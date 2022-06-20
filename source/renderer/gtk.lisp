@@ -305,14 +305,18 @@ the renderer thread, use `defmethod' instead."
    (pathname (str:concat (context-name file) "-web-context/"))))
 
 (define-class gtk-extensions-directory (nyxt-file)
-  ((files:name "gtk-extensions"))
+  ((files:name "gtk-extensions")
+   (files:base-path asdf-user::*nyxt-libdir*))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Directory where to load the 'libnyxt' library.
 By default it is found in the source directory."))
 
 (defmethod files:resolve ((profile nyxt-profile) (file gtk-extensions-directory))
-  (asdf:system-relative-pathname :nyxt "libraries/web-extensions/"))
+  (let ((system-directory (call-next-method)))
+    (if (uiop:directory-exists-p system-directory)
+        system-directory
+        (asdf:system-relative-pathname :nyxt "libraries/web-extensions/"))))
 
 (define-class cookies-file (files:data-file data-manager-file)
   ((files:name "cookies"))
