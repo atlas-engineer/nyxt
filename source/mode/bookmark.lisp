@@ -389,12 +389,17 @@ rest in background buffers."
 
 (defmethod files:serialize ((profile nyxt-profile) (file bookmarks-file) stream &key)
   (let ((content
-          ;; Sort the entries to make serialization reproducible.
-          ;; Particularly useful when bookmarks are under version control.
-          (sort (files:content file)
-                #'url< :key #'url)))
+         ;; Sort the entries to make serialization reproducible.
+         ;; Particularly useful when bookmarks are under version control.
+         ;;
+         ;; Need non-destructive sort here or else the cached version
+         ;; of file content may become corrupted. For example, with
+         ;; destructive SORT almost all bookmarks are removed when the
+         ;; user tries to remove just few.
+         (sera:sort-new (files:content file)
+                        #'url< :key #'url)))
     (write-string "(" stream)
-    (dolist (entry content)
+    (sera:do-each (entry content)
       (write-string +newline+ stream)
       (serialize-object entry stream))
     (format stream "~%)~%")
