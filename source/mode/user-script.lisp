@@ -59,7 +59,7 @@
     nil
     :type (maybe hash-table))
    (include
-    '()
+    '("http://*/*" "https://*/*")
     :type list-of-strings)
    (exclude
     '()
@@ -175,7 +175,18 @@ Return:
             (namespace script) (first (getprop "namespace"))
             (all-frames-p script) (not (first (getprop "noframes")))
             (code script) code-with-requires
-            (include script) (append (getprop "include") (getprop "match"))
+            (include script) (let ((includes (append (getprop "include") (getprop "match"))))
+                               (cond
+                                 ((and (sera:single includes)
+                                       (equal "http*" (first includes)))
+                                  '("http://*/*" "https://*/*"))
+                                 ((and (sera:single includes)
+                                       (equal "https*" (first includes)))
+                                  '("https://*/*"))
+                                 ((and (sera:single includes)
+                                       (equal "*" (first includes)))
+                                  '("*://*/*"))
+                                 (t includes)))
             (exclude script) (getprop "exclude")
             (run-at script) (str:string-case (first (getprop "run-at"))
                               ("document-start" :document-start)
