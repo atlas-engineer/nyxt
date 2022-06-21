@@ -6,7 +6,11 @@
 (in-package :nyxt/repl-mode)
 
 (define-class evaluation ()
-  ((input
+  ((id
+    (nyxt::new-id)
+    :type alex:non-negative-integer
+    :documentation "Unique evaluation identifier.")
+   (input
     nil
     :type (maybe string)
     :documentation "User input.")
@@ -17,6 +21,9 @@
    (results
     nil
     :documentation "The results (as a list) of `input' evaluation.")
+   (ready-p
+    nil
+    :documentation "The evaluation is terminated.")
    (raised-condition
     nil
     :type (maybe condition)
@@ -24,6 +31,14 @@
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(defmethod initialize-instance :after ((evaluation evaluation) &key)
+  (run-thread "repl cell evaluation"
+    (setf (results evaluation) (nyxt::evaluate (input evaluation)))
+    (setf (ready-p evaluation) t)
+    (peval (setf (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "#evaluation-result-~a" (id evaluation))))
+                           |innerHTML|)
+                 (ps:lisp (html-result evaluation))))))
 
 (define-mode repl-mode ()
   "Mode for interacting with the REPL."
@@ -162,9 +177,7 @@
     "Evaluate the currently focused input cell."
     (let* ((input (input repl))
            (id (current-cell-id repl))
-           (evaluation (make-instance 'evaluation
-                                      :input input
-                                      :results (nyxt::evaluate input))))
+           (evaluation (make-instance 'evaluation :input input)))
       (unless (uiop:emptyp input)
         (if id
             (setf (elt (evaluations repl) id) evaluation
@@ -263,6 +276,23 @@
                                        completion (subseq input cursor))
               (cursor repl) (+ cursor (- (length completion) (- cursor previous-delimiter))))))))
 
+(defun html-result (evaluation)
+  (spinneret:with-html-string
+    (if (ready-p evaluation)
+        (loop
+          for result in (results evaluation)
+          for sub-order from 0
+          for name = (if (serapeum:single (results evaluation))
+                         (intern (format nil "V~d" (id evaluation)))
+                         (intern (format nil "V~d.~d" (id evaluation) sub-order)))
+          do (setf (symbol-value name) result)
+          collect (:div
+                   (format nil "~(~a~) = " name)
+                   (:raw
+                    (value->html result (or (typep result 'standard-object)
+                                            (typep result 'structure-object))))))
+        (:span "Calculating..."))))
+
 (define-internal-page-command-global lisp-repl ()
     (repl-buffer "*Lisp REPL*" 'repl-mode)
   "Show Lisp REPL."
@@ -276,39 +306,34 @@
                    (loop
                      for evaluation in (evaluations repl-mode)
                      for order from 0
-                     collect (:div :class "input"
-                                   (:span :class "prompt"
-                                          (:button
-                                           :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                            (:title "move-cell-up")
-                                                            (move-cell-up :id order)))
-                                           :title "Move this cell up."
-                                           "↑")
-                                          (:button
-                                           :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                            (:title "move-cell-down")
-                                                            (move-cell-down :id order)))
-                                           :title "Move this cell down."
-                                           "↓"))
-                                   (:textarea :class "input-buffer" :data-repl-id order
-                                              :onfocus
-                                              (ps:ps (nyxt/ps:lisp-eval
-                                                      (:title "set-current-evaluation")
-                                                      (setf (slot-value (nyxt:current-mode :repl)
-                                                                        'current-evaluation)
-                                                            order)))
-                                              (input evaluation)))
-                     collect (loop
-                               for result in (results evaluation)
-                               for sub-order from 0
-                               for name = (if (serapeum:single (results evaluation))
-                                              (intern (format nil "V~d" order))
-                                              (intern (format nil "V~d.~d" order sub-order)))
-                               do (setf (symbol-value name) result)
-                               collect (:span (format nil "~(~a~) = " name)
-                                              (:raw (value->html result (or (typep result 'standard-object)
-                                                                            (typep result 'structure-object)))))
-                               collect (:br)))
+                     collect (:div
+                              :class "evaluation"
+                              :id (format nil "evaluation-~a" (id evaluation))
+                              (:div :class "input"
+                                    (:span :class "prompt"
+                                           (:button
+                                            :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                             (:title "move-cell-up")
+                                                             (move-cell-up :id order)))
+                                            :title "Move this cell up."
+                                            "↑")
+                                           (:button
+                                            :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                             (:title "move-cell-down")
+                                                             (move-cell-down :id order)))
+                                            :title "Move this cell down."
+                                            "↓"))
+                                    (:textarea :class "input-buffer" :data-repl-id order
+                                               :onfocus
+                                               (ps:ps (nyxt/ps:lisp-eval
+                                                       (:title "set-current-evaluation")
+                                                       (setf (slot-value (nyxt:current-mode :repl)
+                                                                         'current-evaluation)
+                                                             order)))
+                                               (input evaluation)))
+                              (:div :class "evalution-result"
+                                    :id (format nil "evaluation-result-~a" (id evaluation))
+                                    (:raw (html-result evaluation)))))
                    (:div :class "input"
                          (:span :class "prompt" ">")
                          (:textarea :class "input-buffer"
