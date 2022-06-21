@@ -384,7 +384,8 @@ to go to the compilation error location."
                (:nyxt-source-directory "nyxt-asdf")
                (:nyxt-source-directory "libraries"
                 :exclude-pattern ":!:libraries/web-extensions/*" ; Do not install this non-Lisp source.
-                :exclude-types '("o" "c" "fasl"))))
+                :exclude-types '("o" "c" "h"                     ; C code and artifacts.
+                                 "fasl"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Library subsystems:

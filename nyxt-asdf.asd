@@ -1,8 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(load "nyxt-asdf-utils")
-(nyxt-asdf-utils:set-new-translation "NYXT" "nyxt-asdf")
+;; (load "nyxt-asdf-utils")
+;; (nyxt-asdf-utils:set-new-translation "NYXT" "nyxt-asdf")
 
 (defsystem "nyxt-asdf"
   :version "1.0.0"
@@ -10,7 +10,7 @@
   :homepage "https://nyxt.atlas.engineer"
   :description "ASDF helpers for Nyxt and its extensions."
   :license "BSD 3-Clause"
-  :pathname #.(npath #p"NYXT:nyxt-asdf;")
+  :pathname #p"nyxt-asdf/"
   :components ((:file "package")
                (:file "nyxt-asdf")
                (:file "install")
