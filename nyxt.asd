@@ -229,14 +229,6 @@ to go to the compilation error location."
   :perform (compile-op (o c)            ; TODO: Subclass compile-op instead.
                        (symbol-call :nyxt-asdf :fetch-submodules c)))
 
-(defun nyxt-run-test (c path &key network-needed-p)
-  (and (or (not network-needed-p)
-           (not (getenv "NYXT_TESTS_NO_NETWORK")))
-       (not (funcall (read-from-string "prove:run")
-                     (system-relative-pathname c path)))
-       (getenv "NYXT_TESTS_ERROR_ON_FAIL")
-       (quit 18)))
-
 ;; TODO: Test that Nyxt starts and that --help, --version work.
 (defsystem "nyxt/tests"
   :defsystem-depends-on (nyxt-asdf)
@@ -323,8 +315,8 @@ to go to the compilation error location."
   :depends-on (nyxt/gi-gtk prove)
   :components ((:file "tests/renderer-package"))
   :perform (test-op (op c)
-                    (nyxt-run-test c "tests/renderer-offline/")
-                    (nyxt-run-test c "tests/renderer-online/" :network-needed-p t)))
+                    (symbol-call :nyxt-asdf :nyxt-run-test c "tests/renderer-offline/")
+                    (symbol-call :nyxt-asdf :nyxt-run-test c "tests/renderer-online/" :network-needed-p t)))
 
 (defsystem "nyxt/qt"
   :depends-on (nyxt
@@ -366,7 +358,7 @@ to go to the compilation error location."
   :components ((:file "tests/package"))
   :perform (test-op (op c)
                     (if (file-exists-p (system-relative-pathname :nyxt "nyxt"))
-                        (nyxt-run-test c "tests/executable/")
+                        (symbol-call :nyxt-asdf :nyxt-run-test c "tests/executable/")
                         (warn "`nyxt' executable missing, skipping tests."))))
 
 #+sb-core-compression
@@ -456,7 +448,7 @@ the few modules that's not automatically included in the image."
 (defsystem "nyxt/download-manager/tests"
   :depends-on (nyxt/download-manager prove)
   :perform (test-op (op c)
-                    (nyxt-run-test c "libraries/download-manager/tests/"
+                    (symbol-call :nyxt-asdf :nyxt-run-test c "libraries/download-manager/tests/"
                                    :network-needed-p t)))
 
 (defsystem "nyxt/analysis"
@@ -501,7 +493,7 @@ the few modules that's not automatically included in the image."
 (defsystem "nyxt/history-tree/tests"
   :depends-on (nyxt/history-tree prove str)
   :perform (test-op (op c)
-                    (nyxt-run-test c "libraries/history-tree/tests/")))
+                    (symbol-call :nyxt-asdf :nyxt-run-test c "libraries/history-tree/tests/")))
 
 (defsystem "nyxt/password-manager"
   :depends-on (bordeaux-threads
@@ -534,7 +526,7 @@ the few modules that's not automatically included in the image."
   :depends-on (alexandria fset nyxt/keymap prove)
   :components ((:file "libraries/keymap/test-package"))
   :perform (test-op (op c)
-                    (nyxt-run-test c "libraries/keymap/tests/")))
+                    (symbol-call :nyxt-asdf :nyxt-run-test c "libraries/keymap/tests/")))
 
 (defsystem "nyxt/class-star"
   :depends-on (hu.dwim.defclass-star moptilities alexandria)
@@ -547,7 +539,7 @@ the few modules that's not automatically included in the image."
 (defsystem "nyxt/class-star/tests"
   :depends-on (nyxt/class-star prove)
   :perform (test-op (op c)
-                    (nyxt-run-test c "libraries/class-star/tests/")))
+                    (symbol-call :nyxt-asdf :nyxt-run-test c "libraries/class-star/tests/")))
 
 (defsystem "nyxt/ospm"
   :depends-on (alexandria
@@ -573,7 +565,7 @@ the few modules that's not automatically included in the image."
   :depends-on (nyxt/ospm prove)
   :components ((:file "libraries/ospm/test-package"))
   :perform (test-op (op c)
-                    (nyxt-run-test c "libraries/ospm/tests/tests.lisp")))
+                    (symbol-call :nyxt-asdf :nyxt-run-test c "libraries/ospm/tests/tests.lisp")))
 
 (defsystem "nyxt/prompter"
   :depends-on (alexandria
@@ -598,7 +590,7 @@ the few modules that's not automatically included in the image."
   :depends-on (nyxt/prompter prove)
   :components ((:file "libraries/prompter/test-package"))
   :perform (test-op (op c)
-                    (nyxt-run-test c "libraries/prompter/tests/")))
+                    (symbol-call :nyxt-asdf :nyxt-run-test c "libraries/prompter/tests/")))
 
 (defsystem "nyxt/theme"
   :depends-on (alexandria
@@ -614,4 +606,4 @@ the few modules that's not automatically included in the image."
   :depends-on (nyxt/theme prove)
   :components ((:file "libraries/theme/test-package"))
   :perform (test-op (op c)
-                    (nyxt-run-test c "libraries/theme/tests/")))
+                    (symbol-call :nyxt-asdf :nyxt-run-test c "libraries/theme/tests/")))
