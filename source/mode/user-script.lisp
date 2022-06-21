@@ -203,6 +203,7 @@ Return:
      code)))
 
 (defmethod slot-unbound (class (instance user-script) slot-name)
+  (declare (ignore class))
   (parse-user-script instance)
   (slot-value instance slot-name))
 
