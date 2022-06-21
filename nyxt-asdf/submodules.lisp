@@ -22,7 +22,7 @@ A naive benchmark on a 16 Mbps bandwidth gives us
   (:documentation "This system sole purpose is to fetch the Git submodules found in '.gitmodules' next to the system definition file."))
 (import 'nyxt-submodule-system  :asdf-user)
 
-(defmethod asdf:perform ((o asdf:image-op) (c nyxt-submodule-system))
+(defmethod asdf:perform ((o asdf:compile-op) (c nyxt-submodule-system))
   (fetch-submodules c))
 
 (defun register-submodules (component)
@@ -57,10 +57,13 @@ A naive benchmark on a 16 Mbps bandwidth gives us
 
 (export-always 'fetch-submodules)
 (defmethod fetch-submodules ((component asdf:component))
-  (run-program (list *git-program*
-                     "-C" (namestring (system-source-directory component ""))
-                     "submodule" "update" "--init" "--force"
-                     "--jobs" (write-to-string *submodules-jobs*))
-               :ignore-error-status t
-               :output t)
+  (let ((cmd (list *git-program*
+                   "-C" (namestring (system-source-directory component))
+                   "submodule" "update" "--init" "--force"
+                   "--jobs" (write-to-string *submodules-jobs*))))
+    (format *error-output* "~&; running ~s~&" cmd)
+    (run-program cmd
+                 :ignore-error-status t
+                 :output t
+                 :error-output t))
   (register-submodules component))
