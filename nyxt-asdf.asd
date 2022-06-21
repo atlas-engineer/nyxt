@@ -1,23 +1,33 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(defun set-new-translation (host pair)
-  (if (logical-pathname-translations host)
-      (pushnew pair
-               (logical-pathname-translations host)
-               :key #'first :test #'string-equal)
-      (setf (logical-pathname-translations host)
-            (list pair))))
+(defun set-new-translation (host logical-directory
+                            &optional (translated-directory (substitute #\/ #\; logical-directory)))
+  (let ((logical-path (uiop:strcat host ":" logical-directory ";**;*.*.*"))
+        (logical-fasl-path (uiop:strcat host ":" logical-directory ";**;*.fasl.*"))
+        (path-translation (uiop:ensure-pathname
+                           (uiop:subpathname* *default-pathname-defaults*
+                                              translated-directory)
+                           :ensure-directory t
+                           :wilden t))
+        (fasl-translation (uiop:ensure-pathname
+                           (asdf:apply-output-translations *default-pathname-defaults*)
+                           :wilden t)))
+    (if (ignore-errors (logical-pathname-translations host))
+        (setf (cdr
+               (assoc logical-path (logical-pathname-translations host)
+                      :test #'string-equal))
+              (list path-translation)
+              (cdr
+               (assoc logical-fasl-path (logical-pathname-translations host)
+                      :test #'string-equal))
+              (list fasl-translation))
+        (setf (logical-pathname-translations host)
+              ;; WARNING: fasl path must come first as it's more specific.
+              (list (list logical-fasl-path fasl-translation)
+                    (list logical-path path-translation))))))
 
-(set-new-translation
- "NYXT"
- `("NYXT:nyxt-asdf;**;*.fasl.*"
-   ,(uiop:ensure-pathname (asdf:apply-output-translations *default-pathname-defaults*)
-                          :wilden t)))
-(set-new-translation
- "NYXT"
- `("NYXT:nyxt-asdf;**;*.*.*"
-   ,(uiop:ensure-pathname (uiop:subpathname* *default-pathname-defaults* "nyxt-asdf/") :wilden t)))
+(set-new-translation "NYXT" "nyxt-asdf")
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun npath (path)
