@@ -7,3 +7,6 @@
   "Like `export', but also evaluated at compile time."
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      (export ,symbols ,@(and package-supplied? (list package)))))
+
+(export-always '*git-program*)
+(defvar *git-program* "git")
