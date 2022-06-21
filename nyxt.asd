@@ -30,8 +30,8 @@ to go to the compilation error location."
   ;; REVIEW: Would not be necessary if https://github.com/slime/slime/issues/727
   ;; and https://github.com/atlas-engineer/nyxt/pull/2371 were fixed.
   (if (uiop:getenv "NYXT_LOGICAL_PATH")
-      (translate-logical-pathname path)
-      path))
+      path
+      (translate-logical-pathname path)))
 
 (defsystem "nyxt"
   :version "3"                          ; Development version.
