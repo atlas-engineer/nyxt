@@ -42,5 +42,5 @@ the few modules that's not automatically included in the image."
                             "gi-gtk"))
 
 (defmethod asdf:component-depends-on ((o asdf:prepare-op) (c nyxt-renderer-system))
-  `((load-op ,(format nil "nyxt/~a-application" *nyxt-renderer*))
+  `((asdf:load-op ,(format nil "nyxt/~a-application" *nyxt-renderer*))
     ,@(call-next-method)))

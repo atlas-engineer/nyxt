@@ -50,7 +50,7 @@
 (defun install-file (file dest)
   "Like `copy-file' but ensures all parent directories are created if necessary."
   (ensure-all-directories-exist
-   (list (directory-namestring file)))
+   (list (directory-namestring dest)))
   (copy-file file dest))
 
 (export-always 'copy-directory)
