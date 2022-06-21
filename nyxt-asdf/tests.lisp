@@ -3,12 +3,15 @@
 
 (in-package :nyxt-asdf)
 
-(export-always 'nyxt-run-test)          ; TODO: Rename.
-(defun nyxt-run-test (c path &key network-needed-p)
+;; TODO: Switch to a better test suite (e.g. Lisp-Unit2) and make this more generic.
+
+(export-always 'run-test)
+(defun run-test (c path &key network-needed-p)
   (and (or (not network-needed-p)
            (not (getenv "NYXT_TESTS_NO_NETWORK")))
        (not (symbol-call :prove :run (system-relative-pathname c path)))
        (getenv "NYXT_TESTS_ERROR_ON_FAIL")
+       ;; Arbitrary exit code.
        (quit 18)))
 
 (export-always 'print-benchmark)
