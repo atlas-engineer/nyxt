@@ -8,6 +8,9 @@
    #:npath))
 (in-package :nyxt-asdf-utils)
 
+;; TODO: Remove from nyxt-asdf and specialize `asdf:output-files'.
+;; Return 2 values.
+
 (defun set-new-translation (host logical-directory
                             &optional (translated-directory (substitute #\/ #\; logical-directory)))
   ;; REVIEW: Use `*load-pathname*' or `*load-truename*' instead of

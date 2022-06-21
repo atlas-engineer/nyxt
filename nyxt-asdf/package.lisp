@@ -30,6 +30,7 @@
   (:import-from
    #:asdf
    #:clear-configuration
+   #:perform
    #:system-relative-pathname
    #:system-source-directory)
   (:documentation "ASDF helpers for Nyxt and its extensions."))

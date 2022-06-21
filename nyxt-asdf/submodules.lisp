@@ -21,6 +21,13 @@ A naive benchmark on a 16 Mbps bandwidth gives us
     4 jobs: 2m51s
     8 jobs: 2m21s")
 
+(defclass nyxt-submodule-system (asdf:system) ()
+  (:documentation "This system sole purpose is to fetch the Git submodules found in '.gitmodules' next to the system definition file."))
+(import 'nyxt-submodule-system  :asdf-user)
+
+(defmethod asdf:perform ((o asdf:image-op) (c nyxt-submodule-system))
+  (fetch-submodules c))
+
 (defun register-submodules (component)
   ;; Ideally we should avoid writing global, stateful files to the user file
   ;; system.  So instead of writing to the ASDF config file, we register the
@@ -50,7 +57,6 @@ A naive benchmark on a 16 Mbps bandwidth gives us
                (inter-directory-separator)))))
   (clear-configuration)
   (format t "; CL_SOURCE_REGISTRY: ~s~%" (getenv "CL_SOURCE_REGISTRY")))
-
 
 (export-always 'fetch-submodules)
 (defmethod fetch-submodules ((component asdf:component))
