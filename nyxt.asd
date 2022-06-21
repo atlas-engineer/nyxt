@@ -370,7 +370,7 @@ to go to the compilation error location."
                         (call-next-method)
                         (warn "`nyxt' executable missing, skipping tests."))))
 
-(defsystem "nyxt/install3"
+(defsystem "nyxt/install"
   :defsystem-depends-on (nyxt-asdf)
   :class :nyxt-renderer-system
   :depends-on (alexandria
