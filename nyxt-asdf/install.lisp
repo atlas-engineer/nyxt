@@ -15,26 +15,27 @@
         (relativize-pathname-directory (ensure-directory-pathname env))
         default)))
 
+;; We use `defparameter' so that paths are re-computed on system reload.
 (export-always '*destdir*)
-(defvar *destdir* (if (getenv "DESTDIR")
-                      (ensure-directory-pathname (getenv "DESTDIR"))
-                      #p"/"))
+(defparameter *destdir* (if (getenv "DESTDIR")
+                            (ensure-directory-pathname (getenv "DESTDIR"))
+                            #p"/"))
 
 (export-always '*prefix*)
-(defvar *prefix* (merge-pathnames* (relative-path-from-env "PREFIX" #p"usr/local/")
-                                   *destdir*))
+(defparameter *prefix* (merge-pathnames* (relative-path-from-env "PREFIX" #p"usr/local/")
+                                         *destdir*))
 
 (export-always '*datadir*)
-(defvar *datadir* (path-from-env "DATADIR" (merge-pathnames* "share/" *prefix*)))
+(defparameter *datadir* (path-from-env "DATADIR" (merge-pathnames* "share/" *prefix*)))
 (export-always '*bindir*)
-(defvar *bindir* (path-from-env "BINDIR" (merge-pathnames* "bin/" *prefix*)))
+(defparameter *bindir* (path-from-env "BINDIR" (merge-pathnames* "bin/" *prefix*)))
 (export-always '*libdir*)
-(defvar *libdir* (path-from-env "LIBDIR" (merge-pathnames* "lib/" *prefix*)))
+(defparameter *libdir* (path-from-env "LIBDIR" (merge-pathnames* "lib/" *prefix*)))
 
 (export-always '*nyxt-libdir*)
-(defvar *nyxt-libdir* (merge-pathnames* "nyxt/" *libdir*))
+(defparameter *nyxt-libdir* (merge-pathnames* "nyxt/" *libdir*))
 (export-always '*dest-source-dir*)
-(defvar *dest-source-dir* (path-from-env "NYXT_SOURCE_PATH" (merge-pathnames* "nyxt/" *datadir*)))
+(defparameter *dest-source-dir* (path-from-env "NYXT_SOURCE_PATH" (merge-pathnames* "nyxt/" *datadir*)))
 
 (export-always '*chmod-program*)
 (defvar *chmod-program* "chmod")
