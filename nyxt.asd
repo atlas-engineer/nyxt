@@ -233,10 +233,10 @@ to go to the compilation error location."
 (defsystem "nyxt/tests"
   :defsystem-depends-on (nyxt-asdf)
   :depends-on (nyxt prove)
-  :components ((:file "tests/package"))
-  :perform (test-op (op c) ; TODO: Subclass test-op instead.
-                    (symbol-call :nyxt-asdf :run-test c "tests/offline/")
-                    (symbol-call :nyxt-asdf :run-test c "tests/online/" :network-needed-p t)))
+  :serial t
+  :components ((:file "tests/package")
+               (:nyxt-test "tests/offline/")
+               (:nyxt-online-test "tests/online/")))
 
 (defsystem "nyxt/benchmark"
   :defsystem-depends-on (nyxt-asdf)
@@ -312,11 +312,12 @@ to go to the compilation error location."
   :in-order-to ((test-op (test-op "nyxt/gi-gtk/tests"))))
 
 (defsystem "nyxt/gi-gtk/tests"
+  :defsystem-depends-on (nyxt-asdf)
   :depends-on (nyxt/gi-gtk prove)
-  :components ((:file "tests/renderer-package"))
-  :perform (test-op (op c)
-                    (symbol-call :nyxt-asdf :run-test c "tests/renderer-offline/")
-                    (symbol-call :nyxt-asdf :run-test c "tests/renderer-online/" :network-needed-p t)))
+  :serial t
+  :components ((:file "tests/renderer-package")
+               (:nyxt-test "tests/renderer-offline/")
+               (:nyxt-online-test "tests/renderer-online/")))
 
 (defsystem "nyxt/qt"
   :depends-on (nyxt
@@ -362,10 +363,11 @@ to go to the compilation error location."
   :defsystem-depends-on (nyxt-asdf)
   :class :nyxt-renderer-system
   :depends-on (prove)
-  :components ((:file "tests/package"))
-  :perform (test-op (op c)
+  :components ((:file "tests/package")
+               (:nyxt-test "tests/executable/"))
+  :perform (test-op :around (op c)
                     (if (file-exists-p (system-relative-pathname :nyxt "nyxt"))
-                        (symbol-call :nyxt-asdf :run-test c "tests/executable/")
+                        (call-next-method)
                         (warn "`nyxt' executable missing, skipping tests."))))
 
 
@@ -444,10 +446,9 @@ to go to the compilation error location."
   :in-order-to ((test-op (test-op "nyxt/download-manager/tests"))))
 
 (defsystem "nyxt/download-manager/tests"
+  :defsystem-depends-on (nyxt-asdf)
   :depends-on (nyxt/download-manager prove)
-  :perform (test-op (op c)
-                    (symbol-call :nyxt-asdf :run-test c "libraries/download-manager/tests/"
-                                   :network-needed-p t)))
+  :components ((:nyxt-online-test "libraries/download-manager/tests/" )))
 
 (defsystem "nyxt/analysis"
   :depends-on (str
@@ -489,9 +490,9 @@ to go to the compilation error location."
   :in-order-to ((test-op (test-op "nyxt/history-tree/tests"))))
 
 (defsystem "nyxt/history-tree/tests"
+  :defsystem-depends-on (nyxt-asdf)
   :depends-on (nyxt/history-tree prove str)
-  :perform (test-op (op c)
-                    (symbol-call :nyxt-asdf :run-test c "libraries/history-tree/tests/")))
+  :components ((:nyxt-test "libraries/history-tree/tests/")))
 
 (defsystem "nyxt/password-manager"
   :depends-on (bordeaux-threads
@@ -521,10 +522,10 @@ to go to the compilation error location."
   :in-order-to ((test-op (test-op "nyxt/keymap/tests"))))
 
 (defsystem "nyxt/keymap/tests"
+  :defsystem-depends-on (nyxt-asdf)
   :depends-on (alexandria fset nyxt/keymap prove)
-  :components ((:file "libraries/keymap/test-package"))
-  :perform (test-op (op c)
-                    (symbol-call :nyxt-asdf :run-test c "libraries/keymap/tests/")))
+  :components ((:file "libraries/keymap/test-package")
+               (:nyxt-test "libraries/keymap/tests/")))
 
 (defsystem "nyxt/class-star"
   :depends-on (hu.dwim.defclass-star moptilities alexandria)
@@ -535,9 +536,9 @@ to go to the compilation error location."
   :in-order-to ((test-op (test-op "nyxt/class-star/tests"))))
 
 (defsystem "nyxt/class-star/tests"
+  :defsystem-depends-on (nyxt-asdf)
   :depends-on (nyxt/class-star prove)
-  :perform (test-op (op c)
-                    (symbol-call :nyxt-asdf :run-test c "libraries/class-star/tests/")))
+  :components ((:nyxt-test "libraries/class-star/tests/")))
 
 (defsystem "nyxt/ospm"
   :depends-on (alexandria
@@ -560,10 +561,10 @@ to go to the compilation error location."
   :in-order-to ((test-op (test-op "nyxt/ospm/tests"))))
 
 (defsystem "nyxt/ospm/tests"
+  :defsystem-depends-on (nyxt-asdf)
   :depends-on (nyxt/ospm prove)
-  :components ((:file "libraries/ospm/test-package"))
-  :perform (test-op (op c)
-                    (symbol-call :nyxt-asdf :run-test c "libraries/ospm/tests/tests.lisp")))
+  :components ((:file "libraries/ospm/test-package")
+               (:nyxt-test "libraries/ospm/tests/tests")))
 
 (defsystem "nyxt/prompter"
   :depends-on (alexandria
@@ -585,10 +586,10 @@ to go to the compilation error location."
   :in-order-to ((test-op (test-op "nyxt/prompter/tests"))))
 
 (defsystem "nyxt/prompter/tests"
+  :defsystem-depends-on (nyxt-asdf)
   :depends-on (nyxt/prompter prove)
-  :components ((:file "libraries/prompter/test-package"))
-  :perform (test-op (op c)
-                    (symbol-call :nyxt-asdf :run-test c "libraries/prompter/tests/")))
+  :components ((:file "libraries/prompter/test-package")
+               (:nyxt-test "libraries/prompter/tests/")))
 
 (defsystem "nyxt/theme"
   :depends-on (alexandria
@@ -601,7 +602,7 @@ to go to the compilation error location."
   :in-order-to ((test-op (test-op "nyxt/theme/tests"))))
 
 (defsystem "nyxt/theme/tests"
+  :defsystem-depends-on (nyxt-asdf)
   :depends-on (nyxt/theme prove)
-  :components ((:file "libraries/theme/test-package"))
-  :perform (test-op (op c)
-                    (symbol-call :nyxt-asdf :run-test c "libraries/theme/tests/")))
+  :components ((:file "libraries/theme/test-package")
+               (:nyxt-test "libraries/theme/tests/")))
