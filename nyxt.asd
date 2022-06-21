@@ -6,20 +6,9 @@
   (sb-ext:assert-version->= 2 0 0)
   (require 'sb-bsd-sockets))
 
-;; REVIEW: Use `*load-pathname*' or `*load-truename*' instead of `*default-pathname-defaults*'?
-;; We could also use (asdf:system-source-directory :nyxt)), but only after the definition of the system.
-(setf (logical-pathname-translations "NYXT")
-      (append (ignore-errors (logical-pathname-translations "NYXT"))
-              `(("NYXT:source;**;*.fasl.*"
-                 ,(uiop:ensure-pathname (asdf:apply-output-translations *default-pathname-defaults*)
-                                        :wilden t))
-                ("NYXT:source;**;*.*.*"
-                 ,(uiop:ensure-pathname (uiop:subpathname* *default-pathname-defaults* "source/") :wilden t))
-                ("NYXT:libraries;**;*.fasl.*"
-                 ,(uiop:ensure-pathname (asdf:apply-output-translations *default-pathname-defaults*)
-                                        :wilden t))
-                ("NYXT:libraries;**;*.*.*"
-                 ,(uiop:ensure-pathname (uiop:subpathname* *default-pathname-defaults* "libraries/") :wilden t)))))
+(load "nyxt-asdf-utils")
+(nyxt-asdf-utils:set-new-translation "NYXT" "source")
+(nyxt-asdf-utils:set-new-translation "NYXT" "libraries")
 
 (defun npath (path)
   "If NYXT_LOGICAL_PATH environment variable is set, use logical path source
