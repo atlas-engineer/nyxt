@@ -16,4 +16,5 @@
                (:file "install")
                (:file "nyxt-options")
                (:file "submodules")
+               (:file "systems")
                (:file "tests")))
