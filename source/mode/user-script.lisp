@@ -46,31 +46,31 @@
 
 (define-class user-script (renderer-user-script nfiles:data-file nyxt-remote-file)
   ((code
-    nil
+    :unbound
     :type (maybe string))
    (version "")
    (description "")
    (namespace "")
    (world-name
-    nil
+    :unbound
     :type (maybe string)
     :documentation "The JavaScript world to run the `code' in.")
    (requires
     nil
     :type (maybe hash-table))
    (include
-    '("http://*/*" "https://*/*")
+    :unbound
     :type list-of-strings)
    (exclude
-    '()
+    :unbound
     :type list-of-strings)
    (all-frames-p
-    t
+    :unbound
     :type boolean
     :documentation "Whether to run on both top-level frame and all the subframes.
 If false, runs on the toplevel frame only.")
    (run-at
-    :document-end
+    :unbound
     :type (member :document-start :document-end :document-idle)
     :documentation "When to run the script.
 Possible values:
@@ -194,12 +194,17 @@ Return:
                               ("document-idle" :document-idle)
                               (otherwise :document-end)))
            code-with-requires)))
-     (setf (code script) code))))
+     (setf (code script) code
+           (include script) '("http://*/*" "https://*/*")
+           (exclude script) '()
+           (all-frames-p script) t
+           (run-at script) :document-end
+           (world-name script) nil)
+     code)))
 
-(defmethod code :around ((script user-script))
-  (or (call-next-method)
-      (setf (code script)
-            (parse-user-script script))))
+(defmethod slot-unbound (class (instance user-script) slot-name)
+  (parse-user-script instance)
+  (slot-value instance slot-name))
 
 (defmethod nfiles:deserialize ((profile nyxt-profile) (script user-script) raw-content &key)
   "If the script is not in the UserScript format, the raw content is used as is
