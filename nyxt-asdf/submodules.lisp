@@ -3,9 +3,6 @@
 
 (in-package :nyxt-asdf)
 
-(export-always '*git-program*)
-(defvar *git-program* "git")
-
 (export-always '*submodules-directory*)
 (defvar *submodules-directory* (or (getenv "NYXT_SUBMODULES_DIR")
                                    "_build"))

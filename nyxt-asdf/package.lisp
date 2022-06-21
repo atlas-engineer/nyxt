@@ -24,6 +24,7 @@
    #:quit
    #:relativize-pathname-directory
    #:run-program
+   #:split-string
    #:strcat
    #:subpathp
    #:symbol-call)
