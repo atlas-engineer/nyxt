@@ -223,8 +223,8 @@ to go to the compilation error location."
                          (test-op "nyxt/prompter/tests"))))
 
 (defsystem "nyxt/submodules"
-  :perform (compile-op (o c)            ; TODO: Subclass compile-op instead.
-                       (symbol-call :nyxt-asdf :fetch-submodules c)))
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-submodule-system)
 
 ;; TODO: Test that Nyxt starts and that --help, --version work.
 (defsystem "nyxt/tests"
@@ -356,41 +356,45 @@ to go to the compilation error location."
   :entry-point "nyxt:entry-point")
 
 (defsystem "nyxt/application/tests"
-  :depends-on (#.(format nil "nyxt/~a-application" *nyxt-renderer*) ; TODO: Specialize `component-depends-on'?
-                 prove)
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-renderer-system
+  :depends-on (prove)
   :components ((:file "tests/package"))
   :perform (test-op (op c)
                     (if (file-exists-p (system-relative-pathname :nyxt "nyxt"))
                         (symbol-call :nyxt-asdf :nyxt-run-test c "tests/executable/")
                         (warn "`nyxt' executable missing, skipping tests."))))
 
+
+
 (defsystem "nyxt/install"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-renderer-system
   :depends-on (alexandria
                str
-               #.(format nil "nyxt/~a-application" *nyxt-renderer*)
                nyxt/version)
-  :perform (compile-op (o c)            ; TODO: Specialize.
+  :perform (compile-op (o c)            ; REVIEW: Specialize?
                        (let ((desktop-file (merge-pathnames* "applications/nyxt.desktop" *datadir*)))
-                         (install-file (system-relative-pathname c "assets/nyxt.desktop")
-                                       desktop-file))
+                         (symbol-call :nyxt-asdf :install-file (system-relative-pathname c "assets/nyxt.desktop")
+                                      desktop-file))
                        (mapc (lambda (icon-size)
                                (let ((icon-file (format nil "~a/icons/hicolor/~ax~a/apps/nyxt.png"
                                                         *datadir* icon-size icon-size)))
-                                 (install-file (system-relative-pathname
-                                                c
-                                                (format nil "assets/nyxt_~ax~a.png"
-                                                        icon-size icon-size))
-                                               icon-file)))
+                                 (symbol-call :nyxt-asdf :install-file (system-relative-pathname
+                                                                        c
+                                                                        (format nil "assets/nyxt_~ax~a.png"
+                                                                                icon-size icon-size))
+                                              icon-file)))
                              '(16 32 128 256 512))
                        (let ((binary-file (merge-pathnames* "nyxt" *bindir*)))
-                         (install-file (system-relative-pathname c "nyxt") binary-file)
+                         (symbol-call :nyxt-asdf :install-file (system-relative-pathname c "nyxt") binary-file)
                          (make-executable binary-file))
                        (handler-case
                            (progn
                              (format *error-output* "~&;; Copying Git files to ~s.~%" *dest-source-dir*)
                              (dolist (file (mapcan (lambda (dir)
                                                      (split-string
-                                                      (run-program (list *git-program* "-C"
+                                                      (run-program (list (symbol-value (find-symbol* :*git-program* :nyxt-asdf)) "-C"
                                                                          (native-namestring (system-source-directory :nyxt))
                                                                          "ls-files" dir
                                                                          ;; Do not install this non-Lisp source:
@@ -399,15 +403,15 @@ to go to the compilation error location."
                                                       :separator '(#\newline #\return #\linefeed)))
                                                    '("source" "libraries" "nyxt-asdf")))
                                (let ((dest (merge-pathnames* file *dest-source-dir*)))
-                                 (install-file (system-relative-pathname :nyxt file)
-                                               dest))))
+                                 (symbol-call :nyxt-asdf :install-file (system-relative-pathname :nyxt file)
+                                              dest))))
                          (condition (c)
                            (format *error-output* "~&;; Git copy error: ~a" c)
                            (format *error-output* "~&;; Fallback to copying whole directories instead.~%")
                            (dolist (dir '("source" "libraries"))
-                             (copy-directory (system-relative-pathname :nyxt dir)
-                                             (merge-pathnames* dir *dest-source-dir*)
-                                             :verbose-p t))))))
+                             (symbol-call :nyxt-asdf :copy-directory (system-relative-pathname :nyxt dir)
+                                          (merge-pathnames* dir *dest-source-dir*)
+                                          :verbose-p t))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Library subsystems:
