@@ -11,10 +11,9 @@
   (quri:uri url-string))
 
 (defun string->url (url-string)
-  "Return the `quri:uri' object corresponding to URL-STRING.
-If URL-STRING is a path pointing to an existing file, return a `quri:uri' object
- with the `file' scheme.
-If URL-STRING cannot be converted to a `quri:uri' object, return an empty `quri:uri'."
+  "Convert URL-STRING to its corresponding `quri:uri' object.
+If URL-STRING is a path to an existing file, return a `quri:uri-file' object.
+If the conversion fails, a `quri:uri' object is always returned."
   (or (ignore-errors
        (if (uiop:file-exists-p url-string)
            (quri:uri (str:concat "file://" url-string))
@@ -22,8 +21,9 @@ If URL-STRING cannot be converted to a `quri:uri' object, return an empty `quri:
       (quri:uri "")))
 
 (defun strings->urls (url-strings)
-  "Return the list of `quri:uri's corresponding to URL-STRINGS.
-If a URL string cannot be converted to a `quri:uri', it is discarded from the result."
+  "Convert URL-STRINGS to a list of its corresponding `quri:uri' objects.
+Members of URL-STRINGS corresponding to the empty URL are discarded."
+  ;; how to define the empty URL?
   (remove-if #'url-empty-p (mapcar #'string->url url-strings)))
 
 (defun has-method-p (object generic-function)
