@@ -1,6 +1,7 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
+#-asdf3.1 (error "Nyxt requires ASDF 3.1.2")
 #+sbcl
 (progn
   (sb-ext:assert-version->= 2 0 0)
