@@ -332,18 +332,24 @@ to go to the compilation error location."
 ;; produce the desired binary.
 
 (defsystem "nyxt/gtk-application"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (nyxt/gtk)
   :build-operation "program-op"
   :build-pathname "nyxt"
   :entry-point "nyxt:entry-point")
 
 (defsystem "nyxt/gi-gtk-application"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (nyxt/gi-gtk)
   :build-operation "program-op"
   :build-pathname "nyxt"
   :entry-point "nyxt:entry-point")
 
 (defsystem "nyxt/qt-application"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (nyxt/qt)
   :build-operation "program-op"
   :build-pathname "nyxt-qt"
@@ -357,29 +363,6 @@ to go to the compilation error location."
                     (if (file-exists-p (system-relative-pathname :nyxt "nyxt"))
                         (symbol-call :nyxt-asdf :nyxt-run-test c "tests/executable/")
                         (warn "`nyxt' executable missing, skipping tests."))))
-
-#+sb-core-compression
-(handler-bind ((warning #'muffle-warning))
-  (defmethod perform ((o image-op) (c system))
-    (dump-image (output-file o c)
-                :executable t
-                :compression (when (getenv "NYXT_COMPRESS")
-                               (parse-integer (getenv "NYXT_COMPRESS"))))))
-
-(defmethod perform :before ((o image-op) (c system))
-  "Perform some last minute tweaks to the final image.
-
-- Register immutable systems to prevent compiled images of Nyxt from
-trying to recompile dependencies.
-See `asdf::*immutable-systems*'.
-
-- If on SBCL, include `sb-sprof', the statistical profiler, since it's one of
-the few modules that's not automatically included in the image."
-  #+sbcl
-  (require :sb-sprof)
-  (map () 'register-immutable-system
-       (remove-if (lambda (system) (uiop:string-prefix-p "nyxt" system))
-                  (asdf:already-loaded-systems))))
 
 (defsystem "nyxt/install"
   :depends-on (alexandria
