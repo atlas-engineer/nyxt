@@ -287,9 +287,9 @@ Return two values:
                  (unique-p (selconcat :sel ":last-child")))
         (selreturn))
       ;; Then check for previous siblings.
-      ;; (when (and previous
-      ;;            (unique-p (selconcat (get-unique-selector previous)  " ~ " :sel)))
-      ;;   (selreturn))
+      (when (and previous
+                 (unique-p (selconcat (get-unique-selector previous)  " ~ " :sel)))
+        (selreturn))
       ;; Finally, go up the hierarchy.
       (when (and parents
                  (unique-p (selconcat (get-unique-selector (first parents)) " > " :sel)))

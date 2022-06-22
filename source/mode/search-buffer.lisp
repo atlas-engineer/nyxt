@@ -9,6 +9,18 @@
   "Mode for searching text within the buffer."
   ((visible-in-status-p nil)
    (rememberable-p nil)
+   (style (theme:themed-css (theme *browser*)
+            ("mark.nyxt-search-hint"
+             :background-color theme:primary
+             :color theme:on-primary
+             :font-weight "bold"
+             :padding "0px 3px 0px 3px"
+             :border-radius "2px"
+             :z-index #.(1- (expt 2 31)))
+            ("mark.nyxt-highlight-search-hint"
+             :background-color theme:accent
+             :color theme:on-accent))
+          :documentation "The style of the search marks, including the highlighted ones.")
    (test-function
     (lambda (sub string)
       (search sub string :test #'equalp))
@@ -46,8 +58,7 @@ You can redefine it to enable regex-based search, for example:
   (identifier match))
 
 (defmethod prompter:object-attributes ((match search-match) (source prompter:source))
-  `(("Default" ,(body match))
-    ("ID" ,(princ-to-string (identifier match)))
+  `(("Text" ,(body match))
     ("Buffer ID" ,(princ-to-string (id (buffer match))))
     ("Buffer title" ,(title (buffer match)))))
 
@@ -55,11 +66,27 @@ You can redefine it to enable regex-based search, for example:
   (defun create-marks (identifier)
     (ps:let* ((element (nyxt/ps:qs document identifier))
               (mark (ps:chain document (create-element "mark"))))
-      (setf (ps:@ mark class-name) "nyxt-hint")
+      (setf (ps:@ mark class-name) "nyxt-search-hint")
       (ps:chain element (replace-with mark))
       (ps:chain mark (append-child element))))
   (dolist (selector (ps:lisp selectors))
     (create-marks selector)))
+
+(define-parenscript highlight-selected-hint (&key element scroll)
+  (ps:let* ((new-element (nyxt/ps:qs document (ps:lisp (identifier element)))))
+    (when new-element
+      (unless ((ps:@ new-element class-list contains) "nyxt-highlight-search-hint")
+        (ps:let ((old-elements (nyxt/ps:qsa document ".nyxt-highlight-search-hint")))
+          (ps:dolist (e old-elements)
+            (setf (ps:@ e class-name) "nyxt-search-hint"))))
+      (setf (ps:@ new-element class-name) "nyxt-highlight-hint")
+      (when (ps:lisp scroll)
+        (ps:chain new-element (scroll-into-view (ps:create block "nearest")))))))
+
+(define-parenscript remove-focus ()
+  (ps:let ((old-elements (nyxt/ps:qsa document ".nyxt-search-highlight-hint")))
+    (ps:dolist (e old-elements)
+      (setf (ps:@ e class-name) "nyxt-search-hint"))))
 
 (defun prompt-buffer-selection-highlight-hint (&key suggestions scroll follow
                                                  (prompt-buffer (current-prompt-buffer))
@@ -82,11 +109,11 @@ You can redefine it to enable regex-based search, for example:
                  (equal (buffer hint) buffer)))
         (with-current-buffer buffer
           (nyxt/hint-mode::highlight-selected-hint :element hint :scroll scroll))
-        (nyxt/hint-mode:remove-focus))))
+        (remove-focus))))
 
 (define-command remove-search-hints ()
   "Remove all search hints."
-  (peval (ps:dolist (node (nyxt/ps:qsa document "mark.nyxt-hint"))
+  (peval (ps:dolist (node (nyxt/ps:qsa document "mark.nyxt-search-hint"))
            (let ((original (ps:chain node first-child)))
              (ps:chain node (replace-with original))))))
 
