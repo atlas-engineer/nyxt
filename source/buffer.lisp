@@ -1086,6 +1086,7 @@ proceeding."
     ;; last-access time could be older than, say, buffers opened in the
     ;; background.
     (setf (last-access (active-buffer window)) (local-time:now)))
+  (setf %buffer nil)
   (if (dummy-buffer-p (active-buffer window))
       (let ((dummy (active-buffer window)))
         (ffi-window-set-buffer window buffer :focus focus)
