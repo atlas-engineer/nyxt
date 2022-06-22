@@ -211,5 +211,6 @@ Return:
   "If the script is not in the UserScript format, the raw content is used as is
 and only the `code' slot is set."
   (declare (ignorable profile))
-  (setf (files:content script) (alex:read-stream-content-into-string raw-content))
-  (parse-user-script script))
+  (prog1
+      (setf (files:content script) (alex:read-stream-content-into-string raw-content))
+    (parse-user-script script)))
