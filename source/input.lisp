@@ -23,39 +23,6 @@
       (unless current-buffer
         (buffer-delete buffer)))))
 
-(defmacro command-markup (fn &key (modes nil explicit-modes-p))
-  "Print FN in HTML followed its bindings in parentheses."
-  `(let ((spinneret:*suppress-inserted-spaces* t))
-     (spinneret:with-html (:span
-                           (:a :href (nyxt-url 'describe-command :command ,fn)
-                               (:code (let ((*print-case* :downcase))
-                                        (format nil "~a" ,fn))))
-                           " ("
-                           (:code (apply #'binding-keys ,fn (if ,explicit-modes-p
-                                                                (list :modes ,modes)
-                                                                '())))
-                           ")"))))
-
-(defmacro command-docstring-first-sentence (fn &key (sentence-case-p nil))
-  "Print FN first docstring sentence in HTML."
-  `(if (fboundp ,fn)
-       (spinneret:with-html
-         (:span
-          (or ,(if sentence-case-p
-                   `(sera:ensure-suffix (str:sentence-case (first (ppcre:split "\\.\\s" (documentation ,fn 'function)))) ".")
-                   `(sera:ensure-suffix (first (ppcre:split "\\.\\s" (documentation ,fn 'function))) "."))
-              (error "Undocumented function ~a." ,fn))))
-       (error "~a is not a function." ,fn)))
-
-(defmacro command-information (fn)
-  "Print FN binding and first docstring's sentence in HTML."
-  `(spinneret:with-html (:li (command-markup ,fn) ": " (command-docstring-first-sentence ,fn))))
-
-(defun list-command-information (fns)
-  "Print information over a list of commands in HTML."
-  (dolist (i fns)
-    (command-information i)))
-
 (-> make-keymap (string &rest keymap:keymap) keymap:keymap)
 (export-always 'make-keymap)
 (defun make-keymap (name &rest parents)
