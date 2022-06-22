@@ -168,7 +168,7 @@ optimizing the use of space."
 (defun tls-help (buffer url)
   "This function is invoked upon TLS certificate errors to give users
 help on how to proceed."
-  (setf (slot-value buffer 'status) :failed)
+  (setf (status buffer) :failed)
   (html-set
    (spinneret:with-html-string
      (:h1 (format nil "TLS Certificate Error: ~a" (render-url url)))

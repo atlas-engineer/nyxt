@@ -9,7 +9,7 @@
 (defun https->http-loop-help (buffer url) ; TODO: Factor with tls-help?
   "This function is invoked upon TLS certificate errors to give users
 help on how to proceed."
-  (setf (slot-value buffer 'nyxt::status) :failed)
+  (setf (nyxt::status buffer) :failed)
   (nyxt::html-set
    (spinneret:with-html-string
      (:h1 (format nil "HTTPS → HTTP loop: ~a" (render-url url)))

@@ -454,7 +454,6 @@ inherited from the superclasses."))
                   :finished
                   :unloaded
                   :failed)
-    :accessor nil
     :export nil ; TODO: Need to decide if we want progress / errors before exposing to the user.
     :documentation "The status of the buffer.
 - `:loading' when loading a web resource.

@@ -1048,7 +1048,7 @@ See `finalize-buffer'."
                     (url buffer)
                     url)))
       (cond ((eq load-event :webkit-load-started)
-             (setf (slot-value buffer 'status) :loading)
+             (setf (status buffer) :loading)
              (nyxt/web-extensions::tabs-on-updated buffer '(("status" . "loading")))
              (nyxt/web-extensions::tabs-on-updated buffer `(("url" . ,(render-url url))))
              (on-signal-load-started buffer url)
@@ -1066,7 +1066,7 @@ See `finalize-buffer'."
             ((eq load-event :webkit-load-finished)
              (setf (loading-webkit-history-p buffer) nil)
              (unless (eq (slot-value buffer 'status) :failed)
-               (setf (slot-value buffer 'status) :finished))
+               (setf (status buffer) :finished))
              (nyxt/web-extensions::tabs-on-updated buffer '(("status" . "complete")))
              (nyxt/web-extensions::tabs-on-updated buffer `(("url" . ,(render-url url))))
              (on-signal-load-finished buffer url)
@@ -1472,7 +1472,7 @@ See `finalize-buffer'."
        nil)
       (t
        (echo "Failed to load URL ~a in buffer ~a." failing-url (id buffer))
-       (setf (slot-value buffer 'status) :failed)
+       (setf (status buffer) :failed)
        (html-set
         (spinneret:with-html-string
           (:h1 "Page could not be loaded.")
@@ -1561,7 +1561,7 @@ local anyways, and it's better to refresh it if a load was queried."
     ;; don't try to reload if they are called before the "load-changed" signal
     ;; is emitted.
     (when (web-buffer-p buffer)
-      (setf (slot-value buffer 'status) :loading))
+      (setf (status buffer) :loading))
     (if (and entry
              (not (internal-url-p url))
              (not (quri:uri= url (url buffer))))
