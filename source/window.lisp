@@ -8,7 +8,7 @@
 (export-always 'renderer-window)
 (defclass renderer-window ()
   ()
-  (:metaclass mixin-class))
+  (:metaclass interface-class))
 
 (define-class window (renderer-window)
   ((id

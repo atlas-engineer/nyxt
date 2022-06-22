@@ -45,7 +45,7 @@ Without handler, return ARG.  This is an acceptable `combination' for
 (export-always 'renderer-browser)
 (defclass renderer-browser ()
   ()
-  (:metaclass mixin-class))
+  (:metaclass interface-class))
 
 (define-class browser (renderer-browser)
   ((remote-execution-p

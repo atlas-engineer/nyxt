@@ -80,7 +80,7 @@ The URL is fetched, which explains possible bottlenecks."
 (export-always 'renderer-scheme)
 (defclass renderer-scheme ()
   ()
-  (:metaclass mixin-class))
+  (:metaclass interface-class))
 
 (define-class scheme (renderer-scheme)
   ((name (error "Scheme must have a name/scheme")

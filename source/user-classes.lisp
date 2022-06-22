@@ -55,27 +55,48 @@ Do not specialize the standard method in public code, prefer
                      (t (class-of class-specifier)))))
     (typep metaclass 'user-class)))
 
-(defclass mixin-class (standard-class) ())
-(export-always 'mixin-class)
+(defclass interface-class (standard-class) ()
+  (:documentation "An interface class exists solely for the purpose of
+dereferencing other classes through its superclasses.
+It cannot have direct slots.
 
-(defmethod closer-mop:validate-superclass ((class mixin-class)
+This is useful when you do not know in advance which classes you need.
+
+Example:
+
+In some early file:
+
+(defclass renderer-browser () ()
+  (:metaclass interface-class))
+
+In a later file, when you've defined `gtk-browser':
+
+\(handler-bind ((warning #'muffle-warning))
+  (defclass renderer-browser (gtk-browser)
+    ()
+    (:metaclass interface-class)))"))
+(export-always 'interface-class)
+;; TODO: Is there a way to customize the metaclass so that redefinitions do not
+;; trigger a warning?
+
+(defmethod closer-mop:validate-superclass ((class interface-class)
                                            (superclass standard-class))
   t)
 (defmethod closer-mop:validate-superclass ((superclass standard-class)
-                                           (class mixin-class))
+                                           (class interface-class))
   t)
-(defmethod closer-mop:validate-superclass ((class mixin-class)
+(defmethod closer-mop:validate-superclass ((class interface-class)
                                            (superclass user-class))
   t)
 (defmethod closer-mop:validate-superclass ((superclass user-class)
-                                           (class mixin-class))
+                                           (class interface-class))
   t)
 
-(defmethod initialize-instance :after ((class mixin-class) &key)
+(defmethod initialize-instance :after ((class interface-class) &key)
   (when (closer-mop:class-direct-slots class)
-    (error "Mixin class cannot have slots."))
+    (error "Interface class cannot have direct slots."))
   class)
-(defmethod reinitialize-instance :after ((class mixin-class) &key)
+(defmethod reinitialize-instance :after ((class interface-class) &key)
   (when (closer-mop:class-direct-slots class)
-    (error "Mixin class cannot have slots."))
+    (error "Interface class cannot have direct slots."))
   class)

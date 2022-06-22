@@ -11,7 +11,7 @@
 (export-always 'renderer-buffer)
 (defclass renderer-buffer ()
   ()
-  (:metaclass mixin-class))
+  (:metaclass interface-class))
 
 (define-class buffer (renderer-buffer)
   ((id

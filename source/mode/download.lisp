@@ -8,7 +8,7 @@
 (export-always 'renderer-download)
 (defclass renderer-download ()
   ()
-  (:metaclass mixin-class))
+  (:metaclass interface-class))
 
 (define-class download (renderer-download)
   ((url (error "URL required.")

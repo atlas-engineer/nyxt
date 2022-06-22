@@ -42,7 +42,7 @@
 (export-always 'renderer-user-script)
 (defclass renderer-user-script ()
   ()
-  (:metaclass mixin-class))
+  (:metaclass interface-class))
 
 (define-class user-script (renderer-user-script nfiles:data-file nyxt-remote-file)
   ((code "" :type string)
