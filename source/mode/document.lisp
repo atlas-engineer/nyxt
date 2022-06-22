@@ -498,7 +498,7 @@ of buffers."
                              :name (format nil "Headings: ~a" (title buffer))
                              :buffer buffer)))))
 
-(nyxt::define-panel-global headings ()
+(define-panel-command-global headings-panel ()
     (panel-buffer "*Headings panel*")
   "Display a list of heading for jumping."
   (labels ((get-level (heading)
