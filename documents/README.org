@@ -42,6 +42,7 @@
   - [[#contributing][Contributing]]
   - [[#commit-style][Commit style]]
   - [[#branch-management][Branch management]]
+  - [[#programming-conventions][Programming conventions]]
   - [[#irc-channel][IRC Channel]]
 :END:
 * Developer's installation with Guix
@@ -562,6 +563,62 @@ dangling branches.
 Note to core contributors: since you have commit access, you can push trivial
 changes directly to the target branch (skipping the review process).  The merge
 commit is required when at least one commit isn't atomic.
+
+** Programming conventions
+
+We try to follow the usual Common Lisp conventions as recommended by
+[[https://www.cs.umd.edu/~nau/cmsc421/norvig-lisp-style.pdf][Norvig & Pitman's Tutorial on Good Lisp Programming Style]] and [[https://google.github.io/styleguide/lispguide.xml][Google Common Lisp
+Style Guide]].
+
+For symbol naming conventions, see https://www.cliki.net/Naming+conventions.
+
+We've also developed some of our own:
+
+- Prefer =first= and =rest= over =car= and =cdr= respectively.
+- Use =define-class= instead of =defclass=.
+- Use =nyxt:define-package= if you want the default imports and the default
+  package nicknames (e.g. =alex=, =sera=, etc.).
+- Use the =maybe= and =maybe*= types instead of =(or null ...)= and =(or null
+  (array * (0)) ...)= respectively.
+- We make heavy use of Alexandria and Serapeum, remember to use them instead of
+  writing the same boilerplate over and over.  In particular, note these
+  systematic uses of Serapeum:
+  - =sera:eval-always=;
+  - =export-always=;
+  - =->= (declaimed types).
+- Use =funcall*= to not error when function does not exist.
+- Prefer classes over structs.  Rationale:
+  - Class slots have documentation.
+  - Class allow for full-fledged CLOS use (metaclasses, etc.).
+  - Structs have read-only slots but it's easy enough to implement them for
+    classes.
+  - Structs have better performance, but this is usually micro-optimization, and
+    even then class implementations can be made more efficient via MOP.
+- Classes should be usable with just a =make-instance=.
+- Prefer =defmethod= over =defun= if one of the arguments is a user-class.  This
+  allows the user to write specializations of subclasses.
+- =customize-instance= is reserved for end users.  Use =initialize-instance
+  :after= or =slot-unbound= to initialize the slots.  Set up the rest of the
+  class in =customize-instance :after=.  Bear in mind that anything in this last
+  method won't be customizable for the end user.
+- Almost all files should be handled via the =nfiles= library.
+- Specialize =print-object= for recurring class instances.
+- =(setf SLOT-WRITER) :after= is reserved for "watchers",
+  i.e. handlers that are run whenever the slot is set.  The =:around= method is
+  not used by watchers, and thus the watcher may be overridden.
+- We use the =%foo%= naming convention for special local variables, but this is
+  rare and ideally they should be avoided.
+- We suffix preficatess with =-p=.  Unlike the usual convention, we always use a
+  =-= even for single words.
+- Prefer the term =url= over =uri=.
+- All URLs should have the =quri:uri= type.  If you need to manipulate a URL
+  string, call it =url-string=.
+- Paths should have the =cl:pathname= type.
+  Use =uiop:native-namestring= to "send" to OS-facing functions,
+  =uiop:ensure-pathname= to "receive" from OS-facing functions or to "trunamize".
+
+# - Conversion functions =FROM->TO= or =->TO= for generic functions.  The
+#   only one that comes to mind is =url= which does not follow this convention...
 
 ** IRC Channel
 
