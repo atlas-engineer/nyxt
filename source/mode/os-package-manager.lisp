@@ -45,16 +45,21 @@
     ("Version" ,(ospm:version pkg))
     ("Synopsis" ,(ospm:synopsis pkg))))
 
+(defmethod name ((output ospm:os-package-output))
+  (format nil "~a~a"
+          (ospm:name (ospm:parent-package output))
+          ;; TODO: Make this specializable.
+          (if (string= (ospm:name output) "out")
+              ""
+              (str:concat ":" (ospm:name output)))))
+
+(defmethod name ((package ospm:os-package))
+  (ospm:name package))
+
 (defmethod prompter:object-attributes ((output ospm:os-package-output) (source prompter:source))
   (declare (ignore source))
-  (let* ((pkg (ospm:parent-package output))
-         (name (format nil "~a~a"
-                       (ospm:name pkg)
-                       ;; TODO: Make this specializable.
-                       (if (string= (ospm:name output) "out")
-                           ""
-                           (str:concat ":" (ospm:name output))))))
-    `(("Name" ,name)
+  (let ((pkg (ospm:parent-package output)))
+    `(("Name" ,(name output))
       ("Version" ,(ospm:version pkg))
       ("Synopsis" ,(ospm:synopsis pkg)))))
 
@@ -234,7 +239,7 @@ PACKAGES is a list of `ospm:package' IDs created by `nyxt::ensure-inspected-id'.
        (:h1 "Package files")
        (:ul
         (dolist (package-or-output packages-or-outputs)
-          (:li (prompter:attributes-default package-or-output)
+          (:li (name package-or-output)
                (:ul
                 (let ((files (mapcar #'uiop:native-namestring (ospm:list-files (list package-or-output)))))
                   (if files
@@ -371,7 +376,7 @@ OBJECTS can be a list of packages, a generation, etc."
                           :onclick (ps:ps (nyxt/ps:lisp-eval
                                            (:title "describe-os-package")
                                            (describe-os-package :packages (list package))))
-                          (prompter:attributes-default package-output))
+                          (name package-output))
                  " " (ospm:version package))))))
      buffer)
     (echo "")

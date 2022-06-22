@@ -265,7 +265,7 @@ call."))
   `(("Default" ,(princ-to-string object))))
 
 (export-always 'object-attributes)
-(defmethod object-attributes ((object t) (source t))
+(defmethod object-attributes ((object t) (source prompter:source))
   "Return an alist of non-dotted pairs (ATTRIBUTE-KEY ATTRIBUTE-VALUE) for OBJECT.
 Attributes are meant to describe the OBJECT in the context of the SOURCE.
 Both attribute-keys and attribute-values are strings.
@@ -563,12 +563,6 @@ This is a \"safe\" wrapper around `bt:make-thread'."
 (defmethod attributes-default ((suggestion suggestion))
   "Return SUGGESTION default attribute value."
   (second (first (attributes suggestion))))
-
-(defmethod attributes-default ((object t))
-  "Return OBJECT default attribute value.
-Since the OBJECT is taken outside of a source context, attributes are derived
-from `object-attributes'."
-  (second (first (object-attributes object nil))))
 
 (export-always 'attributes-non-default)
 (defmethod attributes-non-default ((suggestion suggestion))
