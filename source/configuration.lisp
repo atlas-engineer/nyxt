@@ -513,7 +513,10 @@ Return the lambda s-expression as a second value, if possible."
                 (eof-error-p t)
                 (eof-value nil)
                 (recursive-p nil))
-  "Like `read' but does not accept reader macros ('#.').
+  "Like `read' with standard IO syntax but does not accept reader macros ('#.').
 This is useful if you do not trust the input."
-  (let ((*read-eval* nil))
-    (read input-stream eof-error-p eof-value recursive-p)))
+  (let ((old-package *package*))
+    (with-standard-io-syntax
+      (let ((*read-eval* nil)
+            (*package* old-package))
+        (read input-stream eof-error-p eof-value recursive-p)))))
