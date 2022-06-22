@@ -40,6 +40,7 @@
   - [[#issue-tracker][Issue tracker]]
   - [[#learning-common-lisp][Learning Common Lisp]]
   - [[#contributing][Contributing]]
+  - [[#commit-style][Commit style]]
   - [[#branch-management][Branch management]]
   - [[#irc-channel][IRC Channel]]
 :END:
@@ -508,6 +509,31 @@ management section]] for more detailed information.
 You can contribute to Nyxt without commit access.  However, if you're a frequent
 contributor, you may request it.  Remember that with great power comes great
 responsibility.
+
+** Commit style
+
+We follow the general Git guidelines, namely we try to commit atomic changes
+that are "clean," that is, on which Nyxt builds and starts.
+
+Make sure to make seperate commits in these cases to avoid distracting noise in
+commits with actual changes:
+
+- Indentation and whitespace trimming;
+
+- Code movements (within a file or to a different file).  In this case, it's
+  crucial that the commit contains nothing else, otherwise "diffs" may fail to
+  highlight the changes.
+
+For commit messages, we follow (somewhat flexibly) the convention of prefixing
+the title with the basename of the file that was modified.  For instance, for
+changes in =source/mode/blocker.lisp= the title would look like this:
+
+: mode/blocker: What and why this change.
+:
+: Rest of the message here.
+
+Your commit should clarify _what_ it does and _why_ (in case it's not already
+obvious).
 
 ** Branch management
 
