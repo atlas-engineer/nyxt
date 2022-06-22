@@ -189,7 +189,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
    (prompter:constructor (tag-suggestions)))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-panel-global bookmarks ()
+(define-panel-command-global bookmarks-panel ()
     (panel-buffer "*Bookmarks panel*")
   "Shows all the bookmarks in a compact panel-buffer layout."
   (spinneret:with-html-string
