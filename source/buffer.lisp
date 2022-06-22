@@ -1086,6 +1086,8 @@ proceeding."
     ;; last-access time could be older than, say, buffers opened in the
     ;; background.
     (setf (last-access (active-buffer window)) (local-time:now)))
+  ;; So that `current-buffer' returns the new value if buffer was
+  ;; switched inside a `with-current-buffer':
   (setf %buffer nil)
   (if (dummy-buffer-p (active-buffer window))
       (let ((dummy (active-buffer window)))
@@ -1113,9 +1115,6 @@ proceeding."
   (when (and focus
              (context-buffer-p buffer))
     (setf (last-access buffer) (local-time:now)))
-  ;; So that `current-buffer' returns the new value if buffer was
-  ;; switched inside a `with-current-buffer':
-  (setf %buffer nil)
   (when (and (network-buffer-p buffer)
              (eq (slot-value buffer 'status) :unloaded))
     (reload-buffers (list buffer))))
