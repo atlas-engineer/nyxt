@@ -188,18 +188,20 @@ JSON should have the format like what `get-document-body-json' produces:
 The closest parent goes first, the furthest one goes last."))
 
 (export-always 'ordered-select)
-(defmethod ordered-select (selector (root plump:nesting-node))
+(defun ordered-select (selector root)
   "A re-implementation of `clss:select' with the goal of preserving elements order.
 
 SELECTOR is any selector acceptable to `clss', including the compiled one and
 string one."
-  (let ((matched-nodes '()))
+  (declare (optimize speed))
+  (let ((matched-nodes (make-array 0 :adjustable t :fill-pointer 0))
+        (selector (clss::ensure-selector selector)))
     (labels ((collect-if-match (element)
                (when (clss:node-matches-p selector element)
-                 (push element matched-nodes))
+                 (vector-push-extend element matched-nodes))
                (map nil #'collect-if-match (plump:child-elements element))))
       (collect-if-match root)
-      (coerce (nreverse matched-nodes) 'vector))))
+      matched-nodes)))
 
 (export-always 'get-unique-selector)
 (-> get-unique-selector (plump:element) t)
@@ -279,9 +281,9 @@ Return two values:
                  (unique-p (selconcat :sel ":last-child")))
         (selreturn))
       ;; Then check for previous siblings.
-      (when (and previous
-                 (unique-p (selconcat (get-unique-selector previous)  " ~ " :sel)))
-        (selreturn))
+      ;; (when (and previous
+      ;;            (unique-p (selconcat (get-unique-selector previous)  " ~ " :sel)))
+      ;;   (selreturn))
       ;; Finally, go up the hierarchy.
       (when (and parents
                  (unique-p (selconcat (get-unique-selector (first parents)) " > " :sel)))
@@ -403,7 +405,7 @@ TEST should be a function of two arguments comparing TEXT with element's
 (export-always 'scroll-to-element)
 (define-parenscript scroll-to-element (element)
   (ps:chain (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element)))
-            (scroll-into-view)))
+            (scroll-into-view t)))
 
 (export-always 'set-caret-on-start)
 (define-parenscript set-caret-on-start (element)
