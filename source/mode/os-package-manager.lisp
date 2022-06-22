@@ -48,7 +48,6 @@
 (defmethod name ((output ospm:os-package-output))
   (format nil "~a~a"
           (ospm:name (ospm:parent-package output))
-          ;; TODO: Make this specializable.
           (if (string= (ospm:name output) "out")
               ""
               (str:concat ":" (ospm:name output)))))
