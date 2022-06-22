@@ -198,7 +198,6 @@ See `find-internal-page-buffer'."))
        `(lambda (,@arglist)
           ,@(when documentation (list documentation))
           (declare (ignorable ,@(alex:mappend #'cdar keywords)))
-          ;; (log:warn "method"  args)
           (set-current-buffer
            (buffer-load (nyxt-url (name ,page) ,@(alex:mappend #'first keywords))
                         :buffer (ensure-internal-page-buffer (name ,page)))))))))
@@ -227,16 +226,19 @@ See `find-internal-page-buffer'."))
       (t
        (format nil "*~a*" (string-downcase (name page)))))))
 
+(defun internal-page-name (url)
+  (read-from-string (str:upcase (quri:uri-path url))))
+
 ;; (-> find-internal-page-buffer (internal-page-symbol) (maybe buffer))
 (defun find-internal-page-buffer (name) ; TODO: Test if CCL can catch bad calls at compile-time.
-  "Return first buffer which URL is a NAME internal page."
-  (find (string name) (buffer-list) :key (alex:compose #'quri:uri-path #'url) :test #'equalp))
+  "Return first buffer which URL is a NAME `internal-page'."
+  (find name (buffer-list) :key (alex:compose #'internal-page-name #'url)))
 
 (defun find-url-internal-page (url)
   "Return the `internal-page' to which URL corresponds."
   (and (equal "nyxt" (quri:uri-scheme url))
        (gethash
-        (read-from-string (str:upcase (quri:uri-path url)))
+        (internal-page-name url)
         *nyxt-url-commands*)))
 
 (export-always 'ensure-internal-page-buffer)
