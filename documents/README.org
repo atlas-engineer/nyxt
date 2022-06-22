@@ -620,6 +620,8 @@ We've also developed some of our own:
 # - Conversion functions =FROM->TO= or =->TO= for generic functions.  The
 #   only one that comes to mind is =url= which does not follow this convention...
 
+# - Blocking function should be prefixed with =wait-on-=.
+
 ** IRC Channel
 
 #+html: You can find Nyxt on Libera IRC: <a href="https://kiwiirc.com/nextclient/irc.libera.chat/nyxt">#nyxt</a>
