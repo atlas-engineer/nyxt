@@ -2,6 +2,8 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/dom
+  ;; FIXME: This is because window causes conflicts with buffer.lisp (somewhy?).
+  (:shadow #:window)
   (:documentation "Nyxt-specific DOM classes and functions operating on them.
 
 The classes are generated for every HTML element, including `h1-element',
@@ -202,6 +204,10 @@ string one."
                (map nil #'collect-if-match (plump:child-elements element))))
       (collect-if-match root)
       matched-nodes)))
+
+(export-always 'get-nyxt-id)
+(defmethod get-nyxt-id ((element plump:element))
+  (plump:get-attribute element "nyxt-identifier"))
 
 (export-always 'get-unique-selector)
 (-> get-unique-selector (plump:element) t)
