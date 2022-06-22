@@ -506,3 +506,14 @@ Return the lambda s-expression as a second value, if possible."
                        ;; :around qualifiers?
                        (block ,name ,@body))
                      ,args))))))))
+
+(export-always 'read*)
+(defun read* (&optional
+                (input-stream *standard-input*)
+                (eof-error-p t)
+                (eof-value nil)
+                (recursive-p nil))
+  "Like `read' but does not accept reader macros ('#.').
+This is useful if you do not trust the input."
+  (let ((*read-eval* nil))
+    (read input-stream eof-error-p eof-value recursive-p)))

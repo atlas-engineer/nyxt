@@ -212,7 +212,7 @@ lot."
                                     out)))
        ;; We READ the output of serialize-sexp to make it more
        ;; human-readable.
-       (read in))
+       (read* in))
      :stream stream)))
 
 ;; REVIEW: This works around the issue of cl-prevalence to deserialize structs
@@ -223,7 +223,7 @@ lot."
 (defun history-deserialize-sexp (stream &optional (serialization-state (s-serialization::make-serialization-state)))
   "Read and return an s-expression serialized version of a lisp object from stream, optionally reusing a serialization state"
   (s-serialization::reset serialization-state)
-  (let ((sexp (read stream nil stream)))
+  (let ((sexp (read* stream nil stream)))
     (if (eq sexp stream)
         nil
         (history-deserialize-sexp-internal sexp (s-serialization::get-hashtable serialization-state)))))

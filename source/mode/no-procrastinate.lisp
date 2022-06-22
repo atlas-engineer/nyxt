@@ -301,7 +301,7 @@ URLS is either a list or a single element."
           (files:expand file))))
 
 (defmethod files:deserialize ((profile nyxt-profile) (path no-procrastinate-hosts-file) raw-content &key)
-  (let ((entries (read raw-content)))
+  (let ((entries (read* raw-content)))
     (mapcar (lambda (entry)
               (when (getf entry :url)
                 (setf (getf entry :url)

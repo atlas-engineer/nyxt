@@ -332,7 +332,7 @@ Return the short error message and the full error message as second value."
 
 (defun read-from-stream (stream)
   "Return a list of all s-expressions read in STREAM."
-  (loop :for value := (read stream nil stream)
+  (loop :for value := (read* stream nil stream)
         :until (eq value stream)
         :collect value))
 
