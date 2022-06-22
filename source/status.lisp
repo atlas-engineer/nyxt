@@ -186,4 +186,9 @@ See also `define-setf-handler'."
   (define-setf-handler window active-buffer status-buffer
     (lambda (window)
       (when (eq window (window status-buffer))
-        (print-status (window status-buffer))))))
+        (print-status (window status-buffer)))))
+  (define-setf-handler network-buffer status status-buffer
+    (lambda (buffer)
+      (when (window status-buffer)
+        (when (eq buffer (active-buffer (window status-buffer)))
+          (print-status (window status-buffer)))))))
