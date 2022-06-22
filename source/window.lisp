@@ -259,15 +259,16 @@ not try to quit the browser."
                (zerop (hash-table-count (windows *browser*))))
       (quit))))
 
-(defmethod prompter:object-attributes ((window window))
-  `(("ID" ,(id window))
-    ("Active buffer" ,(title (active-buffer window)))))
-
 (define-class window-source (prompter:source)
   ((prompter:name "Windows")
    (prompter:multi-selection-p t)
    (prompter:constructor (window-list))
    (prompter:return-actions (list (lambda-mapped-command window-delete)))))
+
+(defmethod prompter:object-attributes ((window window) (source window-source))
+  (declare (ignore source))
+  `(("ID" ,(id window))
+    ("Active buffer" ,(title (active-buffer window)))))
 
 (define-command delete-window ()
   "Delete the queried window(s)."

@@ -475,16 +475,17 @@ See the documentation of `prompt-buffer' to know more about the options."
     (declare #.(cons 'ignorable %prompt-args))
     (first (apply #'prompt args))))
 
-(defmethod prompter:object-attributes ((prompt-buffer prompt-buffer))
-  `(("Prompt" ,(prompter:prompt prompt-buffer))
-    ("Input" ,(prompter:input prompt-buffer))))
-
 (define-class resume-prompt-source (prompter:source)
   ((prompter:name "Resume prompters")
    (prompter:constructor (old-prompt-buffers *browser*))
    ;; TODO: Remove duplicates.
    ;; TODO: History?
    ))
+
+(defmethod prompter:object-attributes ((prompt-buffer prompt-buffer) (source prompter:source))
+  (declare (ignore source))
+  `(("Prompt" ,(prompter:prompt prompt-buffer))
+    ("Input" ,(prompter:input prompt-buffer))))
 
 (define-command resume-prompt ()
   "Query an older prompt and resume it."

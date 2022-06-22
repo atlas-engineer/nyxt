@@ -139,7 +139,7 @@
 (defmethod nyxt/hint-mode:identifier ((match search-match))
   (identifier match))
 
-(defmethod prompter:object-attributes ((match search-match))
+(defmethod prompter:object-attributes ((match search-match) (source prompter:source))
   `(("Default" ,(body match))
     ("ID" ,(princ-to-string (identifier match)))
     ("Buffer ID" ,(princ-to-string (id (buffer match))))

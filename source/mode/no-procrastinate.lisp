@@ -112,13 +112,6 @@ and that should be blocked.")
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod prompter:object-attributes ((entry no-procrastinate-entry))
-  `(("URL" ,(render-url (url entry)))
-    ("Hostname" ,(quri:uri-host (url entry)))
-    ("Title" ,(title entry))
-    ("Tags" ,(format nil "~{~a ~}" (tags entry)))
-    ("Date" ,(princ-to-string (date entry)))))
-
 (defmethod equals ((e1 no-procrastinate-entry) (e2 no-procrastinate-entry))
   "Entries are equal if the hosts and the paths are equal.
 In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
@@ -157,6 +150,14 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
    (prompter:constructor (files:content (no-procrastinate-hosts-file (current-buffer))))
    (prompter:multi-selection-p t)
    (prompter:active-attributes-keys '("URL" "Title" "Tags"))))
+
+(defmethod prompter:object-attributes ((entry no-procrastinate-entry) (source no-procrastinate-source))
+  (declare (ignore source))
+  `(("URL" ,(render-url (url entry)))
+    ("Hostname" ,(quri:uri-host (url entry)))
+    ("Title" ,(title entry))
+    ("Tags" ,(format nil "~{~a ~}" (tags entry)))
+    ("Date" ,(princ-to-string (date entry)))))
 
 (defun url-no-procrastinate-host-tags (url)
   "Return the list of tags of the host corresponding to URL."

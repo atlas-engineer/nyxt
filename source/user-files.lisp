@@ -126,7 +126,7 @@ Example: when passed command line option --with-file foo=bar,
   (let ((*package* (find-package :nyxt)))
     (s-serialization:deserialize-sexp raw-content)))
 
-(defmethod prompter:object-attributes ((file files:file))
+(defmethod prompter:object-attributes ((file files:file) (source prompter:source))
   `(("Path" ,(uiop:native-namestring (files:expand file)))      ; TODO: Trim if too long?
     ("Exists?" ,(if (uiop:file-exists-p (uiop:ensure-pathname (files:expand file)))
                     "yes"

@@ -1233,19 +1233,15 @@ See `finalize-buffer'."
     "WhiteSmoke" "Yellow" "YellowGreen")
   "All the named CSS colors to construct `color-source' from.")
 
-(defstruct color
-  name)
-
 (define-class color-source (prompter:source)
   ((prompter:name "Color")
-   (prompter:constructor (mapcar (alex:curry #'make-color :name) *css-colors*))
+   (prompter:constructor *css-colors*)
    (prompter:filter-preprocessor
     (lambda (suggestions source input)
-      (declare (ignore source))
-      (let ((input-color (make-color :name input)))
+      (let ((input-color input))
         (cons (make-instance 'prompter:suggestion
                              :value input-color
-                             :attributes (prompter:object-attributes input-color))
+                             :attributes (prompter:object-attributes input-color source))
               suggestions))))
    (prompter:selection-actions-enabled-p t)
    (prompter:selection-actions
@@ -1255,11 +1251,11 @@ See `finalize-buffer'."
                (setf (ps:chain (nyxt/ps:qs document "#input") style background-color)
                      (ps:lisp color))))
         (with-current-buffer (current-prompt-buffer)
-          (color-input-area (color-name color)))))))
+          (color-input-area color))))))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod prompter:object-attributes ((color color))
-  `(("Color" ,(color-name color))))
+(defmethod prompter:object-attributes ((color string) (source color-source))
+  `(("Color" ,color)))
 
 (defun process-color-chooser-request (web-view color-chooser-request)
   (declare (ignore web-view))
@@ -1285,14 +1281,13 @@ See `finalize-buffer'."
                                color-chooser-request rgba)
                               rgba))
                  (*interactive-p* t)
-                 (color-name (color-name
-                              (prompt1 :prompt "Color"
-                                :input (format nil "rgba(~d, ~d, ~d, ~d)"
-                                               (round (* 255 (cffi:mem-aref rgba :double 0)))
-                                               (round (* 255 (cffi:mem-aref rgba :double 1)))
-                                               (round (* 255 (cffi:mem-aref rgba :double 2)))
-                                               (round (* 255 (cffi:mem-aref rgba :double 3))))
-                                :sources (list (make-instance 'color-source)))))
+                 (color-name (prompt1 :prompt "Color"
+                                      :input (format nil "rgba(~d, ~d, ~d, ~d)"
+                                                     (round (* 255 (cffi:mem-aref rgba :double 0)))
+                                                     (round (* 255 (cffi:mem-aref rgba :double 1)))
+                                                     (round (* 255 (cffi:mem-aref rgba :double 2)))
+                                                     (round (* 255 (cffi:mem-aref rgba :double 3))))
+                                      :sources (list (make-instance 'color-source))))
                  (color (get-rgba color-name))
                  (opacity (sera:parse-float (get-opacity color-name)))
                  (rgba (progn

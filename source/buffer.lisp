@@ -940,15 +940,6 @@ BUFFER's modes."
 
 (hooks:define-hook-type buffer (function (buffer)))
 
-(defmethod prompter:object-attributes ((buffer buffer))
-  `(("URL" ,(render-url (url buffer)))
-    ("Title" ,(title buffer))))
-
-(defmethod prompter:object-attributes ((buffer web-buffer))
-  `(("URL" ,(render-url (url buffer)))
-    ("Title" ,(title buffer))
-    ("Keywords" ,(lambda (buffer) (format nil "~:{~a~^ ~}" (keywords buffer))))))
-
 (define-command make-buffer (&rest args &key (title "") modes (url (default-new-buffer-url *browser*)) parent-buffer
                              no-history-p (load-url-p t) (buffer-class 'web-buffer)
                              &allow-other-keys)
@@ -1180,6 +1171,17 @@ proceeding."
   (:export-class-name-p t)
   (:metaclass user-class))
 
+(defmethod prompter:object-attributes ((buffer buffer) (source prompter:source))
+  (declare (ignore source))
+  `(("URL" ,(render-url (url buffer)))
+    ("Title" ,(title buffer))))
+
+(defmethod prompter:object-attributes ((buffer web-buffer) (source buffer-source))
+  (declare (ignore source))
+  `(("URL" ,(render-url (url buffer)))
+    ("Title" ,(title buffer))
+    ("Keywords" ,(lambda (buffer) (format nil "~:{~a~^ ~}" (keywords buffer))))))
+
 (define-command switch-buffer (&key buffer (current-is-last-p nil))
   "Switch buffer using fuzzy completion.
 Buffers are ordered by last access.
@@ -1361,10 +1363,6 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
       (fallback-url (engine query)))
      (t (query query)))))
 
-(defmethod prompter:object-attributes ((query new-url-query))
-  `(("URL or new query" ,(or (label query) (query query)))
-    ("Search engine?" ,(if (engine query) (shortcut (engine query)) ""))))
-
 (defun make-completion-query (completion &key engine (check-dns-p t))
   (typecase completion
     (string (make-instance 'new-url-query
@@ -1458,6 +1456,11 @@ that a good-enough default suggestion is showed instantaneously.
 DNS to precisely validate domains and returns the search engines suggestions, if
 any.")
   (:metaclass user-class))
+
+(defmethod prompter:object-attributes ((query new-url-query) (source new-url-or-search-source))
+  (declare (ignore source))
+  `(("URL or new query" ,(or (label query) (query query)))
+    ("Search engine?" ,(if (engine query) (shortcut (engine query)) ""))))
 
 (defun pushnew-url-history (history url)
   "URL is not pushed if empty."

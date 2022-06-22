@@ -168,9 +168,6 @@ The `mode' superclass is automatically added if not present."
 
 (hooks:define-hook-type mode (function (mode)))
 
-(defmethod prompter:object-attributes ((mode mode))
-  `(("Name" ,(princ-to-string mode))))
-
 (export-always 'glyph)
 (defmethod glyph ((mode mode))
   "Return the glyph for a mode.
@@ -289,7 +286,11 @@ For production code, see `find-submode' instead."
   (:export-class-name-p t)
   (:metaclass user-class))
 
-(define-class active-mode-source (prompter:source)
+(defmethod prompter:object-attributes ((mode mode) (source prompter:source))
+  (declare (ignore source))
+  `(("Name" ,(princ-to-string mode))))
+
+(define-class active-mode-source (mode-source)
   ((prompter:name "Active modes")
    (buffers '())
    (prompter:multi-selection-p t)
@@ -303,7 +304,7 @@ For production code, see `find-submode' instead."
   (:export-class-name-p t)
   (:metaclass user-class))
 
-(define-class inactive-mode-source (prompter:source)
+(define-class inactive-mode-source (mode-source)
   ((prompter:name "Inactive modes")
    (buffers '())
    (prompter:multi-selection-p t)

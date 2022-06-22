@@ -22,172 +22,6 @@
    (complement #'exported-p)
    (mopu:slot-names object-specifier)))
 
-(defun default-object-attributes (object)
-  `(("Default" ,(princ-to-string object))))
-
-(export-always 'object-attributes)
-(defmethod object-attributes ((object t))
-  "Return an alist of non-dotted pairs (ATTRIBUTE-KEY ATTRIBUTE-VALUE) for OBJECT.
-Attributes are meant to describe the OBJECT structurally.
-Both attribute-keys and attribute-values are strings.
-
-For structure and class instances, the alist is made of the exported slots: the
-keys are the sentence-cased slot names and the values the slot values passed to
-`princ-to-string'.
-
-It's used in `make-suggestion' which can be used as a `suggestion-maker' for `source's.
-
-It's useful to separate concerns and compose between different object attributes
-and different sources (for instance, the same `object-attributes' method can be
-inherited or used across different sources)."
-  (cond
-    ((hash-table-p object)
-     (let ((result))
-       (maphash (lambda (key value)
-                  (push (list (princ-to-string key)
-                              (princ-to-string value))
-                        result))
-                object)
-       (sort result #'string< :key #'first)))
-    ((or (typep object 'standard-object)
-         (typep object 'structure-object))
-     (or
-      (mapcar (lambda (slot)
-                (list (string-capitalize (string slot))
-                      (princ-to-string (slot-value object slot))))
-              (object-public-slots object))
-      (default-object-attributes object)))
-    ((plist-p object)
-     (let ((result '()))
-       (alex:doplist (key value object result)
-                     (push (list (string-capitalize key) (princ-to-string value))
-                           result))
-       (nreverse result)))
-    ((undotted-alist-p object)
-     (mapcar (lambda (pair)
-               (list
-                (princ-to-string (first pair))
-                (princ-to-string (second pair))))
-             object))
-    ((alist-p object)
-     (mapcar (lambda (pair)
-               (list
-                (princ-to-string (first pair))
-                (princ-to-string (rest pair))))
-             object))
-    (t (default-object-attributes object))))
-
-(define-class suggestion ()
-  ((value nil ; TODO: Rename `data' as with the GHT?  Maybe confusing since we have `match-data'.
-          :type t)
-   (attributes '()
-               :documentation "A non-dotted alist of attributes to structure the filtering.
-Both the key and the value are strings or functions.
-If a function, it is run asynchronously and must return a string.")
-   (match-data nil
-               :type t
-               :documentation "Arbitrary data that can be used by the `filter'
-function and its preprocessors.  It's the responsibility of the filter to ensure
-the match-data is ready for its own use.")
-   (score 0.0
-          :documentation "A score the can be set by the `filter' function and
-used by the `sort-predicate'."))
-  (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
-  (:documentation "Suggestions are processed and listed in `source'.
-It wraps arbitrary object stored in the `value' slot.
-The other slots are optional.
-
-Suggestions are made with the `suggestion-maker' slot from `source'."))
-
-(defun pair-p (object)
-  (and (listp object)
-       (or (not (listp (rest object)))
-           (null (rest (rest object))))))
-
-(defun undotted-pair-p (object)
-  (and (listp object)
-       (listp (rest object))
-       (null (rest (rest object)))))
-
-(defun alist-p (object)
-  "Return non-nil if OBJECT is an alist, dotted or undotted."
-  (and (listp object)
-       (every #'pair-p object)))
-
-(defun undotted-alist-p (object &optional value-type)
-  "If VALUE-TYPE is non-nil, check if all values are of the specified type."
-  (and (listp object)
-       (every #'undotted-pair-p object)
-       (or (not value-type)
-           (every (lambda (e) (typep (first e) value-type))
-                  (mapcar #'rest object)))))
-
-(defun plist-p (object)
-  "Return non-nil if OBJECT is a plist."
-  (and (listp object)
-       (alex:proper-list-p object)
-       (evenp (length object))
-       (loop :for x :in object :by #'cddr
-             :always (keywordp x))))
-
-(defun object-attributes-p (object)
-  (undotted-alist-p object '(or string function)))
-
-(defmethod attribute-key ((attribute t))
-  (first attribute))
-(defmethod attribute-value ((attribute t))
-  (second attribute))
-(defmethod attributes-keys ((attributes t))
-  (mapcar #'attribute-key attributes))
-(defmethod attributes-values ((attributes t))
-  (mapcar #'attribute-value attributes))
-
-(defun ensure-string (object)
-  "Return \"\" if OBJECT is not a string."
-  (if (stringp object)
-      object
-      ""))
-
-(defun format-attributes (attributes)
-  "Performance bottleneck: This function is called as many times as they are
-suggestions."
-  (sera:string-join (mapcar #'ensure-string (attributes-values attributes)) " "))
-
-(defmethod initialize-instance :after ((suggestion suggestion) &key)
-  "Check validity."
-  (unless (object-attributes-p (attributes suggestion))
-    (warn "Attributes of ~s should be a non-dotted alist instead of ~s" (value suggestion) (attributes suggestion))
-    (setf (attributes suggestion) (default-object-attributes (value suggestion)))))
-
-(defun ensure-match-data-string (suggestion source)
-  "Return SUGGESTION's `match-data' as a string.
-If unset, set it to the return value of `format-attributes'."
-  (flet ((maybe-downcase (s)
-           (if (current-input-downcase-p source)
-               (string-downcase s)
-               s)))
-    (setf (match-data suggestion)
-          (if (and (match-data suggestion)
-                   (typep (match-data suggestion) 'string))
-              (if (not (eq (last-input-downcase-p source)
-                           (current-input-downcase-p source)))
-                  (maybe-downcase (match-data suggestion))
-                  (match-data suggestion))
-              (let ((result (format-attributes (attributes suggestion))))
-                (maybe-downcase result)))))
-  (match-data suggestion))
-
-(export-always 'make-suggestion)
-(defmethod make-suggestion ((value t) &optional source input)
-  "Return a `suggestion' wrapping around VALUE.
-Attributes are set with `object-attributes'."
-  (declare (ignore source input))
-  (make-instance 'suggestion
-                 :value value
-                 :attributes (object-attributes value)))
-
 (define-class source ()
   ((name (error "Source must have a name")
          :documentation
@@ -427,6 +261,173 @@ suggestions; they only set the `suggestion's once they are done.  Conversely,
 `filter' is passed one `suggestion' at a time and it updates `suggestion's on each
 call."))
 
+(defun default-object-attributes (object)
+  `(("Default" ,(princ-to-string object))))
+
+(export-always 'object-attributes)
+(defmethod object-attributes ((object t) (source prompter:source))
+  "Return an alist of non-dotted pairs (ATTRIBUTE-KEY ATTRIBUTE-VALUE) for OBJECT.
+Attributes are meant to describe the OBJECT in the context of the SOURCE.
+Both attribute-keys and attribute-values are strings.
+
+For structure and class instances, the alist is made of the exported slots: the
+keys are the sentence-cased slot names and the values the slot values passed to
+`princ-to-string'.
+
+It's used in `make-suggestion' which can be used as a `suggestion-maker' for `source's.
+
+It's useful to separate concerns and compose between different object attributes
+and different sources (for instance, the same `object-attributes' method can be
+inherited or used across different sources)."
+  (declare (ignorable source))
+  (cond
+    ((hash-table-p object)
+     (let ((result))
+       (maphash (lambda (key value)
+                  (push (list (princ-to-string key)
+                              (princ-to-string value))
+                        result))
+                object)
+       (sort result #'string< :key #'first)))
+    ((or (typep object 'standard-object)
+         (typep object 'structure-object))
+     (or
+      (mapcar (lambda (slot)
+                (list (string-capitalize (string slot))
+                      (princ-to-string (slot-value object slot))))
+              (object-public-slots object))
+      (default-object-attributes object)))
+    ((plist-p object)
+     (let ((result '()))
+       (alex:doplist (key value object result)
+                     (push (list (string-capitalize key) (princ-to-string value))
+                           result))
+       (nreverse result)))
+    ((undotted-alist-p object)
+     (mapcar (lambda (pair)
+               (list
+                (princ-to-string (first pair))
+                (princ-to-string (second pair))))
+             object))
+    ((alist-p object)
+     (mapcar (lambda (pair)
+               (list
+                (princ-to-string (first pair))
+                (princ-to-string (rest pair))))
+             object))
+    (t (default-object-attributes object))))
+
+(define-class suggestion ()
+  ((value nil ; TODO: Rename `data' as with the GHT?  Maybe confusing since we have `match-data'.
+          :type t)
+   (attributes '()
+               :documentation "A non-dotted alist of attributes to structure the filtering.
+Both the key and the value are strings or functions.
+If a function, it is run asynchronously and must return a string.")
+   (match-data nil
+               :type t
+               :documentation "Arbitrary data that can be used by the `filter'
+function and its preprocessors.  It's the responsibility of the filter to ensure
+the match-data is ready for its own use.")
+   (score 0.0
+          :documentation "A score the can be set by the `filter' function and
+used by the `sort-predicate'."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name))
+  (:documentation "Suggestions are processed and listed in `source'.
+It wraps arbitrary object stored in the `value' slot.
+The other slots are optional.
+
+Suggestions are made with the `suggestion-maker' slot from `source'."))
+
+(defun pair-p (object)
+  (and (listp object)
+       (or (not (listp (rest object)))
+           (null (rest (rest object))))))
+
+(defun undotted-pair-p (object)
+  (and (listp object)
+       (listp (rest object))
+       (null (rest (rest object)))))
+
+(defun alist-p (object)
+  "Return non-nil if OBJECT is an alist, dotted or undotted."
+  (and (listp object)
+       (every #'pair-p object)))
+
+(defun undotted-alist-p (object &optional value-type)
+  "If VALUE-TYPE is non-nil, check if all values are of the specified type."
+  (and (listp object)
+       (every #'undotted-pair-p object)
+       (or (not value-type)
+           (every (lambda (e) (typep (first e) value-type))
+                  (mapcar #'rest object)))))
+
+(defun plist-p (object)
+  "Return non-nil if OBJECT is a plist."
+  (and (listp object)
+       (alex:proper-list-p object)
+       (evenp (length object))
+       (loop :for x :in object :by #'cddr
+             :always (keywordp x))))
+
+(defun object-attributes-p (object)
+  (undotted-alist-p object '(or string function)))
+
+(defmethod attribute-key ((attribute t))
+  (first attribute))
+(defmethod attribute-value ((attribute t))
+  (second attribute))
+(defmethod attributes-keys ((attributes t))
+  (mapcar #'attribute-key attributes))
+(defmethod attributes-values ((attributes t))
+  (mapcar #'attribute-value attributes))
+
+(defun ensure-string (object)
+  "Return \"\" if OBJECT is not a string."
+  (if (stringp object)
+      object
+      ""))
+
+(defun format-attributes (attributes)
+  "Performance bottleneck: This function is called as many times as they are
+suggestions."
+  (sera:string-join (mapcar #'ensure-string (attributes-values attributes)) " "))
+
+(defmethod initialize-instance :after ((suggestion suggestion) &key)
+  "Check validity."
+  (unless (object-attributes-p (attributes suggestion))
+    (warn "Attributes of ~s should be a non-dotted alist instead of ~s" (value suggestion) (attributes suggestion))
+    (setf (attributes suggestion) (default-object-attributes (value suggestion)))))
+
+(defun ensure-match-data-string (suggestion source)
+  "Return SUGGESTION's `match-data' as a string.
+If unset, set it to the return value of `format-attributes'."
+  (flet ((maybe-downcase (s)
+           (if (current-input-downcase-p source)
+               (string-downcase s)
+               s)))
+    (setf (match-data suggestion)
+          (if (and (match-data suggestion)
+                   (typep (match-data suggestion) 'string))
+              (if (not (eq (last-input-downcase-p source)
+                           (current-input-downcase-p source)))
+                  (maybe-downcase (match-data suggestion))
+                  (match-data suggestion))
+              (let ((result (format-attributes (attributes suggestion))))
+                (maybe-downcase result)))))
+  (match-data suggestion))
+
+(export-always 'make-suggestion)
+(defmethod make-suggestion ((value t) &optional source input)
+  "Return a `suggestion' wrapping around VALUE.
+Attributes are set with `object-attributes'."
+  (declare (ignore input))
+  (make-instance 'suggestion
+                 :value value
+                 :attributes (object-attributes value source)))
+
 (defmethod default-return-action ((source source))
   (first (slot-value source 'return-actions)))
 
@@ -562,12 +563,6 @@ This is a \"safe\" wrapper around `bt:make-thread'."
 (defmethod attributes-default ((suggestion suggestion))
   "Return SUGGESTION default attribute value."
   (second (first (attributes suggestion))))
-
-(defmethod attributes-default ((object t))
-  "Return OBJECT default attribute value.
-Since the OBJECT is taken outside of a source context, attributes are derived
-from `object-attributes'."
-  (second (first (object-attributes object))))
 
 (export-always 'attributes-non-default)
 (defmethod attributes-non-default ((suggestion suggestion))

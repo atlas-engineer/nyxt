@@ -90,7 +90,7 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
   (unlock-page-keypresses)
   (setf (mark-set mode) nil))
 
-(defmethod prompter:object-attributes ((element nyxt/dom:text-element))
+(defmethod prompter:object-attributes ((element nyxt/dom:text-element) (source prompter:source))
   `(("Hint" ,(plump:get-attribute element "nyxt-hint"))
     ("Text" ,(plump:text element))))
 

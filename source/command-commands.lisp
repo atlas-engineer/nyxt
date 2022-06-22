@@ -11,13 +11,6 @@
           :documentation "The hook value."))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod prompter:object-attributes ((hook-description hook-description))
-  `(("Name" ,(name hook-description))
-    ("Value" ,(princ-to-string (value hook-description)))))
-
-(defmethod prompter:object-attributes ((handler hooks:handler))
-  `(("Name" ,(str:downcase (hooks:name handler)))))
-
 (defun command-attributes (command &optional (buffer (active-buffer (current-window :no-rescan))))
   (let* ((scheme-name (keymap-scheme-name buffer))
          (bindings (keymap:binding-keys
@@ -34,9 +27,6 @@
                  (if (sera:in package-name "nyxt" "nyxt-user")
                      ""
                      (str:replace-first "nyxt/" "" package-name)))))))
-
-(defmethod prompter:object-attributes ((command command))
-  (command-attributes command))
 
 (define-class command-source (prompter:source)
   ((prompter:name "Commands")
@@ -58,6 +48,10 @@ Mode commands of enabled modes are also listed.
 While disabled-mode commands are not listed, it's still possible to call them
 from a key binding.")
   (:metaclass user-class))
+
+(defmethod prompter:object-attributes ((command command) (source prompter:source))
+  (declare (ignore source))
+  (command-attributes command))
 
 (define-command execute-command ()
   "Execute a command by name."
@@ -179,6 +173,11 @@ User input is evaluated Lisp."
   ((prompter:name "Hooks")
    (prompter:constructor (get-hooks))))
 
+(defmethod prompter:object-attributes ((hook-description hook-description) (source hook-source))
+  (declare (ignore source))
+  `(("Name" ,(name hook-description))
+    ("Value" ,(princ-to-string (value hook-description)))))
+
 (define-class handler-source (prompter:source)
   ((prompter:name "Handlers")
    (hook :accessor hook
@@ -186,6 +185,10 @@ User input is evaluated Lisp."
          :documentation "The hook for which to retrieve handlers for.")
    (prompter:constructor (lambda (source)
                            (hooks:handlers (hook source))))))
+
+(defmethod prompter:object-attributes ((handler hooks:handler) (source handler-source))
+  (declare (ignore source))
+  `(("Name" ,(str:downcase (hooks:name handler)))))
 
 (define-class disabled-handler-source (handler-source)
   ((prompter:constructor (lambda (source)

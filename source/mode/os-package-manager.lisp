@@ -39,31 +39,39 @@
                       (write (ps:lisp (spinneret:with-html-string
                                         (:p "Operation cancelled.")))))))))
 
-(defmethod prompter:object-attributes ((pkg ospm:os-package))
+(defmethod prompter:object-attributes ((pkg ospm:os-package) (source prompter:source))
+  (declare (ignore source))
   `(("Name" ,(ospm:name pkg))
     ("Version" ,(ospm:version pkg))
     ("Synopsis" ,(ospm:synopsis pkg))))
 
-(defmethod prompter:object-attributes ((output ospm:os-package-output))
-  (let* ((pkg (ospm:parent-package output))
-         (name (format nil "~a~a"
-                       (ospm:name pkg)
-                       ;; TODO: Make this specializable.
-                       (if (string= (ospm:name output) "out")
-                           ""
-                           (str:concat ":" (ospm:name output))))))
-    `(("Name" ,name)
+(defmethod name ((output ospm:os-package-output))
+  (format nil "~a~a"
+          (ospm:name (ospm:parent-package output))
+          (if (string= (ospm:name output) "out")
+              ""
+              (str:concat ":" (ospm:name output)))))
+
+(defmethod name ((package ospm:os-package))
+  (ospm:name package))
+
+(defmethod prompter:object-attributes ((output ospm:os-package-output) (source prompter:source))
+  (declare (ignore source))
+  (let ((pkg (ospm:parent-package output)))
+    `(("Name" ,(name output))
       ("Version" ,(ospm:version pkg))
       ("Synopsis" ,(ospm:synopsis pkg)))))
 
-(defmethod prompter:object-attributes ((gen ospm:os-generation))
+(defmethod prompter:object-attributes ((gen ospm:os-generation) (source prompter:source))
+  (declare (ignore source))
   `(("ID" ,(princ-to-string (ospm:id gen)))
     ("Date" ,(local-time:format-timestring nil (ospm:date gen)
                                            :format local-time:+asctime-format+))
     ("Package count" ,(princ-to-string (ospm:package-count gen)))
     ("Current?" ,(if (ospm:current? gen) "yes" ""))))
 
-(defmethod prompter:object-attributes ((pkg ospm:guix-package))
+(defmethod prompter:object-attributes ((pkg ospm:guix-package) (source prompter:source))
+  (declare (ignore source))
   ;; We could have called `call-next-method', then modify the result, but it's
   ;; too costly for thousands of packages.
   `(("Name" ,(ospm:name pkg))
@@ -230,7 +238,7 @@ PACKAGES is a list of `ospm:package' IDs created by `nyxt::ensure-inspected-id'.
        (:h1 "Package files")
        (:ul
         (dolist (package-or-output packages-or-outputs)
-          (:li (prompter:attributes-default package-or-output)
+          (:li (name package-or-output)
                (:ul
                 (let ((files (mapcar #'uiop:native-namestring (ospm:list-files (list package-or-output)))))
                   (if files
@@ -367,7 +375,7 @@ OBJECTS can be a list of packages, a generation, etc."
                           :onclick (ps:ps (nyxt/ps:lisp-eval
                                            (:title "describe-os-package")
                                            (describe-os-package :packages (list package))))
-                          (prompter:attributes-default package-output))
+                          (name package-output))
                  " " (ospm:version package))))))
      buffer)
     (echo "")

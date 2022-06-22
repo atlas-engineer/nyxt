@@ -21,7 +21,8 @@
   "Return non-nil if OBJECT has `prompter:object-attributes' specialization."
   (has-method-p object #'prompter:object-attributes))
 
-(defmethod prompter:object-attributes ((symbol symbol))
+(defmethod prompter:object-attributes ((symbol symbol) (source prompter:source))
+  (declare (ignore source))
   `(("Name" ,(write-to-string symbol))
     ("Documentation"
      ,(or (cond
@@ -36,7 +37,8 @@
              (first-line (documentation symbol 'variable))))
           ""))))
 
-(defmethod prompter:object-attributes ((package package))
+(defmethod prompter:object-attributes ((package package) (source prompter:source))
+  (declare (ignore source))
   `(("Name" ,(package-name package))
     ("Nicknames" ,(princ-to-string
                    (append (package-nicknames package)

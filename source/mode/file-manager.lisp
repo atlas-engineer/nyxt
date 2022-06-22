@@ -102,7 +102,8 @@ When the user is unspecified, take the current one."
   (:documentation "Prompt source for user-accessible programs.")
   (:metaclass user-class))
 
-(defmethod prompter:object-attributes ((path pathname))
+(defmethod prompter:object-attributes ((path pathname) (source prompter:source))
+  (declare (ignore source))
   `(("Path" ,(uiop:native-namestring path))
     ("Name" ,(if (uiop:directory-pathname-p path)
                  (enough-namestring path (files:parent path))

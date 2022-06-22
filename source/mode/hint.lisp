@@ -232,7 +232,7 @@ FUNCTION is the action to perform on the selected elements."
                                                       (remove-hints))))))
     (funcall function result)))
 
-(defmethod prompter:object-attributes :around ((element plump:element))
+(defmethod prompter:object-attributes :around ((element plump:element) (source hint-source))
   `(,@(when (plump:get-attribute element "nyxt-hint")
         `(("Hint" ,(plump:get-attribute element "nyxt-hint"))))
     ;; Ensure that all of Body, URL and Value are there, even if empty.
@@ -247,15 +247,18 @@ FUNCTION is the action to perform on the selected elements."
                                ("img" "image")
                                (otherwise (plump:tag-name element)))))))
 
-(defmethod prompter:object-attributes ((input nyxt/dom:input-element))
+(defmethod prompter:object-attributes ((input nyxt/dom:input-element) (source prompter:source))
+  (declare (ignore source))
   (when (nyxt/dom:body input)
     `(("Body" ,(str:shorten 80 (nyxt/dom:body input))))))
 
-(defmethod prompter:object-attributes ((textarea nyxt/dom:textarea-element))
+(defmethod prompter:object-attributes ((textarea nyxt/dom:textarea-element) (source prompter:source))
+  (declare (ignore source))
   (when (nyxt/dom:body textarea)
     `(("Body" ,(str:shorten 80 (nyxt/dom:body textarea))))))
 
-(defmethod prompter:object-attributes ((a nyxt/dom:a-element))
+(defmethod prompter:object-attributes ((a nyxt/dom:a-element) (source prompter:source))
+  (declare (ignore source))
   (append
    (sera:and-let* ((has-href? (plump:has-attribute a "href"))
                    (url-string (plump:get-attribute a "href")))
@@ -263,23 +266,27 @@ FUNCTION is the action to perform on the selected elements."
    (when (nyxt/dom:body a)
     `(("Body" ,(str:shorten 80 (nyxt/dom:body a)))))))
 
-(defmethod prompter:object-attributes ((button nyxt/dom:button-element))
+(defmethod prompter:object-attributes ((button nyxt/dom:button-element) (source prompter:source))
+  (declare (ignore source))
   (when (nyxt/dom:body button)
     `(("Body" ,(str:shorten 80 (nyxt/dom:body button))))))
 
-(defmethod prompter:object-attributes ((details nyxt/dom:details-element))
+(defmethod prompter:object-attributes ((details nyxt/dom:details-element) (source prompter:source))
+  (declare (ignore source))
   (when (nyxt/dom:body details)
     `(("Body" ,(str:shorten 80 (nyxt/dom:body details))))))
 
-(defmethod prompter:object-attributes ((select nyxt/dom:select-element))
+(defmethod prompter:object-attributes ((select nyxt/dom:select-element) (source prompter:source))
+  (declare (ignore source))
   `(("Body" ,(str:shorten 80 (nyxt/dom:body select)))))
 
-(defmethod prompter:object-attributes ((option nyxt/dom:option-element))
+(defmethod prompter:object-attributes ((option nyxt/dom:option-element) (source prompter:source))
+  (declare (ignore source))
   `(("Body" ,(nyxt/dom:body option))
     ,@(when (plump:get-attribute option "value")
         `(("Value" ,(plump:get-attribute option "value"))))))
 
-(defmethod prompter:object-attributes ((img nyxt/dom:img-element))
+(defmethod prompter:object-attributes ((img nyxt/dom:img-element) (source hint-source))
   (append
    (sera:and-let* ((has-href? (plump:has-attribute img "href"))
                    (url-string (plump:get-attribute img "href")))
