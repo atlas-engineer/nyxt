@@ -34,14 +34,13 @@ Example:
   "Fetch the text in buffer that matches `selector` and send it off to the TTS."
   (if (executable mode)
       (let* ((tags
-               (sort (handler-case
-                         (coerce
-                          (clss:select (selector mode) (document-model (buffer mode)))
-                          'list)
-                       (error ()
-                         (log:warn "tts-mode: no document-model available.")
-                         nil))
-                     #'< :key (compose #'parse-integer #'nyxt/dom:get-nyxt-id)))
+               (handler-case
+                   (coerce
+                    (clss:ordered-select (selector mode) (document-model (buffer mode)))
+                    'list)
+                 (error ()
+                   (log:warn "tts-mode: no document-model available.")
+                   nil)))
              ;; TODO properly handle punctuation like Emacspeak does
              (text (str:remove-punctuation
                     (with-output-to-string (s)
