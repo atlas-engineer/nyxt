@@ -376,7 +376,8 @@ guarantee of the same result."
                 (enable-modes (page-mode internal-page) buffer)
                 (setf (title buffer) (apply #'dynamic-title internal-page args))
                 (multiple-value-bind (content encoding)
-                    (apply (form internal-page) args)
+                    (with-current-buffer buffer
+                      (apply (form internal-page) args))
                   (cond
                     ((and (arrayp content)
                           (stringp encoding))
@@ -419,7 +420,8 @@ TITLE is purely informative."
             (let* ((request-id (quri:uri-host url))
                    (title (when (and url (quri:uri-path url)) (sera:drop-prefix "/" (quri:uri-path url)))))
               (log:debug "Evaluate Lisp code from internal page: ~a" (or title "UNTITLED"))
-              (values (let ((result (run (gethash request-id (lisp-url-callbacks buffer)))))
+              (values (let ((result (with-current-buffer buffer
+                                      (run (gethash request-id (lisp-url-callbacks buffer))))))
                         ;; Objects and other complex structures make cl-json choke.
                         ;; TODO: Maybe encode it to the format that `cl-json'
                         ;; supports, then we can override the encoding and
