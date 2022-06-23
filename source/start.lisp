@@ -330,12 +330,6 @@ Return the short error message and the full error message as second value."
         (load-lisp config-file :package (find-package :nyxt-user))
         (echo "~a loaded." config-file))))
 
-(defun read-from-stream (stream)
-  "Return a list of all s-expressions read in STREAM."
-  (loop :for value := (read* stream nil stream)
-        :until (eq value stream)
-        :collect value))
-
 (defun eval-expr (expr)
   "Evaluate the form EXPR (string) and print the result of the last expresion."
   (with-input-from-string (input expr)
@@ -412,23 +406,6 @@ It takes URL-STRINGS so that the URL argument can be `cl-read' in case
                                                 (files:expand *socket-file*)))
      (iolib:socket-connected-p s))))
 
-(defun file-is-socket-p (path)
-  "Return non-nil if a PATH is a socket."
-  (and (uiop:file-exists-p path)
-       #+darwin
-       (equal "=" (uiop:run-program (list "stat" "-f" "%T" path)
-                                    :output '(:string :stripped t)))
-       #+(and (not darwin) (not sbcl))
-       (eq :socket (osicat:file-kind path))
-       #+(and (not darwin) sbcl)
-       (flet ((socket-p (path)
-                (let ((socket-mask 49152)
-                      (mode-mask 61440))
-                  (= socket-mask
-                     (logand mode-mask
-                             (sb-posix:stat-mode (sb-posix:stat path)))))))
-         (socket-p path))))
-
 (-> listen-or-query-socket ((or null (cons quri:uri *))) *)
 (defun listen-or-query-socket (urls)
   "If another Nyxt is listening on the socket, tell it to open URLS.
@@ -446,7 +423,7 @@ Otherwise bind socket and return the listening thread."
            (log:info "Nyxt already started."))
        nil)
       ((and (uiop:file-exists-p socket-path)
-            (not (file-is-socket-p socket-path)))
+            (not (socket-p socket-path)))
        (log:error "Could not bind socket ~a, non-socket file exists." socket-path)
        nil)
       (t

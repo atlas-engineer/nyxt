@@ -10,7 +10,7 @@
     (sb-ext:unlock-package :nyxt)))
 
 (uiop:define-package nyxt
-  (:use #:common-lisp)
+  (:use #:common-lisp #:nyxt/utilities)
   #+nyxt-debug-make-instance
   (:shadow #:make-instance)
   (:export #:use-nyxt-package-nicknames)
@@ -24,10 +24,10 @@ modes, commands, etc."))
 (sb-ext:lock-package :nyxt)
 
 (in-package :nyxt)
-(defvar *imports* '((:trivia :match :multiple-value-match :lambda-match :guard)
-                    (:keymap :define-key :define-scheme)
-                    (:class-star :define-class)
-                    (:serapeum :export-always :->))
+(defvar *imports* '((#:trivia #:match #:multiple-value-match #:lambda-match #:guard)
+                    (#:keymap #:define-key #:define-scheme)
+                    (#:class-star #:define-class)
+                    (#:serapeum #:export-always #:->))
   "Default list of symbol imports used by `nyxt:define-package'.")
 
 (loop :for (package . symbols) in *imports*
@@ -65,7 +65,7 @@ modes, commands, etc."))
 `:common-lisp' and `:nyxt' are automatically used.
 `nyxt::*imports*' are automatically imported."
   (let* ((uses (append (serapeum:keep :use options :key #'first)
-                       '((:use :common-lisp :nyxt))))
+                       '((:use #:common-lisp #:nyxt #:nyxt/utilities))))
          (imports (append (serapeum:keep :import-from options :key #'first)
                           (mapcar (lambda (import) (cons :import-from import))
                                   *imports*)))
@@ -97,7 +97,7 @@ initforms may not be caught."
   (apply #'cl:make-instance sym args))
 
 (uiop:define-package nyxt-user
-  (:use #:common-lisp #:nyxt)
+  (:use #:common-lisp #:nyxt #:nyxt/utilities)
   (:import-from #:keymap #:define-key #:define-scheme)
   (:import-from #:class-star #:define-class)
   (:documentation "Package left for the user to fiddle with.  If the
