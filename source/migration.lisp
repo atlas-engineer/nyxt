@@ -97,6 +97,13 @@ major versions."
                    (list ,@(loop :for (syms tip) :on body :by #'cddr
                                :collect (list 'list `',syms `(spinneret:with-html-string ,tip))))))
 
+;; TODO: Fix this, does not work!
+(spinneret:deftag xref (symbol attr)
+  `(:a :href (javascript-url
+              (ps:ps (nyxt/ps:lisp-eval
+                      (:title "describe-any")
+                      (nyxt::describe-any (princ-to-string ,@symbol)))))
+       (:code ,@attr ,@symbol)))
 
 (define-migration "2" "3"
   (download-directory)
