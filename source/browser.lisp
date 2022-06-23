@@ -251,7 +251,7 @@ prevents otherwise.")
   (find buffer (alex:hash-table-values (windows browser)) :key #'active-buffer))
 
 (defun restart-with-message (&key condition backtrace)
-  (flet ((set-error-message (message full-message)
+  (flet ((set-error-message (condition backtrace)
            (let ((*package* (find-package :cl))) ; Switch package to use non-nicknamed packages.
              (write-to-string
               `(hooks:add-hook
@@ -261,22 +261,14 @@ prevents otherwise.")
                  :fn (lambda ()
                        (setf (nyxt::startup-error-reporter-function *browser*)
                              (lambda ()
-                               (nyxt:echo-warning "Restarted without configuration file due to error: ~a" ,message)
-                               (nyxt::error-in-new-window "Initialization error" ,full-message))))
+                               (nyxt:echo-warning "Restarted without configuration file due to error: ~a"
+                                                  ,(princ-to-string condition))
+                               (nyxt::error-in-new-window "Initialization error" ,(princ-to-string condition) ,backtrace))))
                  :name 'error-reporter))))))
-    (let* ((message (princ-to-string condition))
-           (full-message (format nil
-                                 "Restarted without configuration file ~s~&due to following startup error:~%~%~a~a"
-                                 (files:expand *config-file*)
-                                 message
-                                 (if backtrace
-                                     (format nil "~%~%----~%~%~a"
-                                             backtrace)
-                                     "")))
-           (new-command-line (append (uiop:raw-command-line-arguments)
+    (let* ((new-command-line (append (uiop:raw-command-line-arguments)
                                      `("--no-config"
                                        "--eval"
-                                       ,(set-error-message message full-message)))))
+                                       ,(set-error-message condition backtrace)))))
       (log:warn "Restarting with ~s."
                 (append (uiop:raw-command-line-arguments)
                         '("--no-config")))

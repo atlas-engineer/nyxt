@@ -260,7 +260,8 @@ Don't run this from a REPL, prefer `start' instead."
     *)
 (defun load-lisp (file &key package)
   "Load the Lisp FILE (can also be a stream).
-Return the short error message and the full error message as second value."
+Return T on success.
+On error, return the condition as a first value and the backtrace as second value."
   (unless (files:nil-pathname-p file)
     (let ((*package* (or (find-package package) *package*)))
       (flet ((unsafe-load ()
@@ -277,19 +278,12 @@ Return the short error message and the full error message as second value."
             (unsafe-load)
             (catch 'lisp-file-error
               (handler-bind ((error (lambda (c)
-                                      (let* ((error-message "Could not load the config file")
-                                             (type-error-message (str:concat error-message
-                                                                             " because of a type error"))
-                                             (message (if (subtypep (type-of c) 'type-error)
-                                                          type-error-message
-                                                          error-message))
-                                             (backtrace (with-output-to-string (stream)
-                                                          (uiop:print-backtrace :stream stream :condition c)))
-                                             (full-message (format nil "~a: ~a~%~%~%~a" message c backtrace)))
+                                      (let ((backtrace (with-output-to-string (stream)
+                                                         (uiop:print-backtrace :stream stream :condition c))))
                                         (throw 'lisp-file-error
                                           (if *browser*
-                                              (error-in-new-window "*Config file errors*" full-message)
-                                              (values message full-message)))))))
+                                              (error-in-new-window "*Config file errors*" (princ-to-string c) backtrace)
+                                              (values c backtrace)))))))
                 (unsafe-load))))))))
 
 (define-command load-file ()
@@ -600,14 +594,16 @@ Finally, run the browser, load URL-STRINGS if any, then run
               (getf *options* :no-socket)
               (null (files:expand *socket-file*)))
       (load-lisp (files:expand *auto-config-file*) :package (find-package :nyxt-user))
-      (match (multiple-value-list (load-lisp (files:expand *config-file*)
-                                             :package (find-package :nyxt-user)))
-        (nil nil)
-        ((list message full-message)
-         (setf startup-error-reporter
-               (lambda ()
-                 (echo-warning "~a." message)
-                 (error-in-new-window "Configuration file errors" full-message)))))
+      (multiple-value-bind (condition backtrace)
+          (load-lisp (files:expand *config-file*)
+                     :package (find-package :nyxt-user))
+        (when backtrace
+          (setf startup-error-reporter
+                (lambda ()
+                  (echo-warning "~a" condition)
+                  (error-in-new-window "Configuration file errors"
+                                       (princ-to-string condition)
+                                       backtrace)))))
       (load-or-eval :remote nil)
       (setf *browser* (make-instance 'browser
                                      :startup-error-reporter-function startup-error-reporter

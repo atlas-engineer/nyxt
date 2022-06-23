@@ -531,15 +531,24 @@ A command is a special kind of function that can be called with
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TODO: Move rest somewhere else?  Maybe too low-level for help.lisp.
 
-(defun error-buffer (&optional (title "Unknown error") (text ""))
-  (sera:lret* ((error-buffer (make-instance 'document-buffer)))
-    (with-current-buffer error-buffer
-      (html-set (error-help title text)
-                error-buffer))))
-
-(defun error-in-new-window (title text)
+(defun error-in-new-window (title condition-string backtrace)
   (sera:lret* ((window (window-make *browser*))
-               (error-buffer (error-buffer title text)))
+               (error-buffer (make-instance 'document-buffer)))
+    (with-current-buffer error-buffer
+      (html-set
+       (values
+        (spinneret:with-html-string
+          (:head
+           (:title title)
+           (:style (style (current-buffer))))
+          (:body
+           (:h1 title)
+           (:h2 "Condition")
+           (:pre condition-string)
+           (:h2 "Backtrace")
+           (:pre backtrace)))
+        "text/html;charset=utf8")
+       error-buffer))
     (window-set-buffer window error-buffer)))
 
 (export-always 'system-information)
