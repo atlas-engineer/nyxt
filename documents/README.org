@@ -622,7 +622,7 @@ We've also developed some of our own:
   the specialized methods.
 - We use the =%foo%= naming convention for special local variables, but this is
   rare and ideally they should be avoided.
-- We suffix preficatess with =-p=.  Unlike the usual convention, we always use a
+- We suffix predicates with =-p=.  Unlike the usual convention, we always use a
   =-= even for single words.
 - Prefer the term =url= over =uri=.
 - All URLs should have the =quri:uri= type.  If you need to manipulate a URL
