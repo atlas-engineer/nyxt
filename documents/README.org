@@ -625,9 +625,9 @@ We've also developed some of our own:
 - We suffix predicates with =-p=.  Unlike the usual convention, we always use a
   =-= even for single words.
 - Prefer the term =url= over =uri=.
-- All URLs should have the =quri:uri= type.  If you need to manipulate a URL
-  string, call it =url-string=.
-- Paths should have the =cl:pathname= type.
+- URLs should be of type =quri:uri=.  If you need to manipulate a URL string,
+  call it =url-string=.
+- Paths should be of type =cl:pathname=.
   Use =uiop:native-namestring= to "send" to OS-facing functions,
   =uiop:ensure-pathname= to "receive" from OS-facing functions or to "trunamize".
 - Prefer =handler-bind= over =handler-case=: when running from the REPL, this
