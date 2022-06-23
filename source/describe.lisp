@@ -531,26 +531,6 @@ A command is a special kind of function that can be called with
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TODO: Move rest somewhere else?  Maybe too low-level for help.lisp.
 
-(defun error-in-new-window (title condition-string backtrace)
-  (sera:lret* ((window (window-make *browser*))
-               (error-buffer (make-instance 'document-buffer)))
-    (with-current-buffer error-buffer
-      (html-set
-       (values
-        (spinneret:with-html-string
-          (:head
-           (:title title)
-           (:style (style (current-buffer))))
-          (:body
-           (:h1 title)
-           (:h2 "Condition")
-           (:pre condition-string)
-           (:h2 "Backtrace")
-           (:pre backtrace)))
-        "text/html;charset=utf8")
-       error-buffer))
-    (window-set-buffer window error-buffer)))
-
 (export-always 'system-information)
 (defun system-information ()            ; TODO: Rename report-system-information?
   "Return a system information report as a string."

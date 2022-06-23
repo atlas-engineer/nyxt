@@ -161,7 +161,6 @@ This system does nothing in particular.")
                #+quicklisp
                (:file "lisp-system" :depends-on ("Core modes"))
                (:file "status" :depends-on ("Core"))
-               (:file "start" :depends-on ("Core"))
                (:module "Editor modes"
                 :pathname "mode"
                 :depends-on ("Core modes")
@@ -178,6 +177,7 @@ This system does nothing in particular.")
                  (:file "changelog")
                  (:file "migration")
                  (:file "manual")))
+               (:file "start" :depends-on ("Help"))
                (:module "Modes"
                 :pathname "mode"
                 :depends-on ("Core modes")

@@ -240,6 +240,26 @@ Don't run this from a REPL, prefer `start' instead."
       (isys:sigaction isys:sigterm interrupt-sigaction (cffi:null-pointer)))
     (apply #'start (append options (list :urls free-args)))))
 
+(defun error-in-new-window (title condition-string backtrace)
+  (sera:lret* ((window (window-make *browser*))
+               (error-buffer (make-instance 'document-buffer)))
+    (with-current-buffer error-buffer
+      (html-set
+       (values
+        (spinneret:with-html-string
+          (:head
+           (:title title)
+           (:style (style (current-buffer))))
+          (:body
+           (:h1 title)
+           (:h2 "Condition")
+           (:pre condition-string)
+           (:h2 "Backtrace")
+           (:pre backtrace)))
+        "text/html;charset=utf8")
+       error-buffer))
+    (window-set-buffer window error-buffer)))
+
 (-> load-lisp
     ((or null trivial-types:pathname-designator) &key (:package (or null package)))
     *)
@@ -603,6 +623,31 @@ Finally, run the browser, load URL-STRINGS if any, then run
       (bt:make-thread (lambda ()
                         (in-package :nyxt-user)))
       (ffi-initialize *browser* urls startup-timestamp))))
+
+(defun restart-with-message (&key condition backtrace)
+  (flet ((set-error-message (condition backtrace)
+           (let ((*package* (find-package :cl))) ; Switch package to use non-nicknamed packages.
+             (write-to-string
+              `(hooks:add-hook
+                nyxt:*after-init-hook*
+                (make-instance
+                 'hooks:handler
+                 :fn (lambda ()
+                       (setf (nyxt::startup-error-reporter-function *browser*)
+                             (lambda ()
+                               (nyxt:echo-warning "Restarted without configuration file due to error: ~a"
+                                                  ,(princ-to-string condition))
+                               (nyxt::error-in-new-window "Initialization error" ,(princ-to-string condition) ,backtrace))))
+                 :name 'error-reporter))))))
+    (let* ((new-command-line (append (uiop:raw-command-line-arguments)
+                                     `("--no-config"
+                                       "--eval"
+                                       ,(set-error-message condition backtrace)))))
+      (log:warn "Restarting with ~s."
+                (append (uiop:raw-command-line-arguments)
+                        '("--no-config")))
+      (uiop:launch-program new-command-line)
+      (quit 1))))
 
 (define-command nyxt-init-time ()
   "Return the duration of Nyxt initialization."
