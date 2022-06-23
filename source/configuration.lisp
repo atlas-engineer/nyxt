@@ -349,6 +349,69 @@ To discover the default value of a slot or all slots of a class, use the
                                                   (%slot-default% %slot-value%))
                                              ,value))))))))
 
+(defun find-accessor (class-designator slot) ; TODO: Move to utilities.  Useless anyways?
+  "Return accessor for SLOT of CLASS assuming it has the same name.
+Otherwise return nil."
+  (alex:when-let ((fun (fboundp slot)))
+    (find-method fun '() (list (sera:find-class-safe class-designator)))))
+
+(defun extend-configuration (class-sym fun slot slot-value) ; TODO: Better name.
+  "Configure CLASS-SYM for new instances.
+- If FUN is given, run it on instantiation.
+- If SLOT and SLOT-VALUE are given, set SLOT to SLOT-VALUE."
+  (hooks:add-hook
+   (slot-value (find-class class-sym) 'nyxt::customize-hook)
+   (make-instance
+    'hooks:handler
+    :fn (lambda (object)
+          (declare (ignorable object))
+          ;; TODO:
+          (when fun
+            (funcall fun object))
+          (when slot
+            ;; TODO: Can we use accessor / writer?  How do you call (setf ...)
+            ;; on a dynamically-found writer?
+            (set (slot-value object slot) slot-value)))
+    :name (gensym "EXTENT-CONFIGURATION"))))
+
+(defun apply-configuration (&key lambda slot (slot-value nil slot-value-p)
+                              class-name
+                              current-instance instances new-instances-p auto-config-p)
+  "With CLASS-NAME, CURRENT-INSTANCE and INSTANCES that are not of this class are
+automatically filtered out. "
+  (unless (and (or lambda slot)
+               (not (and lambda slot)))
+    (error "Either LAMBDA or SLOT must be provided."))
+  (when (and (or auto-config-p new-instances-p)
+             (not class-name))
+    (error "CLASS-NAME must be provided when passing NEW-INSTANCES-P or AUTO-CONFIG-P."))
+
+  ;; For new instances:
+  (when new-instances-p
+    (apply #'extend-configuration class-name lambda slot
+           (when slot-value-p `(:slot-value ,slot-value))))
+  (when auto-config-p
+    (apply #'auto-configure
+           :class-name class-name
+           :slot slot
+           ;; TODO: Rename this key arg to `:lambda' and have it funcall'ed.
+           :form lambda
+           (when slot-value-p
+             `(:slot-value ,slot-value))))
+  ;; For existing instances:
+  (let ((instances (delete-duplicates
+                    (sera:filter (if class-name
+                                     (sera:eqs class-name)
+                                     #'identity)
+                                 (append (uiop:ensure-list current-instance) instances)
+                                 :key #'sera:class-name-of))))
+    (mapc (or lambda
+              (lambda (instance)
+                ;; TODO: use accessor?
+                (setf (slot-value instance slot)
+                      slot-value)))
+          instances)))
+
 
 (defparameter %buffer nil)              ; TODO: Make a monad?
 
