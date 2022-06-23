@@ -73,13 +73,14 @@ You can redefine it to enable regex-based search, for example:
     (create-marks selector)))
 
 (define-parenscript highlight-selected-hint (&key element scroll)
-  (ps:let* ((new-element (nyxt/ps:qs document (ps:lisp (identifier element)))))
+  (ps:let* ((new-element (ps:@ (nyxt/ps:qs-nyxt-id document (ps:lisp (nyxt/dom:get-nyxt-id (element element))))
+                               parent)))
     (when new-element
       (unless ((ps:@ new-element class-list contains) "nyxt-highlight-search-hint")
         (ps:let ((old-elements (nyxt/ps:qsa document ".nyxt-highlight-search-hint")))
           (ps:dolist (e old-elements)
             (setf (ps:@ e class-name) "nyxt-search-hint"))))
-      (setf (ps:@ new-element class-name) "nyxt-highlight-hint")
+      (setf (ps:@ new-element class-name) "nyxt-highlight-search-hint")
       (when (ps:lisp scroll)
         (ps:chain new-element (scroll-into-view (ps:create block "nearest")))))))
 
@@ -108,7 +109,7 @@ You can redefine it to enable regex-based search, for example:
             (and (slot-exists-p hint 'buffer)
                  (equal (buffer hint) buffer)))
         (with-current-buffer buffer
-          (nyxt/hint-mode::highlight-selected-hint :element hint :scroll scroll))
+          (highlight-selected-hint :element hint :scroll scroll))
         (remove-focus))))
 
 (define-command remove-search-hints ()
@@ -160,8 +161,7 @@ You can redefine it to enable regex-based search, for example:
    (prompter:destructor (lambda (prompter source)
                           (declare (ignore prompter source))
                           (unless (keep-search-hints-p (current-buffer))
-                            (remove-search-hints))
-                          (nyxt/hint-mode:remove-focus))))
+                            (remove-search-hints)))))
   (:export-accessor-names-p t)
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
