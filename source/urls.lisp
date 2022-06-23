@@ -388,12 +388,13 @@ TITLE is purely informative."
   ;; We define it here and not in parenscript-macro because we need
   ;; `nyxt::lisp-url-callbacks' while parenscript-macro is Nyxt-independent.
   `(let ((url (ps:lisp (let ((request-id (string (gensym ""))))
-                             (setf (gethash request-id (nyxt::lisp-url-callbacks ,buffer))
-                                   (lambda () ,@form))
-                             (let ((url-string (format nil "lisp://~a" request-id)))
-                               (when ,title
-                                 (setf url-string (str:concat url-string "/" ,title)))
-                               url-string)))))
+                         (log:debug "Registering callback ~a for buffer ~a" request-id ,buffer)
+                         (setf (gethash request-id (nyxt::lisp-url-callbacks ,buffer))
+                               (lambda () ,@form))
+                         (let ((url-string (format nil "lisp://~a" request-id)))
+                           (when ,title
+                             (setf url-string (str:concat url-string "/" ,title)))
+                           url-string)))))
      (let ((request (fetch url
                            (ps:create :mode "no-cors"))))
        (when ,callback
@@ -414,7 +415,7 @@ TITLE is purely informative."
                 (internal-url-p (url buffer)))
             (let* ((request-id (quri:uri-host url))
                    (title (when (and url (quri:uri-path url)) (sera:drop-prefix "/" (quri:uri-path url)))))
-              (log:debug "Evaluate Lisp code from internal page: ~a" (or title "UNTITLED"))
+              (log:debug "Evaluate Lisp callback ~a from internal page ~a: ~a" request-id buffer (or title "UNTITLED"))
               (values (let ((result (with-current-buffer buffer
                                       (run (gethash request-id (lisp-url-callbacks buffer))))))
                         ;; Objects and other complex structures make cl-json choke.
