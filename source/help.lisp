@@ -53,100 +53,155 @@ CLASS is a class symbol."
          (auto-configure :class-name class :slot slot :slot-value input)
          (echo "Update slot ~s to ~s. You might need to restart to experience the change." slot input))))))
 
-(define-internal-page-command-global common-settings ()
+(defvar *settings* (make-hash-table)
+  "TODO: Document the function / callback type.")
+
+;; TODO: Use `define-setting'?  Use sera:dict?  Let-bind?
+
+(setf (gethash :keystyle *settings*)
+      (lambda (keystyle &key current-instance-p all-instances-p new-instances-p auto-config-p)
+        "KEYSTYLE is for example the `nyxt/emacs-mode:emacs-mode' symbol."
+        (unless (uiop:emptyp keystyle)
+          (apply-configuration
+           :lambda (lambda (input-buffer) (enable-modes (list (read-from-string keystyle)) input-buffer))
+           :class-name 'input-buffer
+           :current-instance (when current-instance-p (current-buffer))
+           :instances (when all-instances-p (buffer-list))
+           :new-instances-p new-instances-p
+           :auto-config-p auto-config-p))))
+
+(setf (gethash :theme *settings*)
+      (lambda (theme &key auto-config-p &allow-other-keys)
+        "THEME is for example the `theme::+light-theme+' symbol."
+        (unless (uiop:emptyp theme)
+          (apply-configuration
+           :slot 'theme
+           :slot-value (eval (read-from-string theme)) ; TODO: Ouch, `eval'!  To get rid of it, we could `(make-instance 'dark-theme) if it were a class.
+           :current-instance *browser*
+           :auto-config-p auto-config-p))))
+
+(define-internal-page-command-global common-settings (&rest args &key &allow-other-keys)
     (buffer "*Settings*" 'nyxt/help-mode:help-mode)
   "Configure a set of frequently used settings."
-  (spinneret:with-html-string
-    (:h1 "Common Settings")
-    (:p "Set the values for frequently configured settings. "
-        "Changes only apply to newly created buffers.")
-    (:h2 "Keybinding style")
-    (:p (:button :class "button"
-                 :onclick (ps:ps (nyxt/ps:lisp-eval
-                                  (:title "set-cua-scheme")
-                                  (nyxt::auto-configure
-                                   :class-name 'input-buffer
-                                   :form '(disable-modes* 'nyxt/emacs-mode:emacs-mode input-buffer))
-                                  (nyxt::auto-configure
-                                   :class-name 'input-buffer
-                                   :form '(disable-modes* 'nyxt/vi-mode:vi-normal-mode input-buffer))))
-                 "Use default (CUA)"))
-    (:p (:button :class "button"
-                 :onclick (ps:ps (nyxt/ps:lisp-eval
-                                  (:title "set-emacs-scheme")
-                                  (nyxt::auto-configure
-                                   :class-name 'input-buffer
-                                   :form '(disable-modes* 'nyxt/vi-mode:vi-normal-mode input-buffer))
-                                  (nyxt::auto-configure
-                                   :class-name 'input-buffer
-                                   :form '(enable-modes* 'nyxt/emacs-mode:emacs-mode input-buffer))))
-                 "Use Emacs"))
-    (:p (:button :class "button"
-                 :onclick (ps:ps (nyxt/ps:lisp-eval
-                                  (:title "set-vi-scheme")
-                                  (nyxt::auto-configure
-                                   :class-name 'input-buffer
-                                   :form '(disable-modes* 'nyxt/emacs-mode:emacs-mode input-buffer))
-                                  (nyxt::auto-configure
-                                   :class-name 'input-buffer
-                                   :form '(enable-modes* 'nyxt/vi-mode:vi-normal-mode input-buffer))))
-                 "Use vi"))
-    (flet ((generate-colors (theme-symbol text)
-             (spinneret:with-html-string
-               (:p (:button :class "button"
-                            :style (format nil "background-color: ~a; color: ~a"
-                                           (theme:accent-color (symbol-value theme-symbol))
-                                           (theme:on-accent-color (symbol-value theme-symbol)))
-                            :onclick (ps:ps (nyxt/ps:lisp-eval
-                                             (:title "set-theme")
-                                             (nyxt::auto-configure
-                                              :class-name 'browser
-                                              :slot 'theme
-                                              :slot-value theme-symbol)))
-                            text))
-               (:p "Colors:")
-               (:dl
-                (loop for (name color text-color) in '(("Background" theme:background-color theme:on-background-color)
-                                                       ("Accent" theme:accent-color theme:on-accent-color)
-                                                       ("Primary" theme:primary-color theme:on-primary-color)
-                                                       ("Secondary" theme:secondary-color theme:on-secondary-color))
-                      collect (:dt name ": ")
-                      collect (:dd (:span :style (format nil "background-color: ~a; color: ~a; border-radius: 0.2em"
-                                                         (slot-value (symbol-value theme-symbol) color)
-                                                         (slot-value (symbol-value theme-symbol) text-color))
-                                          (slot-value (symbol-value theme-symbol) color))))))))
-      (:h2 "Theme style")
+  (log:info (url buffer) args)
+  (when args
+    ;; TODO: Don't block the page.
+    ;; TODO: Reset  URL to avoid reprompting.
+    (let* ((target-current-instance "Current instance")
+           (target-all-instances "All instances")
+           (target-new-instances "New instances")
+           (target-auto-config "Auto-config file")
+           (targets (prompt
+                     :prompt "Where to apply settings"
+                     :sources (make-instance 'prompter:source
+                                             :name "Target(s) for settings"
+                                             :multi-selection-p t
+                                             :constructor (list
+                                                           target-current-instance
+                                                           target-all-instances
+                                                           target-new-instances
+                                                           target-auto-config)))))
+      (loop :for (key value) :on args :by #'cddr
+            ;; :for setting = (gethash key *settings*)
+            :do (funcall (gethash key *settings*) value
+                         :current-instance-p (find target-current-instance targets)
+                         :all-instances-p (find target-all-instances targets)
+                         :new-instances-p (find target-new-instances targets)
+                         :auto-config-p (find target-auto-config targets)))
+      (echo "Settings applied to ~(~{~a~^, ~}~): ~s." targets args)))
+  (flet ((form-entry (&key id label type name)
+           (spinneret:with-html-string
+             (:br)
+             (:label :for id label)
+             (:raw
+              (sera:string-case type
+                ("radio"
+                 (unless name
+                   (error "Radio button needs a name"))
+                 (spinneret:with-html-string
+                   (:input :type type :id id :name name :value id)))
+                (t
+                 (spinneret:with-html-string
+                   (:input :type type :id id :name id)))))))
+         (generate-colors (theme-symbol)
+           (spinneret:with-html-string
+             (:p "Colors:")
+             (:dl
+              (loop for (name color text-color) in '(("Background" theme:background-color theme:on-background-color)
+                                                     ("Accent" theme:accent-color theme:on-accent-color)
+                                                     ("Primary" theme:primary-color theme:on-primary-color)
+                                                     ("Secondary" theme:secondary-color theme:on-secondary-color))
+                    collect (:dt name ": ")
+                    collect (:dd (:span :style (format nil "background-color: ~a; color: ~a; border-radius: 0.2em"
+                                                       (slot-value (symbol-value theme-symbol) color)
+                                                       (slot-value (symbol-value theme-symbol) text-color))
+                                        (slot-value (symbol-value theme-symbol) color))))))))
+    (spinneret:with-html-string
+      (:h1 "Common Settings")
+      (:p "Set the values for frequently configured settings. "
+          "Changes only apply to newly created buffers.")
+      (:form (:input :type "submit" :value "Apply settings")
+
+             ;; Drop-down menu or completion would be nice to have, but does not
+             ;; seem to be portable.
+             ;; https://stackoverflow.com/questions/15992085/html-select-drop-down-with-an-input-field
+
+             ;; (:br)
+             ;; (:label :for "keystyle" "Keybding style")
+             ;; (:input :type "text" :id "keystyle" :name "keystyle")
+             (:h2 "Keybinding style")
+             (:raw (form-entry :id "keystyle" :label "Keybinding style" :type "text")) ; TODO: Radio buttons!
+             ;; nyxt/emacs-mode:emacs-mode
+             ;; nyxt/vi-mode:vi-normal-mode
+
+             (:br)
+             (:h2 "Theme")
+             ;; TODO: Check default.
+             ;; TODO: Loop over all known themes.
+             ;; (:br)
+             ;; (:label :for "light-theme" "Light theme")
+             ;; (:input :type "radio" :id "light-theme" :name "theme" :value "light-theme")
+             (:raw (form-entry :id "theme::+light-theme+" :label "Light theme" :type "radio" :name "theme"))
+             (:blockquote (:raw (generate-colors 'theme::+light-theme+)))
+             (:raw (form-entry :id "theme::+dark-theme+" :label "Dark theme" :type "radio" :name "theme"))
+             (:blockquote (:raw (generate-colors 'theme::+dark-theme+)))
+
+             ;; (:br)
+             ;; (:label :for "keystyle2" "Theme style")
+             ;; (:datalist :id "keystyle2"
+             ;;            (:option :value "cua")
+             ;;            (:option :value "emacs")
+             ;;            (:option :value "vi"))
+             )
+
+      (:h2 "Miscellaneous")
       (:ul
-       (:li (:raw (generate-colors 'theme::+light-theme+ "Use default (Light theme)")))
-       (:li (:raw (generate-colors 'theme::+dark-theme+ "Use Dark theme")))))
-    (:h2 "Miscellaneous")
-    (:ul
-     (:li (:button :class "button"
-                   :onclick (ps:ps (nyxt/ps:lisp-eval
-                                    (:title "default-new-buffer-url")
-                                    (nyxt::configure-slot 'default-new-buffer-url 'browser :type 'string)))
-                   "Set default new buffer URL"))
-     (:li (:button :class "button"
-                   :onclick (ps:ps (nyxt/ps:lisp-eval
-                                    (:title "set-zoom-ration")
-                                    (nyxt::configure-slot 'current-zoom-ratio 'document-buffer)))
-                   "Set default zoom ratio"))
-     (:li (:button :class "button"
-                   :onclick (ps:ps (nyxt/ps:lisp-eval
-                                    (:title "disable-compositing")
-                                    (nyxt::auto-configure
-                                     :form '(setf (uiop:getenv "WEBKIT_DISABLE_COMPOSITING_MODE") "1"))))
-                   "Disable compositing")
-          (:p "On some systems, compositing can cause issues with rendering. If
+       (:li (:button :class "button"
+                     :onclick (ps:ps (nyxt/ps:lisp-eval
+                                      (:title "default-new-buffer-url")
+                                      (nyxt::configure-slot 'default-new-buffer-url 'browser :type 'string)))
+                     "Set default new buffer URL"))
+       (:li (:button :class "button"
+                     :onclick (ps:ps (nyxt/ps:lisp-eval
+                                      (:title "set-zoom-ration")
+                                      (nyxt::configure-slot 'current-zoom-ratio 'document-buffer)))
+                     "Set default zoom ratio"))
+       (:li (:button :class "button"
+                     :onclick (ps:ps (nyxt/ps:lisp-eval
+                                      (:title "disable-compositing")
+                                      (nyxt::auto-configure
+                                       :form '(setf (uiop:getenv "WEBKIT_DISABLE_COMPOSITING_MODE") "1"))))
+                     "Disable compositing")
+            (:p "On some systems, compositing can cause issues with rendering. If
 you are experiencing blank web-views, you can try to disable compositing. After
 disabling compositing, you will need to restart Nyxt."))
 
-     (:li (:button :class "button"
-                   :onclick (ps:ps (nyxt/ps:lisp-eval
-                                    (:title "edit-user-file")
-                                    '(nyxt::edit-user-file-with-external-editor)))
-                   "Edit user files")
-          (:p "Edit user configuration and other files in external text editor.")))))
+       (:li (:button :class "button"
+                     :onclick (ps:ps (nyxt/ps:lisp-eval
+                                      (:title "edit-user-file")
+                                      '(nyxt::edit-user-file-with-external-editor)))
+                     "Edit user files")
+            (:p "Edit user configuration and other files in external text editor."))))))
 
 (define-command print-bindings-cheatsheet ()
   "Print a buffer listing all known bindings for the current buffer."
