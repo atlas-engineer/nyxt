@@ -578,6 +578,12 @@ We've also developed some of our own:
 - Use =define-class= instead of =defclass=.
 - Use =nyxt:define-package= if you want the default imports and the default
   package nicknames (e.g. =alex=, =sera=, etc.).
+- Export using =export-always= (from Serapeum) next to the symbol definition.
+  This helps prevent exports to go out-of-sync, or catch typos.
+  Unlike =export=, =export-always= saves you from surprises upon recompilation.
+- When sensible, declaim the function types using =->= (from Serapeum).  Note
+  that there is then no need to mention the type of the arguments and the return
+  value in the docstring.
 - Use the =maybe= and =maybe*= types instead of =(or null ...)= and =(or null
   (array * (0)) ...)= respectively.
 - We make heavy use of Alexandria and Serapeum, remember to use them instead of
@@ -624,6 +630,12 @@ We've also developed some of our own:
 - Paths should have the =cl:pathname= type.
   Use =uiop:native-namestring= to "send" to OS-facing functions,
   =uiop:ensure-pathname= to "receive" from OS-facing functions or to "trunamize".
+- Prefer =handler-bind= over =handler-case=: when running from the REPL, this
+  triggers the debugger with a full stacktrace; when running the Nyxt binary,
+  all conditions are caught anyways..
+- Do not handle the =T= condition, this may break everything.  Handle =error= or
+  exceptionally =condition= (for instance if do not control the called code, and
+  some libraries subclass =condition= instead of =error=).
 
 # - Conversion functions =FROM->TO= or =->TO= for generic functions.  The
 #   only one that comes to mind is =url= which does not follow this convention...
