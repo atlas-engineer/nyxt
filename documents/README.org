@@ -606,6 +606,9 @@ We've also developed some of our own:
 - =(setf SLOT-WRITER) :after= is reserved for "watchers",
   i.e. handlers that are run whenever the slot is set.  The =:around= method is
   not used by watchers, and thus the watcher may be overridden.
+- A function as a slot value is often a sign that it should be a method instead.
+  Methods give more flexibility to the end user.
+  Example: Avoid adding a =constructor= slot, make it a method instead.
 - We use the =%foo%= naming convention for special local variables, but this is
   rare and ideally they should be avoided.
 - We suffix preficatess with =-p=.  Unlike the usual convention, we always use a
