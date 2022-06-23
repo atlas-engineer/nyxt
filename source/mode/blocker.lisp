@@ -88,7 +88,7 @@ This gives more integrity guaranteees to the user and allows external manipulati
   (flet ((empty-line? (line)
            (< (length line) 2))
          (comment? (line)
-           (string= (subseq line 0 1) "#"))
+           (string= line "#" :end1 1))
          (custom-hosts? (line)
            (not (str:starts-with? "0.0.0.0" line))))
     (loop as line = (read-line raw-content nil)

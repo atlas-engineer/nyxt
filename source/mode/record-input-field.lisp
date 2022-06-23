@@ -71,8 +71,7 @@ See `save-input-data' and `set-input-data-from-saved'."
            (convert-string-to-keyword (string &key (max-string-length 100))
              (and (<= 2 (length string) max-string-length)
                   (str:starts-with-p ":" string)
-                  (let ((string1 (subseq string 1)))
-                    (alex:make-keyword (string-upcase string1)))))
+                  (alex:make-keyword (string-upcase string :start 1))))
            (convert-key-value-lists (lists)
              (loop for list in lists
                    collect (loop for (key value) on list by #'cddr

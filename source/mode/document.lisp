@@ -502,7 +502,7 @@ of buffers."
     (panel-buffer "*Headings panel*")
   "Display a list of heading for jumping."
   (labels ((get-level (heading)
-             (ignore-errors (parse-integer (subseq (plump:tag-name (element heading)) 1))))
+             (ignore-errors (parse-integer (plump:tag-name (element heading)) :start 1)))
            (group-headings (headings)
              (loop with min-level = (apply #'min (mapcar #'get-level headings))
                    with current = (list)
