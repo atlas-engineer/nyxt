@@ -28,8 +28,8 @@
             active-time-units)))
     (echo "Refreshing every ~:@{~{~d ~}~a~:@}"
           (list times active-time-units))
-    (apply '+ (mapcar (lambda (time multiplier) (* time multiplier))
-                      times to-seconds-multipliers))))
+    (reduce #'+ (mapcar (lambda (time multiplier) (* time multiplier))
+                        times to-seconds-multipliers))))
 
 (define-mode watch-mode (nyxt/repeat-mode:repeat-mode)
   "Reload the current buffer every 5 minutes."

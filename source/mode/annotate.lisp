@@ -153,7 +153,7 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
    (prompter:constructor
     (let ((annotations (files:content (annotations-file (current-buffer)))))
       (sort (remove-duplicates
-             (apply #'append (mapcar #'tags annotations))
+             (reduce #'append (mapcar #'tags annotations) :from-end t)
              :test #'string-equal)
             #'string-lessp))))
   (:accessor-name-transformer (class*:make-name-transformer name)))

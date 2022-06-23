@@ -344,10 +344,11 @@ For generic functions, describe all the methods."
                      (when (macro-function input) " (macro)"))
                 (:raw (fun-desc input))
                 (:h2 "Methods")
-                (:raw (apply #'str:concat
-                             (mapcar #'method-desc
-                                     (mopu:generic-function-methods
-                                      (symbol-function input))))))
+                (:raw (sera:string-join
+                       (mapcar #'method-desc
+                               (mopu:generic-function-methods
+                                (symbol-function input)))
+                       "")))
               (spinneret:with-html-string
                 (:style (style buffer))
                 (:h1 (format nil "~s" input) ; Use FORMAT to keep package prefix.
@@ -467,7 +468,7 @@ A command is a special kind of function that can be called with
     (buffer (str:concat "*Help-" (symbol-name class) "*") (resolve-symbol :help-mode :mode))
   "Inspect a class and show it in a help buffer."
   (let* ((slots (class-public-slots class))
-         (slot-descs (apply #'str:concat (mapcar (alex:rcurry #'describe-slot* class) slots)))
+         (slot-descs (sera:string-join (mapcar (alex:rcurry #'describe-slot* class) slots) ""))
          (*print-case* :downcase))
     (spinneret:with-html-string
       (:style (style buffer))

@@ -205,7 +205,7 @@ Return two values:
          (root (alex:lastcar parents))
          (selector ""))
     (labels ((selconcat (&rest strings)
-               (setf selector (apply #'str:concat (subst selector :sel strings))))
+               (setf selector (sera:string-join (subst selector :sel strings) "")))
              (unique-p (selector)
                (sera:single (clss:select selector root)))
              (selreturn ()

@@ -169,8 +169,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
     ;; so if we used `delete-duplicates' here it would have modified the last
     ;; list.
     (let ((tags (sort (remove-duplicates
-                       (apply #'append
-                              (mapcar #'tags bookmarks))
+                       (reduce #'append (mapcar #'tags bookmarks) :from-end t)
                        :test #'string-equal)
                       #'string-lessp)))
       tags)))
