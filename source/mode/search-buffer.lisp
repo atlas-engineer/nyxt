@@ -9,18 +9,18 @@
   "Mode for searching text within the buffer."
   ((visible-in-status-p nil)
    (rememberable-p nil)
-   (style (theme:themed-css (theme *browser*)
-            ("mark.nyxt-search-hint"
-             :background-color theme:primary
-             :color theme:on-primary
-             :font-weight "bold"
-             :padding "0px 3px 0px 3px"
-             :border-radius "2px"
-             :z-index #.(1- (expt 2 31)))
-            ("mark.nyxt-highlight-search-hint"
-             :background-color theme:accent
-             :color theme:on-accent))
-          :documentation "The style of the search marks, including the highlighted ones.")
+   (style
+    (theme:themed-css (theme *browser*)
+      (mark
+       :all "unset"
+       :opacity "0.5")
+      (".nyxt-search-hint"
+       :background-color (str:concat theme:primary " !important")
+       :color (str:concat theme:on-primary " !important"))
+      (".nyxt-highlight-search-hint"
+       :background-color (str:concat theme:accent " !important")
+       :color (str:concat theme:on-accent " !important")))
+    :documentation "The style of the search marks, including the highlighted ones.")
    (test-function
     (lambda (sub string)
       (search sub string :test #'equalp))
