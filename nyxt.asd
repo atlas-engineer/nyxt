@@ -21,14 +21,15 @@
          ,(uiop:ensure-pathname (uiop:subpathname* *default-pathname-defaults* "libraries/") :wilden t))))
 
 (defun npath (path)
-  "If NYXT_LOGICAL_PATH environment variable is set, use logical path source
+  "If NYXT_LOGICAL_PATH environment variable is 'true', use logical path source
 location, otherwise use the translated path.
 
 Tools such as Emacs (SLIME and SLY) may fail to make use of logical paths, say,
 to go to the compilation error location."
   ;; REVIEW: Would not be necessary if https://github.com/slime/slime/issues/727
   ;; and https://github.com/atlas-engineer/nyxt/pull/2371 were fixed.
-  (if (uiop:getenv "NYXT_LOGICAL_PATH")
+
+  (if (string-equal (uiop:getenv "NYXT_LOGICAL_PATH") "true")
       path
       (translate-logical-pathname path)))
 

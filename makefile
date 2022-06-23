@@ -13,9 +13,9 @@ endif
 ## We use --non-interactive with SBCL so that errors don't interrupt the CI.
 LISP_FLAGS ?= $(SBCL_FLAGS) --no-userinit --non-interactive
 
-NYXT_SUBMODULES=true
-NYXT_RENDERER=gi-gtk
-NYXT_LOGICAL_PATH=true
+export NYXT_SUBMODULES=true
+export NYXT_RENDERER=gi-gtk
+export NYXT_LOGICAL_PATH=true
 
 .PHONY: help
 help:
