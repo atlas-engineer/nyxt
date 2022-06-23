@@ -609,6 +609,11 @@ We've also developed some of our own:
 - A function as a slot value is often a sign that it should be a method instead.
   Methods give more flexibility to the end user.
   Example: Avoid adding a =constructor= slot, make it a method instead.
+- Define generic functions (in particular if they are heavily used) using an
+  explicit call to =defgeneric=, not with just calls to =defmethod=.  This
+  enables proper source location of the generic function (otherwise it cannot be
+  found), plus it lets you write different documentation for the generic and the
+  the specialized methods.
 - We use the =%foo%= naming convention for special local variables, but this is
   rare and ideally they should be avoided.
 - We suffix preficatess with =-p=.  Unlike the usual convention, we always use a
