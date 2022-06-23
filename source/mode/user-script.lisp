@@ -9,7 +9,7 @@
   (mapcar (lambda (script) (ffi-buffer-add-user-script buffer script)) scripts))
 
 (defun inject-user-styles (styles buffer)
-  (mapcar (alex:rcurry #'ffi-buffer-add-user-style buffer) styles))
+  (mapcar (rcurry #'ffi-buffer-add-user-style buffer) styles))
 
 (define-mode user-script-mode ()
   "Load user scripts such as GreaseMonkey scripts."

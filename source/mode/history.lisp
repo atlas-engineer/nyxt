@@ -348,7 +348,7 @@ internally, but this display is clearer and more navigable."
 
 (defun add-url-to-history (url buffer mode)
   (unless (or (url-empty-p url)
-              (find-if (alex:rcurry #'str:starts-with? (render-url url))
+              (find-if (rcurry #'str:starts-with? (render-url url))
                        (history-blocklist mode)))
     (log:debug "Notify URL ~a for buffer ~a with load status ~a"
                url

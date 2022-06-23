@@ -143,7 +143,7 @@ JSON should have the format like what `get-document-body-json' produces:
                (when (typep element 'plump:nesting-node)
                  (setf (plump:children element)
                        (plump:ensure-child-array
-                        (map 'vector (alex:rcurry #'json-to-plump element)
+                        (map 'vector (rcurry #'json-to-plump element)
                              (let ((children (gethash "children" json-hash)))
                                (if (stringp children)
                                    (decode-json children)
@@ -193,7 +193,7 @@ Return two values:
          ;; TODO: Remove other attributes, unreliable ones? For example, href
          ;; and type are reliable and are unlikely to change, while data-*
          ;; attributes are unreliable and can change any moment.
-         (attributes (remove-if (alex:rcurry #'member '("class" "id") :test #'string=)
+         (attributes (remove-if (rcurry #'member '("class" "id") :test #'string=)
                                 (alex:hash-table-keys (plump:attributes element))))
          (classes (when raw-classes (remove-if #'str:blankp (str:split " " raw-classes))))
          (parents (parents element))

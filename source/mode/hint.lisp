@@ -323,7 +323,7 @@ FUNCTION is the action to perform on the selected elements."
                                                           :constructor options
                                                           :multi-selection-p
                                                           (plump:get-attribute select "multiple")))))
-    (dolist (option (mapcar (alex:rcurry #'find options :test #'equalp) values))
+    (dolist (option (mapcar (rcurry #'find options :test #'equalp) values))
       (nyxt/dom:select-option-element :nyxt-identifier (get-nyxt-id option)
                                       :parent-select-identifier (get-nyxt-id select)))))
 
@@ -379,14 +379,14 @@ FUNCTION is the action to perform on the selected elements."
     (query-hints "Go to element"
                  (lambda (results)
                    (%follow-hint (first results))
-                   (mapcar (alex:rcurry #'%follow-hint-new-buffer buffer)
+                   (mapcar (rcurry #'%follow-hint-new-buffer buffer)
                            (rest results))))))
 
 (define-command follow-hint-new-buffer ()
   "Like `follow-hint', but open the selected hints in new buffers (no focus)."
   (let ((buffer (current-buffer)))
     (query-hints "Open element in new buffer"
-                 (lambda (result) (mapcar (alex:rcurry #'%follow-hint-new-buffer buffer)
+                 (lambda (result) (mapcar (rcurry #'%follow-hint-new-buffer buffer)
                                           result)))))
 
 (define-command follow-hint-new-buffer-focus ()
@@ -395,7 +395,7 @@ FUNCTION is the action to perform on the selected elements."
     (query-hints "Go to element in new buffer"
                  (lambda (result)
                    (%follow-hint-new-buffer-focus (first result) buffer)
-                   (mapcar (alex:rcurry #'%follow-hint-new-buffer buffer)
+                   (mapcar (rcurry #'%follow-hint-new-buffer buffer)
                            (rest result))))))
 
 (define-command follow-hint-nosave-buffer ()
@@ -417,7 +417,7 @@ modes."
   (let ((buffer (current-buffer)))
     (query-hints "Open element with current modes in new buffer"
                  (lambda (result)
-                   (mapcar (alex:rcurry #'%follow-hint-with-current-modes-new-buffer buffer)
+                   (mapcar (rcurry #'%follow-hint-with-current-modes-new-buffer buffer)
                            result)))))
 
 (define-command copy-hint-url ()

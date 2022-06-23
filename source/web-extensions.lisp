@@ -65,7 +65,7 @@ A list of objects. Does not necessarily have the same order as `files' of the sc
 
 MATCHES, JS, and CSS are all keys of the \"content_scripts\" manifest.json keys:
 https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts"
-  (let ((sanitize-mozilla-regex (alex:curry #'str:replace-using '("*." "*"
+  (let ((sanitize-mozilla-regex (curry #'str:replace-using '("*." "*"
                                                                   "?" "*"
                                                                   "<all_urls>" "*://*/*"))))
     (make-instance
@@ -103,7 +103,7 @@ JSON is the parsed extension manifest."
                                (lambda (a b)
                                  (> (abs (- optimal-height a))
                                     (abs (- optimal-height b))))
-                               :key (alex:compose #'parse-integer #'symbol-name #'first))))))
+                               :key (compose #'parse-integer #'symbol-name #'first))))))
     (error ()
       (cdr (first (and (gethash "icons" json)
                        (alex:hash-table-alist (gethash "icons" json))))))))
@@ -134,7 +134,7 @@ https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.
                      (gethash "theme_icons" browser-action)))
          (sorted-icons (when icons
                          (sort icons
-                               #'> :key (alex:curry #'gethash "size"))))
+                               #'> :key (curry #'gethash "size"))))
          (max-icon (first sorted-icons))
          (default-icon (default-browser-action-icon json 1000)))
     (make-instance 'browser-action

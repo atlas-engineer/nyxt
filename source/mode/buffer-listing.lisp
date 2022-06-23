@@ -114,7 +114,7 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                                     (render-url (url panel-buffer))
                                     (nyxt::panel-buffers (current-window))
                                     :test #'string=
-                                    :key (alexandria:compose
+                                    :key (compose
                                           #'render-url #'url))))))
                 "Update ↺")
        (loop for buffer in (buffer-list)
