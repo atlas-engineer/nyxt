@@ -345,7 +345,7 @@ Finally go through all the owners and update their creator."
     (alex:when-let ((latest-id (first
                                 (first
                                  (sort-by-time (alex:hash-table-alist (htree:owners history))
-                                               :key (alex:compose #'htree:last-access #'rest))))))
+                                               :key (compose #'htree:last-access #'rest))))))
       (switch-buffer :buffer (buffers-get latest-id)))))
 
 (defmethod files:deserialize ((profile nyxt-profile) (file history-file) raw-content &key)

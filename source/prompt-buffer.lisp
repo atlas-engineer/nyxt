@@ -245,7 +245,7 @@ See also `show-prompt-buffer'."
                                         (prompter:sources prompt-buffer)))))
        (setf (ps:chain document (get-element-by-id "prompt-modes") |innerHTML|)
              (ps:lisp (str:join " "
-                                (mapcar (alex:curry #'mode-status status-buffer)
+                                (mapcar (curry #'mode-status status-buffer)
                                         (sort-modes-for-status (modes prompt-buffer))))))))))
 
 (export 'prompt-render-suggestions)

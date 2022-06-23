@@ -232,7 +232,7 @@ See `find-internal-page-buffer'."))
 ;; (-> find-internal-page-buffer (internal-page-symbol) (maybe buffer))
 (defun find-internal-page-buffer (name) ; TODO: Test if CCL can catch bad calls at compile-time.
   "Return first buffer which URL is a NAME `internal-page'."
-  (find name (buffer-list) :key (alex:compose #'internal-page-name #'url)))
+  (find name (buffer-list) :key (compose #'internal-page-name #'url)))
 
 (defun find-url-internal-page (url)
   "Return the `internal-page' to which URL corresponds."

@@ -1404,7 +1404,7 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
                                             (search-auto-complete-p (current-buffer))
                                             (completion-function engine)
                                             (rest terms))
-                                   (mapcar (alex:rcurry #'make-completion-query
+                                   (mapcar (rcurry #'make-completion-query
                                                         :engine      engine
                                                         :check-dns-p check-dns-p)
                                            (with-protect ("Error while completing search: ~a" :condition)
@@ -1418,7 +1418,7 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
                                 (engine (default-search-engine))
                                 (completion (completion-function engine))
                                 (all-terms (str:join " " terms)))
-                  (mapcar (alex:rcurry #'make-completion-query
+                  (mapcar (rcurry #'make-completion-query
                                        :engine      engine
                                        :check-dns-p check-dns-p)
                           (with-protect ("Error while completing default search: ~a" :condition)
@@ -1472,7 +1472,7 @@ any.")
    (list (make-instance 'new-url-or-search-source :return-actions return-actions)
          (make-instance 'global-history-source :return-actions return-actions)
          (make-instance 'search-engine-url-source :return-actions return-actions))
-   (alex:mappend (alex:rcurry #'url-sources return-actions) (modes buffer))))
+   (alex:mappend (rcurry #'url-sources return-actions) (modes buffer))))
 
 (define-command set-url (&key (prefill-current-url-p t))
   "Set the URL for the current buffer, completing with history."

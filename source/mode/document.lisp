@@ -419,7 +419,7 @@ ID is a buffer `id'."
                                                        (plump:text (plump:next-element e))))
                                            :scroll-position (heading-scroll-position e)))
                  (clss:select "h1, h2, h3, h4, h5, h6" (document-model buffer)))
-            #'< :key (alex:compose #'parse-integer #'get-nyxt-id #'element)))))
+            #'< :key (compose #'parse-integer #'get-nyxt-id #'element)))))
 
 (defun current-heading (&optional (buffer (current-buffer)))
   (alex:when-let* ((scroll-position (document-scroll-position buffer))

@@ -479,7 +479,7 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
   "Return a predicate for URL designators matching one of SCHEME or OTHER-SCHEMES."
   #'(lambda (url-designator)
       (when url-designator
-        (some (alex:curry #'string= (quri:uri-scheme (url url-designator)))
+        (some (curry #'string= (quri:uri-scheme (url url-designator)))
               (cons scheme other-schemes)))))
 
 (-> match-host (string &rest string) (function (quri:uri) boolean))
@@ -488,7 +488,7 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
   "Return a predicate for URL designators matching one of HOST or OTHER-HOSTS."
   #'(lambda (url-designator)
       (when url-designator
-        (some (alex:curry #'string= (quri:uri-host (url url-designator)))
+        (some (curry #'string= (quri:uri-host (url url-designator)))
               (cons host other-hosts)))))
 
 (-> match-domain (string &rest string) (function (quri:uri) boolean))
@@ -497,7 +497,7 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
   "Return a predicate for URL designators matching one of DOMAIN or OTHER-DOMAINS."
   #'(lambda (url-designator)
       (when url-designator
-        (some (alex:curry #'string= (quri:uri-domain (url url-designator)))
+        (some (curry #'string= (quri:uri-domain (url url-designator)))
               (cons domain other-domains)))))
 
 (-> match-port (integer &rest integer) (function (quri:uri) boolean))
@@ -506,7 +506,7 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
   "Return a predicate for URL designators matching one of PORT or OTHER-PORTS."
   #'(lambda (url-designator)
       (when url-designator
-        (some (alex:curry #'eq (quri:uri-port (url url-designator)))
+        (some (curry #'eq (quri:uri-port (url url-designator)))
               (cons port other-ports)))))
 
 (-> match-file-extension (string &rest string) (function (quri:uri) boolean))
@@ -515,7 +515,7 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
   "Return a predicate for URL designators matching one of EXTENSION or OTHER-EXTENSIONS."
   #'(lambda (url-designator)
       (when url-designator
-        (some (alex:curry #'string= (pathname-type (or (quri:uri-path (url url-designator)) "")))
+        (some (curry #'string= (pathname-type (or (quri:uri-path (url url-designator)) "")))
               (cons extension other-extensions)))))
 
 (-> match-regex (string &rest string) (function (quri:uri) boolean))
@@ -524,7 +524,7 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
   "Return a predicate for URL designators matching one of REGEX or OTHER-REGEX."
   #'(lambda (url-designator)
       (when url-designator
-        (some (alex:rcurry #'cl-ppcre:scan (render-url (url url-designator)))
+        (some (rcurry #'cl-ppcre:scan (render-url (url url-designator)))
               (cons regex other-regex)))))
 
 (-> match-url (string &rest string) (function (quri:uri) boolean))
@@ -533,6 +533,6 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
   "Return a predicate for URLs exactly matching ONE-URL or OTHER-URLS."
   #'(lambda (url-designator)
       (when url-designator
-        (some (alex:rcurry #'string= (render-url (url url-designator)))
+        (some (rcurry #'string= (render-url (url url-designator)))
               (mapcar (lambda (u) (quri:url-decode u :lenient t))
                       (cons one-url other-urls))))))

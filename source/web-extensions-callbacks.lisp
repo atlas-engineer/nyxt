@@ -427,7 +427,7 @@ there. `reply-user-mesage' takes care of sending the response back."
         ("runtime.sendMessage"
          (sera:and-let* ((json (decode-json message-params))
                          (extension-instances
-                          (sera:filter (alex:curry #'string=
+                          (sera:filter (curry #'string=
                                                    (gethash "extensionId" json))
                                        extensions
                                        :key #'id))

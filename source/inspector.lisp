@@ -22,7 +22,7 @@
             'symbolp
             'characterp
             'stringp
-            (alex:rcurry 'typep '(and number (not complex))))
+            (rcurry 'typep '(and number (not complex))))
            object))
 
 (export-always 'inspected-value)

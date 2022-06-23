@@ -64,7 +64,7 @@ returns. Should return a list of strings.
 Example (Tor-proxied completion function for Wikipedia):
 \(make-search-completion-function
  :base-url \"https://en.wikipedia.org/w/api.php?action=opensearch&format=json&search=~a\"
- :processing-function (alex:compose #'second #'decode-json)
+ :processing-function (compose #'second #'decode-json)
  :request-args '(:proxy \"socks5://localhost:9050\"))"
   #'(lambda (input)
       (funcall processing-function

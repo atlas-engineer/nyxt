@@ -79,7 +79,7 @@
 
 (define-class package-source (prompter:source)
   ((prompter:name "Packages")
-   (prompter:constructor (mapcar (alex:compose #'intern #'package-name) (list-all-packages)))))
+   (prompter:constructor (mapcar (compose #'intern #'package-name) (list-all-packages)))))
 
 (define-command describe-any (&optional input universal)
   "Inspect anything and show it in a help buffer.
@@ -468,7 +468,7 @@ A command is a special kind of function that can be called with
     (buffer (str:concat "*Help-" (symbol-name class) "*") (resolve-symbol :help-mode :mode))
   "Inspect a class and show it in a help buffer."
   (let* ((slots (class-public-slots class))
-         (slot-descs (sera:string-join (mapcar (alex:rcurry #'describe-slot* class) slots) ""))
+         (slot-descs (sera:string-join (mapcar (rcurry #'describe-slot* class) slots) ""))
          (*print-case* :downcase))
     (spinneret:with-html-string
       (:style (style buffer))

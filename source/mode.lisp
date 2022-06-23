@@ -214,7 +214,7 @@ PACKAGES should be a list of package designators."
                                 (sera:filter
                                  (apply #'alex:disjoin
                                         (mapcar (lambda (pkg)
-                                                  (alex:rcurry #'subpackage-p (find-package pkg)))
+                                                  (rcurry #'subpackage-p (find-package pkg)))
                                                 packages))
                                  (list-all-packages))))
                   (symbols (case type
@@ -242,7 +242,7 @@ Return nil if mode is not found."
   (when (modable-buffer-p buffer)
     (alex:if-let ((class (mode-class mode-symbol)))
       (let ((results (sera:filter
-                      (alex:rcurry #'closer-mop:subclassp class)
+                      (rcurry #'closer-mop:subclassp class)
                       (modes buffer)
                       :key #'class-of)))
         (when (< 1 (length results))

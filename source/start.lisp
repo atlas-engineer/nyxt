@@ -479,7 +479,7 @@ Otherwise bind socket and return the listening thread."
                             (rest lines))))))
 
 (sera:eval-always
-  (defvar %start-args (mapcar (alex:compose #'intern
+  (defvar %start-args (mapcar (compose #'intern
                                             #'symbol-name
                                             #'opts::name)
                               opts::*options*)))
