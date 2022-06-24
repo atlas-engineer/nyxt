@@ -177,6 +177,14 @@ This is useful if you do not trust the input."
         :until (eq value stream)
         :collect value))
 
+(export-always 'reduce/append)
+(defun reduce/append (list-of-lists)
+  "Return the appended sublists in LIST-OF-LISTS.
+Like `uiop:reduce/strcat' but for lists."
+  ;; We reduce from the end stay in O(n), otherwise we'd be in O(n²).
+  ;; We do not use `(mapcar #'identity ...)' which alters the sublists.
+  (reduce #'append list-of-lists :from-end t))
+
 (export-always 'socket-p)
 (defun socket-p (path)
   "Return non-nil if a PATH is a socket."
