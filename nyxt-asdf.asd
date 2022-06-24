@@ -7,7 +7,7 @@
   :homepage "https://nyxt.atlas.engineer"
   :description "ASDF helpers for Nyxt and its extensions."
   :license "BSD 3-Clause"
-  :pathname #p"nyxt-asdf/"
+  :pathname #p"libraries/nyxt-asdf/"
   :components ((:file "package")
                (:file "nyxt-asdf")
                (:file "install")
