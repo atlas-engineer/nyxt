@@ -57,7 +57,7 @@ Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
        "m M" 'bookmark-current-url
        "m l" 'list-bookmarks
        "m f" 'bookmark-hint))
-    :type keymap:scheme)
+    :type keymaps:scheme)
    (style (theme:themed-css (theme *browser*)
             ("summary"
              :background-color theme:secondary

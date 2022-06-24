@@ -112,7 +112,7 @@ add the following to your configuration:")
           (:pre (:code "
 \(define-configuration buffer
   ((default-modes (append '(emacs-mode) %slot-default%))))"))))
-    (:p "You can create new scheme names with " (:code "keymap:make-scheme-name")
+    (:p "You can create new scheme names with " (:code "keymaps:make-scheme-name")
         ".  Also see the " (:code "scheme-name") " class and the "
         (:code "define-scheme") " macro.")
     (:p "To extend the bindings of a specific mode, you can extend the mode with "
@@ -151,7 +151,7 @@ keymap.")
 
 \(define-mode my-mode ()
   \"Dummy mode for the custom key bindings in `*my-keymap*'.\"
-  ((keymap-scheme (keymap:make-scheme
+  ((keymap-scheme (keymaps:make-scheme
                    scheme:cua *my-keymap*
                    scheme:emacs *my-keymap*
                    scheme:vi-normal *my-keymap*))))
@@ -160,11 +160,11 @@ keymap.")
   ((default-modes (append '(my-mode) %slot-default%))))"))
 
     (:p "Bindings are subject to various translations as per "
-        (:code "keymap:*translator*") ". "
+        (:code "keymaps:*translator*") ". "
         "By default if it fails to find a binding it tries again with inverted
 shifts.  For instance if " (:code "C-x C-F") " fails to match anything " (:code "C-x C-f")
         " is tried."
-        "See the default value of " (:code "keymap:*translator*") " to learn how to
+        "See the default value of " (:code "keymaps:*translator*") " to learn how to
          custsomize it or set it to " (:code "nil") " to disable all forms of
          translation.")
 

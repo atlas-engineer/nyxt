@@ -129,5 +129,5 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-w q" 'delete-current-window
        "C-w C-q" 'delete-window
        "u" 'reopen-buffer))
-    :type keymap:scheme))
+    :type keymaps:scheme))
   (:toggler-command-p nil))

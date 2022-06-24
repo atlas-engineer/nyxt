@@ -371,12 +371,12 @@ For generic functions, describe all the methods."
 A command is a special kind of function that can be called with
 `execute-command' and can be bound to a key."
   (let* ((command (find command (list-commands) :key #'name))
-         (key-keymap-pairs (nth-value 1 (keymap:binding-keys
+         (key-keymap-pairs (nth-value 1 (keymaps:binding-keys
                                          command
                                          (all-keymaps))))
          (key-keymapname-pairs (mapcar (lambda (pair)
                                          (list (first pair)
-                                               (keymap:name (second pair))))
+                                               (keymaps:name (second pair))))
                                        key-keymap-pairs))
          (source-file
            (alex:when-let ((location (getf (swank:find-definition-for-thing command)
@@ -501,10 +501,10 @@ A command is a special kind of function that can be called with
     (:h1 "Bindings")
     (:p (loop for keymap in (current-keymaps (current-buffer))
               collect (:div
-                       (:h3 (keymap:name keymap))
+                       (:h3 (keymaps:name keymap))
                        (:table
                         (loop for keyspec being the hash-keys
-                                in (keymap:keymap-with-parents->map keymap)
+                                in (keymaps:keymap-with-parents->map keymap)
                                   using (hash-value bound-value)
                               collect (:tr
                                        (:td keyspec)

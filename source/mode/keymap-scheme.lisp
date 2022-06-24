@@ -15,7 +15,7 @@ This is used so that only one mode at a time may be enabled."
     :documentation "The scheme to enable.")
    (previous-keymap-scheme-name
     nil
-    :type (or keymap:scheme-name null)
+    :type (or keymaps:scheme-name null)
     :documentation "The previous keymap scheme that will be used when ending
 this mode."))
   (:toggler-command-p nil))
