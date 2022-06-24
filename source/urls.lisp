@@ -136,13 +136,14 @@ Keys are scheme strings, values are `scheme' objects.")
                         secure-p
                         cors-enabled-p
                       &allow-other-keys)
-  "Define a handler (running CALBACK) for SCHEME-NAME scheme.
+  "Define a handler (running CALLBACK) for SCHEME-NAME scheme.
 
 CALLBACK is called with two arguments:
 - the URL that was requested with this scheme, and
 - buffer that it was requested in.
 
-For keyword arguments' meaning, see `scheme' slot documentation."
+For keyword arguments' meaning, see the corresponding `scheme' slot
+documentation."
   (declare (ignorable local-p no-access-p secure-p cors-enabled-p))
   (setf (gethash scheme-name *schemes*)
         (apply #'make-instance 'scheme
