@@ -341,6 +341,7 @@ Call this function from your initialization file to re-enable the default ASDF r
           asdf/source-registry:default-system-source-registry))
   (asdf:clear-configuration))
 
+;; TODO: Remove `load-after-system'!
 (export-always 'load-after-system)
 (defun load-after-system (system &optional file)
   "Load Common Lisp SYSTEM, then on success load FILE.
@@ -365,3 +366,83 @@ Example:
                nil))))
     (when (and (load-system system) file)
       (load file))))
+
+
+;; TODO: Report compilation errors.
+;; TODO: Enable lazy loading.
+
+(defclass nyxt-user-system (asdf:system) ()
+  (:documentation "Specialized systems for Nyxt users.
+This automatically default :pathname to the `*config-file*' directory."))
+
+(defmethod asdf:component-pathname ((system nyxt-user-system))
+  "Default to `config-directory-file'."
+  (let ((path (call-next-method)))
+    (or path
+        (nfiles:expand (make-instance 'config-directory-file)))))
+
+(defun load-system* (system &rest keys &key force force-not verbose version &allow-other-keys)
+  "Like `asdf:load-system' but, instead of signaling an error on missing
+dependency, it warns the user and skips the load gracefully."
+  ;; TODO: Ideally we would make this the default behaviour of
+  ;; `nyxt-user-system' by specializing a method Unfortunately
+  ;; `resolve-dependency-name' is a function and `find-component' is called
+  ;; against the `depends-on' element but not the system itself.
+  (declare (ignore force force-not verbose version))
+  (flet ((report (c)
+           (echo-warning "Could not load system ~a: ~a" system c)))
+    (handler-bind ((asdf:missing-dependency #'report)
+                   (asdf:missing-dependency-of-version #'report))
+      (apply #'asdf:load-system system keys))))
+
+(defun ensure-component (component-designator)
+  (if (consp component-designator)
+      component-designator
+      (list :file (sera:drop-suffix ".lisp" component-designator :test #'string-equal))))
+
+(defmacro define-nyxt-user-system (name &rest args &key depends-on components
+                                   &allow-other-keys)
+  "Define a user system, usually meant to load configuration files.
+Example to load the \"my-slynk-config\" file in your configuration directory.
+
+  (define-nyxt-user-system nyxt-user/slynk
+    :components (\"my-slynk-config\"))
+  (asdf:load-system :nyxt-user/slynk)
+
+See also `define-nyxt-user-system-and-load'.
+
+It catches potential load dependency cycles.
+
+Arguments are the same as for `asdf:defsystem'.
+For convenience, we also support `string's or `pathname's directly in COMPONENTS.
+So instead of
+
+:components `((:file \"foo\")
+              (:file #p\"bar\"))
+
+you can write
+
+:components `(\"foo\" #p\"bar\")
+
+It only works for top-level components, so if you introduce a module you'll have
+to use the full syntax."
+  ;; We specify DEPENDS-ON to emphasize its availability.
+  (declare (ignore depends-on))
+  (unless (sera:string-prefix-p "nyxt/user/" (string name) )
+    (error "User system name must start with 'nyxt/user/'."))
+  ;; We cannot call `make-instance 'asdf:system' because we need to register the
+  ;; system, and `register-system' is unexported.
+  `(asdf:defsystem ,name
+     :class :nyxt-user-system
+     ,@(uiop:remove-plist-key :components args)
+     :components ,(mapcar #'ensure-component
+                          components)))
+
+(defmacro define-nyxt-user-system-and-load (name &rest args &key depends-on components
+                                            &allow-other-keys)
+  "Like `define-nyxt-user-system' but immediately call `load-system*' on the system.
+Return the system."
+  ;; We specify DEPENDS-ON and COMPONENTS to emphasize their availability.
+  (declare (ignore depends-on components))
+  `(prog1 (define-nyxt-user-system ,name ,@args)
+     (load-system* ',name)))
