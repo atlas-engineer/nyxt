@@ -8,7 +8,7 @@
   (:documentation "Specialized systems for Nyxt.
 Every Nyxt system should use this class or a subclass.
 It enables features such as:
-- Togglable logical-pathnames depending on NYXT_LOGICAL_PATH.
+- Togglable logical-pathnames depending on NYXT_USE_LOGICAL_PATHS.
 - Togglable executable compression with NYXT_COMPRESS.
 - Executable dependencies are made immutable for ASDF to prevent accidental reloads."))
 ;; TODO: This is how `prove' does it, not very clean.
@@ -112,7 +112,7 @@ pathname."
 
 ;; Both `nasdf:component-pathname' and `asdf:component-pathname' work, but it seems more semantically correct to specialize `asdf:component-pathname' for this.
 (defmethod asdf:component-pathname ((system nyxt-system))
-  "If NYXT_LOGICAL_PATH environment variable is set, use logical path source
+  "If NYXT_USE_LOGICAL_PATHS environment variable is set, use logical path source
 location, otherwise use the translated path.
 
 Tools such as Emacs (SLIME and SLY) may fail to make use of logical paths, say,
@@ -130,7 +130,7 @@ to go to the compilation error location."
                                 ;; this point, so we remake the pathname.
                                 (make-pathname :defaults path))
                               path))))
-        (if (string-equal "true" (uiop:getenv "NYXT_LOGICAL_PATH"))
+        (if (string-equal "true" (uiop:getenv "NYXT_USE_LOGICAL_PATHS"))
             final-path
             (translate-logical-pathname final-path))))))
 
