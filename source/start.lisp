@@ -254,6 +254,10 @@ Don't run this from a REPL, prefer `start' instead."
            (:h1 title)
            (:h2 "Condition")
            (:pre condition-string)
+           (:h2 "Suggestions")
+           (:ul (dolist (suggestion
+                         (alex:mappend #'nyxt/migration:match-tips (sera:tokens condition-string)))
+                  (:li (:raw (nyxt/migration:tip suggestion)))))
            (:h2 "Backtrace")
            (:pre backtrace)))
         "text/html;charset=utf8")

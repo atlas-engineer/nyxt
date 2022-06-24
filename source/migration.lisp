@@ -105,6 +105,20 @@ major versions."
                       (nyxt::describe-any (princ-to-string ,@symbol)))))
        (:code ,@attr ,@symbol)))
 
+
+(export-always 'match-tips)             ; TODO: Rename
+(defun match-tips (string)
+  (sera:filter
+   (lambda (symbols) (find (alex:symbolicate (string-upcase string)) symbols))
+   (tips (current-migration-guide))
+   :key #'symbols))
+
+(defun current-migration-guide ()
+  (let ((major (first (nyxt::version))))
+    (gethash (cons (prin1-to-string (1- major))
+                   (prin1-to-string major))
+             +migration-guides+)))
+
 (define-migration "2" "3"
   (download-directory)
   (:p (:code "download-directory") " is in " (:code "context-buffer") ".")
