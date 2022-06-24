@@ -7,24 +7,9 @@
   (sb-ext:assert-version->= 2 0 0)
   (require 'sb-bsd-sockets))
 
-(load "nyxt-asdf-utils")
-(nyxt-asdf-utils:set-new-translation "NYXT" "source")
-(nyxt-asdf-utils:set-new-translation "NYXT" "libraries")
-
-(defun npath (path)
-  "If NYXT_LOGICAL_PATH environment variable is 'true', use logical path source
-location, otherwise use the translated path.
-
-Tools such as Emacs (SLIME and SLY) may fail to make use of logical paths, say,
-to go to the compilation error location."
-  ;; REVIEW: Would not be necessary if https://github.com/slime/slime/issues/727
-  ;; and https://github.com/atlas-engineer/nyxt/pull/2371 were fixed.
-
-  (if (string-equal (uiop:getenv "NYXT_LOGICAL_PATH") "true")
-      path
-      (translate-logical-pathname path)))
-
 (defsystem "nyxt"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :version "3"                          ; Development version.
   :author "Atlas Engineer LLC"
   :homepage "https://nyxt.atlas.engineer"
@@ -86,7 +71,7 @@ to go to the compilation error location."
                nyxt/ospm
                nyxt/prompter
                nyxt/theme)
-  :pathname #.(npath #p"NYXT:source;")  ; TODO: Specialize `asdf:system-source-file' instead.
+  :pathname #p"NYXT:source;"
   :components ((:file "utilities")
                (:file "package")
                (:module "Utilities"
@@ -293,10 +278,12 @@ to go to the compilation error location."
                        (format *error-output* "Manual dumped to ~s.~&" (output-file o c))))
 
 (defsystem "nyxt/gtk"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (nyxt
                cl-cffi-gtk
                cl-webkit2)
-  :pathname #.(npath #p"NYXT:source;")
+  :pathname #p"NYXT:source;"
   :serial t
   :components ((:file "web-extensions")
                (:file "web-extensions-callbacks")
@@ -304,10 +291,12 @@ to go to the compilation error location."
                (:file "renderer/gtk")))
 
 (defsystem "nyxt/gi-gtk"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (nyxt/gtk
                cl-gobject-introspection
                bordeaux-threads)
-  :pathname #.(npath #p"NYXT:source;")
+  :pathname #p"NYXT:source;"
   :components ((:file "renderer/gi-gtk"))
   :in-order-to ((test-op (test-op "nyxt/gi-gtk/tests"))))
 
@@ -323,7 +312,7 @@ to go to the compilation error location."
   :depends-on (nyxt
                cl-webengine
                trivial-main-thread)
-  :pathname #.(npath #p"NYXT:source;")
+  :pathname #p"NYXT:source;"
   :components ((:file "renderer/qt")))
 
 ;; We should not set the build-pathname in systems that have a component.
@@ -397,7 +386,7 @@ to go to the compilation error location."
                log4cl
                quri
                str)
-  :pathname #.(npath #p"NYXT:libraries;download-manager;")
+  :pathname #p"NYXT:libraries;download-manager;"
   :components ((:file "package")
                (:file "engine")
                (:file "native"))
@@ -413,7 +402,7 @@ to go to the compilation error location."
                serapeum
                alexandria
                cl-ppcre)
-  :pathname #.(npath #p"NYXT:libraries;analysis;")
+  :pathname #p"NYXT:libraries;analysis;"
   :components ((:file "package")
                (:file "data")
                (:file "stem")
@@ -426,13 +415,13 @@ to go to the compilation error location."
 
 (defsystem "nyxt/user-interface"
   :depends-on (spinneret)
-  :pathname #.(npath #p"NYXT:libraries;user-interface;")
+  :pathname #p"NYXT:libraries;user-interface;"
   :components ((:file "package")
                (:file "user-interface")))
 
 (defsystem "nyxt/text-buffer"
   :depends-on (cluffer)
-  :pathname #.(npath #p"NYXT:libraries;text-buffer;")
+  :pathname #p"NYXT:libraries;text-buffer;"
   :components ((:file "package")
                (:file "text-buffer")))
 
@@ -442,7 +431,7 @@ to go to the compilation error location."
                local-time
                nyxt/class-star
                trivial-package-local-nicknames)
-  :pathname #.(npath #p"NYXT:libraries;history-tree;")
+  :pathname #p"NYXT:libraries;history-tree;"
   :components ((:file "package")
                (:file "history-tree"))
   :in-order-to ((test-op (test-op "nyxt/history-tree/tests"))))
@@ -460,7 +449,7 @@ to go to the compilation error location."
                uiop
                nyxt/class-star
                serapeum)
-  :pathname #.(npath #p"NYXT:libraries;password-manager;")
+  :pathname #p"NYXT:libraries;password-manager;"
   :components ((:file "package")
                (:file "password")
                (:file "password-keepassxc")
@@ -470,7 +459,7 @@ to go to the compilation error location."
 
 (defsystem "nyxt/keymap"
   :depends-on (alexandria fset str)
-  :pathname #.(npath #p"NYXT:libraries;keymap;")
+  :pathname #p"NYXT:libraries;keymap;"
   :components ((:file "package")
                (:file "types")
                (:file "conditions")
@@ -487,7 +476,7 @@ to go to the compilation error location."
 
 (defsystem "nyxt/class-star"
   :depends-on (hu.dwim.defclass-star moptilities alexandria)
-  :pathname #.(npath #p"NYXT:libraries;class-star;")
+  :pathname #p"NYXT:libraries;class-star;"
   :components ((:file "package")
                (:file "patch")
                (:file "class-star"))
@@ -510,7 +499,7 @@ to go to the compilation error location."
                str
                trivia
                nyxt/class-star)
-  :pathname #.(npath #p"NYXT:libraries;ospm;")
+  :pathname #p"NYXT:libraries;ospm;"
   :components ((:file "package")
                (:file "scheme-syntax")
                (:file "guix-backend")
@@ -535,7 +524,7 @@ to go to the compilation error location."
                str
                trivial-package-local-nicknames
                nyxt/class-star)
-  :pathname #.(npath #p"NYXT:libraries;prompter;")
+  :pathname #p"NYXT:libraries;prompter;"
   :components ((:file "package")
                (:file "filter-preprocessor")
                (:file "filter")
@@ -554,7 +543,7 @@ to go to the compilation error location."
                serapeum
                nyxt/class-star
                cl-css)
-  :pathname #.(npath #p"NYXT:libraries;theme;")
+  :pathname #p"NYXT:libraries;theme;"
   :components ((:file "package")
                (:file "theme"))
   :in-order-to ((test-op (test-op "nyxt/theme/tests"))))

@@ -5,7 +5,12 @@
 
 (export-always 'nyxt-system)
 (defclass nyxt-system (asdf:system) ()
-  (:documentation "Specialized systems for Nyxt."))
+  (:documentation "Specialized systems for Nyxt.
+Every Nyxt system should use this class or a subclass.
+It enables features such as:
+- Togglable logical-pathnames depending on NYXT_LOGICAL_PATH.
+- Togglable executable compression with NYXT_COMPRESS.
+- Executable dependencies are made immutable for ASDF to prevent accidental reloads."))
 ;; TODO: This is how `prove' does it, not very clean.
 ;; Alternatively, we could switch package in nyxt.asd, but this seems cumbersome too.
 (import 'nyxt-system  :asdf-user)
@@ -32,9 +37,103 @@ the few modules that's not automatically included in the image."
        (remove-if (lambda (system) (uiop:string-prefix-p "nyxt" system))
                   (asdf:already-loaded-systems))))
 
+(defun set-new-translation (host logical-directory
+                            &optional (translated-directory (substitute #\/ #\; logical-directory)))
+  "Add default translations for LOGICAL-DIRECTORY (e.g. \"foo;bar;\") in HOST.
+Default translations:
+- FASL files are expanded as usual with `asdf:apply-output-translations' (should default to the ASDF cache).
+- Other files are expanded to their absolute location.
+
+This effectively makes the logical pathname behave as if it had been a physical
+pathname."
+  ;; REVIEW: Use `*load-pathname*' or `*load-truename*' instead of
+  ;; `*default-pathname-defaults*'?  We could also use
+  ;; (asdf:system-source-directory :nyxt)), but only after the definition of the
+  ;; system.
+  (let* ((logical-directory (if (uiop:string-suffix-p logical-directory ";")
+                                logical-directory
+                                (uiop:strcat logical-directory ";")))
+         (logical-path (uiop:strcat host ":" logical-directory "**;*.*.*"))
+         (logical-fasl-path (uiop:strcat host ":" logical-directory "**;*.fasl.*"))
+         (path-translation (uiop:ensure-pathname
+                            (uiop:subpathname* *default-pathname-defaults*
+                                               translated-directory)
+                            :ensure-directory t
+                            :wilden t))
+         (fasl-translation (uiop:ensure-pathname
+                            (asdf:apply-output-translations *default-pathname-defaults*)
+                            :wilden t)))
+    (if (ignore-errors (logical-pathname-translations host))
+        (flet ((set-alist (key value)
+                 (let ((pair (assoc key (logical-pathname-translations host)
+                                    :test #'string-equal)))
+                   (if pair
+                       (setf (cdr pair) (list value))
+                       (push (list key value)
+                             (logical-pathname-translations host))))))
+          (set-alist logical-path path-translation)
+          (set-alist logical-fasl-path fasl-translation))
+        (setf (logical-pathname-translations host)
+              ;; WARNING: fasl path must come first as it's more specific.
+              (list (list logical-fasl-path fasl-translation)
+                    (list logical-path path-translation))))))
+
+(defun logical-word-or-lose (word) ; From  `sb-impl::logical-word-or-lose'.
+  (declare (string word))
+  (when (string= word "")
+    (error 'namestring-parse-error
+           :complaint "Attempted to treat invalid logical hostname ~
+                       as a logical host:~%  ~S"
+           :args (list word)
+           :namestring word :offset 0))
+  (let ((word (string-upcase word)))
+    (dotimes (i (length word))
+      (let ((ch (schar word i)))
+        (unless (and (typep ch 'standard-char)
+                     (or (alpha-char-p ch) (digit-char-p ch) (char= ch #\-)))
+          (error 'namestring-parse-error
+                 :complaint "logical namestring character which ~
+                             is not alphanumeric or hyphen:~%  ~S"
+                 :args (list ch)
+                 :namestring word :offset i))))
+    (coerce word 'string)))
+
+(defun parse-logical-pathname (pathname)
+  "Return two values:
+- the host;
+- the directory."
+  (let* ((name (namestring pathname))
+         (pos (position #\: name)))
+    (when pos
+      (let ((host (subseq name 0 (position #\: name))))
+        (when (ignore-errors (logical-word-or-lose host))
+          (values host
+                  (subseq name (1+ (position #\: name)))))))))
+
+(defmethod asdf:component-relative-pathname ((system nyxt-system))
+  "If NYXT_LOGICAL_PATH environment variable is set, use logical path source
+location, otherwise use the translated path.
+
+Tools such as Emacs (SLIME and SLY) may fail to make use of logical paths, say,
+to go to the compilation error location."
+  (let ((path (call-next-method)))
+    (when path
+      (let ((final-path (let ((host (parse-logical-pathname path)))
+                          (if host
+                              (progn
+                                (set-new-translation host (subseq (namestring path) (1+ (length host))))
+                                ;; The #p reader macro expands to logical pathnames only if
+                                ;; the host is already defined, which may not be the case at
+                                ;; this point, so we remake the pathname.
+                                (make-pathname :defaults path))
+                              path))))
+        (if (uiop:getenv "NYXT_LOGICAL_PATH")
+            final-path
+            (translate-logical-pathname final-path))))))
 
 (defclass nyxt-renderer-system (asdf:system) ()
-  (:documentation "Specialized systems for Nyxt."))
+  (:documentation "Specialized systems for Nyxt with renderer dependency.
+The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
 (import 'nyxt-renderer-system  :asdf-user)
 
 (export-always '*nyxt-renderer*)
