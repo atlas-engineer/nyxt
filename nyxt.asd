@@ -7,7 +7,7 @@
   (sb-ext:assert-version->= 2 0 0)
   (require 'sb-bsd-sockets))
 
-;; WARNING: We _must_ declaire the translation host or else ASDF won't recognize
+;; WARNING: We _must_ declare the translation host or else ASDF won't recognize
 ;; the pathnames as logical-pathnames, thus returning the system directory
 ;; instead.
 (setf (logical-pathname-translations "NYXT") nil)
