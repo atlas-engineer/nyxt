@@ -1,8 +1,0 @@
-;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
-;;;; SPDX-License-Identifier: BSD-3-Clause
-
-(in-package :cl-user)
-
-(uiop:define-package keymap/tests
-  (:use #:common-lisp)
-  (:import-from #:keymap))
