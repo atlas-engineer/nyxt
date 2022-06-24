@@ -34,7 +34,10 @@ the few modules that's not automatically included in the image."
   #+sbcl
   (require :sb-sprof)
   (map () 'asdf:register-immutable-system
-       (remove-if (lambda (system) (uiop:string-prefix-p "nyxt" system))
+       (remove-if (lambda (system)
+                    ;; Ensure nyxt-asdf is immutable.
+                    (or (string= "nyxt" system)
+                        (uiop:string-prefix-p "nyxt/" system)))
                   (asdf:already-loaded-systems))))
 
 (defun set-new-translation (host logical-directory
