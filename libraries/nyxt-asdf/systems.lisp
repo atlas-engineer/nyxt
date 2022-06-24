@@ -110,7 +110,8 @@ pathname."
           (values host
                   (subseq name (1+ (position #\: name)))))))))
 
-(defmethod asdf:component-relative-pathname ((system nyxt-system))
+;; Both `nasdf:component-pathname' and `asdf:component-pathname' work, but it seems more semantically correct to specialize `asdf:component-pathname' for this.
+(defmethod asdf:component-pathname ((system nyxt-system))
   "If NYXT_LOGICAL_PATH environment variable is set, use logical path source
 location, otherwise use the translated path.
 
