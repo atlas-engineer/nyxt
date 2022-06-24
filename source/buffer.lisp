@@ -1249,8 +1249,8 @@ When BUFFER is omitted, it defaults to the current one."
 (declaim (ftype (function (url-designator &key (:buffer buffer)))
                 buffer-load))
 (defun buffer-load (url-designator &key (buffer (current-buffer)))
-  "Load INPUT-URL in BUFFER.
-URL is then transformed by BUFFER's `buffer-load-hook'."
+  "Load URL-DESIGNATOR in BUFFER.
+URL-DESIGNATOR is then transformed by BUFFER's `buffer-load-hook'."
   ;; TODO: Move all most of this code to `ffi-buffer-load :around'?
   (let* ((url (url url-designator))
          (new-url
