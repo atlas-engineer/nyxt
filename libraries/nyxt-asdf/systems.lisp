@@ -41,7 +41,8 @@ the few modules that's not automatically included in the image."
                   (asdf:already-loaded-systems))))
 
 (defun set-new-translation (host logical-directory
-                            &optional (translated-directory (substitute #\/ #\; logical-directory)))
+                            root-directory
+                            &optional (translated-directory (string-downcase (substitute #\/ #\; logical-directory))))
   "Add default translations for LOGICAL-DIRECTORY (e.g. \"foo;bar;\") in HOST.
 Default translations:
 - FASL files are expanded as usual with `asdf:apply-output-translations' (should default to the ASDF cache).
@@ -49,22 +50,18 @@ Default translations:
 
 This effectively makes the logical pathname behave as if it had been a physical
 pathname."
-  ;; REVIEW: Use `*load-pathname*' or `*load-truename*' instead of
-  ;; `*default-pathname-defaults*'?  We could also use
-  ;; (asdf:system-source-directory :nyxt)), but only after the definition of the
-  ;; system.
   (let* ((logical-directory (if (uiop:string-suffix-p logical-directory ";")
                                 logical-directory
                                 (uiop:strcat logical-directory ";")))
          (logical-path (uiop:strcat host ":" logical-directory "**;*.*.*"))
          (logical-fasl-path (uiop:strcat host ":" logical-directory "**;*.fasl.*"))
          (path-translation (uiop:ensure-pathname
-                            (uiop:subpathname* *default-pathname-defaults*
+                            (uiop:subpathname* root-directory
                                                translated-directory)
                             :ensure-directory t
                             :wilden t))
          (fasl-translation (uiop:ensure-pathname
-                            (asdf:apply-output-translations *default-pathname-defaults*)
+                            (asdf:apply-output-translations root-directory)
                             :wilden t)))
     (if (ignore-errors (logical-pathname-translations host))
         (flet ((set-alist (key value)
@@ -124,7 +121,9 @@ to go to the compilation error location."
       (let ((final-path (let ((host (parse-logical-pathname path)))
                           (if host
                               (progn
-                                (set-new-translation host (subseq (namestring path) (1+ (length host))))
+                                (set-new-translation host
+                                                     (subseq (namestring path) (1+ (length host)))
+                                                     (asdf:system-source-directory system))
                                 ;; The #p reader macro expands to logical pathnames only if
                                 ;; the host is already defined, which may not be the case at
                                 ;; this point, so we remake the pathname.
