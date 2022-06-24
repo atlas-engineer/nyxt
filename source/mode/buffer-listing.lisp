@@ -85,7 +85,7 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                  (unless (nyxt::buffer-parent buffer)
                    (buffer-tree->html buffer)))))))))
 
-(nyxt::define-panel-global buffers ()
+(define-panel-command-global buffers-panel ()
     (panel-buffer "*Buffers panel*")
   "Display a list of buffers with easy switching."
   (flet ((buffer-markup (buffer)
@@ -107,7 +107,7 @@ With LINEAR-VIEW-P, list buffers linearly instead."
        (:h1 "Buffers")
        (:button :class "button"
                 :onclick (ps:ps (nyxt/ps:lisp-eval
-                                 (:title "reload-buffer")
+                                 (:title "reload-buffer" :buffer panel-buffer)
                                  (reload-buffers
                                   (list
                                    (find

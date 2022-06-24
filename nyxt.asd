@@ -164,6 +164,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "dom")
                  (:file "buffer")
                  (:file "window")
+                 (:file "panel")
                  (:file "mode")
                  (:file "search-engine")
                  (:file "browser")
