@@ -380,6 +380,8 @@
 ;; Library subsystems:
 
 (defsystem "nyxt/download-manager"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (calispel
                cl-ppcre
                dexador
@@ -398,6 +400,8 @@
   :components ((:nyxt-online-test "libraries/download-manager/tests/" )))
 
 (defsystem "nyxt/analysis"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (str
                serapeum
                alexandria
@@ -414,18 +418,24 @@
                (:file "section")))
 
 (defsystem "nyxt/user-interface"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (spinneret)
   :pathname #p"NYXT:libraries;user-interface;"
   :components ((:file "package")
                (:file "user-interface")))
 
 (defsystem "nyxt/text-buffer"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (cluffer)
   :pathname #p"NYXT:libraries;text-buffer;"
   :components ((:file "package")
                (:file "text-buffer")))
 
 (defsystem "nyxt/history-tree"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (alexandria
                cl-custom-hash-table
                local-time
@@ -442,6 +452,8 @@
   :components ((:nyxt-test "libraries/history-tree/tests/")))
 
 (defsystem "nyxt/password-manager"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (bordeaux-threads
                cl-ppcre
                str
@@ -458,6 +470,8 @@
                (:file "password-pass")))
 
 (defsystem "nyxt/keymap"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (alexandria fset str)
   :pathname #p"NYXT:libraries;keymap;"
   :components ((:file "package")
@@ -475,6 +489,8 @@
                (:nyxt-test "libraries/keymap/tests/")))
 
 (defsystem "nyxt/class-star"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (hu.dwim.defclass-star moptilities alexandria)
   :pathname #p"NYXT:libraries;class-star;"
   :components ((:file "package")
@@ -488,6 +504,8 @@
   :components ((:nyxt-test "libraries/class-star/tests/")))
 
 (defsystem "nyxt/ospm"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (alexandria
                calispel
                cl-ppcre
@@ -514,6 +532,8 @@
                (:nyxt-test "libraries/ospm/tests/tests")))
 
 (defsystem "nyxt/prompter"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (alexandria
                calispel
                cl-containers
@@ -539,6 +559,8 @@
                (:nyxt-test "libraries/prompter/tests/")))
 
 (defsystem "nyxt/theme"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (alexandria
                serapeum
                nyxt/class-star
