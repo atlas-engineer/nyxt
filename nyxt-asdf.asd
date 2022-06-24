@@ -1,9 +1,6 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-;; (load "nyxt-asdf-utils")
-;; (nyxt-asdf-utils:set-new-translation "NYXT" "nyxt-asdf")
-
 (defsystem "nyxt-asdf"
   :version "1.0.0"
   :author "Atlas Engineer LLC"
