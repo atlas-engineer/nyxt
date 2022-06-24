@@ -61,7 +61,9 @@ pathname."
                             :ensure-directory t
                             :wilden t))
          (fasl-translation (uiop:ensure-pathname
-                            (asdf:apply-output-translations root-directory)
+                            (asdf:apply-output-translations
+                             (uiop:subpathname* root-directory
+                                                translated-directory))
                             :wilden t)))
     (if (ignore-errors (logical-pathname-translations host))
         (flet ((set-alist (key value)
@@ -72,7 +74,10 @@ pathname."
                        (push (list key value)
                              (logical-pathname-translations host))))))
           (set-alist logical-path path-translation)
-          (set-alist logical-fasl-path fasl-translation))
+          (set-alist logical-fasl-path fasl-translation)
+          ;; Return this for consistency:
+          (list (list logical-fasl-path fasl-translation)
+                (list logical-path path-translation)))
         (setf (logical-pathname-translations host)
               ;; WARNING: fasl path must come first as it's more specific.
               (list (list logical-fasl-path fasl-translation)
