@@ -35,6 +35,7 @@ to set and use the socket without parsing any file.  Instead, the socket can be
 set from the corresponding command line option or the NYXT_SOCKET environment
 variable.")
 
+;; TODO: Remove `nyxt-config-file'.
 (export-always 'nyxt-config-file)
 (defun nyxt-config-file (&optional subpath)
   "Return SUBPATH relative to `*config-file*'.

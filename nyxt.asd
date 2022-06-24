@@ -12,6 +12,13 @@
 ;; instead.
 (setf (logical-pathname-translations "NYXT") nil)
 
+(defsystem nyxt/user
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-user-system
+  :description "Parent system of user systems.
+It is required that all Nyxt user-defined systems start with nyxt/user/ to avoid clashes.
+This system does nothing in particular.")
+
 (defsystem "nyxt"
   :defsystem-depends-on (nyxt-asdf)
   :class :nyxt-system
