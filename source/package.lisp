@@ -44,7 +44,8 @@ modes, commands, etc."))
           (:lpara :lparallel)
           (:class* :hu.dwim.defclass-star)
           (:hooks :nhooks)
-          (:files :nfiles))
+          (:files :nfiles)
+          (:keymaps :nkeymaps))
         :do (trivial-package-local-nicknames:add-package-local-nickname nickname package :nyxt)))
 
 (defmacro nyxt::use-nyxt-package-nicknames (&optional (package *package*))
@@ -124,3 +125,4 @@ and `serapeum:':
 
 (trivial-package-local-nicknames:add-package-local-nickname :hooks :nhooks :nyxt-user)
 (trivial-package-local-nicknames:add-package-local-nickname :files :nfiles :nyxt-user)
+(trivial-package-local-nicknames:add-package-local-nickname :keymaps :nkeymaps :nyxt-user)
