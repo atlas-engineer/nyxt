@@ -392,7 +392,8 @@ guarantee of the same result."
   "Request the lisp: URL and invoke CALLBACK when there's a successful result.
 BUFFER must be a `document-buffer'.
 TITLE is purely informative."
-  ;; We define it here and not in parenscript-macro because we
+  ;; We define it here and not in parenscript-macro because we need
+  ;; `nyxt::lisp-url-callbacks' while parenscript-macro is Nyxt-independent.
   `(let ((url (ps:lisp (let ((request-id (string (gensym ""))))
                              (setf (gethash request-id (nyxt::lisp-url-callbacks ,buffer))
                                    (lambda () ,@form))
