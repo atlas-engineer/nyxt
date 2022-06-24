@@ -1,8 +1,12 @@
 Usage:
 
     make all                 # Create Nyxt.
-    make install             # Install Nyxt.
+    make web-extensions      # Build the _experimental_ library to enable WebExtension support.
+    make install             # Install Nyxt (and the WebExtension library if built).
     make doc                 # Generate Nyxt documentation (as a fallback).
+
+WARNING: WebExtension support is not included by default because it's unfinished
+and possibly prone to security issues.  Use at your own risk!
 
 Set DESTDIR to change the target destination.  It should be
 an absolute path.

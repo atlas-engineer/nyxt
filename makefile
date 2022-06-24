@@ -58,9 +58,9 @@ install-app-bundle:
 	cp -r Nyxt.app $(DESTDIR)/Applications
 
 .PHONY: all
-all: nyxt web-extensions
+all: nyxt
 ifeq ($(UNAME), Darwin)
-all: nyxt web-extensions app-bundle
+all: nyxt app-bundle
 endif
 
 .PHONY: install
