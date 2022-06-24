@@ -197,9 +197,9 @@ See `find-internal-page-buffer'."))
        page
        `(lambda (,@arglist)
           ,@(when documentation (list documentation))
-          (declare (ignorable ,@(alex:mappend #'cdar keywords)))
+          (declare (ignorable ,@(mappend #'cdar keywords)))
           (set-current-buffer
-           (buffer-load (nyxt-url (name ,page) ,@(alex:mappend #'first keywords))
+           (buffer-load (nyxt-url (name ,page) ,@(mappend #'first keywords))
                         :buffer (ensure-internal-page-buffer (name ,page)))))))))
 
 (defmethod initialize-instance :after ((page internal-page) &key form &allow-other-keys)
@@ -293,7 +293,7 @@ Only keyword arguments are accepted."
                       title
                       (let ((keywords (nth-value 3 (alex:parse-ordinary-lambda-list arglist))))
                         `(lambda (,@arglist)
-                           (declare (ignorable ,@(alex:mappend #'cdar keywords)))
+                           (declare (ignorable ,@(mappend #'cdar keywords)))
                            ,title))))
            (setf (form gf) wrapped-body))))))
 

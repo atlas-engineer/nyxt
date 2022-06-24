@@ -495,7 +495,7 @@ Return the lambda s-expression as a second value, if possible."
            (let ((,args (append (list ,@required)
                                 (list ,@optional)
                                 ,rest
-                                (list ,@(alex:mappend #'first keyword)))))
+                                (list ,@(mappend #'first keyword)))))
              (alex:ensure-gethash
               ,args ,memo-table
               (apply (lambda ,params

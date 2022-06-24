@@ -296,7 +296,7 @@ For production code, see `find-submode' instead."
    (prompter:multi-selection-p t)
    (prompter:constructor (lambda (source)
                            (delete-duplicates
-                            (alex:mappend
+                            (mappend
                              #'modes
                              (uiop:ensure-list (buffers source)))
                             :test (lambda (i y) (eq (sera:class-name-of i)

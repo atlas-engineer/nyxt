@@ -48,12 +48,12 @@ The main difference is that their command toggles the panel."))
        page
        `(lambda (,@arglist)
           ,@(when documentation (list documentation))
-          (declare (ignorable ,@(alex:mappend #'cdar keywords)))
+          (declare (ignorable ,@(mappend #'cdar keywords)))
           (alex:if-let ((panel-buffer (find-panel-buffer (name ,page))))
             (window-delete-panel-buffer (current-window) panel-buffer)
             (window-add-panel-buffer
              (current-window)
-             (buffer-load (nyxt-url (name ,page) ,@(alex:mappend #'first keywords))
+             (buffer-load (nyxt-url (name ,page) ,@(mappend #'first keywords))
                           :buffer (make-instance 'panel-buffer))
              :left)))))))
 
@@ -96,7 +96,7 @@ mapped to query parameters."
                       title
                       (let ((keywords (nth-value 3 (alex:parse-ordinary-lambda-list arglist))))
                         `(lambda (,@arglist)
-                           (declare (ignorable ,@(alex:mappend #'cdar keywords)))
+                           (declare (ignorable ,@(mappend #'cdar keywords)))
                            ,title))))
            (setf (slot-value #',name 'side) ,side)
            (setf (form gf) wrapped-body))))))

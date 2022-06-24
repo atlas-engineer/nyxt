@@ -315,7 +315,7 @@ See `package-symbols' for details on the arguments."
                         (user-packages (nyxt-user-packages)))
   "Return the list of all slot symbols in PACKAGES and USER-PACKAGES.
 See `package-symbols' for details on the arguments."
-  (alex:mappend (lambda (class-sym)
+  (mappend (lambda (class-sym)
                   (mapcar (lambda (slot) (make-instance 'slot
                                                         :name slot
                                                         :class-sym class-sym))

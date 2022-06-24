@@ -132,7 +132,7 @@ User input is evaluated Lisp."
        (multiple-value-match (parse-function-lambda-list-types (slot-value command 'fn))
          ((required-types optional-types _ keyword-types)
           (flet ((parse-args (params)
-                   (alex:mappend
+                   (mappend
                     (lambda-match
                       ((cons (and param (type symbol)) type)
                        (list (prompt-argument param type)))
@@ -145,7 +145,7 @@ User input is evaluated Lisp."
             (setf (last-access command) (local-time:now))
             (run-async
              command
-             (alex:mappend #'parse-args
+             (mappend #'parse-args
                            (list (pairlis required-arguments required-types)
                                  (pairlis optional-arguments optional-types)
                                  (pairlis keyword-arguments (mapcar #'second keyword-types))))))))))))

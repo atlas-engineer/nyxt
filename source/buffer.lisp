@@ -1392,7 +1392,7 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
               (list (make-instance 'new-url-query
                                    :query       input
                                    :check-dns-p check-dns-p)))
-            (or (alex:mappend (lambda (engine)
+            (or (mappend (lambda (engine)
                                 (append
                                  (list (make-instance 'new-url-query
                                                       :query       (str:join " " (rest terms))
@@ -1472,7 +1472,7 @@ any.")
    (list (make-instance 'new-url-or-search-source :return-actions return-actions)
          (make-instance 'global-history-source :return-actions return-actions)
          (make-instance 'search-engine-url-source :return-actions return-actions))
-   (alex:mappend (rcurry #'url-sources return-actions) (modes buffer))))
+   (mappend (rcurry #'url-sources return-actions) (modes buffer))))
 
 (define-command set-url (&key (prefill-current-url-p t))
   "Set the URL for the current buffer, completing with history."

@@ -352,7 +352,7 @@ guarantee of the same result."
                                (read-from-string (str:upcase symbol)))))
     (if (gethash internal-page-name *nyxt-url-commands*)
         (values internal-page-name
-                (alex:mappend (lambda (pair)
+                (mappend (lambda (pair)
                                 (let ((key (intern (str:upcase (first pair)) :keyword))
                                       (value (if (str:starts-with-p +escape+ (rest pair))
                                                  (read-from-string (subseq (rest pair) 1))

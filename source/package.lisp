@@ -24,7 +24,7 @@ modes, commands, etc."))
 (sb-ext:lock-package :nyxt)
 
 (in-package :nyxt)
-(defvar *imports* '((:alexandria :compose :curry :rcurry)
+(defvar *imports* '((:alexandria :compose :curry :mappend :rcurry)
                     (:trivia :match :multiple-value-match :lambda-match :guard)
                     (:keymap :define-key :define-scheme)
                     (:class-star :define-class)
