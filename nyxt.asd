@@ -78,7 +78,7 @@
                nyxt/theme)
   :pathname #p"NYXT:source;"
   :components ((:file "utilities")
-               (:file "package")
+               (:file "package" :depends-on ("utilities"))
                (:module "Utilities"
                 :pathname ""
                 :depends-on ("package")
