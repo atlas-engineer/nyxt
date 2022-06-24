@@ -72,7 +72,7 @@ Consider porting your configuration to ~a."
   "The configuration file entry point.")
 
 (define-class nyxt-source-directory (nyxt-file)
-  ((files:base-path asdf-user::*dest-source-dir*)
+  ((files:base-path nyxt-asdf:*dest-source-dir*)
    (files:name "source"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))

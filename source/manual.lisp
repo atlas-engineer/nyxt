@@ -3,6 +3,7 @@
 
 (in-package :nyxt)
 
+(export-always 'manual-content)
 (defun manual-content ()
   (str:concat
    (spinneret:with-html-string
