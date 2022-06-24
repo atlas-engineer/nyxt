@@ -116,7 +116,7 @@ chosen suggestions inside brackets.")
                :color theme:on-primary))
             :documentation "The CSS applied to a prompt-buffer when it is set-up.")
      (override-map (make-keymap "override-map")
-                   :type keymap:keymap
+                   :type keymaps:keymap
                    :documentation "Keymap that takes precedence over all modes' keymaps.
 See `buffer's `override-map' for more details."))
     (:export-class-name-p t)

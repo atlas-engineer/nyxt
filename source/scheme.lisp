@@ -13,7 +13,7 @@
 (trivial-package-local-nicknames:add-package-local-nickname :scheme :nyxt/scheme :nyxt)
 (in-package :nyxt/scheme)
 
-;; Setting `keymap:keymap' bound-value type to something like `function-symbol'
+;; Setting `nkeymaps:keymap' bound-value type to something like `function-symbol'
 ;; is not practical because functions defined in the same file as the keymap are
 ;; not `fboundp' at compile-time.
 ;;
@@ -23,11 +23,11 @@
 (export-always 'nyxt-keymap-value)
 #+nyxt-debug-keymap
 (deftype nyxt-keymap-value ()
-  '(or keymap:keymap nyxt:function-symbol nyxt::command))
+  '(or nkeymaps:keymap nyxt:function-symbol nyxt::command))
 
 #-nyxt-debug-keymap
 (deftype nyxt-keymap-value ()
-  '(or keymap:keymap t))
+  '(or nkeymaps:keymap t))
 
 (export-always 'make-scheme-name)
 (defun make-scheme-name (name &rest parents)
@@ -40,8 +40,8 @@ Example:
 
 In the above, we define a new scheme name called `emacs` which inherits from the
 existing name `cua`."
-  (the (values keymap:scheme-name &optional)
-       (make-instance 'keymap:scheme-name
+  (the (values nkeymaps:scheme-name &optional)
+       (make-instance 'nkeymaps:scheme-name
                       :name name
                       :parents parents
                       :bound-type 'nyxt-keymap-value)))

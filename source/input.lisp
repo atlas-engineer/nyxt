@@ -18,23 +18,23 @@
          (keymaps (cons (override-map buffer)
                         (delete nil (mapcar #'keymap modes)))))
     (unwind-protect
-         (or (first (keymap:binding-keys fn keymaps))
+         (or (first (keymaps:binding-keys fn keymaps))
              "UNBOUND")
       (unless current-buffer
         (buffer-delete buffer)))))
 
-(-> make-keymap (string &rest keymap:keymap) keymap:keymap)
+(-> make-keymap (string &rest keymaps:keymap) keymaps:keymap)
 (export-always 'make-keymap)
 (defun make-keymap (name &rest parents)
-  "Like `keymap:make-keymap' but only allow binding function symbols, commands
+  "Like `keymaps:make-keymap' but only allow binding function symbols, commands
 or keymaps.
 
 Example:
 
 \(defvar *my-keymap* (make-keymap \"my-map\")
   \"My keymap.\")"
-  (let ((keymap (apply #'keymap:make-keymap name parents)))
-    (setf (keymap:bound-type keymap) 'scheme:nyxt-keymap-value)
+  (let ((keymap (apply #'keymaps:make-keymap name parents)))
+    (setf (keymaps:bound-type keymap) 'scheme:nyxt-keymap-value)
     keymap))
 
 (export-always 'current-keymaps)
@@ -63,24 +63,24 @@ prompt-buffer keymaps."
                 (delete nil (mapcar #'keymap (modes buffer-or-prompt-buffer))))
               (delete nil (list buffer (current-prompt-buffer))))))))
 
-(-> pointer-event-p (keymap:key) boolean)
+(-> pointer-event-p (keymaps:key) boolean)
 (defun pointer-event-p (key)
   "Return non-nil if key-chord is a pointer event, e.g. a mouton button click."
-  (coerce (str:starts-with? "button" (keymap:key-value key))
+  (coerce (str:starts-with? "button" (keymaps:key-value key))
           'boolean))
 
 (defun keyspecs-without-keycode (keys)
-  (keymap:keys->keyspecs
-   (mapcar (lambda (key) (keymap:copy-key key :code 0))
+  (keymaps:keys->keyspecs
+   (mapcar (lambda (key) (keymaps:copy-key key :code 0))
            keys)))
 
 (export-always 'keyspecs-with-optional-keycode)
 (defun keyspecs-with-optional-keycode (keys) ; TODO: Remove "optional" from name.
-  "Like `keymap:keyspecs' but displayes keys with keycodes like this:
+  "Like `keymaps:keyspecs' but displayes keys with keycodes like this:
 KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
   (let ((no-code-specs (keyspecs-without-keycode keys)))
-    (if (find-if (complement #'zerop) keys :key #'keymap:key-code)
-        (format nil "~s [~a]" no-code-specs (keymap:keys->keyspecs keys))
+    (if (find-if (complement #'zerop) keys :key #'keymaps:key-code)
+        (format nil "~s [~a]" no-code-specs (keymaps:keys->keyspecs keys))
         (format nil "~s" no-code-specs))))
 
 (export-always 'dispatch-command)
@@ -119,10 +119,10 @@ Return nil to forward to renderer or non-nil otherwise."
         (t
          (multiple-value-bind (bound-function matching-keymap translated-key)
              (the scheme:nyxt-keymap-value
-                  (keymap:lookup-key key-stack (current-keymaps)))
+                  (keymaps:lookup-key key-stack (current-keymaps)))
            (declare (ignore matching-keymap))
            (cond
-             ((keymap:keymap-p bound-function)
+             ((keymaps:keymap-p bound-function)
               (echo "Pressed keys: ~a" (keyspecs-without-keycode key-stack))
               (log:debug "Prefix binding ~a" (keyspecs key-stack translated-key))
               t)

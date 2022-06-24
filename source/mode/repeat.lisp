@@ -98,7 +98,7 @@ Function taking a `repeat-mode' instance.")))
     (&key (times (or
                   (ignore-errors
                    (parse-integer
-                    (keymap:key-value (nyxt::last-key (current-window)))))
+                    (keymaps:key-value (nyxt::last-key (current-window)))))
                   (ignore-errors
                    (parse-integer
                     (prompt1 :prompt "Repeat for X times"

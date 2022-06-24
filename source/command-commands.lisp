@@ -13,11 +13,11 @@
 
 (defun command-attributes (command &optional (buffer (active-buffer (current-window :no-rescan))))
   (let* ((scheme-name (keymap-scheme-name buffer))
-         (bindings (keymap:binding-keys
+         (bindings (keymaps:binding-keys
                     (name command)
                     (delete nil
                             (mapcar (lambda (mode)
-                                      (keymap:get-keymap scheme-name (keymap-scheme mode)))
+                                      (keymaps:get-keymap scheme-name (keymap-scheme mode)))
                                     (modes buffer))))))
     `(("Name" ,(string-downcase (closer-mop:generic-function-name command)))
       ("Bindings" ,(format nil "~{~a~^, ~}" bindings))

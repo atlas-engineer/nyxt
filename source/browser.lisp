@@ -377,10 +377,10 @@ First URL is focused if NO-FOCUS is nil."
 (defun scheme-keymap (buffer buffer-scheme)
   "Return the keymap in BUFFER-SCHEME corresponding to the BUFFER `keymap-scheme-name'.
 If none is found, fall back to `scheme:cua'."
-  (or (keymap:get-keymap (keymap-scheme-name buffer)
-                         buffer-scheme)
-      (keymap:get-keymap scheme:cua
-                         buffer-scheme)))
+  (or (keymaps:get-keymap (keymap-scheme-name buffer)
+                          buffer-scheme)
+      (keymaps:get-keymap scheme:cua
+                          buffer-scheme)))
 
 (defun request-resource-open-url (&key url buffer &allow-other-keys)
   (make-buffer :url url :parent-buffer buffer))
