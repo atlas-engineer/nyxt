@@ -341,31 +341,6 @@ Call this function from your initialization file to re-enable the default ASDF r
           asdf/source-registry:default-system-source-registry))
   (asdf:clear-configuration))
 
-;; TODO: Remove `load-after-system'!
-(export-always 'load-after-system)
-(defun load-after-system (system &optional file)
-  "Load Common Lisp SYSTEM, then on success load FILE.
-Use Quicklisp if possible.
-See also `reset-asdf-registries'.
-
-Example:
-
-  (load-after-system :xyz \"configure-xyz.lisp\")"
-  (flet ((load-system (system)
-           (handler-case
-               (progn
-                 #+quicklisp
-                 (ql:quickload system :silent t)
-                 #-quicklisp
-                 (asdf:load-system system))
-             (error (c)
-               (echo-warning "Could not load system ~a: ~a" system c)
-               (log:warn "Maybe you want to use `reset-asdf-registries'?")
-               (log:warn "Current ASDF registries: ~{~a~^, ~}"
-                         asdf:*default-source-registries*)
-               nil))))
-    (when (and (load-system system) file)
-      (load file))))
 
 
 ;; TODO: Report compilation errors.
