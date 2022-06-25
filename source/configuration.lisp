@@ -344,11 +344,12 @@ Call this function from your initialization file to re-enable the default ASDF r
 
 
 ;; TODO: Report compilation errors.
-;; TODO: Enable lazy loading.
 
 (defclass nyxt-user-system (asdf:system) ()
   (:documentation "Specialized systems for Nyxt users.
 This automatically default :pathname to the `*config-file*' directory."))
+
+(defvar *nyxt-user-systems-with-missing-dependencies* '())
 
 (defmethod asdf:component-pathname ((system nyxt-user-system))
   "Default to `config-directory-file'."
@@ -358,17 +359,31 @@ This automatically default :pathname to the `*config-file*' directory."))
 
 (defun load-system* (system &rest keys &key force force-not verbose version &allow-other-keys)
   "Like `asdf:load-system' but, instead of signaling an error on missing
-dependency, it warns the user and skips the load gracefully."
+dependency, it warns the user, skips the load gracefully and returns NIL.
+
+When loading succeeds, it goes through the list of all the systems that failed
+to load and attempts to load them if their dependencies now seem to be met."
   ;; TODO: Ideally we would make this the default behaviour of
   ;; `nyxt-user-system' by specializing a method Unfortunately
   ;; `resolve-dependency-name' is a function and `find-component' is called
   ;; against the `depends-on' element but not the system itself.
   (declare (ignore force force-not verbose version))
-  (flet ((report (c)
-           (echo-warning "Could not load system ~a: ~a" system c)))
-    (handler-bind ((asdf:missing-dependency #'report)
-                   (asdf:missing-dependency-of-version #'report))
-      (apply #'asdf:load-system system keys))))
+  (block done
+    (flet ((report (c)
+             (pushnew (asdf:coerce-name system) *nyxt-user-systems-with-missing-dependencies*
+                      :test #'string=)
+             (echo-warning "Could not load system ~a: ~a" system c)
+             (return-from done nil)))
+      (handler-bind ((asdf:missing-dependency #'report)
+                     (asdf:missing-dependency-of-version #'report))
+        (prog1 (apply #'asdf:load-system system keys)
+          (alex:removef *nyxt-user-systems-with-missing-dependencies*
+                        system
+                        :test #'string=)
+          (dolist (system *nyxt-user-systems-with-missing-dependencies*)
+            (when (every (rcurry #'asdf:find-system nil) (asdf:system-depends-on (asdf:find-system system)))
+              (log:info "Load system ~s" system)
+              (load-system* system))))))))
 
 (defun ensure-component (component-designator)
   (if (consp component-designator)
