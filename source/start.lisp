@@ -35,22 +35,6 @@ to set and use the socket without parsing any file.  Instead, the socket can be
 set from the corresponding command line option or the NYXT_SOCKET environment
 variable.")
 
-;; TODO: Remove `nyxt-config-file'.
-(export-always 'nyxt-config-file)
-(defun nyxt-config-file (&optional subpath)
-  "Return SUBPATH relative to `*config-file*'.
-Return #p\"\" if `*config-file*' expands to #p\"\".
-
-The .lisp extension is automatically appended.
-
-For instance, if we want to load some Slynk configuration code that lives in
-/PATH/TO/NYXT/CONFIG/DIRECTORY/my-slink.lisp:
-
-  (load-after-system :slynk (nyxt-config-file \"my-slink\"))"
-  (if subpath
-      (files:expand (make-instance 'config-directory-file :base-path subpath))
-      (files:expand *config-file*)))
-
 (defun handle-malformed-cli-arg (condition)
   (format t "Error parsing argument ~a: ~a.~&" (opts:option condition) condition)
   (opts:describe)

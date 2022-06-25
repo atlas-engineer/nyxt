@@ -394,8 +394,7 @@ be configured in the respective configuration files.
 #+begin_src lisp
 (load (merge-pathnames #p"quicklisp/setup.lisp" (user-homedir-pathname)))
 (ql:quickload 'slynk)
-;; Note: (nyxt-config-file) points to path/to/your/nyxt/config/directory
-(load-after-system :slynk (nyxt-config-file "my-slynk.lisp"))
+(define-nyxt-user-system-and-load :depends-on (slynk) :components ("my-slynk"))
 #+end_src
 
 2. Create a file called =my-slynk.lisp= where you will specify your
@@ -455,7 +454,7 @@ server with the following steps.
 #+end_src
 
 2. Create a file called =my-slynk.lisp= in your Nyxt configuration directory
-   (see =(nyxt-config-file)= where you will create a =start-slynk= command.
+   where you will create a =start-slynk= command.
 
 #+NAME: nyxt/my-slynk.lisp
 #+begin_src lisp
