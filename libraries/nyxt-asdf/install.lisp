@@ -120,7 +120,7 @@ If Git is not found, fall back to copying everything except files of type in `ex
   (copy-file file dest))
 
 (export-always 'copy-directory)
-(defun copy-directory (source destination &key verbose-p) ; REVIEW: Unused, but seem quite useful.
+(defun copy-directory (source destination &key (exclude-types '("fasl")) verbose-p) ; REVIEW: Unused, but seem quite useful.
   "Copy the content (the file tree) of SOURCE to DESTINATION."
   (when verbose-p
     (logger "copy ~s/* inside ~s." source destination))
@@ -130,7 +130,7 @@ If Git is not found, fall back to copying everything except files of type in `ex
    t
    (lambda (subdirectory)
      (mapc (lambda (file)
-             (unless (member (pathname-type file) '("o" "fasl") :test 'equalp)
+             (unless (member (pathname-type file) exclude-types :test 'equalp)
                (let ((destination-file
                        (merge-pathnames*
                         (subpathp file (ensure-directory-pathname source))
