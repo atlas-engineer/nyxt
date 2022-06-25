@@ -61,7 +61,7 @@ A naive benchmark on a 16 Mbps bandwidth gives us
                    "-C" (namestring (system-source-directory component))
                    "submodule" "update" "--init" "--force"
                    "--jobs" (write-to-string *submodules-jobs*))))
-    (format *error-output* "~&; running ~s~&" cmd)
+    (logger "running ~s" cmd)
     (run-program cmd
                  :ignore-error-status t
                  :output t

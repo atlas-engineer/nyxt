@@ -116,7 +116,7 @@ If Git is not found, fall back to copying everything except files of type in `ex
 (defun copy-directory (source destination &key verbose-p) ; REVIEW: Unused, but seem quite useful.
   "Copy the content (the file tree) of SOURCE to DESTINATION."
   (when verbose-p
-    (format *error-output* "~&; copy ~s/* inside ~s.~%" source destination))
+    (logger "copy ~s/* inside ~s." source destination))
   (collect-sub*directories
    (ensure-directory-pathname source)
    (constantly t)
@@ -139,8 +139,8 @@ If Git is not found, fall back to copying everything except files of type in `ex
                (progn
                  (install-file input output)
                  ;; (format *error-output* "~&; installing file~%;  ~s~%; to~%;  ~s~%" source dest) ; Too verbose?
-                 (format *error-output* "~&; installed ~s~%" output))
-               (format *error-output* "~&; skipped missing ~s~%" output)))
+                 (logger "installed ~s" output))
+               (logger "skipped ~s" output)))
   nil)
 
 (defmethod asdf:output-files ((op asdf:compile-op) (c nyxt-file))

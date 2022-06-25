@@ -9,6 +9,7 @@
   :license "BSD 3-Clause"
   :pathname #p"libraries/nyxt-asdf/"
   :components ((:file "package")
+               (:file "log")
                (:file "nyxt-asdf")
                (:file "install")
                (:file "submodules")
