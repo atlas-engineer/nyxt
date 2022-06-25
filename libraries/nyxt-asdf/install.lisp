@@ -3,7 +3,14 @@
 
 (in-package :nyxt-asdf)
 
-(defclass nyxt-file (asdf:static-file) ()
+(defclass nyxt-file (asdf:static-file)
+  ((if-does-not-exist
+    :initform :error
+    :initarg :if-does-not-exist
+    :type (member :error nil)
+    :documentation "What to do when input file is missing:
+- `:error': Signal an error.
+- `nil': Skip it."))
   (:documentation "Component type for files to install."))
 (import 'nyxt-file :asdf-user)
 
@@ -93,8 +100,10 @@ If Git is not found, fall back to copying everything except files of type in `ex
 
 (export-always 'make-executable)
 (defun make-executable (file)
+  "Does nothing if files does not exist."
   ;; TODO: Use iolib/os:file-permissions instead of chmod?  Too verbose?
-  (run-program (list *chmod-program* *chmod-executable-arg* (native-namestring file))))
+  (when (file-exists-p file)
+    (run-program (list *chmod-program* *chmod-executable-arg* (native-namestring file)))))
 
 (export-always 'install-file)
 (defun install-file (file dest)
@@ -125,9 +134,13 @@ If Git is not found, fall back to copying everything except files of type in `ex
 (defmethod asdf:perform ((op asdf:compile-op) (c nyxt-file)) ; REVIEW: load-op?
   (loop for input in (asdf:input-files op c)
         for output in (asdf:output-files op c)
-        do (install-file input output)
-           ;; (format *error-output* "~&; installing file~%;  ~s~%; to~%;  ~s~%" source dest)
-           (format *error-output* "~&; installed ~s~%" output))
+        do (if (or (file-exists-p input)
+                   (slot-value c 'if-does-not-exist))
+               (progn
+                 (install-file input output)
+                 ;; (format *error-output* "~&; installing file~%;  ~s~%; to~%;  ~s~%" source dest) ; Too verbose?
+                 (format *error-output* "~&; installed ~s~%" output))
+               (format *error-output* "~&; skipped missing ~s~%" output)))
   nil)
 
 (defmethod asdf:output-files ((op asdf:compile-op) (c nyxt-file))

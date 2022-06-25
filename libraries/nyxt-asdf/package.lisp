@@ -17,6 +17,7 @@
    #:ensure-all-directories-exist
    #:ensure-directory-pathname
    #:ensure-pathname
+   #:file-exists-p
    #:getenv
    #:inter-directory-separator
    #:merge-pathnames*

@@ -373,7 +373,8 @@
   :components ((:nyxt-desktop-file "assets/nyxt.desktop")
                (:nyxt-icon-directory "assets/")
                (:nyxt-binary-file "nyxt")
-               (:nyxt-library-file "libraries/web-extensions/libnyxt.so")
+               (:nyxt-library-file "libraries/web-extensions/libnyxt.so"
+                                   :if-does-not-exist nil)
                (:nyxt-source-directory "source")
                (:nyxt-source-directory "nyxt-asdf")
                (:nyxt-source-directory "libraries"
