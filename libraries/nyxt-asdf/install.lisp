@@ -158,7 +158,11 @@ If Git is not found, fall back to copying everything except files of type in `ex
   nil)
 
 (defmethod asdf:output-files ((op asdf:compile-op) (c nyxt-library-file))
-  (values (list (uiop:merge-pathnames* (basename (asdf:component-name c)) *libdir*))
+  ;; REVIEW: This forces all libraries to lib/nyxt/* because the nyxt
+  ;; subdirectory is required for WebKit extensions.  If some day we ship other,
+  ;; non-extension libraries, they should probably be installed to another
+  ;; directory.
+  (values (list (uiop:merge-pathnames* (basename (asdf:component-name c)) *nyxt-libdir*))
           t))
 
 (defmethod asdf:output-files ((op asdf:compile-op) (c nyxt-desktop-file))
