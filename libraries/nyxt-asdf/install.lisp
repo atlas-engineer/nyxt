@@ -119,25 +119,6 @@ If Git is not found, fall back to copying everything except files of type in `ex
    (list (directory-namestring dest)))
   (copy-file file dest))
 
-(export-always 'copy-directory)
-(defun copy-directory (source destination &key (exclude-types '("fasl")) verbose-p) ; REVIEW: Unused, but seem quite useful.
-  "Copy the content (the file tree) of SOURCE to DESTINATION."
-  (when verbose-p
-    (logger "copy ~s/* inside ~s." source destination))
-  (collect-sub*directories
-   (ensure-directory-pathname source)
-   (constantly t)
-   t
-   (lambda (subdirectory)
-     (mapc (lambda (file)
-             (unless (member (pathname-type file) exclude-types :test 'equalp)
-               (let ((destination-file
-                       (merge-pathnames*
-                        (subpathp file (ensure-directory-pathname source))
-                        (ensure-pathname destination :truenamize t :ensure-directory t))))
-                 (install-file file destination-file))))
-           (directory-files subdirectory)))))
-
 (defmethod asdf:perform ((op asdf:compile-op) (c nyxt-file)) ; REVIEW: load-op?
   (loop for input in (asdf:input-files op c)
         for output in (asdf:output-files op c)
@@ -229,49 +210,69 @@ File must contain a number in their path."
                 :output '(:string :stripped t))
    :separator '(#\newline #\return #\linefeed)))
 
+(defun file-excluded-type (file exclude-types)
+  (member (pathname-type file) exclude-types :test 'equalp))
+
+(defun list-directory (directory &key exclude-subpath (exclude-types '("fasl")))
+  (let ((result '()))
+    (collect-sub*directories
+     (ensure-directory-pathname directory)
+     (constantly t)
+     (lambda (dir)
+       (notany (lambda (exclusion)
+                 (uiop:string-suffix-p (basename dir) exclusion))
+               (mapcar #'basename exclude-subpath)))
+     (lambda (subdirectory)
+       (setf result (append result
+                            (remove-if
+                             (lambda (file) (file-excluded-type file exclude-types))
+                             (uiop:directory-files subdirectory))))))
+    result))
+
+(export-always 'copy-directory)
+(defun copy-directory (source destination &key exclude-subpath (exclude-types '("fasl")) verbose-p) ; REVIEW: Unused, but seem quite useful.
+  "Copy the content (the file tree) of SOURCE to DESTINATION."
+  (when verbose-p
+    (logger "copy ~s/* inside ~s." source destination))
+  (mapc (lambda (file)
+          (unless (member (pathname-type file) exclude-types :test 'equalp)
+            (let ((destination-file
+                    (merge-pathnames*
+                     (subpathp file (ensure-directory-pathname source))
+                     (ensure-pathname destination :truenamize t :ensure-directory t))))
+              (install-file file destination-file))))
+        (list-directory source)))
+
+
 (defmethod asdf:input-files ((op asdf:compile-op) (component nyxt-source-directory))
   "Return all files of NYXT-SOURCE-DIRECTORY.
 They are either listed with 'git ls-files' or directly if Git is not found."
   (let ((source (asdf:component-pathname component))
         (root (asdf:system-source-directory (asdf:component-system component))))
-    (flet ((remove-if-excluded-type (file)
-             (member (pathname-type file) (exclude-types component) :test 'equalp)))
-      (handler-case
-          (uiop:with-current-directory (root)
-            (let ((absolute-exclusions (mapcar (lambda (exclusion)
-                                                 (namestring
-                                                  (merge-pathnames*
-                                                   (uiop:ensure-directory-pathname exclusion)
-                                                   (uiop:ensure-directory-pathname source))))
-                                               (exclude-subpath component))))
-              (remove-if (lambda (file)
-                           (or (remove-if-excluded-type file)
-                               (let ((file-string (namestring file)))
-                                 (some (lambda (exclusion)
-                                         (uiop:string-prefix-p exclusion file-string))
-                                       absolute-exclusions))))
-                         (mapcar (lambda (path)
-                                   (ensure-pathname path :truenamize t))
-                                 (git-ls-files
-                                  root
-                                  source)))))
-        (error (c)
-          (warn "~a~&Git error, falling back to direct listing." c)
-          (let ((result '()))
-            (uiop:with-current-directory (root)
-              (collect-sub*directories
-               (ensure-directory-pathname source)
-               (constantly t)
-               (lambda (dir)
-                 (notany (lambda (exclusion)
-                           (uiop:string-suffix-p (basename dir) exclusion))
-                         (mapcar #'basename (exclude-subpath component))))
-               (lambda (subdirectory)
-                 (setf result (append result
-                                      (remove-if
-                                       #'remove-if-excluded-type
-                                       (uiop:directory-files subdirectory))))))
-              result)))))))
+    (handler-case
+        (uiop:with-current-directory (root)
+          (let ((absolute-exclusions (mapcar (lambda (exclusion)
+                                               (namestring
+                                                (merge-pathnames*
+                                                 (uiop:ensure-directory-pathname exclusion)
+                                                 (uiop:ensure-directory-pathname source))))
+                                             (exclude-subpath component))))
+            (remove-if (lambda (file)
+                         (or (file-excluded-type file (exclude-types component))
+                             (let ((file-string (namestring file)))
+                               (some (lambda (exclusion)
+                                       (uiop:string-prefix-p exclusion file-string))
+                                     absolute-exclusions))))
+                       (mapcar (lambda (path)
+                                 (ensure-pathname path :truenamize t))
+                               (git-ls-files
+                                root
+                                source)))))
+      (error (c)
+        (warn "~a~&Git error, falling back to direct listing." c)
+        (uiop:with-current-directory (root)
+          (list-directory source :exclude-subpath (exclude-subpath component)
+                                 :exclude-types (exclude-types component)))))))
 
 (defmethod asdf:output-files ((op asdf:compile-op) (component nyxt-source-directory))
   (let ((root (asdf:system-source-directory (asdf:component-system component))))
