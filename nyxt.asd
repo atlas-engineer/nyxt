@@ -378,9 +378,9 @@
                (:nyxt-source-directory "source")
                (:nyxt-source-directory "nyxt-asdf")
                (:nyxt-source-directory "libraries"
-                :exclude-pattern ":!:libraries/web-extensions/*" ; Do not install this non-Lisp source.
-                :exclude-types '("o" "c" "h"                     ; C code and artifacts.
-                                 "fasl"))))
+                :exclude-subpath ("web-extensions") ; Do not install this non-Lisp source.
+                :exclude-types ("o" "c" "h" ; C code and artifacts.
+                                    "fasl"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Library subsystems:

@@ -35,15 +35,22 @@ The last number found in the file name is used to install the icon in the right 
 
 ;; TODO: Is it possible to list all files targetted by an ASDF system?
 (defclass nyxt-source-directory (nyxt-file)
-  ((exclude-pattern
-    :initform nil
-    :type (or null string)
-    :accessor exclude-pattern
-    :initarg :exclude-pattern
-    :documentation "Pattern of files to exclude passed to 'git ls-files'.")
+  ((exclude-subpath
+    :initform '()
+    :type (or null (cons string *))
+    :accessor exclude-subpath
+    :initarg :exclude-subpath
+    :documentation "Subpath to exclude from installation.
+Subpaths are relative to the component, so
+
+  (:nyxt-source-directory \"foo\" :exclude-subpath (\"bar\"))
+
+means that foo/bar is excluded, but foo/baz is not.
+
+If subpath is a directory, then all its subpaths are excluded as well.")
    (exclude-types
     :initform '("fasl")
-    :type (cons string *)
+    :type (or null (cons string *))
     :accessor exclude-types
     :initarg :exclude-types
     :documentation "Pattern of files to exclude when not using Git."))
@@ -214,13 +221,11 @@ File must contain a number in their path."
              (asdf:input-files op c))
      t)))
 
-(defun git-ls-files (root dir &optional exclude-pattern)
+(defun git-ls-files (root dir)
   (split-string
    (run-program (append (list *git-program*
                               "-C" (native-namestring root)
-                              "ls-files" (native-namestring dir))
-                        (when exclude-pattern
-                          (list "--" exclude-pattern)))
+                              "ls-files" (native-namestring dir)))
                 :output '(:string :stripped t))
    :separator '(#\newline #\return #\linefeed)))
 
@@ -229,27 +234,44 @@ File must contain a number in their path."
 They are either listed with 'git ls-files' or directly if Git is not found."
   (let ((source (asdf:component-pathname component))
         (root (asdf:system-source-directory (asdf:component-system component))))
-    (handler-case
-        (uiop:with-current-directory (root)
-          (mapcar (lambda (path)
-                    (ensure-pathname path :truenamize t))
-                  (git-ls-files
-                   root
-                   source
-                   (exclude-pattern component))))
-      (error (c)
-        (warn "~a~&Git error, falling back to direct listing." c)
-        (let ((result '()))
-          (collect-sub*directories
-           (ensure-directory-pathname source)
-           (constantly t)
-           t
-           (lambda (subdirectory)
-             (setf result (append result
-                                  (remove-if
-                                   (lambda (file)
-                                     (member (pathname-type file) (exclude-types component) :test 'equalp))
-                                   (uiop:directory-files subdirectory)))))))))))
+    (flet ((remove-if-excluded-type (file)
+             (member (pathname-type file) (exclude-types component) :test 'equalp)))
+      (handler-case
+          (uiop:with-current-directory (root)
+            (let ((absolute-exclusions (mapcar (lambda (exclusion)
+                                                 (namestring
+                                                  (merge-pathnames*
+                                                   (uiop:ensure-directory-pathname exclusion)
+                                                   (uiop:ensure-directory-pathname source))))
+                                               (exclude-subpath component))))
+              (remove-if (lambda (file)
+                           (or (remove-if-excluded-type file)
+                               (let ((file-string (namestring file)))
+                                 (some (lambda (exclusion)
+                                         (uiop:string-prefix-p exclusion file-string))
+                                       absolute-exclusions))))
+                         (mapcar (lambda (path)
+                                   (ensure-pathname path :truenamize t))
+                                 (git-ls-files
+                                  root
+                                  source)))))
+        (error (c)
+          (warn "~a~&Git error, falling back to direct listing." c)
+          (let ((result '()))
+            (uiop:with-current-directory (root)
+              (collect-sub*directories
+               (ensure-directory-pathname source)
+               (constantly t)
+               (lambda (dir)
+                 (notany (lambda (exclusion)
+                           (uiop:string-suffix-p (basename dir) exclusion))
+                         (mapcar #'basename (exclude-subpath component))))
+               (lambda (subdirectory)
+                 (setf result (append result
+                                      (remove-if
+                                       #'remove-if-excluded-type
+                                       (uiop:directory-files subdirectory))))))
+              result)))))))
 
 (defmethod asdf:output-files ((op asdf:compile-op) (component nyxt-source-directory))
   (let ((root (asdf:system-source-directory (asdf:component-system component))))
