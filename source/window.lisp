@@ -142,7 +142,6 @@ The handlers take the window as argument."))
 
 (hooks:define-hook-type window (function (window)))
 
-(-> window-make (browser) *)
 (export-always 'window-make)
 (defun window-make (browser)
   (let* ((window (ffi-window-make browser)))
