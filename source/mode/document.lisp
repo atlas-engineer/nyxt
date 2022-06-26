@@ -504,7 +504,8 @@ of buffers."
   (labels ((get-level (heading)
              (ignore-errors (parse-integer (plump:tag-name (element heading)) :start 1)))
            (group-headings (headings)
-             (loop with min-level = (reduce #'min (mapcar #'get-level headings))
+             (loop with min-level = (when headings
+                                      (reduce #'min (mapcar #'get-level headings)))
                    with current = (list)
                    for heading in headings
                    if (= (get-level heading) min-level)
