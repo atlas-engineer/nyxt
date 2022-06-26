@@ -232,7 +232,10 @@ Return two values:
          ;; TODO: Remove other attributes, unreliable ones? For example, href
          ;; and type are reliable and are unlikely to change, while data-*
          ;; attributes are unreliable and can change any moment.
-         (attributes (remove-if (rcurry #'member '("class" "id") :test #'string=)
+         (attributes (remove-if (lambda (attribute)
+                                  (or (member attribute '("class" "id") :test #'string=)
+                                      (str:starts-with-p "data-" attribute)
+                                      (str:starts-with-p "nyxt-" attribute)))
                                 (alex:hash-table-keys (plump:attributes element))))
          (classes (when raw-classes (remove-if #'str:blankp (str:split " " raw-classes))))
          (parents (parents element))
@@ -269,9 +272,6 @@ Return two values:
               attributes))
       ;; Check for short and nice parent-child relations, like :only-child,
       ;; :last-child etc.
-      ;;
-      ;; FIXME: :nth-child would be extremely useful there, but it seems to by
-      ;; unpredictable in CLSS (or CSS?).
       (when (and parents
                  (sera:single family)
                  (unique-p (selconcat :sel ":only-child")))
@@ -285,6 +285,15 @@ Return two values:
                  (not (sera:single family))
                  (eq element (elt family (1- (length family))))
                  (unique-p (selconcat :sel ":last-child")))
+        (selreturn))
+      (when (and
+             parents
+             (not (sera:single family))
+             (not (eq element (elt family 0)))
+             (not (eq element (elt family (1- (length family)))))
+             (unique-p (selconcat
+                        :sel ":nth-child("
+                        (princ-to-string (1+ (position element (plump:family-elements element)))) ")")))
         (selreturn))
       ;; Then check for previous siblings.
       (when (and previous
