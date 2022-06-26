@@ -1391,6 +1391,21 @@ See `finalize-buffer'."
   (when (document-buffer-p buffer)
     (setf (ffi-buffer-smooth-scrolling-enabled-p buffer) (smooth-scrolling buffer)))
   (connect-signal-function buffer "decide-policy" (make-decide-policy-handler buffer))
+  (connect-signal buffer "resource-load-started" nil (web-view resource request)
+    (declare (ignore web-view))
+    (let ((response (webkit:webkit-web-resource-response resource)))
+      (hooks:run-hook (request-resource-hook buffer)
+                      (make-instance 'request-data
+                                     :buffer buffer
+                                     :url (quri:uri (webkit:webkit-uri-request-get-uri request))
+                                     :event-type :other
+                                     :new-window-p nil
+                                     :resource-p t
+                                     :http-method (webkit:webkit-uri-request-get-http-method request)
+                                     :toplevel-p nil
+                                     :mime-type (when response
+                                                  (webkit:webkit-uri-response-mime-type response))
+                                     :known-type-p t))))
   (connect-signal buffer "load-changed" t (web-view load-event)
     (declare (ignore web-view))
     (on-signal-load-changed buffer load-event))

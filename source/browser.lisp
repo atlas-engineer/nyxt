@@ -444,6 +444,10 @@ new window.")
    (toplevel-p
     nil
     :documentation "Whether the request happens in a toplevel frame.")
+   (resource-p
+    nil
+    :documentation "Whether the request is a resource request.
+Resource requests cannot be redirected or blocked.")
    (mime-type
     nil
     :documentation "The MIME type of the resource at the other end of the request.")
