@@ -6,7 +6,10 @@
 (in-package :nyxt/migration)
 
 (defparameter +migration-suggestions+ (sera:dict)
-  "Map between symbols and `suggestion's.")
+  "Map between symbol names and `suggestion's.
+
+We use symbol names because when an error occurs because of an unbound symbol,
+we cannot predict the package in which it happened.")
 
 (define-class suggestion ()
   ((symbols
@@ -35,12 +38,11 @@ NIL means suggestion concerns all versions.")
 
 (defmethod initialize-instance :after ((suggestion suggestion) &key)
   (dolist (sym (symbols suggestion))
-    ;; TODO: Hash by symbol-name, since package may be missing?
-    (when (gethash sym +migration-suggestions+)
-      (alex:deletef (gethash sym +migration-suggestions+)
+    (when (gethash (symbol-name sym) +migration-suggestions+)
+      (alex:deletef (gethash (symbol-name sym) +migration-suggestions+)
                     suggestion
                     :test #'suggestion=))
-    (push suggestion (gethash sym +migration-suggestions+))))
+    (push suggestion (gethash (symbol-name sym) +migration-suggestions+))))
 
 (defun version-suggestions (major-version)
   (let ((result '()))
@@ -88,7 +90,8 @@ major versions."
 
 (export-always 'find-suggestions)
 (defun find-suggestions (string)
-  (gethash (alex:symbolicate (string-upcase string)) +migration-suggestions+))
+  (alex:when-let ((sym (ignore-errors (uiop:safe-read-from-string string))))
+    (gethash (symbol-name sym) +migration-suggestions+)))
 
 (defmacro define-migration (major-version-string &body body)
   (let ((result '()))
