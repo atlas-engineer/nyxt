@@ -23,8 +23,14 @@ we cannot predict the package in which it happened.")
 NIL means suggestion concerns all versions.")
    (tip
     ""
-    :type string
-    :documentation "Suggestion how to update the symbols."))
+    :export t
+    :writer t
+    :reader nil
+    :type (or cons string function)
+    :documentation "Suggestion how to update the symbols.
+It can be initialized with a string or a form; if the latter, it's automatically
+passed to `spinneret' on render.
+This is useful to delay the evaluation of the tip until it's rendered."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
@@ -56,6 +62,11 @@ NIL means suggestion concerns all versions.")
              +migration-suggestions+)
     (delete-duplicates result)))
 
+(defmethod tip ((suggestion suggestion))
+  (if (stringp (slot-value suggestion 'tip))
+      (slot-value suggestion 'tip)
+      (funcall (slot-value suggestion 'tip))))
+
 (defmethod render-version-migration (major-version)
   (spinneret:with-html-string
     (:div
@@ -79,14 +90,6 @@ major versions."
     (:p "See also the " (:code "changelog") ".")
     (:raw (render-version-migration (write-to-string (first (nyxt::version)))))))
 
-;; TODO: Fix this, does not work!
-(spinneret:deftag xref (symbol attr)
-  `(:a :href (javascript-url
-              (ps:ps (nyxt/ps:lisp-eval
-                      (:title "describe-any")
-                      (nyxt::describe-any (princ-to-string ,@symbol)))))
-       (:code ,@attr ,@symbol)))
-
 
 (export-always 'find-suggestions)
 (defun find-suggestions (string)
@@ -99,35 +102,37 @@ major versions."
           (alex:doplist (symbols tip body result)
             (push `(make-instance 'suggestion
                                   :symbols (uiop:ensure-list ',symbols)
-                                  :tip (spinneret:with-html-string ,tip)
+                                  :tip ,(if (stringp tip)
+                                            tip
+                                            `(lambda () (spinneret:with-html-string ,tip)))
                                   :version ,major-version-string)
                   result)))))
 
 (define-migration "3"
   (download-directory)
-  (:p (:code "download-directory") " is in " (:code "context-buffer") ".")
+  (:p (:code "download-directory") " is in " (:nxref "context-buffer") ".")
 
   (history-file)
-  (:p (:code "history-file") " is in " (:code "context-buffer") ".")
+  (:p (:code "history-file") " is in " (:nxref "context-buffer") ".")
 
   (standard-output-file standard-error-file)
-  (:p (:code "standard-output-file") " and " (:code "standard-error-file")
+  (:p (:nxref "standard-output-file") " and " (:nxref "standard-error-file")
       " are in " (:code "context-buffer") ".")
 
   (annotations-file)
-  (:p (:code "annotations-file") " is in " (:code "nyxt/annotate-mode:annotate-mode") ".")
+  (:p (:nxref "annotations-file") " is in " (:nxref "nyxt/annotate-mode:annotate-mode") ".")
 
   (auto-mode-rules-file)
-  (:p (:code "auto-mode-rules-file") " is in " (:code "nyxt/auto-mode:auto-mode") ".")
+  (:p (:nxref "auto-mode-rules-file") " is in " (:nxref "nyxt/auto-mode:auto-mode") ".")
 
   (bookmarks-file)
-  (:p (:code "bookmarks-file") " is in " (:code "nyxt/bookmark-mode:bookmark-mode") ".")
+  (:p (:nxref "bookmarks-file") " is in " (:nxref "nyxt/bookmark-mode:bookmark-mode") ".")
 
   (expand-path)
-  (:p (:code "expand-path") " is replaced by " (:code "nfiles:expand") ".")
+  (:p (:code "expand-path") " is replaced by " (:nxref "nfiles:expand") ".")
 
   (get-data get-user-data)
-  (:p (:code "get-data") " and " (:code "get-user-data") " are replaced by " (:code "nfiles:content") ".")
+  (:p (:code "get-data") " and " (:code "get-user-data") " are replaced by " (:nxref "nfiles:content") ".")
 
   (with-data-access with-data-unsafe)
-  (:p (:code "with-data-access") " and " (:code "with-data-unsafe") " are replaced by " (:code "nfiles:with-file-content") "."))
+  (:p (:code "with-data-access") " and " (:code "with-data-unsafe") " are replaced by " (:nxref "nfiles:with-file-content") "."))

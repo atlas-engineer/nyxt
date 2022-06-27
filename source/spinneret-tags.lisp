@@ -14,3 +14,12 @@
 
 (deftag :nscript (body attrs &key &allow-other-keys)
   `(:script ,@attrs (:raw ,@body)))
+
+(spinneret:deftag :nxref (symbol attr &key &allow-other-keys)
+  `(:a :href (nyxt:javascript-url
+              (ps:ps (nyxt/ps:lisp-eval
+                      (:title "describe-any")
+                      ;; Not defined yet:
+                      (funcall (nyxt:resolve-symbol :describe-any :function)
+                               (princ-to-string ,@symbol)))))
+       (:code ,@attr ,@symbol)))
