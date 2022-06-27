@@ -377,6 +377,7 @@ Otherwise return nil."
                   (setf (slot-value object slot) slot-value)))))
     :name (gensym "EXTENT-CONFIGURATION"))))
 
+;; TODO: SLOT should be  WRITER-NAME (a symbol) instead.
 (defun apply-configuration (&key lambda slot (slot-value nil slot-value-p)
                               class-name
                               current-instance instances new-instances-p auto-config-p)

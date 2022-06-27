@@ -419,11 +419,11 @@ TITLE is purely informative."
      (let ((request (fetch url
                            (ps:create :mode "no-cors"))))
        (when ,callback
-         (chain request
-                (then (lambda (response)
-                        (when (@ response ok)
-                          (chain response (json)))))
-                (then ,callback))))))
+         (ps:chain request
+                   (then (lambda (response)
+                              (when (@ response ok)
+                                (ps:chain response (json)))))
+                   (then ,callback))))))
 (export-always 'nyxt/ps::lisp-eval :nyxt/ps)
 
 (define-internal-scheme "lisp"
