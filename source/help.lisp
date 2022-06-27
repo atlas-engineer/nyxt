@@ -80,6 +80,17 @@ CLASS is a class symbol."
            :current-instance *browser*
            :auto-config-p auto-config-p))))
 
+(setf (gethash :default-new-buffer-url *settings*)
+      (lambda (url &key new-instances-p auto-config-p &allow-other-keys)
+        "URL is a string."
+        (unless (uiop:emptyp url)
+          (apply-configuration
+           :slot 'default-new-buffer-url
+           :slot-value url
+           :current-instance *browser*
+           :new-instances-p new-instances-p
+           :auto-config-p auto-config-p))))
+
 (-> ensure (string) string)
 (defun ensure-setting (setting-name)
   "Check whether SETTING-NAME exists  and return it."
@@ -118,11 +129,10 @@ CLASS is a class symbol."
                        :auto-config-p (find target-auto-config targets))
               (echo "Settings applied to ~(~{~a~^, ~}~): ~s." targets args))
             (echo-warning "Undefined setting ~s" key)))))
-  (flet ((form-entry (&key id label type name)
+  (flet ((form-entry (&key id label type name placeholder)
            "ID must be an existing setting in `*settings*'."
            (ensure-setting id)
            (spinneret:with-html-string
-             (:br)
              (:raw
               (sera:string-case type
                 ("radio"
@@ -134,7 +144,8 @@ CLASS is a class symbol."
                 (t
                  (spinneret:with-html-string
                    (:label :for id label)
-                   (:input :type type :id id :name id)))))))
+                   (:input :type type :id id :name id :placeholder placeholder)))))
+             (:br)))
          (generate-colors (theme-symbol)
            (spinneret:with-html-string
              (:p "Colors:")
@@ -150,12 +161,17 @@ CLASS is a class symbol."
                                         (slot-value (symbol-value theme-symbol) color))))))))
     (spinneret:with-html-string
       (:h1 "Common Settings")
-      (:p "Set the values for frequently configured settings. "
-          "Changes only apply to newly created buffers.")
+      (:p "Set the values for frequently configured settings.")
       (:form (:input :type "submit" :value "Apply settings")
              ;; Drop-down menu or completion would be nice to have, but does not
              ;; seem to be portable.
              ;; https://stackoverflow.com/questions/15992085/html-select-drop-down-with-an-input-field
+             (:h2 "General")
+
+             ;; TODO: Add prompt-buffer completion.
+             ;; For this to work we need to fix the lisp-eval callback.
+             (:raw (form-entry :id "default-new-buffer-url" :label "Default new buffer url" :type "text"
+                               :placeholder (default-new-buffer-url *browser*) ))
 
              ;; (:br)
              ;; (:label :for "keystyle" "Keybding style")
