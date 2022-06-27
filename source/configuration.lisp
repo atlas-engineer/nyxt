@@ -345,9 +345,11 @@ Call this function from your initialization file to re-enable the default ASDF r
 
 ;; TODO: Report compilation errors.
 
+(export-always 'nyxt-user-system)
 (defclass nyxt-user-system (asdf:system) ()
   (:documentation "Specialized systems for Nyxt users.
-This automatically default :pathname to the `*config-file*' directory."))
+This automatically defaults :pathname to the `*config-file*' directory.
+See `define-nyxt-user-system' and `define-nyxt-user-system-and-load'."))
 
 (defvar *nyxt-user-systems-with-missing-dependencies* '())
 
@@ -357,6 +359,7 @@ This automatically default :pathname to the `*config-file*' directory."))
     (or path
         (nfiles:expand (make-instance 'config-directory-file)))))
 
+(export-always 'load-system*)
 (defun load-system* (system &rest keys &key force force-not verbose version &allow-other-keys)
   "Like `asdf:load-system' but, instead of signaling an error on missing
 dependency, it warns the user, skips the load gracefully and returns NIL.
@@ -390,6 +393,7 @@ to load and attempts to load them if their dependencies now seem to be met."
       component-designator
       (list :file (sera:drop-suffix ".lisp" component-designator :test #'string-equal))))
 
+(export-always 'define-nyxt-user-system)
 (defmacro define-nyxt-user-system (name &rest args &key depends-on components
                                    &allow-other-keys)
   "Define a user system, usually meant to load configuration files.
@@ -428,6 +432,7 @@ to use the full syntax."
      :components ,(mapcar #'ensure-component
                           components)))
 
+(export-always 'define-nyxt-user-system-and-load)
 (defmacro define-nyxt-user-system-and-load (name &rest args &key depends-on components
                                             &allow-other-keys)
   "Like `define-nyxt-user-system' but immediately call `load-system*' on the system.
