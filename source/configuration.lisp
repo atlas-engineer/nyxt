@@ -423,7 +423,7 @@ to use the full syntax."
   ;; We cannot call `make-instance 'asdf:system' because we need to register the
   ;; system, and `register-system' is unexported.
   `(asdf:defsystem ,name
-     :class :nyxt-user-system
+     :class nyxt-user-system
      ,@(uiop:remove-plist-key :components args)
      :components ,(mapcar #'ensure-component
                           components)))
