@@ -388,6 +388,8 @@ TITLE is purely informative."
   ;; We define it here and not in parenscript-macro because we need
   ;; `nyxt::lisp-url-callbacks' while parenscript-macro is Nyxt-independent.
   `(let ((url (ps:lisp (let ((request-id (string (gensym ""))))
+                         (unless ,buffer
+                           (error "Cannot `nyxt/ps:lisp-eval' without BUFFER or current-buffer."))
                          (log:debug "Registering callback ~a for buffer ~a" request-id ,buffer)
                          (setf (gethash request-id (nyxt::lisp-url-callbacks ,buffer))
                                (lambda () ,@form))
