@@ -269,7 +269,7 @@ Don't run this from a REPL, prefer `start' instead."
            (:h1 title)
            (:h2 "Condition")
            (:pre condition-string)
-           (alex:when-let ((suggestions (alex:mappend #'nyxt/migration:match-tips
+           (alex:when-let ((suggestions (alex:mappend #'nyxt/migration:find-suggestions
                                                       (sera:tokens condition-string))))
              (:h2 "Suggestions")
              (:ul (dolist (suggestion suggestions)
