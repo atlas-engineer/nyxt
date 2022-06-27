@@ -76,7 +76,7 @@ CLASS is a class symbol."
         (unless (uiop:emptyp theme)
           (apply-configuration
            :slot 'theme
-           :slot-value (eval (read-from-string theme)) ; TODO: Ouch, `eval'!  To get rid of it, we could `(make-instance 'dark-theme) if it were a class.
+           :slot-value (symbol-value theme)
            :current-instance *browser*
            :auto-config-p auto-config-p))))
 
