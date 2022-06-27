@@ -26,19 +26,14 @@ It enables features such as:
   "Perform some last minute tweaks to the final image.
 
 - Register immutable systems to prevent compiled images of Nyxt from
-trying to recompile dependencies.
+trying to recompile Nyxt and its dependencies.
 See `asdf::*immutable-systems*'.
 
 - If on SBCL, include `sb-sprof', the statistical profiler, since it's one of
 the few modules that's not automatically included in the image."
   #+sbcl
   (require :sb-sprof)
-  (map () 'asdf:register-immutable-system
-       (remove-if (lambda (system)
-                    ;; Ensure nyxt-asdf is immutable.
-                    (or (string= "nyxt" system)
-                        (uiop:string-prefix-p "nyxt/" system)))
-                  (asdf:already-loaded-systems))))
+  (map () 'asdf:register-immutable-system (asdf:already-loaded-systems)))
 
 (defun set-new-translation (host logical-directory
                             root-directory
