@@ -184,7 +184,7 @@ The handlers take the buffer as argument.")
     (make-instance 'hook-buffer)
     :type hook-buffer
     :documentation "Hook run at the beginning of `buffer' initialization.
-The buffer web view is not allocated, so it's not possible to run any
+The buffer web view is not allocated, so it's not possible to run arbitrary
 parenscript from this hook.
 See `buffer-make-hook' and `buffer-after-make-hook' for other hook options.
 The handlers take the buffer as argument.")
