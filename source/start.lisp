@@ -337,7 +337,7 @@ Return the short error message and the full error message as second value."
       (flet ((eval-protect (s-exp)
                (with-protect ("Error in s-exp evaluation: ~a" :condition)
                  (eval s-exp))))
-        (let* ((sexps (read-from-stream input))
+        (let* ((sexps (safe-slurp-stream-forms input))
                (but-last (butlast sexps))
                (last (alex:last-elt sexps)))
           (mapc #'eval-protect but-last)

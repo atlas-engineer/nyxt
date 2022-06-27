@@ -156,26 +156,24 @@ See `on'."
                    (nth-value 1 (find-symbol (string name) (symbol-package name)))))
              (mopu:direct-slot-names class-specifier)))
 
-(export-always 'read*)
-(defun read* (&optional
-                (input-stream *standard-input*)
-                (eof-error-p t)
-                (eof-value nil)
-                (recursive-p nil))
+(export-always 'safe-read)
+(defun safe-read (&optional
+                    (input-stream *standard-input*)
+                    (eof-error-p t)
+                    (eof-value nil)
+                    (recursive-p nil))
   "Like `read' with standard IO syntax but does not accept reader macros ('#.').
+UIOP has `uiop:safe-read-from-string' but no `read' equivalent.
 This is useful if you do not trust the input."
-  (let ((old-package *package*))
-    (with-standard-io-syntax
-      (let ((*read-eval* nil)
-            (*package* old-package))
-        (read input-stream eof-error-p eof-value recursive-p)))))
+  (uiop:with-safe-io-syntax (:package *package*)
+    (read input-stream eof-error-p eof-value recursive-p)))
 
-(export-always 'read-from-stream)
-(defun read-from-stream (stream)
-  "Return a list of all s-expressions read in STREAM."
-  (loop :for value := (read* stream nil stream)
-        :until (eq value stream)
-        :collect value))
+(export-always 'safe-slurp-stream-forms)
+(defun safe-slurp-stream-forms (stream)
+  "Like `uiop:slurp-stream-forms' but wrapped in `uiop:with-safe-io-syntax' and
+package set to current package."
+  (uiop:with-safe-io-syntax (:package *package*)
+    (uiop:slurp-stream-forms stream)))
 
 (export-always 'reduce/append)
 (defun reduce/append (list-of-lists)

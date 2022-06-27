@@ -107,13 +107,13 @@ evaluated in order."
                         (let ((*interactive-p* interactive-p))
                           (with-protect ("Error in s-exp evaluation: ~a" :condition)
                             (eval s-exp)))))
-                     (read-from-stream input))))))))
+                     (safe-slurp-stream-forms input))))))))
     (calispel:? channel)))
 
 (defun evaluate-async (string)
   "Like `evaluate' but does not block and does not return the result."
   (run-thread "async evaluator"
     (with-input-from-string (input string)
-      (dolist (s-exp (read-from-stream input))
+      (dolist (s-exp (safe-slurp-stream-forms input))
         (funcall (lambda () (with-protect ("Error in s-exp evaluation: ~a" :condition)
                               (eval s-exp))))))))
