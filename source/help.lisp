@@ -80,6 +80,13 @@ CLASS is a class symbol."
            :current-instance *browser*
            :auto-config-p auto-config-p))))
 
+(-> ensure (string) string)
+(defun ensure-setting (setting-name)
+  "Check whether SETTING-NAME exists  and return it."
+  (unless (gethash (alex:make-keyword (string-upcase setting-name)) *settings*)
+    (log:warn "Undefined setting ~s" setting-name))
+  setting-name)
+
 (define-internal-page-command-global common-settings (&rest args &key &allow-other-keys)
     (buffer "*Settings*" 'nyxt/help-mode:help-mode)
   "Configure a set of frequently used settings."
@@ -101,15 +108,19 @@ CLASS is a class symbol."
                                                            target-all-instances
                                                            target-new-instances
                                                            target-auto-config)))))
-      (loop :for (key value) :on args :by #'cddr
-            ;; :for setting = (gethash key *settings*)
-            :do (funcall (gethash key *settings*) value
-                         :current-instance-p (find target-current-instance targets)
-                         :all-instances-p (find target-all-instances targets)
-                         :new-instances-p (find target-new-instances targets)
-                         :auto-config-p (find target-auto-config targets)))
-      (echo "Settings applied to ~(~{~a~^, ~}~): ~s." targets args)))
+      (alex:doplist (key value args)
+        (if (gethash key *settings*)
+            (progn
+              (funcall (gethash key *settings*) value
+                       :current-instance-p (find target-current-instance targets)
+                       :all-instances-p (find target-all-instances targets)
+                       :new-instances-p (find target-new-instances targets)
+                       :auto-config-p (find target-auto-config targets))
+              (echo "Settings applied to ~(~{~a~^, ~}~): ~s." targets args))
+            (echo-warning "Undefined setting ~s" key)))))
   (flet ((form-entry (&key id label type name)
+           "ID must be an existing setting in `*settings*'."
+           (ensure-setting id)
            (spinneret:with-html-string
              (:br)
              (:raw
@@ -119,8 +130,7 @@ CLASS is a class symbol."
                    (error "Radio button needs a name"))
                  (spinneret:with-html-string
                    (:input :type type :id id :name name :value id)
-                   (:label :for id label))
-)
+                   (:label :for id label)))
                 (t
                  (spinneret:with-html-string
                    (:label :for id label)
@@ -143,7 +153,6 @@ CLASS is a class symbol."
       (:p "Set the values for frequently configured settings. "
           "Changes only apply to newly created buffers.")
       (:form (:input :type "submit" :value "Apply settings")
-
              ;; Drop-down menu or completion would be nice to have, but does not
              ;; seem to be portable.
              ;; https://stackoverflow.com/questions/15992085/html-select-drop-down-with-an-input-field
