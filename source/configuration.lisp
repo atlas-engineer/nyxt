@@ -365,13 +365,16 @@ Otherwise return nil."
     'hooks:handler
     :fn (lambda (object)
           (declare (ignorable object))
-          ;; TODO:
           (when fun
             (funcall fun object))
           (when slot
             ;; TODO: Can we use accessor / writer?  How do you call (setf ...)
             ;; on a dynamically-found writer?
-            (set (slot-value object slot) slot-value)))
+            (let* ((gf (closer-mop:ensure-generic-function `(setf ,slot))))
+              (if (ignore-errors (find-method gf '() (list t (class-of object))))
+                  (funcall gf slot-value object)
+                  ;; No writer method found:
+                  (setf (slot-value object slot) slot-value)))))
     :name (gensym "EXTENT-CONFIGURATION"))))
 
 (defun apply-configuration (&key lambda slot (slot-value nil slot-value-p)
