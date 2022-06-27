@@ -88,7 +88,7 @@ CLASS is a class symbol."
   setting-name)
 
 (define-internal-page-command-global common-settings (&rest args &key &allow-other-keys)
-    (buffer "*Settings*" 'nyxt/help-mode:help-mode)
+    (buffer "*Settings*")
   "Configure a set of frequently used settings."
   (log:info (url buffer) args)
   (when args
