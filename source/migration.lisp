@@ -36,6 +36,10 @@ This is useful to delay the evaluation of the tip until it's rendered."))
   (:export-predicate-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
+(defmethod print-object ((object suggestion) stream)
+  (print-unreadable-object (object stream :type t :identity t)
+    (format stream "~a" (symbols  object))))
+
 (defun suggestion= (suggestion1 suggestion2)
   (and (string= (version suggestion1)
                 (version suggestion2))
@@ -51,6 +55,8 @@ This is useful to delay the evaluation of the tip until it's rendered."))
     (push suggestion (gethash (symbol-name sym) +migration-suggestions+))))
 
 (defun version-suggestions (major-version)
+  "Return suggestions corresponding to MAJOR-VERSION.
+Order is stable."
   (let ((result '()))
     (maphash (lambda (key suggestions)
                (declare (ignore key))
@@ -60,7 +66,9 @@ This is useful to delay the evaluation of the tip until it's rendered."))
                                                :test #'string=)
                                     result)))
              +migration-suggestions+)
-    (delete-duplicates result)))
+    (sort  (delete-duplicates result)
+           #'string<
+           :key (compose #'first #'uiop:ensure-list #'symbols))))
 
 (defmethod tip ((suggestion suggestion))
   (if (stringp (slot-value suggestion 'tip))
