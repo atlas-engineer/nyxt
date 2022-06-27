@@ -5,14 +5,19 @@
   (:documentation "Nyxt-specific DOM classes and functions operating on them."))
 (in-package :nyxt/migration)
 
-(defparameter +migration-guides+ (sera:dict)
-  "Map between major series (strings) and the association HTML documentation.")
+(defparameter +migration-suggestions+ (sera:dict)
+  "Map between symbols and `suggestion's.")
 
-(define-class guide-entry ()
+(define-class suggestion ()
   ((symbols
     '()
     :type (maybe (cons symbol *))
     :documentation "List of symbols concerned by this tip.")
+   (version
+    nil
+    :type (maybe string)
+    :documentation "First major version concerned with the migration suggestion.
+NIL means suggestion concerns all versions.")
    (tip
     ""
     :type string
@@ -22,64 +27,45 @@
   (:export-predicate-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-;; (defmethod initialize-instance :around ((entry guide-entry) &key symbols tip &allow-other-keys)
-;;   (call-next-method :symbols (uiop:ensure-list symbols)
-;;                     :tip tip))
+(defun suggestion= (suggestion1 suggestion2)
+  (and (string= (version suggestion1)
+                (version suggestion2))
+       (equal (symbols suggestion1)
+              (symbols suggestion2))))
 
-(defun make-entry (symbols tip)
-  (make-instance 'guide-entry :symbols (uiop:ensure-list symbols) :tip tip))
+(defmethod initialize-instance :after ((suggestion suggestion) &key)
+  (dolist (sym (symbols suggestion))
+    ;; TODO: Hash by symbol-name, since package may be missing?
+    (when (gethash sym +migration-suggestions+)
+      (alex:deletef (gethash sym +migration-suggestions+)
+                    suggestion
+                    :test #'suggestion=))
+    (push suggestion (gethash sym +migration-suggestions+))))
 
-(define-class guide ()
-  ((from-version
-    ""
-    :type string
-    :documentation "Past major version concerned by the guide.")
-   (to-version
-    ""
-    :type string
-    :documentation "Target major version concerned by the guide.")
-   (tips
-    '()
-    :type (maybe (cons guide-entry *))))
-  (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:export-predicate-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+(defun version-suggestions (major-version)
+  (let ((result '()))
+    (maphash (lambda (key suggestions)
+               (declare (ignore key))
+               (setf result (append (sera:keep major-version
+                                               suggestions
+                                               :key #'version
+                                               :test #'string=)
+                                    result)))
+             +migration-suggestions+)
+    (delete-duplicates result)))
 
-(defmethod initialize-instance :after ((guide guide) &key)
-  (setf (gethash (cons (from-version guide) (to-version guide))
-                 +migration-guides+)
-        guide ))
-
-
-(defun make-migration (from-version to-version tips)
-  "TIPS are in the form:
-
-\((SYMBOLS1 TIP1)
- (SYMBOLS2 TIP2)
- ...)"
-  (make-instance
-   'guide
-   :from-version from-version
-   :to-version to-version
-   :tips (mapcar (lambda (args) (apply #'make-entry args))
-                 tips)))
-
-;; TODO: Use `resolve-backtick-quote-links' in
-
-
-(defmethod render-migration ((guide guide))
+(defmethod render-version-migration (major-version)
   (spinneret:with-html-string
     (:div
-     (:h2 "From " (from-version guide) " to " (to-version guide))
+     (:h2 "For major version " major-version)
      (:table
       (:tr
        (:td "Concerned symbols")
        (:td "Suggestion"))
-      (dolist (entry (tips guide))
+      (dolist (suggestion (version-suggestions major-version))
         (:tr
-         (:td (format nil "~{~a~^, ~}" (symbols entry)))
-         (:td (:raw (tip entry)))))))))
+         (:td (format nil "~{~a~^, ~}" (symbols suggestion)))
+         (:td (:raw (tip suggestion)))))))))
 
 (define-internal-page-command-global migration-guide ()
     (buffer "*Migration guide*")
@@ -89,13 +75,7 @@ major versions."
     (:style (style buffer))
     (:h1 "Migration guide")
     (:p "See also the " (:code "changelog") ".")
-    (dolist (guide (alex:hash-table-values +migration-guides+))
-      (:raw (render-migration guide)))))
-
-(defmacro define-migration (from-version-string to-version-string &body body)
-  `(make-migration ,from-version-string ,to-version-string
-                   (list ,@(loop :for (syms tip) :on body :by #'cddr
-                               :collect (list 'list `',syms `(spinneret:with-html-string ,tip))))))
+    (:raw (render-version-migration (write-to-string (first (nyxt::version)))))))
 
 ;; TODO: Fix this, does not work!
 (spinneret:deftag xref (symbol attr)
@@ -106,20 +86,21 @@ major versions."
        (:code ,@attr ,@symbol)))
 
 
-(export-always 'match-tips)             ; TODO: Rename
-(defun match-tips (string)
-  (sera:filter
-   (lambda (symbols) (find (alex:symbolicate (string-upcase string)) symbols))
-   (tips (current-migration-guide))
-   :key #'symbols))
+(export-always 'find-suggestions)
+(defun find-suggestions (string)
+  (gethash (alex:symbolicate (string-upcase string)) +migration-suggestions+))
 
-(defun current-migration-guide ()
-  (let ((major (first (nyxt::version))))
-    (gethash (cons (prin1-to-string (1- major))
-                   (prin1-to-string major))
-             +migration-guides+)))
+(defmacro define-migration (major-version-string &body body)
+  (let ((result '()))
+    (cons 'progn
+          (alex:doplist (symbols tip body result)
+            (push `(make-instance 'suggestion
+                                  :symbols (uiop:ensure-list ',symbols)
+                                  :tip (spinneret:with-html-string ,tip)
+                                  :version ,major-version-string)
+                  result)))))
 
-(define-migration "2" "3"
+(define-migration "3"
   (download-directory)
   (:p (:code "download-directory") " is in " (:code "context-buffer") ".")
 
