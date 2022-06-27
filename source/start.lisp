@@ -589,6 +589,8 @@ Then load `*config-file*' if any.
 Instantiate `*browser*'.
 Finally, run the browser, load URL-STRINGS if any, then run
 `*after-init-hook*'."
+  (format t "Nyxt version ~a~&" +version+)
+  (log:info "Source location: ~s" (files:expand *source-directory*))
   (let* ((urls (strings->urls url-strings))
          (thread (when (files:expand *socket-file*)
                    (listen-or-query-socket urls)))
@@ -597,7 +599,6 @@ Finally, run the browser, load URL-STRINGS if any, then run
     (when (or thread
               (getf *options* :no-socket)
               (null (files:expand *socket-file*)))
-      (format t "Nyxt version ~a~&" +version+)
       (load-lisp (files:expand *auto-config-file*) :package (find-package :nyxt-user))
       (match (multiple-value-list (load-lisp (files:expand *config-file*)
                                              :package (find-package :nyxt-user)))
