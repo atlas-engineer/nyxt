@@ -495,9 +495,10 @@ Examples:
 "))
   (pushnew 'nyxt-source-registry asdf:*default-source-registries*)
   (asdf:clear-configuration)
-  (if (uiop:directory-exists-p (asdf:system-source-directory :nyxt))
-      (set-nyxt-source-location (asdf:system-source-directory :nyxt))
-      (log:debug "Nyxt source directory not found."))
+  (let ((source-directory (files:expand *source-directory*)))
+    (if (uiop:directory-exists-p source-directory)
+        (set-nyxt-source-location source-directory)
+        (log:debug "Nyxt source directory not found.")))
 
   ;; Initialize the lparallel kernel
   (initialize-lparallel-kernel)

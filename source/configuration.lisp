@@ -99,7 +99,7 @@ This is set globally so that extensions can be loaded even if there is no
 (defun nyxt-source-registry ()
   `(:source-registry
     (:tree ,(files:expand *extensions-directory*))
-    (:tree ,(files:expand *source-directory*))
+    (:tree ,(files:expand *source-directory*)) ; Probably useless since systems are immutable.
     :inherit-configuration))
 
 (defun set-nyxt-source-location (pathname) ; From `sb-ext:set-sbcl-source-location'.
