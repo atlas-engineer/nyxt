@@ -112,16 +112,18 @@ CLASS is a class symbol."
   (flet ((form-entry (&key id label type name)
            (spinneret:with-html-string
              (:br)
-             (:label :for id label)
              (:raw
               (sera:string-case type
                 ("radio"
                  (unless name
                    (error "Radio button needs a name"))
                  (spinneret:with-html-string
-                   (:input :type type :id id :name name :value id)))
+                   (:input :type type :id id :name name :value id)
+                   (:label :for id label))
+)
                 (t
                  (spinneret:with-html-string
+                   (:label :for id label)
                    (:input :type type :id id :name id)))))))
          (generate-colors (theme-symbol)
            (spinneret:with-html-string
