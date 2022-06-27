@@ -60,15 +60,13 @@
    (enable-hook
     (make-instance 'hook-mode)
     :type hook-mode
-    :documentation "This hook is run when enabling the mode.
-It takes the mode as argument
-It is run before the destructor.")
+    :documentation "Hook run when enabling the mode, after the constructor.
+The handlers take the mode as argument.")
    (disable-hook
     (make-instance 'hook-mode)
     :type hook-mode
-    :documentation "This hook is run when disabling the mode.
-It takes the mode as argument.
-It is run before the destructor.")
+    :documentation "Hook run when disabling the mode, before the destructor.
+The handlers take the mode as argument.")
    (keymap-scheme
     (make-hash-table :size 0)
     :type keymap:scheme))

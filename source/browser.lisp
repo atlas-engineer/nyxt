@@ -199,14 +199,14 @@ The handlers take the buffer as argument.")
    (prompt-buffer-make-hook
     (make-instance 'hook-prompt-buffer)
     :type hook-prompt-buffer
-    :documentation "Hook run after the `prompt-buffer'
-class is instantiated and before initializing the prompt-buffer modes.
-The handlers take the prompt-buffer as argument.")
+    :documentation "Hook run after the `prompt-buffer' class is instantiated and
+before initializing the `prompt-buffer' modes.
+The handlers take the `prompt-buffer' as argument.")
    (prompt-buffer-ready-hook
     (make-instance 'hook-prompt-buffer)
     :type hook-prompt-buffer
-    :documentation "A hook one can attach to waiting for the prompt buffer to be available.
-The handlers take the prompt-buffer as argument.")
+    :documentation "Hook run while waiting for the prompt buffer to be available.
+The handlers take the `prompt-buffer' as argument.")
    (before-download-hook
     (make-instance 'hook-download)
     :type hook-download

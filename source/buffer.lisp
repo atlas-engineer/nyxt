@@ -140,19 +140,19 @@ access the initialized buffer.")
    (enable-mode-hook
     (make-instance 'hook-mode)
     :type hook-mode
-    :documentation "Hook run on every mode activation,
-after the mode-specific hook.")
+    :documentation "Hook run on every mode activation, after the mode-specific
+hook.")
    (disable-mode-hook
     (make-instance 'hook-mode)
     :type hook-mode
-    :documentation "Hook run on every mode deactivation,
-after the mode-specific hook."))
+    :documentation "Hook run on every mode deactivation, after the mode-specific
+hook."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class)
-  (:documentation "A buffer which behaviour can be modified with `mode's."))
+  (:documentation "A buffer whose behaviour can be modified with `mode's."))
 
 (defmethod finalize-buffer ((buffer modable-buffer) &key (browser *browser*) no-hook-p extra-modes)
   "Finalize instantiation of modable BUFFER.
@@ -468,8 +468,8 @@ inherited from the superclasses."))
     :accessor nil
     :export nil
     :documentation "Hook run in `buffer-load' before loading.
-The handlers take the URL going to be loaded as argument
-and must return a (possibly new) URL.")
+The handlers take the URL going to be loaded as argument and must return a
+(possibly new) URL.")
    (buffer-loaded-hook
     (make-instance 'hook-buffer)
     :type hook-buffer
