@@ -16,7 +16,7 @@ If URL-STRING is a path to an existing file, return a `quri:uri-file' object.
 If the conversion fails, a `quri:uri' object is always returned."
   (or (ignore-errors
        (if (uiop:file-exists-p url-string)
-           (quri:uri (str:concat "file://" url-string))
+           (quri.uri.file:make-uri-file :path url-string)
            (quri:uri url-string)))
       (quri:uri "")))
 
