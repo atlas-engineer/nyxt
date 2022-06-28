@@ -200,3 +200,11 @@ Like `uiop:reduce/strcat' but for lists."
                      (logand mode-mask
                              (sb-posix:stat-mode (sb-posix:stat path)))))))
          (socket-p path))))
+
+(export-always 'has-method-p)
+(defun has-method-p (object generic-function)
+  "Return non-nil if OBJECT has GENERIC-FUNCTION specialization."
+  (some (lambda (method)
+          (subtypep (type-of object) (class-name
+                                      (first (closer-mop:method-specializers method)))))
+        (closer-mop:generic-function-methods generic-function)))
