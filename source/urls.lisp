@@ -26,13 +26,6 @@ Members of URL-STRINGS corresponding to the empty URL are discarded."
   ;; how to define the empty URL?
   (remove-if #'url-empty-p (mapcar #'string->url url-strings)))
 
-(defun has-method-p (object generic-function)
-  "Return non-nil if OBJECT has GENERIC-FUNCTION specialization."
-  (some (lambda (method)
-          (subtypep (type-of object) (class-name
-                                      (first (closer-mop:method-specializers method)))))
-        (closer-mop:generic-function-methods generic-function)))
-
 (defun has-url-method-p (object)
   "Return non-nil if OBJECT has `url' specialization."
   (has-method-p object #'url))
