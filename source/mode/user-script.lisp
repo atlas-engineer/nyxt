@@ -45,32 +45,30 @@
   (:metaclass interface-class))
 
 (define-class user-script (renderer-user-script nfiles:data-file nyxt-remote-file)
-  ((code
-    :unbound
-    :type (maybe string))
+  ((code "" :type (maybe string))
    (version "")
    (description "")
    (namespace "")
    (world-name
-    :unbound
+    nil
     :type (maybe string)
     :documentation "The JavaScript world to run the `code' in.")
    (requires
     nil
     :type (maybe hash-table))
    (include
-    :unbound
+    '("http://*/*" "https://*/*")
     :type list-of-strings)
    (exclude
-    :unbound
+    '()
     :type list-of-strings)
    (all-frames-p
-    :unbound
+    t
     :type boolean
     :documentation "Whether to run on both top-level frame and all the subframes.
 If false, runs on the toplevel frame only.")
    (run-at
-    :unbound
+    :document-end
     :type (member :document-start :document-end :document-idle)
     :documentation "When to run the script.
 Possible values:
@@ -143,7 +141,7 @@ Return:
     (alex:write-string-into-file (nfiles:url-content script) destination :if-exists :supersede)))
 
 (defmethod parse-user-script ((script user-script))
-  (let ((code (files:content script)))
+  (let ((code (code script)))
     (or
      (sera:and-let* ((start-position (search "// ==UserScript==" code))
                      (end-position (search "// ==/UserScript==" code))
@@ -194,23 +192,15 @@ Return:
                               ("document-idle" :document-idle)
                               (otherwise :document-end)))
            code-with-requires)))
-     (setf (code script) code
-           (include script) '("http://*/*" "https://*/*")
-           (exclude script) '()
-           (all-frames-p script) t
-           (run-at script) :document-end
-           (world-name script) nil)
-     code)))
+     (setf (code script) code))))
 
-(defmethod slot-unbound (class (instance user-script) slot-name)
-  (declare (ignore class))
-  (parse-user-script instance)
-  (slot-value instance slot-name))
+(defmethod customize-instance :after ((script user-script) &key)
+  (parse-user-script script))
 
 (defmethod nfiles:deserialize ((profile nyxt-profile) (script user-script) raw-content &key)
   "If the script is not in the UserScript format, the raw content is used as is
 and only the `code' slot is set."
   (declare (ignorable profile))
-  (prog1
-      (setf (files:content script) (alex:read-stream-content-into-string raw-content))
+  (progn
+    (setf (code script) (alex:read-stream-content-into-string raw-content))
     (parse-user-script script)))
