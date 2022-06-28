@@ -806,8 +806,6 @@ See `gtk-browser's `modifier-translator' slot."
                                                                       (files:expand data-manager-cache-directory)))))))
          (gtk-extensions-path (files:expand (make-instance 'gtk-extensions-directory)))
          (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
-    (webkit:webkit-web-context-add-path-to-sandbox
-     context (namestring gtk-extensions-path) t)
     (unless (uiop:emptyp gtk-extensions-path)
       (log:info "GTK extensions directory: ~s" gtk-extensions-path)
       ;; TODO: Should we also use `connect-signal' here?  Does this yield a memory leak?
@@ -815,6 +813,9 @@ See `gtk-browser's `modifier-translator' slot."
        context "initialize-web-extensions"
        (lambda (context)
          (with-protect ("Error in \"initialize-web-extensions\" signal thread: ~a" :condition)
+           ;; The following calls
+           ;; `webkit:webkit-web-context-add-path-to-sandbox' for us, so no need
+           ;; to add `gtk-extensions-path' to the sandbox manually.
            (webkit:webkit-web-context-set-web-extensions-directory
             context
             (uiop:native-namestring gtk-extensions-path))))))
