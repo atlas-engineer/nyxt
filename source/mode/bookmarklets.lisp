@@ -1,3 +1,10 @@
+# SPDX-FileCopyrightText: 2017 John Mercouris <john@atlas.engineer>
+# SPDX-FileCopyrightText: 2017 Atlas Engineer LLC
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+# Atlas Engineer LLC
+
 ;;;; This package and file serves as a source for bookmarklets that
 ;;;; originate outside of the Nyxt codebase. Eventually, the goal is
 ;;;; to translate these bookmarklets into their equivalent parenscript
