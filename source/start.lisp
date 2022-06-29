@@ -240,12 +240,38 @@ Don't run this from a REPL, prefer `start' instead."
       (isys:sigaction isys:sigterm interrupt-sigaction (cffi:null-pointer)))
     (apply #'start (append options (list :urls free-args)))))
 
+(defun error-in-new-window (title condition-string backtrace)
+  (sera:lret* ((window (window-make *browser*))
+               (error-buffer (make-instance 'document-buffer)))
+    (with-current-buffer error-buffer
+      (html-set
+       (values
+        (spinneret:with-html-string
+          (:head
+           (:title title)
+           (:style (style (current-buffer))))
+          (:body
+           (:h1 title)
+           (:h2 "Condition")
+           (:pre condition-string)
+           (alex:when-let ((suggestions (alex:mappend #'nyxt/migration:find-suggestions
+                                                      (sera:tokens condition-string))))
+             (:h2 "Suggestions")
+             (:ul (dolist (suggestion suggestions)
+                    (:li (:raw (nyxt/migration:tip suggestion))))))
+           (:h2 "Backtrace")
+           (:pre backtrace)))
+        "text/html;charset=utf8")
+       error-buffer))
+    (window-set-buffer window error-buffer)))
+
 (-> load-lisp
     ((or null trivial-types:pathname-designator) &key (:package (or null package)))
     *)
 (defun load-lisp (file &key package)
   "Load the Lisp FILE (can also be a stream).
-Return the short error message and the full error message as second value."
+Return T on success.
+On error, return the condition as a first value and the backtrace as second value."
   (unless (files:nil-pathname-p file)
     (let ((*package* (or (find-package package) *package*)))
       (flet ((unsafe-load ()
@@ -262,19 +288,12 @@ Return the short error message and the full error message as second value."
             (unsafe-load)
             (catch 'lisp-file-error
               (handler-bind ((error (lambda (c)
-                                      (let* ((error-message "Could not load the config file")
-                                             (type-error-message (str:concat error-message
-                                                                             " because of a type error"))
-                                             (message (if (subtypep (type-of c) 'type-error)
-                                                          type-error-message
-                                                          error-message))
-                                             (backtrace (with-output-to-string (stream)
-                                                          (uiop:print-backtrace :stream stream :condition c)))
-                                             (full-message (format nil "~a: ~a~%~%~%~a" message c backtrace)))
+                                      (let ((backtrace (with-output-to-string (stream)
+                                                         (uiop:print-backtrace :stream stream :condition c))))
                                         (throw 'lisp-file-error
                                           (if *browser*
-                                              (error-in-new-window "*Config file errors*" full-message)
-                                              (values message full-message)))))))
+                                              (error-in-new-window "*Config file errors*" (princ-to-string c) backtrace)
+                                              (values c backtrace)))))))
                 (unsafe-load))))))))
 
 (define-command load-file ()
@@ -586,14 +605,16 @@ Finally, run the browser, load URL-STRINGS if any, then run
               (getf *options* :no-socket)
               (null (files:expand *socket-file*)))
       (load-lisp (files:expand *auto-config-file*) :package (find-package :nyxt-user))
-      (match (multiple-value-list (load-lisp (files:expand *config-file*)
-                                             :package (find-package :nyxt-user)))
-        (nil nil)
-        ((list message full-message)
-         (setf startup-error-reporter
-               (lambda ()
-                 (echo-warning "~a." message)
-                 (error-in-new-window "Configuration file errors" full-message)))))
+      (multiple-value-bind (condition backtrace)
+          (load-lisp (files:expand *config-file*)
+                     :package (find-package :nyxt-user))
+        (when backtrace
+          (setf startup-error-reporter
+                (lambda ()
+                  (echo-warning "~a" condition)
+                  (error-in-new-window "Configuration file errors"
+                                       (princ-to-string condition)
+                                       backtrace)))))
       (load-or-eval :remote nil)
       (setf *browser* (make-instance 'browser
                                      :startup-error-reporter-function startup-error-reporter
@@ -607,6 +628,31 @@ Finally, run the browser, load URL-STRINGS if any, then run
       (bt:make-thread (lambda ()
                         (in-package :nyxt-user)))
       (ffi-initialize *browser* urls startup-timestamp))))
+
+(defun restart-with-message (&key condition backtrace)
+  (flet ((set-error-message (condition backtrace)
+           (let ((*package* (find-package :cl))) ; Switch package to use non-nicknamed packages.
+             (write-to-string
+              `(hooks:add-hook
+                nyxt:*after-init-hook*
+                (make-instance
+                 'hooks:handler
+                 :fn (lambda ()
+                       (setf (nyxt::startup-error-reporter-function *browser*)
+                             (lambda ()
+                               (nyxt:echo-warning "Restarted without configuration file due to error: ~a"
+                                                  ,(princ-to-string condition))
+                               (nyxt::error-in-new-window "Initialization error" ,(princ-to-string condition) ,backtrace))))
+                 :name 'error-reporter))))))
+    (let* ((new-command-line (append (uiop:raw-command-line-arguments)
+                                     `("--no-config"
+                                       "--eval"
+                                       ,(set-error-message condition backtrace)))))
+      (log:warn "Restarting with ~s."
+                (append (uiop:raw-command-line-arguments)
+                        '("--no-config")))
+      (uiop:launch-program new-command-line)
+      (quit 1))))
 
 (define-command nyxt-init-time ()
   "Return the duration of Nyxt initialization."

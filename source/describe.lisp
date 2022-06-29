@@ -531,17 +531,6 @@ A command is a special kind of function that can be called with
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TODO: Move rest somewhere else?  Maybe too low-level for help.lisp.
 
-(defun error-buffer (&optional (title "Unknown error") (text ""))
-  (sera:lret* ((error-buffer (make-instance 'document-buffer)))
-    (with-current-buffer error-buffer
-      (html-set (error-help title text)
-                error-buffer))))
-
-(defun error-in-new-window (title text)
-  (sera:lret* ((window (window-make *browser*))
-               (error-buffer (error-buffer title text)))
-    (window-set-buffer window error-buffer)))
-
 (export-always 'system-information)
 (defun system-information ()            ; TODO: Rename report-system-information?
   "Return a system information report as a string."

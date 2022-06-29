@@ -250,39 +250,6 @@ prevents otherwise.")
   "Get the window containing a buffer."
   (find buffer (alex:hash-table-values (windows browser)) :key #'active-buffer))
 
-(defun restart-with-message (&key condition backtrace)
-  (flet ((set-error-message (message full-message)
-           (let ((*package* (find-package :cl))) ; Switch package to use non-nicknamed packages.
-             (write-to-string
-              `(hooks:add-hook
-                nyxt:*after-init-hook*
-                (make-instance
-                 'hooks:handler
-                 :fn (lambda ()
-                       (setf (nyxt::startup-error-reporter-function *browser*)
-                             (lambda ()
-                               (nyxt:echo-warning "Restarted without configuration file due to error: ~a" ,message)
-                               (nyxt::error-in-new-window "Initialization error" ,full-message))))
-                 :name 'error-reporter))))))
-    (let* ((message (princ-to-string condition))
-           (full-message (format nil
-                                 "Restarted without configuration file ~s~&due to following startup error:~%~%~a~a"
-                                 (files:expand *config-file*)
-                                 message
-                                 (if backtrace
-                                     (format nil "~%~%----~%~%~a"
-                                             backtrace)
-                                     "")))
-           (new-command-line (append (uiop:raw-command-line-arguments)
-                                     `("--no-config"
-                                       "--eval"
-                                       ,(set-error-message message full-message)))))
-      (log:warn "Restarting with ~s."
-                (append (uiop:raw-command-line-arguments)
-                        '("--no-config")))
-      (uiop:launch-program new-command-line)
-      (quit 1))))
-
 (defmethod finalize ((browser browser) urls startup-timestamp)
   "Run `*after-init-hook*' then BROWSER's `startup'."
   ;; `messages-appender' requires `*browser*' to be initialized.
