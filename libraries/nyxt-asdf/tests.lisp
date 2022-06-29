@@ -21,14 +21,6 @@
        ;; Arbitrary exit code.
        (quit 18)))
 
-(defmethod asdf:perform ((op asdf:compile-op) (c nyxt-test))
-  ;; Do nothing so ASDF does not try to compile the nyxt-test file directly.
-  nil)
-
-(defmethod asdf:output-files ((op asdf:compile-op) (c nyxt-test))
-  (values '()
-          t))
-
 (defmethod asdf:perform ((op asdf:test-op) (c nyxt-test))
   (run-test c))
 

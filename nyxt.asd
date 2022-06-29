@@ -232,8 +232,8 @@ This system does nothing in particular.")
   :depends-on (nyxt prove)
   :serial t
   :components ((:file "tests/package")
-               (:nyxt-test "tests/offline/")
-               (:nyxt-online-test "tests/online/")))
+               (:nyxt-test "tests/offline/global-history")
+               (:nyxt-online-test "tests/online/urls")))
 
 (defsystem "nyxt/benchmark"
   :defsystem-depends-on (nyxt-asdf)
@@ -317,8 +317,8 @@ This system does nothing in particular.")
   :depends-on (nyxt/gi-gtk prove)
   :serial t
   :components ((:file "tests/renderer-package")
-               (:nyxt-test "tests/renderer-offline/")
-               (:nyxt-online-test "tests/renderer-online/")))
+               (:nyxt-test "tests/renderer-offline/set-url")
+               (:nyxt-online-test "tests/renderer-online/set-url")))
 
 (defsystem "nyxt/qt"
   :depends-on (nyxt
@@ -365,7 +365,8 @@ This system does nothing in particular.")
   :class :nyxt-renderer-system
   :depends-on (prove)
   :components ((:file "tests/package")
-               (:nyxt-test "tests/executable/"))
+               (:nyxt-test "tests/executable/config")
+               (:nyxt-test "tests/executable/scripts"))
   :perform (test-op :around (op c)
                     (if (file-exists-p (system-relative-pathname :nyxt "nyxt"))
                         (call-next-method)
@@ -410,7 +411,7 @@ This system does nothing in particular.")
 (defsystem "nyxt/download-manager/tests"
   :defsystem-depends-on (nyxt-asdf)
   :depends-on (nyxt/download-manager prove)
-  :components ((:nyxt-online-test "libraries/download-manager/tests/" )))
+  :components ((:nyxt-online-test "libraries/download-manager/tests/tests" )))
 
 (defsystem "nyxt/analysis"
   :defsystem-depends-on (nyxt-asdf)
@@ -462,7 +463,7 @@ This system does nothing in particular.")
 (defsystem "nyxt/history-tree/tests"
   :defsystem-depends-on (nyxt-asdf)
   :depends-on (nyxt/history-tree prove str)
-  :components ((:nyxt-test "libraries/history-tree/tests/")))
+  :components ((:nyxt-test "libraries/history-tree/tests/tests")))
 
 (defsystem "nyxt/password-manager"
   :defsystem-depends-on (nyxt-asdf)
@@ -514,7 +515,7 @@ This system does nothing in particular.")
 (defsystem "nyxt/class-star/tests"
   :defsystem-depends-on (nyxt-asdf)
   :depends-on (nyxt/class-star prove)
-  :components ((:nyxt-test "libraries/class-star/tests/")))
+  :components ((:nyxt-test "libraries/class-star/tests/tests")))
 
 (defsystem "nyxt/ospm"
   :defsystem-depends-on (nyxt-asdf)
@@ -569,7 +570,9 @@ This system does nothing in particular.")
   :defsystem-depends-on (nyxt-asdf)
   :depends-on (nyxt/prompter prove)
   :components ((:file "libraries/prompter/test-package")
-               (:nyxt-test "libraries/prompter/tests/")))
+               (:nyxt-test "libraries/prompter/tests/tests")
+               (:nyxt-test "libraries/prompter/tests/fuzzy")
+               (:nyxt-test "libraries/prompter/tests/submatches")))
 
 (defsystem "nyxt/theme"
   :defsystem-depends-on (nyxt-asdf)
@@ -587,4 +590,4 @@ This system does nothing in particular.")
   :defsystem-depends-on (nyxt-asdf)
   :depends-on (nyxt/theme prove)
   :components ((:file "libraries/theme/test-package")
-               (:nyxt-test "libraries/theme/tests/")))
+               (:nyxt-test "libraries/theme/tests/test")))
