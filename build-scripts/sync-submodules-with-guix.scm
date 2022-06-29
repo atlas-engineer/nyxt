@@ -1,3 +1,12 @@
+# SPDX-FileCopyrightText: 2017 John Mercouris <john@atlas.engineer>
+# SPDX-FileCopyrightText: 2017 Atlas Engineer LLC
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+# Atlas Engineer LLC
+
+
+
 ;; Run with:
 ;;   guix repl -- ./build-scripts/sync-submodules-with-guix.scm
 ;;   (pk (all-refs nyxt))
