@@ -13,7 +13,7 @@ Non-exhaustive list of features:
 
 - Asynchronous suggestion computation.
 - Multiple sources.
-- Multiple actions.
+- Multiple return actions.
 - Customizable matching and sorting.
 - Multiple attributes to match and display (also known as "multiple column
   display" like =helm-find-files=).
@@ -21,5 +21,5 @@ Non-exhaustive list of features:
 - Notifications sent when suggestion list is updated.
 - Per-source history.
 - Resumable prompters.
-- Follow function (executed without closing the prompter).
-- Follow-mode (automatically run the persistent action on selection change).
+- Selection actions (automatically run persistent actions on selection change).
+- Automatically return the prompt when narrowed down to a single suggestion.

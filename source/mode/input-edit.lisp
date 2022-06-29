@@ -1,11 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/input-edit-mode
-  (:use :common-lisp :nyxt)
-  (:import-from #:keymap #:define-key #:define-scheme)
-  (:documentation "Mode for editing HTML input areas."))
-
+(nyxt:define-package :nyxt/input-edit-mode
+    (:documentation "Mode for editing HTML input areas."))
 (in-package :nyxt/input-edit-mode)
 
 ;;;; commands for navigating/editing input fields on HTML pages
@@ -25,6 +22,7 @@
                                      (ps:lisp selection-start)
                                      (ps:lisp selection-end))))
 
+(export-always 'with-text-buffer)
 (defmacro with-text-buffer ((buffer-name cursor-name
                              &optional initial-contents
                                        initial-cursor-position)
@@ -38,6 +36,7 @@
        (setf (cluffer:cursor-position ,cursor-name) (truncate ,initial-cursor-position)))
      ,@body))
 
+(export-always 'with-input-area)
 (defmacro with-input-area ((contents cursor-position) &body body)
   (let ((unprocessed-cursor (gensym)))
     `(let* ((,contents (active-input-area-content))
@@ -45,7 +44,7 @@
             (,cursor-position (when (numberp ,unprocessed-cursor)
                                 (truncate (active-input-area-cursor)))))
        (declare (ignorable ,contents ,cursor-position))
-       (if cursor-position
+       (if ,cursor-position
            ,@body
            (echo-warning "Cannot get cursor position. Are you in an input field?")))))
 
@@ -133,7 +132,8 @@
   "Mode for editing input areas in HTML. Overrides many of the
 bindings in other modes, so you will have to disable/enable it as
 necessary."
-  ((rememberable-p nil)
+  ((visible-in-status-p nil)
+   (rememberable-p nil)
    (keymap-scheme
     (define-scheme "input-edit-mode"
       scheme:cua

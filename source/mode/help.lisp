@@ -1,13 +1,23 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/help-mode
-  (:use :common-lisp :nyxt)
-  (:import-from #:serapeum #:export-always)
-  (:import-from #:keymap #:define-key #:define-scheme)
-  (:documentation "Mode for help pages"))
+(nyxt:define-package :nyxt/help-mode
+    (:documentation "Mode to enhance navigation on internal documentation pages."))
 (in-package :nyxt/help-mode)
 
 (define-mode help-mode ()
-  "Mode for displaying documentation."
-  ((rememberable-p nil)))
+  "Mode for help and documentation pages."
+  ((visible-in-status-p nil)
+   (rememberable-p nil)
+   (keymap-scheme
+    (define-scheme "help-mode"
+      scheme:cua
+      (list
+       "q" 'delete-current-buffer
+       "n" 'nyxt/document-mode:next-heading
+       "p" 'nyxt/document-mode:previous-heading
+       "m" 'nyxt/document-mode:jump-to-heading
+       "s" 'nyxt/search-buffer-mode:search-buffer
+       "t" 'nyxt/document-mode:headings-panel
+       "?" 'describe-bindings))))
+  (:toggler-command-p nil))

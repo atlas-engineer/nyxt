@@ -1,16 +1,15 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/web-extensions
-  (:use :common-lisp :nyxt)
-  (:import-from #:class-star #:define-class)
-  (:import-from #:serapeum
-                #:export-always
-                #:->)
-  (:documentation "WebExtensions API conformance code."))
+(nyxt:define-package :nyxt/web-extensions
+    (:documentation "WebExtensions API conformance code."))
 (in-package :nyxt/web-extensions)
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (use-nyxt-package-nicknames))
+
+;; TODO: We need to allow modifying :nyxt form here, for instance because we
+;; create a `background-buffer' accessor on what is just a class in `nyxt'.
+#+sb-package-locks
+(sera:eval-always
+  (sb-ext:add-implementation-package :nyxt/web-extensions :nyxt))
 
 (define-class content-script ()
   ((match-patterns (error "Match pattern is required.")
@@ -52,13 +51,13 @@ A list of objects. Does not necessarily have the same order as `files' of the sc
                                           :allow-list (match-patterns script))
               (user-styles script))
         (push
-         (ffi-buffer-add-user-script buffer (uiop:read-file-string
-                                             (merge-extension-path extension file))
-                                     :world-name (name extension)
-                                     :all-frames-p t
-                                     :run-now-p t
-                                     :at-document-start-p t
-                                     :allow-list (match-patterns script))
+         (ffi-buffer-add-user-script buffer (make-instance 'nyxt/user-script-mode:user-script
+                                                           :code (uiop:read-file-string
+                                                                  (merge-extension-path extension file))
+                                                           :all-frames-p t
+                                                           :world-name (name extension)
+                                                           :run-at :document-start
+                                                           :include (match-patterns script)))
          (user-scripts script)))))
 
 (defun make-content-script (json)
@@ -66,7 +65,7 @@ A list of objects. Does not necessarily have the same order as `files' of the sc
 
 MATCHES, JS, and CSS are all keys of the \"content_scripts\" manifest.json keys:
 https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts"
-  (let ((sanitize-mozilla-regex (alex:curry #'str:replace-using '("*." "*"
+  (let ((sanitize-mozilla-regex (curry #'str:replace-using '("*." "*"
                                                                   "?" "*"
                                                                   "<all_urls>" "*://*/*"))))
     (make-instance
@@ -104,7 +103,7 @@ JSON is the parsed extension manifest."
                                (lambda (a b)
                                  (> (abs (- optimal-height a))
                                     (abs (- optimal-height b))))
-                               :key (alex:compose #'parse-integer #'symbol-name #'first))))))
+                               :key (compose #'parse-integer #'symbol-name #'first))))))
     (error ()
       (cdr (first (and (gethash "icons" json)
                        (alex:hash-table-alist (gethash "icons" json))))))))
@@ -135,7 +134,7 @@ https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.
                      (gethash "theme_icons" browser-action)))
          (sorted-icons (when icons
                          (sort icons
-                               #'> :key (alex:curry #'gethash "size"))))
+                               #'> :key (curry #'gethash "size"))))
          (max-icon (first sorted-icons))
          (default-icon (default-browser-action-icon json 1000)))
     (make-instance 'browser-action
@@ -172,8 +171,8 @@ https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
-(define-class extension-storage-file (nfiles:data-file nyxt-file)
-  ((nfiles:name "extension-storage")
+(define-class extension-storage-file (files:data-file nyxt-file)
+  ((files:name "extension-storage")
    (extension-name ""))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
@@ -181,15 +180,16 @@ https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.
   https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/storage
   for API description)."))
 
-(defmethod nfiles:resolve ((profile nyxt-profile) (file extension-storage-file))
+(defmethod files:resolve ((profile nyxt-profile) (file extension-storage-file))
   (sera:path-join
    (call-next-method)
-   (uiop:ensure-directory-pathname (nfiles:name file))
+   (uiop:ensure-directory-pathname (files:name file))
    (uiop:strcat (extension-name file) ".txt")))
 
 (define-mode extension ()
   "The base mode for any extension to inherit from."
-  ((name (error "Extension should have a name")
+  ((visible-in-status-p nil)
+   (name (error "Extension should have a name")
          :type string)
    (version (error "Extension should have a version")
             :type string)
@@ -201,6 +201,7 @@ https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.
        :documentation "A unique ID of the extension.
 Is shared between all the instances of the same extension.")
    (background-buffer nil
+                      :export nil
                       :documentation "The buffer to host background page of the extension in.
 Is shared between all the instances of the same extension.")
    (popup-buffer nil
@@ -297,27 +298,28 @@ slash. WebExtensions require this :/"
   (uiop:merge-pathnames* (string-left-trim "/" (namestring path))
                          (extension-directory extension)))
 
-(defmethod nyxt::format-mode ((extension extension))
+(defmethod nyxt:mode-status ((status status-buffer) (extension extension))
   (spinneret:with-html-string
     (:button :class "button"
-             :onclick (ps:ps (nyxt/ps:lisp-eval `(toggle-extension-popup ',(mode-name extension))))
-             :title (format nil "Open the browser action of ~a" (mode-name extension))
-             (name extension))))
+             :onclick (ps:ps (nyxt/ps:lisp-eval
+                              (:title "toggle-extension-popup")
+                              (toggle-extension-popup (sera:class-name-of extension))))
+             :title (format nil "Open the browser action of ~a" extension)
+             (call-next-method))))
 
 (define-command-global toggle-extension-popup (&optional extension-class (buffer (current-buffer)))
   "Open the popup of the extension of EXTENSION-CLASS.
-If this popup does already exist, close it."
+If the popup already exists, close it."
   (let ((extension-class (or extension-class
-                             (mode-name
-                              (prompt1
-                                :prompt "Extension to toggle the popup of"
-                                :sources (make-instance 'user-active-mode-source
-                                                        :constructor (sera:filter
-                                                                      #'nyxt/web-extensions::extension-p
-                                                                      (modes buffer))))))))
+                             (prompt1
+                               :prompt "Extension to toggle the popup of"
+                               :sources (make-instance 'active-mode-source
+                                                       :constructor (sera:filter
+                                                                     #'nyxt/web-extensions::extension-p
+                                                                     (modes buffer)))))))
     (with-current-buffer buffer
       ;;TODO: Send click message to background script if there's no popup.
-      (sera:and-let* ((extension (nyxt:find-submode (nyxt:current-buffer) extension-class))
+      (sera:and-let* ((extension (nyxt:find-submode extension-class (nyxt:current-buffer)))
                       (browser-action (browser-action extension))
                       (default-popup (default-popup browser-action)))
         (alex:if-let ((existing-popup
@@ -326,9 +328,9 @@ If this popup does already exist, close it."
                              :key #'title
                              :test #'equal)))
           (nyxt::window-delete-panel-buffer (current-window) existing-popup)
-          (let ((popup (make-instance 'user-panel-buffer
+          (let ((popup (make-instance 'panel-buffer
                                       :title (default-title (browser-action extension))
-                                      :id (nyxt::get-unique-identifier *browser*)
+                                      :id (nyxt::new-id)
                                       :default-modes (list extension-class))))
             (setf (popup-buffer extension) popup)
             (nyxt::window-add-panel-buffer
@@ -357,6 +359,7 @@ DIRECTORY should be the one containing manifest.json file for the extension in q
           (id (or (symbol-name (gensym ,name)))
               :allocation :class)
           (background-buffer nil
+                             :export nil
                              :allocation :class)
           (popup-buffer nil
                         :allocation :class)
@@ -375,8 +378,9 @@ DIRECTORY should be the one containing manifest.json file for the extension in q
                (spinneret:with-html-string
                  (:button :class "button"
                           :onclick (ps:ps (nyxt/ps:lisp-eval
-                                           `(toggle-extension-popup ',(mode-name extension))))
-                          :title (format nil "Open the browser action of ~a" (mode-name extension))
+                                           (:title "toggle-extension-popup")
+                                           (toggle-extension-popup (sera:class-name-of extension))))
+                          :title (format nil "Open the browser action of ~a" (name extension))
                           (:raw (setf (default-icon (browser-action extension))
                                       (encode-browser-action-icon (quote ,json) ,directory))))))))))
 

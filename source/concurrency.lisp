@@ -5,9 +5,16 @@
 
 (defun initialize-lparallel-kernel (&key (worker-count (sera:count-cpus)))
   "Initialize the lparallel kernel with WORKER-COUNT, if not supplied set it to
-the amount of CPU cores.."
+the amount of CPU cores."
   (unless lpara:*kernel*
     (setf lpara:*kernel* (lpara:make-kernel worker-count))))
+
+(defun restart-browser (c)
+  "Restart browser reporting condition C."
+  (funcall 'restart-with-message        ; Not defined yet.
+   :condition c
+   :backtrace (with-output-to-string (stream)
+                (uiop:print-backtrace :stream stream :condition c))))
 
 (export-always 'with-protect)
 (defmacro with-protect ((format-string &rest args) &body body)
@@ -26,25 +33,27 @@ raised condition."
               ((error
                  (lambda (,c)
                    (declare (ignorable ,c))
-                   ,(let ((condition-index (position :condition args)))
-                      (flet ((new-args (condition condition-index &optional escaped-p)
-                               (if condition-index
-                                   (append (subseq args 0 condition-index)
-                                           (list (if escaped-p
-                                                     `(plump:encode-entities (princ-to-string ,condition))
-                                                     `,condition))
-                                           (subseq args (1+ condition-index)))
-                                   'args)))
-                        `(handler-bind ((t (lambda (,sub-c)
-                                             (declare (ignore ,sub-c))
-                                             (log:error ,format-string ,@(new-args c condition-index))
-                                             (invoke-restart 'continue))))
-                           (echo-warning ,format-string ,@(new-args c condition-index :escaped-p))))))))
+                   (if *restart-on-error*
+                       (restart-browser ,c)
+                       ,(let ((condition-index (position :condition args)))
+                          (flet ((new-args (condition condition-index &optional escaped-p)
+                                   (if condition-index
+                                       (append (subseq args 0 condition-index)
+                                               (list (if escaped-p
+                                                         `(plump:encode-entities (princ-to-string ,condition))
+                                                         `,condition))
+                                               (subseq args (1+ condition-index)))
+                                       'args)))
+                            `(handler-bind ((t (lambda (,sub-c)
+                                                 (declare (ignore ,sub-c))
+                                                 (log:error ,format-string ,@(new-args c condition-index))
+                                                 (invoke-restart 'continue))))
+                               (echo-warning ,format-string ,@(new-args c condition-index :escaped-p)))))))))
             ,@body)))))
 
 (defun make-channel (&optional size)
   "Return a channel of capacity SIZE.
-If SIZE is NIL, capicity is infinite."
+If SIZE is NIL, capacity is infinite."
   (cond
     ((null size)
      (make-instance 'calispel:channel
@@ -78,4 +87,33 @@ what you are doing!"
     (lambda ()
       (with-protect ("Error on separate thread: ~a" :condition)
         ,@body))
-    :name ,(str:concat "Nyxt " name)))
+    :name (str:concat "Nyxt " ,name)))
+
+(defun evaluate (string &key interactive-p)
+  "Evaluate all expressions in STRING and return the last result as a list of values.
+The list of values is useful when the last result is multi-valued, e.g. (values 'a 'b).
+You need not wrap multiple values in a PROGN, all top-level expressions are
+evaluated in order."
+  (let ((channel (make-channel 1)))
+    (run-thread "evaluator"
+      (let ((interactive-p interactive-p))
+        (calispel:!
+         channel
+         (with-input-from-string (input string)
+           (first
+            (last
+             (mapcar (lambda (s-exp)
+                       (multiple-value-list
+                        (let ((*interactive-p* interactive-p))
+                          (with-protect ("Error in s-exp evaluation: ~a" :condition)
+                            (eval s-exp)))))
+                     (safe-slurp-stream-forms input))))))))
+    (calispel:? channel)))
+
+(defun evaluate-async (string)
+  "Like `evaluate' but does not block and does not return the result."
+  (run-thread "async evaluator"
+    (with-input-from-string (input string)
+      (dolist (s-exp (safe-slurp-stream-forms input))
+        (funcall (lambda () (with-protect ("Error in s-exp evaluation: ~a" :condition)
+                              (eval s-exp))))))))

@@ -11,13 +11,6 @@
           :documentation "The hook value."))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod prompter:object-attributes ((hook-description hook-description))
-  `(("Name" ,(name hook-description))
-    ("Value" ,(princ-to-string (value hook-description)))))
-
-(defmethod prompter:object-attributes ((handler hooks:handler))
-  `(("Name" ,(str:downcase (hooks:name handler)))))
-
 (defun command-attributes (command &optional (buffer (active-buffer (current-window :no-rescan))))
   (let* ((scheme-name (keymap-scheme-name buffer))
          (bindings (keymap:binding-keys
@@ -26,17 +19,14 @@
                             (mapcar (lambda (mode)
                                       (keymap:get-keymap scheme-name (keymap-scheme mode)))
                                     (modes buffer))))))
-    `(("Name" ,(string-downcase (name command)))
+    `(("Name" ,(string-downcase (closer-mop:generic-function-name command)))
       ("Bindings" ,(format nil "~{~a~^, ~}" bindings))
-      ("Docstring" ,(or (first (sera::lines (nyxt::docstring command)))
+      ("Docstring" ,(or (first (sera::lines (documentation command 'function)))
                         ""))
-      ("Mode" ,(let ((package-name (str:downcase (uiop:symbol-package-name (name command)))))
+      ("Mode" ,(let ((package-name (str:downcase (uiop:symbol-package-name (closer-mop:generic-function-name command)))))
                  (if (sera:in package-name "nyxt" "nyxt-user")
                      ""
                      (str:replace-first "nyxt/" "" package-name)))))))
-
-(defmethod prompter:object-attributes ((command command))
-  (command-attributes command))
 
 (define-class command-source (prompter:source)
   ((prompter:name "Commands")
@@ -49,22 +39,26 @@
                            (sort-by-time
                             (list-commands
                              :global-p (global-p source)
-                             :mode-symbols (mapcar #'mode-name (modes (buffer source))))))))
+                             :mode-symbols (mapcar #'sera:class-name-of (sera:filter #'enabled-p (modes (buffer source)))))))))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Prompter source to execute commands.
 Global commands are listed if `global-p' is non-nil.
 Mode commands of enabled modes are also listed.
 While disabled-mode commands are not listed, it's still possible to call them
-from a key binding."))
-(define-user-class command-source)
+from a key binding.")
+  (:metaclass user-class))
+
+(defmethod prompter:object-attributes ((command command) (source prompter:source))
+  (declare (ignore source))
+  (command-attributes command))
 
 (define-command execute-command ()
   "Execute a command by name."
   (unless (active-prompt-buffers (current-window))
     (let ((command (prompt1
                      :prompt "Execute command"
-                     :sources (make-instance 'user-command-source)
+                     :sources (make-instance 'command-source)
                      :hide-suggestion-count-p t)))
       (setf (last-access command) (local-time:now))
       (run-async command))))
@@ -107,22 +101,38 @@ from a key binding."))
                 value (type-of value) type)
           (prompt-argument prompt type input)))))
 
+(defun arglist (fn)
+  "Like `swank-backend:arglist' but normalized the result for `alex:parse-ordinary-lambda-list'."
+  #-ccl
+  (swank-backend:arglist fn)
+  #+ccl
+  (let ((package (alex:if-let ((name (swank-backend:function-name fn)))
+                   (symbol-package (if (listp name)
+                                       ;; Closures are named '(:internal NAME)
+                                       (second name)
+                                       name))
+                   *package*)))
+    (delete 'ccl::&lexpr
+            (mapcar (lambda (s)
+                      (if (keywordp s) (intern (string s) package) s))
+                    (swank-backend:arglist fn)))))
+
 (define-command execute-extended-command (&optional command)
-  "Query the user for the arguments to pass to a given COMMAND.
+  "Prompt for arguments to pass to a given COMMAND.
 User input is evaluated Lisp."
   ;; TODO: Add support for &rest arguments.
   (let* ((command (or command
                       (prompt1
                         :prompt "Execute extended command"
-                        :sources (make-instance 'user-command-source)
+                        :sources (make-instance 'command-source)
                         :hide-suggestion-count-p t)))
-         (lambda-list (swank::arglist (fn command))))
+         (lambda-list (arglist (slot-value command 'fn))))
     (multiple-value-match (alex:parse-ordinary-lambda-list lambda-list)
       ((required-arguments optional-arguments _ keyword-arguments)
-       (multiple-value-match (parse-function-lambda-list-types (fn command))
+       (multiple-value-match (parse-function-lambda-list-types (slot-value command 'fn))
          ((required-types optional-types _ keyword-types)
           (flet ((parse-args (params)
-                   (alex:mappend
+                   (mappend
                     (lambda-match
                       ((cons (and param (type symbol)) type)
                        (list (prompt-argument param type)))
@@ -133,12 +143,12 @@ User input is evaluated Lisp."
                        (list (prompt-argument name type default))))
                     params)))
             (setf (last-access command) (local-time:now))
-            (apply #'run-async
-                   command
-                   (alex:mappend #'parse-args
-                                 (list (pairlis required-arguments required-types)
-                                       (pairlis optional-arguments optional-types)
-                                       (pairlis keyword-arguments (mapcar #'second keyword-types))))))))))))
+            (run-async
+             command
+             (mappend #'parse-args
+                           (list (pairlis required-arguments required-types)
+                                 (pairlis optional-arguments optional-types)
+                                 (pairlis keyword-arguments (mapcar #'second keyword-types))))))))))))
 
 (defun get-hooks ()
   (flet ((list-hooks (object)
@@ -163,6 +173,11 @@ User input is evaluated Lisp."
   ((prompter:name "Hooks")
    (prompter:constructor (get-hooks))))
 
+(defmethod prompter:object-attributes ((hook-description hook-description) (source hook-source))
+  (declare (ignore source))
+  `(("Name" ,(name hook-description))
+    ("Value" ,(princ-to-string (value hook-description)))))
+
 (define-class handler-source (prompter:source)
   ((prompter:name "Handlers")
    (hook :accessor hook
@@ -170,6 +185,10 @@ User input is evaluated Lisp."
          :documentation "The hook for which to retrieve handlers for.")
    (prompter:constructor (lambda (source)
                            (hooks:handlers (hook source))))))
+
+(defmethod prompter:object-attributes ((handler hooks:handler) (source handler-source))
+  (declare (ignore source))
+  `(("Name" ,(str:downcase (hooks:name handler)))))
 
 (define-class disabled-handler-source (handler-source)
   ((prompter:constructor (lambda (source)

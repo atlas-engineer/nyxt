@@ -1,18 +1,17 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package  :nyxt/bookmark-frequent-visits
-  (:use :common-lisp :nyxt)
-  (:documentation "Mode to bookmark frequently visited URLs."))
+(nyxt:define-package :nyxt/bookmark-frequent-visits
+    (:documentation "Mode to bookmark frequently visited URLs."))
 (in-package :nyxt/bookmark-frequent-visits)
-(use-nyxt-package-nicknames)
 
 (define-mode bookmark-frequent-visits-mode ()
   "Mode to bookmark frequently visited URLs while navigating the web."
-  ((threshold 20)
-   (constructor
-    (lambda (mode)
-      (nyxt:on-signal-load-finished mode (url (current-buffer)))))))
+  ((visible-in-status-p nil)
+   (threshold 20)))
+
+(defmethod enable ((mode bookmark-frequent-visits-mode) &key)
+  (nyxt:on-signal-load-finished mode (url (current-buffer))))
 
 (defun bookmark-frequent-visit (threshold)
   "Check if current URL is frequently visited and not included in the
@@ -22,7 +21,7 @@ bookmarks. If this is the case, prompt the user about bookmarking it."
              already bookmarked or not."
              (let ((bookmark-url-strings
                      (mapcar #'(lambda (e) (render-url (url e)))
-                             (nfiles:content (bookmarks-file (current-buffer))))))
+                             (files:content (nyxt/bookmark-mode:bookmarks-file (current-buffer))))))
                (find url-address bookmark-url-strings :test #'string=))))
     (sera:and-let* ((history-entries (let ((history (buffer-history)))
                                        (mapcar #'htree:data (alex:hash-table-keys (htree:entries history)))))
@@ -35,7 +34,7 @@ bookmarks. If this is the case, prompt the user about bookmarking it."
       (when (and (> implicit-visits-value threshold)
                  (not (bookmarked-url-p current-url-string)))
         (if-confirm ("Bookmark ~a?" current-url-string)
-                    (bookmark-url :url current-url-string))))))
+                    (nyxt/bookmark-mode:bookmark-url :url current-url-string))))))
 
 (defmethod nyxt:on-signal-load-finished ((mode bookmark-frequent-visits-mode) url)
   (bookmark-frequent-visit (threshold mode))

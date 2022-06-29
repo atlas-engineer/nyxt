@@ -7,7 +7,7 @@
   "Edit `input-text' using `external-editor-program'.
 Create a temporary file and return its content.  The editor runs synchronously
 so invoke on a separate thread when possible."
-  (uiop:with-temporary-file (:directory (nfiles:expand (make-instance 'nyxt-data-directory))
+  (uiop:with-temporary-file (:directory (files:expand (make-instance 'nyxt-data-directory))
                              :pathname p)
     (when (> (length input-text) 0)
       (with-open-file (f p :direction :io
@@ -74,7 +74,7 @@ If the user file is GPG-encrypted, the editor must be capable of decrypting it."
   (if (external-editor-program *browser*)
       (let* ((file (prompt1 :prompt "Edit user file in external editor"
                             :sources 'user-file-source))
-             (path (nfiles:expand file)))
+             (path (files:expand file)))
 
         (echo "Using \"~{~a~^ ~}\" to edit ~s." (external-editor-program *browser*) path)
         (uiop:launch-program `(,@(external-editor-program *browser*)
@@ -88,7 +88,7 @@ separate thread when possible."
   (let ((page-source (if (web-buffer-p (current-buffer))
                          (plump:serialize (document-model (current-buffer)) nil)
                          (ffi-buffer-get-document (current-buffer)))))
-    (uiop:with-temporary-file (:directory (nfiles:expand (make-instance 'nyxt-data-directory))
+    (uiop:with-temporary-file (:directory (files:expand (make-instance 'nyxt-data-directory))
                                :pathname p)
       (if (> (length page-source) 0)
           (progn

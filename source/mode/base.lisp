@@ -28,17 +28,9 @@ This mode is a good candidate to be passed to `make-buffer'."
        "f5" 'reload-current-buffer
        "C-r" 'reload-current-buffer
        "C-R" 'reload-buffers
-       "C-m o" 'set-url-from-bookmark
-       "C-m s" 'bookmark-current-url
-       "C-d" 'bookmark-current-url
-       "C-m C-s" 'bookmark-buffer-url
-       "C-m k" 'delete-bookmark
        "C-t" 'make-buffer-focus
-       "C-m l" 'bookmark-url
-       "C-b" 'list-bookmarks
        "M-c l" 'copy-url
        "M-c t" 'copy-title
-       "f1 f1" 'help
        "f1 t" 'tutorial
        "f1 r" 'manual
        "f1 v" 'describe-variable
@@ -48,9 +40,10 @@ This mode is a good candidate to be passed to `make-buffer'."
        "f1 s" 'describe-slot
        "f1 k" 'describe-key
        "f1 b" 'describe-bindings
+       "f1 p" 'describe-package
        "f11" 'toggle-fullscreen
        "C-O" 'load-file
-       "C-j" 'list-downloads
+       "C-j" 'nyxt/download-mode:list-downloads
        "C-space" 'execute-command
        "C-M-space" 'execute-extended-command
        "M-space" 'resume-prompt
@@ -61,7 +54,6 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-/" 'reopen-buffer
        "C-shift-t" 'reopen-buffer
        "C-T" 'reopen-buffer
-       "C-p" 'print-buffer
        "C-o" 'nyxt/file-manager-mode:open-file)
 
       scheme:emacs
@@ -75,8 +67,6 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-x C-b" 'nyxt/buffer-listing-mode::list-buffers
        "C-M-l" 'copy-url
        "C-M-t" 'copy-title
-       "C-h C-h" 'help
-       "C-h h" 'help
        "C-h t" 'tutorial
        "C-h r" 'manual
        "C-h v" 'describe-variable
@@ -90,7 +80,8 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-h u s" 'universal-describe-slot
        "C-h k" 'describe-key
        "C-h b" 'describe-bindings
-       "C-d" 'list-downloads
+       "C-h p" 'describe-package
+       "C-d" 'nyxt/download-mode:list-downloads
        "M-x" 'execute-command
        "C-M-x" 'execute-extended-command
        "M-1" (read-from-string "nyxt/repeat-mode:repeat-key")
@@ -102,11 +93,6 @@ This mode is a good candidate to be passed to `make-buffer'."
        "M-7" (read-from-string "nyxt/repeat-mode:repeat-key")
        "M-8" (read-from-string "nyxt/repeat-mode:repeat-key")
        "M-9" (read-from-string "nyxt/repeat-mode:repeat-key")
-       "C-x r j" 'set-url-from-bookmark
-       "C-x r M" 'bookmark-current-url
-       "C-x r m" 'bookmark-buffer-url
-       "C-x r k" 'delete-bookmark
-       "C-x r l" 'bookmark-url
        "C-x 5 2" 'make-window
        "C-x 5 0" 'delete-current-window
        "C-x 5 1" 'delete-window
@@ -124,14 +110,8 @@ This mode is a good candidate to be passed to `make-buffer'."
        "o" 'set-url
        "O" 'set-url-new-buffer
        "g o" 'set-url-new-nosave-buffer
-       "m u" 'bookmark-url
-       "m d" 'delete-bookmark
        "R" 'reload-current-buffer
        "r" 'reload-buffers
-       "m o" 'set-url-from-bookmark
-       "m m" 'bookmark-buffer-url
-       "m M" 'bookmark-current-url
-       "m l" 'list-bookmarks
        "y u" 'copy-url
        "y t" 'copy-title
        ":" 'execute-command
@@ -149,4 +129,5 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-w q" 'delete-current-window
        "C-w C-q" 'delete-window
        "u" 'reopen-buffer))
-    :type keymap:scheme)))
+    :type keymap:scheme))
+  (:toggler-command-p nil))

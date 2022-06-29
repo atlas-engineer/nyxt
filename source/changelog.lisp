@@ -12,7 +12,7 @@ particular revision.")
          (spinneret:with-html-string (:div (:h2 ,version-string) ,@body))))
 
 (define-internal-page-command-global changelog ()
-    (buffer "*Changelog*" 'base-mode)
+    (buffer "*Changelog*")
   "Show the changelog."
   (spinneret:with-html-string
     (:style (style buffer))
@@ -23,6 +23,7 @@ particular revision.")
      (:li "MAJOR when we make incompatible API changes.")
      (:li "MINOR when we add functionality in a backwards-compatible manner.")
      (:li "PATCH when we make backwards-compatible bug fixes."))
+    (:p "See also the " (:code "migration-guide") ".")
     (loop for version in (alex:hash-table-values +changelog+)
           collect (:raw version))))
 
@@ -132,7 +133,7 @@ particular revision.")
    (:li (:p "Don't forward printable characters in vi-normal-mode.")
         (:p "Concretely, pressing an unbound letter won't insert it in an HTML input."))
    (:li (:p "New VI status and prompt buffer indicator.  (Thanks to @edgar-vincent!)")
-        (:p "Both the status area and the prompt buffer now display a colored  indicator for "
+        (:p "Both the status buffer and the prompt buffer now display a colored  indicator for "
             (:code "vi-normal-mode") " and " (:code "vi-insert-mode") "."))
    (:li "New navigation commands: "
         (:code "go-previous") ", "
@@ -177,7 +178,7 @@ particular revision.")
    (:li (:p "Bind " (:code "C-M-space") " to " (:code "execute-extended-command") ".")
         (:p "It makes it easier for users to execute commands and supply parameters.")))
 
-  (:h3 "Status area")
+  (:h3 "Status buffer")
   (:ul
    (:li "Clicking on modes now describes them.")
    (:li "New '+' button to toggles modes.")
@@ -328,7 +329,7 @@ SLY install.")
 
 (define-version "3.0.0"
   (:ul
-   (:li "Revamp status area design.")
+   (:li "Revamp status buffer design.")
    (:li "New prompt-buffer fuzzy matching algorithm, hopefully offering more
   relevant results.  (Thanks to @BlueFlo0d!)")
    (:li "Add support for the Gopher and Gemini protocols.")
@@ -343,7 +344,7 @@ SLY install.")
         "Internal pages also have a URL now, which means they have history support.")
    (:li "New " (:code "define-internal-page-command") "and"
         (:code "define-internal-page-command-global") " helpers to define internal pages.")
-   (:li (:code "define-panel") " and " (:code "define-panel-global")
+   (:li (:code "define-panel-command") " and " (:code "define-panel-command-global")
         " helpers to define new panels are exported now."
         " You can freely use them in your config.")
    (:li "New " (:code "define-internal-scheme") " helper to define custom schemes.")
@@ -355,6 +356,16 @@ SLY install.")
    (:li "New " (:code "bookmark-frequent-visits") " mode.")
    (:li "New " (:code "repeat-key") " command repeating the provided key as many times as you like.")
    (:li (:code "application-mode") " is now " (:code "passthrough-mode") ".")
+   (:li (:code "web-mode") " is no more.  Instead much of its features has been  moved to the new "
+        (:code "document-mode") ".  The buffer history management is now handled in a separate mode, "
+        (:code "history-mode") ". " (:code "bookmarklets") " have they own mode too, " (:code "bookmarklets-mode") ".")
+   (:li "Internal pages are now also " (:code "web-buffer") "s.  Most of the buffer customizations can be done on the "
+        (:code "web-buffer") " class.")
+   (:li "The buffer hierarchy has been redesigned.  Now " (:code "buffer")
+        " is a minimal class and instantiating such a buffer is only useful if you need a dummy buffer. "
+        (:code "web-buffer") " inherits from a mix of specialized buffer subclasses, such as "
+        (:code "mode-buffer") " and " (:code "input-buffer") ".  For the full list, see the "
+        (:code "buffer") " class documentation and browse its subclasses.")
 
    (:h3 "Bindings")
    (:ul

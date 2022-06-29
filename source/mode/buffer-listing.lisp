@@ -1,14 +1,15 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/buffer-listing-mode
-  (:use :common-lisp :nyxt)
-  (:documentation "Mode for buffer-listings"))
+(nyxt:define-package :nyxt/buffer-listing-mode
+    (:documentation "Mode for buffer-listings"))
 (in-package :nyxt/buffer-listing-mode)
 
 (define-mode buffer-listing-mode ()
   "Mode for buffer-listing."
-  ((rememberable-p nil)))
+  ((visible-in-status-p nil)
+   (rememberable-p nil))
+  (:toggler-command-p nil))
 
 (define-internal-page-command-global list-buffers (&key (cluster nil)
                                                   linear-view-p) ; TODO: Document `cluster'.
@@ -23,13 +24,12 @@ With LINEAR-VIEW-P, list buffers linearly instead."
              "Return buffers as hash table, where each value is a cluster (list of documents)."
              (let ((collection (make-instance 'analysis::document-collection)))
                (loop for buffer in (buffer-list)
-                     unless (internal-buffer-p buffer)
-                       do (with-current-buffer buffer
-                            (analysis::add-document
-                             collection
-                             (make-instance 'analysis::document-cluster
-                                            :source buffer
-                                            :string-contents (document-get-paragraph-contents)))))
+                     do (with-current-buffer buffer
+                          (analysis::add-document
+                           collection
+                           (make-instance 'analysis::document-cluster
+                                          :source buffer
+                                          :string-contents (document-get-paragraph-contents)))))
                (analysis::tf-vectorize-documents collection)
                (analysis::generate-document-distance-vectors collection)
                (analysis::dbscan collection :minimum-points 1 :epsilon 0.075)
@@ -42,12 +42,16 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                (spinneret:with-html
                  (:p (:button :class "button"
                               :onclick (ps:ps (nyxt/ps:lisp-eval
-                                               `(nyxt::delete-buffer :id ,(id buffer)))) "✕")
+                                               (:title "delete-buffer")
+                                               (nyxt::delete-buffer :buffer buffer))) "✕")
                      (:button :class "button"
                               :onclick (ps:ps (nyxt/ps:lisp-eval
-                                               `(nyxt::switch-buffer :id ,(id buffer)))) "→")
-                     (:span (title buffer) "  "
-                            (:u (render-url (url buffer))))))))
+                                               (:title "switch-buffer")
+                                               (nyxt::switch-buffer :buffer buffer))) "→")
+                     (:a :href (render-url (url buffer))
+                         (if (uiop:emptyp (title buffer))
+                             (render-url (url buffer))
+                             (title buffer)))))))
            (buffer-tree->html (root-buffer)
              "Present a single buffer tree in HTML."
              (spinneret:with-html
@@ -60,38 +64,31 @@ With LINEAR-VIEW-P, list buffers linearly instead."
              (spinneret:with-html
                (:div (:h2 (format nil "Cluster ~a" cluster-id))
                      (loop for document in cluster
-                           collect (buffer-markup (analysis::source document))))))
-           (internal-buffers-markup ()
-             "Present the internal buffers in HTML."
-             (spinneret:with-html
-               (:div (:h2 "Internal Buffers")
-                     (loop for buffer in (buffer-list)
-                           when (internal-buffer-p buffer)
-                             collect (buffer-markup buffer))))))
+                           collect (buffer-markup (analysis::source document)))))))
     (spinneret:with-html-string
       (:style (style buffer))
       (:h1 "Buffers")
       (:button :class "button"
-               :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt/buffer-listing-mode::list-buffers)))
+               :onclick (ps:ps (nyxt/ps:lisp-eval (:title "tree-display") (nyxt/buffer-listing-mode::list-buffers)))
                "Tree display")
       (:button :class "button"
                :onclick (ps:ps (nyxt/ps:lisp-eval
-                                '(nyxt/buffer-listing-mode::list-buffers :linear-view-p t)))
+                                (:title "linear-display")
+                                (nyxt/buffer-listing-mode::list-buffers :linear-view-p t)))
                "Linear display")
       (:br "")
       (:div
        (if cluster
-           (append (list (internal-buffers-markup))
-                   (loop for cluster-key being the hash-key
-                           using (hash-value cluster) of (cluster-buffers)
-                         collect (cluster-markup cluster-key cluster)))
+           (loop for cluster-key being the hash-key
+                   using (hash-value cluster) of (cluster-buffers)
+                 collect (cluster-markup cluster-key cluster))
            (dolist (buffer (buffer-list))
              (if linear-view-p
                  (buffer-markup buffer)
                  (unless (nyxt::buffer-parent buffer)
                    (buffer-tree->html buffer)))))))))
 
-(nyxt::define-panel-global buffers ()
+(define-panel-command-global buffers-panel ()
     (panel-buffer "*Buffers panel*")
   "Display a list of buffers with easy switching."
   (flet ((buffer-markup (buffer)
@@ -99,7 +96,8 @@ With LINEAR-VIEW-P, list buffers linearly instead."
            (spinneret:with-html
              (:p (:button :class "button"
                           :onclick (ps:ps (nyxt/ps:lisp-eval
-                                           `(nyxt::switch-buffer :id ,(id buffer))))
+                                           (:title "switch-buffer")
+                                           (nyxt::switch-buffer :buffer buffer)))
                           (:span :title (title buffer) :class "title" (title buffer)))))))
     (spinneret:with-html-string
       (:style (cl-css:css
@@ -112,14 +110,15 @@ With LINEAR-VIEW-P, list buffers linearly instead."
        (:h1 "Buffers")
        (:button :class "button"
                 :onclick (ps:ps (nyxt/ps:lisp-eval
-                                 `(reload-buffers
-                                   (list
-                                    (find
-                                     ,(render-url (url panel-buffer))
-                                     (panel-buffers (current-window))
-                                     :test #'string=
-                                     :key (alexandria:compose
-                                           #'render-url #'url))))))
+                                 (:title "reload-buffer" :buffer panel-buffer)
+                                 (reload-buffers
+                                  (list
+                                   (find
+                                    (render-url (url panel-buffer))
+                                    (nyxt::panel-buffers (current-window))
+                                    :test #'string=
+                                    :key (compose
+                                          #'render-url #'url))))))
                 "Update ↺")
        (loop for buffer in (buffer-list)
              collect (buffer-markup buffer))))))

@@ -8,13 +8,22 @@
          :accessor name
          :type string
          :documentation "A scheme name.")
+   ;; TODO: Remove `parents' and use superclasses instead.
    (parents :initarg :parents
             :accessor parents
             :initform '()
             :type list-of-scheme-names
             :documentation "The list of parents.  When a scheme is defined, the
 keymap parents are automatically set to the keymaps corresponding to the given
-schemes.  See `define-scheme'.")))
+schemes.  See `define-scheme'.")
+   (bound-type :accessor bound-type
+               :initarg :bound-type
+               :initform *default-bound-type*
+               :documentation
+               "Type of the bound-value.
+The type is enforced in `define-scheme' at macro-expansion time.
+Type should allow `keymap's, so it should probably be in the form
+\(or keymap NON-KEYMAP-BOUND-TYPE).")))
 
 (defmethod print-object ((scheme-name scheme-name) stream)
   (print-unreadable-object (scheme-name stream :type t :identity t)
@@ -68,7 +77,10 @@ See `define-scheme' for the user-facing function."
                     (make-hash-table :test #'equal))))
     (unless imported-scheme
       (loop :for (name nil . nil) :on name+bindings-pairs :by #'cddr
-            :do (setf (gethash name scheme) (make-keymap (format nil "~a-~a-map" name-prefix (name name))))))
+            :do (setf (gethash name scheme)
+                      (let ((new-keymap (make-keymap (format nil "~a-~a-map" name-prefix (name name)))))
+                        (setf (bound-type new-keymap) (bound-type name))
+                        new-keymap))))
     ;; Set parents now that all keymaps exist.
     (maphash (lambda (name keymap)
                (setf (parents keymap)
@@ -94,6 +106,11 @@ See `define-scheme' for the user-facing function."
     (if extra-keys
         (error "Allowed keys are ~a, got ~a." keys all-keys)
         t)))
+
+(defun quoted-symbol-p (arg)
+  (and (listp arg)
+       (eq (first arg) 'quote)
+       (= 2 (length arg))))
 
 (defmacro define-scheme (scheme-specifier name bindings &rest more-name+bindings-pairs)
   "Return a scheme, a hash table with scheme NAMEs as key and their BINDINGS as value.
@@ -131,11 +148,15 @@ The scheme keymaps are named \"my-mode-cua-map\" and \"my-mode-emacs-map\"."
                            (getf scheme-specifier :import))))
     (unless (stringp scheme-specifier)
       (check-plist scheme-specifier :name-prefix :import))
-    (loop :for (nil quoted-bindings . nil) :on name+bindings-pairs :by #'cddr
+    (loop :for (name quoted-bindings . nil) :on name+bindings-pairs :by #'cddr
           :for bindings = (rest quoted-bindings)
+          :do (check-type (symbol-value name) scheme-name)
           :do (check-type bindings list)
-          :do (loop :for (keyspecs nil . nil) :on bindings :by #'cddr
-                    :do (check-type keyspecs (or keyspecs-type list))))
+          :do (loop :for (keyspecs bound-value . nil) :on bindings :by #'cddr
+                    :do (check-type keyspecs (or keyspecs-type list))
+                    :when (quoted-symbol-p bound-value)
+                      :do (assert (typep (second bound-value) (bound-type (symbol-value name))) (bound-value)
+                                  'type-error :datum (second bound-value) :expected-type (bound-type (symbol-value name)))))
     `(progn
        (define-scheme* ,name-prefix ,imported-scheme ,name ,bindings ,@more-name+bindings-pairs))))
 

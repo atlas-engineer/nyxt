@@ -1,53 +1,78 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :nyxt/web-mode)
+(nyxt:define-package :nyxt/spell-check-mode
+    (:documentation "Mode to spell-check text in buffers."))
+(in-package :nyxt/spell-check-mode)
+
+(define-mode spell-check-mode ()
+  ""
+  ((visible-in-status-p nil)
+   (rememberable-p t)
+   (spell-check-language
+    "en_US"
+    :documentation "Spell check language used by Nyxt. For
+a list of more languages available, see `spell-check-list-languages'.")
+   (keymap-scheme
+    (define-scheme "visual"
+      scheme:cua
+      (list)                            ; TODO: Add CUA bindings!
+      scheme:emacs
+      (list
+       "M-$" 'spell-check-word)
+      scheme:vi-normal
+      (list
+       "z =" 'spell-check-word)))))
+
+(defmacro with-spell-check ((variable) &body body)
+  `(enchant:with-dict (,variable (spell-check-language
+                                  (find-submode 'spell-check-mode)))
+     ,@body))
+
+(defun spell-dict-check-p (word)
+  "Spell check `word' and return if correct or not."
+  (with-spell-check (lang)
+    (enchant:dict-check lang word)))
 
 (define-command spell-check-word (&key (word nil word-supplied-p))
   "Spell check a word."
-  (if word-supplied-p
-      (enchant:with-dict (lang (spell-check-language *browser*))
-        (enchant:dict-check lang word))
-      (let ((word (prompt1
-                    :prompt "Spell check word"
-                    :sources (make-instance 'prompter:raw-source))))
-        (if (enchant:with-dict (lang (spell-check-language *browser*))
-              (enchant:dict-check lang word))
-            (echo "~s spelled correctly." word)
-            (echo "~s is incorrect." word)))))
+  (let ((word (or (and word-supplied-p word)
+                  (prompt1
+                   :prompt "Spell check word"
+                   :sources (make-instance 'prompter:raw-source)))))
+    (if (spell-dict-check-p word)
+        (echo "~s is spelled correctly." word)
+        (echo "~s is NOT correctly spelled." word))))
 
 (define-command spell-check-highlighted-word ()
   "Spell check a highlighted word. If a word is incorrectly spelled,
 pull up a prompt of suggestions."
   (let ((word (%copy)))
-    (spell-check-prompt word)))
+    (if (str:blankp word)
+        (echo "No word highlighted to spell check!")
+        (spell-check-prompt word))))
 
 (defun spell-check-prompt (word)
   "Spell check `word', if incorrectly spelled, prompt the user with
 suggestions."
-  (if (spell-check-word :word word)
-      (echo "Highlighted word ~s spelled correctly." word)
-      (progn (echo "Highlighted word ~s spelled incorrectly." word)
-             (spell-check-suggest-word :word word))))
+  (if (spell-dict-check-p word)
+      (echo "Word ~s spelled correctly." word)
+      (progn
+        (echo "Word ~s spelled incorrectly." word)
+        (spell-check-suggest-word :word word))))
 
 (define-command spell-check-word-at-cursor ()
   "Spell check the word at the cursor."
-  (let* ((contents (nyxt/input-edit-mode::active-input-area-content))
-         (cursor-position (truncate (nyxt/input-edit-mode::active-input-area-cursor))))
-    (let ((text-buffer (make-instance 'text-buffer:text-buffer))
-          (cursor (make-instance 'text-buffer:cursor)))
-      (cluffer:attach-cursor cursor text-buffer)
-      (text-buffer::insert-string cursor contents)
-      (setf (cluffer:cursor-position cursor)
-            cursor-position)
+  (nyxt/input-edit-mode:with-input-area (contents cursor-pos)
+    (nyxt/input-edit-mode:with-text-buffer (text-buffer cursor contents cursor-pos)
       (spell-check-prompt (text-buffer::word-at-cursor cursor)))))
 
 (define-command spell-check-suggest-word (&key word)
   "Suggest a spelling for a given word."
   (let ((selected-word (prompt1
-                         :input word
-                         :prompt "Suggest spelling (3+ characters)"
-                         :sources (make-instance 'enchant-source))))
+                        :input word
+                        :prompt "Suggest spelling (3+ characters)"
+                        :sources (make-instance 'enchant-source))))
     (trivial-clipboard:text selected-word)
     (echo "Word copied to clipboard.")))
 
@@ -59,7 +84,7 @@ suggestions."
     (lambda (preprocessed-suggestions source input)
       (declare (ignore preprocessed-suggestions source))
       (when (> (length input) 2)
-        (enchant:with-dict (lang (spell-check-language *browser*))
+        (with-spell-check (lang)
           (enchant:dict-suggest lang input)))))))
 
 (define-command spell-check-list-languages ()
@@ -70,7 +95,7 @@ suggestions."
 
 (defun spell-check-and-suggest (word)
   "Only suggest if `word' is incorrect."
-  (enchant:with-dict (lang (spell-check-language *browser*))
+  (with-spell-check (lang)
     (let ((result (enchant:dict-check lang word)))
       (or result
           (enchant:dict-suggest lang word)))))
@@ -92,5 +117,4 @@ suggestions."
     (lambda (preprocessed-suggestions text input)
       (declare (ignore preprocessed-suggestions))
       (when (>= (length input) (slot-value text 'minimum-search-length))
-        (enchant:with-dict (lang (spell-check-language *browser*))
-          (mapcar #'spell-check-and-suggest (str:words input))))))))
+        (mapcar #'spell-check-and-suggest (str:words input)))))))

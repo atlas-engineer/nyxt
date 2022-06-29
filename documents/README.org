@@ -4,6 +4,9 @@
 
 #+TITLE: Nyxt Developer's Manual
 
+# Please install org-make-toc so the the TOC below will be automatically
+# generated.
+# https://github.com/alphapapa/org-make-toc
 * Table of contents                                                     :TOC:
 :PROPERTIES:
 :TOC:      :include all :ignore this
@@ -24,6 +27,7 @@
     - [[#gnulinux-freebsd-dependencies][GNU/Linux, FreeBSD dependencies]]
     - [[#macos-dependencies][macOS dependencies]]
   - [[#fetch-the-source-code][Fetch the source code]]
+    - [[#observation][Observation]]
   - [[#compile][Compile]]
     - [[#using-the-makefile][Using the Makefile]]
     - [[#using-lisp][Using Lisp]]
@@ -40,6 +44,9 @@
   - [[#issue-tracker][Issue tracker]]
   - [[#learning-common-lisp][Learning Common Lisp]]
   - [[#contributing][Contributing]]
+  - [[#commit-style][Commit style]]
+  - [[#branch-management][Branch management]]
+  - [[#programming-conventions][Programming conventions]]
   - [[#irc-channel][IRC Channel]]
 :END:
 * Developer's installation with Guix
@@ -135,14 +142,13 @@ git clone https://github.com/joachifm/cl-webkit ~/common-lisp/cl-webkit
 
 - Debian-based distributions:
   #+begin_src sh
-  sudo apt install sbcl libwebkit2gtk-4.0-dev gobject-introspection glib-networking gsettings-desktop-schemas libfixposix-dev pkg-config xclip enchant-2
+  sudo apt install sbcl libwebkit2gtk-4.0-dev gobject-introspection glib-networking gsettings-desktop-schemas libfixposix-dev pkg-config xclip enchant-2 libssl-dev
   #+end_src
 
 - Arch Linux:
   #+begin_src sh
-  sudo pacman -S git sbcl cl-asdf webkit2gtk glib-networking gsettings-desktop-schemas enchant
+  sudo pacman -S git sbcl cl-asdf webkit2gtk glib-networking gsettings-desktop-schemas enchant libfixposix
   #+end_src
-  The package libfixposix can be installed from the [[https://aur.archlinux.org/packages/libfixposix][AUR]], same for ~pkg-config~.
 
 - Fedora:
   #+begin_src sh
@@ -202,7 +208,7 @@ Notes:
    `webkit2-gtk(-devel)` instead of `webkit-gtk3` via your favorite package
    manager. If you are on a legacy version of macOS which is not supported by
    HomeBrew, you may want to try install these via MacPorts.
-  
+
 ** Qt dependencies
 
 Qt is only required if you want to build Nyxt over the WebEngine renderer.
@@ -246,8 +252,16 @@ will find it]]):
 
 #+begin_src sh
 mkdir -p ~/common-lisp
-git clone https://github.com/atlas-engineer/nyxt ~/common-lisp/nyxt
+git clone --recurse-submodules https://github.com/atlas-engineer/nyxt ~/common-lisp/nyxt
 #+end_src
+
+*** Observation
+
+Quicklisp publishes stable releases of Nyxt, but you probably want to run
+cutting edge master branch of Nyxt (not the latest stable release). Via
+Quicklisp, some users end up installing a stable release instead of running the
+frontier of Nyxt's GitHub repository. To have the frotier, please clone Nyxt's
+repository at =~/quicklisp/local-projects=.
 
 ** Compile
 *** Using the Makefile
@@ -264,7 +278,7 @@ application bundle which you can copy into your =/Applications= folder.
   #+begin_src sh
   gmake all
   #+end_src
-  
+
 - macOS:
   #+begin_src sh
   make all
@@ -272,7 +286,7 @@ application bundle which you can copy into your =/Applications= folder.
   #+end_src
 
 Inside the Makefile you'll find many options you can specify.  You can specify
-to use your Lisp's init file or to use your installation of Quicklisp Run ~make~
+to use your Lisp's configuration file or to use your installation of Quicklisp Run ~make~
 to display some documentation.  Please see the Makefile for more details.
 
 *** Using Lisp
@@ -368,7 +382,7 @@ default is 4006).  Then, in Emacs run ~M-x slime-connect RET 127.0.0.1 RET
 Notice that the default value of the variable ~*swank-port*~ in Nyxt is
 different from its counterpart variable =slime-port= in Emacs to avoid
 collisions with an ~*inferior-lisp*~ process.  Both of these default values can
-be configured in the respective init files.
+be configured in the respective configuration files.
 
 *** SLY/SLYNK
 
@@ -377,15 +391,14 @@ be configured in the respective init files.
 **** Quicklisp Setup
 
 *Steps:*
-1. Add the following lines to your Nyxt init file. If your Quicklisp directory
+1. Add the following lines to your Nyxt configuration file. If your Quicklisp directory
    differs, change it accordingly:
 
-#+NAME: nyxt/init.lisp
+#+NAME: nyxt/config.lisp
 #+begin_src lisp
 (load (merge-pathnames #p"quicklisp/setup.lisp" (user-homedir-pathname)))
 (ql:quickload 'slynk)
-;; Note: (nyxt-init-file) points to path/to/your/nyxt/config/directory
-(load-after-system :slynk (nyxt-init-file "my-slynk.lisp"))
+(define-nyxt-user-system-and-load :depends-on (slynk) :components ("my-slynk"))
 #+end_src
 
 2. Create a file called =my-slynk.lisp= where you will specify your
@@ -395,7 +408,7 @@ be configured in the respective init files.
 #+begin_src lisp
 (define-command-global start-slynk (&optional (slynk-port *swank-port*))
   "Start a Slynk server.
-   
+
 Waits for incoming connections, e.g. from SLY.
 
     Warning: This allows Nyxt to be controlled remotely, that is, to execute
@@ -421,14 +434,14 @@ server with the following steps.
    =package-install=. You may also clone the repository from [[https://github.com/joaotavora/sly.git][here]]. Should you
    choose to clone the repository, see the appropriate section in step 2.
 
-2. Add the following lines to your Nyxt's init.lisp (the configuration file)
+2. Add the following lines to your Nyxt's =config.lisp= (the configuration file)
    depending on whether you are using the Emacs Sly package, or you cloned the
    repository:
 
    - If you have installed Sly with =package-install= (or similar method) in
-     Emacs, add these lines to your =nyxt/init.lisp= :
+     Emacs, add these lines to your =nyxt/config.lisp= :
 
-#+NAME: nyxt/init.lisp
+#+NAME: nyxt/config.lisp
 #+begin_src lisp
 (asdf:load-system :slynk)
 (slynk:create-server :port 4008)
@@ -437,7 +450,7 @@ server with the following steps.
    - If you are cloning from git, it's the same as above but with an extra
      =push= expression:
 
-#+NAME: nyxt/init.lisp
+#+NAME: nyxt/config.lisp
 #+begin_src lisp
 (push #p"~/dir/to/newly/cloned/sly/dir" asdf:*central-registry*)
 (asdf:load-system :slynk)
@@ -445,13 +458,13 @@ server with the following steps.
 #+end_src
 
 2. Create a file called =my-slynk.lisp= in your Nyxt configuration directory
-   (see =(nyxt-init-file)= where you will create a =start-slynk= command.
+   where you will create a =start-slynk= command.
 
 #+NAME: nyxt/my-slynk.lisp
 #+begin_src lisp
 (define-command-global start-slynk (&optional (slynk-port *swank-port*))
   "Start a Slynk server.
-   
+
 Waits for incoming connections, e.g. from SLY.
 
     Warning: This allows Nyxt to be controlled remotely, that is, to execute
@@ -489,20 +502,158 @@ See https://nyxt.atlas.engineer/learn-lisp for a few recommendations.
 
 ** Contributing
 
-To contribute, please find a task [[https://github.com/atlas-engineer/nyxt/issues?q=is%3Aissue+is%3Aopen+label%3Agood-first-issue][on our issue tracker]] or within [[file:CHANGELOG.org][CHANGELOG.org]]
-document that has a TASK label affixed.  Upon finding a task that you'd like to
-work on, ideally, ensure that it is not already being worked on.
+Nyxt is a joint effort and we need you to make it succeed!  You can find ideas
+[[https://github.com/atlas-engineer/nyxt/issues?q=is%3Aissue+is%3Aopen+label%3Agood-first-issue][on our issue tracker]] to suit your interests and skills.  Feel free to contact us
+at any point if you need guidance.
 
-After you have found a TASK item that is available:
+When ready to start working please fork the repository, add your changes and
+open a pull request on GitHub to pass the review process.  Refer to the [[*Branch management][branch
+management section]] for more detailed information.
 
-- make a fork of the repository,
-- add your changes,
-- make a pull request.
+You can contribute to Nyxt without commit access.  However, if you're a frequent
+contributor, you may request it.  Remember that with great power comes great
+responsibility.
+
+** Commit style
+
+We follow the general Git guidelines, namely we try to commit atomic changes
+that are "clean," that is, on which Nyxt builds and starts.
+
+Make sure to make seperate commits in these cases to avoid distracting noise in
+commits with actual changes:
+
+- Indentation and whitespace trimming;
+
+- Code movements (within a file or to a different file).  In this case, it's
+  crucial that the commit contains nothing else, otherwise "diffs" may fail to
+  highlight the changes.
+
+For commit messages, we follow (somewhat flexibly) the convention of prefixing
+the title with the basename of the file that was modified.  For instance, for
+changes in =source/mode/blocker.lisp= the title would look like this:
+
+: mode/blocker: What and why this change.
+:
+: Rest of the message here.
+
+Your commit should clarify _what_ it does and _why_ (in case it's not already
+obvious).
+
+** Branch management
+
+Nyxt uses the following branches:
+
+- =master= for development;
+- =<feature-branches>= for very particular situations;
+- =<2,3,...>-series= to backport commits corresponding to specific major
+  versions.
+
+It's recommended to branch off from the target branch and to rebase onto it
+right before merging.  This keeps the history as clear as possible and reduces
+the complexity of the diff.
+
+Unless the changes are trivial and each commit is atomic (that is, leaving Nyxt
+fully functional), they should be followed by a merge commit.  That is
+guaranteed by using the merge option =no-ff= (no fast-forward).  If required,
+the merge commit can be reworded.
+
+The names of the branches really matter since the merge commit references them,
+so please take that into account!
+
+After the changed are merged, please do not forget to delete obsolete or
+dangling branches.
+
+Note to core contributors: since you have commit access, you can push trivial
+changes directly to the target branch (skipping the review process).  The merge
+commit is required when at least one commit isn't atomic.
+
+** Programming conventions
+
+We try to follow the usual Common Lisp conventions as recommended by
+[[https://www.cs.umd.edu/~nau/cmsc421/norvig-lisp-style.pdf][Norvig & Pitman's Tutorial on Good Lisp Programming Style]] and [[https://google.github.io/styleguide/lispguide.xml][Google Common Lisp
+Style Guide]].
+
+For symbol naming conventions, see https://www.cliki.net/Naming+conventions.
+
+We've also developed some of our own:
+
+- Prefer =first= and =rest= over =car= and =cdr= respectively.
+- Use =define-class= instead of =defclass=.
+- Use =nyxt:define-package= if you want the default imports and the default
+  package nicknames (e.g. =alex=, =sera=, etc.).
+- Export using =export-always= (from Serapeum) next to the symbol definition.
+  This helps prevent exports to go out-of-sync, or catch typos.
+  Unlike =export=, =export-always= saves you from surprises upon recompilation.
+- When sensible, declaim the function types using =->= (from Serapeum).  Note
+  that there is then no need to mention the type of the arguments and the return
+  value in the docstring.
+- Use the =maybe= and =maybe*= types instead of =(or null ...)= and =(or null
+  (array * (0)) ...)= respectively.
+- We make heavy use of Alexandria and Serapeum, remember to use them instead of
+  writing the same boilerplate over and over.  In particular, note these
+  systematic uses of Serapeum:
+  - =sera:eval-always=;
+  - =export-always=;
+  - =->= (declaimed types).
+- Use =funcall*= to not error when function does not exist.
+- Prefer classes over structs.  Rationale:
+  - Class slots have documentation.
+  - Class allow for full-fledged CLOS use (metaclasses, etc.).
+  - Structs have read-only slots but it's easy enough to implement them for
+    classes.
+  - Structs have better performance, but this is usually micro-optimization, and
+    even then class implementations can be made more efficient via MOP.
+- Classes should be usable with just a =make-instance=.
+- Prefer =defmethod= over =defun= if one of the arguments is a user-class.  This
+  allows the user to write specializations of subclasses.
+- =customize-instance= is reserved for end users.  Use =initialize-instance
+  :after= or =slot-unbound= to initialize the slots.  Set up the rest of the
+  class in =customize-instance :after=.  Bear in mind that anything in this last
+  method won't be customizable for the end user.
+- Almost all files should be handled via the =nfiles= library.
+- Specialize =print-object= for recurring class instances.
+- =(setf SLOT-WRITER) :after= is reserved for "watchers",
+  i.e. handlers that are run whenever the slot is set.  The =:around= method is
+  not used by watchers, and thus the watcher may be overridden.
+- A function as a slot value is often a sign that it should be a method instead.
+  Methods give more flexibility to the end user.
+  Example: Avoid adding a =constructor= slot, make it a method instead.
+- Define generic functions (in particular if they are heavily used) using an
+  explicit call to =defgeneric=, not with just calls to =defmethod=.  This
+  enables proper source location of the generic function (otherwise it cannot be
+  found), plus it lets you write different documentation for the generic and the
+  the specialized methods.
+- We use the =%foo%= naming convention for special local variables, but this is
+  rare and ideally they should be avoided.
+- We suffix predicates with =-p=.  Unlike the usual convention, we always use a
+  =-= even for single words.
+- Prefer the term =url= over =uri=.
+- URLs should be of type =quri:uri=.  If you need to manipulate a URL string,
+  call it =url-string=.
+- Paths should be of type =cl:pathname=.
+  Use =uiop:native-namestring= to "send" to OS-facing functions,
+  =uiop:ensure-pathname= to "receive" from OS-facing functions or to "trunamize".
+- Prefer =handler-bind= over =handler-case=: when running from the REPL, this
+  triggers the debugger with a full stacktrace; when running the Nyxt binary,
+  all conditions are caught anyways..
+- Do not handle the =T= condition, this may break everything.  Handle =error= or
+  exceptionally =condition= (for instance if do not control the called code, and
+  some libraries subclass =condition= instead of =error=).
+
+# - Conversion functions =FROM->TO= or =->TO= for generic functions.  The
+#   only one that comes to mind is =url= which does not follow this convention...
+
+# - Blocking function should be prefixed with =wait-on-=.
 
 ** IRC Channel
 
 #+html: You can find Nyxt on Libera IRC: <a href="https://kiwiirc.com/nextclient/irc.libera.chat/nyxt">#nyxt</a>
 
 # Local Variables:
-# after-save-hook: (lambda () (if (fboundp 'org-make-toc) (org-make-toc) (message "Please install org-make-toc.")))
+# eval: (add-hook 'before-save-hook
+#                 (lambda nil (if (fboundp 'org-make-toc)
+#                                 (org-make-toc)
+#                                 (message-box "Please install org-make-toc.")))
+#                 nil
+#                 t)
 # End:

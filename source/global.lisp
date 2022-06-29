@@ -18,6 +18,18 @@ close the connection.")
   "Whether the Nyxt-internal debugger pops up when an error happens.
 Allows the user to fix immediate errors in runtime, given enough understanding.")
 
+(defvar *restart-on-error* nil
+  "Control variable to enable accurate error reporting during startup.
+Implementation detail.
+For user-facing controls, see `*run-from-repl-p*' and `*debug-on-error*'.")
+
+(export-always '*open-program*)
+(declaim (type (or string null) *open-program*))
+(defvar *open-program*
+  #+darwin "open"
+  #+(or linux bsd) "xdg-open"
+  #-(or linux bsd darwin) nil)
+
 (defvar *headless-p* nil
   "If non-nil, don't display anything.
 This is convenient for testing purposes or to drive Nyxt programmatically.")
@@ -27,7 +39,7 @@ This is convenient for testing purposes or to drive Nyxt programmatically.")
   "The entry-point object to a complete instance of Nyxt.
 It can be initialized with
 
-  (setf *browser* (make-instance 'user-browser))
+  (setf *browser* (make-instance 'browser))
 
 It's possible to run multiple interfaces of Nyxt at the same time.  You can
 let-bind *browser* to temporarily switch interface.")
@@ -51,6 +63,11 @@ A handler can be added with:
   "Hook run when the browser is started and ready for interaction.
 The handlers take no argument.")
 
+(defvar *interactive-p* nil
+  "When non-nil, allow prompt buffers in during BODY execution.
+This is useful to ensure that non-interactive code (for instance scripts) won't
+be blocked by prompt buffer prompts.")
+
 (export-always '*swank-port*)
 (defvar *swank-port* 4006
   "The port that Swank will open a new server on (default Emacs SLIME port
@@ -60,9 +77,6 @@ is 4005, default set to 4006 in Nyxt to avoid collisions).")
 be set to a string by the renderer itself. This variable exists to allow for
 reporting by users, it does not create any functional differences in the
 execution of Nyxt.")
-
-(export-always '+newline+)
-(alex:define-constant +newline+ (string #\newline) :test #'equal)
 
 (alex:define-constant +nyxt-critical-dependencies+
   '(:cl-cffi-gtk
@@ -109,8 +123,8 @@ Don't set this, it would lose its meaning.")
       (asdf/component:component-version (asdf:find-system :nyxt)))
   :test #'equal)
 
-(flet ((push-feature (string)
-         (pushnew (intern string "KEYWORD") *features*)))
+(defun version ()
+  "Return (MAJOR MINOR PATCH COMMIT)."
   (destructuring-bind (version &optional commits commit)
       (str:split "-" +version+)
     (let* ((commits (and commits (parse-integer commits)))
@@ -118,13 +132,22 @@ Don't set this, it would lose its meaning.")
            (major (first parsed-version))
            (minor (second parsed-version))
            (patch (third parsed-version)))
+      (values (list major minor patch commit)
+              commits))))
+
+(multiple-value-bind (version commits)
+    (version)
+  (destructuring-bind (major minor patch commit)
+      version
+    (flet ((push-feature (string)
+             (pushnew (intern (uiop:strcat "NYXT-" (princ-to-string string)) "KEYWORD") *features*)))
       (when major
-        (push-feature (format nil "NYXT-~a" major)))
+        (push-feature major))
       (when minor
-        (push-feature (format nil "NYXT-~a.~a" major minor)))
+        (push-feature (format nil "~a.~a" major minor)))
       (when patch
-        (push-feature (format nil "NYXT-~a.~a.~a" major minor patch)))
+        (push-feature (format nil "~a.~a.~a" major minor patch)))
       (when commit
-        (push-feature (format nil "NYXT-~:@(~a~)" commit)))
+        (push-feature (string-upcase commit)))
       (when (and commits (not (zerop commits)))
-        (push-feature "NYXT-UNSTABLE")))))
+        (push-feature "UNSTABLE")))))

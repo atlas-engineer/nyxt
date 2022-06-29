@@ -3,24 +3,38 @@
 
 (in-package :nyxt)
 
-(define-class init-file (nfiles:config-file nyxt-lisp-file nfiles:virtual-file)
-  ((nfiles:base-path #p"init")
-   (command-line-option :init
+(define-class config-directory-file (files:config-file nyxt-file)
+  ((files:base-path #p""))
+  (:export-class-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(define-class config-special-file (config-directory-file)
+  ((files:base-path #p"")
+   (command-line-option :config
+                        :accessor nil
+                        :type keyword))
+  (:export-class-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name))
+  (:documentation "Like `config-directory-file' but can be controlled from command line options."))
+
+(define-class config-file (config-special-file files:virtual-file nyxt-lisp-file)
+  ((files:base-path #p"config")
+   (command-line-option :config
                         :accessor nil
                         :type keyword))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-class auto-init-file (init-file) ; TODO: Be consistent here for 3.0!
-  ((nfiles:base-path #p"auto-config")
-   (command-line-option :auto-init
+(define-class auto-config-file (config-special-file nyxt-lisp-file)
+  ((files:base-path (files:join #p"auto-config." (princ-to-string (first (version)))))
+   (command-line-option :auto-config
                         :accessor nil
                         :type keyword))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod nfiles:resolve ((profile nyxt-profile) (init-file init-file))
-  (let* ((option (slot-value init-file 'command-line-option))
+(defmethod files:resolve ((profile nyxt-profile) (config-file config-special-file))
+  (let* ((option (slot-value config-file 'command-line-option))
          (no-option (alex:make-keyword
                      (uiop:strcat "NO-" (symbol-name option)))))
     (if (getf *options* no-option)
@@ -32,17 +46,34 @@
               (log:warn "File ~s does not exist." path))
             path)))))
 
+(defparameter %report-existing-nyxt-2-config
+  (sera:once
+   (lambda (path)
+     (when (not (uiop:file-exists-p path))
+       (let ((nyxt-2-path (files:expand (make-instance 'config-file
+                                                       :base-path #p"init"))))
+         (when (uiop:file-exists-p nyxt-2-path)
+           (log:warn "Found ~a, possibly a Nyxt 2 configuration.
+Consider porting your configuration to ~a."
+                     nyxt-2-path path))))
+     nil)))
+
+(defmethod files:resolve ((profile nyxt-profile) (config-file config-file))
+  (let ((path (call-next-method)))
+    (funcall %report-existing-nyxt-2-config path)
+    path))
+
 (export-always '*auto-config-file*)
-(defvar *auto-config-file* (make-instance 'auto-init-file)
+(defvar *auto-config-file* (make-instance 'auto-config-file)
   "The generated configuration file.")
 
-(export-always '*init-file*)
-(defvar *init-file* (make-instance 'init-file)
-  "The initialization file.")
+(export-always '*config-file*)
+(defvar *config-file* (make-instance 'config-file)
+  "The configuration file entry point.")
 
 (define-class nyxt-source-directory (nyxt-file)
-  ((nfiles:base-path asdf-user::*dest-source-dir*)
-   (nfiles:name "source"))
+  ((files:base-path nyxt-asdf:*dest-source-dir*)
+   (files:name "source"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
@@ -52,9 +83,9 @@
 This is set globally so that it can be looked up if there is no
 `*browser*' instance.")
 
-(define-class extensions-directory (nfiles:data-file nyxt-file)
-  ((nfiles:base-path #p"extensions/")
-   (nfiles:name "extensions"))
+(define-class extensions-directory (files:data-file nyxt-file)
+  ((files:base-path #p"extensions/")
+   (files:name "extensions"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
@@ -67,9 +98,192 @@ This is set globally so that extensions can be loaded even if there is no
 (export-always 'nyxt-source-registry)
 (defun nyxt-source-registry ()
   `(:source-registry
-    (:tree ,(nfiles:expand *extensions-directory*))
-    (:tree ,(nfiles:expand *source-directory*))
+    (:tree ,(files:expand *extensions-directory*))
+    (:tree ,(files:expand *source-directory*)) ; Probably useless since systems are immutable.
     :inherit-configuration))
+
+(defun set-nyxt-source-location (pathname) ; From `sb-ext:set-sbcl-source-location'.
+  "Initialize the NYXT logical host based on PATHNAME, which should be the
+top-level directory of the Nyxt sources. This will replace any existing
+translations for \"NYXT:source;\" and \"NYXT:libraries;\". Other \"NYXT:\"
+translations are preserved."
+  (let ((truename (truename pathname))
+        (current-translations
+         (remove-if (lambda (translation)
+                      (or (pathname-match-p "NYXT:source;" translation)
+                          (pathname-match-p "NYXT:libraries;" translation)))
+                    (logical-pathname-translations "NYXT")
+                    :key #'first)))
+    (flet ((physical-target (component)
+             (merge-pathnames
+              (make-pathname :directory (list :relative component
+                                              :wild-inferiors)
+                             :name :wild
+                             :type :wild)
+              truename)))
+      (setf (logical-pathname-translations "NYXT")
+            `(("NYXT:source;**;*.*.*" ,(physical-target "source"))
+              ("NYXT:libraries;**;*.*.*" ,(physical-target "libraries"))
+              ,@current-translations)))))
+
+(define-class slot-form ()
+  ((name nil
+         :type symbol)
+   (value nil
+          :type t))
+  (:export-class-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(define-class class-form ()
+  ((class-name nil
+               :type symbol)
+   (forms '()
+          :type (maybe (cons (or cons slot-form) *))))
+  (:export-class-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(defun read-init-form-slot (class-name sexp)
+  "Return 2 values:
+- the slot name;
+- the slot value.
+Return NIL if not a slot setting."
+  (when (and (= 3 (length sexp))
+             (eq (first sexp) 'setf)
+             (eq (first (second sexp)) 'slot-value)
+             (eq (second (second sexp)) class-name))
+    (let ((slot-name (second (third (second sexp))))
+          (slot-value (third sexp)))
+      (values slot-name slot-value))))
+
+(defun write-init-form-slot (class-name slot-form)
+  `(setf (slot-value ,class-name ',(name slot-form)) ,(value slot-form)))
+
+(defun read-init-form-class (form)
+  "Return:
+- the class name
+- the list of forms, either `slot-form' or a raw s-exp.
+Return NIL if not a class form."
+  (alex:when-let ((class-name (when (and (eq (first form) 'defmethod)
+                                         (eq (second form) 'customize-instance))
+                                (second (first (find-if #'consp form))))))
+    (let ((body (alex:parse-body (sera:nlet lp ((sexp form))
+                                   (if (consp (first sexp))
+                                       (rest sexp)
+                                       (lp (rest sexp))))
+                                 :documentation t)))
+      (values class-name
+              (mapcar (lambda (sexp)
+                        (multiple-value-bind (name value)
+                            (read-init-form-slot class-name sexp)
+                          (if name
+                              (make-instance 'slot-form
+                                             :name name
+                                             :value value)
+                              sexp)))
+                      body)))))
+
+(defun write-init-form-class (class-form)
+  `(defmethod customize-instance ((,(class-name class-form) ,(class-name class-form)) &key)
+     ,@(mapcar (lambda (form)
+                 (if (slot-form-p form)
+                     (write-init-form-slot (class-name class-form) form)
+                     form))
+               (forms class-form))))
+
+;; TODO: Instantiate directly in read-init-*?
+(defmethod files:deserialize ((profile nyxt-profile) (file auto-config-file) raw-content &key)
+  (flet ((make-init-form (form)
+           (multiple-value-bind (name forms)
+               (read-init-form-class form)
+             (if name
+                 (make-instance 'class-form
+                                :class-name name
+                                :forms forms)
+                 form))))
+    (mapcar #'make-init-form
+            (uiop:slurp-stream-forms raw-content))))
+
+(defmethod files:serialize ((profile nyxt-profile) (file auto-config-file) stream &key)
+  (dolist (form (files:content file))
+    (write
+     (if (class-form-p form)
+         (write-init-form-class form)
+         form)
+     :stream stream)
+    (fresh-line stream)))
+
+(defmethod files:write-file ((profile nyxt-profile) (file auto-config-file) &key &allow-other-keys)
+  (let ((*print-case* :downcase)
+        (*package* (find-package :nyxt-user)))
+    (log:info "Writing auto configuration to ~s." (files:expand file))
+    (call-next-method)))
+
+(defun auto-configure (&key form class-name slot (slot-value nil slot-value-p))
+  (files:with-file-content (config *auto-config-file*)
+    (if class-name
+        (flet ((ensure-class-form (class-name)
+                 (or (when config
+                       (find-if (sera:eqs class-name) (sera:filter #'class-form-p config) :key #'class-name))
+                     (sera:lret ((form (make-instance 'class-form :class-name class-name)))
+                       (alex:appendf config (list form)))))
+               (ensure-slot-form (class-form slot)
+                 (or (find-if (sera:eqs slot) (sera:filter #'slot-form-p (forms class-form)) :key #'name)
+                     (sera:lret ((form (make-instance 'slot-form :name slot)))
+                       (alex:appendf (forms class-form) (list form)))))
+               (delete-slot-form (class-form slot)
+                 (delete-if (sera:eqs slot) (sera:filter #'slot-form-p (forms class-form)) :key #'name)))
+          (let ((class-form (ensure-class-form class-name)))
+            (if slot
+                (if slot-value-p
+                    (sera:lret ((slot-form (ensure-slot-form class-form slot)))
+                      (setf (value slot-form) slot-value))
+                    (setf (forms class-form) (delete-slot-form class-form slot)))
+                (alex:appendf (forms class-form) (list form)))))
+        (alex:appendf config (list form))))
+  (echo "Updated configuration in ~s." (nfiles:expand *auto-config-file*)))
+
+(export-always '%slot-value%)
+(defvar %slot-value% nil
+  "Holds the value of the slot being configured when in `define-configuration'.")
+
+(export-always '%slot-default%)
+(defvar %slot-default% nil
+  "Holds the default value of the slot being configured when in `define-configuration'.")
+
+(export-always 'define-configuration)
+(defmacro define-configuration (classes &body slots-and-values)
+  `(progn
+     ,@(loop
+         for class in (uiop:ensure-list classes)
+         for handler-name = (gensym "DEFINE-CONFIGURATION")
+         collect
+         `(hooks:add-hook
+           (slot-value (find-class (quote ,class)) 'nyxt::customize-hook)
+           (make-instance
+            'hooks:handler
+            :fn (lambda (object)
+                  (declare (ignorable object))
+                  ,@(loop for ((slot value)) on (first slots-and-values)
+                          when (find slot (mopu:slot-names class))
+                            collect `(setf (slot-value object (quote ,slot))
+                                           (let* ((%slot-value% (slot-value object (quote ,slot)))
+                                                  (%slot-default%
+                                                    ,(if (c2mop:class-finalized-p (find-class class))
+                                                         (getf (mopu:slot-properties class slot) :initform)
+                                                         (progn
+                                                           (echo-warning
+                                                            "Slot default not found for slot ~a of class ~a, falling back to its current value"
+                                                            slot class)
+                                                           '%slot-value%))))
+                                             (declare (ignorable %slot-value% %slot-default%))
+                                             ,value))
+                          else
+                            collect `(defmethod ,slot :around ((object ,class))
+                                       (let* ((%slot-value% (call-next-method))
+                                              (%slot-default% %slot-value%))
+                                         ,value))))
+            :name (quote ,handler-name))))))
+
 
 (defparameter %buffer nil)              ; TODO: Make a monad?
 
@@ -95,176 +309,6 @@ This is set globally so that extensions can be loaded even if there is no
            (setf %buffer old-%buffer))
          ;; TODO: Raise error instead?
          (log:warn "Expected buffer, got ~a" ,buffer))))
-
-(defun user-class-name (class-sym)
-  (intern (str:concat "USER-" (string class-sym))
-          (symbol-package class-sym)))
-
-(defvar *user-classes* (make-hash-table)
-  "Keys are the user class symbols (without the 'USER-' prefix), values their
-superclasses as specified by `define-user-class'.
-
-In particular, generated user classes from `define-configuration' are not
-included.")
-
-(export-always 'define-user-class)
-(defmacro define-user-class (name &optional superclasses)
-  "Define the user class of NAME.
-This helper function is useful to compose the customizations of a class.
-
-The resulting class is named with the return value of (user-class-name NAME).
-
-This may be called multiple times.
-NAME must be an existing class.
-NAME is automatically appended to SUPERCLASSES, so that 'user-NAME' inherits
-from NAME last."
-  `(set-user-class ',name ',superclasses :register-p))
-
-(defun set-user-class (class-sym &optional superclasses register-p)
-  "See `define-user-class'
-When register-p is nil, does not register in `*user-classes*'.
-This is useful for local changes to a class, or to add generated superclasses."
-  (let ((user-class-name (user-class-name class-sym))
-        (superclasses-with-original (remove-duplicates
-                                     (append superclasses (list class-sym)))))
-    (progn
-      (export-always user-class-name (symbol-package user-class-name))
-      ;; Probably no need to call the defclass macro if we just need to
-      ;; set the superclasses.
-      (when (and register-p (hash-table-p *user-classes*))
-        (setf (gethash class-sym *user-classes*) superclasses-with-original))
-      (closer-mop:ensure-class user-class-name
-                               :direct-superclasses superclasses-with-original
-                               :documentation (documentation class-sym 'type)))))
-
-(defun reset-user-class (class-sym)
-  (set-user-class class-sym (gethash class-sym *user-classes*)))
-
-(defun reset-all-user-classes ()
-  (mapc #'reset-user-class (alex:hash-table-keys *user-classes*)))
-
-(defun user-class-p (class-specifier)
-  (sera:true (gethash (if (symbolp class-specifier)
-                          class-specifier
-                          (class-name class-specifier))
-                      *user-classes*)))
-
-(defmacro with-user-class ((class-sym new-superclasses) &body body) ; TODO: Export if users ever demand it.
-  "Dynamically override the superclasses of the user class corresponding to
-CLASS-SYM to NEW-SUPERCLASSES.  The class is restored when exiting BODY."
-  ;; Test:
-  ;; (with-user-class (buffer (buffer))
-  ;;   (mopu:direct-superclasses 'user-buffer))
-  (let ((user-class (user-class-name class-sym)))
-    (unless (user-class-p user-class)
-      (error "Argument must be a user class (see `user-class-p')."))
-    (let ((old-superclasses (mapcar #'class-name (mopu:direct-superclasses user-class))))
-      `(unwind-protect
-            (progn
-              (set-user-class ',class-sym ',new-superclasses)
-              ,@body)
-         (set-user-class ',class-sym ',old-superclasses)))))
-
-(-> method-combination-name ((or symbol function)) *)
-(defun method-combination-name (fun)
-  (let ((fun (if (functionp fun)
-                 fun
-                 (symbol-function fun))))
-    (funcall
-     #+sbcl
-     'sb-pcl::method-combination-type-name
-     #+ccl
-     'ccl::method-combination-name
-     #-(or sbcl ccl)
-     (error "Not implemented")
-     (closer-mop:generic-function-method-combination fun))))
-
-(-> standard-method-combination-p ((or symbol function)) boolean)
-(defun standard-method-combination-p (fun)
-  (eq 'standard
-      (method-combination-name fun)))
-
-(export-always '%slot-default%)
-(defmacro %define-configuration (name &body slots)
-  (let* ((final-name (user-class-name name))
-         (temp-name (gentemp (string final-name) (symbol-package name))))
-    (dolist (name (list name final-name))
-      (unless (find-class name nil)
-        (error "define-configuration argument ~a is not a known class." name)))
-    `(progn
-       (define-class ,temp-name ()
-         ,(let ((super-class (closer-mop:ensure-finalized (find-class final-name))))
-            (loop for slot in (sera:filter #'standard-method-combination-p (first slots)
-                                           :key #'first)
-                  for known-slot? = (find (first slot) (mopu:slot-names super-class))
-                  for initform = (and known-slot?
-                                      (getf (mopu:slot-properties super-class (first slot))
-                                            :initform))
-                  if known-slot?
-                    collect (list (first slot)
-                                  :initform `(funcall (lambda (%slot-default%)
-                                                        (declare (ignorable %slot-default%))
-                                                        ,(cadr slot))
-                                                      ,initform))
-                  else do
-                    (log:warn "Undefined slot ~a in ~a" (first slot) final-name)))
-         (:accessor-name-transformer (class*:make-name-transformer name)))
-       ;; TODO: Register the user methods and add function to remove them, like
-       ;; `reset-user-class'.
-       ;; Non-standard accessors, e.g. `default-modes':
-       ,@(loop for slot in (remove-if #'standard-method-combination-p (first slots)
-                                      :key #'first)
-               for slot-name = (first slot)
-               collect
-               `(defmethod ,slot-name :around ((,(user-class-name name) ,(user-class-name name)))
-                  (funcall (lambda (%slot-default%)
-                             (declare (ignorable %slot-default%))
-                             ,(cadr slot))
-                           (call-next-method))))
-       (set-user-class ',name ',(cons temp-name
-                                      (mapcar #'class-name
-                                              (mopu:direct-superclasses final-name)))))))
-
-(defun get-initform (class-symbol class-slot)
-  (getf (mopu:slot-properties (find-class class-symbol) class-slot) :initform))
-
-(export-always 'define-configuration)
-(defmacro define-configuration (names &body slots)
-  "Helper macro to customize the class slots of the NAMES classes.
-NAMES is either a symbol or a list of symbols.
-
-Classes can be modes or a one of the user-configurable classes like `browser',
-`buffer', `prompt-buffer', `window'.  Note that the classes must _not_ be prefixed
-by 'user-'.
-
-The `%slot-default%' variable is replaced by the slot initform.
-
-Example that sets some defaults for all buffers:
-
-\(define-configuration (buffer web-buffer)
-  ((status-buffer-height 24)
-   (default-modes (append '(vi-normal-mode) %slot-default%))))
-
-Example to get the `blocker-mode' command to use a new default hostlists:
-
-\(define-configuration nyxt/blocker-mode:blocker-mode
-  ((nyxt/blocker-mode:hostlists (append (list *my-blocked-hosts*) %slot-default%))))
-
-In the above, `%slot-default%' will be substituted with the return value of
-`default-modes'.
-
-In the last example, `nyxt/blocker-mode:user-blocker-mode' is defined to inherit
-from the original `blocker-mode' and a generated class containing the
-specialized hostlists.
-
-To discover the default value of a slot or all slots of a class, use the
-`describe-slot' or `describe-class' commands respectively."
-  (if (listp names)
-      `(progn
-         ,@(mapcar (lambda (name)
-                     `(%define-configuration ,name ,@slots))
-                   names))
-      `(%define-configuration ,names ,@slots)))
 
 (export-always 'if-confirm)
 (defmacro if-confirm (prompt yes-form &optional no-form)
@@ -297,95 +341,103 @@ Call this function from your initialization file to re-enable the default ASDF r
           asdf/source-registry:default-system-source-registry))
   (asdf:clear-configuration))
 
-(export-always 'load-after-system)
-(defun load-after-system (system &optional file)
-  "Load Common Lisp SYSTEM, then on success load FILE.
-Use Quicklisp if possible.
-See also `reset-asdf-registries'.
 
-Example:
 
-  (load-after-system :xyz \"configure-xyz.lisp\")"
-  (flet ((load-system (system)
-           (handler-case
-               (progn
-                 #+quicklisp
-                 (ql:quickload system :silent t)
-                 #-quicklisp
-                 (asdf:load-system system))
-             (error (c)
-               (echo-warning "Could not load system ~a: ~a" system c)
-               (log:warn "Maybe you want to use `reset-asdf-registries'?")
-               (log:warn "Current ASDF registries: ~{~a~^, ~}"
-                         asdf:*default-source-registries*)
-               nil))))
-    (when (and (load-system system) file)
-      (load file))))
+;; TODO: Report compilation errors.
 
-(defun make-ring (&key (size 1000))
-  "Return a new ring buffer."
-  (containers:make-ring-buffer size :last-in-first-out))
+(export-always 'nyxt-user-system)
+(defclass nyxt-user-system (asdf:system) ()
+  (:documentation "Specialized systems for Nyxt users.
+This automatically defaults :pathname to the `*config-file*' directory.
+See `define-nyxt-user-system' and `define-nyxt-user-system-and-load'."))
 
-(export-always 'trim-list)
-(defun trim-list (list &optional (limit 100))
-  (handler-case
-      (if (< limit (length list))
-          (nconc (sera:nsubseq list 0 (1- limit)) (list "…"))
-          list)
-    (error ()
-      ;; Improper list.
-      list)))
+(defvar *nyxt-user-systems-with-missing-dependencies* '())
 
-(defun public-initargs (class-specifier)
-  (delete-if (lambda (name) (eq :internal (nth-value 1 (find-symbol (string name)
-                                                                    (symbol-package name)))))
-             (mopu:direct-slot-names class-specifier)))
+(defmethod asdf:component-pathname ((system nyxt-user-system))
+  "Default to `config-directory-file'."
+  (let ((path (call-next-method)))
+    (or path
+        (nfiles:expand (make-instance 'config-directory-file)))))
 
-(export-always 'funcall*)
-(defun funcall* (f &rest args)
-  "Like `funcall' but does nothing when F is nil."
-  (when f (apply #'funcall f args)))
+(export-always 'load-system*)
+(defun load-system* (system &rest keys &key force force-not verbose version &allow-other-keys)
+  "Like `asdf:load-system' but, instead of signaling an error on missing
+dependency, it warns the user, skips the load gracefully and returns NIL.
 
-(defun ensure-file-exists (pathname)
-  (open pathname :direction :probe :if-does-not-exist :create))
+When loading succeeds, it goes through the list of all the systems that failed
+to load and attempts to load them if their dependencies now seem to be met."
+  ;; TODO: Ideally we would make this the default behaviour of
+  ;; `nyxt-user-system' by specializing a method Unfortunately
+  ;; `resolve-dependency-name' is a function and `find-component' is called
+  ;; against the `depends-on' element but not the system itself.
+  (declare (ignore force force-not verbose version))
+  (block done
+    (flet ((report (c)
+             (pushnew (asdf:coerce-name system) *nyxt-user-systems-with-missing-dependencies*
+                      :test #'string=)
+             (echo-warning "Could not load system ~a: ~a" system c)
+             (return-from done nil)))
+      (handler-bind ((asdf:missing-dependency #'report)
+                     (asdf:missing-dependency-of-version #'report))
+        (prog1 (apply #'asdf:load-system system keys)
+          (alex:removef *nyxt-user-systems-with-missing-dependencies*
+                        system
+                        :test #'string=)
+          (dolist (system *nyxt-user-systems-with-missing-dependencies*)
+            (when (every (rcurry #'asdf:find-system nil) (asdf:system-depends-on (asdf:find-system system)))
+              (log:info "Load system ~s" system)
+              (load-system* system))))))))
 
-(export-always 'destroy-thread*)
-(defun destroy-thread* (thread)
-  "Like `bt:destroy-thread' but does not raise an error.
-Particularly useful to avoid errors on already terminated threads."
-  (ignore-errors (bt:destroy-thread thread)))
+(defun ensure-component (component-designator)
+  (if (consp component-designator)
+      component-designator
+      (list :file (sera:drop-suffix ".lisp" component-designator :test #'string-equal))))
 
-(export-always 'on)
-(defmacro on (hook args &body body)
-  "Attach a handler with ARGS and BODY to the HOOK.
+(export-always 'define-nyxt-user-system)
+(defmacro define-nyxt-user-system (name &rest args &key depends-on components
+                                   &allow-other-keys)
+  "Define a user system, usually meant to load configuration files.
+Example to load the \"my-slynk-config\" file in your configuration directory.
 
-ARGS can be
-- A symbol if there's only one argument to the callback.
-- A list of arguments.
-- An empty list, if the hook handlers take no argument."
-  (let ((handler-name (gensym "on-hook-handler"))
-        (args (alex:ensure-list args)))
-    `(hooks:add-hook
-      ,hook (make-instance 'hooks:handler
-                           :fn (lambda ,args
-                                 (declare (ignorable ,@args))
-                                 ,@body)
-                           :name (quote ,handler-name)))))
+  (define-nyxt-user-system nyxt-user/slynk
+    :components (\"my-slynk-config\"))
+  (asdf:load-system :nyxt-user/slynk)
 
-(export-always 'once-on)
-(defmacro once-on (hook args &body body)
-  "Attach a handler with ARGS and BODY to the HOOK.
+See also `define-nyxt-user-system-and-load'.
 
-Remove the handler after it fires the first time.
+It catches potential load dependency cycles.
 
-See `on'."
-  (let ((handler-name (gensym "once-on-hook-handler"))
-        (args (alex:ensure-list args)))
-    (alex:once-only (hook)
-      `(hooks:add-hook
-        ,hook (make-instance 'hooks:handler
-                             :fn (lambda ,args
-                                   (declare (ignorable ,@args))
-                                   (hooks:remove-hook ,hook (quote ,handler-name))
-                                   ,@body)
-                             :name (quote ,handler-name))))))
+Arguments are the same as for `asdf:defsystem'.
+For convenience, we also support `string's or `pathname's directly in COMPONENTS.
+So instead of
+
+:components `((:file \"foo\")
+              (:file #p\"bar\"))
+
+you can write
+
+:components `(\"foo\" #p\"bar\")
+
+It only works for top-level components, so if you introduce a module you'll have
+to use the full syntax."
+  ;; We specify DEPENDS-ON to emphasize its availability.
+  (declare (ignore depends-on))
+  (unless (sera:string-prefix-p "nyxt/user/" (string name) )
+    (error "User system name must start with 'nyxt/user/'."))
+  ;; We cannot call `make-instance 'asdf:system' because we need to register the
+  ;; system, and `register-system' is unexported.
+  `(asdf:defsystem ,name
+     :class nyxt-user-system
+     ,@(uiop:remove-plist-key :components args)
+     :components ,(mapcar #'ensure-component
+                          components)))
+
+(export-always 'define-nyxt-user-system-and-load)
+(defmacro define-nyxt-user-system-and-load (name &rest args &key depends-on components
+                                            &allow-other-keys)
+  "Like `define-nyxt-user-system' but immediately call `load-system*' on the system.
+Return the system."
+  ;; We specify DEPENDS-ON and COMPONENTS to emphasize their availability.
+  (declare (ignore depends-on components))
+  `(prog1 (define-nyxt-user-system ,name ,@args)
+     (load-system* ',name)))

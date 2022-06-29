@@ -1,11 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/certificate-exception-mode
-  (:use :common-lisp :nyxt)
-  (:documentation "Certificate exception mode"))
+(nyxt:define-package :nyxt/certificate-exception-mode
+    (:documentation "Control which invalid certificates to accept or reject."))
 (in-package :nyxt/certificate-exception-mode)
-(use-nyxt-package-nicknames)
 
 (sera:export-always '*default-certificate-exceptions*)
 (defparameter *default-certificate-exceptions* '()
@@ -13,17 +11,18 @@
 See the `add-domain-to-certificate-exceptions' command.")
 
 (define-mode certificate-exception-mode ()
-  "Enable ignoring of certificate errors.
+  "Control which invalid certificates to accept or reject.
 This can apply to specific buffers.
 See the `add-domain-to-certificate-exceptions' command."
-  ((certificate-exceptions *default-certificate-exceptions*
-                           :type list-of-strings)
-   (destructor
-    (lambda (mode)
-      (setf (certificate-exceptions (buffer mode)) nil)))
-   (constructor
-    (lambda (mode)
-      (setf (certificate-exceptions (buffer mode)) (certificate-exceptions mode))))))
+  ((visible-in-status-p nil)
+   (certificate-exceptions *default-certificate-exceptions*
+                           :type list-of-strings)))
+
+(defmethod enable ((mode certificate-exception-mode) &key)
+  (setf (certificate-exceptions (buffer mode)) (certificate-exceptions mode)))
+
+(defmethod disable ((mode certificate-exception-mode) &key)
+  (setf (certificate-exceptions (buffer mode)) nil))
 
 (define-command add-domain-to-certificate-exceptions (&optional (buffer (current-buffer)))
   "Add the current hostname to the buffer's certificate exception list.
@@ -34,14 +33,14 @@ To make this change permanent, you can customize
 
 \(setf nyxt/certificate-exception-mode:*default-certificate-exceptions*
       '(\"nyxt.atlas.engineer\" \"example.org\"))"
-  (if (find-submode buffer 'certificate-exception-mode)
+  (if (find-submode 'certificate-exception-mode buffer)
       (let ((input (prompt1
-                     :prompt "URL host to add to exception list:"
+                     :prompt "URL host to add to exception list"
                      :input (render-url (url buffer))
                      :sources (list
                                (make-instance 'prompter:raw-source
                                               :name "URL")
-                               (make-instance 'nyxt/web-mode::user-history-all-source
+                               (make-instance 'nyxt/history-mode:history-all-source
                                               :buffer buffer)))))
         (sera:and-let* ((url (if (stringp input)
                                  (quri:uri input)
@@ -54,3 +53,9 @@ To make this change permanent, you can customize
 
 ;; TODO: Implement command remove-domain-from-certificate-exceptions.
 ;;       Currently it is not possible due to WebKit limitations.
+
+(defmethod nyxt:default-modes append ((buffer web-buffer))
+  '(certificate-exception-mode))
+
+(defmethod nyxt:default-modes append ((buffer nosave-buffer))
+  '(certificate-exception-mode))

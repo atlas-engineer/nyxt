@@ -1,0 +1,36 @@
+# SPDX-FileCopyrightText: 2017-2022 2017 John Mercouris, <john@atlas.engineer> et al.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+name: Guix tests
+
+on:
+  push:
+    branches: [ tests ]
+
+jobs:
+  guix-test:
+    name: Guix test
+    runs-on: ubuntu-latest
+    strategy:
+      # building independent packages, don’t abort entire build if one fails
+      fail-fast: false
+    steps:
+      - name: Guix cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/guix
+          # use a key that (almost) never matches
+          key: guix-cache-${{ github.sha }}
+          restore-keys: |
+            guix-cache-
+      - name: Install Guix
+        uses: PromyLOPh/guix-install-action@v1
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build package
+        run: |
+            guix environment --container --user=dummy-user --load=build-scripts/nyxt.scm --ad-hoc guix -- make all NYXT_SUBMODULES=false CC=gcc
+      - name: Run package
+        # TODO: Test if nyxt --version and nyxt --help outputs are correct.
+        run: ./nyxt --version

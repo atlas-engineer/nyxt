@@ -1,44 +1,27 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
+#-asdf3.1 (error "Nyxt requires ASDF 3.1.2")
 #+sbcl
 (progn
   (sb-ext:assert-version->= 2 0 0)
   (require 'sb-bsd-sockets))
 
-(defvar *prefix* (merge-pathnames* (if (getenv "PREFIX")
-                                       (relativize-pathname-directory (ensure-directory-pathname (getenv "PREFIX")))
-                                       #p"usr/local/")
-                                   (if (getenv "DESTDIR")
-                                       (ensure-directory-pathname (getenv "DESTDIR"))
-                                       #p"/")))
-(defvar *datadir* (if (getenv "DATADIR")
-                      (ensure-directory-pathname (getenv "DATADIR"))
-                      (merge-pathnames* "share/" *prefix*)))
-(defvar *bindir* (if (getenv "BINDIR")
-                     (ensure-directory-pathname (getenv "BINDIR"))
-                     (merge-pathnames* "bin/" *prefix*)))
-(defvar *dest-source-dir* (if (getenv "NYXT_SOURCE_PATH")
-                              (ensure-directory-pathname (getenv "NYXT_SOURCE_PATH"))
-                              (merge-pathnames* "nyxt/" *datadir*)))
+;; WARNING: We _must_ declare the translation host or else ASDF won't recognize
+;; the pathnames as logical-pathnames, thus returning the system directory
+;; instead.
+(setf (logical-pathname-translations "NYXT") nil)
 
-(defvar *nyxt-renderer* (or (getenv "NYXT_RENDERER")
-                            "gi-gtk"))
-
-(defvar *submodules-dir* (or (getenv "NYXT_SUBMODULES_DIR")
-                             "_build"))
-
-(defvar *submodules-jobs* (or (getenv "NYXT_SUBMODULES_JOBS")
-                              4)
-  "Number of parallel 'git clone' jobs to fetch the Git submodules.
-A naive benchmark on a 16 Mpbs bandwidth gives us
-
-    1 job:  5m17s
-    2 jobs: 3m38s
-    4 jobs: 2m51s
-    8 jobs: 2m21s")
+(defsystem nyxt/user
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-user-system
+  :description "Parent system of user systems.
+It is required that all Nyxt user-defined systems start with nyxt/user/ to avoid clashes.
+This system does nothing in particular.")
 
 (defsystem "nyxt"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :version "3"                          ; Development version.
   :author "Atlas Engineer LLC"
   :homepage "https://nyxt.atlas.engineer"
@@ -100,14 +83,16 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                nyxt/ospm
                nyxt/prompter
                nyxt/theme)
-  :pathname "source/"
-  :components ((:file "package")
+  :pathname #p"NYXT:source;"
+  :components ((:file "utilities")
+               (:file "package" :depends-on ("utilities"))
                (:module "Utilities"
                 :pathname ""
                 :depends-on ("package")
                 :components
                 ((:file "time")
                  (:file "types")
+                 (:file "scheme" :depends-on ("types"))
                  (:file "conditions")
                  (:file "debug")
                  (:file "user-interface")))
@@ -120,32 +105,32 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "concurrency")
                  (:file "gpg")
                  (:file "user-files")
+                 (:file "user-classes")
                  (:file "configuration")
-                 (:file "spinneret-tags")
                  (:file "parenscript-macro")
-                 (:file "inspector")
                  (:file "message")
                  (:file "command")
-                 (:file "urls")
                  (:file "renderer-script")
+                 (:file "urls")
+                 (:file "inspector")
                  (:file "dom")
                  (:file "buffer")
                  (:file "window")
+                 (:file "panel")
                  (:file "mode")
+                 (:file "spinneret-tags")
                  (:file "search-engine")
                  (:file "browser")
+                 (:file "foreign-interface")
                  (:file "clipboard")
                  (:file "input")
                  (:file "prompt-buffer")
                  (:file "command-commands")
+                 (:file "describe")
+                 (:file "debugger")
                  (:file "recent-buffers")
-                 (:file "annotate")
                  (:file "history")
-                 (:file "autofill")
-                 (:file "external-editor")
-                 (:file "no-procrastinate")
-                 #+quicklisp
-                 (:file "lisp-system")))
+                 (:file "external-editor")))
                (:module "Core modes"
                 :pathname "mode"
                 :depends-on ("Core")
@@ -153,46 +138,29 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                 ((:file "auto")
                  (:file "input-edit")
                  (:file "prompt-buffer" :depends-on ("input-edit"))
-                 (:file "file-manager")
+                 (:file "file-manager" :depends-on ("prompt-buffer"))
                  (:file "buffer-listing")
-                 (:file "base" :depends-on ("buffer-listing" "file-manager"))
-                 (:file "help")
                  (:file "message")
                  (:file "passthrough")
                  (:file "history-tree")
                  (:file "list-history")
-                 (:file "web" :depends-on ("history-tree" "list-history"))
-                 (:file "style")
-                 (:file "certificate-exception")
-                 (:file "emacs")
-                 (:file "vi")
-                 (:file "blocker")
+                 (:file "document" :depends-on ("passthrough"))
+                 (:file "hint" :depends-on ("document" "download"))
+                 (:file "hint-prompt-buffer" :depends-on ("hint"))
+                 (:file "search-buffer" :depends-on ("hint"))
+                 (:file "spell-check" :depends-on ("document"))
+                 (:file "help" :depends-on ("document" "search-buffer"))
+                 (:file "history" :depends-on ("history-tree" "list-history"))
+                 (:file "certificate-exception" :depends-on ("history"))
+                 (:file "keymap-scheme")
                  (:file "proxy")
-                 (:file "download")
-                 (:file "process")))
-               (:module "file-manager-mode deps"
-                :pathname ""
-                :depends-on ("Core modes")
-                :components
-                ((:file "password")
-                 (:file "bookmark")
-                 (:file "mode/bookmark-frequent-visits" :depends-on ("bookmark"))
-                 (:file "mode/bookmark" :depends-on ("bookmark"))))
-               (:module "web-mode commands"
-                :pathname "mode"
-                :depends-on ("Core modes" "file-manager-mode deps")
-                :components
-                ((:file "bookmarklets")
-                 (:file "element-hint" :depends-on ("search-buffer"))
-                 (:file "element-frame")
-                 (:file "jump-heading")
-                 (:file "summarize")
-                 (:file "scroll")
-                 (:file "search-buffer")
-                 (:file "spell-check")
-                 (:file "zoom")))
+                 (:file "download" :depends-on ("file-manager"))
+                 (:file "process")
+                 (:file "user-script")))
+               (:file "mode/base" :depends-on ("Core modes"))
+               #+quicklisp
+               (:file "lisp-system" :depends-on ("Core modes"))
                (:file "status" :depends-on ("Core"))
-               (:file "start" :depends-on ("Core"))
                (:module "Editor modes"
                 :pathname "mode"
                 :depends-on ("Core modes")
@@ -207,33 +175,45 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "about")
                  (:file "tutorial")
                  (:file "changelog")
+                 (:file "migration")
                  (:file "manual")))
+               (:file "start" :depends-on ("Help"))
                (:module "Modes"
                 :pathname "mode"
                 :depends-on ("Core modes")
                 :components
-                ((:file "repl")
-                 (:file "small-web")
-                 (:file "reading-line")
-                 (:file "no-image")
-                 (:file "no-sound")
-                 (:file "no-script")
-                 (:file "no-webgl")
-                 (:file "no-procrastinate")
-                 (:file "reduce-bandwidth")
-                 (:file "force-https")
-                 (:file "reduce-tracking")
-                 (:file "os-package-manager")
-                 (:file "visual")
-                 (:file "repeat")
-                 (:file "cruise-control")
-                 (:file "watch")
-                 (:file "preview")
+                ((:file "annotate")
+                 (:file "autofill")
+                 (:file "blocker")
+                 (:file "bookmark")
+                 (:file "bookmark-frequent-visits" :depends-on ("bookmark"))
+                 (:file "bookmarklets")
+                 (:file "cruise-control" :depends-on ("repeat"))
                  (:file "diff")
+                 (:file "emacs")
                  (:file "expedition")
-                 (:file "tts")
+                 (:file "force-https")
+                 (:file "macro-edit")
+                 (:file "no-image")
+                 (:file "no-procrastinate" :depends-on ("blocker"))
+                 (:file "no-script")
+                 (:file "no-sound")
+                 (:file "no-webgl")
+                 (:file "os-package-manager")
+                 (:file "password")
+                 (:file "preview")
+                 (:file "reading-line")
                  (:file "record-input-field")
-                 (:file "macro-edit"))))
+                 (:file "reduce-bandwidth")
+                 (:file "reduce-tracking")
+                 (:file "repeat")
+                 (:file "repl")
+                 (:file "small-web")
+                 (:file "style" :depends-on ("bookmarklets"))
+                 (:file "tts")
+                 (:file "vi")
+                 (:file "visual")
+                 (:file "watch"))))
   :in-order-to ((test-op (test-op "nyxt/tests")
                          (test-op "nyxt/download-manager/tests")
                          (test-op "nyxt/history-tree/tests")
@@ -242,87 +222,21 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                          (test-op "nyxt/ospm/tests")
                          (test-op "nyxt/prompter/tests"))))
 
-(defun register-submodules (component)
-  ;; Ideally we should avoid writing global, stateful files to the user file
-  ;; system.  So instead of writing to the ASDF config file, we register the
-  ;; sudmodule directory with CL_SOURCE_REGISTRY.  This locally overrides
-  ;; CL_SOURCE_REGISTRY, but it's fine since submodules are only meant for
-  ;; non-developers (who probably don't set CL_SOURCE_REGISTRY).
-  ;;
-  ;; We must set this globally because the information would be lost within a
-  ;; Lisp compiler subprocess (e.g. as used by linux-packaging).
-  (flet ((ensure-absolute-path (path component)
-           (if (absolute-pathname-p path)
-               path
-               (system-relative-pathname component path))))
-    (setf (getenv "CL_SOURCE_REGISTRY")
-          (strcat
-           (native-namestring
-            (ensure-directory-pathname
-             (ensure-absolute-path *submodules-dir* component)))
-           ;; Double-slash tells ASDF to traverse the tree recursively.
-           "/"
-           ;; Register this directory so that nyxt.asd is included, just in case.
-           (inter-directory-separator)
-           (native-namestring (system-source-directory component))
-           (if (getenv "CL_SOURCE_REGISTRY")
-               (strcat (inter-directory-separator) (getenv "CL_SOURCE_REGISTRY"))
-               ;; End with an empty string to tell ASDF to inherit configuration.
-               (inter-directory-separator)))))
-  (clear-configuration)
-  (format t "; CL_SOURCE_REGISTRY: ~s~%" (getenv "CL_SOURCE_REGISTRY")))
-
 (defsystem "nyxt/submodules"
-  :perform (compile-op (o c)
-                       (run-program `("git"
-                                      "-C" ,(namestring (system-relative-pathname c ""))
-                                      "submodule" "update" "--init" "--force"
-                                      "--jobs" ,(write-to-string *submodules-jobs*))
-                                    :ignore-error-status t
-                                    :output t)
-                       (register-submodules c)))
-
-(defun nyxt-run-test (c path &key network-needed-p)
-  (and (or (not network-needed-p)
-           (not (getenv "NYXT_TESTS_NO_NETWORK")))
-       (not (funcall (read-from-string "prove:run")
-                     (system-relative-pathname c path)))
-       (getenv "NYXT_TESTS_ERROR_ON_FAIL")
-       (quit 18)))
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-submodule-system)
 
 ;; TODO: Test that Nyxt starts and that --help, --version work.
 (defsystem "nyxt/tests"
+  :defsystem-depends-on (nyxt-asdf)
   :depends-on (nyxt prove)
-  :components ((:file "tests/package"))
-  :perform (test-op (op c)
-                    (nyxt-run-test c "tests/offline/")
-                    (nyxt-run-test c "tests/online/" :network-needed-p t)))
-
-(defun print-benchmark (benchmark-results)
-  (labels ((rat->float (num)
-             (if (integerp num) num (float num)))
-           (print-times (entry)
-             (let ((title (first entry))
-                   (attr (rest entry)))
-               (unless (or (member (symbol-name title) '("RUN-TIME" "SYSTEM-RUN-TIME")) ; Not so interesting.
-                           (and (member (symbol-name title) '("PAGE-FAULTS" "EVAL-CALLS")
-                                        :test #'string=)
-                                (zerop (getf attr :average))))
-                 (format t " ~a: ~,9t~a" (string-downcase title) (rat->float (getf attr :average)))
-                 (format t "~32,8t[~a, ~a]"
-                         (rat->float (getf attr :minimum))
-                         (rat->float (getf attr :maximum)))
-                 (format t "~56,8t(median ~a, deviation ~a, total ~a)"
-                         (rat->float (getf attr :median))
-                         (rat->float (getf attr :deviation))
-                         (rat->float (getf attr :total)))
-                 (format t "~%")))))
-    (dolist (mark benchmark-results)
-      (format t "~a (~a sample~:p):~%" (first mark)
-              (getf (rest (second mark)) :samples))
-      (mapc #'print-times (rest mark)))))
+  :serial t
+  :components ((:file "tests/package")
+               (:nyxt-test "tests/offline/")
+               (:nyxt-online-test "tests/online/")))
 
 (defsystem "nyxt/benchmark"
+  :defsystem-depends-on (nyxt-asdf)
   :depends-on (alexandria
                nyxt
                trivial-benchmark)
@@ -335,7 +249,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                                      (funcall (read-from-string "benchmark:run-package-benchmarks")
                                               :package :nyxt/benchmark
                                               :verbose t))))
-                      (print-benchmark results))))
+                      (symbol-call :nyxt-asdf :print-benchmark results))))
 
 (defsystem "nyxt/clean-fasls"
   :depends-on (swank)
@@ -343,8 +257,8 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                        (load (merge-pathnames
                               "contrib/swank-asdf.lisp"
                               (symbol-value
-                               (read-from-string "swank-loader:*source-directory*"))))
-                       (funcall (read-from-string "swank:delete-system-fasls") "nyxt")))
+                               (find-symbol* :*source-directory* :swank-loader))))
+                       (symbol-call :swank :delete-system-fasls "nyxt")))
 
 ;; We use a temporary "version" file to generate the final nyxt.desktop with the
 ;; right version number.  Since "version" is a file target, third-party
@@ -359,7 +273,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                        (with-open-file (out (output-file o c)
                                             :direction :output
                                             :if-exists :supersede)
-                         (princ (symbol-value (read-from-string "nyxt:+version+"))
+                         (princ (symbol-value (find-symbol* :+version+ :nyxt))
                                 out))))
 
 (defsystem "nyxt/documentation"         ; TODO: Only rebuild if input changed.
@@ -371,16 +285,17 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                        (with-open-file (out (output-file o c)
                                             :direction :output
                                             :if-exists :supersede)
-                         (write-string (funcall (read-from-string "nyxt::manual-content"
-                                                                  (find-package 'nyxt)))
+                         (write-string (symbol-call :nyxt :manual-content)
                                        out))
                        (format *error-output* "Manual dumped to ~s.~&" (output-file o c))))
 
 (defsystem "nyxt/gtk"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (nyxt
                cl-cffi-gtk
                cl-webkit2)
-  :pathname "source/"
+  :pathname #p"NYXT:source;"
   :serial t
   :components ((:file "web-extensions")
                (:file "web-extensions-callbacks")
@@ -388,25 +303,28 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                (:file "renderer/gtk")))
 
 (defsystem "nyxt/gi-gtk"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (nyxt/gtk
                cl-gobject-introspection
                bordeaux-threads)
-  :pathname "source/"
+  :pathname #p"NYXT:source;"
   :components ((:file "renderer/gi-gtk"))
   :in-order-to ((test-op (test-op "nyxt/gi-gtk/tests"))))
 
 (defsystem "nyxt/gi-gtk/tests"
+  :defsystem-depends-on (nyxt-asdf)
   :depends-on (nyxt/gi-gtk prove)
-  :components ((:file "tests/renderer-package"))
-  :perform (test-op (op c)
-                    (nyxt-run-test c "tests/renderer-offline/")
-                    (nyxt-run-test c "tests/renderer-online/" :network-needed-p t)))
+  :serial t
+  :components ((:file "tests/renderer-package")
+               (:nyxt-test "tests/renderer-offline/")
+               (:nyxt-online-test "tests/renderer-online/")))
 
 (defsystem "nyxt/qt"
   :depends-on (nyxt
                cl-webengine
                trivial-main-thread)
-  :pathname "source/"
+  :pathname #p"NYXT:source;"
   :components ((:file "renderer/qt")))
 
 ;; We should not set the build-pathname in systems that have a component.
@@ -419,138 +337,89 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
 ;; produce the desired binary.
 
 (defsystem "nyxt/gtk-application"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (nyxt/gtk)
   :build-operation "program-op"
   :build-pathname "nyxt"
   :entry-point "nyxt:entry-point")
 
 (defsystem "nyxt/gi-gtk-application"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (nyxt/gi-gtk)
   :build-operation "program-op"
   :build-pathname "nyxt"
   :entry-point "nyxt:entry-point")
 
 (defsystem "nyxt/qt-application"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (nyxt/qt)
   :build-operation "program-op"
   :build-pathname "nyxt-qt"
   :entry-point "nyxt:entry-point")
 
-#+sb-core-compression
-(handler-bind ((warning #'muffle-warning))
-  (defmethod perform ((o image-op) (c system))
-    (dump-image (output-file o c)
-                :executable t
-                :compression (when (getenv "NYXT_COMPRESS")
-                               (parse-integer (getenv "NYXT_COMPRESS"))))))
-
-(defmethod perform :before ((o image-op) (c system))
-  "Register immutable systems to prevent compiled images of Nyxt from
-trying to recompile dependencies.
-See `asdf::*immutable-systems*'."
-  (map () 'register-immutable-system (already-loaded-systems)))
+(defsystem "nyxt/application/tests"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-renderer-system
+  :depends-on (prove)
+  :components ((:file "tests/package")
+               (:nyxt-test "tests/executable/"))
+  :perform (test-op :around (op c)
+                    (if (file-exists-p (system-relative-pathname :nyxt "nyxt"))
+                        (call-next-method)
+                        (warn "`nyxt' executable missing, skipping tests."))))
 
 (defsystem "nyxt/install"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-renderer-system
   :depends-on (alexandria
                str
-               #.(format nil "nyxt/~a-application" *nyxt-renderer*)
                nyxt/version)
-  :perform (compile-op
-            (o c)
-            (flet ((ensure-parent-exists (file)
-                     (ensure-all-directories-exist
-                      (list (directory-namestring file)))))
-              (let ((desktop-file (merge-pathnames* "applications/nyxt.desktop" *datadir*)))
-                (ensure-parent-exists desktop-file)
-                (copy-file (system-relative-pathname c "assets/nyxt.desktop")
-                                desktop-file))
-              (mapc (lambda (icon-size)
-                      (let ((icon-file (format nil "~a/icons/hicolor/~ax~a/apps/nyxt.png"
-                                               *datadir* icon-size icon-size)))
-                        (ensure-parent-exists icon-file)
-                        (copy-file (system-relative-pathname
-                                         c
-                                         (format nil "assets/nyxt_~ax~a.png"
-                                                 icon-size icon-size))
-                                        icon-file)))
-                    '(16 32 128 256 512))
-              (let ((binary-file (merge-pathnames* "nyxt" *bindir*)))
-                (ensure-parent-exists binary-file)
-                (copy-file (system-relative-pathname c "nyxt") binary-file)
-                ;; TODO: Use iolib/os:file-permissions instead of chmod?  Too verbose?
-                (run-program (list "chmod" "+x" (native-namestring binary-file))))
-              (flet ((copy-directory (source destination)
-                       "Copy the content (the file tree) of SOURCE to DESTINATION."
-                       (collect-sub*directories
-                        (ensure-directory-pathname source)
-                        (constantly t)
-                        t
-                        (lambda (subdirectory)
-                          (mapc (lambda (file)
-                                  (unless (member (pathname-type file) '("o" "fasl") :test 'equalp)
-                                    (let ((destination-file
-                                            (merge-pathnames*
-                                             (subpathp file (ensure-directory-pathname source))
-                                             (ensure-pathname destination :truenamize t :ensure-directory t))))
-                                      (ensure-parent-exists destination-file)
-                                      (copy-file file destination-file))))
-                                (directory-files subdirectory))))))
-                (handler-case
-                    (progn
-                      (dolist (file (cons
-                                     ;; Find `libnyxt' file regardless of its extension:
-                                     (subpathp (first (delete-if
-                                                       (complement (lambda (file)
-                                                                     (string-prefix-p "libnyxt" (pathname-name file))))
-                                                       (directory-files (system-relative-pathname
-                                                                         :nyxt "libraries/web-extensions"))))
-                                               (system-source-directory :nyxt))
-                                     (mapcan (lambda (dir)
-                                               (split-string
-                                                (run-program `("git" "-C" ,(native-namestring
-                                                                            (system-source-directory :nyxt))
-                                                                     "ls-files" ,dir)
-                                                             :output '(:string :stripped t))
-                                                :separator '(#\newline #\return #\linefeed)))
-                                             '("source" "libraries"))))
-                        (let ((dest (merge-pathnames* file *dest-source-dir*)))
-                          (ensure-parent-exists dest)
-                          (copy-file (system-relative-pathname :nyxt file)
-                                     dest))))
-                  (t ()
-                    (dolist (dir '("source" "libraries"))
-                      (copy-directory (system-relative-pathname :nyxt dir)
-                                      (merge-pathnames* dir *dest-source-dir*)))))
-                (copy-file (system-source-file :nyxt) (merge-pathnames* "nyxt.asd" *dest-source-dir*))))))
+  :components ((:nyxt-desktop-file "assets/nyxt.desktop")
+               (:nyxt-icon-directory "assets/")
+               (:nyxt-binary-file "nyxt")
+               (:nyxt-library-file "libraries/web-extensions/libnyxt.so"
+                                   :if-does-not-exist nil)
+               (:nyxt-source-directory "source")
+               (:nyxt-source-directory "nyxt-asdf")
+               (:nyxt-source-directory "libraries"
+                :exclude-subpath ("web-extensions") ; Do not install this non-Lisp source.
+                :exclude-types ("o" "c" "h" ; C code and artifacts.
+                                    "fasl"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Library subsystems:
 
 (defsystem "nyxt/download-manager"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (calispel
                cl-ppcre
                dexador
                log4cl
                quri
                str)
-  :pathname "libraries/download-manager/"
+  :pathname #p"NYXT:libraries;download-manager;"
   :components ((:file "package")
                (:file "engine")
                (:file "native"))
   :in-order-to ((test-op (test-op "nyxt/download-manager/tests"))))
 
 (defsystem "nyxt/download-manager/tests"
+  :defsystem-depends-on (nyxt-asdf)
   :depends-on (nyxt/download-manager prove)
-  :perform (test-op (op c)
-                    (nyxt-run-test c "libraries/download-manager/tests/"
-                                   :network-needed-p t)))
+  :components ((:nyxt-online-test "libraries/download-manager/tests/" )))
 
 (defsystem "nyxt/analysis"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (str
                serapeum
                alexandria
                cl-ppcre)
-  :pathname "libraries/analysis/"
+  :pathname #p"NYXT:libraries;analysis;"
   :components ((:file "package")
                (:file "data")
                (:file "stem")
@@ -562,34 +431,42 @@ See `asdf::*immutable-systems*'."
                (:file "section")))
 
 (defsystem "nyxt/user-interface"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (spinneret)
-  :pathname "libraries/user-interface/"
+  :pathname #p"NYXT:libraries;user-interface;"
   :components ((:file "package")
                (:file "user-interface")))
 
 (defsystem "nyxt/text-buffer"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (cluffer)
-  :pathname "libraries/text-buffer/"
+  :pathname #p"NYXT:libraries;text-buffer;"
   :components ((:file "package")
                (:file "text-buffer")))
 
 (defsystem "nyxt/history-tree"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (alexandria
                cl-custom-hash-table
                local-time
                nyxt/class-star
                trivial-package-local-nicknames)
-  :pathname "libraries/history-tree/"
+  :pathname #p"NYXT:libraries;history-tree;"
   :components ((:file "package")
                (:file "history-tree"))
   :in-order-to ((test-op (test-op "nyxt/history-tree/tests"))))
 
 (defsystem "nyxt/history-tree/tests"
+  :defsystem-depends-on (nyxt-asdf)
   :depends-on (nyxt/history-tree prove str)
-  :perform (test-op (op c)
-                    (nyxt-run-test c "libraries/history-tree/tests/")))
+  :components ((:nyxt-test "libraries/history-tree/tests/")))
 
 (defsystem "nyxt/password-manager"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (bordeaux-threads
                cl-ppcre
                str
@@ -597,7 +474,7 @@ See `asdf::*immutable-systems*'."
                uiop
                nyxt/class-star
                serapeum)
-  :pathname "libraries/password-manager/"
+  :pathname #p"NYXT:libraries;password-manager;"
   :components ((:file "package")
                (:file "password")
                (:file "password-keepassxc")
@@ -606,8 +483,10 @@ See `asdf::*immutable-systems*'."
                (:file "password-pass")))
 
 (defsystem "nyxt/keymap"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (alexandria fset str)
-  :pathname "libraries/keymap/"
+  :pathname #p"NYXT:libraries;keymap;"
   :components ((:file "package")
                (:file "types")
                (:file "conditions")
@@ -617,25 +496,29 @@ See `asdf::*immutable-systems*'."
   :in-order-to ((test-op (test-op "nyxt/keymap/tests"))))
 
 (defsystem "nyxt/keymap/tests"
+  :defsystem-depends-on (nyxt-asdf)
   :depends-on (alexandria fset nyxt/keymap prove)
-  :components ((:file "libraries/keymap/test-package"))
-  :perform (test-op (op c)
-                    (nyxt-run-test c "libraries/keymap/tests/")))
+  :components ((:file "libraries/keymap/test-package")
+               (:nyxt-test "libraries/keymap/tests/")))
 
 (defsystem "nyxt/class-star"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (hu.dwim.defclass-star moptilities alexandria)
-  :pathname "libraries/class-star/"
+  :pathname #p"NYXT:libraries;class-star;"
   :components ((:file "package")
                (:file "patch")
                (:file "class-star"))
   :in-order-to ((test-op (test-op "nyxt/class-star/tests"))))
 
 (defsystem "nyxt/class-star/tests"
+  :defsystem-depends-on (nyxt-asdf)
   :depends-on (nyxt/class-star prove)
-  :perform (test-op (op c)
-                    (nyxt-run-test c "libraries/class-star/tests/")))
+  :components ((:nyxt-test "libraries/class-star/tests/")))
 
 (defsystem "nyxt/ospm"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (alexandria
                calispel
                cl-ppcre
@@ -647,7 +530,7 @@ See `asdf::*immutable-systems*'."
                str
                trivia
                nyxt/class-star)
-  :pathname "libraries/ospm/"
+  :pathname #p"NYXT:libraries;ospm;"
   :components ((:file "package")
                (:file "scheme-syntax")
                (:file "guix-backend")
@@ -656,12 +539,14 @@ See `asdf::*immutable-systems*'."
   :in-order-to ((test-op (test-op "nyxt/ospm/tests"))))
 
 (defsystem "nyxt/ospm/tests"
+  :defsystem-depends-on (nyxt-asdf)
   :depends-on (nyxt/ospm prove)
-  :components ((:file "libraries/ospm/test-package"))
-  :perform (test-op (op c)
-                    (nyxt-run-test c "libraries/ospm/tests/tests.lisp")))
+  :components ((:file "libraries/ospm/test-package")
+               (:nyxt-test "libraries/ospm/tests/tests")))
 
 (defsystem "nyxt/prompter"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (alexandria
                calispel
                cl-containers
@@ -672,7 +557,7 @@ See `asdf::*immutable-systems*'."
                str
                trivial-package-local-nicknames
                nyxt/class-star)
-  :pathname "libraries/prompter/"
+  :pathname #p"NYXT:libraries;prompter;"
   :components ((:file "package")
                (:file "filter-preprocessor")
                (:file "filter")
@@ -681,23 +566,25 @@ See `asdf::*immutable-systems*'."
   :in-order-to ((test-op (test-op "nyxt/prompter/tests"))))
 
 (defsystem "nyxt/prompter/tests"
+  :defsystem-depends-on (nyxt-asdf)
   :depends-on (nyxt/prompter prove)
-  :components ((:file "libraries/prompter/test-package"))
-  :perform (test-op (op c)
-                    (nyxt-run-test c "libraries/prompter/tests/")))
+  :components ((:file "libraries/prompter/test-package")
+               (:nyxt-test "libraries/prompter/tests/")))
 
 (defsystem "nyxt/theme"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-system
   :depends-on (alexandria
                serapeum
                nyxt/class-star
                cl-css)
-  :pathname "libraries/theme/"
+  :pathname #p"NYXT:libraries;theme;"
   :components ((:file "package")
                (:file "theme"))
   :in-order-to ((test-op (test-op "nyxt/theme/tests"))))
 
 (defsystem "nyxt/theme/tests"
+  :defsystem-depends-on (nyxt-asdf)
   :depends-on (nyxt/theme prove)
-  :components ((:file "libraries/theme/test-package"))
-  :perform (test-op (op c)
-                    (nyxt-run-test c "libraries/theme/tests/")))
+  :components ((:file "libraries/theme/test-package")
+               (:nyxt-test "libraries/theme/tests/")))

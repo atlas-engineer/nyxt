@@ -13,7 +13,7 @@
   (let ((urls '("https://abcl.org"
                 "http://en.wikipedia.org/wiki/Main_Page"
                 "https://duckduckgo.com"
-                "https://atlas.engineer")))
+                "https://nyxt.atlas.engineer")))
     (dolist (url urls)
       (ok
        (download-manager:resolve (quri:uri url))

@@ -69,7 +69,7 @@ extensions_data_add_from_json(const char *json)
                         JSCValue *files = jsc_value_object_get_property_at_index(data, 3);
                         char *id = jsc_value_to_string(
                                 jsc_value_object_get_property_at_index(data, 0));
-                        int is_privileged = jsc_value_to_int32(jsc_value_object_get_property_at_index(data, 2));
+                        int is_privileged = jsc_value_to_boolean(jsc_value_object_get_property_at_index(data, 2));
                         char *tab_id = jsc_value_to_string(jsc_value_object_get_property_at_index(data, 4));
                         WebKitScriptWorld *world;
                         if (is_privileged && !IS_PRIVILEGED) {
@@ -83,6 +83,8 @@ extensions_data_add_from_json(const char *json)
                         extension->manifest = manifest;
                         extension->files = files;
                         extension->extension_id = id;
+                        extension->is_injected = 0;
+                        extension->is_privileged = is_privileged;
                         extension->world = world;
                         extension->tab_id = tab_id;
                         g_hash_table_insert(EXTENSIONS_DATA, (void*) name, extension);

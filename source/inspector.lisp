@@ -3,7 +3,7 @@
 
 (in-package :nyxt)
 
-(defvar *inspected-values* (tg:make-weak-hash-table :test 'equal))
+(defvar *inspected-values* (tg:make-weak-hash-table :test 'equal :weakness :value))
 
 (export-always 'sequence-p)
 (defun sequence-p (object)
@@ -22,7 +22,7 @@
             'symbolp
             'characterp
             'stringp
-            (alex:rcurry 'typep '(and number (not complex))))
+            (rcurry 'typep '(and number (not complex))))
            object))
 
 (export-always 'inspected-value)
@@ -38,7 +38,7 @@
      (when (equal value object)
        (return-from ensure-inspected-id id)))
    *inspected-values*)
-  (sera:lret ((id (get-unique-identifier *browser*)))
+  (sera:lret ((id (new-id)))
     (setf (inspected-value id) value)))
 
 
@@ -100,7 +100,7 @@ values in help buffers, REPL and elsewhere."))
               (:dt "closure-p")
               (:dd (:raw (value->html closure-p))))))
         (name
-         (:a :href (nyxt-url 'describe-function :function name)
+         (:a :href (nyxt-url 'describe-function :fn name)
              (:raw (escaped-literal-print value))))
         (t (:raw (escaped-literal-print value)))))))
 
@@ -111,7 +111,30 @@ values in help buffers, REPL and elsewhere."))
      (cond
        ((and compact-p (> (length value) *inspector-print-length*))
         (:raw (link-to value)))
-       ((trivial-types:property-list-p value)
+       ((trivial-types:association-list-p value)
+        (:table
+         (unless compact-p
+           (:caption "Association list"))
+         (:thead
+          (dolist (e value)
+            (:th (:raw (value->html (car e) t)))))
+         (:tbody
+          (:tr
+           (dolist (e value)
+             (:td (:raw (value->html (cdr e) t))))))))
+       ((and (trivial-types:property-list-p value)
+             ;; Stricter understanding of property lists:
+             ;; -- Even length.
+             ;; -- Keys are strictly keywords.
+             ;; -- At least one value should be a non-keyword.
+             (evenp (length value))
+             (loop with all-values-keywords? = t
+                   for (key val) on value by #'cddr
+                   unless (keywordp key)
+                     do (return nil)
+                   unless (keywordp val)
+                     do (setf all-values-keywords? nil)
+                   finally (return (not all-values-keywords?))))
         (:table
          (unless compact-p
            (:caption "Property list"))
@@ -121,18 +144,6 @@ values in help buffers, REPL and elsewhere."))
           (:tr
            (loop for val in (rest value) by #'cddr
                  collect (:td (:raw (value->html val t))))))))
-       ((trivial-types:association-list-p value)
-        (:table
-         (unless compact-p
-           (:caption "Property list")
-           (:thead (:th "Property") (:th "Value")))
-         (:thead
-          (dolist (e value)
-            (:th (:raw (escaped-literal-print (car e))))))
-         (:tbody
-          (:tr
-           (dolist (e value)
-             (:td (:raw (value->html (cdr e) t))))))))
        ((and (trivial-types:proper-list-p value)
              (not (alexandria:circular-list-p value))
              (not (alexandria:circular-tree-p value)))
@@ -234,22 +245,22 @@ values in help buffers, REPL and elsewhere."))
                                           (closer-mop:class-slots (class-of value)))))
           (:dl
            (dolist (slot-name slot-names)
-             (:dt (prin1-to-string slot-name))
-             (:dd (:raw (value->html (slot-value value slot-name) t))
+             (:dt (prin1-to-string slot-name)
+                  " "
                   (:button
                    :class "button"
                    :onclick (ps:ps (nyxt/ps:lisp-eval
-                                    `(handler-case
-                                         (setf (slot-value (inspected-value
-                                                            ,(ensure-inspected-id value))
-                                                           (quote ,slot-name))
-                                               (first
-                                                (evaluate
-                                                 (prompt1
-                                                   :prompt (format nil "Set ~a to" (quote ,slot-name))
-                                                   :sources (make-instance 'prompter:raw-source)))))
-                                       (nyxt-prompt-buffer-canceled nil))))
-                   "change "))))
+                                    (:title "change value")
+                                    (handler-case
+                                        (setf (slot-value value slot-name)
+                                              (first
+                                               (evaluate
+                                                (prompt1
+                                                  :prompt (format nil "Set ~a to" slot-name)
+                                                  :sources (make-instance 'prompter:raw-source)))))
+                                      (nyxt-prompt-buffer-canceled nil))))
+                   "change "))
+             (:dd (:raw (value->html (slot-value value slot-name) t)))))
           (:raw (escaped-literal-print value))))))
 
 (defmethod value->html ((value standard-object) &optional compact-p)

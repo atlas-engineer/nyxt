@@ -11,27 +11,20 @@
   (quri:uri url-string))
 
 (defun string->url (url-string)
-  "Return the `quri:uri' object corresponding to URL-STRING.
-If URL-STRING is a path pointing to an existing file, return a `quri:uri' object
- with the `file' scheme.
-If URL-STRING cannot be converted to a `quri:uri' object, return an empty `quri:uri'."
+  "Convert URL-STRING to its corresponding `quri:uri' object.
+If URL-STRING is a path to an existing file, return a `quri:uri-file' object.
+If the conversion fails, a `quri:uri' object is always returned."
   (or (ignore-errors
        (if (uiop:file-exists-p url-string)
-           (quri:uri (str:concat "file://" url-string))
+           (quri.uri.file:make-uri-file :path url-string)
            (quri:uri url-string)))
       (quri:uri "")))
 
 (defun strings->urls (url-strings)
-  "Return the list of `quri:uri's corresponding to URL-STRINGS.
-If a URL string cannot be converted to a `quri:uri', it is discarded from the result."
+  "Convert URL-STRINGS to a list of its corresponding `quri:uri' objects.
+Members of URL-STRINGS corresponding to the empty URL are discarded."
+  ;; how to define the empty URL?
   (remove-if #'url-empty-p (mapcar #'string->url url-strings)))
-
-(defun has-method-p (object generic-function)
-  "Return non-nil if OBJECT has GENERIC-FUNCTION specialization."
-  (some (lambda (method)
-          (subtypep (type-of object) (class-name
-                                      (first (closer-mop:method-specializers method)))))
-        (closer-mop:generic-function-methods generic-function)))
 
 (defun has-url-method-p (object)
   "Return non-nil if OBJECT has `url' specialization."
@@ -49,7 +42,7 @@ If the URL contains hexadecimal-encoded characters, return their unicode counter
                  url
                  (quri:render-uri url))))
     (the (values (or string null) &optional)
-         (or (ignore-errors (ffi-display-url url))
+         (or (ignore-errors (ffi-display-url *browser* url))
              url))))
 
 (export-always 'render-host-and-scheme)
@@ -60,25 +53,9 @@ If the URL contains hexadecimal-encoded characters, return their unicode counter
 
 (export-always 'fetch-url-title)
 (defun fetch-url-title (url)
-  "Return page's title. The URL is fetched, which could explain a possible
-bottleneck."
-  (let* ((html-source (dex:get url))
-         (html-parsed (plump:parse html-source))
-         (title (plump:text (aref (clss:select "title" html-parsed) 0))))
-    title))
-
-(defmacro defmemo (name params &body body) ; TODO: Replace with https://github.com/AccelerationNet/function-cache?
-  (alex:with-gensyms (memo-table args result result?)
-    `(let ((,memo-table (make-hash-table :test 'equal)))
-       (defun ,name (&rest ,args)
-         (multiple-value-bind (,result ,result?)
-             (gethash ,args ,memo-table)
-           (if ,result?
-               ,result
-               (setf (gethash ,args ,memo-table)
-                     (apply (lambda ,params
-                              ,@body)
-                            ,args))))))))
+  "Return URL's title.
+The URL is fetched, which explains possible bottlenecks."
+  (plump:text (aref (clss:select "title" (plump:parse (dex:get url))) 0)))
 
 (export-always 'error-help)
 (defun error-help (&optional (title "Unknown error") (text ""))
@@ -93,7 +70,12 @@ bottleneck."
       (:pre text)))
    "text/html;charset=utf8"))
 
-(define-class scheme ()
+(export-always 'renderer-scheme)
+(defclass renderer-scheme ()
+  ()
+  (:metaclass interface-class))
+
+(define-class scheme (renderer-scheme)
   ((name (error "Scheme must have a name/scheme")
          :documentation "Scheme/name of the internal scheme.
 For instance, \"gopher\", \"irc\".")
@@ -128,8 +110,8 @@ Requires encryption or other means of security.")
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
-  (:documentation "Representation of Nyxt-specific internal schemes."))
-(define-user-class scheme)
+  (:documentation "Representation of Nyxt-specific internal schemes.")
+  (:metaclass user-class))
 
 (defmethod print-object ((scheme scheme) stream)
   (print-unreadable-object (scheme stream :type t :identity t)
@@ -147,16 +129,17 @@ Keys are scheme strings, values are `scheme' objects.")
                         secure-p
                         cors-enabled-p
                       &allow-other-keys)
-  "Define a handler (running CALBACK) for SCHEME-NAME scheme.
+  "Define a handler (running CALLBACK) for SCHEME-NAME scheme.
 
 CALLBACK is called with two arguments:
 - the URL that was requested with this scheme, and
 - buffer that it was requested in.
 
-For keyword arguments' meaning, see `scheme' slot documentation."
+For keyword arguments' meaning, see the corresponding `scheme' slot
+documentation."
   (declare (ignorable local-p no-access-p secure-p cors-enabled-p))
   (setf (gethash scheme-name *schemes*)
-        (apply #'make-instance 'user-scheme
+        (apply #'make-instance 'scheme
                :name scheme-name
                :callback callback
                keys)))
@@ -178,12 +161,9 @@ For keyword arguments' meaning, see `scheme' slot documentation."
 Public Suffix list, T otherwise."
   (sera:true (cl:ignore-errors (cl-tld:get-tld hostname))))
 
-(export-always 'valid-url-p)
-(defun valid-url-p (url &key (check-dns-p t))
-  "Return non-nil when URL is a valid URL.
-The domain name existence is verified only if CHECK-DNS-P is T. Domain
-name validation may take significant time since it looks up the DNS."
-  (let* ((nyxt-schemes (cons "javascript" (alex:hash-table-keys *schemes*)))
+(export-always 'valid-scheme-p)
+(defun valid-scheme-p (scheme)
+  (let* ((nyxt-schemes (append '("blob" "javascript") (alex:hash-table-keys *schemes*)))
          ;; List of URI schemes: https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
          ;; Last updated 2020-08-26.
          (iana-schemes
@@ -201,30 +181,33 @@ name validation may take significant time since it looks up the DNS."
          ;; TODO: Remove when https://github.com/lu4nx/cl-tld/issues/2 is fixed.
          (special-use-schemes
            '("example" "invalid" "local" "localhost" "onion" "test"))
-         (valid-schemes (append nyxt-schemes iana-schemes special-use-schemes))
-         (url (ignore-errors (quri:uri url))))
-    (flet ((valid-scheme-p (scheme)
-             (find scheme valid-schemes :test #'string=))
-           (http-p (scheme)
-             (find scheme '("http" "https") :test #'string=)))
-      (and url
-           (quri:uri-p url)
-           (valid-scheme-p (quri:uri-scheme url))
-           ;; `new-url-query' automatically falls back to HTTPS if it makes for
-           ;; a valid URL:
-           (or (not (http-p (quri:uri-scheme url)))
-               (and
-                ;; "http:/https://www.iana.org/assignments/special-use-domain-names/special-use-domain-names.xml/" does not have a host.
-                ;; A valid URL may have an empty domain, e.g. http://192.168.1.1.
-                (quri:uri-host url)
-                (or
-                 (not check-dns-p)
-                 (valid-tld-p (quri:uri-host url))
-                 ;; "http://algo" has the "algo" hostname but it's probably invalid
-                 ;; unless it's found on the local network.  We also need to
-                 ;; support "localhost" and the current system hostname.
-                 (or (quri:ip-addr-p (quri:uri-host url))
-                     (lookup-hostname (quri:uri-host url))))))))))
+         (valid-schemes (append nyxt-schemes iana-schemes special-use-schemes)))
+    (sera:true (find scheme valid-schemes :test #'string=))))
+
+(export-always 'valid-url-p)
+(defun valid-url-p (url &key (check-dns-p t))
+  "Return non-nil when URL is a valid URL.
+The domain name existence is verified only if CHECK-DNS-P is T. Domain
+name validation may take significant time since it looks up the DNS."
+  (let ((url (ignore-errors (quri:uri url))))
+    (and url
+         (quri:uri-p url)
+         (valid-scheme-p (quri:uri-scheme url))
+         ;; `new-url-query' automatically falls back to HTTPS if it makes for
+         ;; a valid URL:
+         (or (not (quri:uri-http-p url))
+             (and
+              ;; "http:/https://www.iana.org/assignments/special-use-domain-names/special-use-domain-names.xml/" does not have a host.
+              ;; A valid URL may have an empty domain, e.g. http://192.168.1.1.
+              (quri:uri-host url)
+              (or
+               (not check-dns-p)
+               (valid-tld-p (quri:uri-host url))
+               ;; "http://algo" has the "algo" hostname but it's probably invalid
+               ;; unless it's found on the local network.  We also need to
+               ;; support "localhost" and the current system hostname.
+               (or (quri:ip-addr-p (quri:uri-host url))
+                   (lookup-hostname (quri:uri-host url)))))))))
 
 (-> ensure-url (t) quri:uri)
 (defun ensure-url (thing)
@@ -269,13 +252,15 @@ If it cannot be derived, return an empty `quri:uri'."
           (quri:uri-query url)
           (quri:uri-fragment url)))
 
+(export-always 'url<)
 (-> url< (quri:uri quri:uri) (or null fixnum))
 (defun url< (url1 url2)
   "Like `string<' but ignore the URL scheme.
-This way, HTTPS and HTTP is ignored when comparing URIs."
+This way, HTTPS and HTTP is ignored when comparing URLs."
   (string< (schemeless-url url1)
            (schemeless-url url2)))
 
+(export-always 'url-equal)
 (-> url-equal (quri:uri quri:uri) boolean)
 (defun url-equal (url1 url2)
   "Like `quri:uri=' but ignoring the scheme.
@@ -293,10 +278,6 @@ Authority is compared case-insensitively (RFC 3986)."
                                                  (quri:uri-fragment url2)))
                       (lambda (url1 url2) (equalp (quri:uri-authority url1)
                                                   (quri:uri-authority url2)))))))
-
-(defvar *nyxt-url-commands* (make-hash-table)
-  "A map from allowed nyxt: URLs symbols to the functions that generate code of
-  the pages related to these commands.")
 
 (export-always 'nyxt-url)
 (-> nyxt-url (t &rest t &key &allow-other-keys) string)
@@ -328,7 +309,9 @@ Example:
                          (mapcar (lambda (pair)
                                    (cons (param-name (first pair))
                                          ;; This is to safely parse the args afterwards
-                                         (prin1-to-string (rest pair))))
+                                         (if (stringp (rest pair))
+                                             (rest pair)
+                                             (str:concat +escape+ (prin1-to-string (rest pair))))))
                                  (alexandria:plist-alist args)))))
             (the (values string &optional)
                  (format nil "nyxt:~a~@[~*?~a~]"
@@ -349,7 +332,9 @@ Example:
 (export-always 'parse-nyxt-url)
 (-> parse-nyxt-url ((or string quri:uri)) (values symbol list &optional))
 (defun parse-nyxt-url (url)
-  "Return (1) the name of the function and (2) the arguments to it, parsed from nyxt: URL.
+  "Return two values parsed from the nyxt: URL:
+- the name of the `internal-page',
+- the arguments to it.
 
 Error out if some of the params are not constants. Thanks to this,
 `parse-nyxt-url' can be repeatedly called on the same nyxt: URL, with the
@@ -357,52 +342,84 @@ guarantee of the same result."
   (let* ((url (url url))
          (symbol (quri:uri-path url))
          (params (quri:uri-query-params url))
-         (function (read-from-string (str:upcase symbol))))
-    (if (gethash function *nyxt-url-commands*)
-        (values function
-                (alex:mappend (lambda (pair)
+         (internal-page-name (let ((*package* (find-package :nyxt)))
+                               (read-from-string (str:upcase symbol)))))
+    (if (gethash internal-page-name *nyxt-url-commands*)
+        (values internal-page-name
+                (mappend (lambda (pair)
                                 (let ((key (intern (str:upcase (first pair)) :keyword))
-                                      (value (read-from-string (rest pair))))
+                                      (value (if (str:starts-with-p +escape+ (rest pair))
+                                                 (read-from-string (subseq (rest pair) 1))
+                                                 (rest pair))))
                                   ;; Symbols are safe (are they?)
                                   (if (or (symbolp value)
                                           (constantp value))
                                       (list key value)
                                       (error "A non-constant value passed in URL params: ~a" value))))
                               params))
-        (error "There's no nyxt:~a page defined" symbol))))
+        (error "There's no nyxt:~a internal-page defined" symbol))))
 
 (define-internal-scheme "nyxt"
     (lambda (url buffer)
-      (declare (ignore buffer))
       (with-protect ("Error while processing the \"nyxt:\" URL: ~a" :condition)
-        (sera:and-let* ((url (quri:uri url))
-                        (function-name (parse-nyxt-url url))
-                        (page-generating-function (gethash function-name *nyxt-url-commands*)))
-          (let ((result (multiple-value-list (apply page-generating-function
-                                                    (nth-value 1 (parse-nyxt-url url))))))
-            (cond
-              ((and (alex:length= result 2)
-                    (arrayp (first result))
-                    (stringp (second result)))
-               (values (first result) (second result)))
-              ((arrayp (first result))
-               (first result))
-              (t (error "Cannot display evaluation result")))))))
+        (let ((url (quri:uri url)))
+          (log:debug "Internal page ~a requested." url)
+          (multiple-value-bind (internal-page-name args) (parse-nyxt-url url)
+            (when (and internal-page-name)
+              (alex:when-let ((internal-page (gethash internal-page-name *nyxt-url-commands*)))
+                (enable-modes (page-mode internal-page) buffer)
+                (setf (title buffer) (apply #'dynamic-title internal-page args))
+                (multiple-value-bind (content encoding)
+                    (with-current-buffer buffer
+                      (apply (form internal-page) args))
+                  (cond
+                    ((and (arrayp content)
+                          (stringp encoding))
+                     (values content encoding))
+                    ((arrayp content)
+                     content)
+                    (t (error "Cannot display evaluation result"))))))))))
   :local-p t)
+
+(ps:defpsmacro nyxt/ps::lisp-eval ((&key (buffer '(nyxt:current-buffer)) title callback) &body form)
+  "Request the lisp: URL and invoke CALLBACK when there's a successful result.
+BUFFER must be a `document-buffer'.
+TITLE is purely informative."
+  ;; We define it here and not in parenscript-macro because we need
+  ;; `nyxt::lisp-url-callbacks' while parenscript-macro is Nyxt-independent.
+  `(let ((url (ps:lisp (let ((request-id (string (gensym ""))))
+                         (unless ,buffer
+                           (error "Cannot `nyxt/ps:lisp-eval' without BUFFER or current-buffer."))
+                         (log:debug "Registering callback ~a for buffer ~a" request-id ,buffer)
+                         (setf (gethash request-id (nyxt::lisp-url-callbacks ,buffer))
+                               (lambda () ,@form))
+                         (let ((url-string (format nil "lisp://~a" request-id)))
+                           (when ,title
+                             (setf url-string (str:concat url-string "/" ,title)))
+                           url-string)))))
+     (let ((request (fetch url
+                           (ps:create :mode "no-cors"))))
+       (when ,callback
+         (chain request
+                (then (lambda (response)
+                        (when (@ response ok)
+                          (chain response (json)))))
+                (then ,callback))))))
+(export-always 'nyxt/ps::lisp-eval :nyxt/ps)
 
 (define-internal-scheme "lisp"
     (lambda (url buffer)
       (let ((url (quri:uri url)))
+        ;; TODO: Replace this condition with `(not (network-buffer-p buffer))`?
         (if (or (status-buffer-p buffer)
                 (panel-buffer-p buffer)
                 (prompt-buffer-p buffer)
                 (internal-url-p (url buffer)))
-            (let* ((schemeless-url (schemeless-url url))
-                   (code-raw (quri:url-decode schemeless-url :lenient t))
-                   ;; All URLs WebKitGTK gives us end with an unnecessary forward slash.
-                   (code (sera:slice code-raw 0 -1)))
-              (log:debug "Evaluate Lisp code from internal page: ~a" code)
-              (values (let ((result (first (evaluate code))))
+            (let* ((request-id (quri:uri-host url))
+                   (title (when (and url (quri:uri-path url)) (sera:drop-prefix "/" (quri:uri-path url)))))
+              (log:debug "Evaluate Lisp callback ~a from internal page ~a: ~a" request-id buffer (or title "UNTITLED"))
+              (values (let ((result (with-current-buffer buffer
+                                      (run (gethash request-id (lisp-url-callbacks buffer))))))
                         ;; Objects and other complex structures make cl-json choke.
                         ;; TODO: Maybe encode it to the format that `cl-json'
                         ;; supports, then we can override the encoding and
@@ -460,7 +477,7 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
   "Return a predicate for URL designators matching one of SCHEME or OTHER-SCHEMES."
   #'(lambda (url-designator)
       (when url-designator
-        (some (alex:curry #'string= (quri:uri-scheme (url url-designator)))
+        (some (curry #'string= (quri:uri-scheme (url url-designator)))
               (cons scheme other-schemes)))))
 
 (-> match-host (string &rest string) (function (quri:uri) boolean))
@@ -469,7 +486,7 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
   "Return a predicate for URL designators matching one of HOST or OTHER-HOSTS."
   #'(lambda (url-designator)
       (when url-designator
-        (some (alex:curry #'string= (quri:uri-host (url url-designator)))
+        (some (curry #'string= (quri:uri-host (url url-designator)))
               (cons host other-hosts)))))
 
 (-> match-domain (string &rest string) (function (quri:uri) boolean))
@@ -478,7 +495,7 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
   "Return a predicate for URL designators matching one of DOMAIN or OTHER-DOMAINS."
   #'(lambda (url-designator)
       (when url-designator
-        (some (alex:curry #'string= (quri:uri-domain (url url-designator)))
+        (some (curry #'string= (quri:uri-domain (url url-designator)))
               (cons domain other-domains)))))
 
 (-> match-port (integer &rest integer) (function (quri:uri) boolean))
@@ -487,7 +504,7 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
   "Return a predicate for URL designators matching one of PORT or OTHER-PORTS."
   #'(lambda (url-designator)
       (when url-designator
-        (some (alex:curry #'eq (quri:uri-port (url url-designator)))
+        (some (curry #'eq (quri:uri-port (url url-designator)))
               (cons port other-ports)))))
 
 (-> match-file-extension (string &rest string) (function (quri:uri) boolean))
@@ -496,7 +513,7 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
   "Return a predicate for URL designators matching one of EXTENSION or OTHER-EXTENSIONS."
   #'(lambda (url-designator)
       (when url-designator
-        (some (alex:curry #'string= (pathname-type (or (quri:uri-path (url url-designator)) "")))
+        (some (curry #'string= (pathname-type (or (quri:uri-path (url url-designator)) "")))
               (cons extension other-extensions)))))
 
 (-> match-regex (string &rest string) (function (quri:uri) boolean))
@@ -505,7 +522,7 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
   "Return a predicate for URL designators matching one of REGEX or OTHER-REGEX."
   #'(lambda (url-designator)
       (when url-designator
-        (some (alex:rcurry #'cl-ppcre:scan (render-url (url url-designator)))
+        (some (rcurry #'cl-ppcre:scan (render-url (url url-designator)))
               (cons regex other-regex)))))
 
 (-> match-url (string &rest string) (function (quri:uri) boolean))
@@ -514,6 +531,6 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
   "Return a predicate for URLs exactly matching ONE-URL or OTHER-URLS."
   #'(lambda (url-designator)
       (when url-designator
-        (some (alex:rcurry #'string= (render-url (url url-designator)))
+        (some (rcurry #'string= (render-url (url url-designator)))
               (mapcar (lambda (u) (quri:url-decode u :lenient t))
                       (cons one-url other-urls))))))

@@ -51,11 +51,11 @@ Goals:
 
 Non-goals:
 
-- Customizable modifiers: The input system must decide how to map =meta=,
+- Customizable modifiers: the input system must decide how to map =meta=,
   =control=, etc.
-- Dead key support:  The input system must handle it.
-- Fallback function when binding is not found: The caller of =lookup-key= gets
-  =nil= when a unbound, thus it can decide of a default behaviour.
+- Dead key support: the input system must handle it.
+- Fallback function when binding is not found: the caller of =lookup-key= gets
+  =nil= when unbound, thus it can decide of a default behaviour.
 - Provide a self-insert function: the caller must handle it.
 - Global or local bindings: it's up to the calling application to manage the
   locality of their keymaps.

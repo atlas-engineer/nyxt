@@ -26,8 +26,6 @@
    #:key-status
    #:key=
 
-   #:*default-bound-type*
-
    #:keymap
    #:make-keymap
    #:keymap-p
@@ -87,7 +85,7 @@ Some globals can be tweaked to customize the library to your needs:
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria :keymap))
 
-(uiop:define-package scheme
+(uiop:define-package keymap/scheme
   (:use #:common-lisp)
   (:import-from #:keymap #:make-scheme-name)
   (:export

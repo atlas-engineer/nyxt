@@ -80,7 +80,7 @@ With current owner being X, if we go forward to Y-D2, then we own it and it
 becomes the new /current node/ of X.  Now Y-D2 is owned both by X and Y.
 
 Similarly, Y can "go back" to X-A, which becomes its /current node/, while
-X-B2 becomes the /forward child/ of X-B2 _for_ Y.  If Y now visits X-B1, it
+X-B2 becomes the /forward child/ of X-A _for_ Y.  If Y now visits X-B1, it
 becomes the /forward child/ of X-A for Y (while X-B2 is still the forward child
 of X-A for X).
 

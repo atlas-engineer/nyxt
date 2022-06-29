@@ -209,7 +209,9 @@ typedef struct {
         char *name;
         char *extension_id;
         char *tab_id;
+        int is_injected;
         char *manifest;
+        int is_privileged;
         JSCValue *files;
         WebKitScriptWorld *world;
 } ExtensionData;

@@ -1,17 +1,17 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/list-history-mode
-  (:use :common-lisp :nyxt)
-  (:documentation "Mode for listing history."))
+(nyxt:define-package :nyxt/list-history-mode
+    (:documentation "Mode for listing history."))
 (in-package :nyxt/list-history-mode)
 
 (define-mode list-history-mode ()
   "Mode for listing history."
-  ((rememberable-p nil)
-   (style
-    (theme:themed-css (theme *browser*)
-      (a
-       :color theme:text)
-      ("a:hover"
-       :color theme:primary)))))
+  ((visible-in-status-p nil)
+   (rememberable-p nil)
+   (style (theme:themed-css (theme *browser*)
+            (a
+             :color theme:on-background)
+            ("a:hover"
+             :opacity 0.5))))
+  (:toggler-command-p nil))

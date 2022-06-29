@@ -122,7 +122,7 @@ is the child to go forward to for the bound owner.")
 owner."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "The relationship between an owner and one of its nodes.
-In particular, it encodes the forward child nad the date of last access to the
+In particular, it encodes the forward child and the date of last access to the
 node for a given owner."))
 
 (export-always 'last-access)
@@ -492,23 +492,24 @@ chained."
       (when entry
         (nodes entry)))))
 
-(declaim (ftype (function (t owner) (or null node)) find-child))
-(defun find-child (data owner) ; TODO: Generalize?
-  "Return the direct child node of OWNER which matches DATA. "
+(declaim (ftype (function (t (or null (cons node *))) (or null node)) find-node))
+(defun find-node (data nodes)
+  "Return the node owned by OWNER which matches DATA."
   (find data
-        (children (current owner))
+        nodes
         :key #'entry
         :test #'data-equal-entry-p))
 
+(declaim (ftype (function (t owner) (or null node)) find-child))
+(defun find-child (data owner)
+  "Return the direct child node of OWNER which matches DATA. "
+  (find-node data (children (current owner))))
+
 (declaim (ftype (function (t owner) (or null node))
                 find-owned-child))
-(defun find-owned-child (data owner) ; TODO: Generalize?
-  "Return the direct child node owned by OWNER which matches DATA.
-Test is done with the TEST argument."
-  (find data
-        (owned-children owner)
-        :key #'entry
-        :test #'data-equal-entry-p))
+(defun find-owned-child (data owner)
+  "Return the direct child node owned by OWNER which matches DATA."
+  (find-node data (owned-children owner)))
 
 (export-always 'go-to-child)
 (defmethod go-to-child (data (history history-tree) owner-spec &key (child-finder #'find-child)) ; TODO: Should take a node instead?

@@ -4,7 +4,7 @@
 (in-package :nyxt)
 
 (define-internal-page-command-global list-systems ()
-    (buffer "*Systems*" 'base-mode)
+    (buffer "*Systems*")
   "List systems available via Quicklisp."
   (spinneret:with-html-string
     (:style (style buffer))
@@ -21,14 +21,14 @@
               (:p "Size: " size)
               (:p "Requires: " dependencies)
               (:p (:button :class "button"
-                           :onclick (ps:ps (nyxt/ps:lisp-eval `(ql:quickload ,name))) "Load"))
+                           :onclick (ps:ps (nyxt/ps:lisp-eval (:title "quickload") (ql:quickload name))) "Load"))
               (:hr)))))))
 
 (define-class quicklisp-source (prompter:source)
   ((prompter:name "Quicklisp systems")
    (prompter:constructor (mapcar #'ql-dist:short-description (ql:system-list)))
-   (prompter:actions (list (make-command quickload* (systems)
-                             (ql:quickload (first systems)))))))
+   (prompter:return-actions (list (lambda-command quickload* (systems)
+                                    (ql:quickload (first systems)))))))
 
 (define-command load-system ()
   "Load a system from Quicklisp."

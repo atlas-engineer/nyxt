@@ -79,7 +79,7 @@ filled up, use a number between 0 and 100.")))
                ;; empty string to force markup to make closing :div tag
                "")))
 
-(defmethod (setf percentage) :around (percentage (progress-bar progress-bar))
+(defmethod (setf percentage) :after (percentage (progress-bar progress-bar))
   (declare (ignorable percentage))
   (when (slot-boundp progress-bar 'buffer)
     (update progress-bar)))

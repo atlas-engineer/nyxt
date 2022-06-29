@@ -3,6 +3,7 @@
 
 (in-package :nyxt)
 
+(export-always 'manual-content)
 (defun manual-content ()
   (str:concat
    (spinneret:with-html-string
@@ -13,7 +14,8 @@ of Nyxt."))
    (config-content)))
 
 (defun config-content ()
-  (spinneret:with-html-string (:h2 "Configuration")
+  (spinneret:with-html-string
+    (:h2 "Configuration")
     (:p "Nyxt is written in the Common Lisp programming language which offers a
 great perk: everything in the browser can be customized by the user, even while
 it's running!")
@@ -29,27 +31,29 @@ change the value of a setting. The settings will be applied immediately and
 saved for future sessions. Please note that these settings will not alter
 existing object instances.")
     (:p "Settings created by Nyxt are stored in "
-        (:code (nfiles:expand *auto-config-file*)) ".")
+        (:code (files:expand *auto-config-file*)) ".")
     (:p "Any settings can be overridden manually by "
-        (:code (nfiles:expand *init-file*)) ".")
+        (:code (files:expand *config-file*)) ".")
     (:p "The following section assumes knowledge of basic Common Lisp or a
 similar programming language.")
-    (:p "The user needs to manually create the Nyxt configuration file "
-        (:code (nfiles:expand *init-file*))
-        ", and the parent folders if necessary. You can also press the button
-below to create said file, if it's not created yet.")
-     (let ((init-file-path (nfiles:expand *init-file*)))
-       (:p (if (uiop:file-exists-p init-file-path)
-               (:a :class "button"
-                   :href (ps:ps (nyxt/ps:lisp-eval `(echo "Init file exists")))
-                   "Init file exists")
-               (:a :class "button"
-                   :href (ps:ps (nyxt/ps:lisp-eval
-                                 `(progn (ensure-directories-exist ,init-file-path)
-                                         (ensure-file-exists ,init-file-path)
-                                         (echo "Init file created at ~a."
-                                               ,init-file-path))))
-                   "Create init file"))))
+    (:p "The user needs to manually create the Nyxt configuration file, and the parent folders if necessary."
+        (when (and (current-buffer)     ; In case manual is dumped.
+                   (not (files:nil-pathname-p (files:expand *config-file*))))
+          (:p
+           "You can also press the button below to create said file, if it's not
+created yet."
+           (let ((config-file-path (files:expand *config-file*)))
+             (:p (:a :class "button"
+                     :href (ps:ps (nyxt/ps:lisp-eval
+                                   (:title "maybe-create-config-file")
+                                   (if (uiop:file-exists-p config-file-path)
+                                       (echo "Configuration file exists")
+                                       (progn (ensure-directories-exist config-file-path)
+                                              (ensure-file-exists config-file-path)
+                                              (echo "Configuration file created at ~s."
+                                                    config-file-path)))))
+                     "Create configuration file"))))))
+
     (:p "Example:")
     (:pre (:code "
 \(define-configuration buffer
@@ -73,21 +77,25 @@ For instance, keyboard layouts vary across the world. The slot "
     (:ol
      (:li "Execute command " (command-markup 'describe-slot) ";")
      (:li "Type " (:code 'hints-alphabet)";")
-     (:li "Select " (:code "hints-alphabet") " (" (:code "user-web-mode") " class option);")
+     (:li "Select " (:code "hints-alphabet") " (" (:code "hint-mode") " class option);")
      (:li "Press the button " (:code "Configure") ", and;")
      (:li "Insert the string \"asfdghjkl\"") ".")
     (:p "This will make link-hinting more comfortable for this user. In
 addition, other similar approaches of customization can be applied to slots
 such as " (:code "spell-check-language") ", which can be expanded to do the
 spelling-check of other languages besides English.")
-    (:h3 "Web buffers and internal buffers")
-    (:p "A `internal-buffer' is used for Nyxt-specific, internal pages such as the
-tutorial and the description pages.  A `web-buffer' is used for web pages.  Both
-the `web-buffer' and the `internal-buffer' classes inherit from the `buffer'
-class.")
-    (:p "You can configure a `buffer' slot and it will cascade down as a new
-default for both the `internal-buffer' and `web-buffer' classes- unless this slot
-is specialized by these child classes.")
+    (:h3 "Different types of buffers")
+    (:p "There are multiple buffer classes, such as `document-buffer' (for
+structured documents) and `input-buffer' (for buffers that can receive user
+input).  A `web-buffer' class is used for web pages, `prompt-buffer' for, well,
+the prompt buffer.  Some buffer classes may inherit from multiple other classes.
+For instance `web-buffer' and `prompt-buffer' both inherit from
+`input-buffer'.")
+    (:p "You can configure one of the parent `buffer' classes slots and the new
+values will automatically cascade down as a new default for all child classes-
+unless this slot is specialized by these child classes.
+For instance if you configure the `override-map' slot in `input-buffer', both
+`panel-buffer' and `web-buffer' classes will inherit from the new value.")
 
     (:h3 "Keybinding configuration")
     (:p "Nyxt supports multiple " (:i "bindings schemes") " such as CUA (the
@@ -138,8 +146,8 @@ keymap.")
     (:pre (:code "
 \(defvar *my-keymap* (make-keymap \"my-map\"))
 \(define-key *my-keymap*
-  \"C-f\" 'nyxt/web-mode:history-forwards
-  \"C-b\" 'nyxt/web-mode:history-backwards)
+  \"C-f\" 'nyxt/history-mode:history-forwards
+  \"C-b\" 'nyxt/history-mode:history-backwards)
 
 \(define-mode my-mode ()
   \"Dummy mode for the custom key bindings in `*my-keymap*'.\"
@@ -167,7 +175,7 @@ Bookmarks can also be used as search engines, see the corresponding section.")
         (:code (format nil "~{~a~^, ~}"
                        (mapcar (lambda (engine)
                                  (quri:uri-host (quri:uri (getf engine :search-url))))
-                               (rest (getf (mopu:slot-properties 'buffer 'search-engines)
+                               (rest (getf (mopu:slot-properties 'context-buffer 'search-engines)
                                            :initform)))))
         ". "
         "The following example shows one way to add new search engines.")
@@ -203,7 +211,7 @@ magnet links.  See the" (:code "url-dispatching-handler") " function
 documentation.")
 
     (:h3 "Downloads")
-    (:p "See the " (command-markup 'list-downloads) " command and the "
+    (:p "See the " (command-markup 'nyxt/download-mode:list-downloads) " command and the "
         (:code "download-path") " buffer slot documentation.")
 
     (:h3 "Proxy and Tor")
@@ -217,9 +225,9 @@ all hosts being blocked, execute command " (:code "describe-variable") ", choose
 (:code "blocker-mode") " documentation.")
 
     (:h3 "Custom commands")
-    (:p "Creating your own invokable commands is similar to creating a Common
+    (:p "Creating your own invocable commands is similar to creating a Common
 Lisp function, except the form is " (:code "define-command") " instead of "
-(:code "defun") ". If you want this command to be invokable outside of
+(:code "defun") ". If you want this command to be invocable outside of
         the context of a mode, use " (:code "define-command-global") ".")
     (:p "Example:")
     (:pre (:code
@@ -309,24 +317,22 @@ say to develop Nyxt or extensions.")
         (:code "/tmp/nyxt") " and stores bookmark in an encrypted file:")
     (:pre (:code "
 \(define-class dev-profile (nyxt-profile)
-   ((nfiles:name :initform \"nyxt-dev\"))
+   ((files:name :initform \"nyxt-dev\"))
    (:documentation \"Development profile.\"))
 
 
-\(defmethod nfiles:resolve ((profile dev-profile) (path nyxt-file))
+\(defmethod files:resolve ((profile dev-profile) (path nyxt-file))
   \"Expand all data paths inside a temporary directory.\"
-  (serapeum:path-join (nfiles:expand (make-instance 'nyxt-temporary-directory))
+  (serapeum:path-join (files:expand (make-instance 'nyxt-temporary-directory))
                       (uiop:relativize-pathname-directory (call-next-method))))
 
 \(defmethod nyxt:resolve ((profile dev-profile) (file history-file))
   \"Persist history to default location.\"
-  (nfiles:resolve *global-profile* file))
+  (files:resolve *global-profile* file))
 
 ;; Make new profile the default:
 \(define-configuration buffer
-  ((profile (make-instance (or (find-profile-class (getf *options* :profile)) 'dev-profile)))
-   (bookmarks-file (make-instance 'bookmarks-file
-                                  :base-path \"~/personal/bookmarks/bookmarks.lisp.gpg\"))))"))
+  ((profile (make-instance (or (find-profile-class (getf *options* :profile)) 'dev-profile)))))"))
     (:p "Then you can start a separate instance of Nyxt using this profile
 with " (:code "nyxt --profile dev --socket /tmp/nyxt.socket") ".")
 
@@ -341,26 +347,45 @@ any of the password interfaces to configure them. Please make sure to
 use the package prefixed class name/slot designators within
 the " (:code "define-configuration") " macro.")
     (:ul
-     (:li (command-markup 'save-new-password) ": Query for name and new password to persist in the database.")
-     (:li (command-markup 'copy-password) ": " (command-docstring-first-sentence 'copy-password)))
+     (:li (command-markup 'nyxt/password-mode:save-new-password) ": Query for name and new password to persist in the database.")
+     (:li (command-markup 'nyxt/password-mode:copy-password) ": " (command-docstring-first-sentence 'nyxt/password-mode:copy-password)))
 
     (:h3 "Appearance")
     (:p "Much of the visual style can be configured by the user.  Search the
-class slots for 'style'.  To customize the status area, see
-the " (:code "status-formatter") " window slot.")
+class slots for 'style'.  To customize the status buffer, see
+the " (:code "status-buffer") " window slot.")
+
+    (:h3 "Advanced configuration")
+    (:p "While " (:code "define-configuration") " is convenient, it is mostly
+restricted to class slot configuration.  If you want to do anything else on
+class instantiation, you'll have to specialize the
+lower-level " (:code "customize-instance") " generic function.  Example:"
+(:pre (:code "
+\(defmethod customize-instance ((buffer buffer) &key)
+  (echo \"Buffer ~a created.\" buffer))")))
+    (:p "All classes with metaclass " (:code "user-class") " call "
+        (:code "customize-instance") " on instantiation,
+after " (:code "initialize-instance :after") ".  The primary method is reserved
+to the user, however the " (:code ":after") " method is reserved to the Nyxt
+core to finalize the instance.")
 
     (:h3 "Scripting")
     (:p "You can evaluate code from the command line with "
         (:code "--eval") " and " (:code "--load") ".  From a shell:")
-    (:pre (:code "$ nyxt --no-init --eval '+version+' \
+    (:pre (:code "$ nyxt --no-config --eval '+version+' \
   --load my-lib.lisp --eval '(format t \"Hello ~a!~&\" (my-lib:my-world))'"))
     (:p "You can evaluate multiple --eval and --load in a row, they are
 executed in the order they appear.")
     (:p "You can also evaluate a Lisp file from the Nyxt interface with
 the " (command-markup 'load-file) " command.  For
-convenience, " (command-markup 'load-init-file) " (re)loads your initialization file.")
+convenience, " (command-markup 'load-config-file) " (re)loads your initialization file.")
     (:p "You can even make scripts.  Here is an example foo.lisp:")
-    (:pre (:code "#!nyxt --script
+    (:pre (:code "#!/bin/sh
+#|
+exec nyxt --script \"$0\"
+|#
+
+;; Your code follows:
 \(format t \"~a~&\" +version+)"))
     (:p "--eval and --load can be commanded to operate over an
 existing instance instead of a separate instance that exits immediately.")

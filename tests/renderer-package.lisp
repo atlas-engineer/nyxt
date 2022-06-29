@@ -7,15 +7,16 @@
   (:shadowing-import-from #:prove #:*debug-on-error*)
   (:use #:prove)
   (:import-from #:class-star #:define-class))
+(nyxt::use-nyxt-package-nicknames)
 
 (class-star:define-class nyxt-user::test-profile (nyxt:nyxt-profile)
-  ((nfiles:name :initform "test"))
+  ((files:name :initform "test"))
   (:documentation "Test profile."))
 
-(defmethod nfiles:write-file ((profile nyxt-user::test-profile) (file nfiles:file) &key)
+(defmethod files:write-file ((profile nyxt-user::test-profile) (file files:file) &key)
   "Don't persist test data."
   nil)
 
-(defmethod nfiles:resolve ((profile nyxt-user::test-profile) (file nyxt:history-file))
+(defmethod files:resolve ((profile nyxt-user::test-profile) (file nyxt:history-file))
   "Don't use any history."
   #p"")

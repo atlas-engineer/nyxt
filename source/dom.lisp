@@ -1,15 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/dom
-  (:use :common-lisp :nyxt)
-  (:import-from #:class-star #:define-class)
-  (:import-from #:serapeum
-                #:export-always
-                #:->)
+(nyxt:define-package :nyxt/dom
   (:documentation "Nyxt-specific DOM classes and functions operating on them."))
 (in-package :nyxt/dom)
-(use-nyxt-package-nicknames)
 
 ;; TODO: Factor out into a library?
 
@@ -19,7 +13,7 @@
 
 (defmacro define-element-classes (&body names)
   (loop for name in names
-        collect (let* ((class-name (if (listp name) (first name) name))
+        collect (let* ((class-name (alex:ensure-car name))
                        (tag (str:replace-all "-element"  "" (str:downcase (symbol-name class-name))))
                        (additional-superclasses (when (listp name) (rest name))))
                   `(progn
@@ -149,7 +143,7 @@ JSON should have the format like what `get-document-body-json' produces:
                (when (typep element 'plump:nesting-node)
                  (setf (plump:children element)
                        (plump:ensure-child-array
-                        (map 'vector (alex:rcurry #'json-to-plump element)
+                        (map 'vector (rcurry #'json-to-plump element)
                              (let ((children (gethash "children" json-hash)))
                                (if (stringp children)
                                    (decode-json children)
@@ -166,6 +160,102 @@ JSON should have the format like what `get-document-body-json' produces:
           (root (plump:make-root)))
       (json-to-plump json root)
       (name-dom-elements root))))
+
+(export-always 'parents)
+(defgeneric parents (node)
+  (:method ((node plump:node)) nil)
+  (:method ((node plump:child-node))
+    (let ((parent (plump:parent node)))
+      (cons parent (parents parent))))
+  (:documentation "Get the recursive parents of the NODE.
+The closest parent goes first, the furthest one goes last."))
+
+(export-always 'get-unique-selector)
+(-> get-unique-selector (plump:element) t)
+(defmemo get-unique-selector (element)
+  "Find the shortest selector that uniquely identifies the element on a page.
+Rely (in the order of importance) on:
+- ID.
+- Tag name.
+- CSS Classes.
+- Attributes.
+- Parent and sibling node selectors (recursively).
+
+If none of those provides the unique selector, return the most specific selector
+calculated.
+
+Return two values:
+- The selector for the value.
+- A boolean for whether this selector is unique (no other nodes matching it)."
+  (let* ((tag-name (plump:tag-name element))
+         (identifier (plump:get-attribute element "id"))
+         (raw-classes (plump:get-attribute element "class"))
+         ;; TODO: Remove other attributes, unreliable ones? For example, href
+         ;; and type are reliable and are unlikely to change, while data-*
+         ;; attributes are unreliable and can change any moment.
+         (attributes (remove-if (rcurry #'member '("class" "id") :test #'string=)
+                                (alex:hash-table-keys (plump:attributes element))))
+         (classes (when raw-classes (remove-if #'str:blankp (str:split " " raw-classes))))
+         (parents (parents element))
+         (family (plump:family element))
+         (previous (ignore-errors (plump:previous-element element)))
+         ;; Is it guaranteed that the topmost ancestor of a node is
+         ;; `plump:root'? Anyway, it should work even if there's a single
+         ;; `plump:element' as a root.
+         (root (alex:lastcar parents))
+         (selector ""))
+    (labels ((selconcat (&rest strings)
+               (setf selector (sera:string-join (subst selector :sel strings) "")))
+             (unique-p (selector)
+               (sera:single (clss:select selector root)))
+             (selreturn ()
+               (return-from get-unique-selector (values selector (unique-p selector)))))
+      ;; ID should be globally unique, so we check it first.
+      (when (and identifier (sera:single (clss:select (selconcat :sel "#" identifier)  root)))
+        (selreturn))
+      ;; selconcat hack doesn't look nice here, but should work for cases of
+      ;; both empty selector and ID selector.
+      (when (unique-p (selconcat tag-name :sel))
+        (selreturn))
+      (when classes
+        (mapc (lambda (class)
+                (when (unique-p (selconcat :sel "." class))
+                  (selreturn)))
+              classes))
+      (when attributes
+        (mapc (lambda (attribute)
+                (when (unique-p (selconcat :sel "[" attribute "=\""
+                                            (plump:attribute element attribute) "\"]"))
+                  (selreturn)))
+              attributes))
+      ;; Check for short and nice parent-child relations, like :only-child,
+      ;; :last-child etc.
+      ;;
+      ;; FIXME: :nth-child would be extremely useful there, but it seems to by
+      ;; unpredictable in CLSS (or CSS?).
+      (when (and parents
+                 (sera:single family)
+                 (unique-p (selconcat :sel ":only-child")))
+        (selreturn))
+      (when (and parents
+                 (not (sera:single family))
+                 (eq element (elt family 0))
+                 (unique-p (selconcat :sel ":first-child")))
+        (selreturn))
+      (when (and parents
+                 (not (sera:single family))
+                 (eq element (elt family (1- (length family))))
+                 (unique-p (selconcat :sel ":last-child")))
+        (selreturn))
+      ;; Then check for previous siblings.
+      (when (and previous
+                 (unique-p (selconcat (get-unique-selector previous)  " ~ " :sel)))
+        (selreturn))
+      ;; Finally, go up the hierarchy.
+      (when (and parents
+                 (unique-p (selconcat (get-unique-selector (first parents)) " > " :sel)))
+        (selreturn))
+      (error "There's no unique selector for ~a, the best quess is ~s" element selector))))
 
 (defmethod url :around ((element plump:element))
   (alex:when-let* ((result (call-next-method))

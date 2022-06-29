@@ -96,11 +96,15 @@ set_window_object_cleared (void *key, void *value, void *user_data)
         ExtensionData *data = (ExtensionData *) value;
         /* We only inject APIs for the privileged extension
          * (owning a default world), if there's one. */
-        if ((IS_PRIVILEGED && webkit_script_world_get_default() == data->world) ||
-            !IS_PRIVILEGED)
+        if (!data->is_injected &&
+            ((IS_PRIVILEGED &&
+              webkit_script_world_get_default() == data->world) ||
+             !IS_PRIVILEGED)) {
                 g_signal_connect (data->world, "window-object-cleared",
                                   G_CALLBACK(window_object_cleared_callback),
                                   key);
+                data->is_injected = 1;
+        }
 }
 
 /** user_message_received_callback
@@ -158,7 +162,8 @@ run", -1),
                                 message, webkit_user_message_new(name, NULL));
                 }
         } else if (!strcmp("injectAPIs", name) && contents){
-                inject_apis((void *) contents, NULL, NULL);
+                extensions_data_add_from_json(contents);
+                g_hash_table_foreach(EXTENSIONS_DATA, set_window_object_cleared, NULL);
                 WebKitUserMessage *reply = webkit_user_message_new(name, NULL);
                 webkit_user_message_send_reply(message, reply);
         } else {
@@ -190,8 +195,8 @@ web_page_created_callback (WebKitWebExtension *extension,
                           G_CALLBACK (user_message_received_callback),
                           NULL);
         PAGE = web_page;
-        extensions_data_add_from_json(user_data);
-        g_hash_table_foreach(EXTENSIONS_DATA, set_window_object_cleared, NULL);
+        /* webkit_web_page_send_message_to_view( */
+        /*         PAGE, webkit_user_message_new("ready", g_variant_new("ms", "")), NULL, NULL, NULL); */
 }
 
 /** webkit_web_extension_initialize_with_user_data
@@ -205,8 +210,7 @@ web_page_created_callback (WebKitWebExtension *extension,
  * Print "The WebExtensions support library is loaded" when done.
  */
 G_MODULE_EXPORT void
-webkit_web_extension_initialize_with_user_data
-(WebKitWebExtension *extension, GVariant *user_data)
+webkit_web_extension_initialize (WebKitWebExtension *extension)
 {
         EXTENSIONS_DATA = g_hash_table_new(g_str_hash, g_str_equal);
         IS_PRIVILEGED = 0;
@@ -215,9 +219,8 @@ webkit_web_extension_initialize_with_user_data
                                         (GDestroyNotify) free, NULL);
         REQUESTS = g_hash_table_new(g_str_hash, g_str_equal);
 
-        const char *json = g_variant_get_string(user_data, NULL);
         g_signal_connect (extension, "page-created",
                           G_CALLBACK (web_page_created_callback),
-                          (void *) json);
+                          NULL);
         g_print("The WebExtensions support library is loaded\n");
 }

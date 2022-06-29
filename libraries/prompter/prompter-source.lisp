@@ -5,7 +5,7 @@
 
 ;; TODO: Use methods instead of slots?  Probably no, because we must be able to
 ;; handle anonymous sources / prompters.
-;; TODO: Memoize suggestion computation?
+;; TODO: Memoize `suggestion' computation?
 ;; TODO: User classes?  Probably useful mostly for `source' since
 ;; they may be defined globally.  Conversely, `prompter' is mostly used
 ;; locally.
@@ -22,13 +22,252 @@
    (complement #'exported-p)
    (mopu:slot-names object-specifier)))
 
+(define-class source ()
+  ((name (error "Source must have a name")
+         :documentation
+         "Name which can be used to differentiate sources from one
+another.")
+
+   (constructor nil
+                :type (or null list function)
+                :documentation
+                "Function or list to set `initial-suggestions'.
+If a function, it's called asynchronously with the source as argument.
+The returned value is assigned to `initial-suggestions'.
+
+If a list, it's assigned synchronously to `initial-suggestions'.  The list is
+guaranteed to never be modified.")
+
+   (destructor nil
+               :type (or null function)
+               :documentation
+               "Function called with the source as parameter to clean it up.
+It's called when `destroy' is called over `prompter'.")
+
+   (initial-suggestions '()
+                        :reader initial-suggestions
+                        :documentation
+                        "Suggestions used on initialization, before any
+user input is processed.
+On initialization this list is transformed to a list of `suggestion's
+with `suggestion-maker'.
+This list is never modified after initialization.")
+
+   (initial-suggestions-lock (bt:make-lock)
+                             :type bt:lock
+                             :export nil
+                             :initarg nil
+                             :documentation "Protect `initial-suggestions'
+access.")
+
+   (suggestions '()
+                :reader suggestions
+                :export t
+                :documentation
+                "The current list of suggestions.
+It's updated asynchronously every time the prompter input is changed.
+The slot is readable even when the computation hasn't finished.
+See `ready-notifier' to know when the list is final.
+See `update-notifier' to know when it has been updated, to avoid polling the
+list.")
+
+   (marks '()
+          :documentation
+          "The list of `suggestion' values which have been marked by the user.
+Marking is only allowed when `multi-selection-p' is non-nil.  When suggestions
+are marked, subsequent `return-actions' run over all marked suggestions.
+
+We store the values instead of the `suggestion' because `suggestion' objects are
+reinstantiated between each input processing.")
+
+   (active-attributes-keys '()
+                           :export t
+                           :accessor nil
+                           :documentation "Keys of the `suggestion' attributes to
+display and process when filtering.  An empty list means all attributes are
+displayed.")
+
+   (hide-attribute-header-p :never      ; TODO: Remove `-p' as it's not a boolean.
+                            :type (member :always :never :single)
+                            :documentation "Let know the caller whether the
+attribute names are meant to be displayed or not.
+- When `:always', the column attribute header should be hidden.
+- When `:never', the column attribute header should be shown.
+- When `:single', it's hidden if there is only one active attribute.")
+
+   (hide-suggestion-count-p nil
+                            :type boolean
+                            :documentation "Let know the caller whether the
+`suggestion' count is meant to be displayed or not.")
+
+   (suggestion-maker #'make-suggestion
+                     :type function
+                     :documentation "Function that wraps an arbitrary
+object into a source `suggestion'.
+This is useful to set the `suggestion' slots such as `attributes' and `match-data'
+depending on the source and the input.
+
+Called on
+- arbitrary object
+- (optional) source
+- (optional) current input.")
+
+   (filter #'fuzzy-match
+           :type (or null function function-symbol)
+           :documentation
+           "Takes a `suggestion', the `source' and the `input' and return a new
+`suggestion', or nil if the `suggestion' is discarded.")
+
+   (filter-preprocessor #'delete-inexact-matches
+                        :type (or null function function-symbol)
+                        :documentation
+                        "Function called when
+input is modified, before filtering the suggestions.
+It is passed the following arguments:
+- a copy of `initial-suggestions';
+- the source;
+- the input.")
+
+   (filter-postprocessor nil
+                         :type (or null function function-symbol)
+                         :documentation
+                         "Function called when input is modified, after
+filtering the `suggestion's with `filter'.
+It is passed the following arguments:
+- the filtered suggestions;
+- the source;
+- the input.")
+
+   (current-input-downcase-p nil
+                             :type boolean
+                             :export nil
+                             :documentation "Whether input is downcased.
+This is useful for filters to avoid recomputing it every time.")
+
+   (last-input-downcase-p nil
+                          :type boolean
+                          :export nil
+                          :documentation "Whether previous input was
+downcased.  This is useful to know if there is a case difference since last time
+and to know if we have to recompute the match-data for instance.")
+
+   (sort-predicate #'score>
+                   :type (or null
+                             (function (suggestion suggestion) boolean))
+                   :documentation "A predicate used to sort the `suggestion's once
+filtered.  The predicate works the same as the `sort' predicate.")
+
+   (return-actions '(identity)
+                   :type list
+                   :accessor nil
+                   :export nil
+                   :documentation "List of funcallables that can be run on
+`suggestion's of this source.  This is the low-level implementation, see the
+`return-actions' function for the public interface.")
+
+   (update-notifier (make-channel)
+                    :type calispel:channel
+                    :documentation "A channel which is written to when `filter'
+commits a change to `suggestion's.  A notification is only sent if at least
+`notification-delay' has passed.  This is useful so that clients don't have to
+poll `suggestion's for changes.")
+
+   (notification-delay 0.1
+                       :documentation "Time in seconds after which to notify
+`update-notifier' if `suggestions' was modified.")
+
+   (ready-p
+    nil
+    :type boolean
+    :export t
+    :initarg nil
+    :documentation "Whether the source is done computing its suggestions.
+See also `next-ready-p' and `all-ready-p' to wait until ready.")
+
+   (ready-channel nil
+                  :type (or null calispel:channel)
+                  :export nil
+                  :initarg nil
+                  :documentation "Notify listener that source is ready.
+The source object is sent to the channel.
+If update calculation is aborted, nil is sent instead.")
+
+   (update-thread nil
+                  :type (or null bt:thread)
+                  :export nil
+                  :initarg nil
+                  :documentation "Thread where the `filter-preprocessor', `filter' and
+`filter-postprocessor' are run.  We store it in a slot so that we can terminate it.")
+
+   (attribute-thread nil
+                     :type (or null bt:thread)
+                     :export nil
+                     :initarg nil
+                     :documentation "Thread where the attributes get asynchronously computer.  See `attribute-channel'.")
+
+   (attribute-channel (make-channel)
+                      :type (or null calispel:channel)
+                      :export nil
+                      :initarg nil
+                      :documentation "Channel used to communicate attributes to
+`attribute-thread' to compute asynchronously")
+
+   (multi-selection-p nil
+                      :type boolean
+                      :documentation
+                      "Whether multiple candidates can be marked.")
+
+   (resumer nil
+            :type (or null function)
+            :documentation
+            "Function meant to be called with the source as argument when the
+prompter is resumed.
+See `resume-sources'.")
+
+   (selection-actions '()
+                      :type (or null
+                                (or function function-symbol)
+                                (cons (or function function-symbol) *))
+                      :documentation
+                      "The first function of this list is called automatically
+on the selection when it's changed.  It does not interrupt or return the
+prompter.  For convenience, it may be initialized with a single function, in
+which case it will be automatically turned into a list.")
+
+   (selection-actions-enabled-p nil
+                                :type boolean
+                                :documentation
+                                "Whether the first of `selection-actions' is
+automatically executed.  Also see `selection-actions-delay'.")
+
+   (selection-actions-delay 0.0
+                            :documentation
+                            "Execute the first of `selection-actions' after this
+delay when `selection-actions-enabled-p' is non-nil."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name))
+  (:documentation "A prompter source instance is meant to be used by a
+`prompter' object.  See its `sources' slot.  A source is a consistent collection
+of suggestions, filters, return-actions.
+
+When a `prompter' `input' is set, the `update' function is called over all
+sources.  This function pipelines `initial-suggestions' through
+`filter-preprocessor', `filter', and finally `filter-postprocessor'.  If any of
+these functions is nil, it's equivalent to passing the suggestions unchanged.
+
+`filter-preprocessor' and `filter-postprocessor' are passed the whole list of
+suggestions; they only set the `suggestion's once they are done.  Conversely,
+`filter' is passed one `suggestion' at a time and it updates `suggestion's on each
+call."))
+
 (defun default-object-attributes (object)
   `(("Default" ,(princ-to-string object))))
 
 (export-always 'object-attributes)
-(defmethod object-attributes ((object t))
+(defmethod object-attributes ((object t) (source prompter:source))
   "Return an alist of non-dotted pairs (ATTRIBUTE-KEY ATTRIBUTE-VALUE) for OBJECT.
-Attributes are meant to describe the OBJECT structurally.
+Attributes are meant to describe the OBJECT in the context of the SOURCE.
 Both attribute-keys and attribute-values are strings.
 
 For structure and class instances, the alist is made of the exported slots: the
@@ -40,6 +279,7 @@ It's used in `make-suggestion' which can be used as a `suggestion-maker' for `so
 It's useful to separate concerns and compose between different object attributes
 and different sources (for instance, the same `object-attributes' method can be
 inherited or used across different sources)."
+  (declare (ignorable source))
   (cond
     ((hash-table-p object)
      (let ((result))
@@ -183,244 +423,13 @@ If unset, set it to the return value of `format-attributes'."
 (defmethod make-suggestion ((value t) &optional source input)
   "Return a `suggestion' wrapping around VALUE.
 Attributes are set with `object-attributes'."
-  (declare (ignore source input))
+  (declare (ignore input))
   (make-instance 'suggestion
                  :value value
-                 :attributes (object-attributes value)))
+                 :attributes (object-attributes value source)))
 
-(define-class source ()
-  ((name (error "Source must have a name")
-         :documentation
-         "Name which can be used to differentiate sources from one
-another.")
-
-   (constructor nil
-                :type (or null list function)
-                :documentation
-                "Function or list to set `initial-suggestions'.
-If a function, it's called asynchronously with the source as argument.
-The returned value is assigned to `initial-suggestions'.
-
-If a list, it's assigned synchronously to `initial-suggestions'.  The list is
-guaranteed to never be modified.")
-
-   (destructor nil
-               :type (or null function)
-               :documentation
-               "Function called with the source as parameter to clean it up.
-It's called when `destroy' is called over `prompter'.")
-
-   (initial-suggestions '()
-                        :reader initial-suggestions
-                        :documentation
-                        "Suggestions used on initialization, before any
-user input is processed.
-On initialization this list is transformed to a list of `suggestion's
-with `suggestion-maker'.
-This list is never modified after initialization.")
-
-   (initial-suggestions-lock (bt:make-lock)
-                             :type bt:lock
-                             :export nil
-                             :initarg nil
-                             :documentation "Protect `initial-suggestions'
-access.")
-
-   (suggestions '()
-                :reader suggestions
-                :export t
-                :documentation
-                "The current list of suggestions.
-It's updated asynchronously every time the prompter input is changed.
-The slot is readable even when the computation hasn't finished.
-See `ready-notifier' to know when the list is final.
-See `update-notifier' to know when it has been updated, to avoid polling the
-list.")
-
-   (marks '()
-          :documentation
-          "The list of suggestion values which have been marked by the user.
-Marking is only allowed when `multi-selection-p' is non-nil.
-When suggestions are marked, the subsequent action is run over all marked suggestions.
-
-We store the values instead of the suggestion because suggestions objects are
-reinstantiated between each input processing.")
-
-   (active-attributes-keys '()
-                           :export t
-                           :accessor nil
-                           :documentation "Keys of the suggestion attributes to
-display and process when filtering.  An empty list means all attributes are
-displayed.")
-
-   (hide-attribute-header-p :never
-                            :type (member :always :never :single)
-                            :documentation "Let know the caller whether the
-attribute names are meant to be displayed or not.
-- When `:always', the column attribute header should be hidden.
-- When `:never', the column attribute header should be shown.
-- When `:single', it's hidden if there is only one active attribute.")
-   (hide-suggestion-count-p nil
-                            :type boolean
-                            :documentation "Let know the caller whether the
-suggestion count is meant to be displayed or not.")
-
-   (suggestion-maker #'make-suggestion
-                     :type function
-                     :documentation "Function that wraps an arbitrary
-object into a source `suggestion'.
-This is useful to set the suggestion slots such as `attributes' and `match-data'
-depending on the source and the input.
-
-Called on
-- arbitrary object
-- (optional) source
-- (optional) current input.")
-
-   (filter #'fuzzy-match
-           :type (or null function function-symbol)
-           :documentation
-           "Takes a `suggestion', the `source' and the `input' and return a new
-suggestion, or nil if the suggestion is discarded.")
-
-   (filter-preprocessor #'delete-inexact-matches
-                        :type (or null function function-symbol)
-                        :documentation
-                        "Function called when
-input is modified, before filtering the suggestions.
-It is passed the following arguments:
-- a copy of `initial-suggestions';
-- the source;
-- the input.")
-
-   (filter-postprocessor nil
-                         :type (or null function function-symbol)
-                         :documentation
-                         "Function called when input is modified, after
-filtering the suggestions with `filter'.
-It is passed the following arguments:
-- the filtered suggestions;
-- the source;
-- the input.")
-
-   (current-input-downcase-p nil
-                             :type boolean
-                             :export nil
-                             :documentation "Whether input is downcased.
-This is useful for filters to avoid recomputing it every time.")
-   (last-input-downcase-p nil
-                          :type boolean
-                          :export nil
-                          :documentation "Whether previous input was
-downcased.  This is useful to know if there is a case difference since last time
-and to know if we have to recompute the match-data for instance.")
-
-   (sort-predicate #'score>
-                   :type (or null
-                             (function (suggestion suggestion) boolean))
-                   :documentation "A predicate used to sort the suggestions once
-filtered.  The predicate works the same as the `sort' predicate.")
-
-   (actions '(identity)
-            :type list
-            :accessor nil
-            :export nil
-            :documentation "List of funcallables that can be run on suggestions
-of this source.
-This is the low-level implementation, see the `actions' function for the public
-interface.")
-
-   (update-notifier (make-channel)
-                    :type calispel:channel
-                    :documentation "A channel which is written to when `filter'
-commits a change to `suggestions'.  A notification is only sent if at least
-`notification-delay' has passed.  This is useful so that clients don't have to
-poll `suggestions' for changes.")
-
-   (notification-delay 0.1
-                       :documentation "Time in seconds after which to notify
-`update-notifier' if `suggestions' was modified.")
-
-   (ready-channel nil
-                  :type (or null calispel:channel)
-                  :export nil
-                  :initarg nil
-                  :documentation "Notify listener that source is ready.
-The source object is sent to the channel.
-If update calculation is aborted, nil is sent instead.")
-
-   (update-thread nil
-                  :type (or null bt:thread)
-                  :export nil
-                  :initarg nil
-                  :documentation "Thread where the `filter-preprocessor', `filter' and
-`filter-postprocessor' are run.  We store it in a slot so that we can terminate it.")
-
-   (attribute-thread nil
-                     :type (or null bt:thread)
-                     :export nil
-                     :initarg nil
-                     :documentation "Thread where the attributes get asynchronously computer.  See `attribute-channel'.")
-
-   (attribute-channel (make-channel)
-                      :type (or null calispel:channel)
-                      :export nil
-                      :initarg nil
-                      :documentation "Channel used to communicate attributes to
-`attribute-thread' to compute asynchronously")
-
-   (multi-selection-p nil
-                      :type boolean
-                      :documentation
-                      "Whether multiple candidates can be marked.")
-
-   (resumer nil
-            :type (or null function)
-            :documentation
-            "Function meant to be called with the source as argument when the
-prompter is resumed.
-See `resume-sources'.")
-
-   (follow-p nil
-             :type boolean
-             :documentation
-             "Whether the first `follow-mode-functions' is automatically
-executed.  Also see `follow-delay'.")
-
-   (follow-delay 0.0
-                 :documentation
-                 "Execute the first `follow-mode-functions' after this delay
-when `follow-p' is non-nil.")
-
-   (follow-mode-functions '()
-                          :type (or null
-                                    (or function function-symbol)
-                                    (cons (or function function-symbol) *))
-                          :documentation
-                          "The first function of this list is called
-automatically on the selection when it's changed.  It does not interrupt or
-return the prompter.
-For convenience, it may be initialized with a single function, in which case it
-will be automatically turned into a list."))
-  (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
-  (:documentation "A prompter source instance is meant to be used by a
-`prompter' object.  See its `sources' slot.  A source is a consistent collection
-of suggestions, filters, actions.
-
-When a `prompter' `input' is set, the `update' function is called over all
-sources.  This function pipelines `initial-suggestions' through
-`filter-preprocessor', `filter', and finally `filter-postprocessor'.  If any of
-these functions is nil, it's equivalent to passing the suggestions unchanged.
-
-`filter-preprocessor' and `filter-postprocessor' are passed the whole list of
-suggestions; they only set the `suggestions' once they are done.  Conversely,
-`filter' is passed one suggestion at a time and it updates `suggestions' on each
-call."))
-
-(defmethod default-action ((source source))
-  (first (slot-value source 'actions)))
+(defmethod default-return-action ((source source))
+  (first (slot-value source 'return-actions)))
 
 (define-class yes-no-source (source)
   ((name "Confirm")
@@ -445,7 +454,7 @@ call."))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Prompt source for raw user input.
-Its only suggestion is the user input, thus it has no constructor.
+Its only `suggestion' is the user input, thus it has no constructor.
 If you are looking for a source that just returns its plain suggestions, use `source'."))
 
 (defmethod initialize-instance :after ((raw-source raw-source) &key)
@@ -536,8 +545,8 @@ This is a \"safe\" wrapper around `bt:make-thread'."
         (calispel:! wait-channel t)))
     ;; Wait until above thread has acquired the `initial-suggestions-lock'.
     (calispel:? wait-channel))
-  (setf (follow-mode-functions source)
-        (uiop:ensure-list (follow-mode-functions source)))
+  (setf (selection-actions source)
+        (uiop:ensure-list (selection-actions source)))
   source)
 
 (export-always 'attributes-keys-non-default)
@@ -554,12 +563,6 @@ This is a \"safe\" wrapper around `bt:make-thread'."
 (defmethod attributes-default ((suggestion suggestion))
   "Return SUGGESTION default attribute value."
   (second (first (attributes suggestion))))
-
-(defmethod attributes-default ((object t))
-  "Return OBJECT default attribute value.
-Since the OBJECT is taken outside of a source context, attributes are derived
-from `object-attributes'."
-  (second (first (object-attributes object))))
 
 (export-always 'attributes-non-default)
 (defmethod attributes-non-default ((suggestion suggestion))
@@ -616,7 +619,7 @@ Active attributes are queried from SOURCE."
         (calispel:! (attribute-channel source) (list nil nil))))))
 
 (defun make-attribute-thread (source)
-  "Return a thread that is bound to SOURCE and used to compute its suggestion attributes asynchronously.
+  "Return a thread that is bound to SOURCE and used to compute its `suggestion' attributes asynchronously.
 Asynchronous attributes have a string-returning function as a value."
   ;; TODO: Notify when done updating, maybe using `update-notifier'?
   (run-thread "Prompter attribute thread"
@@ -656,7 +659,7 @@ non-nil."
 
 (defun make-channel (&optional size)
   "Return a channel of capacity SIZE.
-If SIZE is NIL, capicity is infinite."
+If SIZE is NIL, capacity is infinite."
   (cond
     ((null size)
      (make-instance 'calispel:channel
@@ -685,14 +688,14 @@ If SIZE is NIL, capicity is infinite."
   (ignore-errors (bt:destroy-thread (attribute-thread source))))
 
 (defun update (source input new-ready-channel) ; TODO: Store `input' in the source?
-  "Update SOURCE to narrow down the list of `suggestions' according to INPUT.
-If a previous suggestion computation was not finished, it is forcefully terminated.
+  "Update SOURCE to narrow down the list of `suggestion's according to INPUT.
+If a previous `suggestion' computation was not finished, it is forcefully terminated.
 
 - First the `filter-preprocessor' is run over a copy of `initial-suggestions'.
 - The resulting suggestions are passed one by one to `filter'.
   When filter returns non-nil, the result is added to `suggestions' and
   `update-notifier' is notified, if `notification-delay' has been exceeded or if
-  the last suggestion has been processed.
+  the last `suggestion' has been processed.
 - Last the `filter-postprocessor' is run the SOURCE and the INPUT.
   Its return value is assigned to the list of suggestions.
 - Finally, `ready-notifier' is fired up.
@@ -753,6 +756,7 @@ feedback to the user while the list of suggestions is being computed."
                                            input))))))
             (unwind-protect
                  (progn
+                   (setf (ready-p source) nil)
                    (wait-for-initial-suggestions)
                    (setf (last-input-downcase-p source) (current-input-downcase-p source))
                    (setf (current-input-downcase-p source) (str:downcasep input))
@@ -762,5 +766,6 @@ feedback to the user while the list of suggestions is being computed."
                      ;; preprocessor cannot modify them.
                      (mapcar #'copy-object (initial-suggestions source))))
                    (postprocess!))
+              (setf (ready-p source) t)
               ;; Signal this source is done:
               (calispel:! new-ready-channel source))))))

@@ -5,34 +5,33 @@
 * List of Nyxt extensions
 
 - [[https://github.com/kssytsrk/nx-freestance-handler][nx-freestance-handler]] ::
-  nx-freestance-handler is a redirector from mainstream websites to their 
-  privacy-supporting mirrors for the Nyxt browser.
-  It is currently able to redirect from Youtube to Invidious, from Reddit 
-  to Teddit, from Instagram to Bibliogram, and from Twitter to Nitter.
+  nx-freestance-handler is a redirector from mainstream websites to their
+  privacy-supporting mirrors for the Nyxt browser.  It is currently able to
+  redirect from Youtube to Invidious, from Reddit to Teddit, from Instagram to
+  Bibliogram, and from Twitter to Nitter.
 
 - [[https://github.com/aartaka/nx-search-engines][nx-search-engines]] ::
-  The aim of nx-search-engines is to get rid of black box world of
-  search bookmarklets and search cookies by moving to the pretty land
-  of lispy syntax and small helper functions generating search URIs.
+  The aim of nx-search-engines is to get rid of black box world of search
+  bookmarklets and search cookies by moving to the pretty land of lispy syntax
+  and small helper functions generating search URIs.
 
 - [[https://github.com/atlas-engineer/nx-ace][nx-ace]] ::
-  nx-ace allows you to use the Ace editor within Nyxt. To use it, load
-  it, and add =ace-mode= to your default modes for your
-  =editor-buffer=.
+  nx-ace allows you to use the Ace editor within Nyxt. To use it, load it, and
+  add =ace-mode= to your default modes for your =editor-buffer=.
 
 - [[https://github.com/aartaka/nx-kaomoji.git][nx-kaomoji]] ::
-  nx-kaomoji lets you paste Kaomojis to any input field with a
-  dedicated command. Load it and run =kaomoji-fill= (or bind it to a
-  key) in Nyxt.
+  nx-kaomoji lets you paste Kaomojis to any input field with a dedicated
+  command. Load it and run =kaomoji-fill= (or bind it to a key) in Nyxt.
 
 - [[https://github.com/atlas-engineer/nx-fruit][nx-fruit]] ::
-  nx-fruit lets you discover the fruit of the day! A simple extension
-  that you can use to test your Nyxt installation (i.e. can you load
-  extensions).
+  nx-fruit lets you discover the fruit of the day!  A simple extension that you
+  can use to test your Nyxt installation (i.e. can you load extensions).
 
-- [[https://github.com/efimerspan/nx-mapper][nx-mapper]] ::
-  nx-mapper is an extension which aims to reduce the complexity
-  associated with defining common browsing behaviors desired by power
-  users, such as specifying the look and behavior of sites, as well as
-  establishing healthy habits through blocklists, or managing your
-  browser themes on the fly.
+- [[https://github.com/efimerspan/nx-router][nx-router]] ::
+  nx-router is a URL routing extension for Nyxt.  You can set up URL redirects,
+  block lists, open resources with external applications, all in a cohesive
+  configuration language.
+
+- [[https://github.com/efimerspan/nx-tailor][nx-tailor]] ::
+  nx-tailor is a tailor for all-things Nyxt themes which helps you manage them,
+  change them on-the-fly, and discover new ones in a unified interface.

@@ -20,6 +20,8 @@ jobs:
     strategy:
       matrix:
         lisp: [sbcl-bin, ccl]
+        renderer: [gi-gtk]
+        rosargs: [dynamic-space-size=3072]
         os: [ ubuntu-latest ]
 
     # run the job on every combination of "lisp" and "os" above
@@ -58,9 +60,9 @@ jobs:
       continue-on-error: true
       shell: bash
       run: |
-        ros -e '(format t "~a:~a on ~a~%...~%~%" (lisp-implementation-type) (lisp-implementation-version) (machine-type))'
-        ros -e '(format t " fixnum bits:~a~%" (integer-length most-positive-fixnum))'
-        ros -e "(ql:quickload 'trivial-features)" -e '(format t "features = ~s~%" *features*)'
+        ros ${{ matrix.rosargs }} -e '(format t "~a:~a on ~a~%...~%~%" (lisp-implementation-type) (lisp-implementation-version) (machine-type))'
+        ros ${{ matrix.rosargs }} -e '(format t " fixnum bits:~a~%" (integer-length most-positive-fixnum))'
+        ros ${{ matrix.rosargs }} -e "(ql:quickload 'trivial-features)" -e '(format t "features = ~s~%" *features*)'
 
     - name: Update Quickdist if we have one cached
       shell: bash
@@ -69,45 +71,52 @@ jobs:
     - name: Fetch Common Lisp third-party dependencies
       shell: bash
       run: |
-        ros -e '(asdf:load-system :nyxt/submodules)'
+        ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)'
         mkdir -p ~/.config/common-lisp/source-registry.conf.d/
         echo "(:tree \"$PWD/_build/submodules\")" > ~/.config/common-lisp/source-registry.conf.d/asdf.conf
 
-    - name: Load system and run tests
+    - name: Load Nyxt
+      shell: bash
+      run: |
+        ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)' -e '(handler-case (asdf:load-system :nyxt/${{matrix.renderer}}-application) (error (a) (format t "caught error ~s~%~a~%" a a) (uiop:quit 17)))'
+
+    - name: Build Nyxt executable
+      shell: bash
+      ## CCL build binary does not work for now, needs more investigation.
+      if: ${{ matrix.lisp != 'ccl' }}
+      run: |
+        rm -f nyxt
+        make all LISP=ros LISP_FLAGS="${{ matrix.rosargs }} run -- --no-userinit --non-interactive"
+
+    - name: Run tests
       shell: bash
       # Export CI to tell ASDF to quit on test errors.
       env:
        NYXT_TESTS_ERROR_ON_FAIL: yes
       run: |
-        ros -e '(asdf:load-system :nyxt/submodules)' -e '(handler-bind (#+asdf3.2 (asdf:bad-system-name (function MUFFLE-WARNING))) (handler-case (asdf:load-system :nyxt/tests) (error (a) (format t "caught error ~s~%~a~%" a a) (uiop:quit 17))))' -e '(asdf:test-system :nyxt)'
+        ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)' -e '(handler-case (asdf:load-system :nyxt/tests) (error (a) (format t "caught error ~s~%~a~%" a a) (uiop:quit 17)))' -e '(asdf:test-system :nyxt)'
 
     - name: Compilation warnings
       shell: bash
       run: |
-        ros -e '(asdf:load-system :nyxt/submodules)' -e '(load "build-scripts/report-warnings.lisp")' -e '(compilation-conditions "nyxt")' -e '(compilation-conditions "nyxt/gtk")'
+        ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)' -e '(load "build-scripts/report-warnings.lisp")' -e '(compilation-conditions "nyxt")' -e '(compilation-conditions "nyxt/gtk")'
 
-  guix-test:
-    name: Guix test
-    runs-on: ubuntu-latest
-    strategy:
-      # building independent packages, don’t abort entire build if one fails
-      fail-fast: false
-    steps:
-      - name: Guix cache
-        uses: actions/cache@v2
-        with:
-          path: ~/.cache/guix
-          # use a key that (almost) never matches
-          key: guix-cache-${{ github.sha }}
-          restore-keys: |
-            guix-cache-
-      - name: Install Guix
-        uses: PromyLOPh/guix-install-action@v1
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Build package
-        run: |
-            guix environment --container --user=dummy-user --load=build-scripts/nyxt.scm --ad-hoc guix -- make all NYXT_SUBMODULES=false CC=gcc
-      - name: Run package
-        # TODO: Test if nyxt --version and nyxt --help outputs are correct.
-        run: ./nyxt --version
+    - name: Validate make-instance symbols
+      shell: bash
+      run: |
+        ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)'  -e '(asdf:load-system :nyxt)' -e '(push :nyxt-debug-make-instance *features*)' -e '(handler-case (asdf:load-system :nyxt :force t) (error (a) (format t "caught error ~s~%~a~%" a a) (uiop:quit 17)))'
+
+    - name: Keymap type checking
+      shell: bash
+      run: |
+        ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)'  -e '(asdf:load-system :nyxt)' -e '(push :nyxt-debug-keymap *features*)' -e '(handler-case (asdf:load-system :nyxt :force t) (error (a) (format t "caught error ~s~%~a~%" a a) (uiop:quit 17)))'
+
+    - name: Manual dump
+      shell: bash
+      run: |
+        ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)' -e '(handler-case (asdf:load-system :nyxt/documentation) (error (a) (format t "caught error ~s~%~a~%" a a) (uiop:quit 17)))'
+
+    - name: Unbound exports
+      shell: bash
+      run: |
+        ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)' -e '(asdf:load-system :nyxt)' -e '(load "build-scripts/report-unbound-exports.lisp")' -e '(unbound-exports :nyxt)'

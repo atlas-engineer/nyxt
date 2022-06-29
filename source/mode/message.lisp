@@ -1,14 +1,15 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/message-mode
-  (:use :common-lisp :nyxt)
-  (:documentation "Mode for messages and logs"))
+(nyxt:define-package :nyxt/message-mode
+    (:documentation "Mode for messages and logs"))
 (in-package :nyxt/message-mode)
 
 (define-mode message-mode ()
   "Mode for log and message listing."
-  ((rememberable-p nil)))
+  ((visible-in-status-p nil)
+   (rememberable-p nil))
+  (:toggler-command-p nil))
 
 (define-command clear-messages ()
   "Clear the *Messages* buffer."
@@ -21,14 +22,13 @@
   (spinneret:with-html-string
     (:style (style buffer))
     (:h1 "Messages")
-    (:p (:button :class "button" :onclick (ps:ps (nyxt/ps:lisp-eval `(nyxt::manual))) "Manual")
-        "See the troubleshooting section of the manual if you need help diagnose some warnings and errors.")
+    (:p (:button :class "button" :onclick (ps:ps (nyxt/ps:lisp-eval (:title "manual") (funcall (resolve-symbol :manual :function)))) "Manual") ; TODO: Fix load order so that `nyxt:manual' is defined here.
+        (:small "See the troubleshooting section of the manual if you need help diagnosing warnings and errors."))
     (:p
      (:button :class "button"
-              :onclick (ps:ps (nyxt/ps:lisp-eval `(progn
-                                                        (nyxt/message-mode:clear-messages)
-                                                        (nyxt::reload-buffers
-                                                         (nyxt::buffers-get ,(id buffer))))))
+              :onclick (ps:ps (nyxt/ps:lisp-eval (:title "clear-messages")
+                                                  (clear-messages)
+                                                  (nyxt:reload-buffers buffer)))
               "Clear"))
     (:ul
      (loop for message in (reverse (nyxt:messages-content *browser*))

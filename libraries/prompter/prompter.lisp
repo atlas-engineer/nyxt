@@ -72,6 +72,7 @@ with `make-instance'.")
                         "First function called with no parameters when calling the
 `destroy' function over this prompter.
 It's called before the sources are cleaned up.")
+
      (after-destructor nil
                        :type (or null function)
                        :documentation
@@ -79,13 +80,13 @@ It's called before the sources are cleaned up.")
 `destroy' function over this prompter.
 It's called after the sources are cleaned up.
 
-Note that the function is executed *before* performing an action.")
+Note that the function is executed *before* performing a return-action.")
 
      (auto-return-p nil
                     :type boolean
                     :documentation
-                    "Automatically return and run default action when the
-suggestions are narrowed down to just one item.")
+                    "Automatically return and run the default `return-action'
+when the suggestions are narrowed down to just one item.")
 
      (history (make-history)
               :type (or containers:ring-buffer-reverse null)
@@ -97,7 +98,8 @@ If nil, no history is used.")
                      :type calispel:channel
                      :documentation
                      "Channel to which the selection is sent on exit.
-Caller should also listen to `interrupt-channel' to know if the prompter was canceled.")
+Caller should also listen to `interrupt-channel' to know if the prompter was cancelled.")
+
      (interrupt-channel (make-channel 1)
                         :type calispel:channel
                         :documentation
@@ -157,12 +159,12 @@ compution is not finished.")))
 (defmethod (setf selection) (value (prompter prompter))
   (setf (slot-value prompter 'selection) value)
   (let ((source (selected-source prompter)))
-    (when (follow-p source)
-      (if (< 0 (follow-delay source))
-          (run-thread "Prompter follow selection thread"
-            (sleep (follow-delay source))
-            (call-follow-mode-function prompter))
-          (call-follow-mode-function prompter)))))
+    (when (selection-actions-enabled-p source)
+      (if (< 0 (selection-actions-delay source))
+          (run-thread "Prompter selection action thread"
+            (sleep (selection-actions-delay source))
+            (call-selection-action prompter))
+          (call-selection-action prompter)))))
 
 (export-always 'input)
 (defmethod (setf input) (text (prompter prompter))
@@ -172,9 +174,6 @@ compution is not finished.")))
       (setf (slot-value prompter 'input) text)
       (update-sources prompter text)
       (select-first prompter)))
-  (when (and (auto-return-p prompter)
-             (sera:single (all-suggestions prompter)))
-    (return-selection prompter))
   text)
 
 (export-always 'destroy)
@@ -191,14 +190,14 @@ Signal destruction by sending a value to PROMPTER's `interrupt-channel'."
   (calispel:! (sync-interrupt-channel (sync-queue prompter)) t)
   (calispel:! (interrupt-channel prompter) t))
 
-(export-always 'call-follow-mode-function)
-(defun call-follow-mode-function (prompter)
-  (sera:and-let* ((action (first (follow-mode-functions (selected-source prompter))))
+(export-always 'call-selection-action)
+(defun call-selection-action (prompter)
+  (sera:and-let* ((action (first (selection-actions (selected-source prompter))))
                   (suggestion (selected-suggestion prompter)))
     (funcall action (value suggestion))))
 
 (defun select (prompter steps &key wrap-over-p)
-  "Select suggestion by jumping STEPS forward.
+  "Select `suggestion' by jumping STEPS forward.
 If STEPS is 0, do nothing.
 If STEPS is negative, go backward.
 If the currently selected suggestion is the last one of the current source, go
@@ -289,7 +288,10 @@ Empty sources are skipped."
           (or (find-if #'nonempty-source-p (sources prompter))
               (first (sources prompter)))))
     (setf (selection prompter)
-          (list first-non-empty-source 0))))
+          (list first-non-empty-source 0))
+    (when (and (auto-return-p prompter)
+               (sera:single (all-suggestions prompter)))
+      (return-selection prompter))))
 
 (export-always 'select-last)
 (defun select-last (prompter)
@@ -358,18 +360,18 @@ If there is no element, NIL is returned."
   (or (all-marks prompter)
       (mapcar #'value (uiop:ensure-list (selected-suggestion prompter)))))
 
-(export-always 'actions)
-(defun actions (prompter)
-  "Return the list of contextual actions.
-Without marks, it's the list of actions for the current source.
-With marks, it's the intersection of the actions of the sources that contain the
+(export-always 'return-actions)
+(defun return-actions (prompter)
+  "Return the list of contextual return-actions.
+Without marks, it's the list of return-actions for the current source.
+With marks, it's the intersection of the return-actions of the sources that contain the
 marked elements."
   (alex:if-let ((marked-sources
                  (remove-if (complement #'marks) (sources prompter))))
     (reduce #'intersection (mapcar (lambda (source)
-                                     (slot-value source 'actions))
+                                     (slot-value source 'return-actions))
                                    marked-sources))
-    (slot-value (selected-source prompter) 'actions)))
+    (slot-value (selected-source prompter) 'return-actions)))
 
 (defun history-pushnew (history element &key (test #'equal) )
   (alex:when-let ((previous-element-index (containers:element-position
@@ -390,24 +392,26 @@ If input is already in history, move to first position."
                      (input prompter))))
 
 (export-always 'return-selection)
-(defun return-selection (prompter &optional (action (default-action prompter)))
-  "Call action over selection and send the results to PROMPTER's `result-channel'.
+(defun return-selection (prompter
+                         &optional (return-action (default-return-action prompter)))
+  "Call RETURN-ACTION over selection and send the results to PROMPTER's `result-channel'.
 The selection is the collection of marked suggestions across all sources.
 If there is no marked suggestion, send the currently selected suggestion
 instead."
-  (unless action
-    (setf action #'identity))
+  (unless return-action
+    (setf return-action #'identity))
   (setf (returned-p prompter) t)
   (add-input-to-history prompter)
-  (alex:if-let ((selection-values (resolve-selection prompter)))
-    (let ((action-result (funcall action selection-values)))
-      (calispel:! (result-channel prompter) action-result))
-    (destroy prompter)))
+  (alex:when-let ((selection-values (resolve-selection prompter)))
+    (let ((return-action-result (funcall return-action selection-values)))
+      (calispel:! (result-channel prompter) return-action-result)))
+  (destroy prompter))
 
-(export-always 'toggle-follow)
-(defun toggle-follow (prompter &optional (source (selected-source prompter)))
-  "Toggle `follow-p' in SOURCE."
-  (setf (follow-p source) (not (follow-p source))))
+(export-always 'toggle-selection-actions-enabled)
+(defun toggle-selection-actions-enabled (prompter
+                                         &optional (source (selected-source prompter)))
+  "Toggle `selection-actions-enabled-p' in SOURCE."
+  (setf (selection-actions-enabled-p source) (not (selection-actions-enabled-p source))))
 
 (export-always 'next-ready-p)
 (defun next-ready-p (prompter &optional timeout)
@@ -489,9 +493,9 @@ suggestions."
   "Return the list of the suggestions in the prompter."
   (alex:mappend #'suggestions (sources prompter)))
 
-(export-always 'default-action)
-(defmethod default-action ((prompter prompter))
-  (first (actions prompter)))
+(export-always 'default-return-action)
+(defmethod default-return-action ((prompter prompter))
+  (first (return-actions prompter)))
 
 (export-always 'resume)
 (defun resume (prompter)

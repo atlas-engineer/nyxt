@@ -1,10 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/process-mode
-    (:use :common-lisp :nyxt)
-  (:import-from #:class-star #:define-class)
-  (:documentation "Act on file/directory based on a certain condition."))
+(nyxt:define-package :nyxt/process-mode
+    (:documentation "Act on file/directory based on a certain condition."))
 (in-package :nyxt/process-mode)
 
 (define-mode process-mode ()
@@ -15,7 +13,8 @@ Possible applications:
 - Live preview of documents (`preview-mode').
 - Refreshing the website at regular intervals (`watch-mode').
 - Live tracking of filesystem/data in a file/directory."
-  ((rememberable-p nil)
+  ((visible-in-status-p nil)
+   (rememberable-p nil)
    (path-url nil
              :type (or quri:uri null)
              :documentation "The path to where `process-mode' needs to track things at.
@@ -37,11 +36,10 @@ Accepts the path to the acted-on document and `process-mode' instance.")
            :export nil
            :documentation "The thread that `action' happen in.")
    (thread-terminated-p nil
-                        :documentation "Has the thread been terminated?")
-   (constructor #'initialize)
-   (destructor #'destroy)))
+                        :documentation "Has the thread been terminated?"))
+  (:toggler-command-p nil))
 
-(defmethod initialize ((mode process-mode))
+(defmethod enable ((mode process-mode) &key)
   (setf (path-url mode) (or (path-url mode) (url (current-buffer)))
         (thread mode) (unless (thread-terminated-p mode)
                         (run-thread "process"
@@ -53,7 +51,7 @@ Accepts the path to the acted-on document and `process-mode' instance.")
                                 when (eq condition-value :return)
                                   do (progn
                                        (setf (thread-terminated-p mode) t)
-                                       (disable-modes (list (mode-name mode)) (buffer mode))
+                                       (disable-modes (sera:class-name-of mode) (buffer mode))
                                        (return))
                                 else
                                   when condition-value
@@ -61,7 +59,7 @@ Accepts the path to the acted-on document and `process-mode' instance.")
                                          (when (action mode)
                                            (funcall (action mode) (path-url mode) mode))))))))
 
-(defmethod destroy ((mode process-mode))
+(defmethod disable ((mode process-mode) &key)
   (and (cleanup mode)
        (funcall (cleanup mode) (path-url mode) mode))
   (unless (thread-terminated-p mode)

@@ -1,9 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/reduce-tracking-mode
-  (:use :common-lisp :nyxt)
-  (:documentation "Mode to mitigate fingerprinting."))
+(nyxt:define-package :nyxt/reduce-tracking-mode
+    (:documentation "Mode to mitigate fingerprinting."))
 (in-package :nyxt/reduce-tracking-mode)
 
 (define-mode reduce-tracking-mode ()
@@ -28,20 +27,20 @@ still being less noticeable in the crowd.")
     nil
     :type (or null string)
     :export nil
-    :documentation "The User Agent the browser had before enabling this mode.")
-   (destructor
-    (lambda (mode)
-      (ffi-buffer-user-agent (buffer mode) (old-user-agent mode))
-      (ffi-set-preferred-languages (buffer mode)
-                                   (list (first
-                                          (str:split
-                                           "."
-                                           (or (uiop:getenv "LANG") "")))))
-      (ffi-set-tracking-prevention (buffer mode) nil)))
-   (constructor
-    (lambda (mode)
-      (setf (old-user-agent mode) (ffi-buffer-user-agent (buffer mode)))
-      (ffi-buffer-user-agent (buffer mode) (preferred-user-agent mode))
-      (ffi-set-preferred-languages (buffer mode)
-                                   (preferred-languages mode))
-      (ffi-set-tracking-prevention (buffer mode) t)))))
+    :documentation "The User Agent the browser had before enabling this mode.")))
+
+(defmethod enable ((mode reduce-tracking-mode) &key)
+  (setf (old-user-agent mode) (ffi-buffer-user-agent (buffer mode)))
+  (setf (ffi-buffer-user-agent (buffer mode)) (preferred-user-agent mode))
+  (setf (ffi-preferred-languages (buffer mode))
+        (preferred-languages mode))
+  (setf (ffi-tracking-prevention (buffer mode)) t))
+
+(defmethod disable ((mode reduce-tracking-mode) &key)
+  (setf (ffi-buffer-user-agent (buffer mode)) (old-user-agent mode))
+  (setf (ffi-preferred-languages (buffer mode))
+        (list (first
+               (str:split
+                "."
+                (or (uiop:getenv "LANG") "")))))
+  (setf (ffi-tracking-prevention (buffer mode)) nil))

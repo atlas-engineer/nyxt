@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
+(nyxt:define-package :nyxt/prompt-buffer-mode
+    (:documentation "Mode for prompter buffer."))
 (in-package :nyxt/prompt-buffer-mode)
-(use-nyxt-package-nicknames)
 
 (define-mode prompt-buffer-mode ()
   "The prompt buffer is the where all the interactions between Nyxt and the user happen.
@@ -12,14 +13,15 @@ the user types.
 Many prompter-buffer-specific commands are available; you can list them with
 `run-prompt-buffer-command', bound to \"f1 b\" by default.
 
-The prompt buffer can have multiple 'sources' of suggestions.  Each source has
-its own properties, such as the ability to mark multiple suggestions.
+The prompt buffer can have multiple `prompter:source's of suggestions.  Each
+source has its own properties, such as the ability to mark multiple suggestions.
 A same source can be used by different prompt buffers.
 
-Each source offers a set of 'actions' for its selection(s).
-Actions can be listed and run with `return-selection-over-action' (bound to
+Each source offers a set of 'return-actions' for its selection(s).
+Return-actions can be listed and run with `return-selection-over-action' (bound to
 \"M-return\" by default)."
-  ((keymap-scheme
+  ((visible-in-status-p nil)
+   (keymap-scheme
     (define-scheme "prompt-buffer"
       scheme:cua
       (list
@@ -39,13 +41,14 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "tab" 'insert-selection
        "return" 'return-selection
        "M-return" 'return-selection-over-action
-       "C-return" 'run-follow-mode-function
+       "C-return" 'run-selection-action
        "f1 b" 'run-prompt-buffer-command
        "f1 m" 'describe-prompt-buffer
-       "C-c C-f" 'toggle-follow         ; TODO: This is the Emacs Helm binding.  Better?
+       "C-c C-f" 'toggle-selection-actions-enabled ; TODO: This is the Emacs Helm binding.  Better?
        "C-]" 'toggle-attributes-display ; TODO: This is the Emacs Helm binding.  Better?
        "C-space" 'toggle-mark
        "shift-space" 'toggle-mark-backwards
+       "M-shift-space" 'toggle-mark-backwards
        "M-space" 'toggle-mark
        "M-a" 'mark-all
        "M-u" 'unmark-all
@@ -65,10 +68,11 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "M-<" 'select-first
        "M-]" 'select-next-source        ; Emacs Helm binding.
        "M-[" 'select-previous-source    ; Emacs Helm binding.
-       ;; Those two are only bound in Emacs mode. CUA, VI?
        "C-M-n" 'scroll-other-buffer-down
        "C-M-p" 'scroll-other-buffer-up
-       "C-j" 'run-follow-mode-function
+       "C-M-v" 'scroll-page-down-other-buffer
+       "shift-C-M-v" 'scroll-page-up-other-buffer
+       "C-j" 'run-selection-action
        "C-g" 'cancel-input
        "C-h b" 'run-prompt-buffer-command
        "C-e" 'move-end-of-input
@@ -100,12 +104,16 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        ;; Same as with C-j.
        "C-J" 'select-next-source
        "C-K" 'select-previous-source
-       "z f" 'toggle-follow
+       "z f" 'toggle-selection-actions-enabled
        "z a" 'toggle-attributes-display
        "y" 'copy-selection
        "p" 'paste
        "$" 'move-end-of-input
        "^" 'move-start-of-input
+       "M-j" 'scroll-other-buffer-down
+       "M-k" 'scroll-other-buffer-up
+       "C-M-j" 'scroll-page-down-other-buffer
+       "C-M-k" 'scroll-page-up-other-buffer
        "l" 'nyxt/input-edit-mode:cursor-forwards
        "h" 'nyxt/input-edit-mode:cursor-backwards
        "w" 'nyxt/input-edit-mode:cursor-forwards-word
@@ -121,13 +129,15 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "C-J" 'select-next-source
        "C-K" 'select-previous-source
        "C-f" 'select-next-page
-       "C-b" 'select-previous-page)))))
+       "C-b" 'select-previous-page))))
+  (:toggler-command-p nil))
 
+(export-always 'define-command-prompt)
 (defmacro define-command-prompt (name (prompt-buffer &rest arglist) &body body)
-  "Like `define-command' but the first argument is special:
+  "Like `define-command', but the first argument is special:
 - it is considered a keyword argument if `&keyword' is in arglist, `&optional' otherwise,
-- it is bound to `(current-prompt-buffer)` if unspecified,
-- the body is skipped and a warning is emitted when it's nil."
+- it is bound to `current-prompt-buffer' if unspecified,
+- the body is skipped and a warning is emitted unless non-nil."
   (multiple-value-bind (forms declares documentation)
       (alex:parse-body body :documentation t)
     (multiple-value-bind (required optional rest keywords aok? aux key?)
@@ -220,11 +230,11 @@ If STEPS is negative, go to next pages instead."
   (select-next-page :prompt-buffer prompt-buffer :steps (- steps)))
 
 (define-command-prompt return-selection (prompt-buffer)
-  "Have the PROMT-BUFFER return the selection, then quit."
+  "Have the PROMPT-BUFFER return the selection, then quit."
   (prompter:return-selection prompt-buffer))
 
 (defun make-attribute-suggestion (attribute &optional source input)
-  "Return a `suggestion' wrapping around ATTRIBUTE. "
+  "Return a `suggestion' wrapping around ATTRIBUTE."
   (declare (ignore source input))
   (make-instance 'prompter:suggestion
                  :value attribute
@@ -234,7 +244,7 @@ If STEPS is negative, go to next pages instead."
   ((prompter:name "List of prompter attributes")
    (prompter:multi-selection-p t)
    (prompter:suggestion-maker 'make-attribute-suggestion)
-   (prompter:actions '(return-marks-only))))
+   (prompter:return-actions '(return-marks-only))))
 
 (defun return-marks-only (suggestion-values)
   "Return marked suggestions only.
@@ -288,11 +298,11 @@ current unmarked selection."
                                                  :parent-prompt-buffer prompt-buffer)))))
     (funcall* command)))
 
-(defun prompt-buffer-actions (&optional (window (current-window)))
+(defun prompt-buffer-return-actions (&optional (window (current-window)))
   (sera:and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
-    (prompter:actions first-prompt-buffer)))
+    (prompter:return-actions first-prompt-buffer)))
 
-;; TODO: Should actions be commands?  For now, they can be either commands or symbols.
+;; TODO: Should return-actions be commands?  For now, they can be either commands or symbols.
 (defun make-action-suggestion (action &optional source input)
   "Return a `suggestion' wrapping around ACTION."
   (declare (ignore source input))
@@ -305,34 +315,37 @@ current unmarked selection."
                                          (t action))))
                  ("Documentation" ,(or (first (sera:lines
                                                (typecase action
-                                                 (command (nyxt::docstring action))
+                                                 (command (documentation action t))
                                                  (t (documentation action 'function)))))
                                        "")))))
 
 (define-class action-source (prompter:source)
-  ((prompter:name "List of actions")
-   (prompter:constructor (prompt-buffer-actions))
+  ((prompter:name "List of return-actions")
+   (prompter:constructor (prompt-buffer-return-actions))
    (prompter:suggestion-maker 'make-action-suggestion)))
 
 (define-command-prompt return-selection-over-action (prompt-buffer)
   "Prompt for an action to run over PROMPT-BUFFER selection."
-  (let ((action (prompt1
-                 :prompt "Action to run on selection"
-                 :sources (list (make-instance 'action-source)))))
-    (when action
-      (prompter:return-selection prompt-buffer action))))
+  (if (equal (mapcar #'type-of (prompter:sources (current-prompt-buffer)))
+             '(action-source))
+      (echo "Already displaying return-actions of previous prompt buffer.")
+      (let ((action (prompt1
+                      :prompt "Action to run on selection"
+                      :sources (list (make-instance 'action-source)))))
+        (when action
+          (prompter:return-selection prompt-buffer action)))))
 
-(define-command-prompt run-follow-mode-function (prompt-buffer)
+(define-command-prompt run-selection-action (prompt-buffer)
   "Run follow-mode function over selected suggestion without closing PROMPT-BUFFER."
-  (prompter:call-follow-mode-function prompt-buffer))
+  (prompter:call-selection-action prompt-buffer))
 
 (define-command-prompt cancel-input (prompt-buffer) ; TODO: Rename.
   "Close the prompt-buffer without further action."
   (prompter:destroy prompt-buffer))
 
-(define-command-prompt toggle-follow (prompt-buffer)
+(define-command-prompt toggle-selection-actions-enabled (prompt-buffer)
   "Close the prompt-buffer without further action."
-  (prompter:toggle-follow prompt-buffer))
+  (prompter:toggle-selection-actions-enabled prompt-buffer))
 
 (define-command-prompt toggle-mark (prompt-buffer &key (direction :forward))
   "Mark selection.
@@ -346,26 +359,26 @@ select next."
 
 (define-command-prompt toggle-mark-backwards (prompt-buffer)
   "Mark selection.
-Only available if pomrpt-buffer `multi-selection-p' is non-nil.  DIRECTION can be
+Only available if `prompter:multi-selection-p' is non-nil.  DIRECTION can be
 `:forward' or `:backward' and specifies which suggestion to select next."
   (toggle-mark :prompt-buffer prompt-buffer
                :direction :backward))
 
 (define-command-prompt mark-all (prompt-buffer)
   "Mark all visible suggestions in current source.
-Only available if `multi-selection-p' is non-nil."
+Only available if `prompter:multi-selection-p' is non-nil."
   (prompter:mark-all prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
 
 (define-command-prompt unmark-all (prompt-buffer)
   "Unmark all visible suggestions in current source.
-Only available if `multi-selection-p' is non-nil."
+Only available if `prompter:multi-selection-p' is non-nil."
   (prompter:unmark-all prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
 
 (define-command-prompt toggle-mark-all (prompt-buffer)
   "Toggle the mark over all visible suggestions in current source.
-Only available if `multi-selection-p' is non-nil."
+Only available if `prompter:multi-selection-p' is non-nil."
   (prompter:toggle-mark-all prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
 
@@ -435,22 +448,70 @@ Only available if `multi-selection-p' is non-nil."
   "Select all the text in the prompt input."
   (ffi-buffer-select-all prompt-buffer))
 
+;; FIXME: Move scroll.lisp from document-mode so that prompt-buffer.lisp can reach
+;; it.  Ideas?
+
 (define-command-prompt scroll-other-buffer-up (prompt-buffer
                                                &key (scroll-distance
                                                      (scroll-distance (current-buffer))))
-  "Scroll the buffer behind the prompt up."
+  "Scroll up the buffer behind the prompt."
   (with-current-buffer (current-buffer)
-    ;; FIXME: Copy-paste from scroll.lisp. Move it somewhere prompt-buffer.lisp can reach it?
-    (pflet ((scroll-up ()
-            (ps:chain window (scroll-by 0 (ps:lisp (- scroll-distance))))))
-    (scroll-up))))
+    (peval (ps:chain window (scroll-by 0 (ps:lisp (- scroll-distance)))))))
 
 (define-command-prompt scroll-other-buffer-down (prompt-buffer
                                                  &key (scroll-distance
                                                        (scroll-distance (current-buffer))))
-  "Scroll the buffer behind the prompt down."
+  "Scroll down the buffer behind the prompt."
   (with-current-buffer (current-buffer)
-    ;; FIXME: Copy-paste from scroll.lisp. Move it somewhere prompt-buffer.lisp can reach it?
-    (pflet ((scroll-down ()
-            (ps:chain window (scroll-by 0 (ps:lisp scroll-distance)))))
-    (scroll-down))))
+    (peval (ps:chain window (scroll-by 0 (ps:lisp scroll-distance))))))
+
+(define-command-prompt scroll-page-up-other-buffer (prompt-buffer)
+  "Scroll up the buffer behind the prompt by one page."
+  (with-current-buffer (current-buffer)
+    (peval (ps:chain window (scroll-by 0 (- (* (ps:lisp (page-scroll-ratio (current-buffer)))
+                                               (ps:@ window inner-height))))))))
+
+(define-command-prompt scroll-page-down-other-buffer (prompt-buffer)
+  "Scroll down the buffer behind the prompt by one page."
+  (with-current-buffer (current-buffer)
+    (peval (ps:chain window (scroll-by 0 (* (ps:lisp (page-scroll-ratio (current-buffer)))
+                                            (ps:@ window inner-height)))))))
+
+(defmethod default-modes append ((buffer prompt-buffer))
+  '(prompt-buffer-mode))
+(defmethod default-modes :around ((buffer prompt-buffer))
+  ;; TODO: `prompt-buffer' should not be a web-buffer.
+  (set-difference (call-next-method) (list (resolve-symbol :document-mode :mode)
+                                           (resolve-symbol :base-mode :mode))))
+
+;; FIXME: Arglist used to have prompt-buffer, but it's not URL-serializable.
+;; Maybe have prompt-buffers have IDs so that we can identify those by IDs?
+;; How do we actually identify prompt-buffers?
+(define-internal-page-command describe-prompt-buffer ()
+    (buffer (str:concat "*Help-" (prompter:prompt (current-prompt-buffer)) "-prompter*")
+            ;; TODO: Can we somehow fix the load order in the .asd?
+            (resolve-symbol :help-mode :mode))
+  "Describe a prompt buffer instance."
+  (let* ((prompt-buffer (current-prompt-buffer))
+         (modes (modes prompt-buffer))
+         (sources (prompter:sources prompt-buffer)))
+    (spinneret:with-html-string
+      (:style (style buffer))
+      (:h1 (prompter:prompt prompt-buffer))
+      (:p (:raw (resolve-backtick-quote-links (documentation 'prompt-buffer 'type) 'prompt-buffer)))
+      (:h2 "Modes:")
+      (:ul
+       (loop for mode in modes
+             collect (:li (:a :href
+                              (nyxt-url
+                               'describe-class
+                               :class (sera:class-name-of mode))
+                              (string (sera:class-name-of mode))))))
+      (:h2 "Sources:")
+      (:ul
+       (loop for source in sources
+             collect (:li (:a :href
+                              (nyxt-url
+                               'describe-class
+                               :class (sera:class-name-of source))
+                              (string (sera:class-name-of source)))))))))

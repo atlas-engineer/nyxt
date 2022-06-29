@@ -14,19 +14,27 @@
 ;;;; are released into the public domain, per the license available
 ;;;; here: https://www.squarefree.com/bookmarklets/copyright.html
 
-(in-package :nyxt/web-mode)
+(nyxt:define-package :nyxt/bookmarklets-mode
+  (:documentation "Easily create 'bookmarklets' (JavaScript snippets) to alter
+the content of HTML pages."))
+(in-package :nyxt/bookmarklets-mode)
 
-(defmacro nyxt::define-bookmarklet-command (name documentation source)
+(define-mode bookmarklets-mode ()
+  "Mode for 'bookmarklets' commands.
+By default, this mode does nothing but expose the default bookmarklets."
+  ((visible-in-status-p nil)))
+
+(defmacro define-bookmarklet-command (name documentation source) ; TODO: Should it really belong to the `nyxt' package?
   "Define a bookmarklet command, the source can either be a JavaScript string to
 evaluate, or a `cl:pathname' to a JavaScript source file."
-  `(define-command-global ,name (&optional (buffer (current-buffer)))
+  `(define-command ,name (&optional (buffer (current-buffer)))
      ,documentation
      (let* ((source ,source)
             (source (etypecase source
-                      (pathname (uiop:read-file-string source))
+                      (pathname (nfiles:content (make-instance 'nfiles:file :base-path source)))
                       (string source))))
        (ffi-buffer-evaluate-javascript-async buffer source))))
-(sera:export-always 'nyxt::define-bookmarklet-command :nyxt)
+(sera:export-always 'define-bookmarklet-command)
 
 (define-bookmarklet-command color-internal-external-links
   "Color internal links red, external links blue, and in-page links orange."

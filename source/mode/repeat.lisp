@@ -1,14 +1,14 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/repeat-mode
-    (:use :common-lisp :nyxt)
-  (:documentation "Mode to infinitely repeat commands."))
+(nyxt:define-package :nyxt/repeat-mode
+    (:documentation "Mode to infinitely repeat commands."))
 (in-package :nyxt/repeat-mode)
 
 (define-mode repeat-mode (nyxt/process-mode:process-mode)
   "Mode to repeat a simple action/function repetitively until stopped."
-  ((rememberable-p nil)
+  ((visible-in-status-p nil)
+   (rememberable-p nil)
    (nyxt/process-mode:firing-condition
     #'(lambda (path-url mode)
         (declare (ignore path-url))
@@ -33,10 +33,9 @@ Defaults to one second.")
    (repeat-action nil
                   :type (or null (function (repeat-mode)))
                   :documentation "The action to repeat.
-Function taking a `repeat-mode' instance.")
-   (constructor #'initialize)))
+Function taking a `repeat-mode' instance.")))
 
-(defmethod initialize ((mode repeat-mode))
+(defmethod enable ((mode repeat-mode) &key)
   ;; TODO: Remember prompt input now that we have prompt-buffer hooks.
   (unless (repeat-action mode)
     (let ((prompted-action
@@ -47,10 +46,10 @@ Function taking a `repeat-mode' instance.")
             #'(lambda (mode)
                 (declare (ignore mode))
                 (funcall prompted-action)))))
-  (nyxt/process-mode::initialize mode))
+  (call-next-method))
 
 (define-command-global repeat-every (&optional seconds function)
-  "Repeat a FUNCTION every SECONDS (prompts if SECONDS and/or FUNCTION are not provided)."
+  "Prompt for FUNCTION to be run every SECONDS."
   (let ((seconds (or seconds
                      (ignore-errors
                       (parse-integer
@@ -62,7 +61,7 @@ Function taking a `repeat-mode' instance.")
                     (list :repeat-interval seconds :repeat-action function)))))
 
 (define-command-global repeat-times (&optional times function)
-  "Repeat a FUNCTION TIMES times (prompts if FUNCTION and/or TIMES is not provided)."
+  "Prompt for FUNCTION to be run a number of TIMES."
   (let ((times (or times
                    (ignore-errors
                     (parse-integer

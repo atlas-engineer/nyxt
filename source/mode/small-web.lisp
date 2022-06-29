@@ -1,14 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/small-web-mode
-  (:use :common-lisp :nyxt)
-  (:import-from #:class-star #:define-class)
-  (:import-from #:keymap #:define-key #:define-scheme)
-  (:import-from #:serapeum #:-> #:export-always)
-  (:documentation "Mode for Gopher/Gemini page interaction."))
+(nyxt:define-package :nyxt/small-web-mode
+    (:documentation "Mode for Gopher/Gemini page interaction."))
 (in-package :nyxt/small-web-mode)
-(use-nyxt-package-nicknames)
 
 (defun update (mode)
   (let ((url (url (buffer mode))))
@@ -46,12 +41,13 @@ loading, you'd need to override `line->html' in the following way:
         (cl-gopher:display-string line))))
 
 \(defmethod line->html ((line cl-gopher:image)) (image->link line))
-\(defmethod line->html ((line cl-gopher:gif)) (image->html line))
+\(defmethod line->html ((line cl-gopher:gif)) (image->link line))
 \(defmethod line->html ((line cl-gopher:png)) (image->link line))
 
 Gemini support is a bit more chaotic, but you can override `line->html' for
 `phos/gemtext' elements too."
-  ((rememberable-p nil)
+  ((visible-in-status-p nil)
+   (rememberable-p nil)
    (url :documentation "The URL being opened.")
    (model :documentation "The contents of the current page.")
    (redirections nil :documentation "The list of redirection Gemini URLs.")
@@ -62,7 +58,7 @@ Gemini support is a bit more chaotic, but you can override `line->html' for
             (body
              :background-color theme:background)
             (pre
-             :background-color theme:quaternary
+             :background-color theme:secondary
              :padding "2px"
              :margin "0"
              :border-radius 0)
@@ -70,31 +66,35 @@ Gemini support is a bit more chaotic, but you can override `line->html' for
              :margin "0 3px 3px 0"
              :font-size "15px")
             (.search
-             :background-color theme:accent)
+             :background-color theme:accent
+             :color theme:on-accent)
             (.error
              :background-color theme:accent
-             :color theme:background
-             :padding "1em 0")))
-   (destructor
-    (lambda (mode)
-      (hooks:remove-hook
-       (pre-request-hook (buffer mode))
-       'small-web-mode-disable)))
-   (constructor
-    (lambda (mode)
-      (update mode)
-      (hooks:add-hook
-       (pre-request-hook (buffer mode))
-       (make-instance
-        'hooks:handler
-        :fn (lambda (request-data)
-              (when (nyxt/auto-mode::new-page-request-p request-data)
-                (if (str:s-member '("gopher" "gemini")
-                                  (quri:uri-scheme (url request-data)))
-                    (update mode)
-                    (disable-modes '(small-web-mode) (buffer mode))))
-              request-data)
-        :name 'small-web-mode-disable))))))
+             :color theme:on-accent
+             :padding "1em 0"))))
+  (:toggler-command-p nil))
+
+(defmethod enable ((mode small-web-mode) &key)
+  (update mode)
+  (hooks:add-hook
+   (pre-request-hook (buffer mode))
+   (make-instance
+    'hooks:handler
+    :fn (lambda (request-data)
+          (when (toplevel-p request-data)
+            (cond
+              ((str:s-member '("gopher" "gemini") (quri:uri-scheme (url request-data)))
+               (update mode))
+              ((str:starts-with-p "text/gemini" (mime-type request-data))
+               nil)
+              (t (disable-modes 'small-web-mode (buffer mode)))))
+          request-data)
+    :name 'small-web-mode-disable)))
+
+(defmethod disable ((mode small-web-mode) &key)
+  (hooks:remove-hook
+   (pre-request-hook (buffer mode))
+   'small-web-mode-disable))
 
 ;;; Gopher rendering.
 
@@ -103,7 +103,7 @@ Gemini support is a bit more chaotic, but you can override `line->html' for
 
 (export-always 'line->html)
 (defgeneric line->html (line)
-  (:documentation "Transform a gopher line to a reasonable HTML representation."))
+  (:documentation "Transform a Gopher or Gemini line to a reasonable HTML representation."))
 
 (export-always 'gopher-render)
 (defgeneric gopher-render (line)
@@ -122,11 +122,11 @@ Second return value should be the MIME-type of the content."))
           "Error: " (cl-gopher:display-string line))))
 
 (defmethod line->html ((line cl-gopher:info-message))
-  (spinneret:with-html-string
-    (if (or (str:emptyp (cl-gopher:display-string line))
-            (every #'sera:whitespacep (cl-gopher:display-string line)))
-        (:br)
-        (:pre (cl-gopher:display-string line)))))
+  (let ((line (cl-gopher:display-string line)))
+    (spinneret:with-html-string
+      (if (str:blankp line)
+          (:br)
+          (:pre line)))))
 
 (defmethod line->html ((line cl-gopher:submenu))
   (spinneret:with-html-string
@@ -134,10 +134,11 @@ Second return value should be the MIME-type of the content."))
         (cl-gopher:display-string line))))
 
 (defun image->html (line)
-  (spinneret:with-html-string
-    (:a :href (cl-gopher:uri-for-gopher-line line)
-        (:img :src (cl-gopher:uri-for-gopher-line line)
-              :alt (cl-gopher:display-string line)))))
+  (let ((uri (cl-gopher:uri-for-gopher-line line)))
+    (spinneret:with-html-string
+      (:a :href uri
+          (:img :src uri
+                :alt (cl-gopher:display-string line))))))
 
 (defmethod line->html ((line cl-gopher:image)) (image->html line))
 (defmethod line->html ((line cl-gopher:gif)) (image->html line))
@@ -156,18 +157,20 @@ Second return value should be the MIME-type of the content."))
         (:b "[SEARCH] ") (cl-gopher:display-string line))))
 
 (defmethod line->html ((line cl-gopher:html-file))
-  (spinneret:with-html-string
-    (:a :class "button"
-        :href (when (str:starts-with-p "URL:" (cl-gopher:selector line))
-                (sera:slice (cl-gopher:selector line) 4))
-        (cl-gopher:display-string line))
-    (:br)))
+  (let ((selector (cl-gopher:selector line)))
+    (spinneret:with-html-string
+      (:a :class "button"
+          :href (if (str:starts-with-p "URL:" selector)
+                    (sera:slice selector 4)
+                    selector)
+          (cl-gopher:display-string line))
+      (:br))))
 
 (defmethod line->html ((line cl-gopher:text-file))
   (spinneret:with-html-string
     (:a :class "button"
-       :href (cl-gopher:uri-for-gopher-line line)
-       (cl-gopher:display-string line))
+        :href (cl-gopher:uri-for-gopher-line line)
+        (cl-gopher:display-string line))
     (:br)))
 
 (defun file-link->html (line)
@@ -189,8 +192,8 @@ Second return value should be the MIME-type of the content."))
         (spinneret:*html-style* :tree))
     (values (spinneret:with-html-string
               (:style (style (current-buffer)))
-              (:style (when (current-mode 'small-web)
-                        (style (current-mode 'small-web))))
+              (:style (alex:when-let (submode (find-submode 'small-web-mode))
+                        (style submode)))
               (loop for line in (cl-gopher:lines contents)
                     collect (:raw (line->html line))))
             "text/html;charset=utf8")))
@@ -300,6 +303,22 @@ Please, check URL correctness and try again.")))
         (t (:a :class "button" :href url text))))
     (:br)))
 
+(export-always 'gemtext-render)
+(defun gemtext-render (gemtext buffer)
+  "Renders the Gemtext (Gemini markup format) to HTML.
+
+Implies that `small-web-mode' is enabled."
+  (let ((mode (find-submode 'small-web-mode buffer))
+        (elements (phos/gemtext:parse-string gemtext))
+        (spinneret::*html-style* :tree))
+    (values (spinneret:with-html-string
+              (:style (style buffer))
+              (when mode
+                (:style (style mode)))
+              (loop for element in elements
+                    collect (:raw (nyxt/small-web-mode:line->html element))))
+            "text/html;charset=utf8")))
+
 ;; TODO: :secure-p t? Gemini is encrypted, so it can be considered secure.
 (define-internal-scheme "gemini"
     (lambda (url buffer)
@@ -308,39 +327,32 @@ Please, check URL correctness and try again.")))
             ;; FIXME: This better become a default auto-mode rule.
             (enable-modes '(small-web-mode) buffer)
             (unless (member status '(:redirect :permanent-redirect))
-              (setf (nyxt/small-web-mode:redirections (current-mode 'small-web)) nil))
+              (setf (nyxt/small-web-mode:redirections (find-submode 'small-web-mode)) nil))
             (case status
               ((:input :sensitive-input)
                (let ((text (quri:url-encode
                             (handler-case
-                                (prompt1 :prompt meta
+                                (prompt1
+                                  :prompt meta
                                   :sources (list (make-instance 'prompter:raw-source))
                                   :invisible-input-p (eq status :sensitive-input))
                               (nyxt::nyxt-prompt-buffer-canceled () "")))))
                  (buffer-load (str:concat url "?" text) :buffer buffer)))
               (:success
                (if (str:starts-with-p "text/gemini" meta)
-                   (let ((mode (current-mode 'small-web))
-                         (elements (phos/gemtext:parse-string body))
-                         (spinneret::*html-style* :tree))
-                     (values (spinneret:with-html-string
-                               (:style (style buffer))
-                               (:style (style mode))
-                               (loop for element in elements
-                                     collect (:raw (nyxt/small-web-mode:line->html element))))
-                             "text/html;charset=utf8"))
+                   (gemtext-render body buffer)
                    (values body meta)))
               ((:redirect :permanent-redirect)
-               (push url (nyxt/small-web-mode:redirections (current-mode 'small-web)))
-               (if (< (length (nyxt/small-web-mode:redirections (current-mode 'small-web)))
-                      (nyxt/small-web-mode:allowed-redirections-count (current-mode 'small-web)))
+               (push url (nyxt/small-web-mode:redirections (find-submode 'small-web-mode)))
+               (if (< (length (nyxt/small-web-mode:redirections (find-submode 'small-web-mode)))
+                      (nyxt/small-web-mode:allowed-redirections-count (find-submode 'small-web-mode)))
                    (buffer-load (quri:merge-uris (quri:uri meta) (quri:uri url)) :buffer buffer)
                    (error-help
                     "Error"
                     (format nil "The server has caused too many (~a+) redirections.~& ~a~{ -> ~a~}"
-                            (nyxt/small-web-mode:allowed-redirections-count (current-mode 'small-web))
-                            (alex:lastcar (nyxt/small-web-mode:redirections (current-mode 'small-web)))
-                            (butlast (nyxt/small-web-mode:redirections (current-mode 'small-web)))))))
+                            (nyxt/small-web-mode:allowed-redirections-count (find-submode 'small-web-mode))
+                            (alex:lastcar (nyxt/small-web-mode:redirections (find-submode 'small-web-mode)))
+                            (butlast (nyxt/small-web-mode:redirections (find-submode 'small-web-mode)))))))
               ((:temporary-failure :server-unavailable :cgi-error :proxy-error
                 :permanent-failure :not-found :gone :proxy-request-refused :bad-request)
                (error-help "Error" meta))

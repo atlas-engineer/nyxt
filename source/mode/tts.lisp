@@ -1,12 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/tts-mode
-  (:use :common-lisp :nyxt)
-  (:documentation "Mode for interacting with Text-to-Speech (TTS) software."))
-
+(nyxt:define-package :nyxt/tts-mode
+    (:documentation "Mode for interacting with Text-to-Speech (TTS) software."))
 (in-package :nyxt/tts-mode)
-(use-nyxt-package-nicknames)
 
 (define-mode tts-mode ()
   "A mode for interacting with Text-to-Speech (TTS) software.
@@ -21,20 +18,17 @@ Example:
 
 \(define-configuration nyxt/tts-mode:tts-mode
    ((nyxt/tts-mode:executable \"espeak\")
-    (nyxt/tts-mode:selector \"p, h1, h2, h3, h4, h5, h6\")))
-"
-  ((executable nil
+    (nyxt/tts-mode:selector \"p, h1, h2, h3, h4, h5, h6\")))"
+  ((visible-in-status-p nil)
+   (executable nil
                :type (or string null)
                :documentation "The executable command to run.")
    (selector "p, h1, h2, h3, h4, h5, h6"
        :type string
-       :documentation "CSS selector that describes which elements' text to speak.")
+     :documentation "CSS selector that describes which elements' text to speak.")
    (executable-process-info nil
                             :type (or uiop/launch-program::process-info null)
-                            :documentation "Holds the process-info object of the running process")
-   (destructor
-    (lambda (mode)
-      (if-process-then-terminate mode)))))
+                            :documentation "Holds the process-info object of the running process")))
 
 (defmethod process-document ((mode tts-mode))
   "Fetch the text in buffer that matches `selector` and send it off to the TTS."
@@ -47,7 +41,7 @@ Example:
                        (error ()
                          (log:warn "tts-mode: no document-model available.")
                          nil))
-                     #'< :key (alex:compose #'parse-integer #'get-nyxt-id)))
+                     #'< :key (compose #'parse-integer #'get-nyxt-id)))
              ;; TODO properly handle punctuation like Emacspeak does
              (text (str:remove-punctuation
                     (with-output-to-string (s)
@@ -65,16 +59,16 @@ argument."
     (progn
       (log:info "tts-mode: starting TTS.")
       ;; make sure that a running process is stopped before starting a new one
-      (if-process-then-terminate mode)
+      (disable mode)
       (setf (executable-process-info mode)
             (uiop:launch-program program-string
                                  :output *standard-output*
                                  :error-output *standard-output*))
-      (if (not (zerop (uiop:wait-process (executable-process-info mode))))
-          (log:info "tts-mode: TTS done."))
-      (if-process-then-terminate mode))))
+      (when (not (zerop (uiop:wait-process (executable-process-info mode))))
+        (log:info "tts-mode: TTS done."))
+      (disable mode))))
 
-(defmethod if-process-then-terminate ((mode tts-mode))
+(defmethod disable ((mode tts-mode) &key)
   "If there is a running process, terminate it."
   (when (and (executable-process-info mode)
              (uiop:process-alive-p (executable-process-info mode)))
@@ -84,8 +78,8 @@ argument."
 
 (define-command start-tts ()
   "Start TTS on the content of the current buffer matching the selector."
-  (process-document (current-mode 'tts-mode)))
+  (process-document (find-submode 'tts-mode)))
 
 (define-command stop-tts ()
   "Stop running TTS process if there is one."
-  (if-process-then-terminate (current-mode 'tts-mode)))
+  (disable (find-submode 'tts-mode)))

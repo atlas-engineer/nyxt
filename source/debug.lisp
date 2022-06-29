@@ -1,13 +1,13 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/debug
-  (:use :common-lisp :nyxt)
+(uiop:define-package :nyxt/debug ; TODO: Rename to `nyxt/develop' to avoid confusiong with `debugger'?
+  (:use :common-lisp)
   (:import-from #:class-star #:define-class)
   (:import-from #:serapeum #:export-always #:->)
   (:documentation "Development helpers"))
 (in-package :nyxt/debug)
-(use-nyxt-package-nicknames)
+(nyxt:use-nyxt-package-nicknames)
 
 (defvar *all-nyxt-objects* '()
   "Weak list of all Nyxt objects.
@@ -55,7 +55,7 @@ be done automatically, but then how would we access the weak pointers?
   "Return the list of all Nyxt object pointers of type CLASS-SYM.
 Example:
 
-  (sb-ext:search-roots (find-nyxt-objects 'user-web-buffer) :print :verbose)
+  (sb-ext:search-roots (find-nyxt-objects 'web-buffer) :print :verbose)
 
 Use `:print :verbose' is you want a human-readable overview.
 See also `find-object-by-address' (SBCL only)."

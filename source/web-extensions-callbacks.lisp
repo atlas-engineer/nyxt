@@ -1,9 +1,14 @@
+<<<<<<< HEAD
 # SPDX-FileCopyrightText: 2017 John Mercouris <john@atlas.engineer>
 # SPDX-FileCopyrightText: 2017 Atlas Engineer LLC
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
 # Atlas Engineer LLC
+=======
+;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
+;;;; SPDX-License-Identifier: BSD-3-Clause
+>>>>>>> 1ed2ac247b82c474146a2de4467dc10f3f495625
 
 (in-package :nyxt/web-extensions)
 
@@ -76,6 +81,7 @@
 
 (defun all-extensions (&key (buffers (buffer-list)))
   (loop for buffer in buffers
+        when (modable-buffer-p buffer)
         append (sera:filter #'nyxt/web-extensions::extension-p (modes buffer))))
 
 (defmacro fire-extension-event (extension object event &rest args)
@@ -129,7 +135,7 @@
 
 (defmethod tabs-on-removed ((buffer buffer))
   (flet ((integer-id (object)
-           (or (ignore-errors (parse-integer (id object)))
+           (or (ignore-errors (parse-integer (symbol-name (id object))))
                0)))
     (dolist (extension (all-extensions))
       (fire-extension-event
@@ -218,13 +224,8 @@ the description of the mechanism that sends the results back."
                   (calispel:! channel nil)))))
         (if (not (member (slot-value buffer 'nyxt::status) '(:finished :failed)))
             (let ((channel (nyxt::make-channel 1)))
-              (hooks:add-hook (buffer-loaded-hook buffer)
-                              (make-instance
-                               'nyxt::handler-buffer
-                               :fn (lambda (buffer)
-                                     (calispel:! channel (send-message result-channel))
-                                     (hooks:remove-hook (buffer-loaded-hook buffer) 'send-message-when-loaded))
-                               :name 'send-message-when-loaded))
+               (once-on (buffer-loaded-hook buffer) _
+                (calispel:! channel (send-message result-channel)))
               (calispel:? channel))
             (send-message result-channel))))
     (setf (gethash (cffi:pointer-address (g:pointer original-message)) %message-channels%)
@@ -298,15 +299,19 @@ the description of the mechanism that sends the results back."
                           :test #'string-equal)))
     (when (nyxt/web-extensions:tab-apis-enabled-p extension buffer-to-insert)
       (ffi-buffer-add-user-script
-       buffer-to-insert (if file
-                            (uiop:read-file-string
-                             (nyxt/web-extensions:merge-extension-path extension file))
-                            code)
-       :run-now-p t
-       :at-document-start-p (and (gethash "runAt" script-data)
-                                 (string= (gethash "runAt" script-data) "document_start"))
-       :all-frames-p (gethash "allFrames" script-data)
-       :world-name (name extension)))
+       buffer-to-insert
+       (make-instance
+        'nyxt/user-script-mode:user-script
+        :code (if file
+                  (uiop:read-file-string
+                   (nyxt/web-extensions:merge-extension-path extension file))
+                  code)
+        :run-at (if (and (gethash "runAt" script-data)
+                         (string= (gethash "runAt" script-data) "document_start"))
+                    :document-start
+                    :document-end)
+        :all-frames-p (gethash "allFrames" script-data)
+        :world-name (name extension))))
     "[]"))
 
 (-> storage-local-get (buffer string) (values string &optional))
@@ -318,7 +323,7 @@ the description of the mechanism that sends the results back."
                           :key #'id
                           :test #'string-equal))
          (keys (gethash "keys" json)))
-    (let ((data (or (nfiles:content (nyxt/web-extensions:storage-path extension))
+    (let ((data (or (files:content (nyxt/web-extensions:storage-path extension))
                     (make-hash-table))))
       (if (uiop:emptyp keys)
           "{}"
@@ -344,7 +349,7 @@ the description of the mechanism that sends the results back."
                           :key #'id
                           :test #'string-equal))
          (keys (gethash "keys" json)))
-    (let ((data (or (nfiles:content (nyxt/web-extensions:storage-path extension))
+    (let ((data (or (files:content (nyxt/web-extensions:storage-path extension))
                     (make-hash-table))))
       (unless (uiop:emptyp keys)
         (dolist (key-value keys)
@@ -361,7 +366,7 @@ the description of the mechanism that sends the results back."
                           :key #'id
                           :test #'string-equal))
          (keys (uiop:ensure-list (gethash "keys" json))))
-    (let ((data (or (nfiles:content (nyxt/web-extensions:storage-path extension))
+    (let ((data (or (files:content (nyxt/web-extensions:storage-path extension))
                     (make-hash-table))))
       (unless (uiop:emptyp keys)
         (dolist (key keys)
@@ -374,7 +379,7 @@ the description of the mechanism that sends the results back."
                           (sera:filter #'nyxt/web-extensions::extension-p
                                        (modes buffer))
                           :key #'id)))
-    (let ((data (or (nfiles:content (nyxt/web-extensions:storage-path extension))
+    (let ((data (or (files:content (nyxt/web-extensions:storage-path extension))
                     (make-hash-table))))
       (clrhash data)))
   "")
@@ -405,8 +410,25 @@ there. `reply-user-mesage' takes care of sending the response back."
              ;; This is useful when conditional reader macro reads in some
              ;; superfluous items.
              (declare (ignore ignore))
-             (cons se1 se2)))
+             (cons se1 se2))
+           ;;; Only used in "ready" message.
+           ;; (extension->cons (extension)
+           ;;   (cons (nyxt/web-extensions::name extension)
+           ;;         (vector (id extension)
+           ;;                 (nyxt/web-extensions::manifest extension)
+           ;;                 (or (background-buffer-p (buffer extension))
+           ;;                     (nyxt::panel-buffer-p (buffer extension)))
+           ;;                 (nyxt/web-extensions::extension-files extension)
+           ;;                 (id (buffer extension)))))
+           )
       (str:string-case message-name
+        ;;; Commented out due to CPU hogging when enabled.
+        ;; ("ready"
+        ;;  (webkit:webkit-web-view-send-message-to-page
+        ;;   (nyxt::gtk-object buffer)
+        ;;   (webkit:webkit-user-message-new
+        ;;    "injectAPIs" (glib:g-variant-new-string
+        ;;                  (encode-json (mapcar #'extension->cons extensions))))))
         ("management.getSelf"
          (wrap-in-channel
           (encode-json (extension->extension-info (find message-params extensions
@@ -414,7 +436,7 @@ there. `reply-user-mesage' takes care of sending the response back."
         ("runtime.sendMessage"
          (sera:and-let* ((json (decode-json message-params))
                          (extension-instances
-                          (sera:filter (alex:curry #'string=
+                          (sera:filter (curry #'string=
                                                    (gethash "extensionId" json))
                                        extensions
                                        :key #'id))
@@ -476,7 +498,7 @@ there. `reply-user-mesage' takes care of sending the response back."
          (wrap-in-channel
           (encode-json (buffer->tab-description buffer))))
         ("tabs.print"
-         (wrap-in-channel (print-buffer)))
+         (wrap-in-channel (nyxt/document-mode:print-buffer)))
         ("tabs.get"
          (wrap-in-channel
           (encode-json (buffer->tab-description (nyxt::buffers-get message-params)))))

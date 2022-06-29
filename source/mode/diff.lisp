@@ -1,10 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package nyxt/diff-mode
-  (:use #:cl #:nyxt)
-  (:import-from #:serapeum #:export-always))
-
+(nyxt:define-package :nyxt/diff-mode
+    (:documentation "Mode for viewing diffs between two buffers."))
 (in-package :nyxt/diff-mode)
 
 (export-always 'diff-mode)
@@ -13,35 +11,36 @@
   ((rememberable-p nil)
    (style (theme:themed-css (theme *browser*)
             (".nyxt-diff-insert"
-             :text-decoration "none"
-             :background-color "#bbeabb")
+             :background-color "#bbeabb"
+             :text-decoration "none")
             ("ins.nyxt-diff-replace"
-             :text-decoration "none"
-             :background-color "#bbeabb")
+             :background-color "#bbeabb"
+             :text-decoration "none")
             (".nyxt-diff-delete"
-             :text-decoration "none"
-             :background-color "#efcbcf")
+             :background-color "#efcbcf"
+             :text-decoration "none")
             ("del.nyxt-diff-replace"
-             :text-decoration "none"
-             :background-color "#efcbcf"))
+             :background-color "#efcbcf"
+             :text-decoration "none"))
           :documentation "Diff colours for its visual representation.
 They're based on the modus-operandi theme by Protesilaos Stavrou, which follows
-the highest standard on accessibility.")))
+the highest standard on accessibility."))
+  (:toggler-command-p nil))
 
 (export-always 'diff)
 (define-internal-page-command-global diff
     (&key (old-buffer-id (id (prompt1 :prompt "Old buffer"
-                                      :sources (make-instance 'user-buffer-source
-                                                              :actions  nil))))
+                                      :sources (make-instance 'buffer-source
+                                                              :return-actions  nil))))
           (new-buffer-id (id (prompt1 :prompt "New buffer"
-                                      :sources (make-instance 'user-buffer-source
-                                                              :actions  nil)))))
+                                      :sources (make-instance 'buffer-source
+                                                              :return-actions  nil)))))
     (diff-buffer "*diff*" 'diff-mode)
   "Show difference between two buffers"
   (let ((old-html (ffi-buffer-get-document (nyxt::buffers-get old-buffer-id)))
         (new-html (ffi-buffer-get-document (nyxt::buffers-get new-buffer-id))))
     (spinneret:with-html-string
-      (:style (style (find-mode diff-buffer 'diff-mode)))
+      (:style (style (find-submode 'nyxt/diff-mode:diff-mode diff-buffer)))
       (:raw
        (html-diff:html-diff
         old-html new-html

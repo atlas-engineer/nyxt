@@ -48,6 +48,7 @@
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system glib-or-gtk)
   #:use-module (gnu packages)
+  #:use-module (gnu packages aspell)
   #:use-module (gnu packages base)
   #:use-module (gnu packages commencement)
   #:use-module (gnu packages glib)
@@ -61,50 +62,6 @@
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages version-control)
   #:use-module (gnu packages webkit))
-
-(define-public sbcl-nfiles
-  (package
-   (name "sbcl-nfiles")
-   (version "0.2.0")
-   (source
-    (origin
-     (method git-fetch)
-     (uri (git-reference
-           (url "https://github.com/atlas-engineer/nfiles")
-           (commit version)))
-     (file-name (git-file-name "nfiles" version))
-     (sha256
-      (base32
-       "02diypc5i36sv3kwjs0lk1y3r2zjv1k8g65w22844rbc881znb2h"))))
-   (build-system asdf-build-system/sbcl)
-   (inputs
-    (list gnupg
-          sbcl-alexandria
-          sbcl-hu.dwim.defclass-star
-          sbcl-serapeum
-          sbcl-trivial-garbage
-          sbcl-trivial-package-local-nicknames
-          sbcl-trivial-types))
-   (native-inputs
-    (list sbcl-prove))
-   (arguments
-    (list #:phases
-          #~(modify-phases %standard-phases
-              (add-after 'unpack 'fix-paths
-                (lambda _
-                  (substitute* "gpg.lisp"
-                    (("\"gpg\"")
-                     (string-append "\""
-                                    #$(this-package-input "gnupg") "/bin/gpg\""))))))))
-   (home-page "https://github.com/atlas-engineer/nfiles")
-   (synopsis "Manage file persistence and loading in Common Lisp")
-   (description
-    "NFiles is a Common Lisp library to help manage file persistence and
-loading, in particular user-centric files like configuration files.")
-   (license license:bsd-3)))
-
-(define-public cl-nfiles                ; TODO: Add iolib for non-SBCL.
-  (sbcl-package->cl-source-package sbcl-nfiles))
 
 (define %source-dir (dirname (dirname (current-filename))))
 
@@ -202,7 +159,7 @@ loading, in particular user-centric files like configuration files.")
           cl-named-readtables
           cl-nfiles
           cl-nhooks
-          ;; cl-osicat ; Not needed for SBCL.
+          cl-osicat ; Not needed for SBCL, remove it in Guix upstream package.
           cl-parenscript
           cl-phos
           cl-plump
@@ -233,6 +190,18 @@ loading, in particular user-centric files like configuration files.")
           webkitgtk                 ; Required when we use its typelib
           gobject-introspection
           pkg-config))
+   (propagated-inputs
+    (list
+     ;; Useful for video playback in all-inclusive Guix profiles.
+     ;; For now upstream Guix does not include the GST plugins.
+     gst-libav
+     gst-plugins-bad
+     gst-plugins-base
+     gst-plugins-good
+     gst-plugins-ugly
+     ;; For spell-checking.  Same, upstream Guix does not include it in the package.
+     aspell
+     aspell-dict-en))
    (synopsis "Extensible web browser in Common Lisp")
    (home-page "https://nyxt.atlas.engineer")
    (description "Nyxt is a keyboard-oriented, extensible web browser

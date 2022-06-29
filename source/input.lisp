@@ -5,41 +5,23 @@
 ;; TODO: which-key: List all bindings with some prefix.
 ;; TODO: Make sure it's easy enough to set global bindings.
 
-(defmacro command-markup (fn &key (modes nil explicit-modes-p))
-  "Print FN in HTML followed its bindings in parentheses."
-  `(let ((spinneret:*suppress-inserted-spaces* t))
-     (spinneret:with-html (:span
-                           (:a :href (nyxt-url 'describe-command :command ,fn)
-                               (:code (let ((*print-case* :downcase))
-                                        (format nil "~a" ,fn))))
-                           " ("
-                           (:code (apply #'binding-keys ,fn (if ,explicit-modes-p
-                                                                (list :modes ,modes)
-                                                                '())))
-                           ")"))))
-
-(defmacro command-docstring-first-sentence (fn &key (sentence-case-p nil))
-  "Print FN first docstring sentence in HTML."
-  `(if (fboundp ,fn)
-       (spinneret:with-html
-         (:span
-          (or ,(if sentence-case-p
-                   `(sera:ensure-suffix (str:sentence-case (first (ppcre:split "\\.\\s" (documentation ,fn 'function)))) ".")
-                   `(sera:ensure-suffix (first (ppcre:split "\\.\\s" (documentation ,fn 'function))) "."))
-              (error "Undocumented function ~a." ,fn))))
-       (error "~a is not a function." ,fn)))
-
-(defmacro command-information (fn)
-  "Print FN binding and first docstring's sentence in HTML."
-  `(spinneret:with-html (:li (command-markup ,fn) ": " (command-docstring-first-sentence ,fn))))
-
-(defun list-command-information (fns)
-  "Print information over a list of commands in HTML."
-  (dolist (i fns)
-    (command-information i)))
-
-(deftype nyxt-keymap-value ()
-  '(or keymap:keymap function-symbol command))
+(-> binding-keys (function-symbol &key (:modes list)) *)
+(defun binding-keys (fn &key (modes (if (current-buffer)
+                                        (modes (current-buffer))
+                                        (mapcar #'make-instance %default-modes))))
+  ;; We can't use `(modes (make-instance 'buffer))' because modes are only
+  ;; instantiated after the buffer web view, which is not possible if there is
+  ;; no *browser*.
+  (let* ((current-buffer (current-buffer))
+         (buffer (or (current-buffer)
+                     (make-instance 'input-buffer)))
+         (keymaps (cons (override-map buffer)
+                        (delete nil (mapcar #'keymap modes)))))
+    (unwind-protect
+         (or (first (keymap:binding-keys fn keymaps))
+             "UNBOUND")
+      (unless current-buffer
+        (buffer-delete buffer)))))
 
 (-> make-keymap (string &rest keymap:keymap) keymap:keymap)
 (export-always 'make-keymap)
@@ -52,7 +34,7 @@ Example:
 \(defvar *my-keymap* (make-keymap \"my-map\")
   \"My keymap.\")"
   (let ((keymap (apply #'keymap:make-keymap name parents)))
-    (setf (keymap:bound-type keymap) 'nyxt-keymap-value)
+    (setf (keymap:bound-type keymap) 'scheme:nyxt-keymap-value)
     keymap))
 
 (export-always 'current-keymaps)
@@ -63,10 +45,10 @@ Example:
   "Return the list of `keymap' for the current buffer, ordered by priority.
 If non-empty, return the result of BUFFER's `current-keymaps-hook' instead."
   (let ((keymaps
-          (when buffer
+          (when (input-buffer-p buffer)
             (cons (override-map buffer)
                   (delete nil (mapcar #'keymap (modes buffer)))))))
-    (if (current-keymaps-hook buffer)
+    (if (and (input-buffer-p buffer) (current-keymaps-hook buffer))
         (hooks:run-hook (current-keymaps-hook buffer) keymaps buffer)
         keymaps)))
 
@@ -126,7 +108,7 @@ Return nil to forward to renderer or non-nil otherwise."
                                  translated-specs
                                  specs)))
                    (keyspecs-with-optional-keycode key))))
-      (when buffer
+      (when (input-buffer-p buffer)
         (setf (last-event buffer) event))
       (cond
         ((ffi-generated-input-event-p window event)
@@ -136,7 +118,7 @@ Return nil to forward to renderer or non-nil otherwise."
 
         (t
          (multiple-value-bind (bound-function matching-keymap translated-key)
-             (the nyxt-keymap-value
+             (the scheme:nyxt-keymap-value
                   (keymap:lookup-key key-stack (current-keymaps)))
            (declare (ignore matching-keymap))
            (cond
@@ -158,13 +140,13 @@ Return nil to forward to renderer or non-nil otherwise."
                 (setf key-stack nil))
               t)
 
-             ((or (and buffer (forward-input-events-p buffer))
+             ((or (and (input-buffer-p buffer) (forward-input-events-p buffer))
                   (pointer-event-p (first (last key-stack))))
               (log:debug "Forward key ~s" (keyspecs key-stack))
               (setf key-stack nil)
               nil)
 
-             ((and buffer (not (forward-input-events-p buffer)))
+             ((and (input-buffer-p buffer) (not (forward-input-events-p buffer)))
               ;; After checking `pointer-event-p', otherwise pointer events
               ;; might not be forwarded.
               (funcall (input-skip-dispatcher window) (keyspecs key-stack))

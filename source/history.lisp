@@ -3,15 +3,15 @@
 
 (in-package :nyxt)
 
-(define-class history-file (nfiles:data-file nyxt-lisp-file)
-  ((nfiles:base-path #p"history/default")
-   (nfiles:name "history"))
+(define-class history-file (files:data-file nyxt-lisp-file)
+  ((files:base-path #p"history/default")
+   (files:name "history"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (export-always 'buffer-history)
 (defun buffer-history (&optional (buffer (current-buffer)))
-  (nfiles:content (history-file buffer)))
+  (files:content (history-file buffer)))
 
 (define-class history-entry ()          ; TODO: Export?
   ((url (quri:uri "")
@@ -44,10 +44,6 @@ It's a list of a form (Y &OPTIONAL X)."))
   (:documentation "
 Entry for the global history.
 The total number of visit for a given URL is (+ explicit-visits implicit-visits)."))
-
-(defmethod prompter:object-attributes ((entry history-entry))
-  `(("URL" ,(render-url (url entry)))
-    ("Title" ,(title entry))))
 
 (export-always 'equals)
 (defmethod equals ((e1 history-entry) (e2 history-entry))
@@ -92,11 +88,11 @@ class."
 (defun history-add (url &key (title "") (buffer (current-buffer)))
   "Add URL to the global/buffer-local history.
 The `implicit-visits' count is incremented."
-  (nfiles:with-file-content (history (history-file (current-buffer))
+  (files:with-file-content (history (history-file (current-buffer))
                                      :default (make-history-tree))
     (unless (or (url-empty-p url)
                 ;; If buffer was not registered in the global history, don't
-                ;; proceed.  See `buffer's `initialize-instance' `:after' method..
+                ;; proceed.  See `buffer's `customize-instance' `:after' method..
                 (not (htree:owner history (id buffer))))
       (htree:add-child (make-instance 'history-entry
                                       :url url
@@ -113,7 +109,7 @@ The `implicit-visits' count is incremented."
                   :prompt "Delete entries"
                   :sources (list (make-instance 'history-disowned-source
                                                 :buffer buffer)))))
-    (nfiles:with-file-content (history (history-file buffer))
+    (files:with-file-content (history (history-file buffer))
       (dolist (entry entries)
         (htree:delete-data history entry)))))
 
@@ -126,9 +122,9 @@ then become available for deletion with `delete-history-entry'."
   (let ((buffers (or (alex:ensure-list buffer)
                      (prompt
                       :prompt "Reset histories of buffer(s)"
-                      :sources (list (make-instance 'user-buffer-source
-                                                    :actions '()))))))
-    (nfiles:with-file-content (history (history-file (current-buffer)))
+                      :sources (list (make-instance 'buffer-source
+                                                    :return-actions '()))))))
+    (files:with-file-content (history (history-file (current-buffer)))
       (dolist (buffer buffers)
         (htree:reset-owner history (id buffer))))))
 
@@ -187,6 +183,11 @@ lot."
                                (score-history-entry y))))))))
         owner-less-history-entries)))))
 
+(defmethod prompter:object-attributes ((entry history-entry) (source history-disowned-source))
+  (declare (ignore source))
+  `(("URL" ,(render-url (url entry)))
+    ("Title" ,(title entry))))
+
 (defun history-html-list (&key (limit 100) (separator " → "))
   (let* ((history (buffer-history))
          (history-entries
@@ -199,7 +200,7 @@ lot."
                          (:a :href (render-url (url data))
                              (render-url (url data))))))))
 
-(defmethod nfiles:serialize ((profile nyxt-profile) (file history-file) stream &key)
+(defmethod files:serialize ((profile nyxt-profile) (file history-file) stream &key)
   (let ((*package* (find-package :nyxt))
         (*print-length* nil))
     ;; We need to make sure current package is :nyxt so that symbols are printed
@@ -207,11 +208,11 @@ lot."
     (write
      (with-input-from-string (in (with-output-to-string (out)
                                    (s-serialization:serialize-sexp
-                                    (list +version+ (nfiles:content file))
+                                    (list +version+ (files:content file))
                                     out)))
        ;; We READ the output of serialize-sexp to make it more
        ;; human-readable.
-       (read in))
+       (safe-read in))
      :stream stream)))
 
 ;; REVIEW: This works around the issue of cl-prevalence to deserialize structs
@@ -222,8 +223,8 @@ lot."
 (defun history-deserialize-sexp (stream &optional (serialization-state (s-serialization::make-serialization-state)))
   "Read and return an s-expression serialized version of a lisp object from stream, optionally reusing a serialization state"
   (s-serialization::reset serialization-state)
-  (let ((sexp (read stream nil :eof)))
-    (if (eq sexp :eof)
+  (let ((sexp (safe-read stream nil stream)))
+    (if (eq sexp stream)
         nil
         (history-deserialize-sexp-internal sexp (s-serialization::get-hashtable serialization-state)))))
 
@@ -344,14 +345,14 @@ Finally go through all the owners and update their creator."
     (alex:when-let ((latest-id (first
                                 (first
                                  (sort-by-time (alex:hash-table-alist (htree:owners history))
-                                               :key (alex:compose #'htree:last-access #'rest))))))
-      (switch-buffer :id latest-id))))
+                                               :key (compose #'htree:last-access #'rest))))))
+      (switch-buffer :buffer (buffers-get latest-id)))))
 
-(defmethod nfiles:deserialize ((profile nyxt-profile) (file history-file) raw-content &key)
+(defmethod files:deserialize ((profile nyxt-profile) (file history-file) raw-content &key)
   "Restore the global/buffer-local history and session from the PATH."
-  ;; TODO: Move `with-protect' to a more general `nfiles:deserialize' method?
+  ;; TODO: Move `with-protect' to a more general `files:deserialize' method?
   (with-protect ("Failed to restore history from ~a: ~a"
-                 (nfiles:expand file) :condition)
+                 (files:expand file) :condition)
     (let ((data (let ((*package* (find-package :nyxt)))
                   ;; We need to make sure current package is :nyxt so that
                   ;; symbols are printed with consistent namespaces.
@@ -368,13 +369,14 @@ Finally go through all the owners and update their creator."
              nil))))))
 
 (defun histories-directory (&optional (buffer (current-buffer)))
-  (nfiles:parent (nfiles:expand (history-file buffer))))
+  (when (context-buffer-p buffer)
+    (files:parent (nfiles:expand (history-file buffer)))))
 
 (defun histories-list (&optional (buffer (current-buffer)))
   (alex:when-let ((dir (histories-directory buffer)))
     (sera:keep "lisp" (uiop:directory-files dir)
                :test 'string-equal
-               :key #'nfiles:pathname-type*)))
+               :key #'files:pathname-type*)))
 
 (define-class history-name-source (prompter:source)
   ((prompter:name "Histories")
@@ -392,11 +394,11 @@ Useful for session snapshots, as `restore-history-by-name' will restore opened b
                                            :base-path (make-pathname
                                                        :name name
                                                        :directory (pathname-directory (histories-directory))))))
-    (when (or (not (uiop:file-exists-p (nfiles:expand new-file)))
-              (if-confirm ("Overwrite ~s?" (nfiles:expand new-file))
+    (when (or (not (uiop:file-exists-p (files:expand new-file)))
+              (if-confirm ("Overwrite ~s?" (files:expand new-file))
                           t))
-      (setf (nfiles:content new-file) (buffer-history))
-      (echo "History stored to ~s." (nfiles:expand new-file)))))
+      (setf (files:content new-file) (buffer-history))
+      (echo "History stored to ~s." (files:expand new-file)))))
 
 (define-command restore-history-by-name ()
   "Delete all the buffers of the current session/history and import the history chosen by user.
@@ -410,7 +412,7 @@ If you want to save the current history file beforehand, call
                   (new-file (make-instance 'history-file
                                            :base-path (uiop:ensure-pathname name :truename t))))
     (let ((old-buffers (buffer-list))
-          (new-history (nfiles:content new-file)))
+          (new-history (files:content new-file)))
       (restore-history-buffers new-history (history-file (current-buffer)))
       (dolist (buffer old-buffers)
         (buffer-delete buffer)))))

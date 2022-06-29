@@ -3,21 +3,8 @@
 
 (in-package :nyxt)
 
-(defmacro define-function (name args docstring &body body)
-  "Eval ARGS and DOCSTRING then define function over the resulting lambda list
-and string.
-All ARGS are declared as `ignorable'."
-  (let ((evaluated-args (eval args))
-        (evaluated-docstring (eval docstring)))
-    `(defun ,name ,evaluated-args
-       ,evaluated-docstring
-       (declare (ignorable ,@(set-difference (mapcar (lambda (arg) (if (listp arg) (first arg) arg))
-                                                     evaluated-args)
-                                             lambda-list-keywords)))
-       ,@body)))
-
 (sera:eval-always
-  (define-class prompt-buffer (user-internal-buffer prompter:prompter)
+  (define-class prompt-buffer (network-buffer input-buffer modable-buffer prompter:prompter)
     ((window nil
              :type (or null window)
              :export nil
@@ -34,7 +21,7 @@ new history for each new prompt buffer.  Here we set the history to be shared gl
      ;; TODO: Need a changed-callback?  Probably not, see `search-buffer'.  But
      ;; can we run the postprocessor without running the filter?
      (invisible-input-p nil
-                        :documentation "If non-nil, input is replaced by a
+                        :documentation "Whether to replace input by a
 placeholder character.  This is useful to conceal passwords.")
      (hide-suggestion-count-p nil
                               :documentation "Whether to show the number of
@@ -48,29 +35,21 @@ chosen suggestions inside brackets.")
      ;; You will want edit this to match the changes done to `style'.")
      (hide-single-source-header-p nil
                                   :documentation "Hide source header when there is only one.")
-     (style (theme:themed-css
-                (theme *browser*)
-              (* :font-family "monospace,monospace"
-                 :font-size "14px"
-                 :line-height "18px")
+     (style (theme:themed-css (theme *browser*)
+              (*
+               :font-family "monospace,monospace"
+               :font-size "14px"
+               :line-height "18px")
               (body
-               :color theme:text
-               :background theme:background
                :overflow "hidden"
                :margin "0"
                :padding "0")
               ("#prompt-area"
-               :background-color theme:secondary
+               :background-color theme:primary
+               :color theme:on-primary
                :display "grid"
                :grid-template-columns "auto auto 1fr auto"
-               :width "100%"
-               :color theme:background)
-              ("#prompt-area-vi"
-               :background-color theme:tertiary
-               :display "grid"
-               :grid-template-columns "auto auto 1em 1fr auto"
-               :width "100%"
-               :color theme:background)
+               :width "100%")
               ("#prompt"
                :padding-left "10px"
                :line-height "26px")
@@ -81,19 +60,13 @@ chosen suggestions inside brackets.")
                :line-height "26px"
                :padding-left "3px"
                :padding-right "3px")
-              ("#vi-mode"
-               :margin "2px"
-               :padding "1px")
-              (".vi-normal-mode"
-               :background-color theme:primary)
-              (".vi-insert-mode"
-               :background-color theme:accent)
               ("#input"
+               :background-color theme:background
+               :color theme:on-background
+               :opacity 0.9
                :border "none"
                :outline "none"
                :padding "3px"
-               :color theme:text
-               :background-color theme:quaternary
                :width "100%"
                :autofocus "true")
               (".source"
@@ -102,21 +75,21 @@ chosen suggestions inside brackets.")
               (".source-glyph"
                :margin-right "3px")
               (".source-name"
-               :color theme:background
+               :background-color theme:secondary
+               :color theme:on-secondary
                :padding-left "5px"
-               :line-height "24px"
-               :background-color theme:secondary)
+               :line-height "24px")
               ("#suggestions"
-               :color theme:text
                :background-color theme:background
+               :color theme:on-background
                :overflow-y "hidden"
                :overflow-x "hidden"
                :height "100%"
                :width "100%")
               (".source-content"
-               :margin-left "16px"
                :background-color theme:background
-               :color theme:text
+               :color theme:on-background
+               :margin-left "16px"
                :width "100%"
                :table-layout "fixed")
               (".source-content td"
@@ -124,21 +97,23 @@ chosen suggestions inside brackets.")
                :height "20px"
                :overflow "auto")
               (".source-content th"
+               :background-color theme:primary
+               :color theme:on-primary
                :font-weight "normal"
                :padding-left "3px"
-               :text-align "left"
-               :color theme:text
-               :background-color theme:quaternary)
+               :text-align "left")
               (".source-content td::-webkit-scrollbar"
                :display "none")
               ("#selection"
                :background-color theme:accent
-               :color theme:background)
-              (.marked :background-color theme:tertiary
-                       :font-weight "bold"
-                       :color theme:background)
-              (.selected :background-color theme:primary
-                         :color theme:background))
+               :color theme:on-accent)
+              (.marked
+               :background-color theme:secondary
+               :color theme:on-secondary
+               :font-weight "bold")
+              (.selected
+               :background-color theme:primary
+               :color theme:on-primary))
             :documentation "The CSS applied to a prompt-buffer when it is set-up.")
      (override-map (make-keymap "override-map")
                    :type keymap:keymap
@@ -151,19 +126,15 @@ See `buffer's `override-map' for more details."))
 Each prompt spawns a new object: this makes it possible to nest prompts, such as
 invoking `prompt-buffer:history'.
 
-See `prompt' for how to invoke prompts.")))
+See `prompt' for how to invoke prompts.")
+    (:metaclass user-class)))
 
-(define-user-class prompt-buffer)
-
-(defmethod default-modes append ((buffer prompt-buffer))
-  '(prompt-buffer-mode))
-(defmethod default-modes :around ((buffer prompt-buffer))
-  (set-difference (call-next-method) '(web-mode base-mode)))
-
-(defmethod initialize-instance :after ((prompt-buffer prompt-buffer) &key extra-modes)
+(defmethod customize-instance :after ((prompt-buffer prompt-buffer)
+                                      &key extra-modes &allow-other-keys)
   (hooks:run-hook (prompt-buffer-make-hook *browser*) prompt-buffer)
-  (initialize-modes prompt-buffer)
-  (mapc (alex:rcurry #'make-mode prompt-buffer) extra-modes))
+  (enable-modes (append (reverse (default-modes prompt-buffer))
+                        extra-modes)
+                prompt-buffer))
 
 (export-always 'current-source)
 (defun current-source (&optional (prompt-buffer (current-prompt-buffer)))
@@ -187,10 +158,9 @@ See also `hide-prompt-buffer'."
     (push prompt-buffer (active-prompt-buffers (window prompt-buffer)))
     (calispel:! (prompt-buffer-channel (window prompt-buffer)) prompt-buffer)
     (prompt-render prompt-buffer)
-    (ffi-window-set-prompt-buffer-height
-     (window prompt-buffer)
-     (or height
-         (prompt-buffer-open-height (window prompt-buffer))))
+    (setf (ffi-window-prompt-buffer-height (window prompt-buffer))
+          (or height
+              (prompt-buffer-open-height (window prompt-buffer))))
     (run-thread "Show prompt watcher"
       (let ((prompt-buffer prompt-buffer))
         (update-prompt-input prompt-buffer)
@@ -226,7 +196,7 @@ See also `show-prompt-buffer'."
     (if (active-prompt-buffers window)
         (let ((next-prompt-buffer (first (active-prompt-buffers window))))
           (show-prompt-buffer next-prompt-buffer))
-        (ffi-window-set-prompt-buffer-height window 0))))
+        (setf (ffi-window-prompt-buffer-height window) 0))))
 
 (defun suggestion-and-mark-count (prompt-buffer suggestions marks
                                   &key multi-selection-p pad-p)
@@ -260,13 +230,9 @@ See also `show-prompt-buffer'."
 (defun prompt-render-prompt (prompt-buffer)
   (let* ((suggestions (prompter:all-suggestions prompt-buffer))
          (marks (prompter:all-marks prompt-buffer))
-         (vi-class (cond ((find-submode prompt-buffer 'vi-normal-mode)
-                          "vi-normal-mode")
-                         ((find-submode prompt-buffer 'vi-insert-mode)
-                          "vi-insert-mode")))
-         (vi-letter (match vi-class
-                      ("vi-normal-mode" "N")
-                      ("vi-insert-mode" "I"))))
+         ;; TODO: Should prompt-buffer be a status-buffer?
+         ;; Then no need to depend on the current status buffer.
+         (status-buffer (status-buffer (current-window))))
     (ffi-buffer-evaluate-javascript-async
      prompt-buffer
      (ps:ps
@@ -277,16 +243,10 @@ See also `show-prompt-buffer'."
                :pad-p t
                :multi-selection-p (some #'prompter:multi-selection-p
                                         (prompter:sources prompt-buffer)))))
-       (when (ps:lisp vi-class)
-         (let ((vi-indicator (ps:chain document (get-element-by-id "vi-mode"))))
-           (setf (ps:chain vi-indicator |innerHTML|) (ps:lisp vi-letter))
-           (setf (ps:chain vi-indicator class-name) (ps:lisp vi-class))))
        (setf (ps:chain document (get-element-by-id "prompt-modes") |innerHTML|)
-             (ps:lisp
-              (format nil "~{~a~^ ~}" (delete "prompt-buffer"
-                                              (mapcar #'format-mode
-                                                      (modes prompt-buffer))
-                                              :test #'string=))))))))
+             (ps:lisp (str:join " "
+                                (mapcar (curry #'mode-status status-buffer)
+                                        (sort-modes-for-status (modes prompt-buffer))))))))))
 
 (export 'prompt-render-suggestions)
 (defmethod prompt-render-suggestions ((prompt-buffer prompt-buffer))
@@ -302,16 +262,19 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                      (:div :class "source-name"
                            :style (if (and (hide-single-source-header-p prompt-buffer)
                                            (sera:single sources))
-                                      "dislay:none;"
+                                      "display:none;"
                                       "display:revert")
-                           (:span :class "source-glyph" "⛯")
+                           (:span :class "source-glyph" "☼")
                            (prompter:name source)
                            (if (prompter:hide-suggestion-count-p source)
                                ""
                                (suggestion-and-mark-count prompt-buffer
                                                           (prompter:suggestions source)
                                                           (prompter:marks source)
-                                                          :multi-selection-p (prompter:multi-selection-p source))))
+                                                          :multi-selection-p (prompter:multi-selection-p source)))
+                           (if (prompter:ready-p source)
+                               ""
+                               "(In progress...)"))
                      (when (prompter:suggestions source)
                        (:table :class "source-content"
                                (:tr :style (if (or (eq (prompter:hide-attribute-header-p source) :always)
@@ -337,17 +300,18 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                           :onmouseover (ps:ps
                                                          ;; FIXME: A better way to set selection?
                                                          (nyxt/ps:lisp-eval
+                                                          (:title "set-selection")
                                                           ;; TODO: Export?
-                                                          `(progn
-                                                             (prompter::select
-                                                                 (current-prompt-buffer)
-                                                               ,(- suggestion-index cursor-index))
-                                                             (prompt-render-suggestions
-                                                              (current-prompt-buffer)))))
+                                                          (prompter::select
+                                                              (current-prompt-buffer)
+                                                            (- suggestion-index cursor-index))
+                                                          (prompt-render-suggestions
+                                                           (current-prompt-buffer))))
                                           :onmousedown (ps:ps
                                                          (nyxt/ps:lisp-eval
-                                                          '(prompter:return-selection
-                                                            (nyxt::current-prompt-buffer))))
+                                                          (:title "return-selection")
+                                                          (prompter:return-selection
+                                                           (nyxt::current-prompt-buffer))))
                                           (loop for (nil attribute) in (prompter:active-attributes suggestion :source source)
                                                 collect (:td (:mayberaw attribute)))))))))))
       (ffi-buffer-evaluate-javascript
@@ -370,27 +334,23 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
 
 (defun prompt-render-skeleton (prompt-buffer)
   (erase-document prompt-buffer)
-  (let ((vi-mode? (or (find-submode prompt-buffer 'vi-normal-mode)
-                      (find-submode prompt-buffer 'vi-insert-mode))))
-    (html-set (spinneret:with-html-string
-                (:head (:style (style prompt-buffer)))
-                (:body
-                 (:div :id (if vi-mode? "prompt-area-vi" "prompt-area")
-                       (:div :id "prompt" (:mayberaw (prompter:prompt prompt-buffer)))
-                       (:div :id "prompt-extra" "[?/?]")
-                       (when vi-mode?
-                         (:div :id "vi-mode" ""))
-                       (:div (:input :type (if (invisible-input-p prompt-buffer)
-                                               "password"
-                                               "text")
-                                     :id "input"
-                                     :value (prompter:input prompt-buffer)))
-                       (:div :id "prompt-modes" ""))
-                 (:div :id "suggestions"
-                       :style (if (invisible-input-p prompt-buffer)
-                                  "visibility:hidden;"
-                                  "visibility:visible;"))))
-              prompt-buffer)))
+  (html-set (spinneret:with-html-string
+              (:head (:style (style prompt-buffer)))
+              (:body
+               (:div :id "prompt-area"
+                     (:div :id "prompt" (:mayberaw (prompter:prompt prompt-buffer)))
+                     (:div :id "prompt-extra" "[?/?]")
+                     (:div (:input :type (if (invisible-input-p prompt-buffer)
+                                             "password"
+                                             "text")
+                                   :id "input"
+                                   :value (prompter:input prompt-buffer)))
+                     (:div :id "prompt-modes" ""))
+               (:div :id "suggestions"
+                     :style (if (invisible-input-p prompt-buffer)
+                                "visibility:hidden;"
+                                "visibility:visible;"))))
+            prompt-buffer))
 
 (defun prompt-render-focus (prompt-buffer)
   (ffi-buffer-evaluate-javascript-async
@@ -462,17 +422,17 @@ See `update-prompt-input' to update the changes visually."
        (hide-prompt-buffer prompt-buffer)
        (error 'nyxt-prompt-buffer-canceled)))))
 
+(sera:eval-always
+  (defvar %prompt-args (delete-duplicates
+                        (append
+                         (public-initargs 'prompt-buffer)
+                         (public-initargs 'prompter:prompter)
+                         ;; `customize-instance' `:after' arguments:
+                         '(extra-modes)))))
 (export-always 'prompt)
 (sera:eval-always
-  (define-function prompt (append
-                           '(&rest args)
-                           `(&key ,@(delete-duplicates
-                                     (append
-                                      (public-initargs 'prompt-buffer)
-                                      (public-initargs 'prompter:prompter)
-                                      ;; `initialize-instance' :after arguments:
-                                      '(extra-modes)))))
-      "Open the prompt buffer, ready for user input.
+  (defun prompt #.(append '(&rest args) `(&key ,@%prompt-args))
+    "Open the prompt buffer, ready for user input.
 PROMPTER and PROMPT-BUFFER are plists of keyword arguments passed to the
 prompt-buffer constructor.
 
@@ -480,14 +440,25 @@ Example use:
 
 \(prompt
   :prompt \"Test prompt\"
-  :sources (list (make-instance 'prompter:source :filter #'my-suggestion-filter)))
+  :sources (list (make-instance 'prompter:source :name \"Test\"
+                                                 :constructor '(\"foo\" \"bar\"))))
 
 See the documentation of `prompt-buffer' to know more about the options."
+    (declare #.(cons 'ignorable %prompt-args))
+    (unless *interactive-p*
+      (restart-case
+          (error 'nyxt-prompt-buffer-non-interactively :name prompter:prompt)
+        (prompt-anyway () nil)
+        (cancel () (error 'nyxt-prompt-buffer-canceled))))
+    (alex:when-let ((prompt-text (getf args :prompt)))
+      (when (str:ends-with-p ":" prompt-text)
+        (log:warn "Prompt text ~s should not end with a ':'." prompt-text)
+        (setf (getf args :prompt) (string-right-trim (uiop:strcat ":" serapeum:whitespace) prompt-text))))
     (let ((prompt-object-channel (make-channel 1)))
       (ffi-within-renderer-thread
        *browser*
        (lambda ()
-         (let ((prompt-buffer (apply #'make-instance 'user-prompt-buffer
+         (let ((prompt-buffer (apply #'make-instance 'prompt-buffer
                                      (append args
                                              (list
                                               :window (current-window)
@@ -498,13 +469,11 @@ See the documentation of `prompt-buffer' to know more about the options."
         (wait-on-prompt-buffer new-prompt)))))
 
 (export-always 'prompt1)
-(defmacro prompt1 (&body body)
-  "Return the first result of a prompt."
-  `(first (prompt ,@body)))
-
-(defmethod prompter:object-attributes ((prompt-buffer prompt-buffer))
-  `(("Prompt" ,(prompter:prompt prompt-buffer))
-    ("Input" ,(prompter:input prompt-buffer))))
+(sera:eval-always
+  (defun prompt1 #.(append '(&rest args) `(&key ,@%prompt-args))
+    "Return the first result of a prompt."
+    (declare #.(cons 'ignorable %prompt-args))
+    (first (apply #'prompt args))))
 
 (define-class resume-prompt-source (prompter:source)
   ((prompter:name "Resume prompters")
@@ -512,6 +481,11 @@ See the documentation of `prompt-buffer' to know more about the options."
    ;; TODO: Remove duplicates.
    ;; TODO: History?
    ))
+
+(defmethod prompter:object-attributes ((prompt-buffer prompt-buffer) (source prompter:source))
+  (declare (ignore source))
+  `(("Prompt" ,(prompter:prompt prompt-buffer))
+    ("Input" ,(prompter:input prompt-buffer))))
 
 (define-command resume-prompt ()
   "Query an older prompt and resume it."

@@ -5,6 +5,7 @@
 
 ;; trivial-types:proper-list doesn't check its element type.
 
+(export-always 'function-symbol)
 (deftype function-symbol ()
   `(and symbol (satisfies fboundp)))
 
@@ -24,7 +25,7 @@ Example:
        (defun ,predicate (list)
          (list-of-type-p list ,type))
        (deftype ,(intern (format nil "LIST-OF-~aS" name)) ()
-         '(satisfies ,predicate)))))
+         '(and list (satisfies ,predicate))))))
 
 (export-always 'list-of-symbols)
 (define-list-type 'symbol)
@@ -49,7 +50,7 @@ Example:
 
 (export-always 'alist-of-strings)
 (deftype alist-of-strings ()
-  `(satisfies alist-of-strings-p))
+  `(and list (satisfies alist-of-strings-p)))
 
 #+doctest
 (progn

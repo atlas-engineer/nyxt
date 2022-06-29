@@ -40,20 +40,6 @@ stdenv.mkDerivation {
       gst-libav
   ]);
 
-  propogatedBuildInputs = [
-    pkgs.enchant.out
-    pkgs.pkg-config.out
-    pkgs.gsettings-desktop-schemas.out
-    pkgs.glib-networking.out
-    pkgs.pango.out
-    pkgs.cairo.out
-    pkgs.gdk-pixbuf.out
-    pkgs.gtk3.out
-    pkgs.glib.out
-    pkgs.libfixposix.out
-    pkgs.webkitgtk
-  ];
-
   LD_LIBRARY_PATH = with lib; "${makeLibraryPath [ pkgs.gsettings-desktop-schemas.out
                                                    pkgs.enchant.out
                                                    pkgs.glib-networking.out

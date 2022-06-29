@@ -34,26 +34,33 @@ want to change the behaviour of modifiers, for instance swap 'control' and
 \(define-configuration browser
   ((modifier-translator #'my-translate-modifiers)))")
    (web-contexts (make-hash-table :test 'equal)
+                 :export nil
                  :documentation "Persistent `nyxt::webkit-web-context's
 Keyed by strings as they must be backed to unique folders
 See also the `ephemeral-web-contexts' slot.")
    (ephemeral-web-contexts (make-hash-table :test 'equal)
+                           :export nil
                            :documentation "Ephemeral `nyxt::webkit-web-context's.
 See also the `web-contexts' slot."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
-(define-user-class browser (gtk-browser))
+  (:accessor-name-transformer (class*:make-name-transformer name))
+  (:metaclass user-class))
+
+(handler-bind ((warning #'muffle-warning))
+  (defclass renderer-browser (gtk-browser)
+    ()
+    (:metaclass interface-class)))
 
 (alex:define-constant +internal+ "internal" :test 'equal)
 (alex:define-constant +default+ "default" :test 'equal)
 
-(defmethod get-context ((browser gtk-browser) name buffer &key ephemeral-p)
+(defmethod get-context ((browser gtk-browser) name &key ephemeral-p)
   (alexandria:ensure-gethash name
                              (if ephemeral-p
                                  (ephemeral-web-contexts browser)
                                  (web-contexts browser))
-                             (make-context name buffer :ephemeral-p ephemeral-p)))
+                             (make-context name :ephemeral-p ephemeral-p)))
 
 (define-class gtk-window ()
   ((gtk-object)
@@ -74,9 +81,13 @@ See also the `web-contexts' slot."))
    (message-view)
    (key-string-buffer))
   (:export-class-name-p t)
-  (:export-accessor-names-p t)
+  (:export-accessor-names-p t)          ; TODO: Unexport?
   (:accessor-name-transformer (class*:make-name-transformer name)))
-(define-user-class window (gtk-window))
+
+(handler-bind ((warning #'muffle-warning))
+  (defclass renderer-window (gtk-window)
+    ()
+    (:metaclass interface-class)))
 
 (define-class gtk-buffer ()
   ((gtk-object)
@@ -102,7 +113,11 @@ failures."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
-(define-user-class buffer (gtk-buffer))
+
+(handler-bind ((warning #'muffle-warning))
+  (defclass renderer-buffer (gtk-buffer)
+    ()
+    (:metaclass interface-class)))
 
 (defclass webkit-web-context (webkit:webkit-web-context) ()
   (:metaclass gobject:gobject-class))
@@ -186,8 +201,8 @@ not return."
 (defmacro define-ffi-method (name args &body body)
   "Define an FFI method to run in the renderer thread.
 
-Always returns a value retrieved from the renderer thread, using Calispel
-channels if the current thread is not the renderer one.
+Return the value or forward the condition retrieved from the renderer thread,
+using a channel if the current thread is not the renderer one.
 
 It's a `defmethod' wrapper. If you don't need the body of the method to execute in
 the renderer thread, use `defmethod' instead."
@@ -197,15 +212,30 @@ the renderer thread, use `defmethod' instead."
        ,@(sera:unsplice docstring)
        ,@declares
        (if (renderer-thread-p)
-           (progn
-             ,@forms)
-           (let ((channel (make-channel 1)))
+           (progn ,@forms)
+           (let ((channel (make-channel 1))
+                 (error-channel (make-channel 1)))
              (within-gtk-thread
-               (calispel:!
-                channel
-                (progn
-                  ,@forms)))
-             (calispel:? channel))))))
+               ;; We do not include `*debug-on-error*' for now, since we need to
+               ;; first improve the debugger to properly handle the GTK thread.
+               ;; TODO: Abstract this into `with-protect-from-thread'?
+               (if (or *run-from-repl-p* *restart-on-error*)
+                   (let ((current-condition nil))
+                     (restart-case
+                         (handler-bind ((condition (lambda (c) (setf current-condition c))))
+                           (calispel:! channel (progn ,@forms)))
+                       (abort-ffi-method ()
+                         :report "Pass condition to calling thread."
+                         (calispel:! error-channel current-condition))))
+                   (handler-case (calispel:! channel (progn ,@forms))
+                     (condition (c)
+                       (calispel:! error-channel c)))))
+             (calispel:fair-alt
+               ((calispel:? channel result)
+                result)
+               ((calispel:? error-channel condition)
+                (with-protect ("Error in FFI method: ~a" :condition)
+                  (error condition)))))))))
 
 (defmethod ffi-initialize ((browser gtk-browser) urls startup-timestamp)
   "gtk:within-main-loop handles all the GTK initialization. On
@@ -228,7 +258,8 @@ the renderer thread, use `defmethod' instead."
           (with-protect ("Error on GTK thread: ~a" :condition)
             (finalize browser urls startup-timestamp)))
         (unless *run-from-repl-p*
-          (gtk:join-gtk-main)))
+          (gtk:join-gtk-main)
+          (uiop:quit (slot-value browser 'exit-code))))
       #+darwin
       (progn
         (setf gtk-running-p t)
@@ -245,60 +276,69 @@ the renderer thread, use `defmethod' instead."
 
 (define-class data-manager-file (nyxt-file)
   ((context-name (error "Context name required."))
-   (nfiles:name "web-context"))
+   (files:name "web-context"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod nfiles:resolve :around ((profile nosave-profile) (file data-manager-file))
+(defmethod files:resolve :around ((profile nosave-profile) (file data-manager-file))
   "We shouldn't store any `data-manager' data for `nosave-profile'."
   #p"")
 
-(define-class data-manager-data-directory (nfiles:data-file data-manager-file)
+(define-class data-manager-data-directory (files:data-file data-manager-file)
   ()
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod nfiles:resolve ((profile nyxt-profile) (file data-manager-data-directory))
+(defmethod files:resolve ((profile nyxt-profile) (file data-manager-data-directory))
   (sera:path-join
    (call-next-method)
    (pathname (str:concat (context-name file) "-web-context/"))))
 
-(define-class data-manager-cache-directory (nfiles:cache-file data-manager-file)
+(define-class data-manager-cache-directory (files:cache-file data-manager-file)
   ()
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod nfiles:resolve ((profile nyxt-profile) (file data-manager-cache-directory))
+(defmethod files:resolve ((profile nyxt-profile) (file data-manager-cache-directory))
   (sera:path-join
    (call-next-method)
    (pathname (str:concat (context-name file) "-web-context/"))))
 
 (define-class gtk-extensions-directory (nyxt-file)
-  ((nfiles:name "gtk-extensions"))
+  ((files:name "gtk-extensions")
+   (files:base-path nyxt-asdf:*nyxt-libdir*))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Directory where to load the 'libnyxt' library.
 By default it is found in the source directory."))
 
-(defmethod nfiles:resolve ((profile nyxt-profile) (file gtk-extensions-directory))
-  (asdf:system-relative-pathname :nyxt "libraries/web-extensions/"))
+(defmethod files:resolve ((profile nyxt-profile) (file gtk-extensions-directory))
+  (let ((system-directory (call-next-method)))
+    (if (uiop:directory-exists-p system-directory)
+        system-directory
+        (files:join (files:expand *source-directory*) "/libraries/web-extensions/"))))
 
-(define-class cookies-file (nfiles:data-file data-manager-file)
-  ((nfiles:name "cookies"))
+(define-class cookies-file (files:data-file data-manager-file)
+  ((files:name "cookies"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod nfiles:resolve ((profile nyxt-profile) (file cookies-file))
+(defmethod files:resolve ((profile nyxt-profile) (file cookies-file))
   (sera:path-join
    (call-next-method)
    (pathname (str:concat (context-name file) "-cookies"))))
 
-(define-class gtk-download (download)
+(define-class gtk-download ()
   ((gtk-object)
    (handler-ids
     :documentation "See `gtk-buffer' slot of the same name."))
   (:accessor-name-transformer (class*:make-name-transformer name)))
-(define-user-class download (gtk-download))
+
+(without-package-locks ; TODO: Is there a cleaner way to update the mode class?  Maybe move it to the core?
+  (handler-bind ((warning #'muffle-warning))
+    (defclass nyxt/download-mode:renderer-download (gtk-download)
+      ()
+      (:metaclass interface-class))))
 
 (defclass webkit-web-view-ephemeral (webkit:webkit-web-view) ()
   (:metaclass gobject:gobject-class))
@@ -308,29 +348,33 @@ By default it is found in the source directory."))
     (error 'nyxt-web-context-condition :context web-context
                                        :message "Tried to make an ephemeral web-view in a non-ephemeral context")))
 
-(defun make-web-view (&key buffer ephemeral-p)
-  "Return a web view instance.
+(defmethod make-web-view ((profile nyxt-profile) (buffer t))
+  "Return an ephemeral web view instance for basic buffers."
+  (declare (ignorable profile buffer))
+  (make-instance 'webkit-web-view-ephemeral
+                 :web-context (get-context *browser* +internal+
+                                           :ephemeral-p t)))
 
-If passed a context-name, a `nyxt:webkit-web-context' with that name is used for
-the `webkit:webkit-web-view'.  If :buffer is an internal-buffer or is
-not set, the browser's `+internal+' `nyxt:webkit-web-context' is
-used.  Otherwise (such as an external web buffer), the `+default+'
-webkit-web-context is used.
+(defmethod make-web-view ((profile nyxt-profile) (buffer context-buffer))
+  "Return a regular web view instance for buffers with context."
+  (declare (ignorable profile))
+  (make-instance 'webkit:webkit-web-view
+                 :web-context (get-context *browser* (context-name buffer)
+                                           :ephemeral-p nil)))
 
-If ephemeral-p is set, the buffer is a nosave-buffer, or the current
-`protife' is a `nosave-profile', then an ephemeral context is used, with
-the same naming rules as above."
-  (let ((internal-p (or (not buffer)
-                        (internal-buffer-p buffer)))
-        (ephemeral-p (or ephemeral-p
-                         (when buffer (typep (profile buffer) 'nosave-profile))
-                         (typep buffer 'nosave-buffer))))
-    (make-instance (if ephemeral-p
-                       'webkit-web-view-ephemeral
-                       'webkit:webkit-web-view)
-                   :web-context (get-context *browser* (if internal-p +internal+ (context-name buffer))
-                                             buffer
-                                             :ephemeral-p ephemeral-p))))
+(defmethod make-web-view ((profile nyxt-profile) (buffer nosave-buffer))
+  "Return an ephemeral web view instance for nosave buffers."
+  (declare (ignorable profile))
+  (make-instance 'webkit-web-view-ephemeral
+                 :web-context (get-context *browser* (context-name buffer)
+                                           :ephemeral-p t)))
+
+(defmethod make-web-view ((profile nosave-profile) (buffer buffer))
+  "Return an ephemeral web view instance for nosave profiles."
+  (declare (ignorable profile))
+  (make-instance 'webkit-web-view-ephemeral
+                 :web-context (get-context *browser* (context-name buffer)
+                                           :ephemeral-p t)))
 
 (defun make-decide-policy-handler (buffer)
   (lambda (web-view response-policy-decision policy-decision-type-response)
@@ -379,16 +423,7 @@ response.  The BODY is wrapped with `with-protect'."
                                   ,@forms))))))
        (push handler-id (handler-ids ,object)))))
 
-(defmethod initialize-instance :after ((buffer status-buffer) &key)
-  (%within-renderer-thread-async
-   (lambda ()
-     (with-slots (gtk-object) buffer
-       (setf gtk-object (make-web-view :buffer buffer))
-       (connect-signal-function
-        buffer "decide-policy"
-        (make-decide-policy-handler buffer))))))
-
-(defmethod initialize-instance :after ((window gtk-window) &key)
+(defmethod customize-instance :after ((window gtk-window) &key)
   (%within-renderer-thread-async
    (lambda ()
      (with-slots (gtk-object root-box-layout horizontal-box-layout
@@ -399,87 +434,91 @@ response.  The BODY is wrapped with `with-protect'."
                   prompt-buffer-view
                   status-buffer status-container
                   message-container message-view
-                  id key-string-buffer) window
-       (setf id (get-unique-identifier *browser*))
-       (setf gtk-object (make-instance 'gtk:gtk-window
-                                       :type :toplevel
-                                       :default-width 1024
-                                       :default-height 768))
-       (setf root-box-layout (make-instance 'gtk:gtk-box
-                                            :orientation :vertical
-                                            :spacing 0))
-       (setf horizontal-box-layout (make-instance 'gtk:gtk-box
-                                                  :orientation :horizontal
-                                                  :spacing 0))
-       (setf panel-buffer-container-left (make-instance 'gtk:gtk-box
-                                                        :orientation :horizontal
-                                                        :spacing 0))
-       (setf panel-buffer-container-right (make-instance 'gtk:gtk-box
-                                                         :orientation :horizontal
-                                                         :spacing 0))
-       (setf main-buffer-container (make-instance 'gtk:gtk-box
-                                                  :orientation :vertical
-                                                  :spacing 0))
-       (setf prompt-buffer-container (make-instance 'gtk:gtk-box
-                                                    :orientation :vertical
-                                                    :spacing 0))
-       (setf message-container (make-instance 'gtk:gtk-box
+                  key-string-buffer) window
+       (unless gtk-object
+         (setf gtk-object (make-instance 'gtk:gtk-window
+                                         :type :toplevel
+                                         :default-width 1024
+                                         :default-height 768))
+         (setf root-box-layout (make-instance 'gtk:gtk-box
                                               :orientation :vertical
                                               :spacing 0))
-       (setf status-container (make-instance 'gtk:gtk-box
-                                             :orientation :vertical
-                                             :spacing 0))
-       (setf key-string-buffer (make-instance 'gtk:gtk-entry))
-       (setf active-buffer (make-instance 'dummy-buffer))
+         (setf horizontal-box-layout (make-instance 'gtk:gtk-box
+                                                    :orientation :horizontal
+                                                    :spacing 0))
+         (setf panel-buffer-container-left (make-instance 'gtk:gtk-box
+                                                          :orientation :horizontal
+                                                          :spacing 0))
+         (setf panel-buffer-container-right (make-instance 'gtk:gtk-box
+                                                           :orientation :horizontal
+                                                           :spacing 0))
+         (setf main-buffer-container (make-instance 'gtk:gtk-box
+                                                    :orientation :vertical
+                                                    :spacing 0))
+         (setf prompt-buffer-container (make-instance 'gtk:gtk-box
+                                                      :orientation :vertical
+                                                      :spacing 0))
+         (setf message-container (make-instance 'gtk:gtk-box
+                                                :orientation :vertical
+                                                :spacing 0))
+         (setf status-container (make-instance 'gtk:gtk-box
+                                               :orientation :vertical
+                                               :spacing 0))
+         (setf key-string-buffer (make-instance 'gtk:gtk-entry))
+         (setf active-buffer (make-instance 'buffer))
 
-       ;; Add the views to the box layout and to the window
-       (gtk:gtk-box-pack-start main-buffer-container (gtk-object active-buffer) :expand t :fill t)
-       (gtk:gtk-box-pack-start horizontal-box-layout panel-buffer-container-left :expand nil)
-       (gtk:gtk-box-pack-start horizontal-box-layout main-buffer-container :expand t :fill t)
-       (gtk:gtk-box-pack-start horizontal-box-layout panel-buffer-container-right :expand nil)
-       (gtk:gtk-box-pack-start root-box-layout horizontal-box-layout :expand t :fill t)
+         ;; Add the views to the box layout and to the window
+         (gtk:gtk-box-pack-start main-buffer-container (gtk-object active-buffer) :expand t :fill t)
+         (gtk:gtk-box-pack-start horizontal-box-layout panel-buffer-container-left :expand nil)
+         (gtk:gtk-box-pack-start horizontal-box-layout main-buffer-container :expand t :fill t)
+         (gtk:gtk-box-pack-start horizontal-box-layout panel-buffer-container-right :expand nil)
+         (gtk:gtk-box-pack-start root-box-layout horizontal-box-layout :expand t :fill t)
 
-       (setf message-view (make-web-view))
-       (gtk:gtk-box-pack-end root-box-layout message-container :expand nil)
-       (gtk:gtk-box-pack-start message-container message-view :expand t)
-       (setf (gtk:gtk-widget-size-request message-container)
-             (list -1 (message-buffer-height window)))
+         (setf message-view (make-web-view *global-profile* nil))
+         (gtk:gtk-box-pack-end root-box-layout message-container :expand nil)
+         (gtk:gtk-box-pack-start message-container message-view :expand t)
+         (setf (gtk:gtk-widget-size-request message-container)
+               (list -1 (message-buffer-height window)))
 
-       (setf status-buffer (make-instance 'user-status-buffer))
-       (gtk:gtk-box-pack-end root-box-layout status-container :expand nil)
-       (gtk:gtk-box-pack-start status-container (gtk-object status-buffer) :expand t)
-       (setf (gtk:gtk-widget-size-request status-container)
-             (list -1 (height status-buffer)))
+         (gtk:gtk-box-pack-end root-box-layout status-container :expand nil)
+         (gtk:gtk-box-pack-start status-container (gtk-object status-buffer) :expand t)
+         (setf (gtk:gtk-widget-size-request status-container)
+               (list -1 (height status-buffer)))
 
-       (setf prompt-buffer-view (make-web-view))
-       (gtk:gtk-box-pack-end root-box-layout prompt-buffer-container :expand nil)
-       (gtk:gtk-box-pack-start prompt-buffer-container prompt-buffer-view :expand t)
-       (setf (gtk:gtk-widget-size-request prompt-buffer-container)
-             (list -1 0))
+         (setf prompt-buffer-view (make-web-view *global-profile* nil))
+         (gtk:gtk-box-pack-end root-box-layout prompt-buffer-container :expand nil)
+         (gtk:gtk-box-pack-start prompt-buffer-container prompt-buffer-view :expand t)
+         (setf (gtk:gtk-widget-size-request prompt-buffer-container)
+               (list -1 0))
 
-       (gtk:gtk-container-add gtk-object root-box-layout)
-       (setf (slot-value *browser* 'last-active-window) window)
+         (gtk:gtk-container-add gtk-object root-box-layout)
+
+         (connect-signal window "key_press_event" nil (widget event)
+           (declare (ignore widget))
+           #+darwin
+           (push-modifier *browser* event)
+           (on-signal-key-press-event window event))
+         (connect-signal window "key_release_event" nil (widget event)
+           (declare (ignore widget))
+           #+darwin
+           (pop-modifier *browser* event)
+           (on-signal-key-release-event window event))
+         (connect-signal window "destroy" nil (widget)
+           (declare (ignore widget))
+           (on-signal-destroy window))
+         (connect-signal window "window-state-event" nil (widget event)
+           (declare (ignore widget))
+           (setf (fullscreen-p window)
+                 (find :fullscreen
+                       (gdk:gdk-event-window-state-new-window-state event)))
+           nil))
+
        (unless *headless-p*
-         (gtk:gtk-widget-show-all gtk-object))
-       (connect-signal window "key_press_event" nil (widget event)
-         (declare (ignore widget))
-         #+darwin
-         (push-modifier *browser* event)
-         (on-signal-key-press-event window event))
-       (connect-signal window "key_release_event" nil (widget event)
-         (declare (ignore widget))
-         #+darwin
-         (pop-modifier *browser* event)
-         (on-signal-key-release-event window event))
-       (connect-signal window "destroy" nil (widget)
-         (declare (ignore widget))
-         (on-signal-destroy window))
-       (connect-signal window "window-state-event" nil (widget event)
-         (declare (ignore widget))
-         (setf (fullscreen-p window)
-               (find :fullscreen
-                     (gdk:gdk-event-window-state-new-window-state event)))
-         nil)))))
+         (gtk:gtk-widget-show-all gtk-object))))))
+
+(defmethod update-instance-for-redefined-class :after ((window window) added deleted plist &key)
+  (declare (ignore added deleted plist))
+  (customize-instance window))
 
 (define-ffi-method on-signal-destroy ((window gtk-window))
   ;; remove buffer from window to avoid corruption of buffer
@@ -742,9 +781,13 @@ See `gtk-browser's `modifier-translator' slot."
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
-(define-user-class scheme (gtk-scheme))
 
-(defun make-context (name buffer &key ephemeral-p)
+(handler-bind ((warning #'muffle-warning))
+  (defclass renderer-scheme (gtk-scheme)
+    ()
+    (:metaclass interface-class)))
+
+(defun make-context (name &key ephemeral-p)
   (let* ((context
            (if ephemeral-p
                ;; An ephemeral data-manager cannot be given any directories, even if they are set to nil.
@@ -758,56 +801,48 @@ See `gtk-browser's `modifier-translator' slot."
                                 :website-data-manager
                                 (make-instance 'webkit-website-data-manager
                                                :base-data-directory (uiop:native-namestring
-                                                                     (nfiles:expand data-manager-data-directory))
+                                                                     (files:expand data-manager-data-directory))
                                                :base-cache-directory (uiop:native-namestring
-                                                                      (nfiles:expand data-manager-cache-directory)))))))
-         (gtk-extensions-path (nfiles:expand (make-instance 'gtk-extensions-directory)))
+                                                                      (files:expand data-manager-cache-directory)))))))
+         (gtk-extensions-path (files:expand (make-instance 'gtk-extensions-directory)))
          (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
-    (webkit:webkit-web-context-add-path-to-sandbox
-     context (namestring (asdf:system-relative-pathname :nyxt "libraries/web-extensions/")) t)
     (unless (uiop:emptyp gtk-extensions-path)
       (log:info "GTK extensions directory: ~s" gtk-extensions-path)
       ;; TODO: Should we also use `connect-signal' here?  Does this yield a memory leak?
       (gobject:g-signal-connect
        context "initialize-web-extensions"
        (lambda (context)
-         (with-protect ("Error in signal thread: ~a" :condition)
+         (with-protect ("Error in \"initialize-web-extensions\" signal thread: ~a" :condition)
+           ;; The following calls
+           ;; `webkit:webkit-web-context-add-path-to-sandbox' for us, so no need
+           ;; to add `gtk-extensions-path' to the sandbox manually.
            (webkit:webkit-web-context-set-web-extensions-directory
             context
-            (uiop:native-namestring gtk-extensions-path))
-           (webkit:webkit-web-context-set-web-extensions-initialization-user-data
-            context (glib:g-variant-new-string
-                     (flet ((describe-extension (extension &key privileged-p)
-                              (cons (nyxt/web-extensions::name extension)
-                                    (vector (id extension)
-                                            (nyxt/web-extensions::manifest extension)
-                                            (if privileged-p 1 0)
-                                            (nyxt/web-extensions::extension-files extension)
-                                            (id buffer)))))
-                       (let ((extensions
-                               (when buffer
-                                 (sera:filter #'nyxt/web-extensions::extension-p (modes buffer)))))
-                         (encode-json
-                          (alex:if-let ((extension
-                                         (or (find buffer extensions :key #'background-buffer)
-                                             (find buffer extensions :key #'nyxt/web-extensions:popup-buffer)
-                                             (and (sera:single extensions) (panel-buffer-p buffer)
-                                                  (first extensions)))))
-                            (list (describe-extension extension :privileged-p t))
-                            (mapcar #'describe-extension extensions)))))))))))
+            (uiop:native-namestring gtk-extensions-path))))))
+    (gobject:g-signal-connect
+     context "download-started"
+     (lambda (context download)
+       (declare (ignore context))
+       (with-protect ("Error in \"download-started\" signal thread: ~a" :condition)
+         (wrap-download download))))
     (maphash
      (lambda (scheme scheme-object)
        (webkit:webkit-web-context-register-uri-scheme-callback
         context scheme
         (lambda (request)
-          (funcall* (callback scheme-object)
-                    (webkit:webkit-uri-scheme-request-get-uri request)
-                    (find (webkit:webkit-uri-scheme-request-get-web-view request)
-                          (delete nil
-                                  (append (list (status-buffer (current-window)))
-                                          (active-prompt-buffers (current-window))
-                                          (panel-buffers (current-window))
-                                          (buffer-list))) :key #'gtk-object)))
+          (let ((*interactive-p* t)
+                ;; Look up the scheme-object again so that we can live-update
+                ;; the callback without having to create a new view with a new
+                ;; context.
+                (scheme-object (gethash scheme nyxt::*schemes*)))
+            (funcall* (callback scheme-object)
+                      (webkit:webkit-uri-scheme-request-get-uri request)
+                      (find (webkit:webkit-uri-scheme-request-get-web-view request)
+                            (delete nil
+                                    (append (list (status-buffer (current-window)))
+                                            (active-prompt-buffers (current-window))
+                                            (panel-buffers (current-window))
+                                            (buffer-list))) :key #'gtk-object))))
         (or (error-callback scheme-object)
             (lambda (condition)
               (echo-warning "Error while routing ~s resource: ~a" scheme condition))))
@@ -836,24 +871,34 @@ See `gtk-browser's `modifier-translator' slot."
      nyxt::*schemes*)
     (unless (or ephemeral-p
                 (internal-context-p name))
-      (let ((cookies-path (nfiles:expand (make-instance 'cookies-file :context-name name))))
+      (let ((cookies-path (files:expand (make-instance 'cookies-file :context-name name))))
         (webkit:webkit-cookie-manager-set-persistent-storage
          cookie-manager
          (uiop:native-namestring cookies-path)
          :webkit-cookie-persistent-storage-text))
-      (set-cookie-policy cookie-manager (default-cookie-policy *browser*)))
+      (setf (ffi-buffer-cookie-policy cookie-manager) (default-cookie-policy *browser*)))
     context))
 
 (defun internal-context-p (name)
   (equal name +internal+))
 
-(defmethod initialize-instance :after ((buffer gtk-buffer) &key extra-modes
-                                                             no-hook-p
-                                       &allow-other-keys)
+(defmethod customize-instance :after ((buffer gtk-buffer) &key extra-modes
+                                                            no-hook-p
+                                      &allow-other-keys)
   "Make BUFFER with EXTRA-MODES.
 See `finalize-buffer'."
   (ffi-buffer-make buffer)
-  (finalize-buffer buffer :extra-modes extra-modes :no-hook-p no-hook-p))
+  (finalize-buffer buffer :extra-modes extra-modes :no-hook-p no-hook-p)
+  (typecase buffer
+    (status-buffer
+     (%within-renderer-thread-async
+      (lambda ()
+        (with-slots (gtk-object) buffer
+          (unless gtk-object
+            (setf gtk-object (make-web-view (profile buffer) buffer))
+            (connect-signal-function
+             buffer "decide-policy"
+             (make-decide-policy-handler buffer)))))))))
 
 (define-ffi-method ffi-buffer-url ((buffer gtk-buffer))
   (quri:uri (webkit:webkit-web-view-uri (gtk-object buffer))))
@@ -882,7 +927,9 @@ See `finalize-buffer'."
   (let ((is-new-window nil) (is-known-type t) (event-type :other)
         (navigation-action nil) (navigation-type nil)
         (mouse-button nil) (modifiers ())
-        (url nil) (request nil))
+        (url nil) (request nil)
+        (mime-type nil)
+        (method nil) (file-name nil))
     (match policy-decision-type-response
       (:webkit-policy-decision-type-navigation-action
        (setf navigation-type (webkit:webkit-navigation-policy-decision-navigation-type response-policy-decision)))
@@ -893,7 +940,10 @@ See `finalize-buffer'."
        (setf request (webkit:webkit-response-policy-decision-request response-policy-decision))
        (setf is-known-type
              (webkit:webkit-response-policy-decision-is-mime-type-supported
-              response-policy-decision))))
+              response-policy-decision))
+       (setf mime-type (webkit:webkit-uri-response-mime-type (webkit:webkit-response-policy-decision-response response-policy-decision)))
+       (setf method (webkit:webkit-uri-request-get-http-method request))
+       (setf file-name (webkit:webkit-uri-response-suggested-filename (webkit:webkit-response-policy-decision-response response-policy-decision)))))
     ;; Set Event-Type
     (setf event-type
           (match navigation-type
@@ -914,60 +964,79 @@ See `finalize-buffer'."
       (setf modifiers (funcall (modifier-translator *browser*)
                                (webkit:webkit-navigation-action-get-modifiers navigation-action))))
     (setf url (quri:uri (webkit:webkit-uri-request-uri request)))
-    (let ((request-data (preprocess-request
-                         (make-instance 'request-data
-                                        :buffer buffer
-                                        :url (quri:copy-uri url)
-                                        :keys (unless (uiop:emptyp mouse-button)
-                                                (list (keymap:make-key
-                                                       :value mouse-button
-                                                       :modifiers modifiers)))
-                                        :event-type event-type
-                                        :new-window-p is-new-window
-                                        :known-type-p is-known-type))))
-      (if request-data
-          (if (null (hooks:handlers (request-resource-hook buffer)))
-              (progn
-                (log:debug "Forward to ~s's renderer (no request-resource-hook handlers)."
-                           buffer)
-                (webkit:webkit-policy-decision-use response-policy-decision))
-              (let ((request-data
-                      (hooks:run-hook
-                       (request-resource-hook buffer)
-                       (hooks:run-hook (pre-request-hook buffer)
-                                       request-data))))
-                (cond
-                  ((not (typep request-data 'request-data))
-                   (log:debug "Don't forward to ~s's renderer (non request data)."
-                              buffer)
-                   (webkit:webkit-policy-decision-ignore response-policy-decision))
-                  ((quri:uri= url (url request-data))
-                   (log:debug "Forward to ~s's renderer (unchanged URL)."
-                              buffer)
-                   (webkit:webkit-policy-decision-use response-policy-decision))
-                  ((and (quri:uri= (url buffer) (quri:uri (webkit:webkit-uri-request-uri request)))
-                        (not (quri:uri= (quri:uri (webkit:webkit-uri-request-uri request))
-                                        (url request-data))))
-                   ;; Low-level URL string, we must not render the puni codes so use
-                   ;; `quri:render-uri'.
-                   (setf (webkit:webkit-uri-request-uri request) (quri:render-uri (url request-data)))
-                   (log:debug "Don't forward to ~s's renderer (resource request replaced with ~s)."
-                              buffer
-                              (render-url (url request-data)))
-                   ;; Warning: We must ignore the policy decision _before_ we
-                   ;; start the new load request, or else WebKit will be
-                   ;; confused about which URL to load.
-                   (webkit:webkit-policy-decision-ignore response-policy-decision)
-                   (webkit:webkit-web-view-load-request (gtk-object buffer) request))
-                  (t
-                   (log:info "Cannot redirect to ~a in an iframe, forwarding to the original URL (~a)."
-                             (render-url (url request-data))
-                             (webkit:webkit-uri-request-uri request))
-                   (webkit:webkit-policy-decision-use response-policy-decision)))))
-          (progn
-            (log:debug "Don't forward to ~s's renderer (non request data)."
-                       buffer)
-            (webkit:webkit-policy-decision-ignore response-policy-decision))))))
+    (let* ((request-data
+            (hooks:run-hook
+             (request-resource-hook buffer)
+             (hooks:run-hook (pre-request-hook buffer)
+                             (make-instance 'request-data
+                                            :buffer buffer
+                                            :url (quri:copy-uri url)
+                                            :keys (unless (uiop:emptyp mouse-button)
+                                                    (list (keymap:make-key
+                                                           :value mouse-button
+                                                           :modifiers modifiers)))
+                                            :event-type event-type
+                                            :new-window-p is-new-window
+                                            :http-method method
+                                            :toplevel-p (quri:uri=
+                                                         url (quri:uri (webkit:webkit-web-view-uri
+                                                                        (gtk-object buffer))))
+                                            :mime-type mime-type
+                                            :known-type-p is-known-type
+                                            :file-name file-name))))
+           (keymap (scheme-keymap (buffer request-data) (request-resource-scheme (buffer request-data))))
+           (bound-function (the (or symbol keymap:keymap null)
+                                (keymap:lookup-key (keys request-data) keymap))))
+      (cond
+       ((not (typep request-data 'request-data))
+        (log:debug "Don't forward to ~s's renderer (non request data)."
+                   buffer)
+        (webkit:webkit-policy-decision-ignore response-policy-decision))
+       ;; FIXME: Do we ever use it? Do we actually need it?
+       (bound-function
+        (log:debug "Resource request key sequence ~a" (keyspecs-with-optional-keycode (keys request-data)))
+        (funcall bound-function :url url :buffer buffer)
+        (webkit:webkit-policy-decision-ignore response-policy-decision))
+       ((new-window-p request-data)
+        (log:debug "Load URL in new buffer: ~a" (render-url (url request-data)))
+        (open-urls (list (url request-data)))
+        (webkit:webkit-policy-decision-ignore response-policy-decision))
+       ((not (valid-scheme-p (quri:uri-scheme (url request-data))))
+        (uiop:launch-program (list *open-program* (quri:render-uri (url request-data)))))
+       ((and (quri:uri= url (url request-data))
+             (str:starts-with-p "text/gemini" (mime-type request-data)))
+        (log:debug "Processing gemtext from ~a." (render-url url))
+        (enable-modes 'nyxt/small-web-mode:small-web-mode (buffer request-data))
+        (webkit:webkit-policy-decision-ignore response-policy-decision)
+        (ffi-buffer-load-html
+         buffer (nyxt/small-web-mode:gemtext-render (or (ignore-errors (dex:get (quri:render-uri url))) "") buffer)
+         url))
+       ((not (known-type-p request-data))
+        (log:debug "Initiate download of ~s." (render-url (url request-data)))
+        (webkit:webkit-policy-decision-download response-policy-decision))
+       ((quri:uri= url (url request-data))
+        (log:debug "Forward to ~s's renderer (unchanged URL)."
+                   buffer)
+        (webkit:webkit-policy-decision-use response-policy-decision))
+       ((and (toplevel-p request-data)
+             (not (quri:uri= (quri:uri (webkit:webkit-uri-request-uri request))
+                             (url request-data))))
+        ;; Low-level URL string, we must not render the puni codes so use
+        ;; `quri:render-uri'.
+        (setf (webkit:webkit-uri-request-uri request) (quri:render-uri (url request-data)))
+        (log:debug "Don't forward to ~s's renderer (resource request replaced with ~s)."
+                   buffer
+                   (render-url (url request-data)))
+        ;; Warning: We must ignore the policy decision _before_ we
+        ;; start the new load request, or else WebKit will be
+        ;; confused about which URL to load.
+        (webkit:webkit-policy-decision-ignore response-policy-decision)
+        (webkit:webkit-web-view-load-request (gtk-object buffer) request))
+       (t
+        (log:info "Cannot redirect to ~a in an iframe, forwarding to the original URL (~a)."
+                  (render-url (url request-data))
+                  (webkit:webkit-uri-request-uri request))
+        (webkit:webkit-policy-decision-use response-policy-decision))))))
 
 ;; See https://webkitgtk.org/reference/webkit2gtk/stable/WebKitWebView.html#WebKitLoadEvent
 (defmethod on-signal-load-changed ((buffer gtk-buffer) load-event)
@@ -980,10 +1049,9 @@ See `finalize-buffer'."
                     (url buffer)
                     url)))
       (cond ((eq load-event :webkit-load-started)
-             (setf (slot-value buffer 'status) :loading)
+             (setf (status buffer) :loading)
              (nyxt/web-extensions::tabs-on-updated buffer '(("status" . "loading")))
              (nyxt/web-extensions::tabs-on-updated buffer `(("url" . ,(render-url url))))
-             (print-status nil (get-containing-window-for-buffer buffer *browser*))
              (on-signal-load-started buffer url)
              (unless (internal-url-p url)
                (echo "Loading ~s." (render-url url))))
@@ -999,11 +1067,10 @@ See `finalize-buffer'."
             ((eq load-event :webkit-load-finished)
              (setf (loading-webkit-history-p buffer) nil)
              (unless (eq (slot-value buffer 'status) :failed)
-               (setf (slot-value buffer 'status) :finished))
+               (setf (status buffer) :finished))
              (nyxt/web-extensions::tabs-on-updated buffer '(("status" . "complete")))
              (nyxt/web-extensions::tabs-on-updated buffer `(("url" . ,(render-url url))))
              (on-signal-load-finished buffer url)
-             (print-status nil (get-containing-window-for-buffer buffer *browser*))
              (unless (internal-url-p url)
                (echo "Finished loading ~s." (render-url url))))))))
 
@@ -1021,24 +1088,23 @@ See `finalize-buffer'."
 
 (define-ffi-method ffi-window-make ((browser gtk-browser))
   "Make a window."
-  (make-instance 'user-window))
+  (make-instance 'window))
 
 (define-ffi-method ffi-window-to-foreground ((window gtk-window))
   "Show window in foreground."
   (unless *headless-p*
     (gtk:gtk-window-present (gtk-object window)))
-  (setf (slot-value *browser* 'last-active-window) window))
+  (call-next-method))
 
-(define-ffi-method ffi-window-set-title ((window gtk-window) title)
-  "Set the title for a window."
+(define-ffi-method ffi-window-title ((window gtk-window))
+  (gtk:gtk-window-title (gtk-object window)))
+(define-ffi-method (setf ffi-window-title) (title (window gtk-window))
   (setf (gtk:gtk-window-title (gtk-object window)) title))
 
 (define-ffi-method ffi-window-active ((browser gtk-browser))
-  "Return the window object for the current window."
-  (setf (slot-value browser 'last-active-window)
-        (or (find-if #'gtk:gtk-window-is-active (window-list) :key #'gtk-object)
-            (slot-value browser 'last-active-window)
-            (first (window-list)))))
+  "Return the focused window."
+  (or (find-if #'gtk:gtk-window-is-active (window-list) :key #'gtk-object)
+      (call-next-method)))
 
 (define-ffi-method ffi-window-set-buffer ((window gtk-window) (buffer gtk-buffer) &key (focus t))
   "Set BROWSER's WINDOW buffer to BUFFER."
@@ -1067,8 +1133,9 @@ See `finalize-buffer'."
   (unless *headless-p*
     (gtk:gtk-widget-show (gtk-object buffer))))
 
-(define-ffi-method ffi-window-set-panel-buffer-width ((window gtk-window) (buffer panel-buffer) width)
-  "Set the width of a panel buffer."
+(define-ffi-method ffi-window-panel-buffer-width ((window gtk-window) (buffer panel-buffer))
+  (nth-value 1 (gtk:gtk-widget-size-request (gtk-object buffer))))
+(define-ffi-method (setf ffi-window-panel-buffer-width) (width (window gtk-window) (buffer panel-buffer))
   (setf (gtk:gtk-widget-size-request (gtk-object buffer))
         (list width -1)))
 
@@ -1081,27 +1148,24 @@ See `finalize-buffer'."
          (setf (panel-buffers-right window) (remove buffer (panel-buffers-right window)))
          (gtk:gtk-container-remove (panel-buffer-container-right window) (gtk-object buffer)))))
 
-(define-ffi-method ffi-window-set-prompt-buffer-height ((window gtk-window) height)
+(define-ffi-method ffi-window-prompt-buffer-height ((window gtk-window))
+  (nth-value 1 (gtk:gtk-widget-size-request (prompt-buffer-container window))))
+(define-ffi-method (setf ffi-window-prompt-buffer-height) (height (window gtk-window))
   (setf (gtk:gtk-widget-size-request (prompt-buffer-container window))
         (list -1 height))
   (if (eql 0 height)
       (gtk:gtk-widget-grab-focus (gtk-object (active-buffer window)))
       (gtk:gtk-widget-grab-focus (prompt-buffer-view window))))
 
-(define-ffi-method ffi-window-get-prompt-buffer-height ((window gtk-window))
-  (nth-value 1 (gtk:gtk-widget-size-request (prompt-buffer-container window))))
-
-(define-ffi-method ffi-window-get-status-buffer-height ((window gtk-window))
+(define-ffi-method ffi-window-status-buffer-height ((window gtk-window))
   (nth-value 1 (gtk:gtk-widget-size-request (status-container window))))
-
-(define-ffi-method ffi-window-set-status-buffer-height ((window gtk-window) height)
+(define-ffi-method (setf ffi-window-status-buffer-height) (height (window gtk-window))
   (setf (gtk:gtk-widget-size-request (status-container window))
         (list -1 height)))
 
-(define-ffi-method ffi-window-get-message-buffer-height ((window gtk-window))
+(define-ffi-method ffi-window-message-buffer-height ((window gtk-window))
   (nth-value 1 (gtk:gtk-widget-size-request (message-container window))))
-
-(define-ffi-method ffi-window-set-message-buffer-height ((window gtk-window) height)
+(define-ffi-method (setf ffi-window-message-buffer-height) (height (window gtk-window))
   (setf (gtk:gtk-widget-size-request (message-container window))
         (list -1 height)))
 
@@ -1111,25 +1175,26 @@ See `finalize-buffer'."
     (when (native-dialogs *browser*)
       (gobject:g-object-ref (gobject:pointer file-chooser-request))
       (run-thread "file chooser"
-        (let ((files (mapcar
-                      #'uiop:native-namestring
-                      (handler-case
-                          (prompt :prompt (format
-                                           nil "File~@[s~*~] to input"
-                                           (webkit:webkit-file-chooser-request-select-multiple
-                                            file-chooser-request))
-                                  :input (or
-                                          (and
-                                           (webkit:webkit-file-chooser-request-selected-files
-                                            file-chooser-request)
-                                           (first
+        (let* ((*interactive-p* t)
+               (files (mapcar
+                       #'uiop:native-namestring
+                       (handler-case
+                           (prompt :prompt (format
+                                            nil "File~@[s~*~] to input"
+                                            (webkit:webkit-file-chooser-request-select-multiple
+                                             file-chooser-request))
+                                   :input (or
+                                           (and
                                             (webkit:webkit-file-chooser-request-selected-files
-                                             file-chooser-request)))
-                                          (uiop:native-namestring (uiop:getcwd)))
-                                  :extra-modes '(nyxt/file-manager-mode:file-manager-mode)
-                                  :sources (list (make-instance 'nyxt/file-manager-mode:user-file-source)))
-                        (nyxt-prompt-buffer-canceled ()
-                          nil)))))
+                                             file-chooser-request)
+                                            (first
+                                             (webkit:webkit-file-chooser-request-selected-files
+                                              file-chooser-request)))
+                                           (uiop:native-namestring (uiop:getcwd)))
+                                   :extra-modes '(nyxt/file-manager-mode:file-manager-mode)
+                                   :sources (list (make-instance 'nyxt/file-manager-mode:file-source)))
+                         (nyxt-prompt-buffer-canceled ()
+                           nil)))))
           (if files
               (webkit:webkit-file-chooser-request-select-files
                file-chooser-request
@@ -1169,33 +1234,29 @@ See `finalize-buffer'."
     "WhiteSmoke" "Yellow" "YellowGreen")
   "All the named CSS colors to construct `color-source' from.")
 
-(defstruct color
-  name)
-
 (define-class color-source (prompter:source)
   ((prompter:name "Color")
-   (prompter:constructor (mapcar (alex:curry #'make-color :name) *css-colors*))
+   (prompter:constructor *css-colors*)
    (prompter:filter-preprocessor
     (lambda (suggestions source input)
-      (declare (ignore source))
-      (let ((input-color (make-color :name input)))
+      (let ((input-color input))
         (cons (make-instance 'prompter:suggestion
                              :value input-color
-                             :attributes (prompter:object-attributes input-color))
+                             :attributes (prompter:object-attributes input-color source))
               suggestions))))
-   (prompter:follow-p t)
-   (prompter:follow-mode-functions
+   (prompter:selection-actions-enabled-p t)
+   (prompter:selection-actions
     (lambda (color)
       (pflet ((color-input-area
                (color)
                (setf (ps:chain (nyxt/ps:qs document "#input") style background-color)
                      (ps:lisp color))))
         (with-current-buffer (current-prompt-buffer)
-          (color-input-area (color-name color)))))))
+          (color-input-area color))))))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod prompter:object-attributes ((color color))
-  `(("Color" ,(color-name color))))
+(defmethod prompter:object-attributes ((color string) (source color-source))
+  `(("Color" ,color)))
 
 (defun process-color-chooser-request (web-view color-chooser-request)
   (declare (ignore web-view))
@@ -1220,14 +1281,14 @@ See `finalize-buffer'."
                  (rgba (progn (webkit:webkit-color-chooser-request-get-rgba
                                color-chooser-request rgba)
                               rgba))
-                 (color-name (color-name
-                              (prompt1 :prompt "Color"
-                                :input (format nil "rgba(~d, ~d, ~d, ~d)"
-                                               (round (* 255 (cffi:mem-aref rgba :double 0)))
-                                               (round (* 255 (cffi:mem-aref rgba :double 1)))
-                                               (round (* 255 (cffi:mem-aref rgba :double 2)))
-                                               (round (* 255 (cffi:mem-aref rgba :double 3))))
-                                :sources (list (make-instance 'color-source)))))
+                 (*interactive-p* t)
+                 (color-name (prompt1 :prompt "Color"
+                                      :input (format nil "rgba(~d, ~d, ~d, ~d)"
+                                                     (round (* 255 (cffi:mem-aref rgba :double 0)))
+                                                     (round (* 255 (cffi:mem-aref rgba :double 1)))
+                                                     (round (* 255 (cffi:mem-aref rgba :double 2)))
+                                                     (round (* 255 (cffi:mem-aref rgba :double 3))))
+                                      :sources (list (make-instance 'color-source))))
                  (color (get-rgba color-name))
                  (opacity (sera:parse-float (get-opacity color-name)))
                  (rgba (progn
@@ -1248,7 +1309,8 @@ See `finalize-buffer'."
   (declare (ignore web-view))
   (with-protect ("Failed to process dialog: ~a" :condition)
     (when (native-dialogs *browser*)
-      (let ((dialog (gobject:pointer dialog)))
+      (let ((dialog (gobject:pointer dialog))
+             (*interactive-p* t))
         (webkit:webkit-script-dialog-ref dialog)
         (run-thread "script dialog"
           (case (webkit:webkit-script-dialog-get-dialog-type dialog)
@@ -1283,37 +1345,38 @@ See `finalize-buffer'."
 (defun process-permission-request (web-view request)
   (g:g-object-ref (g:pointer request))
   (run-thread "permission requester"
-   (if-confirm ((format
-                 nil "[~a] ~a"
-                 (webkit:webkit-web-view-uri web-view)
-                 (etypecase request
-                   (webkit:webkit-geolocation-permission-request
-                    "Grant this website geolocation access?")
-                   (webkit:webkit-notification-permission-request
-                    "Grant this website notifications access?")
-                   (webkit:webkit-pointer-lock-permission-request
-                    "Grant this website pointer access?")
-                   (webkit:webkit-device-info-permission-request
-                    "Grant this website device info access?")
-                   (webkit:webkit-install-missing-media-plugins-permission-request
-                    (format nil "Grant this website a media install permission for ~s?"
-                            (webkit:webkit-install-missing-media-plugins-permission-request-get-description
-                             request)))
-                   (webkit:webkit-media-key-system-permission-request
-                    (format nil "Grant this website an EME ~a key access?"
-                            (webkit:webkit-media-key-system-permission-get-name request)))
-                   (webkit:webkit-user-media-permission-request
-                    (format nil "Grant this website a~@[~*n audio~]~@[~* video~] access?"
-                            (webkit:webkit-user-media-permission-is-for-audio-device request)
-                            (webkit:webkit-user-media-permission-is-for-video-device request)))
-                   (webkit:webkit-website-data-access-permission-request
-                    (format nil "Grant ~a an access to ~a data?"
-                            (webkit:webkit-website-data-access-permission-request-get-requesting-domain
-                             request)
-                            (webkit:webkit-website-data-access-permission-request-get-current-domain
-                             request))))))
-                (webkit:webkit-permission-request-allow request)
-                (webkit:webkit-permission-request-deny request))))
+    (let ((*interactive-p* t))
+      (if-confirm ((format
+                    nil "[~a] ~a"
+                    (webkit:webkit-web-view-uri web-view)
+                    (etypecase request
+                      (webkit:webkit-geolocation-permission-request
+                       "Grant this website geolocation access?")
+                      (webkit:webkit-notification-permission-request
+                       "Grant this website notifications access?")
+                      (webkit:webkit-pointer-lock-permission-request
+                       "Grant this website pointer access?")
+                      (webkit:webkit-device-info-permission-request
+                       "Grant this website device info access?")
+                      (webkit:webkit-install-missing-media-plugins-permission-request
+                       (format nil "Grant this website a media install permission for ~s?"
+                               (webkit:webkit-install-missing-media-plugins-permission-request-get-description
+                                request)))
+                      (webkit:webkit-media-key-system-permission-request
+                       (format nil "Grant this website an EME ~a key access?"
+                               (webkit:webkit-media-key-system-permission-get-name request)))
+                      (webkit:webkit-user-media-permission-request
+                       (format nil "Grant this website a~@[~*n audio~]~@[~* video~] access?"
+                               (webkit:webkit-user-media-permission-is-for-audio-device request)
+                               (webkit:webkit-user-media-permission-is-for-video-device request)))
+                      (webkit:webkit-website-data-access-permission-request
+                       (format nil "Grant ~a an access to ~a data?"
+                               (webkit:webkit-website-data-access-permission-request-get-requesting-domain
+                                request)
+                               (webkit:webkit-website-data-access-permission-request-get-current-domain
+                                request))))))
+                  (webkit:webkit-permission-request-allow request)
+                  (webkit:webkit-permission-request-deny request)))))
 
 (defun process-notification (web-view notification)
   (when (native-dialogs *browser*)
@@ -1325,11 +1388,25 @@ See `finalize-buffer'."
 (define-ffi-method ffi-buffer-make ((buffer gtk-buffer))
   "Initialize BUFFER's GTK web view."
   (unless (gtk-object buffer) ; Buffer may already have a view, e.g. the prompt-buffer.
-    (setf (gtk-object buffer) (make-web-view :buffer buffer)))
-  (if (smooth-scrolling buffer)
-      (ffi-buffer-enable-smooth-scrolling buffer t)
-      (ffi-buffer-enable-smooth-scrolling buffer nil))
+    (setf (gtk-object buffer) (make-web-view (profile buffer) buffer)))
+  (when (document-buffer-p buffer)
+    (setf (ffi-buffer-smooth-scrolling-enabled-p buffer) (smooth-scrolling buffer)))
   (connect-signal-function buffer "decide-policy" (make-decide-policy-handler buffer))
+  (connect-signal buffer "resource-load-started" nil (web-view resource request)
+    (declare (ignore web-view))
+    (let ((response (webkit:webkit-web-resource-response resource)))
+      (hooks:run-hook (request-resource-hook buffer)
+                      (make-instance 'request-data
+                                     :buffer buffer
+                                     :url (quri:uri (webkit:webkit-uri-request-get-uri request))
+                                     :event-type :other
+                                     :new-window-p nil
+                                     :resource-p t
+                                     :http-method (webkit:webkit-uri-request-get-http-method request)
+                                     :toplevel-p nil
+                                     :mime-type (when response
+                                                  (webkit:webkit-uri-response-mime-type response))
+                                     :known-type-p t))))
   (connect-signal buffer "load-changed" t (web-view load-event)
     (declare (ignore web-view))
     (on-signal-load-changed buffer load-event))
@@ -1356,6 +1433,7 @@ See `finalize-buffer'."
   ;; TLS certificate handling
   (connect-signal buffer "load-failed-with-tls-errors" nil (web-view failing-url certificate errors)
     (declare (ignore web-view errors))
+    (on-signal-load-failed buffer (quri:uri failing-url))
     (on-signal-load-failed-with-tls-errors buffer certificate (quri:uri failing-url)))
   (connect-signal buffer "notify::uri" nil (web-view param-spec)
     (declare (ignore param-spec))
@@ -1392,39 +1470,44 @@ See `finalize-buffer'."
     ;; TODO: WebKitGTK sometimes (when?) triggers "load-failed" when loading a
     ;; page from the webkit-history cache.  Upstream bug?  Anyways, we should
     ;; ignore these.
-    (if (loading-webkit-history-p buffer)
-        (setf (loading-webkit-history-p buffer) nil)
-        (unless (or (member (slot-value buffer 'status) '(:finished :failed))
-                    ;; WebKitGTK emits the WEBKIT_PLUGIN_ERROR_WILL_HANDLE_LOAD
-                    ;; (204) if the plugin will handle loading content of the
-                    ;; URL. This often happens with videos. The only thing we
-                    ;; can do is ignore it.
-                    ;;
-                    ;; TODO: Use cl-webkit provided error types. How
-                    ;; do we use it, actually?
-                    (= 204 (webkit::g-error-code error))
-                    (= 302 (webkit::g-error-code error)))
-          (echo "Failed to load URL ~a in buffer ~a." failing-url (id buffer))
-          (setf (slot-value buffer 'status) :failed)
-          (html-set
-           (spinneret:with-html-string
-             (:h1 "Page could not be loaded.")
-             (:h2 "URL: " failing-url)
-             (:ul
-              (:li "Try again in a moment, maybe the site will be available again.")
-              (:li "If the problem persists for every site, check your Internet connection.")
-              (:li "Make sure the URL is valid."
-                   (when (quri:uri-https-p (quri:uri failing-url))
-                     "If this site does not support HTTPS, try with HTTP (insecure)."))))
-           buffer)))
+    (on-signal-load-failed buffer (quri:uri failing-url))
+    (cond
+      ((loading-webkit-history-p buffer)
+       (setf (loading-webkit-history-p buffer) nil))
+      ((= 302 (webkit::g-error-code error))
+       (on-signal-load-canceled buffer (quri:uri failing-url)))
+      ((or (member (slot-value buffer 'status) '(:finished :failed))
+           ;; WebKitGTK emits the WEBKIT_PLUGIN_ERROR_WILL_HANDLE_LOAD
+           ;; (204) if the plugin will handle loading content of the
+           ;; URL. This often happens with videos. The only thing we
+           ;; can do is ignore it.
+           ;;
+           ;; TODO: Use cl-webkit provided error types. How
+           ;; do we use it, actually?
+           (= 204 (webkit::g-error-code error)))
+       nil)
+      (t
+       (echo "Failed to load URL ~a in buffer ~a." failing-url (id buffer))
+       (setf (status buffer) :failed)
+       (html-set
+        (spinneret:with-html-string
+          (:h1 "Page could not be loaded.")
+          (:h2 "URL: " failing-url)
+          (:ul
+           (:li "Try again in a moment, maybe the site will be available again.")
+           (:li "If the problem persists for every site, check your Internet connection.")
+           (:li "Make sure the URL is valid."
+                (when (quri:uri-https-p (quri:uri failing-url))
+                  "If this site does not support HTTPS, try with HTTP (insecure)."))))
+        buffer)))
     t)
   (connect-signal buffer "create" nil (web-view navigation-action)
     (declare (ignore web-view))
-    (let ((new-buffer (make-instance 'user-web-buffer :parent-buffer (current-buffer)))
+    (let ((new-buffer (make-instance 'web-buffer :parent-buffer (current-buffer)))
           (url (webkit:webkit-uri-request-uri
                 (webkit:webkit-navigation-action-get-request
                  (gobject:pointer navigation-action)))))
-      (ffi-buffer-load new-buffer (quri:uri url))
+      (buffer-load (quri:uri url) :buffer new-buffer)
       (window-set-buffer (current-window) new-buffer)
       (gtk-object new-buffer)))
   ;; Remove "download to disk" from the right click context menu because it
@@ -1433,37 +1516,41 @@ See `finalize-buffer'."
     (declare (ignore web-view event hit-test-result))
     (let ((length (webkit:webkit-context-menu-get-n-items context-menu)))
       (dotimes (i length)
-        (let ((item (webkit:webkit-context-menu-get-item-at-position context-menu i)))
-          (match (webkit:webkit-context-menu-item-get-stock-action item)
-            (:webkit-context-menu-action-download-link-to-disk
-             (webkit:webkit-context-menu-remove context-menu item))))))
+        (if (status-buffer-p buffer)
+            (webkit:webkit-context-menu-remove
+             context-menu (webkit:webkit-context-menu-get-item-at-position context-menu i))
+            (let ((item (webkit:webkit-context-menu-get-item-at-position context-menu i)))
+              (match (webkit:webkit-context-menu-item-get-stock-action item)
+                (:webkit-context-menu-action-open-link-in-new-window
+                 (webkit:webkit-context-menu-remove context-menu item)
+                 (webkit:webkit-context-menu-insert
+                  context-menu
+                  (webkit:webkit-context-menu-item-new-from-stock-action-with-label
+                   :webkit-context-menu-action-open-link-in-new-window
+                   "Open Link in New Buffer")
+                  i)))))))
     nil)
   (connect-signal buffer "enter-fullscreen" nil (web-view)
     (declare (ignore web-view))
-    (hooks:run-hook toggle-fullscreen-before-hook)
-    (toggle-status-buffer :show-p nil)
-    (toggle-message-buffer :show-p nil)
-    (hooks:run-hook toggle-fullscreen-after-hook)
+    (toggle-fullscreen :skip-renderer-resize t)
     nil)
   (connect-signal buffer "leave-fullscreen" nil (web-view)
     (declare (ignore web-view))
-    (hooks:run-hook toggle-fullscreen-before-hook)
-    (toggle-status-buffer :show-p t)
-    (toggle-message-buffer :show-p t)
-    (hooks:run-hook toggle-fullscreen-after-hook)
+    (toggle-fullscreen :skip-renderer-resize t)
     nil)
-  (connect-signal buffer "user-message-received" nil (view message)
-    (declare (ignorable view))
-    (g:g-object-ref (g:pointer message))
-    (run-thread
-      "Process user messsage"
-      (nyxt/web-extensions:process-user-message buffer message))
-    (sleep 0.01)
-    (run-thread
-      "Reply user message"
-      (nyxt/web-extensions:reply-user-message buffer message))
-    t)
-  (nyxt/web-extensions::tabs-on-created buffer)
+  (when (context-buffer-p buffer)
+    (connect-signal buffer "user-message-received" nil (view message)
+      (declare (ignorable view))
+      (g:g-object-ref (g:pointer message))
+      (run-thread
+          "Process user messsage"
+        (nyxt/web-extensions:process-user-message buffer message))
+      (sleep 0.01)
+      (run-thread
+          "Reply user message"
+        (nyxt/web-extensions:reply-user-message buffer message))
+      t)
+    (nyxt/web-extensions::tabs-on-created buffer))
   buffer)
 
 (define-ffi-method ffi-buffer-delete ((buffer gtk-buffer))
@@ -1490,7 +1577,7 @@ local anyways, and it's better to refresh it if a load was queried."
     ;; don't try to reload if they are called before the "load-changed" signal
     ;; is emitted.
     (when (web-buffer-p buffer)
-      (setf (slot-value buffer 'status) :loading))
+      (setf (status buffer) :loading))
     (if (and entry
              (not (internal-url-p url))
              (not (quri:uri= url (url buffer))))
@@ -1498,6 +1585,23 @@ local anyways, and it's better to refresh it if a load was queried."
           (log:debug "Load URL from history entry ~a" entry)
           (load-webkit-history-entry buffer entry))
         (webkit:webkit-web-view-load-uri (gtk-object buffer) (quri:render-uri url)))))
+
+(define-ffi-method ffi-buffer-load-html ((buffer gtk-buffer) html-content url)
+  (declare (type quri:uri url))
+  (webkit:webkit-web-view-load-html (gtk-object buffer)
+                                    html-content
+                                    (if (url-empty-p url)
+                                        "about:blank"
+                                        (render-url url))))
+
+(define-ffi-method ffi-buffer-load-alternate-html ((buffer gtk-buffer) html-content content-url url)
+  (declare (type quri:uri url))
+  (webkit:webkit-web-view-load-alternate-html (gtk-object buffer)
+                                              html-content
+                                              content-url
+                                              (if (url-empty-p url)
+                                                  "about:blank"
+                                                  (render-url url))))
 
 (defmethod ffi-buffer-evaluate-javascript ((buffer gtk-buffer) javascript &optional world-name)
   (%within-renderer-thread
@@ -1510,9 +1614,9 @@ local anyways, and it's better to refresh it if a load was queried."
             (lambda (result jsc-result)
               (declare (ignore jsc-result))
               (calispel:! channel result))
-          (lambda (result jsc-result)
-            (declare (ignore jsc-result))
-            result))
+            (lambda (result jsc-result)
+              (declare (ignore jsc-result))
+              result))
         (lambda (condition)
           (javascript-error-handler condition)
           ;; Notify the listener that we are done.
@@ -1573,97 +1677,108 @@ local anyways, and it's better to refresh it if a load was queried."
       (webkit:webkit-user-content-manager-remove-style-sheet
        content-manager style-sheet))))
 
-(define-ffi-method ffi-buffer-add-user-script ((buffer gtk-buffer) javascript &key
-                                               world-name all-frames-p
-                                               at-document-start-p run-now-p
-                                               allow-list block-list)
-  (let* ((content-manager
-           (webkit:webkit-web-view-get-user-content-manager
-            (gtk-object buffer)))
-         (frames (if all-frames-p
-                     :webkit-user-content-inject-all-frames
-                     :webkit-user-content-inject-top-frame))
-         (inject-time (if at-document-start-p
-                          :webkit-user-script-inject-at-document-start
-                          :webkit-user-script-inject-at-document-end))
-         (allow-list (if allow-list
-                         (list-of-string-to-foreign allow-list)
-                         '("http://*/*" "https://*/*")))
-         (block-list (list-of-string-to-foreign block-list))
-         (script (if world-name
-                     (webkit:webkit-user-script-new-for-world
-                      javascript frames inject-time world-name allow-list block-list)
-                     (webkit:webkit-user-script-new
-                      javascript frames inject-time allow-list block-list))))
-    (webkit:webkit-user-content-manager-add-script
-     content-manager script)
-    (when (and run-now-p
-               (member (slot-value buffer 'status)
-                       '(:finished :failed)))
-      (reload-buffers (list buffer)))
-    script))
+(define-class gtk-user-script ()
+  ((gtk-object))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-ffi-method ffi-buffer-remove-user-script ((buffer gtk-buffer) script)
+
+(without-package-locks ; TODO: Is there a cleaner way to update the mode class?  Maybe move it to the core?
+  (handler-bind ((warning #'muffle-warning))
+    (defclass nyxt/user-script-mode:renderer-user-script (gtk-user-script)
+      ()
+      (:metaclass interface-class))))
+
+(define-ffi-method ffi-buffer-add-user-script ((buffer gtk-buffer) (script gtk-user-script))
+  (alex:if-let ((code (nfiles:content script)))
+    (let* ((content-manager
+             (webkit:webkit-web-view-get-user-content-manager
+              (gtk-object buffer)))
+           (frames (if (nyxt/user-script-mode:all-frames-p script)
+                       :webkit-user-content-inject-all-frames
+                       :webkit-user-content-inject-top-frame))
+           (inject-time (if (eq :document-start (nyxt/user-script-mode:run-at script))
+                            :webkit-user-script-inject-at-document-start
+                            :webkit-user-script-inject-at-document-end))
+           (allow-list (list-of-string-to-foreign
+                        (or (nyxt/user-script-mode:include script)
+                            '("http://*/*" "https://*/*"))))
+           (block-list (list-of-string-to-foreign
+                        (nyxt/user-script-mode:exclude script)))
+           (user-script (if (nyxt/user-script-mode:world-name script)
+                            (webkit:webkit-user-script-new-for-world
+                             code frames inject-time
+                             (nyxt/user-script-mode:world-name script) allow-list block-list)
+                            (webkit:webkit-user-script-new
+                             code frames inject-time allow-list block-list))))
+      (setf (gtk-object script) user-script)
+      (webkit:webkit-user-content-manager-add-script
+       content-manager user-script)
+      script)
+    (echo-warning "User script ~a is empty." script)))
+
+(define-ffi-method ffi-buffer-remove-user-script ((buffer gtk-buffer) (script gtk-user-script))
   (let ((content-manager
           (webkit:webkit-web-view-get-user-content-manager
            (gtk-object buffer))))
-    (when script
+    (when (and script (gtk-object script))
       (webkit:webkit-user-content-manager-remove-script
-       content-manager script))))
+       content-manager (gtk-object script)))))
 
-(define-ffi-method ffi-buffer-enable-javascript ((buffer gtk-buffer) value)
-  (setf (webkit:webkit-settings-enable-javascript
-         (webkit:webkit-web-view-get-settings (gtk-object buffer)))
-        value))
+(defmacro define-ffi-settings-accessor (setting-name webkit-setting)
+  (let ((full-name (intern (format nil "FFI-BUFFER-~a" setting-name))))
+    (symbol-function full-name)
+    `(progn
+       (define-ffi-method ,full-name ((buffer gtk-buffer))
+         (,webkit-setting
+          (webkit:webkit-web-view-get-settings (gtk-object buffer))))
+       (define-ffi-method (setf ,full-name) (value (buffer gtk-buffer))
+         (setf (,webkit-setting
+                (webkit:webkit-web-view-get-settings (gtk-object buffer)))
+               value)))))
 
-(define-ffi-method ffi-buffer-enable-javascript-markup ((buffer gtk-buffer) value)
-  (setf (webkit:webkit-settings-enable-javascript-markup
-         (webkit:webkit-web-view-get-settings (gtk-object buffer)))
-        value))
-
-(define-ffi-method ffi-buffer-enable-smooth-scrolling ((buffer gtk-buffer) value)
-  (setf (webkit:webkit-settings-enable-smooth-scrolling
-         (webkit:webkit-web-view-get-settings (gtk-object buffer)))
-        value))
-
+(define-ffi-settings-accessor javascript-enabled-p webkit:webkit-settings-enable-javascript)
+(define-ffi-settings-accessor javascript-markup-enabled-p webkit:webkit-settings-enable-javascript-markup)
+(define-ffi-settings-accessor smooth-scrolling-enabled-p webkit:webkit-settings-enable-smooth-scrolling)
 #+webkit2-media
-(define-ffi-method ffi-buffer-enable-media ((buffer gtk-buffer) value)
-  (setf (webkit:webkit-settings-enable-media
-         (webkit:webkit-web-view-get-settings (gtk-object buffer)))
-        value))
-
-(define-ffi-method ffi-buffer-auto-load-image ((buffer gtk-buffer) value)
-  (setf (webkit:webkit-settings-auto-load-images
-         (webkit:webkit-web-view-get-settings (gtk-object buffer)))
-        value))
+(define-ffi-settings-accessor media-enabled-p webkit:webkit-settings-enable-media)
+(define-ffi-settings-accessor webgl-enabled-p webkit:webkit-settings-enable-webgl)
+(define-ffi-settings-accessor auto-load-image-enabled-p webkit:webkit-settings-auto-load-images)
 
 #+webkit2-mute
-(defmethod ffi-buffer-enable-sound ((buffer gtk-buffer) value)
+(defmethod ffi-buffer-sound-enabled-p ((buffer gtk-buffer))
+  (not (webkit:webkit-web-view-get-is-muted (gtk-object buffer))))
+#+webkit2-mute
+(defmethod (setf ffi-buffer-sound-enabled-p) (value (buffer gtk-buffer))
   (nyxt/web-extensions::tabs-on-updated
    buffer (alex:alist-hash-table `(("audible" . ,value))))
   (webkit:webkit-web-view-set-is-muted (gtk-object buffer) (not value)))
 
-(defmethod ffi-buffer-download ((buffer gtk-buffer) url)
-  (let* ((webkit-download (webkit:webkit-web-view-download-uri (gtk-object buffer) url))
-         (download (make-instance 'user-download
-                                  :url url
-                                  :gtk-object webkit-download)))
-    (hooks:run-hook (before-download-hook *browser*) url)
-    (setf (cancel-function download)
+(defun wrap-download (webkit-download)
+  (sera:lret ((download (make-instance 'nyxt/download-mode:download
+                                       :url (webkit:webkit-uri-request-uri
+                                             (webkit:webkit-download-get-request webkit-download))
+                                       :gtk-object webkit-download)))
+    (setf (nyxt/download-mode::cancel-function download)
           #'(lambda ()
-              (setf (status download) :canceled)
+              (setf (nyxt/download-mode:status download) :canceled)
               (webkit:webkit-download-cancel webkit-download)))
     (push download (downloads *browser*))
     (connect-signal download "received-data" nil (webkit-download data-length)
       (declare (ignore data-length))
-      (setf (bytes-downloaded download)
+      (setf (nyxt/download-mode:bytes-downloaded download)
             (webkit:webkit-download-get-received-data-length webkit-download))
-      (setf (completion-percentage download)
+      (setf (nyxt/download-mode:completion-percentage download)
             (* 100 (webkit:webkit-download-estimated-progress webkit-download))))
     (connect-signal download "decide-destination" nil (webkit-download suggested-file-name)
-      (alex:when-let* ((download-dir (download-directory buffer))
-                       (download-directory (nfiles:expand download-dir))
-                       (native-download-directory (unless (nfiles:nil-pathname-p download-directory)
+      (alex:when-let* ((download-dir (or (ignore-errors
+                                          (download-directory
+                                           (find (webkit:webkit-download-get-web-view webkit-download)
+                                                 (buffer-list) :key #'gtk-object)))
+                                         (make-instance 'download-directory)))
+                       (download-directory (files:expand download-dir))
+                       (native-download-directory (unless (files:nil-pathname-p download-directory)
                                                     (uiop:native-namestring download-directory)))
                        (path (str:concat native-download-directory suggested-file-name))
                        (unique-path (download-manager::ensure-unique-file path))
@@ -1674,83 +1789,85 @@ local anyways, and it's better to refresh it if a load was queried."
         (webkit:webkit-download-set-destination webkit-download file-path)))
     (connect-signal download "created-destination" nil (webkit-download destination)
       (declare (ignore destination))
-      (setf (destination-path download)
+      (setf (nyxt/download-mode:destination-path download)
             (uiop:ensure-pathname
              (quri:uri-path (quri:uri
                              (webkit:webkit-download-destination webkit-download)))))
       ;; TODO: We should not have to update the buffer, button actions should be
       ;; dynamic.  Bug in `user-interface'?
-      (reload-buffers (list (find-if
-                             (lambda (b)
-                               (and (string= (title b) "*Downloads*")
-                                    (find-mode b 'download-mode)))
-                             (buffer-list)))))
+      (nyxt/download-mode:list-downloads))
     (connect-signal download "failed" nil (webkit-download error)
       (declare (ignore error))
-      (unless (eq (status download) :canceled)
-        (setf (status download) :failed))
+      (unless (eq (nyxt/download-mode:status download) :canceled)
+        (setf (nyxt/download-mode:status download) :failed))
       (echo "Download failed for ~s."
             (webkit:webkit-uri-request-uri
              (webkit:webkit-download-get-request webkit-download))))
     (connect-signal download "finished" nil (webkit-download)
       (declare (ignore webkit-download))
-      (unless (member (status download) '(:canceled :failed))
-        (setf (status download) :finished)
+      (unless (member (nyxt/download-mode:status download) '(:canceled :failed))
+        (setf (nyxt/download-mode:status download) :finished)
         ;; If download was too small, it may not have been updated.
-        (setf (completion-percentage download) 100)
-        (hooks:run-hook (after-download-hook *browser*) download)))
+        (setf (nyxt/download-mode:completion-percentage download) 100)
+        (hooks:run-hook (after-download-hook *browser*) download)))))
+
+(defmethod ffi-buffer-download ((buffer gtk-buffer) url)
+  (let* ((webkit-download (webkit:webkit-web-view-download-uri (gtk-object buffer) url))
+         (download (make-instance 'nyxt/download-mode:download
+                                  :url url
+                                  :gtk-object webkit-download)))
+    (hooks:run-hook (before-download-hook *browser*) url)
+    (wrap-download webkit-download)
     download))
 
-(define-ffi-method ffi-buffer-user-agent ((buffer gtk-buffer) &optional value)
+(define-ffi-method ffi-buffer-user-agent ((buffer gtk-buffer))
   (alex:when-let ((settings (webkit:webkit-web-view-get-settings (gtk-object buffer))))
-    (if value
-        (setf (webkit:webkit-settings-user-agent settings) value)
-        (webkit:webkit-settings-user-agent settings))))
+    (webkit:webkit-settings-user-agent settings)))
 
-(define-ffi-method ffi-buffer-webgl-enabled-p ((buffer gtk-buffer))
-  (webkit:webkit-settings-enable-webgl
-   (webkit:webkit-web-view-get-settings (gtk-object buffer))))
+(define-ffi-method (setf ffi-buffer-user-agent) (value (buffer gtk-buffer))
+  (alex:when-let ((settings (webkit:webkit-web-view-get-settings (gtk-object buffer))))
+    (setf (webkit:webkit-settings-user-agent settings) value)))
 
-(define-ffi-method ffi-buffer-enable-webgl ((buffer gtk-buffer) value)
-  (setf (webkit:webkit-settings-enable-webgl
-         (webkit:webkit-web-view-get-settings (gtk-object buffer)))
-        value))
-
-(define-ffi-method ffi-buffer-set-proxy ((buffer gtk-buffer)
-                                         &optional (proxy-url (quri:uri ""))
-                                         (ignore-hosts (list nil)))
-  "Redirect network connections of BUFFER to proxy server PROXY-URL.
-Hosts in IGNORE-HOSTS (a list of strings) ignore the proxy.
-For the user-level interface, see `proxy-mode'.
-
-Note: WebKit supports three proxy 'modes': default (the system proxy),
-custom (the specified proxy) and none."
-  (declare (type quri:uri proxy-url))
-  (setf (gtk-proxy-url buffer) proxy-url)
-  (setf (proxy-ignored-hosts buffer) ignore-hosts)
-  (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
-         (settings (cffi:null-pointer))
-         (mode :webkit-network-proxy-mode-no-proxy)
-         (ignore-hosts (cffi:foreign-alloc :string
-                                           :initial-contents ignore-hosts
-                                           :null-terminated-p t)))
-    (unless (url-empty-p proxy-url)
-      (setf mode :webkit-network-proxy-mode-custom)
-      (setf settings
-            (webkit:webkit-network-proxy-settings-new
-             (render-url proxy-url)
-             ignore-hosts)))
-    (cffi:foreign-free ignore-hosts)
-    (webkit:webkit-web-context-set-network-proxy-settings
-     context mode settings)))
-
-(define-ffi-method ffi-buffer-get-proxy ((buffer gtk-buffer))
+(define-ffi-method ffi-buffer-proxy ((buffer gtk-buffer))
   "Return the proxy URL and list of ignored hosts (a list of strings) as second value."
   (the (values (or quri:uri null) list-of-strings)
        (values (gtk-proxy-url buffer)
                (proxy-ignored-hosts buffer))))
+(define-ffi-method (setf ffi-buffer-proxy) (proxy-specifier
+                                            (buffer gtk-buffer))
+  "Redirect network connections of BUFFER to proxy server PROXY-URL.
+Hosts in IGNORE-HOSTS (a list of strings) ignore the proxy.
+For the user-level interface, see `proxy-mode'.
 
-(define-ffi-method ffi-buffer-set-zoom-level ((buffer gtk-buffer) value)
+PROXY-SPECIFIER is either a PROXY-URL or a pair of (PROXY-URL IGNORE-HOSTS).
+
+Note: WebKit supports three proxy 'modes': default (the system proxy),
+custom (the specified proxy) and none."
+  (let ((proxy-url (first (alex:ensure-list proxy-specifier)))
+        (ignore-hosts (or (second (alex:ensure-list proxy-specifier))
+                          (list nil))))
+    (declare (type quri:uri proxy-url))
+    (setf (gtk-proxy-url buffer) proxy-url)
+    (setf (proxy-ignored-hosts buffer) ignore-hosts)
+    (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
+           (settings (cffi:null-pointer))
+           (mode :webkit-network-proxy-mode-no-proxy)
+           (ignore-hosts (cffi:foreign-alloc :string
+                                             :initial-contents ignore-hosts
+                                             :null-terminated-p t)))
+      (unless (url-empty-p proxy-url)
+        (setf mode :webkit-network-proxy-mode-custom)
+        (setf settings
+              (webkit:webkit-network-proxy-settings-new
+               (render-url proxy-url)
+               ignore-hosts)))
+      (cffi:foreign-free ignore-hosts)
+      (webkit:webkit-web-context-set-network-proxy-settings
+       context mode settings))))
+
+(define-ffi-method ffi-buffer-zoom-level ((buffer gtk-buffer))
+  (webkit:webkit-web-view-zoom-level (gtk-object buffer)))
+(define-ffi-method (setf ffi-buffer-zoom-level) (value (buffer gtk-buffer))
   (when (and (floatp value) (>= value 0))
     (setf (webkit:webkit-web-view-zoom-level (gtk-object buffer)) value)))
 
@@ -1799,11 +1916,41 @@ custom (the specified proxy) and none."
 
 ;; This method does not need a renderer, so no need to use `define-ffi-method'
 ;; which is prone to race conditions.
-(defmethod ffi-display-url (text)
+(defmethod ffi-display-url ((browser gtk-browser) text)
+  (declare (ignore browser))
   (webkit:webkit-uri-for-display text))
 
-(-> set-cookie-policy (webkit:webkit-cookie-manager cookie-policy) *)
-(defun set-cookie-policy (cookie-manager cookie-policy)
+(defmethod ffi-buffer-cookie-policy ((buffer gtk-buffer))
+  (if (renderer-thread-p)
+      (progn
+        (log:warn "Querying cookie policy in WebKitGTK is only supported from a non-renderer thread.")
+        nil)
+      (let ((result-channel (make-channel 1)))
+        (run-thread "WebKitGTK cookie-policy"
+          (within-gtk-thread
+            (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
+                   (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
+              ;; TODO: Update upstream to export and fix `with-g-async-ready-callback'.
+              (webkit::with-g-async-ready-callback (callback
+                                                     (declare (ignorable webkit::user-data webkit::source-object))
+                                                     (calispel:! result-channel
+                                                                 (webkit:webkit-cookie-manager-get-accept-policy-finish
+                                                                  cookie-manager
+                                                                  webkit::result)))
+                (webkit:webkit-cookie-manager-get-accept-policy
+                 cookie-manager
+                 (cffi:null-pointer)
+                 callback
+                 (cffi:null-pointer))))))
+        (calispel:? result-channel))))
+(defmethod (setf ffi-buffer-cookie-policy) (cookie-policy (buffer gtk-buffer))
+  "VALUE is one of`:always', `:never' or `:no-third-party'."
+  (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
+         (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
+    (setf (ffi-buffer-cookie-policy cookie-manager) cookie-policy)
+    buffer))
+(defmethod (setf ffi-buffer-cookie-policy) (cookie-policy (cookie-manager webkit:webkit-cookie-manager))
+  "VALUE is one of`:always', `:never' or `:no-third-party'."
   (webkit:webkit-cookie-manager-set-accept-policy
    cookie-manager
    (match cookie-policy
@@ -1811,17 +1958,13 @@ custom (the specified proxy) and none."
      (:never :webkit-cookie-policy-accept-never)
      (:no-third-party :webkit-cookie-policy-accept-no-third-party))))
 
-(define-ffi-method ffi-buffer-cookie-policy ((buffer gtk-buffer) value)
-  "VALUE is one of`:always', `:never' or `:no-third-party'."
-  (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
-         (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
-    (set-cookie-policy cookie-manager value)
-    buffer))
-
-(defmethod ffi-set-preferred-languages ((buffer gtk-buffer)
-                                        language-list)
-  "Set the list of preferred languages in the HTTP header \"Accept-Language:\".
-LANGUAGE is a list of strings like '(\"en_US\" \"fr_FR\")."
+(defmethod ffi-preferred-languages ((buffer gtk-buffer))
+  "Not supported by WebKitGTK.
+Only the setf method is."
+  nil)
+(defmethod (setf ffi-preferred-languages) (language-list
+                                           (buffer gtk-buffer))
+  "LANGUAGE-LIST is a list of strings like '(\"en_US\" \"fr_FR\")."
   (let ((langs (cffi:foreign-alloc :string
                                    :initial-contents language-list
                                    :null-terminated-p t)))
@@ -1875,17 +2018,12 @@ As a second value, return the current buffer index starting from 0."
 (define-ffi-method ffi-focused-p ((buffer gtk-buffer))
   (gtk:gtk-widget-is-focus (gtk-object buffer)))
 
-;; Working with clipboard
-(define-ffi-method (setf clipboard-text) (text (gtk-browser gtk-browser))
-  (gtk:gtk-clipboard-set-text
-   (gtk:gtk-clipboard-get "CLIPBOARD")
-   text))
-
-(define-ffi-method clipboard-text ((gtk-browser gtk-browser))
-  (gtk:gtk-clipboard-wait-for-text
-   (gtk:gtk-clipboard-get "CLIPBOARD")))
-
-(define-ffi-method ffi-set-tracking-prevention ((buffer gtk-buffer) value)
+(define-ffi-method ffi-tracking-prevention ((buffer gtk-buffer))
+  #+webkit2-tracking
+  (webkit:webkit-website-data-manager-get-itp-enabled
+   (webkit:webkit-web-context-website-data-manager
+    (webkit:webkit-web-view-web-context (gtk-object buffer)))))
+(define-ffi-method (setf ffi-tracking-prevention) (value (buffer gtk-buffer))
   #+webkit2-tracking
   (webkit:webkit-website-data-manager-set-itp-enabled
    (webkit:webkit-web-context-website-data-manager
@@ -1958,7 +2096,7 @@ As a second value, return the current buffer index starting from 0."
                                           &key title modes url load-url-p
                                           context-name)
   "Create a new buffer with a given context.
-See the `context-name' documention.
+See the `context-name' documentation.
 See `make-buffer' for a description of the other arguments."
   (declare (ignorable title modes url load-url-p))
   (setf (getf args :context-name)
@@ -1967,5 +2105,5 @@ See `make-buffer' for a description of the other arguments."
              :prompt "Choose context"
              :sources (list (make-instance 'prompter:raw-source :name "New context")
                             'context-source))))
-  (apply #'make-buffer (append (list :buffer-class 'user-buffer)
+  (apply #'make-buffer (append (list :buffer-class 'buffer)
                                args)))

@@ -64,7 +64,7 @@ returns. Should return a list of strings.
 Example (Tor-proxied completion function for Wikipedia):
 \(make-search-completion-function
  :base-url \"https://en.wikipedia.org/w/api.php?action=opensearch&format=json&search=~a\"
- :processing-function (alex:compose #'second #'decode-json)
+ :processing-function (compose #'second #'decode-json)
  :request-args '(:proxy \"socks5://localhost:9050\"))"
   #'(lambda (input)
       (funcall processing-function
@@ -72,7 +72,8 @@ Example (Tor-proxied completion function for Wikipedia):
                       (cons (format nil base-url (quri:url-encode input))
                             request-args)))))
 
-(defmethod prompter:object-attributes ((engine search-engine))
+(defmethod prompter:object-attributes ((engine search-engine) (source prompter:source))
+  (declare (ignore source))
   `(("Shortcut" ,(shortcut engine))
     ("Search URL" ,(search-url engine))))
 
@@ -80,7 +81,7 @@ Example (Tor-proxied completion function for Wikipedia):
   "Return the `search-engines' from the current buffer."
   (let* ((current-buffer (current-buffer))
          (buffer (or current-buffer
-                     (make-instance 'user-buffer))))
+                     (make-instance 'context-buffer))))
     (unwind-protect
          (search-engines buffer)
       (unless current-buffer
@@ -103,7 +104,7 @@ Example (Tor-proxied completion function for Wikipedia):
   "Search selected text using the queried search engine."
   (let* ((selection (%copy))
          (engine (first (prompt
-                         :prompt "Search engine:"
+                         :prompt "Search engine"
                          :sources (make-instance 'search-engine-source))))
          (target-buffer (if query-in-new-buffer-p
                             (make-buffer-focus)

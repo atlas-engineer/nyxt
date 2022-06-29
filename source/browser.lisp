@@ -42,7 +42,12 @@ Without handler, return ARG.  This is an acceptable `combination' for
                  result)))
     (compose-handlers (mapcar #'hooks:fn (hooks:handlers hook)) arg)))
 
-(define-class browser ()
+(export-always 'renderer-browser)
+(defclass renderer-browser ()
+  ()
+  (:metaclass interface-class))
+
+(define-class browser (renderer-browser)
   ((remote-execution-p
     nil
     :type boolean
@@ -50,6 +55,14 @@ Without handler, return ARG.  This is an acceptable `combination' for
 understand the risks before enabling this: a privileged user with access to your
 system can then take control of the browser and execute arbitrary code under
 your user profile.")
+   (exit-code
+    0
+    :type alex:non-negative-integer
+    :export nil
+    :accessor nil
+    :documentation "The exit code return to the operating system.
+0 means success.
+Non-zero means failure.")
    (socket-thread
     nil
     :type t
@@ -74,7 +87,7 @@ Most recent messages are first.")
     (make-ring)
     :documentation "The default history of all prompt buffer entries.
 This history is used if no history is specified for a given prompt buffer.")
-   (default-new-buffer-url (quri:uri (nyxt-url 'help))
+   (default-new-buffer-url (quri:uri (nyxt-url 'new))
                            :type url-designator
                            :documentation "The URL set to a new blank buffer opened by Nyxt.")
    (set-url-history
@@ -90,8 +103,9 @@ This can be used to resume former buffers.")
     :export nil
     :documentation "A ring that keeps track of deleted buffers.")
    (windows
-    (make-hash-table :test #'equal)
-    :export nil)
+    (make-hash-table)
+    :export nil
+    :documentation "Table of all windows, indexed by their `id'.")
    (last-active-window
     nil
     :type (or window null)
@@ -101,8 +115,8 @@ useful when no Nyxt window is focused and we still want `ffi-window-active' to
 return something.
 See `current-window' for the user-facing function.")
    (buffers
-    :initform (make-hash-table :test #'equal)
-    :documentation "To manipulate the list of buffers,
+    :initform (make-hash-table)
+    :documentation "Table of all live buffers, indexed by their `id'.
 see `buffer-list', `buffers-get', `buffers-set' and `buffers-delete'.")
    (startup-error-reporter-function
     nil
@@ -163,14 +177,14 @@ The handlers take the window as argument.")
     :type hook-buffer
     :documentation "Hook run after `buffer' initialization and before the URL is
 loaded.
-It is run before `initialize-modes' so that the default mode list can still be
+It is run before mode initialization so that the default mode list can still be
 altered from the hooks.
 The handlers take the buffer as argument.")
    (buffer-before-make-hook
     (make-instance 'hook-buffer)
     :type hook-buffer
     :documentation "Hook run at the beginning of `buffer' initialization.
-The buffer web view is not allocated, so it's not possible to run any
+The buffer web view is not allocated, so it's not possible to run arbitrary
 parenscript from this hook.
 See `buffer-make-hook' and `buffer-after-make-hook' for other hook options.
 The handlers take the buffer as argument.")
@@ -185,14 +199,14 @@ The handlers take the buffer as argument.")
    (prompt-buffer-make-hook
     (make-instance 'hook-prompt-buffer)
     :type hook-prompt-buffer
-    :documentation "Hook run after the `prompt-buffer'
-class is instantiated and before initializing the prompt-buffer modes.
-The handlers take the prompt-buffer as argument.")
+    :documentation "Hook run after the `prompt-buffer' class is instantiated and
+before initializing the `prompt-buffer' modes.
+The handlers take the `prompt-buffer' as argument.")
    (prompt-buffer-ready-hook
     (make-instance 'hook-prompt-buffer)
     :type hook-prompt-buffer
-    :documentation "A hook one can attach to waiting for the prompt buffer to be available.
-The handlers take the prompt-buffer as argument.")
+    :documentation "Hook run while waiting for the prompt buffer to be available.
+The handlers take the `prompt-buffer' as argument.")
    (before-download-hook
     (make-instance 'hook-download)
     :type hook-download
@@ -203,21 +217,6 @@ The handlers take the URL as argument.")
     :type hook-download
     :documentation "Hook run after a download has completed.
 The handlers take the `download-manager:download' class instance as argument.")
-   (autofills
-    (list (make-autofill :name "Name" :fill "My Name")
-          (make-autofill :name "Hello Printer"
-                         :fill (lambda () (format nil "hello!"))))
-    :documentation "To autofill run the command `autofill'.
-Use this slot to customize the autofill values available.
-
-The fill can be a string value or a function.  The latter allows you to provide
-content dynamic to the context.")
-
-   (spell-check-language
-    "en_US"
-    :documentation "Spell check language used by Nyxt. For
-a list of more languages available, please view the documentation for
-cl-enchant (broker-list-dicts).")
    (external-editor-program
     (or (uiop:getenv "VISUAL")
         (uiop:getenv "EDITOR"))
@@ -236,9 +235,13 @@ the renderer, and lays the foundations to track and manipulate buffers and
 windows.
 
 A typical Nyxt session encompasses a single instance of this class, but nothing
-prevents otherwise."))
+prevents otherwise.")
+  (:metaclass user-class))
 
-(define-user-class browser)
+(defmethod theme ((ignored (eql nil)))
+  "Fallback theme in case there `*browser*' is NIL."
+  (declare (ignore ignored))
+  (make-instance 'theme:theme))
 
 (defmethod external-editor-program ((browser browser))
   (alex:ensure-list (slot-value browser 'external-editor-program)))
@@ -246,34 +249,6 @@ prevents otherwise."))
 (defmethod get-containing-window-for-buffer ((buffer buffer) (browser browser))
   "Get the window containing a buffer."
   (find buffer (alex:hash-table-values (windows browser)) :key #'active-buffer))
-
-(defun restart-with-message (&optional condition)
-  (flet ((set-error-message (message full-message)
-           (let ((*package* (find-package :cl))) ; Switch package to use non-nicknamed packages.
-             (write-to-string
-              `(hooks:add-hook
-                nyxt:*after-init-hook*
-                (make-instance
-                 'hooks:handler
-                 :fn (lambda ()
-                       (setf (nyxt::startup-error-reporter-function *browser*)
-                             (lambda ()
-                               (nyxt:echo-warning "Restarted without init file due to error: ~a." ,message)
-                               (nyxt::error-in-new-window "*Initialization error*" ,full-message))))
-                 :name 'error-reporter))))))
-    (let* ((message (princ-to-string condition))
-           (full-message (format nil "Startup error: ~a.~%~&Restarted Nyxt without init file ~s."
-                                 message
-                                 (nfiles:expand *init-file*)))
-           (new-command-line (append (uiop:raw-command-line-arguments)
-                                     `("--no-init"
-                                       "--eval"
-                                       ,(set-error-message message full-message)))))
-      (log:warn "Restarting with ~s."
-                (append (uiop:raw-command-line-arguments)
-                        '("--no-init")))
-      (uiop:launch-program new-command-line)
-      (quit))))
 
 (defmethod finalize ((browser browser) urls startup-timestamp)
   "Run `*after-init-hook*' then BROWSER's `startup'."
@@ -294,24 +269,17 @@ prevents otherwise."))
    browser
    (lambda ()
      (run-thread "finalization"
-       ;; Restart on init error, in case `*init-file*' broke the state.
+       ;; Restart on init error, in case `*config-file*' broke the state.
        ;; We only `handler-case' when there is an init file, this way we avoid
        ;; looping indefinitely.
-       (if (or (getf *options* :no-init)
-               (not (uiop:file-exists-p (nfiles:expand *init-file*))))
-           (startup browser urls)
-           (catch 'startup-error
-             (handler-bind ((error (lambda (c)
-                                     (log:error "Startup failed (probably due to a mistake in ~s):~&~a"
-                                                (nfiles:expand *init-file*) c)
-                                     (throw 'startup-error
-                                       (if *run-from-repl-p*
-                                           (progn
-                                             (quit)
-                                             (reset-all-user-classes)
-                                             (apply #'start (append *options* (list :urls urls :no-init t))))
-                                           (restart-with-message c))))))
-               (startup browser urls)))))))
+       (let ((restart-on-error? (not (or (getf *options* :no-config)
+                                         (getf *options* :no-init) ; TODO: Deprecated, remove in 4.0.
+                                         (not (uiop:file-exists-p (files:expand *config-file*)))))))
+         ;; Set `*restart-on-error*' globally instead of let-binding it to
+         ;; make it visible from all threads.
+         (unwind-protect (progn (setf *restart-on-error* restart-on-error?)
+                                (startup browser urls))
+           (setf *restart-on-error* nil))))))
   ;; Set `init-time' at the end of finalize to take the complete startup time
   ;; into account.
   (setf (slot-value *browser* 'init-time)
@@ -323,7 +291,7 @@ prevents otherwise."))
              "Warning: We clear the previous owners here.
 After this, buffers from a previous session are permanently lost, they cannot be
 restored."
-             (nfiles:with-file-content (history (history-file buffer))
+             (files:with-file-content (history (history-file buffer))
                (when history
                  (clrhash (htree:owners history)))))
            (restore-session ()
@@ -345,6 +313,13 @@ restored."
                     (clear-history-owners buffer))))))
            (load-start-urls (urls)
              (open-urls (or urls (list (default-new-buffer-url browser))))))
+    ;; Remove existing windows.  This may happen if we invoked this function,
+    ;; possibly with a different renderer.  To avoid mixing windows with
+    ;; different renderers.  REVIEW: A better option would be to have
+    ;; `update-instance-for-redefined-class' call `customize-instance', but this
+    ;; is tricky to get right, in particular `ffi-buffer-make' seems to hang on
+    ;; `web-buffer's.
+    (mapcar #'window-delete (window-list))
     (window-make browser)
     ;; Restore session before opening command line URLs, otherwise it will
     ;; reset the session with the new URLs.
@@ -358,76 +333,15 @@ restored."
   (when (null browser)
     (error "There is no current *browser*. Is Nyxt started?")))
 
-
-(defun download-watch (download-render download-object)
-  "Update the *Downloads* buffer.
-This function is meant to be run in the background. There is a
-potential thread starvation issue if one thread consumes all
-messages. If in practice this becomes a problem, we should poll on
-each thread until the completion percentage is 100 OR a timeout is
-reached (during which no new progress has been made)."
-  (when download-manager:*notifications*
-    (loop for d = (calispel:? download-manager:*notifications*)
-          while d
-          when (download-manager:finished-p d)
-            do (hooks:run-hook (after-download-hook *browser*) download-render)
-          do (sleep 0.1) ; avoid excessive polling
-             (setf (bytes-downloaded download-render)
-                   (download-manager:bytes-fetched download-object))
-             (setf (completion-percentage download-render)
-                   (* 100 (/ (download-manager:bytes-fetched download-object)
-                             (max 1 (download-manager:bytes-total download-object))))))))
-
-;; TODO: To download any URL at any moment and not just in resource-query, we
-;; need to query the cookies for URL.  Thus we need to add an IPC endpoint to
-;; query cookies.
-(export-always 'download)
-(defmethod download ((buffer buffer) url &key cookies (proxy-url :auto))
-  "Download URL.
-When PROXY-URL is :AUTO (the default), the proxy address is guessed from the
-current buffer.
-
-Return the download object matching the download."
-  (hooks:run-hook (before-download-hook *browser*) url) ; TODO: Set URL to download-hook result?
-  (prog1
-      (match (download-engine buffer)
-        (:lisp
-         (alex:when-let* ((path (download-directory buffer))
-                          (download-dir (nfiles:expand path)))
-           (when (eq proxy-url :auto)
-             (setf proxy-url (proxy-url buffer :downloads-only t)))
-           (let* ((download nil))
-             (with-protect ("Download error: ~a" :condition)
-               (nfiles:with-file-content (downloads path)
-                 (setf download
-                       (download-manager:resolve url
-                                                 :directory download-dir
-                                                 :cookies cookies
-                                                 :proxy proxy-url))
-                 (push download downloads)
-                 ;; Add a watcher / renderer for monitoring download
-                 (let ((download-render (make-instance 'user-download :url (render-url url))))
-                   (setf (destination-path download-render)
-                         (uiop:ensure-pathname
-                          (download-manager:filename download)))
-                   (push download-render (downloads *browser*))
-                   (run-thread
-                     "download watcher"
-                     (download-watch download-render download)))
-                 download)))))
-        (:renderer
-         (ffi-buffer-download buffer (render-url url))))
-    (list-downloads)))
-
-(defmethod get-unique-identifier ((browser browser))
-  (symbol-name (gensym "")))
+(defun new-id ()
+  (parse-integer (symbol-name (gensym ""))))
 
 (-> set-window-title (&optional window buffer) *)
 (export-always 'set-window-title)
 (defun set-window-title (&optional (window (current-window)) (buffer (current-buffer)))
   "Set current window title to the return value of (titler window). "
   (declare (ignore buffer)) ; TODO: BUFFER is kept for backward compatibility.  Remove with 3.0.
-  (ffi-window-set-title window (funcall (titler window) window)))
+  (setf (ffi-window-title window) (funcall (titler window) window)))
 
 (-> window-default-title (window) string)
 (export-always 'window-default-title)
@@ -491,56 +405,33 @@ If none is found, fall back to `scheme:cua'."
     nil
     :documentation "Whether the request takes place in a
 new window.")
+   (http-method
+    nil
+    :documentation "The HTTP method (GET, POST and friends) of the request.")
+   (toplevel-p
+    nil
+    :documentation "Whether the request happens in a toplevel frame.")
+   (resource-p
+    nil
+    :documentation "Whether the request is a resource request.
+Resource requests cannot be redirected or blocked.")
+   (mime-type
+    nil
+    :documentation "The MIME type of the resource at the other end of the request.")
    (known-type-p
     nil
     :documentation "Whether the request is for content with
 supported MIME-type, such as a picture that can be displayed in the web
 view.")
+   (file-name
+    nil
+    :documentation "The name this file will be saved on disk with, if downloaded.")
    (keys
     '()
     :documentation "The key sequence that generated the request."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
-
-(defun preprocess-request (request-data)
-  "Deal with REQUEST-DATA with the following rules:
-- If a binding matches KEYS in `request-resource-scheme', run the bound function.
-- If `new-window-p' is non-nil, load in new buffer.
-- If `known-type-p' is nil, download the file.
-- Otherwise let the renderer load the request."
-  (with-slots (url buffer keys) request-data
-    (let* ((keymap (scheme-keymap buffer (request-resource-scheme buffer)))
-           (bound-function (the (or symbol keymap:keymap null)
-                                (keymap:lookup-key keys keymap))))
-      (declare (type quri:uri url))
-      (cond
-        ((and (internal-buffer-p buffer) (not (internal-url-p url)))
-         (log:debug "Load URL from internal buffer in new buffer: ~a" (render-url url))
-         (make-buffer-focus :url url)
-         nil)
-        (bound-function
-         (log:debug "Resource request key sequence ~a" (keyspecs-with-optional-keycode keys))
-         (funcall bound-function :url url :buffer buffer)
-         nil)
-        ((new-window-p request-data)
-         (log:debug "Load URL in new buffer: ~a" (render-url url))
-         (open-urls (list url))
-         nil)
-        ((not (known-type-p request-data))
-         (log:debug "Buffer ~a initiated download of ~s." (id buffer) (render-url url))
-         (download buffer url
-                   :proxy-url (proxy-url buffer :downloads-only t)
-                   :cookies "")
-         ;; TODO: WebKitGTK emits "load-failed" if we call
-         ;; webkit-policy-decision-ignore on a download requestion.
-         ;; To work around this, we set the `status' to a value other than
-         ;; `:loading'.
-         (setf (slot-value buffer 'status) :finished)
-         nil)
-        (t
-         (log:debug "Forwarding ~a for buffer ~s" (render-url url) buffer)
-         request-data)))))
 
 (export-always 'url-dispatching-handler)
 (-> url-dispatching-handler
@@ -566,26 +457,26 @@ The following example does a few things:
 - Open magnet links with Transmission.
 - Open local files (file:// URIs) with Emacs.
 
-\(define-configuration buffer
-    ((request-resource-hook (reduce #'hooks:add-hook
-                                    (list (url-dispatching-handler
-                                           'doi-link-dispatcher
-                                           (match-scheme \"doi\")
-                                           (lambda (url)
-                                             (quri:uri (format nil \"https://doi.org/~a\"
-                                                               (quri:uri-path url)))))
-                                          (url-dispatching-handler
-                                           'transmission-magnet-links
-                                           (match-scheme \"magnet\")
-                                           \"transmission-remote --add ~a\")
-                                          (url-dispatching-handler
-                                           'emacs-file
-                                           (match-scheme \"file\")
-                                           (lambda (url)
-                                             (uiop:launch-program
-                                              `(\"emacs\" ,(quri:uri-path url)))
-                                             nil)))
-                                    :initial-value %slot-default%))))"
+\(defmethod configure-instance ((buffer buffer))
+  (reduce #'hooks:add-hook
+          (list (url-dispatching-handler
+                 'doi-link-dispatcher
+                 (match-scheme \"doi\")
+                 (lambda (url)
+                   (quri:uri (format nil \"https://doi.org/~a\"
+                                     (quri:uri-path url)))))
+                (url-dispatching-handler
+                 'transmission-magnet-links
+                 (match-scheme \"magnet\")
+                 \"transmission-remote --add ~a\")
+                (url-dispatching-handler
+                 'emacs-file
+                 (match-scheme \"file\")
+                 (lambda (url)
+                   (uiop:launch-program
+                    `(\"emacs\" ,(quri:uri-path url)))
+                   nil)))
+          :initial-value (request-resource-hook buffer)))"
   (make-instance
    'hooks:handler
    :fn (lambda (request-data)
@@ -640,7 +531,8 @@ sometimes yields the wrong result."
 
 (export-always 'set-current-buffer)
 (defun set-current-buffer (buffer &key (focus t))
-  "Set the active buffer for the active window."
+  "Set the active BUFFER for the active window.
+Return BUFFER."
   (unless (eq 'prompt-buffer (sera:class-name-of buffer))
     (if (current-window)
         (window-set-buffer (current-window) buffer :focus focus)
@@ -652,153 +544,62 @@ sometimes yields the wrong result."
   "Return the current prompt-buffer."
   (first (active-prompt-buffers (current-window))))
 
+(export-always 'focused-buffer)
+(defun focused-buffer (&optional (window (current-window)) )
+  "Return the currently focused buffer."
+  ;; TODO: Add message-buffer when we have the slot in `window'.
+  (find-if #'ffi-focused-p
+           (list (first (active-prompt-buffers window))
+                 (active-buffer window)
+                 (status-buffer window))))
+
 (defmethod write-output-to-log ((browser browser))
   "Set the *standard-output* and *error-output* to write to a log file."
   (let ((buffer (current-buffer)))
     (values
-     (sera:and-let* ((path (nfiles:expand (standard-output-file buffer))))
+     (sera:and-let* ((path (files:expand (standard-output-file buffer))))
        (setf *standard-output*
              (open path
                    :direction :output
                    :if-does-not-exist :create
                    :if-exists :append)))
-     (sera:and-let* ((path (nfiles:expand (error-output-file buffer))))
+     (sera:and-let* ((path (files:expand (error-output-file buffer))))
        (setf *error-output*
              (open path
                    :direction :output
                    :if-does-not-exist :create
                    :if-exists :append))))))
 
-(defmacro define-ffi-generic (name arguments &body options)
-  `(progn
-     (export-always ',name)
-     (defgeneric ,name (,@arguments)
-       ,@(if options
-             options
-             `((:method (,@arguments)
-                 (declare (ignore ,@(set-difference arguments lambda-list-keywords)))))))))
-
-(define-ffi-generic ffi-window-delete (window))
-(define-ffi-generic ffi-window-fullscreen (window))
-(define-ffi-generic ffi-window-unfullscreen (window))
-(define-ffi-generic ffi-buffer-url (buffer))
-(define-ffi-generic ffi-buffer-title (buffer))
-(define-ffi-generic ffi-window-make (browser)
-  (:method (browser)
-    (declare (ignore browser))
-    (make-instance 'user-window)))
-(define-ffi-generic ffi-window-to-foreground (window)
-  (:method (window)
-    (setf (slot-value *browser* 'last-active-window) window)))
-(define-ffi-generic ffi-window-set-title (window title))
-(define-ffi-generic ffi-window-active (browser))
-(define-ffi-generic ffi-window-set-buffer (window buffer &key focus))
-(define-ffi-generic ffi-window-add-panel-buffer (window buffer side))
-(define-ffi-generic ffi-window-delete-panel-buffer (window buffer))
-(define-ffi-generic ffi-window-set-panel-buffer-width (window buffer width))
-(define-ffi-generic ffi-window-set-prompt-buffer-height (window height))
-(define-ffi-generic ffi-window-set-status-buffer-height (window height))
-(define-ffi-generic ffi-window-set-message-buffer-height (window height))
-(define-ffi-generic ffi-window-get-status-buffer-height (window))
-(define-ffi-generic ffi-window-get-message-buffer-height (window))
-(define-ffi-generic ffi-window-get-prompt-buffer-height (window))
-(define-ffi-generic ffi-buffer-make (buffer))
-(define-ffi-generic ffi-buffer-delete (buffer))
-(define-ffi-generic ffi-buffer-load (buffer url))
-(define-ffi-generic ffi-buffer-evaluate-javascript (buffer javascript &optional world-name))
-(define-ffi-generic ffi-buffer-evaluate-javascript-async (buffer javascript &optional world-name))
-(define-ffi-generic ffi-buffer-add-user-style (buffer css &key
-                                                      world-name all-frames-p inject-as-author-p
-                                                      allow-list block-list))
-(define-ffi-generic ffi-buffer-remove-user-style (buffer style-sheet))
-(define-ffi-generic ffi-buffer-add-user-script (buffer javascript &key
-                                                       world-name all-frames-p at-document-start-p
-                                                       run-now-p allow-list block-list))
-(define-ffi-generic ffi-buffer-remove-user-script (buffer script))
-(define-ffi-generic ffi-buffer-enable-javascript (buffer value))
-(define-ffi-generic ffi-buffer-enable-javascript-markup (buffer value))
-(define-ffi-generic ffi-buffer-enable-smooth-scrolling (buffer value))
-(define-ffi-generic ffi-buffer-enable-media (buffer value))
-(define-ffi-generic ffi-buffer-webgl-enabled-p (buffer))
-(define-ffi-generic ffi-buffer-enable-webgl (buffer value))
-(define-ffi-generic ffi-buffer-auto-load-image (buffer value))
-(define-ffi-generic ffi-buffer-enable-sound (buffer value))
-(define-ffi-generic ffi-buffer-user-agent (buffer &optional value))
-(define-ffi-generic ffi-buffer-set-proxy (buffer &optional proxy-url ignore-hosts))
-(define-ffi-generic ffi-buffer-get-proxy (buffer))
-(define-ffi-generic ffi-buffer-download (buffer url))
-(define-ffi-generic ffi-buffer-set-zoom-level (buffer value)
-  (:method ((buffer buffer) value)
-    (pflet ((zoom ()
-                  (ps:let ((style (ps:chain document body style)))
-                    (setf (ps:@ style zoom)
-                          (ps:lisp value)))))
-      (with-current-buffer buffer
-        (zoom)))))
-(define-ffi-generic ffi-buffer-get-document (buffer)
-  (:method ((buffer buffer))
-    (pflet ((get-html (start end)
-                      (ps:chain document document-element |innerHTML| (slice (ps:lisp start)
-                                                                             (ps:lisp end))))
-            (get-html-length ()
-                             (ps:chain document document-element |innerHTML| length)))
-      (with-current-buffer buffer
-        (let ((slice-size 10000))
-          (reduce #'str:concat
-                  (loop for i from 0 to (truncate (get-html-length)) by slice-size
-                        collect (get-html i (+ i slice-size)))))))))
-(define-ffi-generic ffi-generate-input-event (window event))
-(define-ffi-generic ffi-generated-input-event-p (window event))
-(define-ffi-generic ffi-within-renderer-thread (browser thunk)
-  (:method ((browser browser) thunk)
-    (declare (ignore browser))
-    (funcall thunk)))
-(define-ffi-generic ffi-kill-browser (browser))
-(define-ffi-generic ffi-initialize (browser urls startup-timestamp)
-  (:method ((browser browser) urls startup-timestamp)
-    (finalize browser urls startup-timestamp)))
-(define-ffi-generic ffi-inspector-show (buffer))
-(define-ffi-generic ffi-print-status (window text))
-(define-ffi-generic ffi-print-message (window message)
-  (:documentation "Print MESSAGE which is an HTML string."))
-(define-ffi-generic ffi-display-url (text))
-(define-ffi-generic ffi-buffer-cookie-policy (buffer value))
-(define-ffi-generic ffi-set-preferred-languages (buffer value))
-(define-ffi-generic ffi-focused-p (buffer))
-(define-ffi-generic ffi-set-tracking-prevention (buffer value))
-(define-ffi-generic ffi-buffer-copy (buffer)
-  (:method ((buffer buffer))
-    (with-current-buffer buffer
-      ;; On some systems like Xorg, clipboard pasting happens just-in-time.  So if we
-      ;; copy something from the context menu 'Copy' action, upon pasting we will
-      ;; retrieve the text from the GTK thread.  This is prone to create
-      ;; dead-locks (e.g. when executing a Parenscript that acts upon the clipboard).
-      ;;
-      ;; To avoid this, we can 'flush' the clipboard to ensure that the copied text
-      ;; is present the clipboard and need not be retrieved from the GTK thread.
-      ;; TODO: Do we still need to flush now that we have multiple threads?
-      ;; (trivial-clipboard:text (trivial-clipboard:text))
-      (let ((input (%copy)))
-        (copy-to-clipboard input)
-        (echo "Text copied: ~s" input)))))
-(define-ffi-generic ffi-buffer-paste (buffer)
-  (:method ((buffer buffer))
-    (with-current-buffer buffer
-      (%paste))))
-(define-ffi-generic ffi-buffer-cut (buffer)
-  (:method ((buffer buffer))
-    (with-current-buffer buffer
-      (let ((input (%cut)))
-        (when input
-          (copy-to-clipboard input)
-          (echo "Text cut: ~s" input))))))
-(define-ffi-generic ffi-buffer-select-all (buffer)
-  (:method ((buffer buffer))
-    (with-current-buffer buffer
-      (%select-all))))
-(define-ffi-generic ffi-buffer-undo (buffer)
-  (:method ((buffer buffer))
-    (echo-warning "Undoing the edits is not yet implemented for this renderer.")))
-(define-ffi-generic ffi-buffer-redo (buffer)
-  (:method ((buffer buffer))
-    (echo-warning "Redoing the edits is not yet implemented for this renderer.")))
+(define-internal-page-command-global reduce-to-buffer (&key (delete t))
+    (reduced-buffer "*Reduced Buffers*")
+  "Query the buffer(s) to \"reduce \" by copying their titles/URLs to a
+single buffer, optionally delete them. This function is useful for archiving a
+set of useful URLs or preparing a list to send to a someone else."
+  (let ((buffers (prompt
+                  :prompt "Reduce buffer(s)"
+                  :sources (make-instance 'buffer-source
+                                          :constructor (remove-if #'internal-url-p (buffer-list)
+                                                                  :key #'url)
+                                          :return-actions '(identity)
+                                          :multi-selection-p t))))
+    (unwind-protect
+         (spinneret:with-html-string
+           (:style (style reduced-buffer))
+           (:h1 "Reduced Buffers:")
+           (:div
+            (if buffers
+                (loop for buffer in buffers
+                      collect
+                      (with-current-buffer buffer
+                        (:div
+                         (:p (:b "Title: ") (title buffer))
+                         (:p (:b "URL: ") (:a :href (render-url (url buffer))
+                                              (render-url (url buffer))))
+                         (:p (:b "Automatically generated summary: ")
+                             (:ul
+                              (loop for summary-bullet in (analysis:summarize-text
+                                                           (document-get-paragraph-contents :limit 10000))
+                                    collect (:li (str:collapse-whitespaces summary-bullet)))))
+                         (:hr ""))))
+                (:p "None chosen."))))
+      (when delete (mapcar #'buffer-delete buffers)))))

@@ -1,11 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/cruise-control-mode
-  (:use :common-lisp :nyxt)
-  (:import-from #:keymap #:define-key #:define-scheme)
-  (:documentation "Mode for scrolling continuously at a pre-defined speed."))
-
+(nyxt:define-package :nyxt/cruise-control-mode
+    (:documentation "Mode for scrolling continuously at a pre-defined speed."))
 (in-package :nyxt/cruise-control-mode)
 
 (define-mode cruise-control-mode (nyxt/repeat-mode:repeat-mode)
@@ -35,17 +32,17 @@
     (lambda (mode)
       (unless (zerop (velocity mode))
         (with-current-buffer (buffer mode)
-          (nyxt/web-mode::scroll-down
+          (nyxt/document-mode::scroll-down
            :scroll-distance (velocity mode))))))))
 
-(define-command velocity-incf (&key (cruise-control (current-mode 'cruise-control)))
+(define-command velocity-incf (&key (cruise-control (find-submode 'cruise-control-mode)))
   "Increase the velocity."
   (incf (velocity cruise-control)))
 
-(define-command velocity-decf (&key (cruise-control (current-mode 'cruise-control)))
+(define-command velocity-decf (&key (cruise-control (find-submode 'cruise-control-mode)))
   "Decrease the velocity."
   (decf (velocity cruise-control)))
 
-(define-command velocity-zero (&key (cruise-control (current-mode 'cruise-control)))
+(define-command velocity-zero (&key (cruise-control (find-submode 'cruise-control-mode)))
   "Zero the velocity. Scrolling will stop."
   (setf (velocity cruise-control) 0))

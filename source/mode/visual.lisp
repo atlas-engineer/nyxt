@@ -1,17 +1,18 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/visual-mode
-  (:use :common-lisp :nyxt)
-  (:import-from #:keymap #:define-key #:define-scheme)
-  (:import-from #:nyxt/web-mode #:query-hints #:get-nyxt-id)
+(nyxt:define-package :nyxt/visual-mode
   (:documentation "Visual mode."))
 (in-package :nyxt/visual-mode)
-(use-nyxt-package-nicknames)
 
-(define-mode visual-mode ()
+(define-mode visual-mode (nyxt/hint-mode:hint-mode)
   "Visual mode. For documentation on commands and keybindings, see the manual."
   ((rememberable-p nil)
+   (nyxt/hint-mode:hints-selector
+    "a, b, p, del, h1, h2, h3, h4, h5, h6, i, option,
+strong, sub, sup, listing, xmp, plaintext, basefont, big, blink, center, font,
+marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
+    :type string)
    (keymap-scheme
     (define-scheme "visual"
       scheme:cua
@@ -74,22 +75,22 @@
        "0" 'beginning-line
        "v" 'toggle-mark
        "C-c" 'visual-mode)))
-   (mark-set nil)
-   (destructor
-    (lambda (mode)
-      (make-page-uneditable)
-      (unlock-page-keypresses)
-      (setf (mark-set mode) nil)))
-   (constructor
-    (lambda (mode)
-      (make-page-editable)
-      (block-page-keypresses)
-      (select-paragraph)
-      ;; imitating visual mode in vim
-      (if (equal (keymap-scheme-name (buffer mode)) scheme:vi-normal)
-          (setf (mark-set mode) t))))))
+   (mark-set nil)))
 
-(defmethod prompter:object-attributes ((element nyxt/dom:text-element))
+(defmethod enable ((mode visual-mode) &key)
+  (make-page-editable)
+  (block-page-keypresses)
+  (select-paragraph mode)
+  ;; imitating visual mode in vim
+  (when (equal (keymap-scheme-name (buffer mode)) scheme:vi-normal)
+    (setf (mark-set mode) t)))
+
+(defmethod disable ((mode visual-mode) &key)
+  (make-page-uneditable)
+  (unlock-page-keypresses)
+  (setf (mark-set mode) nil))
+
+(defmethod prompter:object-attributes ((element nyxt/dom:text-element) (source prompter:source))
   `(("Hint" ,(plump:get-attribute element "nyxt-hint"))
     ("Text" ,(plump:text element))))
 
@@ -132,13 +133,11 @@
 (define-parenscript make-page-uneditable ()
   (setf (ps:@ document body content-editable) "false"))
 
-(define-command select-paragraph ()
+(define-command select-paragraph (&optional (mode (find-submode 'visual-mode)))
   "Add hints to text elements on the page and query them."
-  (query-hints "Set caret on element"
-               (lambda (results) (%follow-hint (first results)))
-               :selector "a, b, p, del, h1, h2, h3, h4, h5, h6, i, option,
-strong, sub, sup, listing, xmp, plaintext, basefont, big, blink, center, font,
-marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"))
+  (nyxt/hint-mode:query-hints "Set caret on element"
+                              (lambda (results) (%follow-hint (first results)))
+                              :selector (nyxt/hint-mode:hints-selector mode)))
 
 (define-parenscript collapsed-p ()
   "Return T if mark's start and end are the same value, nil otherwise."
@@ -156,7 +155,7 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"))
 
 (define-command toggle-mark ()
   "Toggle the mark."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (if (collapsed-p)
         (progn
           (setf (mark-set mode) (not (mark-set mode)))
@@ -169,7 +168,7 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"))
 
 (define-command clear-selection ()
   "Clear the selection and unset the mark."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (unless (collapsed-p) (collapse-to-focus))
     (setf (mark-set mode) nil)
     (echo "Mark deactivated")))
@@ -185,98 +184,98 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"))
 
 (define-command forward-char ()
   "Move caret forward by a character."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (caret-move :action (caret-action mode)
                 :direction :forward
                 :scale :character)))
 
 (define-command backward-char ()
   "Move caret backward by a character."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (caret-move :action (caret-action mode)
                 :direction :backward
                 :scale :character)))
 
 (define-command forward-word ()
   "Move caret forward by a word."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (caret-move :action (caret-action mode)
                 :direction :forward
                 :scale :word)))
 
 (define-command backward-word ()
   "Move caret backward by a word."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (caret-move :action (caret-action mode)
                 :direction :backward
                 :scale :word)))
 
 (define-command forward-line ()
   "Move caret forward by a line."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (caret-move :action (caret-action mode)
                 :direction :forward
                 :scale :line)))
 
 (define-command backward-line ()
   "Move caret backward by a line."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (caret-move :action (caret-action mode)
                 :direction :backward
                 :scale :line)))
 
 (define-command beginning-line ()
   "Move caret to the beginning of the line."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (caret-move :action (caret-action mode)
                 :direction :backward
                 :scale :lineboundary)))
 
 (define-command end-line ()
   "Move caret to the end of the line."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (caret-move :action (caret-action mode)
                 :direction :forward
                 :scale :lineboundary)))
 
 (define-command forward-sentence ()
   "Move caret forward to next end of sentence."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (caret-move :action (caret-action mode)
                 :direction :forward
                 :scale :sentence)))
 
 (define-command backward-sentence ()
   "Move caret backward to start of sentence."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (caret-move :action (caret-action mode)
                 :direction :backward
                 :scale :sentence)))
 
 (define-command forward-paragraph ()
   "Move caret forward by a paragraph."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (caret-move :action (caret-action mode)
                 :direction :forward
                 :scale :paragraph)))
 
 (define-command backward-paragraph ()
   "Move caret backward by a paragraph."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (caret-move :action (caret-action mode)
                 :direction :backward
                 :scale :paragraph)))
 
 (define-command forward-document ()
   "Move caret forward to the end of the document."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (caret-move :action (caret-action mode)
                 :direction :forward
                 :scale :documentboundary)))
 
 (define-command backward-document ()
   "Move caret backward to the beginning of the document."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (caret-move :action (caret-action mode)
                 :direction :backward
                 :scale :documentboundary)))
@@ -288,7 +287,7 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"))
       (alex:parse-body body :documentation t)
         `(define-command ,name ()
            ,@decls ,@(sera:unsplice doc)
-           (let ((,mode (find-submode (current-buffer) 'visual-mode)))
+           (let ((,mode (find-submode 'visual-mode)))
              (setf (mark-set ,mode) t)
              ,@body)))))
 

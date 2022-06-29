@@ -5,7 +5,8 @@
 
 (define-mode plaintext-editor-mode (editor-mode)
   "Mode for basic plaintext editing."
-  ((rememberable-p nil)
+  ((visible-in-status-p nil)
+   (rememberable-p nil)
    (style (theme:themed-css (theme *browser*)
             ("body"
              :margin 0)
@@ -21,12 +22,10 @@
              :padding "5px"
              :autofocus "true"
              :background-color theme:background
-             :color theme:text)))
-   (constructor
-    (lambda (mode)
-      (initialize-display mode)))))
+             :color theme:on-background))))
+  (:toggler-command-p nil))
 
-(defmethod initialize-display ((editor plaintext-editor-mode))
+(defmethod enable ((editor plaintext-editor-mode) &key)
   (let* ((content (spinneret:with-html-string
                     (:head (:style (style editor)))
                     (:body
@@ -37,11 +36,13 @@
 (defmethod set-content ((editor plaintext-editor-mode) content)
   (with-current-buffer (buffer editor)
     (pflet ((set-content (content)
-                         (setf (ps:chain document (query-selector "#editor") value)
+                         (setf (ps:chain (nyxt/ps:qs document "#editor") value)
                                (ps:lisp content))))
       (set-content content))))
 
 (defmethod get-content ((editor plaintext-editor-mode))
   (with-current-buffer (buffer editor)
-    (pflet ((get-content () (ps:chain document (query-selector "#editor") value)))
-      (get-content))))
+    (peval (ps:chain (nyxt/ps:qs document "#editor") value))))
+
+(defmethod nyxt:default-modes append ((buffer editor-buffer))
+  '(plaintext-editor-mode))

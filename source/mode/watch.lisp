@@ -1,10 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/watch-mode
-    (:use :common-lisp :nyxt)
-  (:documentation "Mode for reloading buffers at regular time
-  intervals."))
+(nyxt:define-package :nyxt/watch-mode
+  (:documentation "Mode for reloading buffers at regular time intervals."))
 (in-package :nyxt/watch-mode)
 
 (defun seconds-from-user-input ()
@@ -30,8 +28,8 @@
             active-time-units)))
     (echo "Refreshing every ~:@{~{~d ~}~a~:@}"
           (list times active-time-units))
-    (apply '+ (mapcar (lambda (time multiplier) (* time multiplier))
-                      times to-seconds-multipliers))))
+    (reduce #'+ (mapcar (lambda (time multiplier) (* time multiplier))
+                        times to-seconds-multipliers))))
 
 (define-mode watch-mode (nyxt/repeat-mode:repeat-mode)
   "Reload the current buffer every 5 minutes."
@@ -42,6 +40,6 @@
         (buffer-load (nyxt/process-mode:path-url mode) :buffer (buffer mode))))))
 
 (define-command-global watch-buffer (&optional (buffer (current-buffer)))
-  "Reload BUFFER at a prompted interval, instead of default 5 minutes."
+  "Reload BUFFER at a prompted interval"
   (let ((interval (seconds-from-user-input)))
     (enable-modes 'watch-mode buffer (list :repeat-interval interval))))

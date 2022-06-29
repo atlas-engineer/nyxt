@@ -6,34 +6,35 @@
 (defvar *command-list* '()
   "The list of known commands, for internal use only.")
 
-(define-class command ()
-  ((name (error "Command name required.")
-         :export t
-         :type symbol
-         :documentation "Name of the command.
-This is useful to build commands out of anonymous functions.")
-   (docstring ""
-              :type string
-              :documentation "Documentation of the command.")
-   (fn (error "Function required.")
-     :type function
-     :documentation "Function wrapped by the command.")
-   (sexp nil
-         :type t
-         :documentation "S-expression of the definition of top-level commands or
-commands wrapping over lambdas.
-This is nil for local commands that wrap over named functions.")
-   (global-p nil
-             :type boolean
-             :documentation "If non-nil, this command can be run from anywhere.
-Otherwise the command can only be run if its corresponding package mode is enabled.")
+(define-class command (standard-generic-function)
+  ((visibility :mode                    ; So that `define-command' registers into `*command-list*'.
+               :type (member :global :mode :anonymous)
+               :reader t
+               :writer nil
+               :documentation "
+- `:global'  means it will be listed in `command-source' when the global option is on.
+This is mostly useful for third-party packages to define globally-accessible
+commands without polluting the official Nyxt packages.
+
+- `:mode' means the command is only listed in `command-source' when the
+corresponding mode is active.
+
+- `:anonymous' is for local definitions; the command is never listed in
+`command-source'. ")
+   (deprecated-p nil
+                 :type boolean
+                 :reader t
+                 :writer nil
+                 :documentation "Mark the command as superseded by something else.
+If non-nil, report a warning before executing the command.")
    (last-access (local-time:now)
                 :type local-time:timestamp
                 :documentation "Last time this command was called from prompt buffer.
-This can be used to order the commands."))
+Useful to sort the commands by most recent use."))
   (:metaclass closer-mop:funcallable-standard-class)
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:export-class-name-p t)
+  (:export-accessor-names-p t)
   (:documentation "Commands are interactive functions.
 (As in Emacs.)
 
@@ -45,159 +46,131 @@ We need a `command' class for multiple reasons:
 - Customize prompt buffer display value with properties.
 
 - Last access: This is useful to sort command by the time they were last
-  called.  The only way to do this is to persist the command instances."))
+  called.  The only way to do this is to persist the command instances.
 
-(defmethod initialize-instance :after ((command command) &key)
-  (closer-mop:set-funcallable-instance-function command
-                                                (lambda (&rest args)
-                                                  (apply (fn command)
-                                                         (or args
-                                                             (mapcar #'prompt-argument
-                                                                     (parse-function-lambda-list-types (fn command))))))))
+Since they are generic functions, they can be specialize with `:before',
+`:after' and `:around' qualifiers, effectively acting as hooks.
+These specializations are reserved to the user."))
 
-(defmethod print-object ((command command) stream)
-  (print-unreadable-object (command stream :type t :identity t)
-    (format stream "~a" (name command))))
+(defmethod name ((command command))
+  "A useful shortcut."
+  (closer-mop:generic-function-name command))
 
-(define-condition documentation-style-warning (style-warning)
-  ((name :initarg :name :reader name)
-   (subject-type :initarg :subject-type :reader subject-type))
-  (:report
-   (lambda (condition stream)
-     (format stream
-             "~:(~A~) ~A doesn't have a documentation string"
-             (subject-type condition)
-             (name condition)))))
+(defmethod closer-mop:compute-effective-method :around ((command command) combin applicable)
+  (declare (ignorable applicable combin))
+  ;; TODO: Should `define-deprecated-command' report the version
+  ;; number of deprecation?  Maybe OK to just remove all deprecated
+  ;; commands on major releases.
+  `(echo-warning "~a is deprecated." ,(name command))
+  (call-next-method))
 
-(define-condition command-documentation-style-warning  ; TODO: Remove and force docstring instead.
-    (documentation-style-warning)
-  ((subject-type :initform 'command)))
+(defun initialize-command (command lambda-expression)
+  (when (uiop:emptyp (closer-mop:generic-function-name command))
+    (alex:required-argument 'name))
+  (when lambda-expression
+    (closer-mop:ensure-method command lambda-expression))
+  (when (uiop:emptyp (documentation command t))
+    (let ((doc (nth-value 2 (alex:parse-body (rest (rest lambda-expression)) :documentation t))))
+      (if (and (uiop:emptyp doc)
+               (not (eq :anonymous (visibility command))))
+          (error "Command ~a requires documentation." (name command))
+          (setf (documentation command 'function) doc))))
+  (unless (or (eq :anonymous (visibility command))
+              (deprecated-p command))
+    ;; Overwrite previous command:
+    (setf *command-list* (delete (closer-mop:generic-function-name command) *command-list*
+                                 :key #'closer-mop:generic-function-name))
+    (push command *command-list*)))
+
+(defmethod initialize-instance :after ((command command) &key lambda-expression &allow-other-keys)
+  (initialize-command command lambda-expression))
+(defmethod reinitialize-instance :after ((command command) &key lambda-expression &allow-other-keys)
+  (initialize-command command lambda-expression))
 
 (defun find-command (name)
   (find name *command-list* :key #'name))
 
+;; TODO: Can we use `alex:named-lambda'?  How do we get the name then?
 (export-always 'make-command)
-(defmacro make-command (name arglist &body body)
-  "Return a new local `command' named NAME.
+(defun make-command (name lambda-expression &optional (visibility :anonymous))
+  "Return an non-globally defined command named NAME."
+  (make-instance 'command :name name
+                          :lambda-expression lambda-expression
+                          :visibility visibility))
 
-With BODY, the command binds ARGLIST and executes the body.
-The first string in the body is used to fill the `help' slot.
+(export-always 'lambda-command)
+(defmacro lambda-command (name args &body body)
+  "ARGS may only be a list of required arguments (optional and keyword argument
+not allowed).
 
-Without BODY, NAME must be a function symbol and the command wraps over it
-against ARGLIST, if specified."
-  (check-type name symbol)
-  (let ((documentation (or (nth-value 2 (alex:parse-body body :documentation t))
-                           ""))
-        (args (multiple-value-match (alex:parse-ordinary-lambda-list arglist)
-                ((required-arguments optional-arguments rest keyword-arguments)
-                 (append required-arguments
-                         optional-arguments
-                         (alex:mappend #'first keyword-arguments)
-                         (when rest
-                           (list rest)))))))
-    (alex:with-gensyms (fn sexp)
-      `(let ((,fn nil)
-             (,sexp nil))
-         (cond
-           (',body
-            (setf ,fn (lambda (,@arglist) ,@body)
-                  ,sexp '(lambda (,@arglist) ,@body)))
-           ((and ',arglist (typep ',name 'function-symbol))
-            (setf ,fn (lambda (,@arglist) (funcall ',name ,@args))
-                  ,sexp '(lambda (,@arglist) (funcall ,name ,@args))))
-           ((and (null ',arglist) (typep ',name 'function-symbol))
-            (setf ,fn (symbol-function ',name)))
-           (t (error "Either NAME must be a function symbol, or ARGLIST and BODY must be set properly.")))
-         (make-instance 'command
-                        :name ',name
-                        :docstring ,documentation
-                        :fn ,fn
-                        :sexp ,sexp)))))
+Example:
 
-(export-always 'make-mapped-command)
-(defmacro make-mapped-command (function-symbol)
+\(let ((source (make-my-source)))
+  (lambda-command open-file* (files)
+    \"Open files in some way.\"
+    ;; Note that `source' is captured in the closure.
+    (mapc (opener source) files)))"
+  (alex:with-gensyms (closed-over-body)
+    ;; Warning: `make-command' takes a lambda-expression as an unevaluated list,
+    ;; thus the BODY environment is not that of the lexical environment
+    ;; (closures would thus fail to close over).  To avoid this problem, we capture
+    ;; the lexical environment in a lambda.
+    ;;
+    ;; Note that this relies on the assumption that ARGS is just a list of
+    ;; _required arguments_, which is a same assumption for prompt buffer actions.
+    ;; We could remove this limitation with some argument parsing.
+    `(let ((,closed-over-body (lambda ,args ,@body)))
+       (make-command ',name
+                     (list 'lambda ',args (list 'apply ,closed-over-body  '(list ,@args)))))))
+
+(export-always 'lambda-mapped-command)
+(defmacro lambda-mapped-command (function-symbol)
   "Define a command which `mapcar's FUNCTION-SYMBOL over a list of arguments."
-  (let ((name (intern (str:concat (string FUNCTION-SYMBOL) "-*"))))
-    `(make-command ,name (arg-list)
+  (let ((name (intern (str:concat (string function-symbol) "-*"))))
+    `(lambda-command ,name (arg-list)
        ,(documentation function-symbol 'function)
        (mapcar ',function-symbol arg-list))))
 
-(export-always 'make-unmapped-command)
-(defmacro make-unmapped-command (function-symbol)
+(export-always 'lambda-unmapped-command)
+(defmacro lambda-unmapped-command (function-symbol)
   "Define a command which calls FUNCTION-SYMBOL over the first element of a list
 of arguments."
-  (let ((name (intern (str:concat (string FUNCTION-SYMBOL) "-1"))))
-    `(make-command ,name (arg-list)
+  (let ((name (intern (str:concat (string function-symbol) "-1"))))
+    `(lambda-command ,name (arg-list)
        ,(documentation function-symbol 'function)
        (,function-symbol (first arg-list)))))
 
-(defmacro %define-command (name (&key deprecated-p
-                                   pre-form
-                                   global-p)
-                           (&rest arglist) &body body)
+(sera:eval-always
+  (defun generalize-lambda-list (lambda-list)
+    "Return a lambda-list compatible with generic-function definitions.
+Generic function lambda lists differ from ordinary lambda list in some ways;
+see HyperSpec '3.4.2 Generic Function Lambda Lists'."
+    (multiple-value-bind (required optional rest keywords aok? aux key?)
+        (alex:parse-ordinary-lambda-list lambda-list)
+      (declare (ignore aux))
+      (sera:unparse-ordinary-lambda-list required (mapcar #'first optional) rest (mapcar #'cadar keywords) aok? nil key?))))
+
+(export-always 'define-command)
+(defmacro define-command (name (&rest arglist) &body body)
   "Define new command NAME.
-`define-command' has a syntax similar to `defun'.
-ARGLIST must be a list of optional arguments or key arguments.
-This macro also defines two hooks, NAME-before-hook and NAME-after-hook.
-When run, the command always returns the last expression of BODY.
+`define-command' syntax is similar to `defmethod'.
 
 Example:
 
 \(define-command play-video-in-current-page (&optional (buffer (current-buffer)))
   \"Play video in the currently open buffer.\"
   (uiop:run-program (list \"mpv\" (render-url (url buffer)))))"
-  (multiple-value-bind (forms declares documentation)
-      (alex:parse-body body :documentation t)
-    (unless documentation
-      (warn (make-condition 'command-documentation-style-warning
-                            :name name)))
-    (let ((before-hook (intern (str:concat (symbol-name name) "-BEFORE-HOOK")
-                               (symbol-package name)))
-          (after-hook (intern (str:concat (symbol-name name) "-AFTER-HOOK")
-                              (symbol-package name))))
-      `(progn
-         (export-always ',before-hook (symbol-package ',name))
-         (defparameter ,before-hook (make-instance 'hooks:hook-void))
-         (export-always ',after-hook (symbol-package ',name))
-         (defparameter ,after-hook (make-instance 'hooks:hook-void))
-         (export-always ',name (symbol-package ',name))
-         ;; We define the function at compile-time so that macros from the same
-         ;; file can find the symbol function.
-         (eval-when (:compile-toplevel :load-toplevel :execute)
-           ;; We use defun to define the command instead of storing a lambda because we want
-           ;; to be able to call the foo command from Lisp with (FOO ...).
-           (defun ,name ,arglist
-             ,@(sera:unsplice documentation)
-             ,@declares
-             ,pre-form
-             (handler-case
-                 (progn
-                   (hooks:run-hook ,before-hook)
-                   ;; (log:debug "Calling command ~a." ',name)
-                   ;; TODO: How can we print the arglist as well?
-                   ;; (log:debug "Calling command (~a ~a)." ',name (list ,@arglist))
-                   (prog1
-                       (progn
-                         ,@forms)
-                     (hooks:run-hook ,after-hook)))
-               (nyxt-condition (c)
-                 (format t "~s" c)))))
-         (let ((new-command (make-instance 'command
-                                           :name ',name
-                                           :docstring ,documentation
-                                           :fn (symbol-function ',name)
-                                           :sexp '(define-command ,name (,@arglist) ,@body)
-                                           :global-p ,global-p)))
-           (unless ,deprecated-p
-             ;; Overwrite previous command:
-             (setf *command-list* (delete ',name *command-list* :key #'name))
-             (push new-command
-                   *command-list*))
-           new-command)))))
-
-(export-always 'define-command)
-(defmacro define-command (name (&rest arglist) &body body)
-  `(%define-command ,name () (,@arglist) ,@body))
+  (let ((doc (or (nth-value 2 (alex:parse-body body :documentation t)) "")))
+    `(progn
+       (export-always ',name (symbol-package ',name))
+       ;; Warning: We use `defgeneric' instead of `make-instance' (or even
+       ;; `ensure-generic-function') so that the compiler stores source location
+       ;; information (for "go to definition" to work.
+       (sera:lret ((gf (defgeneric ,name (,@(generalize-lambda-list arglist))
+                (:documentation ,doc)
+                (:method (,@arglist) ,@body)
+                (:generic-function-class command))))
+         (setf (slot-value gf 'visibility) :mode)))))
 
 (export-always 'define-command-global)
 (defmacro define-command-global (name (&rest arglist) &body body)
@@ -205,7 +178,8 @@ Example:
 This means it will be listed in `command-source' when the global option is on.
 This is mostly useful for third-party packages to define globally-accessible
 commands without polluting Nyxt packages."
-  `(%define-command ,name (:global-p t) (,@arglist) ,@body))
+  `(sera:lret ((cmd (define-command ,name (,@arglist) ,@body)))
+     (setf (slot-value cmd 'visibility) :global)))
 
 (export-always 'delete-command)
 (defun delete-command (name)
@@ -215,68 +189,104 @@ regardless of whether NAME is defined as a command."
   (setf *command-list* (delete name *command-list* :key #'name))
   (fmakunbound name))
 
-;; TODO: Should `define-deprecated-command' report the version number of deprecation?
-;; Maybe OK to just remove all deprecated commands on major releases.
-(defmacro define-deprecated-command (name (&rest arglist) &body body)
+(defmacro define-deprecated-command (name (&rest arglist) &body body) ; TODO: Do we even need this?
   "Define NAME, a deprecated command.
 This is just like a command.  It's recommended to explain why the function is
 deprecated and by what in the docstring."
-  `(%define-command ,name (:deprecated-p t
-                           ;; TODO: Implement `warn'.
-                           :pre-form (echo-warning "~a is deprecated." ',name))
-       (,@arglist)
-     ,@body))
+  `(prog1 (define-command ,name (,@arglist) ,@body)
+     (setf (slot-value #',name 'visibility) :mode
+           (slot-value #'name 'deprecated-p) t)))
 
-(defun nyxt-packages ()                 ; TODO: Export a customizable *nyxt-packages* instead?
-  "Return all package designators that start with 'nyxt' plus Nyxt own libraries."
-  (mapcar #'package-name
-          (append (delete-if
-                   (lambda (p)
-                     (not (str:starts-with-p "NYXT" (package-name p))))
-                   (list-all-packages))
-                  (mapcar #'find-package
-                          '(class-star
-                            download-manager
-                            history-tree
-                            keymap
-                            scheme
-                            password
-                            analysis
-                            text-buffer)))))
 
-(defun package-defined-symbols (&optional (external-package-designators (nyxt-packages))
-                                  (user-package-designators '(:nyxt-user)))
-  "Return the list of all external symbols interned in EXTERNAL-PACKAGE-DESIGNATORS
-and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
-  (let ((external-package-designators
-          ;; This is for the case external-package-designators are passed nil.
-          (or external-package-designators (nyxt-packages)))
-        (symbols))
-    (dolist (package (mapcar #'find-package external-package-designators))
+(-> subpackage-p (trivial-types:package-designator trivial-types:package-designator) boolean)
+(defun subpackage-p (subpackage package)
+  "Return non-nil if SUBPACKAGE is a subpackage of PACKAGE or is PACKAGE itself.
+A subpackage has a name that starts with that of PACKAGE followed by a '/' separator."
+  (or (eq (find-package subpackage) (find-package package))
+      (sera:string-prefix-p (uiop:strcat (package-name package) "/")
+                            (package-name subpackage))))
+
+(-> nyxt-subpackage-p (trivial-types:package-designator) boolean)
+(defun nyxt-subpackage-p (package)
+  "Return non-nil if PACKAGE is a sub-package of `nyxt'."
+  (subpackage-p package :nyxt))
+
+(-> nyxt-user-subpackage-p (trivial-types:package-designator) boolean)
+(defun nyxt-user-subpackage-p (package)
+  "Return non-nil if PACKAGE is a sub-package of `nyxt' or `nyxt-user'."
+  (subpackage-p package :nyxt-user))
+
+(defvar *nyxt-extra-packages* (mapcar #'find-package
+                                      '(class-star
+                                        download-manager
+                                        history-tree
+                                        keymap
+                                        keymap/scheme
+                                        password
+                                        analysis
+                                        text-buffer))
+  "Packages to append to the result of `nyxt-packages'.")
+
+(defun nyxt-packages ()
+  "Return the Nyxt package, all its subpackages plus what's in `*nyxt-extra-packages*'.
+See also `nyxt-user-packages'."
+  (cons
+   (find-package :nyxt)
+   (sera:filter #'nyxt-subpackage-p
+                (list-all-packages))))
+
+(defun nyxt-user-packages ()
+  "Return the Nyxt package, the `:nyxt-user', all their subpackages plus what's
+in `*nyxt-extra-packages*'.
+See also `nyxt-packages'."
+  (cons
+   (find-package :nyxt-user)
+   (sera:filter #'nyxt-user-subpackage-p
+                (list-all-packages))))
+
+(defun package-symbols (&optional (packages (nyxt-packages))
+                          (user-packages (nyxt-user-packages)))
+  "Return the list of all external symbols from PACKAGES
+and all (possibly unexported) symbols from USER-PACKAGES.
+
+If PACKAGES is NIL, return all external symbols in all packages."
+  (let* ((user-packages (mapcar #'find-package (alex:ensure-list user-packages)))
+         (packages (or (alex:ensure-list packages)
+                       (set-difference
+                        (list-all-packages)
+                        user-packages)))
+         (symbols))
+    (dolist (package (mapcar #'find-package packages))
       (do-external-symbols (s package symbols)
-        (pushnew s symbols)))
-    (dolist (package (mapcar #'find-package user-package-designators))
+        (push s symbols)))
+    (dolist (package user-packages)
       (do-symbols (s package symbols)
         (when (eq (symbol-package s) package)
-          (pushnew s symbols))))
-    symbols))
+          (push s symbols))))
+    (delete-duplicates symbols)))
 
-(defun package-variables (&optional packages)
-  "Return the list of variable symbols in Nyxt-related-packages."
-  (delete-if (complement #'boundp) (package-defined-symbols packages)))
+(defun package-variables (&optional (packages (nyxt-packages))
+                            (user-packages (nyxt-user-packages)))
+  "Return the list of variable symbols in PACKAGES and USER-PACKAGES.
+See `package-symbols' for details on the arguments."
+  (delete-if (complement #'boundp) (package-symbols packages user-packages)))
 
-(defun package-functions (&optional packages)
-  "Return the list of function symbols in Nyxt-related packages."
-  (delete-if (complement #'fboundp) (package-defined-symbols packages)))
+(defun package-functions (&optional (packages (nyxt-packages))
+                            (user-packages (nyxt-user-packages)))
+  "Return the list of function symbols in PACKAGES and USER-PACKAGES.
+See `package-symbols' for details on the arguments."
+  (delete-if (complement #'fboundp) (package-symbols packages user-packages)))
 
-(defun package-classes (&optional packages)
-  "Return the list of class symbols in Nyxt-related-packages."
+(defun package-classes (&optional (packages (nyxt-packages))
+                          (user-packages (nyxt-user-packages)))
+  "Return the list of class symbols in PACKAGES and USER-PACKAGES.
+See `package-symbols' for details on the arguments."
   (delete-if (lambda (sym)
                (not (and (find-class sym nil)
                          ;; Discard non-standard objects such as structures or
                          ;; conditions because they don't have public slots.
                          (mopu:subclassp (find-class sym) (find-class 'standard-object)))))
-             (package-defined-symbols packages)))
+             (package-symbols packages user-packages)))
 
 (define-class slot ()
   ((name nil
@@ -284,10 +294,6 @@ and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
    (class-sym nil
               :type (or symbol null)))
   (:accessor-name-transformer (class*:make-name-transformer name)))
-
-(defmethod prompter:object-attributes ((slot slot))
-  `(("Name" ,(string (name slot)))
-    ("Class" ,(string (class-sym slot)))))
 
 (defun exported-p (sym)
   (eq :external
@@ -300,26 +306,29 @@ and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
    (complement #'exported-p)
    (mopu:slot-names class-sym)))
 
-(defun package-slots (&optional packages)
-  "Return the list of all slot symbols in `:nyxt' and `:nyxt-user' or other PACKAGES."
-  (alex:mappend (lambda (class-sym)
+(defmethod prompter:object-attributes ((slot slot) (source prompter:source))
+  (declare (ignore source))
+  `(("Name" ,(string (name slot)))
+    ("Class" ,(string (class-sym slot)))))
+
+(defun package-slots (&optional (packages (nyxt-packages))
+                        (user-packages (nyxt-user-packages)))
+  "Return the list of all slot symbols in PACKAGES and USER-PACKAGES.
+See `package-symbols' for details on the arguments."
+  (mappend (lambda (class-sym)
                   (mapcar (lambda (slot) (make-instance 'slot
                                                         :name slot
                                                         :class-sym class-sym))
                           (class-public-slots class-sym)))
-                (package-classes packages)))
+                (package-classes packages user-packages)))
 
-(defun package-methods (&optional packages) ; TODO: Unused.  Remove?
-  (loop for sym in (package-defined-symbols packages)
+(defun package-methods (&optional (packages (nyxt-packages)) ; TODO: Unused.  Remove?
+                          (user-packages (nyxt-user-packages)))
+  "Return the list of all method symbols in PACKAGES and USER-PACKAGES.
+See `package-symbols' for details on the arguments."
+  (loop for sym in (package-symbols packages user-packages)
         append (ignore-errors
                 (closer-mop:generic-function-methods (symbol-function sym)))))
-
-(defmethod mode-toggler-p ((command command))
-  "Return non-nil if COMMAND is a mode toggler.
-A mode toggler is a command of the same name as its associated mode."
-  (ignore-errors
-   (closer-mop:subclassp (find-class (name command) nil)
-                         (find-class 'root-mode))))
 
 (defun list-commands (&key global-p mode-symbols)
   "List commands.
@@ -333,52 +342,49 @@ With MODE-SYMBOLS and GLOBAL-P, include global commands."
       (lpara:premove-if
        (lambda (command)
          (and (or (not global-p)
-                  (not (global-p command)))
+                  (not (eq :global (visibility command))))
               (notany
                (lambda (mode-symbol)
                  (eq (symbol-package (name command))
-                     (alex:when-let ((mode-command (mode-command mode-symbol)))
-                       (symbol-package (name mode-command)))))
+                     (symbol-package mode-symbol)))
                mode-symbols)))
        *command-list*)
       *command-list*))
 
-(-> function-command (function) (or null command))
-(defun function-command (function)
-  "Return the command associated to FUNCTION, if any."
-  (find-if (sera:eqs function) (list-commands) :key #'fn))
+(defun run-command (command &optional args)
+  ;; Bind current buffer for the duration of the command.  This
+  ;; way, if the user switches buffer after running a command
+  ;; but before command termination, `current-buffer' will
+  ;; return the buffer from which the command was invoked.
+  (with-current-buffer (current-buffer)
+    (let ((*interactive-p* t))
+      (handler-case (apply #'funcall command args)
+        (nyxt-prompt-buffer-canceled ()
+          (log:debug "Prompt buffer interrupted")
+          nil)))))
 
-(defun run (command &rest args)
+(defun run (command &optional args)
   "Run COMMAND over ARGS and return its result.
 This is blocking, see `run-async' for an asynchronous way to run commands."
-  (let ((channel (make-channel 1)))
+  (let ((channel (make-channel 1))
+        (error-channel (make-channel 1)))
     (run-thread "run command"
-      (calispel:! channel
-               ;; Bind current buffer for the duration of the command.  This
-               ;; way, if the user switches buffer after running a command
-               ;; but before command termination, `current-buffer' will
-               ;; return the buffer from which the command was invoked.
-               (with-current-buffer (current-buffer)
-                 (handler-case (apply #'funcall command args)
-                   (nyxt-prompt-buffer-canceled ()
-                     (log:debug "Prompt buffer interrupted")
-                     nil)))))
-    (calispel:? channel)))
+      ;; TODO: This `handler-case' overlaps with `with-protect' from `run-thread'.  Factor them!
+      (handler-case (calispel:! channel (run-command command args))
+        (condition (c)
+          (calispel:! error-channel c))))
+    (calispel:fair-alt
+      ((calispel:? channel result)
+       result)
+      ((calispel:? error-channel c)
+       (echo-warning "Error when running ~a: ~a" command c)))))
 
-(defun run-async (command &rest args)
+(defun run-async (command &optional args)
   "Run COMMAND over ARGS asynchronously.
 See `run' for a way to run commands in a synchronous fashion and return the
 result."
   (run-thread "run-async command"
-    ;; It's important to rebind `args' since it may otherwise be shared with the
-    ;; caller.
-    (let ((command command)
-          (args args))
-      (with-current-buffer (current-buffer) ; See `run' for why we bind current buffer.
-        (handler-case (apply #'funcall command args)
-          (nyxt-prompt-buffer-canceled ()
-            (log:debug "Prompt buffer interrupted")
-            nil))))))
+    (run-command command args)))
 
 (define-command forward-to-renderer (&key (window (current-window))
                                      (buffer (current-buffer)))
