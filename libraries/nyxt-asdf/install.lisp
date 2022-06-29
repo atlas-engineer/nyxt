@@ -241,7 +241,8 @@ File must contain a number in their path."
                      (subpathp file (ensure-directory-pathname source))
                      (ensure-pathname destination :truenamize t :ensure-directory t))))
               (install-file file destination-file))))
-        (list-directory source)))
+        (list-directory source :exclude-subpath exclude-subpath
+                               :exclude-types exclude-types)))
 
 
 (defmethod asdf:input-files ((op asdf:compile-op) (component nyxt-source-directory))
