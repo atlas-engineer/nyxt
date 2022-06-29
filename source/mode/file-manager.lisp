@@ -18,11 +18,11 @@
   "Prompt buffer mode for file choosing."
   ((visible-in-status-p nil)
    (keymap-scheme
-    (define-scheme "hint"
-      scheme:cua
+    (define-keyscheme-map "hint" ()
+      keyscheme:cua
       (list
        "C-backspace" 'directory-up)
-      scheme:emacs
+      keyscheme:emacs
       (list
        "C-l" 'directory-up)))))
 

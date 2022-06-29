@@ -22,10 +22,10 @@ the web page.
 
 See also `vi-insert-mode'."
   ((glyph "vi:N")
-   (nyxt/keymap-scheme-mode:scheme-name scheme:vi-normal)
+   (nyxt/keymap-scheme-mode:scheme-name keyscheme:vi-normal)
    (keymap-scheme
-    (define-scheme "vi"
-      scheme:vi-normal
+    (define-keyscheme-map "vi" ()
+      keyscheme:vi-normal
       (list
        "i" 'vi-insert-mode
        "button1" 'vi-button1)))))
@@ -38,13 +38,13 @@ See `vi-normal-mode'."
   ;; We could inherit from vi-normal-mode to save the declaration of this slot
   ;; but then (find-submode ... 'vi-normal-mode) would match vi-insert-mode.
   ((glyph "vi:I")
-   (nyxt/keymap-scheme-mode:scheme-name scheme:vi-insert)
+   (nyxt/keymap-scheme-mode:scheme-name keyscheme:vi-insert)
    (previous-vi-normal-mode nil
     :type (or vi-normal-mode null)
     :documentation "The `vi-normal-mode' that this insert mode is tied to.")
    (keymap-scheme
-    (define-scheme "vi"
-      scheme:vi-insert
+    (define-keyscheme-map "vi" ()
+      keyscheme:vi-insert
       (list
        "C-z" 'nyxt/passthrough-mode:passthrough-mode
        "escape" 'switch-to-vi-normal-mode)))

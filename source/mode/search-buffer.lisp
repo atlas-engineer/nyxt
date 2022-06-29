@@ -10,18 +10,18 @@
   ((visible-in-status-p nil)
    (rememberable-p nil)
    (keymap-scheme
-    (define-scheme "web"
-      scheme:cua
+    (define-keyscheme-map "web" ()
+      keyscheme:cua
       (list
        "C-f" 'search-buffer
        "f3" 'search-buffer
        "M-f" 'remove-search-hints)
-      scheme:emacs
+      keyscheme:emacs
       (list
        "C-s s" 'search-buffer
        "C-s k" 'remove-search-hints)
 
-      scheme:vi-normal
+      keyscheme:vi-normal
       (list
        "/" 'search-buffer
        "?" 'remove-search-hints)))))

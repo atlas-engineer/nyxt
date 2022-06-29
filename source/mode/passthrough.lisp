@@ -14,8 +14,8 @@
 See the mode `keymap-scheme' for special bindings."
   ((visible-in-status-p nil)
    (keymap-scheme
-    (define-scheme "application"
-      scheme:cua
+    (define-keyscheme-map "application" ()
+      keyscheme:cua
       (list
        "C-z" 'passthrough-mode)))))
 

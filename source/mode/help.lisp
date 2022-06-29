@@ -10,8 +10,8 @@
   ((visible-in-status-p nil)
    (rememberable-p nil)
    (keymap-scheme
-    (define-scheme "help-mode"
-      scheme:cua
+    (define-keyscheme-map "help-mode" ()
+      keyscheme:cua
       (list
        "q" 'delete-current-buffer
        "n" 'nyxt/document-mode:next-heading

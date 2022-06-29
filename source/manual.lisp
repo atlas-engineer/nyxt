@@ -114,15 +114,15 @@ add the following to your configuration:")
   ((default-modes (append '(emacs-mode) %slot-default%))))"))))
     (:p "You can create new scheme names with " (:code "keymaps:make-scheme-name")
         ".  Also see the " (:code "scheme-name") " class and the "
-        (:code "define-scheme") " macro.")
+        (:code "define-keyscheme-map") " macro.")
     (:p "To extend the bindings of a specific mode, you can extend the mode with "
         (:code "define-configuration") " and extend its binding scheme with "
-        (:code "define-scheme") ". For example:")
+        (:code "define-keyscheme-map") ". For example:")
     (:pre (:code "
 \(define-configuration base-mode
   ((keymap-scheme
-    (define-scheme (:name-prefix \"my-base\" :import %slot-default%)
-      scheme:vi-normal
+    (define-keyscheme-map \"my-base\" (list :import %slot-default%)
+      keyscheme:vi-normal
       (list \"g b\" (make-command switch-buffer* ()
                     (switch-buffer :current-is-last-p t)))))))"))
     (:p "The " (:code "override-map") " is a keymap that has priority over
@@ -152,9 +152,9 @@ keymap.")
 \(define-mode my-mode ()
   \"Dummy mode for the custom key bindings in `*my-keymap*'.\"
   ((keymap-scheme (keymaps:make-scheme
-                   scheme:cua *my-keymap*
-                   scheme:emacs *my-keymap*
-                   scheme:vi-normal *my-keymap*))))
+                   keyscheme:cua *my-keymap*
+                   keyscheme:emacs *my-keymap*
+                   keyscheme:vi-normal *my-keymap*))))
 
 \(define-configuration (buffer web-buffer)
   ((default-modes (append '(my-mode) %slot-default%))))"))

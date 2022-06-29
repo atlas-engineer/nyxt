@@ -388,7 +388,7 @@ DIRECTORY should be the one containing manifest.json file for the extension in q
     (lambda (url buffer)
       (let ((data "<h1>Resource not found</h1>")
             (type "text/html;charset=utf8"))
-        (with-protect ("Error while processing the web-extension scheme: ~a" :condition)
+        (with-protect ("Error while processing the web-extension keyscheme: ~a" :condition)
           (sera:and-let* ((url (quri:uri url))
                           (path (quri:uri-path url))
                           (parts (str:split "/" path :limit 2))

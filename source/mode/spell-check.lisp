@@ -14,13 +14,13 @@
     :documentation "Spell check language used by Nyxt. For
 a list of more languages available, see `spell-check-list-languages'.")
    (keymap-scheme
-    (define-scheme "visual"
-      scheme:cua
+    (define-keyscheme-map "visual" ()
+      keyscheme:cua
       (list)                            ; TODO: Add CUA bindings!
-      scheme:emacs
+      keyscheme:emacs
       (list
        "M-$" 'spell-check-word)
-      scheme:vi-normal
+      keyscheme:vi-normal
       (list
        "z =" 'spell-check-word)))))
 

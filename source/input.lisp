@@ -34,7 +34,7 @@ Example:
 \(defvar *my-keymap* (make-keymap \"my-map\")
   \"My keymap.\")"
   (let ((keymap (apply #'keymaps:make-keymap name parents)))
-    (setf (keymaps:bound-type keymap) 'scheme:nyxt-keymap-value)
+    (setf (keymaps:bound-type keymap) 'keyscheme:nyxt-keymap-value)
     keymap))
 
 (export-always 'current-keymaps)
@@ -118,7 +118,7 @@ Return nil to forward to renderer or non-nil otherwise."
 
         (t
          (multiple-value-bind (bound-function matching-keymap translated-key)
-             (the scheme:nyxt-keymap-value
+             (the keyscheme:nyxt-keymap-value
                   (keymaps:lookup-key key-stack (current-keymaps)))
            (declare (ignore matching-keymap))
            (cond
