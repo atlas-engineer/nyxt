@@ -87,7 +87,7 @@ reinstantiated between each input processing.")
 display and process when filtering.  An empty list means all attributes are
 displayed.")
 
-   (hide-attribute-header-p :never
+   (hide-attribute-header-p :never      ; TODO: Remove `-p' as it's not a boolean.
                             :type (member :always :never :single)
                             :documentation "Let know the caller whether the
 attribute names are meant to be displayed or not.
