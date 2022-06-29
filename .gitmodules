@@ -554,3 +554,7 @@
 	path = _build/nfiles
 	url = https://github.com/atlas-engineer/nfiles
 	shallow = true
+[submodule "_build/nkeymaps"]
+	path = _build/nkeymaps
+	url = https://github.com/atlas-engineer/nkeymaps
+	shallow = true
