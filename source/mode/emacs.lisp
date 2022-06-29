@@ -15,4 +15,4 @@ Example:
 \(define-configuration buffer
   ((default-modes (append '(emacs-mode) %slot-default%))))"
   ((glyph "ε")
-   (nyxt/keymap-scheme-mode:scheme-name scheme:emacs)))
+   (nyxt/keymap-scheme-mode:scheme-name keyscheme:emacs)))

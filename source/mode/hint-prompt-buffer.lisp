@@ -23,8 +23,8 @@
   "Prompt buffer mode for element hinting."
   ((visible-in-status-p nil)
    (keymap-scheme
-    (define-scheme "hint"
-      scheme:cua
+    (define-keyscheme-map "hint" ()
+      keyscheme:cua
       (list
        "M-i" 'toggle-hints-transparency
        "C-l" 'scroll-to-hint)))))

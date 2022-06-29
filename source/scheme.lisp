@@ -3,15 +3,15 @@
 
 ;; We use `uiop:define-package' instead of `nyxt:define-package' since this does
 ;; not depend on Nyxt at all.
-(uiop:define-package :nyxt/scheme
+(uiop:define-package :nyxt/keyscheme
   (:use :common-lisp)
   (:import-from #:serapeum
                 #:export-always
                 #:->)
   (:documentation "Nyxt type specialization for `keymap' bound values."))
 (in-package :nyxt) ; In case the package is locked.
-(trivial-package-local-nicknames:add-package-local-nickname :scheme :nyxt/scheme :nyxt)
-(in-package :nyxt/scheme)
+(trivial-package-local-nicknames:add-package-local-nickname :keyscheme :nyxt/keyscheme :nyxt)
+(in-package :nyxt/keyscheme)
 
 ;; Setting `nkeymaps:keymap' bound-value type to something like `function-symbol'
 ;; is not practical because functions defined in the same file as the keymap are
@@ -29,28 +29,28 @@
 (deftype nyxt-keymap-value ()
   '(or nkeymaps:keymap t))
 
-(export-always 'make-scheme-name)
-(defun make-scheme-name (name &rest parents)
+(export-always 'make-keyscheme)
+(defun make-keyscheme (name &rest parents)
   "Return a new `scheme-name' object, with `nyxt-keymap-value' value type.
 The scheme name inherits from the optional PARENTS, ordered by priority.
 
 Example:
 
-  (defvar emacs (make-scheme-name \"emacs\" cua))
+  (defvar emacs (make-keyscheme \"emacs\" cua))
 
 In the above, we define a new scheme name called `emacs` which inherits from the
 existing name `cua`."
-  (the (values nkeymaps:scheme-name &optional)
-       (make-instance 'nkeymaps:scheme-name
+  (the (values nkeymaps:keyscheme &optional)
+       (make-instance 'nkeymaps:keyscheme
                       :name name
                       :parents parents
                       :bound-type 'nyxt-keymap-value)))
 
 (export-always 'cua)
-(defvar cua (make-scheme-name "cua"))
+(defvar cua (make-keyscheme "cua"))
 (export-always 'emacs)
-(defvar emacs (make-scheme-name "emacs" cua))
+(defvar emacs (make-keyscheme "emacs" cua))
 (export-always 'vi-normal)
-(defvar vi-normal (make-scheme-name "vi-normal" cua emacs))
+(defvar vi-normal (make-keyscheme "vi-normal" cua emacs))
 (export-always 'vi-insert)
-(defvar vi-insert (make-scheme-name "vi-insert" cua))
+(defvar vi-insert (make-keyscheme "vi-insert" cua))

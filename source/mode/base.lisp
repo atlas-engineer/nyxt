@@ -9,8 +9,8 @@ This mode is a good candidate to be passed to `make-buffer'."
   ((visible-in-status-p nil)
    (rememberable-p nil)
    (keymap-scheme
-    (define-scheme "base"
-      scheme:cua
+    (define-keyscheme-map "base" ()
+      keyscheme:cua
       (list
        "C-q" 'quit
        "C-[" 'switch-buffer-previous
@@ -56,7 +56,7 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-T" 'reopen-buffer
        "C-o" 'nyxt/file-manager-mode:open-file)
 
-      scheme:emacs
+      keyscheme:emacs
       (list
        "C-x C-c" 'quit
        "C-x k" 'delete-buffer
@@ -98,7 +98,7 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-x 5 1" 'delete-window
        "C-x C-f" 'nyxt/file-manager-mode:open-file)
 
-      scheme:vi-normal
+      keyscheme:vi-normal
       (list
        "Z Z" 'quit
        "[" 'switch-buffer-previous
@@ -129,5 +129,5 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-w q" 'delete-current-window
        "C-w C-q" 'delete-window
        "u" 'reopen-buffer))
-    :type keymaps:scheme))
+    :type keymaps:keyscheme))
   (:toggler-command-p nil))

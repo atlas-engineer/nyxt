@@ -183,7 +183,7 @@ To access all modes, including disabled ones, use `slot-value'."
 
 (define-class input-buffer (buffer)
   ((keymap-scheme-name
-    scheme:cua
+    keyscheme:cua
     :documentation "The keymap scheme that will be used for all modes in the current buffer.")
    (current-keymaps-hook
     (make-instance 'hook-keymaps-buffer
@@ -485,8 +485,8 @@ One example of its application is `auto-mode' that changes mode setup. Any
 action on modes that can possibly change the handlers in `request-resource-hook'
 should find its place there.")
    (request-resource-scheme
-    (define-scheme "request-resource"
-      scheme:cua
+    (define-keyscheme-map "request-resource" ()
+      keyscheme:cua
       (list
        "C-button1" 'request-resource-open-url-focus
        "button2" 'request-resource-open-url-focus

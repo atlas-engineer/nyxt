@@ -69,7 +69,7 @@ The handlers take the mode as argument.")
 The handlers take the mode as argument.")
    (keymap-scheme
     (make-hash-table :size 0)
-    :type keymaps:scheme))
+    :type keymaps:keyscheme))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
@@ -450,7 +450,7 @@ mode permanently for this buffer."
 If there is no corresponding keymap, return nil."
   (keymaps:get-keymap (if (buffer mode)
                           (keymap-scheme-name (buffer mode))
-                          scheme:cua)
+                          keyscheme:cua)
                       (keymap-scheme mode)))
 
 (defmethod on-signal-notify-uri ((mode mode) url)

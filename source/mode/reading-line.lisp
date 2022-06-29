@@ -16,16 +16,16 @@ position. To remove the reading line from the screen, disable this
 mode."
   ((visible-in-status-p nil)
    (keymap-scheme
-    (define-scheme "reading-line-mode"
-      scheme:cua
+    (define-keyscheme-map "reading-line-mode" ()
+      keyscheme:cua
       (list
        "M-up" 'reading-line-cursor-up
        "M-down" 'reading-line-cursor-down)
-      scheme:emacs
+      keyscheme:emacs
       (list
        "M-p" 'reading-line-cursor-up
        "M-n" 'reading-line-cursor-down)
-      scheme:vi-normal
+      keyscheme:vi-normal
       (list
        "K" 'reading-line-cursor-up
        "J" 'reading-line-cursor-down)))

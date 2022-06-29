@@ -16,14 +16,14 @@
    (current-process-info nil
                          :type (or null uiop/launch-program::process-info))
    (keymap-scheme
-    (define-scheme "web"
-      scheme:cua
+    (define-keyscheme-map "web" ()
+      keyscheme:cua
       (list
        "C-d" 'cancel-package-operation)
-      scheme:emacs
+      keyscheme:emacs
       (list
        "C-d" 'cancel-package-operation)
-      scheme:vi-normal
+      keyscheme:vi-normal
       (list
        "C-d" 'cancel-package-operation))))
   (:toggler-command-p nil))

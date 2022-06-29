@@ -376,10 +376,10 @@ First URL is focused if NO-FOCUS is nil."
 
 (defun scheme-keymap (buffer buffer-scheme)
   "Return the keymap in BUFFER-SCHEME corresponding to the BUFFER `keymap-scheme-name'.
-If none is found, fall back to `scheme:cua'."
+If none is found, fall back to `keyscheme:cua'."
   (or (keymaps:get-keymap (keymap-scheme-name buffer)
                           buffer-scheme)
-      (keymaps:get-keymap scheme:cua
+      (keymaps:get-keymap keyscheme:cua
                           buffer-scheme)))
 
 (defun request-resource-open-url (&key url buffer &allow-other-keys)
