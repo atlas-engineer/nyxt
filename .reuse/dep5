@@ -1,0 +1,8 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Atlas Engineer LLC
+Upstream-Contact: John Mercouris <john@atlas.engineer>
+Source: https://github.com/atlas-engineer/nyxt.git
+
+Files: *assets/*
+Copyright: 2017 Atlas Engineer LLC
+License: BSD-3-Clause
