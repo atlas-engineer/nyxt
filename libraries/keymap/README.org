@@ -1,3 +1,10 @@
+# SPDX-FileCopyrightText: 2017 John Mercouris <john@atlas.engineer>
+# SPDX-FileCopyrightText: 2017 Atlas Engineer LLC
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+# Atlas Engineer LLC
+
 General-purpose keymap management.
 
 This keymap library is inspired by [[https://savannah.nongnu.org/projects/emacsy][Emacsy]] (=keymap.scm=) which is inspired by

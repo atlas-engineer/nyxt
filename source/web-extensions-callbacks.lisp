@@ -1,3 +1,10 @@
+# SPDX-FileCopyrightText: 2017 John Mercouris <john@atlas.engineer>
+# SPDX-FileCopyrightText: 2017 Atlas Engineer LLC
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+# Atlas Engineer LLC
+
 (in-package :nyxt/web-extensions)
 
 (-> extension->extension-info ((or null nyxt/web-extensions:extension)) (values list &optional))

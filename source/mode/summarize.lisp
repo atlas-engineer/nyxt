@@ -1,3 +1,11 @@
+# SPDX-FileCopyrightText: 2017 John Mercouris <john@atlas.engineer>
+# SPDX-FileCopyrightText: 2017 Atlas Engineer LLC
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+# Atlas Engineer LLC
+
+
 (in-package :nyxt/web-mode)
 
 (define-internal-page-command-global summarize-buffer (&key (summary-length 5) (id (id (current-buffer))))

@@ -1,3 +1,10 @@
+# SPDX-FileCopyrightText: 2017 John Mercouris <john@atlas.engineer>
+# SPDX-FileCopyrightText: 2017 Atlas Engineer LLC
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+# Atlas Engineer LLC
+
 #+TITLE: Global History Tree
 
 # NOTE: Should have been called "shared history tree" instead?

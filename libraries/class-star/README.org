@@ -1,3 +1,10 @@
+# SPDX-FileCopyrightText: 2017 John Mercouris <john@atlas.engineer>
+# SPDX-FileCopyrightText: 2017 Atlas Engineer LLC
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+# Atlas Engineer LLC
+
 This library enhances the class definition idiom with saner defaults and more
 slot and class options.  It wraps around the =hu.dwim.defclass-star= macro,
 fixes a few bugs and adds a few more features:
