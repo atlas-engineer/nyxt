@@ -1,3 +1,10 @@
+# SPDX-FileCopyrightText: 2017 John Mercouris <john@atlas.engineer>
+# SPDX-FileCopyrightText: 2017 Atlas Engineer LLC
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+# Atlas Engineer LLC
+
 ((nil . ((fill-column . 80)))
  (org-mode . ((org-edit-src-content-indentation 0)))
  (lisp-mode
