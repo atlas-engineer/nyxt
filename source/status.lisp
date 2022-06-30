@@ -13,16 +13,16 @@
 Upon returning NIL, the mode is not displayed."))
 
 (defun sort-modes-for-status (modes)
-  "Return visible modes in MODES, with `nyxt/keymap-scheme-mode:scheme-mode' placed first."
+  "Return visible modes in MODES, with `nyxt/keyscheme-mode:scheme-mode' placed first."
   (multiple-value-bind (scheme-mode other-modes)
-      (sera:partition #'nyxt/keymap-scheme-mode::keymap-scheme-mode-p
+      (sera:partition #'nyxt/keyscheme-mode::keyscheme-mode-p
                       (sera:filter #'visible-in-status-p modes))
     (append scheme-mode other-modes)))
 
 (export-always 'format-status-modes)
 (defmethod format-status-modes ((status status-buffer))
   "Render the enabled modes.
-Any `nyxt/keymap-scheme-mode:keymap-scheme-mode' is placed first.
+Any `nyxt/keyscheme-mode:keyscheme-mode' is placed first.
 
 This leverages `mode-status' which can be specialized for individual modes."
   (let ((buffer (current-buffer (window status))))
