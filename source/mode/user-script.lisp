@@ -141,7 +141,9 @@ Return:
     (alex:write-string-into-file (nfiles:url-content script) destination :if-exists :supersede)))
 
 (defmethod parse-user-script ((script user-script))
-  (let ((code (code script)))
+  (let ((code (if (uiop:emptyp (code script))
+                  (files:content script)
+                  (code script))))
     (or
      (sera:and-let* ((start-position (search "// ==UserScript==" code))
                      (end-position (search "// ==/UserScript==" code))
