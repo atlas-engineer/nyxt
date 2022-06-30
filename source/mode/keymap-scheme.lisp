@@ -13,12 +13,12 @@ Ensures that a single keybindings mode, such as `nyxt/emacs-mode', is enabled."
   ((rememberable-p nil)
    (scheme-name
     keyscheme:cua
-    :documentation "The scheme to enable.")
+    :type keymaps:keyscheme
+    :documentation "The `keymaps:keyscheme' to enable.")
    (previous-keymap-scheme-name
     nil
     :type (or keymaps:keyscheme null)
-    :documentation "The previous keymap scheme that will be used when ending
-this mode."))
+    :documentation "The active `keymaps:keyscheme' when disabling this mode."))
   (:toggler-command-p nil))
 
 (defmethod enable :before ((mode keymap-scheme-mode) &key)
