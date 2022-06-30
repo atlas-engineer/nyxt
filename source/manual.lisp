@@ -385,6 +385,98 @@ instance must be non-nil.")
 `foo' function:")
     (:pre (:code "nyxt --profile nosave --remote --load foo.lisp --eval '(foo)'"))
 
+    (:h3 "Headless mode")
+    (:p "Much like with scripting functionality, you can use Nyxt in headless (=
+    with no graphical interface appearing) mode. Possible use-cases for this
+    mode are web scraping, repetitive actions automation, and web page
+    analysis.")
+    (:p "Enabling the headless mode is easy: just start Nyxt with --headless CLI
+    flag and provide a script file as a configuration file:")
+    (:pre (:code "nyxt --headless --config /path/to/your/headless-config.lisp"))
+    (:p "Note that you pass it a " (:i "configuration file") "—headless mode is
+    only different from the regular Nyxt functions in that it has no GUI, and is
+    all the same otherwise, contrary to all the seeming similarities to
+    the " (:code "--script") " flag usage.")
+    (:p "An example of headless configuration file could be this small snippet
+    showcasing most headless mode idioms:")
+    (:pre (:code "#!/bin/sh
+#|
+exec nyxt --headless --no-auto-config --profile nosave --config \"$0\"
+|#
+
+;; TODO!!!"))
+    (:p "The thing to put into the headless-config.lisp is a set of
+    configuration forms to make Nyxt automatically perform some actions to the
+    pages opened and/or on certain events. Things you'd most probably want to
+    put there are: ")
+    (:ul
+     (:li "Hook bindings, using the " (:nxref :package t nhooks) " library and hooks
+     provided by Nyxt, with notable mentions being:")
+     (:ul
+      (:li (:nxref :slot-of network-buffer buffer-load-hook) " for when there's a new page loading in the buffer.")
+      (:li (:nxref :slot-of network-buffer buffer-loaded-hook) " for when this page is mostly done
+      loading (some scripts/image/styles may not be fully loaded yet, so you may
+      need to wait a bit after it fires.)")
+      (:li (:nxref :slot-of network-buffer request-resource-hook) " for when a new request
+      happens. Allows redirecting and blocking requests, and is a good place to
+      do something conditioned on the links being loaded.")
+      (:li (:nxref :variable t *after-startup-hook*) " is the best place to start
+      instrumenting Nyxt, as this hook fires when Nyxt is ready for
+      interaction.")
+      (:li (:nxref :slot-of prompt-buffer prompt-buffer-ready-hook) " fires when the prompt buffer is
+      ready for user input. You may need to
+      call " (:nxref :function t prompter:all-ready-p) " on the prompt to ensure all the
+      sources it contains are ready too, and then you can safely set new inputs
+      and select the necessary suggestions.")
+      (:li (:nxref :function t nhooks:add-hook) " (also known
+      as " (:code "hooks:add-hook") ") allows you to add a handler to a hook,
+      for it to be invoked when the hook fires.")
+      (:li (:code "nhooks:on") " (also available
+      as " (:code "hooks:on") ") as a shorthand for the " (:code "nhooks:add-hook") ".")
+      (:li (:nxref :function t nhooks:remove-hook) " (also available
+      as " (:code "hooks:remove-hook") ") that removes the handler from a
+      certain hook.")
+      (:li (:code "hnooks:once-on") " (also available
+      as " (:code "hooks:once-on") ") as a one-shot version
+      of " (:code "nhooks:on") " that removes the handler right after it's
+      completed."))
+     (:li "Operations with the page. For those, we have a whole "
+          (:nxref :package t nyxt/dom) " library and " (:nxref :function t document-model)
+          "buffer slot.")
+     (:ul
+      (:li (:nxref :function t document-model) " method of " (:nxref :class t buffer) " has a
+      reasonably fresh copy of the page DOM (Document Object Model, reflects the
+      dynamic structure of the page). It is a Plump DOM, which means that all
+      Plump (and CLSS) functions can be used on it.")
+      (:li (:nxref :function t update-document-model) " is a function to force DOM
+      re-parsing for the cases when you consider the
+      current " (:nxref :function t document-model) " too outdated.")
+      (:li (:nxref :function t clss:select) " is a CLSS function to find elements using CSS
+      selectors (a terse notation for web page element description).")
+      ;; FIXME: Make a nxref once we update CLSS submodule.
+      (:li (:code"clss:ordered-select") " is the same
+      as " (:nxref :function t clss:select) ", except it guarantees that all the elements
+      are returned in a depth-first traversal order.")
+      (:li (:nxref :function t nyxt/dom:click-element) " to programmatically click a
+      certain element (including the ones returned
+      by " (:nxref :function t clss:select) ".)")
+      (:li (:nxref :function t nyxt/dom:focus-select-element) " to focus an input field, for example.")
+      (:li (:nxref :function t nyxt/dom:check-element) " to check a checkbox or a radio button.")
+      (:li (:nxref :function t nyxt/dom:select-option-element) " to select an option from the "
+           (:code "<select>") " element options.")))
+    (:p "Additionally, headless mode interacts in useful way with other CLI
+    toggles the Nyxt has:")
+    (:ul
+     (:li (:code "--headless") " itself. If you provide it, Nyxt runs
+     headless. If you don't provide " (:code "--headless") ", then Nyxt starts
+     as usual and allows you to see the changes that happen to the page because
+     of your script. A good way to debug and check script behavior, isn't it?")
+     (:li (:code "--no-socket") " flag allows starting as much Nyxt instances as
+     your computer allows you to. Useful to start several instances of Nyxt and
+     do your thing in parallel.")
+     (:li (:code "--profile nosave") " to not pollute your history and cache
+     with the script-accessed pages."))
+
     (:h2 "Extensions")
     (:p "To install an extension, copy inside the "
         (:nxref :variable t *extensions-directory*) " (default to "
