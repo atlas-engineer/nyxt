@@ -2,13 +2,14 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/keymap-scheme-mode
-  (:documentation "Mode from which all modes setting the buffer `keymap-scheme-name' should inherit.
-This is used so that only one mode at a time may be enabled."))
+  (:documentation "All modes that set `keymap-scheme-name' should inherit from
+this mode.
+Ensures that a single keybindings mode, such as `nyxt/emacs-mode', is enabled."))
 (in-package :nyxt/keymap-scheme-mode)
 
 (define-mode keymap-scheme-mode ()
-  "Mode from which all modes setting the buffer `keymap-scheme-name' should inherit.
-This is used so that only one mode at a time may be enabled."
+  "All modes that set `keymap-scheme-name' should inherit from this mode.
+Ensures that a single keybindings mode, such as `nyxt/emacs-mode', is enabled."
   ((rememberable-p nil)
    (scheme-name
     keyscheme:cua
