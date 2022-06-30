@@ -118,29 +118,37 @@ major versions."
 
 (define-migration "3"
   (download-directory)
-  (:p (:code "download-directory") " is in " (:nxref "context-buffer") ".")
+  (:p (:nxref :slot-of context-buffer download-directory)
+      " is in " (:nxref :class t context-buffer) ".")
 
   (history-file)
-  (:p (:code "history-file") " is in " (:nxref "context-buffer") ".")
+  (:p (:nxref :slot-of context-buffer history-file)
+      " is in " (:nxref :class t context-buffer) ".")
 
   (standard-output-file standard-error-file)
-  (:p (:nxref "standard-output-file") " and " (:nxref "standard-error-file")
-      " are in " (:code "context-buffer") ".")
+  (:p (:nxref :slot-of context-buffer nyxt:standard-output-file) " and "
+      (:nxref :slot-of context-buffer nyxt:error-output-file)
+      " are in " (:nxref :class t context-buffer) ".")
 
   (annotations-file)
-  (:p (:nxref "annotations-file") " is in " (:nxref "nyxt/annotate-mode:annotate-mode") ".")
+  (:p (:nxref :slot-of nyxt/annotate-mode:annotate-mode nyxt/annotate-mode:annotations-file)
+      " is in " (:nxref :class t nyxt/annotate-mode:annotate-mode) ".")
 
   (auto-mode-rules-file)
-  (:p (:nxref "auto-mode-rules-file") " is in " (:nxref "nyxt/auto-mode:auto-mode") ".")
+  (:p (:nxref :slot-of nyxt/auto-mode:auto-mode auto-mode-rules-file)
+      " is in " (:nxref :class t nyxt/auto-mode:auto-mode) ".")
 
   (bookmarks-file)
-  (:p (:nxref "bookmarks-file") " is in " (:nxref "nyxt/bookmark-mode:bookmark-mode") ".")
+  (:p (:nxref :slot-of nyxt/bookmark-mode:bookmark-mode nyxt/bookmark-mode:bookmarks-file)
+      " is in " (:nxref :class t nyxt/bookmark-mode:bookmark-mode) ".")
 
   (expand-path)
-  (:p (:code "expand-path") " is replaced by " (:nxref "nfiles:expand") ".")
+  (:p (:code "expand-path") " is replaced by " (:nxref :function t nfiles:expand) ".")
 
   (get-data get-user-data)
-  (:p (:code "get-data") " and " (:code "get-user-data") " are replaced by " (:nxref "nfiles:content") ".")
+  (:p (:code "get-data") " and " (:code "get-user-data") " are replaced by "
+      (:nxref :function t nfiles:content) ".")
 
   (with-data-access with-data-unsafe)
-  (:p (:code "with-data-access") " and " (:code "with-data-unsafe") " are replaced by " (:nxref "nfiles:with-file-content") "."))
+  (:p (:code "with-data-access") " and " (:code "with-data-unsafe")
+      " are replaced by " (:code "nfiles:with-file-content") "."))
