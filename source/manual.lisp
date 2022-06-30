@@ -151,7 +151,7 @@ keymap.")
 
 \(define-mode my-mode ()
   \"Dummy mode for the custom key bindings in `*my-keymap*'.\"
-  ((keymap-scheme (keymaps:make-scheme
+  ((keymap-scheme (keymaps:make-keyscheme-map
                    keyscheme:cua *my-keymap*
                    keyscheme:emacs *my-keymap*
                    keyscheme:vi-normal *my-keymap*))))
