@@ -12,7 +12,7 @@
   each update interval. A positive velocity corresponds to scrolling down, a
   negative velocity corresponds to scrolling up.")
    (nyxt/repeat-mode:repeat-interval 0.10)
-   (keymap-scheme
+   (keyscheme-map
     (define-keyscheme-map "cruise-control-mode" ()
       keyscheme:cua
       (list

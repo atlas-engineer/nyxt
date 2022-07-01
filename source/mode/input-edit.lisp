@@ -134,7 +134,7 @@ bindings in other modes, so you will have to disable/enable it as
 necessary."
   ((visible-in-status-p nil)
    (rememberable-p nil)
-   (keymap-scheme
+   (keyscheme-map
     (define-keyscheme-map "input-edit-mode" ()
       keyscheme:cua
       (list)

@@ -13,7 +13,7 @@
     "en_US"
     :documentation "Spell check language used by Nyxt. For
 a list of more languages available, see `spell-check-list-languages'.")
-   (keymap-scheme
+   (keyscheme-map
     (define-keyscheme-map "visual" ()
       keyscheme:cua
       (list)                            ; TODO: Add CUA bindings!

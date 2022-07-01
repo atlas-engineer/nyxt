@@ -13,7 +13,7 @@
 strong, sub, sup, listing, xmp, plaintext, basefont, big, blink, center, font,
 marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
     :type string)
-   (keymap-scheme
+   (keyscheme-map
     (define-keyscheme-map "visual" ()
       keyscheme:cua
       (list

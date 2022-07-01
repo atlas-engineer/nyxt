@@ -15,7 +15,7 @@ navigate away from the reading line, you can always invoke the command
 position. To remove the reading line from the screen, disable this
 mode."
   ((visible-in-status-p nil)
-   (keymap-scheme
+   (keyscheme-map
     (define-keyscheme-map "reading-line-mode" ()
       keyscheme:cua
       (list

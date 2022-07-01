@@ -18,7 +18,7 @@ It does not assume being online."))
   "Base mode for interacting with documents."
   ((visible-in-status-p nil)
    (rememberable-p nil)
-   (keymap-scheme
+   (keyscheme-map
     (define-keyscheme-map "web" ()
       keyscheme:cua
       (list

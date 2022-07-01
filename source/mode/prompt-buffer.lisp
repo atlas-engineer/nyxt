@@ -21,7 +21,7 @@ Each source offers a set of 'return-actions' for its selection(s).
 Return-actions can be listed and run with `return-selection-over-action' (bound to
 \"M-return\" by default)."
   ((visible-in-status-p nil)
-   (keymap-scheme
+   (keyscheme-map
     (define-keyscheme-map "prompt-buffer" ()
       keyscheme:cua
       (list

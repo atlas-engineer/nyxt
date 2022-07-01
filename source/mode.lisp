@@ -67,7 +67,7 @@ The handlers take the mode as argument.")
     :type hook-mode
     :documentation "Hook run when disabling the mode, before the destructor.
 The handlers take the mode as argument.")
-   (keymap-scheme
+   (keyscheme-map
     (make-hash-table :size 0)
     :type keymaps:keyscheme))
   (:export-class-name-p t)
@@ -446,12 +446,12 @@ mode permanently for this buffer."
 
 (export-always 'keymap)
 (defmethod keymap ((mode mode))
-  "Return the keymap of MODE according to its buffer keymap scheme.
+  "Return the keymap of MODE according to its buffer `keyscheme-map'.
 If there is no corresponding keymap, return nil."
   (keymaps:get-keymap (if (buffer mode)
                           (keyscheme (buffer mode))
                           keyscheme:cua)
-                      (keymap-scheme mode)))
+                      (keyscheme-map mode)))
 
 (defmethod on-signal-notify-uri ((mode mode) url)
   url)
@@ -488,6 +488,6 @@ If there is no corresponding keymap, return nil."
 
 (defmethod s-serialization:serializable-slots ((object mode))
   "Discard keymaps which can be quite verbose."
-  (delete 'keymap-scheme
+  (delete 'keyscheme-map
           (mapcar #'closer-mop:slot-definition-name
                   (closer-mop:class-slots (class-of object)))))

@@ -17,7 +17,7 @@
                     (name command)
                     (delete nil
                             (mapcar (lambda (mode)
-                                      (keymaps:get-keymap scheme-name (keymap-scheme mode)))
+                                      (keymaps:get-keymap scheme-name (keyscheme-map mode)))
                                     (modes buffer))))))
     `(("Name" ,(string-downcase (closer-mop:generic-function-name command)))
       ("Bindings" ,(format nil "~{~a~^, ~}" bindings))
