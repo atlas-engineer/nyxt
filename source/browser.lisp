@@ -408,9 +408,9 @@ First URL is focused if NO-FOCUS is nil."
             (set-current-buffer first-buffer))))))
 
 (defun scheme-keymap (buffer buffer-scheme)
-  "Return the keymap in BUFFER-SCHEME corresponding to the BUFFER `keymap-scheme-name'.
+  "Return the keymap in BUFFER-SCHEME corresponding to the BUFFER `keyscheme'.
 If none is found, fall back to `keyscheme:cua'."
-  (or (keymaps:get-keymap (keymap-scheme-name buffer)
+  (or (keymaps:get-keymap (keyscheme buffer)
                           buffer-scheme)
       (keymaps:get-keymap keyscheme:cua
                           buffer-scheme)))

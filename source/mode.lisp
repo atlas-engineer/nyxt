@@ -449,7 +449,7 @@ mode permanently for this buffer."
   "Return the keymap of MODE according to its buffer keymap scheme.
 If there is no corresponding keymap, return nil."
   (keymaps:get-keymap (if (buffer mode)
-                          (keymap-scheme-name (buffer mode))
+                          (keyscheme (buffer mode))
                           keyscheme:cua)
                       (keymap-scheme mode)))
 

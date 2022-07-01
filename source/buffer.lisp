@@ -182,9 +182,9 @@ To access all modes, including disabled ones, use `slot-value'."
   (sera:filter #'enabled-p (slot-value buffer 'modes)))
 
 (define-class input-buffer (buffer)
-  ((keymap-scheme-name
+  ((keyscheme
     keyscheme:cua
-    :documentation "The keymap scheme that will be used for all modes in the current buffer.")
+    :documentation "The keyscheme that will be used for all modes in the current buffer.")
    (current-keymaps-hook
     (make-instance 'hook-keymaps-buffer
                    :combination #'hooks:combine-composed-hook)
