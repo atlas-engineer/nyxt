@@ -432,7 +432,7 @@ A command is a special kind of function that can be called with
        (:li (symbol-name slot))
        (:ul
         (when mention-class-p
-          (:li (format nil "Class: ~s" class)))
+          (:li "Class " (:a :href (nyxt-url 'describe-class :class class) class)))
         (when (getf props :type)
           (:li
            (:raw (format nil "Type: ~a"
