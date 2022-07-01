@@ -5,7 +5,7 @@
     (:documentation "Mode for element hints."))
 (in-package :nyxt/search-buffer-mode)
 
-(define-mode search-buffer-mode (nyxt/hint-mode:hint-mode)
+(define-mode search-buffer-mode ()
   "Mode for searching text within the buffer."
   ((visible-in-status-p nil)
    (rememberable-p nil)
@@ -47,6 +47,14 @@ You can redefine it to enable regex-based search, for example:
        "/" 'search-buffer
        "?" 'remove-search-hints)))))
 
+(define-parenscript add-stylesheet ()
+  (unless (nyxt/ps:qs document "#nyxt-stylesheet")
+    (ps:let* ((style-element (ps:chain document (create-element "style")))
+              (style (ps:lisp (style (find-submode 'search-buffer-mode)))))
+      (setf (ps:@ style-element id) "nyxt-stylesheet")
+      (setf (ps:@ style-element inner-text) style)
+      (ps:chain document head (append-child style-element)))))
+
 (define-class search-match ()
   ((identifier)
    (element)
@@ -73,14 +81,14 @@ You can redefine it to enable regex-based search, for example:
     (create-marks selector)))
 
 (define-parenscript highlight-selected-hint (&key element scroll)
-  (ps:let* ((new-element (ps:@ (nyxt/ps:qs-nyxt-id document (ps:lisp (nyxt/dom:get-nyxt-id (element element))))
-                               parent)))
+  (ps:let* ((element (ps:@ (nyxt/ps:qs document (ps:lisp (nyxt/dom:get-unique-selector element)))))
+            (new-element (ps:@ element parent-element)))
     (when new-element
-      (unless ((ps:@ new-element class-list contains) "nyxt-highlight-search-hint")
+      (unless (ps:chain new-element class-list (contains "nyxt-highlight-search-hint"))
         (ps:let ((old-elements (nyxt/ps:qsa document ".nyxt-highlight-search-hint")))
           (ps:dolist (e old-elements)
-            (setf (ps:@ e class-name) "nyxt-search-hint"))))
-      (setf (ps:@ new-element class-name) "nyxt-highlight-search-hint")
+            (ps:chain e class-list (remove "nyxt-highlight-search-hint")))))
+      (ps:chain new-element class-list (add "nyxt-highlight-search-hint"))
       (when (ps:lisp scroll)
         (ps:chain new-element (scroll-into-view (ps:create block "nearest")))))))
 
@@ -88,29 +96,6 @@ You can redefine it to enable regex-based search, for example:
   (ps:let ((old-elements (nyxt/ps:qsa document ".nyxt-search-highlight-hint")))
     (ps:dolist (e old-elements)
       (setf (ps:@ e class-name) "nyxt-search-hint"))))
-
-(defun prompt-buffer-selection-highlight-hint (&key suggestions scroll follow
-                                                 (prompt-buffer (current-prompt-buffer))
-                                                 (buffer (current-buffer)))
-  (alex:when-let ((hint (flet ((hintp (hint-suggestion)
-                                 (if (typep hint-suggestion '(or plump:element search-match))
-                                     hint-suggestion
-                                     nil)))
-                          (if suggestions
-                              (hintp (prompter:value (first suggestions)))
-                              (when prompt-buffer
-                                (hintp (current-suggestion-value)))))))
-    (when (and follow
-               (slot-exists-p hint 'buffer)
-               (not (equal (buffer hint) buffer)))
-      (set-current-buffer (buffer hint))
-      (setf buffer (buffer hint)))
-    (if (or (not (slot-exists-p hint 'buffer))
-            (and (slot-exists-p hint 'buffer)
-                 (equal (buffer hint) buffer)))
-        (with-current-buffer buffer
-          (highlight-selected-hint :element hint :scroll scroll))
-        (remove-focus))))
 
 (define-command remove-search-hints ()
   "Remove all search hints."
@@ -133,10 +118,8 @@ You can redefine it to enable regex-based search, for example:
                                  elements)))
     (remove-search-hints)
     (with-current-buffer buffer
-      (run-thread "stylesheet adder"
-        (nyxt/hint-mode::add-stylesheet))
-      (run-thread "search hint drawing"
-        (hint-elements (coerce (mapcar #'identifier search-matches) 'vector)))
+      (add-stylesheet)
+      (hint-elements (coerce (mapcar #'identifier search-matches) 'vector))
       search-matches)))
 
 (define-class search-buffer-source (prompter:source)
@@ -157,7 +140,8 @@ You can redefine it to enable regex-based search, for example:
    (prompter:selection-actions (lambda (suggestion)
                                  ;; TODO: rewrite prompt-buffer-selection-highlight-hint
                                  (set-current-buffer (buffer suggestion) :focus nil)
-                                 (prompt-buffer-selection-highlight-hint :scroll t)))
+                                 (with-current-buffer (buffer suggestion)
+                                   (highlight-selected-hint :element (element suggestion) :scroll t))))
    (prompter:destructor (lambda (prompter source)
                           (declare (ignore prompter source))
                           (unless (keep-search-hints-p (current-buffer))
