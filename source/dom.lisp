@@ -239,7 +239,7 @@ Return two values:
                                 (alex:hash-table-keys (plump:attributes element))))
          (classes (when raw-classes (remove-if #'str:blankp (str:split " " raw-classes))))
          (parents (parents element))
-         (family (plump:family element))
+         (family (plump:family-elements element))
          (previous (ignore-errors (plump:previous-element element)))
          ;; Is it guaranteed that the topmost ancestor of a node is
          ;; `plump:root'? Anyway, it should work even if there's a single
@@ -293,7 +293,7 @@ Return two values:
              (not (eq element (elt family (1- (length family)))))
              (unique-p (selconcat
                         :sel ":nth-child("
-                        (princ-to-string (1+ (position element (plump:family-elements element)))) ")")))
+                        (princ-to-string (1+ (position element family))) ")")))
         (selreturn))
       ;; Then check for previous siblings.
       (when (and previous
