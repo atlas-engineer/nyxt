@@ -20,7 +20,9 @@ It enables features such as:
   (uiop:dump-image (asdf:output-file o c)
                    :executable t
                    :compression (when (getenv "NYXT_COMPRESS")
-                                  (parse-integer (getenv "NYXT_COMPRESS")))))
+                                  (or (parse-integer (getenv "NYXT_COMPRESS")
+                                                     :junk-allowed t)
+                                      (string-equal "T" (getenv "NYXT_COMPRESS"))))))
 
 (defmethod asdf:perform :before ((o asdf:image-op) (c nyxt-system))
   "Perform some last minute tweaks to the final image.
