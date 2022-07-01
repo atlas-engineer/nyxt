@@ -391,8 +391,9 @@ TITLE is purely informative."
                          (unless ,buffer
                            (error "Cannot `nyxt/ps:lisp-eval' without BUFFER or current-buffer."))
                          (log:debug "Registering callback ~a for buffer ~a" request-id ,buffer)
-                         (setf (gethash request-id (nyxt::lisp-url-callbacks ,buffer))
-                               (lambda () ,@form))
+                         (sera:synchronized ((nyxt::lisp-url-callbacks ,buffer))
+                           (setf (gethash request-id (nyxt::lisp-url-callbacks ,buffer))
+                                 (lambda () ,@form)))
                          (let ((url-string (format nil "lisp://~a" request-id)))
                            (when ,title
                              (setf url-string (str:concat url-string "/" ,title)))
