@@ -13,11 +13,12 @@
 Upon returning NIL, the mode is not displayed."))
 
 (defun sort-modes-for-status (modes)
-  "Return visible modes in MODES, with `nyxt/keyscheme-mode:scheme-mode' placed first."
-  (multiple-value-bind (scheme-mode other-modes)
+  "Return visible modes in MODES, with `nyxt/keyscheme-mode:keyscheme-mode' placed
+first."
+  (multiple-value-bind (keyscheme-mode other-modes)
       (sera:partition #'nyxt/keyscheme-mode::keyscheme-mode-p
                       (sera:filter #'visible-in-status-p modes))
-    (append scheme-mode other-modes)))
+    (append keyscheme-mode other-modes)))
 
 (export-always 'format-status-modes)
 (defmethod format-status-modes ((status status-buffer))
