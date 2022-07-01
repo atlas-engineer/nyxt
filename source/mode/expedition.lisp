@@ -9,7 +9,7 @@
   "Mode for traversing a set of URLs."
   ((urls (list))
    (index 0 :documentation "The index of the current element in URLs.")
-   (keymap-scheme
+   (keyscheme-map
     (define-keyscheme-map "expedition" ()
       keyscheme:cua
       (list

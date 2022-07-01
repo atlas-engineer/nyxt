@@ -8,7 +8,7 @@
 This mode is a good candidate to be passed to `make-buffer'."
   ((visible-in-status-p nil)
    (rememberable-p nil)
-   (keymap-scheme
+   (keyscheme-map
     (define-keyscheme-map "base" ()
       keyscheme:cua
       (list

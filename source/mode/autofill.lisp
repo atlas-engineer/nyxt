@@ -22,7 +22,7 @@ Use this slot to customize the autofill values available.
 
 The fill can be a string value or a function.  The latter allows you to provide
 content dynamic to the context.")
-   (keymap-scheme
+   (keyscheme-map
     (define-keyscheme-map "autofill" ()
       keyscheme:cua
       (list

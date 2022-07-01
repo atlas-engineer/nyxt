@@ -15,7 +15,7 @@
   ((visible-in-status-p nil)
    (current-process-info nil
                          :type (or null uiop/launch-program::process-info))
-   (keymap-scheme
+   (keyscheme-map
     (define-keyscheme-map "web" ()
       keyscheme:cua
       (list

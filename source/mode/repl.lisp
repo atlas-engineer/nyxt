@@ -43,7 +43,7 @@
 (define-mode repl-mode ()
   "Mode for interacting with the REPL."
   ((rememberable-p nil)
-   (keymap-scheme
+   (keyscheme-map
     (define-keyscheme-map "repl" ()
       keyscheme:cua
       (list

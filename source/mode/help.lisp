@@ -9,7 +9,7 @@
   "Mode for help and documentation pages."
   ((visible-in-status-p nil)
    (rememberable-p nil)
-   (keymap-scheme
+   (keyscheme-map
     (define-keyscheme-map "help-mode" ()
       keyscheme:cua
       (list

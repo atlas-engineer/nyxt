@@ -23,7 +23,7 @@ the web page.
 See also `vi-insert-mode'."
   ((glyph "vi:N")
    (nyxt/keyscheme-mode:keyscheme keyscheme:vi-normal)
-   (keymap-scheme
+   (keyscheme-map
     (define-keyscheme-map "vi" ()
       keyscheme:vi-normal
       (list
@@ -42,7 +42,7 @@ See `vi-normal-mode'."
    (previous-vi-normal-mode nil
     :type (or vi-normal-mode null)
     :documentation "The `vi-normal-mode' that this insert mode is tied to.")
-   (keymap-scheme
+   (keyscheme-map
     (define-keyscheme-map "vi" ()
       keyscheme:vi-insert
       (list

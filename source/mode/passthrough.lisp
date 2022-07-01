@@ -11,9 +11,9 @@
 
 (define-mode passthrough-mode ()
   "Mode that forwards all keys to the renderer.
-See the mode `keymap-scheme' for special bindings."
+See the mode `keyscheme-map' for special bindings."
   ((visible-in-status-p nil)
-   (keymap-scheme
+   (keyscheme-map
     (define-keyscheme-map "application" ()
       keyscheme:cua
       (list

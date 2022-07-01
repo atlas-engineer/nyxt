@@ -9,7 +9,7 @@
   "Mode for editor modes to extend. Importantly, it is required to implement the
 methods get/set-content for each editor-mode. This will allow your mode to
 get/set-content (which is necessary for operation)."
-  ((keymap-scheme (define-keyscheme-map "editor" ()
+  ((keyscheme-map (define-keyscheme-map "editor" ()
                     keyscheme:cua
                     (list
                      "C-o" 'editor-open-file

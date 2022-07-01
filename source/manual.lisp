@@ -120,7 +120,7 @@ add the following to your configuration:")
         (:code "define-keyscheme-map") ". For example:")
     (:pre (:code "
 \(define-configuration base-mode
-  ((keymap-scheme
+  ((keyscheme-map
     (define-keyscheme-map \"my-base\" (list :import %slot-default%)
       keyscheme:vi-normal
       (list \"g b\" (make-command switch-buffer* ()
@@ -151,7 +151,7 @@ keymap.")
 
 \(define-mode my-mode ()
   \"Dummy mode for the custom key bindings in `*my-keymap*'.\"
-  ((keymap-scheme (keymaps:make-keyscheme-map
+  ((keyscheme-map (keymaps:make-keyscheme-map
                    keyscheme:cua *my-keymap*
                    keyscheme:emacs *my-keymap*
                    keyscheme:vi-normal *my-keymap*))))

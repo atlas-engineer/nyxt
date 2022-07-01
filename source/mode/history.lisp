@@ -22,7 +22,7 @@ search.")
     nil
     :type boolean
     :documentation "Whether history navigation is restricted by buffer-local history.")
-   (keymap-scheme
+   (keyscheme-map
     (define-keyscheme-map "history" ()
       keyscheme:cua
       (list

@@ -9,7 +9,7 @@
   "Mode for searching text withing."
   ((visible-in-status-p nil)
    (rememberable-p nil)
-   (keymap-scheme
+   (keyscheme-map
     (define-keyscheme-map "web" ()
       keyscheme:cua
       (list

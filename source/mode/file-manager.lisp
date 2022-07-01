@@ -17,7 +17,7 @@
 (define-mode file-manager-mode (nyxt/prompt-buffer-mode:prompt-buffer-mode)
   "Prompt buffer mode for file choosing."
   ((visible-in-status-p nil)
-   (keymap-scheme
+   (keyscheme-map
     (define-keyscheme-map "hint" ()
       keyscheme:cua
       (list
