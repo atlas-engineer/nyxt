@@ -82,7 +82,7 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
   (block-page-keypresses)
   (select-paragraph mode)
   ;; imitating visual mode in vim
-  (when (equal (keymap-scheme-name (buffer mode)) keyscheme:vi-normal)
+  (when (equal (keyscheme (buffer mode)) keyscheme:vi-normal)
     (setf (mark-set mode) t)))
 
 (defmethod disable ((mode visual-mode) &key)

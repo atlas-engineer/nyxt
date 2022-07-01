@@ -59,10 +59,10 @@ See `vi-normal-mode'."
       (setf (nyxt/keyscheme-mode:previous-keyscheme mode)
             (if vi-insert
                 (nyxt/keyscheme-mode:previous-keyscheme vi-insert)
-                (keymap-scheme-name buffer)))
+                (keyscheme buffer)))
       (when vi-insert
         ;; Destroy vi-normal mode after setting previous-keyscheme, or else we
-        ;; can't save the previous keymap scheme.
+        ;; can't save the previous keyscheme.
         (disable vi-insert)))
     (call-next-method)
     (setf (forward-input-events-p buffer) nil)))
@@ -87,7 +87,7 @@ See also `vi-normal-mode' and `vi-insert-mode'."
       (setf (nyxt/keyscheme-mode:previous-keyscheme mode)
             (if vi-normal
                 (nyxt/keyscheme-mode:previous-keyscheme vi-normal)
-                (keymap-scheme-name buffer))
+                (keyscheme buffer))
             (previous-vi-normal-mode mode)
             vi-normal)
       (when vi-normal

@@ -12,7 +12,7 @@
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defun command-attributes (command &optional (buffer (active-buffer (current-window :no-rescan))))
-  (let* ((scheme-name (keymap-scheme-name buffer))
+  (let* ((scheme-name (keyscheme buffer))
          (bindings (keymaps:binding-keys
                     (name command)
                     (delete nil
