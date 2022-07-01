@@ -172,7 +172,7 @@ shifts.  For instance if " (:code "C-x C-F") " fails to match anything " (:code 
          translation.")
 
     (:h3 "Search engines")
-    (:p "See the " (:nxref :slot-of buffer search-engines) " buffer slot
+    (:p "See the " (:nxref :slot-of context-buffer search-engines) " buffer slot
 documentation.  Bookmarks can also be used as search engines, see the
 corresponding section.")
     (:p "Nyxt comes with some default search engines for "
