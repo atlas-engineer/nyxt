@@ -12,12 +12,12 @@
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defun command-attributes (command &optional (buffer (active-buffer (current-window :no-rescan))))
-  (let* ((scheme-name (keyscheme buffer))
+  (let* ((keyscheme (keyscheme buffer))
          (bindings (keymaps:binding-keys
                     (name command)
                     (delete nil
                             (mapcar (lambda (mode)
-                                      (keymaps:get-keymap scheme-name (keyscheme-map mode)))
+                                      (keymaps:get-keymap keyscheme (keyscheme-map mode)))
                                     (modes buffer))))))
     `(("Name" ,(string-downcase (closer-mop:generic-function-name command)))
       ("Bindings" ,(format nil "~{~a~^, ~}" bindings))
