@@ -220,8 +220,6 @@ A subpackage has a name that starts with that of PACKAGE followed by a '/' separ
                                       '(class-star
                                         download-manager
                                         history-tree
-                                        keymap
-                                        keymap/scheme
                                         password
                                         analysis
                                         text-buffer))
