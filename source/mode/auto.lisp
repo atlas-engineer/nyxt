@@ -493,7 +493,8 @@ Auto-mode is re-enabled once the page is reloaded."
     (echo "Saved ~a auto-mode rules to ~s." (length rules) (files:expand file))))
 
 (defmethod files:deserialize ((profile nyxt-profile) (file auto-mode-rules-file) raw-content &key)
-  (let ((rules (safe-read raw-content)))
+  (let ((*package* (find-package :nyxt))
+        (rules (safe-read raw-content)))
     (mapcar #'(lambda (rule)
                 (let ((rule (append '(:test) rule)))
                   (setf (getf rule :included) (mode-invocations (getf rule :included))
