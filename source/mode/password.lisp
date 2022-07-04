@@ -77,8 +77,8 @@ for which the `executable' slot is non-nil."
   (password-debug-info)
   (cond
     ((and (password-interface buffer)
-          (nyxt::has-method-p (password-interface (find-submode 'password-mode buffer))
-                              #'password:save-password))
+          (nyxt:has-method-p (password-interface (find-submode 'password-mode buffer))
+                             #'password:save-password))
      (let* ((password-name (prompt1
                              :prompt "Name for new password"
                              :input (or (quri:uri-domain (url (current-buffer))) "")
