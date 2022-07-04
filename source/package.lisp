@@ -10,7 +10,8 @@
     (sb-ext:unlock-package :nyxt)))
 
 (uiop:define-package nyxt
-  (:use #:common-lisp #:nyxt/utilities)
+  (:use #:common-lisp)
+  (:use-reexport #:nyxt/utilities)
   #+nyxt-debug-make-instance
   (:shadow #:make-instance)
   (:export #:use-nyxt-package-nicknames)
