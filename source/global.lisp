@@ -124,30 +124,27 @@ Don't set this, it would lose its meaning.")
   :test #'equal)
 
 (defun version ()
-  "Return (MAJOR MINOR PATCH COMMIT)."
-  (destructuring-bind (version &optional commits commit)
-      (str:split "-" +version+)
-    (let* ((commits (and commits (parse-integer commits)))
-           (parsed-version (uiop:parse-version version))
-           (major (first parsed-version))
-           (minor (second parsed-version))
-           (patch (third parsed-version)))
-      (values (list major minor patch commit)
-              commits))))
+  "Return 4 values: MAJOR, MINOR, PATCH and COMMIT.
+Return nil on error."
+  (ignore-errors
+   (destructuring-bind (version &optional commits commit)
+       (str:split "-" +version+)
+     (let* ((commits (and commits (parse-integer commits))))
+       (destructuring-bind (&optional major minor patch)
+           (uiop:parse-version version)
+         (values major minor patch commit commits))))))
 
-(multiple-value-bind (version commits)
+(multiple-value-bind (major minor patch commit commits)
     (version)
-  (destructuring-bind (major minor patch commit)
-      version
-    (flet ((push-feature (string)
-             (pushnew (intern (uiop:strcat "NYXT-" (princ-to-string string)) "KEYWORD") *features*)))
-      (when major
-        (push-feature major))
-      (when minor
-        (push-feature (format nil "~a.~a" major minor)))
-      (when patch
-        (push-feature (format nil "~a.~a.~a" major minor patch)))
-      (when commit
-        (push-feature (string-upcase commit)))
-      (when (and commits (not (zerop commits)))
-        (push-feature "UNSTABLE")))))
+  (flet ((push-feature (string)
+           (pushnew (intern (uiop:strcat "NYXT-" (princ-to-string string)) "KEYWORD") *features*)))
+    (when major
+      (push-feature major))
+    (when minor
+      (push-feature (format nil "~a.~a" major minor)))
+    (when patch
+      (push-feature (format nil "~a.~a.~a" major minor patch)))
+    (when commit
+      (push-feature (string-upcase commit)))
+    (when (and commits (not (zerop commits)))
+      (push-feature "UNSTABLE"))))
