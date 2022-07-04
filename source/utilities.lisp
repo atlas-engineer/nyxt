@@ -165,8 +165,9 @@ See `on'."
   "Like `read' with standard IO syntax but does not accept reader macros ('#.').
 UIOP has `uiop:safe-read-from-string' but no `read' equivalent.
 This is useful if you do not trust the input."
-  (uiop:with-safe-io-syntax (:package *package*)
-    (read input-stream eof-error-p eof-value recursive-p)))
+  (let ((package *package*))
+    (uiop:with-safe-io-syntax (:package package)
+      (read input-stream eof-error-p eof-value recursive-p))))
 
 (export-always 'safe-slurp-stream-forms)
 (defun safe-slurp-stream-forms (stream)
