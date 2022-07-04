@@ -329,7 +329,15 @@ SLY install.")
 
 (define-version "3.0.0"
   (:ul
+   (:li "New " (:code "migration-guide") " command to help the user mgirate "
+        "their configuration between major version releases. "
+        "Migration suggestions are automatically given on startup error.")
+   (:li "The auto-config file is now suffixed with the major version number."
+        "This means that upgrading Nyxt to a new major version will ignore"
+        " the previous auto-configuration (which probably wouldn't work anyways).")
+   (:li "UserScript support (such as GreaseMonkey scripts).")
    (:li "Revamp status buffer design.")
+   (:li "Status buffer is now fully customizable.")
    (:li "New prompt-buffer fuzzy matching algorithm, hopefully offering more
   relevant results.  (Thanks to @BlueFlo0d!)")
    (:li "Add support for the Gopher and Gemini protocols.")
@@ -358,14 +366,27 @@ SLY install.")
    (:li (:code "application-mode") " is now " (:code "passthrough-mode") ".")
    (:li (:code "web-mode") " is no more.  Instead much of its features has been  moved to the new "
         (:code "document-mode") ".  The buffer history management is now handled in a separate mode, "
-        (:code "history-mode") ". " (:code "bookmarklets") " have they own mode too, " (:code "bookmarklets-mode") ".")
-   (:li "Internal pages are now also " (:code "web-buffer") "s.  Most of the buffer customizations can be done on the "
+        (:code "history-mode") "."
+        (:code "bookmarklets") " have they own mode too, " (:code "bookmarklets-mode") ".")
+   (:li "Internal pages are now also " (:code "web-buffer") "s."
+        " Most of the buffer customizations can be done on the "
         (:code "web-buffer") " class.")
    (:li "The buffer hierarchy has been redesigned.  Now " (:code "buffer")
         " is a minimal class and instantiating such a buffer is only useful if you need a dummy buffer. "
         (:code "web-buffer") " inherits from a mix of specialized buffer subclasses, such as "
         (:code "mode-buffer") " and " (:code "input-buffer") ".  For the full list, see the "
         (:code "buffer") " class documentation and browse its subclasses.")
+   (:li "Revamped lisp-repl.  Multiple commands can be run at the same time."
+        "Results can be referred to via dynamic variables.")
+   (:li "The history-tree buffer links are now clickable "
+        "and navigate the corresponding buffer to the corresponding history entry.")
+   (:li "Fixed context menu entries to match Nyxt more.")
+   (:li "The source code is not shipped together with Nyxt."
+        "This enables to inspect the source of most Nyxt functions.")
+   (:li (:code "load-after-system") " and " (:code "nyxt-config-file")
+        "have been replaced with " (:code "define-nyxt-user-system")
+        " and " (:code "define-nyxt-user-system-and-load") ".")
+
 
    (:h3 "Bindings")
    (:ul
@@ -390,4 +411,21 @@ SLY install.")
     (:li "Input processing is now easier to customize with " (:code "command-dispatcher")
          " and " (:code "input-skip-dispatcher") " slots of " (:code "window") ".")
     (:li (:code "on") " and " (:code "on-once") " helpers to shorten attaching to hooks.")
-    (:li "Rename buffer slot " (:code "load-status") " to " (:code "status") "."))))
+    (:li "Rename buffer slot " (:code "load-status") " to " (:code "status") ".")
+    (:li "Export " (:code "system-information") ".")
+    (:li "The core " (:code "nyxt") " packages are now locked"
+         "to prevent against accidental clobbering from the user side.")
+    (:li "New " (:code "ffi-buffer-load-html") " and " (:code "ffi-buffer-load-alternate-html")
+         "."
+         "This is useful to set the buffer content without resorting to expensive JavaScript calls.")
+    (:li "Removed " (:code "clipboard-text") " since it's redundant with " (:code "ffi-buffer-copy") ".")
+    (:li "Specialize " (:code "prompter:object-attributes") " on " (:code "source") " to o."
+         "This offers more customizability.")
+    (:li "General purpose helpers can be found in the " (:code "nyxt/utilities") " package.")
+    (:li "New " (:code "nxref") " Spinneret tag for cross-referencing."))
+
+   (:h3 "Bug fixes")
+   (:ul
+    (:li "Lisp run with the --script or --eval command line arguments"
+         " now default to the " (:code "nyxt-user") " package.")
+    (:li "Various " (:code "spell-check-mode") " fixes.  (Thanks to @hendursaga!) "))))
