@@ -435,7 +435,9 @@ to use the full syntax."
 (export-always 'define-nyxt-user-system-and-load)
 (defmacro define-nyxt-user-system-and-load (name &rest args &key depends-on components
                                             &allow-other-keys)
-  "Like `define-nyxt-user-system' but immediately call `load-system*' on the system.
+  "Like `define-nyxt-user-system' but schedule to load the system when all
+DEPENDS-ON packages are loaded.
+If they already are, load the system now.
 Return the system."
   ;; We specify DEPENDS-ON and COMPONENTS to emphasize their availability.
   (declare (ignore depends-on components))
