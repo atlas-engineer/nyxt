@@ -10,7 +10,7 @@ Ensures that a single keybindings mode, such as `nyxt/emacs-mode', is enabled.")
   "All modes that set `keyscheme' should inherit from this mode.
 Ensures that a single keybindings mode, such as `nyxt/emacs-mode', is enabled."
   ((rememberable-p nil)
-   (keyscheme
+   (keyscheme                           ; This specialized `nyxt:keyscheme'.
     keyscheme:cua
     :type keymaps:keyscheme
     :documentation "The `keymaps:keyscheme' to enable.")
