@@ -394,7 +394,7 @@ be configured in the respective configuration files.
 #+begin_src lisp
 (load (merge-pathnames #p"quicklisp/setup.lisp" (user-homedir-pathname)))
 (ql:quickload 'slynk)
-(define-nyxt-user-system-and-load :depends-on (slynk) :components ("my-slynk"))
+(define-nyxt-user-system-and-load nyxt/user/slynk :depends-on (slynk) :components ("my-slynk"))
 #+end_src
 
 2. Create a file called =my-slynk.lisp= where you will specify your
