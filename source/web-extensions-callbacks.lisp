@@ -464,13 +464,13 @@ there. `reply-user-mesage' takes care of sending the response back."
         ("runtime.getBrowserInfo"
          (wrap-in-channel
           (encode-json
-           (let ((nyxt-version (str:split "-" nyxt:+version+)))
+           (multiple-value-bind (major &optional _ patch)
+               (version)
+             (declare (ignore _))
              `(("name" . "Nyxt")
                ("vendor" . "Atlas Engineer LLC")
-               ("version" ,(first nyxt-version))
-               ("build" ,(if (rest nyxt-version)
-                             (third nyxt-version)
-                             "")))))))
+               ("version" ,(or major ""))
+               ("build" ,(or patch "")))))))
         ("storage.local.get"
          (wrap-in-channel (storage-local-get buffer message-params)))
         ("storage.local.set"
