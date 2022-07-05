@@ -69,4 +69,4 @@ If PASSWORD-NAME is empty, then generate a new password."))
     (namestring pathname)))
 
 (export-always '*interfaces*)
-(defvar *interfaces* (list))
+(defvar *interfaces* '())
