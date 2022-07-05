@@ -46,11 +46,13 @@ existing keyscheme `cua'."
                       :parents parents
                       :bound-type 'nyxt-keymap-value)))
 
+(export-always 'default)
+(defvar default (make-keyscheme "default"))
 (export-always 'cua)
-(defvar cua (make-keyscheme "cua"))
+(defvar cua (make-keyscheme "cua" default))
 (export-always 'emacs)
-(defvar emacs (make-keyscheme "emacs" cua))
+(defvar emacs (make-keyscheme "emacs" default))
 (export-always 'vi-normal)
-(defvar vi-normal (make-keyscheme "vi-normal" cua emacs))
+(defvar vi-normal (make-keyscheme "vi-normal" default))
 (export-always 'vi-insert)
-(defvar vi-insert (make-keyscheme "vi-insert" cua))
+(defvar vi-insert (make-keyscheme "vi-insert"))
