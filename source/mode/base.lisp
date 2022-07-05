@@ -10,6 +10,10 @@ This mode is a good candidate to be passed to `make-buffer'."
    (rememberable-p nil)
    (keyscheme-map
     (define-keyscheme-map "base" ()
+      keyscheme:default
+      (list
+       "C-l" 'set-url
+       "M-l" 'set-url-new-buffer)
       keyscheme:cua
       (list
        "C-q" 'quit
@@ -22,8 +26,6 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-`" 'switch-buffer-last
        "C-pageup" 'switch-buffer-previous
        "C-pagedown" 'switch-buffer-next
-       "C-l" 'set-url
-       "M-l" 'set-url-new-buffer
        "C-u M-l" 'set-url-new-nosave-buffer
        "f5" 'reload-current-buffer
        "C-r" 'reload-current-buffer
