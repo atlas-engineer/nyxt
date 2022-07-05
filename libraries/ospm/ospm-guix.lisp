@@ -13,7 +13,7 @@
                    :type (or null guix-package))
    (path ""
          :type (or string pathname)
-         :documentation "The path is not automatically filled in `make-guix-package'.
+         :documentation "Path is not automatically filled in `make-guix-package'.
 Call `expand-outputs' to fill this field for all the outputs of a package.
 Also see `expand-output-p' and `expand-outputs-p'.")
    (size 0

@@ -231,7 +231,7 @@ Value is the loadable URL of that file.")
                    :documentation "Configuration for popup opening on extension icon click.")
    (storage-path nil
                  :type (or null extension-storage-file)
-                 :documentation "The path that the storage API stores data in.")
+                 :documentation "Path that the storage API stores data in.")
    (destructor (lambda (mode)
                  (dolist (script (content-scripts mode))
                    (remove-content-script (buffer mode) mode script))))

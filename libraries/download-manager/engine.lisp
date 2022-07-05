@@ -52,7 +52,7 @@ This may be different from the URL the user requested, see REQUESTED-URL.")
    (file :accessor file
          :initarg :file
          :initform ""
-         :documentation "The path to the local storage location of the
+         :documentation "Path pointing to the local storage location of the
 downloaded file.")
    (downstream :accessor downstream
                :initarg :downstream
