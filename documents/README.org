@@ -384,40 +384,9 @@ be configured in the respective configuration files.
 
 [[https://github.com/joaotavora/sly][=SLY=]] is a fork of =SLIME= with additional functionality.
 
-**** Quicklisp Setup
+1. Run the command =start-slynk= in Nyxt.
 
-*Steps:*
-1. Add the following lines to your Nyxt configuration file. If your Quicklisp directory
-   differs, change it accordingly:
-
-#+NAME: nyxt/config.lisp
-#+begin_src lisp
-(load (merge-pathnames #p"quicklisp/setup.lisp" (user-homedir-pathname)))
-(ql:quickload 'slynk)
-(define-nyxt-user-system-and-load nyxt-user/slynk :depends-on (slynk) :components ("my-slynk"))
-#+end_src
-
-2. Create a file called =my-slynk.lisp= where you will specify your
-   =start-slynk= command:
-
-#+NAME: nyxt/my-slynk.lisp
-#+begin_src lisp
-(define-command-global start-slynk (&optional (slynk-port *swank-port*))
-  "Start a Slynk server.
-
-Waits for incoming connections, e.g. from SLY.
-
-    Warning: This allows Nyxt to be controlled remotely, that is, to execute
-    arbitrary code with the privileges of the user running Nyxt.  Make sure
-    you understand the security risks associated with this before running
-    this command."
-  (slynk:create-server :port slynk-port :dont-close t)
-  (echo "Slynk server started at port ~a" slynk-port))
-#+end_src
-
-3. Run the command =start-slynk= in Nyxt.
-
-4. Proceed as in the previous SLIME section by replacing ~slime-connect~ with
+2. Proceed as in the previous SLIME section by replacing ~slime-connect~ with
    ~sly-connect~.
 
 **** Non-Quicklisp Setup
