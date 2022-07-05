@@ -202,7 +202,7 @@ Rely (in the order of importance) on:
 - Tag name.
 - CSS Classes.
 - Attributes.
-- Parent and sibling node selectors (recursively).
+- Parent node selectors (recursively).
 
 If none of those provides the unique selector, return the most specific selector
 calculated.
@@ -278,10 +278,6 @@ Return two values:
              (unique-p (selconcat
                         :sel ":nth-child("
                         (princ-to-string (1+ (position element family))) ")")))
-        (selreturn))
-      ;; Then check for previous siblings.
-      (when (and previous
-                 (unique-p (selconcat (get-unique-selector previous)  " ~ " :sel)))
         (selreturn))
       ;; Finally, go up the hierarchy.
       (when (and parents
