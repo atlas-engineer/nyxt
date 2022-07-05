@@ -1018,8 +1018,9 @@ See `finalize-buffer'."
        ((and (toplevel-p request-data)
              (not (quri:uri= (quri:uri (webkit:webkit-uri-request-uri request))
                              (url request-data))))
-        ;; Low-level URL string, we must not render the puni codes so use
+        ;; Low-level URL string, we must not render punycode so use
         ;; `quri:render-uri'.
+        ;; See https://datatracker.ietf.org/doc/html/rfc3492.
         (setf (webkit:webkit-uri-request-uri request) (quri:render-uri (url request-data)))
         (log:debug "Don't forward to ~s's renderer (resource request replaced with ~s)."
                    buffer
