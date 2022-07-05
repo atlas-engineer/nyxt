@@ -404,7 +404,38 @@ instance must be non-nil.")
 exec nyxt --headless --no-auto-config --profile nosave --config \"$0\"
 |#
 
-;; TODO!!!"))
+;; Nyxt shows a history restore prompt by default, you don't want it to.
+\(define-configuration browser
+  ((session-restore-prompt :never-restore)))
+
+;; Load the URL of Nyxt repository by default in all new buffers.
+;; Alternatively, call `buffer-load' in `*after-startup-hook*'.
+\(define-configuration browser
+  ((default-new-buffer-url (quri:uri \"https://github.com/atlas-engineer/nyxt\"))))
+
+\(hooks:on *after-startup-hook* ()
+  ;; Once the page's done loading, do your thing.
+  (once-on (buffer-loaded-hook (current-buffer)) (buffer)
+    ;; It's sometimes necessary to sleep, as `buffer-loaded-hook'
+    ;; fires when the page is loaded, which does not mean that all the
+    ;; resources and scripts are done loading yet. Give it some time
+    ;; there.
+    (sleep 0.5)
+    ;; All the Nyxt reporting is on in headless mode, you may want to
+    ;; log thing with `echo' and `echo-warning'.
+    (echo \"Nyxt GitHub repo open.\")
+    ;; Updating the `document-model' so that it includes the most
+    ;; relevant information about the page.
+    (nyxt:update-document-model)
+    ;; Click the star button.
+    (nyxt/dom:click-element
+     :nyxt-identifier
+     (get-nyxt-id (elt (clss:select \"[aria-label=\\\"Star this repository\\\"]\" (document-model buffer)) 0)))
+    (echo \"Clicked the star.\")
+    ;; It's a good tone to `nyxt:quit' after you're done, but if you
+    ;; use nyxt --no-socket, you don't have to. Just be ready for some
+    ;; RAM eating :)
+    (nyxt:quit)))"))
     (:p "The thing to put into the headless-config.lisp is a set of
     configuration forms to make Nyxt automatically perform some actions to the
     pages opened and/or on certain events. Things you'd most probably want to
