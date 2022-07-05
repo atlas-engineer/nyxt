@@ -104,9 +104,9 @@ These modes will then be activated on every visit to this domain/host/URL."
     (make-instance 'auto-mode-rules-file)
     :type auto-mode-rules-file
     :documentation "The file where the auto-mode rules are saved.")
-   (keymap-scheme
-    (define-scheme "auto-mode"
-      scheme:cua
+   (keyscheme-map
+    (define-keyscheme-map "auto-mode" ()
+      keyscheme:cua
       (list
        "C-R" 'reload-with-modes)))
    (prompt-on-mode-toggle

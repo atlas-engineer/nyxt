@@ -13,9 +13,9 @@
 strong, sub, sup, listing, xmp, plaintext, basefont, big, blink, center, font,
 marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
     :type string)
-   (keymap-scheme
-    (define-scheme "visual"
-      scheme:cua
+   (keyscheme-map
+    (define-keyscheme-map "visual" ()
+      keyscheme:cua
       (list
        "up" 'backward-line
        "down" 'forward-line
@@ -36,7 +36,7 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
        "C-shift-up" 'beginning-line-with-selection
        "C-shift-down" 'end-line-with-selection
        "C-c" 'visual-mode)
-      scheme:emacs
+      keyscheme:emacs
       (list
        "C-h" 'select-paragraph
        "shift-space" 'toggle-mark
@@ -57,7 +57,7 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
        "M->" 'forward-document
        "M-<" 'backward-document)
       ;; vi keybindings only enable use of vim's plain "visual" mode for now
-      scheme:vi-normal
+      keyscheme:vi-normal
       (list
        "h" 'backward-char
        "j" 'forward-line
@@ -82,7 +82,7 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
   (block-page-keypresses)
   (select-paragraph mode)
   ;; imitating visual mode in vim
-  (when (equal (keymap-scheme-name (buffer mode)) scheme:vi-normal)
+  (when (equal (keyscheme (buffer mode)) keyscheme:vi-normal)
     (setf (mark-set mode) t)))
 
 (defmethod disable ((mode visual-mode) &key)

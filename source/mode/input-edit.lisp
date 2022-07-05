@@ -134,11 +134,11 @@ bindings in other modes, so you will have to disable/enable it as
 necessary."
   ((visible-in-status-p nil)
    (rememberable-p nil)
-   (keymap-scheme
-    (define-scheme "input-edit-mode"
-      scheme:cua
+   (keyscheme-map
+    (define-keyscheme-map "input-edit-mode" ()
+      keyscheme:cua
       (list)
-      scheme:emacs
+      keyscheme:emacs
       (list
        "C-f" 'cursor-forwards
        "C-b" 'cursor-backwards

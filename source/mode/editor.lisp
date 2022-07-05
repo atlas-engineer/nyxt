@@ -9,19 +9,19 @@
   "Mode for editor modes to extend. Importantly, it is required to implement the
 methods get/set-content for each editor-mode. This will allow your mode to
 get/set-content (which is necessary for operation)."
-  ((keymap-scheme (define-scheme "editor"
-                    scheme:cua
+  ((keyscheme-map (define-keyscheme-map "editor" ()
+                    keyscheme:cua
                     (list
                      "C-o" 'editor-open-file
                      "C-s" 'editor-write-file)
-                    scheme:emacs
+                    keyscheme:emacs
                     (list
                      "C-x C-f" 'editor-open-file
                      "C-x C-s" 'editor-write-file)
-                    scheme:vi-normal
+                    keyscheme:vi-normal
                     (list
                      "C-o" 'editor-open-file))
-                  :type keymap:scheme))
+                  :type keymaps:keyscheme))
   (:toggler-command-p nil))
 
 (defmethod enable ((editor editor-mode) &key) ; TODO: Use an internal page instead of this HTML injection?

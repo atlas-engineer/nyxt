@@ -27,7 +27,7 @@ modes, commands, etc."))
 (in-package :nyxt)
 (defvar *imports* '((#:alexandria #:compose #:curry #:mappend #:rcurry)
                     (#:trivia #:match #:multiple-value-match #:lambda-match #:guard)
-                    (#:keymap #:define-key #:define-scheme)
+                    (#:nkeymaps #:define-key #:define-keyscheme-map)
                     (#:class-star #:define-class)
                     (#:serapeum #:export-always #:->))
   "Default list of symbol imports used by `nyxt:define-package'.")
@@ -44,7 +44,8 @@ modes, commands, etc."))
           (:lpara :lparallel)
           (:class* :hu.dwim.defclass-star)
           (:hooks :nhooks)
-          (:files :nfiles))
+          (:files :nfiles)
+          (:keymaps :nkeymaps))
         :do (trivial-package-local-nicknames:add-package-local-nickname nickname package :nyxt)))
 
 (defmacro nyxt::use-nyxt-package-nicknames (&optional (package *package*))
@@ -100,7 +101,7 @@ initforms may not be caught."
 
 (uiop:define-package nyxt-user
   (:use #:common-lisp #:nyxt #:nyxt/utilities)
-  (:import-from #:keymap #:define-key #:define-scheme)
+  (:import-from #:nkeymaps #:define-key #:define-keyscheme-map)
   (:import-from #:class-star #:define-class)
   (:documentation "Package left for the user to fiddle with.  If the
 configuration file package is left unspecified, it defaults to this.  It's not
@@ -124,3 +125,4 @@ and `serapeum:':
 
 (trivial-package-local-nicknames:add-package-local-nickname :hooks :nhooks :nyxt-user)
 (trivial-package-local-nicknames:add-package-local-nickname :files :nfiles :nyxt-user)
+(trivial-package-local-nicknames:add-package-local-nickname :keymaps :nkeymaps :nyxt-user)

@@ -14,7 +14,7 @@ To work around this issue, we store them in this list while they are pressed.
 See `push-modifiers', `pop-modifiers' and `key-event-modifiers'.")
    (modifier-translator #'translate-modifiers
                         :documentation "Function that returns a list of
-modifiers understood by `keymap:make-key'.  You can customize this slot if you
+modifiers understood by `keymaps:make-key'.  You can customize this slot if you
 want to change the behaviour of modifiers, for instance swap 'control' and
 'meta':
 
@@ -601,7 +601,7 @@ Return nil when key must be discarded, e.g. for modifiers."
 
 (-> translate-modifiers (list &optional gdk:gdk-event) list)
 (defun translate-modifiers (modifier-state &optional event)
-  "Return list of modifiers fit for `keymap:make-key'.
+  "Return list of modifiers fit for `keymaps:make-key'.
 See `gtk-browser's `modifier-translator' slot."
   (declare (ignore event))
   (let ((plist '(:control-mask "control"
@@ -697,10 +697,10 @@ See `gtk-browser's `modifier-translator' slot."
     (if key-string
         (progn
           (alex:appendf (key-stack sender)
-                        (list (keymap:make-key :code keycode
-                                               :value key-string
-                                               :modifiers modifiers
-                                               :status :pressed)))
+                        (list (keymaps:make-key :code keycode
+                                                :value key-string
+                                                :modifiers modifiers
+                                                :status :pressed)))
           (funcall (input-dispatcher sender) event
                    buffer
                    sender printable-value))
@@ -736,10 +736,9 @@ See `gtk-browser's `modifier-translator' slot."
       (update-prompt buffer))
     (when key-string
       (alex:appendf (key-stack window)
-                    (list (keymap:make-key
-                           :value key-string
-                           :modifiers modifiers
-                           :status :pressed)))
+                    (list (keymaps:make-key :value key-string
+                                            :modifiers modifiers
+                                            :status :pressed)))
       (funcall (input-dispatcher window) event sender window nil))))
 
 (define-ffi-method on-signal-scroll-event ((sender gtk-buffer) event)
@@ -765,10 +764,9 @@ See `gtk-browser's `modifier-translator' slot."
                              event)))
     (when key-string
       (alex:appendf (key-stack window)
-                    (list (keymap:make-key
-                           :value key-string
-                           :modifiers modifiers
-                           :status :pressed)))
+                    (list (keymaps:make-key :value key-string
+                                            :modifiers modifiers
+                                            :status :pressed)))
       (funcall (input-dispatcher window) event sender window nil))))
 
 (define-class gtk-scheme ()
@@ -965,28 +963,27 @@ See `finalize-buffer'."
                                (webkit:webkit-navigation-action-get-modifiers navigation-action))))
     (setf url (quri:uri (webkit:webkit-uri-request-uri request)))
     (let* ((request-data
-            (hooks:run-hook
-             (request-resource-hook buffer)
-             (hooks:run-hook (pre-request-hook buffer)
-                             (make-instance 'request-data
-                                            :buffer buffer
-                                            :url (quri:copy-uri url)
-                                            :keys (unless (uiop:emptyp mouse-button)
-                                                    (list (keymap:make-key
-                                                           :value mouse-button
-                                                           :modifiers modifiers)))
-                                            :event-type event-type
-                                            :new-window-p is-new-window
-                                            :http-method method
-                                            :toplevel-p (quri:uri=
-                                                         url (quri:uri (webkit:webkit-web-view-uri
-                                                                        (gtk-object buffer))))
-                                            :mime-type mime-type
-                                            :known-type-p is-known-type
-                                            :file-name file-name))))
+             (hooks:run-hook
+              (request-resource-hook buffer)
+              (hooks:run-hook (pre-request-hook buffer)
+                              (make-instance 'request-data
+                                             :buffer buffer
+                                             :url (quri:copy-uri url)
+                                             :keys (unless (uiop:emptyp mouse-button)
+                                                     (list (keymaps:make-key :value mouse-button
+                                                                             :modifiers modifiers)))
+                                             :event-type event-type
+                                             :new-window-p is-new-window
+                                             :http-method method
+                                             :toplevel-p (quri:uri=
+                                                          url (quri:uri (webkit:webkit-web-view-uri
+                                                                         (gtk-object buffer))))
+                                             :mime-type mime-type
+                                             :known-type-p is-known-type
+                                             :file-name file-name))))
            (keymap (scheme-keymap (buffer request-data) (request-resource-scheme (buffer request-data))))
-           (bound-function (the (or symbol keymap:keymap null)
-                                (keymap:lookup-key (keys request-data) keymap))))
+           (bound-function (the (or symbol keymaps:keymap null)
+                                (keymaps:lookup-key (keys request-data) keymap))))
       (cond
        ((not (typep request-data 'request-data))
         (log:debug "Don't forward to ~s's renderer (non request data)."

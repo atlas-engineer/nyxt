@@ -43,14 +43,14 @@
 (define-mode repl-mode ()
   "Mode for interacting with the REPL."
   ((rememberable-p nil)
-   (keymap-scheme
-    (define-scheme "repl"
-      scheme:cua
+   (keyscheme-map
+    (define-keyscheme-map "repl" ()
+      keyscheme:cua
       (list
        "C-return" 'evaluate-cell
        "(" 'paren
        "tab" 'tab-complete-symbol)
-      scheme:emacs
+      keyscheme:emacs
       (list
        "C-f" 'nyxt/input-edit-mode:cursor-forwards
        "C-b" 'nyxt/input-edit-mode:cursor-backwards
@@ -65,7 +65,7 @@
        "C-^" 'move-cell-up
        "M-p" 'previous-cell
        "M-n" 'next-cell)
-      scheme:vi-normal
+      keyscheme:vi-normal
       (list
        ;; TODO: deleting chars/words
        "l" 'nyxt/input-edit-mode:cursor-forwards

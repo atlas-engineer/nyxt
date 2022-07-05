@@ -58,6 +58,7 @@ This system does nothing in particular.")
                quri
                serapeum
                nhooks
+               nkeymaps
                str
                phos
                plump
@@ -78,7 +79,6 @@ This system does nothing in particular.")
                nyxt/download-manager
                nyxt/history-tree
                nyxt/password-manager
-               nyxt/keymap
                nyxt/class-star
                nyxt/ospm
                nyxt/prompter
@@ -152,7 +152,7 @@ This system does nothing in particular.")
                  (:file "help" :depends-on ("document" "search-buffer"))
                  (:file "history" :depends-on ("history-tree" "list-history"))
                  (:file "certificate-exception" :depends-on ("history"))
-                 (:file "keymap-scheme")
+                 (:file "keyscheme")
                  (:file "proxy")
                  (:file "download" :depends-on ("file-manager"))
                  (:file "process")
@@ -217,7 +217,6 @@ This system does nothing in particular.")
   :in-order-to ((test-op (test-op "nyxt/tests")
                          (test-op "nyxt/download-manager/tests")
                          (test-op "nyxt/history-tree/tests")
-                         (test-op "nyxt/keymap/tests")
                          (test-op "nyxt/class-star/tests")
                          (test-op "nyxt/ospm/tests")
                          (test-op "nyxt/prompter/tests"))))
@@ -482,25 +481,6 @@ This system does nothing in particular.")
                (:file "password-security")
                ;; Keep password-store last so that it has higher priority.
                (:file "password-pass")))
-
-(defsystem "nyxt/keymap"
-  :defsystem-depends-on (nyxt-asdf)
-  :class :nyxt-system
-  :depends-on (alexandria fset str)
-  :pathname #p"NYXT:libraries;keymap;"
-  :components ((:file "package")
-               (:file "types")
-               (:file "conditions")
-               (:file "keymap")
-               (:file "scheme")
-               (:file "scheme-names"))
-  :in-order-to ((test-op (test-op "nyxt/keymap/tests"))))
-
-(defsystem "nyxt/keymap/tests"
-  :defsystem-depends-on (nyxt-asdf)
-  :depends-on (alexandria fset nyxt/keymap prove)
-  :components ((:file "libraries/keymap/test-package")
-               (:nyxt-test "libraries/keymap/tests/")))
 
 (defsystem "nyxt/class-star"
   :defsystem-depends-on (nyxt-asdf)

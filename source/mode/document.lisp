@@ -18,9 +18,9 @@ It does not assume being online."))
   "Base mode for interacting with documents."
   ((visible-in-status-p nil)
    (rememberable-p nil)
-   (keymap-scheme
-    (define-scheme "web"
-      scheme:cua
+   (keyscheme-map
+    (define-keyscheme-map "web" ()
+      keyscheme:cua
       (list
        "C-M-Z" 'nyxt/passthrough-mode:passthrough-mode
        "M-i" 'focus-first-input-field
@@ -58,7 +58,7 @@ It does not assume being online."))
        "keypadpageup" 'scroll-page-up
        "keypadprior" 'scroll-page-up
        "C-p" 'print-buffer)
-      scheme:emacs
+      keyscheme:emacs
       (list
        "C-g" 'nothing              ; Emacs users may hit C-g out of habit.
        "C-y" 'paste
@@ -80,7 +80,7 @@ It does not assume being online."))
        "M-v" 'scroll-page-up
        "C-u C-x C-f" 'edit-with-external-editor)
 
-      scheme:vi-normal
+      keyscheme:vi-normal
       (list
        "y y" 'copy
        "p" 'paste

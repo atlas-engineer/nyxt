@@ -38,9 +38,9 @@ and to index the top of the page.")
                    :documentation "Defines which elements are to be hinted. The
 hints-selector syntax is that of CLSS, and broadly, that of CSS. Use it to
 define which elements are picked up by element hinting.")
-   (keymap-scheme
-    (define-scheme "web"
-      scheme:cua
+   (keyscheme-map
+    (define-keyscheme-map "web" ()
+      keyscheme:cua
       (list
        "C-j" 'follow-hint
        "C-u C-j" 'follow-hint-new-buffer-focus
@@ -48,7 +48,7 @@ define which elements are picked up by element hinting.")
        "C-M-j" 'follow-hint-nosave-buffer-focus
        "C-u C-M-j" 'follow-hint-nosave-buffer
        "M-c h" 'copy-hint-url)
-      scheme:emacs
+      keyscheme:emacs
       (list
        "M-g M-g" 'follow-hint           ; Corresponds to Emacs' `goto-line'.
        "M-g g" 'follow-hint-new-buffer-focus
@@ -58,7 +58,7 @@ define which elements are picked up by element hinting.")
        "C-M-g g" 'follow-hint-nosave-buffer
        "C-x C-w" 'copy-hint-url)
 
-      scheme:vi-normal
+      keyscheme:vi-normal
       (list
        "f" 'follow-hint
        "F" 'follow-hint-new-buffer-focus

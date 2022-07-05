@@ -42,7 +42,7 @@ The channel is popped when a prompt buffer is hidden.")
    (last-key
     nil
     :export nil
-    :type (or null keymap:key)
+    :type (or null keymaps:key)
     :documentation "Last pressed key.  Useful for `self-insert'.")
    (fullscreen-p
     nil

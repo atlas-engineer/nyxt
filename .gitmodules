@@ -545,7 +545,7 @@
 [submodule "_build/phos"]
 	path = _build/phos
 	url = https://github.com/omar-polo/phos
-    shallow = true
+	shallow = true
 [submodule "_build/cl-tld"]
 	path = _build/cl-tld
 	url = https://github.com/lu4nx/cl-tld
@@ -553,4 +553,8 @@
 [submodule "_build/nfiles"]
 	path = _build/nfiles
 	url = https://github.com/atlas-engineer/nfiles
+	shallow = true
+[submodule "_build/nkeymaps"]
+	path = _build/nkeymaps
+	url = https://github.com/atlas-engineer/nkeymaps
 	shallow = true

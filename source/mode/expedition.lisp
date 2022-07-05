@@ -9,13 +9,13 @@
   "Mode for traversing a set of URLs."
   ((urls (list))
    (index 0 :documentation "The index of the current element in URLs.")
-   (keymap-scheme
-    (define-scheme "expedition"
-      scheme:cua
+   (keyscheme-map
+    (define-keyscheme-map "expedition" ()
+      keyscheme:cua
       (list
        "C-]" 'expedition-next
        "C-[" 'expedition-previous)
-      scheme:emacs
+      keyscheme:emacs
       (list
        "M-n" 'expedition-next
        "M-p" 'expedition-previous)))

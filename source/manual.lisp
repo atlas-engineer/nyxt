@@ -111,17 +111,16 @@ add the following to your configuration:")
      (:li "Emacs bindings:"
           (:pre (:code "(define-configuration buffer
   ((default-modes (append '(emacs-mode) %slot-default%))))"))))
-    (:p "You can create new scheme names with " (:code "keymap:make-scheme-name")
+    (:p "You can create new scheme names with " (:code "keymaps:make-scheme-name")
         ".  Also see the " (:code "scheme-name") " class and the "
-        (:code "define-scheme") " macro.")
-    ;; TODO: Update when the nkeymap changes:
+        (:code "define-keyscheme-map") " macro.")
     (:p "To extend the bindings of a specific mode, you can extend the mode with "
         (:code "define-configuration") " and extend its binding scheme with "
-        (:code "define-scheme") ". For example:")
+        (:code "define-keyscheme-map") ". For example:")
     (:pre (:code "(define-configuration base-mode
-  ((keymap-scheme
-    (define-scheme (:name-prefix \"my-base\" :import %slot-default%)
-      scheme:vi-normal
+  ((keyscheme-map
+    (define-keyscheme-map \"my-base\" (list :import %slot-default%)
+      keyscheme:vi-normal
       (list \"g b\" (make-command switch-buffer* ()
                     (switch-buffer :current-is-last-p t)))))))"))
     (:p "The " (:nxref :slot-of override-map input-buffer) " is a keymap that has priority over
@@ -148,20 +147,20 @@ keymap.")
 
 \(define-mode my-mode ()
   \"Dummy mode for the custom key bindings in `*my-keymap*'.\"
-  ((keymap-scheme (keymap:make-scheme
-                   scheme:cua *my-keymap*
-                   scheme:emacs *my-keymap*
-                   scheme:vi-normal *my-keymap*))))
+  ((keyscheme-map (keymaps:make-keyscheme-map
+                   keyscheme:cua *my-keymap*
+                   keyscheme:emacs *my-keymap*
+                   keyscheme:vi-normal *my-keymap*))))
 
 \(define-configuration (buffer web-buffer)
   ((default-modes (append '(my-mode) %slot-default%))))"))
 
     (:p "Bindings are subject to various translations as per "
-        (:nxref :variable t keymap:*translator*) ". "
+        (:nxref :variable t keymaps:*translator*) ". "
         "By default if it fails to find a binding it tries again with inverted
 shifts.  For instance if " (:code "C-x C-F") " fails to match anything " (:code "C-x C-f")
         " is tried."
-        "See the default value of " (:nxref :variable t keymap:*translator*) " to learn how to
+        "See the default value of " (:nxref :variable t keymaps:*translator*) " to learn how to
          custsomize it or set it to " (:code "nil") " to disable all forms of
          translation.")
 

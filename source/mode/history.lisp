@@ -22,9 +22,9 @@ search.")
     nil
     :type boolean
     :documentation "Whether history navigation is restricted by buffer-local history.")
-   (keymap-scheme
-    (define-scheme "history"
-      scheme:cua
+   (keyscheme-map
+    (define-keyscheme-map "history" ()
+      keyscheme:cua
       (list
        "C-M-right" 'history-forwards-all-query
        "C-M-left" 'history-all-query
@@ -38,7 +38,7 @@ search.")
        "M-[" 'history-backwards
        "button9" 'history-forwards
        "button8" 'history-backwards)
-      scheme:emacs
+      keyscheme:emacs
       (list
        "C-M-f" 'history-forwards-all-query
        "C-M-b" 'history-all-query
@@ -49,7 +49,7 @@ search.")
        "button9" 'history-forwards
        "button8" 'history-backwards)
 
-      scheme:vi-normal
+      keyscheme:vi-normal
       (list
        "H" 'history-backwards
        "L" 'history-forwards-maybe-query

@@ -21,9 +21,9 @@ Each source offers a set of 'return-actions' for its selection(s).
 Return-actions can be listed and run with `return-selection-over-action' (bound to
 \"M-return\" by default)."
   ((visible-in-status-p nil)
-   (keymap-scheme
-    (define-scheme "prompt-buffer"
-      scheme:cua
+   (keyscheme-map
+    (define-keyscheme-map "prompt-buffer" ()
+      keyscheme:cua
       (list
        "escape" 'cancel-input
        "down" 'select-next
@@ -57,7 +57,7 @@ Return-actions can be listed and run with `return-selection-over-action' (bound 
        "C-v" 'paste
        "M-h" 'history)
 
-      scheme:emacs
+      keyscheme:emacs
       (list
        "C-y" 'paste
        "C-n" 'select-next
@@ -87,7 +87,7 @@ Return-actions can be listed and run with `return-selection-over-action' (bound 
        "M-d" 'nyxt/input-edit-mode:delete-forwards-word
        "C-x h" 'select-all)
 
-      scheme:vi-normal
+      keyscheme:vi-normal
       (list
        "j" 'select-next
        "k" 'select-previous
@@ -122,7 +122,7 @@ Return-actions can be listed and run with `return-selection-over-action' (bound 
        ;; VI has no short keybinding for delete-backwards-word, hasn't it?
        "d w" 'nyxt/input-edit-mode:delete-forwards-word)
 
-      scheme:vi-insert
+      keyscheme:vi-insert
       (list
        "C-j" 'select-next
        "C-k" 'select-previous
