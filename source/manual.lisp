@@ -148,9 +148,9 @@ keymap.")
 \(define-mode my-mode ()
   \"Dummy mode for the custom key bindings in `*my-keymap*'.\"
   ((keyscheme-map (keymaps:make-keyscheme-map
-                   keyscheme:cua *my-keymap*
-                   keyscheme:emacs *my-keymap*
-                   keyscheme:vi-normal *my-keymap*))))
+                   nyxt/keyscheme:cua *my-keymap*
+                   nyxt/keyscheme:emacs *my-keymap*
+                   nyxt/keyscheme:vi-normal *my-keymap*))))
 
 \(define-configuration (buffer web-buffer)
   ((default-modes (append '(my-mode) %slot-default%))))"))
