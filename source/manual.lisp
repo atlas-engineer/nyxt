@@ -55,8 +55,7 @@ created yet."
                      "Create configuration file"))))))
 
     (:p "Example:")
-    (:pre (:code "
-\(define-configuration buffer
+    (:pre (:code "(define-configuration buffer
   ((default-modes (append '(no-script-mode) %slot-default%))))"))
     (:p "The above turns on the 'no-script-mode' (disables JavaScript) by default for
 every buffer.")
@@ -107,12 +106,10 @@ For instance if you configure the " (:nxref :slot-of override-map input-buffer)
 add the following to your configuration:")
     (:ul
      (:li "vi bindings:"
-          (:pre (:code "
-\(define-configuration buffer
+          (:pre (:code "(define-configuration buffer
   ((default-modes (append '(vi-normal-mode) %slot-default%))))")))
      (:li "Emacs bindings:"
-          (:pre (:code "
-\(define-configuration buffer
+          (:pre (:code "(define-configuration buffer
   ((default-modes (append '(emacs-mode) %slot-default%))))"))))
     (:p "You can create new scheme names with " (:code "keymap:make-scheme-name")
         ".  Also see the " (:code "scheme-name") " class and the "
@@ -121,8 +118,7 @@ add the following to your configuration:")
     (:p "To extend the bindings of a specific mode, you can extend the mode with "
         (:code "define-configuration") " and extend its binding scheme with "
         (:code "define-scheme") ". For example:")
-    (:pre (:code "
-\(define-configuration base-mode
+    (:pre (:code "(define-configuration base-mode
   ((keymap-scheme
     (define-scheme (:name-prefix \"my-base\" :import %slot-default%)
       scheme:vi-normal
@@ -131,8 +127,7 @@ add the following to your configuration:")
     (:p "The " (:nxref :slot-of override-map input-buffer) " is a keymap that has priority over
 all other keymaps.  By default, it has few bindings like the one
 for " (command-markup 'execute-command) ".  You can use it to set keys globally:")
-    (:pre (:code "
-\(define-configuration buffer
+    (:pre (:code "(define-configuration buffer
   ((override-map (let ((map (make-keymap \"override-map\")))
                    (define-key map
                      \"M-x\" 'execute-command
@@ -146,8 +141,7 @@ its keybindings have priorities over the other modes.
 Note that this kind of global keymaps also have priority over regular character
 insertion, so you should probably not bind anything without modifiers in such a
 keymap.")
-    (:pre (:code "
-\(defvar *my-keymap* (make-keymap \"my-map\"))
+    (:pre (:code "(defvar *my-keymap* (make-keymap \"my-map\"))
 \(define-key *my-keymap*
   \"C-f\" 'nyxt/history-mode:history-forwards
   \"C-b\" 'nyxt/history-mode:history-backwards)
@@ -183,8 +177,7 @@ corresponding section.")
                                            :initform)))))
         ". "
         "The following example shows one way to add new search engines.")
-    (:pre (:code "
-\(defvar *my-search-engines*
+    (:pre (:code "(defvar *my-search-engines*
   (list
    '(\"python3\" \"https://docs.python.org/3/search.html?q=~a\" \"https://docs.python.org/3\")\
    '(\"doi\" \"https://dx.doi.org/~a\" \"https://dx.doi.org/\")\)
@@ -197,8 +190,7 @@ corresponding section.")
     (:p "Note that the last search engine is the default one. For example, in
 order to make python3 the default, the above code can be slightly modified as
 follows.")
-    (:pre (:code "
-\(defvar *my-search-engines*
+    (:pre (:code "(defvar *my-search-engines*
   (list
    '(\"doi\" \"https://dx.doi.org/~a\" \"https://dx.doi.org/\")
    '(\"python3\" \"https://docs.python.org/3/search.html?q=~a\" \"https://docs.python.org/3\")))
@@ -234,8 +226,7 @@ Lisp function, except the form is " (:code "define-command") " instead of "
 (:code "defun") ". If you want this command to be invocable outside of
         the context of a mode, use " (:code "define-command-global") ".")
     (:p "Example:")
-    (:pre (:code
-           "(define-command-global bookmark-url ()
+    (:pre (:code "(define-command-global bookmark-url ()
   \"Query the user which URL to bookmark.\"
   (let ((url (prompt
               :prompt \"Bookmark URL\"
@@ -265,8 +256,7 @@ specify which input and output values are expected.")
      (:li "Modes 'enable' and 'disable' hooks."))
     (:p "For instance, if you want to force 'old.reddit.com' over 'www.reddit.com', you
 can set a hook like the following in your configuration file:")
-    (:pre (:code "
-\(defun old-reddit-handler (request-data)
+    (:pre (:code "(defun old-reddit-handler (request-data)
   (let ((url (url request-data)))
     (setf (url request-data)
           (if (search \"reddit.com\" (quri:uri-host url))
@@ -283,8 +273,7 @@ can set a hook like the following in your configuration file:")
     (:p "(See " (:nxref :function t url-dispatching-handler)
         " for a simpler way to achieve the same result.)")
     (:p "Or, if you want to set multiple handlers at once,")
-    (:pre (:code "
-\(define-configuration web-buffer
+    (:pre (:code "(define-configuration web-buffer
   ((request-resource-hook
     (reduce #'hooks:add-hook
             '(old-reddit-handler auto-proxy-handler)
@@ -319,8 +308,7 @@ new socket path.  This is particularly useful in combination with profiles,
 say to develop Nyxt or extensions.")
     (:p "Example to create a development profile that stores all data in "
         (:code "/tmp/nyxt") " and stores bookmark in an encrypted file:")
-    (:pre (:code "
-\(define-class dev-profile (nyxt-profile)
+    (:pre (:code "(define-class dev-profile (nyxt-profile)
    ((files:name :initform \"nyxt-dev\"))
    (:documentation \"Development profile.\"))
 
@@ -364,8 +352,7 @@ the " (:nxref :slot-of window status-buffer) " window slot.")
 restricted to class slot configuration.  If you want to do anything else on
 class instantiation, you'll have to specialize the
 lower-level " (:nxref :function t customize-instance) " generic function.  Example:"
-(:pre (:code "
-\(defmethod customize-instance ((buffer buffer) &key)
+(:pre (:code "(defmethod customize-instance ((buffer buffer) &key)
   (echo \"Buffer ~a created.\" buffer))")))
     (:p "All classes with metaclass " (:nxref :class t user-class) " call "
         (:nxref :function t customize-instance) " on instantiation,
@@ -435,8 +422,7 @@ as mentioned in the 'Playing videos' section.")
     (:h3 "Input method support (CJK, etc.)")
     (:p "Depending on your setup, you might have to set some environment
 variables or run some commands before starting Nyxt, for instance")
-    (:pre (:code "
-GTK_IM_MODULE=xim
+    (:pre (:code "GTK_IM_MODULE=xim
 XMODIFIERS=@im=ibus
 ibus --daemonize --replace --xim"))
     (:p "You can persist this change by saving the commands in
@@ -446,8 +432,7 @@ your " (:code ".xprofile") " or similar.")
 prompt-buffer content might be too tiny.")
     (:p "To fix this issue when using the WebKitGTK render, export the following
 environment variable before starting Nyxt:")
-    (:pre (:code "
-export GDK_SCALE=2
+    (:pre (:code "export GDK_SCALE=2
 export GDK_DPI_SCALE=0.5
 nyxt
 "))
