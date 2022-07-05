@@ -60,6 +60,12 @@ Git is used to list the tracked files -- untracked files will be ignored.
 If Git is not found, fall back to copying everything except files of type in `exclude-types'."))
 (import 'nyxt-source-directory :asdf-user)
 
+(defun nil-pathname-p (pathname)
+  "Return non-nil if PATHNAME is `uiop:*nil-pathname*' or nil."
+  (the (values boolean &optional)
+       (or (null pathname)
+           (uiop:pathname-equal pathname uiop:*nil-pathname*))))
+
 (defun basename (pathname)              ; From nfiles.
   "Return the basename, that is:
 - if it's a directory, the name of the directory,
