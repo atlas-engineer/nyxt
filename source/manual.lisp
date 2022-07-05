@@ -386,16 +386,16 @@ instance must be non-nil.")
     (:pre (:code "nyxt --profile nosave --remote --load foo.lisp --eval '(foo)'"))
 
     (:h3 "Headless mode")
-    (:p "Much like with scripting functionality, you can use Nyxt in headless (=
-    with no graphical interface appearing) mode. Possible use-cases for this
-    mode are web scraping, repetitive actions automation, and web page
-    analysis.")
-    (:p "Enabling the headless mode is easy: just start Nyxt with --headless CLI
-    flag and provide a script file as a configuration file:")
+    (:p "Much like with scripting functionality, you can use Nyxt without a
+    graphical interface (GUI). Possible use-cases for this mode are web
+    scraping, automations and web page analysis.")
+    (:p "To enable headless mode, simply start Nyxt with
+    the " (:code "--headless") " CLI flag and provide a script file to serve as
+    the configuration file:")
     (:pre (:code "nyxt --headless --config /path/to/your/headless-config.lisp"))
-    (:p "Note that you pass it a " (:i "configuration file") "—headless mode is
-    only different from the regular Nyxt functions in that it has no GUI, and is
-    all the same otherwise, contrary to all the seeming similarities to
+    (:p "Note that you pass it a " (:i "configuration file") "—headless mode is only
+    different from the regular Nyxt functions in that it has no GUI, and is all
+    the same otherwise, contrary to all the seeming similarities to
     the " (:code "--script") " flag usage.")
     (:p "An example of headless configuration file could be this small snippet
     showcasing most headless mode idioms:")
@@ -421,8 +421,8 @@ exec nyxt --headless --no-auto-config --profile nosave --config \"$0\"
     ;; resources and scripts are done loading yet. Give it some time
     ;; there.
     (sleep 0.5)
-    ;; All the Nyxt reporting is on in headless mode, you may want to
-    ;; log thing with `echo' and `echo-warning'.
+    ;; All the Nyxt reporting happens in headless mode, so you may want to log
+    ;; it with `echo' and `echo-warning'.
     (echo \"Nyxt GitHub repo open.\")
     ;; Updating the `document-model' so that it includes the most
     ;; relevant information about the page.
@@ -432,14 +432,14 @@ exec nyxt --headless --no-auto-config --profile nosave --config \"$0\"
      :nyxt-identifier
      (get-nyxt-id (elt (clss:select \"[aria-label=\\\"Star this repository\\\"]\" (document-model buffer)) 0)))
     (echo \"Clicked the star.\")
-    ;; It's a good tone to `nyxt:quit' after you're done, but if you
+    ;; It's good tone to `nyxt:quit' after you're done, but if you
     ;; use nyxt --no-socket, you don't have to. Just be ready for some
     ;; RAM eating :)
     (nyxt:quit)))"))
     (:p "The thing to put into the headless-config.lisp is a set of
-    configuration forms to make Nyxt automatically perform some actions to the
-    pages opened and/or on certain events. Things you'd most probably want to
-    put there are: ")
+    configuration forms to make Nyxt perform some actions to the opened pages
+    and/or on certain events. Things you'd most probably want to put there
+    are: ")
     (:ul
      (:li "Hook bindings, using the " (:nxref :package t nhooks) " library and hooks
      provided by Nyxt, with notable mentions being:")
