@@ -247,8 +247,8 @@ on may want to have dynamic interactions."))
 (define-class document-buffer (buffer)
   ((document-model-delta-threshold
     10
-    :documentation "Update the document model when the amount of elements on the
-    page change greater than this amount."
+    :documentation "The `document-model' is updated when the changed elements
+exceed this amount."
     :export nil)
    (document-model
     nil
@@ -256,8 +256,8 @@ on may want to have dynamic interactions."))
     :writer t
     :export t
     :type (or null plump:node)
-    :documentation "A parsed representation of the page currently opened.
-Created from the page code with the help of `plump:parse'. See `update-document-model'.")
+    :documentation "A parsed representation of the rendered buffer.
+Computed by `plump:parse', see `update-document-model' for details.")
    (search-auto-complete-p
     t
     :type boolean
@@ -265,12 +265,13 @@ Created from the page code with the help of `plump:parse'. See `update-document-
    (search-always-auto-complete-p
     t
     :type boolean
-    :documentation "Whether auto-completion works even for non-prefixed search.
-Auto-completions come from the default search engine.")
+    :documentation "Whether auto-completion acts on non-prefixed searches.
+Suggestions are computed by the default search engine.")
    (keep-search-hints-p
     t
     :type boolean
-    :documentation "Whether to keep search hints when the search prompt for the `search-buffer' command is closed.")
+    :documentation "Whether to keep search hints when the search prompt for the
+`search-buffer' command is closed.")
    (scroll-distance
     50
     :type integer
@@ -281,8 +282,8 @@ Auto-completions come from the default search engine.")
    (horizontal-scroll-distance
     50
     :type integer
-    :documentation "Horizontal scroll distance. The
-distance scroll-left or scroll-right will scroll.")
+    :documentation "Horizontal scroll distance. The distance scroll-left or
+scroll-right will scroll.")
    (current-zoom-ratio
     1.0
     :type float
@@ -363,8 +364,8 @@ query is not a valid URL, or the first keyword is not recognized.")
    (download-engine
     :initform :renderer
     :type symbol
-    :documentation "Select a download engine to use,
-such as :lisp or :renderer.")
+    :documentation "Select a download engine to use, such as `:lisp' or
+`:renderer'.")
    (history-file
     (make-instance 'history-file)
     :type history-file
