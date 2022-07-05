@@ -73,9 +73,11 @@ If Git is not found, fall back to copying everything except files of type in `ex
 - nil if it's a nil-pathname (#p\"\")."
   (if (nil-pathname-p pathname)
       nil                               ; TODO: Shouldn't we return #p"" instead?
-      (first (last (pathname-directory (uiop:ensure-pathname pathname
-                                                             :truenamize t
-                                                             :ensure-directory t))))))
+      (first (last (pathname-directory
+                    ;; Ensure directory _after_ truenamizing, otherwise if
+                    ;; non-directory file exists it may not yield a directory.
+                    (uiop:ensure-directory-pathname
+                     (uiop:ensure-pathname pathname :truenamize t)))))))
 
 (defun path-from-env (environment-variable default)
   (let ((env (getenv environment-variable)))
