@@ -1389,6 +1389,11 @@ See `finalize-buffer'."
     (setf (gtk-object buffer) (make-web-view (profile buffer) buffer)))
   (when (document-buffer-p buffer)
     (setf (ffi-buffer-smooth-scrolling-enabled-p buffer) (smooth-scrolling buffer)))
+  ;; TODO: Maybe define an FFI method?
+  (when (getf *options* :verbose)
+    (setf (webkit:webkit-settings-enable-write-console-messages-to-stdout
+           (webkit:webkit-web-view-get-settings (gtk-object buffer)))
+          t))
   (connect-signal-function buffer "decide-policy" (make-decide-policy-handler buffer))
   (connect-signal buffer "resource-load-started" nil (web-view resource request)
     (declare (ignore web-view))
