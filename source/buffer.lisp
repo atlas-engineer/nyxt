@@ -369,8 +369,7 @@ query is not a valid URL, or the first keyword is not recognized.")
    (history-file
     (make-instance 'history-file)
     :type history-file
-    :documentation "
-The file where the system will create/save the global history.")
+    :documentation "File where the global history is saved.")
    (standard-output-file
     (make-instance 'standard-output-file)
     :type standard-output-file

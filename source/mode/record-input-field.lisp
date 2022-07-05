@@ -12,7 +12,7 @@ See `save-input-data' and `set-input-data-from-saved'."
    (inputs-file
     (make-instance 'inputs-file)
     :type inputs-file
-    :documentation "The file where the system will create/save the input data.")))
+    :documentation "File where input date is saved.")))
 
 (defmethod inputs-file ((buffer buffer))
   (inputs-file (find-submode 'record-input-field-mode buffer)))

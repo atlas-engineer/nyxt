@@ -103,7 +103,7 @@ These modes will then be activated on every visit to this domain/host/URL."
    (auto-mode-rules-file
     (make-instance 'auto-mode-rules-file)
     :type auto-mode-rules-file
-    :documentation "The file where the auto-mode rules are saved.")
+    :documentation "File where the auto-mode rules are saved.")
    (keyscheme-map
     (define-keyscheme-map "auto-mode" ()
       keyscheme:cua

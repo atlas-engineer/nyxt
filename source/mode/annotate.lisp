@@ -13,7 +13,7 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
    (annotations-file
     (make-instance 'annotations-file)
     :type annotations-file
-    :documentation "The file where to save annotations.")))
+    :documentation "File where annotations are saved.")))
 
 (defmethod annotations-file ((buffer buffer))
   (annotations-file (find-submode 'annotate-mode buffer)))

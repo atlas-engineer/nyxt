@@ -19,8 +19,7 @@
    (no-procrastinate-hosts-file
     (make-instance 'no-procrastinate-hosts-file)
     :type no-procrastinate-hosts-file
-    :documentation "The file where to save hosts associated to procrastination
-and that should be blocked.")
+    :documentation "File where hosts associated to procrastination are saved.")
    (style (theme:themed-css (theme *browser*)
             ("summary"
              :background-color theme:secondary
