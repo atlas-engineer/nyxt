@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/xmpp-mode
-    (:documentation "XMPP support mode with a configurable chat-like communication."))
+  (:documentation "XMPP support mode with a configurable chat-like communication."))
 (in-package :nyxt/xmpp-mode)
 
 (define-mode xmpp-mode ()
@@ -25,7 +25,7 @@
              :border-color theme:primary
              :border-style "solid"
              :border-radius "0"
-             :color theme:background
+             :color theme:on-primary
              :width "100%"
              :position "absolute"
              :bottom "1em"
@@ -41,12 +41,12 @@
              :margin "0.5em"
              :padding "0.2em")
             (.incoming
-             :background-color theme:text
-             :color theme:background
+             :background-color theme:primary
+             :color theme:on-primary
              :align-self "flex-start")
             (.outbound
-             :background-color theme:quaternary
-             :color theme:text
+             :background-color theme:secondary
+             :color theme:on-secondary
              :align-self "flex-end")))
    (host
     nil
