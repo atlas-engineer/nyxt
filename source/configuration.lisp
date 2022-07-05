@@ -429,8 +429,8 @@ to use the full syntax.
 To change the base directory, pass the `:config-directory' option."
   ;; We specify DEPENDS-ON to emphasize its availability.
   (declare (ignore depends-on))
-  (unless (sera:string-prefix-p "nyxt/user/" (string name) )
-    (error "User system name must start with 'nyxt/user/'."))
+  (unless (sera:string-prefix-p "nyxt-user/" (string name) )
+    (error "User system name must start with 'nyxt-user/'."))
   ;; We cannot call `make-instance 'asdf:system' because we need to register the
   ;; system, and `register-system' is unexported.
   `(asdf:defsystem ,name
