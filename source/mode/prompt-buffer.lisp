@@ -23,9 +23,15 @@ Return-actions can be listed and run with `return-selection-over-action' (bound 
   ((visible-in-status-p nil)
    (keyscheme-map
     (define-keyscheme-map "prompt-buffer" ()
-      keyscheme:cua
+      keyscheme:default
       (list
        "escape" 'cancel-input
+       "return" 'return-selection
+       "M-return" 'return-selection-over-action
+       "C-return" 'run-selection-action
+       "tab" 'insert-selection)
+      keyscheme:cua
+      (list
        "down" 'select-next
        "up" 'select-previous
        "button5" 'select-next
@@ -38,10 +44,6 @@ Return-actions can be listed and run with `return-selection-over-action' (bound 
        "C-down" 'select-last
        "C-pagedown" 'select-next-source
        "C-pageup" 'select-previous-source
-       "tab" 'insert-selection
-       "return" 'return-selection
-       "M-return" 'return-selection-over-action
-       "C-return" 'run-selection-action
        "f1 b" 'run-prompt-buffer-command
        "f1 m" 'describe-prompt-buffer
        "C-c C-f" 'toggle-selection-actions-enabled ; TODO: This is the Emacs Helm binding.  Better?
