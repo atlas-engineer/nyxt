@@ -4,21 +4,23 @@
 (nyxt:define-package :nyxt/dom
   (:documentation "Nyxt-specific DOM classes and functions operating on them.
 
-The classes are generated for every HTML element tag name, including (but not
-limited to) `h1-element', `div-element', `img-element', and others. There are
-also some non-HTML classes, like `text-element', `semantic-element',
-`h-element', and `input-element' being umbrella classes for groups of tag
-classes.
+The classes are generated for every HTML element, including `h1-element',
+`div-element', `img-element' and others.
+
+Classes corresponding to non-HTML elements, such as `text-element',
+`semantic-element', `h-element' or `input-element', act as higher hierarchical
+entities of element classes.  For instance, every `h<n>-ement' inherits from
+`h-element'.
 
 The most useful functions are:
-- `named-html-parse' and `named-json-parse' turning the HTML and JSON page
-representations into the proper `plump:root' with all the HTML elements being
-converted to the matching class.
-- `parents', `url', and `body' to get access to the features that may be
-  element-specific, in a unified fashion.
-- `click-element', `focus-select-element', `select-option-element' and others,
-  as a way to interact with the page using the `nyxt/dom' elements as
-  proxies/representatives of the actual DOM elements."))
+- `named-html-parse' and `named-json-parse' to turn HTML and JSON documents into
+  a representation of type `plump:root', converting elements into its matching
+  classes.
+- `parents', `url' and `body' to access element-specific features in a unified
+  fashion.
+- `click-element', `focus-select-element', `select-option-element' and others to
+  interact with the page using `nyxt/dom' elements as representations of the
+  actual DOM elements."))
 (in-package :nyxt/dom)
 
 ;; TODO: Factor out into a library?
