@@ -119,7 +119,7 @@ You can redefine it to enable regex-based search, for example:
     (remove-search-hints)
     (with-current-buffer buffer
       (add-stylesheet)
-      (hint-elements (coerce (mapcar #'identifier search-matches) 'vector))
+      (hint-elements (map 'vector #'identifier search-matches))
       search-matches)))
 
 (define-class search-buffer-source (prompter:source)
