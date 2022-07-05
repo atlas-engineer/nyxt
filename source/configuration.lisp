@@ -72,10 +72,15 @@ Consider porting your configuration to ~a."
   "The configuration file entry point.")
 
 (define-class nyxt-source-directory (nyxt-file)
-  ((files:base-path nyxt-asdf:*dest-source-dir*)
-   (files:name "source"))
+  ((files:name "source"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(defmethod files:resolve ((profile nyxt-profile) (directory nyxt-source-directory))
+  (let ((asd-path (ignore-errors (asdf:system-source-directory :nyxt-asdf))))
+    (if (uiop:directory-exists-p asd-path)
+        asd-path
+        nyxt-asdf:*dest-source-dir*)))
 
 (export-always '*source-directory*)
 (defvar *source-directory* (make-instance 'nyxt-source-directory)
