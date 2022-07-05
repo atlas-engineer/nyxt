@@ -464,8 +464,8 @@ there. `reply-user-mesage' takes care of sending the response back."
         ("runtime.getBrowserInfo"
          (wrap-in-channel
           (encode-json
-           (multiple-value-bind (major &optional _ patch)
-               (version)
+           (multiple-value-bind (major _ patch)
+               (nyxt::version)
              (declare (ignore _))
              `(("name" . "Nyxt")
                ("vendor" . "Atlas Engineer LLC")
