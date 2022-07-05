@@ -224,7 +224,6 @@ Return two values:
          (classes (when raw-classes (remove-if #'str:blankp (str:split " " raw-classes))))
          (parents (parents element))
          (family (plump:family-elements element))
-         (previous (ignore-errors (plump:previous-element element)))
          ;; Is it guaranteed that the topmost ancestor of a node is
          ;; `plump:root'? Anyway, it should work even if there's a single
          ;; `plump:element' as a root.
