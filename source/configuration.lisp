@@ -346,18 +346,23 @@ Call this function from your initialization file to re-enable the default ASDF r
 ;; TODO: Report compilation errors.
 
 (export-always 'nyxt-user-system)
-(defclass nyxt-user-system (asdf:system) ()
+(defclass nyxt-user-system (asdf:system)
+  ;; We cannot use :pathname because ASDF forces its value.
+  ((config-directory
+    :initarg :config-directory
+    :initform nil
+    :accessor config-directory))
   (:documentation "Specialized systems for Nyxt users.
-This automatically defaults :pathname to the `*config-file*' directory.
+This automatically defaults :pathname to the `*config-file*' directory unless
+overridden by the `:config-directory' option.
 See `define-nyxt-user-system' and `define-nyxt-user-system-and-load'."))
 
 (defvar *nyxt-user-systems-with-missing-dependencies* '())
 
 (defmethod asdf:component-pathname ((system nyxt-user-system))
   "Default to `config-directory-file'."
-  (let ((path (call-next-method)))
-    (or path
-        (nfiles:expand (make-instance 'config-directory-file)))))
+  (or (config-directory system)
+      (nfiles:expand (make-instance 'config-directory-file))) )
 
 (export-always 'load-system*)
 (defun load-system* (system &rest keys &key force force-not verbose version &allow-other-keys)
@@ -375,7 +380,7 @@ to load and attempts to load them if their dependencies now seem to be met."
     (flet ((report (c)
              (pushnew (asdf:coerce-name system) *nyxt-user-systems-with-missing-dependencies*
                       :test #'string=)
-             (echo-warning "Could not load system ~a: ~a" system c)
+             (log:warn "Could not load system ~a: ~a" system c)
              (return-from done nil)))
       (handler-bind ((asdf:missing-dependency #'report)
                      (asdf:missing-dependency-of-version #'report))
@@ -419,7 +424,9 @@ you can write
 :components `(\"foo\" #p\"bar\")
 
 It only works for top-level components, so if you introduce a module you'll have
-to use the full syntax."
+to use the full syntax.
+
+To change the base directory, pass the `:config-directory' option."
   ;; We specify DEPENDS-ON to emphasize its availability.
   (declare (ignore depends-on))
   (unless (sera:string-prefix-p "nyxt/user/" (string name) )
