@@ -209,7 +209,7 @@ calculated.
 
 Return two values:
 - The selector for the value.
-- A boolean for whether this selector is unique (no other nodes matching it)."
+- Whether this selector is unique (no other nodes matching it)."
   (let* ((tag-name (plump:tag-name element))
          (identifier (plump:get-attribute element "id"))
          (raw-classes (plump:get-attribute element "class"))
