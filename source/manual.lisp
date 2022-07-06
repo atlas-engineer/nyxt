@@ -69,7 +69,7 @@ run " (command-markup 'describe-command) " and type 'mode'.")
     (:p "Slots store values that can be either accessed (get) or changed
 (set). Setting new values for slots allows many possibilities of customization.
 For instance, keyboard layouts vary across the world. The slot "
-        (:nxref :slot-of 'nyxt/hint-mode:hint-mode 'nyxt/hint-mode:hints-alphabet)
+        (:nxref :slot 'nyxt/hint-mode:hints-alphabet :class 'nyxt/hint-mode:hint-mode)
         " has the default value of "
         (:code "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
         ". If the user has an American keyboard, they can do:")
@@ -81,7 +81,7 @@ For instance, keyboard layouts vary across the world. The slot "
      (:li "Insert the string \"asfdghjkl\"") ".")
     (:p "This will make link-hinting more comfortable for this user. In
 addition, other similar approaches of customization can be applied to slots
-such as " (:nxref :slot-of 'nyxt/spell-check-mode:spell-check-mode 'nyxt/spell-check-mode:spell-check-language)
+such as " (:nxref :slot 'nyxt/spell-check-mode:spell-check-language :class 'nyxt/spell-check-mode:spell-check-mode)
 ", which can be expanded to do the spelling-check of other languages besides English.")
     (:h3 "Different types of buffers")
     (:p "There are multiple buffer classes, such as "
@@ -94,7 +94,7 @@ For instance " (:nxref :class 'web-buffer) " and " (:nxref :class 'prompt-buffer
     (:p "You can configure one of the parent " (:nxref :class 'buffer) " classes slots and the new
 values will automatically cascade down as a new default for all child classes-
 unless this slot is specialized by these child classes.
-For instance if you configure the " (:nxref :slot-of 'input-buffer 'override-map)
+For instance if you configure the " (:nxref :slot 'override-map :class 'input-buffer)
 " slot in " (:nxref :class 'input-buffer) ", both " (:nxref :class 'panel-buffer) " and "
 (:nxref :class 'web-buffer) " classes will inherit from the new value.")
 
@@ -123,7 +123,7 @@ add the following to your configuration:")
       keyscheme:vi-normal
       (list \"g b\" (make-command switch-buffer* ()
                     (switch-buffer :current-is-last-p t)))))))"))
-    (:p "The " (:nxref :slot-of 'input-buffer 'override-map) " is a keymap that has priority over
+    (:p "The " (:nxref :slot 'override-map :class 'input-buffer) " is a keymap that has priority over
 all other keymaps.  By default, it has few bindings like the one
 for " (command-markup 'execute-command) ".  You can use it to set keys globally:")
     (:pre (:code "(define-configuration buffer
@@ -165,7 +165,7 @@ shifts.  For instance if " (:code "C-x C-F") " fails to match anything " (:code 
          translation.")
 
     (:h3 "Search engines")
-    (:p "See the " (:nxref :slot-of 'context-buffer 'search-engines) " buffer slot
+    (:p "See the " (:nxref :slot 'search-engines :class 'context-buffer) " buffer slot
 documentation.  Bookmarks can also be used as search engines, see the
 corresponding section.")
     (:p "Nyxt comes with some default search engines for "
@@ -207,7 +207,7 @@ documentation.")
 
     (:h3 "Downloads")
     (:p "See the " (command-markup 'nyxt/download-mode:list-downloads) " command and the "
-        (:nxref :slot-of 'buffer 'download-path) " buffer slot documentation.")
+        (:nxref :slot 'download-path :class 'buffer) " buffer slot documentation.")
 
     (:h3 "Proxy and Tor")
     (:p "See the " (:nxref :class 'nyxt/proxy-mode:proxy-mode) " documentation.")
@@ -241,14 +241,14 @@ events that occur in the context of windows, buffers, modes, etc.")
 typed functions.  Each hook has a dedicated handler constructor.")
     (:p
      "Hooks can be 'run', that is, their handlers are run according to
-the " (:nxref :slot-of 'nhooks:hook 'nhooks:combination) " slot of the hook.  This combination is a function
+the " (:nxref :slot 'nhooks:combination :class 'nhooks:hook) " slot of the hook.  This combination is a function
 of the handlers.  Depending on the combination, a hook can run the handlers
 either in parallel, or in order until one fails, or even " (:i "compose")
      " them (pass the result of one as the input of the next).  The handler types
 specify which input and output values are expected.")
     (:p "To add or delete a hook, you only need to know a couple of functions:"
         (:ul
-         (:li (:xnref :class 'nhooks:handler) " a class to wrap hook handlers in.")
+         (:li (:nxref :class 'nhooks:handler) " a class to wrap hook handlers in.")
          (:li (:nxref :function 'nhooks:add-hook) " (also known as "
               (:code "hooks:add-hook")
               ") allows you to add a handler to a hook,for it to be invoked when the hook fires.")
@@ -265,19 +265,19 @@ specify which input and output values are expected.")
           " or " (:nxref :variable '*after-startup-hook*) ".")
      (:li "Window- or buffer-related hooks.")
      (:ul
-      (:li (:nxref :slot-of 'window 'window-make-hook) " for when a new window is created.")
-      (:li (:nxref :slot-of 'window 'window-delete-hook) " for when a window is deleted.")
-      (:li (:nxref :slot-of 'window 'window-set-buffer-hook)
+      (:li (:nxref :slot 'window-make-hook :class 'window) " for when a new window is created.")
+      (:li (:nxref :slot 'window-delete-hook :class 'window) " for when a window is deleted.")
+      (:li (:nxref :slot 'window-set-buffer-hook :class 'window)
            " for when the " (:nxref :function 'current-buffer) " changes in the window.")
-      (:li (:nxref :slot-of 'network-buffer 'buffer-load-hook)
+      (:li (:nxref :slot 'buffer-load-hook :class 'network-buffer)
            " for when there's a new page loading in the buffer.")
-      (:li (:nxref :slot-of 'network-buffer 'buffer-loaded-hook)
+      (:li (:nxref :slot 'buffer-loaded-hook :class 'network-buffer)
            " for when this page is mostly done loading (some scripts/image/styles may not
 be fully loaded yet, so you may need to wait a bit after it fires.)")
-      (:li (:nxref :slot-of 'network-buffer 'request-resource-hook)
+      (:li (:nxref :slot 'request-resource-hook :class 'network-buffer)
            " for when a new request happens. Allows redirecting and blocking requests, and
 is a good place to do something conditioned on the links being loaded.")
-      (:li (:nxref :slot-of 'prompt-buffer 'prompt-buffer-ready-hook)
+      (:li (:nxref :slot 'prompt-buffer-ready-hook :class 'prompt-buffer)
            " fires when the prompt buffer is ready for user input. You may need to call "
            (:nxref :function 'prompter:all-ready-p)
            " on the prompt to ensure all the sources it contains are ready too, and then
@@ -379,7 +379,7 @@ the " (:code "define-configuration") " macro.")
     (:h3 "Appearance")
     (:p "Much of the visual style can be configured by the user.  Search the
 class slots for 'style'.  To customize the status buffer, see
-the " (:nxref :slot-of 'window 'status-buffer) " window slot.")
+the " (:nxref :slot 'status-buffer :class 'window) " window slot.")
 
     (:h3 "Advanced configuration")
     (:p "While " (:code "define-configuration") " is convenient, it is mostly
