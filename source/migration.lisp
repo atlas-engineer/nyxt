@@ -118,29 +118,29 @@ major versions."
 
 (define-migration "3"
   (download-directory)
-  (:p (:nxref :slot 'download-directory :class 'context-buffer)
-      " is in " (:nxref :class 'context-buffer) ".")
+  (:p (:nxref :slot 'download-directory :class-name 'context-buffer)
+      " is in " (:nxref :class-name 'context-buffer) ".")
 
   (history-file)
-  (:p (:nxref :slot 'history-file :class 'context-buffer)
-      " is in " (:nxref :class 'context-buffer) ".")
+  (:p (:nxref :slot 'history-file :class-name 'context-buffer)
+      " is in " (:nxref :class-name 'context-buffer) ".")
 
   (standard-output-file standard-error-file)
-  (:p (:nxref :slot 'nyxt:standard-output-file :class 'context-buffer) " and "
-      (:nxref :slot 'nyxt:error-output-file :class 'context-buffer)
-      " are in " (:nxref :class 'context-buffer) ".")
+  (:p (:nxref :slot 'nyxt:standard-output-file :class-name 'context-buffer) " and "
+      (:nxref :slot 'nyxt:error-output-file :class-name 'context-buffer)
+      " are in " (:nxref :class-name 'context-buffer) ".")
 
   (annotations-file)
-  (:p (:nxref :slot 'nyxt/annotate-mode:annotations-file :class 'nyxt/annotate-mode:annotate-mode)
-      " is in " (:nxref :class 'nyxt/annotate-mode:annotate-mode) ".")
+  (:p (:nxref :slot 'nyxt/annotate-mode:annotations-file :class-name 'nyxt/annotate-mode:annotate-mode)
+      " is in " (:nxref :class-name 'nyxt/annotate-mode:annotate-mode) ".")
 
   (auto-mode-rules-file)
-  (:p (:nxref :slot 'nyxt/auto-mode:auto-mode-rules-file :class 'nyxt/auto-mode:auto-mode)
-      " is in " (:nxref :class 'nyxt/auto-mode:auto-mode) ".")
+  (:p (:nxref :slot 'nyxt/auto-mode:auto-mode-rules-file :class-name 'nyxt/auto-mode:auto-mode)
+      " is in " (:nxref :class-name 'nyxt/auto-mode:auto-mode) ".")
 
   (bookmarks-file)
-  (:p (:nxref :slot 'nyxt/bookmark-mode:bookmarks-file :class 'nyxt/bookmark-mode:bookmark-mode)
-      " is in " (:nxref :class 'nyxt/bookmark-mode:bookmark-mode) ".")
+  (:p (:nxref :slot 'nyxt/bookmark-mode:bookmarks-file :class-name 'nyxt/bookmark-mode:bookmark-mode)
+      " is in " (:nxref :class-name 'nyxt/bookmark-mode:bookmark-mode) ".")
 
   (expand-path)
   (:p (:code "expand-path") " is replaced by " (:nxref :function 'nfiles:expand) ".")

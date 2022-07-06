@@ -15,7 +15,7 @@
 (deftag :nscript (body attrs &key &allow-other-keys)
   `(:script ,@attrs (:raw ,@body)))
 
-(spinneret:deftag :nxref (body attr &key slot class function command variable package &allow-other-keys)
+(spinneret:deftag :nxref (body attr &key slot class-name function command variable package &allow-other-keys)
   `(:a :href ,(cond
                 (package `(nyxt:nyxt-url (read-from-string "nyxt:describe-package")
                                          :universal t :package ,package))
@@ -26,9 +26,9 @@
                 (command `(nyxt:nyxt-url (read-from-string "nyxt:describe-command")
                                          :universal t :command ,command))
                 (slot `(nyxt:nyxt-url (read-from-string "nyxt:describe-slot")
-                                      :universal t :name ,slot :class ,class))
-                (class `(nyxt:nyxt-url (read-from-string "nyxt:describe-class")
-                                       :universal t :class ,class))
+                                      :universal t :name ,slot :class ,class-name))
+                (class-name `(nyxt:nyxt-url (read-from-string "nyxt:describe-class")
+                                       :universal t :class ,class-name))
                 (t `(nyxt:javascript-url
                      (ps:ps (nyxt/ps:lisp-eval
                              (:title "describe-any")
@@ -38,7 +38,7 @@
        ;; TODO: Add :title so that documentation is available on hover.
        ;; TODO: Add keybindings for commands, like in `nyxt::command-markup'.
        (:code ,@(progn
-                  (remf attr :class)
+                  (remf attr :class-name)
                   (remf attr :slot)
                   (remf attr :function)
                   (remf attr :command)
@@ -46,4 +46,4 @@
                   (remf attr :package)
                   attr)
               (let ((*print-case* :downcase))
-                (format nil "~a" ,(or (first body) package variable function command slot class))))))
+                (format nil "~a" ,(or (first body) package variable function command slot class-name))))))
