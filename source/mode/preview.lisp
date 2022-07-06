@@ -29,8 +29,8 @@
 (in-package :nyxt)
 
 (define-command preview-file (&optional file (buffer (current-buffer)))
-  "Open a file in the current buffer and call `preview-mode' to continuously
-watch and refresh it."
+  "Open FILE in BUFFER and call `preview-mode' to continuously watch and refresh
+it."
   (alex:when-let ((file (or file (prompt :prompt "File to preview"
                                          :input (quri:uri-path (url (current-buffer)))
                                          :sources (list (make-instance 'nyxt/file-manager-mode:file-source))))))
