@@ -8,9 +8,8 @@ The classes are generated for every HTML element, including `h1-element',
 `div-element', `img-element' and others.
 
 Classes corresponding to non-HTML elements, such as `text-element',
-`semantic-element', or `h-element', act as higher hierarchical
-entities of element classes.  For instance, every `h<n>-element' inherits from
-`h-element'.
+`semantic-element', or `h-element', act as higher hierarchical entities of
+element classes.  For instance, every `h<n>-element' inherits from `h-element'.
 
 The most useful functions are:
 - `named-html-parse' and `named-json-parse' to turn HTML and JSON documents into
