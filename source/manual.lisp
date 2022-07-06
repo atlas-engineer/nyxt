@@ -464,7 +464,9 @@ exec nyxt --headless --no-auto-config --profile nosave --config \"$0\"
     ;; Click the star button.
     (nyxt/dom:click-element
      :nyxt-identifier
-     (get-nyxt-id (elt (clss:select \"[aria-label=\\\"Star this repository\\\"]\" (document-model buffer)) 0)))
+     (get-nyxt-id (elt (clss:select \"[aria-label=\\\"Star this repository\\\"]\"
+                         (document-model buffer))
+                       0)))
     (echo \"Clicked the star.\")
     ;; It's good tone to `nyxt:quit' after you're done, but if you use nyxt
     ;; --no-socket, you don't have to. Just be ready for some RAM eating :)
