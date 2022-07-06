@@ -82,6 +82,18 @@ the following platforms:
 - [[https://nixos.org/nix/][Nix]]: Install with =nix-env --install nyxt=.
 - [[https://guix.gnu.org][Guix]]: Install with =guix install nyxt=.
 - [[https://voidlinux.org/][Void]]: Install with =xbps-install nyxt=.
+- [[https://www.opensuse.org/][OpenSuse]] (user-maintained package of the latest `master` build):
+  - Tumbleweed:
+
+    ```
+    zypper ar https://download.opensuse.org/repositories/home:/bobbie424242/openSUSE_Tumbleweed/ nyxt-git
+    ```
+
+  - LEAP:
+
+    ```
+    zypper ar https://download.opensuse.org/repositories/home:/bobbie424242/15.4/ nyxt-git
+    ```
 
 To install from source, please refer to the [[file:documents/README.org][developer's manual]].
 
