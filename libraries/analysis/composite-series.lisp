@@ -4,7 +4,10 @@
 (in-package :analysis)
 
 (defclass sequence-model (node)
-  ())
+  ()
+  (:documentation "The sequence-model class represents the root of a directed
+  graph. The edges represent possible sequences of events. It may help to
+  envision the graph as a finite state machine."))
 
 (defclass node ()
   ((edges :accessor edges :initform (make-hash-table :test #'equal))
