@@ -451,29 +451,27 @@ exec nyxt --headless --no-auto-config --profile nosave --config \"$0\"
 \(hooks:on *after-startup-hook* ()
   ;; Once the page's done loading, do your thing.
   (once-on (buffer-loaded-hook (current-buffer)) (buffer)
-    ;; It's sometimes necessary to sleep, as `buffer-loaded-hook'
-    ;; fires when the page is loaded, which does not mean that all the
-    ;; resources and scripts are done loading yet. Give it some time
-    ;; there.
+    ;; It's sometimes necessary to sleep, as `buffer-loaded-hook' fires when the
+    ;; page is loaded, which does not mean that all the resources and scripts
+    ;; are done loading yet. Give it some time there.
     (sleep 0.5)
     ;; All the Nyxt reporting happens in headless mode, so you may want to log
     ;; it with `echo' and `echo-warning'.
     (echo \"Nyxt GitHub repo open.\")
-    ;; Updating the `document-model' so that it includes the most
-    ;; relevant information about the page.
+    ;; Updating the `document-model' so that it includes the most relevant
+    ;; information about the page.
     (nyxt:update-document-model)
     ;; Click the star button.
     (nyxt/dom:click-element
      :nyxt-identifier
      (get-nyxt-id (elt (clss:select \"[aria-label=\\\"Star this repository\\\"]\" (document-model buffer)) 0)))
     (echo \"Clicked the star.\")
-    ;; It's good tone to `nyxt:quit' after you're done, but if you
-    ;; use nyxt --no-socket, you don't have to. Just be ready for some
-    ;; RAM eating :)
+    ;; It's good tone to `nyxt:quit' after you're done, but if you use nyxt
+    ;; --no-socket, you don't have to. Just be ready for some RAM eating :)
     (nyxt:quit)))"))
-    (:p "The thing to put into the headless-config.lisp is a set of configuration forms
-to make Nyxt perform some actions to the opened pages and/or on certain
-hooks. Things you'd most probably want to put there are: ")
+    (:p "The thing to put into the headless-config.lisp is a set of
+configuration forms to make Nyxt perform some actions to the opened pages and/or
+on certain hooks. Things you'd most probably want to put there are: ")
     (:ul
      (:li "Hook bindings, using the " (:nxref :package 'nhooks)
           " library and hooks provided by Nyxt.")
