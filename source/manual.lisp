@@ -490,16 +490,18 @@ reflects the dynamic structure of the page). It is a " (:nxref :package 'plump "
            " is a function to force DOM re-parsing for the cases when you consider the
 current " (:nxref :function 'document-model) " too outdated.")
       (:li (:nxref :function 'clss:select)
-           " is a CLSS function to find elements using CSS selectors (a terse notation for web page element description).")
+           " is a CLSS function to find elements using CSS selectors (a terse
+           notation for web page element description).")
       ;; FIXME: Make a nxref once we update CLSS submodule.
       (:li (:code"clss:ordered-select") " is the same as "
            (:nxref :function 'clss:select)
-           ", except it guarantees that all the elements are returned in a depth-first
-traversal order.")
+           ", except it guarantees that all the elements are returned in a
+           depth-first traversal order.")
       (:li (:nxref :function 'nyxt/dom:click-element)
            " to programmatically click a certain element (including the ones returned by "
            (:nxref :function 'clss:select) ".)")
-      (:li (:nxref :function 'nyxt/dom:focus-select-element) " to focus an input field, for example.")
+      (:li (:nxref :function 'nyxt/dom:focus-select-element) " to focus an input
+           field, for example.")
       (:li (:nxref :function 'nyxt/dom:check-element) " to check a checkbox or a radio button.")
       (:li (:nxref :function 'nyxt/dom:select-option-element) " to select an option from the "
            (:code "<select>") " element options.")))
