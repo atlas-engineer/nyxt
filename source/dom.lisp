@@ -2,7 +2,24 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/dom
-  (:documentation "Nyxt-specific DOM classes and functions operating on them."))
+  (:documentation "Nyxt-specific DOM classes and functions operating on them.
+
+The classes are generated for every HTML element, including `h1-element',
+`div-element', `img-element' and others.
+
+Classes corresponding to non-HTML elements, such as `text-element',
+`semantic-element', or `h-element', act as higher hierarchical entities of
+element classes.  For instance, every `h<n>-element' inherits from `h-element'.
+
+The most useful functions are:
+- `named-html-parse' and `named-json-parse' to turn HTML and JSON documents into
+  a representation of type `plump:root', converting elements into its matching
+  classes.
+- `parents', `url' and `body' to access element-specific features in a unified
+  fashion.
+- `click-element', `focus-select-element', `select-option-element' and others to
+  interact with the page using `nyxt/dom' elements as representations of the
+  actual DOM elements."))
 (in-package :nyxt/dom)
 
 ;; TODO: Factor out into a library?
