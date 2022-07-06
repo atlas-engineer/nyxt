@@ -75,8 +75,8 @@ WebEngine/Blink.
 Please find pre-built binaries at [[https://nyxt.atlas.engineer/download][Nyxt's downloads page]].  Nyxt is available on
 the following platforms:
 
-- Alpine.
-- Debian and derivatives such as Ubuntu and Linux Mint.
+- [[https://www.alpinelinux.org/][Alpine]].
+- [[https://www.debian.org][Debian]] and derivatives such as [[https://ubuntu.com/][Ubuntu]] and [[https://linuxmint.com/][Linux Mint]].
 - [[https://github.com/atlas-engineer/ports][MacPorts]].
 - [[https://archlinux.org/][Arch Linux]]: Install with =pacman -Syu nyxt=.
 - [[https://nixos.org/nix/][Nix]]: Install with =nix-env --install nyxt=.
