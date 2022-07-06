@@ -558,3 +558,6 @@
 	path = _build/nkeymaps
 	url = https://github.com/atlas-engineer/nkeymaps
 	shallow = true
+[submodule "_build/sly"]
+	path = _build/sly
+	url = https://github.com/joaotavora/sly
