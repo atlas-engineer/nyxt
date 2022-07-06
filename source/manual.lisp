@@ -504,13 +504,12 @@ current " (:nxref :function 'document-model) " too outdated.")
       (:li (:nxref :function 'nyxt/dom:check-element) " to check a checkbox or a radio button.")
       (:li (:nxref :function 'nyxt/dom:select-option-element) " to select an option from the "
            (:code "<select>") " element options.")))
-    (:p "Additionally, headless mode interacts in useful way with other CLI toggles the Nyxt has:")
+    (:p "Additionally, headless mode gracefully interacts with other CLI toggles the
+Nyxt has:")
     (:ul
-     (:li (:code "--headless") " itself. If you provide it, Nyxt runs headless. If you don't provide "
-          (:code "--headless")
-          ", then Nyxt starts as usual and allows you to see the changes that happen to
-the page because of your script. A good way to debug and check script behavior,
-isn't it?")
+     (:li (:code "--headless") " itself! Notice that you can debug your script
+by omitting this CLI flag.  When you're confident enough about it, put it back
+in. A good debugging tip, isn't it?")
      (:li (:code "--no-socket")
           " flag allows starting as many Nyxt instances as your machine can
 handle. Useful to parallelize computations.")
