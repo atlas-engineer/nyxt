@@ -46,4 +46,4 @@
                   (remf attr :package)
                   attr)
               (let ((*print-case* :downcase))
-                (format nil "~a" ,(or package variable function command class (first body)))))))
+                (format nil "~a" ,(or (first body) package variable function command class))))))
