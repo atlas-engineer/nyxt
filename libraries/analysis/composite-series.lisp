@@ -3,8 +3,8 @@
 
 (in-package :analysis)
 
-(defclass sequence-model ()
-  ((sequence-look-up :accessor sequence-look-up :initform (make-hash-table :test #'equal))))
+(defclass sequence-model (node)
+  ())
 
 (defclass node ()
   ((edges :accessor edges :initform (make-hash-table :test #'equal))
@@ -25,6 +25,6 @@
   (let* ((list-but-last-element (butlast sequence))
          (last-element (car (last sequence)))
          (leaf (alexandria:ensure-gethash list-but-last-element
-                                          (sequence-look-up model)
+                                          (edges model)
                                           (make-instance 'node))))
     (increment (add-edge leaf (make-instance 'node :element last-element)))))
