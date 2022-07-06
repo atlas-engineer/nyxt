@@ -421,8 +421,8 @@ instance must be non-nil.")
     (:pre (:code "nyxt --profile nosave --remote --load foo.lisp --eval '(foo)'"))
 
     (:h3 "Headless mode")
-    (:p "Much like a scripting functionality, you can use Nyxt in headless (without
-graphical interface) mode. Possible use-cases for this mode are web scraping,
+    (:p "Similarly to Nyxt's scripting functionality, headless mode runs without a
+graphical user interface. Possible use-cases for this mode are web scraping,
 automations and web page analysis.")
     (:p "To enable headless mode, simply start Nyxt with the "
         (:code "--headless")
@@ -432,8 +432,8 @@ automations and web page analysis.")
         "—headless mode is only different from the regular Nyxt functions in that it has
 no GUI, and is all the same otherwise, contrary to all the seeming similarities
 to the " (:code "--script") " flag usage.")
-    (:p "An example of headless configuration file could be this small snippet
-showcasing most headless mode idioms:")
+    (:p "The example below showcases frequent idioms that are found in the
+mode's configuration file:")
     (:pre (:code "#!/bin/sh
 #|
 exec nyxt --headless --no-auto-config --profile nosave --config \"$0\"
@@ -511,8 +511,8 @@ traversal order.")
 the page because of your script. A good way to debug and check script behavior,
 isn't it?")
      (:li (:code "--no-socket")
-          " flag allows starting as many Nyxt instances as your computer allows you
-to. Useful to start several instances of Nyxt and do your thing in parallel.")
+          " flag allows starting as many Nyxt instances as your machine can
+handle. Useful to parallelize computations.")
      (:li (:code "--profile nosave")
           " to not pollute your history and cache with the script-accessed pages."))
 
