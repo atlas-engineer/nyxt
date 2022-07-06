@@ -255,7 +255,12 @@ Value is the loadable URL of that file.")
                                                (format nil "file://~a" file)
                                                (make-data-url file)))))
                                  (nyxt/file-manager-mode:recursive-directory-elements
-                                  (extension-directory mode)))))))))
+                                  (extension-directory mode))))))))
+  (:toggler-command-p nil))
+
+(defmethod initialize-instance :after ((mode extension) &key)
+  (when (eq 'extension (sera:class-name-of mode))
+    (error "Cannot initialize `extension', you must subclass it.")))
 
 (export-always 'has-permission-p)
 (defmethod has-permission-p ((extension extension) (permission string))
