@@ -421,7 +421,7 @@ instance must be non-nil.")
     (:pre (:code "nyxt --profile nosave --remote --load foo.lisp --eval '(foo)'"))
 
     (:h3 "Headless mode")
-    (:p "Much like with scripting functionality, you can use Nyxt in headless (without
+    (:p "Much like a scripting functionality, you can use Nyxt in headless (without
 graphical interface) mode. Possible use-cases for this mode are web scraping,
 automations and web page analysis.")
     (:p "To enable headless mode, simply start Nyxt with the "
@@ -478,13 +478,14 @@ hooks. Things you'd most probably want to put there are: ")
      (:li "Hook bindings, using the " (:nxref :package 'nhooks)
           " library and hooks provided by Nyxt.")
      (:li "Operations with the page. For those, we have a whole "
-          (:nxref :package 'nyxt/dom) " library and " (:nxref :function 'document-model)
-          "buffer slot.")
+          (:nxref :package 'nyxt/dom) " library and the " (:nxref :function 'document-model)
+          "method.")
      (:ul
-      (:li (:nxref :function 'document-model) " method of " (:nxref :class 'buffer)
-           " has a reasonably fresh copy of the page DOM (Document Object Model, reflects
-the dynamic structure of the page). It is a " (:nxref :package 'plump) " DOM, which means that all "
-(:nxref :package 'plump "Plump") " (and " (:nxref :package 'clss "CLSS") ") functions can be used on it.")
+      (:li "The " (:nxref :function 'document-model)
+           " method has a reasonably fresh copy of the page DOM (Document Object Model,
+reflects the dynamic structure of the page). It is a " (:nxref :package 'plump "Plump")
+" DOM, which means that all " (:nxref :package 'plump "Plump") " (and "
+(:nxref :package 'clss "CLSS") ") functions can be used on it.")
       (:li (:nxref :function 'update-document-model)
            " is a function to force DOM re-parsing for the cases when you consider the
 current " (:nxref :function 'document-model) " too outdated.")
@@ -509,9 +510,11 @@ traversal order.")
           ", then Nyxt starts as usual and allows you to see the changes that happen to
 the page because of your script. A good way to debug and check script behavior,
 isn't it?")
-     (:li (:code "--no-socket") " flag allows starting as much Nyxt instances as your computer allows you
+     (:li (:code "--no-socket")
+          " flag allows starting as many Nyxt instances as your computer allows you
 to. Useful to start several instances of Nyxt and do your thing in parallel.")
-     (:li (:code "--profile nosave") " to not pollute your history and cache with the script-accessed pages."))
+     (:li (:code "--profile nosave")
+          " to not pollute your history and cache with the script-accessed pages."))
 
     (:h2 "Extensions")
     (:p "To install an extension, copy inside the "
