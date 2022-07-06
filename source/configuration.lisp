@@ -403,6 +403,8 @@ to load and attempts to load them if their dependencies now seem to be met."
       component-designator
       (list :file (sera:drop-suffix ".lisp" component-designator :test #'string-equal))))
 
+(asdf:defsystem "nyxt-user") ; Dummy parent needs to exist for `define-nyxt-user-system' to define subsystems.
+
 (export-always 'define-nyxt-user-system)
 (defmacro define-nyxt-user-system (name &rest args &key depends-on components
                                    &allow-other-keys)
