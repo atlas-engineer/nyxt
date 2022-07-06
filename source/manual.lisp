@@ -482,7 +482,7 @@ hooks. Things you'd most probably want to put there are: ")
      (:ul
       (:li "The " (:nxref :function 'document-model)
            " method has a reasonably fresh copy of the page DOM (Document Object Model,
-reflects the dynamic structure of the page). It is a " (:nxref :package 'plump "Plump")
+reflecting the dynamic structure of the page). It is a " (:nxref :package 'plump "Plump")
 " DOM, which means that all " (:nxref :package 'plump "Plump") " (and "
 (:nxref :package 'clss "CLSS") ") functions can be used on it.")
       (:li (:nxref :function 'update-document-model)
