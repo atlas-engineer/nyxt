@@ -471,9 +471,9 @@ exec nyxt --headless --no-auto-config --profile nosave --config \"$0\"
     ;; It's good tone to `nyxt:quit' after you're done, but if you use nyxt
     ;; --no-socket, you don't have to. Just be ready for some RAM eating :)
     (nyxt:quit)))"))
-    (:p "The thing to put into the headless-config.lisp is a set of
-configuration forms to make Nyxt perform some actions to the opened pages and/or
-on certain hooks. Things you'd most probably want to put there are: ")
+    (:p "The contents of headless-config.lisp feature configuration forms that
+make Nyxt perform some actions to the opened pages and/or on certain
+hooks. Things you'd most probably want to put there are: ")
     (:ul
      (:li "Hook bindings, using the " (:nxref :package 'nhooks)
           " library and hooks provided by Nyxt.")
