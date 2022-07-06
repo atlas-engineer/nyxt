@@ -45,7 +45,7 @@
   ((rememberable-p nil)
    (keyscheme-map
     (define-keyscheme-map "repl" ()
-      keyscheme:cua
+      keyscheme:default
       (list
        "C-return" 'evaluate-cell
        "(" 'paren

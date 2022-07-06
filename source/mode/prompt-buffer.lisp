@@ -29,7 +29,20 @@ Return-actions can be listed and run with `return-selection-over-action' (bound 
        "return" 'return-selection
        "M-return" 'return-selection-over-action
        "C-return" 'run-selection-action
-       "tab" 'insert-selection)
+       "tab" 'insert-selection
+       "f1 b" 'run-prompt-buffer-command
+       "f1 m" 'describe-prompt-buffer
+       "C-c C-f" 'toggle-selection-actions-enabled ; TODO: This is the Emacs Helm binding.  Better?
+       "C-]" 'toggle-attributes-display ; TODO: This is the Emacs Helm binding.  Better?
+       "C-space" 'toggle-mark
+       "shift-space" 'toggle-mark-backwards
+       "M-shift-space" 'toggle-mark-backwards
+       "M-space" 'toggle-mark
+       "M-a" 'mark-all
+       "M-u" 'unmark-all
+       "M-m" 'toggle-mark-all
+       "M-h" 'history)
+
       keyscheme:cua
       (list
        "down" 'select-next
@@ -44,23 +57,11 @@ Return-actions can be listed and run with `return-selection-over-action' (bound 
        "C-down" 'select-last
        "C-pagedown" 'select-next-source
        "C-pageup" 'select-previous-source
-       "f1 b" 'run-prompt-buffer-command
-       "f1 m" 'describe-prompt-buffer
-       "C-c C-f" 'toggle-selection-actions-enabled ; TODO: This is the Emacs Helm binding.  Better?
-       "C-]" 'toggle-attributes-display ; TODO: This is the Emacs Helm binding.  Better?
-       "C-space" 'toggle-mark
-       "shift-space" 'toggle-mark-backwards
-       "M-shift-space" 'toggle-mark-backwards
-       "M-space" 'toggle-mark
-       "M-a" 'mark-all
-       "M-u" 'unmark-all
-       "M-m" 'toggle-mark-all
-       "C-w" 'copy-selection
-       "C-v" 'paste
-       "M-h" 'history)
+       "C-v" 'paste)
 
       keyscheme:emacs
       (list
+       "C-w" 'copy-selection
        "C-y" 'paste
        "C-n" 'select-next
        "C-p" 'select-previous

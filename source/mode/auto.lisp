@@ -106,7 +106,7 @@ These modes will then be activated on every visit to this domain/host/URL."
     :documentation "File where the auto-mode rules are saved.")
    (keyscheme-map
     (define-keyscheme-map "auto-mode" ()
-      keyscheme:cua
+      keyscheme:default
       (list
        "C-R" 'reload-with-modes)))
    (prompt-on-mode-toggle

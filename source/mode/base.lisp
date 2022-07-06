@@ -13,7 +13,27 @@ This mode is a good candidate to be passed to `make-buffer'."
       keyscheme:default
       (list
        "C-l" 'set-url
-       "M-l" 'set-url-new-buffer)
+       "M-l" 'set-url-new-buffer
+       "C-M-l" 'set-url-new-nosave-buffer
+       "C-r" 'reload-current-buffer
+       "M-r" 'reload-buffers
+       "C-t" 'make-buffer-focus
+       "f1 t" 'tutorial
+       "f1 r" 'manual
+       "f1 v" 'describe-variable
+       "f1 f" 'describe-function
+       "f1 c" 'describe-command
+       "f1 C" 'describe-class
+       "f1 s" 'describe-slot
+       "f1 k" 'describe-key
+       "f1 b" 'describe-bindings
+       "f1 p" 'describe-package
+       "f11" 'toggle-fullscreen
+       "C-j" 'nyxt/download-mode:list-downloads
+       "C-space" 'execute-command
+       "C-M-space" 'execute-extended-command
+       "M-space" 'resume-prompt
+       "C-T" 'reopen-buffer)
       keyscheme:cua
       (list
        "C-q" 'quit
@@ -26,36 +46,15 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-`" 'switch-buffer-last
        "C-pageup" 'switch-buffer-previous
        "C-pagedown" 'switch-buffer-next
-       "C-u M-l" 'set-url-new-nosave-buffer
        "f5" 'reload-current-buffer
-       "C-r" 'reload-current-buffer
-       "C-R" 'reload-buffers
-       "C-t" 'make-buffer-focus
        "M-c l" 'copy-url
        "M-c t" 'copy-title
-       "f1 t" 'tutorial
-       "f1 r" 'manual
-       "f1 v" 'describe-variable
-       "f1 f" 'describe-function
-       "f1 c" 'describe-command
-       "f1 C" 'describe-class
-       "f1 s" 'describe-slot
-       "f1 k" 'describe-key
-       "f1 b" 'describe-bindings
-       "f1 p" 'describe-package
-       "f11" 'toggle-fullscreen
        "C-O" 'load-file
-       "C-j" 'nyxt/download-mode:list-downloads
-       "C-space" 'execute-command
-       "C-M-space" 'execute-extended-command
-       "M-space" 'resume-prompt
        "C-n" 'make-window
        "C-shift-W" 'delete-current-window
        "C-W" 'delete-current-window
        "M-w" 'delete-window
        "C-/" 'reopen-buffer
-       "C-shift-t" 'reopen-buffer
-       "C-T" 'reopen-buffer
        "C-o" 'nyxt/file-manager-mode:open-file)
 
       keyscheme:emacs

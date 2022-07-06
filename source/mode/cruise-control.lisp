@@ -14,10 +14,12 @@
    (nyxt/repeat-mode:repeat-interval 0.10)
    (keyscheme-map
     (define-keyscheme-map "cruise-control-mode" ()
-      keyscheme:cua
+      keyscheme:default
       (list
        "escape" 'cruise-control-mode
-       "0" 'velocity-zero
+       "0" 'velocity-zero)
+      keyscheme:cua
+      (list
        "up" 'velocity-decf
        "down" 'velocity-incf)
       keyscheme:emacs

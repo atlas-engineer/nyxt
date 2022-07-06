@@ -5,6 +5,7 @@
     (:documentation "Record input fields to be refilled later."))
 (in-package :nyxt/record-input-field-mode)
 
+;;; FIXME: Use "submit-form" WebkitWebView signal instead.
 (define-mode record-input-field-mode ()
   "Record input fields to be refilled later.
 See `save-input-data' and `set-input-data-from-saved'."

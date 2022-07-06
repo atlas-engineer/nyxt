@@ -19,7 +19,7 @@
   ((visible-in-status-p nil)
    (keyscheme-map
     (define-keyscheme-map "hint" ()
-      keyscheme:cua
+      keyscheme:default
       (list
        "C-backspace" 'directory-up)
       keyscheme:emacs

@@ -24,7 +24,7 @@
   ((visible-in-status-p nil)
    (keyscheme-map
     (define-keyscheme-map "hint" ()
-      keyscheme:cua
+      keyscheme:default
       (list
        "M-i" 'toggle-hints-transparency
        "C-l" 'scroll-to-hint)))))

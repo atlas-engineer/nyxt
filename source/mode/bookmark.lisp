@@ -28,6 +28,10 @@ Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
     :documentation "File where bookmarks are saved.")
    (keyscheme-map
     (define-keyscheme-map "bookmarks" ()
+      keyscheme:default
+      (list
+       "C-b" 'list-bookmarks
+       "C-m g" 'bookmark-hint)
       keyscheme:cua
       (list
        "C-m o" 'set-url-from-bookmark
@@ -35,9 +39,7 @@ Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
        "C-d" 'bookmark-current-url
        "C-m C-s" 'bookmark-buffer-url
        "C-m k" 'delete-bookmark
-       "C-m l" 'bookmark-url
-       "C-b" 'list-bookmarks
-       "C-m g" 'bookmark-hint)
+       "C-m l" 'bookmark-url)
 
       keyscheme:emacs
       (list
@@ -45,8 +47,7 @@ Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
        "C-x r M" 'bookmark-current-url
        "C-x r m" 'bookmark-buffer-url
        "C-x r k" 'delete-bookmark
-       "C-x r l" 'bookmark-url
-       "C-m g" 'bookmark-hint)
+       "C-x r l" 'bookmark-url)
 
       keyscheme:vi-normal
       (list

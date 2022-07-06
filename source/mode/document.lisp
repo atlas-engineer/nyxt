@@ -20,10 +20,18 @@ It does not assume being online."))
    (rememberable-p nil)
    (keyscheme-map
     (define-keyscheme-map "web" ()
-      keyscheme:cua
+      keyscheme:default
       (list
        "C-M-Z" 'nyxt/passthrough-mode:passthrough-mode
        "M-i" 'focus-first-input-field
+       "C-M-c" 'open-inspector
+       "C-." 'jump-to-heading
+       "C-M-." 'jump-to-heading-buffers
+       "M-{" 'previous-heading
+       "M-}" 'next-heading
+       "C-p" 'print-buffer)
+      keyscheme:cua
+      (list
        "C-c" 'copy
        "C-v" 'paste
        "C-x" 'cut
@@ -36,10 +44,6 @@ It does not assume being online."))
        "C-0" 'reset-page-zoom
        "C-button4" 'zoom-page
        "C-button5" 'unzoom-page
-       "C-M-c" 'open-inspector
-       "C-." 'jump-to-heading
-       "M-{" 'previous-heading
-       "M-}" 'next-heading
        "end" 'maybe-scroll-to-bottom
        "home" 'maybe-scroll-to-top
        "C-down" 'scroll-to-bottom
@@ -56,8 +60,7 @@ It does not assume being online."))
        "keypadhome" 'scroll-to-top
        "keypadnext" 'scroll-page-down
        "keypadpageup" 'scroll-page-up
-       "keypadprior" 'scroll-page-up
-       "C-p" 'print-buffer)
+       "keypadprior" 'scroll-page-up)
       keyscheme:emacs
       (list
        "C-g" 'nothing              ; Emacs users may hit C-g out of habit.
@@ -73,7 +76,6 @@ It does not assume being online."))
        "C-x C-=" 'zoom-page ; Because + shifted = on QWERTY.
        "C-x C-hyphen" 'unzoom-page
        "C-x C-0" 'reset-page-zoom
-       "C-." 'jump-to-heading
        "M->" 'scroll-to-bottom
        "M-<" 'scroll-to-top
        "C-v" 'scroll-page-down

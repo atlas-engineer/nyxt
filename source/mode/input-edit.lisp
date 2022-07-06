@@ -136,8 +136,7 @@ necessary."
    (rememberable-p nil)
    (keyscheme-map
     (define-keyscheme-map "input-edit-mode" ()
-      keyscheme:cua
-      (list)
+      ;; TODO: Add VI-normal?
       keyscheme:emacs
       (list
        "C-f" 'cursor-forwards

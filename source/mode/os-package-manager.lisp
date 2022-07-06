@@ -17,13 +17,7 @@
                          :type (or null uiop/launch-program::process-info))
    (keyscheme-map
     (define-keyscheme-map "web" ()
-      keyscheme:cua
-      (list
-       "C-d" 'cancel-package-operation)
-      keyscheme:emacs
-      (list
-       "C-d" 'cancel-package-operation)
-      keyscheme:vi-normal
+      keyscheme:default
       (list
        "C-d" 'cancel-package-operation))))
   (:toggler-command-p nil))

@@ -15,9 +15,9 @@ See the mode `keyscheme-map' for special bindings."
   ((visible-in-status-p nil)
    (keyscheme-map
     (define-keyscheme-map "application" ()
-      keyscheme:cua
+      keyscheme:default
       (list
-       "C-z" 'passthrough-mode)))))
+       "C-M-z" 'passthrough-mode)))))
 
 (defmethod enable ((mode passthrough-mode) &key)
   (hooks:add-hook (current-keymaps-hook (buffer mode)) 'keep-override-map)
