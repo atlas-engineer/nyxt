@@ -78,7 +78,7 @@ The handlers take the mode as argument.")
   (:metaclass mode-class))
 
 (defmethod initialize-instance :after ((mode mode) &key)
-  (when (eq 'mode (type-of mode))
+  (when (eq 'mode (sera:class-name-of mode))
     (error "Cannot initialize `mode', you must subclass it.")))
 
 (defmethod name ((mode mode))
