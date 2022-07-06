@@ -246,13 +246,48 @@ of the handlers.  Depending on the combination, a hook can run the handlers
 either in parallel, or in order until one fails, or even " (:i "compose")
      " them (pass the result of one as the input of the next).  The handler types
 specify which input and output values are expected.")
-    (:p "Many hooks are executed at different points in Nyxt, among others:
-")
+    (:p "To add or delete a hook, you only need to know a couple of functions:"
+        (:ul
+         (:li (:xnref :class 'nhooks:handler) " a class to wrap hook handlers in.")
+         (:li (:nxref :function 'nhooks:add-hook) " (also known as "
+              (:code "hooks:add-hook")
+              ") allows you to add a handler to a hook,for it to be invoked when the hook fires.")
+         (:li (:code "nhooks:on") " (also available as " (:code "hooks:on")
+              ") as a shorthand for the " (:code "nhooks:add-hook") ".")
+         (:li (:nxref :function 'nhooks:remove-hook) " (also available as "
+              (:code "hooks:remove-hook") ") that removes the handler from a certain hook.")
+         (:li (:code "hnooks:once-on") " (also available as " (:code "hooks:once-on")
+              ") as a one-shot version of " (:code "nhooks:on")
+              " that removes the handler right after it's completed.")))
+    (:p "Many hooks are executed at different points in Nyxt, among others:")
     (:ul
-     (:li "Global hooks, such as " (:nxref :variable '*after-init-hook*) ".")
+     (:li "Global hooks, such as " (:nxref :variable '*after-init-hook*)
+          " or " (:nxref :variable '*after-startup-hook*) ".")
      (:li "Window- or buffer-related hooks.")
-     (:li "Commands 'before' and 'after' hooks.")
-     (:li "Modes 'enable' and 'disable' hooks."))
+     (:ul
+      (:li (:nxref :slot-of 'window 'window-make-hook) " for when a new window is created.")
+      (:li (:nxref :slot-of 'window 'window-delete-hook) " for when a window is deleted.")
+      (:li (:nxref :slot-of 'window 'window-set-buffer-hook)
+           " for when the " (:nxref :function 'current-buffer) " changes in the window.")
+      (:li (:nxref :slot-of 'network-buffer 'buffer-load-hook)
+           " for when there's a new page loading in the buffer.")
+      (:li (:nxref :slot-of 'network-buffer 'buffer-loaded-hook)
+           " for when this page is mostly done loading (some scripts/image/styles may not
+be fully loaded yet, so you may need to wait a bit after it fires.)")
+      (:li (:nxref :slot-of 'network-buffer 'request-resource-hook)
+           " for when a new request happens. Allows redirecting and blocking requests, and
+is a good place to do something conditioned on the links being loaded.")
+      (:li (:nxref :slot-of 'prompt-buffer 'prompt-buffer-ready-hook)
+           " fires when the prompt buffer is ready for user input. You may need to call "
+           (:nxref :function 'prompter:all-ready-p)
+           " on the prompt to ensure all the sources it contains are ready too, and then
+you can safely set new inputs and select the necessary suggestions."))
+     (:li "Commands :before and :after methods.")
+     (:ul
+      (:li "Try, for example, "
+           (:code "(defmethod set-url :after (&key (prefill-current-url-p t)) ...)")
+           " to do something after the set-url finishes executing."))
+     (:li "Modes 'enable' and 'disable' methods and their :before, :after, and :around methods."))
     (:p "For instance, if you want to force 'old.reddit.com' over 'www.reddit.com', you
 can set a hook like the following in your configuration file:")
     (:pre (:code "(defun old-reddit-handler (request-data)
@@ -438,44 +473,18 @@ exec nyxt --headless --no-auto-config --profile nosave --config \"$0\"
     (nyxt:quit)))"))
     (:p "The thing to put into the headless-config.lisp is a set of configuration forms
 to make Nyxt perform some actions to the opened pages and/or on certain
-events. Things you'd most probably want to put there are: ")
+hooks. Things you'd most probably want to put there are: ")
     (:ul
      (:li "Hook bindings, using the " (:nxref :package 'nhooks)
-          " library and hooks provided by Nyxt, with notable mentions being:")
-     (:ul
-      (:li (:nxref :slot-of 'network-buffer 'buffer-load-hook) " for when there's a new page loading in the buffer.")
-      (:li (:nxref :slot-of 'network-buffer 'buffer-loaded-hook)
-           " for when this page is mostly done loading (some scripts/image/styles may not
-be fully loaded yet, so you may need to wait a bit after it fires.)")
-      (:li (:nxref :slot-of 'network-buffer 'request-resource-hook)
-           " for when a new request happens. Allows redirecting and blocking requests, and
-is a good place to do something conditioned on the links being loaded.")
-      (:li (:nxref :variable '*after-startup-hook*)
-           " is the best place to start instrumenting Nyxt, as this hook fires when Nyxt is
-ready for interaction.")
-      (:li (:nxref :slot-of 'prompt-buffer 'prompt-buffer-ready-hook)
-           " fires when the prompt buffer is ready for user input. You may need to call "
-           (:nxref :function 'prompter:all-ready-p)
-           " on the prompt to ensure all the sources it contains are ready too, and then
-you can safely set new inputs and select the necessary suggestions.")
-      (:li (:nxref :function 'nhooks:add-hook) " (also known as "
-           (:code "hooks:add-hook")
-           ") allows you to add a handler to a hook,for it to be invoked when the hook fires.")
-      (:li (:code "nhooks:on") " (also available as " (:code "hooks:on")
-           ") as a shorthand for the " (:code "nhooks:add-hook") ".")
-      (:li (:nxref :function 'nhooks:remove-hook) " (also available as "
-           (:code "hooks:remove-hook") ") that removes the handler from a certain hook.")
-      (:li (:code "hnooks:once-on") " (also available as " (:code "hooks:once-on")
-           ") as a one-shot version of " (:code "nhooks:on")
-           " that removes the handler right after it's completed."))
+          " library and hooks provided by Nyxt.")
      (:li "Operations with the page. For those, we have a whole "
           (:nxref :package 'nyxt/dom) " library and " (:nxref :function 'document-model)
           "buffer slot.")
      (:ul
       (:li (:nxref :function 'document-model) " method of " (:nxref :class 'buffer)
            " has a reasonably fresh copy of the page DOM (Document Object Model, reflects
-the dynamic structure of the page). It is a Plump DOM, which means that all
-Plump (and CLSS) functions can be used on it.")
+the dynamic structure of the page). It is a " (:nxref :package 'plump) " DOM, which means that all "
+(:nxref :package 'plump "Plump") " (and " (:nxref :package 'clss "CLSS") ") functions can be used on it.")
       (:li (:nxref :function 'update-document-model)
            " is a function to force DOM re-parsing for the cases when you consider the
 current " (:nxref :function 'document-model) " too outdated.")
