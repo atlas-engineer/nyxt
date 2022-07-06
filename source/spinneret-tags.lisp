@@ -15,26 +15,26 @@
 (deftag :nscript (body attrs &key &allow-other-keys)
   `(:script ,@attrs (:raw ,@body)))
 
-(spinneret:deftag :nxref (symbol attr &key class slot-of function command variable package &allow-other-keys)
+(spinneret:deftag :nxref (body attr &key class slot-of function command variable package &allow-other-keys)
   `(:a :href ,(cond
                 (package `(nyxt:nyxt-url (read-from-string "nyxt:describe-package")
-                                         :universal t :package (quote ,@symbol)))
+                                         :universal t :package ,package))
                 (variable `(nyxt:nyxt-url (read-from-string "nyxt:describe-variable")
-                                          :universal t :variable (quote ,@symbol)))
+                                          :universal t :variable ,variable))
                 (function `(nyxt:nyxt-url (read-from-string "nyxt:describe-function")
-                                          :universal t :fn (quote ,@symbol)))
+                                          :universal t :fn ,function))
                 (command `(nyxt:nyxt-url (read-from-string "nyxt:describe-command")
-                                         :universal t :command (quote ,@symbol)))
+                                         :universal t :command ,command))
                 (class `(nyxt:nyxt-url (read-from-string "nyxt:describe-class")
-                                       :universal t :class (quote ,@symbol)))
+                                       :universal t :class ,class))
                 (slot-of `(nyxt:nyxt-url (read-from-string "nyxt:describe-slot")
-                                         :universal t :name (quote ,@symbol) :class (quote ,slot-of)))
+                                         :universal t :name ,(first body) :class ,slot-of))
                 (t `(nyxt:javascript-url
                      (ps:ps (nyxt/ps:lisp-eval
                              (:title "describe-any")
                              ;; Not defined yet:
                              (funcall (nyxt:resolve-symbol :describe-any :function)
-                                      (princ-to-string ,@symbol)))))))
+                                      (princ-to-string ,@body)))))))
        ;; TODO: Add :title so that documentation is available on hover.
        ;; TODO: Add keybindings for commands, like in `nyxt::command-markup'.
        (:code ,@(progn
@@ -45,5 +45,5 @@
                   (remf attr :variable)
                   (remf attr :package)
                   attr)
-              ,(let ((*print-case* :downcase))
-                 (format nil "~a" (first symbol))))))
+              (let ((*print-case* :downcase))
+                (format nil "~a" ,(or package variable function command class (first body)))))))

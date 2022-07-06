@@ -69,7 +69,7 @@ run " (command-markup 'describe-command) " and type 'mode'.")
     (:p "Slots store values that can be either accessed (get) or changed
 (set). Setting new values for slots allows many possibilities of customization.
 For instance, keyboard layouts vary across the world. The slot "
-        (:nxref :slot-of nyxt/hint-mode:hint-mode nyxt/hint-mode:hints-alphabet)
+        (:nxref :slot-of 'nyxt/hint-mode:hint-mode 'nyxt/hint-mode:hints-alphabet)
         " has the default value of "
         (:code "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
         ". If the user has an American keyboard, they can do:")
@@ -81,28 +81,28 @@ For instance, keyboard layouts vary across the world. The slot "
      (:li "Insert the string \"asfdghjkl\"") ".")
     (:p "This will make link-hinting more comfortable for this user. In
 addition, other similar approaches of customization can be applied to slots
-such as " (:nxref :slot-of nyxt/spell-check-mode:spell-check-mode nyxt/spell-check-mode:spell-check-language)
+such as " (:nxref :slot-of 'nyxt/spell-check-mode:spell-check-mode 'nyxt/spell-check-mode:spell-check-language)
 ", which can be expanded to do the spelling-check of other languages besides English.")
     (:h3 "Different types of buffers")
     (:p "There are multiple buffer classes, such as "
-        (:nxref :class t document-buffer) " (for structured documents) and "
-        (:nxref :class t input-buffer) " (for buffers that can receive user input).  A "
-        (:nxref :class t web-buffer) " class is used for web pages," (:nxref :class t prompt-buffer)
+        (:nxref :class 'document-buffer) " (for structured documents) and "
+        (:nxref :class 'input-buffer) " (for buffers that can receive user input).  A "
+        (:nxref :class 'web-buffer) " class is used for web pages," (:nxref :class 'prompt-buffer)
         " for, well,the prompt buffer.  Some buffer classes may inherit from multiple other classes.
-For instance " (:nxref :class t web-buffer) " and " (:nxref :class t prompt-buffer)
-        " both inherit from" (:nxref :class t input-buffer) ".")
-    (:p "You can configure one of the parent " (:nxref :class t buffer) " classes slots and the new
+For instance " (:nxref :class 'web-buffer) " and " (:nxref :class 'prompt-buffer)
+        " both inherit from" (:nxref :class 'input-buffer) ".")
+    (:p "You can configure one of the parent " (:nxref :class 'buffer) " classes slots and the new
 values will automatically cascade down as a new default for all child classes-
 unless this slot is specialized by these child classes.
-For instance if you configure the " (:nxref :slot-of override-map input-buffer)
-" slot in " (:nxref :class t input-buffer) ", both " (:nxref :class t panel-buffer) " and "
-(:nxref :class t web-buffer) " classes will inherit from the new value.")
+For instance if you configure the " (:nxref :slot-of 'input-buffer 'override-map)
+" slot in " (:nxref :class 'input-buffer) ", both " (:nxref :class 'panel-buffer) " and "
+(:nxref :class 'web-buffer) " classes will inherit from the new value.")
 
     (:h3 "Keybinding configuration")
     (:p "Nyxt supports multiple " (:i "bindings schemes") " such as CUA (the
     default), Emacs or vi.  Changing scheme is as simple as setting the
     corresponding mode as default, e.g. "
-        (:nxref :class t nyxt/emacs-mode:emacs-mode) ".  To make the change persistent across sessions,
+        (:nxref :class 'nyxt/emacs-mode:emacs-mode) ".  To make the change persistent across sessions,
 add the following to your configuration:")
     (:ul
      (:li "vi bindings:"
@@ -123,7 +123,7 @@ add the following to your configuration:")
       keyscheme:vi-normal
       (list \"g b\" (make-command switch-buffer* ()
                     (switch-buffer :current-is-last-p t)))))))"))
-    (:p "The " (:nxref :slot-of override-map input-buffer) " is a keymap that has priority over
+    (:p "The " (:nxref :slot-of 'input-buffer 'override-map) " is a keymap that has priority over
 all other keymaps.  By default, it has few bindings like the one
 for " (command-markup 'execute-command) ".  You can use it to set keys globally:")
     (:pre (:code "(define-configuration buffer
@@ -131,7 +131,7 @@ for " (command-markup 'execute-command) ".  You can use it to set keys globally:
                    (define-key map
                      \"M-x\" 'execute-command
                      \"C-space\" 'nothing)))))"))
-    (:p "The " (:nxref  :command t nothing) " command is useful to override bindings to do
+    (:p "The " (:nxref  :command 'nothing) " command is useful to override bindings to do
 nothing. Note that it's possible to bind any command, including those of
 disabled modes that are not listed in " (command-markup 'execute-command) ".")
     (:p "In addition, a more flexible approach is to create your own mode with
@@ -156,16 +156,16 @@ keymap.")
   ((default-modes (append '(my-mode) %slot-default%))))"))
 
     (:p "Bindings are subject to various translations as per "
-        (:nxref :variable t keymaps:*translator*) ". "
+        (:nxref :variable 'nkeymaps:*translator*) ". "
         "By default if it fails to find a binding it tries again with inverted
 shifts.  For instance if " (:code "C-x C-F") " fails to match anything " (:code "C-x C-f")
         " is tried."
-        "See the default value of " (:nxref :variable t keymaps:*translator*) " to learn how to
+        "See the default value of " (:nxref :variable 'nkeymaps:*translator*) " to learn how to
          custsomize it or set it to " (:code "nil") " to disable all forms of
          translation.")
 
     (:h3 "Search engines")
-    (:p "See the " (:nxref :slot-of context-buffer search-engines) " buffer slot
+    (:p "See the " (:nxref :slot-of 'context-buffer 'search-engines) " buffer slot
 documentation.  Bookmarks can also be used as search engines, see the
 corresponding section.")
     (:p "Nyxt comes with some default search engines for "
@@ -202,22 +202,22 @@ follows.")
     (:h3 "URL-dispatchers")
     (:p "You can configure which actions to take depending on the URL to be
 loaded.  For instance, you can configure which Torrent program to start to load
-magnet links.  See the" (:nxref :function t url-dispatching-handler) " function
+magnet links.  See the" (:nxref :function 'url-dispatching-handler) " function
 documentation.")
 
     (:h3 "Downloads")
     (:p "See the " (command-markup 'nyxt/download-mode:list-downloads) " command and the "
-        (:nxref :slot-of buffer download-path) " buffer slot documentation.")
+        (:nxref :slot-of 'buffer 'download-path) " buffer slot documentation.")
 
     (:h3 "Proxy and Tor")
-    (:p "See the " (:nxref :class t nyxt/proxy-mode:proxy-mode) " documentation.")
+    (:p "See the " (:nxref :class 'nyxt/proxy-mode:proxy-mode) " documentation.")
 
     (:h3 "Blocker mode")
     (:p "This mode blocks access to websites related to especific hosts. To see
 all hosts being blocked, execute command " (:code "describe-variable") ", choose variable "
 (:code "NYXT/BLOCKER-MODE:*DEFAULT-HOSTLIST*") ", and read data on "
 (:code "nyxt/blocker-mode:url-body") " slot." " To customize host blocking, read the "
-(:nxref :class t nyxt/blocker-mode:blocker-mode) " documentation.")
+(:nxref :class 'nyxt/blocker-mode:blocker-mode) " documentation.")
 
     (:h3 "Custom commands")
     (:p "Creating your own invocable commands is similar to creating a Common
@@ -231,7 +231,7 @@ Lisp function, except the form is " (:code "define-command") " instead of "
               :prompt \"Bookmark URL\"
               :sources (make-instance 'prompter:raw-source))))
     (bookmark-add url)))"))
-    (:p "See the " (:nxref :class t prompt-buffer) " class documentation for how
+    (:p "See the " (:nxref :class 'prompt-buffer) " class documentation for how
 to write custom prompt-buffers.")
 
     (:h3 "Hooks")
@@ -241,7 +241,7 @@ events that occur in the context of windows, buffers, modes, etc.")
 typed functions.  Each hook has a dedicated handler constructor.")
     (:p
      "Hooks can be 'run', that is, their handlers are run according to
-the " (:nxref :slot-of nhooks:hook nhooks:combination) " slot of the hook.  This combination is a function
+the " (:nxref :slot-of 'nhooks:hook 'nhooks:combination) " slot of the hook.  This combination is a function
 of the handlers.  Depending on the combination, a hook can run the handlers
 either in parallel, or in order until one fails, or even " (:i "compose")
      " them (pass the result of one as the input of the next).  The handler types
@@ -249,7 +249,7 @@ specify which input and output values are expected.")
     (:p "Many hooks are executed at different points in Nyxt, among others:
 ")
     (:ul
-     (:li "Global hooks, such as " (:nxref :variable t *after-init-hook*) ".")
+     (:li "Global hooks, such as " (:nxref :variable '*after-init-hook*) ".")
      (:li "Window- or buffer-related hooks.")
      (:li "Commands 'before' and 'after' hooks.")
      (:li "Modes 'enable' and 'disable' hooks."))
@@ -269,7 +269,7 @@ can set a hook like the following in your configuration file:")
 \(define-configuration web-buffer
   ((request-resource-hook
     (hooks:add-hook %slot-default% 'old-reddit-handler))))"))
-    (:p "(See " (:nxref :function t url-dispatching-handler)
+    (:p "(See " (:nxref :function 'url-dispatching-handler)
         " for a simpler way to achieve the same result.)")
     (:p "Or, if you want to set multiple handlers at once,")
     (:pre (:code "(define-configuration web-buffer
@@ -278,13 +278,13 @@ can set a hook like the following in your configuration file:")
             '(old-reddit-handler auto-proxy-handler)
             :initial-value %slot-default%))))"))
     (:p "Some hooks like the above example expect a return value, so it's
-important to make sure we return " (:nxref :class t request-data) " here.  See the
+important to make sure we return " (:nxref :class 'request-data) " here.  See the
 documentation of the respective hooks for more details.")
 
     (:h3 "Data paths and data profiles")
     (:p "Nyxt provides a uniform configuration interface for all data files
 persisted to disk (bookmarks, cookies, etc.).  To each file corresponds
-a " (:nxref :class t nyxt-file) " object. An " (:nxref :class t nyxt-profile) " is a
+a " (:nxref :class 'nyxt-file) " object. An " (:nxref :class 'nyxt-profile) " is a
 customizable object that helps define general rules for data storage.  Both
 nyxt-file and nyxt-profile compose, so it's possible to define general rules
 for all files (even for those not known in advance) while it's also
@@ -344,18 +344,18 @@ the " (:code "define-configuration") " macro.")
     (:h3 "Appearance")
     (:p "Much of the visual style can be configured by the user.  Search the
 class slots for 'style'.  To customize the status buffer, see
-the " (:nxref :slot-of window status-buffer) " window slot.")
+the " (:nxref :slot-of 'window 'status-buffer) " window slot.")
 
     (:h3 "Advanced configuration")
     (:p "While " (:code "define-configuration") " is convenient, it is mostly
 restricted to class slot configuration.  If you want to do anything else on
 class instantiation, you'll have to specialize the
-lower-level " (:nxref :function t customize-instance) " generic function.  Example:"
+lower-level " (:nxref :function 'customize-instance) " generic function.  Example:"
 (:pre (:code "(defmethod customize-instance ((buffer buffer) &key)
   (echo \"Buffer ~a created.\" buffer))")))
-    (:p "All classes with metaclass " (:nxref :class t user-class) " call "
-        (:nxref :function t customize-instance) " on instantiation,
-after " (:nxref :function t initialize-instance)(:code " :after") ".  The primary method is reserved
+    (:p "All classes with metaclass " (:nxref :class 'user-class) " call "
+        (:nxref :function 'customize-instance) " on instantiation,
+after " (:nxref :function 'initialize-instance)(:code " :after") ".  The primary method is reserved
 to the user, however the " (:code ":after") " method is reserved to the Nyxt
 core to finalize the instance.")
 
@@ -440,58 +440,58 @@ exec nyxt --headless --no-auto-config --profile nosave --config \"$0\"
 to make Nyxt perform some actions to the opened pages and/or on certain
 events. Things you'd most probably want to put there are: ")
     (:ul
-     (:li "Hook bindings, using the " (:nxref :package t nhooks)
+     (:li "Hook bindings, using the " (:nxref :package 'nhooks)
           " library and hooks provided by Nyxt, with notable mentions being:")
      (:ul
-      (:li (:nxref :slot-of network-buffer buffer-load-hook) " for when there's a new page loading in the buffer.")
-      (:li (:nxref :slot-of network-buffer buffer-loaded-hook)
+      (:li (:nxref :slot-of 'network-buffer 'buffer-load-hook) " for when there's a new page loading in the buffer.")
+      (:li (:nxref :slot-of 'network-buffer 'buffer-loaded-hook)
            " for when this page is mostly done loading (some scripts/image/styles may not
 be fully loaded yet, so you may need to wait a bit after it fires.)")
-      (:li (:nxref :slot-of network-buffer request-resource-hook)
+      (:li (:nxref :slot-of 'network-buffer 'request-resource-hook)
            " for when a new request happens. Allows redirecting and blocking requests, and
 is a good place to do something conditioned on the links being loaded.")
-      (:li (:nxref :variable t *after-startup-hook*)
+      (:li (:nxref :variable '*after-startup-hook*)
            " is the best place to start instrumenting Nyxt, as this hook fires when Nyxt is
 ready for interaction.")
-      (:li (:nxref :slot-of prompt-buffer prompt-buffer-ready-hook)
+      (:li (:nxref :slot-of 'prompt-buffer 'prompt-buffer-ready-hook)
            " fires when the prompt buffer is ready for user input. You may need to call "
-           (:nxref :function t prompter:all-ready-p)
+           (:nxref :function 'prompter:all-ready-p)
            " on the prompt to ensure all the sources it contains are ready too, and then
 you can safely set new inputs and select the necessary suggestions.")
-      (:li (:nxref :function t nhooks:add-hook) " (also known as "
+      (:li (:nxref :function 'nhooks:add-hook) " (also known as "
            (:code "hooks:add-hook")
            ") allows you to add a handler to a hook,for it to be invoked when the hook fires.")
       (:li (:code "nhooks:on") " (also available as " (:code "hooks:on")
            ") as a shorthand for the " (:code "nhooks:add-hook") ".")
-      (:li (:nxref :function t nhooks:remove-hook) " (also available as "
+      (:li (:nxref :function 'nhooks:remove-hook) " (also available as "
            (:code "hooks:remove-hook") ") that removes the handler from a certain hook.")
       (:li (:code "hnooks:once-on") " (also available as " (:code "hooks:once-on")
            ") as a one-shot version of " (:code "nhooks:on")
            " that removes the handler right after it's completed."))
      (:li "Operations with the page. For those, we have a whole "
-          (:nxref :package t nyxt/dom) " library and " (:nxref :function t document-model)
+          (:nxref :package 'nyxt/dom) " library and " (:nxref :function 'document-model)
           "buffer slot.")
      (:ul
-      (:li (:nxref :function t document-model) " method of " (:nxref :class t buffer)
+      (:li (:nxref :function 'document-model) " method of " (:nxref :class 'buffer)
            " has a reasonably fresh copy of the page DOM (Document Object Model, reflects
 the dynamic structure of the page). It is a Plump DOM, which means that all
 Plump (and CLSS) functions can be used on it.")
-      (:li (:nxref :function t update-document-model)
+      (:li (:nxref :function 'update-document-model)
            " is a function to force DOM re-parsing for the cases when you consider the
-current " (:nxref :function t document-model) " too outdated.")
-      (:li (:nxref :function t clss:select)
+current " (:nxref :function 'document-model) " too outdated.")
+      (:li (:nxref :function 'clss:select)
            " is a CLSS function to find elements using CSS selectors (a terse notation for web page element description).")
       ;; FIXME: Make a nxref once we update CLSS submodule.
       (:li (:code"clss:ordered-select") " is the same as "
-           (:nxref :function t clss:select)
+           (:nxref :function 'clss:select)
            ", except it guarantees that all the elements are returned in a depth-first
 traversal order.")
-      (:li (:nxref :function t nyxt/dom:click-element)
+      (:li (:nxref :function 'nyxt/dom:click-element)
            " to programmatically click a certain element (including the ones returned by "
-           (:nxref :function t clss:select) ".)")
-      (:li (:nxref :function t nyxt/dom:focus-select-element) " to focus an input field, for example.")
-      (:li (:nxref :function t nyxt/dom:check-element) " to check a checkbox or a radio button.")
-      (:li (:nxref :function t nyxt/dom:select-option-element) " to select an option from the "
+           (:nxref :function 'clss:select) ".)")
+      (:li (:nxref :function 'nyxt/dom:focus-select-element) " to focus an input field, for example.")
+      (:li (:nxref :function 'nyxt/dom:check-element) " to check a checkbox or a radio button.")
+      (:li (:nxref :function 'nyxt/dom:select-option-element) " to select an option from the "
            (:code "<select>") " element options.")))
     (:p "Additionally, headless mode interacts in useful way with other CLI toggles the Nyxt has:")
     (:ul
@@ -506,7 +506,7 @@ to. Useful to start several instances of Nyxt and do your thing in parallel.")
 
     (:h2 "Extensions")
     (:p "To install an extension, copy inside the "
-        (:nxref :variable t *extensions-directory*) " (default to "
+        (:nxref :variable '*extensions-directory*) " (default to "
         (:code "~/.local/share/nyxt/extensions")").")
     (:p "Extensions are regular Common Lisp systems.")
     (:p "A catalogue of extensions is available in the "
