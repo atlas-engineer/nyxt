@@ -420,8 +420,12 @@ TITLE is purely informative."
                    (title (when (and url (quri:uri-path url)) (sera:drop-prefix "/" (quri:uri-path url)))))
               (log:debug "Evaluate Lisp callback ~a from internal page ~a: ~a" request-id buffer (or title "UNTITLED"))
               (values (let ((result (with-current-buffer buffer
-                                      (sera:synchronized ((lisp-url-callbacks buffer))
-                                        (run (gethash request-id (lisp-url-callbacks buffer)))))))
+                                      (let ((callback (sera:synchronized ((lisp-url-callbacks buffer))
+                                                        (gethash request-id (lisp-url-callbacks buffer)))))
+                                        (if callback
+                                            (run callback)
+                                            (log:warn "Request ~a is bound to no callback for buffer ~a"
+                                                      url buffer))))))
                         ;; Objects and other complex structures make cl-json choke.
                         ;; TODO: Maybe encode it to the format that `cl-json'
                         ;; supports, then we can override the encoding and
