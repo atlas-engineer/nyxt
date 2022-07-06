@@ -94,6 +94,7 @@ the following platforms:
     ```
     zypper ar https://download.opensuse.org/repositories/home:/bobbie424242/15.4/ nyxt-git
     ```
+  Then install with =zypper in nyxt=.
 
 To install from source, please refer to the [[file:documents/README.org][developer's manual]].
 
