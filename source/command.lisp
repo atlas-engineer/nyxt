@@ -25,8 +25,8 @@ corresponding mode is active.
                  :type boolean
                  :reader t
                  :writer nil
-                 :documentation "Mark the command as superseded by something else.
-If non-nil, report a warning before executing the command.")
+                 :documentation "Whether a warning before executing a deprecated
+                 command is signalled.")
    (last-access (local-time:now)
                 :type local-time:timestamp
                 :documentation "Last time this command was called from prompt buffer.

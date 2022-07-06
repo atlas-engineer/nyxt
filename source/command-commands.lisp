@@ -32,7 +32,7 @@
   ((prompter:name "Commands")
    (global-p t
              :type boolean
-             :documentation "If non-nil, include global commands in the suggestions.")
+             :documentation "Whether global commands are included in the suggestions.")
    (buffer (current-buffer)
            :type buffer)
    (prompter:constructor (lambda (source)

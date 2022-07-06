@@ -85,8 +85,8 @@ Note that the function is executed *before* performing a return-action.")
      (auto-return-p nil
                     :type boolean
                     :documentation
-                    "Automatically return and run the default `return-action'
-when the suggestions are narrowed down to just one item.")
+                    "Whether the default `return-action' automatically runs when
+the suggestions are narrowed down to just one item.")
 
      (history (make-history)
               :type (or containers:ring-buffer-reverse null)

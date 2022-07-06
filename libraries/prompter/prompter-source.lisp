@@ -97,8 +97,8 @@ attribute names are meant to be displayed or not.
 
    (hide-suggestion-count-p nil
                             :type boolean
-                            :documentation "Let know the caller whether the
-`suggestion' count is meant to be displayed or not.")
+                            :documentation "Whether the `suggestion' count is
+displayed.")
 
    (suggestion-maker #'make-suggestion
                      :type function
