@@ -118,36 +118,36 @@ major versions."
 
 (define-migration "3"
   (download-directory)
-  (:p (:nxref :slot-of context-buffer download-directory)
-      " is in " (:nxref :class t context-buffer) ".")
+  (:p (:nxref :slot 'download-directory :class 'context-buffer)
+      " is in " (:nxref :class 'context-buffer) ".")
 
   (history-file)
-  (:p (:nxref :slot-of context-buffer history-file)
-      " is in " (:nxref :class t context-buffer) ".")
+  (:p (:nxref :slot 'history-file :class 'context-buffer)
+      " is in " (:nxref :class 'context-buffer) ".")
 
   (standard-output-file standard-error-file)
-  (:p (:nxref :slot-of context-buffer nyxt:standard-output-file) " and "
-      (:nxref :slot-of context-buffer nyxt:error-output-file)
-      " are in " (:nxref :class t context-buffer) ".")
+  (:p (:nxref :slot 'nyxt:standard-output-file :class 'context-buffer) " and "
+      (:nxref :slot 'nyxt:error-output-file :class 'context-buffer)
+      " are in " (:nxref :class 'context-buffer) ".")
 
   (annotations-file)
-  (:p (:nxref :slot-of nyxt/annotate-mode:annotate-mode nyxt/annotate-mode:annotations-file)
-      " is in " (:nxref :class t nyxt/annotate-mode:annotate-mode) ".")
+  (:p (:nxref :slot 'nyxt/annotate-mode:annotations-file :class 'nyxt/annotate-mode:annotate-mode)
+      " is in " (:nxref :class 'nyxt/annotate-mode:annotate-mode) ".")
 
   (auto-mode-rules-file)
-  (:p (:nxref :slot-of nyxt/auto-mode:auto-mode auto-mode-rules-file)
-      " is in " (:nxref :class t nyxt/auto-mode:auto-mode) ".")
+  (:p (:nxref :slot 'nyxt/auto-mode:auto-mode-rules-file :class 'nyxt/auto-mode:auto-mode)
+      " is in " (:nxref :class 'nyxt/auto-mode:auto-mode) ".")
 
   (bookmarks-file)
-  (:p (:nxref :slot-of nyxt/bookmark-mode:bookmark-mode nyxt/bookmark-mode:bookmarks-file)
-      " is in " (:nxref :class t nyxt/bookmark-mode:bookmark-mode) ".")
+  (:p (:nxref :slot 'nyxt/bookmark-mode:bookmarks-file :class 'nyxt/bookmark-mode:bookmark-mode)
+      " is in " (:nxref :class 'nyxt/bookmark-mode:bookmark-mode) ".")
 
   (expand-path)
-  (:p (:code "expand-path") " is replaced by " (:nxref :function t nfiles:expand) ".")
+  (:p (:code "expand-path") " is replaced by " (:nxref :function 'nfiles:expand) ".")
 
   (get-data get-user-data)
   (:p (:code "get-data") " and " (:code "get-user-data") " are replaced by "
-      (:nxref :function t nfiles:content) ".")
+      (:nxref :function 'nfiles:content) ".")
 
   (with-data-access with-data-unsafe)
   (:p (:code "with-data-access") " and " (:code "with-data-unsafe")
