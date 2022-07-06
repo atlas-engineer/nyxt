@@ -15,7 +15,7 @@
 (deftag :nscript (body attrs &key &allow-other-keys)
   `(:script ,@attrs (:raw ,@body)))
 
-(spinneret:deftag :nxref (body attr &key class slot-of function command variable package &allow-other-keys)
+(spinneret:deftag :nxref (body attr &key slot class function command variable package &allow-other-keys)
   `(:a :href ,(cond
                 (package `(nyxt:nyxt-url (read-from-string "nyxt:describe-package")
                                          :universal t :package ,package))
@@ -25,10 +25,10 @@
                                           :universal t :fn ,function))
                 (command `(nyxt:nyxt-url (read-from-string "nyxt:describe-command")
                                          :universal t :command ,command))
+                (slot `(nyxt:nyxt-url (read-from-string "nyxt:describe-slot")
+                                      :universal t :name ,slot :class ,class))
                 (class `(nyxt:nyxt-url (read-from-string "nyxt:describe-class")
                                        :universal t :class ,class))
-                (slot-of `(nyxt:nyxt-url (read-from-string "nyxt:describe-slot")
-                                         :universal t :name ,(first body) :class ,slot-of))
                 (t `(nyxt:javascript-url
                      (ps:ps (nyxt/ps:lisp-eval
                              (:title "describe-any")
@@ -39,11 +39,11 @@
        ;; TODO: Add keybindings for commands, like in `nyxt::command-markup'.
        (:code ,@(progn
                   (remf attr :class)
-                  (remf attr :slot-of)
+                  (remf attr :slot)
                   (remf attr :function)
                   (remf attr :command)
                   (remf attr :variable)
                   (remf attr :package)
                   attr)
               (let ((*print-case* :downcase))
-                (format nil "~a" ,(or (first body) package variable function command class))))))
+                (format nil "~a" ,(or (first body) package variable function command slot class))))))
