@@ -477,9 +477,8 @@ on certain hooks. Things you'd most probably want to put there are: ")
     (:ul
      (:li "Hook bindings, using the " (:nxref :package 'nhooks)
           " library and hooks provided by Nyxt.")
-     (:li "Operations with the page. For those, we have a whole "
-          (:nxref :package 'nyxt/dom) " library and the " (:nxref :function 'document-model)
-          "method.")
+     (:li "Operations on the page. Check the " (:nxref :package 'nyxt/dom) "
+          library and the " (:nxref :function 'document-model) "method.")
      (:ul
       (:li "The " (:nxref :function 'document-model)
            " method has a reasonably fresh copy of the page DOM (Document Object Model,
