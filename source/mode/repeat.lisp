@@ -23,17 +23,19 @@
         (declare (ignore path-url))
         (when (repeat-action mode)
           (funcall (repeat-action mode) mode))))
-   (repeat-count nil
-                 :type (or integer null)
-                 :documentation "The number of times to repeat the commands for.")
-   (repeat-interval 1
-                    :type number
-                    :documentation "The interval (in seconds) to repeat `repeat-action' at.
-Defaults to one second.")
-   (repeat-action nil
-                  :type (or null (function (repeat-mode)))
-                  :documentation "The action to repeat.
-Function taking a `repeat-mode' instance.")))
+   (repeat-count
+    nil
+    :type (or integer null)
+    :documentation "The number of times to repeat the commands for.")
+   (repeat-interval
+    1
+    :type number
+    :documentation "Time interval (in seconds) to repeat `repeat-action'.")
+   (repeat-action
+    nil
+    :type (or null (function (repeat-mode)))
+    :documentation "The action to repeat.
+It takes a `repeat-mode' instance as argument.")))
 
 (defmethod enable ((mode repeat-mode) &key)
   ;; TODO: Remember prompt input now that we have prompt-buffer hooks.
