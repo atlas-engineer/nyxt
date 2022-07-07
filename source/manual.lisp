@@ -480,7 +480,7 @@ exec nyxt --headless --no-auto-config --profile nosave --config \"$0\"
 
 \(hooks:on *after-startup-hook* ()
   ;; Once the page's done loading, do your thing.
-  (once-on (buffer-loaded-hook (current-buffer)) (buffer)
+  (hooks:once-on (buffer-loaded-hook (current-buffer)) (buffer)
     ;; It's sometimes necessary to sleep, as `buffer-loaded-hook' fires when the
     ;; page is loaded, which does not mean that all the resources and scripts
     ;; are done loading yet. Give it some time there.

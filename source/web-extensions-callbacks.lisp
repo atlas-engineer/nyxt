@@ -215,7 +215,7 @@ the description of the mechanism that sends the results back."
                   (calispel:! channel nil)))))
         (if (not (member (slot-value buffer 'nyxt::status) '(:finished :failed)))
             (let ((channel (nyxt::make-channel 1)))
-               (once-on (buffer-loaded-hook buffer) _
+               (hooks:once-on (buffer-loaded-hook buffer) _
                 (calispel:! channel (send-message result-channel)))
               (calispel:? channel))
             (send-message result-channel))))

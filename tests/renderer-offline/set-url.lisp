@@ -21,13 +21,13 @@
   (let ((url-channel (nyxt::make-channel 1))
         (url "nyxt:about"))
     (setf nyxt::*headless-p* t)
-    (once-on nyxt:*after-startup-hook* ()
-      (once-on (prompt-buffer-ready-hook *browser*)
+    (hooks:once-on nyxt:*after-startup-hook* ()
+      (hooks:once-on (prompt-buffer-ready-hook *browser*)
           (prompt-buffer)
         (prompter:all-ready-p prompt-buffer)
         (nyxt:set-prompt-buffer-input url prompt-buffer)
         (prompter:all-ready-p prompt-buffer)
-        (once-on (buffer-loaded-hook (current-buffer)) buffer
+        (hooks:once-on (buffer-loaded-hook (current-buffer)) buffer
           (calispel:! url-channel (nyxt:render-url (nyxt:url buffer))))
         (nyxt/prompt-buffer-mode:return-selection prompt-buffer))
       (run-thread "run set-url"

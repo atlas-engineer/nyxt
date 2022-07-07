@@ -113,41 +113,6 @@ Return the lambda s-expression as a second value, if possible."
   "Return a new ring buffer."
   (containers:make-ring-buffer size :last-in-first-out))
 
-(export-always 'on)
-(defmacro on (hook args &body body)
-  "Attach a handler with ARGS and BODY to the HOOK.
-
-ARGS can be
-- A symbol if there's only one argument to the callback.
-- A list of arguments.
-- An empty list, if the hook handlers take no argument."
-  (let ((handler-name (gensym "on-hook-handler"))
-        (args (alex:ensure-list args)))
-    `(nhooks:add-hook
-      ,hook (make-instance 'nhooks:handler
-                           :fn (lambda ,args
-                                 (declare (ignorable ,@args))
-                                 ,@body)
-                           :name (quote ,handler-name)))))
-
-(export-always 'once-on)
-(defmacro once-on (hook args &body body)
-  "Attach a handler with ARGS and BODY to the HOOK.
-
-Remove the handler after it fires the first time.
-
-See `on'."
-  (let ((handler-name (gensym "once-on-hook-handler"))
-        (args (alex:ensure-list args)))
-    (alex:once-only (hook)
-      `(nhooks:add-hook
-        ,hook (make-instance 'nhooks:handler
-                             :fn (lambda ,args
-                                   (declare (ignorable ,@args))
-                                   (nhooks:remove-hook ,hook (quote ,handler-name))
-                                   ,@body)
-                             :name (quote ,handler-name))))))
-
 (export-always 'public-initargs)
 (defun public-initargs (class-specifier)
   "Return the list of initargs for CLASS-SPECIFIER direct slots."
