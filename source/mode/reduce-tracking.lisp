@@ -27,16 +27,22 @@ still being less noticeable in the crowd.")
     nil
     :type (or null string)
     :export nil
-    :documentation "The User Agent the browser had before enabling this mode.")))
+    :documentation "The User Agent the browser had before enabling this mode.")
+   (old-timezone
+    nil
+    :export nil
+    :documentation "The timezone the system had before enabling this mode.")))
 
 (defmethod enable ((mode reduce-tracking-mode) &key)
-  (setf (old-user-agent mode) (ffi-buffer-user-agent (buffer mode)))
-  (setf (ffi-buffer-user-agent (buffer mode)) (preferred-user-agent mode))
-  (setf (ffi-preferred-languages (buffer mode))
-        (preferred-languages mode))
+  (setf (old-timezone mode) (uiop:getenv "TZ")
+        (uiop:getenv "TZ") "UTC")
+  (setf (old-user-agent mode) (ffi-buffer-user-agent (buffer mode))
+        (ffi-buffer-user-agent (buffer mode)) (preferred-user-agent mode))
+  (setf (ffi-preferred-languages (buffer mode)) (preferred-languages mode))
   (setf (ffi-tracking-prevention (buffer mode)) t))
 
 (defmethod disable ((mode reduce-tracking-mode) &key)
+  (setf (uiop:getenv "TZ") (old-timezone mode))
   (setf (ffi-buffer-user-agent (buffer mode)) (old-user-agent mode))
   (setf (ffi-preferred-languages (buffer mode))
         (list (first
