@@ -468,6 +468,10 @@ small configuration snippet (note that you'd need to have"
   ((nyxt/user-script-mode:user-scripts
     (list
      (make-instance 'nyxt/user-script-mode:user-script
+                    ;; Alternatively, save the code to some file and use
+                    ;; :base-path #p\"/path/to/our/file.user.js\".
+                    ;; Or fetch a remove script with
+                    ;; :url (quri:uri \"https://example.com/script.user.js\")
                     :code \"// ==UserScript==
 // @name          No navbars!
 // @description	  A simple script to remove navbars
