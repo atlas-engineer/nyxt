@@ -198,11 +198,3 @@ Return:
 
 (defmethod customize-instance :after ((script user-script) &key)
   (parse-user-script script))
-
-(defmethod nfiles:deserialize ((profile nyxt-profile) (script user-script) raw-content &key)
-  "If the script is not in the UserScript format, the raw content is used as is
-and only the `code' slot is set."
-  (declare (ignorable profile))
-  (progn
-    (setf (code script) (alex:read-stream-content-into-string raw-content))
-    (parse-user-script script)))
