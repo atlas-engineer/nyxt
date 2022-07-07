@@ -57,6 +57,7 @@
                plump
                clss
                spinneret
+               slynk
                swank
                trivia
                trivial-clipboard
