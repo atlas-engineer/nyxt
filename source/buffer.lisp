@@ -116,6 +116,13 @@ representation of HTML documents.
 Rendered URLs or the Nyxt's manual qualify as examples.  Buffers are fully
 separated from one another, so that each has its own behaviour and settings."))
 
+(defmethod request-resource-hook ((buffer buffer))
+  "A method to not error out if the buffer has no `request-resource-hook'.
+
+Useful in FFI functions where we usually specialize things against
+`renderer-buffer', not knowing the exact class of those."
+  nil)
+
 (defmethod initialize-instance :after ((buffer buffer) &key
                                        &allow-other-keys)
   "Dummy method to allow forwarding other key arguments."
