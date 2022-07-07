@@ -449,6 +449,64 @@ instance must be non-nil.")
       (:pre (:code "nyxt --profile nosave --remote --load foo.lisp --eval '(foo)'")))
 
      (:section
+      :id "user-scripts"
+      (:h3 "User scripts")
+      (:p "User scripts are a conventional and lightweight way to run arbitrary JavaScript
+code on some set of pages/conditions. While not as powerful as either
+WebExtensions on Lisp-native extensions to Nyxt, those hook into the tenderer
+inner working and allow you to change the page and JavaScript objects associated
+to it.")
+      (:p "As an example, you can remove navbars from all the pages you visit with this
+small configuration snippet (note that you'd need to have"
+          (:nxref :class-name 'nyxt/user-script-mode:user-script-mode)
+          " in your " (:nxref :function 'default-modes "buffer default-modes") " ):")
+      (:pre (:code ";; Enable user-script-mode, if you didn't already.
+\(define-configuration web-buffer
+  ((default-modes (append '(nyxt/user-script-mode:user-script-mode) %slot-default%))))
+
+\(define-configuration nyxt/user-script-mode:user-script-mode
+  ((nyxt/user-script-mode:user-scripts
+    (list
+     (make-instance 'nyxt/user-script-mode:user-script
+                    :code \"// ==UserScript==
+// @name          No navbars!
+// @description	  A simple script to remove navbars
+// @run-at        document-end
+// @include       http://*/*
+// @include       https://*/*
+// @noframes
+// ==/UserScript==
+
+var elem = document.querySelector(\"header\") || document.querySelector(\"nav\");
+if (elem) {
+  elem.parentNode.removeChild(elem);
+}\")))))"))
+      (:p (:a :href "https://wiki.greasespot.net/Metadata_Block" "Greasemonkey documentation")
+          " lists all the possible properties that a user script might have. To Nyxt
+implementation, only those are meaningful:")
+      (:dl
+       (:dt "@include and" (:nxref :function 'nyxt/user-script-mode:include))
+       (:dd "Sets the URL pattern to enable this script for. Follows the pattern "
+            (:code "scheme://host/path")
+            ", where scheme is either a literal scheme or and asterisk (matching any
+scheme), and host and path are any valid characters plus asterisks (matching any
+set of characters) anywhere.")
+       (:dt "@match")
+       (:dd "Same as @include.")
+       (:dt "@exclude and " (:nxref :function 'nyxt/user-script-mode:exclude))
+       (:dd "Similar to @include, but rather disables the script for the matching pages.")
+       (:dt "@noframes and " (:nxref :function 'nyxt/user-script-mode:all-frames-p))
+       (:dd "When present, disables the script for all the frames but toplevel ones. When
+absent, injects the script everywhere. The Lisp-side"
+            (:nxref :function 'nyxt/user-script-mode:all-frames-p) "works in an opposite way.")
+       (:dt "@run-at and " (:nxref :function 'nyxt/user-script-mode:run-at))
+       (:dd "When to run a script. Allowed values: document-start, document-end,
+document-idle (in Nyxt implementation, same as document-end).")
+       (:dt "@require")
+       (:dd "Allows including arbitrary JS files hosted on the Internet or loaded from the
+same place as the script itself. Neat for including some JS libraries, like jQuery.")))
+
+     (:section
       :id "headless-mode"
       (:h3 "Headless mode")
       (:p "Similarly to Nyxt's scripting functionality, headless mode runs without a
