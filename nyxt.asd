@@ -64,6 +64,7 @@ This system does nothing in particular.")
                plump
                clss
                spinneret
+               slynk
                swank
                trivia
                trivial-clipboard
