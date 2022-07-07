@@ -1694,7 +1694,7 @@ local anyways, and it's better to refresh it if a load was queried."
       (:metaclass interface-class))))
 
 (define-ffi-method ffi-buffer-add-user-script ((buffer gtk-buffer) (script gtk-user-script))
-  (alex:if-let ((code (nfiles:content script)))
+  (alex:if-let ((code (nyxt/user-script-mode:code script)))
     (let* ((content-manager
              (webkit:webkit-web-view-get-user-content-manager
               (gtk-object buffer)))

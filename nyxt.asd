@@ -232,6 +232,7 @@ This system does nothing in particular.")
   :serial t
   :components ((:file "tests/package")
                (:nyxt-test "tests/offline/global-history")
+               (:nyxt-test "tests/offline/user-script-parsing")
                (:nyxt-online-test "tests/online/urls")))
 
 (defsystem "nyxt/benchmark"

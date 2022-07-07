@@ -45,7 +45,7 @@
   (:metaclass interface-class))
 
 (define-class user-script (renderer-user-script nfiles:data-file nyxt-remote-file)
-  ((code "" :type string)
+  ((code "" :type (maybe string))
    (version "")
    (description "")
    (namespace "")
@@ -57,7 +57,7 @@
     nil
     :type (maybe hash-table))
    (include
-    '()
+    '("http://*/*" "https://*/*")
     :type list-of-strings)
    (exclude
     '()
@@ -140,11 +140,10 @@ Return:
   (unless (uiop:emptyp (nfiles:url-content script))
     (alex:write-string-into-file (nfiles:url-content script) destination :if-exists :supersede)))
 
-(defmethod nfiles:deserialize ((profile nyxt-profile) (script user-script) raw-content &key)
-  "If the script is not in the UserScript format, the raw content is used as is
-and only the `code' slot is set."
-  ;; TODO: Parse the stream directly?
-  (let ((code  (alex:read-stream-content-into-string raw-content)))
+(defmethod parse-user-script ((script user-script))
+  (let ((code (if (uiop:emptyp (code script))
+                  (files:content script)
+                  (code script))))
     (or
      (sera:and-let* ((start-position (search "// ==UserScript==" code))
                      (end-position (search "// ==/UserScript==" code))
@@ -176,7 +175,18 @@ and only the `code' slot is set."
             (namespace script) (first (getprop "namespace"))
             (all-frames-p script) (not (first (getprop "noframes")))
             (code script) code-with-requires
-            (include script) (append (getprop "include") (getprop "match"))
+            (include script) (let ((includes (append (getprop "include") (getprop "match"))))
+                               (cond
+                                 ((and (sera:single includes)
+                                       (equal "http*" (first includes)))
+                                  '("http://*/*" "https://*/*"))
+                                 ((and (sera:single includes)
+                                       (equal "https*" (first includes)))
+                                  '("https://*/*"))
+                                 ((and (sera:single includes)
+                                       (equal "*" (first includes)))
+                                  '("*://*/*"))
+                                 (t includes)))
             (exclude script) (getprop "exclude")
             (run-at script) (str:string-case (first (getprop "run-at"))
                               ("document-start" :document-start)
@@ -185,3 +195,6 @@ and only the `code' slot is set."
                               (otherwise :document-end)))
            code-with-requires)))
      (setf (code script) code))))
+
+(defmethod customize-instance :after ((script user-script) &key)
+  (parse-user-script script))
