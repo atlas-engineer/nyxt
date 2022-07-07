@@ -16,34 +16,36 @@
   `(:script ,@attrs (:raw ,@body)))
 
 (spinneret:deftag :nxref (body attr &key slot class-name function command variable package &allow-other-keys)
-  `(:a :href ,(cond
-                (package `(nyxt:nyxt-url (read-from-string "nyxt:describe-package")
-                                         :universal t :package ,package))
-                (variable `(nyxt:nyxt-url (read-from-string "nyxt:describe-variable")
-                                          :universal t :variable ,variable))
-                (function `(nyxt:nyxt-url (read-from-string "nyxt:describe-function")
-                                          :universal t :fn ,function))
-                (command `(nyxt:nyxt-url (read-from-string "nyxt:describe-command")
-                                         :universal t :command ,command))
-                (slot `(nyxt:nyxt-url (read-from-string "nyxt:describe-slot")
-                                      :universal t :name ,slot :class ,class-name))
-                (class-name `(nyxt:nyxt-url (read-from-string "nyxt:describe-class")
-                                       :universal t :class ,class-name))
-                (t `(nyxt:javascript-url
-                     (ps:ps (nyxt/ps:lisp-eval
-                             (:title "describe-any")
-                             ;; Not defined yet:
-                             (funcall (nyxt:resolve-symbol :describe-any :function)
-                                      (princ-to-string ,@body)))))))
-       ;; TODO: Add :title so that documentation is available on hover.
-       ;; TODO: Add keybindings for commands, like in `nyxt::command-markup'.
-       (:code ,@(progn
-                  (remf attr :class-name)
-                  (remf attr :slot)
-                  (remf attr :function)
-                  (remf attr :command)
-                  (remf attr :variable)
-                  (remf attr :package)
-                  attr)
-              (let ((*print-case* :downcase))
-                (format nil "~a" ,(or (first body) package variable function command slot class-name))))))
+  (let ((symbol (or package variable function command slot class-name))
+        (printable (or (first body) package variable function command slot class-name)))
+    `(:a :href ,(cond
+                  (package `(nyxt:nyxt-url (read-from-string "nyxt:describe-package")
+                                           :universal t :package ,package))
+                  (variable `(nyxt:nyxt-url (read-from-string "nyxt:describe-variable")
+                                            :universal t :variable ,variable))
+                  (function `(nyxt:nyxt-url (read-from-string "nyxt:describe-function")
+                                            :universal t :fn ,function))
+                  (command `(nyxt:nyxt-url (read-from-string "nyxt:describe-command")
+                                           :universal t :command ,command))
+                  (slot `(nyxt:nyxt-url (read-from-string "nyxt:describe-slot")
+                                        :universal t :name ,slot :class ,class-name))
+                  (class-name `(nyxt:nyxt-url (read-from-string "nyxt:describe-class")
+                                              :universal t :class ,class-name))
+                  (t `(nyxt:javascript-url
+                       (ps:ps (nyxt/ps:lisp-eval
+                               (:title "describe-any")
+                               ;; Not defined yet:
+                               (funcall (nyxt:resolve-symbol :describe-any :function)
+                                        (princ-to-string ,symbol)))))))
+         ;; TODO: Add :title so that documentation is available on hover.
+         ;; TODO: Add keybindings for commands, like in `nyxt::command-markup'.
+         (:code ,@(progn
+                    (remf attr :class-name)
+                    (remf attr :slot)
+                    (remf attr :function)
+                    (remf attr :command)
+                    (remf attr :variable)
+                    (remf attr :package)
+                    attr)
+                (let ((*print-case* :downcase))
+                  (format nil "~a" ,printable))))))
