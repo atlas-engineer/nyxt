@@ -10,9 +10,15 @@
   envision the graph as a finite state machine."))
 
 (defclass node ()
-  ((edges :accessor edges :initform (make-hash-table :test #'equal))
-   (occurrence-count :accessor occurrence-count :initform 0)
-   (element :accessor element :initarg :element)))
+  ((edges :accessor edges :initform (make-hash-table :test #'equal))))
+
+(defclass element-node (node)
+  ((element :accessor element :initarg :element)
+   (occurrences
+    :accessor occurrences
+    :initform 0
+    :documentation "Number of times this element has appeared at the end of a
+    sequence.")))
 
 (defmethod add-edge ((from-node node) (to-node node))
   (alexandria:ensure-gethash (element to-node)
@@ -30,4 +36,4 @@
          (leaf (alexandria:ensure-gethash list-but-last-element
                                           (edges model)
                                           (make-instance 'node))))
-    (increment (add-edge leaf (make-instance 'node :element last-element)))))
+    (increment (add-edge leaf (make-instance 'element-node :element last-element)))))
