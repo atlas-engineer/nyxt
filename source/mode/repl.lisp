@@ -21,6 +21,9 @@
    (results
     nil
     :documentation "The results (as a list) of `input' evaluation.")
+   (output
+    nil
+    :documentation "The text printed out during evaluation.")
    (ready-p
     nil
     :documentation "The evaluation is terminated.")
@@ -34,11 +37,14 @@
 
 (defmethod initialize-instance :after ((evaluation evaluation) &key)
   (run-thread "repl cell evaluation"
-    (setf (results evaluation) (nyxt::evaluate (input evaluation)))
-    (setf (ready-p evaluation) t)
-    (peval (setf (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "#evaluation-result-~a" (id evaluation))))
-                           |innerHTML|)
-                 (ps:lisp (html-result evaluation))))))
+    (multiple-value-bind (result output)
+        (nyxt::evaluate (input evaluation))
+      (setf (results evaluation) result)
+      (setf (output evaluation) output)
+      (setf (ready-p evaluation) t)
+      (peval (setf (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "#evaluation-result-~a" (id evaluation))))
+                             |innerHTML|)
+                   (ps:lisp (html-result evaluation)))))))
 
 (define-mode repl-mode ()
   "Mode for interacting with the REPL."
@@ -278,6 +284,8 @@
 
 (defun html-result (evaluation)
   (spinneret:with-html-string
+    (unless (uiop:emptyp (output evaluation))
+      (:pre (output evaluation)))
     (if (ready-p evaluation)
         (loop
           for result in (results evaluation)
