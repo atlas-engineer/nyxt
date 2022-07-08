@@ -1,10 +1,14 @@
 # Inspired by http://3bb.cc/blog/2020/09/11/github-ci/.
 name: Tests
 
+# We tell GitHub to not duplicate the checks in pull requests.  See
+# https://github.community/t/how-to-trigger-an-action-on-push-or-pull-request-but-not-both/16662/15
 on:
   push:
+    branches: [ master ]
   pull_request:
     branches: [ master ]
+    types: [ opened, synchronize, closed ]
 
 jobs:
   test:
