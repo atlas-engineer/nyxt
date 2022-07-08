@@ -22,7 +22,7 @@
   (mapcar #'element (alexandria:hash-table-values (edges node))))
 
 (defmethod increment ((node node))
-  (setf (occurrence-count node) (incf (occurrence-count node))))
+  (incf (occurrences node)))
 
 (defmethod add-record ((model sequence-model) sequence)
   (let* ((list-but-last-element (butlast sequence))
