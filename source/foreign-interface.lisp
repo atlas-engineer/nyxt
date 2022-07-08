@@ -123,13 +123,10 @@ See also `ffi-buffer-evaluate-javascript-async'."))
   (:documentation "Same as `ffi-buffer-evaluate-javascript' but don't wait for
 the termination of the JavaScript execution."))
 
-(define-ffi-generic ffi-buffer-add-user-style (buffer css &key
-                                                      world-name all-frames-p inject-as-author-p
-                                                      allow-list block-list)
-  ;; TODO: Document the options!
+(define-ffi-generic ffi-buffer-add-user-style (buffer style)
   (:documentation "Apply the CSS style to the BUFFER web view."))
-(define-ffi-generic ffi-buffer-remove-user-style (buffer style-sheet)
-  (:documentation "Remove the STYLE-SHEET installed with `ffi-buffer-add-user-style'."))
+(define-ffi-generic ffi-buffer-remove-user-style (buffer style)
+  (:documentation "Remove the STYLE installed with `ffi-buffer-add-user-style'."))
 
 (define-ffi-generic ffi-buffer-add-user-script (buffer user-script)
   (:documentation "Install the JAVASCRIPT  into the BUFFER web view."))

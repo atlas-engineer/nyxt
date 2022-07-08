@@ -8,8 +8,14 @@
 (defun inject-user-scripts (scripts buffer)
   (mapcar (lambda (script) (ffi-buffer-add-user-script buffer script)) scripts))
 
+(defun de-inject-user-scripts (scripts buffer)
+  (mapcar (lambda (script) (ffi-buffer-remove-user-script buffer script)) scripts))
+
 (defun inject-user-styles (styles buffer)
-  (mapcar (rcurry #'ffi-buffer-add-user-style buffer) styles))
+  (mapcar (lambda (style) (ffi-buffer-add-user-style buffer style)) styles))
+
+(defun de-inject-user-styles (styles buffer)
+  (mapcar (lambda (style) (ffi-buffer-remove-user-style buffer style)) styles))
 
 (define-mode user-script-mode ()
   "Load user scripts such as GreaseMonkey scripts."
@@ -27,15 +33,21 @@
 
 (defmethod enable ((mode user-script-mode) &key)
   (inject-user-scripts (user-scripts mode) (buffer mode))
-  (inject-user-styles (user-scripts mode) (buffer mode)))
+  (inject-user-styles (user-styles mode) (buffer mode)))
+
+(defmethod disable ((mode user-script-mode) &key)
+  (de-inject-user-scripts (user-scripts mode) (buffer mode))
+  (de-inject-user-styles (user-styles mode) (buffer mode)))
 
 (export-always 'user-scripts)
 (defmethod (setf user-scripts) (new-value (mode user-script-mode))
+  (inject-user-scripts (slot-value mode 'user-scripts) (buffer mode))
   (inject-user-scripts new-value (buffer mode))
   (setf (slot-value mode 'user-scripts) new-value))
 
 (export-always 'user-styles)
 (defmethod (setf user-styles) (new-value (mode user-script-mode))
+  (de-inject-user-styles (slot-value mode 'user-styles) (buffer mode))
   (inject-user-styles new-value (buffer mode))
   (setf (slot-value mode 'user-styles) new-value))
 
@@ -198,3 +210,46 @@ Return:
 
 (defmethod customize-instance :after ((script user-script) &key)
   (parse-user-script script))
+
+(export-always 'renderer-user-style)
+(defclass renderer-user-style ()
+  ()
+  (:metaclass interface-class))
+
+(define-class user-style (renderer-user-style nfiles:data-file nyxt-remote-file)
+  ((code "" :type (maybe string))
+   (world-name
+    nil
+    :type (maybe string)
+    :documentation "The JavaScript world to inject the style in.")
+   (include
+    '("http://*/*" "https://*/*")
+    :type list-of-strings)
+   (exclude
+    '()
+    :type list-of-strings)
+   (all-frames-p
+    t
+    :type boolean
+    :documentation "Whether to run on both top-level frame and all the subframes.
+If false, runs on the toplevel frame only.")
+   (level
+    :user
+    :type (member :user :author)
+    :documentation "The level of authority (:USER > :AUTHOR) with which to inject the style.
+:USER styles override everything else."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name))
+  (:documentation "The Nyxt-internal representation of user styles to bridge with the renderer.")
+  (:metaclass user-class))
+
+(defmethod nfiles:write-file ((profile nyxt-profile) (style user-style) &key destination)
+  "Persist the script body if it has a URL and associated content."
+  (unless (uiop:emptyp (nfiles:url-content style))
+    (alex:write-string-into-file (nfiles:url-content style) destination :if-exists :supersede)))
+
+(defmethod customize-instance :after ((style user-style) &key)
+  ;; TODO: Somehow parse @-moz-document patterns?
+  (when (uiop:emptyp (code style))
+    (setf (code style) (nfiles:content style))))

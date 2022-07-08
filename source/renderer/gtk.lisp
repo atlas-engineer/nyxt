@@ -1646,39 +1646,52 @@ local anyways, and it's better to refresh it if a load was queried."
                           :null-terminated-p t)
       (cffi:null-pointer)))
 
-(define-ffi-method ffi-buffer-add-user-style ((buffer gtk-buffer) css &key
-                                              world-name all-frames-p inject-as-author-p
-                                              allow-list block-list)
+(define-class gtk-user-style ()
+  ((gtk-object))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(without-package-locks ;; FIXME
+  (handler-bind ((warning #'muffle-warning))
+    (defclass nyxt/user-script-mode:renderer-user-style (gtk-user-style)
+      ()
+      (:metaclass interface-class))))
+
+(define-ffi-method ffi-buffer-add-user-style ((buffer gtk-buffer) (style gtk-user-style))
   (let* ((content-manager
            (webkit:webkit-web-view-get-user-content-manager
             (gtk-object buffer)))
-         (frames (if all-frames-p
+         (frames (if (nyxt/user-script-mode:all-frames-p style)
                      :webkit-user-content-inject-all-frames
                      :webkit-user-content-inject-top-frame))
-         (style-level (if inject-as-author-p
+         (style-level (if (eq (nyxt/user-script-mode:level style) :author)
                           :webkit-user-style-level-author
                           :webkit-user-style-level-user))
          (style-sheet
-           (if world-name
+           (if (nyxt/user-script-mode:world-name style)
                (webkit:webkit-user-style-sheet-new-for-world
-                css frames style-level world-name
-                (list-of-string-to-foreign allow-list)
-                (list-of-string-to-foreign block-list))
+                (nyxt/user-script-mode:code style)
+                frames style-level
+                (nyxt/user-script-mode:world-name style)
+                (list-of-string-to-foreign (nyxt/user-script-mode:include style))
+                (list-of-string-to-foreign (nyxt/user-script-mode:exclude style)))
                (webkit:webkit-user-style-sheet-new
-                css frames style-level
-                (list-of-string-to-foreign allow-list)
-                (list-of-string-to-foreign block-list)))))
+                (nyxt/user-script-mode:code style)
+                frames style-level
+                (list-of-string-to-foreign (nyxt/user-script-mode:include style))
+                (list-of-string-to-foreign (nyxt/user-script-mode:exclude style))))))
+    (setf (gtk-object style) style-sheet)
     (webkit:webkit-user-content-manager-add-style-sheet
      content-manager style-sheet)
-    style-sheet))
+    style))
 
-(define-ffi-method ffi-buffer-remove-user-style ((buffer gtk-buffer) style-sheet)
+(define-ffi-method ffi-buffer-remove-user-style ((buffer gtk-buffer) (style gtk-user-style))
   (let ((content-manager
           (webkit:webkit-web-view-get-user-content-manager
            (gtk-object buffer))))
-    (when style-sheet
-      (webkit:webkit-user-content-manager-remove-style-sheet
-       content-manager style-sheet))))
+    (webkit:webkit-user-content-manager-remove-style-sheet
+     content-manager (gtk-object style))))
 
 (define-class gtk-user-script ()
   ((gtk-object))

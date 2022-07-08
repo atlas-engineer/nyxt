@@ -43,21 +43,21 @@ A list of objects. Does not necessarily have the same order as `files' of the sc
   (remove-content-script buffer extension script)
   (dolist (file (files script))
     (if (equal (pathname-type file) "css")
-        (push (ffi-buffer-add-user-style buffer (uiop:read-file-string
-                                                  (merge-extension-path extension file))
-                                          :inject-as-author-p t
-                                          :all-frames-p t
-                                          :world-name (name extension)
-                                          :allow-list (match-patterns script))
+        (push (ffi-buffer-add-user-style
+               buffer (make-instance 'nyxt/user-script-mode:user-style
+                                     :base-path (merge-extension-path extension file)
+                                     :world-name (name extension)
+                                     :allow-list (match-patterns script)))
               (user-styles script))
         (push
-         (ffi-buffer-add-user-script buffer (make-instance 'nyxt/user-script-mode:user-script
-                                                           :code (uiop:read-file-string
-                                                                  (merge-extension-path extension file))
-                                                           :all-frames-p t
-                                                           :world-name (name extension)
-                                                           :run-at :document-start
-                                                           :include (match-patterns script)))
+         (ffi-buffer-add-user-script
+          buffer (make-instance 'nyxt/user-script-mode:user-script
+                                :code (uiop:read-file-string
+                                       (merge-extension-path extension file))
+                                :all-frames-p t
+                                :world-name (name extension)
+                                :run-at :document-start
+                                :include (match-patterns script)))
          (user-scripts script)))))
 
 (defun make-content-script (json)
