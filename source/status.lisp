@@ -104,11 +104,12 @@ This leverages `mode-status' which can be specialized for individual modes."
                          (sera:filter-map #'quri:uri-domain
                                           (mapcar #'url (sort-by-time (buffer-list))))
                          :test #'equal)
-          collect (:button :type "tab" :class "button"
-                           :onclick (ps:ps (nyxt/ps:lisp-eval
-                                            (:title "switch-buffer-or-query-domain" :buffer status)
-                                            (nyxt::switch-buffer-or-query-domain domain)))
-                           domain))))
+          collect (let ((domain domain))
+                    (:button :type "tab" :class "button"
+                             :onclick (ps:ps (nyxt/ps:lisp-eval
+                                              (:title "switch-buffer-or-query-domain" :buffer status)
+                                              (nyxt::switch-buffer-or-query-domain domain)))
+                             domain)))))
 
 (export-always 'format-status)
 (defmethod format-status ((status status-buffer))
