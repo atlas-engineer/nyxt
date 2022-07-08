@@ -11,9 +11,6 @@
    (rememberable-p nil)
    (style
     (theme:themed-css (theme *browser*)
-      (mark
-       :all "unset"
-       :opacity "0.5")
       (".nyxt-search-hint"
        :background-color (str:concat theme:primary " !important")
        :color (str:concat theme:on-primary " !important"))
@@ -71,37 +68,32 @@ You can redefine it to enable regex-based search, for example:
     ("Buffer title" ,(title (buffer match)))))
 
 (define-parenscript hint-elements (selectors)
-  (defun create-marks (identifier)
-    (ps:let* ((element (nyxt/ps:qs document identifier))
-              (mark (ps:chain document (create-element "mark"))))
-      (setf (ps:@ mark class-name) "nyxt-search-hint")
-      (ps:chain element (replace-with mark))
-      (ps:chain mark (append-child element))))
   (dolist (selector (ps:lisp selectors))
-    (create-marks selector)))
+    (ps:let* ((element (nyxt/ps:qs document selector)))
+      (ps:chain element class-list (add "nyxt-search-hint")))))
 
 (define-parenscript highlight-selected-hint (&key element scroll)
-  (ps:let* ((element (ps:@ (nyxt/ps:qs document (ps:lisp (nyxt/dom:get-unique-selector element)))))
-            (new-element (ps:@ element parent-element)))
-    (when new-element
-      (unless (ps:chain new-element class-list (contains "nyxt-highlight-search-hint"))
+  (ps:let* ((element (ps:@ (nyxt/ps:qs document (ps:lisp (nyxt/dom:get-unique-selector element))))))
+    (when element
+      (unless (ps:chain element class-list (contains "nyxt-highlight-search-hint"))
         (ps:let ((old-elements (nyxt/ps:qsa document ".nyxt-highlight-search-hint")))
           (ps:dolist (e old-elements)
             (ps:chain e class-list (remove "nyxt-highlight-search-hint")))))
-      (ps:chain new-element class-list (add "nyxt-highlight-search-hint"))
+      (ps:chain element class-list (add "nyxt-highlight-search-hint"))
       (when (ps:lisp scroll)
-        (ps:chain new-element (scroll-into-view (ps:create block "nearest")))))))
+        (ps:chain element (scroll-into-view (ps:create block "center")))))))
 
 (define-parenscript remove-focus ()
   (ps:let ((old-elements (nyxt/ps:qsa document ".nyxt-search-highlight-hint")))
     (ps:dolist (e old-elements)
-      (setf (ps:@ e class-name) "nyxt-search-hint"))))
+      (ps:chain e class-list (remove "nyxt-highlight-search-hint"))
+      (ps:chain e class-list (add "nyxt-search-hint")))))
 
 (define-command remove-search-hints ()
   "Remove all search hints."
-  (peval (ps:dolist (node (nyxt/ps:qsa document "mark.nyxt-search-hint"))
-           (let ((original (ps:chain node first-child)))
-             (ps:chain node (replace-with original))))))
+  (peval (ps:dolist (node (nyxt/ps:qsa document ".nyxt-search-hint"))
+           (ps:chain node class-list (remove "nyxt-search-hint"))
+           (ps:chain node class-list (remove "nyxt-highlight-search-hint")))))
 
 (defun add-search-hints (input buffer)
   (let* ((input (str:replace-all " " " " input))
