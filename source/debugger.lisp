@@ -72,10 +72,9 @@ the channel, wrapped alongside the condition and its restarts."))
      (loop for restart in restarts
            for i from 0
            collect (:button :class "button"
-                            :onclick (ps:ps (nyxt/ps:lisp-eval (:title "condition" )
+                            :onclick (ps:ps (nyxt/ps:lisp-eval (:title "condition")
                                              (let ((condition (gethash id *debug-conditions*)))
-                                               (calispel:! (channel condition)
-                                                           (nth i (restarts condition))))))
+                                               (calispel:! (channel condition) restart))))
                             (format nil "[~d] ~a" i (restart-name restart))))
      (:h* "Backtrace")
      ;; TODO: SLIME and SLY provide introspectable backtraces. How?
