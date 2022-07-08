@@ -40,6 +40,7 @@ the channel, wrapped alongside the condition and its restarts."))
                                    :condition-itself condition
                                    :restarts restarts
                                    :channel channel))
+           (*interactive-p* t)
            (*query-io*
              (make-two-way-stream
               ;; TODO: Understand how Swank makes those streams.
@@ -54,10 +55,11 @@ the channel, wrapped alongside the condition and its restarts."))
                (lambda (string) (setf (prompt-text handler) string)))))
            (debug-buffer (open-debugger :id id)))
       (setf (gethash id *debug-conditions*) handler)
-      ;; FIXME: Waits indefinitely. Should it?
-      (invoke-restart-interactively (calispel:? channel))
-      (remhash id *debug-conditions*)
-      (buffer-delete debug-buffer))))
+      (unwind-protect
+           ;; FIXME: Waits indefinitely. Should it?
+           (invoke-restart-interactively (calispel:? channel))
+        (remhash id *debug-conditions*)
+        (buffer-delete debug-buffer)))))
 
 (defun debug->html (condition id &optional restarts)
   "Produce HTML code for the CONDITION with RESTARTS."
@@ -67,12 +69,13 @@ the channel, wrapped alongside the condition and its restarts."))
     (:section
      (loop for restart in restarts
            for i from 0
-           collect (:button :class "button"
-                            :onclick (ps:ps (nyxt/ps:lisp-eval (:title "condition" )
-                                             (let ((condition (gethash id *debug-conditions*)))
-                                               (calispel:! (channel condition)
-                                                           (nth i (restarts condition))))))
-                            (format nil "[~d] ~a" i (restart-name restart))))
+           collect (let ((restart restart))
+                     (:button :class "button"
+                              :onclick (ps:ps (nyxt/ps:lisp-eval
+                                               (:title "condition")
+                                               (calispel:! (channel (gethash id *debug-conditions*))
+                                                           restart)))
+                              (format nil "[~d] ~a" i (restart-name restart)))))
      (:h* "Backtrace")
      ;; TODO: SLIME and SLY provide introspectable backtraces. How?
      (:pre (with-output-to-string (s) (uiop:print-backtrace :stream s :condition condition))))))
