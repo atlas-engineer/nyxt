@@ -3,9 +3,6 @@
 
 (in-package :nyxt)
 
-(defvar *old-debugger-hook* nil
-  "The debugger to fall back to in case Nyxt debugger fails.")
-
 (defvar *debug-conditions* (make-hash-table)
   "A hash-table from condition ID (as per `new-id') to the `condition-handler' lists.")
 
@@ -34,9 +31,8 @@ Made so that `debugger-hook' can wait for the condition to be resolved based on
 the channel, wrapped alongside the condition and its restarts."))
 
 (defun debugger-hook (condition hook)
-  (declare (ignore hook))
   (when *debug-on-error*
-    (let* ((*debugger-hook* *old-debugger-hook*)
+    (let* ((*debugger-hook* hook)
            (id (new-id))
            (restarts (compute-restarts condition))
            (channel (make-channel 1))
@@ -96,8 +92,6 @@ the channel, wrapped alongside the condition and its restarts."))
 See `*debug-on-error*'."
   (let ((value (if value-provided-p value (not *debug-on-error*))))
     (setf *debug-on-error* value)
-    (when (and value (not *debug-on-error*))
-      (setf *old-debugger-hook* *debugger-hook*))
     ;; FIXME: This messes up SLIME/SLY debugging in REPL, as they set this too.
-    (swank-backend:install-debugger-globally (if value #'debugger-hook *old-debugger-hook*))
+    (swank-backend:install-debugger-globally (if value 'debugger-hook nil))
     (echo "Nyxt-native debugging ~:[dis~;en~]abled." value)))
