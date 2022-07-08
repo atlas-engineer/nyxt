@@ -285,7 +285,9 @@ directory name) as parameter.
 it. Every type in `supported-media-types' will be opened directly in Nyxt."
   (prompt
    :extra-modes '(file-manager-mode)
-   :input (uiop:native-namestring default-directory)
+   :input (if (quri:uri-file-p (url (current-buffer)))
+              (namestring (uiop:pathname-directory-pathname (quri:uri-path (url (current-buffer)))))
+              (uiop:native-namestring default-directory))
    :prompt "Open file"
    :sources (list (make-instance 'open-file-source))))
 
