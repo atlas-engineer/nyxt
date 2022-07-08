@@ -175,9 +175,12 @@ Example: --with-file bookmarks=/path/to/bookmarks
         (mapc #'destroy-thread* (non-terminating-threads *browser*))
         (ffi-kill-browser *browser*)
         (unless *run-from-repl-p*
-          (sleep 1)
-          ;; Force-quit in case `ffi-kill-browser' hangs.
-          (uiop:quit code nil)))
+          (run-thread "force-quitter"
+            ;; Force-quit in case `ffi-kill-browser' hangs.  Must be run in a
+            ;; separate thread because the renderer loop is waiting for this
+            ;; function to finish.
+            (sleep 1)
+            (uiop:quit code nil))))
       (log:warn "Cannot quit browser ~a that is not ready." *browser*)))
 
 (define-command quit-after-clearing-session (&key confirmation-p) ; TODO: Rename?
