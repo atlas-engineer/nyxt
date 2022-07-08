@@ -399,7 +399,7 @@ TEST should be a function of two arguments comparing TEXT with element's
 (export-always 'scroll-to-element)
 (define-parenscript scroll-to-element (element)
   (ps:chain (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element)))
-            (scroll-into-view t)))
+            (scroll-into-view)))
 
 (export-always 'set-caret-on-start)
 (define-parenscript set-caret-on-start (element)
