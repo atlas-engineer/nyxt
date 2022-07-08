@@ -283,10 +283,11 @@ Return NIL if not a class form."
                                              (declare (ignorable %slot-value% %slot-default%))
                                              ,value))
                           else
-                            collect `(defmethod ,slot :around ((object ,class))
-                                       (let* ((%slot-value% (call-next-method))
-                                              (%slot-default% %slot-value%))
-                                         ,value))))
+                            collect `(handler-bind ((warning #'muffle-warning))
+                                       (defmethod ,slot :around ((object ,class))
+                                         (let* ((%slot-value% (call-next-method))
+                                                (%slot-default% %slot-value%))
+                                           ,value)))))
             :name (quote ,handler-name))))))
 
 
