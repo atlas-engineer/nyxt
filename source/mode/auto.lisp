@@ -162,6 +162,20 @@ restored.")))
                     rules)
                    #'priority :key #'test)))))
 
+(defun auto-enable-modes (modes buffers &optional args)
+  "Like `enable-modes', but with more feedback."
+  (when modes
+    (enable-modes modes buffers args)
+    (hooks:once-on (buffer-loaded-hook (current-buffer)) (buffer)
+      (echo "Auto-mode enabled modes ~{~a~^, ~}." modes))))
+
+(defun auto-disable-modes (modes buffers)
+  "Like `disable-modes', but with more feedback."
+  (when modes
+    (disable-modes modes buffers)
+    (hooks:once-on (buffer-loaded-hook (current-buffer)) (buffer)
+      (echo "Auto-mode disabled modes ~{~a~^, ~}." modes))))
+
 (-> enable-matching-modes (quri:uri buffer) *)
 (defun enable-matching-modes (url buffer)
   (let ((rule (matching-auto-mode-rule url buffer)))
@@ -170,14 +184,16 @@ restored.")))
                                (rememberable-of (modes buffer))
                                :test #'equals))
       (check-type mode-invocation mode-invocation)
-      (enable-modes (list (name mode-invocation)) buffer (arguments mode-invocation)))
+      (auto-enable-modes (list (name mode-invocation))
+                         buffer
+                         (arguments mode-invocation)))
     (alex:when-let ((modes (mapcar #'name
                                    (if (exact-p rule)
                                        (set-difference
                                         (rememberable-of (modes buffer))
                                         (included rule) :test #'equals)
                                        (excluded rule)))))
-      (disable-modes modes buffer))))
+      (auto-disable-modes modes buffer))))
 
 (defun can-save-last-active-modes (auto-mode url)
   (or (null (last-active-modes-url auto-mode))
@@ -193,12 +209,12 @@ restored.")))
                                  (set-difference (mode-invocations (modes (buffer auto-mode)))
                                                  (last-active-modes auto-mode)
                                                  :test #'equals))))
-    (disable-modes modes (buffer auto-mode)))
+    (auto-disable-modes modes (buffer auto-mode)))
   (alex:when-let ((modes (mapcar #'name
                                  (set-difference (last-active-modes auto-mode)
                                                  (mode-invocations (modes (buffer auto-mode)))
                                                  :test #'equals))))
-    (enable-modes modes (buffer auto-mode))))
+    (auto-enable-modes modes (buffer auto-mode))))
 
 (-> url-infer-match (string) list)
 (defun url-infer-match (url)
@@ -380,15 +396,15 @@ Auto-mode is re-enabled once the page is reloaded."
                     (make-instance
                      'hooks:handler
                      :fn (lambda (request-data)
-                           (enable-modes '(auto-mode) buffer)
+                           (auto-enable-modes '(auto-mode) buffer)
                            (hooks:remove-hook (request-resource-hook buffer)
                                               'auto-mode-reenable)
                            request-data)
                      :name 'auto-mode-reenable))
     (when modes-to-enable
-      (disable-modes (uiop:ensure-list modes-to-disable) buffer))
+      (auto-disable-modes (uiop:ensure-list modes-to-disable) buffer))
     (when modes-to-disable
-      (enable-modes (uiop:ensure-list modes-to-enable) buffer))
+      (auto-enable-modes (uiop:ensure-list modes-to-enable) buffer))
     (nyxt::reload-buffers (list buffer))))
 
 (-> add-modes-to-auto-mode-rules
