@@ -41,7 +41,7 @@ Example:
                        (error ()
                          (log:warn "tts-mode: no document-model available.")
                          nil))
-                     #'< :key (compose #'parse-integer #'get-nyxt-id)))
+                     #'< :key (compose #'parse-integer #'nyxt/dom:get-nyxt-id)))
              ;; TODO properly handle punctuation like Emacspeak does
              (text (str:remove-punctuation
                     (with-output-to-string (s)

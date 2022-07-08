@@ -94,18 +94,8 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
   `(("Hint" ,(plump:get-attribute element "nyxt-hint"))
     ("Text" ,(plump:text element))))
 
-(define-parenscript set-caret-on-start (&key nyxt-identifier)
-  (let ((el (nyxt/ps:qs-nyxt-id document nyxt-identifier))
-        (range (ps:chain document (create-range)))
-        (sel (ps:chain window (get-selection))))
-    (ps:chain window (focus))
-    (ps:chain range (set-start (ps:@ el child-nodes 0) 0))
-    (ps:chain range (collapse true))
-    (ps:chain sel (remove-all-ranges))
-    (ps:chain sel (add-range range))))
-
 (defmethod %follow-hint ((element nyxt/dom:text-element))
-  (set-caret-on-start :nyxt-identifier (get-nyxt-id element)))
+  (nyxt/dom:set-caret-on-start element))
 
 (defmethod caret-action ((mode visual-mode))
   (if (mark-set mode)

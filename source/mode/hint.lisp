@@ -131,7 +131,7 @@ define which elements are picked up by element hinting.")
     (run-thread "stylesheet adder"
       (add-stylesheet))
     (run-thread "element hint drawing"
-      (hint-elements (map 'list #'get-nyxt-id hintable-elements) hints))
+      (hint-elements (map 'list #'nyxt/dom:get-nyxt-id hintable-elements) hints))
     (loop for elem across hintable-elements
           for hint in hints
           do (plump:set-attribute elem "nyxt-hint" hint)
@@ -191,18 +191,18 @@ define which elements are picked up by element hinting.")
    (prompter:return-actions (list 'identity
                            (lambda-command click* (elements)
                              (dolist (element (rest elements))
-                               (nyxt/dom:click-element :nyxt-identifier (get-nyxt-id element)))
-                             (nyxt/dom:click-element :nyxt-identifier (get-nyxt-id (first elements)))
+                               (nyxt/dom:click-element element))
+                             (nyxt/dom:click-element (first elements))
                              nil)
                            (lambda-command focus* (elements)
                              (dolist (element (rest elements))
-                               (nyxt/dom:focus-select-element :nyxt-identifier (get-nyxt-id element)))
-                             (nyxt/dom:focus-select-element :nyxt-identifier (get-nyxt-id (first elements)))
+                               (nyxt/dom:focus-select-element element))
+                             (nyxt/dom:focus-select-element (first elements))
                              nil)
                            (lambda-command hover* (elements)
                              (dolist (element (rest elements))
-                               (nyxt/dom:hover-element :nyxt-identifier (get-nyxt-id element)))
-                             (nyxt/dom:hover-element :nyxt-identifier (get-nyxt-id (first elements)))
+                               (nyxt/dom:hover-element element))
+                             (nyxt/dom:hover-element (first elements))
                              nil)))))
 
 (serapeum:export-always 'query-hints)
@@ -295,20 +295,20 @@ FUNCTION is the action to perform on the selected elements."
     `(("Body" ,(str:shorten 80 (nyxt/dom:body img)))))))
 
 (defmethod %follow-hint ((element plump:element))
-  (nyxt/dom:click-element :nyxt-identifier (get-nyxt-id element)))
+  (nyxt/dom:click-element element))
 
 (defmethod %follow-hint ((input nyxt/dom:input-element))
   (str:string-case (plump:get-attribute input "type")
-    ("button" (nyxt/dom:click-element :nyxt-identifier (get-nyxt-id input)))
-    ("radio" (nyxt/dom:check-element :nyxt-identifier (get-nyxt-id input)))
-    ("checkbox" (nyxt/dom:check-element :nyxt-identifier (get-nyxt-id input)))
-    (otherwise (nyxt/dom:focus-select-element :nyxt-identifier (get-nyxt-id input)))))
+    ("button" (nyxt/dom:click-element input))
+    ("radio" (nyxt/dom:check-element input))
+    ("checkbox" (nyxt/dom:check-element input))
+    (otherwise (nyxt/dom:focus-select-element input))))
 
 (defmethod %follow-hint ((textarea nyxt/dom:textarea-element))
-  (nyxt/dom:focus-select-element :nyxt-identifier (get-nyxt-id textarea)))
+  (nyxt/dom:focus-select-element textarea))
 
 (defmethod %follow-hint ((details nyxt/dom:details-element))
-  (nyxt/dom:toggle-details-element :nyxt-identifier (get-nyxt-id details)))
+  (nyxt/dom:toggle-details-element details))
 
 (define-class options-source (prompter:source)
   ((prompter:name "Options"))
@@ -324,8 +324,7 @@ FUNCTION is the action to perform on the selected elements."
                                                           :multi-selection-p
                                                           (plump:get-attribute select "multiple")))))
     (dolist (option (mapcar (rcurry #'find options :test #'equalp) values))
-      (nyxt/dom:select-option-element :nyxt-identifier (get-nyxt-id option)
-                                      :parent-select-identifier (get-nyxt-id select)))))
+      (nyxt/dom:select-option-element option select))))
 
 (defmethod %follow-hint-new-buffer-focus ((a nyxt/dom:a-element) &optional parent-buffer)
   (make-buffer-focus :url (url a)
