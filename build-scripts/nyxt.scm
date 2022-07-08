@@ -166,6 +166,7 @@
           cl-plump
           cl-ppcre
           cl-prevalence
+          cl-py-configparser
           cl-qrencode
           cl-quri
           cl-serapeum

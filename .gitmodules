@@ -561,3 +561,8 @@
 [submodule "_build/sly"]
 	path = _build/sly
 	url = https://github.com/joaotavora/sly
+	shallow = true
+[submodule "_build/py-configparser"]
+	path = _build/py-configparser
+	url = https://gitlab.common-lisp.net/nyxt/py-configparser
+	shallow = true

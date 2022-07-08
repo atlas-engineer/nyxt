@@ -48,6 +48,7 @@
                #-sbcl
                osicat
                parenscript
+               py-configparser
                quri
                serapeum
                nhooks
