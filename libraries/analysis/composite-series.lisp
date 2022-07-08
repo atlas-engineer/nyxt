@@ -37,3 +37,8 @@
                                           (edges model)
                                           (make-instance 'node))))
     (increment (add-edge leaf (make-instance 'element-node :element last-element)))))
+
+(defmethod predict ((model sequence-model) sequence)
+  (let* ((leaf (gethash sequence (edges model)))
+         (edges (alexandria:hash-table-values (edges leaf))))
+    (first (sort edges #'> :key #'occurrences))))
