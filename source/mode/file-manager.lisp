@@ -268,7 +268,11 @@ Can be used as a `open-file-function'."
     ;; We can probably signal something and display a notification.
     (error (c) (log:error "Opening ~a: ~a~&" filename c))))
 
-(define-command-global open-file (&key (default-directory *default-pathname-defaults*))
+(define-command-global open-file (&key (default-directory
+                                        (if (quri:uri-file-p (url (current-buffer)))
+                                            (uiop:pathname-directory-pathname
+                                             (quri:uri-path (url (current-buffer))))
+                                            *default-pathname-defaults*)))
   "Open a file from the filesystem.
 
 The user is prompted with the prompt-buffer, files are browsable with
@@ -285,9 +289,7 @@ directory name) as parameter.
 it. Every type in `supported-media-types' will be opened directly in Nyxt."
   (prompt
    :extra-modes '(file-manager-mode)
-   :input (if (quri:uri-file-p (url (current-buffer)))
-              (namestring (uiop:pathname-directory-pathname (quri:uri-path (url (current-buffer)))))
-              (uiop:native-namestring default-directory))
+   :input (uiop:native-namestring default-directory)
    :prompt "Open file"
    :sources (list (make-instance 'open-file-source))))
 
