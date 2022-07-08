@@ -558,3 +558,7 @@
 	path = _build/nkeymaps
 	url = https://github.com/atlas-engineer/nkeymaps
 	shallow = true
+[submodule "_build/py-configparser"]
+	path = _build/py-configparser
+	url = https://gitlab.common-lisp.net/nyxt/py-configparser
+	shallow = true

@@ -346,6 +346,36 @@ Call this function from your initialization file to re-enable the default ASDF r
           asdf/source-registry:default-system-source-registry))
   (asdf:clear-configuration))
 
+(defun set-as-default-browser (&key (name "nyxt")
+                                 (targets
+                                  (list (uiop:xdg-config-home "mimeapps.list")
+                                        (uiop:xdg-data-home "applications/mimeapps.list"))))
+  "Return the modified MIME apps list.
+Return the persisted file as second value."
+  (let* ((target (or (first (sera:filter #'uiop:file-exists-p targets))
+                     (first targets)))
+         (config (py-configparser:read-files (py-configparser:make-config)
+                                             (list target)))
+         (desktop-file (uiop:strcat name ".desktop")))
+    (dolist (section '("Added Associations" "Default Applications"))
+      (dolist (key '("text/html"
+                     "text/gemini"
+                     "x-scheme-handler/http"
+                     "x-scheme-handler/https"
+                     "x-scheme-handler/chrome"
+                     "application/x-extension-htm"
+                     "application/x-extension-html"
+                     "application/x-extension-shtml"
+                     "application/xhtml+xml"
+                     "application/x-extension-xhtml"
+                     "application/x-extension-xht"))
+        (py-configparser:set-option config section key desktop-file)))
+    (with-open-file (s target
+                       :direction :output
+                       :if-does-not-exist :create
+                       :if-exists :supersede)
+      (py-configparser:write-stream config s))
+    (values config target)))
 
 
 ;; TODO: Report compilation errors.
