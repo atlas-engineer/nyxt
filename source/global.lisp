@@ -73,6 +73,11 @@ be blocked by prompt buffer prompts.")
   "The port that Swank will open a new server on (default Emacs SLIME port
 is 4005, default set to 4006 in Nyxt to avoid collisions).")
 
+(export-always '*slynk-port*)
+(defvar *slynk-port* 4006
+  "The port that Slynk will open a new server on (default Emacs Sly port
+is 4005, default set to 4006 in Nyxt to avoid collisions).")
+
 (defparameter +renderer+ nil "The renderer used by Nyxt. This value is meant to
 be set to a string by the renderer itself. This variable exists to allow for
 reporting by users, it does not create any functional differences in the
