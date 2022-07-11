@@ -38,7 +38,7 @@
                                           (make-instance 'node))))
     (increment (add-edge leaf (make-instance 'element-node :element last-element)))))
 
-(defmethod add-record-subset ((model sequence-model) sequence)
+(defmethod add-record-subsequence ((model sequence-model) sequence)
   "Add a record for all sub sequences. E.g. transform '(3 2 1)' into:
 '(3 2 1), '(2 1), '(1)"
   (let ((sequence (copy-list sequence)))
@@ -51,5 +51,5 @@
          (edges (alexandria:hash-table-values (edges leaf))))
     (first (sort edges #'> :key #'occurrences))))
 
-(defmethod predict-subset ((model sequence-model) sequence)
+(defmethod predict-subsequence ((model sequence-model) sequence)
   "Predict a sequence's next value based on all subsequence predictions.")
