@@ -58,7 +58,11 @@ Features:
                      (handler (make-instance 'nyxt::condition-handler
                                              :condition-itself condition
                                              :restarts (compute-restarts condition)
-                                             :channel channel))
+                                             :channel channel
+                                             :stack (dissect:stack)
+                                             :backtrace (with-output-to-string (s)
+                                                          (uiop:print-backtrace
+                                                           :stream s :condition condition))))
                      (*query-io* (nyxt::make-debugger-stream handler)))
                 (setf (ready-p evaluation) t)
                 (setf (raised-condition evaluation) handler)
@@ -327,12 +331,25 @@ Features:
                          (:button :class "button"
                                   :onclick (ps:ps (nyxt/ps:lisp-eval
                                                    (:title "condition")
-                                                   (calispel:! (nyxt::channel wrapper) restart)
-                                                   (setf (raised-condition evaluation) nil)))
+                                                   (setf (raised-condition evaluation) nil)
+                                                   (calispel:! (nyxt::channel wrapper) restart)))
                                   (format nil "[~d] ~a" i (restart-name restart)))))
          ;; TODO: SLIME and SLY provide introspectable backtraces. How?
-         (:pre (with-output-to-string (s)
-                 (uiop:print-backtrace :stream s :condition (nyxt::condition-itself wrapper))))))
+         (cond
+           ((nyxt::stack wrapper)
+            (loop for frame in (nyxt::stack wrapper)
+                  collect (when (or (dissect:form frame)
+                                    (dissect:args frame))
+                            (:details
+                             (:summary (:code (sera:ellipsize (princ-to-string (dissect:form frame)) 80)))
+                             (when (dissect:args frame)
+                               (:p "Called with:")
+                               (:ul (loop for arg in (dissect:args frame)
+                                          when (or (typep arg 'dissect:unknown-arguments)
+                                                   (typep arg 'dissect:unavailable-argument))
+                                            collect (:li (:code "Unknown argument"))
+                                          else collect (:li (:raw (value->html arg t))))))))))
+           (t (:pre (nyxt::backtrace wrapper))))))
       ((ready-p evaluation)
        (loop
          for result in (results evaluation)
