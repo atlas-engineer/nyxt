@@ -29,7 +29,7 @@
     :documentation "The evaluation is terminated.")
    (raised-condition
     nil
-    :type (maybe condition)
+    :type (maybe nyxt::condition-handler)
     :documentation "The condition that was raised during the `input' execution."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
@@ -37,14 +37,30 @@
 
 (defmethod initialize-instance :after ((evaluation evaluation) &key)
   (run-thread "repl cell evaluation"
-    (multiple-value-bind (result output)
-        (nyxt::evaluate (input evaluation))
-      (setf (results evaluation) result)
-      (setf (output evaluation) output)
-      (setf (ready-p evaluation) t)
-      (peval (setf (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "#evaluation-result-~a" (id evaluation))))
-                             |innerHTML|)
-                   (ps:lisp (html-result evaluation)))))))
+    (let ((nyxt::*interactive-p* t)
+          (*standard-output* (make-string-output-stream))
+          (*debugger-hook*
+            (lambda (condition hook)
+              (let* ((*debugger-hook* hook)
+                     (channel (nyxt::make-channel 1))
+                     (handler (make-instance 'nyxt::condition-handler
+                                             :condition-itself condition
+                                             :restarts (compute-restarts condition)
+                                             :channel channel))
+                     (*query-io* (nyxt::make-debugger-stream handler)))
+                (setf (ready-p evaluation) t)
+                (setf (raised-condition evaluation) handler)
+                (invoke-restart-interactively (calispel:? channel))))))
+      (with-input-from-string (input (input evaluation))
+        (alex:lastcar
+         (mapcar (lambda (s-exp)
+                   (setf (results evaluation) (multiple-value-list (eval s-exp))
+                         (output evaluation) (get-output-stream-string *standard-output*)))
+                 (safe-slurp-stream-forms input)))))
+    (setf (ready-p evaluation) t)
+    (peval (setf (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "#evaluation-result-~a" (id evaluation))))
+                           |innerHTML|)
+                 (ps:lisp (html-result evaluation))))))
 
 (define-mode repl-mode ()
   "Mode for interacting with the REPL."
@@ -286,20 +302,39 @@
   (spinneret:with-html-string
     (unless (uiop:emptyp (output evaluation))
       (:pre (output evaluation)))
-    (if (ready-p evaluation)
-        (loop
-          for result in (results evaluation)
-          for sub-order from 0
-          for name = (if (serapeum:single (results evaluation))
-                         (intern (format nil "V~d" (id evaluation)))
-                         (intern (format nil "V~d.~d" (id evaluation) sub-order)))
-          do (setf (symbol-value name) result)
-          collect (:div
-                   (format nil "~(~a~) = " name)
-                   (:raw
-                    (value->html result (or (typep result 'standard-object)
-                                            (typep result 'structure-object))))))
-        (:span "Calculating..."))))
+    (cond
+      ((and (ready-p evaluation)
+            (raised-condition evaluation))
+       (let ((wrapper (raised-condition evaluation)))
+         (:pre (format nil "~a" (nyxt::condition-itself wrapper)))
+         (loop for restart in (nyxt::restarts wrapper)
+               for i from 0
+               collect (let ((restart restart)
+                             (wrapper wrapper)
+                             (evaluation evaluation))
+                         (:button :class "button"
+                                  :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                   (:title "condition")
+                                                   (calispel:! (nyxt::channel wrapper) restart)
+                                                   (setf (raised-condition evaluation) nil)))
+                                  (format nil "[~d] ~a" i (restart-name restart)))))
+         ;; TODO: SLIME and SLY provide introspectable backtraces. How?
+         (:pre (with-output-to-string (s)
+                 (uiop:print-backtrace :stream s :condition (nyxt::condition-itself wrapper))))))
+      ((ready-p evaluation)
+       (loop
+         for result in (results evaluation)
+         for sub-order from 0
+         for name = (if (serapeum:single (results evaluation))
+                        (intern (format nil "V~d" (id evaluation)))
+                        (intern (format nil "V~d.~d" (id evaluation) sub-order)))
+         do (setf (symbol-value name) result)
+         collect (:div
+                  (format nil "~(~a~) = " name)
+                  (:raw
+                   (value->html result (or (typep result 'standard-object)
+                                           (typep result 'structure-object)))))))
+      (t (:span "Calculating...")))))
 
 (define-internal-page-command-global lisp-repl ()
     (repl-buffer "*Lisp REPL*" 'repl-mode)

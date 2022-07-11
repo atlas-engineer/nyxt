@@ -3,6 +3,8 @@
 
 (in-package :nyxt)
 
+;;; TODO: Turn into a library for UI-independent debugging.
+
 (defvar *debug-conditions* (make-hash-table)
   "A hash-table from condition ID (as per `new-id') to the `condition-handler' lists.")
 
@@ -30,6 +32,19 @@ Stored in the format given by `compute-restarts'.")
 Made so that `debugger-hook' can wait for the condition to be resolved based on
 the channel, wrapped alongside the condition and its restarts."))
 
+(defun make-debugger-stream (handler)
+  (make-two-way-stream
+   ;; TODO: Understand how Swank makes those streams.
+   (swank-backend:make-input-stream
+    (lambda ()
+      (str:concat
+       (prompt1
+        :prompt (prompt-text handler)
+        :sources (list (make-instance 'prompter:raw-source)))
+       +newline+)))
+   (swank-backend:make-output-stream
+    (lambda (string) (setf (prompt-text handler) string)))))
+
 (defun debugger-hook (condition hook)
   (when *debug-on-error*
     (let* ((*debugger-hook* hook)
@@ -41,18 +56,7 @@ the channel, wrapped alongside the condition and its restarts."))
                                    :restarts restarts
                                    :channel channel))
            (*interactive-p* t)
-           (*query-io*
-             (make-two-way-stream
-              ;; TODO: Understand how Swank makes those streams.
-              (swank-backend:make-input-stream
-               (lambda ()
-                 (str:concat
-                  (prompt1
-                    :prompt (prompt-text handler)
-                    :sources (list (make-instance 'prompter:raw-source)))
-                  +newline+)))
-              (swank-backend:make-output-stream
-               (lambda (string) (setf (prompt-text handler) string)))))
+           (*query-io* (make-debugger-stream handler))
            (debug-buffer (open-debugger :id id)))
       (setf (gethash id *debug-conditions*) handler)
       (unwind-protect
