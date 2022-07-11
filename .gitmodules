@@ -566,3 +566,7 @@
 	path = _build/py-configparser
 	url = https://gitlab.common-lisp.net/nyxt/py-configparser
 	shallow = true
+[submodule "_build/dissect"]
+	path = _build/dissect
+	url = https://github.com/Shinmera/dissect
+    shallow = true

@@ -143,6 +143,7 @@
           cl-cluffer
           cl-custom-hash-table
           cl-dexador
+          cl-dissect
           cl-enchant
           cl-flexi-streams
           cl-fset
