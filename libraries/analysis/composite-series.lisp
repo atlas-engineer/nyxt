@@ -50,3 +50,6 @@
   (let* ((leaf (gethash sequence (edges model)))
          (edges (alexandria:hash-table-values (edges leaf))))
     (first (sort edges #'> :key #'occurrences))))
+
+(defmethod predict-subset ((model sequence-model) sequence)
+  "Predict a sequence's next value based on all subsequence predictions.")
