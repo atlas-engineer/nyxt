@@ -95,10 +95,10 @@ the channel, wrapped alongside the condition and its restarts."))
        (cond
          ((stack handler)
           (loop for frame in (stack handler)
-                collect (when (or (dissect:form frame)
+                collect (when (or (dissect:call frame)
                                   (dissect:args frame))
                           (:details
-                           (:summary (:code (sera:ellipsize (princ-to-string (dissect:form frame)) 80)))
+                           (:summary (:code (princ-to-string (dissect:call frame))))
                            (when (dissect:args frame)
                              (:p "Called with:")
                              (:ul (loop for arg in (dissect:args frame)
