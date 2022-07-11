@@ -50,6 +50,7 @@ Supports:
   (run-thread "repl cell evaluation"
     (let ((nyxt::*interactive-p* t)
           (*standard-output* (make-string-output-stream))
+          (*package* (find-package :nyxt-user))
           (*debugger-hook*
             (lambda (condition hook)
               (let* ((*debugger-hook* hook)
