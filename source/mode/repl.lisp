@@ -2,7 +2,18 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/repl-mode
-    (:documentation "Mode for programming in Common Lisp."))
+    (:documentation "Mode for programming in Common Lisp.
+
+It has a multi-cell/panel/input environment that evaluates the inputted code on `evaluate-cell'.
+
+Features:
+- Creating additional cells using the bottom cell.
+- Moving cells with `move-cell-down', `move-cell-up', and dedicated cell UI buttons.
+- Basic tab-completion of the inputted symbols.
+- Multiple evaluation results.
+- Standard output recording.
+- Binding results to the automatically-generated variables.
+- Inline debugging (similar to Nyxt-native debugging with `*debug-on-error*' on.)"))
 (in-package :nyxt/repl-mode)
 
 (define-class evaluation ()
@@ -29,7 +40,7 @@
     :documentation "The evaluation is terminated.")
    (raised-condition
     nil
-    :type (maybe condition)
+    :type (maybe nyxt::condition-handler)
     :documentation "The condition that was raised during the `input' execution."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
@@ -37,14 +48,35 @@
 
 (defmethod initialize-instance :after ((evaluation evaluation) &key)
   (run-thread "repl cell evaluation"
-    (multiple-value-bind (result output)
-        (nyxt::evaluate (input evaluation))
-      (setf (results evaluation) result)
-      (setf (output evaluation) output)
-      (setf (ready-p evaluation) t)
-      (peval (setf (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "#evaluation-result-~a" (id evaluation))))
-                             |innerHTML|)
-                   (ps:lisp (html-result evaluation)))))))
+    (let ((nyxt::*interactive-p* t)
+          (*standard-output* (make-string-output-stream))
+          (*package* (find-package :nyxt-user))
+          (*debugger-hook*
+            (lambda (condition hook)
+              (let* ((*debugger-hook* hook)
+                     (channel (nyxt::make-channel 1))
+                     (handler (make-instance 'nyxt::condition-handler
+                                             :condition-itself condition
+                                             :restarts (compute-restarts condition)
+                                             :channel channel
+                                             :stack (dissect:stack)
+                                             :backtrace (with-output-to-string (s)
+                                                          (uiop:print-backtrace
+                                                           :stream s :condition condition))))
+                     (*query-io* (nyxt::make-debugger-stream handler)))
+                (setf (ready-p evaluation) t)
+                (setf (raised-condition evaluation) handler)
+                (invoke-restart-interactively (calispel:? channel))))))
+      (with-input-from-string (input (input evaluation))
+        (alex:lastcar
+         (mapcar (lambda (s-exp)
+                   (setf (results evaluation) (multiple-value-list (eval s-exp))
+                         (output evaluation) (get-output-stream-string *standard-output*)))
+                 (safe-slurp-stream-forms input)))))
+    (setf (ready-p evaluation) t)
+    (peval (setf (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "#evaluation-result-~a" (id evaluation))))
+                           |innerHTML|)
+                 (ps:lisp (html-result evaluation))))))
 
 (define-mode repl-mode ()
   "Mode for interacting with the REPL."
@@ -286,20 +318,37 @@
   (spinneret:with-html-string
     (unless (uiop:emptyp (output evaluation))
       (:pre (output evaluation)))
-    (if (ready-p evaluation)
-        (loop
-          for result in (results evaluation)
-          for sub-order from 0
-          for name = (if (serapeum:single (results evaluation))
-                         (intern (format nil "V~d" (id evaluation)))
-                         (intern (format nil "V~d.~d" (id evaluation) sub-order)))
-          do (setf (symbol-value name) result)
-          collect (:div
-                   (format nil "~(~a~) = " name)
-                   (:raw
-                    (value->html result (or (typep result 'standard-object)
-                                            (typep result 'structure-object))))))
-        (:span "Calculating..."))))
+    (cond
+      ((and (ready-p evaluation)
+            (raised-condition evaluation))
+       (let ((wrapper (raised-condition evaluation)))
+         (:pre (format nil "~a" (nyxt::condition-itself wrapper)))
+         (loop for restart in (nyxt::restarts wrapper)
+               for i from 0
+               collect (let ((restart restart)
+                             (wrapper wrapper)
+                             (evaluation evaluation))
+                         (:button :class "button"
+                                  :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                   (:title "condition")
+                                                   (setf (raised-condition evaluation) nil)
+                                                   (calispel:! (nyxt::channel wrapper) restart)))
+                                  (format nil "[~d] ~a" i (restart-name restart)))))
+         (:raw (nyxt::backtrace->html wrapper))))
+      ((ready-p evaluation)
+       (loop
+         for result in (results evaluation)
+         for sub-order from 0
+         for name = (if (serapeum:single (results evaluation))
+                        (intern (format nil "V~d" (id evaluation)))
+                        (intern (format nil "V~d.~d" (id evaluation) sub-order)))
+         do (setf (symbol-value name) result)
+         collect (:div
+                  (format nil "~(~a~) = " name)
+                  (:raw
+                   (value->html result (or (typep result 'standard-object)
+                                           (typep result 'structure-object)))))))
+      (t (:span "Calculating...")))))
 
 (define-internal-page-command-global lisp-repl ()
     (repl-buffer "*Lisp REPL*" 'repl-mode)

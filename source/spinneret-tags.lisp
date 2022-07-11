@@ -19,8 +19,7 @@
   (let ((symbol (or package variable function command slot class-name))
         (printable (or (first body) package variable function command slot class-name)))
     `(:a :href ,(cond
-                  (package `(nyxt:nyxt-url (read-from-string "nyxt:describe-package")
-                                           :universal t :package ,package))
+                  (package `(nyxt:nyxt-url (read-from-string "nyxt:describe-package") :package ,package))
                   (variable `(nyxt:nyxt-url (read-from-string "nyxt:describe-variable")
                                             :universal t :variable ,variable))
                   (function `(nyxt:nyxt-url (read-from-string "nyxt:describe-function")

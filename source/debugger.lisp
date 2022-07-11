@@ -3,6 +3,8 @@
 
 (in-package :nyxt)
 
+;;; TODO: Turn into a library for UI-independent debugging.
+
 (defvar *debug-conditions* (make-hash-table)
   "A hash-table from condition ID (as per `new-id') to the `condition-handler' lists.")
 
@@ -23,12 +25,32 @@ Stored in the format given by `compute-restarts'.")
    (prompt-text
     "[restart prompt]"
     :type string
-    :documentation "The prompt text debugger requires."))
+    :documentation "The prompt text debugger requires.")
+   (stack
+    nil
+    :documentation  "The state of call stack at the time of the condition firing.")
+   (backtrace
+    nil
+    :documentation "The printed backtrace at the time of condition firing.
+Prefer `stack', if present."))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "The wrapper for condition.
 
 Made so that `debugger-hook' can wait for the condition to be resolved based on
 the channel, wrapped alongside the condition and its restarts."))
+
+(defun make-debugger-stream (handler)
+  (make-two-way-stream
+   ;; TODO: Understand how Swank makes those streams.
+   (swank-backend:make-input-stream
+    (lambda ()
+      (str:concat
+       (prompt1
+        :prompt (prompt-text handler)
+        :sources (list (make-instance 'prompter:raw-source)))
+       +newline+)))
+   (swank-backend:make-output-stream
+    (lambda (string) (setf (prompt-text handler) string)))))
 
 (defun debugger-hook (condition hook)
   (when *debug-on-error*
@@ -39,20 +61,12 @@ the channel, wrapped alongside the condition and its restarts."))
            (handler (make-instance 'condition-handler
                                    :condition-itself condition
                                    :restarts restarts
-                                   :channel channel))
+                                   :channel channel
+                                   :stack (dissect:stack)
+                                   :backtrace (with-output-to-string (s)
+                                                (uiop:print-backtrace :stream s :condition condition))))
            (*interactive-p* t)
-           (*query-io*
-             (make-two-way-stream
-              ;; TODO: Understand how Swank makes those streams.
-              (swank-backend:make-input-stream
-               (lambda ()
-                 (str:concat
-                  (prompt1
-                    :prompt (prompt-text handler)
-                    :sources (list (make-instance 'prompter:raw-source)))
-                  +newline+)))
-              (swank-backend:make-output-stream
-               (lambda (string) (setf (prompt-text handler) string)))))
+           (*query-io* (make-debugger-stream handler))
            (debug-buffer (open-debugger :id id)))
       (setf (gethash id *debug-conditions*) handler)
       (unwind-protect
@@ -61,34 +75,54 @@ the channel, wrapped alongside the condition and its restarts."))
         (remhash id *debug-conditions*)
         (buffer-delete debug-buffer)))))
 
-(defun debug->html (condition id &optional restarts)
-  "Produce HTML code for the CONDITION with RESTARTS."
+(defun restarts->html (handler)
   (spinneret:with-html-string
-    (:h* (symbol-name (type-of condition)))
-    (:pre (format nil "~a" condition))
-    (:section
-     (loop for restart in restarts
-           for i from 0
-           collect (let ((restart restart))
-                     (:button :class "button"
-                              :onclick (ps:ps (nyxt/ps:lisp-eval
-                                               (:title "condition")
-                                               (calispel:! (channel (gethash id *debug-conditions*))
-                                                           restart)))
-                              (format nil "[~d] ~a" i (restart-name restart)))))
-     (:h* "Backtrace")
-     ;; TODO: SLIME and SLY provide introspectable backtraces. How?
-     (:pre (with-output-to-string (s) (uiop:print-backtrace :stream s :condition condition))))))
+    (loop for restart in (restarts handler)
+          for i from 0
+          collect (let ((restart restart)
+                        (handler handler))
+                    (:button :class "button"
+                             :onclick (ps:ps (nyxt/ps:lisp-eval
+                                              (:title "condition")
+                                              (calispel:! (channel handler) restart)))
+                             (format nil "[~d] ~a" i (restart-name restart)))))))
+
+(defun backtrace->html (handler)
+  (spinneret:with-html-string
+    (cond
+      ((stack handler)
+       (loop for frame in (stack handler)
+             collect (when (or (dissect:call frame)
+                               (dissect:args frame))
+                       (:details
+                        (:summary (:code (princ-to-string (dissect:call frame))))
+                        (when (dissect:args frame)
+                          (:p "Called with:")
+                          (:ul (loop for arg in (dissect:args frame)
+                                     when (or (typep arg 'dissect:unknown-arguments)
+                                              (typep arg 'dissect:unavailable-argument))
+                                       collect (:li (:code "Unknown argument"))
+                                     else collect (:li (:raw (value->html arg t))))))))))
+      ((backtrace handler)
+       (:pre (backtrace handler))))))
+
+(defun debug->html (handler)
+  "Produce HTML code for the CONDITION with RESTARTS."
+  (let ((condition (condition-itself handler)))
+    (spinneret:with-html-string
+      (:h* (symbol-name (type-of condition)))
+      (:pre (format nil "~a" condition))
+      (:section
+       (:raw (restarts->html handler))
+       (:h* "Backtrace")
+       (:raw (backtrace->html handler))))))
 
 ;; FIXME: Not for interactive use?
 (define-internal-page-command open-debugger (&key id)
     ;; TODO: Introduce debug-mode with keys invoking restarts and toggling backtrace.
     (buffer (format nil "*Debug-~d*" id))
   "Open the debugger with the condition indexed by ID."
-  (with-slots (condition-itself restarts channel)
-      (gethash id *debug-conditions*)
-    (declare (ignore channel))
-    (debug->html condition-itself id restarts)))
+  (debug->html (gethash id *debug-conditions*)))
 
 (define-command-global toggle-debug-on-error (&optional (value nil value-provided-p))
   "Toggle Nyxt-native debugging.
