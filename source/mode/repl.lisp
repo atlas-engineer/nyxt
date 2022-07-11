@@ -130,7 +130,7 @@ Features:
              :grid-template-columns "auto 1fr"
              :width "100%"
              :padding 0
-             :margin 0)
+             :margin "1em 0")
             (.prompt
              :color theme:on-accent
              :padding-right "4px"
