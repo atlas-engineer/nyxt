@@ -449,6 +449,26 @@ instance must be non-nil.")
       (:pre (:code "nyxt --profile nosave --remote --load foo.lisp --eval '(foo)'")))
 
      (:section
+      :id "repl"
+      (:h3 "Built-in REPL (" (:nxref :package :nyxt/repl-mode) ")")
+      (:p "Nyxt has a built-in REPL, available with "
+          (:nxref :command 'nyxt/repl-mode:lisp-repl "lisp-repl command") "."
+          "The REPL can be used to try out some code snippets for automation or quickly
+make some Lisp calculations. All the packages Nyxt depends on are available in
+repl with convenient nicknames, and all the code is evaluated in "
+          (:nxref :package :nyxt-user) " package.")
+      (:p "Once the REPL is open, there's only one input cell visible. This cell, always
+present at the bottom of the screen, adds new cells to the multi-pane interface
+of Nyxt REPL. You can input " (:code "(print \"Hello, Nyxt!\")") " and invoke "
+(command-markup 'nyxt/repl-mode:evaluate-cell)
+" to evaluate the cell. A new cell will appear at the top of the buffer, with
+input area containing familiar code, with some " (:code "v332 = \"Hello, Nyxt!\"")
+" variable assignment, and with a verbatim text outputted by your code:")
+      (:pre (:code "Hello, Nyxt!"))
+      (:p "This cell-based code evaluation is the basis of the Nyxt REPL. For more features, see "
+          (:nxref :package :nyxt/repl-mode "REPL mode documenation") "."))
+
+     (:section
       :id "user-scripts"
       (:h3 "User scripts")
       (:p "User scripts are a conventional and lightweight way to run arbitrary JavaScript
