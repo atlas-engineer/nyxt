@@ -334,22 +334,7 @@ Features:
                                                    (setf (raised-condition evaluation) nil)
                                                    (calispel:! (nyxt::channel wrapper) restart)))
                                   (format nil "[~d] ~a" i (restart-name restart)))))
-         ;; TODO: SLIME and SLY provide introspectable backtraces. How?
-         (cond
-           ((nyxt::stack wrapper)
-            (loop for frame in (nyxt::stack wrapper)
-                  collect (when (or (dissect:form frame)
-                                    (dissect:args frame))
-                            (:details
-                             (:summary (:code (princ-to-string (dissect:call frame))))
-                             (when (dissect:args frame)
-                               (:p "Called with:")
-                               (:ul (loop for arg in (dissect:args frame)
-                                          when (or (typep arg 'dissect:unknown-arguments)
-                                                   (typep arg 'dissect:unavailable-argument))
-                                            collect (:li (:code "Unknown argument"))
-                                          else collect (:li (:raw (value->html arg t))))))))))
-           (t (:pre (nyxt::backtrace wrapper))))))
+         (:raw (nyxt::backtrace->html wrapper))))
       ((ready-p evaluation)
        (loop
          for result in (results evaluation)

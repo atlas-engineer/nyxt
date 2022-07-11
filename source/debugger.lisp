@@ -75,6 +75,37 @@ the channel, wrapped alongside the condition and its restarts."))
         (remhash id *debug-conditions*)
         (buffer-delete debug-buffer)))))
 
+(defun restarts->html (handler)
+  (spinneret:with-html-string
+    (loop for restart in (restarts handler)
+          for i from 0
+          collect (let ((restart restart)
+                        (handler handler))
+                    (:button :class "button"
+                             :onclick (ps:ps (nyxt/ps:lisp-eval
+                                              (:title "condition")
+                                              (calispel:! (channel handler) restart)))
+                             (format nil "[~d] ~a" i (restart-name restart)))))))
+
+(defun backtrace->html (handler)
+  (spinneret:with-html-string
+    (cond
+      ((stack handler)
+       (loop for frame in (stack handler)
+             collect (when (or (dissect:call frame)
+                               (dissect:args frame))
+                       (:details
+                        (:summary (:code (princ-to-string (dissect:call frame))))
+                        (when (dissect:args frame)
+                          (:p "Called with:")
+                          (:ul (loop for arg in (dissect:args frame)
+                                     when (or (typep arg 'dissect:unknown-arguments)
+                                              (typep arg 'dissect:unavailable-argument))
+                                       collect (:li (:code "Unknown argument"))
+                                     else collect (:li (:raw (value->html arg t))))))))))
+      ((backtrace handler)
+       (:pre (backtrace handler))))))
+
 (defun debug->html (handler)
   "Produce HTML code for the CONDITION with RESTARTS."
   (let ((condition (condition-itself handler)))
@@ -82,32 +113,9 @@ the channel, wrapped alongside the condition and its restarts."))
       (:h* (symbol-name (type-of condition)))
       (:pre (format nil "~a" condition))
       (:section
-       (loop for restart in (restarts handler)
-             for i from 0
-             collect (let ((restart restart)
-                           (handler handler))
-                       (:button :class "button"
-                                :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                 (:title "condition")
-                                                 (calispel:! (channel handler) restart)))
-                                (format nil "[~d] ~a" i (restart-name restart)))))
+       (:raw (restarts->html handler))
        (:h* "Backtrace")
-       (cond
-         ((stack handler)
-          (loop for frame in (stack handler)
-                collect (when (or (dissect:call frame)
-                                  (dissect:args frame))
-                          (:details
-                           (:summary (:code (princ-to-string (dissect:call frame))))
-                           (when (dissect:args frame)
-                             (:p "Called with:")
-                             (:ul (loop for arg in (dissect:args frame)
-                                        when (or (typep arg 'dissect:unknown-arguments)
-                                                 (typep arg 'dissect:unavailable-argument))
-                                          collect (:li (:code "Unknown argument"))
-                                        else collect (:li (:raw (value->html arg t))))))))))
-         ((backtrace handler)
-          (:pre (backtrace handler))))))))
+       (:raw (backtrace->html handler))))))
 
 ;; FIXME: Not for interactive use?
 (define-internal-page-command open-debugger (&key id)
