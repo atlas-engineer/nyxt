@@ -4,16 +4,16 @@
 (nyxt:define-package :nyxt/repl-mode
     (:documentation "Mode for programming in Common Lisp.
 
-Has a multi-cell/panel/input environment that evaluates the inputted code on `evaluate-cell'.
+It has a multi-cell/panel/input environment that evaluates the inputted code on `evaluate-cell'.
 
-Supports:
+Features:
 - Creating additional cells using the bottom cell.
 - Moving cells with `move-cell-down', `move-cell-up', and dedicated cell UI buttons.
 - Basic tab-completion of the inputted symbols.
 - Multiple evaluation results.
 - Standard output recording.
 - Binding results to the automatically-generated variables.
-- Inline debugging (similar no Nyxt-native debugging with `*debug-on-error*' on.)"))
+- Inline debugging (similar to Nyxt-native debugging with `*debug-on-error*' on.)"))
 (in-package :nyxt/repl-mode)
 
 (define-class evaluation ()

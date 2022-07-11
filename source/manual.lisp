@@ -455,13 +455,12 @@ instance must be non-nil.")
           (:nxref :command 'nyxt/repl-mode:lisp-repl "lisp-repl command") "."
           "The REPL can be used to try out some code snippets for automation or quickly
 make some Lisp calculations. All the packages Nyxt depends on are available in
-repl with convenient nicknames, and all the code is evaluated in "
+REPL with convenient nicknames, and all the code is evaluated in "
           (:nxref :package :nyxt-user) " package.")
       (:p "Once the REPL is open, there's only one input cell visible. This cell, always
 present at the bottom of the screen, adds new cells to the multi-pane interface
-of Nyxt REPL. You can input " (:code "(print \"Hello, Nyxt!\")") " and invoke "
-(command-markup 'nyxt/repl-mode:evaluate-cell)
-" to evaluate the cell. A new cell will appear at the top of the buffer, with
+of Nyxt REPL. You can type in " (:code "(print \"Hello, Nyxt!\")")
+" and press C-return to evaluate the cell. A new cell will appear at the top of the buffer, with
 input area containing familiar code, with some " (:code "v332 = \"Hello, Nyxt!\"")
 " variable assignment, and with a verbatim text outputted by your code:")
       (:pre (:code "Hello, Nyxt!"))
