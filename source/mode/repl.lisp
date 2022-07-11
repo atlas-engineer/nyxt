@@ -336,18 +336,20 @@ Features:
                                   (format nil "[~d] ~a" i (restart-name restart)))))
          (:raw (nyxt::backtrace->html wrapper))))
       ((ready-p evaluation)
-       (loop
-         for result in (results evaluation)
-         for sub-order from 0
-         for name = (if (serapeum:single (results evaluation))
-                        (intern (format nil "V~d" (id evaluation)))
-                        (intern (format nil "V~d.~d" (id evaluation) sub-order)))
-         do (setf (symbol-value name) result)
-         collect (:div
-                  (format nil "~(~a~) = " name)
-                  (:raw
-                   (value->html result (or (typep result 'standard-object)
-                                           (typep result 'structure-object)))))))
+       (if (results evaluation)
+           (loop
+             for result in (results evaluation)
+             for sub-order from 0
+             for name = (if (serapeum:single (results evaluation))
+                            (intern (format nil "V~d" (id evaluation)))
+                            (intern (format nil "V~d.~d" (id evaluation) sub-order)))
+             do (setf (symbol-value name) result)
+             collect (:div
+                      (format nil "~(~a~) = " name)
+                      (:raw
+                       (value->html result (or (typep result 'standard-object)
+                                               (typep result 'structure-object))))))
+           (:span "No values.")))
       (t (:span "Calculating...")))))
 
 (define-internal-page-command-global lisp-repl ()
