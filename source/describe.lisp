@@ -372,7 +372,7 @@ A command is a special kind of function that can be called with
 `execute-command' and can be bound to a key."
   (let* ((command (find command (list-commands) :key #'name))
          (key-keymap-pairs (nth-value 1 (keymaps:binding-keys
-                                         command
+                                         (name command)
                                          (all-keymaps))))
          (key-keymapname-pairs (mapcar (lambda (pair)
                                          (list (first pair)
