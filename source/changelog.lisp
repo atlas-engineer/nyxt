@@ -386,6 +386,8 @@ SLY install.")
    (:li (:code "load-after-system") " and " (:code "nyxt-config-file")
         "have been replaced with " (:code "define-nyxt-user-system")
         " and " (:code "define-nyxt-user-system-and-load") ".")
+   (:li "Slynk is a new dependency and SLY users can now connect to a running Nyxt instance the "
+        (:code "start-slynk") " command.  (Thanks to @jgart!)")
 
 
    (:h3 "Bindings")
