@@ -63,7 +63,8 @@ CLASS is a class symbol."
         "KEYSTYLE is for example the `nyxt/emacs-mode:emacs-mode' symbol."
         (unless (uiop:emptyp keystyle)
           (apply-configuration
-           :lambda (lambda (input-buffer) (enable-modes (list (read-from-string keystyle)) input-buffer))
+           :lambda (lambda (input-buffer)
+                     (setf (keyscheme input-buffer) (eval (read-from-string keystyle))))
            :class-name 'input-buffer
            :current-instance (when current-instance-p (current-buffer))
            :instances (when all-instances-p (buffer-list))
