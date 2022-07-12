@@ -142,6 +142,9 @@ CLASS is a class symbol."
                  (spinneret:with-html-string
                    (:input :type type :id id :name name :value id)
                    (:label :for id label)))
+                ("option"
+                 (spinneret:with-html-string
+                   (:option :id id :value id label)))
                 (t
                  (spinneret:with-html-string
                    (:label :for id label)
