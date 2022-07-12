@@ -4,7 +4,7 @@
 (in-package :nyxt)
 
 (defmacro command-markup (fn &key (modes nil explicit-modes-p))
-  "Print FN in HTML followed its bindings in parentheses."
+  "Print FN in HTML followed by its keybinding in parentheses."
   `(let ((spinneret:*suppress-inserted-spaces* t))
      (spinneret:with-html (:span
                            (:a :href (nyxt-url 'describe-command :command ,fn)
@@ -28,7 +28,7 @@
        (error "~a is not a function." ,fn)))
 
 (defmacro command-information (fn)
-  "Print FN binding and first docstring's sentence in HTML."
+  "Print FN keybinding and first docstring sentence in HTML."
   `(spinneret:with-html (:li (command-markup ,fn) ": " (command-docstring-first-sentence ,fn))))
 
 (defun list-command-information (fns)
@@ -39,7 +39,7 @@
 (defun configure-slot (slot class &key
                                     (type (getf (mopu:slot-properties (find-class class) slot)
                                                 :type)))
-  "Set the value of a slot in `*auto-config-file*'.
+  "Set value of CLASS' SLOT in `*auto-config-file*'.
 CLASS is a class symbol."
   (sera:nlet lp ()
     (let ((input (read-from-string
@@ -151,8 +151,7 @@ disabling compositing, you will need to restart Nyxt."))
           (:p "Edit user configuration and other files in external text editor.")))))
 
 (define-command print-bindings-cheatsheet ()
-  "Print the buffer with the list of all known bindings for the current buffer
-optimizing the use of space."
+  "Print a buffer listing all known bindings for the current buffer."
   (nyxt::html-set-style (theme:themed-css (theme *browser*)
                           (h3
                            :font-size "10px"
@@ -166,8 +165,7 @@ optimizing the use of space."
   (nyxt/document-mode:print-buffer))
 
 (defun tls-help (buffer url)
-  "This function is invoked upon TLS certificate errors to give users
-help on how to proceed."
+  "Helper function invoked upon TLS certificate errors."
   (setf (status buffer) :failed)
   (html-set
    (spinneret:with-html-string
@@ -198,7 +196,7 @@ The version number is stored in the clipboard."
 
 (define-internal-page-command-global new ()
     (buffer "*New buffer*")
-  "Open up a buffer with useful links suitable for a `default-new-buffer-url'."
+  "Open up a buffer with useful links suitable for `default-new-buffer-url'."
   (spinneret:with-html-string
     (:style (:raw (theme:themed-css (theme *browser*)
                     (body
