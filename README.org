@@ -85,15 +85,16 @@ the following platforms:
 - [[https://www.opensuse.org/][OpenSuse]] (user-maintained package of the latest `master` build):
   - Tumbleweed:
 
-    ```
+    #+begin_src sh
     zypper ar https://download.opensuse.org/repositories/home:/bobbie424242/openSUSE_Tumbleweed/ nyxt-git
-    ```
+    #+end_src
 
   - LEAP:
 
-    ```
+    #+begin_src sh
     zypper ar https://download.opensuse.org/repositories/home:/bobbie424242/15.4/ nyxt-git
-    ```
+    #+end_src
+
   Then install with =zypper in nyxt=.
 
 To install from source, please refer to the [[file:documents/README.org][developer's manual]].
