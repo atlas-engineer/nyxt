@@ -166,7 +166,7 @@ CLASS is a class symbol."
     (spinneret:with-html-string
       (:h1 "Common Settings")
       (:p "Set the values for frequently configured settings.")
-      (:form (:input :type "submit" :value "Apply settings")
+      (:form (:input :type "submit" :class "button" :value "Apply settings")
              ;; Drop-down menu or completion would be nice to have, but does not
              ;; seem to be portable.
              ;; https://stackoverflow.com/questions/15992085/html-select-drop-down-with-an-input-field
