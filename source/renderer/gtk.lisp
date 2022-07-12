@@ -163,11 +163,11 @@ As a workaround, we never leave the GTK main loop when running from a REPL.
 
 See https://github.com/atlas-engineer/nyxt/issues/740")
 
-(defun renderer-thread-p ()
+(defun renderer-thread-p (&optional (thread (bt:current-thread)))
   #+darwin
-  (string= "main thread" (bt:thread-name (bt:current-thread)))
+  (string= "main thread" (bt:thread-name thread))
   #-darwin
-  (string= "cl-cffi-gtk main thread" (bt:thread-name (bt:current-thread))))
+  (string= "cl-cffi-gtk main thread" (bt:thread-name thread)))
 
 (defmacro within-gtk-thread (&body body)
   "Protected `gtk:within-gtk-thread'."
