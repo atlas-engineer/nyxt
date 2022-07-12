@@ -151,4 +151,12 @@ major versions."
 
   (with-data-access with-data-unsafe)
   (:p (:code "with-data-access") " and " (:code "with-data-unsafe")
-      " are replaced by " (:code "nfiles:with-file-content") "."))
+      " are replaced by " (:code "nfiles:with-file-content") ".")
+
+  (copy-password copy-password-prompt-details save-new-password copy-username)
+  (:p (:code "copy-password") ", "
+      (:code "copy-password-prompt-details") ", "
+      (:code "save-new-password") "  and "
+      (:code "copy-username")
+      " have been moved to the " (:code "nyxt/password-mode") " mode package.")
+  )
