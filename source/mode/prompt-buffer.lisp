@@ -388,7 +388,7 @@ Only available if `prompter:multi-selection-p' is non-nil."
   (prompt-render-suggestions prompt-buffer))
 
 (define-command-prompt copy-selection (prompt-buffer)
-  "Copy default property of selection to clipboard."
+  "Save default property of selection to clipboard."
   (let* ((marks (prompter:all-marks prompt-buffer))
          (props (if marks
                     (mapcar #'prompter:attributes-default marks)

@@ -146,7 +146,7 @@ for which the `executable' slot is non-nil."
       (echo-warning "No password manager found.")))
 
 (define-command copy-password (&optional (buffer (current-buffer)))
-  "Query password and copy to clipboard.
+  "Query password and save to clipboard.
 See also `copy-password-prompt-details'."
   (password-debug-info)
   (if (password-interface buffer)
@@ -161,7 +161,7 @@ See also `copy-password-prompt-details'."
       (echo-warning "No password manager found.")))
 
 (define-command copy-username (&optional (buffer (current-buffer)))
-  "Query username and copy to clipboard."
+  "Query username and save to clipboard."
   (password-debug-info)
   (if (password-interface buffer)
       (with-password (password-interface buffer)

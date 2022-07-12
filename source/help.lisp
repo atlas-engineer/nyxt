@@ -190,7 +190,7 @@ file, see the "
 
 (define-command nyxt-version ()
   "Version number of this version of Nyxt.
-The version number is stored in the clipboard."
+The version number is saved to clipboard."
   (trivial-clipboard:text +version+)
   (echo "Version ~a" +version+))
 
@@ -311,7 +311,7 @@ the "
 (define-internal-page-command-global show-system-information ()
     (buffer "*System information*")
   "Show buffer with Lisp version, Lisp features, OS kernel, etc.
-System information is also saved into the clipboard."
+System information is also saved to clipboard."
   (let* ((*print-length* nil)
          (nyxt-information (system-information)))
     (prog1
@@ -320,7 +320,7 @@ System information is also saved into the clipboard."
           (:pre nyxt-information))
       (copy-to-clipboard nyxt-information)
       (log:info nyxt-information)
-      (echo "System information copied to clipboard."))))
+      (echo "System information saved to clipboard."))))
 
 (define-internal-page-command-global dashboard ()
     (buffer "*Dashboard*")
