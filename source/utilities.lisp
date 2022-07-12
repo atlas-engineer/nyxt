@@ -138,8 +138,9 @@ This is useful if you do not trust the input."
 (defun safe-slurp-stream-forms (stream)
   "Like `uiop:slurp-stream-forms' but wrapped in `uiop:with-safe-io-syntax' and
 package set to current package."
-  (uiop:with-safe-io-syntax (:package *package*)
-    (uiop:slurp-stream-forms stream)))
+  (let ((package *package*))
+    (uiop:with-safe-io-syntax (:package package)
+      (uiop:slurp-stream-forms stream))))
 
 (export-always 'reduce/append)
 (defun reduce/append (list-of-lists)
