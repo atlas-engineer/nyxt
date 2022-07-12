@@ -109,7 +109,7 @@ See also `disable'."))
   (hooks:run-hook (enable-hook mode) mode)
   (let ((buffer (buffer mode)))
     ;; TODO: Should we move mode to the front on re-enable?
-    (pushnew mode (slot-value (buffer mode) 'modes))
+    (pushnew mode (modes (buffer mode)))
     (hooks:run-hook (enable-mode-hook buffer) mode)
     (when (and (prompt-buffer-p buffer)
                (eq (first (active-prompt-buffers (window buffer)))

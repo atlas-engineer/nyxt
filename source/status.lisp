@@ -170,6 +170,13 @@ When BOUND-OBJECT is garbage-collected, the corresponding handler is automatical
 - `window' `active-buffer'.
 
 See also `define-setf-handler'."
+  ;; We need to watch both the buffer `modes' slot and the status of modes,
+  ;; since the mode list does not change when a mode gets disabled.
+  (define-setf-handler modable-buffer modes status-buffer
+    (lambda (buffer)
+      (when (window status-buffer)
+        (when (eq buffer (active-buffer (window status-buffer)))
+          (print-status (window status-buffer))))))
   (define-setf-handler mode enabled-p status-buffer
     (lambda (mode)
       (when (window status-buffer)
