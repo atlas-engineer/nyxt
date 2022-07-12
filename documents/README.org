@@ -569,6 +569,18 @@ We've also developed some of our own:
   - Structs have better performance, but this is usually micro-optimization, and
     even then class implementations can be made more efficient via MOP.
 - Classes should be usable with just a =make-instance=.
+- Slots classes should be formatted in the following way:
+#+begin_src lisp
+(slot-name
+ slot-value
+ ...
+ :documentation "Foo.")
+#+end_src
+
+When =slot-value= is the only parameter specified then:
+#+begin_src lisp
+(slot-name slot-value)
+#+end_src
 - Prefer =defmethod= over =defun= if one of the arguments is a user-class.  This
   allows the user to write specializations of subclasses.
 - =customize-instance= is reserved for end users.  Use =initialize-instance
