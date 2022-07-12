@@ -15,7 +15,7 @@
 (deftag :nscript (body attrs &key &allow-other-keys)
   `(:script ,@attrs (:raw ,@body)))
 
-(spinneret:deftag :nxref (body attr &key slot class-name function command variable package &allow-other-keys)
+(deftag :nxref (body attr &key slot class-name function command variable package &allow-other-keys)
   (let ((symbol (or package variable function command slot class-name))
         (printable (or (first body) package variable function command slot class-name)))
     `(:a :href ,(cond
