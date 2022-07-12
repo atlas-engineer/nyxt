@@ -152,10 +152,12 @@ If nil, renderer-provided dialogs are used.")
     (make-instance 'theme:theme)
     :type theme:theme
     :documentation "The theme to use for all the browser interface elements.")
-   (session-restore-prompt
-    :always-ask
-    :documentation "Ask whether to restore the session.
-The possible values are `:always-ask', `:always-restore' and `:never-restore'.")
+   (restore-session-on-startup-p
+    t
+    :type boolean
+    :documentation "Whether to restore buffers from the previous session.
+You can store and restore sessions manually to various files with
+`store-history-by-name' and `restore-history-by-name'.")
    (default-cookie-policy :no-third-party
                           :type cookie-policy
                           :documentation "Cookie policy of new buffers.
@@ -293,26 +295,7 @@ After this, buffers from a previous session are permanently lost, they cannot be
 restored."
              (files:with-file-content (history (history-file buffer))
                (when history
-                 (clrhash (htree:owners history)))))
-           (restore-session ()
-             (let ((buffer (current-buffer)))
-               (when (histories-list buffer)
-                 (match (session-restore-prompt *browser*)
-                   (:always-ask (handler-case (restore-history-by-name)
-                                  ;; We handle prompt cancelation, otherwise the rest of
-                                  ;; the function would not be run.
-                                  (nyxt-prompt-buffer-canceled ()
-                                    (clear-history-owners buffer)
-                                    (log:debug "Prompt buffer interrupted")
-                                    nil)))
-                   (:always-restore
-                    (restore-history-buffers (buffer-history buffer)
-                                             (history-file buffer)))
-                   (:never-restore
-                    (log:info "Not restoring session.")
-                    (clear-history-owners buffer))))))
-           (load-start-urls (urls)
-             (open-urls (or urls (list (default-new-buffer-url browser))))))
+                 (clrhash (htree:owners history))))))
     ;; Remove existing windows.  This may happen if we invoked this function,
     ;; possibly with a different renderer.  To avoid mixing windows with
     ;; different renderers.  REVIEW: A better option would be to have
@@ -321,10 +304,18 @@ restored."
     ;; `web-buffer's.
     (mapcar #'window-delete (window-list))
     (window-make browser)
-    ;; Restore session before opening command line URLs, otherwise it will
-    ;; reset the session with the new URLs.
-    (restore-session)
-    (load-start-urls urls)
+    (if (restore-session-on-startup-p *browser*)
+        (progn
+          ;; TODO: Test restore-history-buffers on dummy buffer.
+          (let ((buffer (make-instance 'context-buffer :no-history-p t)))
+            (if (restore-history-buffers (buffer-history buffer)
+                                         (history-file buffer))
+                (open-urls urls)
+                (open-urls (or urls (list (default-new-buffer-url browser)))))))
+        (progn
+          (log:info "Not restoring session.")
+          (open-urls (or urls (list (default-new-buffer-url browser))))
+          (clear-history-owners (current-buffer))))
     (hooks:run-hook *after-startup-hook*)
     (funcall* (startup-error-reporter-function *browser*))))
 
@@ -360,7 +351,7 @@ This is useful to tell REPL instances from binary ones."
                      url))))
 
 ;; REVIEW: Do we need :NO-FOCUS? It's not used anywhere.
-(-> open-urls ((cons quri:uri *) &key (:no-focus boolean)) *)
+(-> open-urls ((maybe (cons quri:uri *)) &key (:no-focus boolean)) *)
 (defun open-urls (urls &key no-focus)
   "Create new buffers from URLs.
 First URL is focused if NO-FOCUS is nil."

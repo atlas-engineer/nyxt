@@ -316,7 +316,9 @@ lot."
 This modifies the history owners as follows.
 For each owner, make a buffer, swap old owner identifier for the new buffer ID
 and maintain a table of (old-id -> new-id).
-Finally go through all the owners and update their creator."
+Finally go through all the owners and update their creator.
+
+Return non-NIL of history was restored, NIL otherwise."
   (when history
     (log:info "Restoring ~a buffer~:p from history."
               (hash-table-count (htree:owners history)))
