@@ -65,8 +65,10 @@ Return-actions can be listed and run with `return-selection-over-action' (bound 
        "C-y" 'paste
        "C-n" 'select-next
        "C-p" 'select-previous
-       "M-n" 'select-next-page
-       "M-p" 'select-previous-page
+       "C-v" 'select-next-page
+       "M-v" 'select-previous-page
+       "M-n" 'select-next-source
+       "M-p" 'select-previous-source
        "M->" 'select-last
        "M-<" 'select-first
        "M-]" 'select-next-source        ; Emacs Helm binding.
