@@ -76,7 +76,7 @@ CLASS is a class symbol."
         (unless (uiop:emptyp theme)
           (apply-configuration
            :slot 'theme
-           :slot-value (symbol-value theme)
+           :slot-value (symbol-value (read-from-string theme))
            :current-instance *browser*
            :auto-config-p auto-config-p))))
 
