@@ -123,10 +123,10 @@ CLASS is a class symbol."
         (if (gethash key *settings*)
             (progn
               (funcall (gethash key *settings*) value
-                       :current-instance-p (find target-current-instance targets)
-                       :all-instances-p (find target-all-instances targets)
-                       :new-instances-p (find target-new-instances targets)
-                       :auto-config-p (find target-auto-config targets))
+                       :current-instance-p (find target-current-instance targets :test #'equal)
+                       :all-instances-p (find target-all-instances targets :test #'equal)
+                       :new-instances-p (find target-new-instances targets :test #'equal)
+                       :auto-config-p (find target-auto-config targets :test #'equal))
               (echo "Settings applied to ~(~{~a~^, ~}~): ~s." targets args))
             (echo-warning "Undefined setting ~s" key)))))
   (flet ((form-entry (&key id label type name placeholder)
