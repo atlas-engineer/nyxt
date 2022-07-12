@@ -37,15 +37,17 @@ This leverages `mode-status' which can be specialized for individual modes."
                                       (nyxt:toggle-modes)))
                      :title (str:concat "Enabled modes: " (modes-string buffer)) "✚")
             (loop for mode in sorted-modes
-                  collect (alex:when-let ((formatted-mode (mode-status status mode)))
-                            (if (html-string-p formatted-mode)
-                                (:raw formatted-mode)
-                                (:button :class "button"
-                                         :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                          (:title "describe-class" :buffer status)
-                                                          (describe-class :class (name mode))))
-                                         :title (format nil "Describe ~a" mode)
-                                         formatted-mode))))))
+                  collect
+                  (let ((mode mode))
+                    (alex:when-let ((formatted-mode (mode-status status mode)))
+                      (if (html-string-p formatted-mode)
+                          (:raw formatted-mode)
+                          (:button :class "button"
+                                   :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                    (:title "describe-class" :buffer status)
+                                                    (describe-class :class (name mode))))
+                                   :title (format nil "Describe ~a" mode)
+                                   formatted-mode)))))))
         "")))
 
 (defun modes-string (buffer)
