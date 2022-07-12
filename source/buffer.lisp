@@ -1176,12 +1176,14 @@ proceeding."
 (defmethod prompter:object-attributes ((buffer buffer) (source prompter:source))
   (declare (ignore source))
   `(("URL" ,(render-url (url buffer)))
-    ("Title" ,(title buffer))))
+    ("Title" ,(title buffer))
+    ("ID" ,(princ-to-string (id buffer)))))
 
 (defmethod prompter:object-attributes ((buffer web-buffer) (source buffer-source))
   (declare (ignore source))
   `(("URL" ,(render-url (url buffer)))
     ("Title" ,(title buffer))
+    ("ID" ,(princ-to-string (id buffer)))
     ("Keywords" ,(lambda (buffer) (format nil "~:{~a~^ ~}" (keywords buffer))))))
 
 (define-command switch-buffer (&key buffer (current-is-last-p nil))

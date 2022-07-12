@@ -95,9 +95,15 @@ This leverages `mode-status' which can be specialized for individual modes."
                :onclick (ps:ps (nyxt/ps:lisp-eval
                                 (:title "set-url" :buffer status)
                                 (nyxt:set-url)))
-               (format nil " ~a — ~a"
+               (format nil " ~a — ~a~a"
                        (render-url (url buffer))
-                       (title buffer))))))
+                       (title buffer)
+                       (if (find (url buffer)
+                                 (remove buffer (buffer-list))
+                                 :test #'url-equal
+                                 :key #'url)
+                           (format nil " (~a)" (id buffer))
+                           ""))))))
 
 (export-always 'format-status-tabs)
 (defmethod format-status-tabs ((status status-buffer))
