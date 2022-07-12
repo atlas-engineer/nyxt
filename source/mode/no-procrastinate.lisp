@@ -62,8 +62,8 @@
       (:h1 "Hosts to avoid procrastination")
       (:body
        (if (zerop (hash-table-count no-procrastinate-hosts))
-           (format nil "No hosts to avoid procrastination in ~s."
-                   (files:expand (no-procrastinate-hosts-file mode)))
+           (sera:fmt "No hosts to avoid procrastination in ~s."
+                     (files:expand (no-procrastinate-hosts-file mode)))
            (maphash
             (lambda (tag no-procrastinate-hosts)
               (:details
@@ -78,7 +78,7 @@
                                                          url-display))
                          (:p (:b "Tags: ")
                              (when (tags host)
-                               (format nil " (~{~a~^, ~})" (tags host))))
+                               (sera:fmt " (~{~a~^, ~})" (tags host))))
                          (:p (:button :class "button"
                                       :onclick
                                       (ps:ps
@@ -155,7 +155,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
   `(("URL" ,(render-url (url entry)))
     ("Hostname" ,(quri:uri-host (url entry)))
     ("Title" ,(title entry))
-    ("Tags" ,(format nil "~{~a ~}" (tags entry)))
+    ("Tags" ,(sera:fmt "~{~a ~}" (tags entry)))
     ("Date" ,(princ-to-string (date entry)))))
 
 (defun url-no-procrastinate-host-tags (url)
@@ -169,7 +169,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
   (if (url-empty-p (url buffer))
       (echo "Buffer has no URL.")
       (let* ((tags (prompt
-                    :prompt (format nil "Tag(s) for ~a " (render-url (url buffer)))
+                    :prompt (sera:fmt "Tag(s) for ~a " (render-url (url buffer)))
                     :sources (list
                               (make-instance 'prompter:word-source
                                              :name "New tags"

@@ -176,7 +176,7 @@ Second return value should be the MIME-type of the content."))
 (defun file-link->html (line)
   (spinneret:with-html-string
     (:a :class "button"
-        :style (format nil "background-color: ~a" (theme:primary-color (theme *browser*)))
+        :style (sera:fmt "background-color: ~a" (theme:primary-color (theme *browser*)))
         :href (cl-gopher:uri-for-gopher-line line)
         (:b "[FILE] ") (cl-gopher:display-string line))
     (:br)))
@@ -236,28 +236,28 @@ Second return value should be the MIME-type of the content."))
                      (uiop:emptyp (cl-gopher:terms line)))
                 (progn (setf (cl-gopher:terms line)
                              (prompt1
-                               :prompt (format nil "Search query for ~a" url)
+                               :prompt (sera:fmt "Search query for ~a" url)
                                :sources (list (make-instance 'prompter:raw-source))))
                        (buffer-load (cl-gopher:uri-for-gopher-line line) :buffer buffer))
                 (with-current-buffer buffer
                   (nyxt/small-web-mode:gopher-render line))))
         (cl-gopher:bad-submenu-error ()
-          (error-help (format nil "Malformed line at ~s" url)
-                      (format nil "One of the lines on this page has an improper format.
+          (error-help (sera:fmt "Malformed line at ~s" url)
+                      (sera:fmt "One of the lines on this page has an improper format.
 Please report this to the server admin.")))
         (cl-gopher:bad-uri-error ()
-          (error-help (format nil "Malformed URL: ~s" url)
-                      (format nil "The URL you inputted most probably has a typo in it.
+          (error-help (sera:fmt "Malformed URL: ~s" url)
+                      (sera:fmt "The URL you inputted most probably has a typo in it.
 Please, check URL correctness and try again.")))
         (usocket:ns-condition (condition)
-          (error-help (format nil "Error resolving ~s" url)
-                      (format nil "Original text of ~a:~%~a" (type-of condition) condition)))
+          (error-help (sera:fmt "Error resolving ~s" url)
+                      (sera:fmt "Original text of ~a:~%~a" (type-of condition) condition)))
         (usocket:socket-condition (condition)
-          (error-help (format nil "Socket malfunction when accessing ~s" url)
-                      (format nil "Original text of ~a:~%~a" (type-of condition) condition)))
+          (error-help (sera:fmt "Socket malfunction when accessing ~s" url)
+                      (sera:fmt "Original text of ~a:~%~a" (type-of condition) condition)))
         (condition (condition)
           (error-help "Unknown error"
-                      (format nil "Original text of ~a:~%~a" (type-of condition) condition))))))
+                      (sera:fmt "Original text of ~a:~%~a" (type-of condition) condition))))))
 
 ;;; Gemini rendering.
 
@@ -349,7 +349,7 @@ Implies that `small-web-mode' is enabled."
                    (buffer-load (quri:merge-uris (quri:uri meta) (quri:uri url)) :buffer buffer)
                    (error-help
                     "Error"
-                    (format nil "The server has caused too many (~a+) redirections.~& ~a~{ -> ~a~}"
+                    (sera:fmt "The server has caused too many (~a+) redirections.~& ~a~{ -> ~a~}"
                             (nyxt/small-web-mode:allowed-redirections-count (find-submode 'small-web-mode))
                             (alex:lastcar (nyxt/small-web-mode:redirections (find-submode 'small-web-mode)))
                             (butlast (nyxt/small-web-mode:redirections (find-submode 'small-web-mode)))))))
@@ -359,19 +359,19 @@ Implies that `small-web-mode' is enabled."
               (:slow-down
                (error-help
                 "Slow down error"
-                (format nil "Try reloading the page in ~a seconds." meta)))
+                (sera:fmt "Try reloading the page in ~a seconds." meta)))
               ((:client-certificate-required :certificate-not-authorised :certificate-not-valid)
                (error-help "Certificate error" meta))))
         (gemini::malformed-response (e)
           (error-help
            "Malformed response"
-           (format nil "The response for the URL you're requesting (~s) is malformed:~2%~a" url e)))
+           (sera:fmt "The response for the URL you're requesting (~s) is malformed:~2%~a" url e)))
         (usocket:ns-condition (condition)
-          (error-help (format nil "Error resolving ~s" url)
-                      (format nil "Original text of ~a:~%~a" (type-of condition) condition)))
+          (error-help (sera:fmt "Error resolving ~s" url)
+                      (sera:fmt "Original text of ~a:~%~a" (type-of condition) condition)))
         (usocket:socket-condition (condition)
-          (error-help (format nil "Socket malfunction when accessing ~s" url)
-                      (format nil "Original text of ~a:~%~a" (type-of condition) condition)))
+          (error-help (sera:fmt "Socket malfunction when accessing ~s" url)
+                      (sera:fmt "Original text of ~a:~%~a" (type-of condition) condition)))
         (condition (condition)
           (error-help "Unknown error"
-                      (format nil "Original text of ~a:~%~a" (type-of condition) condition))))))
+                      (sera:fmt "Original text of ~a:~%~a" (type-of condition) condition))))))

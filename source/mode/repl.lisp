@@ -74,7 +74,7 @@ Features:
                          (output evaluation) (get-output-stream-string *standard-output*)))
                  (safe-slurp-stream-forms input)))))
     (setf (ready-p evaluation) t)
-    (peval (setf (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "#evaluation-result-~a" (id evaluation))))
+    (peval (setf (ps:chain (nyxt/ps:qs document (ps:lisp (sera:fmt "#evaluation-result-~a" (id evaluation))))
                            |innerHTML|)
                  (ps:lisp (html-result evaluation))))))
 
@@ -200,7 +200,7 @@ Features:
 
 (defmethod (setf current-evaluation) (new-index (mode repl-mode))
   (if new-index
-      (focus (format nil ".input-buffer[data-repl-id=\"~a\"]" new-index))
+      (focus (sera:fmt ".input-buffer[data-repl-id=\"~a\"]" new-index))
       (focus ".input-buffer[data-repl-id=\"\"]"))
   (setf (slot-value mode 'current-evaluation) new-index))
 
@@ -322,7 +322,7 @@ Features:
       ((and (ready-p evaluation)
             (raised-condition evaluation))
        (let ((wrapper (raised-condition evaluation)))
-         (:pre (format nil "~a" (nyxt::condition-itself wrapper)))
+         (:pre (sera:fmt "~a" (nyxt::condition-itself wrapper)))
          (loop for restart in (nyxt::restarts wrapper)
                for i from 0
                collect (let ((restart restart)
@@ -333,7 +333,7 @@ Features:
                                                    (:title "condition")
                                                    (setf (raised-condition evaluation) nil)
                                                    (calispel:! (nyxt::channel wrapper) restart)))
-                                  (format nil "[~d] ~a" i (restart-name restart)))))
+                                  (sera:fmt "[~d] ~a" i (restart-name restart)))))
          (:raw (nyxt::backtrace->html wrapper))))
       ((ready-p evaluation)
        (if (results evaluation)
@@ -341,11 +341,11 @@ Features:
              for result in (results evaluation)
              for sub-order from 0
              for name = (if (serapeum:single (results evaluation))
-                            (intern (format nil "V~d" (id evaluation)))
-                            (intern (format nil "V~d.~d" (id evaluation) sub-order)))
+                            (intern (sera:fmt "V~d" (id evaluation)))
+                            (intern (sera:fmt "V~d.~d" (id evaluation) sub-order)))
              do (setf (symbol-value name) result)
              collect (:div
-                      (format nil "~(~a~) = " name)
+                      (sera:fmt "~(~a~) = " name)
                       (:raw
                        (value->html result (or (typep result 'standard-object)
                                                (typep result 'structure-object))))))
@@ -367,7 +367,7 @@ Features:
                      for order from 0
                      collect (:div
                               :class "evaluation"
-                              :id (format nil "evaluation-~a" (id evaluation))
+                              :id (sera:fmt "evaluation-~a" (id evaluation))
                               (:div :class "input"
                                     (:span :class "prompt"
                                            (:button
@@ -391,12 +391,12 @@ Features:
                                                              order)))
                                                (input evaluation)))
                               (:div :class "evalution-result"
-                                    :id (format nil "evaluation-result-~a" (id evaluation))
+                                    :id (sera:fmt "evaluation-result-~a" (id evaluation))
                                     (:raw (html-result evaluation)))))
                    (:div :class "input"
                          (:span :class "prompt" ">")
                          (:textarea :class "input-buffer"
                                     :id "input-buffer"
                                     :data-repl-id ""
-                                    :placeholder (format nil "Press ~a to evaluate the Lisp expression"
+                                    :placeholder (sera:fmt "Press ~a to evaluate the Lisp expression"
                                                          evaluate-binding)))))))))

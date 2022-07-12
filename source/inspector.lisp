@@ -256,7 +256,7 @@ values in help buffers, REPL and elsewhere."))
                                               (first
                                                (evaluate
                                                 (prompt1
-                                                  :prompt (format nil "Set ~a to" slot-name)
+                                                  :prompt (sera:fmt "Set ~a to" slot-name)
                                                   :sources (make-instance 'prompter:raw-source)))))
                                       (nyxt-prompt-buffer-canceled nil))))
                    "change "))

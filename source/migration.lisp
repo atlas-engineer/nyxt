@@ -85,7 +85,7 @@ Order is stable."
        (:td "Suggestion"))
       (dolist (suggestion (version-suggestions major-version))
         (:tr
-         (:td (format nil "~{~a~^, ~}" (symbols suggestion)))
+         (:td (sera:fmt "~{~a~^, ~}" (symbols suggestion)))
          (:td (:raw (tip suggestion)))))))))
 
 (define-internal-page-command-global migration-guide ()

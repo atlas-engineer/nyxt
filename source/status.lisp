@@ -46,13 +46,13 @@ This leverages `mode-status' which can be specialized for individual modes."
                                    :onclick (ps:ps (nyxt/ps:lisp-eval
                                                     (:title "describe-class" :buffer status)
                                                     (describe-class :class (name mode))))
-                                   :title (format nil "Describe ~a" mode)
+                                   :title (sera:fmt "Describe ~a" mode)
                                    formatted-mode)))))))
         "")))
 
 (defun modes-string (buffer)
   (when (modable-buffer-p buffer)
-    (format nil "~{~a~^ ~}" (mapcar #'princ-to-string (modes buffer)))))
+    (sera:fmt "~{~a~^ ~}" (mapcar #'princ-to-string (modes buffer)))))
 
 (export-always 'format-status-buttons)
 (defmethod format-status-buttons ((status status-buffer))
@@ -95,15 +95,15 @@ This leverages `mode-status' which can be specialized for individual modes."
                :onclick (ps:ps (nyxt/ps:lisp-eval
                                 (:title "set-url" :buffer status)
                                 (nyxt:set-url)))
-               (format nil " ~a — ~a~a"
-                       (render-url (url buffer))
-                       (title buffer)
-                       (if (find (url buffer)
-                                 (remove buffer (buffer-list))
-                                 :test #'url-equal
-                                 :key #'url)
-                           (format nil " (~a)" (id buffer))
-                           ""))))))
+               (sera:fmt " ~a — ~a~a"
+                         (render-url (url buffer))
+                         (title buffer)
+                         (if (find (url buffer)
+                                   (remove buffer (buffer-list))
+                                   :test #'url-equal
+                                   :key #'url)
+                             (sera:fmt " (~a)" (id buffer))
+                             ""))))))
 
 (export-always 'format-status-tabs)
 (defmethod format-status-tabs ((status status-buffer))

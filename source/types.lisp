@@ -20,11 +20,11 @@ If type is not a simple symbol, NAME will be used to define `list-of-NAMEs'.
 Example:
   (define-list-type 'string)"
   (let* ((name (string-upcase (string (or name (eval type)))))
-         (predicate (intern (format nil "LIST-OF-~aS-P" name))))
+         (predicate (intern (sera:fmt "LIST-OF-~aS-P" name))))
     `(progn
        (defun ,predicate (list)
          (list-of-type-p list ,type))
-       (deftype ,(intern (format nil "LIST-OF-~aS" name)) ()
+       (deftype ,(intern (sera:fmt "LIST-OF-~aS" name)) ()
          '(and list (satisfies ,predicate))))))
 
 (export-always 'list-of-symbols)

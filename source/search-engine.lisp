@@ -27,7 +27,7 @@ Can be built via `make-search-completion-function'"))
 
 (defmethod fallback-url ((engine search-engine))
   (or (slot-value engine 'fallback-url)
-      (quri:uri (format nil (search-url engine) ""))))
+      (quri:uri (sera:fmt (search-url engine) ""))))
 
 (export-always 'make-search-engine)
 (defun make-search-engine (shortcut search-url &optional fallback-url)
@@ -69,7 +69,7 @@ Example (Tor-proxied completion function for Wikipedia):
   #'(lambda (input)
       (funcall processing-function
                (apply request-function
-                      (cons (format nil base-url (quri:url-encode input))
+                      (cons (sera:fmt base-url (quri:url-encode input))
                             request-args)))))
 
 (defmethod prompter:object-attributes ((engine search-engine) (source prompter:source))

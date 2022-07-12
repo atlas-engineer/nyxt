@@ -119,7 +119,7 @@ Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
   (declare (ignore source))
   `(("URL" ,(render-url (url entry)))
     ("Title" ,(title entry))
-    ("Tags" ,(format nil "~{~a ~}" (tags entry)))
+    ("Tags" ,(sera:fmt "~{~a ~}" (tags entry)))
     ("Date" ,(princ-to-string (date entry)))))
 
 (export-always 'equals)
@@ -212,7 +212,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                    (:div
                     (:p (title bookmark))
                     (:p (:a :href url-href url-href))))))
-         (format nil "No bookmarks in ~s." (files:expand (files:content (bookmarks-file (current-buffer)))))))))
+         (sera:fmt "No bookmarks in ~s." (files:expand (files:content (bookmarks-file (current-buffer)))))))))
 
 (export-always 'url-bookmark-tags)
 (defun url-bookmark-tags (url)
@@ -226,7 +226,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
   (if (url-empty-p (url buffer))
       (echo "Buffer has no URL.")
       (let ((tags (prompt
-                   :prompt (format nil "Tag(s) for ~a " (render-url (url buffer)))
+                   :prompt (sera:fmt "Tag(s) for ~a " (render-url (url buffer)))
                    :sources (list
                              (make-instance 'prompter:word-source
                                             :name "New tags"
@@ -330,7 +330,7 @@ rest in background buffers."
       (:h1 "Bookmarks")
       (cond
         ((zerop (hash-table-count bookmarks))
-         (:p (format nil "No bookmarks in ~s." (files:expand (bookmarks-file bookmarks-buffer)))))
+         (:p (sera:fmt "No bookmarks in ~s." (files:expand (bookmarks-file bookmarks-buffer)))))
         (t (maphash
             (lambda (tag bookmarks)
               (:details
@@ -353,7 +353,7 @@ rest in background buffers."
                            (serapeum:ellipsize (title bookmark) 80))
                           (:dd (:a :href url-href uri-host))
                           (when (tags bookmark)
-                            (:dd (format nil " (~{~a~^, ~})" (tags bookmark)))))
+                            (:dd (sera:fmt " (~{~a~^, ~})" (tags bookmark)))))
                          (:hr))))))
             bookmarks))))))
 

@@ -1185,7 +1185,7 @@ proceeding."
   `(("URL" ,(render-url (url buffer)))
     ("Title" ,(title buffer))
     ("ID" ,(princ-to-string (id buffer)))
-    ("Keywords" ,(lambda (buffer) (format nil "~:{~a~^ ~}" (keywords buffer))))))
+    ("Keywords" ,(lambda (buffer) (sera:fmt "~:{~a~^ ~}" (keywords buffer))))))
 
 (define-command switch-buffer (&key buffer (current-is-last-p nil))
   "Switch buffer using fuzzy completion.
@@ -1360,10 +1360,10 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
    (cond
      ((and (engine query)
            (not (uiop:emptyp (query query))))
-      (format nil (search-url (engine query))
-              (str:join ""
-                        (mapcar #'encode-url-char
-                                (map 'list #'string (query query))))))
+      (sera:fmt (search-url (engine query))
+                (str:join ""
+                          (mapcar #'encode-url-char
+                                  (map 'list #'string (query query))))))
      ((engine query)
       (fallback-url (engine query)))
      (t (query query)))))

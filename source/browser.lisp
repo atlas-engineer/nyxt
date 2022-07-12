@@ -463,7 +463,7 @@ The following example does a few things:
                  'doi-link-dispatcher
                  (match-scheme \"doi\")
                  (lambda (url)
-                   (quri:uri (format nil \"https://doi.org/~a\"
+                   (quri:uri (sera:fmt \"https://doi.org/~a\"
                                      (quri:uri-path url)))))
                 (url-dispatching-handler
                  'transmission-magnet-links
@@ -494,8 +494,8 @@ The following example does a few things:
                       request-data)))
                  (string (let ((action #'(lambda (url)
                                            (uiop:launch-program
-                                            (format nil action
-                                                    (render-url url)))
+                                            (sera:fmt action
+                                                      (render-url url)))
                                            nil)))
                            (funcall action url)
                            (log:info "Applied ~s shell-command URL-dispatcher on ~s"

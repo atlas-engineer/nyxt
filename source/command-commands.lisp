@@ -20,7 +20,7 @@
                                       (keymaps:get-keymap keyscheme (keyscheme-map mode)))
                                     (modes buffer))))))
     `(("Name" ,(string-downcase (closer-mop:generic-function-name command)))
-      ("Bindings" ,(format nil "~{~a~^, ~}" bindings))
+      ("Bindings" ,(sera:fmt "~{~a~^, ~}" bindings))
       ("Docstring" ,(or (first (sera::lines (documentation command 'function)))
                         ""))
       ("Mode" ,(let ((package-name (str:downcase (uiop:symbol-package-name (closer-mop:generic-function-name command)))))
@@ -88,7 +88,7 @@ from a key binding.")
            (evaluate
             (prompt1
               :prompt (if type
-                          (format nil "~a (~a)" prompt type)
+                          (sera:fmt "~a (~a)" prompt type)
                           prompt)
               :input (write-to-string input)
               :sources (make-instance 'prompter:raw-source
@@ -200,7 +200,7 @@ User input is evaluated Lisp."
                       :prompt "Hook where to disable handler"
                       :sources (make-instance 'hook-source)))
          (handler (prompt1
-                    :prompt (format nil "Disable handler from ~a" (name hook-desc))
+                    :prompt (sera:fmt "Disable handler from ~a" (name hook-desc))
                     :sources (make-instance 'handler-source
                                             :hook (value hook-desc)))))
     (hooks:disable-hook (value hook-desc) handler)))
@@ -211,7 +211,7 @@ User input is evaluated Lisp."
                       :prompt "Hook where to enable handler"
                       :sources (make-instance 'hook-source)))
          (handler (prompt1
-                    :prompt (format nil "Enable handler from ~a" (name hook-desc))
+                    :prompt (sera:fmt "Enable handler from ~a" (name hook-desc))
                     :sources (make-instance 'disabled-handler-source
                                             :hook (value hook-desc)))))
     (hooks:enable-hook (value hook-desc) handler)))

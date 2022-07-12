@@ -650,7 +650,7 @@ Asynchronous attributes have a string-returning function as a value."
                 (list
                  (handler-case (funcall (attribute-value attr) (value sugg))
                    (error (c)
-                     (format nil "keyword error: ~a" c)))))
+                     (sera:fmt "keyword error: ~a" c)))))
           (lp (calispel:? (attribute-channel source))))))))
 
 (export-always 'marked-p)

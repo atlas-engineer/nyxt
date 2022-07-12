@@ -9,7 +9,7 @@
      (spinneret:with-html (:span
                            (:a :href (nyxt-url 'describe-command :command ,fn)
                                (:code (let ((*print-case* :downcase))
-                                        (format nil "~a" ,fn))))
+                                        (sera:fmt "~a" ,fn))))
                            " ("
                            (:code (apply #'binding-keys ,fn (if ,explicit-modes-p
                                                                 (list :modes ,modes)
@@ -44,7 +44,7 @@ CLASS is a class symbol."
   (sera:nlet lp ()
     (let ((input (read-from-string
                   (prompt1
-                    :prompt (format nil "Configure slot value ~a" slot)
+                    :prompt (sera:fmt "Configure slot value ~a" slot)
                     :sources (make-instance 'prompter:raw-source)))))
       (cond
         ((and type (not (typep input type)))
@@ -96,9 +96,9 @@ CLASS is a class symbol."
     (flet ((generate-colors (theme-symbol text)
              (spinneret:with-html-string
                (:p (:button :class "button"
-                            :style (format nil "background-color: ~a; color: ~a"
-                                           (theme:accent-color (symbol-value theme-symbol))
-                                           (theme:on-accent-color (symbol-value theme-symbol)))
+                            :style (sera:fmt "background-color: ~a; color: ~a"
+                                             (theme:accent-color (symbol-value theme-symbol))
+                                             (theme:on-accent-color (symbol-value theme-symbol)))
                             :onclick (ps:ps (nyxt/ps:lisp-eval
                                              (:title "set-theme")
                                              (nyxt::auto-configure
@@ -113,9 +113,9 @@ CLASS is a class symbol."
                                                        ("Primary" theme:primary-color theme:on-primary-color)
                                                        ("Secondary" theme:secondary-color theme:on-secondary-color))
                       collect (:dt name ": ")
-                      collect (:dd (:span :style (format nil "background-color: ~a; color: ~a; border-radius: 0.2em"
-                                                         (slot-value (symbol-value theme-symbol) color)
-                                                         (slot-value (symbol-value theme-symbol) text-color))
+                      collect (:dd (:span :style (sera:fmt "background-color: ~a; color: ~a; border-radius: 0.2em"
+                                                           (slot-value (symbol-value theme-symbol) color)
+                                                           (slot-value (symbol-value theme-symbol) text-color))
                                           (slot-value (symbol-value theme-symbol) color))))))))
       (:h2 "Theme style")
       (:ul
@@ -169,7 +169,7 @@ disabling compositing, you will need to restart Nyxt."))
   (setf (status buffer) :failed)
   (html-set
    (spinneret:with-html-string
-     (:h1 (format nil "TLS Certificate Error: ~a" (render-url url)))
+     (:h1 (sera:fmt "TLS Certificate Error: ~a" (render-url url)))
      (:p "The address you are trying to visit has an invalid
 certificate. By default Nyxt refuses to establish a secure connection
 to a host with an erroneous certificate (e.g. self-signed ones). This
@@ -281,9 +281,9 @@ The version number is saved to clipboard."
                                     (set-url :prefill-current-url-p nil)))
                    "Start searching!")))
      (:p :class "copyright"
-         (format nil "Nyxt/~a ~a" +renderer+ +version+)
+         (sera:fmt "Nyxt/~a ~a" +renderer+ +version+)
          (:br)
-         (format nil "Atlas Engineer LLC, 2018-~a" (local-time:timestamp-year (local-time:now)))))))
+         (sera:fmt "Atlas Engineer LLC, 2018-~a" (local-time:timestamp-year (local-time:now)))))))
 
 (sera:eval-always ; To satisfy `fboundp' of `manual' at compile-time (e.g. CCL).
   (define-internal-page-command-global manual ()
@@ -333,7 +333,7 @@ System information is also saved to clipboard."
                    (:li (title bookmark) separator
                         (:a :href (render-url (url bookmark))
                             (render-url (url bookmark)))))
-                 (:p (format nil "No bookmarks in ~s." (files:expand (nyxt/bookmark-mode:bookmarks-file mode)))))))))
+                 (:p (sera:fmt "No bookmarks in ~s." (files:expand (nyxt/bookmark-mode:bookmarks-file mode)))))))))
     (let ((dashboard-style (theme:themed-css (theme *browser*)
                              (body
                               :background-color theme:background

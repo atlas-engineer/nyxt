@@ -62,7 +62,7 @@ With LINEAR-VIEW-P, list buffers linearly instead."
            (cluster-markup (cluster-id cluster)
              "Present a cluster in HTML."
              (spinneret:with-html
-               (:div (:h2 (format nil "Cluster ~a" cluster-id))
+               (:div (:h2 (sera:fmt "Cluster ~a" cluster-id))
                      (loop for document in cluster
                            collect (buffer-markup (analysis::source document)))))))
     (spinneret:with-html-string

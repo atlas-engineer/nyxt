@@ -16,7 +16,7 @@
    (autofills
     (list (make-autofill :name "Name" :fill "My Name")
           (make-autofill :name "Hello Printer"
-                         :fill (lambda () (format nil "hello!"))))
+                         :fill (lambda () (sera:fmt "hello!"))))
     :documentation "To autofill run the command `autofill'.
 Use this slot to customize the autofill values available.
 

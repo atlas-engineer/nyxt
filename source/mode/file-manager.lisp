@@ -220,7 +220,7 @@ See `supported-media-types' of `file-mode'."
                  (let* ((file (first files))
                         (name (files:basename file)))
                    (rename-file file (prompt1
-                                       :prompt (format nil "New name for ~a" name)
+                                       :prompt (sera:fmt "New name for ~a" name)
                                        :sources (list (make-instance 'prompter:raw-source))
                                        :input name))))
                ;; TODO: File/directory copying.

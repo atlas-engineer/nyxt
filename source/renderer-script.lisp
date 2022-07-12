@@ -224,7 +224,7 @@ See `find-internal-page-buffer'."))
       ((functionp title)
        (apply title args))
       (t
-       (format nil "*~a*" (string-downcase (name page)))))))
+       (sera:fmt "*~a*" (string-downcase (name page)))))))
 
 (defun internal-page-name (url)
   (read-from-string (str:upcase (quri:uri-path url))))

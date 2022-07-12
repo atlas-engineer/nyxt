@@ -85,7 +85,7 @@ the channel, wrapped alongside the condition and its restarts."))
                              :onclick (ps:ps (nyxt/ps:lisp-eval
                                               (:title "condition")
                                               (calispel:! (channel handler) restart)))
-                             (format nil "[~d] ~a" i (restart-name restart)))))))
+                             (sera:fmt "[~d] ~a" i (restart-name restart)))))))
 
 (defun backtrace->html (handler)
   (spinneret:with-html-string
@@ -111,7 +111,7 @@ the channel, wrapped alongside the condition and its restarts."))
   (let ((condition (condition-itself handler)))
     (spinneret:with-html-string
       (:h* (symbol-name (type-of condition)))
-      (:pre (format nil "~a" condition))
+      (:pre (sera:fmt "~a" condition))
       (:section
        (:raw (restarts->html handler))
        (:h* "Backtrace")
@@ -120,7 +120,7 @@ the channel, wrapped alongside the condition and its restarts."))
 ;; FIXME: Not for interactive use?
 (define-internal-page-command open-debugger (&key id)
     ;; TODO: Introduce debug-mode with keys invoking restarts and toggling backtrace.
-    (buffer (format nil "*Debug-~d*" id))
+    (buffer (sera:fmt "*Debug-~d*" id))
   "Open the debugger with the condition indexed by ID."
   (debug->html (gethash id *debug-conditions*)))
 

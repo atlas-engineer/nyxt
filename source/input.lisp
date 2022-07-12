@@ -80,8 +80,8 @@ prompt-buffer keymaps."
 KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
   (let ((no-code-specs (keyspecs-without-keycode keys)))
     (if (find-if (complement #'zerop) keys :key #'keymaps:key-code)
-        (format nil "~s [~a]" no-code-specs (keymaps:keys->keyspecs keys))
-        (format nil "~s" no-code-specs))))
+        (sera:fmt "~s [~a]" no-code-specs (keymaps:keys->keyspecs keys))
+        (sera:fmt "~s" no-code-specs))))
 
 (export-always 'dispatch-command)
 (defun dispatch-command (function)
@@ -103,10 +103,10 @@ Return nil to forward to renderer or non-nil otherwise."
                    (let ((specs (keyspecs key))
                          (translated-specs (keyspecs translated-key)))
                      (if (string= specs translated-specs)
-                         (format nil "~a" specs)
-                         (format nil "~a (translated from ~a)"
-                                 translated-specs
-                                 specs)))
+                         (sera:fmt "~a" specs)
+                         (sera:fmt "~a (translated from ~a)"
+                                   translated-specs
+                                   specs)))
                    (keyspecs-with-optional-keycode key))))
       (when (input-buffer-p buffer)
         (setf (last-event buffer) event))

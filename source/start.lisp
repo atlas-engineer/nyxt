@@ -64,7 +64,7 @@ and not the build environment."
        :short #\i
        :long "config"
        :arg-parser #'identity
-       :description (format nil "Set path to configuration file.
+       :description (sera:fmt "Set path to configuration file.
 Default: ~s" (files:expand *config-file*)))
       (:name :no-config
        :short #\I
@@ -73,7 +73,7 @@ Default: ~s" (files:expand *config-file*)))
       (:name :init
        :long "init"
        :arg-parser #'identity
-       :description (format nil "Alias for --config.  Deprecated."))
+       :description (sera:fmt "Alias for --config.  Deprecated."))
       (:name :no-init
        :long "no-init"
        :description "Alias for --no-config.  Deprecated.")
@@ -81,7 +81,7 @@ Default: ~s" (files:expand *config-file*)))
        :short #\c
        :long "auto-config"
        :arg-parser #'identity
-       :description (format nil "Set path to auto-configuration file.
+       :description (sera:fmt "Set path to auto-configuration file.
 Default: ~s" (files:expand *auto-config-file*)))
       (:name :no-auto-config
        :short #\C
@@ -480,7 +480,7 @@ Otherwise bind socket and return the listening thread."
                               opts::*options*)))
 (export-always 'start)
 (defun start #.(append '(&rest options &key urls) %start-args)
-  #.(format nil "Parse command line or REPL options then start the browser.
+  #.(sera:fmt "Parse command line or REPL options then start the browser.
 Load URLS if any (a list of strings).
 
 This functions focuses on OPTIONS parsing, see `start-browser' for the actual
@@ -588,7 +588,7 @@ Examples:
                       ;; Absolute path is necessary since remote process may have
                       ;; a different working directory.
                       (if remote
-                          (remote-eval (format nil "~s" `(load-lisp ,value)))
+                          (remote-eval (sera:fmt "~s" `(load-lisp ,value)))
                           (load-lisp value))))
              (:eval (if remote
                         (remote-eval value)

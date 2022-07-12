@@ -22,7 +22,7 @@
 (export-always 'qs-nyxt-id)
 (defpsmacro qs-nyxt-id (context id)
   "document.querySelector tailored for Nyxt IDs."
-  `(chain ,context (query-selector (lisp (format nil "[nyxt-identifier=\"~a\"]" ,id)))))
+  `(chain ,context (query-selector (lisp (sera:fmt "[nyxt-identifier=\"~a\"]" ,id)))))
 
 (defpsmacro get-caret ()
   `(let* ((element (chain document active-element))

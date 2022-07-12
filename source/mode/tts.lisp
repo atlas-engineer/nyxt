@@ -55,7 +55,7 @@ Example:
   "Start an asynchronous process of the `executable` with TEXT passed as the
 argument."
   (let ((program-string
-          (format nil "~s ~s" (executable mode) text)))
+          (sera:fmt "~s ~s" (executable mode) text)))
     (progn
       (log:info "tts-mode: starting TTS.")
       ;; make sure that a running process is stopped before starting a new one

@@ -159,7 +159,7 @@
   (let* ((properties (decode-json (or create-properties "{}")))
          (parent-buffer (when (gethash "openerTabId" properties)
                           (nyxt::buffers-get
-                           (format nil "~d" (gethash "openerTabId" properties)))))
+                           (sera:fmt "~d" (gethash "openerTabId" properties)))))
          (url (quri:uri (or (gethash "url" properties)
                             "about:blank")))
          ;; See https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/create
@@ -241,7 +241,7 @@ the description of the mechanism that sends the results back."
                           :test #'string-equal))
          (buffer-to-insert (if (zerop tab-id)
                                (current-buffer)
-                               (or (find (format nil "~d" tab-id) (buffer-list) :key #'id)
+                               (or (find (sera:fmt "~d" tab-id) (buffer-list) :key #'id)
                                    (current-buffer))))
          (style-sheet (when (nyxt/web-extensions:tab-apis-enabled-p extension buffer-to-insert)
                         (ffi-buffer-add-user-style
@@ -270,7 +270,7 @@ the description of the mechanism that sends the results back."
          (tab-id (gethash "tabId" json))
          (buffer-to-remove (if (zerop tab-id)
                                (current-buffer)
-                               (or (find (format nil "~d" tab-id) (buffer-list) :key #'id)
+                               (or (find (sera:fmt "~d" tab-id) (buffer-list) :key #'id)
                                    (current-buffer))))
          (style-sheet (gethash message-params %style-sheets%)))
     (ffi-buffer-remove-user-style buffer-to-remove style-sheet)
@@ -286,7 +286,7 @@ the description of the mechanism that sends the results back."
          (tab-id (gethash "tabId" json))
          (buffer-to-insert (if (zerop tab-id)
                                (current-buffer)
-                               (or (find (format nil "~d" tab-id) (buffer-list) :key #'id)
+                               (or (find (sera:fmt "~d" tab-id) (buffer-list) :key #'id)
                                    (current-buffer))))
          (extension (find (gethash "extensionId" json)
                           (sera:filter #'nyxt/web-extensions::extension-p
@@ -503,7 +503,7 @@ there. `reply-user-mesage' takes care of sending the response back."
                 (id (gethash "tabId" json))
                 (buffer (if (zerop id)
                             (current-buffer)
-                            (nyxt::buffers-get (format nil "~d" id))))
+                            (nyxt::buffers-get (sera:fmt "~d" id))))
                 (extension (find (gethash "extensionId" json)
                                  (sera:filter #'nyxt/web-extensions::extension-p
                                               (modes buffer))

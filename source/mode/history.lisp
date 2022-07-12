@@ -309,7 +309,7 @@ ID is a buffer `id'."
         (mode (find-submode 'nyxt/history-tree-mode:history-tree-mode)))
     (spinneret:with-html-string
       (:style (style mode))
-      (:h1 (format nil "History of ~a" buffer))
+      (:h1 (sera:fmt "History of ~a" buffer))
       (:div (:raw (with-current-buffer buffer (render-buffer-history-tree buffer)))))))
 
 (define-command-global buffer-history-tree (&key (buffer (current-buffer)))
@@ -343,7 +343,7 @@ internally, but this display is clearer and more navigable."
     (:style (style buffer))
     (:style (style (find-submode 'nyxt/list-history-mode:list-history-mode buffer)))
     (:h1 "History")
-    (:p (format nil "The last ~a history entries:" limit))
+    (:p (sera:fmt "The last ~a history entries:" limit))
     (:ul (:raw (nyxt::history-html-list :limit limit)))))
 
 (defun add-url-to-history (url buffer mode)

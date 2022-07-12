@@ -227,7 +227,7 @@ turned into links to their respective description page."
   (let ((*print-case* :downcase))
     (spinneret:with-html-string
       (:style (style buffer))
-      (:h1 (format nil "~s" variable)) ; Use FORMAT to keep package prefix.
+      (:h1 (sera:fmt "~s" variable)) ; Use FORMAT to keep package prefix.
       (:raw (resolve-backtick-quote-links (documentation variable 'variable) variable))
       (:h2 "Current Value:")
       (:button
@@ -239,7 +239,7 @@ turned into links to their respective description page."
                                   (first
                                    (evaluate
                                     (prompt1
-                                      :prompt (format nil "Set ~a to" variable)
+                                      :prompt (sera:fmt "Set ~a to" variable)
                                       :sources (make-instance 'prompter:raw-source)))))
                           (nyxt-prompt-buffer-canceled nil))))
        "Change value")
@@ -298,14 +298,14 @@ For generic functions, describe all the methods."
                    (alex:when-let* ((definition (swank:find-definition-for-thing (symbol-function input)))
                                     (not-error-p (null (getf definition :error)))
                                     (file (rest (getf definition :location))))
-                     (:h2 (format nil "Source ~a" file))
+                     (:h2 (sera:fmt "Source ~a" file))
                      (:pre (function-lambda-string (symbol-function input))))))
                (method-desc (method)
                  (spinneret:with-html-string
                    (:details
                     (:summary
                         (:h3 :style "display: inline"
-                             (format nil "~s" input) " "
+                             (sera:fmt "~s" input) " "
                              (:raw (format
                                     nil "(~{~a~^ ~})"
                                     (mapcar (lambda (class)
@@ -335,12 +335,12 @@ For generic functions, describe all the methods."
                     (alex:when-let* ((definition (swank:find-definition-for-thing method))
                                      (not-error-p (null (getf definition :error)))
                                      (file (rest (getf definition :location))))
-                      (:h2 (format nil "Source ~a" file))
+                      (:h2 (sera:fmt "Source ~a" file))
                       (:pre (function-lambda-string method)))))))
           (if (typep (symbol-function input) 'generic-function)
               (spinneret:with-html-string
                 (:style (style buffer))
-                (:h1 (format nil "~s" input) ; Use FORMAT to keep package prefix.
+                (:h1 (sera:fmt "~s" input) ; Use FORMAT to keep package prefix.
                      (when (macro-function input) " (macro)"))
                 (:raw (fun-desc input))
                 (:h2 "Methods")
@@ -351,7 +351,7 @@ For generic functions, describe all the methods."
                        "")))
               (spinneret:with-html-string
                 (:style (style buffer))
-                (:h1 (format nil "~s" input) ; Use FORMAT to keep package prefix.
+                (:h1 (sera:fmt "~s" input) ; Use FORMAT to keep package prefix.
                      (when (macro-function input) " (macro)"))
                 (:raw (fun-desc input))))))
       (prompt
@@ -388,7 +388,7 @@ A command is a special kind of function that can be called with
       (:h1 (symbol-name (name command))
            (unless (eq (find-package :nyxt)
                        (symbol-package (name command)))
-             (format nil " (~a)"
+             (sera:fmt " (~a)"
                      (package-name (symbol-package (name command))))))
       (:p (:raw
            ;; TODO: This only displays the first method,
@@ -397,10 +397,10 @@ A command is a special kind of function that can be called with
            (resolve-backtick-quote-links (documentation command t)
                                          (name command))))
       (:h2 "Bindings")
-      (:p (format nil "~:{ ~S (~a)~:^, ~}" key-keymapname-pairs))
-      (:h2 (format nil "Source~a: " (if source-file
-                                        (format nil " (~a)" source-file)
-                                        "")))
+      (:p (sera:fmt "~:{ ~S (~a)~:^, ~}" key-keymapname-pairs))
+      (:h2 (sera:fmt "Source~a: " (if source-file
+                                      (sera:fmt " (~a)" source-file)
+                                      "")))
       (alex:when-let ((code (ignore-errors (function-lambda-string command))))
         (:pre (:code code))))))
 
@@ -435,13 +435,13 @@ A command is a special kind of function that can be called with
           (:li "Class " (:a :href (nyxt-url 'describe-class :class class) class)))
         (when (getf props :type)
           (:li
-           (:raw (format nil "Type: ~a"
-                         (if (and (subtypep (getf props :type) 'standard-object))
-                             (spinneret:with-html-string
-                               (:a :href (nyxt-url 'describe-class
-                                                   :class (getf props :type))
-                                   (getf props :type))
-                               (getf props :type)))))))
+           (:raw (sera:fmt "Type: ~a"
+                           (if (and (subtypep (getf props :type) 'standard-object))
+                               (spinneret:with-html-string
+                                 (:a :href (nyxt-url 'describe-class
+                                                     :class (getf props :type))
+                                     (getf props :type))
+                                 (getf props :type)))))))
         (when (getf props :initform)
           (let* ((initform-string (let ((*print-case* :downcase))
                                     (write-to-string (getf props :initform))))
@@ -508,7 +508,7 @@ A command is a special kind of function that can be called with
                                   using (hash-value bound-value)
                               collect (:tr
                                        (:td keyspec)
-                                       (:td (format nil "~(~a~)" bound-value))))))))))
+                                       (:td (sera:fmt "~(~a~)" bound-value))))))))))
 
 (defun describe-key-dispatch (command)
   (unwind-protect
@@ -555,7 +555,7 @@ A command is a special kind of function that can be called with
      "Operating system kernel: " (software-type) " " (software-version) +newline+
      "Lisp implementation: " (lisp-implementation-type) " " (lisp-implementation-version)
      #+sbcl
-     (format nil " (Dynamic space size: ~a)" (sb-ext:dynamic-space-size))
+     (sera:fmt " (Dynamic space size: ~a)" (sb-ext:dynamic-space-size))
      +newline+
 
      "Features: " (prin1-to-string *features*) +newline+
@@ -586,6 +586,6 @@ A command is a special kind of function that can be called with
             (loop for command in (list-commands)
                   collect (spinneret:with-html-string
                             (:details
-                             (:summary (format nil "~(~a~)" (symbol-name (name command))))
+                             (:summary (sera:fmt "~(~a~)" (symbol-name (name command))))
                              (:p (:pre (documentation command t)))
                              (:pre :class "nyxt-source" (:code (function-lambda-string command)))))))))

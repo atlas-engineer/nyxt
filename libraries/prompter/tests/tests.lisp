@@ -41,7 +41,7 @@
        (handler-case (bt:with-timeout ((* 2 (length remaining-threads)))
                        (mapc #'join-thread* remaining-threads))
          (t (c)
-           (prove:fail (format nil "Error when joining ~a: ~a"
+           (prove:fail (sera:fmt "Error when joining ~a: ~a"
                                remaining-threads c)))))
      (prove:is (all-live-prompter-threads)
                nil

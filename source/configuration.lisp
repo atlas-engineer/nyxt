@@ -323,7 +323,7 @@ YES-FORM is executed on  \"yes\" answer, NO-FORM -- on \"no\".
 PROMPT is a list fed to `format nil'."
   `(let ((answer (first (handler-case
                             (prompt
-                             :prompt (format nil ,@prompt)
+                             :prompt (sera:fmt ,@prompt)
                              :sources '(prompter:yes-no-source)
                              :hide-suggestion-count-p t)
                           (nyxt-prompt-buffer-canceled (c) (declare (ignore c)) '("no"))))))

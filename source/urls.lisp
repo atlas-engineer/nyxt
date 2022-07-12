@@ -48,8 +48,8 @@ If the URL contains hexadecimal-encoded characters, return their unicode counter
 (export-always 'render-host-and-scheme)
 (defun render-host-and-scheme (url)
   "Return decoded URL without path, if existent."
-  (format nil "~a://~a" (quri:uri-scheme url)
-          (quri:uri-host url)))
+  (sera:fmt "~a://~a" (quri:uri-scheme url)
+            (quri:uri-host url)))
 
 (export-always 'fetch-url-title)
 (defun fetch-url-title (url)
@@ -245,12 +245,11 @@ If it cannot be derived, return an empty `quri:uri'."
   "Return URL without its scheme (e.g. it removes 'https://')."
   ;; Warning: We can't just set `quri:uri-scheme' to nil because that would
   ;; change the port (e.g. HTTP defaults to 80, HTTPS to 443).
-  (format nil
-          "~@[~A~]~@[~A~]~@[?~A~]~@[#~A~]"
-          (quri:uri-authority url)
-          (or (quri:uri-path url) "/")
-          (quri:uri-query url)
-          (quri:uri-fragment url)))
+  (sera:fmt "~@[~A~]~@[~A~]~@[?~A~]~@[#~A~]"
+            (quri:uri-authority url)
+            (or (quri:uri-path url) "/")
+            (quri:uri-query url)
+            (quri:uri-fragment url)))
 
 (export-always 'url<)
 (-> url< (quri:uri quri:uri) (or null fixnum))
@@ -302,8 +301,8 @@ Example:
     (flet ((param-name (symbol)
              (let ((*package* (find-package :nyxt)))
                (if (keywordp symbol)
-                   (format nil "~(~a~)" symbol)
-                   (format nil "~s" symbol)))))
+                   (sera:fmt "~(~a~)" symbol)
+                   (sera:fmt "~s" symbol)))))
       (if (gethash function-name *nyxt-url-commands*)
           (let ((params (quri:url-encode-params
                          (mapcar (lambda (pair)
@@ -314,10 +313,10 @@ Example:
                                              (str:concat +escape+ (prin1-to-string (rest pair))))))
                                  (alexandria:plist-alist args)))))
             (the (values string &optional)
-                 (format nil "nyxt:~a~@[~*?~a~]"
-                         (param-name function-name)
-                         (not (uiop:emptyp params))
-                         params)))
+                 (sera:fmt "nyxt:~a~@[~*?~a~]"
+                           (param-name function-name)
+                           (not (uiop:emptyp params))
+                           params)))
           (error "There's no nyxt:~a page defined" (param-name function-name))))))
 
 (export-always 'javascript-url)
@@ -394,7 +393,7 @@ TITLE is purely informative."
                          (sera:synchronized ((nyxt::lisp-url-callbacks ,buffer))
                            (setf (gethash request-id (nyxt::lisp-url-callbacks ,buffer))
                                  (lambda () ,@form)))
-                         (let ((url-string (format nil "lisp://~a" request-id)))
+                         (let ((url-string (sera:fmt "lisp://~a" request-id)))
                            (when ,title
                              (setf url-string (str:concat url-string "/" ,title)))
                            url-string)))))

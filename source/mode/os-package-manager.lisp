@@ -40,11 +40,11 @@
     ("Synopsis" ,(ospm:synopsis pkg))))
 
 (defmethod name ((output ospm:os-package-output))
-  (format nil "~a~a"
-          (ospm:name (ospm:parent-package output))
-          (if (string= (ospm:name output) "out")
-              ""
-              (str:concat ":" (ospm:name output)))))
+  (sera:fmt "~a~a"
+            (ospm:name (ospm:parent-package output))
+            (if (string= (ospm:name output) "out")
+                ""
+                (str:concat ":" (ospm:name output)))))
 
 (defmethod name ((package ospm:os-package))
   (ospm:name package))
@@ -79,7 +79,7 @@
     ("Inputs" ,(sera:string-join (ospm:inputs pkg) " "))
     ("Native inputs" ,(sera:string-join (ospm:native-inputs pkg) " "))
     ("Propagated inputs" ,(sera:string-join (ospm:propagated-inputs pkg) " "))
-    ("Licenses" ,(format nil "~{~a~^, ~}" (ospm:licenses pkg)))))
+    ("Licenses" ,(sera:fmt "~{~a~^, ~}" (ospm:licenses pkg)))))
 
 (define-class os-package-source (prompter:source)
   ((prompter:name "Packages")
@@ -360,7 +360,7 @@ OBJECTS can be a list of packages, a generation, etc."
     (nyxt::html-set
      (spinneret:with-html-string
        (:style (style buffer))
-       (:h2 (format nil "Packages for generation ~a" (ospm:id generation)))
+       (:h2 (sera:fmt "Packages for generation ~a" (ospm:id generation)))
        (:p "Profile " profile)
        (:ul
         (dolist (package-output (ospm:list-packages (ospm:path generation)))

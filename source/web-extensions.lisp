@@ -81,11 +81,11 @@ Can have:
 - base64 encoded contents (for everything else)."
   (let* ((type (or mime-type (mimes:mime file)))
          (binary-p (not (str:starts-with-p "text" type))))
-    (format nil "data:~a~@[;base64~*~],~a"
-            type binary-p (if binary-p
-                              (base64:usb8-array-to-base64-string
-                               (alex:read-file-into-byte-vector file))
-                              (quri:url-encode (uiop:read-file-string file))))))
+    (sera:fmt "data:~a~@[;base64~*~],~a"
+              type binary-p (if binary-p
+                                (base64:usb8-array-to-base64-string
+                                 (alex:read-file-into-byte-vector file))
+                                (quri:url-encode (uiop:read-file-string file))))))
 
 (defun default-browser-action-icon (json optimal-height)
   "Find the best browser action icon using OPTIMAL-HEIGHT of `status-buffer'.
@@ -117,12 +117,12 @@ hacking into it with data: URLs and encode icons into base64 there."
          (padded-height (- status-buffer-height 10))
          (best-icon
            (default-browser-action-icon json padded-height)))
-    (format nil "<img src=\"~a\" alt=\"~a\"
+    (sera:fmt "<img src=\"~a\" alt=\"~a\"
 height=~a/>"
-            ;; Extension does not exist yet, so we cannot use `merge-extension-path'.
-            (make-data-url (uiop:merge-pathnames* best-icon extension-directory))
-            (gethash "name" json)
-            padded-height)))
+              ;; Extension does not exist yet, so we cannot use `merge-extension-path'.
+              (make-data-url (uiop:merge-pathnames* best-icon extension-directory))
+              (gethash "name" json)
+              padded-height)))
 
 (defun make-browser-action (json)
   "A helper function to construct `browser-action' from the manifest JSON.
@@ -252,7 +252,7 @@ Value is the loadable URL of that file.")
                                             "" (namestring file))))
                                      (cons relative-path
                                            (if (equal (mimes:mime file) "text/html")
-                                               (format nil "file://~a" file)
+                                               (sera:fmt "file://~a" file)
                                                (make-data-url file)))))
                                  (nyxt/file-manager-mode:recursive-directory-elements
                                   (extension-directory mode))))))))
@@ -309,7 +309,7 @@ slash. WebExtensions require this :/"
              :onclick (ps:ps (nyxt/ps:lisp-eval
                               (:title "toggle-extension-popup")
                               (toggle-extension-popup (sera:class-name-of extension))))
-             :title (format nil "Open the browser action of ~a" extension)
+             :title (sera:fmt "Open the browser action of ~a" extension)
              (call-next-method))))
 
 (define-command-global toggle-extension-popup (&optional extension-class (buffer (current-buffer)))
@@ -385,7 +385,7 @@ DIRECTORY should be the one containing manifest.json file for the extension in q
                           :onclick (ps:ps (nyxt/ps:lisp-eval
                                            (:title "toggle-extension-popup")
                                            (toggle-extension-popup (sera:class-name-of extension))))
-                          :title (format nil "Open the browser action of ~a" (name extension))
+                          :title (sera:fmt "Open the browser action of ~a" (name extension))
                           (:raw (setf (default-icon (browser-action extension))
                                       (encode-browser-action-icon (quote ,json) ,directory))))))))))
 

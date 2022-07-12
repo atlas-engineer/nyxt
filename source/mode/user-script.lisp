@@ -173,13 +173,13 @@ Return:
                                 (subseq raw-prop (elt reg-starts 0) (elt reg-ends 0)))))
                           raw-props))))
 
-         (let ((code-with-requires (format nil "~{~a;~&~}~a"
-                                           (mapcar (lambda (require)
-                                                     (get-script-text
-                                                      require
-                                                      (get-script-url require nil)))
-                                                   (getprop "require"))
-                                           code)))
+         (let ((code-with-requires (sera:fmt "~{~a;~&~}~a"
+                                             (mapcar (lambda (require)
+                                                       (get-script-text
+                                                        require
+                                                        (get-script-url require nil)))
+                                                     (getprop "require"))
+                                             code)))
            (setf
             (nfiles:name script) (or (first (getprop "name")) (alex:required-argument 'name))
             (version script) (first (getprop "version"))

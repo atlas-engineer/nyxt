@@ -55,7 +55,7 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
     (:p (:b "URL: ") (render-url (url annotation)))
     (:p (:b "Title: ") (page-title annotation))
     (:p (:b "Annotation: ") (data annotation))
-    (:p (:b "Tags: ") (format nil "~{~a ~}" (tags annotation)))))
+    (:p (:b "Tags: ") (sera:fmt "~{~a ~}" (tags annotation)))))
 
 (defmethod render ((annotation snippet-annotation))
   (spinneret:with-html-string
@@ -63,7 +63,7 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
     (:p (:b "URL: ") (render-url (url annotation)))
     (:p (:b "Title: ") (page-title annotation))
     (:p (:b "Annotation: ") (data annotation))
-    (:p (:b "Tags: ") (format nil "~{~a ~}" (tags annotation)))))
+    (:p (:b "Tags: ") (sera:fmt "~{~a ~}" (tags annotation)))))
 
 (defun annotation-add (annotation)
   (files:with-file-content (annotations (annotations-file (current-buffer)))

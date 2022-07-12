@@ -218,14 +218,13 @@ See also `show-prompt-buffer'."
        (let ((padding (if pad-p
                           (prin1-to-string (decimals (max-suggestions prompt-buffer)))
                           "0")))
-         (format nil (str:concat "[~a~" padding ",,,' @a]")
-                 (cond
-                   ((or marks multi-selection-p)
-                    (format nil
-                            (str:concat "~" padding ",,,' @a/")
-                            (length marks)))
-                   (t ""))
-                 (length suggestions)))))))
+         (sera:fmt (str:concat "[~a~" padding ",,,' @a]")
+                   (cond
+                     ((or marks multi-selection-p)
+                      (sera:fmt (str:concat "~" padding ",,,' @a/")
+                                (length marks)))
+                     (t ""))
+                   (length suggestions)))))))
 
 (defun prompt-render-prompt (prompt-buffer)
   (let* ((suggestions (prompter:all-suggestions prompt-buffer))

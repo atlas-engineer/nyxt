@@ -296,7 +296,7 @@ Warning: URL is a string."
                 :buffer (ensure-internal-page-buffer 'show-url-qrcode))))
 
 (define-internal-page-command-global view-source (&key (url (render-url (url (current-buffer)))))
-  (source-buffer (format nil "*Source of ~a" url))
+  (source-buffer (sera:fmt "*Source of ~a" url))
   "View source of the URL (by default current page) in a separate buffer."
   (let ((buffer (or (find (quri:uri url) (buffer-list) :test #'quri:uri= :key #'url)
                     (make-background-buffer :url url))))
@@ -460,18 +460,18 @@ ID is a buffer `id'."
 
 (defmethod prompter:object-attributes ((heading heading) (source heading-source))
   (declare (ignore source))
-  `(("Title" ,(format nil "~a ~a"
-                      (make-string (typecase (element heading)
-                                     (nyxt/dom:h1-element 1)
-                                     (nyxt/dom:h2-element 2)
-                                     (nyxt/dom:h3-element 3)
-                                     (nyxt/dom:h4-element 4)
-                                     (nyxt/dom:h5-element 5)
-                                     (nyxt/dom:h6-element 6)
-                                     (t 0))
-                                   :initial-element #\*)
-                      (title heading)))
-    ("Keywords" ,(format nil "~:{~a~^ ~}" (keywords heading)))))
+  `(("Title" ,(sera:fmt "~a ~a"
+                        (make-string (typecase (element heading)
+                                       (nyxt/dom:h1-element 1)
+                                       (nyxt/dom:h2-element 2)
+                                       (nyxt/dom:h3-element 3)
+                                       (nyxt/dom:h4-element 4)
+                                       (nyxt/dom:h5-element 5)
+                                       (nyxt/dom:h6-element 6)
+                                       (t 0))
+                                     :initial-element #\*)
+                        (title heading)))
+    ("Keywords" ,(sera:fmt "~:{~a~^ ~}" (keywords heading)))))
 
 (define-command jump-to-heading (&key (buffer (current-buffer)))
   "Jump to a particular heading, of type h1, h2, h3, h4, h5, or h6."
@@ -493,7 +493,7 @@ of buffers."
      :sources (loop for buffer in buffers
                     collect (make-instance
                              'heading-source
-                             :name (format nil "Headings: ~a" (title buffer))
+                             :name (sera:fmt "Headings: ~a" (title buffer))
                              :buffer buffer)))))
 
 (define-panel-command-global headings-panel ()

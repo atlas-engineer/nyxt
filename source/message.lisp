@@ -55,7 +55,7 @@ Untrusted content should be given as argument with a format string."
   "Like `echo' but prefix with \"Warning\" and output to the standard error."
   (handler-case
       (let ((text (apply #'format nil args)))
-        (%echo (format nil "Warning: ~a" text)
+        (%echo (sera:fmt "Warning: ~a" text)
                :logger log:warn))
     (error ()
       (%echo-help args))))

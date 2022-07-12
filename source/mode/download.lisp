@@ -91,19 +91,19 @@ finds it, it will invoke its cancel-function."
 (defmethod (setf status) (value (download download))
   (setf (slot-value download 'status) value)
   (setf (user-interface:text (status-text download))
-        (format nil "Status: ~(~a~)." value)))
+        (sera:fmt "Status: ~(~a~)." value)))
 
 (defmethod (setf completion-percentage) (percentage (download download))
   (setf (slot-value download 'completion-percentage) percentage)
   (setf (user-interface:percentage (progress download))
         (completion-percentage download))
   (setf (user-interface:text (progress-text download))
-        (format nil "Completion: ~,2f%" (completion-percentage download))))
+        (sera:fmt "Completion: ~,2f%" (completion-percentage download))))
 
 (defmethod (setf bytes-downloaded) (bytes (download download))
   (setf (slot-value download 'bytes-downloaded) bytes)
   (setf (user-interface:text (bytes-text download))
-        (format nil "Bytes downloaded: ~a" (bytes-downloaded download))))
+        (sera:fmt "Bytes downloaded: ~a" (bytes-downloaded download))))
 
 (defmethod (setf destination-path) (path (download download))
   (setf (slot-value download 'destination-path) path)

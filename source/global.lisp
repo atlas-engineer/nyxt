@@ -146,9 +146,9 @@ Return nil on error."
     (when major
       (push-feature major))
     (when minor
-      (push-feature (format nil "~a.~a" major minor)))
+      (push-feature (sera:fmt "~a.~a" major minor)))
     (when patch
-      (push-feature (format nil "~a.~a.~a" major minor patch)))
+      (push-feature (sera:fmt "~a.~a.~a" major minor patch)))
     (when commit
       (push-feature (string-upcase commit)))
     (when (and commits (not (zerop commits)))

@@ -220,9 +220,9 @@
 
 (defmethod initialize-instance :after ((source search-buffer-source) &key)
   (setf (prompter:name source)
-        (format nil "~a (~a+ characters)"
-                (prompter:name source)
-                (minimum-search-length source))))
+        (sera:fmt "~a (~a+ characters)"
+                  (prompter:name source)
+                  (minimum-search-length source))))
 
 (define-command search-buffer (&key case-sensitive-p)
   "Search on the current buffer.
@@ -254,9 +254,9 @@ Example:
      :prompt "Search text"
      :sources (mapcar (lambda (buffer)
                         (make-instance 'search-buffer-source
-                                       :name (format nil "Search ~a" (if (url-empty-p (url buffer))
-                                                                         (title buffer)
-                                                                         (url buffer)))
+                                       :name (sera:fmt "Search ~a" (if (url-empty-p (url buffer))
+                                                                       (title buffer)
+                                                                       (url buffer)))
                                        :case-sensitive-p case-sensitive-p
                                        :buffer buffer))
                       buffers))))

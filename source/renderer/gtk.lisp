@@ -726,7 +726,7 @@ See `gtk-browser's `modifier-translator' slot."
          ;; (x (gdk:gdk-event-button-x event))
          ;; (y (gdk:gdk-event-button-y event))
          (window (sender-window sender))
-         (key-string (format nil "button~s" button))
+         (key-string (sera:fmt "button~s" button))
          (modifiers (funcall (modifier-translator *browser*)
                              (button-event-modifiers event)
                              event))
@@ -758,7 +758,7 @@ See `gtk-browser's `modifier-translator' slot."
                       ((< 0 (gdk:gdk-event-scroll-delta-x event))
                        7)))))
          (window (sender-window sender))
-         (key-string (format nil "button~s" button))
+         (key-string (sera:fmt "button~s" button))
          (modifiers (funcall (modifier-translator *browser*)
                              (scroll-event-modifiers event)
                              event)))
@@ -956,9 +956,9 @@ See `finalize-buffer'."
       (setf navigation-action (webkit:webkit-navigation-policy-decision-get-navigation-action
                                response-policy-decision))
       (setf request (webkit:webkit-navigation-action-get-request navigation-action))
-      (setf mouse-button (format nil "button~d"
-                                 (webkit:webkit-navigation-action-get-mouse-button
-                                  navigation-action)))
+      (setf mouse-button (sera:fmt "button~d"
+                                   (webkit:webkit-navigation-action-get-mouse-button
+                                    navigation-action)))
       (setf modifiers (funcall (modifier-translator *browser*)
                                (webkit:webkit-navigation-action-get-modifiers navigation-action))))
     (setf url (quri:uri (webkit:webkit-uri-request-uri request)))
@@ -1281,11 +1281,11 @@ See `finalize-buffer'."
                               rgba))
                  (*interactive-p* t)
                  (color-name (prompt1 :prompt "Color"
-                                      :input (format nil "rgba(~d, ~d, ~d, ~d)"
-                                                     (round (* 255 (cffi:mem-aref rgba :double 0)))
-                                                     (round (* 255 (cffi:mem-aref rgba :double 1)))
-                                                     (round (* 255 (cffi:mem-aref rgba :double 2)))
-                                                     (round (* 255 (cffi:mem-aref rgba :double 3))))
+                                      :input (sera:fmt "rgba(~d, ~d, ~d, ~d)"
+                                                       (round (* 255 (cffi:mem-aref rgba :double 0)))
+                                                       (round (* 255 (cffi:mem-aref rgba :double 1)))
+                                                       (round (* 255 (cffi:mem-aref rgba :double 2)))
+                                                       (round (* 255 (cffi:mem-aref rgba :double 3))))
                                       :sources (list (make-instance 'color-source))))
                  (color (get-rgba color-name))
                  (opacity (sera:parse-float (get-opacity color-name)))
@@ -1334,7 +1334,8 @@ See `finalize-buffer'."
              (webkit:webkit-script-dialog-confirm-set-confirmed
               dialog (if-confirm
                       ;; FIXME: This asks for keyword override in if-confirm.
-                      ((format nil "~a ['yes' = leave, 'no' = stay]" (webkit:webkit-script-dialog-get-message dialog)))
+                      ((sera:fmt "~a ['yes' = leave, 'no' = stay]"
+                                 (webkit:webkit-script-dialog-get-message dialog)))
                       t nil))))
           (webkit:webkit-script-dialog-close dialog)
           (webkit:webkit-script-dialog-unref dialog))
@@ -1357,22 +1358,21 @@ See `finalize-buffer'."
                       (webkit:webkit-device-info-permission-request
                        "Grant this website device info access?")
                       (webkit:webkit-install-missing-media-plugins-permission-request
-                       (format nil "Grant this website a media install permission for ~s?"
-                               (webkit:webkit-install-missing-media-plugins-permission-request-get-description
-                                request)))
+                       (sera:fmt "Grant this website a media install permission for ~s?"
+                                 (webkit:webkit-install-missing-media-plugins-permission-request-get-description request)))
                       (webkit:webkit-media-key-system-permission-request
-                       (format nil "Grant this website an EME ~a key access?"
-                               (webkit:webkit-media-key-system-permission-get-name request)))
+                       (sera:fmt "Grant this website an EME ~a key access?"
+                                 (webkit:webkit-media-key-system-permission-get-name request)))
                       (webkit:webkit-user-media-permission-request
-                       (format nil "Grant this website a~@[~*n audio~]~@[~* video~] access?"
-                               (webkit:webkit-user-media-permission-is-for-audio-device request)
-                               (webkit:webkit-user-media-permission-is-for-video-device request)))
+                       (sera:fmt "Grant this website a~@[~*n audio~]~@[~* video~] access?"
+                                 (webkit:webkit-user-media-permission-is-for-audio-device request)
+                                 (webkit:webkit-user-media-permission-is-for-video-device request)))
                       (webkit:webkit-website-data-access-permission-request
-                       (format nil "Grant ~a an access to ~a data?"
-                               (webkit:webkit-website-data-access-permission-request-get-requesting-domain
-                                request)
-                               (webkit:webkit-website-data-access-permission-request-get-current-domain
-                                request))))))
+                       (sera:fmt "Grant ~a an access to ~a data?"
+                                 (webkit:webkit-website-data-access-permission-request-get-requesting-domain
+                                  request)
+                                 (webkit:webkit-website-data-access-permission-request-get-current-domain
+                                  request))))))
                   (webkit:webkit-permission-request-allow request)
                   (webkit:webkit-permission-request-deny request)))))
 
@@ -1743,7 +1743,7 @@ local anyways, and it's better to refresh it if a load was queried."
        content-manager (gtk-object script)))))
 
 (defmacro define-ffi-settings-accessor (setting-name webkit-setting)
-  (let ((full-name (intern (format nil "FFI-BUFFER-~a" setting-name))))
+  (let ((full-name (intern (sera:fmt "FFI-BUFFER-~a" setting-name))))
     (symbol-function full-name)
     `(progn
        (define-ffi-method ,full-name ((buffer gtk-buffer))
@@ -1798,7 +1798,7 @@ local anyways, and it's better to refresh it if a load was queried."
                                                     (uiop:native-namestring download-directory)))
                        (path (str:concat native-download-directory suggested-file-name))
                        (unique-path (download-manager::ensure-unique-file path))
-                       (file-path (format nil "file://~a" unique-path)))
+                       (file-path (sera:fmt "file://~a" unique-path)))
         (if (string= path unique-path)
             (log:debug "Downloading file to ~s." unique-path)
             (echo "Destination ~s exists, saving as ~s." path unique-path))

@@ -18,7 +18,7 @@
    (ps:ps
      (let ((element (ps:chain document (get-element-by-id (ps:lisp (user-interface:id progress-bar))))))
        (setf (ps:chain element style width)
-             (ps:lisp (format nil "~,1f%" (user-interface:percentage progress-bar))))))))
+             (ps:lisp (sera:fmt "~,1f%" (user-interface:percentage progress-bar))))))))
 
 (defmethod user-interface:update ((button user-interface:button))
   (ffi-buffer-evaluate-javascript-async

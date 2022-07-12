@@ -14,8 +14,8 @@
      (loop for system in (ql:system-list)
            collect
            (let ((name (ql-dist:short-description system))
-                 (size (format nil "~a" (ql-dist:archive-size (ql-dist:preference-parent system))))
-                 (dependencies (format nil "~a" (ql-dist:required-systems system))))
+                 (size (sera:fmt "~a" (ql-dist:archive-size (ql-dist:preference-parent system))))
+                 (dependencies (sera:fmt "~a" (ql-dist:required-systems system))))
              (:div
               (:h2 name)
               (:p "Size: " size)
