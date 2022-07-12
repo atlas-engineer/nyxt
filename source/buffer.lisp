@@ -165,12 +165,13 @@ hook."))
   "Finalize instantiation of modable BUFFER.
 In particular,
 - run `buffer-make-hook';
-- initialize the default modes plus EXTRA-MODES,
+- `enable' the modes from the `modes' slot, the `default-modes' and the EXTRA-MODES,
 - run `buffer-after-make-hook'.
 This method should be called by the renderer after instantiating the web view
 of BUFFER."
   (unless no-hook-p
     (hooks:run-hook (buffer-make-hook browser) buffer))
+  (mapc #'enable (modes buffer))
   (enable-modes (append (reverse (default-modes buffer))
                         extra-modes)
                 buffer)
