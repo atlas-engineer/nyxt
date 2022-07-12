@@ -383,7 +383,7 @@ Return non-NIL of history was restored, NIL otherwise."
 
 (define-class history-name-source (prompter:source)
   ((prompter:name "Histories")
-   (prompter:constructor (histories-list))
+   (prompter:constructor (mapcar #'pathname-name (histories-list)))
    (prompter:hide-attribute-header-p :single)))
 
 (define-command store-history-by-name ()
@@ -413,7 +413,9 @@ If you want to save the current history file beforehand, call
                           :prompt "The name of the history to restore"
                           :sources (list (make-instance 'history-name-source))))
                   (new-file (make-instance 'history-file
-                                           :base-path (uiop:ensure-pathname name :truename t))))
+                                           :base-path (make-pathname
+                                                       :name name
+                                                       :directory (pathname-directory (histories-directory))))))
     (let ((old-buffers (buffer-list))
           (new-history (files:content new-file)))
       (restore-history-buffers new-history (history-file (current-buffer)))
