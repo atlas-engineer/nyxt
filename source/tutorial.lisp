@@ -194,12 +194,22 @@ Bookmarks can have the following settings:")
       (:nsection :title "Annotations"
         (:p "Annotations can have the following settings:")
         (:ul
-         (:li (:code ":snippet") ": The snippet which was highlighted by the user.")
-         (:li (:code ":url") ": The URL of the annotation.")
-         (:li (:code ":title") ": The title of the annotation.")
-         (:li (:code ":annotation") ": The comment about the highlighted snippet or
+         (:li (:nxref :slot 'nyxt/annotate-mode:snippet
+                      :class-name 'nyxt/annotate-mode:snippet-annotation)
+              ": The snippet which was highlighted by the user.")
+         (:li (:nxref :slot 'nyxt/annotate-mode::url
+                      :class-name 'nyxt/annotate-mode:url-annotation)
+              ": The URL of the annotation.")
+         (:li (:nxref :slot 'nyxt/annotate-mode:page-title
+                      :class-name 'nyxt/annotate-mode:url-annotation)
+              ": The title of the annotation.")
+         (:li (:nxref :slot 'nyxt/annotate-mode::data
+                      :class-name 'nyxt/annotate-mode:annotation)
+              ": The comment about the highlighted snippet or
 the URL.")
-         (:li (:code ":tags") ": A list of strings.  Useful to categorize and filter annotations."))
+         (:li (:nxref :slot 'nyxt/annotate-mode:tags
+                      :class-name 'nyxt/annotate-mode:annotation)
+              ": A list of strings.  Useful to categorize and filter annotations."))
         (:p "Annotate-related commands")
         (:ul
          (list-command-information '(nyxt/annotate-mode:annotate-current-url nyxt/annotate-mode:annotate-highlighted-text
