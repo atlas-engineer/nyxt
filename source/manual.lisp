@@ -16,47 +16,44 @@ of Nyxt."))
 (defun manual-sections ()
   (spinneret:with-html-string
     (:nsection :title "Configuration"
-      (:p "Nyxt is written in the Common Lisp programming language which offers a
+      (let ((auto-config-file (files:expand *auto-config-file*))
+            (config-file (files:expand *config-file*)))
+        (:p "Nyxt is written in the Common Lisp programming language which offers a
 great perk: everything in the browser can be customized by the user, even while
 it's running!")
-      (:p "To get started with Common Lisp, we recommend checking out
+        (:p "To get started with Common Lisp, we recommend checking out
     our web page: "
-          (:a :href "https://nyxt.atlas.engineer/learn-lisp" "Learn Lisp")
-          ". It contains numerous pointers to other resources, including
+            (:a :href "https://nyxt.atlas.engineer/learn-lisp" "Learn Lisp")
+            ". It contains numerous pointers to other resources, including
         free books both for beginners and seasoned programmers.")
-      (:p "Nyxt provides a mechanism for new users unfamiliar with Lisp to
+        (:p "Nyxt provides a mechanism for new users unfamiliar with Lisp to
 customize Nyxt. Start by invoking the commands " (command-markup 'describe-class) "
 or " (command-markup 'describe-slot) ".  You can press the button marked 'Configure' to
 change the value of a setting. The settings will be applied immediately and
 saved for future sessions. Please note that these settings will not alter
 existing object instances.")
-      (:p "Settings created by Nyxt are stored in "
-          (:code (files:expand *auto-config-file*)) ".")
-      (:p "Any settings can be overridden manually by "
-          (:code (files:expand *config-file*)) ".")
-      (:p "The following section assumes knowledge of basic Common Lisp or a
+        (:p "Settings created by Nyxt are stored in "
+            (:code auto-config-file) ".")
+        (:p "Any settings can be overridden manually by "
+            (:code config-file) ".")
+        (:p "The following section assumes knowledge of basic Common Lisp or a
 similar programming language.")
-      (:p "The user needs to manually create the Nyxt configuration file, and the parent folders if necessary."
-          (when (and (current-buffer)   ; In case manual is dumped.
-                     (not (files:nil-pathname-p (files:expand *config-file*))))
-            (:p
-             "You can also press the button below to create said file, if it's not
-created yet."
-             (let ((config-file-path (files:expand *config-file*)))
-               (:p (:a :class "button"
-                       :href (ps:ps (nyxt/ps:lisp-eval
-                                     (:title "maybe-create-config-file")
-                                     (if (uiop:file-exists-p config-file-path)
-                                         (echo "Configuration file exists")
-                                         (progn (ensure-directories-exist config-file-path)
-                                                (ensure-file-exists config-file-path)
-                                                (echo "Configuration file created at ~s."
-                                                      config-file-path)))))
-                       "Create configuration file"))))))
-
-      (:p "Example:")
-      (:pre (:code "(define-configuration buffer
-  ((default-modes (append '(no-script-mode) %slot-default%))))"))
+        (:p "The user needs to manually create the Nyxt configuration file, and the parent folders if necessary."
+            (when (and (current-buffer) ; In case manual is dumped.
+                       (not (files:nil-pathname-p config-file))
+                       (not (uiop:file-exists-p config-file)))
+              (:p "You can also press the button below to create it."
+                  (:p (:a :class "button"
+                          :onclick (ps:ps
+                                     (nyxt/ps:lisp-eval
+                                      (:title "create-config-file")
+                                      (ensure-directories-exist config-file)
+                                      (ensure-file-exists config-file)
+                                      (echo "Configuration file created at ~s." config-file)))
+                          "Create configuration file")))))
+        (:p "Example:")
+        (:pre (:code "(define-configuration buffer
+  ((default-modes (append '(no-script-mode) %slot-default%))))")))
       (:p "The above turns on the 'no-script-mode' (disables JavaScript) by default for
 every buffer.")
       (:p "The " (:code "define-configuration") " macro can be used to customize
