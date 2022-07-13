@@ -159,4 +159,7 @@ major versions."
       (:code "save-new-password") "  and "
       (:code "copy-username")
       " have been moved to the " (:code "nyxt/password-mode") " mode package.")
-  )
+
+  (session-restore-prompt)
+  (:p (:code "session-restore-prompt") " is now "
+      (:code "restore-session-on-startup-p") " and is a boolean."))

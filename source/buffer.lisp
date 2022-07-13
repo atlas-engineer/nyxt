@@ -375,9 +375,11 @@ query is not a valid URL, or the first keyword is not recognized.")
     :documentation "Select a download engine to use, such as `:lisp' or
 `:renderer'.")
    (history-file
-    (make-instance 'history-file)
+    (history-file *browser*)
     :type history-file
-    :documentation "File where the global history is saved.")
+    :documentation "File where to save the global history used by this buffer.
+See also `history-file' in `browser' for the global history restored on startup,
+which is not necessarily the same.")
    (standard-output-file
     (make-instance 'standard-output-file)
     :type standard-output-file
@@ -1040,7 +1042,7 @@ associated to the buffer is already killed."
     (when parent-window
       (let ((replacement-buffer (or (first (get-inactive-buffers))
                                     (make-buffer :load-url-p nil
-                                                 :url (quri:uri "about:blank")))))
+                                                 :url (default-new-buffer-url *browser*)))))
         (window-set-buffer parent-window replacement-buffer)))
     (buffers-delete (id buffer))
     (add-to-recent-buffers buffer)))

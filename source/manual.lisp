@@ -550,9 +550,9 @@ mode's configuration file:")
 exec nyxt --headless --no-auto-config --profile nosave --config \"$0\"
 |#
 
-;; Nyxt shows a history restore prompt by default, you don't want it to.
+;; Disable session restoration to speed up startup and get more reproducible behaviour.
 \(define-configuration browser
-  ((session-restore-prompt :never-restore)))
+  ((restore-session-on-startup-p nil)))
 
 ;; Load the URL of Nyxt repository by default in all new buffers.
 ;; Alternatively, call `buffer-load' in `*after-startup-hook*'.

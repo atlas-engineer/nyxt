@@ -163,11 +163,11 @@ As a workaround, we never leave the GTK main loop when running from a REPL.
 
 See https://github.com/atlas-engineer/nyxt/issues/740")
 
-(defun renderer-thread-p ()
+(defun renderer-thread-p (&optional (thread (bt:current-thread)))
   #+darwin
-  (string= "main thread" (bt:thread-name (bt:current-thread)))
+  (string= "main thread" (bt:thread-name thread))
   #-darwin
-  (string= "cl-cffi-gtk main thread" (bt:thread-name (bt:current-thread))))
+  (string= "cl-cffi-gtk main thread" (bt:thread-name thread)))
 
 (defmacro within-gtk-thread (&body body)
   "Protected `gtk:within-gtk-thread'."
@@ -465,7 +465,9 @@ response.  The BODY is wrapped with `with-protect'."
                                                :orientation :vertical
                                                :spacing 0))
          (setf key-string-buffer (make-instance 'gtk:gtk-entry))
-         (setf active-buffer (make-instance 'buffer))
+         ;; Dummy buffer is an `input-buffer' so that an empty window can still
+         ;; receive input, for instance to create a new buffer.
+         (setf active-buffer (make-instance 'input-buffer))
 
          ;; Add the views to the box layout and to the window
          (gtk:gtk-box-pack-start main-buffer-container (gtk-object active-buffer) :expand t :fill t)
