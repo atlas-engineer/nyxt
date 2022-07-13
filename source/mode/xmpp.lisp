@@ -88,7 +88,7 @@ One of :PLAIN, :SASL-PLAIN, :DIGEST-MD5, :SASL-DIGEST-MD5.")
           (flet ((reconnect (err)
                    (declare (ignorable err))
                    (xmpp-reconnect)))
-            (loop (handler-bind ((cl+ssl::ssl-error #'reconnect))
+            (loop (handler-bind ((error #'reconnect))
                     (xmpp:receive-stanza
                      (connection mode)
                      :stanza-callback (lambda (stanza connection &key dom-repr)
