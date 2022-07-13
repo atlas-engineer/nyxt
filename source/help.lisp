@@ -6,15 +6,13 @@
 (defmacro command-markup (fn &key (modes nil explicit-modes-p))
   "Print FN in HTML followed by its keybinding in parentheses."
   `(let ((spinneret:*suppress-inserted-spaces* t))
-     (spinneret:with-html (:span
-                           (:a :href (nyxt-url 'describe-command :command ,fn)
-                               (:code (let ((*print-case* :downcase))
-                                        (format nil "~a" ,fn))))
-                           " ("
-                           (:code (apply #'binding-keys ,fn (if ,explicit-modes-p
-                                                                (list :modes ,modes)
-                                                                '())))
-                           ")"))))
+     (spinneret:with-html
+      (:span (:nxref :command ,fn)
+             " ("
+             (:code (apply #'binding-keys ,fn (if ,explicit-modes-p
+                                                  (list :modes ,modes)
+                                                '())))
+             ")"))))
 
 (defmacro command-docstring-first-sentence (fn &key (sentence-case-p nil))
   "Print FN first docstring sentence in HTML."
