@@ -85,21 +85,17 @@ One of :PLAIN, :SASL-PLAIN, :DIGEST-MD5, :SASL-DIGEST-MD5.")
 (defmethod enable ((mode xmpp-mode) &key &allow-other-keys)
   (setf (receive-thread mode)
         (run-thread "XMPP receiver thread"
-          (xmpp:receive-stanza-loop
-           (connection mode)
-           :stanza-callback (lambda (stanza connection &key dom-repr)
-                              (declare (ignore dom-repr))
-                              (flet ((get-events ()
-                                       (cl-xmpp::dom-to-event connection (cl-xmpp::parse-result connection stanza))))
-                                (let ((events (handler-case
-                                                  (get-events)
-                                                (error ()
-                                                  (xmpp-reconnect mode)
-                                                  (ignore-errors (get-events))))))
-                                  (dolist (event (alex:ensure-list events))
-                                    (push event (messages mode)))
-                                  (reload-buffers (list (buffer mode)))
-                                  events)))))))
+          (loop (xmpp:receive-stanza
+                 connection
+                 :stanza-callback (lambda (stanza connection &key dom-repr)
+                                    (declare (ignore dom-repr))
+                                    (let ((events (cl-xmpp::dom-to-event
+                                                   connection (cl-xmpp::parse-result connection stanza))))
+                                      (dolist (event (alex:ensure-list events))
+                                        (push event (messages mode)))
+                                      (reload-buffers (list (buffer mode)))
+                                      events))
+                 :dom-repr t)))))
 
 (defmethod connection ((mode xmpp-mode))
   (or (slot-value mode 'connection)
