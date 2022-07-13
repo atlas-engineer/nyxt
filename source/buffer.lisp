@@ -1042,7 +1042,7 @@ associated to the buffer is already killed."
     (when parent-window
       (let ((replacement-buffer (or (first (get-inactive-buffers))
                                     (make-buffer :load-url-p nil
-                                                 :url (quri:uri "about:blank")))))
+                                                 :url (default-new-buffer-url *browser*)))))
         (window-set-buffer parent-window replacement-buffer)))
     (buffers-delete (id buffer))
     (add-to-recent-buffers buffer)))
