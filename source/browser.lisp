@@ -152,6 +152,12 @@ If nil, renderer-provided dialogs are used.")
     (make-instance 'theme:theme)
     :type theme:theme
     :documentation "The theme to use for all the browser interface elements.")
+   (history-file
+    (make-instance 'history-file)
+    :type history-file
+    :documentation "History file to read from when restoring session.
+See `restore-session-on-startup-p' to c ontrol this behaviour.
+See also `history-file' in `context-buffer' for per-buffer history files.")
    (restore-session-on-startup-p
     t
     :type boolean
@@ -305,13 +311,10 @@ restored."
     (mapcar #'window-delete (window-list))
     (window-make browser)
     (if (restore-session-on-startup-p *browser*)
-        (progn
-          ;; TODO: Test restore-history-buffers on dummy buffer.
-          (let ((buffer (make-instance 'context-buffer :no-history-p t)))
-            (if (restore-history-buffers (buffer-history buffer)
-                                         (history-file buffer))
-                (open-urls urls)
-                (open-urls (or urls (list (default-new-buffer-url browser)))))))
+        (if (restore-history-buffers (files:content (history-file *browser*))
+                                     (history-file *browser*))
+            (open-urls urls)
+            (open-urls (or urls (list (default-new-buffer-url browser)))))
         (progn
           (log:info "Not restoring session.")
           (open-urls (or urls (list (default-new-buffer-url browser))))
