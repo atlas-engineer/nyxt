@@ -35,6 +35,10 @@ chosen suggestions inside brackets.")
      ;; You will want edit this to match the changes done to `style'.")
      (hide-single-source-header-p nil
                                   :documentation "Hide source header when there is only one.")
+     (mouse-support-p t
+                      :type boolean
+                      :documentation "Whether to allow mouse events to set and return a selection over prompt
+ buffer suggestions.")
      (style (theme:themed-css (theme *browser*)
               (*
                :font-family "monospace,monospace"
@@ -299,21 +303,23 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                                   "selection")
                                             :class (when (prompter:marked-p source (prompter:value suggestion))
                                                      "marked")
-                                            :onmouseover (ps:ps
-                                                           ;; FIXME: A better way to set selection?
-                                                           (nyxt/ps:lisp-eval
-                                                            (:title "set-selection" :buffer prompt-buffer)
-                                                            ;; TODO: Export?
-                                                            (prompter::select
-                                                                (current-prompt-buffer)
-                                                              (- suggestion-index cursor-index))
-                                                            (prompt-render-suggestions
-                                                             (current-prompt-buffer))))
-                                            :onmousedown (ps:ps
-                                                           (nyxt/ps:lisp-eval
-                                                            (:title "return-selection" :buffer prompt-buffer)
-                                                            (prompter:return-selection
-                                                             (nyxt::current-prompt-buffer))))
+                                            :onmouseover (when (mouse-support-p prompt-buffer)
+                                                           (ps:ps
+                                                             ;; FIXME: A better way to set selection?
+                                                             (nyxt/ps:lisp-eval
+                                                              (:title "set-selection" :buffer prompt-buffer)
+                                                              ;; TODO: Export?
+                                                              (prompter::select
+                                                                  (current-prompt-buffer)
+                                                                (- suggestion-index cursor-index))
+                                                              (prompt-render-suggestions
+                                                               (current-prompt-buffer)))))
+                                            :onmousedown (when (mouse-support-p prompt-buffer)
+                                                           (ps:ps
+                                                             (nyxt/ps:lisp-eval
+                                                              (:title "return-selection" :buffer prompt-buffer)
+                                                              (prompter:return-selection
+                                                               (nyxt::current-prompt-buffer)))))
                                             (loop for (nil attribute) in (prompter:active-attributes suggestion :source source)
                                                   collect (:td (:mayberaw attribute))))))))))))
       (ffi-buffer-evaluate-javascript
