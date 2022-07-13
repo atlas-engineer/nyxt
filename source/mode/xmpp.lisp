@@ -8,12 +8,12 @@
 (define-mode xmpp-mode ()
   "A mode for XMPP chats management."
   ((rememberable-p nil)
-   (keymap-scheme
-    (define-scheme "repl"
-      scheme:cua
+   (keyscheme-map
+    (define-keyscheme-map "xmpp-mode" ()
+      keyscheme:default
       (list
        "C-return" 'send-message)
-      scheme:emacs
+      keyscheme:emacs
       (list
        "C-c C-c" 'send-message)))
    (style (theme:themed-css (theme *browser*)
