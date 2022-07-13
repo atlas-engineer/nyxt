@@ -1014,8 +1014,9 @@ See `make-buffer' for a description of the arguments."
 (-> add-to-recent-buffers (buffer) *)
 (defun add-to-recent-buffers (buffer)
   "Create a recent-buffer from given buffer and add it to `recent-buffers'."
-  (containers:delete-item-if (recent-buffers *browser*) (buffer-match-predicate buffer))
-  (containers:insert-item (recent-buffers *browser*) buffer))
+  (when (web-buffer-p buffer)
+    (containers:delete-item-if (recent-buffers *browser*) (buffer-match-predicate buffer))
+    (containers:insert-item (recent-buffers *browser*) buffer)))
 
 
 (defmethod buffer-delete ((buffer buffer))
