@@ -328,6 +328,7 @@ SLY install.")
    (:li "Fix some " (:code "auto-mode") " issues.  (Thanks to @efimerspan!)")))
 
 (define-version "3.0.0"
+  (:h3 "Pre-release 1")
   (:ul
    (:li "New " (:code "migration-guide") " command to help the user mgirate "
         "their configuration between major version releases. "

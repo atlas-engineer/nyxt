@@ -15,7 +15,7 @@
 (defsystem "nyxt"
   :defsystem-depends-on (nyxt-asdf)
   :class :nyxt-system
-  :version "3"                          ; Development version.
+  :version "3"                          ;  3-pre-release-1 / Development version
   :author "Atlas Engineer LLC"
   :homepage "https://nyxt.atlas.engineer"
   :description "Extensible web browser in Common Lisp"
