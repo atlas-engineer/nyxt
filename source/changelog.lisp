@@ -388,7 +388,11 @@ SLY install.")
         " and " (:code "define-nyxt-user-system-and-load") ".")
    (:li "Slynk is a new dependency and SLY users can now connect to a running Nyxt instance the "
         (:code "start-slynk") " command.  (Thanks to @jgart!)")
-
+   (:li "Session is restored on startup by default."
+        " Slot " (:code "session-restore-prompt") " has been replaced by "
+        (:code "restore-session-on-startup-p") ", a boolean.")
+   (:li "Prompt buffer mouse support can be disabled with the " (:code "mouse-support-p")
+        " prompt-buffer slot.  (Thanks to @efimerspan!)")
 
    (:h3 "Bindings")
    (:ul
