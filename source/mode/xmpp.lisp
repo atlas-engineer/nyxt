@@ -87,16 +87,10 @@ One of :PLAIN, :SASL-PLAIN, :DIGEST-MD5, :SASL-DIGEST-MD5.")
         (run-thread "XMPP receiver thread"
           (flet ((reconnect (err)
                    (declare (ignorable err))
-                   (xmpp-reconnect))
-                 (disconnect (err)
-                   (declare (ignorable err))
-                   (xmpp-disconnect)))
-            (loop (handler-bind ((cl+ssl:ssl-error-call #'reconnect)
-                                 (cl+ssl:ssl-error-verify #'disconnect)
-                                 (cl+ssl:ssl-error-stream #'disconnect)
-                                 (cl+ssl:ssl-error-initialize #'disconnect))
+                   (xmpp-reconnect)))
+            (loop (handler-bind ((cl+ssl::ssl-error #'reconnect))
                     (xmpp:receive-stanza
-                     connection
+                     (connection mode)
                      :stanza-callback (lambda (stanza connection &key dom-repr)
                                         (declare (ignore dom-repr))
                                         (let ((events (cl-xmpp::dom-to-event
