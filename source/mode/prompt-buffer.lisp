@@ -49,7 +49,6 @@ default)."
        "M-u"           'unmark-all
        "M-m"           'toggle-mark-all
        "M-h"           'history)
-
       keyscheme:cua
       (list
        "C-up"          'select-first
@@ -57,7 +56,6 @@ default)."
        "C-pagedown"    'select-next-source
        "C-pageup"      'select-previous-source
        "C-v"           'paste)
-
       keyscheme:emacs
       (list
        "C-w"           'copy-selection
@@ -90,7 +88,6 @@ default)."
        "M-backspace"   'nyxt/input-edit-mode:delete-backwards-word
        "M-d"           'nyxt/input-edit-mode:delete-forwards-word
        "C-x h"         'select-all)
-
       keyscheme:vi-normal
       (list
        "j"             'select-next
@@ -125,7 +122,6 @@ default)."
        "x"             'nyxt/input-edit-mode:delete-forwards
        ;; VI has no short keybinding for delete-backwards-word, hasn't it?
        "d w"           'nyxt/input-edit-mode:delete-forwards-word)
-
       keyscheme:vi-insert
       (list
        "C-j"           'select-next

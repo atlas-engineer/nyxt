@@ -56,7 +56,6 @@ This mode is a good candidate to be passed to `make-buffer'."
        "M-w"         'delete-window
        "C-/"         'reopen-buffer
        "C-o"         'nyxt/file-manager-mode:open-file)
-
       keyscheme:emacs
       (list
        "C-x C-c"     'quit
@@ -98,7 +97,6 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-x 5 0"     'delete-current-window
        "C-x 5 1"     'delete-window
        "C-x C-f"     'nyxt/file-manager-mode:open-file)
-
       keyscheme:vi-normal
       (list
        "Z Z"         'quit

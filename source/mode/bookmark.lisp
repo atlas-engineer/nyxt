@@ -40,7 +40,6 @@ Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
        "C-m C-s" 'bookmark-buffer-url
        "C-m k"   'delete-bookmark
        "C-m l"   'bookmark-url)
-
       keyscheme:emacs
       (list
        "C-x r j" 'set-url-from-bookmark
@@ -48,7 +47,6 @@ Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
        "C-x r m" 'bookmark-buffer-url
        "C-x r k" 'delete-bookmark
        "C-x r l" 'bookmark-url)
-
       keyscheme:vi-normal
       (list
        "m u"     'bookmark-url

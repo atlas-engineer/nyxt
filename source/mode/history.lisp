@@ -50,7 +50,6 @@ search.")
        "C-b"           'history-backwards
        "button9"       'history-forwards
        "button8"       'history-backwards)
-
       keyscheme:vi-normal
       (list
        "H"             'history-backwards

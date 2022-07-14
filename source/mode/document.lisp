@@ -82,7 +82,6 @@ It does not assume being online."))
        "C-v"          'scroll-page-down
        "M-v"          'scroll-page-up
        "C-u C-x C-f"  'edit-with-external-editor)
-
       keyscheme:vi-normal
       (list
        "y y"          'copy
