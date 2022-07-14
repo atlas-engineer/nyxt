@@ -17,7 +17,7 @@
                 (".nyxt-hint"
                  :background-color theme:primary
                  :color theme:on-primary
-                 :font-weight "bold"
+                 :font-family "monospace,monospace"
                  :padding "0px 3px 0px 3px"
                  :border-radius "2px"
                  :z-index #.(1- (expt 2 31))))
