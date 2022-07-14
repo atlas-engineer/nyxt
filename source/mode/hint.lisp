@@ -66,6 +66,7 @@ For instance, to include images:
        "C-x C-w"     'copy-hint-url)
       keyscheme:vi-normal
       (list
+       ;; TODO bind copy-hint-url!
        "f"           'follow-hint
        "; f"         'follow-hint-new-buffer
        "F"           'follow-hint-new-buffer-focus
