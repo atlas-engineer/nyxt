@@ -88,7 +88,7 @@
                 :components
                 ((:file "time")
                  (:file "types")
-                 (:file "scheme" :depends-on ("types"))
+                 (:file "keyscheme" :depends-on ("types"))
                  (:file "conditions")
                  (:file "debug")
                  (:file "user-interface")))
