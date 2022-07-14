@@ -56,7 +56,7 @@ This leverages `mode-status' which can be specialized for individual modes."
 
 (export-always 'format-status-buttons)
 (defmethod format-status-buttons ((status status-buffer))
-  "Render buttons for interactivity, like history backwards/forwards and the `execute-command' menu."
+  "Render interactive buttons."
   (spinneret:with-html-string
     (:button :type "button" :class "button"
              :title "Backwards"
