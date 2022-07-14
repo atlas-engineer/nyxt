@@ -23,7 +23,7 @@
   "Prompt buffer mode for element hinting."
   ((visible-in-status-p nil)
    (keyscheme-map
-    (define-keyscheme-map "hint" ()
+    (define-keyscheme-map "hint-prompt-buffer-mode" ()
       keyscheme:default
       (list
        "M-i" 'toggle-hints-transparency

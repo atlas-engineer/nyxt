@@ -23,7 +23,7 @@ search.")
     :type boolean
     :documentation "Whether history navigation is restricted by buffer-local history.")
    (keyscheme-map
-    (define-keyscheme-map "history" ()
+    (define-keyscheme-map "history-mode" ()
       keyscheme:default
       (list
        "M-left"        'history-backwards

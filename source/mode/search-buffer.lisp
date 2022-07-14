@@ -10,7 +10,7 @@
   ((visible-in-status-p nil)
    (rememberable-p nil)
    (keyscheme-map
-    (define-keyscheme-map "web" ()
+    (define-keyscheme-map "search-buffer-mode" ()
       keyscheme:cua
       (list
        "C-f"   'search-buffer

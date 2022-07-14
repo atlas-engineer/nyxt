@@ -10,7 +10,7 @@
   ((urls (list))
    (index 0 :documentation "The index of the current element in URLs.")
    (keyscheme-map
-    (define-keyscheme-map "expedition" ()
+    (define-keyscheme-map "expedition-mode" ()
       keyscheme:cua
       (list
        "C-[" 'expedition-previous

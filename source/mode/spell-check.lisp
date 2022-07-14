@@ -14,7 +14,7 @@
     :documentation "Spell check language used by Nyxt. For
 a list of more languages available, see `spell-check-list-languages'.")
    (keyscheme-map
-    (define-keyscheme-map "visual" ()
+    (define-keyscheme-map "spell-check-mode" ()
       keyscheme:cua
       (list)                            ; TODO: Add CUA bindings!
       keyscheme:emacs

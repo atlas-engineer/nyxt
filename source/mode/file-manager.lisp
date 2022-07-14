@@ -18,7 +18,7 @@
   "Prompt buffer mode for file choosing."
   ((visible-in-status-p nil)
    (keyscheme-map
-    (define-keyscheme-map "hint" ()
+    (define-keyscheme-map "file-manager-mode" ()
       keyscheme:default
       (list
        "C-backspace" 'directory-up)

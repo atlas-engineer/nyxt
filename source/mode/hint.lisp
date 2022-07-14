@@ -46,7 +46,7 @@ For instance, to include images:
 
     a, button, input, textarea, details, select, img:not([alt=\"\"])")
    (keyscheme-map
-    (define-keyscheme-map "hint" ()
+    (define-keyscheme-map "hint-mode" ()
       keyscheme:cua
       (list
        "C-j"         'follow-hint

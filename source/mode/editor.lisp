@@ -10,7 +10,7 @@
 methods get/set-content for each editor-mode. This will allow your mode to
 get/set-content (which is necessary for operation)."
   ((keyscheme-map
-    (define-keyscheme-map "editor" ()
+    (define-keyscheme-map "editor-mode" ()
       keyscheme:cua
       (list
        "C-o"     'editor-open-file

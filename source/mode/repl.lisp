@@ -74,7 +74,7 @@ Features:
   "Mode for interacting with the REPL."
   ((rememberable-p nil)
    (keyscheme-map
-    (define-keyscheme-map "repl" ()
+    (define-keyscheme-map "repl-mode" ()
       keyscheme:default
       (list
        "C-return"    'evaluate-cell

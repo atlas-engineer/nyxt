@@ -27,7 +27,7 @@ Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
     :type bookmarks-file
     :documentation "File where bookmarks are saved.")
    (keyscheme-map
-    (define-keyscheme-map "bookmarks" ()
+    (define-keyscheme-map "bookmarks-mode" ()
       keyscheme:default
       (list
        "C-b"     'list-bookmarks

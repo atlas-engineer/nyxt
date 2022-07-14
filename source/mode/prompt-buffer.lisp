@@ -21,7 +21,7 @@ listed and run with `return-selection-over-action' (bound to \"M-return\" by
 default)."
   ((visible-in-status-p nil)
    (keyscheme-map
-    (define-keyscheme-map "prompt-buffer" ()
+    (define-keyscheme-map "prompt-buffer-mode" ()
       keyscheme:default
       (list
        "up"            'select-previous

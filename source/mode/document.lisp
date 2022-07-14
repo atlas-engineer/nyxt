@@ -19,7 +19,7 @@ It does not assume being online."))
   ((visible-in-status-p nil)
    (rememberable-p nil)
    (keyscheme-map
-    (define-keyscheme-map "web" ()
+    (define-keyscheme-map "document-mode" ()
       keyscheme:default
       (list
        "C-M-Z"        'nyxt/passthrough-mode:passthrough-mode
