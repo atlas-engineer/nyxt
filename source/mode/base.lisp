@@ -17,71 +17,74 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-M-l"       'set-url-new-nosave-buffer
        "C-r"         'reload-current-buffer
        "M-r"         'reload-buffers
+       "C-T"         'reopen-buffer
        "C-t"         'make-buffer-focus
-       "f1 t"        'tutorial
        "f1 r"        'manual
-       "f1 v"        'describe-variable
-       "f1 f"        'describe-function
-       "f1 c"        'describe-command
-       "f1 C"        'describe-class
-       "f1 s"        'describe-slot
-       "f1 k"        'describe-key
+       "f1 t"        'tutorial
        "f1 b"        'describe-bindings
+       "f1 C"        'describe-class
+       "f1 c"        'describe-command
+       "f1 f"        'describe-function
+       "f1 k"        'describe-key
        "f1 p"        'describe-package
+       "f1 s"        'describe-slot
+       "f1 v"        'describe-variable
        "f11"         'toggle-fullscreen
        "C-j"         'nyxt/download-mode:list-downloads
        "C-space"     'execute-command
        "C-M-space"   'execute-extended-command
-       "M-space"     'resume-prompt
-       "C-T"         'reopen-buffer)
+       "M-space"     'resume-prompt)
       keyscheme:cua
       (list
-       "C-q"         'quit
+       "f5"          'reload-current-buffer
+       "C-/"         'reopen-buffer
        "C-["         'switch-buffer-previous
-       "C-]"         'switch-buffer-next
-       "M-down"      'switch-buffer
-       "C-w"         'delete-current-buffer
        "C-shift-tab" 'switch-buffer-previous
+       "C-]"         'switch-buffer-next
        "C-tab"       'switch-buffer-next
+       "C-pagedown"  'switch-buffer-next
+       "M-down"      'switch-buffer
        "C-`"         'switch-buffer-last
        "C-pageup"    'switch-buffer-previous
-       "C-pagedown"  'switch-buffer-next
-       "f5"          'reload-current-buffer
-       "M-c l"       'copy-url
-       "M-c t"       'copy-title
-       "C-O"         'load-file
+       "C-w"         'delete-current-buffer
        "C-n"         'make-window
        "C-shift-W"   'delete-current-window
        "C-W"         'delete-current-window
        "M-w"         'delete-window
-       "C-/"         'reopen-buffer
-       "C-o"         'nyxt/file-manager-mode:open-file)
+       "M-c l"       'copy-url
+       "M-c t"       'copy-title
+       "C-O"         'load-file
+       "C-o"         'nyxt/file-manager-mode:open-file
+       "C-q"         'quit)
       keyscheme:emacs
       (list
-       "C-x C-c"     'quit
-       "C-x k"       'delete-buffer
-       "C-x C-k"     'delete-current-buffer
        "C-x left"    'switch-buffer-previous
        "C-x right"   'switch-buffer-next
        "C-x b"       'switch-buffer
+       "C-x k"       'delete-buffer
+       "C-x C-k"     'delete-current-buffer
        "C-x C-b"     'nyxt/buffer-listing-mode::list-buffers
        "C-M-l"       'copy-url
        "C-M-t"       'copy-title
        "C-h t"       'tutorial
        "C-h r"       'manual
-       "C-h v"       'describe-variable
-       "C-h u v"     'universal-describe-variable
-       "C-h f"       'describe-function
-       "C-h u f"     'universal-describe-function
-       "C-h c"       'describe-command
+       "C-h b"       'describe-bindings
        "C-h C"       'describe-class
        "C-h u C"     'universal-describe-class
+       "C-h c"       'describe-command
+       "C-h f"       'describe-function
+       "C-h u f"     'universal-describe-function
+       "C-h k"       'describe-key
+       "C-h p"       'describe-package
        "C-h s"       'describe-slot
        "C-h u s"     'universal-describe-slot
-       "C-h k"       'describe-key
-       "C-h b"       'describe-bindings
-       "C-h p"       'describe-package
+       "C-h v"       'describe-variable
+       "C-h u v"     'universal-describe-variable
        "C-d"         'nyxt/download-mode:list-downloads
+       "C-x 5 2"     'make-window
+       "C-x 5 0"     'delete-current-window
+       "C-x 5 1"     'delete-window
+       "C-x C-f"     'nyxt/file-manager-mode:open-file
        "M-x"         'execute-command
        "C-M-x"       'execute-extended-command
        "M-1"         (read-from-string "nyxt/repeat-mode:repeat-key")
@@ -93,24 +96,25 @@ This mode is a good candidate to be passed to `make-buffer'."
        "M-7"         (read-from-string "nyxt/repeat-mode:repeat-key")
        "M-8"         (read-from-string "nyxt/repeat-mode:repeat-key")
        "M-9"         (read-from-string "nyxt/repeat-mode:repeat-key")
-       "C-x 5 2"     'make-window
-       "C-x 5 0"     'delete-current-window
-       "C-x 5 1"     'delete-window
-       "C-x C-f"     'nyxt/file-manager-mode:open-file)
+       "C-x C-c"     'quit)
       keyscheme:vi-normal
       (list
-       "Z Z"         'quit
-       "["           'switch-buffer-previous
-       "]"           'switch-buffer-next
-       "g b"         'switch-buffer
-       "d"           'delete-buffer
-       "D"           'delete-current-buffer
-       "B"           'make-buffer-focus
        "o"           'set-url
        "O"           'set-url-new-buffer
        "g o"         'set-url-new-nosave-buffer
        "R"           'reload-current-buffer
        "r"           'reload-buffers
+       "u"           'reopen-buffer
+       "g b"         'switch-buffer
+       "["           'switch-buffer-previous
+       "]"           'switch-buffer-next
+       "d"           'delete-buffer
+       "D"           'delete-current-buffer
+       "B"           'make-buffer-focus
+       "W"           'make-window
+       "C-w C-w"     'make-window
+       "C-w q"       'delete-current-window
+       "C-w C-q"     'delete-window
        "y u"         'copy-url
        "y t"         'copy-title
        ":"           'execute-command
@@ -123,10 +127,6 @@ This mode is a good candidate to be passed to `make-buffer'."
        "7"           (read-from-string "nyxt/repeat-mode:repeat-key")
        "8"           (read-from-string "nyxt/repeat-mode:repeat-key")
        "9"           (read-from-string "nyxt/repeat-mode:repeat-key")
-       "W"           'make-window
-       "C-w C-w"     'make-window
-       "C-w q"       'delete-current-window
-       "C-w C-q"     'delete-window
-       "u"           'reopen-buffer))
+       "Z Z"         'quit))
     :type keymaps:keyscheme))
   (:toggler-command-p nil))
