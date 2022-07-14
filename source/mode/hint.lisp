@@ -38,9 +38,9 @@ to index the top of the page.")
    (hints-selector
     "a, button, input, textarea, details, select, img:not([alt=\"\"])"
     :type string
-    :documentation "Defines which elements are to be hinted. The hints-selector
-syntax is that of CLSS, and broadly, that of CSS. Use it to define which
-elements are picked up by element hinting.")
+    :documentation "The elements to be hinted.
+The hints-selector syntax is that of CLSS, and broadly, that of CSS. Use it to
+define which elements are picked up by element hinting.")
    (keyscheme-map
     (define-keyscheme-map "hint" ()
       keyscheme:cua
