@@ -1,6 +1,29 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
+;; Given the following sequence:
+;; 1 2 3 4 5
+;;
+;; We would record the following sequences/outcomes.
+;;
+;; Chain length of 1:
+;; 1 2
+;; 2 3
+;; 3 4
+;; 4 5
+;;
+;; Chain length of 2:
+;; 1 2 3
+;; 2 3 4
+;; 3 4 5
+;;
+;; Chain length of 3:
+;; 1 2 3 4
+;; 2 3 4 5
+;;
+;; As can be seen above, the amount of subsequences within a given sequence is
+;; equal to (- (length sequence) chain length).
+
 (in-package :analysis)
 
 (defclass sequence-model (node)
