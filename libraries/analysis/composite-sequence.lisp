@@ -74,5 +74,13 @@
          (edges (alexandria:hash-table-values (edges leaf))))
     (first (sort edges #'> :key #'occurrences))))
 
-(defmethod predict-subsequence ((model sequence-model) sequence)
-  "Predict a sequence's next value based on all subsequence predictions.")
+(defmethod predict-subsequence-simple ((model sequence-model) sequence)
+  "Predict a sequence's next value based on all subsequence predictions."
+  (let* ((sequence (copy-list sequence))
+         (subsequence-results
+           (loop while (> (length sequence) 1)
+                 collect (let* ((leaf (gethash sequence (edges model)))
+                                (edges (alexandria:hash-table-values (edges leaf))))
+                           (first (sort edges #'> :key #'occurrences)))
+                 do (pop sequence))))
+    (first (sort subsequence-results #'> :key #'occurrences))))
