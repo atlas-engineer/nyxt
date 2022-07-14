@@ -56,7 +56,7 @@ the channel, wrapped alongside the condition and its restarts."))
   (when *debug-on-error*
     (let* ((*debugger-hook* hook)
            (id (new-id))
-           (restarts (compute-restarts condition))
+           (restarts (compute-restarts))
            (channel (make-channel 1))
            (handler (make-instance 'condition-handler
                                    :condition-itself condition
