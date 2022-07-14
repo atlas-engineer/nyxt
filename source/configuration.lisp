@@ -257,6 +257,32 @@ Return NIL if not a class form."
 
 (export-always 'define-configuration)
 (defmacro define-configuration (classes &body slots-and-values)
+  "Helper macro to customize the class slots of the CLASSES.
+CLASSES is either a symbol or a list of symbols.
+
+Classes can be modes or a one of the user-configurable classes like `browser',
+`buffer', `prompt-buffer', `window'.
+
+The `%slot-default%' variable is replaced by the slot initform, the
+`%slot-value%' is replaced by the current calue of the slot.
+
+Example that sets some defaults for all buffers:
+
+\(define-configuration (buffer web-buffer)
+  ((status-buffer-height (* 2 %slot-value%))
+   (default-modes (append '(vi-normal-mode) %slot-default%))))
+
+In the above, `%slot-default%' will be substituted with the return value of
+`default-modes', and `%slot-value%' will be substituted with the value of
+`status-buffer-height' at the moment of configuration code running.
+
+Example to get the `blocker-mode' command to use a new default hostlists:
+
+\(define-configuration nyxt/blocker-mode:blocker-mode
+  ((nyxt/blocker-mode:hostlists (append (list *my-blocked-hosts*) %slot-default%))))
+
+To discover the default value of a slot or all slots of a class, use the
+`describe-slot' or `describe-class' commands respectively."
   `(progn
      ,@(loop
          for class in (uiop:ensure-list classes)
