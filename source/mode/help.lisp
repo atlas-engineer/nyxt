@@ -11,7 +11,7 @@
    (rememberable-p nil)
    (keyscheme-map
     (define-keyscheme-map "help-mode" ()
-      keyscheme:cua
+      keyscheme:default
       (list
        "q" 'delete-current-buffer
        "n" 'nyxt/document-mode:next-heading
