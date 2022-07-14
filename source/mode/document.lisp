@@ -25,6 +25,7 @@ It does not assume being online."))
        "C-M-Z"        'nyxt/passthrough-mode:passthrough-mode
        "M-i"          'focus-first-input-field
        "C-M-c"        'open-inspector
+       "C-S-c"        'open-inspector
        "C-."          'jump-to-heading
        "C-M-."        'jump-to-heading-buffers
        "M-{"          'previous-heading
