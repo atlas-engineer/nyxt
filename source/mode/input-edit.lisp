@@ -145,4 +145,5 @@ necessary."
        "M-b"         'cursor-backwards-word
        "M-f"         'cursor-forwards-word
        "M-backspace" 'delete-backwards-word
+       "C-backspace" 'delete-backwards-word
        "M-d"         'delete-forwards-word)))))
