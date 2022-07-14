@@ -56,7 +56,10 @@ Features:
             :ui-display (lambda (wrapper)
                           (setf (ready-p evaluation) t)
                           (setf (raised-condition evaluation) wrapper))
-            :ui-cleanup nil))
+            :ui-cleanup (lambda (wrapper)
+                          (declare (ignorable wrapper))
+                          (setf (raised-condition evaluation) nil)
+                          (reload-current-buffer))))
         (with-input-from-string (input (input evaluation))
           (alex:lastcar
            (mapcar (lambda (s-exp)
