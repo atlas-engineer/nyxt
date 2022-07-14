@@ -314,18 +314,13 @@ Features:
             (raised-condition evaluation))
        (let ((wrapper (raised-condition evaluation)))
          (:pre (format nil "~a" (ndebug:condition-itself wrapper)))
-         (loop for restart in (ndebug:restarts wrapper)
-               for i from 0
-               collect (let ((restart restart)
-                             (wrapper wrapper)
-                             (evaluation evaluation))
-                         (:button :class "button"
-                                  :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                   (:title "condition")
-                                                   (setf (raised-condition evaluation) nil)
-                                                   (lpara:submit-task (ndebug:channel wrapper)
-                                                                      (lambda () restart))))
-                                  (format nil "[~d] ~a" i (restart-name restart)))))
+         (dolist (restart (ndebug:restarts wrapper))
+           (:button :class "button"
+                    :onclick (ps:ps (nyxt/ps:lisp-eval
+                                     (:title "condition")
+                                     (lpara:submit-task (ndebug:channel wrapper)
+                                                        (lambda () restart))))
+                    (format nil "[~a] ~a" (dissect:name restart) (dissect:report restart))))
          (:raw (nyxt::backtrace->html wrapper))))
       ((ready-p evaluation)
        (if (results evaluation)

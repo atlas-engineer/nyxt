@@ -51,33 +51,30 @@ See `ndebug:condition-wrapper' for documentation."))
 
 (defun restarts->html (wrapper)
   (spinneret:with-html-string
-    (loop for restart in (ndebug:restarts wrapper)
-          for i from 0
-          collect (let ((restart restart)
-                        (wrapper wrapper))
-                    (:button :class "button"
-                             :onclick (ps:ps (nyxt/ps:lisp-eval
-                                              (:title "condition")
-                                              (lpara:submit-task (ndebug:channel wrapper)
-                                                                 (lambda () restart))))
-                             (format nil "[~d] ~a" i (restart-name restart)))))))
+    (dolist (restart (ndebug:restarts wrapper))
+      (:button :class "button"
+               :onclick (ps:ps (nyxt/ps:lisp-eval
+                                (:title "condition")
+                                (lpara:submit-task (ndebug:channel wrapper)
+                                                   (lambda () restart))))
+               (format nil "[~a] ~a" (dissect:name restart) (dissect:report restart))))))
 
 (defun backtrace->html (wrapper)
   (spinneret:with-html-string
     (cond
       ((ndebug:stack wrapper)
-       (loop for frame in (ndebug:stack wrapper)
-             collect (when (or (dissect:call frame)
-                               (dissect:args frame))
-                       (:details
-                        (:summary (:code (princ-to-string (dissect:call frame))))
-                        (when (dissect:args frame)
-                          (:p "Called with:")
-                          (:ul (loop for arg in (dissect:args frame)
-                                     when (or (typep arg 'dissect:unknown-arguments)
-                                              (typep arg 'dissect:unavailable-argument))
-                                       collect (:li (:code "Unknown argument"))
-                                     else collect (:li (:raw (value->html arg t)))))))))))))
+       (dolist (frame (ndebug:stack wrapper))
+         (when (or (dissect:call frame)
+                   (dissect:args frame))
+           (:details
+            (:summary (:code (princ-to-string (dissect:call frame))))
+            (when (dissect:args frame)
+              (:p "Called with:")
+              (:ul (loop for arg in (dissect:args frame)
+                         when (or (typep arg 'dissect:unknown-arguments)
+                                  (typep arg 'dissect:unavailable-argument))
+                           collect (:li (:code "Unknown argument"))
+                         else collect (:li (:raw (value->html arg t)))))))))))))
 
 (defun debug->html (wrapper)
   "Produce HTML code for the condition WRAPPER."
