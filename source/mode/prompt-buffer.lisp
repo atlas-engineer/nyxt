@@ -28,6 +28,10 @@ default)."
        "up"            'select-previous
        "button5"       'select-next
        "button4"       'select-previous
+       "home"          'select-first
+       "end"           'select-last
+       "pagehome"      'select-first
+       "pageend"       'select-last
        "escape"        'cancel-input
        "return"        'return-selection
        "M-return"      'return-selection-over-action
@@ -48,10 +52,6 @@ default)."
 
       keyscheme:cua
       (list
-       "home" 'select-first
-       "end" 'select-last
-       "pagehome" 'select-first
-       "pageend" 'select-last
        "C-up"          'select-first
        "C-down"        'select-last
        "C-pagedown"    'select-next-source
