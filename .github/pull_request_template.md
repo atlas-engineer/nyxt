@@ -12,6 +12,10 @@ Mention there any suspicious parts of the new code, or the ideas that you'd like
 Everything in this checklist is required for each PR.  Please do not approve a PR that does not have all of these items.  
 
 - [ ] I have pulled from master before submitting this PR
+- [ ] I've added the new dependencies as:
+  - [ ] ASDF dependencies,
+  - [ ] Git submodules,
+  - [ ] and Guix dependencies.
 - [ ] My code follows the style guidelines for Common Lisp code
   - See [Norvig & Pitman's Tutorial on Good Lisp Programming Style (PDF)](https://www.cs.umd.edu/~nau/cmsc421/norvig-lisp-style.pdf) and [Google Common Lisp Style Guide](https://google.github.io/styleguide/lispguide.xml).
 - [ ] I have performed a self-review of my own code
