@@ -3,95 +3,70 @@
 
 (in-package :nyxt)
 
-;;; TODO: Turn into a library for UI-independent debugging.
-
 (defvar *debug-conditions* (make-hash-table)
   "A hash-table from condition ID (as per `new-id') to the `condition-handler' lists.")
 
-(define-class condition-handler ()
-  ((condition-itself
-    (error "condition-handler should always wrap a condition.")
-    :type condition
-    :documentation "The condition itself.")
-   (restarts
-    '()
-    :type list
-    :documentation "A list of restarts for the given condition.
-Stored in the format given by `compute-restarts'.")
-   (channel
-    nil
-    :type (or null calispel:channel)
-    :documentation "The channel to send the chosen restart through.")
-   (prompt-text
+(define-class debug-wrapper (ndebug:condition-wrapper)
+  ((prompt-text
     "[restart prompt]"
     :type string
     :documentation "The prompt text debugger requires.")
-   (stack
+   (id
+    (new-id)
+    :type integer
+    :documentation "The identifier of the wrapper to find it among other wrappers by.")
+   (buffer
     nil
-    :documentation  "The state of call stack at the time of the condition firing.")
-   (backtrace
-    nil
-    :documentation "The printed backtrace at the time of condition firing.
-Prefer `stack', if present."))
+    :type (maybe buffer)
+    :documentation "The buffer debugger is open in for this condition."))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "The wrapper for condition.
 
-Made so that `debugger-hook' can wait for the condition to be resolved based on
-the channel, wrapped alongside the condition and its restarts."))
+See `ndebug:condition-wrapper' for documentation."))
 
-(defun make-debugger-stream (handler)
-  (make-two-way-stream
-   ;; TODO: Understand how Swank makes those streams.
-   (swank-backend:make-input-stream
-    (lambda ()
-      (str:concat
-       (prompt1
-        :prompt (prompt-text handler)
-        :sources 'prompter:raw-source)
-       +newline+)))
-   (swank-backend:make-output-stream
-    (lambda (string) (setf (prompt-text handler) string)))))
+(export 'make-nyxt-debugger)
+(defun make-nyxt-debugger
+    (&key (query-read (lambda (wrapper)
+                        (let ((*interactive-p* t))
+                          (str:concat (prompt1 :prompt (prompt-text wrapper)
+                                               :sources (list (make-instance 'prompter:raw-source)))
+                                      +newline+))))
+       (query-write (lambda (wrapper string)
+                      (setf (prompt-text wrapper) string)))
+       (ui-display (lambda (wrapper)
+                     (setf (gethash (id wrapper) *debug-conditions*) wrapper)
+                     (set-current-buffer
+                      (setf (buffer wrapper)
+                            (buffer-load (nyxt-url 'open-debugger :id (id wrapper))
+                                         :buffer (ensure-internal-page-buffer 'open-debugger))))))
+       (ui-cleanup (lambda (wrapper)
+                     (remhash (id wrapper) *debug-conditions*)
+                     (buffer-delete (buffer wrapper)))))
+  (ndebug:make-debugger-hook
+   :wrapper-class 'debug-wrapper
+   :query-read query-read
+   :query-write query-write
+   :ui-display ui-display
+   :ui-cleanup ui-cleanup))
 
-(defun debugger-hook (condition hook)
-  (when *debug-on-error*
-    (let* ((*debugger-hook* hook)
-           (id (new-id))
-           (restarts (compute-restarts))
-           (channel (make-channel 1))
-           (handler (make-instance 'condition-handler
-                                   :condition-itself condition
-                                   :restarts restarts
-                                   :channel channel
-                                   :stack (dissect:stack)
-                                   :backtrace (with-output-to-string (s)
-                                                (uiop:print-backtrace :stream s :condition condition))))
-           (*interactive-p* t)
-           (*query-io* (make-debugger-stream handler))
-           (debug-buffer (open-debugger :id id)))
-      (setf (gethash id *debug-conditions*) handler)
-      (unwind-protect
-           ;; FIXME: Waits indefinitely. Should it?
-           (invoke-restart-interactively (calispel:? channel))
-        (remhash id *debug-conditions*)
-        (buffer-delete debug-buffer)))))
-
-(defun restarts->html (handler)
+(defun restarts->html (wrapper)
   (spinneret:with-html-string
-    (loop for restart in (restarts handler)
+    (loop for restart in (ndebug:restarts wrapper)
           for i from 0
           collect (let ((restart restart)
-                        (handler handler))
+                        (wrapper wrapper))
                     (:button :class "button"
                              :onclick (ps:ps (nyxt/ps:lisp-eval
                                               (:title "condition")
-                                              (calispel:! (channel handler) restart)))
+                                              (lpara:submit-task (ndebug:channel wrapper)
+                                                                 (lambda () restart))))
                              (format nil "[~d] ~a" i (restart-name restart)))))))
 
-(defun backtrace->html (handler)
+(defun backtrace->html (wrapper)
   (spinneret:with-html-string
     (cond
-      ((stack handler)
-       (loop for frame in (stack handler)
+      ((ndebug:stack wrapper)
+       (loop for frame in (ndebug:stack wrapper)
              collect (when (or (dissect:call frame)
                                (dissect:args frame))
                        (:details
@@ -102,25 +77,22 @@ the channel, wrapped alongside the condition and its restarts."))
                                      when (or (typep arg 'dissect:unknown-arguments)
                                               (typep arg 'dissect:unavailable-argument))
                                        collect (:li (:code "Unknown argument"))
-                                     else collect (:li (:raw (value->html arg t))))))))))
-      ((backtrace handler)
-       (:pre (backtrace handler))))))
+                                     else collect (:li (:raw (value->html arg t)))))))))))))
 
-(defun debug->html (handler)
-  "Produce HTML code for the CONDITION with RESTARTS."
-  (let ((condition (condition-itself handler)))
+(defun debug->html (wrapper)
+  "Produce HTML code for the condition WRAPPER."
+  (let ((condition (ndebug:condition-itself wrapper)))
     (spinneret:with-html-string
       (:h* (symbol-name (type-of condition)))
       (:pre (format nil "~a" condition))
       (:section
-       (:raw (restarts->html handler))
+       (:raw (restarts->html wrapper))
        (:h* "Backtrace")
-       (:raw (backtrace->html handler))))))
+       (:raw (backtrace->html wrapper))))))
 
-;; FIXME: Not for interactive use?
-(define-internal-page-command open-debugger (&key id)
+(define-internal-page open-debugger (&key id)
     ;; TODO: Introduce debug-mode with keys invoking restarts and toggling backtrace.
-    (buffer (format nil "*Debug-~d*" id))
+    (:title "*Debugger*")
   "Open the debugger with the condition indexed by ID."
   (debug->html (gethash id *debug-conditions*)))
 
@@ -131,5 +103,5 @@ See `*debug-on-error*'."
   (let ((value (if value-provided-p value (not *debug-on-error*))))
     (setf *debug-on-error* value)
     ;; FIXME: This messes up SLIME/SLY debugging in REPL, as they set this too.
-    (swank-backend:install-debugger-globally (if value 'debugger-hook nil))
+    (swank-backend:install-debugger-globally (if value (make-nyxt-debugger) nil))
     (echo "Nyxt-native debugging ~:[dis~;en~]abled." value)))

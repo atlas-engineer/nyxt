@@ -40,7 +40,7 @@ Features:
     :documentation "The evaluation is terminated.")
    (raised-condition
     nil
-    :type (maybe nyxt::condition-handler)
+    :type (maybe ndebug:condition-wrapper)
     :documentation "The condition that was raised during the `input' execution."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
@@ -50,29 +50,19 @@ Features:
   (run-thread "repl cell evaluation"
     (let ((nyxt::*interactive-p* t)
           (*standard-output* (make-string-output-stream))
-          (*package* (find-package :nyxt-user))
-          (*debugger-hook*
-            (lambda (condition hook)
-              (let* ((*debugger-hook* hook)
-                     (channel (nyxt::make-channel 1))
-                     (handler (make-instance 'nyxt::condition-handler
-                                             :condition-itself condition
-                                             :restarts (compute-restarts condition)
-                                             :channel channel
-                                             :stack (dissect:stack)
-                                             :backtrace (with-output-to-string (s)
-                                                          (uiop:print-backtrace
-                                                           :stream s :condition condition))))
-                     (*query-io* (nyxt::make-debugger-stream handler)))
-                (setf (ready-p evaluation) t)
-                (setf (raised-condition evaluation) handler)
-                (invoke-restart-interactively (calispel:? channel))))))
-      (with-input-from-string (input (input evaluation))
-        (alex:lastcar
-         (mapcar (lambda (s-exp)
-                   (setf (results evaluation) (multiple-value-list (eval s-exp))
-                         (output evaluation) (get-output-stream-string *standard-output*)))
-                 (safe-slurp-stream-forms input)))))
+          (*package* (find-package :nyxt-user)))
+      (trivial-custom-debugger:with-debugger
+          ((make-nyxt-debugger
+            :ui-display (lambda (wrapper)
+                          (setf (ready-p evaluation) t)
+                          (setf (raised-condition evaluation) wrapper))
+            :ui-cleanup nil))
+        (with-input-from-string (input (input evaluation))
+          (alex:lastcar
+           (mapcar (lambda (s-exp)
+                     (setf (results evaluation) (multiple-value-list (eval s-exp))
+                           (output evaluation) (get-output-stream-string *standard-output*)))
+                   (safe-slurp-stream-forms input))))))
     (setf (ready-p evaluation) t)
     (peval (setf (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "#evaluation-result-~a" (id evaluation))))
                            |innerHTML|)
@@ -323,8 +313,8 @@ Features:
       ((and (ready-p evaluation)
             (raised-condition evaluation))
        (let ((wrapper (raised-condition evaluation)))
-         (:pre (format nil "~a" (nyxt::condition-itself wrapper)))
-         (loop for restart in (nyxt::restarts wrapper)
+         (:pre (format nil "~a" (ndebug:condition-itself wrapper)))
+         (loop for restart in (ndebug:restarts wrapper)
                for i from 0
                collect (let ((restart restart)
                              (wrapper wrapper)
@@ -333,7 +323,8 @@ Features:
                                   :onclick (ps:ps (nyxt/ps:lisp-eval
                                                    (:title "condition")
                                                    (setf (raised-condition evaluation) nil)
-                                                   (calispel:! (nyxt::channel wrapper) restart)))
+                                                   (lpara:submit-task (ndebug:channel wrapper)
+                                                                      (lambda () restart))))
                                   (format nil "[~d] ~a" i (restart-name restart)))))
          (:raw (nyxt::backtrace->html wrapper))))
       ((ready-p evaluation)
