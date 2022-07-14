@@ -41,75 +41,75 @@ It does not assume being online."))
        "C-Z"          'redo
        "C-+"          'zoom-page
        "C-="          'zoom-page              ; Because + shifted = on QWERTY.
-       "C-hyphen"     'unzoom-page
-       "C-0"          'reset-page-zoom
        "C-button4"    'zoom-page
+       "C-hyphen"     'unzoom-page
        "C-button5"    'unzoom-page
-       "end"          'maybe-scroll-to-bottom
-       "home"         'maybe-scroll-to-top
+       "C-0"          'reset-page-zoom
        "C-down"       'scroll-to-bottom
        "C-up"         'scroll-to-top
-       "C-u C-o"      'edit-with-external-editor
        ;; Leave SPACE and arrow keys unbound so that the renderer decides whether to
        ;; navigate textboxes (arrows), insert or scroll (space).
        ;; keypad, gtk:
        "keypadleft"   'scroll-left
-       "keypaddown"   'scroll-down
-       "keypadup"     'scroll-up
        "keypadright"  'scroll-right
-       "keypadend"    'scroll-to-bottom
+       "keypadup"     'scroll-up
+       "keypaddown"   'scroll-down
        "keypadhome"   'scroll-to-top
-       "keypadnext"   'scroll-page-down
+       "keypadend"    'scroll-to-bottom
        "keypadpageup" 'scroll-page-up
-       "keypadprior"  'scroll-page-up)
+       "keypadprior"  'scroll-page-up
+       "keypadnext"   'scroll-page-down
+       "end"          'maybe-scroll-to-bottom
+       "home"         'maybe-scroll-to-top
+       "C-u C-o"      'edit-with-external-editor)
       keyscheme:emacs
       (list
        "C-g"          'nothing              ; Emacs users may hit C-g out of habit.
-       "C-y"          'paste
        "M-w"          'copy
-       "C-/"          'undo
-       "C-?"          'redo ; / shifted on QWERTY
+       "C-y"          'paste
        "C-w"          'cut
        "C-x h"        'select-all
-       "C-p"          'scroll-up
-       "C-n"          'scroll-down
+       "C-/"          'undo
+       "C-?"          'redo ; / shifted on QWERTY
        "C-x C-+"      'zoom-page
        "C-x C-="      'zoom-page ; Because + shifted = on QWERTY.
        "C-x C-hyphen" 'unzoom-page
        "C-x C-0"      'reset-page-zoom
-       "M->"          'scroll-to-bottom
+       "C-p"          'scroll-up
+       "C-n"          'scroll-down
        "M-<"          'scroll-to-top
-       "C-v"          'scroll-page-down
+       "M->"          'scroll-to-bottom
        "M-v"          'scroll-page-up
+       "C-v"          'scroll-page-down
        "C-u C-x C-f"  'edit-with-external-editor)
       keyscheme:vi-normal
       (list
+       "g h"          'jump-to-heading
+       "g H"          'jump-to-heading-buffers
+       "{"            'previous-heading
+       "}"            'next-heading
        "y y"          'copy
        "p"            'paste
        "d d"          'cut
        "u"            'undo
        "C-r"          'redo
        "+"            'zoom-page
-       "hyphen"       'unzoom-page
-       "0"            'reset-page-zoom
        "z i"          'zoom-page
+       "hyphen"       'unzoom-page
        "z o"          'unzoom-page
+       "0"            'reset-page-zoom
        "z z"          'reset-page-zoom
-       "g h"          'jump-to-heading
-       "g H"          'jump-to-heading-buffers
-       "{"            'previous-heading
-       "}"            'next-heading
        "h"            'scroll-left
-       "j"            'scroll-down
-       "k"            'scroll-up
        "l"            'scroll-right
-       "G"            'scroll-to-bottom
+       "k"            'scroll-up
+       "j"            'scroll-down
        "g g"          'scroll-to-top
-       "C-f"          'scroll-page-down
+       "G"            'scroll-to-bottom
        "C-b"          'scroll-page-up
-       "space"        'scroll-page-down
        "s-space"      'scroll-page-up
        "pageup"       'scroll-page-up
+       "C-f"          'scroll-page-down
+       "space"        'scroll-page-down
        "pagedown"     'scroll-page-down)))))
 
 (sera:export-always '%clicked-in-input?)
