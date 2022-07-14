@@ -17,64 +17,64 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
     (define-keyscheme-map "visual" ()
       keyscheme:cua
       (list
-       "up" 'backward-line
-       "down" 'forward-line
-       "left" 'backward-char
-       "right" 'forward-char
-       "escape" 'visual-mode
-       "delete" 'clear-selection
-       "keypadend" 'end-line
-       "space" 'forward-char
-       "backspace" 'backward-char
-       "keypadhome" 'beginning-line
-       "shift-down" 'forward-line-with-selection
-       "shift-up" 'backward-line-with-selection
-       "shift-left" 'backward-char-with-selection
-       "shift-right" 'forward-char-with-selection
-       "C-shift-left" 'backward-word-with-selection
+       "up"            'backward-line
+       "down"          'forward-line
+       "left"          'backward-char
+       "right"         'forward-char
+       "escape"        'visual-mode
+       "delete"        'clear-selection
+       "keypadend"     'end-line
+       "space"         'forward-char
+       "backspace"     'backward-char
+       "keypadhome"    'beginning-line
+       "shift-down"    'forward-line-with-selection
+       "shift-up"      'backward-line-with-selection
+       "shift-left"    'backward-char-with-selection
+       "shift-right"   'forward-char-with-selection
+       "C-shift-left"  'backward-word-with-selection
        "C-shift-right" 'forward-word-with-selection
-       "C-shift-up" 'beginning-line-with-selection
-       "C-shift-down" 'end-line-with-selection
-       "C-c" 'visual-mode)
+       "C-shift-up"    'beginning-line-with-selection
+       "C-shift-down"  'end-line-with-selection
+       "C-c"           'visual-mode)
       keyscheme:emacs
       (list
-       "C-h" 'select-paragraph
-       "shift-space" 'toggle-mark
-       "C-space" 'toggle-mark
-       "C-g" 'visual-mode
-       "C-f" 'forward-char
-       "C-b" 'backward-char
-       "M-f" 'forward-word
-       "M-b" 'backward-word
-       "C-n" 'forward-line
-       "C-p" 'backward-line
-       "C-a" 'beginning-line
-       "C-e" 'end-line
-       "M-a" 'backward-sentence
-       "M-e" 'forward-sentence
-       "M-}" 'forward-paragraph
-       "M-{" 'backward-paragraph
-       "M->" 'forward-document
-       "M-<" 'backward-document)
+       "C-h"           'select-paragraph
+       "shift-space"   'toggle-mark
+       "C-space"       'toggle-mark
+       "C-g"           'visual-mode
+       "C-f"           'forward-char
+       "C-b"           'backward-char
+       "M-f"           'forward-word
+       "M-b"           'backward-word
+       "C-n"           'forward-line
+       "C-p"           'backward-line
+       "C-a"           'beginning-line
+       "C-e"           'end-line
+       "M-a"           'backward-sentence
+       "M-e"           'forward-sentence
+       "M-}"           'forward-paragraph
+       "M-{"           'backward-paragraph
+       "M->"           'forward-document
+       "M-<"           'backward-document)
       ;; vi keybindings only enable use of vim's plain "visual" mode for now
       keyscheme:vi-normal
       (list
-       "h" 'backward-char
-       "j" 'forward-line
-       "k" 'backward-line
-       "l" 'forward-char
-       "w" 'forward-word
-       "b" 'backward-word
-       "$" 'end-line
-       ")" 'forward-sentence
-       "(" 'backward-sentence
-       "}" 'forward-paragraph
-       "{" 'backward-paragraph
-       "G" 'forward-document
-       "g g" 'backward-document
-       "0" 'beginning-line
-       "v" 'toggle-mark
-       "C-c" 'visual-mode)))
+       "h"             'backward-char
+       "j"             'forward-line
+       "k"             'backward-line
+       "l"             'forward-char
+       "w"             'forward-word
+       "b"             'backward-word
+       "$"             'end-line
+       ")"             'forward-sentence
+       "("             'backward-sentence
+       "}"             'forward-paragraph
+       "{"             'backward-paragraph
+       "G"             'forward-document
+       "g g"           'backward-document
+       "0"             'beginning-line
+       "v"             'toggle-mark
+       "C-c"           'visual-mode)))
    (mark-set nil)))
 
 (defmethod enable ((mode visual-mode) &key)

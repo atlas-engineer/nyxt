@@ -27,7 +27,7 @@ See also `vi-insert-mode'."
     (define-keyscheme-map "vi" ()
       keyscheme:vi-normal
       (list
-       "i" 'vi-insert-mode
+       "i"       'vi-insert-mode
        "button1" 'vi-button1)))))
 
 
@@ -46,7 +46,7 @@ See `vi-normal-mode'."
     (define-keyscheme-map "vi" ()
       keyscheme:vi-insert
       (list
-       "C-z" 'nyxt/passthrough-mode:passthrough-mode
+       "C-z"    'nyxt/passthrough-mode:passthrough-mode
        "escape" 'switch-to-vi-normal-mode)))
    (passthrough-mode-p nil
                        :type boolean

@@ -13,17 +13,17 @@
     (define-keyscheme-map "web" ()
       keyscheme:cua
       (list
-       "C-f" 'search-buffer
-       "f3" 'search-buffer
-       "M-f" 'remove-search-hints)
+       "C-f"   'search-buffer
+       "f3"    'search-buffer
+       "M-f"   'remove-search-hints)
       keyscheme:emacs
       (list
        "C-s s" 'search-buffer
        "C-s k" 'remove-search-hints)
       keyscheme:vi-normal
       (list
-       "/" 'search-buffer
-       "?" 'remove-search-hints)))))
+       "/"     'search-buffer
+       "?"     'remove-search-hints)))))
 
 (define-parenscript query-buffer (&key query (case-sensitive-p nil))
   (defvar *identifier* 0)

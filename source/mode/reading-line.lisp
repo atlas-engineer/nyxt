@@ -19,16 +19,16 @@ mode."
     (define-keyscheme-map "reading-line-mode" ()
       keyscheme:cua
       (list
-       "M-up" 'reading-line-cursor-up
+       "M-up"   'reading-line-cursor-up
        "M-down" 'reading-line-cursor-down)
       keyscheme:emacs
       (list
-       "M-p" 'reading-line-cursor-up
-       "M-n" 'reading-line-cursor-down)
+       "M-p"    'reading-line-cursor-up
+       "M-n"    'reading-line-cursor-down)
       keyscheme:vi-normal
       (list
-       "K" 'reading-line-cursor-up
-       "J" 'reading-line-cursor-down)))
+       "K"      'reading-line-cursor-up
+       "J"      'reading-line-cursor-down)))
    (style (theme:themed-css (theme *browser*)
             ("#reading-line-cursor"
              :position "absolute"

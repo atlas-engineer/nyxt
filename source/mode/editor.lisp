@@ -9,18 +9,19 @@
   "Mode for editor modes to extend. Importantly, it is required to implement the
 methods get/set-content for each editor-mode. This will allow your mode to
 get/set-content (which is necessary for operation)."
-  ((keyscheme-map (define-keyscheme-map "editor" ()
-                    keyscheme:cua
-                    (list
-                     "C-o" 'editor-open-file
-                     "C-s" 'editor-write-file)
-                    keyscheme:emacs
-                    (list
-                     "C-x C-f" 'editor-open-file
-                     "C-x C-s" 'editor-write-file)
-                    keyscheme:vi-normal
-                    (list
-                     "C-o" 'editor-open-file))
+  ((keyscheme-map
+    (define-keyscheme-map "editor" ()
+      keyscheme:cua
+      (list
+       "C-o"     'editor-open-file
+       "C-s"     'editor-write-file)
+      keyscheme:emacs
+      (list
+       "C-x C-f" 'editor-open-file
+       "C-x C-s" 'editor-write-file)
+      keyscheme:vi-normal
+      (list
+       "C-o"     'editor-open-file))
                   :type keymaps:keyscheme))
   (:toggler-command-p nil))
 

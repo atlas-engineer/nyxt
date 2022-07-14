@@ -26,39 +26,41 @@ search.")
     (define-keyscheme-map "history" ()
       keyscheme:cua
       (list
-       "C-M-right" 'history-forwards-all-query
-       "C-M-left" 'history-all-query
-       "C-shift-h" 'history-all-query
-       "C-shift-H" 'history-all-query
+       "C-M-right"     'history-forwards-all-query
+       "C-M-left"      'history-all-query
+       "C-shift-h"     'history-all-query
+       "C-shift-H"     'history-all-query
        "M-shift-right" 'history-forwards-query
-       "M-shift-left" 'history-backwards-query
-       "M-right" 'history-forwards
-       "M-left" 'history-backwards
-       "M-]" 'history-forwards
-       "M-[" 'history-backwards
-       "button9" 'history-forwards
-       "button8" 'history-backwards)
+       "M-shift-left"  'history-backwards-query
+       "M-right"       'history-forwards
+       "M-left"        'history-backwards
+       ;; this should be C-]
+       "M-]"           'history-forwards
+       ;; this should be C-[
+       "M-["           'history-backwards
+       "button9"       'history-forwards
+       "button8"       'history-backwards)
       keyscheme:emacs
       (list
-       "C-M-f" 'history-forwards-all-query
-       "C-M-b" 'history-all-query
-       "M-f" 'history-forwards-query
-       "M-b" 'history-backwards-query
-       "C-f" 'history-forwards-maybe-query
-       "C-b" 'history-backwards
-       "button9" 'history-forwards
-       "button8" 'history-backwards)
+       "C-M-f"         'history-forwards-all-query
+       "C-M-b"         'history-all-query
+       "M-f"           'history-forwards-query
+       "M-b"           'history-backwards-query
+       "C-f"           'history-forwards-maybe-query
+       "C-b"           'history-backwards
+       "button9"       'history-forwards
+       "button8"       'history-backwards)
 
       keyscheme:vi-normal
       (list
-       "H" 'history-backwards
-       "L" 'history-forwards-maybe-query
-       "M-h" 'history-backwards-query
-       "M-l" 'history-forwards-query
-       "M-H" 'history-all-query
-       "M-L" 'history-forwards-all-query
-       "button9" 'history-forwards
-       "button8" 'history-backwards)))))
+       "H"             'history-backwards
+       "L"             'history-forwards-maybe-query
+       "M-h"           'history-backwards-query
+       "M-l"           'history-forwards-query
+       "M-H"           'history-all-query
+       "M-L"           'history-forwards-all-query
+       "button9"       'history-forwards
+       "button8"       'history-backwards)))))
 
 (defun load-history-url (url-or-node
                          &key (buffer (current-buffer))

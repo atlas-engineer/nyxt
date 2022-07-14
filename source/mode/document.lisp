@@ -22,95 +22,95 @@ It does not assume being online."))
     (define-keyscheme-map "web" ()
       keyscheme:default
       (list
-       "C-M-Z" 'nyxt/passthrough-mode:passthrough-mode
-       "M-i" 'focus-first-input-field
-       "C-M-c" 'open-inspector
-       "C-." 'jump-to-heading
-       "C-M-." 'jump-to-heading-buffers
-       "M-{" 'previous-heading
-       "M-}" 'next-heading
-       "C-p" 'print-buffer)
+       "C-M-Z"        'nyxt/passthrough-mode:passthrough-mode
+       "M-i"          'focus-first-input-field
+       "C-M-c"        'open-inspector
+       "C-."          'jump-to-heading
+       "C-M-."        'jump-to-heading-buffers
+       "M-{"          'previous-heading
+       "M-}"          'next-heading
+       "C-p"          'print-buffer)
       keyscheme:cua
       (list
-       "C-c" 'copy
-       "C-v" 'paste
-       "C-x" 'cut
-       "C-a" 'select-all
-       "C-z" 'undo
-       "C-Z" 'redo
-       "C-+" 'zoom-page
-       "C-=" 'zoom-page              ; Because + shifted = on QWERTY.
-       "C-hyphen" 'unzoom-page
-       "C-0" 'reset-page-zoom
-       "C-button4" 'zoom-page
-       "C-button5" 'unzoom-page
-       "end" 'maybe-scroll-to-bottom
-       "home" 'maybe-scroll-to-top
-       "C-down" 'scroll-to-bottom
-       "C-up" 'scroll-to-top
-       "C-u C-o" 'edit-with-external-editor
+       "C-c"          'copy
+       "C-v"          'paste
+       "C-x"          'cut
+       "C-a"          'select-all
+       "C-z"          'undo
+       "C-Z"          'redo
+       "C-+"          'zoom-page
+       "C-="          'zoom-page              ; Because + shifted = on QWERTY.
+       "C-hyphen"     'unzoom-page
+       "C-0"          'reset-page-zoom
+       "C-button4"    'zoom-page
+       "C-button5"    'unzoom-page
+       "end"          'maybe-scroll-to-bottom
+       "home"         'maybe-scroll-to-top
+       "C-down"       'scroll-to-bottom
+       "C-up"         'scroll-to-top
+       "C-u C-o"      'edit-with-external-editor
        ;; Leave SPACE and arrow keys unbound so that the renderer decides whether to
        ;; navigate textboxes (arrows), insert or scroll (space).
        ;; keypad, gtk:
-       "keypadleft" 'scroll-left
-       "keypaddown" 'scroll-down
-       "keypadup" 'scroll-up
-       "keypadright" 'scroll-right
-       "keypadend" 'scroll-to-bottom
-       "keypadhome" 'scroll-to-top
-       "keypadnext" 'scroll-page-down
+       "keypadleft"   'scroll-left
+       "keypaddown"   'scroll-down
+       "keypadup"     'scroll-up
+       "keypadright"  'scroll-right
+       "keypadend"    'scroll-to-bottom
+       "keypadhome"   'scroll-to-top
+       "keypadnext"   'scroll-page-down
        "keypadpageup" 'scroll-page-up
-       "keypadprior" 'scroll-page-up)
+       "keypadprior"  'scroll-page-up)
       keyscheme:emacs
       (list
-       "C-g" 'nothing              ; Emacs users may hit C-g out of habit.
-       "C-y" 'paste
-       "M-w" 'copy
-       "C-/" 'undo
-       "C-?" 'redo ; / shifted on QWERTY
-       "C-w" 'cut
-       "C-x h" 'select-all
-       "C-p" 'scroll-up
-       "C-n" 'scroll-down
-       "C-x C-+" 'zoom-page
-       "C-x C-=" 'zoom-page ; Because + shifted = on QWERTY.
+       "C-g"          'nothing              ; Emacs users may hit C-g out of habit.
+       "C-y"          'paste
+       "M-w"          'copy
+       "C-/"          'undo
+       "C-?"          'redo ; / shifted on QWERTY
+       "C-w"          'cut
+       "C-x h"        'select-all
+       "C-p"          'scroll-up
+       "C-n"          'scroll-down
+       "C-x C-+"      'zoom-page
+       "C-x C-="      'zoom-page ; Because + shifted = on QWERTY.
        "C-x C-hyphen" 'unzoom-page
-       "C-x C-0" 'reset-page-zoom
-       "M->" 'scroll-to-bottom
-       "M-<" 'scroll-to-top
-       "C-v" 'scroll-page-down
-       "M-v" 'scroll-page-up
-       "C-u C-x C-f" 'edit-with-external-editor)
+       "C-x C-0"      'reset-page-zoom
+       "M->"          'scroll-to-bottom
+       "M-<"          'scroll-to-top
+       "C-v"          'scroll-page-down
+       "M-v"          'scroll-page-up
+       "C-u C-x C-f"  'edit-with-external-editor)
 
       keyscheme:vi-normal
       (list
-       "y y" 'copy
-       "p" 'paste
-       "d d" 'cut
-       "u" 'undo
-       "C-r" 'redo
-       "+" 'zoom-page
-       "hyphen" 'unzoom-page
-       "0" 'reset-page-zoom
-       "z i" 'zoom-page
-       "z o" 'unzoom-page
-       "z z" 'reset-page-zoom
-       "g h" 'jump-to-heading
-       "g H" 'jump-to-heading-buffers
-       "{" 'previous-heading
-       "}" 'next-heading
-       "h" 'scroll-left
-       "j" 'scroll-down
-       "k" 'scroll-up
-       "l" 'scroll-right
-       "G" 'scroll-to-bottom
-       "g g" 'scroll-to-top
-       "C-f" 'scroll-page-down
-       "C-b" 'scroll-page-up
-       "space" 'scroll-page-down
-       "s-space" 'scroll-page-up
-       "pageup" 'scroll-page-up
-       "pagedown" 'scroll-page-down)))))
+       "y y"          'copy
+       "p"            'paste
+       "d d"          'cut
+       "u"            'undo
+       "C-r"          'redo
+       "+"            'zoom-page
+       "hyphen"       'unzoom-page
+       "0"            'reset-page-zoom
+       "z i"          'zoom-page
+       "z o"          'unzoom-page
+       "z z"          'reset-page-zoom
+       "g h"          'jump-to-heading
+       "g H"          'jump-to-heading-buffers
+       "{"            'previous-heading
+       "}"            'next-heading
+       "h"            'scroll-left
+       "j"            'scroll-down
+       "k"            'scroll-up
+       "l"            'scroll-right
+       "G"            'scroll-to-bottom
+       "g g"          'scroll-to-top
+       "C-f"          'scroll-page-down
+       "C-b"          'scroll-page-up
+       "space"        'scroll-page-down
+       "s-space"      'scroll-page-up
+       "pageup"       'scroll-page-up
+       "pagedown"     'scroll-page-down)))))
 
 (sera:export-always '%clicked-in-input?)
 (defun %clicked-in-input? (&optional (buffer (current-buffer)))
