@@ -59,7 +59,9 @@ This mode is a good candidate to be passed to `make-buffer'."
       keyscheme:emacs
       (list
        "C-x left"    'switch-buffer-previous
+       "C-x C-left"  'switch-buffer-previous
        "C-x right"   'switch-buffer-next
+       "C-x C-right" 'switch-buffer-next
        "C-x b"       'switch-buffer
        "C-x k"       'delete-buffer
        "C-x C-k"     'delete-current-buffer
