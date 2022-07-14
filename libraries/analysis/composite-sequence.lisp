@@ -75,7 +75,9 @@
     (first (sort edges #'> :key #'occurrences))))
 
 (defmethod predict-subsequence-simple ((model sequence-model) sequence)
-  "Predict a sequence's next value based on all subsequence predictions."
+  "Predict a sequence's next value based on all subsequence predictions. This is
+a naieve implementation which simply considers the amount of occurences without
+regard to the weight of different chain lengths."
   (let* ((sequence (copy-list sequence))
          (subsequence-results
            (loop while (> (length sequence) 1)
