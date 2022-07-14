@@ -89,6 +89,7 @@ Features:
        "M-b"         'nyxt/input-edit-mode:cursor-backwards-word
        "M-f"         'nyxt/input-edit-mode:cursor-forwards-word
        "M-backspace" 'nyxt/input-edit-mode:delete-backwards-word
+       "C-backspace" 'nyxt/input-edit-mode:delete-backwards-word
        "M-d"         'nyxt/input-edit-mode:delete-forwards-word
        "M-p"         'previous-cell
        "M-n"         'next-cell
