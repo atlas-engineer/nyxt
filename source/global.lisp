@@ -132,12 +132,15 @@ Don't set this, it would lose its meaning.")
   "Return 4 values: MAJOR, MINOR, PATCH and COMMIT.
 Return nil on error."
   (ignore-errors
-   (destructuring-bind (version &optional commits commit)
-       (str:split "-" +version+)
-     (let* ((commits (and commits (parse-integer commits))))
-       (destructuring-bind (&optional major minor patch)
-           (uiop:parse-version version)
-         (values major minor patch commit commits))))))
+   ;; Pre-releases are falling outside the conventional version values.
+   (if (str:containsp "pre-release" +version+)
+       (first (str:split "-" +version+))
+       (destructuring-bind (version &optional commits commit)
+           (str:split "-" +version+)
+         (let* ((commits (and commits (parse-integer commits))))
+           (destructuring-bind (&optional major minor patch)
+               (uiop:parse-version version)
+             (values major minor patch commit commits)))))))
 
 (multiple-value-bind (major minor patch commit commits)
     (version)
