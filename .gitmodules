@@ -570,3 +570,9 @@
 	path = _build/dissect
 	url = https://github.com/Shinmera/dissect
     shallow = true
+[submodule "_build/trivial-custom-debugger"]
+	path = _build/trivial-custom-debugger
+	url = https://github.com/phoe/trivial-custom-debugger
+[submodule "_build/ndebug"]
+	path = _build/ndebug
+	url = https://github.com/atlas-engineer/ndebug
