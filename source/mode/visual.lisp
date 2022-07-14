@@ -21,58 +21,58 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
        "down"          'forward-line
        "left"          'backward-char
        "right"         'forward-char
-       "escape"        'visual-mode
-       "delete"        'clear-selection
-       "keypadend"     'end-line
-       "space"         'forward-char
        "backspace"     'backward-char
-       "keypadhome"    'beginning-line
-       "shift-down"    'forward-line-with-selection
-       "shift-up"      'backward-line-with-selection
+       "space"         'forward-char
        "shift-left"    'backward-char-with-selection
        "shift-right"   'forward-char-with-selection
        "C-shift-left"  'backward-word-with-selection
        "C-shift-right" 'forward-word-with-selection
+       "keypadhome"    'beginning-line
+       "keypadend"     'end-line
+       "shift-up"      'backward-line-with-selection
+       "shift-down"    'forward-line-with-selection
        "C-shift-up"    'beginning-line-with-selection
        "C-shift-down"  'end-line-with-selection
+       "escape"        'visual-mode
+       "delete"        'clear-selection
        "C-c"           'visual-mode)
       keyscheme:emacs
       (list
-       "C-h"           'select-paragraph
-       "shift-space"   'toggle-mark
-       "C-space"       'toggle-mark
-       "C-g"           'visual-mode
-       "C-f"           'forward-char
-       "C-b"           'backward-char
-       "M-f"           'forward-word
-       "M-b"           'backward-word
-       "C-n"           'forward-line
        "C-p"           'backward-line
-       "C-a"           'beginning-line
-       "C-e"           'end-line
+       "C-n"           'forward-line
+       "C-b"           'backward-char
+       "C-f"           'forward-char
+       "M-b"           'backward-word
+       "M-f"           'forward-word
        "M-a"           'backward-sentence
        "M-e"           'forward-sentence
-       "M-}"           'forward-paragraph
        "M-{"           'backward-paragraph
+       "M-}"           'forward-paragraph
+       "C-h"           'select-paragraph
+       "M-<"           'backward-document
        "M->"           'forward-document
-       "M-<"           'backward-document)
+       "C-a"           'beginning-line
+       "C-e"           'end-line
+       "C-g"           'visual-mode
+       "shift-space"   'toggle-mark
+       "C-space"       'toggle-mark)
       ;; vi keybindings only enable use of vim's plain "visual" mode for now
       keyscheme:vi-normal
       (list
        "h"             'backward-char
-       "j"             'forward-line
-       "k"             'backward-line
        "l"             'forward-char
-       "w"             'forward-word
+       "k"             'backward-line
+       "j"             'forward-line
        "b"             'backward-word
-       "$"             'end-line
-       ")"             'forward-sentence
+       "w"             'forward-word
        "("             'backward-sentence
-       "}"             'forward-paragraph
+       ")"             'forward-sentence
        "{"             'backward-paragraph
-       "G"             'forward-document
+       "}"             'forward-paragraph
        "g g"           'backward-document
+       "G"             'forward-document
        "0"             'beginning-line
+       "$"             'end-line
        "v"             'toggle-mark
        "C-c"           'visual-mode)))
    (mark-set nil)))
