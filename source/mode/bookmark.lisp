@@ -38,24 +38,24 @@ Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
        "C-m s"   'bookmark-current-url
        "C-d"     'bookmark-current-url
        "C-m C-s" 'bookmark-buffer-url
-       "C-m k"   'delete-bookmark
-       "C-m l"   'bookmark-url)
+       "C-m l"   'bookmark-url
+       "C-m k"   'delete-bookmark)
       keyscheme:emacs
       (list
        "C-x r j" 'set-url-from-bookmark
        "C-x r M" 'bookmark-current-url
        "C-x r m" 'bookmark-buffer-url
-       "C-x r k" 'delete-bookmark
-       "C-x r l" 'bookmark-url)
+       "C-x r l" 'bookmark-url
+       "C-x r k" 'delete-bookmark)
       keyscheme:vi-normal
       (list
-       "m u"     'bookmark-url
-       "m d"     'delete-bookmark
-       "m o"     'set-url-from-bookmark
-       "m m"     'bookmark-buffer-url
-       "m M"     'bookmark-current-url
        "m l"     'list-bookmarks
-       "m f"     'bookmark-hint))
+       "m f"     'bookmark-hint
+       "m o"     'set-url-from-bookmark
+       "m M"     'bookmark-current-url
+       "m m"     'bookmark-buffer-url
+       "m u"     'bookmark-url
+       "m d"     'delete-bookmark))
     :type keymaps:keyscheme)
    (style (theme:themed-css (theme *browser*)
             ("summary"
