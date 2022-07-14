@@ -24,7 +24,7 @@ search.")
     :documentation "Whether history navigation is restricted by buffer-local history.")
    (keyscheme-map
     (define-keyscheme-map "history" ()
-      keyscheme:cua
+      keyscheme:default
       (list
        "M-left"        'history-backwards
        ;; this should be C-[
@@ -43,8 +43,6 @@ search.")
       keyscheme:emacs
       (list
        "C-b"           'history-backwards
-       "button8"       'history-backwards
-       "button9"       'history-forwards
        "M-b"           'history-backwards-query
        "M-f"           'history-forwards-query
        "C-M-f"         'history-forwards-all-query
@@ -53,8 +51,6 @@ search.")
       keyscheme:vi-normal
       (list
        "H"             'history-backwards
-       "button8"       'history-backwards
-       "button9"       'history-forwards
        "M-h"           'history-backwards-query
        "M-l"           'history-forwards-query
        "M-L"           'history-forwards-all-query
