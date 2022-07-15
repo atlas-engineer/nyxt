@@ -319,6 +319,7 @@ Features:
             (raised-condition evaluation))
        (let ((wrapper (raised-condition evaluation)))
          (:pre (format nil "~a" (ndebug:condition-itself wrapper)))
+         (:h3 "Restarts:")
          (dolist (restart (ndebug:restarts wrapper))
            (:button :class "button"
                     :onclick (ps:ps (nyxt/ps:lisp-eval
@@ -326,6 +327,7 @@ Features:
                                      (lpara:submit-task (ndebug:channel wrapper)
                                                         (lambda () restart))))
                     (format nil "[~a] ~a" (dissect:name restart) (dissect:report restart))))
+         (:h3 "Backtrace:")
          (:raw (nyxt::backtrace->html wrapper))))
       ((ready-p evaluation)
        (if (results evaluation)
