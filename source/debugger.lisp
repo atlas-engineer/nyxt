@@ -61,20 +61,20 @@ See `ndebug:condition-wrapper' for documentation."))
 
 (defun backtrace->html (wrapper)
   (spinneret:with-html-string
-    (cond
-      ((ndebug:stack wrapper)
-       (dolist (frame (ndebug:stack wrapper))
-         (when (or (dissect:call frame)
-                   (dissect:args frame))
-           (:details
-            (:summary (:code (princ-to-string (dissect:call frame))))
-            (when (dissect:args frame)
-              (:p "Called with:")
-              (:ul (loop for arg in (dissect:args frame)
-                         when (or (typep arg 'dissect:unknown-arguments)
-                                  (typep arg 'dissect:unavailable-argument))
-                           collect (:li (:code "Unknown argument"))
-                         else collect (:li (:raw (value->html arg t)))))))))))))
+    (dolist (frame (ndebug:stack wrapper))
+      (let ((frame-call (dissect:call frame))
+            (frame-args (dissect:args frame)))
+        (when frame-call
+          (:details
+           :attrs (list :open frame-args)
+           (:summary (:code (princ-to-string frame-call)))
+           (when frame-args
+             (:p "Called with:")
+             (:ul (loop for arg in frame-args
+                        when (or (typep arg 'dissect:unknown-arguments)
+                                 (typep arg 'dissect:unavailable-argument))
+                          collect (:li (:code "Unknown argument"))
+                        else collect (:li (:raw (value->html arg t))))))))))))
 
 (defun debug->html (wrapper)
   "Produce HTML code for the condition WRAPPER."
