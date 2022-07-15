@@ -1109,6 +1109,8 @@ See `finalize-buffer'."
 (define-ffi-method ffi-window-set-buffer ((window gtk-window) (buffer gtk-buffer) &key (focus t))
   "Set BROWSER's WINDOW buffer to BUFFER."
   (let ((old-buffer (active-buffer window)))
+    ;; Just a precaution for the buffer to not be destroyed until we say so.
+    (g:g-object-ref (g:pointer (gtk-object old-buffer)))
     (gtk:gtk-container-remove (main-buffer-container window) (gtk-object old-buffer))
     (gtk:gtk-box-pack-start (main-buffer-container window) (gtk-object buffer) :expand t :fill t)
     (unless *headless-p*
