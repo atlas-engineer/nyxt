@@ -55,8 +55,7 @@ See `ndebug:condition-wrapper' for documentation."))
       (:button :class "button"
                :onclick (ps:ps (nyxt/ps:lisp-eval
                                 (:title "condition")
-                                (lpara:submit-task (ndebug:channel wrapper)
-                                                   (lambda () restart))))
+                                (ndebug:invoke wrapper restart)))
                (format nil "[~a] ~a" (dissect:name restart) (dissect:report restart))))))
 
 (defun backtrace->html (wrapper)
