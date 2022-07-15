@@ -137,6 +137,8 @@ Features:
              :padding "3px"
              :autofocus "true"
              :width "100%")
+            (.button
+             :display "block")
             ("#evaluations"
              :font-size "12px"
              :flex-grow "1"
