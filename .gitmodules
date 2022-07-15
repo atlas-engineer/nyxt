@@ -142,10 +142,6 @@
 	path = _build/proc-parse
 	url = https://github.com/fukamachi/proc-parse
 	shallow = true
-[submodule "_build/prove"]
-	path = _build/prove
-	url = https://github.com/fukamachi/prove
-	shallow = true
 [submodule "_build/cl-ansi-text"]
 	path = _build/cl-ansi-text
 	url = https://github.com/pnathan/cl-ansi-text
@@ -576,3 +572,7 @@
 [submodule "_build/ndebug"]
 	path = _build/ndebug
 	url = https://github.com/atlas-engineer/ndebug
+[submodule "_build/lisp-unit2"]
+	path = _build/lisp-unit2
+	url = https://github.com/AccelerationNet/lisp-unit2
+	shallow = true
