@@ -523,8 +523,8 @@ response.  The BODY is wrapped with `with-protect'."
   (customize-instance window))
 
 (define-ffi-method on-signal-destroy ((window gtk-window))
-  ;; remove buffer from window to avoid corruption of buffer
-  (gtk:gtk-container-remove (root-box-layout window) (gtk-object (active-buffer window)))
+  ;; Then remove buffer from window container to avoid corruption of buffer.
+  (gtk:gtk-container-remove (main-buffer-container window) (gtk-object (active-buffer window)))
   (window-delete window))
 
 (define-ffi-method ffi-window-delete ((window gtk-window))
