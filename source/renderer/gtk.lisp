@@ -1517,8 +1517,6 @@ See `finalize-buffer'."
       (buffer-load (quri:uri url) :buffer new-buffer)
       (window-set-buffer (current-window) new-buffer)
       (gtk-object new-buffer)))
-  ;; Remove "download to disk" from the right click context menu because it
-  ;; bypasses request resource signal
   (connect-signal buffer "context-menu" nil (web-view context-menu event hit-test-result)
     (declare (ignore web-view event hit-test-result))
     (let ((length (webkit:webkit-context-menu-get-n-items context-menu)))
