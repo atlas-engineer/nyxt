@@ -301,13 +301,14 @@ Features:
            (previous-delimiter (if previous-delimiter (1+ previous-delimiter) 0))
            (symbol-to-complete (subseq input previous-delimiter cursor))
            (completion (handler-case
-                           (prompt1 :prompt "Symbol to complete"
-                             :input symbol-to-complete
-                             :sources (list (make-instance
-                                             'prompter:source
-                                             :name "Completions"
-                                             :constructor (first (swank:simple-completions
-                                                                  symbol-to-complete *package*)))))
+                           (prompt1
+                            :prompt "Symbol to complete"
+                            :input symbol-to-complete
+                            :sources (make-instance
+                                      'prompter:source
+                                      :name "Completions"
+                                      :constructor (first (swank:simple-completions
+                                                           symbol-to-complete *package*))))
                          (nyxt::nyxt-prompt-buffer-canceled () nil))))
       (when completion
         (setf (input repl) (str:concat (subseq input 0 previous-delimiter)

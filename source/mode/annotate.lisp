@@ -74,10 +74,9 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
 
 (define-command annotate-current-url (&optional (buffer (current-buffer)))
   "Create an annotation of the URL of BUFFER."
-  (let* ((data (prompt1
-                 :prompt "Annotation"
-                 :sources (list (make-instance 'prompter:raw-source
-                                               :name "Note"))))
+  (let* ((data (prompt1 :prompt "Annotation"
+                        :sources (make-instance 'prompter:raw-source
+                                                :name "Note")))
          (tags (prompt
                 :prompt "Tag(s)"
                 :sources (list (make-instance 'prompter:word-source
@@ -96,10 +95,9 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
   "Create an annotation for the highlighted text of BUFFER."
   (with-current-buffer buffer
     (let* ((snippet (%copy))
-           (data (prompt1
-                   :prompt "Annotation"
-                   :sources (list (make-instance 'prompter:raw-source
-                                                 :name "Note"))))
+           (data (prompt1 :prompt "Annotation"
+                          :sources (make-instance 'prompter:raw-source
+                                                  :name "Note")))
            (tags (prompt
                   :prompt "Tag(s)"
                   :sources (list (make-instance 'prompter:word-source

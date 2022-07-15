@@ -1199,9 +1199,9 @@ second latest buffer first."
       (set-current-buffer buffer)
       (prompt
        :prompt "Switch to buffer"
-       :sources (list (make-instance 'buffer-source
-                                     :constructor (buffer-initial-suggestions
-                                                   :current-is-last-p current-is-last-p))))))
+       :sources (make-instance 'buffer-source
+                               :constructor (buffer-initial-suggestions
+                                             :current-is-last-p current-is-last-p)))))
 
 (define-command switch-buffer-domain (&key domain (buffer (current-buffer)))
   "Switch the active buffer in the current window from the current domain."

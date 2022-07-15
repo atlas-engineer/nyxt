@@ -219,16 +219,15 @@ See `supported-media-types' of `file-mode'."
                  "Rename the first chosen file."
                  (let* ((file (first files))
                         (name (files:basename file)))
-                   (rename-file file (prompt1
-                                       :prompt (format nil "New name for ~a" name)
-                                       :sources (list (make-instance 'prompter:raw-source))
-                                       :input name))))
+                   (rename-file file (prompt1 :prompt (format nil "New name for ~a" name)
+                                              :sources (make-instance 'prompter:raw-source)
+                                              :input name))))
                ;; TODO: File/directory copying.
                (lambda-command open-with* (files)
                  "Open files with the selected program."
                  (let* ((program (prompt1
-                                   :prompt "The program to open the selected files with"
-                                   :sources (list (make-instance 'program-source)))))
+                                  :prompt "The program to open the selected files with"
+                                  :sources (make-instance 'program-source))))
                    (uiop:launch-program (cons (uiop:native-namestring program) (mapcar #'uiop:native-namestring files))))))
          (slot-value source 'prompter:return-actions))))
 
@@ -287,11 +286,10 @@ directory name) as parameter.
 
 `file-source' also has `supported-media-types'. You can append new types to
 it. Every type in `supported-media-types' will be opened directly in Nyxt."
-  (prompt
-   :extra-modes '(file-manager-mode)
-   :input (uiop:native-namestring default-directory)
-   :prompt "Open file"
-   :sources (list (make-instance 'open-file-source))))
+  (prompt :extra-modes '(file-manager-mode)
+          :input (uiop:native-namestring default-directory)
+          :prompt "Open file"
+          :sources (make-instance 'open-file-source)))
 
 (define-command-global download-open-file ()
   "Open file in Nyxt or externally."

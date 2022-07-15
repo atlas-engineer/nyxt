@@ -265,16 +265,17 @@ current unmarked selection."
 
 (define-command-prompt toggle-attributes-display (prompt-buffer)
   "Prompt for which prompter attributes to display."
-  (let ((attributes (prompt
-                     :prompt "Mark attributes to display"
-                     :sources (list (make-instance 'attribute-source
-                                                   :marks (intersection
-                                                           (prompter:active-attributes-keys (current-source prompt-buffer))
-                                                           (prompter:attributes-keys-non-default
-                                                            (current-source prompt-buffer))
-                                                           :test #'string=)
-                                                   :constructor (prompter:attributes-keys-non-default
-                                                                 (current-source prompt-buffer)))))))
+  (let ((attributes (prompt :prompt "Mark attributes to display"
+                            :sources (make-instance
+                                      'attribute-source
+                                      :marks (intersection
+                                              (prompter:active-attributes-keys
+                                               (current-source prompt-buffer))
+                                              (prompter:attributes-keys-non-default
+                                               (current-source prompt-buffer))
+                                              :test #'string=)
+                                      :constructor (prompter:attributes-keys-non-default
+                                                    (current-source prompt-buffer))))))
     (setf (prompter:active-attributes-keys (current-source prompt-buffer))
           attributes)
     (prompt-render-suggestions prompt-buffer)))
@@ -296,10 +297,9 @@ current unmarked selection."
 
 (define-command-prompt run-prompt-buffer-command (prompt-buffer)
   "Prompt for a command to call in PROMPT-BUFFER."
-  (let ((command (prompt1
-                   :prompt "Command to run in current prompt buffer"
-                   :sources (list (make-instance 'prompt-buffer-command-source
-                                                 :parent-prompt-buffer prompt-buffer)))))
+  (let ((command (prompt1 :prompt "Command to run in current prompt buffer"
+                          :sources (make-instance 'prompt-buffer-command-source
+                                                  :parent-prompt-buffer prompt-buffer))))
     (funcall* command)))
 
 (defun prompt-buffer-return-actions (&optional (window (current-window)))
@@ -334,9 +334,8 @@ current unmarked selection."
   (if (equal (mapcar #'type-of (prompter:sources (current-prompt-buffer)))
              '(action-source))
       (echo "Already displaying return-actions of previous prompt buffer.")
-      (let ((action (prompt1
-                      :prompt "Action to run on selection"
-                      :sources (list (make-instance 'action-source)))))
+      (let ((action (prompt1 :prompt "Action to run on selection"
+                             :sources (make-instance 'action-source))))
         (when action
           (prompter:return-selection prompt-buffer action)))))
 
@@ -419,7 +418,7 @@ Only available if `prompter:multi-selection-p' is non-nil."
     (if (and history (not (containers:empty-p history)))
         (let ((input (prompt1
                       :prompt "Input history"
-                      :sources (list (make-instance 'prompt-buffer-history-source)))))
+                      :sources (make-instance 'prompt-buffer-history-source))))
           (unless (str:empty? input)
             (nyxt:set-prompt-buffer-input input)))
         (echo "Prompt buffer has no history."))))

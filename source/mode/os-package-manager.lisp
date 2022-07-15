@@ -309,14 +309,11 @@ OBJECTS can be a list of packages, a generation, etc."
 (define-command-global uninstall-os-package ()
   "Uninstall selected packages."
   (assert-package-manager)
-  (let* ((profile (first
-                   (prompt
-                    :sources '(os-profile-source)
-                    :prompt "Target profile")))
-         (packages (prompt
-                    :sources (list (make-instance 'os-installed-package-source
-                                                  :profile profile))
-                    :prompt "Uninstall OS package(s)")))
+  (let* ((profile (prompt1 :sources '(os-profile-source)
+                           :prompt "Target profile"))
+         (packages (prompt :sources (make-instance 'os-installed-package-source
+                                                   :profile profile)
+                           :prompt "Uninstall OS package(s)")))
     (operate-os-package "Uninstalling packages..." #'ospm:uninstall profile packages)))
 
 (define-command-global install-package-manifest ()
@@ -345,16 +342,12 @@ OBJECTS can be a list of packages, a generation, etc."
 (define-command-global describe-os-generation ()
   "Show the packages of a given profile generation."
   (assert-package-manager)
-  (let* ((profile (first
-                   (prompt
-                    :sources (list (make-instance 'os-profile-source
-                                                  :include-manager-p t))
-                    :prompt "Profile")))
-         (generation (first
-                      (prompt
-                       :sources (list (make-instance 'os-generation-source
-                                                     :profile profile))
-                       :prompt "Generation")))
+  (let* ((profile (prompt1 :sources (make-instance 'os-profile-source
+                                                   :include-manager-p t)
+                           :prompt "Profile"))
+         (generation (prompt1 :sources (make-instance 'os-generation-source
+                                                      :profile profile)
+                              :prompt "Generation"))
          (buffer (ensure-os-package-buffer)))
     (echo "Loading package database...")
     (nyxt::html-set
@@ -379,32 +372,26 @@ OBJECTS can be a list of packages, a generation, etc."
 (define-command-global switch-os-generation ()
   "Switch generation of selected profile."
   (assert-package-manager)
-  (let* ((profile (first
-                   (prompt
-                    :sources (list (make-instance 'os-profile-source
-                                                  :include-manager-p t))
-                    :prompt "Target profile")))
-         (generation (first
-                      (prompt
-                       :sources (list (make-instance 'os-generation-source
-                                                     :profile profile))
-                       :prompt "Switch to generation"))))
+  (let* ((profile (prompt1 :sources (make-instance 'os-profile-source
+                                                   :include-manager-p t)
+                           :prompt "Target profile"))
+         (generation (prompt1 :sources (make-instance 'os-generation-source
+                                                      :profile profile)
+                              :prompt "Switch to generation")))
     (operate-os-package "Switching to generation..." #'ospm:switch-generation
                         profile generation)))
 
 (define-command-global delete-os-generations ()
   "Delete generations of selected profile."
   (assert-package-manager)
-  (let* ((profile (first
-                   (prompt
-                    :sources (list (make-instance 'os-profile-source
-                                                  :include-manager-p t))
-                    :prompt "Target profile")))
-         (generations (prompt
-                       :sources (list (make-instance 'os-generation-source
-                                                     :multi-selection-p t
-                                                     :profile profile))
-                       :prompt "Delete generations")))
+  (let* ((profile (prompt1
+                   :sources (make-instance 'os-profile-source
+                                           :include-manager-p t)
+                   :prompt "Target profile"))
+         (generations (prompt :sources (make-instance 'os-generation-source
+                                                      :multi-selection-p t
+                                                      :profile profile)
+                              :prompt "Delete generations")))
     (operate-os-package "Deleting generations..." #'ospm:delete-generations
                         profile generations)))
 
