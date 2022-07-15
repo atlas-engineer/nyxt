@@ -295,11 +295,11 @@ prevents otherwise.")
   (setf (slot-value *browser* 'ready-p) t))
 
 (defmethod startup ((browser browser) urls)
-  (labels ((clear-history-owners (buffer)
+  (labels ((clear-history-owners ()
              "Warning: We clear the previous owners here.
 After this, buffers from a previous session are permanently lost, they cannot be
 restored."
-             (files:with-file-content (history (history-file buffer))
+             (files:with-file-content (history (history-file *browser*))
                (when history
                  (clrhash (htree:owners history))))))
     ;; Remove existing windows.  This may happen if we invoked this function,
@@ -317,8 +317,8 @@ restored."
             (open-urls (or urls (list (default-new-buffer-url browser)))))
         (progn
           (log:info "Not restoring session.")
-          (open-urls (or urls (list (default-new-buffer-url browser))))
-          (clear-history-owners (current-buffer))))
+          (clear-history-owners)
+          (open-urls (or urls (list (default-new-buffer-url browser))))))
     (hooks:run-hook *after-startup-hook*)
     (funcall* (startup-error-reporter-function *browser*))))
 
