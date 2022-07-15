@@ -4,8 +4,6 @@
 (in-package :nyxt/tests)
 (use-nyxt-package-nicknames)
 
-(plan nil)
-
 (let* ((code "// ==UserScript==
 // @name          Script Name
 // @namespace     Script
@@ -23,16 +21,18 @@
                             'nyxt/user-script-mode:user-script
                             :code code :base-path #p"testing-script.user.js"))
        (virtual-script (make-instance 'nyxt/user-script-mode:user-script :code code)))
-  (subtest "Virtual user script code equality"
-    (is (nyxt/user-script-mode:code virtual-script) code))
-  (subtest "Virtual user script noframes"
-    (is (nyxt/user-script-mode:all-frames-p virtual-script) nil))
-  (subtest "Virtual user script document start"
-    (is (nyxt/user-script-mode:run-at virtual-script) :document-start))
-  (subtest "Virtual user script @include"
-    (is (nyxt/user-script-mode:include virtual-script) '("http://*/*" "https://*/*")))
+  ;; Virtual user script code equality
+  (assert-equal code
+                (nyxt/user-script-mode:code virtual-script))
+  ;; Virtual user script noframes
+  (assert-false (nyxt/user-script-mode:all-frames-p virtual-script))
+  ;; Virtual user script document start
+  (assert-eq o:document-start (nyxt/user-script-mode:run-at virtual-script))
+  ;; Virtual user script @include
+  (assert-equal '("http://*/*" "https://*/*")
+                (nyxt/user-script-mode:include virtual-script))
   ;; TODO:  Check the file serialization.
-  (subtest "Virtual user script code equality"
-    (is (nyxt/user-script-mode:code virtual-script)
-        (nyxt/user-script-mode:code file-backed-script)))
+  ;; Virtual user script code equality
+  (assert-equal (nyxt/user-script-mode:code virtual-script)
+                (nyxt/user-script-mode:code file-backed-script))
   (uiop:delete-file-if-exists (nfiles:expand file-backed-script)))

@@ -3,20 +3,15 @@
 
 (in-package :cl-user)
 (uiop:define-package download-manager/tests
-  (:use #:common-lisp #:prove)
+  (:use #:common-lisp #:lisp-unit2)
   (:import-from #:download-manager))
 (in-package :download-manager/tests)
 
-(plan nil)
-
-(subtest "Simple HTTP/HTTPS downloads"
+(define-test simple-http/https-downloads ()
   (let ((urls '("https://abcl.org"
                 "http://en.wikipedia.org/wiki/Main_Page"
                 "https://duckduckgo.com"
                 "https://nyxt.atlas.engineer")))
     (dolist (url urls)
-      (ok
-       (download-manager:resolve (quri:uri url))
-       (format nil "Able to download <~a>~%" url)))))
-
-(finalize)
+      (assert-no-error t
+                       (download-manager:resolve (quri:uri url))))))

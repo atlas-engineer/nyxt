@@ -225,7 +225,7 @@
 ;; TODO: Test that Nyxt starts and that --help, --version work.
 (defsystem "nyxt/tests"
   :defsystem-depends-on (nyxt-asdf)
-  :depends-on (nyxt prove)
+  :depends-on (nyxt lisp-unit2)
   :serial t
   :components ((:file "tests/package")
                (:nyxt-test "tests/offline/global-history")
@@ -311,7 +311,7 @@
 
 (defsystem "nyxt/gi-gtk/tests"
   :defsystem-depends-on (nyxt-asdf)
-  :depends-on (nyxt/gi-gtk prove)
+  :depends-on (nyxt/gi-gtk lisp-unit2)
   :serial t
   :components ((:file "tests/renderer-package")
                (:nyxt-test "tests/renderer-offline/set-url")
@@ -360,7 +360,7 @@
 (defsystem "nyxt/application/tests"
   :defsystem-depends-on (nyxt-asdf)
   :class :nyxt-renderer-system
-  :depends-on (prove)
+  :depends-on (lisp-unit2)
   :components ((:file "tests/package")
                (:nyxt-test "tests/executable/config")
                (:nyxt-test "tests/executable/scripts"))
@@ -407,7 +407,7 @@
 
 (defsystem "nyxt/download-manager/tests"
   :defsystem-depends-on (nyxt-asdf)
-  :depends-on (nyxt/download-manager prove)
+  :depends-on (nyxt/download-manager lisp-unit2)
   :components ((:nyxt-online-test "libraries/download-manager/tests/tests" )))
 
 (defsystem "nyxt/analysis"
@@ -459,7 +459,7 @@
 
 (defsystem "nyxt/history-tree/tests"
   :defsystem-depends-on (nyxt-asdf)
-  :depends-on (nyxt/history-tree prove str)
+  :depends-on (nyxt/history-tree lisp-unit2 str)
   :components ((:nyxt-test "libraries/history-tree/tests/tests")))
 
 (defsystem "nyxt/password-manager"
@@ -492,7 +492,7 @@
 
 (defsystem "nyxt/class-star/tests"
   :defsystem-depends-on (nyxt-asdf)
-  :depends-on (nyxt/class-star prove)
+  :depends-on (nyxt/class-star lisp-unit2)
   :components ((:nyxt-test "libraries/class-star/tests/tests")))
 
 (defsystem "nyxt/ospm"
@@ -519,9 +519,8 @@
 
 (defsystem "nyxt/ospm/tests"
   :defsystem-depends-on (nyxt-asdf)
-  :depends-on (nyxt/ospm prove)
-  :components ((:file "libraries/ospm/test-package")
-               (:nyxt-test "libraries/ospm/tests/tests")))
+  :depends-on (nyxt/ospm lisp-unit2)
+  :components ((:nyxt-test "libraries/ospm/tests/tests")))
 
 (defsystem "nyxt/prompter"
   :defsystem-depends-on (nyxt-asdf)
@@ -546,7 +545,7 @@
 
 (defsystem "nyxt/prompter/tests"
   :defsystem-depends-on (nyxt-asdf)
-  :depends-on (nyxt/prompter prove)
+  :depends-on (nyxt/prompter lisp-unit2)
   :components ((:file "libraries/prompter/test-package")
                (:nyxt-test "libraries/prompter/tests/tests")
                (:nyxt-test "libraries/prompter/tests/fuzzy")
@@ -556,9 +555,9 @@
   :defsystem-depends-on (nyxt-asdf)
   :class :nyxt-system
   :depends-on (alexandria
-               serapeum
+               cl-css
                nyxt/class-star
-               cl-css)
+               serapeum)
   :pathname #p"NYXT:libraries;theme;"
   :components ((:file "package")
                (:file "theme"))
@@ -566,6 +565,5 @@
 
 (defsystem "nyxt/theme/tests"
   :defsystem-depends-on (nyxt-asdf)
-  :depends-on (nyxt/theme prove)
-  :components ((:file "libraries/theme/test-package")
-               (:nyxt-test "libraries/theme/tests/test")))
+  :depends-on (nyxt/theme lisp-unit2)
+  :components ((:nyxt-test "libraries/theme/tests/test")))

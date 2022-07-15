@@ -3,9 +3,7 @@
 
 (in-package :prompter/tests)
 
-(prove:plan nil)
-
-(prove:subtest "Submatches Test"
+(define-test submatches-test ()
   (flet ((submatch (input list)
            (let ((source 'prompter:raw-source))
              (mapcar (lambda (suggestion)
@@ -14,13 +12,11 @@
                            (prompter:value res))))
                      (prompter::ensure-suggestions-list source list)))))
 
-    (prove:is (submatch "cat" '("cstheory" "category" "candidate"))
-              '(nil "category" nil))
-    (prove:is (submatch "car" '("care" "ful" "ness"))
-              '("care" nil nil))
-    (prove:is (submatch "careful" '("care" "ful" "ness"))
-              '(nil nil nil))
-    (prove:is (submatch "swit buf" '("about" "switch-buffer-next" "switch-buffer" "delete-buffer"))
-              '(nil "switch-buffer-next" "switch-buffer" nil))))
-
-(prove:finalize)
+    (assert-equal '(nil "category" nil)
+                  (submatch "cat" '("cstheory" "category" "candidate")))
+    (assert-equal '("care" nil nil)
+                  (submatch "car" '("care" "ful" "ness")))
+    (assert-equal '(nil nil nil)
+                  (submatch "careful" '("care" "ful" "ness")))
+    (assert-equal '(nil "switch-buffer-next" "switch-buffer" nil)
+                  (submatch "swit buf" '("about" "switch-buffer-next" "switch-buffer" "delete-buffer")))))

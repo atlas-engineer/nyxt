@@ -3,8 +3,6 @@
 
 (in-package :nyxt/tests/renderer)
 
-(plan nil)
-
 (defmacro with-prompt-buffer-test (command &body body)
   (alexandria:with-gensyms (thread)
     `(let ((,thread (bt:make-thread (lambda () ,command))))
@@ -17,7 +15,7 @@
 ;; (with-prompt-buffer-test (set-url)
 ;;   (update-prompt-input (current-prompt-buffer) "foobar"))
 
-(subtest "set online URL"
+(define-test set-online-url ()
   (let ((url-channel (nyxt::make-channel 1))
         (url "http://example.org/"))
     (setf nyxt::*headless-p* t)
@@ -36,7 +34,5 @@
     (nyxt:start :no-config t :no-auto-config t
                 :socket "/tmp/nyxt-test.socket"
                 :profile "test")
-    (prove:is (calispel:? url-channel 5) url)
+    (assert-equal url (calispel:? url-channel 5))
     (quit)))
-
-(finalize)

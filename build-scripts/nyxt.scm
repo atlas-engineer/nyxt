@@ -127,7 +127,7 @@
    ;;
    ;; The official Guix package should use `sbcl-*' inputs though.
    (native-inputs
-    (list cl-prove
+    (list cl-lisp-unit2
           sbcl
           ;; Only for development, uneeded for the upstream Guix package:
           cl-trivial-benchmark))

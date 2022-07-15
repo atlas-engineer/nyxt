@@ -4,8 +4,8 @@
 (uiop:define-package nyxt/tests/renderer
   (:use #:common-lisp)
   (:use #:nyxt)
-  (:shadowing-import-from #:prove #:*debug-on-error*)
-  (:use #:prove)
+  (:shadowing-import-from #:lisp-unit2 #:*debug-on-error*)
+  (:use #:lisp-unit2)
   (:import-from #:class-star #:define-class))
 (nyxt::use-nyxt-package-nicknames)
 
