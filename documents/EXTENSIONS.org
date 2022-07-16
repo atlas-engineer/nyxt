@@ -23,11 +23,11 @@
   nx-fruit lets you discover the fruit of the day!  A simple extension that you
   can use to test your Nyxt installation (i.e. can you load extensions).
 
-- [[https://github.com/efimerspan/nx-router][nx-router]] ::
+- [[https://git.sr.ht/~conses/nx-router][nx-router]] ::
   nx-router is a URL routing extension for Nyxt.  You can set up URL redirects,
   block lists, open resources with external applications, all in a cohesive
   configuration language.
 
-- [[https://github.com/efimerspan/nx-tailor][nx-tailor]] ::
+- [[https://git.sr.ht/~conses/nx-tailor][nx-tailor]] ::
   nx-tailor is a tailor for all-things Nyxt themes which helps you manage them,
   change them on-the-fly, and discover new ones in a unified interface.
