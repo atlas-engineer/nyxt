@@ -6,7 +6,7 @@
 (in-package :nyxt/hint-mode)
 
 (define-mode hint-mode ()
-  "Mode to interact with links using keyword only."
+  "Interact with elements by typing a short character sequence."
   ((visible-in-status-p nil)
    (rememberable-p nil)
    (auto-follow-hints-p
