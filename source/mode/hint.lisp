@@ -19,8 +19,8 @@
        :background-color theme:primary
        :color theme:on-primary
        :font-family "monospace,monospace"
-       :padding "0px 3px 0px 3px"
-       :border-radius "2px"
+       :padding "0px 0.3em"
+       :border-radius "0.3em"
        :z-index #.(1- (expt 2 31))))
     :documentation "The style of the boxes, e.g. link hints.")
    (highlighted-box-style
