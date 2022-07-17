@@ -36,7 +36,7 @@
 Order matters -- the ones that go first are more likely to appear more often and
 to index the top of the page.")
    (hints-selector
-    "a, button, input, textarea, details, select, img:not([alt=\"\"])"
+    "a, button, input, textarea, details, select"
     :type string
     :documentation "The elements to be hinted.
 The hints-selector syntax is that of CLSS, and broadly, that of CSS. Use it to
