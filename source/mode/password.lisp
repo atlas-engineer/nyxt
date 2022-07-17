@@ -82,14 +82,14 @@ for which the `executable' slot is non-nil."
      (let* ((password-name (prompt1
                              :prompt "Name for new password"
                              :input (or (quri:uri-domain (url (current-buffer))) "")
-                             :sources (make-instance 'prompter:raw-source)))
+                             :sources 'prompter:raw-source))
             (new-password (prompt1
                             :invisible-input-p t
                             :prompt "New password (leave empty to generate)"
-                            :sources (make-instance 'prompter:raw-source)))
+                            :sources 'prompter:raw-source))
             (username (prompt1
                         :prompt "Username (can be empty)"
-                        :sources (make-instance 'prompter:raw-source))))
+                        :sources 'prompter:raw-source)))
        (password:save-password (password-interface buffer)
                                :username username
                                :password-name password-name
@@ -115,7 +115,7 @@ for which the `executable' slot is non-nil."
   (loop :until (password:password-correct-p password-interface)
         :do (setf (password::master-password password-interface)
                   (prompt1 :prompt "Database password"
-                           :sources (make-instance 'prompter:raw-source)
+                           :sources 'prompter:raw-source
                            :invisible-input-p t))))
 
 (defmacro with-password (password-interface &body body)
@@ -131,10 +131,10 @@ for which the `executable' slot is non-nil."
   (if (password-interface buffer)
       (let* ((password-name (prompt1
                               :prompt "Name of password"
-                              :sources (make-instance 'prompter:raw-source)))
+                              :sources 'prompter:raw-source))
              (service (prompt1
                         :prompt "Service"
-                        :sources (make-instance 'prompter:raw-source))))
+                        :sources 'prompter:raw-source)))
         (handler-case
             (password:clip-password (password-interface buffer)
                                     :password-name password-name

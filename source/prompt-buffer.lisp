@@ -498,7 +498,7 @@ See the documentation of `prompt-buffer' to know more about the options."
   "Query an older prompt and resume it."
   (let ((old-prompt (prompt1 :resumable-p nil
                              :prompt "Resume prompt session"
-                             :sources (make-instance 'resume-prompt-source))))
+                             :sources 'resume-prompt-source)))
     (when old-prompt
       (prompter:resume old-prompt)
       (wait-on-prompt-buffer old-prompt))))

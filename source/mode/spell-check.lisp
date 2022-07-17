@@ -39,7 +39,7 @@ a list of more languages available, see `spell-check-list-languages'.")
   (let ((word (or (and word-supplied-p word)
                   (prompt1
                    :prompt "Spell check word"
-                   :sources (make-instance 'prompter:raw-source)))))
+                   :sources 'prompter:raw-source))))
     (if (spell-dict-check-p word)
         (echo "~s is spelled correctly." word)
         (echo "~s is NOT correctly spelled." word))))
@@ -72,7 +72,7 @@ suggestions."
   (let ((selected-word (prompt1
                         :input word
                         :prompt "Suggest spelling (3+ characters)"
-                        :sources (make-instance 'enchant-source))))
+                        :sources 'enchant-source)))
     (trivial-clipboard:text selected-word)
     (echo "Word saved to clipboard.")))
 
@@ -104,7 +104,7 @@ suggestions."
   "Spell check full text input provided by the user."
   (let ((selected-text (prompt :input text
                                :prompt "Suggest spelling"
-                               :sources (make-instance 'enchant-text-input))))
+                               :sources 'enchant-text-input)))
     (trivial-clipboard:text selected-text)
     (echo "Text saved to clipboard.")))
 

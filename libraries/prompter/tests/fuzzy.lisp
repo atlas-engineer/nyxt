@@ -35,7 +35,7 @@
   "Historical list of Nyxt commands.")
 
 (prove:subtest "Fuzzy match"
-  (let ((source (make-instance 'prompter:raw-source)))
+  (let ((source 'prompter:raw-source))
     (flet ((match (input list)
              (setf (prompter::current-input-downcase-p source)
                    (str:downcasep input))

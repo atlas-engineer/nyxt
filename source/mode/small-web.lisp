@@ -236,7 +236,7 @@ Second return value should be the MIME-type of the content."))
                      (uiop:emptyp (cl-gopher:terms line)))
                 (progn (setf (cl-gopher:terms line)
                              (prompt1 :prompt (format nil "Search query for ~a" url)
-                                      :sources (make-instance 'prompter:raw-source)))
+                                      :sources 'prompter:raw-source))
                        (buffer-load (cl-gopher:uri-for-gopher-line line) :buffer buffer))
                 (with-current-buffer buffer
                   (nyxt/small-web-mode:gopher-render line))))
@@ -332,7 +332,7 @@ Implies that `small-web-mode' is enabled."
                (let ((text (quri:url-encode
                             (handler-case
                                 (prompt1 :prompt meta
-                                         :sources (make-instance 'prompter:raw-source)
+                                         :sources 'prompter:raw-source
                                          :invisible-input-p (eq status :sensitive-input))
                               (nyxt::nyxt-prompt-buffer-canceled () "")))))
                  (buffer-load (str:concat url "?" text) :buffer buffer)))

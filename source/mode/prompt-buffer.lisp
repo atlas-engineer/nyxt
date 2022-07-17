@@ -335,7 +335,7 @@ current unmarked selection."
              '(action-source))
       (echo "Already displaying return-actions of previous prompt buffer.")
       (let ((action (prompt1 :prompt "Action to run on selection"
-                             :sources (make-instance 'action-source))))
+                             :sources 'action-source)))
         (when action
           (prompter:return-selection prompt-buffer action)))))
 
@@ -416,9 +416,8 @@ Only available if `prompter:multi-selection-p' is non-nil."
   "Choose a PROMPT-BUFFER input history entry to insert as input."
   (let ((history (prompter:history prompt-buffer)))
     (if (and history (not (containers:empty-p history)))
-        (let ((input (prompt1
-                      :prompt "Input history"
-                      :sources (make-instance 'prompt-buffer-history-source))))
+        (let ((input (prompt1 :prompt "Input history"
+                              :sources 'prompt-buffer-history-source)))
           (unless (str:empty? input)
             (nyxt:set-prompt-buffer-input input)))
         (echo "Prompt buffer has no history."))))

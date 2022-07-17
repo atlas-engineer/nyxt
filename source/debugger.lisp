@@ -47,7 +47,7 @@ the channel, wrapped alongside the condition and its restarts."))
       (str:concat
        (prompt1
         :prompt (prompt-text handler)
-        :sources (make-instance 'prompter:raw-source))
+        :sources 'prompter:raw-source)
        +newline+)))
    (swank-backend:make-output-stream
     (lambda (string) (setf (prompt-text handler) string)))))

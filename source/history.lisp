@@ -390,7 +390,7 @@ Return non-NIL of history was restored, NIL otherwise."
 Useful for session snapshots, as `restore-history-by-name' will restore opened buffers."
   (sera:and-let* ((name (prompt1
                           :prompt "The name to store history with"
-                          :sources (list (make-instance 'prompter:raw-source)
+                          :sources (list 'prompter:raw-source
                                          (make-instance 'history-name-source))))
                   (new-file (make-instance 'history-file
                                            :base-path (make-pathname
@@ -409,7 +409,7 @@ If you want to save the current history file beforehand, call
 `store-history-by-name' to save it under a new name."
   ;; TODO: backup current history?
   (sera:and-let* ((name (prompt1 :prompt "The name of the history to restore"
-                                 :sources (make-instance 'history-name-source)))
+                                 :sources 'history-name-source))
                   (new-file (make-instance 'history-file
                                            :base-path (make-pathname
                                                        :name name

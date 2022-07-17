@@ -41,7 +41,7 @@ It takes a `repeat-mode' instance as argument.")))
   ;; TODO: Remember prompt input now that we have prompt-buffer hooks.
   (unless (repeat-action mode)
     (let ((prompted-action (prompt1 :prompt "Command to repeat"
-                                    :sources (make-instance 'nyxt:command-source))))
+                                    :sources 'nyxt:command-source)))
       (setf (repeat-action mode)
             #'(lambda (mode)
                 (declare (ignore mode))
@@ -55,7 +55,7 @@ It takes a `repeat-mode' instance as argument.")))
                       (parse-integer
                        (prompt1 :prompt "Repeat every X seconds"
                                 :input "5"
-                                :sources (make-instance 'prompter:raw-source)))))))
+                                :sources 'prompter:raw-source))))))
     (when seconds
       (enable-modes 'repeat-mode (current-buffer)
                     (list :repeat-interval seconds :repeat-action function)))))
@@ -67,7 +67,7 @@ It takes a `repeat-mode' instance as argument.")))
                     (parse-integer
                      (prompt1 :prompt "Repeat for X times"
                               :input "4"
-                              :sources (make-instance 'prompter:raw-source)))))))
+                              :sources 'prompter:raw-source))))))
     (when times
       (enable-modes 'repeat-mode (current-buffer)
                     (list :repeat-count times
@@ -103,7 +103,7 @@ It takes a `repeat-mode' instance as argument.")))
                    (parse-integer
                     (prompt1 :prompt "Repeat for X times"
                              :input "4"
-                             :sources (make-instance 'prompter:raw-source)))))))
+                             :sources 'prompter:raw-source))))))
   "Repeat the command bound to the user-pressed keybinding TIMES times."
   (setf *repeat-times-stack* (+ times (* 10 *repeat-times-stack*))
         (command-dispatcher (current-window)) (make-repeat-command-dispatcher *repeat-times-stack*)

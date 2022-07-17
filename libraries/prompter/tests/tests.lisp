@@ -232,14 +232,14 @@
 
 (prove:subtest "Raw source"
   (with-report-dangling-threads
-    (let ((prompter (prompter:make :sources (make-instance 'prompter:raw-source))))
+    (let ((prompter (prompter:make :sources 'prompter:raw-source)))
       (setf (prompter:input prompter) "foo")
       (when (prompter:all-ready-p prompter)
         (prove:is (all-source-suggestions prompter)
                   '("foo"))))
     (let ((prompter (prompter:make
                      :input "foo"
-                     :sources (make-instance 'prompter:raw-source))))
+                     :sources 'prompter:raw-source)))
       (when (prompter:all-ready-p prompter)
         (prove:is (all-source-suggestions prompter)
                   '("foo"))))))

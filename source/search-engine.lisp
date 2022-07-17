@@ -104,7 +104,7 @@ Example (Tor-proxied completion function for Wikipedia):
   "Search selected text using the queried search engine."
   (let* ((selection (%copy))
          (engine (prompt1 :prompt "Search engine"
-                          :sources (make-instance 'search-engine-source)))
+                          :sources 'search-engine-source))
          (target-buffer (if query-in-new-buffer-p
                             (make-buffer-focus)
                             (current-buffer))))

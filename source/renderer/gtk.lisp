@@ -1194,7 +1194,7 @@ See `finalize-buffer'."
                                               file-chooser-request)))
                                            (uiop:native-namestring (uiop:getcwd)))
                                    :extra-modes '(nyxt/file-manager-mode:file-manager-mode)
-                                   :sources (make-instance 'nyxt/file-manager-mode:file-source))
+                                   :sources 'nyxt/file-manager-mode:file-source)
                          (nyxt-prompt-buffer-canceled ()
                            nil)))))
           (if files
@@ -1290,7 +1290,7 @@ See `finalize-buffer'."
                                                      (round (* 255 (cffi:mem-aref rgba :double 1)))
                                                      (round (* 255 (cffi:mem-aref rgba :double 2)))
                                                      (round (* 255 (cffi:mem-aref rgba :double 3))))
-                                      :sources (make-instance 'color-source)))
+                                      :sources 'color-source))
                  (color (get-rgba color-name))
                  (opacity (sera:parse-float (get-opacity color-name)))
                  (rgba (progn
@@ -1322,7 +1322,7 @@ See `finalize-buffer'."
                                     (prompt
                                      :input (webkit:webkit-script-dialog-prompt-get-default-text dialog)
                                      :prompt (webkit:webkit-script-dialog-get-message dialog)
-                                     :sources (make-instance 'prompter:raw-source))
+                                     :sources 'prompter:raw-source)
                                   (nyxt-prompt-buffer-canceled (c) (declare (ignore c)) nil)))))
                (if text
                    (webkit:webkit-script-dialog-prompt-set-text dialog text)

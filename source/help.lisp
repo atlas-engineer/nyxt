@@ -43,7 +43,7 @@ CLASS is a class symbol."
     (let ((input (read-from-string
                   (prompt1
                     :prompt (format nil "Configure slot value ~a" slot)
-                    :sources (make-instance 'prompter:raw-source)))))
+                    :sources 'prompter:raw-source))))
       (cond
         ((and type (not (typep input type)))
          (echo-warning "Type mismatch for ~a: got ~a, expected ~a."

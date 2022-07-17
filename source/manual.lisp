@@ -226,7 +226,7 @@ Lisp function, except the form is " (:code "define-command") " instead of "
   \"Query the user which URL to bookmark.\"
   (let ((url (prompt
               :prompt \"Bookmark URL\"
-              :sources (make-instance 'prompter:raw-source))))
+              :sources 'prompter:raw-source)))
     (bookmark-add url)))"))
         (:p "See the " (:nxref :class-name 'prompt-buffer) " class documentation for how
 to write custom prompt-buffers."))
