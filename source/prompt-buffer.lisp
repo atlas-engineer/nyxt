@@ -137,7 +137,7 @@ See `prompt' for how to invoke prompts.")
                                       &key extra-modes &allow-other-keys)
   (hooks:run-hook (prompt-buffer-make-hook *browser*) prompt-buffer)
   (enable-modes (append (reverse (default-modes prompt-buffer))
-                        extra-modes)
+                        (uiop:ensure-list extra-modes))
                 prompt-buffer))
 
 (export-always 'current-source)
