@@ -286,7 +286,7 @@ directory name) as parameter.
 
 `file-source' also has `supported-media-types'. You can append new types to
 it. Every type in `supported-media-types' will be opened directly in Nyxt."
-  (prompt :extra-modes '(file-manager-mode)
+  (prompt :extra-modes 'file-manager-mode
           :input (uiop:native-namestring default-directory)
           :prompt "Open file"
           :sources 'open-file-source))

@@ -109,7 +109,7 @@ for which the `executable' slot is non-nil."
                   (uiop:native-namestring
                    (prompt1
                     :prompt "Password database file"
-                    :extra-modes '(nyxt/file-manager-mode:file-manager-mode)
+                    :extra-modes 'nyxt/file-manager-mode:file-manager-mode
                     :sources (make-instance 'nyxt/file-manager-mode:file-source
                                             :extensions '("kdbx"))))))
   (loop :until (password:password-correct-p password-interface)

@@ -319,7 +319,7 @@ On error, return the condition as a first value and the backtrace as second valu
              (if (uiop:file-exists-p config-path)
                  (uiop:pathname-directory-pathname config-path)
                  (uiop:getcwd))))
-   :extra-modes '(nyxt/file-manager-mode:file-manager-mode)
+   :extra-modes 'nyxt/file-manager-mode:file-manager-mode
    :sources
    (make-instance 'nyxt/file-manager-mode:file-source
                   :extensions '("lisp")

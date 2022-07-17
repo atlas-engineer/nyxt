@@ -78,7 +78,7 @@ contains an `nyxt/editor-mode:editor-mode' instance (or a subclass thereof)."))
   "Open a file in the internal editor."
   (let ((file (prompt1
                 :prompt "Open file"
-                :extra-modes '(nyxt/file-manager-mode:file-manager-mode)
+                :extra-modes 'nyxt/file-manager-mode:file-manager-mode
                 :input (uiop:native-namestring (uiop:getcwd))
                 :sources
                 (list (make-instance 'nyxt/file-manager-mode:file-source

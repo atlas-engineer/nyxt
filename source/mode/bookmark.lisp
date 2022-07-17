@@ -422,7 +422,7 @@ rest in background buffers."
     (&key (html-file (prompt1
                        ;; TODO: Is there a more intuitive directory for bookmarks?
                        :input (uiop:native-namestring (uiop:getcwd))
-                       :extra-modes '(nyxt/file-manager-mode:file-manager-mode)
+                       :extra-modes 'nyxt/file-manager-mode:file-manager-mode
                        :sources (make-instance
                                  'nyxt/file-manager-mode:file-source
                                  :extensions '("html")))))

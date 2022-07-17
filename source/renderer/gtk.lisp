@@ -1193,7 +1193,7 @@ See `finalize-buffer'."
                                              (webkit:webkit-file-chooser-request-selected-files
                                               file-chooser-request)))
                                            (uiop:native-namestring (uiop:getcwd)))
-                                   :extra-modes '(nyxt/file-manager-mode:file-manager-mode)
+                                   :extra-modes 'nyxt/file-manager-mode:file-manager-mode
                                    :sources 'nyxt/file-manager-mode:file-source)
                          (nyxt-prompt-buffer-canceled ()
                            nil)))))
