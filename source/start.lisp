@@ -312,20 +312,19 @@ On error, return the condition as a first value and the backtrace as second valu
 
 (define-command load-file ()
   "Load the prompted Lisp file."
-  (prompt
-   :prompt "Load file"
-   :input (uiop:native-namestring
-           (let ((config-path (files:expand *config-file*)))
-             (if (uiop:file-exists-p config-path)
-                 (uiop:pathname-directory-pathname config-path)
-                 (uiop:getcwd))))
-   :extra-modes 'nyxt/file-manager-mode:file-manager-mode
-   :sources
-   (make-instance 'nyxt/file-manager-mode:file-source
-                  :extensions '("lisp")
-                  :return-actions (list (lambda-command load-file* (files)
-                                   (dolist (file files)
-                                     (load-lisp file)))))))
+  (prompt :prompt "Load file"
+          :input (uiop:native-namestring
+                  (let ((config-path (files:expand *config-file*)))
+                    (if (uiop:file-exists-p config-path)
+                        (uiop:pathname-directory-pathname config-path)
+                        (uiop:getcwd))))
+          :extra-modes 'nyxt/file-manager-mode:file-manager-mode
+          :sources
+          (make-instance 'nyxt/file-manager-mode:file-source
+                         :extensions '("lisp")
+                         :return-actions (list (lambda-command load-file* (files)
+                                                 (dolist (file files)
+                                                   (load-lisp file)))))))
 
 (define-command clean-configuration ()
   "Clean all the user configuration created with `define-configuration' or `customize-instance'."

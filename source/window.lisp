@@ -184,8 +184,7 @@ not try to quit the browser."
 
 (define-command delete-window ()
   "Delete the queried window(s)."
-   (prompt :prompt "Delete window(s)"
-          :sources 'window-source))
+   (prompt :prompt "Delete window(s)" :sources 'window-source))
 
 (define-command delete-current-window (&optional (window (current-window)))
   "Delete WINDOW, or the current window, when omitted."
