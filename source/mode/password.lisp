@@ -84,8 +84,8 @@ for which the `executable' slot is non-nil."
                              :input (or (quri:uri-domain (url (current-buffer))) "")
                              :sources 'prompter:raw-source))
             (new-password (prompt1
-                            :invisible-input-p t
                             :prompt "New password (leave empty to generate)"
+                            :invisible-input-p t
                             :sources 'prompter:raw-source))
             (username (prompt1
                         :prompt "Username (can be empty)"

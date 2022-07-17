@@ -1320,8 +1320,8 @@ See `finalize-buffer'."
             (:webkit-script-dialog-prompt
              (let ((text (first (handler-case
                                     (prompt
-                                     :input (webkit:webkit-script-dialog-prompt-get-default-text dialog)
                                      :prompt (webkit:webkit-script-dialog-get-message dialog)
+                                     :input (webkit:webkit-script-dialog-prompt-get-default-text dialog)
                                      :sources 'prompter:raw-source)
                                   (nyxt-prompt-buffer-canceled (c) (declare (ignore c)) nil)))))
                (if text

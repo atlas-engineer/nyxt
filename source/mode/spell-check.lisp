@@ -70,8 +70,8 @@ suggestions."
 (define-command spell-check-suggest-word (&key word)
   "Suggest a spelling for a given word."
   (let ((selected-word (prompt1
-                        :input word
                         :prompt "Suggest spelling (3+ characters)"
+                        :input word
                         :sources 'enchant-source)))
     (trivial-clipboard:text selected-word)
     (echo "Word saved to clipboard.")))
@@ -102,8 +102,8 @@ suggestions."
 
 (define-command spell-check-text-input (&key text)
   "Spell check full text input provided by the user."
-  (let ((selected-text (prompt :input text
-                               :prompt "Suggest spelling"
+  (let ((selected-text (prompt :prompt "Suggest spelling"
+                               :input text
                                :sources 'enchant-text-input)))
     (trivial-clipboard:text selected-text)
     (echo "Text saved to clipboard.")))
