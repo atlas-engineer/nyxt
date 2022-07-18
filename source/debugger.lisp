@@ -24,29 +24,24 @@
 
 See `ndebug:condition-wrapper' for documentation."))
 
-(export 'make-nyxt-debugger)
-(defun make-nyxt-debugger
-    (&key (query-read (lambda (wrapper)
-                        (let ((*interactive-p* t))
-                          (prompt1 :prompt (prompt-text wrapper)
-                                   :sources (list (make-instance 'prompter:raw-source))))))
-       (query-write (lambda (wrapper string)
-                      (setf (prompt-text wrapper) string)))
-       (ui-display (lambda (wrapper)
-                     (setf (gethash (id wrapper) *debug-conditions*) wrapper)
-                     (set-current-buffer
-                      (setf (buffer wrapper)
-                            (buffer-load (nyxt-url 'open-debugger :id (id wrapper))
-                                         :buffer (ensure-internal-page-buffer 'open-debugger))))))
-       (ui-cleanup (lambda (wrapper)
-                     (remhash (id wrapper) *debug-conditions*)
-                     (buffer-delete (buffer wrapper)))))
-  (ndebug:make-debugger-hook
-   :wrapper-class 'debug-wrapper
-   :query-read query-read
-   :query-write query-write
-   :ui-display ui-display
-   :ui-cleanup ui-cleanup))
+(defmethod ndebug:ui-display ((wrapper debug-wrapper))
+  (setf (gethash (id wrapper) *debug-conditions*) wrapper)
+  (set-current-buffer
+   (setf (buffer wrapper)
+         (buffer-load (nyxt-url 'open-debugger :id (id wrapper))
+                      :buffer (ensure-internal-page-buffer 'open-debugger)))))
+
+(defmethod ndebug:ui-cleanup ((wrapper debug-wrapper))
+  (remhash (id wrapper) *debug-conditions*)
+  (buffer-delete (buffer wrapper)))
+
+(defmethod ndebug:query-read ((wrapper debug-wrapper))
+  (let ((*interactive-p* t))
+    (prompt1 :prompt (prompt-text wrapper)
+             :sources (list (make-instance 'prompter:raw-source)))))
+
+(defmethod ndebug:query-write ((wrapper debug-wrapper) (string string))
+  (setf (prompt-text wrapper) string))
 
 (defun restarts->html (wrapper)
   (spinneret:with-html-string
@@ -100,5 +95,8 @@ See `*debug-on-error*'."
   (let ((value (if value-provided-p value (not *debug-on-error*))))
     (setf *debug-on-error* value)
     ;; FIXME: This messes up SLIME/SLY debugging in REPL, as they set this too.
-    (swank-backend:install-debugger-globally (if value (make-nyxt-debugger) nil))
+    (swank-backend:install-debugger-globally
+     (if value
+         (ndebug:make-debugger-hook :wrapper-class 'debug-wrapper)
+         nil))
     (echo "Nyxt-native debugging ~:[dis~;en~]abled." value)))

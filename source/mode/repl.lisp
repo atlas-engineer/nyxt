@@ -51,15 +51,14 @@ Features:
     (let ((nyxt::*interactive-p* t)
           (*standard-output* (make-string-output-stream))
           (*package* (find-package :nyxt-user)))
-      (trivial-custom-debugger:with-debugger
-          ((make-nyxt-debugger
-            :ui-display (lambda (wrapper)
-                          (setf (ready-p evaluation) t)
-                          (setf (raised-condition evaluation) wrapper))
-            :ui-cleanup (lambda (wrapper)
-                          (declare (ignorable wrapper))
-                          (setf (raised-condition evaluation) nil)
-                          (reload-current-buffer))))
+      (ndebug:with-debugger-hook
+          (:wrapper-class 'nyxt::debug-wrapper
+           :ui-display (setf (ready-p evaluation) t
+                             (raised-condition evaluation) %wrapper%)
+           :ui-cleanup (lambda (wrapper)
+                         (declare (ignore wrapper))
+                         (setf (raised-condition evaluation) nil)
+                         (reload-current-buffer)))
         (with-input-from-string (input (input evaluation))
           (alex:lastcar
            (mapcar (lambda (s-exp)
