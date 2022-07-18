@@ -85,7 +85,6 @@
      (mark :foo)
      (sym 'sims)
      (fun #'list)
-     (composite (error "Should not eval, type should not be infered"))))
   (is (getf (mopu:slot-properties 'foo-type-infer 'name) :type)
             'string)
   (is (getf (mopu:slot-properties 'foo-type-infer 'nickname) :type)
@@ -110,3 +109,4 @@
             nil))
 
 (finalize)
+     (composite (error "Should not eval, type should not be inferred"))))

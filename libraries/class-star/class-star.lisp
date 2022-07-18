@@ -47,10 +47,10 @@ This is like `type-of' but returns less specialized types for some common
 subtypes, e.g.  for \"\" return 'string instead of `(SIMPLE-ARRAY CHARACTER
 \(0))'.
 
-Note that in a slot definition, '() is infered to be a list while NIL is infered
-to be a boolean.
+Note that in a slot definition, '() is inferred to be a list while NIL is
+inferred to be a boolean.
 
-Non-basic form types are not infered (returns nil).
+Non-basic form types are not inferred (returns nil).
 Non-basic scalar types are derived to their own type (with `type-of')."
   (multiple-value-bind (found? value)
       (initform definition)
