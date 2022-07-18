@@ -6,37 +6,40 @@
 (in-package :nyxt/hint-mode)
 
 (define-mode hint-mode ()
-  "Mode to interact with links using keyword only."
+  "Interact with elements by typing a short character sequence."
   ((visible-in-status-p nil)
    (rememberable-p nil)
    (auto-follow-hints-p
     nil
     :type boolean
     :documentation "Whether the hints are automatically followed when matching user input.")
-   (box-style (theme:themed-css (theme *browser*)
-                (".nyxt-hint"
-                 :background-color theme:primary
-                 :color theme:on-primary
-                 :font-weight "bold"
-                 :padding "0px 3px 0px 3px"
-                 :border-radius "2px"
-                 :z-index #.(1- (expt 2 31))))
-              :documentation "The style of the boxes, e.g. link hints.")
-   (highlighted-box-style (theme:themed-css (theme *browser*)
-                            (".nyxt-hint.nyxt-highlight-hint"
-                             :background-color theme:accent
-                             :color theme:on-accent))
-                          :documentation "The style of highlighted boxes, e.g. link hints.")
-
-   (hints-alphabet "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                   :type string
-                   :documentation "The alphabet (charset) to use for hints.
-Order matters -- the ones that go first are more likely to appear more often
-and to index the top of the page.")
-   (hints-selector "a, button, input, textarea, details, select, img:not([alt=\"\"])"
-                   :type string
-                   :documentation "Defines which elements are to be hinted. The
-hints-selector syntax is that of CLSS, and broadly, that of CSS. Use it to
+   (box-style
+    (theme:themed-css (theme *browser*)
+      (".nyxt-hint"
+       :background-color theme:primary
+       :color theme:on-primary
+       :font-family "monospace,monospace"
+       :padding "0px 0.3em"
+       :border-radius "0.3em"
+       :z-index #.(1- (expt 2 31))))
+    :documentation "The style of the boxes, e.g. link hints.")
+   (highlighted-box-style
+    (theme:themed-css (theme *browser*)
+      (".nyxt-hint.nyxt-highlight-hint"
+       :background-color theme:accent
+       :color theme:on-accent))
+    :documentation "The style of highlighted boxes, e.g. link hints.")
+   (hints-alphabet
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    :type string
+    :documentation "The alphabet (charset) to use for hints.
+Order matters -- the ones that go first are more likely to appear more often and
+to index the top of the page.")
+   (hints-selector
+    "a, button, input, textarea, details, select"
+    :type string
+    :documentation "The elements to be hinted.
+The hints-selector syntax is that of CLSS, and broadly, that of CSS. Use it to
 define which elements are picked up by element hinting.")
    (keyscheme-map
     (define-keyscheme-map "hint" ()
