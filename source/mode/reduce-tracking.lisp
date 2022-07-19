@@ -24,6 +24,7 @@ Accept-Language HTTP header.")
 It's Safari on macOS by default, because this way we break fewer websites while
 still being less noticeable in the crowd.")
    ;; Taken from https://github.com/brave/brave-core/blob/master/browser/net/brave_site_hacks_network_delegate_helper.cc#L31
+   ;; Also see https://gitlab.com/ClearURLs/rules/-/blob/master/data.min.json
    (query-tracking-parameters
     '("fbclid" "gclid" "msclkid" "mc_eid"
       "dclid"
