@@ -58,7 +58,7 @@ from a key binding.")
   (unless (active-prompt-buffers (current-window))
     (let ((command (prompt1
                      :prompt "Execute command"
-                     :sources (make-instance 'command-source)
+                     :sources 'command-source
                      :hide-suggestion-count-p t)))
       (setf (last-access command) (local-time:now))
       (run-async command))))
@@ -124,7 +124,7 @@ User input is evaluated Lisp."
   (let* ((command (or command
                       (prompt1
                         :prompt "Execute extended command"
-                        :sources (make-instance 'command-source)
+                        :sources 'command-source
                         :hide-suggestion-count-p t)))
          (lambda-list (arglist (slot-value command 'fn))))
     (multiple-value-match (alex:parse-ordinary-lambda-list lambda-list)
@@ -198,7 +198,7 @@ User input is evaluated Lisp."
   "Remove handler(s) from a hook."
   (let* ((hook-desc (prompt1
                       :prompt "Hook where to disable handler"
-                      :sources (make-instance 'hook-source)))
+                      :sources 'hook-source))
          (handler (prompt1
                     :prompt (format nil "Disable handler from ~a" (name hook-desc))
                     :sources (make-instance 'handler-source
@@ -209,7 +209,7 @@ User input is evaluated Lisp."
   "Enable handler(s) from a hook."
   (let* ((hook-desc (prompt1
                       :prompt "Hook where to enable handler"
-                      :sources (make-instance 'hook-source)))
+                      :sources 'hook-source))
          (handler (prompt1
                     :prompt (format nil "Enable handler from ~a" (name hook-desc))
                     :sources (make-instance 'disabled-handler-source

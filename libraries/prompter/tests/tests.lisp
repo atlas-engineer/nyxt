@@ -68,9 +68,9 @@
 (prove:subtest "Prompter matching"
   (with-report-dangling-threads
     (let ((prompter (prompter:make
-                     :sources (list (make-instance 'prompter:source
-                                                   :name "Test source"
-                                                   :constructor '("foo" "bar"))))))
+                     :sources (make-instance 'prompter:source
+                                             :name "Test source"
+                                             :constructor '("foo" "bar")))))
       (setf (prompter:input prompter) "foo")
       (when (prompter:all-ready-p prompter)
         (prove:is (source1-suggestions prompter)
@@ -99,9 +99,9 @@
     (let* ((url1 (make-instance 'url :url "http://example.org" :title "Example"))
            (url2 (make-instance 'url :url "http://nyxt.atlas.engineer" :title "Nyxt homepage"))
            (prompter (prompter:make
-                      :sources (list (make-instance 'prompter:source
-                                                    :name "Test source"
-                                                    :constructor (list url1 url2))))))
+                      :sources (make-instance 'prompter:source
+                                              :name "Test source"
+                                              :constructor (list url1 url2)))))
       (setf (prompter:input prompter) "nyxt")
       (when (prompter:all-ready-p prompter)
         (let ((filtered-suggestions (prompter:suggestions
@@ -127,10 +127,10 @@
 (prove:subtest "Asynchronous suggestion computation"
   (with-report-dangling-threads
     (let ((prompter (prompter:make
-                     :sources (list (make-instance 'prompter:source
-                                                   :name "Test source"
-                                                   :constructor '("foo" "bar")
-                                                   :filter #'slow-identity-match)))))
+                     :sources (make-instance 'prompter:source
+                                             :name "Test source"
+                                             :constructor '("foo" "bar")
+                                             :filter #'slow-identity-match))))
       (setf (prompter:input prompter) "foo")
       (when (prompter:all-ready-p prompter)
         (let ((filtered-suggestions (prompter:suggestions
@@ -145,8 +145,7 @@
                                   :name "Test source"
                                   :constructor suggestion-values
                                   :filter #'slow-identity-match))
-           (prompter (prompter:make
-                      :sources (list source))))
+           (prompter (prompter:make :sources source)))
       (setf (prompter:input prompter) "foo")
       (sera:nlet query-suggestions ((computed-count 1))
         (calispel:fair-alt
@@ -165,8 +164,7 @@
                                   :name "Test source"
                                   :constructor suggestion-values
                                   :filter #'slow-identity-match))
-           (prompter (prompter:make
-                      :sources (list source))))
+           (prompter (prompter:make :sources source)))
       (let ((before-input (get-internal-real-time)))
         (setf (prompter:input prompter) "foo")
         (setf (prompter:input prompter) "bar")
@@ -182,8 +180,7 @@
   (with-report-dangling-threads
     (let* ((source (make-instance 'prompter:yes-no-source
                                   :constructor '("no" "yes")))
-           (prompter (prompter:make
-                      :sources (list source))))
+           (prompter (prompter:make :sources source)))
       (prove:is
        (mapcar #'prompter:value (prompter:suggestions
                                  (first (prompter:sources prompter))))
@@ -198,9 +195,9 @@
 (prove:subtest "Return result"
   (with-report-dangling-threads
     (let ((prompter (prompter:make
-                     :sources (list (make-instance 'prompter:source
-                                                   :name "Test source"
-                                                   :constructor '("foo" "bar"))))))
+                     :sources (make-instance 'prompter:source
+                                             :name "Test source"
+                                             :constructor '("foo" "bar")))))
       (setf (prompter:input prompter) "bar")
       (when (prompter:all-ready-p prompter)
         (prompter:return-selection prompter)
@@ -235,15 +232,14 @@
 
 (prove:subtest "Raw source"
   (with-report-dangling-threads
-    (let ((prompter (prompter:make
-                     :sources (list (make-instance 'prompter:raw-source)))))
+    (let ((prompter (prompter:make :sources 'prompter:raw-source)))
       (setf (prompter:input prompter) "foo")
       (when (prompter:all-ready-p prompter)
         (prove:is (all-source-suggestions prompter)
                   '("foo"))))
     (let ((prompter (prompter:make
                      :input "foo"
-                     :sources (list (make-instance 'prompter:raw-source)))))
+                     :sources 'prompter:raw-source)))
       (when (prompter:all-ready-p prompter)
         (prove:is (all-source-suggestions prompter)
                   '("foo"))))))
@@ -292,10 +288,9 @@
 
 (prove:subtest "History"
   (with-report-dangling-threads
-    (let ((prompter (prompter:make
-                     :sources (list (make-instance 'prompter:source
-                                                   :name "Test source"
-                                                   :constructor '("foo" "bar"))))))
+    (let ((prompter (prompter:make :sources (make-instance 'prompter:source
+                                                           :name "Test source"
+                                                           :constructor '("foo" "bar")))))
       (flet ((history ()
                (containers:container->list (prompter:history prompter)))
              (sync ()
@@ -452,10 +447,10 @@
       (let* ((buffer1 (make-instance 'buffer :title "buffer1" :keywords '("foo1" "bar1")))
              (buffer2 (make-instance 'buffer :title "buffer2" :keywords '("foo2" "bar2")))
              (prompter (prompter:make
-                        :sources (list (make-instance 'prompter:source
-                                                      :name "Test source"
-                                                      :constructor (list buffer1 buffer2)
-                                                      :active-attributes-keys '("Title"))))))
+                        :sources (make-instance 'prompter:source
+                                                :name "Test source"
+                                                :constructor (list buffer1 buffer2)
+                                                :active-attributes-keys '("Title")))))
         (prove:is (prompter:active-attributes
                    (prompter:selected-suggestion prompter)
                    :source (prompter:selected-source prompter))
@@ -479,14 +474,13 @@
 (prove:subtest "Error handling"
   (with-report-dangling-threads
     (let ((prompter (prompter:make
-                     :sources (list
-                               (make-instance 'prompter:source
-                                              :name "Test source"
-                                              :constructor '("foo" "bar")
-                                              :filter-postprocessor
-                                              (lambda (suggestions source input)
-                                                (declare (ignore suggestions source))
-                                                (/ 1 input)))))))
+                     :sources (make-instance 'prompter:source
+                                             :name "Test source"
+                                             :constructor '("foo" "bar")
+                                             :filter-postprocessor
+                                             (lambda (suggestions source input)
+                                               (declare (ignore suggestions source))
+                                               (/ 1 input))))))
       (flet ((selection-value ()
                (prompter:value (prompter:selected-suggestion prompter))))
         (prompter:all-ready-p prompter)

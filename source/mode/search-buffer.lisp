@@ -233,23 +233,21 @@ Example:
 
   (define-configuration buffer
     ((keep-search-hints-p nil)))"
-  (prompt
-   :prompt "Search text"
-   :sources (list
-             (make-instance 'search-buffer-source
-                            :case-sensitive-p case-sensitive-p
-                            :return-actions (list (lambda (search-match)
-                                             (unless (keep-search-hints-p (current-buffer))
-                                               (remove-search-hints))
-                                             search-match))))))
+  (prompt :prompt "Search text"
+          :sources (make-instance 'search-buffer-source
+                                  :case-sensitive-p case-sensitive-p
+                                  :return-actions
+                                  (list (lambda (search-match)
+                                          (unless (keep-search-hints-p (current-buffer))
+                                            (remove-search-hints))
+                                          search-match)))))
 
 (define-command search-buffers (&key case-sensitive-p)
   "Search multiple buffers."
-  (let ((buffers (prompt
-                  :prompt "Search buffer(s)"
-                  :sources (list (make-instance 'buffer-source ; TODO: Define class?
-                                                :return-actions '()
-                                                :multi-selection-p t)))))
+  (let ((buffers (prompt :prompt "Search buffer(s)"
+                         :sources (make-instance 'buffer-source ; TODO: Define class?
+                                                 :return-actions '()
+                                                 :multi-selection-p t))))
     (prompt
      :prompt "Search text"
      :sources (mapcar (lambda (buffer)

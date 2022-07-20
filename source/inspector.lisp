@@ -257,7 +257,7 @@ values in help buffers, REPL and elsewhere."))
                                                (evaluate
                                                 (prompt1
                                                   :prompt (format nil "Set ~a to" slot-name)
-                                                  :sources (make-instance 'prompter:raw-source)))))
+                                                  :sources 'prompter:raw-source))))
                                       (nyxt-prompt-buffer-canceled nil))))
                    "change "))
              (:dd (:raw (value->html (slot-value value slot-name) t)))))

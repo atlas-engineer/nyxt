@@ -185,9 +185,8 @@ turned into links to their respective description page."
 
 (define-internal-page-command-global describe-package
     (&key (package
-           (prompt1
-             :prompt "Describe package"
-             :sources (make-instance 'package-source))))
+           (prompt1 :prompt "Describe package"
+                    :sources 'package-source)))
     (buffer (str:concat "*Help-" (package-name package) "*") (resolve-symbol :help-mode :mode))
   "Inspect a package and show it in a help buffer."
   (let ((total-symbols (package-symbols nil (list package)))
@@ -218,10 +217,9 @@ turned into links to their respective description page."
 (define-internal-page-command-global describe-variable
     (&key
      universal
-     (variable
-      (prompt1
-        :prompt "Describe variable"
-        :sources (make-instance 'variable-source :universal universal))))
+     (variable (prompt1 :prompt "Describe variable"
+                        :sources (make-instance 'variable-source
+                                                :universal universal))))
     (buffer (str:concat "*Help-" (symbol-name variable) "*") (resolve-symbol :help-mode :mode))
   "Inspect a variable and show it in a help buffer."
   (let ((*print-case* :downcase))
@@ -240,7 +238,7 @@ turned into links to their respective description page."
                                    (evaluate
                                     (prompt1
                                       :prompt (format nil "Set ~a to" variable)
-                                      :sources (make-instance 'prompter:raw-source)))))
+                                      :sources 'prompter:raw-source))))
                           (nyxt-prompt-buffer-canceled nil))))
        "Change value")
       (:p (:raw (value->html (symbol-value variable)))))))
@@ -276,9 +274,8 @@ turned into links to their respective description page."
 (define-internal-page-command-global describe-function
     (&key
      universal
-     (fn (prompt1
-           :prompt "Describe function"
-           :sources (make-instance 'function-source :universal universal))))
+     (fn (prompt1 :prompt "Describe function"
+                  :sources (make-instance 'function-source :universal universal))))
     (buffer (str:concat "*Help-" (symbol-name fn) "*") (resolve-symbol :help-mode :mode))
   "Inspect a function and show it in a help buffer.
 For generic functions, describe all the methods."
@@ -354,18 +351,16 @@ For generic functions, describe all the methods."
                 (:h1 (format nil "~s" input) ; Use FORMAT to keep package prefix.
                      (when (macro-function input) " (macro)"))
                 (:raw (fun-desc input))))))
-      (prompt
-       :prompt "Describe function"
-       :sources (make-instance 'function-source))))
+      (prompt :prompt "Describe function"
+              :sources 'function-source)))
 
 (define-command-global universal-describe-function ()
   "Inspect a function from any Nyxt-accessible package and show it in a help buffer."
   (describe-function :universal t))
 
 (define-internal-page-command-global describe-command
-    (&key (command (name (prompt1
-                           :prompt "Describe command"
-                           :sources (make-instance 'command-source)))))
+    (&key (command (name (prompt1 :prompt "Describe command"
+                                  :sources 'command-source))))
     (buffer (str:concat "*Help-" (symbol-name command) "*") (resolve-symbol :help-mode :mode))
   "Inspect a command and show it in a help buffer.
 A command is a special kind of function that can be called with

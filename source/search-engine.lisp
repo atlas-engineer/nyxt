@@ -103,9 +103,8 @@ Example (Tor-proxied completion function for Wikipedia):
 (define-command query-selection-in-search-engine (&key (query-in-new-buffer-p t))
   "Search selected text using the queried search engine."
   (let* ((selection (%copy))
-         (engine (first (prompt
-                         :prompt "Search engine"
-                         :sources (make-instance 'search-engine-source))))
+         (engine (prompt1 :prompt "Search engine"
+                          :sources 'search-engine-source))
          (target-buffer (if query-in-new-buffer-p
                             (make-buffer-focus)
                             (current-buffer))))

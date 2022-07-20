@@ -107,8 +107,8 @@ The `implicit-visits' count is incremented."
   "Delete queried history entries."
   (let ((entries (prompt
                   :prompt "Delete entries"
-                  :sources (list (make-instance 'history-disowned-source
-                                                :buffer buffer)))))
+                  :sources (make-instance 'history-disowned-source
+                                          :buffer buffer))))
     (files:with-file-content (history (history-file buffer))
       (dolist (entry entries)
         (htree:delete-data history entry)))))
@@ -120,10 +120,9 @@ This removes the parenthood with the parent buffer, if there was any.
 When called over many or all buffers, it may free many history entries which
 then become available for deletion with `delete-history-entry'."
   (let ((buffers (or (alex:ensure-list buffer)
-                     (prompt
-                      :prompt "Reset histories of buffer(s)"
-                      :sources (list (make-instance 'buffer-source
-                                                    :return-actions '()))))))
+                     (prompt :prompt "Reset histories of buffer(s)"
+                             :sources (make-instance 'buffer-source
+                                                     :return-actions '())))))
     (files:with-file-content (history (history-file (current-buffer)))
       (dolist (buffer buffers)
         (htree:reset-owner history (id buffer))))))
@@ -391,7 +390,7 @@ Return non-NIL of history was restored, NIL otherwise."
 Useful for session snapshots, as `restore-history-by-name' will restore opened buffers."
   (sera:and-let* ((name (prompt1
                           :prompt "The name to store history with"
-                          :sources (list (make-instance 'prompter:raw-source)
+                          :sources (list 'prompter:raw-source
                                          (make-instance 'history-name-source))))
                   (new-file (make-instance 'history-file
                                            :base-path (make-pathname
@@ -409,9 +408,8 @@ The imported history file is untouched while the current one is overwritten.
 If you want to save the current history file beforehand, call
 `store-history-by-name' to save it under a new name."
   ;; TODO: backup current history?
-  (sera:and-let* ((name (prompt1
-                          :prompt "The name of the history to restore"
-                          :sources (list (make-instance 'history-name-source))))
+  (sera:and-let* ((name (prompt1 :prompt "The name of the history to restore"
+                                 :sources 'history-name-source))
                   (new-file (make-instance 'history-file
                                            :base-path (make-pathname
                                                        :name name

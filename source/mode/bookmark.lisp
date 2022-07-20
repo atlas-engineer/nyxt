@@ -256,14 +256,10 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                            :return-actions (list (lambda-mapped-command bookmark-current-url)))))
 
 (define-command bookmark-url
-    (&key (url (ignore-errors
-                (quri:uri
-                 (first
-                  (prompt
-                   :prompt "Bookmark URL"
-                   :sources (list
-                             (make-instance 'prompter:raw-source
-                                            :name "New URL"))))))))
+    (&key (url (ignore-errors (quri:uri (prompt1
+                                         :prompt "Bookmark URL"
+                                         :sources (make-instance 'prompter:raw-source
+                                                                 :name "New URL"))))))
   "Prompt for a URL to bookmark."
   (if (not (valid-url-p url))
       (echo "Invalid URL '~a'" url)
@@ -426,7 +422,7 @@ rest in background buffers."
     (&key (html-file (prompt1
                        ;; TODO: Is there a more intuitive directory for bookmarks?
                        :input (uiop:native-namestring (uiop:getcwd))
-                       :extra-modes '(nyxt/file-manager-mode:file-manager-mode)
+                       :extra-modes 'nyxt/file-manager-mode:file-manager-mode
                        :sources (make-instance
                                  'nyxt/file-manager-mode:file-source
                                  :extensions '("html")))))

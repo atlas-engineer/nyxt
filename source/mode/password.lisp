@@ -82,14 +82,14 @@ for which the `executable' slot is non-nil."
      (let* ((password-name (prompt1
                              :prompt "Name for new password"
                              :input (or (quri:uri-domain (url (current-buffer))) "")
-                             :sources (make-instance 'prompter:raw-source)))
+                             :sources 'prompter:raw-source))
             (new-password (prompt1
-                            :invisible-input-p t
                             :prompt "New password (leave empty to generate)"
-                            :sources (make-instance 'prompter:raw-source)))
+                            :invisible-input-p t
+                            :sources 'prompter:raw-source))
             (username (prompt1
                         :prompt "Username (can be empty)"
-                        :sources (make-instance 'prompter:raw-source))))
+                        :sources 'prompter:raw-source)))
        (password:save-password (password-interface buffer)
                                :username username
                                :password-name password-name
@@ -108,17 +108,15 @@ for which the `executable' slot is non-nil."
         :do (setf (password::password-file password-interface)
                   (uiop:native-namestring
                    (prompt1
-                     :prompt "Password database file"
-                     :extra-modes '(nyxt/file-manager-mode:file-manager-mode)
-                     :sources (list (make-instance
-                                     'nyxt/file-manager-mode:file-source
-                                     :extensions '("kdbx")))))))
+                    :prompt "Password database file"
+                    :extra-modes 'nyxt/file-manager-mode:file-manager-mode
+                    :sources (make-instance 'nyxt/file-manager-mode:file-source
+                                            :extensions '("kdbx"))))))
   (loop :until (password:password-correct-p password-interface)
         :do (setf (password::master-password password-interface)
-                  (prompt1
-                    :prompt "Database password"
-                    :sources (list (make-instance 'prompter:raw-source))
-                    :invisible-input-p t))))
+                  (prompt1 :prompt "Database password"
+                           :sources 'prompter:raw-source
+                           :invisible-input-p t))))
 
 (defmacro with-password (password-interface &body body)
   `(if (password:password-correct-p ,password-interface)
@@ -133,10 +131,10 @@ for which the `executable' slot is non-nil."
   (if (password-interface buffer)
       (let* ((password-name (prompt1
                               :prompt "Name of password"
-                              :sources (make-instance 'prompter:raw-source)))
+                              :sources 'prompter:raw-source))
              (service (prompt1
                         :prompt "Service"
-                        :sources (make-instance 'prompter:raw-source))))
+                        :sources 'prompter:raw-source)))
         (handler-case
             (password:clip-password (password-interface buffer)
                                     :password-name password-name
@@ -151,13 +149,12 @@ See also `copy-password-prompt-details'."
   (password-debug-info)
   (if (password-interface buffer)
       (with-password (password-interface buffer)
-        (prompt1
-          :prompt "Password"
-          :input (quri:uri-domain (url buffer))
-          :sources (list (make-instance
-                          'password-source
-                          :buffer buffer
-                          :password-instance (password-interface buffer)))))
+        (prompt1 :prompt "Password"
+                 :input (quri:uri-domain (url buffer))
+                 :sources (make-instance
+                           'password-source
+                           :buffer buffer
+                           :password-instance (password-interface buffer))))
       (echo-warning "No password manager found.")))
 
 (define-command copy-username (&optional (buffer (current-buffer)))
@@ -165,14 +162,13 @@ See also `copy-password-prompt-details'."
   (password-debug-info)
   (if (password-interface buffer)
       (with-password (password-interface buffer)
-        (prompt
-         :prompt "Username"
-         :input (quri:uri-domain (url buffer))
-         :sources (list
-                   (make-instance 'password-source
-                                  :buffer buffer
-                                  :password-instance (password-interface buffer)
-                                  :return-actions (sera:filter (sera:eqs 'clip-username)
-                                                               password-source-actions
-                                                               :key #'name)))))
+        (prompt :prompt "Username"
+                :input (quri:uri-domain (url buffer))
+                :sources (make-instance
+                          'password-source
+                          :buffer buffer
+                          :password-instance (password-interface buffer)
+                          :return-actions (sera:filter (sera:eqs 'clip-username)
+                                                       password-source-actions
+                                                       :key #'name))))
       (echo-warning "No password manager found.")))

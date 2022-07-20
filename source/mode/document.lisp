@@ -189,10 +189,8 @@ It does not assume being online."))
 
 (define-command paste-from-clipboard-ring ()
   "Show `*browser*' clipboard ring and paste selected entry."
-  (prompt
-   :prompt "Paste from ring"
-   :sources (list (make-instance 'ring-source
-                                 :ring (nyxt::clipboard-ring *browser*)))))
+  (prompt :prompt "Paste from ring"
+          :sources (make-instance 'ring-source :ring (nyxt::clipboard-ring *browser*))))
 
 (define-command copy (&optional (buffer (current-buffer)))
   "Copy selected text to clipboard."
@@ -475,10 +473,8 @@ ID is a buffer `id'."
 
 (define-command jump-to-heading (&key (buffer (current-buffer)))
   "Jump to a particular heading, of type h1, h2, h3, h4, h5, or h6."
-  (prompt
-   :prompt "Jump to heading"
-   :sources (list (make-instance 'heading-source
-                                 :buffer buffer))))
+  (prompt :prompt "Jump to heading"
+          :sources (make-instance 'heading-source :buffer buffer)))
 
 (define-command jump-to-heading-buffers ()
   "Jump to a particular heading, of type h1, h2, h3, h4, h5, or h6 across a set
@@ -703,19 +699,17 @@ of buffers."
 
 (define-command select-frame-new-buffer (&key (buffer (current-buffer)))
   "Select a frame and open the links in new buffers."
-  (prompt
-   :prompt "Open selected links in new buffers"
-   :sources (list
-             (make-instance
-              'frame-source
-              :buffer buffer
-              :multi-selection-p t
-              :return-actions (list (lambda-command open-new-buffers (urls)
-                                      (mapcar (lambda (i) (make-buffer :url (quri:uri i))) urls)))))
-   :after-destructor
-   (lambda ()
-     (with-current-buffer buffer
-       (frame-element-clear)))))
+  (prompt :prompt "Open selected links in new buffers"
+          :sources (make-instance
+                    'frame-source
+                    :buffer buffer
+                    :multi-selection-p t
+                    :return-actions (list (lambda-command open-new-buffers (urls)
+                                            (mapcar (lambda (i)
+                                                      (make-buffer :url (quri:uri i)))
+                                                    urls))))
+          :after-destructor (lambda () (with-current-buffer buffer
+                                    (frame-element-clear)))))
 
 (defun frame-source-selection ()
   (remove-duplicates (mapcar #'url (frame-element-get-selection))

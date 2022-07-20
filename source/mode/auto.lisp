@@ -227,7 +227,7 @@ The rules are:
                       (let ((url (prompt1
                                    :prompt "URL"
                                    :input (render-url (url (buffer mode)))
-                                   :sources (make-instance 'prompter:raw-source))))
+                                   :sources 'prompter:raw-source)))
                         (add-modes-to-auto-mode-rules (url-infer-match url)
                                                       :append-p t
                                                       :include (when enable-p (list invocation))

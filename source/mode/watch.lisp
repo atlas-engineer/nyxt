@@ -19,7 +19,7 @@
                           (parse-integer
                            (prompt1
                              :prompt (format nil "Time interval (~a)" unit)
-                             :sources (make-instance 'prompter:raw-source))
+                             :sources 'prompter:raw-source)
                            :junk-allowed t))
                         active-time-units))
          (to-seconds-multipliers

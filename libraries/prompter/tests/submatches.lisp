@@ -7,7 +7,7 @@
 
 (prove:subtest "Submatches Test"
   (flet ((submatch (input list)
-           (let ((source (make-instance 'prompter:raw-source)))
+           (let ((source 'prompter:raw-source))
              (mapcar (lambda (suggestion)
                        (let ((res (prompter:submatches suggestion source input)))
                          (when res
