@@ -100,3 +100,18 @@ See `*debug-on-error*'."
          (ndebug:make-debugger-hook :wrapper-class 'debug-wrapper)
          nil))
     (echo "Nyxt-native debugging ~:[dis~;en~]abled." value)))
+
+(define-command-global report-bug ()
+  "Report the bug on Nyxt GitHub, filling all the guessable information in the process."
+  (let* ((title (prompt1
+                 :prompt "Title of the issue"
+                 :sources (list (make-instance 'prompter:raw-source))))
+         (buffer (make-buffer-focus
+                  :url (quri:uri (format nil "https://github.com/atlas-engineer/nyxt/issues/new?&template=bug_report.md&title=~a"
+                                         title)))))
+    (hooks:once-on (buffer-loaded-hook buffer)
+        (buffer)
+      (when (and (equalp (quri:uri-host (url buffer)) "github.com")
+                 (equalp (quri:uri-path (url buffer)) "/atlas-engineer/nyxt/issues/new"))
+        (nyxt:peval (ps:chain (nyxt/ps:qs document "#issue_body") (focus)))
+        (%paste :input-text (funcall (nyxt/autofill-mode:autofill-fill *debug-autofill*)))))))
