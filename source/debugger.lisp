@@ -114,4 +114,31 @@ See `*debug-on-error*'."
       (when (and (equalp (quri:uri-host (url buffer)) "github.com")
                  (equalp (quri:uri-path (url buffer)) "/atlas-engineer/nyxt/issues/new"))
         (nyxt:peval (ps:chain (nyxt/ps:qs document "#issue_body") (focus)))
-        (%paste :input-text (funcall (nyxt/autofill-mode:autofill-fill *debug-autofill*)))))))
+        (nyxt:peval (setf (ps:@ document active-element value) ""))
+        (%paste
+         :input-text (format
+                      nil "**Describe the bug**
+
+**Precise recipe to reproduce the issue**
+
+For website-specific issues:
+Can you reproduce this issue with Epiphany / GNOME Web (https://wiki.gnome.org/Apps/Web)?
+
+**Information**
+- OS name+version:
+```sh
+
+```
+- Graphics card and driver:
+``` sh
+
+```
+- Desktop environment / Window manager name+version: 
+- How you installed Nyxt (Guix pack, package manager, build from source):
+- Information from `show-system-information`:
+```
+~a
+```
+
+**Output when started from a shell** "
+                      (nyxt::system-information)))))))
