@@ -310,6 +310,7 @@ SLY install.")
       "This should mitigate memory errors since Nyxt is very memory intensive."
       "You can override this by setting the " (:code "LISP_FLAGS") " variable as
       per the installation instructions.")
+
   (:h3 "Bug fixes")
   (:ul
    (:li "Fix the frequent dead locks on multi-buffer deletion.")
@@ -327,8 +328,7 @@ SLY install.")
    (:li "Fix formatting of web process crash report.")
    (:li "Fix some " (:code "auto-mode") " issues.  (Thanks to @efimerspan!)")))
 
-(define-version "3.0.0"
-  (:h3 "Pre-release 1")
+(define-version "3-pre-release-1"
   (:ul
    (:li "New " (:code "migration-guide") " command to help the user mgirate "
         "their configuration between major version releases. "
@@ -393,46 +393,46 @@ SLY install.")
         " Slot " (:code "session-restore-prompt") " has been replaced by "
         (:code "restore-session-on-startup-p") ", a boolean.")
    (:li "Prompt buffer mouse support can be disabled with the " (:code "mouse-support-p")
-        " prompt-buffer slot.  (Thanks to @efimerspan!)")
+        " prompt-buffer slot.  (Thanks to @efimerspan!)"))
 
-   (:h3 "Bindings")
-   (:ul
-    (:li "Add Emacs/VI text editing bindings in " (:code "prompt-buffer-mode") " and " (:code "lisp-repl") ".")
-    (:li "Rebind " (:code "history-forwards") " to " (:code "history-forwards-maybe-query") " in the Emacs and VI schemes.")
-    (:li "Rebind " (:code "bookmark-url") " and " (:code "copy-title") " to be more consistent with other bindings."))
+  (:h3 "Bindings")
+  (:ul
+   (:li "Add Emacs/VI text editing bindings in " (:code "prompt-buffer-mode") " and " (:code "lisp-repl") ".")
+   (:li "Rebind " (:code "history-forwards") " to " (:code "history-forwards-maybe-query") " in the Emacs and VI schemes.")
+   (:li "Rebind " (:code "bookmark-url") " and " (:code "copy-title") " to be more consistent with other bindings."))
 
-   (:h3 "Programming interface")
-   (:ul
-    (:li "Nyxt-native debugger available via " (:code "toggle-debug-on-error") ".")
-    (:li "Better Lisp values inspection in " (:code "describe-*")
-         " commands and " (:code "lisp-repl") ", extensible through "
-         (:code "value->html") " method.")
-    (:li "Universal describe-* commands describing things in any Nyxt-accessible package."
-         "Available via " (:code "C-h u") " key prefix.")
-    (:li (:code "*after-startup-hook*") " to attach headless mode actions or configuration to.")
-    (:li "Thread name is now mandatory in " (:code "run-thread") ".")
-    (:li "New " (:code "nyxt-unstable") " " (:code "*features*")
-         " when built from source on an untagged commit.  A feature with the commit is also added.")
-    (:li "New " (:code "prompt1") " helper.")
-    (:li "New " (:code "theme") " library.")
-    (:li "Input processing is now easier to customize with " (:code "command-dispatcher")
-         " and " (:code "input-skip-dispatcher") " slots of " (:code "window") ".")
-    (:li (:code "on") " and " (:code "on-once") " helpers to shorten attaching to hooks.")
-    (:li "Rename buffer slot " (:code "load-status") " to " (:code "status") ".")
-    (:li "Export " (:code "system-information") ".")
-    (:li "The core " (:code "nyxt") " packages are now locked"
-         "to prevent against accidental clobbering from the user side.")
-    (:li "New " (:code "ffi-buffer-load-html") " and " (:code "ffi-buffer-load-alternate-html")
-         "."
-         "This is useful to set the buffer content without resorting to expensive JavaScript calls.")
-    (:li "Removed " (:code "clipboard-text") " since it's redundant with " (:code "ffi-buffer-copy") ".")
-    (:li "Specialize " (:code "prompter:object-attributes") " on " (:code "source") " to o."
-         "This offers more customizability.")
-    (:li "General purpose helpers can be found in the " (:code "nyxt/utilities") " package.")
-    (:li "New " (:code "nxref") " Spinneret tag for cross-referencing."))
+  (:h3 "Programming interface")
+  (:ul
+   (:li "Nyxt-native debugger available via " (:code "toggle-debug-on-error") ".")
+   (:li "Better Lisp values inspection in " (:code "describe-*")
+        " commands and " (:code "lisp-repl") ", extensible through "
+        (:code "value->html") " method.")
+   (:li "Universal describe-* commands describing things in any Nyxt-accessible package."
+        "Available via " (:code "C-h u") " key prefix.")
+   (:li (:code "*after-startup-hook*") " to attach headless mode actions or configuration to.")
+   (:li "Thread name is now mandatory in " (:code "run-thread") ".")
+   (:li "New " (:code "nyxt-unstable") " " (:code "*features*")
+        " when built from source on an untagged commit.  A feature with the commit is also added.")
+   (:li "New " (:code "prompt1") " helper.")
+   (:li "New " (:code "theme") " library.")
+   (:li "Input processing is now easier to customize with " (:code "command-dispatcher")
+        " and " (:code "input-skip-dispatcher") " slots of " (:code "window") ".")
+   (:li (:code "on") " and " (:code "on-once") " helpers to shorten attaching to hooks.")
+   (:li "Rename buffer slot " (:code "load-status") " to " (:code "status") ".")
+   (:li "Export " (:code "system-information") ".")
+   (:li "The core " (:code "nyxt") " packages are now locked"
+        "to prevent against accidental clobbering from the user side.")
+   (:li "New " (:code "ffi-buffer-load-html") " and " (:code "ffi-buffer-load-alternate-html")
+        "."
+        "This is useful to set the buffer content without resorting to expensive JavaScript calls.")
+   (:li "Removed " (:code "clipboard-text") " since it's redundant with " (:code "ffi-buffer-copy") ".")
+   (:li "Specialize " (:code "prompter:object-attributes") " on " (:code "source") " to o."
+        "This offers more customizability.")
+   (:li "General purpose helpers can be found in the " (:code "nyxt/utilities") " package.")
+   (:li "New " (:code "nxref") " Spinneret tag for cross-referencing."))
 
-   (:h3 "Bug fixes")
-   (:ul
-    (:li "Lisp run with the --script or --eval command line arguments"
-         " now default to the " (:code "nyxt-user") " package.")
-    (:li "Various " (:code "spell-check-mode") " fixes.  (Thanks to @hendursaga!) "))))
+  (:h3 "Bug fixes")
+  (:ul
+   (:li "Lisp run with the --script or --eval command line arguments"
+        " now default to the " (:code "nyxt-user") " package.")
+   (:li "Various " (:code "spell-check-mode") " fixes.  (Thanks to @hendursaga!) ")))
