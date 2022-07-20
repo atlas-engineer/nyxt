@@ -13,7 +13,7 @@ in your configuration file.
 Example:
 
 \(define-configuration buffer
-  ((default-modes (append '(vi-normal-mode) %slot-default%))))
+  ((default-modes (append '(vi-normal-mode) %slot-value%))))
 
 In `vi-insert-mode', CUA bindings are still available unless
 `passthrough-mode-p' is non-nil in `vi-insert-mode'.
