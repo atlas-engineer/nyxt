@@ -714,5 +714,3 @@ of buffers."
 (defun frame-source-selection ()
   (remove-duplicates (mapcar #'url (frame-element-get-selection))
                      :test #'equal))
-
-(pushnew 'document-mode nyxt::%default-modes)
