@@ -436,3 +436,15 @@ SLY install.")
    (:li "Lisp run with the --script or --eval command line arguments"
         " now default to the " (:code "nyxt-user") " package.")
    (:li "Various " (:code "spell-check-mode") " fixes.  (Thanks to @hendursaga!) ")))
+
+(define-version "3.0.0"
+  (:ul
+   (:li (:code "reduce-tracking-mode") " now cleans widely known tracking query parameters.")
+   (:li "Remove image support from " (:code "hint-mode") "."))
+
+  (:h3 "Bug fixes")
+  (:ul
+   (:li "The version parsing (that features like " (:code "#+nyxt-3")
+        " depend on) is more robust and pre-release-aware now.")
+   (:li "Setting " (:code "restore-session-on-startup-p") "to nil no longer hangs the browser.")
+   (:li "Fix buffer re-attachment from the deleted window.")))
