@@ -72,59 +72,10 @@
     (close-pipe pipe)
     version))
 
-;; TODO: Contribute ndebug and trivial-custom-debugger to Guix.
-
-(define-public sbcl-trivial-custom-debugger
-  (let ((commit "a560594a673bbcd88136af82086107ee5ff9ca81"))
-    (package
-      (name "sbcl-trivial-custom-debugger")
-      (version (git-version "1.0.0" "0" commit))
-      (source
-       (origin
-         (method git-fetch)
-         (uri (git-reference
-               (url "https://github.com/phoe/trivial-custom-debugger")
-               (commit commit)))
-         (file-name (git-file-name "cl-trivial-custom-debugger" version))
-         (sha256
-          (base32 "1iri5wsp9sc1f5q934cj87zd79r5dc8fda0gl7x1pz95v0wx28yk"))))
-      (build-system asdf-build-system/sbcl)
-      (native-inputs
-       (list sbcl-parachute))
-      (home-page "https://github.com/phoe/trivial-custom-debugger")
-      (synopsis
-       "Allows arbitrary functions to become the standard Lisp debugger")
-      (description
-       "This is a portability library that allows one to fully override the standard
-debugger provided by their Common Lisp system for situations where binding
-@code{*debugger-hook*} is not enough - most notably, for @code{#'break}.
-@itemize
-
-@item The main interface is the @code{with-debugger} macro that accepts a hook
-function that would be acceptable for @code{*debugger-hook*} (it must accept two
-arguments: a condition that the debugger is invoked with and a similar hook
-function).
-
-@item A functional interface for the above is provided in form of
-@code{call-with-debugger}, which accepts a hook function and a zero-argument thunk.
-
-@item It is possible, though not advisable, to install a debugger function
-globally across the whole Lisp system. The function @code{install-debugger} is
-provided for that case. (If you want to use it, you might want to contribute a
-matching @code{uninstall-debugger} function that restores the Lisp system to the
-previous state.)
-
-@end itemize")
-      (license license:bsd-3))))
-
-(define-public cl-trivial-custom-debugger
-  (sbcl-package->cl-source-package sbcl-trivial-custom-debugger))
-
-(define-public ecl-trivial-custom-debugger
-  (sbcl-package->ecl-package sbcl-trivial-custom-debugger))
+;; TODO: Contribute ndebug to Guix.
 
 (define-public sbcl-ndebug
-  (let ((commit "0f2df5e537eb749d769de1d786bdbb282f655104"))
+  (let ((commit "ed9cd65e4c8eb96434e24ea0c83d846cedfa536c"))
     (package
       (name "sbcl-ndebug")
       (version (git-version "0.0.1" "0" commit))
@@ -143,6 +94,8 @@ previous state.)
              sbcl-trivial-custom-debugger
              sbcl-slime-swank
              sbcl-lparallel))
+      (native-inputs
+       (list sbcl-lisp-unit2))
       (home-page "https://github.com/atlas-engineer/ndebug")
       (synopsis
        "A Common Lisp tool to construct interface-aware debugger hooks")
