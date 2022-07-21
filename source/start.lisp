@@ -328,15 +328,13 @@ On error, return the condition as a first value and the backtrace as second valu
 
 (define-command clean-configuration ()
   "Clean all the user configuration created with `define-configuration' or `customize-instance'."
-  (dolist (class (sera:filter (lambda (class) (user-class-p class))
-                              (mapcar #'find-class (package-classes))))
+  (dolist (class (sera:filter #'user-class-p (mapcar #'find-class (package-classes))))
     (setf (hooks:handlers-alist (slot-value class 'customize-hook)) nil))
   (dolist (method (mopu:generic-function-methods #'customize-instance))
-    (unless (equal (list (find-class t)) ; Don't remove default method.
-                   (mopu:method-specializers method ))
-      (match (method-qualifiers method)
-        ((or (list :before) (list :after) (list :around)) nil)
-        (_ (remove-method #'customize-instance method))))))
+    (unless (or (equal (list (find-class t)) ; Don't remove default method.
+                       (mopu:method-specializers method))
+                ;; We only preserve :after methods for ourselves.
+                (equal (list :after) (method-qualifiers method))))))
 
 (define-command load-config-file (&key (config-file (files:expand *config-file*)))
   "Load or reload the CONFIG-FILE."
