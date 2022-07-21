@@ -48,7 +48,7 @@
    "--headless"
    "--eval"
    (write-to-string
-    `(nyxt:once-on nyxt:*after-startup-hook* ()
+    `(hooks:once-on nyxt:*after-startup-hook* ()
        (handler-case (progn ,@args)
          (condition (c)
            (log:error "~a" c)
@@ -82,5 +82,19 @@
     (eval-on-startup
      `(nyxt:quit)))
    1))
+
+(subtest "Default-modes are composable"
+  (prove:is
+   (exec-with-config
+    `(progn
+       (nyxt:define-configuration nyxt:web-buffer
+         ((nyxt:default-modes (append '(nyxt/reading-line-mode:reading-line-mode) nyxt:%slot-value%))))
+       (nyxt:define-configuration nyxt:web-buffer
+         ((nyxt:default-modes (append '(nyxt/style-mode:dark-mode) nyxt:%slot-value%)))))
+    (eval-on-startup
+     `(assert (member 'nyxt/reading-line-mode:reading-line-mode (nyxt:default-modes (nyxt:current-buffer))))
+     `(assert (member 'nyxt/style-mode:dark-mode (nyxt:default-modes (nyxt:current-buffer))))
+     `(nyxt:quit)))
+   0))
 
 (finalize)
