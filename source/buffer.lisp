@@ -19,7 +19,7 @@ This is useful when there is no current buffer.")
 
 (define-class buffer (renderer-buffer)
   ((default-modes
-    '(base-mode)
+    %default-modes
     :accessor nil
     :type list
     :documentation "The symbols of the modes to instantiate on buffer creation.
