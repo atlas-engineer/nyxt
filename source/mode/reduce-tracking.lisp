@@ -55,13 +55,13 @@ still being less noticeable in the crowd.")
 
 (defun strip-tracking-parameters (request-data)
   (let ((mode (find-submode 'reduce-tracking-mode)))
-    (when mode
+    (when (and mode (ignore-errors (quri:uri-query-params (url request-data))))
       (setf (quri:uri-query-params (url request-data))
             (remove-if (alexandria:rcurry #'member (query-tracking-parameters mode)
                                           :test #'string-equal)
                        (quri:uri-query-params (url request-data))
-                       :key #'first))
-     request-data)))
+                       :key #'first)))
+    request-data))
 
 (defmethod enable ((mode reduce-tracking-mode) &key)
   (setf (old-timezone mode) (uiop:getenv "TZ")
