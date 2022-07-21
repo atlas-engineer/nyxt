@@ -374,9 +374,57 @@ the " (:code "define-configuration") " macro.")
          (:li (command-markup 'nyxt/password-mode:copy-password) ": " (command-docstring-first-sentence 'nyxt/password-mode:copy-password))))
 
       (:nsection :title "Appearance"
-        (:p "Much of the visual style can be configured by the user.  Search the
-class slots for 'style'.  To customize the status buffer, see
-the " (:nxref :slot 'status-buffer :class-name 'window) " window slot."))
+        (:p "Much of the visual style can be configured by the user. You can use the
+facilities provided by " (:nxref :package :theme) " and "
+(:nxref :slot 'nyxt:theme :class 'nyxt:browser)
+". For example, to set a theme to a midnight-like one, you can add this snippet
+to your configuration file:")
+        (:pre (:code "(define-configuration browser
+  ((theme (make-instance
+           'theme:theme
+           :dark-p t
+           :background-color \"black\"
+           :on-background-color \"#808080\"
+           :accent-color \"#37a8e4\"
+           :on-accent-color \"black\"
+           :primary-color \"gray\"
+           :on-primary-color \"white\"
+           :secondary-color \"darkgray\"
+           :on-secondary-color \"black\"))))"))
+        (:p "This, on the next restart of Nyxt, will repaint all the interface elements into
+a dark-ish theme.")
+        (:p "As an alternative to the all-encompassing themes, you can alter the style of
+every individual class controlling Nyxt interface elements. All such classes have a "
+            (:nxref :function 'nyxt:style)
+            " slot that you can configure with your own CSS like this:")
+        (:pre (:code "(define-configuration nyxt/style-mode:dark-mode
+  ((style
+    (theme:themed-css (theme *browser*)
+      (*
+       :background-color (str:concat
+                          (if (theme:dark-p theme:theme)
+                              theme:background
+                              theme:on-background)
+                          \" !important\")
+       :background-image \"none !important\"
+       :color (str:concat
+               (if (theme:dark-p theme:theme)
+                   theme:on-background
+                   theme:background)
+               \" !important\"))
+      (a
+       :background-color (str:concat
+                          (if (theme:dark-p theme:theme)
+                              theme:background
+                              theme:on-background)
+                          \" !important\")
+       :background-image \"none !important\"
+       :color (str:concat theme:primary \" !important\"))))))"))
+        (:p "This snippet alters the " (:nxref :slot 'style :class 'nyxt/style-mode:dark-mode)
+            " of Nyxt dark mode to have a more theme-compliant colors, using the "
+            (:code "theme:themed-css")
+            " macro (making all the theme colors you've configured earlier available as
+variables like " (:code "theme:on-primary") ".)"))
 
       (:nsection :title "Advanced configuration"
         (:p "While " (:code "define-configuration") " is convenient, it is mostly
