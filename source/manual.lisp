@@ -376,7 +376,7 @@ the " (:code "define-configuration") " macro.")
       (:nsection :title "Appearance"
         (:p "Much of the visual style can be configured by the user. You can use the
 facilities provided by " (:nxref :package :theme) " and "
-(:nxref :slot 'nyxt:theme :class 'nyxt:browser)
+(:nxref :slot 'nyxt:theme :class-name 'nyxt:browser)
 ". For example, to set a theme to a midnight-like one, you can add this snippet
 to your configuration file:")
         (:pre (:code "(define-configuration browser
@@ -420,7 +420,7 @@ every individual class controlling Nyxt interface elements. All such classes hav
                           \" !important\")
        :background-image \"none !important\"
        :color (str:concat theme:primary \" !important\"))))))"))
-        (:p "This snippet alters the " (:nxref :slot 'style :class 'nyxt/style-mode:dark-mode)
+        (:p "This snippet alters the " (:nxref :slot 'style :class-name 'nyxt/style-mode:dark-mode)
             " of Nyxt dark mode to have a more theme-compliant colors, using the "
             (:code "theme:themed-css")
             " macro (making all the theme colors you've configured earlier available as
