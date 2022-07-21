@@ -13,6 +13,10 @@
   ()
   (:metaclass interface-class))
 
+(defvar %default-modes '(base-mode)
+  "The default modes for unspecialized buffers.
+This is useful when there is no current buffer.")
+
 (define-class buffer (renderer-buffer)
   ((default-modes
     '(base-mode)
@@ -428,8 +432,10 @@ the buffer (which gives us more flexibility)."))
 (export-always 'default-modes)
 (defgeneric default-modes (buffer)
   (:method-combination append)
+  ;; TODO: Add a warning method when passing NIL to guard the current buffer not
+  ;; bound errors?
   (:method append ((buffer t))
-    `(base-mode ,(resolve-symbol :document-mode :mode)))
+    %default-modes)
   (:method append ((buffer buffer))
     (slot-value buffer 'default-modes))
   (:method :around ((buffer buffer))
