@@ -440,7 +440,9 @@ SLY install.")
 (define-version "3.0.0"
   (:ul
    (:li (:code "reduce-tracking-mode") " now cleans widely known tracking query parameters.")
-   (:li "Remove image support from " (:code "hint-mode") "."))
+   (:li "Remove image support from " (:code "hint-mode") ".")
+   (:li (:code "default-modes") " can be configured with " (:code "%slot-value%")
+        " due to finally having an underlying slot."))
 
   (:h3 "Bug fixes")
   (:ul
