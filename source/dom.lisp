@@ -2,8 +2,6 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/dom
-  ;; FIXME: This is because window causes conflicts with buffer.lisp (somewhy?).
-  (:shadow #:window)
   (:documentation "Nyxt-specific DOM classes and functions operating on them.
 
 The classes are generated for every HTML element, including `h1-element',
