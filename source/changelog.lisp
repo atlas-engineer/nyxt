@@ -442,7 +442,8 @@ SLY install.")
    (:li (:code "reduce-tracking-mode") " now cleans widely known tracking query parameters.")
    (:li "Remove image support from " (:code "hint-mode") ".")
    (:li (:code "default-modes") " can be configured with " (:code "%slot-value%")
-        " due to finally having an underlying slot."))
+        " due to finally having an underlying slot.")
+   (:li "New " (:code "toggle-maximize") " command for maximizing a window."))
 
   (:h3 "Bug fixes")
   (:ul

@@ -31,6 +31,9 @@ After this call, the window should not be displayed."))
 (define-ffi-generic ffi-window-fullscreen (window))
 (define-ffi-generic ffi-window-unfullscreen (window))
 
+(define-ffi-generic ffi-window-maximize (window))
+(define-ffi-generic ffi-window-unmaximize (window))
+
 (define-ffi-generic ffi-buffer-url (buffer)
   (:documentation "Return the `quri:uri' associated with the BUFFER.
 This is used to set the `buffer' `url' slot."))
