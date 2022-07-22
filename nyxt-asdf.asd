@@ -8,6 +8,7 @@
   :description "ASDF helpers for Nyxt and its extensions."
   :license "BSD 3-Clause"
   :pathname #p"libraries/nyxt-asdf/"
+  :depends-on (lisp-unit2)
   :components ((:file "package")
                (:file "log")
                (:file "nyxt-asdf")

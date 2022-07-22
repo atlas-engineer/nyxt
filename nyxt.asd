@@ -565,5 +565,7 @@
 
 (defsystem "nyxt/theme/tests"
   :defsystem-depends-on (nyxt-asdf)
-  :depends-on (nyxt/theme lisp-unit2)
-  :components ((:nyxt-test "libraries/theme/tests/test")))
+  :class :nyxt-test-system
+  :depends-on (nyxt/theme)
+  :targets (:package :theme/tests)
+  :components ((:file "libraries/theme/tests/test")))

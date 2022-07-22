@@ -3,7 +3,49 @@
 
 (in-package :nyxt-asdf)
 
-;; TODO: Switch to a better test suite (e.g. Lisp-Unit2) and make this more generic.
+(export-always 'nyxt-test-system)
+(defclass nyxt-test-system (asdf:system)
+  ((targets
+    :initform '()  ;; (error "Targets required")
+    :initarg :targets
+    :reader targets
+    :documentation "Arguments passed to `lisp-unit2:run-tests'.
+Example:
+
+  :targets '(:package my-app/tests :exclude-tags (:foo my-app/tests::bar))"))
+  (:documentation "Specialized systems for Nyxt tests.
+It automatically depends on Lisp-Unit2 and calls the appropriate invocation for tests.
+You must list what to test, see the `targets' slot.
+
+If the NYXT_TESTS_ERROR_ON_FAIL environment variable is set, quit Lisp on failure.
+This is useful for some continuous integration systems.
+
+If the NYXT_TESTS_NO_NETWORK environment variable is set, tests with the `:online' tags are excluded."))
+(import 'nyxt-test-system  :asdf-user)
+
+(defmethod asdf:component-depends-on ((op asdf:prepare-op) (c nyxt-test-system))
+  `((asdf:load-op "lisp-unit2")
+    ,@(call-next-method)))
+
+(defmethod asdf:perform ((op asdf:test-op) (c nyxt-test-system))
+  (destructuring-bind (&key package tags exclude-tags &allow-other-keys)
+      (targets c)
+    (let ((exclude-tags (append (when (getenv "NYXT_TESTS_NO_NETWORK")
+                                  '(:online))
+                                exclude-tags)))
+      (when (and
+             (lisp-unit2:failed (lisp-unit2:run-tests
+                                 :package package
+                                 :tags tags
+                                 :exclude-tags exclude-tags
+                                 :run-contexts 'lisp-unit2:with-summary-context))
+             (getenv "NYXT_TESTS_ERROR_ON_FAIL"))
+        ;; Arbitrary but hopefully recognizable exit code.
+        (quit 18)))))
+
+
+
+;; TODO: Remove the following when done with Prove.
 
 (export-always 'nyxt-test)
 (defclass nyxt-test (asdf:cl-source-file) ())
