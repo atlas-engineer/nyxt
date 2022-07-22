@@ -1863,7 +1863,7 @@ Note: WebKit supports three proxy 'modes': default (the system proxy),
 custom (the specified proxy) and none."
   (let ((proxy-url (first (alex:ensure-list proxy-specifier)))
         (ignore-hosts (or (second (alex:ensure-list proxy-specifier))
-                          (list nil))))
+                          nil)))
     (declare (type quri:uri proxy-url))
     (setf (gtk-proxy-url buffer) proxy-url)
     (setf (proxy-ignored-hosts buffer) ignore-hosts)
