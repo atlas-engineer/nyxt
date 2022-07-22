@@ -75,6 +75,10 @@ jobs:
       run: |
         echo "Release notes: https://nyxt.atlas.engineer/article/release-$(cat version).org" >> release.txt
         echo "" >> release.txt
+        echo "For Ubuntu 22.04: the .deb file depends on libssl1.1.  To install it:" >> release.txt
+        echo "    $ wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4_amd64.deb" >> release.txt
+        echo "    $ sudo dpkg -i ./libssl1.1_1.1.0g-2ubuntu4_amd64.deb" >> release.txt
+        echo "" >> release.txt
         echo "To compile from source, prefer the tarball including the submodules if you don't manage the Lisp dependencies yourself." >> release.txt
     - name: Generate Guix pack reproduction recipe
       shell: bash
