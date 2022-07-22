@@ -55,11 +55,11 @@ still being less noticeable in the crowd.")
 
 (defun strip-tracking-parameters (request-data)
   (let ((mode (find-submode 'reduce-tracking-mode)))
-    (when (and mode (ignore-errors (quri:uri-query-params (url request-data))))
+    (when (and mode (not (uiop:emptyp (quri:uri-query (url request-data))))b)
       (setf (quri:uri-query-params (url request-data))
             (remove-if (alexandria:rcurry #'member (query-tracking-parameters mode)
                                           :test #'string-equal)
-                       (quri:uri-query-params (url request-data))
+                       (quri:url-decode-params (quri:uri-query-params (url request-data)) :lenient t)
                        :key #'first)))
     request-data))
 
