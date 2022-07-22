@@ -341,6 +341,8 @@ Error out if some of the params are not constants. Thanks to this,
 guarantee of the same result."
   (let* ((url (url url))
          (symbol (quri:uri-path url))
+         ;; FIXME: While we ourselves guarantee the correctness of nyxt:// URLs,
+         ;; it would be nice to ensure it processes even the malformed URLs.
          (params (quri:uri-query-params url))
          (internal-page-name (let ((*package* (find-package :nyxt)))
                                (read-from-string (str:upcase symbol)))))
