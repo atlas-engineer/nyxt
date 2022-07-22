@@ -29,7 +29,6 @@ Everything in this checklist is required for each PR.  Please do not approve a P
 - [ ] Documentation:
   - [ ] All my code has docstrings and `:documentation`s written in the aforementioned style.  (It's OK to skip the docstring for really trivial parts.)
   - [ ] I have updated the existing documentation to match my changes.
-  - [ ] I have added new changelog.lisp entries matching the added features.
   - [ ] I have commented my code in hard-to-understand areas.
   - [ ] I have updated the `changelog.lisp` with my changes if it's anything user-facing (new features, important bug fix, compatibility breakage).
   - [ ] I have added a `migration.lisp` entry for all compatibility-breaking changes.
