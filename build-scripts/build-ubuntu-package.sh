@@ -10,7 +10,7 @@ sudo gem install --no-document fpm &> /dev/null
 
 export PATH=~/.gem/ruby/$(ls ~/.gem/ruby)/bin:$PATH
 
-git clone --depth=1 --branch=sbcl-2.1.0 https://github.com/sbcl/sbcl.git ~/sbcl &> /dev/null
+git clone --depth=1 --branch=sbcl-2.2.6 https://github.com/sbcl/sbcl.git ~/sbcl &> /dev/null
 (
     cd ~/sbcl
     set +e
@@ -36,7 +36,7 @@ for repo in https://gitlab.com/ralt/linux-packaging.git \
 						git clone --depth=1 "$repo" ~/common-lisp/$(basename "$repo")/ &> /dev/null
 				 done
 ## Modern ASDF needed.
-git clone --depth=1 --branch=3.3.4 https://gitlab.common-lisp.net/asdf/asdf.git ~/common-lisp/asdf/ &> /dev/null
+git clone --depth=1 --branch=3.3.5 https://gitlab.common-lisp.net/asdf/asdf.git ~/common-lisp/asdf/ &> /dev/null
 
 mkdir -p ~/.config/common-lisp/source-registry.conf.d/
 echo "(:tree \"$(pwd)/\")" >> ~/.config/common-lisp/source-registry.conf.d/linux-packaging.conf
