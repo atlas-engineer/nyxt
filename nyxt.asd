@@ -492,8 +492,11 @@
 
 (defsystem "nyxt/class-star/tests"
   :defsystem-depends-on (nyxt-asdf)
-  :depends-on (nyxt/class-star lisp-unit2)
-  :components ((:nyxt-test "libraries/class-star/tests/tests")))
+  :class :nyxt-test-system
+  :depends-on (nyxt/class-star)
+  :targets (:package :class-star/tests)
+  :components ((:nyxt-test "libraries/class-star/tests/tests")
+               (:nyxt-test "libraries/class-star/tests/global-settings")))
 
 (defsystem "nyxt/ospm"
   :defsystem-depends-on (nyxt-asdf)

@@ -35,15 +35,6 @@
                   (let ((foo (make-instance 'foo-default)))
                     (name-of foo)))))
 
-;; TODO: Fix following test and try to make it portable.
-#+or ()
-(define-test "No initarg" ()
-  (is-error (let ((hu.dwim.defclass-star:*automatic-initargs-p* nil))
-                    (class-star:define-class foo-no-initarg ()
-                      ((name :type string)))
-                    (make-instance 'foo-no-initarg :name "bar"))
-                  'sb-pcl::initarg-error))
-
 (define-test no-accessor ()
   (assert-false (progn
                   (class-star:define-class foo-no-accessors ()
@@ -82,26 +73,25 @@
      (sym 'sims)
      (fun #'list)
      (composite (error "Should not eval, type should not be inferred"))))
-  ;; FIXME these tests fail. why?
-  (assert-typep 'string
-                (getf (mopu:slot-properties 'foo-type-infer 'name) :type))
-  (assert-typep 'string
-                (getf (mopu:slot-properties 'foo-type-infer 'nickname) :type))
-  (assert-typep 'integer
-                (getf (mopu:slot-properties 'foo-type-infer 'age) :type))
-  (assert-typep 'number
-                (getf (mopu:slot-properties 'foo-type-infer 'height) :type))
-  (assert-typep 'number
-                (getf (mopu:slot-properties 'foo-type-infer 'width) :type))
-  (assert-typep 'boolean
-                (getf (mopu:slot-properties 'foo-type-infer 'lisper) :type))
-  (assert-typep 'list
-                (getf (mopu:slot-properties 'foo-type-infer 'empty-list) :type))
-  (assert-typep 'list
-                (getf (mopu:slot-properties 'foo-type-infer 'nonempty-list) :type))
-  (assert-typep 'symbol
-                (getf (mopu:slot-properties 'foo-type-infer 'sym) :type))
-  (assert-typep 'function
-                (getf (mopu:slot-properties 'foo-type-infer 'fun) :type))
-  (assert-typep nil
-                (getf (mopu:slot-properties 'foo-type-infer 'composite) :type)))
+  (assert-eq 'string
+             (getf (mopu:slot-properties 'foo-type-infer 'name) :type))
+  (assert-eq 'string
+             (getf (mopu:slot-properties 'foo-type-infer 'nickname) :type))
+  (assert-eq 'integer
+             (getf (mopu:slot-properties 'foo-type-infer 'age) :type))
+  (assert-eq 'number
+             (getf (mopu:slot-properties 'foo-type-infer 'height) :type))
+  (assert-eq 'number
+             (getf (mopu:slot-properties 'foo-type-infer 'width) :type))
+  (assert-eq 'boolean
+             (getf (mopu:slot-properties 'foo-type-infer 'lisper) :type))
+  (assert-eq 'list
+             (getf (mopu:slot-properties 'foo-type-infer 'empty-list) :type))
+  (assert-eq 'list
+             (getf (mopu:slot-properties 'foo-type-infer 'nonempty-list) :type))
+  (assert-eq 'symbol
+             (getf (mopu:slot-properties 'foo-type-infer 'sym) :type))
+  (assert-eq 'function
+             (getf (mopu:slot-properties 'foo-type-infer 'fun) :type))
+  (assert-eq nil
+             (getf (mopu:slot-properties 'foo-type-infer 'composite) :type)))
