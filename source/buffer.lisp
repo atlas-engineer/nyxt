@@ -441,7 +441,7 @@ the buffer (which gives us more flexibility)."))
   (:method :around ((buffer buffer))
     "Remove the duplicates from the `default-modes'."
     (remove-duplicates (call-next-method)
-                       ;; Mode at the beginning of the list have higher priorities.
+                       ;; Modes at the beginning of the list have higher priority.
                        :from-end t))
   (:method append ((buffer context-buffer))
     (list
