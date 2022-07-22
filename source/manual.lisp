@@ -53,7 +53,7 @@ similar programming language.")
                           "Create configuration file")))))
         (:p "Example:")
         (:pre (:code "(define-configuration buffer
-  ((default-modes (append '(no-script-mode) %slot-default%))))")))
+  ((default-modes (append '(no-script-mode) %slot-value%))))")))
       (:p "The above turns on the 'no-script-mode' (disables JavaScript) by default for
 every buffer.")
       (:p "The " (:code "define-configuration") " macro can be used to customize
@@ -105,10 +105,10 @@ add the following to your configuration:")
         (:ul
          (:li "vi bindings:"
               (:pre (:code "(define-configuration buffer
-  ((default-modes (append '(vi-normal-mode) %slot-default%))))")))
+  ((default-modes (append '(vi-normal-mode) %slot-value%))))")))
          (:li "Emacs bindings:"
               (:pre (:code "(define-configuration buffer
-  ((default-modes (append '(emacs-mode) %slot-default%))))"))))
+  ((default-modes (append '(emacs-mode) %slot-value%))))"))))
         (:p "You can create new scheme names with " (:code "keymaps:make-scheme-name")
             ".  Also see the " (:code "scheme-name") " class and the "
             (:code "define-keyscheme-map") " macro.")
@@ -151,7 +151,7 @@ keymap.")
                    nyxt/keyscheme:vi-normal *my-keymap*))))
 
 \(define-configuration (buffer web-buffer)
-  ((default-modes (append '(my-mode) %slot-default%))))"))
+  ((default-modes (append '(my-mode) %slot-value%))))"))
         (:p "Bindings are subject to various translations as per "
             (:nxref :variable 'nkeymaps:*translator*) ". "
             "By default if it fails to find a binding it tries again with inverted
@@ -494,7 +494,7 @@ small configuration snippet (note that you'd need to have"
             " in your " (:nxref :function 'default-modes "buffer default-modes") " ):")
         (:pre (:code ";; Enable user-script-mode, if you didn't already.
 \(define-configuration web-buffer
-  ((default-modes (append '(nyxt/user-script-mode:user-script-mode) %slot-default%))))
+  ((default-modes (append '(nyxt/user-script-mode:user-script-mode) %slot-value%))))
 
 \(define-configuration nyxt/user-script-mode:user-script-mode
   ((nyxt/user-script-mode:user-scripts

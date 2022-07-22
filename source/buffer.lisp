@@ -13,8 +13,21 @@
   ()
   (:metaclass interface-class))
 
+(defvar %default-modes '(base-mode)
+  "The default modes for unspecialized buffers.
+This is useful when there is no current buffer.")
+
 (define-class buffer (renderer-buffer)
-  ((id
+  ((default-modes
+    %default-modes
+    :accessor nil
+    :type list
+    :documentation "The symbols of the modes to instantiate on buffer creation.
+The mode instances are stored in the `modes' BUFFER slot.
+
+The default modes returned by this method are appended to the default modes
+inherited from the superclasses.")
+   (id
     (new-id)
     :type unsigned-byte
     :documentation "Unique identifier for a buffer.")
@@ -416,46 +429,37 @@ the buffer (which gives us more flexibility)."))
   (call-next-method)
   (set-window-title))
 
-(defvar %default-modes '(base-mode)
-  "The default modes for unspecialized buffers.
-This is useful when there is no current buffer.")
-
 (export-always 'default-modes)
 (defgeneric default-modes (buffer)
   (:method-combination append)
+  ;; TODO: Add a warning method when passing NIL to guard the current buffer not
+  ;; bound errors?
+  (:method append ((buffer t))
+    %default-modes)
   (:method append ((buffer buffer))
-    '())
+    (slot-value buffer 'default-modes))
+  (:method :around ((buffer buffer))
+    "Remove the duplicates from the `default-modes'."
+    (remove-duplicates (call-next-method)
+                       ;; Modes at the beginning of the list have higher priority.
+                       :from-end t))
   (:method append ((buffer context-buffer))
-    (append
-     (list
-      ;; TODO: No need for `resolve-symbol' if we move `context-buffer'
-      ;; declaration in a separate file, loaded after modes.
-      (resolve-symbol :annotate-mode :mode)
-      (resolve-symbol :bookmark-mode :mode)
-      (resolve-symbol :history-mode :mode)
-      (resolve-symbol :password-mode :mode))
-     %default-modes))
+    (list
+     ;; TODO: No need for `resolve-symbol' if we move `context-buffer'
+     ;; declaration in a separate file, loaded after modes.
+     (resolve-symbol :annotate-mode :mode)
+     (resolve-symbol :bookmark-mode :mode)
+     (resolve-symbol :history-mode :mode)
+     (resolve-symbol :password-mode :mode)))
   (:method append ((buffer document-buffer))
-    (append
-     (list
-      ;; TODO: No need for `resolve-symbol' if we move `document-buffer'
-      ;; declaration in a separate file, loaded after modes.
-      (resolve-symbol :hint-mode :mode)
-      (resolve-symbol :search-buffer-mode :mode)
-      (resolve-symbol :autofill-mode :mode) ; TODO: Remove from default?
-      (resolve-symbol :spell-check-mode :mode))
-     %default-modes))
-  (:documentation "The symbols of the modes to instantiate on buffer creation.
-The mode instances are stored in the `modes' BUFFER slot.
-
-The default modes returned by this method are appended to the default modes
-inherited from the superclasses."))
-
-(defmethod default-modes :around ((buffer buffer))
-  "Remove the duplicates from the `default-modes'."
-  (remove-duplicates (call-next-method)
-                     ;; Mode at the beginning of the list have higher priorities.
-                     :from-end t))
+    (list
+     ;; TODO: No need for `resolve-symbol' if we move `document-buffer'
+     ;; declaration in a separate file, loaded after modes.
+     (resolve-symbol :hint-mode :mode)
+     (resolve-symbol :document-mode :mode)
+     (resolve-symbol :search-buffer-mode :mode)
+     (resolve-symbol :autofill-mode :mode) ; TODO: Remove from default?
+     (resolve-symbol :spell-check-mode :mode))))
 
 (define-class network-buffer (buffer)
   ((status
