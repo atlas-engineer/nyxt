@@ -36,7 +36,7 @@
                     (name-of foo)))))
 
 ;; TODO: Fix following test and try to make it portable.
-#+nil
+#+or ()
 (define-test "No initarg" ()
   (is-error (let ((hu.dwim.defclass-star:*automatic-initargs-p* nil))
                     (class-star:define-class foo-no-initarg ()
