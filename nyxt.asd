@@ -405,11 +405,6 @@
                (:file "native"))
   :in-order-to ((test-op (test-op "nyxt/download-manager/tests"))))
 
-(defsystem "nyxt/download-manager/tests"
-  :defsystem-depends-on (nyxt-asdf)
-  :depends-on (nyxt/download-manager lisp-unit2)
-  :components ((:nyxt-online-test "libraries/download-manager/tests/tests" )))
-
 (defsystem "nyxt/analysis"
   :defsystem-depends-on (nyxt-asdf)
   :class :nyxt-system
