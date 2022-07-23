@@ -34,11 +34,12 @@ If the NYXT_TESTS_NO_NETWORK environment variable is set, tests with the `:onlin
                                   '(:online))
                                 exclude-tags)))
       (when (and
-             (lisp-unit2:failed (lisp-unit2:run-tests
-                                 :package package
-                                 :tags tags
-                                 :exclude-tags exclude-tags
-                                 :run-contexts 'lisp-unit2:with-summary-context))
+             (uiop:symbol-call :lisp-unit2 :failed
+                               (uiop:symbol-call :lisp-unit2 :run-tests
+                                                 :package package
+                                                 :tags tags
+                                                 :exclude-tags exclude-tags
+                                                 :run-contexts (find-symbol "WITH-SUMMARY-CONTEXT" :lisp-unit2)))
              (getenv "NYXT_TESTS_ERROR_ON_FAIL"))
         ;; Arbitrary but hopefully recognizable exit code.
         (quit 18)))))
