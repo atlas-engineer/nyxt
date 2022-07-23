@@ -548,11 +548,14 @@
 
 (defsystem "nyxt/prompter/tests"
   :defsystem-depends-on (nyxt-asdf)
-  :depends-on (nyxt/prompter lisp-unit2)
-  :components ((:file "libraries/prompter/test-package")
-               (:nyxt-test "libraries/prompter/tests/tests")
-               (:nyxt-test "libraries/prompter/tests/fuzzy")
-               (:nyxt-test "libraries/prompter/tests/submatches")))
+  :class :nyxt-test-system
+  :depends-on (nyxt/prompter)
+  :targets (:package :prompter/tests)
+  :pathname #p"NYXT:libraries;prompter;tests;"
+  :components ((:file "package")
+               (:file "tests")
+               (:file "fuzzy")
+               (:file "submatches")))
 
 (defsystem "nyxt/theme"
   :defsystem-depends-on (nyxt-asdf)
