@@ -313,11 +313,13 @@
 
 (defsystem "nyxt/gi-gtk/tests"
   :defsystem-depends-on (nyxt-asdf)
-  :depends-on (nyxt/gi-gtk lisp-unit2)
+  :class :nyxt-test-system
+  :depends-on (nyxt/gi-gtk)
+  :targets (:package :nyxt/tests/renderer)
   :serial t
   :components ((:file "tests/renderer-package")
-               (:nyxt-test "tests/renderer-offline/set-url")
-               (:nyxt-online-test "tests/renderer-online/set-url")))
+               (:file "tests/renderer-offline/set-url")
+               (:file "tests/renderer-online/set-url")))
 
 (defsystem "nyxt/qt"
   :depends-on (nyxt

@@ -15,24 +15,5 @@
 ;; (with-prompt-buffer-test (set-url)
 ;;   (update-prompt-input (current-prompt-buffer) "foobar"))
 
-(define-test set-online-url ()
-  (let ((url-channel (nyxt::make-channel 1))
-        (url "http://example.org/"))
-    (setf nyxt::*headless-p* t)
-    (hooks:once-on nyxt:*after-startup-hook* ()
-      (hooks:once-on (prompt-buffer-ready-hook *browser*)
-          (prompt-buffer)
-        (prompter:all-ready-p prompt-buffer)
-        (nyxt:set-prompt-buffer-input url prompt-buffer)
-        (prompter:all-ready-p prompt-buffer)
-        (hooks:once-on (buffer-loaded-hook (current-buffer)) buffer
-          (calispel:! url-channel (nyxt:render-url (nyxt:url buffer))))
-        (nyxt/prompt-buffer-mode:return-selection prompt-buffer))
-      (run-thread "run set-url"
-        ;; TODO: Test if thread returns.
-        (nyxt:set-url)))
-    (nyxt:start :no-config t :no-auto-config t
-                :socket "/tmp/nyxt-test.socket"
-                :profile "test")
-    (assert-equal url (calispel:? url-channel 5))
-    (quit)))
+(define-test set-online-url (:tags :online)
+  (test-set-url "http://example.org/"))
