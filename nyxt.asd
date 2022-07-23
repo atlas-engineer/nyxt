@@ -496,8 +496,8 @@
   :class :nyxt-test-system
   :depends-on (nyxt/class-star)
   :targets (:package :class-star/tests)
-  :components ((:nyxt-test "libraries/class-star/tests/tests")
-               (:nyxt-test "libraries/class-star/tests/global-settings")))
+  :components ((:file "libraries/class-star/tests/tests")
+               (:file "libraries/class-star/tests/global-settings")))
 
 (defsystem "nyxt/ospm"
   :defsystem-depends-on (nyxt-asdf)
