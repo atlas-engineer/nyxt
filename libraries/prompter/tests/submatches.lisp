@@ -5,7 +5,7 @@
 
 (define-test submatches-test ()
   (flet ((submatch (input list)
-           (let ((source 'prompter:raw-source))
+           (let ((source (make-instance 'prompter:raw-source)))
              (mapcar (lambda (suggestion)
                        (let ((res (prompter:submatches suggestion source input)))
                          (when res
