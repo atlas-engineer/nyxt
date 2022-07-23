@@ -363,11 +363,12 @@
 
 (defsystem "nyxt/application/tests"
   :defsystem-depends-on (nyxt-asdf)
-  :class :nyxt-renderer-system
-  :depends-on (lisp-unit2)
+  :class :nyxt-test-system
+  :depends-on (nyxt)
+  :targets (:package :nyxt/tests/executable)
   :components ((:file "tests/package")
-               (:nyxt-test "tests/executable/config")
-               (:nyxt-test "tests/executable/scripts"))
+               (:file "tests/executable/config")
+               (:file "tests/executable/scripts"))
   :perform (test-op :around (op c)
                     (if (file-exists-p (system-relative-pathname :nyxt "nyxt"))
                         (call-next-method)
