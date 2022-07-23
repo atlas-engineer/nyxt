@@ -3,7 +3,7 @@
 
 (in-package :nyxt/tests)
 
-(define-test parse-url ()
+(define-test parse-url (:tags :online)
   (let* ((*browser* (make-instance 'browser)))
     ;; "full URL"
     (assert-equality #'quri:uri=
@@ -58,7 +58,7 @@
                      (quri:uri "https://duckduckgo.com/?q=foo:blank")
                      (url (first (nyxt::input->queries "foo:blank"))))))
 
-(define-test url-processing ()
+(define-test url-processing (:tags :online)
   ;; "Invalid URL (empty host)"
   (assert-false (valid-url-p "http://foo"))
   ;; "Invalid URL (TLD == host)"

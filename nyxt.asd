@@ -225,12 +225,14 @@
 ;; TODO: Test that Nyxt starts and that --help, --version work.
 (defsystem "nyxt/tests"
   :defsystem-depends-on (nyxt-asdf)
-  :depends-on (nyxt lisp-unit2)
+  :class :nyxt-test-system
+  :depends-on (nyxt)
+  :targets (:package :nyxt/tests)
   :serial t
   :components ((:file "tests/package")
-               (:nyxt-test "tests/offline/global-history")
-               (:nyxt-test "tests/offline/user-script-parsing")
-               (:nyxt-online-test "tests/online/urls")))
+               (:file "tests/offline/global-history")
+               (:file "tests/offline/user-script-parsing")
+               (:file "tests/online/urls")))
 
 (defsystem "nyxt/benchmark"
   :defsystem-depends-on (nyxt-asdf)
