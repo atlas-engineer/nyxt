@@ -39,9 +39,7 @@
        (handler-case (bt:with-timeout ((* 2 (length remaining-threads)))
                        (mapc #'join-thread* remaining-threads))
          (t (c)
-           ;; Did I get this right?
-           (assert-signal t
-                          (format nil "Error when joining ~a: ~a" remaining-threads c)))))
+           (error "Error when joining ~a: ~a" remaining-threads c))))
      ;; No dangling threads
      (assert-false (all-live-prompter-threads))))
 
