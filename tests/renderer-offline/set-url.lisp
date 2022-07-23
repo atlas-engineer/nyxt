@@ -31,7 +31,8 @@
                (nyxt/prompt-buffer-mode:return-selection prompt-buffer))
              (nyxt:run-thread "run set-url"
                ;; TODO: Test if thread returns.
-               (nyxt:set-url)))
+               (let ((nyxt::*interactive-p* t))
+                 (nyxt:set-url))))
            (nyxt:start :no-config t :no-auto-config t
                        :socket "/tmp/nyxt-test.socket"
                        :profile "test")
