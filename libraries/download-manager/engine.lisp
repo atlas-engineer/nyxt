@@ -153,5 +153,6 @@ PROXY is the full proxy address, e.g. \"socks5://127.0.0.1:9050\"."
     ;; watch for unfinished downloads and warn the user before closing.
     (bt:make-thread
      (lambda ()
-       (fetch download)))
+       (fetch download))
+     :name "download-manager")
     download))
