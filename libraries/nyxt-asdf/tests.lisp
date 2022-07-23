@@ -33,6 +33,9 @@ If the NYXT_TESTS_NO_NETWORK environment variable is set, tests with the `:onlin
     (let ((exclude-tags (append (when (getenv "NYXT_TESTS_NO_NETWORK")
                                   '(:online))
                                 exclude-tags)))
+      (let ((missing-packages (remove-if  #'find-package (uiop:ensure-list package))))
+        (when missing-packages
+          (logger "Undefined test packages: ~s" missing-packages)))
       (when (and
              (uiop:symbol-call :lisp-unit2 :failed
                                (uiop:symbol-call :lisp-unit2 :run-tests
