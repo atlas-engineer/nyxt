@@ -459,8 +459,10 @@
 
 (defsystem "nyxt/history-tree/tests"
   :defsystem-depends-on (nyxt-asdf)
-  :depends-on (nyxt/history-tree lisp-unit2 str)
-  :components ((:nyxt-test "libraries/history-tree/tests/tests")))
+  :class :nyxt-test-system
+  :depends-on (nyxt/history-tree str)
+  :targets (:package :history-tree/tests)
+  :components ((:file "libraries/history-tree/tests/tests")))
 
 (defsystem "nyxt/password-manager"
   :defsystem-depends-on (nyxt-asdf)
