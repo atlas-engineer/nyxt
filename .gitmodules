@@ -576,3 +576,7 @@
 	path = _build/lisp-unit2
 	url = https://github.com/AccelerationNet/lisp-unit2
 	shallow = true
+[submodule "_build/ospm"]
+	path = _build/ospm
+	url = https://github.com/atlas-engineer/ospm
+	shallow = true

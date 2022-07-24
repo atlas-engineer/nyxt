@@ -45,16 +45,17 @@
                local-time
                lparallel
                log4cl
+               ndebug
                nfiles
+               nhooks
+               nkeymaps
                #-sbcl
                osicat
+               ospm
                parenscript
                py-configparser
                quri
                serapeum
-               ndebug
-               nhooks
-               nkeymaps
                str
                phos
                plump
@@ -77,7 +78,6 @@
                nyxt/history-tree
                nyxt/password-manager
                nyxt/class-star
-               nyxt/ospm
                nyxt/prompter
                nyxt/theme)
   :pathname #p"NYXT:source;"
@@ -499,33 +499,6 @@
   :targets (:package :class-star/tests)
   :components ((:file "libraries/class-star/tests/tests")
                (:file "libraries/class-star/tests/global-settings")))
-
-(defsystem "nyxt/ospm"
-  :defsystem-depends-on (nyxt-asdf)
-  :class :nyxt-system
-  :depends-on (alexandria
-               calispel
-               cl-ppcre
-               local-time
-               named-readtables
-               #-sbcl
-               osicat
-               serapeum
-               str
-               trivia
-               nyxt/class-star)
-  :pathname #p"NYXT:libraries;ospm;"
-  :components ((:file "package")
-               (:file "scheme-syntax")
-               (:file "guix-backend")
-               (:file "ospm")
-               (:file "ospm-guix"))
-  :in-order-to ((test-op (test-op "nyxt/ospm/tests"))))
-
-(defsystem "nyxt/ospm/tests"
-  :defsystem-depends-on (nyxt-asdf)
-  :depends-on (nyxt/ospm lisp-unit2)
-  :components ((:nyxt-test "libraries/ospm/tests/tests")))
 
 (defsystem "nyxt/prompter"
   :defsystem-depends-on (nyxt-asdf)
