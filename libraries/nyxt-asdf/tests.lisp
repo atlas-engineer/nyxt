@@ -47,32 +47,6 @@ If the NYXT_TESTS_NO_NETWORK environment variable is set, tests with the `:onlin
         ;; Arbitrary but hopefully recognizable exit code.
         (quit 18)))))
 
-
-
-;; TODO: Remove the following when done with Prove.
-
-(export-always 'nyxt-test)
-(defclass nyxt-test (asdf:cl-source-file) ())
-(import 'nyxt-test :asdf-user)
-
-(export-always 'nyxt-online-test)
-(defclass nyxt-online-test (nyxt-test) ())
-(import 'nyxt-online-test :asdf-user)
-
-(defun run-test (path &key network-needed-p)
-  (and (or (not network-needed-p)
-           (not (getenv "NYXT_TESTS_NO_NETWORK")))
-       (not (symbol-call :prove :run path))
-       (getenv "NYXT_TESTS_ERROR_ON_FAIL")
-       ;; Arbitrary exit code.
-       (quit 18)))
-
-(defmethod asdf:perform ((op asdf:test-op) (c nyxt-test))
-  (run-test c))
-
-(defmethod asdf:perform ((op asdf:test-op) (c nyxt-online-test))
-  (run-test c :network-needed-p t))
-
 (export-always 'print-benchmark)
 (defun print-benchmark (benchmark-results)
   (labels ((rat->float (num)
