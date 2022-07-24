@@ -59,7 +59,7 @@ still being less noticeable in the crowd.")
       (setf (quri:uri-query-params (url request-data))
             (remove-if (alexandria:rcurry #'member (query-tracking-parameters mode)
                                           :test #'string-equal)
-                       (quri:url-decode-params (quri:uri-query-params (url request-data)) :lenient t)
+                       (quri:url-decode-params (quri:uri-query (url request-data)) :lenient t)
                        :key #'first)))
     request-data))
 
