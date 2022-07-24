@@ -513,10 +513,7 @@ response.  The BODY is wrapped with `with-protect'."
            (setf (fullscreen-p window)
                  (find :fullscreen
                        (gdk:gdk-event-window-state-new-window-state event)))
-           nil)
-	 (connect-signal window "window-state-event" nil (widget event)
-           (declare (ignore widget))
-           (setf (maximized-p window)
+	   (setf (maximized-p window)
                  (find :maximized
                        (gdk:gdk-event-window-state-new-window-state event)))
            nil))

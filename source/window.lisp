@@ -223,9 +223,7 @@ When `skip-renderer-resize' is non-nil, don't ask the renderer to "
   (let ((maximized (maximized-p window)))
     (if maximized
 	(ffi-window-unmaximize window)
-	(ffi-window-maximize window))
-  (toggle-status-buffer :show-p (not maximized))
-  (toggle-message-buffer :show-p (not maximized))))
+	(ffi-window-maximize window))))
 
 (defun enable-status-buffer (&optional (window (current-window)))
   (setf (ffi-window-status-buffer-height window) (height (status-buffer window))))
