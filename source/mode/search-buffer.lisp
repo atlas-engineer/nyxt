@@ -20,7 +20,6 @@
       (list
        "C-s s" 'search-buffer
        "C-s k" 'remove-search-hints)
-
       keyscheme:vi-normal
       (list
        "/" 'search-buffer
