@@ -92,6 +92,12 @@
 (defmethod ffi-window-unfullscreen ((window qt-window))
   (qt:widget-show-normal (qt-object window)))
 
+(defmethod ffi-window-maximize ((window qt-window))
+  (qt:widget-show-maximized (qt-object window)))
+
+(defmethod ffi-window-unmaximize ((window qt-window))
+  (qt:widget-show-normal (qt-object window)))
+
 (defmethod initialize-instance :after ((buffer qt-buffer) &key)
   (hooks:run-hook (buffer-before-make-hook *browser*) buffer)
   (setf (id buffer) (get-unique-identifier *browser*))

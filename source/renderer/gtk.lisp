@@ -513,6 +513,9 @@ response.  The BODY is wrapped with `with-protect'."
            (setf (fullscreen-p window)
                  (find :fullscreen
                        (gdk:gdk-event-window-state-new-window-state event)))
+	   (setf (maximized-p window)
+                 (find :maximized
+                       (gdk:gdk-event-window-state-new-window-state event)))
            nil))
 
        (unless *headless-p*
@@ -535,6 +538,12 @@ response.  The BODY is wrapped with `with-protect'."
 
 (define-ffi-method ffi-window-unfullscreen ((window gtk-window))
   (gtk:gtk-window-unfullscreen (gtk-object window)))
+
+(define-ffi-method ffi-window-maximize ((window gtk-window))
+  (gtk:gtk-window-maximize (gtk-object window)))
+
+(define-ffi-method ffi-window-unmaximize ((window gtk-window))
+  (gtk:gtk-window-unmaximize (gtk-object window)))
 
 (defun derive-key-string (keyval character)
   "Return string representation of a keyval.
