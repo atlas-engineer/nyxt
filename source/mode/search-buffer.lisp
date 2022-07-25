@@ -21,7 +21,7 @@
    (test-function
     (lambda (sub string)
       (search sub string :test #'equalp))
-    :documentation "The function to match text with the text on the page while searching.
+    :documentation "The function to match text with the body of the page while searching.
 
 Takes two string arguments: search input and the page element text.
 
