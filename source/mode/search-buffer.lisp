@@ -70,7 +70,11 @@ You can redefine it to enable regex-based search, for example:
 (define-parenscript hint-elements (selectors)
   (dolist (selector (ps:lisp selectors))
     (ps:let* ((element (nyxt/ps:qs document selector)))
-      (ps:chain element class-list (add "nyxt-search-hint")))))
+      (ps:try
+       (ps:chain element class-list (add "nyxt-search-hint"))
+       (:catch (err)
+         (setf (ps:chain element class)
+               "nyxt-search-hint"))))))
 
 (define-parenscript highlight-selected-hint (&key element scroll)
   (ps:let* ((element (ps:@ (nyxt/ps:qs document (ps:lisp (nyxt/dom:get-unique-selector element))))))
