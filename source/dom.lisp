@@ -215,7 +215,7 @@ Return two values:
          ;; and type are reliable and are unlikely to change, while data-*
          ;; attributes are unreliable and can change any moment.
          (attributes (remove-if (lambda (attribute)
-                                  (or (member attribute '("class" "id") :test #'string=)
+                                  (or (str:s-member '("class" "id") attribute)
                                       (str:starts-with-p "data-" attribute)
                                       (str:starts-with-p "nyxt-" attribute)))
                                 (alex:hash-table-keys (plump:attributes element))))
