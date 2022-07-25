@@ -52,6 +52,7 @@
                py-configparser
                quri
                serapeum
+               ndebug
                nhooks
                nkeymaps
                str

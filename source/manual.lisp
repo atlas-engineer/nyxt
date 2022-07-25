@@ -647,6 +647,15 @@ handle. Useful to parallelize computations.")
 
     (:nsection :title "Troubleshooting"
 
+      (:nsection :title "Debugging and reporting errors"
+        (:p "If you experience hangs or errors you can reproduce, you can use the "
+            (:nxref :command 'nyxt:toggle-debug-on-error)
+            " command to enable Nyxt-native debugger and see the reasons of these. Based on
+this information, you can report a bug using " (:nxref :command 'nyxt:report-bug) ".")
+        (:p "Note that often errors, hangs, and crashes happen on the side of renderer and
+thus are not visible to the Nyxt-native debugger and fixable on the side of
+Nyxt. See below for some of those"))
+
       (:nsection :title "Playing videos"
         (:p "Nyxt delegates video support to third-party plugins.")
         (:p "When using the WebKitGTK backends, GStreamer and its plugins are

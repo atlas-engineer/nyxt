@@ -144,6 +144,7 @@
           cl-custom-hash-table
           cl-dexador
           cl-dissect
+          cl-trivial-custom-debugger
           cl-enchant
           cl-flexi-streams
           cl-fset
@@ -158,6 +159,7 @@
           cl-mk-string-metrics
           cl-moptilities
           cl-named-readtables
+          cl-ndebug
           cl-nfiles
           cl-nhooks
           cl-nkeymaps
