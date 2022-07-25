@@ -72,47 +72,6 @@
     (close-pipe pipe)
     version))
 
-;; TODO: Contribute ndebug to Guix.
-
-(define-public sbcl-ndebug
-  (let ((commit "ed9cd65e4c8eb96434e24ea0c83d846cedfa536c"))
-    (package
-      (name "sbcl-ndebug")
-      (version (git-version "0.0.1" "0" commit))
-      (source
-       (origin
-         (method git-fetch)
-         (uri (git-reference
-               (url "https://github.com/atlas-engineer/ndebug")
-               (commit commit)))
-         (file-name (git-file-name "cl-ndebug" version))
-         (sha256
-          (base32 "1fjg17b9148razg2avrjq8qw665q39nlaag6k0rw93rz31r1sm4k"))))
-      (build-system asdf-build-system/sbcl)
-      (inputs
-       (list sbcl-dissect
-             sbcl-trivial-custom-debugger
-             sbcl-slime-swank
-             sbcl-lparallel))
-      (native-inputs
-       (list sbcl-lisp-unit2))
-      (home-page "https://github.com/atlas-engineer/ndebug")
-      (synopsis
-       "A Common Lisp tool to construct interface-aware debugger hooks")
-      (description
-       "NDebug provides a small set of utilities to make graphical (or, rather
-non-REPL-resident) Common Lisp application easier to integrate with the standard
-Lisp debugger (@code{*debugger-hook*}, namely) and implementation-specific
-debugger hooks (via @code{trivial-custom-debugger}), especially in the
-multi-threaded context.")
-      (license license:bsd-3))))
-
-(define-public cl-ndebug
-  (sbcl-package->cl-source-package sbcl-ndebug))
-
-(define-public ecl-ndebug
-  (sbcl-package->ecl-package sbcl-ndebug))
-
 (define-public nyxt
   (package
    (name "nyxt")
