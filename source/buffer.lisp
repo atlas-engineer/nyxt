@@ -807,7 +807,7 @@ Return the created buffer."
           (nyxt/dom::named-json-parse body-json))))
 
 (defun dead-buffer-p (buffer)           ; TODO: Use this wherever needed.
-  (buffers-get (id buffer)))
+  (not (buffers-get (id buffer))))
 
 (-> resurrect-buffer (buffer) (values &optional buffer))
 (defun resurrect-buffer (dead-buffer)
