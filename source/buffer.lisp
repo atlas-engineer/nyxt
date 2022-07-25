@@ -816,24 +816,18 @@ Return the created buffer."
   dead-buffer)
 
 (defmethod document-model ((buffer buffer))
-  (pflet ((%count-dom-elements
+  (pflet ((%count-identified-elements
            ()
-           (defvar dom-counter 0)
-           (defun count-dom-elements (node)
-             (incf dom-counter)
-             (dolist (child (ps:chain node children))
-               (count-dom-elements child))
-             dom-counter)
-           (setf dom-counter 0)
-           (count-dom-elements (nyxt/ps:qs document "html"))))
+           (ps:@ (nyxt/ps:qsa document "[nyxt-identifier]") length)))
     (if (dead-buffer-p buffer)
         (slot-value buffer 'document-model)
         (with-current-buffer buffer
           (let ((value (slot-value buffer 'document-model))
-                (element-count (%count-dom-elements)))
+                (element-count (%count-identified-elements)))
             (if (and value element-count
                      ;; Check whether the difference in element count is significant.
-                     (< (abs (- (length (clss:select "*" value)) (truncate element-count)))
+                     (< (abs (- (length (clss:select "[nyxt-identifier]" value))
+                                (truncate element-count)))
                         (document-model-delta-threshold buffer)))
                 value
                 (update-document-model :buffer buffer)))))))
