@@ -115,8 +115,7 @@ You can redefine it to enable regex-based search, for example:
       search-matches)))
 
 (define-class search-buffer-source (prompter:source)
-  ((case-sensitive-p nil)
-   (buffer (current-buffer))
+  ((buffer (current-buffer))
    (minimum-search-length 3)
    (prompter:name "Search buffer")
    (prompter:selection-actions-enabled-p t)
@@ -149,7 +148,7 @@ You can redefine it to enable regex-based search, for example:
                 (prompter:name source)
                 (minimum-search-length source))))
 
-(define-command search-buffer (&key case-sensitive-p)
+(define-command search-buffer ()
   "Search on the current buffer.
 If you want to remove the search hints when you close the search
 prompt, Set BUFFER's `keep-search-hints-p' slot to nil.
@@ -160,14 +159,13 @@ Example:
     ((keep-search-hints-p nil)))"
   (prompt :prompt "Search text"
           :sources (make-instance 'search-buffer-source
-                                  :case-sensitive-p case-sensitive-p
                                   :return-actions
                                   (list (lambda (search-match)
                                           (unless (keep-search-hints-p (current-buffer))
                                             (remove-search-hints))
                                           search-match)))))
 
-(define-command search-buffers (&key case-sensitive-p)
+(define-command search-buffers ()
   "Search multiple buffers."
   (let ((buffers (prompt :prompt "Search buffer(s)"
                          :sources (make-instance 'buffer-source ; TODO: Define class?
@@ -180,6 +178,5 @@ Example:
                                        :name (format nil "Search ~a" (if (url-empty-p (url buffer))
                                                                          (title buffer)
                                                                          (url buffer)))
-                                       :case-sensitive-p case-sensitive-p
                                        :buffer buffer))
                       buffers))))
