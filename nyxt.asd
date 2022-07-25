@@ -212,10 +212,8 @@
                  (:file "visual")
                  (:file "watch"))))
   :in-order-to ((test-op (test-op "nyxt/tests")
-                         (test-op "nyxt/download-manager/tests")
                          (test-op "nyxt/history-tree/tests")
                          (test-op "nyxt/class-star/tests")
-                         (test-op "nyxt/ospm/tests")
                          (test-op "nyxt/prompter/tests"))))
 
 (defsystem "nyxt/submodules"
@@ -407,8 +405,7 @@
   :pathname #p"NYXT:libraries;download-manager;"
   :components ((:file "package")
                (:file "engine")
-               (:file "native"))
-  :in-order-to ((test-op (test-op "nyxt/download-manager/tests"))))
+               (:file "native")))
 
 (defsystem "nyxt/analysis"
   :defsystem-depends-on (nyxt-asdf)
