@@ -154,34 +154,33 @@ Example: --with-file bookmarks=/path/to/bookmarks
 
 (define-command quit (&optional (code 0))
   "Quit Nyxt."
-  (if (slot-value *browser* 'ready-p)
-      (progn
-        (hooks:run-hook (before-exit-hook *browser*))
-        ;; Unready browser:
-        ;; - after the hook, so that on hook error the browser is still ready;
-        ;; - before the rest, so to avoid nested `quit' calls.
-        (setf (slot-value *browser* 'ready-p) nil)
-        (setf (slot-value *browser* 'exit-code) code)
-        (dolist (window (window-list))
-          (window-delete window :force-p (/= 0 code)))
-        (when (socket-thread *browser*)
-          (destroy-thread* (socket-thread *browser*))
-          ;; Warning: Don't attempt to remove socket-path if socket-thread was not
-          ;; running or we risk remove an unrelated file.
-          (let ((socket (files:expand *socket-file*)))
-            (when (uiop:file-exists-p socket)
-              (log:info "Deleting socket ~s." socket)
-              (uiop:delete-file-if-exists socket))))
-        (mapc #'destroy-thread* (non-terminating-threads *browser*))
-        (ffi-kill-browser *browser*)
-        (unless *run-from-repl-p*
-          (run-thread "force-quitter"
-            ;; Force-quit in case `ffi-kill-browser' hangs.  Must be run in a
-            ;; separate thread because the renderer loop is waiting for this
-            ;; function to finish.
-            (sleep 1)
-            (uiop:quit code nil))))
-      (log:warn "Cannot quit browser ~a that is not ready." *browser*)))
+  (when (slot-value *browser* 'ready-p)
+    (progn
+      (hooks:run-hook (before-exit-hook *browser*))
+      ;; Unready browser:
+      ;; - after the hook, so that on hook error the browser is still ready;
+      ;; - before the rest, so to avoid nested `quit' calls.
+      (setf (slot-value *browser* 'ready-p) nil)
+      (setf (slot-value *browser* 'exit-code) code)
+      (dolist (window (window-list))
+        (window-delete window :force-p (/= 0 code)))
+      (when (socket-thread *browser*)
+        (destroy-thread* (socket-thread *browser*))
+        ;; Warning: Don't attempt to remove socket-path if socket-thread was not
+        ;; running or we risk remove an unrelated file.
+        (let ((socket (files:expand *socket-file*)))
+          (when (uiop:file-exists-p socket)
+            (log:info "Deleting socket ~s." socket)
+            (uiop:delete-file-if-exists socket))))
+      (mapc #'destroy-thread* (non-terminating-threads *browser*))
+      (ffi-kill-browser *browser*)
+      (unless *run-from-repl-p*
+        (run-thread "force-quitter"
+          ;; Force-quit in case `ffi-kill-browser' hangs.  Must be run in a
+          ;; separate thread because the renderer loop is waiting for this
+          ;; function to finish.
+          (sleep 1)
+          (uiop:quit code nil))))))
 
 (define-command quit-after-clearing-session (&key confirmation-p) ; TODO: Rename?
   "Close all buffers then quit Nyxt."
