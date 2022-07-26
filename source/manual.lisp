@@ -426,7 +426,7 @@ every individual class controlling Nyxt interface elements. All such classes hav
             " macro (making all the theme colors you've configured earlier available as
 variables like " (:code "theme:on-primary") ".)")
 
-        (:nsection "Status buffer appearance"
+        (:nsection :title "Status buffer appearance"
           (:p "You can customize the layout and styling of " (:nxref :class-name 'status-buffer)
               " using the methods it uses for layout. These methods are: ")
           (:dl
