@@ -15,7 +15,7 @@
 
 (define-condition nyxt-prompt-buffer-canceled (error)
   ())
-(define-condition nyxt-prompt-buffer-non-interactively (nyxt-prompt-buffer-canceled)
+(define-condition nyxt-prompt-buffer-non-interactively (error)
   ((name :initarg :name :accessor name))
   (:report (lambda (c stream)
              (format stream "Tried to invoke the prompt buffer (~a) when non-interactive."
