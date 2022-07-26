@@ -38,6 +38,11 @@
                                         (princ-to-string ,symbol)))))))
          ;; TODO: Add :title so that documentation is available on hover.
          ;; TODO: Add keybindings for commands, like in `nyxt::command-markup'.
+         ,@(when (and (getf attr :class)
+                      (or (getf attr :slot)
+                          (every #'null (list slot class-name function command variable package))))
+             (error ":class attribute used ambiguously in :nxref tag. Use :class-name instead.")
+             nil)
          (:code ,@(progn
                     (remf attr :class-name)
                     (remf attr :slot)
