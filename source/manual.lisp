@@ -424,7 +424,25 @@ every individual class controlling Nyxt interface elements. All such classes hav
             " of Nyxt dark mode to have a more theme-compliant colors, using the "
             (:code "theme:themed-css")
             " macro (making all the theme colors you've configured earlier available as
-variables like " (:code "theme:on-primary") ".)"))
+variables like " (:code "theme:on-primary") ".)")
+
+        (:nsection "Status buffer appearance"
+          (:p "You can customize the layout and styling of " (:nxref :class-name 'status-buffer)
+              " using the methods it uses for layout. These methods are: ")
+          (:dl
+           (:dt (:nxref :function 'nyxt:format-status))
+           (:dd "General layout of the status buffer, including the parts it consists of.")
+           (:dt (:nxref :function 'nyxt::format-status-buttons))
+           (:dd "The (\"Back\", \"Forward\", \"Reload\") buttons section.")
+           (:dt (:nxref :function 'nyxt::format-status-url))
+           (:dd "The current URL display section.")
+           (:dt (:nxref :function 'nyxt::format-status-tabs))
+           (:dd "Tab listing.")
+           (:dt (:nxref :function 'nyxt::format-status-modes))
+           (:dd "List of modes."))
+          (:p "To complement the layout produced by these " (:code "format-*")
+              " functions, you might need to add more rules or replace the "
+              (:nxref :slot 'style :class-name 'status-buffer "style of status buffer") ".")))
 
       (:nsection :title "Advanced configuration"
         (:p "While " (:code "define-configuration") " is convenient, it is mostly
