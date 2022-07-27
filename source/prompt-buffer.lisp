@@ -454,7 +454,7 @@ See the documentation of `prompt-buffer' to know more about the options."
     (declare #.(cons 'ignorable %prompt-args))
     (unless *interactive-p*
       (restart-case
-          (error 'nyxt-prompt-buffer-non-interactively :name prompter:prompt)
+          (error 'prompt-buffer-non-interactive :name prompter:prompt)
         (prompt-anyway () nil)
         (cancel () (error 'nyxt-prompt-buffer-canceled))))
     (alex:when-let ((prompt-text (getf args :prompt)))
