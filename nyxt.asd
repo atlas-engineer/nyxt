@@ -228,6 +228,7 @@
   :targets (:package :nyxt/tests)
   :serial t
   :components ((:file "tests/package")
+               (:file "tests/offline/define-configuration")
                (:file "tests/offline/global-history")
                (:file "tests/offline/user-script-parsing")
                (:file "tests/online/urls")))
