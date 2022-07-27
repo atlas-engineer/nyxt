@@ -1,10 +1,10 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :nyxt/tests)
+(nyxt:define-package nyxt/tests/executable
+  (:use #:lisp-unit2))
+(in-package :nyxt/tests/executable)
 (use-nyxt-package-nicknames)
-
-(plan nil)
 
 (defvar *executable* (asdf:system-relative-pathname :nyxt "nyxt"))
 (defvar *timeout* 10
@@ -37,7 +37,8 @@
 (defun exec-with-config (config-s-exp args)
   (uiop:with-temporary-file (:pathname config)
     (alex:with-output-to-file (f config  :if-exists :supersede)
-      (write config-s-exp :stream f))
+      (let ((*package* #.*package*))
+        (write config-s-exp :stream f)))
     (exec-with-timeout
      (append
       (list "--no-auto-config" "--config" (uiop:native-namestring config))
@@ -47,44 +48,45 @@
   (list
    "--headless"
    "--eval"
-   (write-to-string
-    `(hooks:once-on nyxt:*after-startup-hook* ()
-       (handler-case (progn ,@args)
-         (condition (c)
-           (log:error "~a" c)
-           (nyxt:quit 17)))))))
+   (let ((*package* #.*package*))
+     (write-to-string
+      `(hooks:once-on nyxt:*after-startup-hook* ()
+         (handler-case (progn ,@args)
+           (condition (c)
+             (log:error "~a" c)
+             (nyxt:quit 17))))))))
 
-(subtest "Eval works"
-  (prove:is
-   (exec-with-timeout
-    `("--no-config"
-      "--eval" ,(write-to-string `(or
-                                   (eq *package* (find-package :nyxt-user))
-                                   (nyxt:quit 17)))
-      "--quit"))
-   0))
+(define-test eval-works ()
+  (assert-eql 0
+              (exec-with-timeout
+               `("--no-config"
+                 "--eval" ,(write-to-string `(or
+                                              (eq *package* (find-package :nyxt-user))
+                                              (nyxt:quit 17)))
+                 "--quit"))))
 
-(subtest "Config loads and browser starts"
-  (prove:is
-   (exec-with-config
-    `(defvar foo "foo variable")
-    (eval-on-startup
-     `(assert (string= foo "foo variable"))
-     `(nyxt:quit)))
-   0))
+(define-test config-loads-and-browser-starts ()
+  (assert-eql 0
+              (exec-with-config
+               `(defvar foo "foo variable")
+               (eval-on-startup
+                `(assert (string= foo "foo variable"))
+                `(nyxt:quit)))))
 
-(subtest "Config fails and browser restarts"
-  (prove:is
+(define-test config-fails-and-browser-restarts ()
+  (assert-eql
+   1
    (exec-with-config
     `(defmethod customize-instance ((buffer buffer) &key)
+       ;; `buffer' does not have an `auto-mode-rules-file' slot.
        (setf (auto-mode-rules-file buffer) (make-instance 'auto-mode-rules-file
                                                           :base-path "/path/to/auto/rules")))
     (eval-on-startup
-     `(nyxt:quit)))
-   1))
+     `(nyxt:quit)))))
 
-(subtest "Default-modes are composable"
-  (prove:is
+(define-test composable-default-modes ()
+  (assert-eql
+   0
    (exec-with-config
     `(progn
        (nyxt:define-configuration nyxt:web-buffer
@@ -94,7 +96,4 @@
     (eval-on-startup
      `(assert (member 'nyxt/reading-line-mode:reading-line-mode (nyxt:default-modes (nyxt:current-buffer))))
      `(assert (member 'nyxt/style-mode:dark-mode (nyxt:default-modes (nyxt:current-buffer))))
-     `(nyxt:quit)))
-   0))
-
-(finalize)
+     `(nyxt:quit)))))

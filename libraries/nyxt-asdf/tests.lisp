@@ -3,29 +3,49 @@
 
 (in-package :nyxt-asdf)
 
-;; TODO: Switch to a better test suite (e.g. Lisp-Unit2) and make this more generic.
+(export-always 'nyxt-test-system)
+(defclass nyxt-test-system (asdf:system)
+  ((targets
+    :initform '()  ;; (error "Targets required")
+    :initarg :targets
+    :reader targets
+    :documentation "Arguments passed to `lisp-unit2:run-tests'.
+Example:
 
-(export-always 'nyxt-test)
-(defclass nyxt-test (asdf:cl-source-file) ())
-(import 'nyxt-test :asdf-user)
+  :targets '(:package my-app/tests :exclude-tags (:foo my-app/tests::bar))"))
+  (:documentation "Specialized systems for Nyxt tests.
+It automatically depends on Lisp-Unit2 and calls the appropriate invocation for tests.
+You must list what to test, see the `targets' slot.
 
-(export-always 'nyxt-online-test)
-(defclass nyxt-online-test (nyxt-test) ())
-(import 'nyxt-online-test :asdf-user)
+If the NYXT_TESTS_ERROR_ON_FAIL environment variable is set, quit Lisp on failure.
+This is useful for some continuous integration systems.
 
-(defun run-test (path &key network-needed-p)
-  (and (or (not network-needed-p)
-           (not (getenv "NYXT_TESTS_NO_NETWORK")))
-       (not (symbol-call :prove :run path))
-       (getenv "NYXT_TESTS_ERROR_ON_FAIL")
-       ;; Arbitrary exit code.
-       (quit 18)))
+If the NYXT_TESTS_NO_NETWORK environment variable is set, tests with the `:online' tags are excluded."))
+(import 'nyxt-test-system  :asdf-user)
 
-(defmethod asdf:perform ((op asdf:test-op) (c nyxt-test))
-  (run-test c))
+(defmethod asdf:component-depends-on ((op asdf:prepare-op) (c nyxt-test-system))
+  `((asdf:load-op "lisp-unit2")
+    ,@(call-next-method)))
 
-(defmethod asdf:perform ((op asdf:test-op) (c nyxt-online-test))
-  (run-test c :network-needed-p t))
+(defmethod asdf:perform ((op asdf:test-op) (c nyxt-test-system))
+  (destructuring-bind (&key package tags exclude-tags &allow-other-keys)
+      (targets c)
+    (let ((exclude-tags (append (when (getenv "NYXT_TESTS_NO_NETWORK")
+                                  '(:online))
+                                exclude-tags)))
+      (let ((missing-packages (remove-if  #'find-package (uiop:ensure-list package))))
+        (when missing-packages
+          (logger "Undefined test packages: ~s" missing-packages)))
+      (when (and
+             (uiop:symbol-call :lisp-unit2 :failed
+                               (uiop:symbol-call :lisp-unit2 :run-tests
+                                                 :package package
+                                                 :tags tags
+                                                 :exclude-tags exclude-tags
+                                                 :run-contexts (find-symbol "WITH-SUMMARY-CONTEXT" :lisp-unit2)))
+             (getenv "NYXT_TESTS_ERROR_ON_FAIL"))
+        ;; Arbitrary but hopefully recognizable exit code.
+        (quit 18)))))
 
 (export-always 'print-benchmark)
 (defun print-benchmark (benchmark-results)

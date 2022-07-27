@@ -45,16 +45,17 @@
                local-time
                lparallel
                log4cl
+               ndebug
                nfiles
+               nhooks
+               nkeymaps
                #-sbcl
                osicat
+               ospm
                parenscript
                py-configparser
                quri
                serapeum
-               ndebug
-               nhooks
-               nkeymaps
                str
                phos
                plump
@@ -77,7 +78,6 @@
                nyxt/history-tree
                nyxt/password-manager
                nyxt/class-star
-               nyxt/ospm
                nyxt/prompter
                nyxt/theme)
   :pathname #p"NYXT:source;"
@@ -212,10 +212,8 @@
                  (:file "visual")
                  (:file "watch"))))
   :in-order-to ((test-op (test-op "nyxt/tests")
-                         (test-op "nyxt/download-manager/tests")
                          (test-op "nyxt/history-tree/tests")
                          (test-op "nyxt/class-star/tests")
-                         (test-op "nyxt/ospm/tests")
                          (test-op "nyxt/prompter/tests"))))
 
 (defsystem "nyxt/submodules"
@@ -225,12 +223,14 @@
 ;; TODO: Test that Nyxt starts and that --help, --version work.
 (defsystem "nyxt/tests"
   :defsystem-depends-on (nyxt-asdf)
-  :depends-on (nyxt prove)
+  :class :nyxt-test-system
+  :depends-on (nyxt)
+  :targets (:package :nyxt/tests)
   :serial t
   :components ((:file "tests/package")
-               (:nyxt-test "tests/offline/global-history")
-               (:nyxt-test "tests/offline/user-script-parsing")
-               (:nyxt-online-test "tests/online/urls")))
+               (:file "tests/offline/global-history")
+               (:file "tests/offline/user-script-parsing")
+               (:file "tests/online/urls")))
 
 (defsystem "nyxt/benchmark"
   :defsystem-depends-on (nyxt-asdf)
@@ -311,11 +311,13 @@
 
 (defsystem "nyxt/gi-gtk/tests"
   :defsystem-depends-on (nyxt-asdf)
-  :depends-on (nyxt/gi-gtk prove)
+  :class :nyxt-test-system
+  :depends-on (nyxt/gi-gtk)
+  :targets (:package :nyxt/tests/renderer)
   :serial t
   :components ((:file "tests/renderer-package")
-               (:nyxt-test "tests/renderer-offline/set-url")
-               (:nyxt-online-test "tests/renderer-online/set-url")))
+               (:file "tests/renderer-offline/set-url")
+               (:file "tests/renderer-online/set-url")))
 
 (defsystem "nyxt/qt"
   :depends-on (nyxt
@@ -359,11 +361,12 @@
 
 (defsystem "nyxt/application/tests"
   :defsystem-depends-on (nyxt-asdf)
-  :class :nyxt-renderer-system
-  :depends-on (prove)
+  :class :nyxt-test-system
+  :depends-on (nyxt)
+  :targets (:package :nyxt/tests/executable)
   :components ((:file "tests/package")
-               (:nyxt-test "tests/executable/config")
-               (:nyxt-test "tests/executable/scripts"))
+               (:file "tests/executable/config")
+               (:file "tests/executable/scripts"))
   :perform (test-op :around (op c)
                     (if (file-exists-p (system-relative-pathname :nyxt "nyxt"))
                         (call-next-method)
@@ -402,13 +405,7 @@
   :pathname #p"NYXT:libraries;download-manager;"
   :components ((:file "package")
                (:file "engine")
-               (:file "native"))
-  :in-order-to ((test-op (test-op "nyxt/download-manager/tests"))))
-
-(defsystem "nyxt/download-manager/tests"
-  :defsystem-depends-on (nyxt-asdf)
-  :depends-on (nyxt/download-manager prove)
-  :components ((:nyxt-online-test "libraries/download-manager/tests/tests" )))
+               (:file "native")))
 
 (defsystem "nyxt/analysis"
   :defsystem-depends-on (nyxt-asdf)
@@ -459,8 +456,10 @@
 
 (defsystem "nyxt/history-tree/tests"
   :defsystem-depends-on (nyxt-asdf)
-  :depends-on (nyxt/history-tree prove str)
-  :components ((:nyxt-test "libraries/history-tree/tests/tests")))
+  :class :nyxt-test-system
+  :depends-on (nyxt/history-tree str)
+  :targets (:package :history-tree/tests)
+  :components ((:file "libraries/history-tree/tests/tests")))
 
 (defsystem "nyxt/password-manager"
   :defsystem-depends-on (nyxt-asdf)
@@ -492,36 +491,11 @@
 
 (defsystem "nyxt/class-star/tests"
   :defsystem-depends-on (nyxt-asdf)
-  :depends-on (nyxt/class-star prove)
-  :components ((:nyxt-test "libraries/class-star/tests/tests")))
-
-(defsystem "nyxt/ospm"
-  :defsystem-depends-on (nyxt-asdf)
-  :class :nyxt-system
-  :depends-on (alexandria
-               calispel
-               cl-ppcre
-               local-time
-               named-readtables
-               #-sbcl
-               osicat
-               serapeum
-               str
-               trivia
-               nyxt/class-star)
-  :pathname #p"NYXT:libraries;ospm;"
-  :components ((:file "package")
-               (:file "scheme-syntax")
-               (:file "guix-backend")
-               (:file "ospm")
-               (:file "ospm-guix"))
-  :in-order-to ((test-op (test-op "nyxt/ospm/tests"))))
-
-(defsystem "nyxt/ospm/tests"
-  :defsystem-depends-on (nyxt-asdf)
-  :depends-on (nyxt/ospm prove)
-  :components ((:file "libraries/ospm/test-package")
-               (:nyxt-test "libraries/ospm/tests/tests")))
+  :class :nyxt-test-system
+  :depends-on (nyxt/class-star)
+  :targets (:package :class-star/tests)
+  :components ((:file "libraries/class-star/tests/tests")
+               (:file "libraries/class-star/tests/global-settings")))
 
 (defsystem "nyxt/prompter"
   :defsystem-depends-on (nyxt-asdf)
@@ -546,19 +520,22 @@
 
 (defsystem "nyxt/prompter/tests"
   :defsystem-depends-on (nyxt-asdf)
-  :depends-on (nyxt/prompter prove)
-  :components ((:file "libraries/prompter/test-package")
-               (:nyxt-test "libraries/prompter/tests/tests")
-               (:nyxt-test "libraries/prompter/tests/fuzzy")
-               (:nyxt-test "libraries/prompter/tests/submatches")))
+  :class :nyxt-test-system
+  :depends-on (nyxt/prompter)
+  :targets (:package :prompter/tests)
+  :pathname #p"NYXT:libraries;prompter;tests;"
+  :components ((:file "package")
+               (:file "tests")
+               (:file "fuzzy")
+               (:file "submatches")))
 
 (defsystem "nyxt/theme"
   :defsystem-depends-on (nyxt-asdf)
   :class :nyxt-system
   :depends-on (alexandria
-               serapeum
+               cl-css
                nyxt/class-star
-               cl-css)
+               serapeum)
   :pathname #p"NYXT:libraries;theme;"
   :components ((:file "package")
                (:file "theme"))
@@ -566,6 +543,7 @@
 
 (defsystem "nyxt/theme/tests"
   :defsystem-depends-on (nyxt-asdf)
-  :depends-on (nyxt/theme prove)
-  :components ((:file "libraries/theme/test-package")
-               (:nyxt-test "libraries/theme/tests/test")))
+  :class :nyxt-test-system
+  :depends-on (nyxt/theme)
+  :targets (:package :theme/tests)
+  :components ((:file "libraries/theme/tests/test")))

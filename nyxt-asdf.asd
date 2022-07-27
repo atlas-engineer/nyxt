@@ -8,6 +8,7 @@
   :description "ASDF helpers for Nyxt and its extensions."
   :license "BSD 3-Clause"
   :pathname #p"libraries/nyxt-asdf/"
+  ;; It cannot depend on anything because it's in charge of fetching the dependencies.
   :components ((:file "package")
                (:file "log")
                (:file "nyxt-asdf")
