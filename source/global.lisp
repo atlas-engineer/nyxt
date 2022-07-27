@@ -64,9 +64,9 @@ A handler can be added with:
 The handlers take no argument.")
 
 (defvar *interactive-p* nil
-  "When non-nil, allow prompt buffers in during BODY execution.
-This is useful to ensure that non-interactive code (for instance scripts) won't
-be blocked by prompt buffer prompts.")
+  "When non-nil, allow prompt buffers during BODY execution.
+This is useful to spot potential blocks when non-interactive code (for instance
+scripts) tries to invoke the prompt buffer.")
 
 (export-always '*swank-port*)
 (defvar *swank-port* 4006
