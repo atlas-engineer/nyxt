@@ -565,13 +565,15 @@
 [submodule "_build/dissect"]
 	path = _build/dissect
 	url = https://github.com/Shinmera/dissect
-    shallow = true
+	shallow = true
 [submodule "_build/trivial-custom-debugger"]
 	path = _build/trivial-custom-debugger
 	url = https://github.com/phoe/trivial-custom-debugger
+	shallow = true
 [submodule "_build/ndebug"]
 	path = _build/ndebug
 	url = https://github.com/atlas-engineer/ndebug
+	shallow = true
 [submodule "_build/lisp-unit2"]
 	path = _build/lisp-unit2
 	url = https://github.com/AccelerationNet/lisp-unit2
