@@ -283,38 +283,41 @@ Example to get the `blocker-mode' command to use a new default hostlists:
 
 To discover the default value of a slot or all slots of a class, use the
 `describe-slot' or `describe-class' commands respectively."
-  `(progn
-     ,@(loop
-         for class in (uiop:ensure-list classes)
-         for handler-name = (gensym "DEFINE-CONFIGURATION")
-         collect
-         `(hooks:add-hook
-           (slot-value (find-class (quote ,class)) 'nyxt::customize-hook)
-           (make-instance
-            'hooks:handler
-            :fn (lambda (object)
-                  (declare (ignorable object))
-                  ,@(loop for ((slot value)) on (first slots-and-values)
-                          when (find slot (mopu:slot-names class))
-                            collect `(setf (slot-value object (quote ,slot))
-                                           (let* ((%slot-value% (slot-value object (quote ,slot)))
-                                                  (%slot-default%
-                                                    ,(if (c2mop:class-finalized-p (find-class class))
-                                                         (getf (mopu:slot-properties class slot) :initform)
-                                                         (progn
-                                                           (echo-warning
-                                                            "Slot default not found for slot ~a of class ~a, falling back to its current value"
-                                                            slot class)
-                                                           '%slot-value%))))
-                                             (declare (ignorable %slot-value% %slot-default%))
-                                             ,value))
-                          else
-                            collect `(handler-bind ((warning #'muffle-warning))
-                                       (defmethod ,slot :around ((object ,class))
-                                         (let* ((%slot-value% (call-next-method))
-                                                (%slot-default% %slot-value%))
-                                           ,value)))))
-            :name (quote ,handler-name))))))
+  (alex:with-gensyms (handler hook)
+    `(progn
+       ,@(loop
+           for class in (uiop:ensure-list classes)
+           append (loop for ((slot value)) on (first slots-and-values)
+                        ;; TODO: Shall we really make the name unique?  Since we
+                        ;; are configuring slots, maybe not.
+                        for handler-name = (gensym (format nil "CONFIGURE-~a" slot))
+                        when (find slot (mopu:slot-names class))
+                          collect
+                        `(let ((,hook (slot-value (find-class (quote ,class)) 'nyxt::customize-hook))
+                               (,handler (make-instance
+                                          'hooks:handler
+                                          :fn (lambda (object)
+                                                (declare (ignorable object))
+                                                (setf (slot-value object (quote ,slot))
+                                                      (let* ((%slot-value% (slot-value object (quote ,slot)))
+                                                             (%slot-default%
+                                                               ,(if (c2mop:class-finalized-p (find-class class))
+                                                                    (getf (mopu:slot-properties class slot) :initform)
+                                                                    (progn
+                                                                      (echo-warning
+                                                                       "Slot default not found for slot ~a of class ~a, falling back to its current value"
+                                                                       slot class)
+                                                                      '%slot-value%))))
+                                                        (declare (ignorable %slot-value% %slot-default%))
+                                                        ,value)))
+                                          :name (quote ,handler-name))))
+                           (hooks:add-hook ,hook ,handler))
+                        else
+                          collect `(handler-bind ((warning #'muffle-warning))
+                                     (defmethod ,slot :around ((object ,class))
+                                       (let* ((%slot-value% (call-next-method))
+                                              (%slot-default% %slot-value%))
+                                         ,value))))))))
 
 
 (defparameter %buffer nil)              ; TODO: Make a monad?
