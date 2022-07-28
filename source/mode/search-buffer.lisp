@@ -55,6 +55,7 @@ You can redefine it to enable regex-based search, for example:
 (define-class search-match ()
   ((identifier)
    (element)
+   (pos)
    (body)
    (buffer))
   (:accessor-name-transformer (class*:make-name-transformer name)))
@@ -63,7 +64,14 @@ You can redefine it to enable regex-based search, for example:
   (identifier match))
 
 (defmethod prompter:object-attributes ((match search-match) (source prompter:source))
-  `(("Text" ,(body match))
+  `(("Text" ,(let ((long-match (> (pos match) 40)))
+               (uiop:strcat
+                (when long-match
+                  "...")
+                (subseq (body match)
+                        (if long-match
+                            (1+ (position #\Space (body match) :end (- (pos match) 20) :from-end t))
+                            0)))))
     ("Buffer ID" ,(princ-to-string (id (buffer match))))
     ("Buffer title" ,(title (buffer match)))))
 
@@ -109,6 +117,7 @@ You can redefine it to enable regex-based search, for example:
                                    (make-instance 'search-match
                                                   :identifier (nyxt/dom:get-unique-selector element)
                                                   :element element
+                                                  :pos (funcall test input (plump:text element))
                                                   :body (plump:text element)
                                                   :buffer buffer))
                                  elements)))
