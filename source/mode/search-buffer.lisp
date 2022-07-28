@@ -73,7 +73,7 @@ You can redefine it to enable regex-based search, for example:
       (ps:try
        (ps:chain element class-list (add "nyxt-search-hint"))
        (:catch (err)
-         (setf (ps:chain element class)
+         (setf (ps:@ element class)
                "nyxt-search-hint"))))))
 
 (define-parenscript highlight-selected-hint (&key element scroll)
