@@ -311,7 +311,11 @@ TEST should be a function of two arguments comparing TEXT with element's
   (flet ((matches (elem)
            (find-text text elem :test test)))
     (when (funcall test text (plump:text element))
-      (or (alex:mappend #'matches (coerce (plump:child-elements element) 'list))
+      (or (remove-if
+           ;; Remove those to not clutter the output.
+           ;; TODO: More tags/attributes?
+           (alex:curry #'clss:node-matches-p "style, script")
+           (alex:mappend #'matches (coerce (plump:child-elements element) 'list)))
           (list element)))))
 
 ;; REVIEW: Export to :nyxt? We are forced to use it with nyxt/dom: prefix.
