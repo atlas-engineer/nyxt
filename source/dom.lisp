@@ -219,7 +219,8 @@ Return two values:
                                       (str:starts-with-p "data-" attribute)
                                       (str:starts-with-p "nyxt-" attribute)))
                                 (alex:hash-table-keys (plump:attributes element))))
-         (classes (when raw-classes (remove-if #'str:blankp (str:split " " raw-classes))))
+         (classes (when raw-classes (mapcar #'clss:css-escape
+                                            (remove-if #'str:blankp (str:split " " raw-classes)))))
          (parents (parents element))
          (family (plump:family-elements element))
          ;; Is it guaranteed that the topmost ancestor of a node is
@@ -234,7 +235,7 @@ Return two values:
              (selreturn ()
                (return-from get-unique-selector (values selector (unique-p selector)))))
       ;; ID should be globally unique, so we check it first.
-      (when (and identifier (sera:single (clss:select (selconcat :sel "#" identifier)  root)))
+      (when (and identifier (sera:single (clss:select (selconcat :sel "#" (clss:css-escape identifier))  root)))
         (selreturn))
       ;; selconcat hack doesn't look nice here, but should work for cases of
       ;; both empty selector and ID selector.
@@ -247,8 +248,9 @@ Return two values:
               classes))
       (when attributes
         (mapc (lambda (attribute)
-                (when (unique-p (selconcat :sel "[" attribute "=\""
-                                            (plump:attribute element attribute) "\"]"))
+                (when (unique-p (selconcat :sel "[" (clss:css-escape attribute) "='"
+                                           (clss:css-escape (plump:attribute element attribute))
+                                           "']"))
                   (selreturn)))
               attributes))
       ;; Check for short and nice parent-child relations, like :only-child,
