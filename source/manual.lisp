@@ -444,19 +444,6 @@ variables like " (:code "theme:on-primary") ".)")
               " functions, you might need to add more rules or replace the "
               (:nxref :slot 'style :class-name 'status-buffer "style of status buffer") ".")))
 
-      (:nsection :title "Advanced configuration"
-        (:p "While " (:code "define-configuration") " is convenient, it is mostly
-restricted to class slot configuration.  If you want to do anything else on
-class instantiation, you'll have to specialize the
-lower-level " (:nxref :function 'customize-instance) " generic function.  Example:"
-(:pre (:code "(defmethod customize-instance ((buffer buffer) &key)
-  (echo \"Buffer ~a created.\" buffer))")))
-        (:p "All classes with metaclass " (:nxref :class-name 'user-class) " call "
-            (:nxref :function 'customize-instance) " on instantiation,
-after " (:nxref :function 'initialize-instance)(:code " :after") ".  The primary method is reserved
-to the user, however the " (:code ":after") " method is reserved to the Nyxt
-core to finalize the instance."))
-
       (:nsection :title "Scripting"
         (:p "You can evaluate code from the command line with "
             (:code "--eval") " and " (:code "--load") ".  From a shell:")
@@ -482,23 +469,6 @@ instance must be non-nil.")
         (:p "To let know a private instance of Nyxt to load a foo.lisp script and run its
 `foo' function:")
         (:pre (:code "nyxt --profile nosave --remote --load foo.lisp --eval '(foo)'")))
-
-      (:nsection :title "Built-in REPL (" (:nxref :package :nyxt/repl-mode) ")"
-        (:p "Nyxt has a built-in REPL, available with "
-            (:nxref :command 'nyxt/repl-mode:lisp-repl "lisp-repl command") "."
-            "The REPL can be used to try out some code snippets for automation or quickly
-make some Lisp calculations. All the packages Nyxt depends on are available in
-REPL with convenient nicknames, and all the code is evaluated in "
-            (:nxref :package :nyxt-user) " package.")
-        (:p "Once the REPL is open, there's only one input cell visible. This cell, always
-present at the bottom of the screen, adds new cells to the multi-pane interface
-of Nyxt REPL. You can type in " (:code "(print \"Hello, Nyxt!\")")
-" and press C-return to evaluate the cell. A new cell will appear at the top of the buffer, with
-input area containing familiar code, with some " (:code "v332 = \"Hello, Nyxt!\"")
-" variable assignment, and with a verbatim text outputted by your code:")
-        (:pre (:code "Hello, Nyxt!"))
-        (:p "This cell-based code evaluation is the basis of the Nyxt REPL. For more features, see "
-            (:nxref :package :nyxt/repl-mode "REPL mode documentation") "."))
 
       (:nsection :title "User scripts"
         (:p "User scripts are a conventional and lightweight way to run arbitrary JavaScript
@@ -653,7 +623,37 @@ in. A good debugging tip, isn't it?")
               " flag allows starting as many Nyxt instances as your machine can
 handle. Useful to parallelize computations.")
          (:li (:code "--profile nosave")
-              " to not pollute your history and cache with the script-accessed pages."))))
+              " to not pollute your history and cache with the script-accessed pages.")))
+
+      (:nsection :title "Built-in REPL (" (:nxref :package :nyxt/repl-mode) ")"
+        (:p "Nyxt has a built-in REPL, available with "
+            (:nxref :command 'nyxt/repl-mode:lisp-repl "lisp-repl command") "."
+            "The REPL can be used to try out some code snippets for automation or quickly
+make some Lisp calculations. All the packages Nyxt depends on are available in
+REPL with convenient nicknames, and all the code is evaluated in "
+            (:nxref :package :nyxt-user) " package.")
+        (:p "Once the REPL is open, there's only one input cell visible. This cell, always
+present at the bottom of the screen, adds new cells to the multi-pane interface
+of Nyxt REPL. You can type in " (:code "(print \"Hello, Nyxt!\")")
+" and press C-return to evaluate the cell. A new cell will appear at the top of the buffer, with
+input area containing familiar code, with some " (:code "v332 = \"Hello, Nyxt!\"")
+" variable assignment, and with a verbatim text outputted by your code:")
+        (:pre (:code "Hello, Nyxt!"))
+        (:p "This cell-based code evaluation is the basis of the Nyxt REPL. For more features, see "
+            (:nxref :package :nyxt/repl-mode "REPL mode documentation") "."))
+
+      (:nsection :title "Advanced configuration"
+        (:p "While " (:code "define-configuration") " is convenient, it is mostly
+restricted to class slot configuration.  If you want to do anything else on
+class instantiation, you'll have to specialize the
+lower-level " (:nxref :function 'customize-instance) " generic function.  Example:"
+(:pre (:code "(defmethod customize-instance ((buffer buffer) &key)
+  (echo \"Buffer ~a created.\" buffer))")))
+        (:p "All classes with metaclass " (:nxref :class-name 'user-class) " call "
+            (:nxref :function 'customize-instance) " on instantiation,
+after " (:nxref :function 'initialize-instance)(:code " :after") ".  The primary method is reserved
+to the user, however the " (:code ":after") " method is reserved to the Nyxt
+core to finalize the instance.")))
 
     (:nsection :title "Extensions"
       (:p "To install an extension, copy inside the "
