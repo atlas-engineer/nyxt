@@ -86,7 +86,7 @@ such as " (:nxref :slot 'nyxt/spell-check-mode:spell-check-language :class-name 
             (:nxref :class-name 'document-buffer) " (for structured documents) and "
             (:nxref :class-name 'input-buffer) " (for buffers that can receive user input).  A "
             (:nxref :class-name 'web-buffer) " class is used for web pages," (:nxref :class-name 'prompt-buffer)
-            " for, well,the prompt buffer.  Some buffer classes may inherit from multiple other classes.
+            " for, well, the prompt buffer.  Some buffer classes may inherit from multiple other classes.
 For instance " (:nxref :class-name 'web-buffer) " and " (:nxref :class-name 'prompt-buffer)
             " both inherit from" (:nxref :class-name 'input-buffer) ".")
         (:p "You can configure one of the parent " (:nxref :class-name 'buffer) " classes slots and the new
