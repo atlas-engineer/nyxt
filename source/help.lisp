@@ -60,11 +60,11 @@ CLASS is a class symbol."
 
 (setf (gethash :keystyle *settings*)
       (lambda (keystyle &key current-instance-p all-instances-p new-instances-p auto-config-p)
-        "KEYSTYLE is for example the `nyxt/emacs-mode:emacs-mode' symbol."
+        "KEYSTYLE is for example the 'nyxt/emacs-mode:emacs-mode' string."
         (unless (uiop:emptyp keystyle)
           (apply-configuration
            :lambda (lambda (input-buffer)
-                     (setf (keyscheme input-buffer) (eval (read-from-string keystyle))))
+                     (setf (keyscheme input-buffer) (symbol-value (intern (string-upcase  keystyle)))))
            :class-name 'input-buffer
            :current-instance (when current-instance-p (current-buffer))
            :instances (when all-instances-p (buffer-list))
@@ -73,11 +73,11 @@ CLASS is a class symbol."
 
 (setf (gethash :theme *settings*)
       (lambda (theme &key auto-config-p &allow-other-keys)
-        "THEME is for example the `theme::+light-theme+' symbol."
+        "THEME is for example the 'theme::+light-theme+' string."
         (unless (uiop:emptyp theme)
           (apply-configuration
            :slot 'theme
-           :slot-value (symbol-value (read-from-string theme))
+           :slot-value (symbol-value (intern (string-upcase theme)))
            :current-instance *browser*
            :auto-config-p auto-config-p))))
 
