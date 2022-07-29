@@ -181,40 +181,30 @@ CLASS is a class symbol."
              ;; (:label :for "keystyle" "Keybding style")
              ;; (:input :type "text" :id "keystyle" :name "keystyle")
              (:h2 "Keybinding style")
-             (:raw (form-entry :id "keystyle" :label "Keybinding style" :type "text")) ; TODO: Radio buttons!
-             ;; nyxt/emacs-mode:emacs-mode
-             ;; nyxt/vi-mode:vi-normal-mode
+             ;; TODO: Loop over all known keystyles.
+             ;; https://developer.mozilla.org/en-US/docs/Web/HTML/Element/select
+             ;; https://developer.mozilla.org/en-US/docs/Learn/Forms/Other_form_controls#drop-down_controls
+             (:raw (form-entry :id "nyxt/emacs-mode:emacs-mode" :label "CUA style" :type "radio" :name "keystyle"))
+             (:raw (form-entry :id "nyxt/emacs-mode:emacs-mode" :label "Emacs style" :type "radio" :name "keystyle"))
+             (:raw (form-entry :id "nyxt/vi-mode:vi-normal-mode" :label "VI style" :type "radio" :name "keystyle"))
+
 
              (:br)
              (:h2 "Theme")
              ;; TODO: Check default.
              ;; TODO: Loop over all known themes.
-             ;; (:br)
-             ;; (:label :for "light-theme" "Light theme")
-             ;; (:input :type "radio" :id "light-theme" :name "theme" :value "light-theme")
              (:raw (form-entry :id "theme::+light-theme+" :label "Light theme" :type "radio" :name "theme"))
              (:blockquote (:raw (generate-colors 'theme::+light-theme+)))
              (:raw (form-entry :id "theme::+dark-theme+" :label "Dark theme" :type "radio" :name "theme"))
-             (:blockquote (:raw (generate-colors 'theme::+dark-theme+)))
-
-             ;; (:br)
-             ;; (:label :for "keystyle2" "Theme style")
-             ;; (:datalist :id "keystyle2"
-             ;;            (:option :value "cua")
-             ;;            (:option :value "emacs")
-             ;;            (:option :value "vi"))
-             )
+             (:blockquote (:raw (generate-colors 'theme::+dark-theme+))))
 
       (:h2 "Miscellaneous")
       (:ul
+       ;;   <input type="number" id="quantity" name="quantity" min="1" max="5" step="0.1">
+       ;; https://www.w3schools.com/html/html_form_input_types.asp
        (:li (:button :class "button"
                      :onclick (ps:ps (nyxt/ps:lisp-eval
-                                      (:title "default-new-buffer-url")
-                                      (nyxt::configure-slot 'default-new-buffer-url 'browser :type 'string)))
-                     "Set default new buffer URL"))
-       (:li (:button :class "button"
-                     :onclick (ps:ps (nyxt/ps:lisp-eval
-                                      (:title "set-zoom-ration")
+                                      (:title "set-zoom-ratio")
                                       (nyxt::configure-slot 'current-zoom-ratio 'document-buffer)))
                      "Set default zoom ratio"))
        (:li (:button :class "button"
