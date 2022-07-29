@@ -92,6 +92,18 @@ CLASS is a class symbol."
            :new-instances-p new-instances-p
            :auto-config-p auto-config-p))))
 
+(setf (gethash :set-zoom-ratio *settings*)
+      (lambda (zoom-ratio &key new-instances-p auto-config-p &allow-other-keys)
+        "URL is a string."
+        (unless (uiop:emptyp url)
+          (apply-configuration
+           :slot 'current-zoom-ratio
+           :slot-value zoom-ratio
+           :current-instance (when current-instance-p (current-buffer))
+           :instances (when all-instances-p (sera:filter #'document-buffer-p (buffer-list)))
+           :new-instances-p new-instances-p
+           :auto-config-p auto-config-p))))
+
 (-> ensure (string) string)
 (defun ensure-setting (setting-name)
   "Check whether SETTING-NAME exists  and return it."
@@ -176,6 +188,8 @@ CLASS is a class symbol."
              ;; For this to work we need to fix the lisp-eval callback.
              (:raw (form-entry :id "default-new-buffer-url" :label "Default new buffer url" :type "text"
                                :placeholder (default-new-buffer-url *browser*) ))
+             (:raw (form-entry :id "set-zoom-ratio" :label "Set zoom ratio" :type "text"
+                               :placeholder (current-zoom-ratio (current-buffer))))
 
              ;; (:br)
              ;; (:label :for "keystyle" "Keybding style")
@@ -202,11 +216,6 @@ CLASS is a class symbol."
       (:ul
        ;;   <input type="number" id="quantity" name="quantity" min="1" max="5" step="0.1">
        ;; https://www.w3schools.com/html/html_form_input_types.asp
-       (:li (:button :class "button"
-                     :onclick (ps:ps (nyxt/ps:lisp-eval
-                                      (:title "set-zoom-ratio")
-                                      (nyxt::configure-slot 'current-zoom-ratio 'document-buffer)))
-                     "Set default zoom ratio"))
        (:li (:button :class "button"
                      :onclick (ps:ps (nyxt/ps:lisp-eval
                                       (:title "disable-compositing")
