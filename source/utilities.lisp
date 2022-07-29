@@ -78,10 +78,17 @@ Return the lambda s-expression as a second value, if possible."
     (or (alex:when-let* ((full-definition (swank:find-definition-for-thing fun))
                          (definition (and (not (eq :error (first full-definition)))
                                           (rest full-definition)))
-                         (*package* (symbol-package (swank-backend:function-name
-                                                     (if (functionp fun)
-                                                         fun
-                                                         (closer-mop:method-generic-function fun)))))
+                         ;; REVIEW: Returns (:macro name) for macros on
+                         ;; SBCL. What does it do on CCL, ECL etc?
+                         (name (swank-backend:function-name
+                                (typecase fun
+                                  ;; REVIEW: How do we handle macros here?
+                                  (method (closer-mop:method-generic-function fun))
+                                  (function fun))))
+                         (*package* (if (and (listp name)
+                                             (eq :macro (first name)))
+                                        (symbol-package (second name))
+                                        (symbol-package name)))
                          (file (uiop:file-exists-p (first (alexandria:assoc-value definition :file))))
                          (file-content (alexandria:read-file-into-string
                                         file
