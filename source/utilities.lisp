@@ -18,6 +18,11 @@
 (export-always '+escape+)
 (alex:define-constant +escape+ (string #\escape) :test #'equal)
 
+(export-always 'new-id)
+(defun new-id ()
+  "Generate a new unique numeric ID."
+  (parse-integer (symbol-name (gensym ""))))
+
 (export-always 'defmemo)
 (defmacro defmemo (name params &body body) ; TODO: Replace with https://github.com/AccelerationNet/function-cache?
   (multiple-value-bind (required optional rest keyword)
