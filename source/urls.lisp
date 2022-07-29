@@ -279,6 +279,26 @@ Authority is compared case-insensitively (RFC 3986)."
                       (lambda (url1 url2) (equalp (quri:uri-authority url1)
                                                   (quri:uri-authority url2)))))))
 
+(-> symbol->param-name (symbol) string)
+(defun symbol->param-name (symbol)
+  "Turn the provided SYMBOL into a reasonable query URL parameter name."
+  (let* ((*package* (find-package :nyxt))
+         (*print-case* :downcase))
+    (if (keywordp symbol)
+        (format nil "~(~a~)" symbol)
+        (format nil "~s" symbol))))
+
+(-> value->param-value (t) (values string &optional))
+(defun value->param-value (value)
+  "Turns the VALUE into a `query-params->arglist'-readable representation.
+- If VALUE is a string, return it as-is.
+- Otherwise, print it so string and prepend `+escape+' in front of it to notify
+  the `query-params->arglist' that it should be READ by CL reader."
+  (if (stringp value)
+      value
+      ;; This is to safely parse the args afterwards
+      (str:concat +escape+ (prin1-to-string value))))
+
 (export-always 'nyxt-url)
 (-> nyxt-url (t &rest t &key &allow-other-keys) string)
 (defun nyxt-url (function-name &rest args &key &allow-other-keys)
@@ -299,26 +319,18 @@ Example:
 => NYXT:DESCRIBE-VALUE
 => (:ID \"1000\")"
   (let ((*print-case* :downcase))
-    (flet ((param-name (symbol)
-             (let ((*package* (find-package :nyxt)))
-               (if (keywordp symbol)
-                   (format nil "~(~a~)" symbol)
-                   (format nil "~s" symbol)))))
-      (if (gethash function-name *nyxt-url-commands*)
-          (let ((params (quri:url-encode-params
-                         (mapcar (lambda (pair)
-                                   (cons (param-name (first pair))
-                                         ;; This is to safely parse the args afterwards
-                                         (if (stringp (rest pair))
-                                             (rest pair)
-                                             (str:concat +escape+ (prin1-to-string (rest pair))))))
-                                 (alexandria:plist-alist args)))))
-            (the (values string &optional)
-                 (format nil "nyxt:~a~@[~*?~a~]"
-                         (param-name function-name)
-                         (not (uiop:emptyp params))
-                         params)))
-          (error "There's no nyxt:~a page defined" (param-name function-name))))))
+    (if (gethash function-name *nyxt-url-commands*)
+        (let ((params (quri:url-encode-params
+                       (mapcar (lambda (pair)
+                                 (cons (symbol->param-name (first pair))
+                                       (value->param-value (rest pair))))
+                               (alexandria:plist-alist args)))))
+          (the (values string &optional)
+               (format nil "nyxt:~a~@[~*?~a~]"
+                       (symbol->param-name function-name)
+                       (not (uiop:emptyp params))
+                       params)))
+        (error "There's no nyxt:~a page defined" (symbol->param-name function-name)))))
 
 (export-always 'javascript-url)
 (defun javascript-url (javascript-string)
@@ -328,6 +340,21 @@ Example:
 (export-always 'internal-url-p)
 (defun internal-url-p (url)
   (string= "nyxt" (quri:uri-scheme (url url))))
+
+(-> query-params->arglist ((trivial-types:association-list string string)) (values list &optional))
+(defun query-params->arglist (params)
+  "Process the PARAMS (an alist of strings, as returned by QURI) to a regular Lisp argument plist."
+  (mappend (lambda (pair)
+             (let ((key (intern (str:upcase (first pair)) :keyword))
+                   (value (if (str:starts-with-p +escape+ (rest pair))
+                              (read-from-string (subseq (rest pair) 1))
+                              (rest pair))))
+               ;; Symbols are safe (are they?)
+               (if (or (symbolp value)
+                       (constantp value))
+                   (list key value)
+                   (error "A non-constant value passed in URL params: ~a" value))))
+           params))
 
 (export-always 'parse-nyxt-url)
 (-> parse-nyxt-url ((or string quri:uri)) (values symbol list &optional))
@@ -347,18 +374,7 @@ guarantee of the same result."
          (internal-page-name (let ((*package* (find-package :nyxt)))
                                (read-from-string (str:upcase symbol)))))
     (if (gethash internal-page-name *nyxt-url-commands*)
-        (values internal-page-name
-                (mappend (lambda (pair)
-                                (let ((key (intern (str:upcase (first pair)) :keyword))
-                                      (value (if (str:starts-with-p +escape+ (rest pair))
-                                                 (read-from-string (subseq (rest pair) 1))
-                                                 (rest pair))))
-                                  ;; Symbols are safe (are they?)
-                                  (if (or (symbolp value)
-                                          (constantp value))
-                                      (list key value)
-                                      (error "A non-constant value passed in URL params: ~a" value))))
-                              params))
+        (values internal-page-name (query-params->arglist params))
         (error "There's no nyxt:~a internal-page defined" symbol))))
 
 (define-internal-scheme "nyxt"
