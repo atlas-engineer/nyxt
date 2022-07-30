@@ -26,7 +26,7 @@ raised condition."
   (alex:with-gensyms (c sub-c)
     `(if (or *run-from-repl-p* *debug-on-error*)
          (handler-case (progn ,@body)
-           (nyxt-prompt-buffer-canceled ()
+           (prompt-buffer-canceled ()
              (log:debug "Prompt buffer interrupted")))
          (ignore-errors
           (handler-bind

@@ -355,7 +355,7 @@ PROMPT is a list fed to `format nil'."
                       :prompt (format nil ,@prompt)
                       :sources '(prompter:yes-no-source)
                       :hide-suggestion-count-p t)
-                   (nyxt-prompt-buffer-canceled () "no"))))
+                   (prompt-buffer-canceled () "no"))))
      (if (string= "yes" answer)
          ,yes-form
          ,no-form)))

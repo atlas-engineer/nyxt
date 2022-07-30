@@ -140,7 +140,7 @@ failures."))
 
 (defmethod initialize-instance :after ((web-context webkit-web-context-ephemeral) &key)
   (unless (webkit:webkit-web-context-is-ephemeral web-context)
-    (error 'nyxt-web-context-condition :context web-context
+    (error 'web-context-error :context web-context
                                        :message "Web Contexts of class webkit-web-context-ephemeral must be ephemeral")))
 
 (defclass webkit-website-data-manager (webkit:webkit-website-data-manager) ()
@@ -151,7 +151,7 @@ failures."))
 
 (defmethod initialize-instance :after ((data-manager webkit-website-data-manager-ephemeral) &key)
   (unless (webkit:webkit-website-data-manager-is-ephemeral data-manager)
-    (error 'nyxt-web-context-condition :context data-manager
+    (error 'web-context-error :context data-manager
                                        :message "Data Managers of class webkit-website-data-manager-ephemeral must be ephemeral")))
 
 (defvar gtk-running-p nil
@@ -345,7 +345,7 @@ By default it is found in the source directory."))
 
 (defmethod initialize-instance :after ((web-view webkit-web-view-ephemeral) &key web-context)
   (unless (webkit:webkit-web-view-is-ephemeral web-view)
-    (error 'nyxt-web-context-condition :context web-context
+    (error 'web-context-error :context web-context
                                        :message "Tried to make an ephemeral web-view in a non-ephemeral context")))
 
 (defmethod make-web-view ((profile nyxt-profile) (buffer t))
@@ -1204,7 +1204,7 @@ See `finalize-buffer'."
                                            (uiop:native-namestring (uiop:getcwd)))
                                    :extra-modes 'nyxt/file-manager-mode:file-manager-mode
                                    :sources 'nyxt/file-manager-mode:file-source)
-                         (nyxt-prompt-buffer-canceled ()
+                         (prompt-buffer-canceled ()
                            nil)))))
           (if files
               (webkit:webkit-file-chooser-request-select-files
@@ -1332,7 +1332,7 @@ See `finalize-buffer'."
                                      :prompt (webkit:webkit-script-dialog-get-message dialog)
                                      :input (webkit:webkit-script-dialog-prompt-get-default-text dialog)
                                      :sources 'prompter:raw-source)
-                                  (nyxt-prompt-buffer-canceled (c) (declare (ignore c)) nil)))))
+                                  (prompt-buffer-canceled (c) (declare (ignore c)) nil)))))
                (if text
                    (webkit:webkit-script-dialog-prompt-set-text dialog text)
                    (progn

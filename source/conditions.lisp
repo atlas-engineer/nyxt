@@ -3,17 +3,18 @@
 
 (in-package :nyxt)
 
-(export-always 'nyxt-condition)
-(define-condition nyxt-condition (error)
-  ((message :initarg :message :accessor nyxt-condition-message))
+(export-always 'nyxt-error)
+(define-condition nyxt-error (error)
+  ((message :initarg :message :accessor message))
   (:report (lambda (c stream)
              (format stream "~a" (slot-value c 'message))))
-  (:documentation "An error internal to Nyxt. It should abort the ongoing command, but not the whole process."))
+  (:documentation "An error internal to Nyxt.
+It should abort the ongoing command, but not the whole process."))
 
-(define-condition nyxt-web-context-condition (nyxt-condition)
+(define-condition web-context-error (nyxt-error)
   ((context :initarg :context :reader context)))
 
-(define-condition nyxt-prompt-buffer-canceled (error)
+(define-condition prompt-buffer-canceled (error)
   ())
 (define-condition prompt-buffer-non-interactive (error)
   ((name :initarg :name :accessor name))

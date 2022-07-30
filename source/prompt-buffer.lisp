@@ -428,7 +428,7 @@ See `update-prompt-input' to update the changes visually."
        results)
       ((calispel:? (prompter:interrupt-channel prompt-buffer))
        (hide-prompt-buffer prompt-buffer)
-       (error 'nyxt-prompt-buffer-canceled)))))
+       (error 'prompt-buffer-canceled)))))
 
 (sera:eval-always
   (defvar %prompt-args (delete-duplicates
@@ -456,7 +456,7 @@ See the documentation of `prompt-buffer' to know more about the options."
       (restart-case
           (error 'prompt-buffer-non-interactive :name prompter:prompt)
         (prompt-anyway () nil)
-        (cancel () (error 'nyxt-prompt-buffer-canceled))))
+        (cancel () (error 'prompt-buffer-canceled))))
     (alex:when-let ((prompt-text (getf args :prompt)))
       (when (str:ends-with-p ":" prompt-text)
         (log:warn "Prompt text ~s should not end with a ':'." prompt-text)
