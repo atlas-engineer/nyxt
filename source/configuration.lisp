@@ -387,7 +387,6 @@ To discover the default value of a slot or all slots of a class, use the
                                                   (%slot-default% %slot-value%))
                                              ,value))))))))
 
-
 (defparameter %buffer nil)              ; TODO: Make a monad?
 
 (export-always 'current-buffer)
