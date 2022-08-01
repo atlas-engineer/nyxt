@@ -239,7 +239,7 @@ turned into links to their respective description page."
                                     (prompt1
                                       :prompt (format nil "Set ~a to" variable)
                                       :sources 'prompter:raw-source))))
-                          (nyxt-prompt-buffer-canceled nil))))
+                          (prompt-buffer-canceled nil))))
        "Change value")
       (:p (:raw (value->html (symbol-value variable)))))))
 

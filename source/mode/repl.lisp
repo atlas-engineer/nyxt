@@ -303,7 +303,7 @@ Features:
                                       :name "Completions"
                                       :constructor (first (swank:simple-completions
                                                            symbol-to-complete *package*))))
-                         (nyxt::nyxt-prompt-buffer-canceled () nil))))
+                         (nyxt::prompt-buffer-canceled () nil))))
       (when completion
         (setf (input repl) (str:concat (subseq input 0 previous-delimiter)
                                        completion (subseq input cursor))

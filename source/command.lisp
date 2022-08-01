@@ -357,7 +357,7 @@ With MODE-SYMBOLS and GLOBAL-P, include global commands."
   (with-current-buffer (current-buffer)
     (let ((*interactive-p* t))
       (handler-case (apply #'funcall command args)
-        (nyxt-prompt-buffer-canceled ()
+        (prompt-buffer-canceled ()
           (log:debug "Prompt buffer interrupted")
           nil)))))
 
