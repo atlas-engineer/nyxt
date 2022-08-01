@@ -264,8 +264,75 @@ bytes are recognized), and they are capable of being "
             (:nxref :class-name 'scheme :slot 'cors-enabled-p "CORS-enabled")
             ", " (:nxref :class-name 'scheme :slot 'local-p "protected")
             " and are in general capable of whatever the renderer-provided schemes do.")
-        ;; TODO: A section about internal pages.
-        )
+
+        (:nsection :title "nyxt: URLs and internal pages"
+          (:p "You can create pages out of Lisp commands, and make arbitrary computations for
+the content of those. More so: these pages can invoke Lisp commands on demand,
+be it on button click or on some page event. The macros and functions to look at are:")
+          (:ul
+           (:li (:nxref :function 'define-internal-page) " to create new pages.")
+           (:li (:nxref :function 'ensure-internal-page-buffer)
+                " to either get or create the buffer for the page.")
+           (:li (:nxref :function 'nyxt-url) " to reference the internal pages by their name.")
+           (:li (:nxref :function 'define-internal-page-command)
+                " to generate a mode-specific command loading the internal page.")
+           (:li (:nxref :function 'define-internal-page-command-global)
+                " to generate a global command loading the internal page."))
+          (:p "Using the facilities Nyxt provides, you can make a random number generator
+page:")
+          (:code (:pre "(define-internal-page-command-global random-number (&key (max 1000000))
+    (buffer \"*Random*\")
+  \"Generates a random number on every reload.\"
+  (spinneret:with-html-string
+    (:h1 (princ-to-string (random max)))
+    (:button.button
+     :onclick (ps:ps (nyxt/ps:lisp-eval
+                      (:title \"re-load/re-generate the random number\")
+                      (reload-buffer buffer)))
+     :title \"Re-generate the random number again\"
+     \"New number\")))"))
+          (:p "Several things to notice here:")
+          (:ul
+           (:li "Internal page command is much like a regular command in being a Lisp function
+that you can call either from the REPL or from the " (:nxref :command 'execute-command) " menu.")
+           (:ul
+            (:li "With one important restriction: internal page commands should only have keyword
+arguments. Other argument types are not supported. This is to make them
+invocable through the URL they are assigned. For example, when you invoke the "
+                 (:code "random-number") " command you've written, you'll see the "
+                 (:code "nyxt:nyxt-user:random-number?max=%1B1000000")
+                 " URL in the status buffer. The keyword argument is being seamlessly translated
+into a URL query parameter.")
+            (:li "There's yet another important restriction: the values you provide to the
+internal page command should be serializable to URLs. Which restricts the
+arguments to numbers, symbols, and strings, for instance."))
+           (:li "Those commands should return the content of the page in their body, like
+internal schemes do.")
+           (:li "If you want to return HTML, then " (:nxref :function 'spinneret:with-html-string)
+                " is your best friend, but no one restricts you from producing HTML in any other
+way, including simply writing it by hand ;)")
+           (:li (:code "nyxt/ps:lisp-eval")
+                " is a Parenscript macro to request Nyxt run arbitrary code. The signature is: "
+                (:code "((&key (buffer '(nyxt:current-buffer)) title callback) &body form)")
+                ". You can bind it to a " (:code "<button>") "'s " (:code "onClick")
+                " event, for example."))
+          (:p "If you're making an extension, you might find other macros more useful. "
+              (:nxref :function 'define-internal-page-command)
+              ", for example, defines a command to only be visible when in the mode you define
+it in the package of. Useful to separate the context-specific commands from the
+universally useful (" (:code "-global")
+              ") ones. If there's a page that you'd rather not have a command for, you can
+still define it as:")
+          (:pre (:code "(define-internal-page not-a-command ()
+    (:title \"*Hello*\" :page-mode 'base-mode)
+  \"Hello there!\")"))
+          (:p " and use as:")
+          (:pre (:code "(set-current-buffer
+ (buffer-load (nyxt-url 'not-a-command)
+              :buffer (ensure-internal-page-buffer 'not-a-command)))"))
+          (:p "See the slots and documentation of " (:nxref :class-name 'internal-page)
+              " to understand what you can pass to the "
+              (:nxref :function 'define-internal-page) ".")))
 
       (:nsection :title "Hooks"
         (:p "Hooks provide a powerful mechanism to tweak the behaviour of various
