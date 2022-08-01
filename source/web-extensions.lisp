@@ -151,22 +151,27 @@ https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.
                                              (gethash "dark" max-icon))))))
 
 (define-class browser-action ()
-  ((default-popup nil
-                  :type (or null string pathname)
-                  :documentation "An HTML file for the popup to open when its icon is clicked.")
-   (default-title nil
-                  :type (or null string)
-                  :documentation "The title to label the popup with.")
-   (default-icon nil
-                 :type (or null string)
-                 :documentation "The extension icon to use in mode line.")
+  ((default-popup
+     nil
+     :type (or null string pathname)
+     :documentation "An HTML file for the popup to open when its icon is clicked.")
+   (default-title
+     nil
+     :type (or null string)
+     :documentation "The title to label the popup with.")
+   (default-icon
+     nil
+     :type (or null string)
+     :documentation "The extension icon to use in status buffer.")
    ;; TODO: Use those.
-   (default-light-icon nil
-                       :type (or null string)
-                       :documentation "The extension icon for use in mode line in the light theme.")
-   (default-dark-icon nil
-                       :type (or null string)
-                       :documentation "The extension icon for use in mode line in the dark theme."))
+   (default-light-icon
+     nil
+     :type (or null string)
+     :documentation "The extension icon for use in status buffer in the light theme.")
+   (default-dark-icon
+     nil
+     :type (or null string)
+     :documentation "The extension icon for use in status buffer in the dark theme."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
