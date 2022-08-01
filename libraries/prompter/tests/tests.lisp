@@ -296,7 +296,7 @@
         (sync)
         (assert-equal '("jackfruit" "banana")
                       (history))
-        (assert-equal "jackfruit"
+        (assert-equality 'string= "jackfruit"
                       (containers:first-item (prompter:history prompter)))
         (setf (prompter:input prompter) "banana")
         (sync)
@@ -318,53 +318,53 @@
                  (prompter:value (prompter:selected-suggestion prompter))))
           (prompter:all-ready-p prompter)
           (prompter:select-next prompter)
-          (assert-equal "bar"
+          (assert-equality 'string= "bar"
                         (selection-value))
           (prompter:select-next prompter)
-          (assert-equal "100 foo"
+          (assert-equality 'string= "100 foo"
                         (selection-value))
           (prompter:select-next prompter)
-          (assert-equal "200"
+          (assert-equality 'string= "200"
                         (selection-value))
           (prompter:select-next prompter)
-          (assert-equal "200"
+          (assert-equality 'string= "200"
                         (selection-value))
           (prompter:select-previous prompter)
-          (assert-equal "100 foo"
+          (assert-equality 'string= "100 foo"
                         (selection-value))
           (prompter:select-first prompter)
-          (assert-equal "foo"
+          (assert-equality 'string= "foo"
                         (selection-value))
           (prompter:select-previous prompter)
-          (assert-equal "foo"
+          (assert-equality 'string= "foo"
                         (selection-value))
           (prompter:select-last prompter)
-          (assert-equal "200"
+          (assert-equality 'string= "200"
                         (selection-value))
           (prompter:select-previous-source prompter)
-          (assert-equal "bar"
+          (assert-equality 'string= "bar"
                         (selection-value))
           (prompter:select-previous-source prompter)
-          (assert-equal "bar"
+          (assert-equality 'string= "bar"
                         (selection-value))
           (prompter:select-next-source prompter)
-          (assert-equal "100 foo"
+          (assert-equality 'string= "100 foo"
                         (selection-value))
           (prompter:select-next-source prompter)
-          (assert-equal "100 foo"
+          (assert-equality 'string= "100 foo"
                         (selection-value))
 
           (setf (prompter:input prompter) "bar")
           (prompter:all-ready-p prompter)
-          (assert-equal "bar"
+          (assert-equality 'string= "bar"
                         (selection-value))
           (assert-equal '("bar")
                         (all-source-suggestions prompter))
           (prompter:select-next prompter)
-          (assert-equal "bar"
+          (assert-equality 'string= "bar"
                         (selection-value))
           (prompter:select-next-source prompter)
-          (assert-equal "bar"
+          (assert-equality 'string= "bar"
                         (selection-value)))
         (prompter:all-ready-p prompter))))
 
@@ -382,13 +382,13 @@
                  (prompter:value (prompter:selected-suggestion prompter))))
           (prompter:all-ready-p prompter)
           (prompter:select-next prompter 2)
-          (assert-equal "100 foo"
+          (assert-equality 'string= "100 foo"
                         (selection-value))
           (prompter:select-next prompter -2)
-          (assert-equal "foo"
+          (assert-equality 'string= "foo"
                         (selection-value))
           (prompter:select-next prompter 99)
-          (assert-equal "200"
+          (assert-equality 'string= "200"
                         (selection-value)))
         (prompter:all-ready-p prompter))))
 
@@ -406,22 +406,22 @@
                  (prompter:value (prompter:selected-suggestion prompter))))
           (prompter:all-ready-p prompter)
           (prompter:select-last prompter)
-          (assert-equal "200"
+          (assert-equality 'string= "200"
                         (selection-value))
           (prompter:select-next prompter)
-          (assert-equal "200"
+          (assert-equality 'string= "200"
                         (selection-value))
           (prompter::select prompter 1 :wrap-over-p t)
-          (assert-equal "foo"
+          (assert-equality 'string= "foo"
                         (selection-value))
           (prompter::select prompter -1 :wrap-over-p t)
-          (assert-equal "200"
+          (assert-equality 'string= "200"
                         (selection-value))
           (prompter::select prompter 2 :wrap-over-p t)
-          (assert-equal "bar"
+          (assert-equality 'string= "bar"
                         (selection-value))
           (prompter::select prompter -3 :wrap-over-p t)
-          (assert-equal "100 foo"
+          (assert-equality 'string= "100 foo"
                         (selection-value)))
         (prompter:all-ready-p prompter))))
 
@@ -451,7 +451,7 @@
         (setf (prompter:active-attributes-keys (prompter:selected-source prompter))
               '("Title" "Keywords"))
 
-        (assert-equal ""
+        (assert-equality 'string= ""
                       (first (alex:assoc-value (prompter:active-attributes
                                                 (prompter:selected-suggestion prompter)
                                                 :source (prompter:selected-source prompter))
@@ -477,10 +477,10 @@
         (flet ((selection-value ()
                  (prompter:value (prompter:selected-suggestion prompter))))
           (prompter:all-ready-p prompter)
-          (assert-equal "foo"
+          (assert-equality 'string= "foo"
                         (selection-value))
           (setf (prompter:input prompter) "bar")
           (prompter:all-ready-p prompter)
-          (assert-equal "bar"
+          (assert-equality 'string= "bar"
                         (selection-value))
           (prompter:all-ready-p prompter)))))

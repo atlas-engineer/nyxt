@@ -20,7 +20,7 @@
   "Dummy theme for testing.")
 
 (define-test basic-css-substitution ()
-  (assert-equal "a { background-color: black; color: yellow; }
+  (assert-equality 'string= "a { background-color: black; color: yellow; }
 "
                 (theme:themed-css *theme*
                   (a
@@ -28,7 +28,7 @@
                    :color theme:primary))))
 
 (define-test multi-rule/multi-color-substitution ()
-  (assert-equal "a { background-color: black; color: yellow; }
+  (assert-equality 'string= "a { background-color: black; color: yellow; }
 body { background-color: yellow; color: white; }
 h1 { color: magenta; }
 "
@@ -43,7 +43,7 @@ h1 { color: magenta; }
                :color theme:accent))))
 
 (define-test inline-function-execution ()
-  (assert-equal  "body { background-color: yellow; color: magenta !important; }
+  (assert-equality 'string=  "body { background-color: yellow; color: magenta !important; }
 "
                  (theme:themed-css *theme*
                    (body
@@ -51,7 +51,7 @@ h1 { color: magenta; }
                     :color (concatenate 'string theme:accent " !important")))))
 
 (define-test inline-macro/special-form-invocation ()
-  (assert-equal "body { color: black; background-color: yellow; }
+  (assert-equality 'string= "body { color: black; background-color: yellow; }
 "
                 (theme:themed-css *theme*
                   (body
