@@ -70,7 +70,9 @@ You can redefine it to enable regex-based search, for example:
                   "...")
                 (subseq (body match)
                         (if long-match
-                            (1+ (position #\Space (body match) :end (- (pos match) 20) :from-end t))
+                            (alex:if-let ((pos (position #\Space (body match) :end (- (pos match) 20) :from-end t)))
+                              (1+ pos)
+                              0)
                             0)))))
     ("Buffer ID" ,(princ-to-string (id (buffer match))))
     ("Buffer title" ,(title (buffer match)))))
