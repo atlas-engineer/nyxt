@@ -1550,22 +1550,30 @@ any.")
      :sources (url-sources (current-buffer) return-actions))
     (current-buffer)))
 
+(define-command reload-buffer
+    (&optional (buffer
+                (prompt
+                 :prompt "Reload buffer(s)"
+                 :sources (make-instance 'buffer-source))))
+  "Reload BUFFER.
+Return it."
+  (when buffer
+    (buffer-load (url buffer) :buffer buffer)))
+
 (define-command reload-current-buffer ()
   "Reload current buffer.
 Return it."
-  (reload-buffers (list (current-buffer)))
-  (current-buffer))
+  (reload-buffer (current-buffer)))
 
-(define-command reload-buffers (&optional buffers)
+(define-command reload-buffers
+    (&optional (buffers
+                (prompt
+                 :prompt "Reload buffer(s)"
+                 :sources (make-instance 'buffer-source :multi-selection-p t))))
   "Prompt for BUFFERS to be reloaded.
 Return BUFFERS."
-  (if buffers
-      (mapcar (lambda (buffer) (buffer-load (url buffer) :buffer buffer)) (alex:ensure-list buffers))
-      (prompt
-       :prompt "Reload buffer(s)"
-       :sources (make-instance 'buffer-source
-                               :multi-selection-p t
-                               :return-actions (list 'reload-buffers))))
+  (when buffers
+    (mapcar #'reload-buffer (alex:ensure-list buffers)))
   buffers)
 
 (defun buffer-parent (&optional (buffer (current-buffer)))
