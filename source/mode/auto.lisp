@@ -164,11 +164,11 @@ restored.")))
 
 (-> enable-matching-modes (quri:uri buffer) *)
 (defun enable-matching-modes (url buffer)
-  (let ((rule (matching-auto-mode-rule url buffer)))
+  (alex:when-let ((rule (matching-auto-mode-rule url buffer)))
     (dolist (mode-invocation (set-difference
-                               (included rule)
-                               (rememberable-of (modes buffer))
-                               :test #'equals))
+                              (included rule)
+                              (rememberable-of (modes buffer))
+                              :test #'equals))
       (check-type mode-invocation mode-invocation)
       (enable-modes (list (name mode-invocation)) buffer (arguments mode-invocation)))
     (alex:when-let ((modes (mapcar #'name
@@ -259,6 +259,7 @@ The rules are:
   (unless (last-active-modes mode)
     (setf (last-active-modes mode)
           (mode-invocations (default-modes (buffer mode)))))
+  (enable-matching-modes (url (buffer mode)) (buffer mode))
   (when (prompt-on-mode-toggle mode)
     (hooks:add-hook (enable-mode-hook (buffer mode))
                     (make-instance 'hooks:handler
@@ -276,7 +277,8 @@ The rules are:
   (hooks:remove-hook (enable-mode-hook (buffer mode))
                      'enable-mode-auto-mode-handler)
   (hooks:remove-hook (disable-mode-hook (buffer mode))
-                     'disable-mode-auto-mode-handler))
+                     'disable-mode-auto-mode-handler)
+  (reapply-last-active-modes mode))
 
 (-> mode-covered-by-auto-mode-p
     (mode auto-mode boolean)
