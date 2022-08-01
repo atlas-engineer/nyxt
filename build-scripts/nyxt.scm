@@ -164,6 +164,7 @@
           cl-nhooks
           cl-nkeymaps
           cl-osicat ; Not needed for SBCL, remove it in Guix upstream package.
+          cl-ospm
           cl-parenscript
           cl-phos
           cl-plump
