@@ -671,9 +671,9 @@ store them somewhere and `ffi-buffer-delete' them once done."))
              :clip-path "polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0% 50%)"
              :margin-left "-10px")
             ("#container"
-             :display "grid"
+             :display "flex"
              ;; Columns: controls, url, tabs, modes
-             :grid-template-columns "90px minmax(auto, 30ch) 1fr 220px"
+             :justify-content "space-between"
              :overflow-y "hidden")
             ("#controls"
              :background-color theme:secondary
@@ -684,7 +684,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
              :overflow "hidden"
              :white-space "nowrap"
              :z-index "3"
-             )
+             :flex-basis "6em")
             ("#url"
              :background-color theme:primary
              :color theme:on-primary
@@ -695,7 +695,9 @@ store them somewhere and `ffi-buffer-delete' them once done."))
              :padding-right "10px"
              :padding-left "15px"
              :z-index "2"
-             )
+             :flex-grow "3"
+             :flex-shrink "2"
+             :flex-basis "10em")
             ("#tabs"
              :background-color theme:secondary
              :color theme:on-secondary
@@ -706,7 +708,9 @@ store them somewhere and `ffi-buffer-delete' them once done."))
              :padding-left "15px"
              :padding-right "10px"
              :z-index "1"
-             )
+             :flex-grow "10"
+             :flex-shrink "4"
+             :flex-basis "10em")
             ("#tabs::-webkit-scrollbar"
              :display "none")
             (.tab
@@ -726,7 +730,9 @@ store them somewhere and `ffi-buffer-delete' them once done."))
              :overflow-x "scroll"
              :white-space "nowrap"
              :z-index "2"
-             )
+             :flex-grow "2"
+             :flex-shrink "1"
+             :flex-basis "10em")
             ("#modes::-webkit-scrollbar"
              :display "none")
             (button
