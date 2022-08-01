@@ -31,7 +31,7 @@
                            (url entry))
           ;; "value has no title"
           (assert-equality 'string= ""
-                        (title entry)))
+                           (title entry)))
         (nyxt::history-add (quri:uri "http://example.org") :title "foo")
         ;; "history has still 1 entry after adding same URL"
         (assert-eq 1
@@ -41,7 +41,7 @@
         (let ((entry (first (htree:all-data (files:content file)))))
           ;; "value now has title"
           (assert-equality 'string= "foo"
-                        (title entry)))
+                           (title entry)))
         (nyxt::history-add (quri:uri "http://example.org/sub"))
         ;; "history now has 2 entries"
         (assert-eq 2

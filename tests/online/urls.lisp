@@ -77,8 +77,8 @@
                                  (quri:uri "https://example.org/foo")))
   ;; "schemeless URL"
   (assert-equality 'string= (nyxt::schemeless-url
-                 (quri:uri "http://example.org/foo/bar?query=baz#qux"))
-                "example.org/foo/bar?query=baz#qux")
+                             (quri:uri "http://example.org/foo/bar?query=baz#qux"))
+                   "example.org/foo/bar?query=baz#qux")
   ;; "comparing same URL"
   (assert-false (nyxt::url< (quri:uri "http://example.org")
                             (quri:uri "http://example.org")))

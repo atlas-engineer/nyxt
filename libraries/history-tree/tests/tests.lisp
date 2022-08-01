@@ -40,7 +40,7 @@
         (url "http://example.org"))
     (htree:add-child url history *owner*)
     (assert-equality 'string= url
-                  (htree:data (htree:owner-node history *owner*)))))
+                     (htree:data (htree:owner-node history *owner*)))))
 
 (define-test multiple-entry ()
   (let ((history (make))
@@ -52,17 +52,17 @@
     (htree:backward history *owner*)
     (htree:add-child url3 history *owner*)
     (assert-equality 'string= url3
-                  (htree:data (htree:owner-node history *owner*)))
+                     (htree:data (htree:owner-node history *owner*)))
     (assert-equality 'string= url1
-                  (htree:data (htree:parent (htree:owner-node history *owner*))))
+                     (htree:data (htree:parent (htree:owner-node history *owner*))))
     (htree:backward history *owner*)
     (htree:go-to-child url2 history *owner*)
     (assert-equality 'string= url2
-                  (htree:data (htree:owner-node history *owner*)))))
+                     (htree:data (htree:owner-node history *owner*)))))
 
 (define-test simple-branching-tree-tests ()
   (assert-equality 'string= "http://example.root/B2"
-                (htree:data (htree:owner-node (make-history1) *owner*))))
+                   (htree:data (htree:owner-node (make-history1) *owner*))))
 
 (define-test history-depth ()
   (assert-eq 2
@@ -135,13 +135,13 @@
 (define-test move-node-to-forward-child-on-add ()
   (let ((history (make-history2)))
     (assert-equality 'string= "http://example.root/B"
-                  (htree:data (htree:owner-node history *owner*)))
+                     (htree:data (htree:owner-node history *owner*)))
     (htree:backward history *owner*)
     (assert-equality 'string= "http://example.root"
-                  (htree:data (htree:owner-node history *owner*)))
+                     (htree:data (htree:owner-node history *owner*)))
     (htree:add-child "http://example.root/A" history *owner*)
     (assert-equality 'string= "http://example.root/A"
-                  (htree:data (htree:owner-node history *owner*)))))
+                     (htree:data (htree:owner-node history *owner*)))))
 
 (define-class web-page ()
   ((url "")
@@ -159,7 +159,7 @@
       (assert-eq 1
                  (hash-table-count (htree:entries history)))
       (assert-equality 'string= "Example page"
-                    (title (htree:data (htree::first-hash-table-key (htree:entries history))))))
+                       (title (htree:data (htree::first-hash-table-key (htree:entries history))))))
     (let ((history (make :key 'url)))
       (htree:add-child web-page1 history *owner*)
       (htree:add-owner history "b")
@@ -167,7 +167,7 @@
       (assert-eq 1
                  (hash-table-count (htree:entries history)))
       (assert-equality 'string= "Example page"
-                    (title (htree:data (htree::first-hash-table-key (htree:entries history))))))
+                       (title (htree:data (htree::first-hash-table-key (htree:entries history))))))
     (let ((history (make)))
       (htree:add-child web-page1 history *owner*)
       (htree:add-child web-page2 history *owner*)
@@ -183,9 +183,9 @@
         (url1 "http://example.org"))
     (htree:add-child url1 history *owner*)
     (assert-equality 'string= *owner*
-                  (first (alexandria:hash-table-keys (htree:owners history))))
+                     (first (alexandria:hash-table-keys (htree:owners history))))
     (assert-eq 1
-              (hash-table-count (htree:owners history)))))
+               (hash-table-count (htree:owners history)))))
 
 (define-test multiple-owners ()
   (let ((history (make :owner "a"))
@@ -199,15 +199,15 @@
     (assert-eq 3
                (hash-table-count (htree:entries history)))
     (assert-equality 'string= url3
-                  (htree:data (htree:owner-node history "b")))
+                     (htree:data (htree:owner-node history "b")))
     (assert-equality 'string= url2
-                  (htree:data (htree:parent (htree:owner-node history "b"))))
+                     (htree:data (htree:parent (htree:owner-node history "b"))))
     (assert-false (htree:parent (htree:parent (htree:owner-node history "b"))))
     ;; Following tests are useless now that we don't have with-current-owner anymore.
     (assert-eq 2
                (length (htree:nodes (htree:owner history "b"))))
     (assert-equality 'string= url1
-                  (htree:data (htree:owner-node history "a")))))
+                     (htree:data (htree:owner-node history "a")))))
 
 (define-test backward-and-forward ()
   (let ((history (make :owner "a"))
@@ -219,17 +219,17 @@
     (htree:add-owner history "b" :creator-id "a")
     (htree:add-child url3 history "b")
     (assert-equality 'string= url2
-                  (htree:data (htree:owner-node history "a")))
+                     (htree:data (htree:owner-node history "a")))
     (htree:backward history "a")
     (htree:backward history "a")
     (assert-equality 'string= url1
-                  (htree:data (htree:owner-node history "a")))
+                     (htree:data (htree:owner-node history "a")))
     (htree:forward history "a")
     (assert-equality 'string= url2
-                  (htree:data (htree:owner-node history "a")))
+                     (htree:data (htree:owner-node history "a")))
     (htree:forward history "a")
     (assert-equality 'string= url2
-                  (htree:data (htree:owner-node history "a")))))
+                     (htree:data (htree:owner-node history "a")))))
 
 (define-test inter-owner-relationships ()
   (let ((history (make :owner "a"))
@@ -319,7 +319,7 @@
     (htree:visit-all history "b" distant-node)
 
     (assert-equality 'string= distant-node-value
-                  (htree:data (htree:owner-node history "b")))
+                     (htree:data (htree:owner-node history "b")))
     (assert-equal (sort (copy-seq '("http://example.root/A1" "http://example.root/A" "http://example.root"
                                     "http://example.root/B" "http://example.root/B2" "b-data"))
                         #'string<)
@@ -337,7 +337,7 @@
       (htree:visit-all history *owner* distant-node))
 
     (assert-equality 'string= distant-node-value
-                  (htree:data (htree:owner-node history *owner*)))
+                     (htree:data (htree:owner-node history *owner*)))
     (assert-equal (sort (copy-seq '("http://example.root/A"
                                     "http://example.root/A1"
                                     "http://example.root/A2"
@@ -427,22 +427,22 @@
     (htree:backward history "a")
 
     (assert-equality 'string= url1
-                  (htree:data (htree:owner-node history *owner*)))
+                     (htree:data (htree:owner-node history *owner*)))
     (htree:go-to-owned-child url3 history *owner*)
     (assert-equality 'string= url1
-                  (htree:data (htree:owner-node history *owner*)))
+                     (htree:data (htree:owner-node history *owner*)))
     (htree:go-to-owned-child url2 history *owner*)
     (assert-equality 'string= url2
-                  (htree:data (htree:owner-node history *owner*)))
+                     (htree:data (htree:owner-node history *owner*)))
 
     (assert-equality 'string= url1
-                  (htree:data (htree:owner-node history "a")))
+                     (htree:data (htree:owner-node history "a")))
     (htree:go-to-owned-child url2 history "a")
     (assert-equality 'string= url1
-                  (htree:data (htree:owner-node history "a")))
+                     (htree:data (htree:owner-node history "a")))
     (htree:go-to-owned-child url3 history "a")
     (assert-equality 'string= url3
-                  (htree:data (htree:owner-node history "a")))))
+                     (htree:data (htree:owner-node history "a")))))
 
 (define-test add-children ()
   (let ((history (make))
@@ -451,11 +451,11 @@
         (url3 "http://en.wikipedia.org"))
     (htree:add-children (list url1 url2 url3) history *owner*)
     (assert-equality 'string= url3
-                  (htree:data (htree:owner-node history *owner*)))
+                     (htree:data (htree:owner-node history *owner*)))
     (assert-false (htree::map-data (htree:children (htree:owner-node history *owner*))))
     (htree:backward history *owner*)
     (assert-equality 'string= url1
-                  (htree:data (htree:owner-node history *owner*)))
+                     (htree:data (htree:owner-node history *owner*)))
 
     (assert-eq 2
                (length (htree:children (htree:owner-node history *owner*))))))

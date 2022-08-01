@@ -22,40 +22,40 @@
 (define-test basic-css-substitution ()
   (assert-equality 'string= "a { background-color: black; color: yellow; }
 "
-                (theme:themed-css *theme*
-                  (a
-                   :background-color theme:background
-                   :color theme:primary))))
+                   (theme:themed-css *theme*
+                     (a
+                      :background-color theme:background
+                      :color theme:primary))))
 
 (define-test multi-rule/multi-color-substitution ()
   (assert-equality 'string= "a { background-color: black; color: yellow; }
 body { background-color: yellow; color: white; }
 h1 { color: magenta; }
 "
-            (theme:themed-css *theme*
-              (a
-               :background-color theme:background
-               :color theme:primary)
-              (body
-               :background-color theme:primary
-               :color theme:on-background)
-              (h1
-               :color theme:accent))))
+                   (theme:themed-css *theme*
+                     (a
+                      :background-color theme:background
+                      :color theme:primary)
+                     (body
+                      :background-color theme:primary
+                      :color theme:on-background)
+                     (h1
+                      :color theme:accent))))
 
 (define-test inline-function-execution ()
   (assert-equality 'string=  "body { background-color: yellow; color: magenta !important; }
 "
-                 (theme:themed-css *theme*
-                   (body
-                    :background-color theme:primary
-                    :color (concatenate 'string theme:accent " !important")))))
+                   (theme:themed-css *theme*
+                     (body
+                      :background-color theme:primary
+                      :color (concatenate 'string theme:accent " !important")))))
 
 (define-test inline-macro/special-form-invocation ()
   (assert-equality 'string= "body { color: black; background-color: yellow; }
 "
-                (theme:themed-css *theme*
-                  (body
-                   :color (if (theme:dark-p theme:theme)
-                              theme:background
-                              theme:on-background)
-                   :background-color theme:primary))))
+                   (theme:themed-css *theme*
+                     (body
+                      :color (if (theme:dark-p theme:theme)
+                                 theme:background
+                                 theme:on-background)
+                      :background-color theme:primary))))
