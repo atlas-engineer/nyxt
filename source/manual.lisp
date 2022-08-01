@@ -416,17 +416,16 @@ facilities provided by " (:nxref :package :theme) " and "
 ". For example, to set a theme to a midnight-like one, you can add this snippet
 to your configuration file:")
         (:pre (:code "(define-configuration browser
-  ((theme (make-instance
-           'theme:theme
-           :dark-p t
-           :background-color \"black\"
-           :on-background-color \"#808080\"
-           :accent-color \"#37a8e4\"
-           :on-accent-color \"black\"
-           :primary-color \"gray\"
-           :on-primary-color \"white\"
-           :secondary-color \"darkgray\"
-           :on-secondary-color \"black\"))))"))
+  ((theme (make-instance 'theme:theme
+                         :dark-p t
+                         :background-color \"black\"
+                         :on-background-color \"#808080\"
+                         :accent-color \"#37a8e4\"
+                         :on-accent-color \"black\"
+                         :primary-color \"gray\"
+                         :on-primary-color \"white\"
+                         :secondary-color \"darkgray\"
+                         :on-secondary-color \"black\"))))"))
         (:p "This, on the next restart of Nyxt, will repaint all the interface elements into
 a dark-ish theme.")
         (:p "As an alternative to the all-encompassing themes, you can alter the style of
