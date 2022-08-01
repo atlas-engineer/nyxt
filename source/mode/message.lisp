@@ -28,7 +28,7 @@
      (:button :class "button"
               :onclick (ps:ps (nyxt/ps:lisp-eval (:title "clear-messages")
                                                   (clear-messages)
-                                                  (nyxt:reload-buffers buffer)))
+                                                  (nyxt:reload-buffer buffer)))
               "Clear"))
     (:ul
      (loop for message in (reverse (nyxt:messages-content *browser*))

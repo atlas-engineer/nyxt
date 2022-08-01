@@ -216,7 +216,7 @@ Features:
                   (current-evaluation repl) id)
             (setf (current-evaluation repl) (length (evaluations repl))
                   (evaluations repl) (append (evaluations repl) (list evaluation))))
-        (reload-buffers (list (buffer repl)))))))
+        (reload-buffer (buffer repl))))))
 
 (define-command previous-cell (&optional (repl (find-submode 'repl-mode)))
   "Move to the previous input cell."
@@ -247,7 +247,7 @@ Features:
       (psetf (elt evals (1- id)) (elt evals id)
              (elt evals id) (elt evals (1- id))
              (current-evaluation repl) (1- id)))
-    (reload-buffers (list (buffer repl)))))
+    (reload-buffer (buffer repl))))
 
 (define-command move-cell-down (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
   "Move the current code cell down, swapping it with the one below."
@@ -256,7 +256,7 @@ Features:
       (psetf (elt evals (1+ id)) (elt evals id)
              (elt evals id) (elt evals (1+ id))
              (current-evaluation repl) (1+ id)))
-    (reload-buffers (list (buffer repl)))))
+    (reload-buffer (buffer repl))))
 
 (define-command paren (&optional (repl (find-submode 'repl-mode)))
   ;; FIXME: Not an intuitive behavior? What does Emacs do?

@@ -391,7 +391,7 @@ Auto-mode is re-enabled once the page is reloaded."
       (disable-modes (uiop:ensure-list modes-to-disable) buffer))
     (when modes-to-disable
       (enable-modes (uiop:ensure-list modes-to-enable) buffer))
-    (nyxt::reload-buffers (list buffer))))
+    (nyxt::reload-buffer buffer)))
 
 (-> add-modes-to-auto-mode-rules
     (list &key

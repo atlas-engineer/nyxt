@@ -13,8 +13,8 @@
 (defun reopen-dead-buffer (buffer)
   (containers:delete-item-if (recent-buffers *browser*)
                              (buffer-match-predicate buffer))
-    (reload-buffers (list (resurrect-buffer buffer)))
-    buffer)
+  (reload-buffer (resurrect-buffer buffer))
+  buffer)
 
 (define-class recent-buffer-source (prompter:source)
   ((prompter:name "Deleted buffers")
