@@ -165,6 +165,47 @@ Nothing to do for the simplest `buffer' type."
 Modes are instantiated over the result of the `default-modes' method, with
 `finalize-buffer' and not in the initform so that the instantiation form can
 access the initialized buffer.")
+   (auto-rules-file
+    (make-instance 'auto-rules-file)
+    :type auto-rules-file
+    :documentation "File where the auto-rules are saved.")
+   (bypass-auto-rules-p
+    nil
+    :type boolean
+    :documentation "Whether to bypass the auto-rules for the time being.")
+   (prompt-on-mode-toggle-p
+    nil
+    :type boolean
+    :documentation "Whether the user is asked to confirm adding the rule with a toggled mode.")
+   (previous-url
+    nil
+    :type (or quri:uri null)
+    :documentation "The last URL for which auto-rules were applied.  We
+need to know if the auto-rule has been applied before to avoid re-applying
+a rule for a sequence of pages that match the same rule.
+
+We can'rely on the previous history entry because dead buffers and
+session-restored buffers may have a history with a previous URL matching the
+same rule while obviously the rule has never been applied for the new-born
+buffer.")
+   (last-active-modes-url
+    nil
+    :type (or quri:uri null)
+    :documentation "The last URL that the active modes were saved for.  We need
+to store this to not overwrite the `last-active-modes' for a given URL if it's being reloaded.")
+   (last-active-modes
+    '()
+    :type (or (cons mode-invocation *) null)
+    :documentation "The list of `mode-invocation's that were enabled on the last
+URL not covered by `auto-mode'.  This is useful when alternative between
+rule-less and ruled pages.  Example browsing sequence:
+
+- https://example.org (no-script-mode no-image-mode) ; No rule.
+- https://nyxt.atlas.engineer (dark-mode) ; Rule
+- https://en.wikipedia.org (no-script-mode no-image-mode) ; No rule.
+
+When browsing from nyxt.atlas.engineer to en.wikipedia.org, the modes that were
+enabled before nyxt.atlas.engineer are restored.")
    (enable-mode-hook
     (make-instance 'hook-mode)
     :type hook-mode
@@ -487,15 +528,6 @@ The handlers take the URL going to be loaded as argument and must return a
     :type hook-buffer
     :documentation "Hook run on `on-signal-load-finished'.
 The handlers take the buffer as argument.")
-
-   (pre-request-hook
-    (make-instance 'hook-resource
-                   :combination #'combine-composed-hook-until-nil)
-    :type hook-resource
-    :documentation "Hook run before the `request-resource-hook'.
-One example of its application is `auto-mode' that changes mode setup. Any
-action on modes that can possibly change the handlers in `request-resource-hook'
-should find its place there.")
    (request-resource-keyscheme-map
     (define-keyscheme-map "request-resource" ()
       keyscheme:cua
@@ -1333,8 +1365,6 @@ URL-DESIGNATOR is then transformed by BUFFER's `buffer-load-hook'."
          (ffi-buffer-evaluate-javascript buffer (quri:url-decode (quri:uri-path url))))
         (t
          (clrhash (lisp-url-callbacks buffer)) ; REVIEW: Is it the only spot where to clear the Lisp URL callbacks?
-         (alex:when-let ((page (find-url-internal-page url)))
-           (disable-modes (page-mode page) buffer))
          (ffi-buffer-load buffer url))))
     buffer))
 

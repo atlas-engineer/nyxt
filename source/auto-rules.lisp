@@ -1,16 +1,15 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/auto-mode
-    (:documentation "Mode for automatic URL-based mode toggling."))
-(in-package :nyxt/auto-mode)
+(in-package :nyxt)
 
-(define-class auto-mode-rules-file (files:data-file nyxt-lisp-file)
-  ((files:base-path #p"auto-mode-rules")
-   (files:name "auto-mode-rules"))
+(define-class auto-rules-file (files:data-file nyxt-lisp-file)
+  ((files:base-path #p"auto-rules")
+   (files:name "auto-rules"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
+;; REVIEW: Do we still need this?
 (define-class mode-invocation ()
   ((name
     (error "Mode invocation should have a name to call mode through.")
@@ -44,11 +43,11 @@ Package prefix is optional.")
                                         (if (keywordp mode)
                                             (resolve-symbol mode :mode)
                                             (alex:when-let ((resolved-symbol (nyxt::resolve-symbol (string mode) :mode)))
-                                              (log:warn "Auto-mode rule: non-package-prefixed symbols are deprecated, use prefixed symbols or keywords instead: ~s" mode)
+                                              (log:warn "Auto-rule: non-package-prefixed symbols are deprecated, use prefixed symbols or keywords instead: ~s" mode)
                                               resolved-symbol)))))
       (when (rememberable-p (make-instance full-mode-symbol))
         (make-instance 'mode-invocation :name full-mode-symbol))
-      (log:warn "Auto-mode rule: unknown mode symbol ~s" mode)))
+      (log:warn "Auto-rule: unknown mode symbol ~s" mode)))
   (:method ((mode list))
     (check-type mode (cons symbol *))
     (when (rememberable-p (make-instance (class-of (first mode))))
@@ -72,7 +71,7 @@ If the mode specifier is not known, it's omitted from the results."
   "Filter MODES based on `rememberable-p'."
   (mode-invocations (sera:filter #'rememberable-p modes)))
 
-(define-class auto-mode-rule ()
+(define-class auto-rule ()
   ((test
     (error "Slot `test' should be set.")
     :type list)
@@ -92,81 +91,48 @@ If the mode specifier is not known, it's omitted from the results."
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod print-object ((rule auto-mode-rule) stream)
+(defmethod print-object ((rule auto-rule) stream)
   (print-unreadable-object (rule stream :type t :identity t)
-    (format stream "~a" (second (test rule)))))
+    (princ (sera:ellipsize (format nil "~a" (test rule)) 40) stream)))
 
-(define-mode auto-mode ()
-  "Remember the modes setup for given domain/host/URL and store it in an editable form.
-These modes will then be activated on every visit to this domain/host/URL."
-  ((rememberable-p nil)
-   (auto-mode-rules-file
-    (make-instance 'auto-mode-rules-file)
-    :type auto-mode-rules-file
-    :documentation "File where the auto-mode rules are saved.")
-   (keyscheme-map
-    (define-keyscheme-map "auto-mode" ()
-      keyscheme:default
-      (list
-       "C-R" 'reload-with-modes)))
-   (prompt-on-mode-toggle
-    nil
-    :type boolean
-    :documentation "Whether the user is prompted to add the auto-rule on mode
-toggling.")
-   (previous-url
-    nil
-    :type (or quri:uri null)
-    :documentation "The last URL for which `auto-mode-handler' was fired.  We
-need to know if the auto mode rule has been applied before to avoid re-applying
-a rule for a sequence of pages that match the same rule.
+(defvar *default-rules* '()
+  "The list of rules to always use, even when there is no auto-rules file.")
 
-We can'rely on the previous history entry because dead buffers and
-session-restored buffers may have a history with a previous URL matching the
-same rule while obviously the rule has never been applied for the new-born
-buffer.")
-   (last-active-modes-url
-    nil
-    :type (or quri:uri null)
-    :documentation "The last URL that the active modes were saved for.  We need
-to store this to not overwrite the `last-active-modes' for a given URL, if
-`auto-mode-handler' is fired more than once.")
-   (last-active-modes
-    '()
-    :type (or (cons mode-invocation *) null)
-    :documentation "The list of `mode-invocation's that were enabled on the last
-URL not covered by `auto-mode'.  This is useful when alternative between
-rule-less and ruled pages.
+(export-always 'define-auto-rule)
+(defun define-auto-rule (test &key excluded included exact-p)
+  "Define a new default `auto-rule'.
+ARGS as in make-instance of `auto-rule'."
+  (push (apply #'make-instance
+               'auto-rule
+               :exact-p exact-p
+               :test (if (stringp test)
+                         `(match-url ,test)
+                         test)
+               (append
+                (when included
+                  (list :included (mode-invocations included)))
+                (when excluded
+                  (list :excluded (mode-invocations excluded)))))
+        *default-rules*))
 
-Example of browsing sequence:
-
-- https://example.org (no-script-mode no-image-mode) ; No rule.
-- https://nyxt.atlas.engineer (dark-mode) ; Rule
-- https://en.wikipedia.org (no-script-mode no-image-mode) ; No rule.
-
-In the above, when browsing from nyxt.atlas.engineer to en.wikipedia.org, the
-modes that were in place before the nyxt.atlas.engineer rule was applied are
-restored.")))
-
-(-> matching-auto-mode-rule (quri:uri buffer) (or auto-mode-rule null))
-(defun matching-auto-mode-rule (url buffer)
-  (sera:and-let* ((mode (find-submode 'auto-mode buffer))
-                  (rules (files:content (auto-mode-rules-file mode))))
+(-> matching-auto-rule (quri:uri modable-buffer) (or auto-rule null))
+(defun matching-auto-rule (url buffer)
+  (let ((rules (append *default-rules*
+                       (files:content (auto-rules-file buffer)))))
     (flet ((priority (test1 test2)
-             (let ((priority-list '(match-regex match-url match-host match-domain)))
-               (< (or (position (first test1) priority-list) 4)
-                  (or (position (first test2) priority-list) 4)))))
-      (first (sort (remove-if-not
-                    #'(lambda (rule)
-                        (funcall
-                         ;; REVIEW: Use `eval'?
-                         (apply (first (test rule)) (rest (test rule))) url))
-                    rules)
-                   #'priority :key #'test)))))
+             (let ((priority-list '(match-regex match-url match-host match-domain match-scheme)))
+               (< (or (position (first test1) priority-list) (length priority-list))
+                  (or (position (first test2) priority-list) (length priority-list))))))
+      (first (sort
+              (remove-if-not
+               #'(lambda (rule)
+                   (funcall (eval (test rule)) url))
+               rules)
+              #'priority :key #'test)))))
 
-(-> enable-matching-modes (quri:uri buffer) *)
+(-> enable-matching-modes (quri:uri modable-buffer) *)
 (defun enable-matching-modes (url buffer)
-  (alex:when-let ((rule (matching-auto-mode-rule url buffer)))
+  (alex:when-let ((rule (matching-auto-rule url buffer)))
     (dolist (mode-invocation (set-difference
                               (included rule)
                               (rememberable-of (modes buffer))
@@ -181,30 +147,30 @@ restored.")))
                                        (excluded rule)))))
       (disable-modes modes buffer))))
 
-(defun can-save-last-active-modes (auto-mode url)
-  (or (null (last-active-modes-url auto-mode))
-      (not (quri:uri= url (last-active-modes-url auto-mode)))))
+(defun can-save-last-active-modes (buffer url)
+  (or (null (last-active-modes-url buffer))
+      (not (quri:uri= url (last-active-modes-url buffer)))))
 
-(defun save-last-active-modes (auto-mode url)
-  (when (can-save-last-active-modes auto-mode url)
-    (setf (last-active-modes auto-mode) (mode-invocations (modes (buffer auto-mode)))
-          (last-active-modes-url auto-mode) url)))
+(defun save-last-active-modes (buffer url)
+  (when (can-save-last-active-modes buffer url)
+    (setf (last-active-modes buffer) (mode-invocations (modes buffer))
+          (last-active-modes-url buffer) url)))
 
-(defun reapply-last-active-modes (auto-mode)
+(defun reapply-last-active-modes (buffer)
   (alex:when-let ((modes (mapcar #'name
-                                 (set-difference (mode-invocations (modes (buffer auto-mode)))
-                                                 (last-active-modes auto-mode)
+                                 (set-difference (mode-invocations (modes buffer))
+                                                 (last-active-modes buffer)
                                                  :test #'equals))))
-    (disable-modes modes (buffer auto-mode)))
+    (disable-modes modes buffer))
   (alex:when-let ((modes (mapcar #'name
-                                 (set-difference (last-active-modes auto-mode)
-                                                 (mode-invocations (modes (buffer auto-mode)))
+                                 (set-difference (last-active-modes buffer)
+                                                 (mode-invocations (modes buffer))
                                                  :test #'equals))))
-    (enable-modes modes (buffer auto-mode))))
+    (enable-modes modes buffer)))
 
 (-> url-infer-match (string) list)
 (defun url-infer-match (url)
-  "Infer the best `test' for `auto-mode-rule', based on the form of URL.
+  "Infer the best `test' for `auto-rule', based on the form of URL.
 The rules are:
 - If it's a plain domain-only URL (i.e. \"http://domain.com\") -- then use `match-domain'.
 - If it's host with subdomains (\"http://whatever.subdomain.domain.com\") -- use `match-host'.
@@ -219,11 +185,14 @@ The rules are:
             `(match-host ,(quri:uri-host url)))
         `(match-url ,(render-url url)))))
 
-(-> make-mode-toggle-prompting-handler (boolean t) (function (mode)))
-(defun make-mode-toggle-prompting-handler (enable-p auto-mode)
+(-> make-mode-toggle-prompting-handler (boolean modable-buffer) (function (mode)))
+(defun make-mode-toggle-prompting-handler (enable-p buffer)
   #'(lambda (mode)
-      (alex:when-let* ((invocation (mode-invocation mode)))
-        (when (not (mode-covered-by-auto-mode-p mode auto-mode enable-p))
+      (sera:and-let* ((_ (not (bypass-auto-rules-p buffer)))
+                      (_ (prompt-on-mode-toggle-p buffer))
+                      (invocation (mode-invocation mode))
+                      (*interactive-p* t))
+        (when (not (mode-covered-by-auto-rules-p mode buffer enable-p))
           (if-confirm ((format nil
                                "Permanently ~:[disable~;enable~] ~a for this URL?"
                                enable-p (sera:class-name-of mode)))
@@ -231,63 +200,36 @@ The rules are:
                                    :prompt "URL"
                                    :input (render-url (url (buffer mode)))
                                    :sources 'prompter:raw-source)))
-                        (add-modes-to-auto-mode-rules (url-infer-match url)
-                                                      :append-p t
-                                                      :include (when enable-p (list invocation))
-                                                      :exclude (unless enable-p (list invocation))))
-                      (setf (last-active-modes auto-mode)
+                        (add-modes-to-auto-rules (url-infer-match url)
+                                                 :append-p t
+                                                 :include (when enable-p (list invocation))
+                                                 :exclude (unless enable-p (list invocation))))
+                      (setf (last-active-modes buffer)
                             (if enable-p
-                                (union (list invocation) (last-active-modes auto-mode)
+                                (union (list invocation) (last-active-modes buffer)
                                        :test #'equals)
-                                (remove invocation (last-active-modes auto-mode)
+                                (remove invocation (last-active-modes buffer)
                                         :test #'equals))))))))
 
-(-> auto-mode-handler (request-data) request-data)
-(defun auto-mode-handler (request-data)
-  (let* ((auto-mode (find-submode 'auto-mode (buffer request-data)))
-         (rule (matching-auto-mode-rule (url request-data) (buffer request-data)))
-         (previous-url (previous-url auto-mode))
-         (previous-rule (when previous-url (matching-auto-mode-rule previous-url (buffer request-data)))))
-    (when (and rule previous-url (not previous-rule))
-      (save-last-active-modes auto-mode previous-url))
-    (cond
-      ((and (not rule) (toplevel-p request-data))
-       (reapply-last-active-modes auto-mode))
-      ((and rule (not (eq rule previous-rule)))
-       (enable-matching-modes (url request-data) (buffer request-data))))
-    (setf (previous-url auto-mode) (url request-data)))
-  request-data)
-
-(defmethod enable ((mode auto-mode) &key)
-  (unless (last-active-modes mode)
-    (setf (last-active-modes mode)
-          (mode-invocations (default-modes (buffer mode)))))
-  (enable-matching-modes (url (buffer mode)) (buffer mode))
-  (when (prompt-on-mode-toggle mode)
-    (hooks:add-hook (enable-mode-hook (buffer mode))
+(defmethod customize-instance :after ((buffer modable-buffer) &key &allow-other-keys)
+  (unless (last-active-modes buffer)
+    (setf (last-active-modes buffer)
+          (mode-invocations (default-modes buffer))))
+  (when (prompt-on-mode-toggle-p buffer)
+    (hooks:add-hook (enable-mode-hook buffer)
                     (make-instance 'hooks:handler
-                                   :fn (make-mode-toggle-prompting-handler t mode)
-                                   :name 'enable-mode-auto-mode-handler))
-    (hooks:add-hook (disable-mode-hook (buffer mode))
+                                   :fn (make-mode-toggle-prompting-handler t buffer)
+                                   :name 'enable-mode-auto-rules-handler))
+    (hooks:add-hook (disable-mode-hook buffer)
                     (make-instance 'hooks:handler
-                                   :fn (make-mode-toggle-prompting-handler nil mode)
-                                   :name 'disable-mode-auto-mode-handler)))
-  (hooks:add-hook (pre-request-hook (buffer mode)) 'auto-mode-handler))
+                                   :fn (make-mode-toggle-prompting-handler nil buffer)
+                                   :name 'disable-mode-auto-rules-handler))))
 
-(defmethod disable ((mode auto-mode) &key)
-  (hooks:remove-hook (pre-request-hook (buffer mode))
-                     'auto-mode-handler)
-  (hooks:remove-hook (enable-mode-hook (buffer mode))
-                     'enable-mode-auto-mode-handler)
-  (hooks:remove-hook (disable-mode-hook (buffer mode))
-                     'disable-mode-auto-mode-handler)
-  (reapply-last-active-modes mode))
-
-(-> mode-covered-by-auto-mode-p
-    (mode auto-mode boolean)
+(-> mode-covered-by-auto-rules-p
+    (mode buffer boolean)
     (values (or list boolean) &optional))
-(defun mode-covered-by-auto-mode-p (mode auto-mode enable-p)
-  "Says whether AUTO-MODE already knows what to do with MODE.
+(defun mode-covered-by-auto-rules-p (mode buffer enable-p)
+  "Says whether auto-rules in BUFFER already knows what to do with MODE.
 ENABLE-P is whether mode is being enabled (non-nil) or disabled (nil).
 Mode is covered if:
 - It's not rememberable (has `rememberable-p' set to nil).
@@ -300,31 +242,30 @@ Mode is covered if:
     (flet ((invocation-member (list)
              (member invocation list :test #'equals)))
       (or (not (rememberable-p mode))
-          (alex:when-let ((matching-rule (matching-auto-mode-rule (url (buffer auto-mode))
-                                                                  (buffer auto-mode))))
+          (alex:when-let ((matching-rule (matching-auto-rule (url buffer) buffer)))
             (or (and enable-p (invocation-member (included matching-rule)))
                 (and (not enable-p) (invocation-member (excluded matching-rule)))))
-          ;; Mode is covered by auto-mode only if it is both in
+          ;; Mode is covered by auto-rules only if it is both in
           ;; last-active-modes and gets enabled.  If it gets disabled, user
           ;; should be prompted, because they may want to persist it.
-          (and enable-p (invocation-member (last-active-modes auto-mode)))
+          (and enable-p (invocation-member (last-active-modes buffer)))
           (and (not enable-p)
                (invocation-member
-                (alex:when-let* ((previous-url (previous-url auto-mode))
-                                 (matching-rule (matching-auto-mode-rule previous-url
-                                                                         (buffer auto-mode))))
+                (alex:when-let* ((previous-url (previous-url buffer))
+                                 (matching-rule (matching-auto-rule previous-url buffer)))
                   (included matching-rule))))))))
 
 (define-command save-non-default-modes-for-future-visits ()
   "Save the modes present in `default-modes' and not present in current modes as :excluded,
 and modes that are present in mode list but not in `default-modes' as :included,
-to one of auto-mode rules. Apply the resulting rule for all the future visits to this URL,
+to one of auto-rules. Apply the resulting rule for all the future visits to this URL,
 inferring the matching condition with `url-infer-match'.
 
-This command does not save non-rememberable modes. If you want to auto-mode to
-save a particular mode, configure it to be `rememberable-p' in your initfile.
+This command does not save non-rememberable modes. If you want auto-rules to
+remember a particular mode, configure it to be `rememberable-p' in your
+initfile.
 
-For the storage format see the comment in the head of your `auto-mode-rules-file'."
+For the storage format see the comment in the head of your `auto-rules-file'."
   (let ((url (prompt1
               :prompt "URL"
               :input (render-url (url (current-buffer)))
@@ -335,7 +276,7 @@ For the storage format see the comment in the head of your `auto-mode-rules-file
                                        :return-actions '())))))
     (when (typep url 'nyxt::history-entry)
       (setf url (url url)))
-    (add-modes-to-auto-mode-rules
+    (add-modes-to-auto-rules
      (url-infer-match url)
      :include (set-difference (mode-invocations (modes (current-buffer)))
                               (mode-invocations (default-modes (current-buffer)))
@@ -345,14 +286,14 @@ For the storage format see the comment in the head of your `auto-mode-rules-file
                               :test #'equals))))
 
 (define-command save-exact-modes-for-future-visits ()
-  "Store the exact list of enabled modes to auto-mode rules for all the future visits of this
+  "Store the exact list of enabled modes to auto-rules for all the future visits of this
 domain/host/URL/group of websites inferring the suitable matching condition by user input.
 Uses `url-infer-match', see its documentation for matching rules.
 
-This command does not save non-rememberable modes. If you want to auto-mode to
+This command does not save non-rememberable modes. If you want auto-rules to
 save a particular mode, configure it to be `rememberable-p' in your initfile.
 
-For the storage format see the comment in the head of your `auto-mode-rules-file'."
+For the storage format see the comment in the head of your `auto-rules-file'."
   ;; TODO: Should it prompt for modes to save?
   ;; One may want to adjust the modes before persisting them as :exact-p rule.
   (let ((url (prompt1
@@ -365,67 +306,40 @@ For the storage format see the comment in the head of your `auto-mode-rules-file
                                        :return-actions '())))))
     (when (typep url 'nyxt::history-entry)
       (setf url (url url)))
-    (add-modes-to-auto-mode-rules (url-infer-match url)
-                                  :include (mode-invocations (modes (current-buffer)))
-                                  :exact-p t)))
+    (add-modes-to-auto-rules (url-infer-match url)
+                             :include (mode-invocations (modes (current-buffer)))
+                             :exact-p t)))
 
-(define-command reload-with-modes (&optional (buffer (current-buffer)))
-  "Reload the buffer with the queried modes.
-This bypasses auto-mode.
-Auto-mode is re-enabled once the page is reloaded."
-  (let* ((modes-to-enable (prompt
-                           :prompt "Mark modes to enable, unmark to disable"
-                           :sources (make-instance 'mode-source
-                                                   :marks (remove 'nyxt/auto-mode:auto-mode
-                                                                  (mapcar #'sera:class-name-of (modes (current-buffer)))))))
-         (modes-to-disable (cons 'nyxt/auto-mode:auto-mode
-                                 (set-difference (nyxt::all-mode-symbols) modes-to-enable
-                                                 :test #'string=))))
-    (hooks:add-hook (request-resource-hook buffer)
-                    (make-instance
-                     'hooks:handler
-                     :fn (lambda (request-data)
-                           (enable-modes '(auto-mode) buffer)
-                           (hooks:remove-hook (request-resource-hook buffer)
-                                              'auto-mode-reenable)
-                           request-data)
-                     :name 'auto-mode-reenable))
-    (when modes-to-enable
-      (disable-modes (uiop:ensure-list modes-to-disable) buffer))
-    (when modes-to-disable
-      (enable-modes (uiop:ensure-list modes-to-enable) buffer))
-    (nyxt::reload-buffer buffer)))
-
-(-> add-modes-to-auto-mode-rules
+(-> add-modes-to-auto-rules
     (list &key
           (:append-p boolean)
           (:exclude (or (cons mode-invocation *) null))
+          (:buffer modable-buffer)
           (:include (or (cons mode-invocation *) null))
           (:exact-p boolean))
     (values list &optional))
-(sera:export-always 'add-modes-to-auto-mode-rules)
-(defun add-modes-to-auto-mode-rules (test &key (append-p nil) exclude include (exact-p nil))
-  (alex:when-let ((mode (find-submode 'auto-mode)))
-    (nfiles:with-file-content (rules (auto-mode-rules-file mode))
-      (let* ((rule (or (find test rules
-                             :key #'test :test #'equal)
-                       (make-instance 'auto-mode-rule :test test)))
-             (include (rememberable-of include))
-             (exclude (rememberable-of exclude)))
-        (setf (exact-p rule) exact-p
-              (included rule) (union include
-                                     (when append-p
-                                       (set-difference (included rule) exclude
-                                                       :test #'equals)))
-              (excluded rule) (union exclude
-                                     (when append-p
-                                       (set-difference (excluded rule) include
-                                                       :test #'equals)))
-              rules (delete-duplicates
-                     (append (when (or (included rule) (excluded rule))
-                               (list rule))
-                             rules)
-                     :key #'test :test #'equal))))))
+(sera:export-always 'add-modes-to-auto-rules)
+(defun add-modes-to-auto-rules (test &key (buffer (nyxt:current-buffer)) (append-p nil) exclude include (exact-p nil))
+  (nfiles:with-file-content (rules (auto-rules-file buffer))
+    (let* ((rule (or (find test rules
+                           :key #'test :test #'equal)
+                     (make-instance 'auto-rule :test test)))
+           (include (rememberable-of include))
+           (exclude (rememberable-of exclude)))
+      (setf (exact-p rule) exact-p
+            (included rule) (union include
+                                   (when append-p
+                                     (set-difference (included rule) exclude
+                                                     :test #'equals)))
+            (excluded rule) (union exclude
+                                   (when append-p
+                                     (set-difference (excluded rule) include
+                                                     :test #'equals)))
+            rules (delete-duplicates
+                   (append (when (or (included rule) (excluded rule))
+                             (list rule))
+                           rules)
+                   :key #'test :test #'equal)))))
 
 (defun serialize-object (rule &optional (stream *standard-output*))
   (flet ((write-if-present (slot &key modes-p)
@@ -454,16 +368,17 @@ Auto-mode is re-enabled once the page is reloaded."
       (write-if-present 'exact-p)
       (write-string ")" stream))))
 
-(defmethod files:serialize ((profile nyxt-profile) (file auto-mode-rules-file) stream &key)
+(defmethod files:serialize ((profile nyxt-profile) (file auto-rules-file) stream &key)
   (let ((rules (files:content file)))
     (let ((*standard-output* stream)
-          (*package* (find-package :nyxt/auto-mode)))
-      (write-string ";; List of auto-mode rules.
+          (*package* (find-package :nyxt)))
+      (write-string ";; List of auto-rules.
 ;; It is made to be easily readable and editable, but you still need to remember some things:
 ;;
 ;; Every rule starts on a new line and consists of one or more of the following elements:
 ;; - Condition for rule activation. It is either (match-domain ...),
-;;   (match-host ...), (match-regex ...) or a string.
+;;   (match-host ...), (match-regex ...), (match-port ...), some other condition
+;;   you define, or a string.
 ;; - :included (optional) -- List of the modes to enable on condition.
 ;; - :excluded (optional) -- List of the modes to disable on condition.
 ;; - :exact-p  (optional) -- Whether to enable only :included modes and disable
@@ -487,17 +402,17 @@ Auto-mode is re-enabled once the page is reloaded."
 ;;   Example: \"https://lispcookbook.github.io/cl-cookbook/pattern_matching.html\"
 ;;            will work on the Pattern Matching article of CL Cookbook, and nowhere else.
 ;;
-;; You can write additional URLs in the bracketed conditions, to reuse the rule for other URL
+;; You can write additional URLs in the parenthesized conditions, to reuse the rule for other URL
 ;; Example: (match-host \"reddit.com\" \"old.reddit.com\" \"www6.reddit.com\")
 ")
-      (write-string "(" )
+      (write-string "(")
       (dolist (rule rules)
         (write-char #\newline)
         (serialize-object rule))
       (format t "~%)~%"))
-    (echo "Saved ~a auto-mode rules to ~s." (length rules) (files:expand file))))
+    (echo "Saved ~a auto-rules to ~s." (length rules) (files:expand file))))
 
-(defmethod files:deserialize ((profile nyxt-profile) (file auto-mode-rules-file) raw-content &key)
+(defmethod files:deserialize ((profile nyxt-profile) (file auto-rules-file) raw-content &key)
   (let ((*package* (find-package :nyxt))
         (rules (safe-read raw-content)))
     (mapcar #'(lambda (rule)
@@ -506,5 +421,5 @@ Auto-mode is re-enabled once the page is reloaded."
                         (getf rule :excluded) (mode-invocations (getf rule :excluded)))
                   (when (stringp (getf rule :test))
                     (setf (getf rule :test) `(match-url ,(getf rule :test))))
-                  (apply #'make-instance 'auto-mode-rule rule)))
+                  (apply #'make-instance 'auto-rule rule)))
             rules)))

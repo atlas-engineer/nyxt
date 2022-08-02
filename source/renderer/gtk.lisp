@@ -1026,29 +1026,44 @@ See `finalize-buffer'."
                              (let ((headers (webkit:webkit-uri-response-get-http-headers response)))
                                (unless (cffi:null-pointer-p headers)
                                  (webkit:soup-message-headers-get-headers headers)))))
+    (unless (bypass-auto-rules-p buffer)
+      (let* ((rule (matching-auto-rule url buffer))
+             (previous-url (previous-url buffer))
+             (previous-rule (when previous-url (matching-auto-rule previous-url buffer))))
+        (when (and rule previous-url (not previous-rule))
+          (save-last-active-modes buffer previous-url))
+        (cond
+          ((and (not rule)
+                ;; `toplevel-p'
+                (quri:uri=
+                 url (quri:uri (webkit:webkit-web-view-uri
+                                (gtk-object buffer)))))
+           (reapply-last-active-modes buffer))
+          ((and rule (not (eq rule previous-rule)))
+           (enable-matching-modes url buffer)))
+        (setf (previous-url buffer) url)))
     (let* ((request-data
-             (hooks:run-hook
-              (request-resource-hook buffer)
-              (hooks:run-hook (pre-request-hook buffer)
-                              (sera:lret ((data (make-instance 'request-data
-                                                               :buffer buffer
-                                                               :url (quri:copy-uri url)
-                                                               :keys (unless (uiop:emptyp mouse-button)
-                                                                       (list (keymaps:make-key :value mouse-button
-                                                                                               :modifiers modifiers)))
-                                                               :event-type event-type
-                                                               :new-window-p is-new-window
-                                                               :http-method method
-                                                               :request-headers request-headers
-                                                               :response-headers response-headers
-                                                               :toplevel-p (quri:uri=
-                                                                            url (quri:uri (webkit:webkit-web-view-uri
-                                                                                           (gtk-object buffer))))
-                                                               :mime-type mime-type
-                                                               :known-type-p is-known-type
-                                                               :file-name file-name)))
-                                (setf (gtk-request data) request
-                                      (gtk-response data) response)))))
+            (hooks:run-hook
+             (request-resource-hook buffer)
+             (sera:lret ((data (make-instance 'request-data
+                                              :buffer buffer
+                                              :url (quri:copy-uri url)
+                                              :keys (unless (uiop:emptyp mouse-button)
+                                                      (list (keymaps:make-key :value mouse-button
+                                                                              :modifiers modifiers)))
+                                              :event-type event-type
+                                              :new-window-p is-new-window
+                                              :http-method method
+                                              :request-headers request-headers
+                                              :response-headers response-headers
+                                              :toplevel-p (quri:uri=
+                                                           url (quri:uri (webkit:webkit-web-view-uri
+                                                                          (gtk-object buffer))))
+                                              :mime-type mime-type
+                                              :known-type-p is-known-type
+                                              :file-name file-name)))
+                        (setf (gtk-request data) request
+                              (gtk-response data) response))))
            (keymap (when request-data
                      (nyxt::get-keymap (buffer request-data)
                                        (request-resource-keyscheme-map (buffer request-data)))))

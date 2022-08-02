@@ -153,6 +153,8 @@ and must return a string.")
    (page-mode
     nil
     :export t
+    :writer nil
+    :reader t
     :type symbol
     :documentation "The mode that's specific to a nyxt:// page.
 It's automatically enabled when the page is loaded and disabled when another URL
@@ -217,6 +219,14 @@ See `find-internal-page-buffer'."))
                                (:style (style (current-buffer))))
                               (:body (:raw contents))))))
                   (values contents type status headers reason))))))))
+
+(defmethod (setf page-mode) (new-value (page internal-page))
+  ;; FIXME: Better rule?
+  (when (and new-value (rememberable-p (mode-invocation new-value)))
+    (define-auto-rule `(lambda (url)
+                         (str:starts-with-p ,(nyxt-url (name page))
+                                            (render-url url)))
+      :included (list new-value))))
 
 (defmethod set-internal-page-method ((page internal-page) form)
   (when form
@@ -328,7 +338,7 @@ Only keyword arguments are accepted."
                                  ,@stripped-body))))
            (set-internal-page-method gf wrapped-body)
            (setf (slot-value #',name 'visibility) :mode)
-           (setf (slot-value #',name 'page-mode) ,mode)
+           (setf (page-mode #',name) ,mode)
            (setf (slot-value #',name 'dynamic-title)
                  ,(if (stringp title)
                       title

@@ -8,7 +8,6 @@
 (define-mode history-mode ()
   "Mode to manage navigation history."
   ((visible-in-status-p nil)
-   (rememberable-p nil)
    (history-blocklist '("https://duckduckgo.com/l/")
                       ;; TODO: Find a more automated way to do it.  WebKitGTK
                       ;; automatically removes such redirections from its
