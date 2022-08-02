@@ -162,4 +162,8 @@ major versions."
 
   (session-restore-prompt)
   (:p (:code "session-restore-prompt") " is now "
-      (:code "restore-session-on-startup-p") " and is a boolean."))
+      (:code "restore-session-on-startup-p") " and is a boolean.")
+
+  (scheme-keymap)
+  (:p (:code "scheme-keymap") " is now "
+      (:code "get-keymap") "."))

@@ -365,13 +365,10 @@ First URL is focused if NO-FOCUS is nil."
               (window-set-buffer window first-buffer))
             (set-current-buffer first-buffer))))))
 
-(defun scheme-keymap (buffer buffer-scheme)
-  "Return the keymap in BUFFER-SCHEME corresponding to the BUFFER `keyscheme'.
+(defun get-keymap (buffer buffer-keyscheme-map)
+  "Return the keymap in BUFFER-KEYSCHEME-MAP corresponding to BUFFER's `keyscheme'.
 If none is found, fall back to `keyscheme:cua'."
-  (or (keymaps:get-keymap (keyscheme buffer)
-                          buffer-scheme)
-      (keymaps:get-keymap keyscheme:cua
-                          buffer-scheme)))
+  (keymaps:get-keymap (or (keyscheme buffer) keyscheme:cua) buffer-keyscheme-map))
 
 (defun request-resource-open-url (&key url buffer &allow-other-keys)
   (make-buffer :url url :parent-buffer buffer))

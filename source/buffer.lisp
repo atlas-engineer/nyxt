@@ -498,16 +498,15 @@ The handlers take the buffer as argument.")
 One example of its application is `auto-mode' that changes mode setup. Any
 action on modes that can possibly change the handlers in `request-resource-hook'
 should find its place there.")
-   (request-resource-scheme
+   (request-resource-keyscheme-map
     (define-keyscheme-map "request-resource" ()
       keyscheme:cua
       (list
        "C-button1" 'request-resource-open-url-focus
        "button2" 'request-resource-open-url-focus
        "C-shift-button1" 'request-resource-open-url))
-    :documentation "This keymap can be looked up when
-`request-resource-hook' handlers run.
-The functions are expected to take key arguments like `:url'.")
+    :documentation "Looked up when `request-resource-hook' handlers run.  The
+keymap takes functions whose key arguments are `:url' and `:buffer'.")
    (request-resource-hook
     (make-instance 'hook-resource
                    :combination #'combine-composed-hook-until-nil)
