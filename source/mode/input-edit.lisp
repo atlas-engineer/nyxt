@@ -139,11 +139,11 @@ necessary."
       ;; TODO: Add VI-normal?
       keyscheme:emacs
       (list
-       "C-b"         'cursor-backwards
-       "C-f"         'cursor-forwards
-       "C-d"         'delete-forwards
-       "M-b"         'cursor-backwards-word
-       "M-f"         'cursor-forwards-word
+       "C-b" 'cursor-backwards
+       "C-f" 'cursor-forwards
+       "C-d" 'delete-forwards
+       "M-b" 'cursor-backwards-word
+       "M-f" 'cursor-forwards-word
        "M-backspace" 'delete-backwards-word
        "C-backspace" 'delete-backwards-word
-       "M-d"         'delete-forwards-word)))))
+       "M-d" 'delete-forwards-word)))))

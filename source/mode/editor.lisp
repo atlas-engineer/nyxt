@@ -13,16 +13,16 @@ get/set-content (which is necessary for operation)."
     (define-keyscheme-map "editor-mode" ()
       keyscheme:cua
       (list
-       "C-o"     'editor-open-file
-       "C-s"     'editor-write-file)
+       "C-o" 'editor-open-file
+       "C-s" 'editor-write-file)
       keyscheme:emacs
       (list
        "C-x C-f" 'editor-open-file
        "C-x C-s" 'editor-write-file)
       keyscheme:vi-normal
       (list
-       "C-o"     'editor-open-file))
-                  :type keymaps:keyscheme))
+       "C-o" 'editor-open-file))
+    :type keymaps:keyscheme))
   (:toggler-command-p nil))
 
 (defmethod enable ((editor editor-mode) &key) ; TODO: Use an internal page instead of this HTML injection?

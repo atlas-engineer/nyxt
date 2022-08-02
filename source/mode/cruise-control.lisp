@@ -17,19 +17,19 @@
       keyscheme:default
       (list
        "escape" 'cruise-control-mode
-       "0"      'velocity-zero)
+       "0" 'velocity-zero)
       keyscheme:cua
       (list
-       "up"     'velocity-decf
-       "down"   'velocity-incf)
+       "up" 'velocity-decf
+       "down" 'velocity-incf)
       keyscheme:emacs
       (list
-       "p"      'velocity-decf
-       "n"      'velocity-incf)
+       "p" 'velocity-decf
+       "n" 'velocity-incf)
       keyscheme:vi-normal
       (list
-       "K"      'velocity-decf
-       "J"      'velocity-incf)))
+       "K" 'velocity-decf
+       "J" 'velocity-incf)))
    (nyxt/repeat-mode:repeat-action
     (lambda (mode)
       (unless (zerop (velocity mode))

@@ -77,39 +77,39 @@ Features:
     (define-keyscheme-map "repl-mode" ()
       keyscheme:default
       (list
-       "C-return"    'evaluate-cell
-       "("           'paren
-       "tab"         'tab-complete-symbol)
+       "C-return" 'evaluate-cell
+       "(" 'paren
+       "tab" 'tab-complete-symbol)
       keyscheme:emacs
       (list
-       "C-M-x"       'evaluate-cell
-       "C-b"         'nyxt/input-edit-mode:cursor-backwards
-       "C-f"         'nyxt/input-edit-mode:cursor-forwards
-       "C-d"         'nyxt/input-edit-mode:delete-forwards
-       "M-b"         'nyxt/input-edit-mode:cursor-backwards-word
-       "M-f"         'nyxt/input-edit-mode:cursor-forwards-word
+       "C-M-x" 'evaluate-cell
+       "C-b" 'nyxt/input-edit-mode:cursor-backwards
+       "C-f" 'nyxt/input-edit-mode:cursor-forwards
+       "C-d" 'nyxt/input-edit-mode:delete-forwards
+       "M-b" 'nyxt/input-edit-mode:cursor-backwards-word
+       "M-f" 'nyxt/input-edit-mode:cursor-forwards-word
        "M-backspace" 'nyxt/input-edit-mode:delete-backwards-word
        "C-backspace" 'nyxt/input-edit-mode:delete-backwards-word
-       "M-d"         'nyxt/input-edit-mode:delete-forwards-word
-       "M-p"         'previous-cell
-       "M-n"         'next-cell
+       "M-d" 'nyxt/input-edit-mode:delete-forwards-word
+       "M-p" 'previous-cell
+       "M-n" 'next-cell
        ;; FIXME: Org uses C-c C-_ and C-c C-^, but those are shadowed by C-c in Nyxt.
-       "C-^"         'move-cell-up
-       "C-_"         'move-cell-down)
+       "C-^" 'move-cell-up
+       "C-_" 'move-cell-down)
       keyscheme:vi-normal
       (list
        ;; TODO: deleting chars/words
-       "h"           'nyxt/input-edit-mode:cursor-backwards
-       "l"           'nyxt/input-edit-mode:cursor-forwards
-       "x"           'nyxt/input-edit-mode:delete-forwards
-       "b"           'nyxt/input-edit-mode:cursor-backwards-word
-       "w"           'nyxt/input-edit-mode:cursor-forwards-word
-       "d b"         'nyxt/input-edit-mode:delete-backwards-word
-       "d w"         'nyxt/input-edit-mode:delete-forwards-word
-       "k"           'previous-cell
-       "j"           'next-cell
-       "K"           'move-cell-up
-       "J"           'move-cell-down)))
+       "h" 'nyxt/input-edit-mode:cursor-backwards
+       "l" 'nyxt/input-edit-mode:cursor-forwards
+       "x" 'nyxt/input-edit-mode:delete-forwards
+       "b" 'nyxt/input-edit-mode:cursor-backwards-word
+       "w" 'nyxt/input-edit-mode:cursor-forwards-word
+       "d b" 'nyxt/input-edit-mode:delete-backwards-word
+       "d w" 'nyxt/input-edit-mode:delete-forwards-word
+       "k" 'previous-cell
+       "j" 'next-cell
+       "K" 'move-cell-up
+       "J" 'move-cell-down)))
    (style (theme:themed-css (theme *browser*)
             (*
              :font-family "monospace,monospace")
