@@ -23,8 +23,8 @@
                               :code code :base-path #p"testing-script.user.js"))
          (virtual-script (make-instance 'nyxt/user-script-mode:user-script :code code)))
     ;; Virtual user script code equality
-    (assert-equal code
-                  (nyxt/user-script-mode:code virtual-script))
+    (assert-equality 'string= code
+                     (nyxt/user-script-mode:code virtual-script))
     ;; Virtual user script noframes
     (assert-false (nyxt/user-script-mode:all-frames-p virtual-script))
     ;; Virtual user script document start

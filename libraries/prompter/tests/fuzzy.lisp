@@ -42,38 +42,38 @@
                                      (prompter:fuzzy-match suggestion source input))
                                    (prompter::ensure-suggestions-list source list))
                            #'prompter:score>)))))
-      (assert-equal "help"
-                    (match "hel" '("help-mode" "help" "foo-help" "help-foo-bar")))
+      (assert-equality 'string= "help"
+                       (match "hel" '("help-mode" "help" "foo-help" "help-foo-bar")))
       ;; match 'help' with real suggestions list
-      (assert-equal "HELP"
-                    (match "hel" *suggestions*))
+      (assert-equality 'string= "HELP"
+                       (match "hel" *suggestions*))
       ;; match 'swit buf' (small list)
-      (assert-equal "switch-buffer"
-                    (match "swit buf" '("about" "switch-buffer-next" "switch-buffer" "delete-buffer")))
+      (assert-equality 'string= "switch-buffer"
+                       (match "swit buf" '("about" "switch-buffer-next" "switch-buffer" "delete-buffer")))
       ;; match 'swit buf' with real suggestions list
-      (assert-equal "SWITCH-BUFFER"
-                    (match "swit buf" *suggestions*))
+      (assert-equality 'string= "SWITCH-BUFFER"
+                       (match "swit buf" *suggestions*))
       ;; reverse match 'buf swit' (small list)
-      (assert-equal "switch-buffer"
-                    (match "buf swit" '("about" "switch-buffer-next" "switch-buffer" "delete-buffer")))
+      (assert-equality 'string= "switch-buffer"
+                       (match "buf swit" '("about" "switch-buffer-next" "switch-buffer" "delete-buffer")))
       ;; reverse match 'buf swit' with real suggestions list
-      (assert-equal "SWITCH-BUFFER"
-                    (match "buf swit" *suggestions*))
+      (assert-equality 'string= "SWITCH-BUFFER"
+                       (match "buf swit" *suggestions*))
       ;; suggestions beginning with the first word appear first
-      (assert-equal "delete-foo"
-                    (match "de" '("some-mode" "delete-foo")))
+      (assert-equality 'string= "delete-foo"
+                       (match "de" '("some-mode" "delete-foo")))
       ;; search without a space. All characters count (small list).
-      (assert-equal "foo-bar"
-                    (match "foobar" '("foo-dash-bar" "foo-bar")))
+      (assert-equality 'string= "foo-bar"
+                       (match "foobar" '("foo-dash-bar" "foo-bar")))
       ;; search without a space. All characters count, real list.
-      (assert-equal "SWITCH-BUFFER"
-                    (match "sbf" *suggestions*))
+      (assert-equality 'string= "SWITCH-BUFFER"
+                       (match "sbf" *suggestions*))
       ;; input is uppercase (small list).
-      (assert-equal "FOO-BAR"
-                    (match "FOO" '("foo-dash-bar" "FOO-BAR")))
+      (assert-equality 'string= "FOO-BAR"
+                       (match "FOO" '("foo-dash-bar" "FOO-BAR")))
       ;; lowercase matches uppercase
-      (assert-equal "FOO-BAR"
-                    (match "foo" '("zzz" "FOO-BAR")))
+      (assert-equality 'string= "FOO-BAR"
+                       (match "foo" '("zzz" "FOO-BAR")))
       ;; match regex meta-characters
-      (assert-equal "http://[1:0:0:2::3:0.]/"
-                    (match "[" '("test1" "http://[1:0:0:2::3:0.]/" "test2"))))))
+      (assert-equality 'string= "http://[1:0:0:2::3:0.]/"
+                       (match "[" '("test1" "http://[1:0:0:2::3:0.]/" "test2"))))))
