@@ -86,12 +86,17 @@ The handlers take the mode as argument.")
 
 (export-always 'enable)
 (defgeneric enable (mode &key &allow-other-keys)
+  (:method-combination cascade)
   (:method ((mode mode) &key)
     nil)
   (:documentation "Run when enabling a mode.
 The pre-defined `:after' method handles further setup.
 This method is meant to be specialized for every mode.
 It is not meant to be called directly, see `enable-modes' instead.
+
+All the parent modes' `enable' methods run after the exact mode one, cascading
+upwards to allow a more useful mode inheritance without duplicating the
+functionality. A `cascade' method combination is used for that.
 
 See also `disable'."))
 
@@ -120,12 +125,17 @@ See also `disable'."))
 
 (export-always 'disable)
 (defgeneric disable (mode &key &allow-other-keys)
+  (:method-combination cascade)
   (:method ((mode mode) &key)
     nil)
   (:documentation "Run when disabling a mode.
 The pre-defined `:after' method handles further cleanup.
 This method is meant to be specialized for every mode.
 It is not meant to be called directly, see `disable-modes' instead.
+
+All the parent modes' `disable' methods run after the exact mode one, cascading
+upwards to allow a more useful mode inheritance without duplicating the
+functionality. A `cascade' method combination is used for that.
 
 See also `enable'."))
 

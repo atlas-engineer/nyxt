@@ -100,3 +100,31 @@ In a later file, when you've defined `gtk-browser':
   (when (closer-mop:class-direct-slots class)
     (error "Interface class cannot have direct slots."))
   class)
+
+(define-method-combination cascade ()
+  ((before (:before))
+   (around (:around))
+   (after (:after))
+   (primary ()))
+  "Cascade to all the parent methods after the child one.
+Allows for composed object constructors/destructors, for instance."
+  ;; TODO: Allow cascading down to children instead?
+  (flet ((call-methods (methods)
+           (mapcar #'(lambda (method)
+                       `(call-method ,method))
+                   methods)))
+    (if (and (null before)
+             (null around)
+             (null after)
+             (sera:single primary))
+        `(call-method ,(first primary))
+        (let ((form `(prog1
+                         (progn
+                           ,@(call-methods before)
+                           ,@(call-methods primary))
+                       ,@(call-methods (reverse after)))))
+          (if around
+              `(call-method ,(first around)
+                            (,@(rest around)
+                             (make-method ,form)))
+              form)))))
