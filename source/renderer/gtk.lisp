@@ -1796,6 +1796,7 @@ local anyways, and it's better to refresh it if a load was queried."
                                        :url (webkit:webkit-uri-request-uri
                                              (webkit:webkit-download-get-request webkit-download))
                                        :gtk-object webkit-download)))
+    (nyxt/download-mode:list-downloads)
     (setf (nyxt/download-mode::cancel-function download)
           #'(lambda ()
               (setf (nyxt/download-mode:status download) :canceled)
@@ -1828,10 +1829,7 @@ local anyways, and it's better to refresh it if a load was queried."
       (setf (nyxt/download-mode:destination-path download)
             (uiop:ensure-pathname
              (quri:uri-path (quri:uri
-                             (webkit:webkit-download-destination webkit-download)))))
-      ;; TODO: We should not have to update the buffer, button actions should be
-      ;; dynamic.  Bug in `user-interface'?
-      (nyxt/download-mode:list-downloads))
+                             (webkit:webkit-download-destination webkit-download))))))
     (connect-signal download "failed" nil (webkit-download error)
       (declare (ignore error))
       (unless (eq (nyxt/download-mode:status download) :canceled)
