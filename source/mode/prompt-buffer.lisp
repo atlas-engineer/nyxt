@@ -94,9 +94,9 @@ default)."
       (list
        "k" 'select-previous
        "j" 'select-next
+       "C-k" 'select-previous
        ;; C-j and C-k are useful in insert mode since "j", "k" are taken.
        ;; We bind C-j and C-k in normal mode for consistency between the two modes.
-       "C-k" 'select-previous
        "C-j" 'select-next
        "g g" 'select-first
        "G" 'select-last
@@ -104,8 +104,8 @@ default)."
        "C-f" 'select-next-page
        "K" 'select-previous-source
        "J" 'select-next-source
-       ;; Same as with C-j.
        "C-K" 'select-previous-source
+       ;; Same as with C-j.
        "C-J" 'select-next-source
        "M-j" 'scroll-other-buffer-down
        "M-k" 'scroll-other-buffer-up
