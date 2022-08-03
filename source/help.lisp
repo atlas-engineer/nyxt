@@ -66,30 +66,48 @@ CLASS is a class symbol."
                                   (:title "set-cua-scheme")
                                   (nyxt::auto-configure
                                    :class-name 'input-buffer
-                                   :form '(disable-modes '(nyxt/emacs-mode:emacs-mode) input-buffer))
+                                   :form '(disable-modes
+                                           :modes '(nyxt/emacs-mode:emacs-mode)
+                                           :buffers input-buffer
+                                           :bypass-auto-rules-p t))
                                   (nyxt::auto-configure
                                    :class-name 'input-buffer
-                                   :form '(disable-modes '(nyxt/vi-mode:vi-normal-mode) input-buffer))))
+                                   :form '(disable-modes
+                                           :modes '(nyxt/vi-mode:vi-normal-mode)
+                                           :buffers input-buffer
+                                           :bypass-auto-rules-p t))))
                  "Use default (CUA)"))
     (:p (:button :class "button"
                  :onclick (ps:ps (nyxt/ps:lisp-eval
                                   (:title "set-emacs-scheme")
                                   (nyxt::auto-configure
                                    :class-name 'input-buffer
-                                   :form '(disable-modes '(nyxt/vi-mode:vi-normal-mode) input-buffer))
+                                   :form '(disable-modes
+                                           :modes '(nyxt/vi-mode:vi-normal-mode)
+                                           :buffers input-buffer
+                                           :bypass-auto-rules-p t))
                                   (nyxt::auto-configure
                                    :class-name 'input-buffer
-                                   :form '(enable-modes '(nyxt/emacs-mode:emacs-mode) input-buffer))))
+                                   :form '(enable-modes
+                                           :modes '(nyxt/emacs-mode:emacs-mode)
+                                           :buffers input-buffer
+                                           :bypass-auto-rules-p t))))
                  "Use Emacs"))
     (:p (:button :class "button"
                  :onclick (ps:ps (nyxt/ps:lisp-eval
                                   (:title "set-vi-scheme")
                                   (nyxt::auto-configure
                                    :class-name 'input-buffer
-                                   :form '(disable-modes '(nyxt/emacs-mode:emacs-mode) input-buffer))
+                                   :form '(disable-modes
+                                           :modes '(nyxt/emacs-mode:emacs-mode)
+                                           :buffers input-buffer
+                                           :bypass-auto-rules-p t))
                                   (nyxt::auto-configure
                                    :class-name 'input-buffer
-                                   :form '(enable-modes '(nyxt/vi-mode:vi-normal-mode) input-buffer))))
+                                   :form '(enable-modes
+                                           :modes '(nyxt/vi-mode:vi-normal-mode)
+                                           :buffers input-buffer
+                                           :bypass-auto-rules-p t))))
                  "Use vi"))
     (flet ((generate-colors (theme-symbol text)
              (spinneret:with-html-string

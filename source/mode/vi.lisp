@@ -75,10 +75,11 @@ See `vi-normal-mode'."
   "Switch to the mode remembered to be the matching VI-normal one for this MODE.
 See also `vi-normal-mode' and `vi-insert-mode'."
   (when mode
-    (enable-modes (list (or (and (previous-vi-normal-mode mode)
-                                 (sera:class-name-of (previous-vi-normal-mode mode)))
-                            'vi-normal-mode))
-                  (buffer mode))))
+    (enable-modes :modes (list (or (and (previous-vi-normal-mode mode)
+                                        (sera:class-name-of (previous-vi-normal-mode mode)))
+                                   'vi-normal-mode))
+                  :buffers (buffer mode)
+                  :bypass-auto-rules-p t)))
 
 (defmethod enable ((mode vi-insert-mode) &key)
   (with-accessors ((buffer buffer)) mode
@@ -92,13 +93,17 @@ See also `vi-normal-mode' and `vi-insert-mode'."
       (when vi-normal
         (disable vi-normal)))
     (call-next-method)
+    ;; Somehow use inheritance instead?
     (when (passthrough-mode-p mode)
-      (enable-modes '(nyxt/passthrough-mode:passthrough-mode)
-                    buffer))))
+      (enable-modes :modes 'nyxt/passthrough-mode:passthrough-mode
+                    :buffers buffer
+                    :bypass-auto-rules-p t))))
 
 (defmethod on-signal-load-finished ((mode vi-insert-mode) url)
   (declare (ignore url))
-  (enable-modes '(vi-normal-mode) (buffer mode)))
+  (enable-modes :modes 'vi-normal-mode
+                :buffers (buffer mode)
+                :bypass-auto-rules-p t))
 
 (defmethod on-signal-button-press ((mode vi-normal-mode) button-key)
   (let ((buffer (buffer mode)))
@@ -108,7 +113,7 @@ See also `vi-normal-mode' and `vi-insert-mode'."
       (enable-modes '(nyxt/vi-mode:vi-insert-mode) buffer))))
 
 (defmethod nyxt/document-mode:element-focused ((mode vi-normal-mode))
-  (enable-modes '(vi-insert-mode) (buffer mode)))
+  (enable-modes :modes 'vi-insert-mode :buffers (buffer mode) :bypass-auto-rules-p t))
 
 (defmethod nyxt:mode-status ((status status-buffer) (vi-normal vi-normal-mode))
   (spinneret:with-html-string

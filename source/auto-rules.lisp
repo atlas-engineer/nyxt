@@ -138,14 +138,17 @@ ARGS as in make-instance of `auto-rule'."
                               (rememberable-of (modes buffer))
                               :test #'equals))
       (check-type mode-invocation mode-invocation)
-      (enable-modes (list (name mode-invocation)) buffer (arguments mode-invocation)))
+      (apply #'enable-modes :modes (name mode-invocation)
+                            :buffers buffer
+                            :bypass-auto-rules-p t
+                            (arguments mode-invocation)))
     (alex:when-let ((modes (mapcar #'name
                                    (if (exact-p rule)
                                        (set-difference
                                         (rememberable-of (modes buffer))
                                         (included rule) :test #'equals)
                                        (excluded rule)))))
-      (disable-modes modes buffer))))
+      (disable-modes :modes modes :buffers buffer :bypass-auto-rules-p t))))
 
 (defun can-save-last-active-modes (buffer url)
   (or (null (last-active-modes-url buffer))
@@ -161,12 +164,12 @@ ARGS as in make-instance of `auto-rule'."
                                  (set-difference (mode-invocations (modes buffer))
                                                  (last-active-modes buffer)
                                                  :test #'equals))))
-    (disable-modes modes buffer))
+    (disable-modes :modes modes :buffers buffer :bypass-auto-rules-p t))
   (alex:when-let ((modes (mapcar #'name
                                  (set-difference (last-active-modes buffer)
                                                  (mode-invocations (modes buffer))
                                                  :test #'equals))))
-    (enable-modes modes buffer)))
+    (enable-modes :modes modes :buffest buffer :bypass-auto-rules-p t)))
 
 (-> url-infer-match (string) list)
 (defun url-infer-match (url)

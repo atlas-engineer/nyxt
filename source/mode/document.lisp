@@ -569,10 +569,11 @@ Auto-rules are re-applied once the page is reloaded."
                                               'auto-rules-reenable)
                            request-data)
                      :name 'auto-rules-reenable))
+    (setf (bypass-auto-rules-p buffer) t)
     (when modes-to-enable
-      (disable-modes (uiop:ensure-list modes-to-disable) buffer))
+      (disable-modes :modes modes-to-disable :buffers buffer))
     (when modes-to-disable
-      (enable-modes (uiop:ensure-list modes-to-enable) buffer))
+      (enable-modes :modes (uiop:ensure-list modes-to-enable) :buffer buffer))
     (nyxt::reload-buffer buffer)))
 
 

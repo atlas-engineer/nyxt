@@ -100,14 +100,20 @@ functionality. A `cascade' method combination is used for that.
 
 See also `disable'."))
 
-(defmethod enable :around ((mode mode) &key)
+(defmethod enable :around ((mode mode) &key bypass-auto-rules-p &allow-other-keys)
   (let* ((buffer (buffer mode))
          (existing-instance (find (sera:class-name-of mode)
                                   (remove-if (sera:eqs mode) (slot-value buffer 'modes))
                                   :key #'sera:class-name-of)))
     (if existing-instance
         (log:debug "Not enabling ~s since other ~s instance is already in buffer ~a" mode existing-instance buffer)
-        (call-next-method))))
+        (if bypass-auto-rules-p
+            (let ((old-bypass (bypass-auto-rules-p (buffer mode))))
+              (setf (bypass-auto-rules-p (buffer mode)) t)
+              (unwind-protect
+                   (call-next-method)
+                (setf (bypass-auto-rules-p (buffer mode)) old-bypass)))
+            (call-next-method)))))
 
 (defmethod enable :after ((mode mode) &key)
   (setf (enabled-p mode) t)
@@ -138,6 +144,15 @@ upwards to allow a more useful mode inheritance without duplicating the
 functionality. A `cascade' method combination is used for that.
 
 See also `enable'."))
+
+(defmethod disable :around ((mode mode) &key bypass-auto-rules-p &allow-other-keys)
+  (if bypass-auto-rules-p
+      (let ((old-bypass (bypass-auto-rules-p (buffer mode))))
+        (setf (bypass-auto-rules-p (buffer mode)) t)
+        (unwind-protect
+             (call-next-method)
+          (setf (bypass-auto-rules-p (buffer mode)) old-bypass)))
+      (call-next-method)))
 
 (defmethod disable :after ((mode mode) &key)
   (setf (enabled-p mode) nil)
@@ -332,8 +347,11 @@ For production code, see `find-submode' instead."
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class))
 
-(define-command enable-modes (&optional (modes nil explicit-modes-p)
-                              (buffers nil explicit-buffers-p) args)
+(define-command enable-modes (&rest args &key
+                              (modes nil explicit-modes-p)
+                              (buffers (current-buffer) explicit-buffers-p)
+                              bypass-auto-rules-p
+                              &allow-other-keys)
   "Enable MODES for BUFFERS.
 MODES should be a list of mode symbols.
 BUFFERS and MODES are automatically coerced into a list.
@@ -341,8 +359,10 @@ ARGS are passed to the mode `enable' method.
 
 If BUFFERS is a list, return it.
 If it's a single buffer, return it directly (not as a list)."
+  (declare (ignorable bypass-auto-rules-p))
   ;; We allow NIL values for MODES and BUFFERS in case they are forms, in which
   ;; case it's handy that this function does not error, it simply does nothing.
+  ;; REVIEW: But we wrap commands into `with-protect' for this, don't we?
   (let* ((buffers (if buffers
                       (uiop:ensure-list buffers)
                       (unless explicit-buffers-p
@@ -366,13 +386,14 @@ If it's a single buffer, return it directly (not as a list)."
               (mapcar (lambda (mode-sym)
                         (apply #'enable (or (find mode-sym (slot-value buffer 'modes) :key #'name)
                                             (make-instance mode-sym :buffer buffer))
-                               args))
+                               (alex:remove-from-plist args :buffers :modes)))
                       modes))
             (sera:filter #'modable-buffer-p buffers)))
   buffers)
 
-(define-command disable-modes (&optional (modes nil explicit-modes-p)
-                               (buffers nil explicit-buffers-p))
+(define-command disable-modes (&key (modes nil explicit-modes-p)
+                               (buffers (current-buffer) explicit-buffers-p) bypass-auto-rules-p
+                               &allow-other-keys)
   "Disable MODES for BUFFERS.
 MODES should be a list of mode symbols.
 BUFFERS and MODES are automatically coerced into a list.
@@ -399,8 +420,9 @@ If it's a single buffer, return it directly (not as a list)."
     (dolist (buffer buffers)
       (check-type buffer buffer))
     (mapcar (lambda (buffer)
-              (mapcar #'disable (delete nil (mapcar (lambda (mode) (find mode (modes buffer) :key #'name))
-                                                    (uiop:ensure-list modes)))))
+              (mapcar (alex:rcurry #'disable :bypass-auto-rules-p bypass-auto-rules-p)
+                      (delete nil (mapcar (lambda (mode) (find mode (modes buffer) :key #'name))
+                                          (uiop:ensure-list modes)))))
             buffers))
   buffers)
 
@@ -449,8 +471,8 @@ mode permanently for this buffer."
                       :marks (mapcar #'sera:class-name-of (modes buffer)))))
          (modes-to-disable (set-difference (all-mode-symbols) modes-to-enable
                                            :test #'string=)))
-    (disable-modes (uiop:ensure-list modes-to-disable) buffer)
-    (enable-modes (uiop:ensure-list modes-to-enable) buffer))
+    (disable-modes :modes modes-to-disable :buffers buffer)
+    (enable-modes :modes modes-to-enable :buffers buffer))
   buffer)
 
 (export-always 'find-buffer)

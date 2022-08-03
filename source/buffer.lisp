@@ -232,9 +232,10 @@ of BUFFER."
   (unless no-hook-p
     (hooks:run-hook (buffer-make-hook browser) buffer))
   (mapc #'enable (slot-value buffer 'modes))
-  (enable-modes (append (reverse (default-modes buffer))
-                        (uiop:ensure-list extra-modes))
-                buffer)
+  (enable-modes :modes (append (reverse (default-modes buffer))
+                               (uiop:ensure-list extra-modes))
+                :buffers buffer
+                :bypass-auto-rules-p t)
   (unless no-hook-p
     (hooks:run-hook (buffer-after-make-hook browser) buffer)))
 
