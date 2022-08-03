@@ -14,7 +14,7 @@
 See the mode `keyscheme-map' for special bindings."
   ((visible-in-status-p nil)
    (keyscheme-map
-    (define-keyscheme-map "application" ()
+    (define-keyscheme-map "passthrough-mode" ()
       keyscheme:default
       (list
        "C-M-z" 'passthrough-mode)))))

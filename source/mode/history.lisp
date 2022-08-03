@@ -23,42 +23,39 @@ search.")
     :type boolean
     :documentation "Whether history navigation is restricted by buffer-local history.")
    (keyscheme-map
-    (define-keyscheme-map "history" ()
-      keyscheme:cua
+    (define-keyscheme-map "history-mode" ()
+      keyscheme:default
       (list
+       "M-left" 'history-backwards
+       ;; this should be C-[
+       "M-[" 'history-backwards
+       "button8" 'history-backwards
+       "M-right" 'history-forwards
+       ;; this should be C-]
+       "M-]" 'history-forwards
+       "button9" 'history-forwards
+       "M-shift-left" 'history-backwards-query
+       "M-shift-right" 'history-forwards-query
        "C-M-right" 'history-forwards-all-query
        "C-M-left" 'history-all-query
        "C-shift-h" 'history-all-query
-       "C-shift-H" 'history-all-query
-       "M-shift-right" 'history-forwards-query
-       "M-shift-left" 'history-backwards-query
-       "M-right" 'history-forwards
-       "M-left" 'history-backwards
-       "M-]" 'history-forwards
-       "M-[" 'history-backwards
-       "button9" 'history-forwards
-       "button8" 'history-backwards)
+       "C-shift-H" 'history-all-query)
       keyscheme:emacs
       (list
-       "C-M-f" 'history-forwards-all-query
-       "C-M-b" 'history-all-query
-       "M-f" 'history-forwards-query
-       "M-b" 'history-backwards-query
-       "C-f" 'history-forwards-maybe-query
        "C-b" 'history-backwards
-       "button9" 'history-forwards
-       "button8" 'history-backwards)
-
+       "M-b" 'history-backwards-query
+       "M-f" 'history-forwards-query
+       "C-M-f" 'history-forwards-all-query
+       "C-f" 'history-forwards-maybe-query
+       "C-M-b" 'history-all-query)
       keyscheme:vi-normal
       (list
        "H" 'history-backwards
-       "L" 'history-forwards-maybe-query
        "M-h" 'history-backwards-query
        "M-l" 'history-forwards-query
-       "M-H" 'history-all-query
        "M-L" 'history-forwards-all-query
-       "button9" 'history-forwards
-       "button8" 'history-backwards)))))
+       "L" 'history-forwards-maybe-query
+       "M-H" 'history-all-query)))))
 
 (defun load-history-url (url-or-node
                          &key (buffer (current-buffer))

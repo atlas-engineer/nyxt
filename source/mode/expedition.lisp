@@ -10,15 +10,15 @@
   ((urls (list))
    (index 0 :documentation "The index of the current element in URLs.")
    (keyscheme-map
-    (define-keyscheme-map "expedition" ()
+    (define-keyscheme-map "expedition-mode" ()
       keyscheme:cua
       (list
-       "C-]" 'expedition-next
-       "C-[" 'expedition-previous)
+       "C-[" 'expedition-previous
+       "C-]" 'expedition-next)
       keyscheme:emacs
       (list
-       "M-n" 'expedition-next
-       "M-p" 'expedition-previous)))
+       "M-p" 'expedition-previous
+       "M-n" 'expedition-next)))
    (rememberable-p nil)))
 
 (define-command expedition-next (&key (expedition (find-submode 'expedition-mode)))

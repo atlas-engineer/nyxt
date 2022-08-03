@@ -16,7 +16,7 @@
    (current-process-info nil
                          :type (or null uiop/launch-program::process-info))
    (keyscheme-map
-    (define-keyscheme-map "web" ()
+    (define-keyscheme-map "os-package-manager-mode" ()
       keyscheme:default
       (list
        "C-d" 'cancel-package-operation))))

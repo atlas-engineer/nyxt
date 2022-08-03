@@ -21,119 +21,117 @@ listed and run with `return-selection-over-action' (bound to \"M-return\" by
 default)."
   ((visible-in-status-p nil)
    (keyscheme-map
-    (define-keyscheme-map "prompt-buffer" ()
+    (define-keyscheme-map "prompt-buffer-mode" ()
       keyscheme:default
       (list
-       "down" 'select-next
        "up" 'select-previous
-       "button5" 'select-next
+       "down" 'select-next
        "button4" 'select-previous
-       "escape" 'cancel-input
-       "return" 'return-selection
-       "M-return" 'return-selection-over-action
-       "C-return" 'run-selection-action
-       "tab" 'insert-selection
-       "f1 b" 'run-prompt-buffer-command
-       "f1 m" 'describe-prompt-buffer
-       "C-c C-f" 'toggle-selection-actions-enabled ; TODO: This is the Emacs Helm binding.  Better?
-       "C-]" 'toggle-attributes-display ; TODO: This is the Emacs Helm binding.  Better?
-       "C-space" 'toggle-mark
-       "shift-space" 'toggle-mark-backwards
-       "M-shift-space" 'toggle-mark-backwards
-       "M-space" 'toggle-mark
-       "M-a" 'mark-all
-       "M-u" 'unmark-all
-       "M-m" 'toggle-mark-all
-       "M-h" 'history)
-
-      keyscheme:cua
-      (list
+       "button5" 'select-next
        "home" 'select-first
        "end" 'select-last
        "pagehome" 'select-first
        "pageend" 'select-last
+       "escape" 'cancel-input
+       "M-a" 'mark-all
+       "M-u" 'unmark-all
+       "C-space" 'toggle-mark
+       "M-space" 'toggle-mark
+       "shift-space" 'toggle-mark-backwards
+       "M-shift-space" 'toggle-mark-backwards
+       "M-m" 'toggle-mark-all
+       "M-h" 'history
+       "f1 b" 'run-prompt-buffer-command
+       "f1 m" 'describe-prompt-buffer
+       "return" 'return-selection
+       "M-return" 'return-selection-over-action
+       "C-return" 'run-selection-action
+       "tab" 'insert-selection
+       ; TODO: This is the Emacs Helm binding.  Better?
+       "C-c C-f" 'toggle-selection-actions-enabled
+       ; TODO: This is the Emacs Helm binding.  Better?
+       "C-]" 'toggle-attributes-display)
+      keyscheme:cua
+      (list
        "C-up" 'select-first
        "C-down" 'select-last
-       "C-pagedown" 'select-next-source
        "C-pageup" 'select-previous-source
+       "C-pagedown" 'select-next-source
        "C-v" 'paste)
-
       keyscheme:emacs
       (list
-       "C-w" 'copy-selection
-       "C-y" 'paste
-       "C-n" 'select-next
        "C-p" 'select-previous
-       "C-v" 'select-next-page
-       "M-v" 'select-previous-page
-       "M-n" 'select-next-source
-       "M-p" 'select-previous-source
-       "M->" 'select-last
+       "C-n" 'select-next
        "M-<" 'select-first
-       "M-]" 'select-next-source        ; Emacs Helm binding.
+       "M->" 'select-last
+       "M-v" 'select-previous-page
+       "C-v" 'select-next-page
+       "M-p" 'select-previous-source
+       "M-n" 'select-next-source
        "M-[" 'select-previous-source    ; Emacs Helm binding.
+       "M-]" 'select-next-source        ; Emacs Helm binding.
        "C-M-n" 'scroll-other-buffer-down
        "C-M-p" 'scroll-other-buffer-up
        "C-M-v" 'scroll-page-down-other-buffer
        "shift-C-M-v" 'scroll-page-up-other-buffer
-       "C-j" 'run-selection-action
        "C-g" 'cancel-input
-       "C-h b" 'run-prompt-buffer-command
        "C-e" 'move-end-of-input
        "C-a" 'move-start-of-input
-       "C-f" 'nyxt/input-edit-mode:cursor-forwards
        "C-b" 'nyxt/input-edit-mode:cursor-backwards
-       "M-f" 'nyxt/input-edit-mode:cursor-forwards-word
-       "M-b" 'nyxt/input-edit-mode:cursor-backwards-word
+       "C-f" 'nyxt/input-edit-mode:cursor-forwards
        "C-d" 'nyxt/input-edit-mode:delete-forwards
+       "M-b" 'nyxt/input-edit-mode:cursor-backwards-word
+       "M-f" 'nyxt/input-edit-mode:cursor-forwards-word
        "C-backspace" 'nyxt/input-edit-mode:delete-backwards-word
        "M-backspace" 'nyxt/input-edit-mode:delete-backwards-word
        "M-d" 'nyxt/input-edit-mode:delete-forwards-word
-       "C-x h" 'select-all)
-
+       "C-x h" 'select-all
+       "C-w" 'copy-selection
+       "C-y" 'paste
+       "C-h b" 'run-prompt-buffer-command
+       "C-j" 'run-selection-action)
       keyscheme:vi-normal
       (list
-       "j" 'select-next
        "k" 'select-previous
+       "j" 'select-next
+       "C-k" 'select-previous
        ;; C-j and C-k are useful in insert mode since "j", "k" are taken.
        ;; We bind C-j and C-k in normal mode for consistency between the two modes.
        "C-j" 'select-next
-       "C-k" 'select-previous
-       "C-f" 'select-next-page
-       "C-b" 'select-previous-page
-       "G" 'select-last
        "g g" 'select-first
-       "J" 'select-next-source
+       "G" 'select-last
+       "C-b" 'select-previous-page
+       "C-f" 'select-next-page
        "K" 'select-previous-source
+       "J" 'select-next-source
+       "C-K" 'select-previous-source
        ;; Same as with C-j.
        "C-J" 'select-next-source
-       "C-K" 'select-previous-source
-       "z f" 'toggle-selection-actions-enabled
-       "z a" 'toggle-attributes-display
-       "y" 'copy-selection
-       "p" 'paste
-       "$" 'move-end-of-input
-       "^" 'move-start-of-input
        "M-j" 'scroll-other-buffer-down
        "M-k" 'scroll-other-buffer-up
        "C-M-j" 'scroll-page-down-other-buffer
        "C-M-k" 'scroll-page-up-other-buffer
+       "$" 'move-end-of-input
+       "^" 'move-start-of-input
        "l" 'nyxt/input-edit-mode:cursor-forwards
        "h" 'nyxt/input-edit-mode:cursor-backwards
        "w" 'nyxt/input-edit-mode:cursor-forwards-word
        "b" 'nyxt/input-edit-mode:cursor-backwards-word
        "x" 'nyxt/input-edit-mode:delete-forwards
        ;; VI has no short keybinding for delete-backwards-word, hasn't it?
-       "d w" 'nyxt/input-edit-mode:delete-forwards-word)
-
+       "d w" 'nyxt/input-edit-mode:delete-forwards-word
+       "z f" 'toggle-selection-actions-enabled
+       "z a" 'toggle-attributes-display
+       "y" 'copy-selection
+       "p" 'paste)
       keyscheme:vi-insert
       (list
-       "C-j" 'select-next
        "C-k" 'select-previous
-       "C-J" 'select-next-source
-       "C-K" 'select-previous-source
+       "C-j" 'select-next
+       "C-b" 'select-previous-page
        "C-f" 'select-next-page
-       "C-b" 'select-previous-page))))
+       "C-K" 'select-previous-source
+       "C-J" 'select-next-source))))
   (:toggler-command-p nil))
 
 (export-always 'define-command-prompt)

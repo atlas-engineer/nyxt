@@ -24,7 +24,7 @@ See also `vi-insert-mode'."
   ((glyph "vi:N")
    (keyscheme keyscheme:vi-normal)
    (keyscheme-map
-    (define-keyscheme-map "vi" ()
+    (define-keyscheme-map "vi-normal-mode" ()
       keyscheme:vi-normal
       (list
        "i" 'vi-insert-mode
@@ -43,7 +43,7 @@ See `vi-normal-mode'."
     :type (or vi-normal-mode null)
     :documentation "The `vi-normal-mode' that this insert mode is tied to.")
    (keyscheme-map
-    (define-keyscheme-map "vi" ()
+    (define-keyscheme-map "vi-insert-mode" ()
       keyscheme:vi-insert
       (list
        "C-z" 'nyxt/passthrough-mode:passthrough-mode

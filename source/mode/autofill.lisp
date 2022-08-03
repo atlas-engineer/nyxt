@@ -23,7 +23,7 @@ Use this slot to customize the autofill values available.
 The fill can be a string value or a function.  The latter allows you to provide
 content dynamic to the context.")
    (keyscheme-map
-    (define-keyscheme-map "autofill" ()
+    (define-keyscheme-map "autofill-mode" ()
       keyscheme:default
       (list
        "C-i" 'autofill)))))

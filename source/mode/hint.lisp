@@ -46,30 +46,30 @@ For instance, to include images:
 
     a, button, input, textarea, details, select, img:not([alt=\"\"])")
    (keyscheme-map
-    (define-keyscheme-map "hint" ()
+    (define-keyscheme-map "hint-mode" ()
       keyscheme:cua
       (list
        "C-j" 'follow-hint
-       "C-u C-j" 'follow-hint-new-buffer-focus
        "C-J" 'follow-hint-new-buffer
-       "C-M-j" 'follow-hint-nosave-buffer-focus
+       "C-u C-j" 'follow-hint-new-buffer-focus
        "C-u C-M-j" 'follow-hint-nosave-buffer
+       "C-M-j" 'follow-hint-nosave-buffer-focus
        "M-c h" 'copy-hint-url)
       keyscheme:emacs
       (list
        "M-g M-g" 'follow-hint           ; Corresponds to Emacs' `goto-line'.
-       "M-g g" 'follow-hint-new-buffer-focus
        "C-u M-g M-g" 'follow-hint-new-buffer
        "C-u M-g g" 'follow-hint-new-buffer
-       "C-M-g C-M-g" 'follow-hint-nosave-buffer-focus
+       "M-g g" 'follow-hint-new-buffer-focus
        "C-M-g g" 'follow-hint-nosave-buffer
+       "C-M-g C-M-g" 'follow-hint-nosave-buffer-focus
        "C-x C-w" 'copy-hint-url)
-
       keyscheme:vi-normal
       (list
+       ;; TODO bind copy-hint-url!
        "f" 'follow-hint
-       "F" 'follow-hint-new-buffer-focus
        "; f" 'follow-hint-new-buffer
+       "F" 'follow-hint-new-buffer-focus
        "g f" 'follow-hint-nosave-buffer
        "g F" 'follow-hint-nosave-buffer-focus)))))
 
