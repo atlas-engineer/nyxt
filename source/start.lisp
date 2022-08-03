@@ -174,6 +174,9 @@ Example: --with-file bookmarks=/path/to/bookmarks
             (uiop:delete-file-if-exists socket))))
       (mapc #'destroy-thread* (non-terminating-threads *browser*))
       (ffi-kill-browser *browser*)
+      ;; On FreeBSD this may cause freeze. Also we have to pass
+      ;; FINISH-OUTPUT = NIL in FFI-INITIALIZE.
+      #-freebsd
       (unless *run-from-repl-p*
         (run-thread "force-quitter"
           ;; Force-quit in case `ffi-kill-browser' hangs.  Must be run in a
