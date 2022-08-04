@@ -409,6 +409,10 @@ For the storage format see the comment in the head of your `auto-rules-file'."
 ;; - String format matches the exact URL and nothing else
 ;;   Example: \"https://lispcookbook.github.io/cl-cookbook/pattern_matching.html\"
 ;;            will work on the Pattern Matching article of CL Cookbook, and nowhere else.
+;; - Any other Lisp form is evaluated and the result of it is called with the
+;;   URL as an argument. This means you can write arbitrary Lisp code to activate auto-rules.
+;;   Note: The URL is passed as quri:uri object.
+;;   Example: (lambda (url) (string= \"/my/path\" (quri:uri-path url)))
 ;;
 ;; You can write additional URLs in the parenthesized conditions, to reuse the rule for other URL
 ;; Example: (match-host \"reddit.com\" \"old.reddit.com\" \"www6.reddit.com\")
