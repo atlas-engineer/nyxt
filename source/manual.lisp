@@ -224,7 +224,58 @@ all hosts being blocked, execute command " (:code "describe-variable") ", choose
 (:code "nyxt/blocker-mode:url-body") " slot." " To customize host blocking, read the "
 (:nxref :class-name 'nyxt/blocker-mode:blocker-mode) " documentation."))
 
-      (:nsection :title "Custom commands"
+      (:nsection :title "URL-dispatchers"
+        (:p "You can configure which actions to take depending on the URL to be
+loaded.  For instance, you can configure which Torrent program to start to load
+magnet links.  See the" (:nxref :function 'url-dispatching-handler) " function
+documentation."))
+
+      (:nsection :title "Auto rules"
+        (:p "Auto-rules (previously " (:code "auto-mode")
+            " are similar to URL-dispatchers in that they act based on the URL. What they're
+restricted by is that they can only enable or disable modes. Given that a lot on
+Nyxt functionalities are mode-based, this restriction is a productive one.")
+        (:p "You can use auto-rules in two ways:")
+        (:ul
+         (:li "You can call " (:nxref :command 'save-non-default-modes-for-future-visits) " or "
+              (:nxref :command 'save-exact-modes-for-future-visits)
+              " on any page you've enabled/disabled some modes.")
+         (:ul
+          (:li "The former will only save \"unusual\" modes, the ones that you don't have as
+default and thus most probably enabled/disabled just for this page.")
+          (:li "The latter will save the exact list of modes so that when you visit the same
+website, you have exactly the same list of modes enabled."))
+         (:li "Alternatively, you can configure "
+              (:nxref :slot 'prompt-on-mode-toggle-p :class-name 'modable-buffer)
+              " as true so that Nyxt asks you whether to save the modes you enable, the very
+moment you enable those. The necessary configuration piece is:"))
+        (:pre (:code "(define-configuration modable-buffer
+  ((prompt-on-mode-toggle-p t)))"))
+        (:p "All the files are stored in your auto-rules file:"
+            (:code (files:expand (make-instance 'auto-rules-file))) " which " (:u "is")
+            " intended for editing and reading. You can find the instructions on what to put
+inside it, in the top-of-the-file commentary. The gist of it is: rules are mere
+Lisp lists, and they start with a condition to check the URL with. If the
+condition passes, modes are being disabled/enabled. Some useful conditions are: "
+            (:ul
+             (:li (:nxref :function 'match-domain))
+             (:li (:nxref :function 'match-host))
+             (:li (:nxref :function 'match-url))
+             (:li (:nxref :function 'match-regex))
+             (:li (:nxref :function 'match-scheme))
+             (:li "And the ones you write yourself for your use-cases :)")))
+        (:p "By default, only the most-specific or the earliest auto-rule is
+chosen/applied. But, if you want those to add up, you can configure "
+            (:nxref :slot 'apply-all-matching-auto-rules-p :class-name 'modable-buffer) ":")
+        (:pre (:code "(define-configuration modable-buffer
+  ((apply-all-matching-auto-rules-p t)))"))
+        (:p "You can also define auto-rules for your own modes/extensions with "
+            (:nxref :function 'define-auto-rule)
+            " and those will be added on top of the user-defined ones."))
+
+      (:nsection
+        :title "Custom commands"
+        :open-p nil
         (:p "Creating your own invocable commands is similar to creating a Common
 Lisp function, except the form is " (:code "define-command") " instead of "
 (:code "defun") ". If you want this command to be invocable outside of
