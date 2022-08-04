@@ -595,7 +595,7 @@ of buffers."
                           set1 false
                           set2 false))
              (defun add-stylesheet ()
-               (unless (ps:chain document (get-element-by-id "nyxt-stylesheet"))
+               (unless (nyxt/ps:qs document "#nyxt-stylesheet")
                  (ps:let ((style-element (ps:chain document (create-element "style"))))
                    (setf (ps:@ style-element id) "nyxt-stylesheet")
                    (ps:chain document head (append-child style-element)))))
