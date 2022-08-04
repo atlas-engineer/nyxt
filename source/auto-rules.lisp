@@ -263,6 +263,26 @@ Mode is covered if:
                                  (matching-rules (matching-auto-rules previous-url buffer)))
                   (alex:mappend #'included matching-rules))))))))
 
+(-> apply-auto-rules (quri:uri buffer) *)
+(export-always 'apply-auto-rules)
+(defun apply-auto-rules (url buffer)
+  (unless (bypass-auto-rules-p buffer)
+    (let* ((rules (matching-auto-rules url buffer))
+           (previous-url (previous-url buffer))
+           (previous-rules (when previous-url (matching-auto-rules previous-url buffer))))
+      (when (and rules previous-url (not previous-rules))
+        (save-last-active-modes buffer previous-url))
+      (cond
+        ((and (not rules)
+              ;; `toplevel-p'
+              (quri:uri=
+               url (quri:uri (webkit:webkit-web-view-uri
+                              (gtk-object buffer)))))
+         (reapply-last-active-modes buffer))
+        ((and rules (not (eq rules previous-rules)))
+         (enable-matching-modes url buffer)))
+      (setf (previous-url buffer) url))))
+
 (define-command save-non-default-modes-for-future-visits ()
   "Save the modes present in `default-modes' and not present in current modes as :excluded,
 and modes that are present in mode list but not in `default-modes' as :included,

@@ -1026,22 +1026,7 @@ See `finalize-buffer'."
                              (let ((headers (webkit:webkit-uri-response-get-http-headers response)))
                                (unless (cffi:null-pointer-p headers)
                                  (webkit:soup-message-headers-get-headers headers)))))
-    (unless (bypass-auto-rules-p buffer)
-      (let* ((rules (matching-auto-rules url buffer))
-             (previous-url (previous-url buffer))
-             (previous-rules (when previous-url (matching-auto-rules previous-url buffer))))
-        (when (and rules previous-url (not previous-rules))
-          (save-last-active-modes buffer previous-url))
-        (cond
-          ((and (not rules)
-                ;; `toplevel-p'
-                (quri:uri=
-                 url (quri:uri (webkit:webkit-web-view-uri
-                                (gtk-object buffer)))))
-           (reapply-last-active-modes buffer))
-          ((and rules (not (eq rules previous-rules)))
-           (enable-matching-modes url buffer)))
-        (setf (previous-url buffer) url)))
+    (apply-auto-rules url buffer)
     (let* ((request-data
             (hooks:run-hook
              (request-resource-hook buffer)
