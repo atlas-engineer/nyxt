@@ -201,7 +201,9 @@ For instance, to include images:
       (multiple-value-bind (matching-hints other-hints)
           (sera:partition
            (lambda (element)
-             (str:starts-with-p input (plump:get-attribute element "nyxt-hint") :ignore-case t))
+             (str:starts-with-p input
+                                (plump:get-attribute element "nyxt-hint")
+                                :ignore-case t))
            suggestions
            :key #'prompter:value)
         (append matching-hints other-hints))))
