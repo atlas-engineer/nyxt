@@ -396,7 +396,7 @@ FUNCTION is the action to perform on the selected elements."
 (define-command follow-hint ()
   "Prompt for element hints and open them in the current buffer."
   (let ((buffer (current-buffer)))
-    (query-hints "Go to element"
+    (query-hints "Interact with element"
                  (lambda (results)
                    (%follow-hint (first results))
                    (mapcar (rcurry #'%follow-hint-new-buffer buffer)
@@ -412,7 +412,7 @@ FUNCTION is the action to perform on the selected elements."
 (define-command follow-hint-new-buffer-focus ()
   "Like `follow-hint-new-buffer', but with focus."
   (let ((buffer (current-buffer)))
-    (query-hints "Go to element in new buffer"
+    (query-hints "Open element in new buffer"
                  (lambda (result)
                    (%follow-hint-new-buffer-focus (first result) buffer)
                    (mapcar (rcurry #'%follow-hint-new-buffer buffer)
@@ -426,7 +426,7 @@ focus)."
 
 (define-command follow-hint-nosave-buffer-focus ()
   "Like `follow-hint-nosave-buffer', but with focus."
-  (query-hints "Go to element in new buffer"
+  (query-hints "Open element in new buffer"
                (lambda (result)
                  (%follow-hint-nosave-buffer-focus (first result))
                  (mapcar #'%follow-hint-nosave-buffer (rest result)))))
