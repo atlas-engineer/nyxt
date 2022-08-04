@@ -1027,19 +1027,19 @@ See `finalize-buffer'."
                                (unless (cffi:null-pointer-p headers)
                                  (webkit:soup-message-headers-get-headers headers)))))
     (unless (bypass-auto-rules-p buffer)
-      (let* ((rule (matching-auto-rule url buffer))
+      (let* ((rules (matching-auto-rules url buffer))
              (previous-url (previous-url buffer))
-             (previous-rule (when previous-url (matching-auto-rule previous-url buffer))))
-        (when (and rule previous-url (not previous-rule))
+             (previous-rules (when previous-url (matching-auto-rules previous-url buffer))))
+        (when (and rules previous-url (not previous-rules))
           (save-last-active-modes buffer previous-url))
         (cond
-          ((and (not rule)
+          ((and (not rules)
                 ;; `toplevel-p'
                 (quri:uri=
                  url (quri:uri (webkit:webkit-web-view-uri
                                 (gtk-object buffer)))))
            (reapply-last-active-modes buffer))
-          ((and rule (not (eq rule previous-rule)))
+          ((and rules (not (eq rules previous-rules)))
            (enable-matching-modes url buffer)))
         (setf (previous-url buffer) url)))
     (let* ((request-data

@@ -115,40 +115,45 @@ ARGS as in make-instance of `auto-rule'."
                   (list :excluded (mode-invocations excluded)))))
         *default-rules*))
 
-(-> matching-auto-rule (quri:uri modable-buffer) (or auto-rule null))
-(defun matching-auto-rule (url buffer)
-  (let ((rules (append *default-rules*
-                       (files:content (auto-rules-file buffer)))))
-    (flet ((priority (test1 test2)
-             (let ((priority-list '(match-regex match-url match-host match-domain match-scheme)))
-               (< (or (position (first test1) priority-list) (length priority-list))
-                  (or (position (first test2) priority-list) (length priority-list))))))
-      (first (sort
-              (remove-if-not
-               #'(lambda (rule)
-                   (funcall (eval (test rule)) url))
-               rules)
-              #'priority :key #'test)))))
+(-> matching-auto-rules (quri:uri modable-buffer) (values list &optional))
+(defun matching-auto-rules (url buffer)
+  (let* ((rules (append *default-rules*
+                        (files:content (auto-rules-file buffer))))
+         (matching-rules (remove-if-not
+                          #'(lambda (rule)
+                              (funcall (eval (test rule)) url))
+                          rules)))
+    (if (apply-all-matching-auto-rules-p buffer)
+        matching-rules
+        (flet ((priority (test1 test2)
+                 (let ((priority-list '(match-regex match-url match-host match-domain match-scheme)))
+                   (< (or (position (first test1) priority-list) (length priority-list))
+                      (or (position (first test2) priority-list) (length priority-list))))))
+          (uiop:ensure-list
+           (first (sort
+                   matching-rules
+                   #'priority :key #'test)))))))
 
 (-> enable-matching-modes (quri:uri modable-buffer) *)
 (defun enable-matching-modes (url buffer)
-  (alex:when-let ((rule (matching-auto-rule url buffer)))
-    (dolist (mode-invocation (set-difference
-                              (included rule)
-                              (rememberable-of (modes buffer))
-                              :test #'equals))
-      (check-type mode-invocation mode-invocation)
-      (apply #'enable-modes :modes (name mode-invocation)
-                            :buffers buffer
-                            :bypass-auto-rules-p t
-                            (arguments mode-invocation)))
-    (alex:when-let ((modes (mapcar #'name
-                                   (if (exact-p rule)
-                                       (set-difference
-                                        (rememberable-of (modes buffer))
-                                        (included rule) :test #'equals)
-                                       (excluded rule)))))
-      (disable-modes :modes modes :buffers buffer :bypass-auto-rules-p t))))
+  (alex:when-let ((rules (matching-auto-rules url buffer)))
+    (dolist (rule rules)
+      (dolist (mode-invocation (set-difference
+                                (included rule)
+                                (rememberable-of (modes buffer))
+                                :test #'equals))
+        (check-type mode-invocation mode-invocation)
+        (apply #'enable-modes :modes (name mode-invocation)
+                              :buffers buffer
+                              :bypass-auto-rules-p t
+                              (arguments mode-invocation)))
+      (alex:when-let ((modes (mapcar #'name
+                                     (if (exact-p rule)
+                                         (set-difference
+                                          (rememberable-of (modes buffer))
+                                          (included rule) :test #'equals)
+                                         (excluded rule)))))
+        (disable-modes :modes modes :buffers buffer :bypass-auto-rules-p t)))))
 
 (defun can-save-last-active-modes (buffer url)
   (or (null (last-active-modes-url buffer))
@@ -245,9 +250,9 @@ Mode is covered if:
     (flet ((invocation-member (list)
              (member invocation list :test #'equals)))
       (or (not (rememberable-p mode))
-          (alex:when-let ((matching-rule (matching-auto-rule (url buffer) buffer)))
-            (or (and enable-p (invocation-member (included matching-rule)))
-                (and (not enable-p) (invocation-member (excluded matching-rule)))))
+          (alex:when-let ((matching-rules (matching-auto-rules (url buffer) buffer)))
+            (or (and enable-p (invocation-member (alex:mappend #'included matching-rules)))
+                (and (not enable-p) (invocation-member (alex:mappend #'excluded matching-rules)))))
           ;; Mode is covered by auto-rules only if it is both in
           ;; last-active-modes and gets enabled.  If it gets disabled, user
           ;; should be prompted, because they may want to persist it.
@@ -255,8 +260,8 @@ Mode is covered if:
           (and (not enable-p)
                (invocation-member
                 (alex:when-let* ((previous-url (previous-url buffer))
-                                 (matching-rule (matching-auto-rule previous-url buffer)))
-                  (included matching-rule))))))))
+                                 (matching-rules (matching-auto-rules previous-url buffer)))
+                  (alex:mappend #'included matching-rules))))))))
 
 (define-command save-non-default-modes-for-future-visits ()
   "Save the modes present in `default-modes' and not present in current modes as :excluded,

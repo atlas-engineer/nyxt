@@ -169,6 +169,11 @@ access the initialized buffer.")
     (make-instance 'auto-rules-file)
     :type auto-rules-file
     :documentation "File where the auto-rules are saved.")
+   (apply-all-matching-auto-rules-p
+    nil
+    :type boolean
+    :documentation "Whether all the auto-rules matching the URL are applied to it.
+The default behavior is to only apply the most specific rule.")
    (bypass-auto-rules-p
     nil
     :type boolean
@@ -176,7 +181,7 @@ access the initialized buffer.")
    (prompt-on-mode-toggle-p
     nil
     :type boolean
-    :documentation "Whether the user is asked to confirm adding the rule with a toggled mode.")
+    :documentation "Whether the user is asked to confirm adding the auto-rule with a toggled mode.")
    (previous-url
     nil
     :type (or quri:uri null)
