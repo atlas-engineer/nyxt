@@ -58,6 +58,9 @@ define which elements are picked up by element hinting.
 For instance, to include images:
 
     a, button, input, textarea, details, select, img:not([alt=\"\"])")
+   (compute-hints-in-view-port-p
+    nil
+    :documentation "Whether hints are computed in view port.")
    (keyscheme-map
     (define-keyscheme-map "hint-mode" ()
       keyscheme:cua
@@ -104,8 +107,8 @@ For instance, to include images:
                    (insert-rule (ps:lisp (hint-scope-style (find-submode 'hint-mode))) 2))))
      (:catch (error)))))
 
-(define-parenscript hint-elements (nyxt-identifiers hints)
-  (defun hint-create-element (original-element hint)
+(define-parenscript hint-elements (hints)
+  (defun create-hint-overlay (original-element hint)
     "Create a DOM element to be used as a hint."
     (ps:let* ((rect (ps:chain original-element (get-bounding-client-rect)))
               (element (ps:chain document (create-element "span"))))
@@ -118,18 +121,15 @@ For instance, to include images:
       element))
 
   (let ((fragment (ps:chain document (create-document-fragment)))
-        (ids (ps:lisp (list 'quote nyxt-identifiers)))
-        (hints (ps:lisp (list 'quote hints))))
-    (dotimes (i (ps:lisp (length nyxt-identifiers)))
-      (let ((element (nyxt/ps:qs document (+ "[nyxt-identifier=\""
-                                             (aref ids i)
-                                             "\"]")))
-            (hint (aref hints i)))
-        (when element
-          (ps:chain element (set-attribute "nyxt-hint" hint))
-          (ps:chain fragment (append-child (hint-create-element element hint))))))
+        (hints (ps:lisp (list 'quote hints)))
+        (i 0))
+    (dolist (element (nyxt/ps:qsa document "[nyxt-hintable]"))
+      (let ((hint (aref hints i)))
+        (ps:chain element (set-attribute "nyxt-hint" hint))
+        (ps:chain fragment (append-child (create-hint-overlay element hint)))
         (when (ps:lisp (show-hint-scope-p (find-submode 'hint-mode)))
-          (ps:chain element class-list (add "nyxt-element-hint")))))
+          (ps:chain element class-list (add "nyxt-element-hint")))
+        (setf i (1+ i))))
     (ps:chain document body (append-child fragment))
     ;; Returning fragment makes WebKit choke.
     nil))
@@ -151,9 +151,25 @@ For instance, to include images:
            (char-length (ceiling (log length (length alphabet)))))
       (loop for i below length collect (select-from-alphabet i char-length alphabet)))))
 
-(defun add-hints (&key selector)
-  (let* ((dom (document-model (current-buffer)))
-         (hintable-elements (clss:select selector dom))
+(define-parenscript set-hintable-attribute ()
+  (let ((elements (nyxt/ps:qsa document
+                               (ps:lisp (hints-selector (find-submode 'hint-mode))))))
+    (if (ps:lisp (compute-hints-in-view-port-p (find-submode 'hint-mode)))
+        (ps:dolist (element elements)
+          (when (nyxt/ps:element-in-view-port-p element)
+            (ps:chain element (set-attribute "nyxt-hintable" ""))))
+        (ps:dolist (element elements)
+          (ps:chain element (set-attribute "nyxt-hintable" ""))))))
+
+(define-parenscript remove-hintable-attribute ()
+  (ps:dolist (element (nyxt/ps:qsa document "[nyxt-hintable]"))
+    (ps:chain element (remove-attribute "nyxt-hintable"))))
+
+(defun add-hints (&key selector (buffer (current-buffer)))
+  (run-thread "add CSS stylesheet" (add-stylesheet))
+  (set-hintable-attribute)
+  (setf (document-model buffer) (nyxt/dom::named-json-parse (nyxt/dom::get-document-body-json)))
+  (let* ((hintable-elements (clss:select selector (document-model buffer)))
          (hints (generate-hints (length hintable-elements))))
     (run-thread "stylesheet adder"
       (add-stylesheet))
@@ -164,15 +180,17 @@ For instance, to include images:
           do (plump:set-attribute elem "nyxt-hint" hint)
           collect elem)))
 
-(define-parenscript remove-hints ()
-  (defun hints-remove-all ()
-    "Remove style from hinted elements."
-    (ps:dolist (element (nyxt/ps:qsa document ":not(.nyxt-search-node) > .nyxt-hint"))
-      (ps:chain element (remove)))
-    (when (ps:lisp (show-hint-scope-p (find-submode 'hint-mode)))
-      (ps:dolist (element (nyxt/ps:qsa document ".nyxt-element-hint"))
-        (ps:chain element class-list (remove "nyxt-element-hint")))))
-  (hints-remove-all))
+(define-parenscript remove-hint-elements ()
+  (ps:dolist (element (nyxt/ps:qsa document ":not(.nyxt-search-node) > .nyxt-hint"))
+    (ps:chain element (remove)))
+  (when (ps:lisp (show-hint-scope-p (find-submode 'hint-mode)))
+    (ps:dolist (element (nyxt/ps:qsa document ".nyxt-element-hint"))
+      (ps:chain element class-list (remove "nyxt-element-hint")))))
+
+(defun remove-hints (&key (buffer (current-buffer)))
+  (run-thread "remove element hints overlays" (remove-hint-elements))
+  (remove-hintable-attribute)
+  (setf (document-model buffer) (nyxt/dom::named-json-parse (nyxt/dom::get-document-body-json))))
 
 (export-always 'identifier)
 (defmethod identifier ((element plump:element))
@@ -249,7 +267,7 @@ For instance, to include images:
 (serapeum:export-always 'query-hints)
 (defun query-hints (prompt function
                     &key (multi-selection-p t)
-                      (selector (hints-selector (find-submode 'hint-mode))))
+                         (selector "[nyxt-hintable]"))
   "Prompt for elements matching SELECTOR, hinting them visually.
 MULTI-SELECTION-P defines whether several elements can be chosen.
 PROMPT is a text to show while prompting for hinted elements.
