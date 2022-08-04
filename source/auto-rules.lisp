@@ -266,6 +266,8 @@ Mode is covered if:
 (-> apply-auto-rules (quri:uri buffer) *)
 (export-always 'apply-auto-rules)
 (defun apply-auto-rules (url buffer)
+  "Apply the rules based on the URL being loaded.
+Implies that the request is a top-level one"
   (unless (bypass-auto-rules-p buffer)
     (let* ((rules (matching-auto-rules url buffer))
            (previous-url (previous-url buffer))
@@ -273,11 +275,7 @@ Mode is covered if:
       (when (and rules previous-url (not previous-rules))
         (save-last-active-modes buffer previous-url))
       (cond
-        ((and (not rules)
-              ;; `toplevel-p'
-              (quri:uri=
-               url (quri:uri (webkit:webkit-web-view-uri
-                              (gtk-object buffer)))))
+        ((not rules)
          (reapply-last-active-modes buffer))
         ((and rules (not (eq rules previous-rules)))
          (enable-matching-modes url buffer)))
