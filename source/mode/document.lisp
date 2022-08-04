@@ -550,7 +550,7 @@ of buffers."
   (ps-eval (print)))
 
 ;; FIXME: Better place for it? auto-mode is no more, after all...
-(define-command reload-with-modes (&optional (buffer (current-buffer)))
+(define-command-global reload-with-modes (&optional (buffer (current-buffer)))
   "Reload the buffer with the queried modes.
 This bypasses auto-rules.
 Auto-rules are re-applied once the page is reloaded."

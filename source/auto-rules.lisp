@@ -281,7 +281,7 @@ Implies that the request is a top-level one"
          (enable-matching-modes url buffer)))
       (setf (previous-url buffer) url))))
 
-(define-command save-non-default-modes-for-future-visits ()
+(define-command-global save-non-default-modes-for-future-visits ()
   "Save the modes present in `default-modes' and not present in current modes as :excluded,
 and modes that are present in mode list but not in `default-modes' as :included,
 to one of auto-rules. Apply the resulting rule for all the future visits to this URL,
@@ -311,7 +311,7 @@ For the storage format see the comment in the head of your `auto-rules-file'."
                               (mode-invocations (modes (current-buffer)))
                               :test #'equals))))
 
-(define-command save-exact-modes-for-future-visits ()
+(define-command-global save-exact-modes-for-future-visits ()
   "Store the exact list of enabled modes to auto-rules for all the future visits of this
 domain/host/URL/group of websites inferring the suitable matching condition by user input.
 Uses `url-infer-match', see its documentation for matching rules.
