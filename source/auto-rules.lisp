@@ -24,7 +24,7 @@ Package prefix is optional.")
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(sera:export-always 'equals)
+(export-always 'equals)
 (defmethod equals ((object1 t) (object2 t))
   (equalp object1 object2))
 (defmethod equals ((mode1 mode-invocation) (mode2 mode-invocation))
@@ -326,7 +326,7 @@ For the storage format see the comment in the head of your `auto-rules-file'."
           (:include (or (cons mode-invocation *) null))
           (:exact-p boolean))
     (values list &optional))
-(sera:export-always 'add-modes-to-auto-rules)
+(export-always 'add-modes-to-auto-rules)
 (defun add-modes-to-auto-rules (test &key (buffer (nyxt:current-buffer)) (append-p nil) exclude include (exact-p nil))
   (nfiles:with-file-content (rules (auto-rules-file buffer))
     (let* ((rule (or (find test rules
