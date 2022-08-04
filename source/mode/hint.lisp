@@ -13,6 +13,10 @@
     nil
     :type boolean
     :documentation "Whether the hints are automatically followed when matching user input.")
+   (fit-to-prompt-p
+    nil
+    :type boolean
+    :documentation "Whether the hinting prompt buffer is collapsed to the input line.")
    (box-style
     (theme:themed-css (theme *browser*)
       (".nyxt-hint"
@@ -228,6 +232,9 @@ FUNCTION is the action to perform on the selected elements."
                             :extra-modes (list (resolve-symbol :hint-prompt-buffer-mode :mode))
                             :auto-return-p (auto-follow-hints-p (find-submode 'hint-mode))
                             :history nil
+                            :height (if (fit-to-prompt-p (find-submode 'hint-mode))
+                                        :fit-to-prompt
+                                        :default)
                             :sources
                             (make-instance
                              'hint-source
