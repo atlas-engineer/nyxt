@@ -50,7 +50,7 @@ Package prefix is optional.")
       (log:warn "Auto-rule: unknown mode symbol ~s" mode)))
   (:method ((mode list))
     (check-type mode (cons symbol *))
-    (when (rememberable-p (make-instance (class-of (first mode))))
+    (when (rememberable-p (make-instance (sera:class-name-of (first mode))))
       (make-instance 'mode-invocation
                      :name (sera:class-name-of (first mode))
                      :arguments (rest mode)))))
