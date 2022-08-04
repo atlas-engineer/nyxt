@@ -233,26 +233,24 @@ For instance, to include images:
 MULTI-SELECTION-P defines whether several elements can be chosen.
 PROMPT is a text to show while prompting for hinted elements.
 FUNCTION is the action to perform on the selected elements."
-  (alex:when-let* ((buffer (current-buffer))
-                   (result (prompt
-                            :prompt prompt
-                            ;; TODO: No need to find the symbol if we move this code (and
-                            ;; the rest) to the hint-mode package.
-                            :extra-modes (list (resolve-symbol :hint-prompt-buffer-mode :mode))
-                            :auto-return-p (auto-follow-hints-p (find-submode 'hint-mode))
-                            :history nil
-                            :height (if (fit-to-prompt-p (find-submode 'hint-mode))
-                                        :fit-to-prompt
-                                        :default)
-                            :sources
-                            (make-instance
-                             'hint-source
-                             :multi-selection-p multi-selection-p
-                             :constructor (lambda (source)
-                                            (declare (ignore source))
-                                            (add-hints :selector selector)))
-                            :after-destructor (lambda () (with-current-buffer buffer
-                                                      (remove-hints))))))
+  (alex:when-let*
+      ((buffer (current-buffer))
+       (result (prompt
+                :prompt prompt
+                ;; TODO: No need to find the symbol if we move this code (and
+                ;; the rest) to the hint-mode package.
+                :extra-modes (list (resolve-symbol :hint-prompt-buffer-mode :mode))
+                :auto-return-p (auto-follow-hints-p (find-submode 'hint-mode))
+                :history nil
+                :height (if (fit-to-prompt-p (find-submode 'hint-mode))
+                            :fit-to-prompt
+                            :default)
+                :hide-suggestion-count-p (fit-to-prompt-p (find-submode 'hint-mode))
+                :sources (make-instance 'hint-source
+                                        :multi-selection-p multi-selection-p
+                                        :constructor (lambda (source) (declare (ignore source))
+                                                       (add-hints :selector selector)))
+                :after-destructor (lambda () (with-current-buffer buffer (remove-hints))))))
     (funcall function result)))
 
 (defmethod prompter:object-attributes :around ((element plump:element) (source hint-source))
