@@ -109,9 +109,17 @@
 (export-always 'element-in-view-port-p)
 (defpsmacro element-in-view-port-p (element)
   "Is the element in the view port?"
-  `(let* ((rect (chain ,element (get-bounding-client-rect))))
+  `(let* ((rect (chain ,element (get-bounding-client-rect)))
+          (computed-style (chain window (get-computed-style ,element))))
      (if (and (>= (chain rect top) 0)
+              ;; a partially visible element is still visible
+              (<= (chain rect top) (- (chain window inner-height) 1))
               (>= (chain rect left) 0)
-              (<= (chain rect right) (chain window inner-width))
-              (<= (chain rect bottom) (chain window inner-height)))
+              ;; a partially visible element is still visible
+              (<= (chain rect left) (- (chain window inner-width) 1))
+              ;; some elements have top=bottom=left=right
+              (> (chain rect width) 3)
+              (> (chain rect height) 3)
+              (not (= (chain computed-style "visibility") "hidden"))
+              (not (= (chain computed-style "display") "none")))
          t nil)))
