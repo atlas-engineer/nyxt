@@ -125,8 +125,8 @@ return a new `suggestion', or nil if the `suggestion' is discarded.")
    (filter-preprocessor
     #'delete-inexact-matches
     :type (or null function function-symbol)
-    :documentation "Function called when input is modified, before filtering the
-suggestions.
+    :documentation "Function called when input is modified, before `filter'ing the
+`suggestion's.
 It is passed the following arguments:
 - a copy of `initial-suggestions';
 - the source;
@@ -135,8 +135,8 @@ It is passed the following arguments:
    (filter-postprocessor
     nil
     :type (or null function function-symbol)
-    :documentation "Function called when input is modified, after filtering the
-`suggestion's with `filter'.
+    :documentation "Function called when input is modified, after `filter'ing the
+`suggestion's.
 It is passed the following arguments:
 - the filtered suggestions;
 - the source;
