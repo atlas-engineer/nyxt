@@ -5,10 +5,11 @@
 
 (sera:eval-always
   (define-class prompt-buffer (network-buffer input-buffer modable-buffer prompter:prompter)
-    ((window nil
-             :type (or null window)
-             :export nil
-             :documentation "The window in which the prompt buffer is showing.")
+    ((window
+      nil
+      :type (or null window)
+      :export nil
+      :documentation "The window in which the prompt buffer is showing.")
      (height
       :default
       :type (or keyword integer)
@@ -28,108 +29,116 @@ The options are:
 new history for each new prompt buffer.  Here we set the history to be shared globally.")
      ;; TODO: Need a changed-callback?  Probably not, see `search-buffer'.  But
      ;; can we run the postprocessor without running the filter?
-     (invisible-input-p nil
-                        :documentation "Whether to replace input by a
-placeholder character.  This is useful to conceal passwords.")
-     (hide-suggestion-count-p nil
-                              :documentation "Whether to show the number of
-chosen suggestions inside brackets.")
-     (max-suggestions 0
-                      :export nil
-                      :documentation "Maximum number of total suggestions that were listed at some point.")
+     (invisible-input-p
+      nil
+      :documentation "Whether to replace input by a placeholder character.  This
+is useful to conceal passwords.")
+     (hide-suggestion-count-p
+      nil
+      :documentation "Whether to show the number of chosen suggestions inside
+brackets.")
+     (max-suggestions
+      0
+      :export nil
+      :documentation "Maximum number of total suggestions that were listed at
+some point.")
      ;; TODO: Need max-lines?
      ;; (max-lines 10
      ;;               :documentation "Max number of suggestion lines to show.
      ;; You will want edit this to match the changes done to `style'.")
-     (hide-single-source-header-p nil
-                                  :documentation "Hide source header when there is only one.")
-     (mouse-support-p t
-                      :type boolean
-                      :documentation "Whether to allow mouse events to set and return a selection over prompt
- buffer suggestions.")
-     (style (theme:themed-css (theme *browser*)
-              (*
-               :font-family "monospace,monospace"
-               :font-size "14px"
-               :line-height "18px")
-              (body
-               :overflow "hidden"
-               :margin "0"
-               :padding "0")
-              ("#prompt-area"
-               :background-color theme:primary
-               :color theme:on-primary
-               :display "grid"
-               :grid-template-columns "auto auto 1fr auto"
-               :width "100%")
-              ("#prompt"
-               :padding-left "10px"
-               :line-height "26px")
-              ("#prompt-extra"
-               :line-height "26px"
-               :padding-right "7px")
-              ("#prompt-modes"
-               :line-height "26px"
-               :padding-left "3px"
-               :padding-right "3px")
-              ("#input"
-               :background-color theme:background
-               :color theme:on-background
-               :opacity 0.9
-               :border "none"
-               :outline "none"
-               :padding "3px"
-               :width "100%"
-               :autofocus "true")
-              (".source"
-               :margin-left "10px"
-               :margin-top "15px")
-              (".source-glyph"
-               :margin-right "3px")
-              (".source-name"
-               :background-color theme:secondary
-               :color theme:on-secondary
-               :padding-left "5px"
-               :line-height "24px")
-              ("#suggestions"
-               :background-color theme:background
-               :color theme:on-background
-               :overflow-y "hidden"
-               :overflow-x "hidden"
-               :height "100%"
-               :width "100%")
-              (".source-content"
-               :background-color theme:background
-               :color theme:on-background
-               :margin-left "16px"
-               :width "100%"
-               :table-layout "fixed")
-              (".source-content td"
-               :white-space "nowrap"
-               :height "20px"
-               :overflow "auto")
-              (".source-content th"
-               :background-color theme:primary
-               :color theme:on-primary
-               :font-weight "normal"
-               :padding-left "3px"
-               :text-align "left")
-              (".source-content td::-webkit-scrollbar"
-               :display "none")
-              ("#selection"
-               :background-color theme:accent
-               :color theme:on-accent)
-              (.marked
-               :background-color theme:secondary
-               :color theme:on-secondary
-               :font-weight "bold")
-              (.selected
-               :background-color theme:primary
-               :color theme:on-primary))
-            :documentation "The CSS applied to a prompt-buffer when it is set-up.")
-     (override-map (make-keymap "override-map")
-                   :type keymaps:keymap
-                   :documentation "Keymap that takes precedence over all modes' keymaps.
+     (hide-single-source-header-p
+      nil
+      :documentation "Hide source header when there is only one.")
+     (mouse-support-p
+      t
+      :type boolean
+      :documentation "Whether to allow mouse events to set and return a
+selection over prompt buffer suggestions.")
+     (style
+      (theme:themed-css (theme *browser*)
+        (*
+         :font-family "monospace,monospace"
+         :font-size "14px"
+         :line-height "18px")
+        (body
+         :overflow "hidden"
+         :margin "0"
+         :padding "0")
+        ("#prompt-area"
+         :background-color theme:primary
+         :color theme:on-primary
+         :display "grid"
+         :grid-template-columns "auto auto 1fr auto"
+         :width "100%")
+        ("#prompt"
+         :padding-left "10px"
+         :line-height "26px")
+        ("#prompt-extra"
+         :line-height "26px"
+         :padding-right "7px")
+        ("#prompt-modes"
+         :line-height "26px"
+         :padding-left "3px"
+         :padding-right "3px")
+        ("#input"
+         :background-color theme:background
+         :color theme:on-background
+         :opacity 0.9
+         :border "none"
+         :outline "none"
+         :padding "3px"
+         :width "100%"
+         :autofocus "true")
+        (".source"
+         :margin-left "10px"
+         :margin-top "15px")
+        (".source-glyph"
+         :margin-right "3px")
+        (".source-name"
+         :background-color theme:secondary
+         :color theme:on-secondary
+         :padding-left "5px"
+         :line-height "24px")
+        ("#suggestions"
+         :background-color theme:background
+         :color theme:on-background
+         :overflow-y "hidden"
+         :overflow-x "hidden"
+         :height "100%"
+         :width "100%")
+        (".source-content"
+         :background-color theme:background
+         :color theme:on-background
+         :margin-left "16px"
+         :width "100%"
+         :table-layout "fixed")
+        (".source-content td"
+         :white-space "nowrap"
+         :height "20px"
+         :overflow "auto")
+        (".source-content th"
+         :background-color theme:primary
+         :color theme:on-primary
+         :font-weight "normal"
+         :padding-left "3px"
+         :text-align "left")
+        (".source-content td::-webkit-scrollbar"
+         :display "none")
+        ("#selection"
+         :background-color theme:accent
+         :color theme:on-accent)
+        (.marked
+         :background-color theme:secondary
+         :color theme:on-secondary
+         :font-weight "bold")
+        (.selected
+         :background-color theme:primary
+         :color theme:on-primary))
+      :documentation "The CSS applied to a prompt-buffer when it is set-up.")
+     (override-map
+      (make-keymap "override-map")
+      :type keymaps:keymap
+      :documentation "Keymap that takes precedence over all modes' keymaps.
 See `buffer's `override-map' for more details."))
     (:export-class-name-p t)
     (:export-accessor-names-p t)
