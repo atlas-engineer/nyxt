@@ -15,9 +15,10 @@
 If URL-STRING is a path to an existing file, return a `quri:uri-file' object.
 If the conversion fails, a `quri:uri' object is always returned."
   (or (ignore-errors
-       (if (uiop:file-exists-p url-string)
-           (quri.uri.file:make-uri-file :path url-string)
-           (quri:uri url-string)))
+       (sera:and-let* ((path (uiop:merge-pathnames* url-string (uiop:getcwd)))
+                       (exist-p (uiop:file-exists-p path)))
+         (quri.uri.file:make-uri-file :path path)))
+      (quri:uri url-string)
       (quri:uri "")))
 
 (defun strings->urls (url-strings)
