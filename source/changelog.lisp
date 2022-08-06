@@ -449,5 +449,7 @@ SLY install.")
   (:ul
    (:li "The version parsing (that features like " (:code "#+nyxt-3")
         " depend on) is more robust and pre-release-aware now.")
+   (:li "Opening files via a relative path (for instance, " (:code "buffer.html")
+        ") is now correctly processed to an absolute path.")
    (:li "Setting " (:code "restore-session-on-startup-p") "to nil no longer hangs the browser.")
    (:li "Fix buffer re-attachment from the deleted window.")))
