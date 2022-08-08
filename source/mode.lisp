@@ -475,6 +475,27 @@ mode permanently for this buffer."
     (enable-modes :modes modes-to-enable :buffers buffer))
   buffer)
 
+(define-command-global reload-with-modes (&optional (buffer (current-buffer)))
+  "Reload the buffer with the queried modes.
+This bypasses auto-rules.
+Auto-rules are re-applied once the page is reloaded."
+  (let* ((modes-to-enable (prompt
+                           :prompt "Mark modes to enable, unmark to disable"
+                           :sources (make-instance 'mode-source
+                                                   :marks (mapcar #'sera:class-name-of (modes (current-buffer))))))
+         (modes-to-disable (set-difference (all-mode-symbols) modes-to-enable
+                                           :test #'string=)))
+    (hooks:once-on (request-resource-hook buffer)
+        (request-data)
+      (setf (bypass-auto-rules-p (buffer request-data)) nil)
+      request-data)
+    (setf (bypass-auto-rules-p buffer) t)
+    (when modes-to-enable
+      (disable-modes :modes modes-to-disable :buffers buffer))
+    (when modes-to-disable
+      (enable-modes :modes (uiop:ensure-list modes-to-enable) :buffer buffer))
+    (reload-buffer buffer)))
+
 (export-always 'find-buffer)
 (defun find-buffer (mode-symbol)
   "Return first buffer matching MODE-SYMBOL."

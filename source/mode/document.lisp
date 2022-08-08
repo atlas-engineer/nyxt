@@ -549,33 +549,6 @@ of buffers."
   "Print the current buffer."
   (ps-eval (print)))
 
-;; FIXME: Better place for it? auto-mode is no more, after all...
-(define-command-global reload-with-modes (&optional (buffer (current-buffer)))
-  "Reload the buffer with the queried modes.
-This bypasses auto-rules.
-Auto-rules are re-applied once the page is reloaded."
-  (let* ((modes-to-enable (prompt
-                           :prompt "Mark modes to enable, unmark to disable"
-                           :sources (make-instance 'mode-source
-                                                   :marks (mapcar #'sera:class-name-of (modes (current-buffer))))))
-         (modes-to-disable (set-difference (nyxt::all-mode-symbols) modes-to-enable
-                                           :test #'string=)))
-    (hooks:add-hook (request-resource-hook buffer)
-                    (make-instance
-                     'hooks:handler
-                     :fn (lambda (request-data)
-                           (setf (bypass-auto-rules-p buffer) nil)
-                           (hooks:remove-hook (request-resource-hook buffer)
-                                              'auto-rules-reenable)
-                           request-data)
-                     :name 'auto-rules-reenable))
-    (setf (bypass-auto-rules-p buffer) t)
-    (when modes-to-enable
-      (disable-modes :modes modes-to-disable :buffers buffer))
-    (when modes-to-disable
-      (enable-modes :modes (uiop:ensure-list modes-to-enable) :buffer buffer))
-    (nyxt::reload-buffer buffer)))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Frame selection engine:
