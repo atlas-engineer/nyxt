@@ -978,12 +978,10 @@ See `finalize-buffer'."
           t))))
 
 (define-ffi-method on-signal-decide-policy ((buffer gtk-buffer) response-policy-decision policy-decision-type-response)
-  (let ((is-new-window nil) (is-known-type t) (event-type :other)
-        (navigation-action nil) (navigation-type nil)
-        (mouse-button nil) (modifiers ())
-        (url nil) (request nil) (response nil)
-        (method nil) (request-headers nil) (response-headers nil)
-        (file-name nil) (mime-type nil))
+  (let ((is-known-type t) (event-type :other) (modifiers ())
+        is-new-window navigation-action navigation-type
+        mouse-button url request mime-type method request-headers response-headers
+        file-name toplevel-p response)
     (match policy-decision-type-response
       (:webkit-policy-decision-type-navigation-action
        (setf navigation-type (webkit:webkit-navigation-policy-decision-navigation-type response-policy-decision)))
@@ -1026,10 +1024,13 @@ See `finalize-buffer'."
                              (let ((headers (webkit:webkit-uri-response-get-http-headers response)))
                                (unless (cffi:null-pointer-p headers)
                                  (webkit:soup-message-headers-get-headers headers)))))
-    ;; `toplevel-p'
-    (when (quri:uri=
-           url (quri:uri (webkit:webkit-web-view-uri
-                          (gtk-object buffer))))
+    (setf toplevel-p (quri:uri=
+                      url (quri:uri (webkit:webkit-web-view-uri
+                                     (gtk-object buffer)))))
+    (setf toplevel-p (quri:uri=
+                      url (quri:uri (webkit:webkit-web-view-uri
+                                     (gtk-object buffer)))))
+    (when toplevel-p
       (apply-auto-rules url buffer))
     (let* ((request-data
             (hooks:run-hook
@@ -1045,9 +1046,7 @@ See `finalize-buffer'."
                                               :http-method method
                                               :request-headers request-headers
                                               :response-headers response-headers
-                                              :toplevel-p (quri:uri=
-                                                           url (quri:uri (webkit:webkit-web-view-uri
-                                                                          (gtk-object buffer))))
+                                              :toplevel-p toplevel-p
                                               :mime-type mime-type
                                               :known-type-p is-known-type
                                               :file-name file-name)))
