@@ -33,6 +33,15 @@
        :background-color theme:accent
        :color theme:on-accent))
     :documentation "The style of highlighted boxes, e.g. link hints.")
+   (show-hint-scope-p
+    nil
+    :type boolean
+    :documentation "Whether the hinted element should display its visual scope.")
+   (hint-scope-style
+    (theme:themed-css (theme *browser*)
+      (".nyxt-element-hint"
+       :background-color theme:accent))
+    :documentation "The style of the hinted elements.")
    (hints-alphabet
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     :type string
@@ -88,7 +97,11 @@ For instance, to include images:
                  (insert-rule (ps:lisp (box-style (find-submode 'hint-mode))) 0))
        (ps:chain style-element
                  sheet
-                 (insert-rule (ps:lisp (highlighted-box-style (find-submode 'hint-mode))) 1)))
+                 (insert-rule (ps:lisp (highlighted-box-style (find-submode 'hint-mode))) 1))
+       (when (ps:lisp (show-hint-scope-p (find-submode 'hint-mode)))
+         (ps:chain style-element
+                   sheet
+                   (insert-rule (ps:lisp (hint-scope-style (find-submode 'hint-mode))) 2))))
      (:catch (error)))))
 
 (define-parenscript hint-elements (nyxt-identifiers hints)
@@ -114,8 +127,9 @@ For instance, to include images:
             (hint (aref hints i)))
         (when element
           (ps:chain element (set-attribute "nyxt-hint" hint))
-          (ps:let ((hint-element (hint-create-element element hint)))
-            (ps:chain fragment (append-child hint-element))))))
+          (ps:chain fragment (append-child (hint-create-element element hint))))))
+        (when (ps:lisp (show-hint-scope-p (find-submode 'hint-mode)))
+          (ps:chain element class-list (add "nyxt-element-hint")))))
     (ps:chain document body (append-child fragment))
     ;; Returning fragment makes WebKit choke.
     nil))
@@ -154,7 +168,10 @@ For instance, to include images:
   (defun hints-remove-all ()
     "Remove style from hinted elements."
     (ps:dolist (element (nyxt/ps:qsa document ":not(.nyxt-search-node) > .nyxt-hint"))
-      (ps:chain element (remove))))
+      (ps:chain element (remove)))
+    (when (ps:lisp (show-hint-scope-p (find-submode 'hint-mode)))
+      (ps:dolist (element (nyxt/ps:qsa document ".nyxt-element-hint"))
+        (ps:chain element class-list (remove "nyxt-element-hint")))))
   (hints-remove-all))
 
 (export-always 'identifier)
