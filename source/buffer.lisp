@@ -172,16 +172,16 @@ access the initialized buffer.")
    (apply-all-matching-auto-rules-p
     nil
     :type boolean
-    :documentation "Whether all the auto-rules matching the URL are applied to it.
+    :documentation "Whether all matching auto-rules should be applied to the URL.
 The default behavior is to only apply the most specific rule.")
    (bypass-auto-rules-p
     nil
     :type boolean
-    :documentation "Whether to bypass the auto-rules for the time being.")
+    :documentation "Whether to temporarily bypass the auto-rules.")
    (prompt-on-mode-toggle-p
     nil
     :type boolean
-    :documentation "Whether the user is asked to confirm adding the auto-rule with a toggled mode.")
+    :documentation "Whether the user is asked to confirm adding the auto-rule on mode toggling")
    (previous-url
     nil
     :type (or quri:uri null)
@@ -189,7 +189,7 @@ The default behavior is to only apply the most specific rule.")
 need to know if the auto-rule has been applied before to avoid re-applying
 a rule for a sequence of pages that match the same rule.
 
-We can'rely on the previous history entry because dead buffers and
+We can't rely on the previous history entry because dead buffers and
 session-restored buffers may have a history with a previous URL matching the
 same rule while obviously the rule has never been applied for the new-born
 buffer.")
@@ -240,6 +240,8 @@ of BUFFER."
   (enable-modes :modes (append (reverse (default-modes buffer))
                                (uiop:ensure-list extra-modes))
                 :buffers buffer
+                ;; XXX: We don't want to trigger auto-rules when enabling
+                ;; extra-modes, don't we?
                 :bypass-auto-rules-p t)
   (unless no-hook-p
     (hooks:run-hook (buffer-after-make-hook browser) buffer)))
