@@ -31,7 +31,8 @@
     (execute password-interface (list "clip"
                                       (password-file password-interface)
                                       password-name)
-      :input st)))
+      :input st
+      :async t)))
 
 (defmethod clip-username ((password-interface keepassxc-interface) &key password-name service)
   (declare (ignore service))
@@ -40,7 +41,8 @@
                                       "--attribute" "username"
                                       (password-file password-interface)
                                       password-name)
-             :input st)))
+             :input st
+             :async t)))
 
 (defmethod save-password ((password-interface keepassxc-interface)
                           &key password-name username password service)

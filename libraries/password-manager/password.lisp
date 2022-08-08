@@ -41,8 +41,19 @@ If PASSWORD-NAME is empty, then generate a new password."))
     password-interface)
   (:documentation "Return the PASSWORD-INTERFACE with all the misfilled fields corrected."))
 
-(defmacro execute (interface arguments &body body)
-  `(uiop:run-program (append (list (executable ,interface)) ,arguments) ,@body))
+(defmacro execute (interface arguments &rest run-program-args &key async &allow-other-keys)
+  "Execute the command matching the INTERFACE, with ARGS.
+
+`uiop:run-program' is used underneath, with RUN-PROGRAM-ARGS being its
+arguments.
+
+When the ASYNC keyword argument is provided, `uiop:launch-program' is used
+instead of `uiop:run-program'."
+  `(,(if async
+         'uiop:launch-program
+         'uiop:run-program)
+    (append (list (executable ,interface)) ,arguments)
+    ,@(alexandria:remove-from-plist run-program-args :async)))
 
 (defun safe-clipboard-text ()
   "Return clipboard content, or \"\" if the content is not textual."
