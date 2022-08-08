@@ -184,6 +184,7 @@ The default behavior is to only apply the most specific rule.")
     :documentation "Whether the user is asked to confirm adding the auto-rule on mode toggling")
    (previous-url
     nil
+    :export nil
     :type (or quri:uri null)
     :documentation "The last URL for which auto-rules were applied.  We
 need to know if the auto-rule has been applied before to avoid re-applying
@@ -195,11 +196,13 @@ same rule while obviously the rule has never been applied for the new-born
 buffer.")
    (last-active-modes-url
     nil
+    :export nil
     :type (or quri:uri null)
     :documentation "The last URL that the active modes were saved for.  We need
 to store this to not overwrite the `last-active-modes' for a given URL if it's being reloaded.")
    (last-active-modes
     '()
+    :export nil
     :type (or (cons mode-invocation *) null)
     :documentation "The list of `mode-invocation's that were enabled on the last
 URL not covered by `auto-mode'.  This is useful when alternative between
