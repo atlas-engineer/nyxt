@@ -456,23 +456,24 @@ If it's a single buffer, return it directly (not as a list)."
 
 (define-command toggle-modes (&key (buffer (current-buffer)))
   "Enable marked modes, disable unmarked modes for BUFFER."
-  (let* ((modes-to-enable
+  (let* ((bypass-auto-rules-p nil)
+         (modes-to-enable
            (prompt
             :prompt "Mark modes to enable, unmark to disable"
             :sources (make-instance
                       'mode-source
                       :return-actions (list 'identity
-                                            (lambda-command force-disable-auto-mode (modes)
-                                              "Return selection but force disabling auto-mode.
-This is convenient when you use auto-mode by default and you want to toggle a
+                                            (lambda-command force-disable-auto-rules (modes)
+                                              "Return selection but force disabling auto-rules.
+This is convenient when you use auto-rules by default and you want to toggle a
 mode permanently for this buffer."
-                                              (delete (read-from-string "nyxt/auto-mode:auto-mode")
-                                                      modes)))
+                                                            (setf bypass-auto-rules-p t)
+                                                            modes))
                       :marks (mapcar #'sera:class-name-of (modes buffer)))))
          (modes-to-disable (set-difference (all-mode-symbols) modes-to-enable
                                            :test #'string=)))
-    (disable-modes :modes modes-to-disable :buffers buffer)
-    (enable-modes :modes modes-to-enable :buffers buffer))
+    (disable-modes :modes modes-to-disable :buffers buffer :bypass-auto-rules-p bypass-auto-rules-p)
+    (enable-modes :modes modes-to-enable :buffers buffer :bypass-auto-rules-p bypass-auto-rules-p))
   buffer)
 
 (define-command-global reload-with-modes (&optional (buffer (current-buffer)))
