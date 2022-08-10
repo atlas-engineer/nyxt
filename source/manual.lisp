@@ -312,14 +312,14 @@ internal schemes do.")
                 " is your best friend, but no one restricts you from producing HTML in any other
 way, including simply writing it by hand ;)")
            (:li (:code "nyxt/ps:lisp-eval")
-                " is a Parenscript macro to request Nyxt run arbitrary code. The signature is: "
+                " is a Parenscript macro to request Nyxt to run arbitrary code. The signature is: "
                 (:code "((&key (buffer '(nyxt:current-buffer)) title callback) &body form)")
                 ". You can bind it to a " (:code "<button>") "'s " (:code "onClick")
                 " event, for example."))
           (:p "If you're making an extension, you might find other macros more useful. "
               (:nxref :function 'define-internal-page-command)
-              ", for example, defines a command to only be visible when in the mode you define
-it in the package of. Useful to separate the context-specific commands from the
+              ", for example, defines a command to only be visible when in the corresponding mode
+is enabled. Useful to separate the context-specific commands from the
 universally useful (" (:code "-global")
               ") ones. If there's a page that you'd rather not have a command for, you can
 still define it as:")
@@ -331,7 +331,7 @@ still define it as:")
  (buffer-load (nyxt-url 'not-a-command)
               :buffer (ensure-internal-page-buffer 'not-a-command)))"))
           (:p "See the slots and documentation of " (:nxref :class-name 'internal-page)
-              " to understand what you can pass to the "
+              " to understand what you can pass to "
               (:nxref :function 'define-internal-page) ".")))
 
       (:nsection :title "Hooks"
