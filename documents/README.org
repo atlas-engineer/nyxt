@@ -33,7 +33,6 @@
   - [[#interacting-with-a-compiled-version-of-nyxt][Interacting with a compiled version of Nyxt]]
     - [[#slime][SLIME]]
     - [[#slyslynk][SLY/SLYNK]]
-      - [[#quicklisp-setup][Quicklisp Setup]]
       - [[#non-quicklisp-setup][Non-Quicklisp Setup]]
   - [[#adding-a-new-lisp-dependency][Adding a new Lisp dependency]]
 - [[#help--community][Help & Community]]
