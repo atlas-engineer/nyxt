@@ -613,7 +613,7 @@ When =slot-value= is the only parameter specified then:
   triggers the debugger with a full stacktrace; when running the Nyxt binary,
   all conditions are caught anyway.
 - Do not handle the =T= condition, this may break everything.  Handle =error= or
-  exceptionally =condition= (for instance if do not control the called code, and
+  exceptionally =condition= (for instance if you do not control the called code, and
   some libraries subclass =condition= instead of =error=).
 - Dummy variables are called =_=.
 
