@@ -106,7 +106,7 @@ In a later file, when you've defined `gtk-browser':
    (around (:around))
    (after (:after))
    (primary ()))
-  "Cascade to all the parent methods after the child one.
+  "Cascade upwards in the hierarchy from the child to all parent methods.
 Allows for composed object constructors/destructors, for instance."
   ;; TODO: Allow cascading down to children instead?
   (flet ((call-methods (methods)

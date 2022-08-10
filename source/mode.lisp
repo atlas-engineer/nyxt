@@ -52,7 +52,7 @@
     :documentation "Whether the mode is visible in the status line.")
    (rememberable-p
     t
-    :documentation "Whether this mode is visible to `auto-mode'.")
+    :documentation "Whether this mode is visible to auto-rules.")
    (enabled-p
     nil
     :accessor t

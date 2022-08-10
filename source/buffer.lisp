@@ -205,8 +205,8 @@ to store this to not overwrite the `last-active-modes' for a given URL if it's b
     :export nil
     :type (or (cons mode-invocation *) null)
     :documentation "The list of `mode-invocation's that were enabled on the last
-URL not covered by `auto-mode'.  This is useful when alternative between
-rule-less and ruled pages.  Example browsing sequence:
+URL not covered by auto-rules.  This is useful when alternating between URLs for
+which auto-rules are enabled or disabled.  Example browsing sequence:
 
 - https://example.org (no-script-mode no-image-mode) ; No rule.
 - https://nyxt.atlas.engineer (dark-mode) ; Rule
