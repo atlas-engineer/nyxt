@@ -35,12 +35,12 @@
     (unless (nyxt/ps:qs document "#nyxt-stylesheet")
       (ps:try
        (ps:let* ((style-element (ps:chain document (create-element "style")))
-                 (box-style (ps:lisp (nyxt/hint-mode:box-style (find-submode 'search-buffer-mode))))
-                 (highlighted-style (ps:lisp (nyxt/hint-mode:highlighted-box-style (find-submode 'search-buffer-mode)))))
+                 (style (ps:lisp (nyxt/hint-mode::style (find-submode 'search-buffer-mode))))
+                 (selection-style (ps:lisp (nyxt/hint-mode::selection-style (find-submode 'search-buffer-mode)))))
          (setf (ps:@ style-element id) "nyxt-stylesheet")
          (ps:chain document head (append-child style-element))
-         (ps:chain style-element sheet (insert-rule box-style 0))
-         (ps:chain style-element sheet (insert-rule highlighted-style 1)))
+         (ps:chain style-element sheet (insert-rule style 0))
+         (ps:chain style-element sheet (insert-rule selection-style 1)))
        (:catch (error)))))
 
   (defun create-match-object (body identifier)

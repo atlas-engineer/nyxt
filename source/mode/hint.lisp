@@ -17,7 +17,7 @@
     nil
     :type boolean
     :documentation "Whether the hinting prompt buffer is collapsed to the input line.")
-   (box-style
+   (style
     (theme:themed-css (theme *browser*)
       (".nyxt-hint"
        :background-color theme:primary
@@ -26,13 +26,13 @@
        :padding "0px 0.3em"
        :border-radius "0.3em"
        :z-index #.(1- (expt 2 31))))
-    :documentation "The style of the boxes, e.g. link hints.")
-   (highlighted-box-style
+    :documentation "The style of the hint overlays.")
+   (selection-style
     (theme:themed-css (theme *browser*)
       (".nyxt-hint.nyxt-highlight-hint"
        :background-color theme:accent
        :color theme:on-accent))
-    :documentation "The style of highlighted boxes, e.g. link hints.")
+    :documentation "The style of selected hints.")
    (show-hint-scope-p
     nil
     :type boolean
@@ -97,10 +97,10 @@ For instance, to include images:
        (ps:chain document head (append-child style-element))
        (ps:chain style-element
                  sheet
-                 (insert-rule (ps:lisp (box-style (find-submode 'hint-mode))) 0))
+                 (insert-rule (ps:lisp (style (find-submode 'hint-mode))) 0))
        (ps:chain style-element
                  sheet
-                 (insert-rule (ps:lisp (highlighted-box-style (find-submode 'hint-mode))) 1))
+                 (insert-rule (ps:lisp (selection-style (find-submode 'hint-mode))) 1))
        (when (ps:lisp (show-hint-scope-p (find-submode 'hint-mode)))
          (ps:chain style-element
                    sheet
