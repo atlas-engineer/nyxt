@@ -2,7 +2,24 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/dom
-  (:documentation "Nyxt-specific DOM classes and functions operating on them."))
+  (:documentation "Nyxt-specific DOM classes and functions operating on them.
+
+The classes are generated for every HTML element, including `h1-element',
+`div-element', `img-element' and others.
+
+Classes corresponding to non-HTML elements, such as `text-element',
+`semantic-element', or `h-element', act as higher hierarchical entities of
+element classes.  For instance, every `h<n>-element' inherits from `h-element'.
+
+The most useful functions are:
+- `named-html-parse' and `named-json-parse' to turn HTML and JSON documents into
+  a representation of type `plump:root', converting elements into its matching
+  classes.
+- `parents', `url' and `body' to access element-specific features in a unified
+  fashion.
+- `click-element', `focus-select-element', `select-option-element' and others to
+  interact with the page using `nyxt/dom' elements as representations of the
+  actual DOM elements."))
 (in-package :nyxt/dom)
 
 ;; TODO: Factor out into a library?
@@ -301,38 +318,69 @@ Return two values:
   (when (plump:has-attribute img "alt")
     (plump:get-attribute img "alt")))
 
+(export-always 'get-nyxt-id)
+(defmethod get-nyxt-id ((element plump:element))
+  (plump:get-attribute element "nyxt-identifier"))
+
 (export-always 'click-element)
-(define-parenscript click-element (&key nyxt-identifier)
-  (ps:chain (nyxt/ps:qs-nyxt-id document nyxt-identifier) (click)))
+(define-parenscript click-element (element)
+  (ps:chain (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element))) (click)))
 
 (export-always 'focus-select-element)
-(define-parenscript focus-select-element (&key nyxt-identifier)
-  (ps:chain (nyxt/ps:qs-nyxt-id document nyxt-identifier) (focus))
-  (when (functionp (ps:chain (nyxt/ps:qs-nyxt-id document nyxt-identifier) select))
-    (ps:chain (nyxt/ps:qs-nyxt-id document nyxt-identifier) (select))))
+(define-parenscript focus-select-element (element)
+  (let ((element (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element)))))
+    (unless (nyxt/ps:element-in-view-port-p element)
+      (ps:chain element (scroll-into-view)))
+    (ps:chain element (focus))
+    (when (functionp (ps:chain element select))
+      (ps:chain element (select)))))
 
 (export-always 'check-element)
-(define-parenscript check-element (&key nyxt-identifier (value t))
-  (ps:chain (nyxt/ps:qs-nyxt-id document nyxt-identifier)
-            (set-attribute "checked" (ps:lisp value))))
+(define-parenscript check-element (element &key (value t))
+  (let ((element (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element)))))
+    (unless (nyxt/ps:element-in-view-port-p element)
+      (ps:chain element (scroll-into-view)))
+    (ps:chain element (set-attribute "checked" (ps:lisp value)))))
 
 (export-always 'toggle-details-element)
-(define-parenscript toggle-details-element (&key nyxt-identifier)
-  (ps:let ((element (nyxt/ps:qs-nyxt-id document nyxt-identifier)))
+(define-parenscript toggle-details-element (element)
+  (ps:let ((element (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element)))))
+    (unless (nyxt/ps:element-in-view-port-p element)
+      (ps:chain element (scroll-into-view)))
     (if (ps:chain element (get-attribute "open"))
         (ps:chain element (remove-attribute "open"))
         (ps:chain element (set-attribute "open" t)))))
 
 (export-always 'select-option-element)
-(define-parenscript select-option-element (&key nyxt-identifier parent-select-identifier)
-  (ps:let* ((element (nyxt/ps:qs-nyxt-id document nyxt-identifier))
-            (parent-select (nyxt/ps:qs-nyxt-id document parent-select-identifier)))
+(define-parenscript select-option-element (element parent)
+  (ps:let* ((element (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element))))
+            (parent-select (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id parent)))))
+    (unless (nyxt/ps:element-in-view-port-p element)
+      (ps:chain element (scroll-into-view)))
     (if (ps:chain element (get-attribute "multiple"))
         (ps:chain element (set-attribute "selected" t))
         (setf (ps:@ parent-select value) (ps:@ element value)))))
 
 (export-always 'hover-element)
-(define-parenscript hover-element (&key nyxt-identifier)
-  (ps:let ((element (nyxt/ps:qs-nyxt-id document nyxt-identifier))
+(define-parenscript hover-element (element)
+  (ps:let ((element (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element))))
            (event (ps:new (*Event "mouseenter"))))
+    (unless (nyxt/ps:element-in-view-port-p element)
+      (ps:chain element (scroll-into-view)))
     (ps:chain element (dispatch-event event))))
+
+(export-always 'scroll-to-element)
+(define-parenscript scroll-to-element (element)
+  (ps:chain (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element)))
+            (scroll-into-view)))
+
+(export-always 'set-caret-on-start)
+(define-parenscript set-caret-on-start (element)
+  (let ((el (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element))))
+        (range (ps:chain document (create-range)))
+        (sel (ps:chain #:window (get-selection))))
+    (ps:chain #:window (focus))
+    (ps:chain range (set-start (ps:@ el child-nodes 0) 0))
+    (ps:chain range (collapse true))
+    (ps:chain sel (remove-all-ranges))
+    (ps:chain sel (add-range range))))

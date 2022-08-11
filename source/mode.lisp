@@ -67,9 +67,9 @@ The handlers take the mode as argument.")
     :type hook-mode
     :documentation "Hook run when disabling the mode, before the destructor.
 The handlers take the mode as argument.")
-   (keymap-scheme
+   (keyscheme-map
     (make-hash-table :size 0)
-    :type keymap:scheme))
+    :type keymaps:keyscheme))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
@@ -78,7 +78,7 @@ The handlers take the mode as argument.")
   (:metaclass mode-class))
 
 (defmethod initialize-instance :after ((mode mode) &key)
-  (when (eq 'mode (type-of mode))
+  (when (eq 'mode (sera:class-name-of mode))
     (error "Cannot initialize `mode', you must subclass it.")))
 
 (defmethod name ((mode mode))
@@ -109,7 +109,9 @@ See also `disable'."))
   (hooks:run-hook (enable-hook mode) mode)
   (let ((buffer (buffer mode)))
     ;; TODO: Should we move mode to the front on re-enable?
-    (pushnew mode (slot-value (buffer mode) 'modes))
+    (unless (find mode (slot-value buffer 'modes))
+      (setf (modes buffer)
+            (cons mode (slot-value buffer 'modes))))
     (hooks:run-hook (enable-mode-hook buffer) mode)
     (when (and (prompt-buffer-p buffer)
                (eq (first (active-prompt-buffers (window buffer)))
@@ -446,12 +448,12 @@ mode permanently for this buffer."
 
 (export-always 'keymap)
 (defmethod keymap ((mode mode))
-  "Return the keymap of MODE according to its buffer keymap scheme.
+  "Return the keymap of MODE according to its buffer `keyscheme-map'.
 If there is no corresponding keymap, return nil."
-  (keymap:get-keymap (if (buffer mode)
-                         (keymap-scheme-name (buffer mode))
-                         scheme:cua)
-                     (keymap-scheme mode)))
+  (keymaps:get-keymap (if (buffer mode)
+                          (keyscheme (buffer mode))
+                          keyscheme:cua)
+                      (keyscheme-map mode)))
 
 (defmethod on-signal-notify-uri ((mode mode) url)
   url)
@@ -488,6 +490,6 @@ If there is no corresponding keymap, return nil."
 
 (defmethod s-serialization:serializable-slots ((object mode))
   "Discard keymaps which can be quite verbose."
-  (delete 'keymap-scheme
+  (delete 'keyscheme-map
           (mapcar #'closer-mop:slot-definition-name
                   (closer-mop:class-slots (class-of object)))))

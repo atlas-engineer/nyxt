@@ -150,10 +150,6 @@
 	path = _build/proc-parse
 	url = https://github.com/fukamachi/proc-parse
 	shallow = true
-[submodule "_build/prove"]
-	path = _build/prove
-	url = https://github.com/fukamachi/prove
-	shallow = true
 [submodule "_build/cl-ansi-text"]
 	path = _build/cl-ansi-text
 	url = https://github.com/pnathan/cl-ansi-text
@@ -553,7 +549,7 @@
 [submodule "_build/phos"]
 	path = _build/phos
 	url = https://github.com/omar-polo/phos
-    shallow = true
+	shallow = true
 [submodule "_build/cl-tld"]
 	path = _build/cl-tld
 	url = https://github.com/lu4nx/cl-tld
@@ -561,4 +557,36 @@
 [submodule "_build/nfiles"]
 	path = _build/nfiles
 	url = https://github.com/atlas-engineer/nfiles
+	shallow = true
+[submodule "_build/nkeymaps"]
+	path = _build/nkeymaps
+	url = https://github.com/atlas-engineer/nkeymaps
+	shallow = true
+[submodule "_build/sly"]
+	path = _build/sly
+	url = https://github.com/joaotavora/sly
+	shallow = true
+[submodule "_build/py-configparser"]
+	path = _build/py-configparser
+	url = https://gitlab.common-lisp.net/nyxt/py-configparser
+	shallow = true
+[submodule "_build/dissect"]
+	path = _build/dissect
+	url = https://github.com/Shinmera/dissect
+	shallow = true
+[submodule "_build/trivial-custom-debugger"]
+	path = _build/trivial-custom-debugger
+	url = https://github.com/phoe/trivial-custom-debugger
+	shallow = true
+[submodule "_build/ndebug"]
+	path = _build/ndebug
+	url = https://github.com/atlas-engineer/ndebug
+	shallow = true
+[submodule "_build/lisp-unit2"]
+	path = _build/lisp-unit2
+	url = https://github.com/AccelerationNet/lisp-unit2
+	shallow = true
+[submodule "_build/ospm"]
+	path = _build/ospm
+	url = https://github.com/atlas-engineer/ospm
 	shallow = true

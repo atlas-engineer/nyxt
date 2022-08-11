@@ -7,11 +7,12 @@
 
 ;; TODO: Add style to loop help page?
 (defun https->http-loop-help (buffer url) ; TODO: Factor with tls-help?
-  "This function is invoked upon TLS certificate errors to give users
+  "This function is invoked upon HTTPS->HTTP->HTTPS loops to give users
 help on how to proceed."
   (setf (nyxt::status buffer) :failed)
   (nyxt::html-set
    (spinneret:with-html-string
+     (:style (style buffer))
      (:h1 (format nil "HTTPS → HTTP loop: ~a" (render-url url)))
      (:p "The HTTPS address you are trying to visit redirects to HTTP while the "
          (:code "force-https-mode") " is on.")

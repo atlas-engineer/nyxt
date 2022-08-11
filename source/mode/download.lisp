@@ -146,7 +146,7 @@ appearance in the buffer when they are setf'd."
              :height "20px"
              :width "100%")
             (".progress-bar-base"
-             :background-color theme:secondary
+             :background-color theme:primary
              :height "100%")
             (".progress-bar-fill"
              :background-color theme:secondary

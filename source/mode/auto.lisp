@@ -103,10 +103,10 @@ These modes will then be activated on every visit to this domain/host/URL."
    (auto-mode-rules-file
     (make-instance 'auto-mode-rules-file)
     :type auto-mode-rules-file
-    :documentation "The file where the auto-mode rules are saved.")
-   (keymap-scheme
-    (define-scheme "auto-mode"
-      scheme:cua
+    :documentation "File where the auto-mode rules are saved.")
+   (keyscheme-map
+    (define-keyscheme-map "auto-mode" ()
+      keyscheme:default
       (list
        "C-R" 'reload-with-modes)))
    (prompt-on-mode-toggle
@@ -164,11 +164,11 @@ restored.")))
 
 (-> enable-matching-modes (quri:uri buffer) *)
 (defun enable-matching-modes (url buffer)
-  (let ((rule (matching-auto-mode-rule url buffer)))
+  (alex:when-let ((rule (matching-auto-mode-rule url buffer)))
     (dolist (mode-invocation (set-difference
-                               (included rule)
-                               (rememberable-of (modes buffer))
-                               :test #'equals))
+                              (included rule)
+                              (rememberable-of (modes buffer))
+                              :test #'equals))
       (check-type mode-invocation mode-invocation)
       (enable-modes (list (name mode-invocation)) buffer (arguments mode-invocation)))
     (alex:when-let ((modes (mapcar #'name
@@ -227,7 +227,7 @@ The rules are:
                       (let ((url (prompt1
                                    :prompt "URL"
                                    :input (render-url (url (buffer mode)))
-                                   :sources (make-instance 'prompter:raw-source))))
+                                   :sources 'prompter:raw-source)))
                         (add-modes-to-auto-mode-rules (url-infer-match url)
                                                       :append-p t
                                                       :include (when enable-p (list invocation))
@@ -259,6 +259,7 @@ The rules are:
   (unless (last-active-modes mode)
     (setf (last-active-modes mode)
           (mode-invocations (default-modes (buffer mode)))))
+  (enable-matching-modes (url (buffer mode)) (buffer mode))
   (when (prompt-on-mode-toggle mode)
     (hooks:add-hook (enable-mode-hook (buffer mode))
                     (make-instance 'hooks:handler
@@ -276,7 +277,8 @@ The rules are:
   (hooks:remove-hook (enable-mode-hook (buffer mode))
                      'enable-mode-auto-mode-handler)
   (hooks:remove-hook (disable-mode-hook (buffer mode))
-                     'disable-mode-auto-mode-handler))
+                     'disable-mode-auto-mode-handler)
+  (reapply-last-active-modes mode))
 
 (-> mode-covered-by-auto-mode-p
     (mode auto-mode boolean)
@@ -389,7 +391,7 @@ Auto-mode is re-enabled once the page is reloaded."
       (disable-modes (uiop:ensure-list modes-to-disable) buffer))
     (when modes-to-disable
       (enable-modes (uiop:ensure-list modes-to-enable) buffer))
-    (nyxt::reload-buffers (list buffer))))
+    (nyxt::reload-buffer buffer)))
 
 (-> add-modes-to-auto-mode-rules
     (list &key
@@ -493,7 +495,8 @@ Auto-mode is re-enabled once the page is reloaded."
     (echo "Saved ~a auto-mode rules to ~s." (length rules) (files:expand file))))
 
 (defmethod files:deserialize ((profile nyxt-profile) (file auto-mode-rules-file) raw-content &key)
-  (let ((rules (safe-read raw-content)))
+  (let ((*package* (find-package :nyxt))
+        (rules (safe-read raw-content)))
     (mapcar #'(lambda (rule)
                 (let ((rule (append '(:test) rule)))
                   (setf (getf rule :included) (mode-invocations (getf rule :included))

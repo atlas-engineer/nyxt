@@ -4,21 +4,21 @@
 (in-package :prompter)
 
 (define-class sync-queue ()
-  ((ready-sources '()
-                  :type list
-                  :export nil
-                  :documentation
-                  "List of ready sources.")
-   (ready-channel (make-channel nil)
-                  :type calispel:channel
-                  :export nil
-                  :documentation
-                  "Communication channel with the `update' thread.")
-   (sync-interrupt-channel (make-channel)
-                           :type calispel:channel
-                           :export nil
-                           :documentation
-                           "This channel can be used to stop the queue listening."))
+  ((ready-sources
+    '()
+    :type list
+    :export nil
+    :documentation "List of ready sources.")
+   (ready-channel
+    (make-channel nil)
+    :type calispel:channel
+    :export nil
+    :documentation "Communication channel with the `update' thread.")
+   (sync-interrupt-channel
+    (make-channel)
+    :type calispel:channel
+    :export nil
+    :documentation "This channel can be used to stop the queue listening."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "This object is used to memorize which sources are ready for a
 given input.
@@ -35,86 +35,90 @@ A new object is created on every new input."))
 ;; Same as `source' as to why we wrap in `eval-always'.
 (sera:eval-always
   (define-class prompter ()
-    ((input ""
-            :accessor nil
-            :reader input
-            :documentation
-            "User input.")
+    ((input
+      ""
+      :accessor nil
+      :reader input
+      :documentation "User input.")
 
-     (prompt ""
-             :documentation
-             "Prefix to the user input.")
+     (prompt
+      ""
+      :documentation "Prefix to the user input.")
 
-     (sources '()
-              :type (or null source (cons source))
-              :documentation "List of `source's.
+     (sources
+      '()
+      :type (or null source (cons source))
+      :documentation "List of `source's.
 For convenience, if the initarg is a single source (that is, not inside a list),
 it is automatically wrapped into a list upon initialization.
 If the source is designated by a symbol, then it is automatically instantiated
 with `make-instance'.")
 
-     (selection '()
-                ;; TODO: Index by (source-index suggestion-index) instead?
-                ;; TODO: Use structure?
-                :type list
-                :export nil
-                :reader selection
-                :documentation "A pair of source and suggestion index.")
+     (selection
+      '()
+      ;; TODO: Index by (source-index suggestion-index) instead?
+      ;; TODO: Use structure?
+      :type list
+      :export nil
+      :reader selection
+      :documentation "A pair of source and suggestion index.")
 
-     (constructor nil
-                  :type (or null function)
-                  :documentation
-                  "Function called with the prompter as argument.")
+     (constructor
+      nil
+      :type (or null function)
+      :documentation "Function called with the prompter as argument.")
 
-     (before-destructor nil
-                        :type (or null function)
-                        :documentation
-                        "First function called with no parameters when calling the
+     (before-destructor
+      nil
+      :type (or null function)
+      :documentation "First function called with no parameters when calling the
 `destroy' function over this prompter.
 It's called before the sources are cleaned up.")
 
-     (after-destructor nil
-                       :type (or null function)
-                       :documentation
-                       "Last function called with no parameters when calling the
+     (after-destructor
+      nil
+      :type (or null function)
+      :documentation "Last function called with no parameters when calling the
 `destroy' function over this prompter.
 It's called after the sources are cleaned up.
 
 Note that the function is executed *before* performing a return-action.")
 
-     (auto-return-p nil
-                    :type boolean
-                    :documentation
-                    "Automatically return and run the default `return-action'
+     (auto-return-p
+      nil
+      :type boolean
+      :documentation "Whether the default `return-action' automatically runs
 when the suggestions are narrowed down to just one item.")
 
-     (history (make-history)
-              :type (or containers:ring-buffer-reverse null)
-              :documentation
-              "History of inputs for the prompter.
+     (history
+      (make-history)
+      :type (or containers:ring-buffer-reverse null)
+      :documentation
+      "History of inputs for the prompter.
 If nil, no history is used.")
 
-     (result-channel (make-channel 1)
-                     :type calispel:channel
-                     :documentation
-                     "Channel to which the selection is sent on exit.
+     (result-channel
+      (make-channel 1)
+      :type calispel:channel
+      :documentation "Channel to which the selection is sent on exit.
 Caller should also listen to `interrupt-channel' to know if the prompter was cancelled.")
 
-     (interrupt-channel (make-channel 1)
-                        :type calispel:channel
-                        :documentation
-                        "Channel to which an arbitrary value is written on exit.
+     (interrupt-channel
+      (make-channel 1)
+      :type calispel:channel
+      :documentation "Channel to which an arbitrary value is written on exit.
 See also `result-channel'.")
 
-     (sync-queue nil
-                 :type (or null sync-queue)
-                 :export nil
-                 :documentation "See `sync-queue' class documentation.")
+     (sync-queue
+      nil
+      :type (or null sync-queue)
+      :export nil
+      :documentation "See `sync-queue' class documentation.")
 
-     (returned-p nil
-                 :type boolean
-                 :documentation
-                 "Whether the prompter has been cancelled."))
+     (returned-p
+      nil
+      :type boolean
+      :documentation "Whether the prompter has been cancelled."))
     (:export-class-name-p t)
     (:export-accessor-names-p t)
     (:accessor-name-transformer (class*:make-name-transformer name))

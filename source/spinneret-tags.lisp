@@ -15,11 +15,50 @@
 (deftag :nscript (body attrs &key &allow-other-keys)
   `(:script ,@attrs (:raw ,@body)))
 
-(spinneret:deftag :nxref (symbol attr &key &allow-other-keys)
-  `(:a :href (nyxt:javascript-url
-              (ps:ps (nyxt/ps:lisp-eval
-                      (:title "describe-any")
-                      ;; Not defined yet:
-                      (funcall (nyxt:resolve-symbol :describe-any :function)
-                               (princ-to-string ,@symbol)))))
-       (:code ,@attr ,@symbol)))
+(deftag :nxref (body attr &key slot class-name function command variable package &allow-other-keys)
+  (let ((symbol (or package variable function command slot class-name))
+        (printable (or (first body) package variable function command slot class-name)))
+    `(:a :href ,(cond
+                  (package `(nyxt:nyxt-url (read-from-string "nyxt:describe-package") :package ,package))
+                  (variable `(nyxt:nyxt-url (read-from-string "nyxt:describe-variable")
+                                            :universal t :variable ,variable))
+                  (function `(nyxt:nyxt-url (read-from-string "nyxt:describe-function")
+                                            :universal t :fn ,function))
+                  (command `(nyxt:nyxt-url (read-from-string "nyxt:describe-command")
+                                           :universal t :command ,command))
+                  (slot `(nyxt:nyxt-url (read-from-string "nyxt:describe-slot")
+                                        :universal t :name ,slot :class ,class-name))
+                  (class-name `(nyxt:nyxt-url (read-from-string "nyxt:describe-class")
+                                              :universal t :class ,class-name))
+                  (t `(nyxt:javascript-url
+                       (ps:ps (nyxt/ps:lisp-eval
+                               (:title "describe-any")
+                               ;; Not defined yet:
+                               (funcall (nyxt:resolve-symbol :describe-any :function)
+                                        (princ-to-string ,symbol)))))))
+         ;; TODO: Add :title so that documentation is available on hover.
+         ;; TODO: Add keybindings for commands, like in `nyxt::command-markup'.
+         ,@(when (and (getf attr :class)
+                      (or (getf attr :slot)
+                          (every #'null (list slot class-name function command variable package))))
+             (error ":class attribute used ambiguously in :nxref tag. Use :class-name instead.")
+             nil)
+         (:code ,@(progn
+                    (remf attr :class-name)
+                    (remf attr :slot)
+                    (remf attr :function)
+                    (remf attr :command)
+                    (remf attr :variable)
+                    (remf attr :package)
+                    attr)
+                (let ((*print-case* :downcase))
+                  (format nil "~a" ,printable))))))
+
+(deftag :nsection (body attrs &key (title (alexandria:required-argument 'title))
+                                   (id (str:remove-punctuation (str:downcase title)
+                                                               :replacement "-"))
+                              &allow-other-keys)
+  `(:section
+    :id ,id
+    (:h* ,@attrs ,title)
+    ,@body))

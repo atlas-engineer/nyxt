@@ -55,7 +55,7 @@ The main difference is that their command toggles the panel."))
              (current-window)
              (buffer-load (nyxt-url (name ,page) ,@(mappend #'first keywords))
                           :buffer (make-instance 'panel-buffer))
-             :left)))))))
+             (side ,page))))))))
 
 ;; TODO: Add define-panel?
 

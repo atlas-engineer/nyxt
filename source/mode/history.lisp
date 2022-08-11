@@ -22,43 +22,40 @@ search.")
     nil
     :type boolean
     :documentation "Whether history navigation is restricted by buffer-local history.")
-   (keymap-scheme
-    (define-scheme "history"
-      scheme:cua
+   (keyscheme-map
+    (define-keyscheme-map "history-mode" ()
+      keyscheme:default
       (list
+       "M-left" 'history-backwards
+       ;; this should be C-[
+       "M-[" 'history-backwards
+       "button8" 'history-backwards
+       "M-right" 'history-forwards
+       ;; this should be C-]
+       "M-]" 'history-forwards
+       "button9" 'history-forwards
+       "M-shift-left" 'history-backwards-query
+       "M-shift-right" 'history-forwards-query
        "C-M-right" 'history-forwards-all-query
        "C-M-left" 'history-all-query
        "C-shift-h" 'history-all-query
-       "C-shift-H" 'history-all-query
-       "M-shift-right" 'history-forwards-query
-       "M-shift-left" 'history-backwards-query
-       "M-right" 'history-forwards
-       "M-left" 'history-backwards
-       "M-]" 'history-forwards
-       "M-[" 'history-backwards
-       "button9" 'history-forwards
-       "button8" 'history-backwards)
-      scheme:emacs
+       "C-shift-H" 'history-all-query)
+      keyscheme:emacs
       (list
-       "C-M-f" 'history-forwards-all-query
-       "C-M-b" 'history-all-query
-       "M-f" 'history-forwards-query
-       "M-b" 'history-backwards-query
-       "C-f" 'history-forwards-maybe-query
        "C-b" 'history-backwards
-       "button9" 'history-forwards
-       "button8" 'history-backwards)
-
-      scheme:vi-normal
+       "M-b" 'history-backwards-query
+       "M-f" 'history-forwards-query
+       "C-M-f" 'history-forwards-all-query
+       "C-f" 'history-forwards-maybe-query
+       "C-M-b" 'history-all-query)
+      keyscheme:vi-normal
       (list
        "H" 'history-backwards
-       "L" 'history-forwards-maybe-query
        "M-h" 'history-backwards-query
        "M-l" 'history-forwards-query
-       "M-H" 'history-all-query
        "M-L" 'history-forwards-all-query
-       "button9" 'history-forwards
-       "button8" 'history-backwards)))))
+       "L" 'history-forwards-maybe-query
+       "M-H" 'history-all-query)))))
 
 (defun load-history-url (url-or-node
                          &key (buffer (current-buffer))
@@ -196,10 +193,9 @@ Otherwise go forward to the only child."
 
 (define-command history-forwards-query (&optional (buffer (current-buffer)))
   "Query forward-URL to navigate to."
-  (let ((input (prompt1
-                 :prompt "Navigate forwards to"
-                 :sources (list (make-instance 'history-forwards-source
-                                               :buffer buffer)))))
+  (let ((input (prompt1 :prompt "Navigate forwards to"
+                        :sources (make-instance 'history-forwards-source
+                                                :buffer buffer))))
     (when input
       (with-history-access (history buffer)
         ;; REVIEW: Alternatively, we could use the COUNT argument with
@@ -224,10 +220,9 @@ Otherwise go forward to the only child."
 
 (define-command history-forwards-all-query (&optional (buffer (current-buffer)))
   "Query URL to forward to, from all child branches."
-  (let ((input (prompt1
-                 :prompt "Navigate forwards to (all branches)"
-                 :sources (list (make-instance 'all-history-forwards-source
-                                               :buffer buffer)))))
+  (let ((input (prompt1 :prompt "Navigate forwards to (all branches)"
+                        :sources (make-instance 'all-history-forwards-source
+                                                :buffer buffer))))
     (when input
       (with-history (history buffer)
         (htree:forward history (id buffer)))
@@ -249,10 +244,8 @@ Otherwise go forward to the only child."
 
 (define-command history-all-query (&optional (buffer (current-buffer)))
   "Query URL to go to, from the whole history."
-  (let ((input (prompt1
-                 :prompt "Navigate to"
-                 :sources (list (make-instance 'history-all-source
-                                               :buffer buffer)))))
+  (let ((input (prompt1 :prompt "Navigate to"
+                        :sources (make-instance 'history-all-source :buffer buffer))))
     (when input
       (with-history (history buffer)
         (htree:visit-all history (id buffer) input))

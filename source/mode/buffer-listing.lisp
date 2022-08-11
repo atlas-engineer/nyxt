@@ -111,14 +111,13 @@ With LINEAR-VIEW-P, list buffers linearly instead."
        (:button :class "button"
                 :onclick (ps:ps (nyxt/ps:lisp-eval
                                  (:title "reload-buffer" :buffer panel-buffer)
-                                 (reload-buffers
-                                  (list
-                                   (find
-                                    (render-url (url panel-buffer))
-                                    (nyxt::panel-buffers (current-window))
-                                    :test #'string=
-                                    :key (compose
-                                          #'render-url #'url))))))
+                                 (reload-buffer
+                                  (find
+                                   (render-url (url panel-buffer))
+                                   (nyxt::panel-buffers (current-window))
+                                   :test #'string=
+                                   :key (compose
+                                         #'render-url #'url)))))
                 "Update ↺")
        (loop for buffer in (buffer-list)
              collect (buffer-markup buffer))))))

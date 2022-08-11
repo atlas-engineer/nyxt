@@ -20,6 +20,7 @@ _build/submodules/system-index.txt
 # Ignore compiled lisp files
 *.FASL
 *.fasl
+*.fas
 *.lisp-temp
 *.dfsl
 *.pfsl

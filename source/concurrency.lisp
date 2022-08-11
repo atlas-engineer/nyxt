@@ -26,7 +26,7 @@ raised condition."
   (alex:with-gensyms (c sub-c)
     `(if (or *run-from-repl-p* *debug-on-error*)
          (handler-case (progn ,@body)
-           (nyxt-prompt-buffer-canceled ()
+           (prompt-buffer-canceled ()
              (log:debug "Prompt buffer interrupted")))
          (ignore-errors
           (handler-bind
@@ -94,9 +94,10 @@ what you are doing!"
 The list of values is useful when the last result is multi-valued, e.g. (values 'a 'b).
 You need not wrap multiple values in a PROGN, all top-level expressions are
 evaluated in order."
-  (let ((channel (make-channel 1)))
+  (let ((channel (make-channel 2)))
     (run-thread "evaluator"
-      (let ((interactive-p interactive-p))
+      (let ((interactive-p interactive-p)
+            (*standard-output* (make-string-output-stream)))
         (calispel:!
          channel
          (with-input-from-string (input string)
@@ -107,8 +108,9 @@ evaluated in order."
                         (let ((*interactive-p* interactive-p))
                           (with-protect ("Error in s-exp evaluation: ~a" :condition)
                             (eval s-exp)))))
-                     (safe-slurp-stream-forms input))))))))
-    (calispel:? channel)))
+                     (safe-slurp-stream-forms input))))))
+        (calispel:! channel (get-output-stream-string *standard-output*))))
+    (values (calispel:? channel) (calispel:? channel))))
 
 (defun evaluate-async (string)
   "Like `evaluate' but does not block and does not return the result."

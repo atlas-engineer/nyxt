@@ -10,7 +10,7 @@
 
 * Nyxt browser
 
-*Nyxt* is a keyboard-driven web browser designed for power users.  Inspired by
+*Nyxt* [nýkst] is a keyboard-driven web browser designed for power users.  Inspired by
 Emacs and Vim, it has familiar keybindings ([[https://en.wikipedia.org/wiki/Emacs][Emacs]], [[https://en.wikipedia.org/wiki/Vim_(text_editor)][vi]], [[https://en.wikipedia.org/wiki/IBM_Common_User_Access][CUA]]), and is infinitely
 extensible in Lisp.
 
@@ -83,13 +83,27 @@ WebEngine/Blink.
 Please find pre-built binaries at [[https://nyxt.atlas.engineer/download][Nyxt's downloads page]].  Nyxt is available on
 the following platforms:
 
-- Alpine.
-- Debian and derivatives such as Ubuntu and Linux Mint.
+- [[https://www.alpinelinux.org/][Alpine]].
+- [[https://www.debian.org][Debian]] and derivatives such as [[https://ubuntu.com/][Ubuntu]] and [[https://linuxmint.com/][Linux Mint]].
 - [[https://github.com/atlas-engineer/ports][MacPorts]].
 - [[https://archlinux.org/][Arch Linux]]: Install with =pacman -Syu nyxt=.
 - [[https://nixos.org/nix/][Nix]]: Install with =nix-env --install nyxt=.
 - [[https://guix.gnu.org][Guix]]: Install with =guix install nyxt=.
 - [[https://voidlinux.org/][Void]]: Install with =xbps-install nyxt=.
+- [[https://www.opensuse.org/][OpenSuse]] (user-maintained package of the latest `master` build):
+  - Tumbleweed:
+
+    #+begin_src sh
+    zypper ar https://download.opensuse.org/repositories/home:/bobbie424242/openSUSE_Tumbleweed/ nyxt-git
+    #+end_src
+
+  - LEAP:
+
+    #+begin_src sh
+    zypper ar https://download.opensuse.org/repositories/home:/bobbie424242/15.4/ nyxt-git
+    #+end_src
+
+  Then install with =zypper in nyxt=.
 
 To install from source, please refer to the [[file:documents/README.org][developer's manual]].
 

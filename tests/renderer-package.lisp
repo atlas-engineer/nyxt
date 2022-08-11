@@ -2,11 +2,9 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package nyxt/tests/renderer
-  (:use #:common-lisp)
-  (:use #:nyxt)
-  (:shadowing-import-from #:prove #:*debug-on-error*)
-  (:use #:prove)
+  (:use #:common-lisp #:lisp-unit2)
   (:import-from #:class-star #:define-class))
+(in-package :nyxt/tests/renderer)
 (nyxt::use-nyxt-package-nicknames)
 
 (class-star:define-class nyxt-user::test-profile (nyxt:nyxt-profile)

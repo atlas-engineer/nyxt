@@ -9,19 +9,20 @@
   "Mode for editor modes to extend. Importantly, it is required to implement the
 methods get/set-content for each editor-mode. This will allow your mode to
 get/set-content (which is necessary for operation)."
-  ((keymap-scheme (define-scheme "editor"
-                    scheme:cua
-                    (list
-                     "C-o" 'editor-open-file
-                     "C-s" 'editor-write-file)
-                    scheme:emacs
-                    (list
-                     "C-x C-f" 'editor-open-file
-                     "C-x C-s" 'editor-write-file)
-                    scheme:vi-normal
-                    (list
-                     "C-o" 'editor-open-file))
-                  :type keymap:scheme))
+  ((keyscheme-map
+    (define-keyscheme-map "editor-mode" ()
+      keyscheme:cua
+      (list
+       "C-o" 'editor-open-file
+       "C-s" 'editor-write-file)
+      keyscheme:emacs
+      (list
+       "C-x C-f" 'editor-open-file
+       "C-x C-s" 'editor-write-file)
+      keyscheme:vi-normal
+      (list
+       "C-o" 'editor-open-file))
+    :type keymaps:keyscheme))
   (:toggler-command-p nil))
 
 (defmethod enable ((editor editor-mode) &key) ; TODO: Use an internal page instead of this HTML injection?
@@ -78,7 +79,7 @@ contains an `nyxt/editor-mode:editor-mode' instance (or a subclass thereof)."))
   "Open a file in the internal editor."
   (let ((file (prompt1
                 :prompt "Open file"
-                :extra-modes '(nyxt/file-manager-mode:file-manager-mode)
+                :extra-modes 'nyxt/file-manager-mode:file-manager-mode
                 :input (uiop:native-namestring (uiop:getcwd))
                 :sources
                 (list (make-instance 'nyxt/file-manager-mode:file-source

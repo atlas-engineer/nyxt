@@ -15,9 +15,10 @@
 If URL-STRING is a path to an existing file, return a `quri:uri-file' object.
 If the conversion fails, a `quri:uri' object is always returned."
   (or (ignore-errors
-       (if (uiop:file-exists-p url-string)
-           (quri.uri.file:make-uri-file :path url-string)
-           (quri:uri url-string)))
+       (sera:and-let* ((path (uiop:merge-pathnames* url-string (uiop:getcwd)))
+                       (exist-p (uiop:file-exists-p path)))
+         (quri.uri.file:make-uri-file :path path)))
+      (quri:uri url-string)
       (quri:uri "")))
 
 (defun strings->urls (url-strings)
@@ -279,6 +280,26 @@ Authority is compared case-insensitively (RFC 3986)."
                       (lambda (url1 url2) (equalp (quri:uri-authority url1)
                                                   (quri:uri-authority url2)))))))
 
+(-> symbol->param-name (symbol) string)
+(defun symbol->param-name (symbol)
+  "Turn the provided SYMBOL into a reasonable query URL parameter name."
+  (let* ((*package* (find-package :nyxt))
+         (*print-case* :downcase))
+    (if (keywordp symbol)
+        (format nil "~(~a~)" symbol)
+        (format nil "~s" symbol))))
+
+(-> value->param-value (t) (values string &optional))
+(defun value->param-value (value)
+  "Turns the VALUE into a `query-params->arglist'-readable representation.
+- If VALUE is a string, return it as-is.
+- Otherwise, print it so string and prepend `+escape+' in front of it to notify
+  the `query-params->arglist' that it should be READ by CL reader."
+  (if (stringp value)
+      value
+      ;; This is to safely parse the args afterwards
+      (str:concat +escape+ (prin1-to-string value))))
+
 (export-always 'nyxt-url)
 (-> nyxt-url (t &rest t &key &allow-other-keys) string)
 (defun nyxt-url (function-name &rest args &key &allow-other-keys)
@@ -299,26 +320,18 @@ Example:
 => NYXT:DESCRIBE-VALUE
 => (:ID \"1000\")"
   (let ((*print-case* :downcase))
-    (flet ((param-name (symbol)
-             (let ((*package* (find-package :nyxt)))
-               (if (keywordp symbol)
-                   (format nil "~(~a~)" symbol)
-                   (format nil "~s" symbol)))))
-      (if (gethash function-name *nyxt-url-commands*)
-          (let ((params (quri:url-encode-params
-                         (mapcar (lambda (pair)
-                                   (cons (param-name (first pair))
-                                         ;; This is to safely parse the args afterwards
-                                         (if (stringp (rest pair))
-                                             (rest pair)
-                                             (str:concat +escape+ (prin1-to-string (rest pair))))))
-                                 (alexandria:plist-alist args)))))
-            (the (values string &optional)
-                 (format nil "nyxt:~a~@[~*?~a~]"
-                         (param-name function-name)
-                         (not (uiop:emptyp params))
-                         params)))
-          (error "There's no nyxt:~a page defined" (param-name function-name))))))
+    (if (gethash function-name *nyxt-url-commands*)
+        (let ((params (quri:url-encode-params
+                       (mapcar (lambda (pair)
+                                 (cons (symbol->param-name (first pair))
+                                       (value->param-value (rest pair))))
+                               (alexandria:plist-alist args)))))
+          (the (values string &optional)
+               (format nil "nyxt:~a~@[~*?~a~]"
+                       (symbol->param-name function-name)
+                       (not (uiop:emptyp params))
+                       params)))
+        (error "There's no nyxt:~a page defined" (symbol->param-name function-name)))))
 
 (export-always 'javascript-url)
 (defun javascript-url (javascript-string)
@@ -328,6 +341,21 @@ Example:
 (export-always 'internal-url-p)
 (defun internal-url-p (url)
   (string= "nyxt" (quri:uri-scheme (url url))))
+
+(-> query-params->arglist ((trivial-types:association-list string string)) (values list &optional))
+(defun query-params->arglist (params)
+  "Process the PARAMS (an alist of strings, as returned by QURI) to a regular Lisp argument plist."
+  (mappend (lambda (pair)
+             (let ((key (intern (str:upcase (first pair)) :keyword))
+                   (value (if (str:starts-with-p +escape+ (rest pair))
+                              (read-from-string (subseq (rest pair) 1))
+                              (rest pair))))
+               ;; Symbols are safe (are they?)
+               (if (or (symbolp value)
+                       (constantp value))
+                   (list key value)
+                   (error "A non-constant value passed in URL params: ~a" value))))
+           params))
 
 (export-always 'parse-nyxt-url)
 (-> parse-nyxt-url ((or string quri:uri)) (values symbol list &optional))
@@ -341,22 +369,13 @@ Error out if some of the params are not constants. Thanks to this,
 guarantee of the same result."
   (let* ((url (url url))
          (symbol (quri:uri-path url))
+         ;; FIXME: While we ourselves guarantee the correctness of nyxt:// URLs,
+         ;; it would be nice to ensure it processes even the malformed URLs.
          (params (quri:uri-query-params url))
          (internal-page-name (let ((*package* (find-package :nyxt)))
                                (read-from-string (str:upcase symbol)))))
     (if (gethash internal-page-name *nyxt-url-commands*)
-        (values internal-page-name
-                (mappend (lambda (pair)
-                                (let ((key (intern (str:upcase (first pair)) :keyword))
-                                      (value (if (str:starts-with-p +escape+ (rest pair))
-                                                 (read-from-string (subseq (rest pair) 1))
-                                                 (rest pair))))
-                                  ;; Symbols are safe (are they?)
-                                  (if (or (symbolp value)
-                                          (constantp value))
-                                      (list key value)
-                                      (error "A non-constant value passed in URL params: ~a" value))))
-                              params))
+        (values internal-page-name (query-params->arglist params))
         (error "There's no nyxt:~a internal-page defined" symbol))))
 
 (define-internal-scheme "nyxt"
@@ -391,8 +410,9 @@ TITLE is purely informative."
                          (unless ,buffer
                            (error "Cannot `nyxt/ps:lisp-eval' without BUFFER or current-buffer."))
                          (log:debug "Registering callback ~a for buffer ~a" request-id ,buffer)
-                         (setf (gethash request-id (nyxt::lisp-url-callbacks ,buffer))
-                               (lambda () ,@form))
+                         (sera:synchronized ((nyxt::lisp-url-callbacks ,buffer))
+                           (setf (gethash request-id (nyxt::lisp-url-callbacks ,buffer))
+                                 (lambda () ,@form)))
                          (let ((url-string (format nil "lisp://~a" request-id)))
                            (when ,title
                              (setf url-string (str:concat url-string "/" ,title)))
@@ -419,7 +439,12 @@ TITLE is purely informative."
                    (title (when (and url (quri:uri-path url)) (sera:drop-prefix "/" (quri:uri-path url)))))
               (log:debug "Evaluate Lisp callback ~a from internal page ~a: ~a" request-id buffer (or title "UNTITLED"))
               (values (let ((result (with-current-buffer buffer
-                                      (run (gethash request-id (lisp-url-callbacks buffer))))))
+                                      (let ((callback (sera:synchronized ((lisp-url-callbacks buffer))
+                                                        (gethash request-id (lisp-url-callbacks buffer)))))
+                                        (if callback
+                                            (run callback)
+                                            (log:warn "Request ~a is bound to no callback for buffer ~a"
+                                                      url buffer))))))
                         ;; Objects and other complex structures make cl-json choke.
                         ;; TODO: Maybe encode it to the format that `cl-json'
                         ;; supports, then we can override the encoding and

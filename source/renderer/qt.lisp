@@ -72,10 +72,10 @@
 (defmethod on-signal-key-press-event ((sender qt-window) event)
   (when (qt:key-string event)
     (alex:appendf (key-stack sender)
-                  (list (keymap:make-key :code (qt:key-code event)
-                                         :value (string-downcase (qt:key-string event))
-                                         :modifiers (qt:modifiers event)
-                                         :status :pressed)))
+                  (list (keymaps:make-key :code (qt:key-code event)
+                                          :value (string-downcase (qt:key-string event))
+                                          :modifiers (qt:modifiers event)
+                                          :status :pressed)))
     (funcall (input-dispatcher sender)
              event (active-buffer sender)
              sender (printable-p sender event))))
@@ -90,6 +90,12 @@
   (qt:widget-show-full-screen (qt-object window)))
 
 (defmethod ffi-window-unfullscreen ((window qt-window))
+  (qt:widget-show-normal (qt-object window)))
+
+(defmethod ffi-window-maximize ((window qt-window))
+  (qt:widget-show-maximized (qt-object window)))
+
+(defmethod ffi-window-unmaximize ((window qt-window))
   (qt:widget-show-normal (qt-object window)))
 
 (defmethod initialize-instance :after ((buffer qt-buffer) &key)

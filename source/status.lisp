@@ -13,16 +13,17 @@
 Upon returning NIL, the mode is not displayed."))
 
 (defun sort-modes-for-status (modes)
-  "Return visible modes in MODES, with `nyxt/keymap-scheme-mode:scheme-mode' placed first."
-  (multiple-value-bind (scheme-mode other-modes)
-      (sera:partition #'nyxt/keymap-scheme-mode::keymap-scheme-mode-p
+  "Return visible modes in MODES, with `nyxt/keyscheme-mode:keyscheme-mode' placed
+first."
+  (multiple-value-bind (keyscheme-mode other-modes)
+      (sera:partition #'nyxt/keyscheme-mode::keyscheme-mode-p
                       (sera:filter #'visible-in-status-p modes))
-    (append scheme-mode other-modes)))
+    (append keyscheme-mode other-modes)))
 
 (export-always 'format-status-modes)
 (defmethod format-status-modes ((status status-buffer))
   "Render the enabled modes.
-Any `nyxt/keymap-scheme-mode:keymap-scheme-mode' is placed first.
+Any `nyxt/keyscheme-mode:keyscheme-mode' is placed first.
 
 This leverages `mode-status' which can be specialized for individual modes."
   (let ((buffer (current-buffer (window status))))
@@ -36,15 +37,17 @@ This leverages `mode-status' which can be specialized for individual modes."
                                       (nyxt:toggle-modes)))
                      :title (str:concat "Enabled modes: " (modes-string buffer)) "✚")
             (loop for mode in sorted-modes
-                  collect (alex:when-let ((formatted-mode (mode-status status mode)))
-                            (if (html-string-p formatted-mode)
-                                (:raw formatted-mode)
-                                (:button :class "button"
-                                         :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                          (:title "describe-class" :buffer status)
-                                                          (describe-class :class (name mode))))
-                                         :title (format nil "Describe ~a" mode)
-                                         formatted-mode))))))
+                  collect
+                  (let ((mode mode))
+                    (alex:when-let ((formatted-mode (mode-status status mode)))
+                      (if (html-string-p formatted-mode)
+                          (:raw formatted-mode)
+                          (:button :class "button"
+                                   :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                    (:title "describe-class" :buffer status)
+                                                    (describe-class :class (name mode))))
+                                   :title (format nil "Describe ~a" mode)
+                                   formatted-mode)))))))
         "")))
 
 (defun modes-string (buffer)
@@ -53,7 +56,7 @@ This leverages `mode-status' which can be specialized for individual modes."
 
 (export-always 'format-status-buttons)
 (defmethod format-status-buttons ((status status-buffer))
-  "Render buttons for interactivity, like history backwards/forwards and the `execute-command' menu."
+  "Render interactive buttons."
   (spinneret:with-html-string
     (:button :type "button" :class "button"
              :title "Backwards"
@@ -92,9 +95,15 @@ This leverages `mode-status' which can be specialized for individual modes."
                :onclick (ps:ps (nyxt/ps:lisp-eval
                                 (:title "set-url" :buffer status)
                                 (nyxt:set-url)))
-               (format nil " ~a — ~a"
+               (format nil " ~a — ~a~a"
                        (render-url (url buffer))
-                       (title buffer))))))
+                       (title buffer)
+                       (if (find (url buffer)
+                                 (remove buffer (buffer-list))
+                                 :test #'url-equal
+                                 :key #'url)
+                           (format nil " (~a)" (id buffer))
+                           ""))))))
 
 (export-always 'format-status-tabs)
 (defmethod format-status-tabs ((status status-buffer))
@@ -103,11 +112,12 @@ This leverages `mode-status' which can be specialized for individual modes."
                          (sera:filter-map #'quri:uri-domain
                                           (mapcar #'url (sort-by-time (buffer-list))))
                          :test #'equal)
-          collect (:button :type "tab" :class "button"
-                           :onclick (ps:ps (nyxt/ps:lisp-eval
-                                            (:title "switch-buffer-or-query-domain" :buffer status)
-                                            (nyxt::switch-buffer-or-query-domain domain)))
-                           domain))))
+          collect (let ((domain domain))
+                    (:button :type "tab" :class "button"
+                             :onclick (ps:ps (nyxt/ps:lisp-eval
+                                              (:title "switch-buffer-or-query-domain" :buffer status)
+                                              (nyxt::switch-buffer-or-query-domain domain)))
+                             domain)))))
 
 (export-always 'format-status)
 (defmethod format-status ((status status-buffer))
@@ -168,6 +178,13 @@ When BOUND-OBJECT is garbage-collected, the corresponding handler is automatical
 - `window' `active-buffer'.
 
 See also `define-setf-handler'."
+  ;; We need to watch both the buffer `modes' slot and the status of modes,
+  ;; since the mode list does not change when a mode gets disabled.
+  (define-setf-handler modable-buffer modes status-buffer
+    (lambda (buffer)
+      (when (window status-buffer)
+        (when (eq buffer (active-buffer (window status-buffer)))
+          (print-status (window status-buffer))))))
   (define-setf-handler mode enabled-p status-buffer
     (lambda (mode)
       (when (window status-buffer)

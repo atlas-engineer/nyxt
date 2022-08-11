@@ -154,31 +154,36 @@ Example: --with-file bookmarks=/path/to/bookmarks
 
 (define-command quit (&optional (code 0))
   "Quit Nyxt."
-  (if (slot-value *browser* 'ready-p)
-      (progn
-        (hooks:run-hook (before-exit-hook *browser*))
-        ;; Unready browser:
-        ;; - after the hook, so that on hook error the browser is still ready;
-        ;; - before the rest, so to avoid nested `quit' calls.
-        (setf (slot-value *browser* 'ready-p) nil)
-        (setf (slot-value *browser* 'exit-code) code)
-        (dolist (window (window-list))
-          (window-delete window :force-p (/= 0 code)))
-        (when (socket-thread *browser*)
-          (destroy-thread* (socket-thread *browser*))
-          ;; Warning: Don't attempt to remove socket-path if socket-thread was not
-          ;; running or we risk remove an unrelated file.
-          (let ((socket (files:expand *socket-file*)))
-            (when (uiop:file-exists-p socket)
-              (log:info "Deleting socket ~s." socket)
-              (uiop:delete-file-if-exists socket))))
-        (mapc #'destroy-thread* (non-terminating-threads *browser*))
-        (ffi-kill-browser *browser*)
-        (unless *run-from-repl-p*
+  (when (slot-value *browser* 'ready-p)
+    (progn
+      (hooks:run-hook (before-exit-hook *browser*))
+      ;; Unready browser:
+      ;; - after the hook, so that on hook error the browser is still ready;
+      ;; - before the rest, so to avoid nested `quit' calls.
+      (setf (slot-value *browser* 'ready-p) nil)
+      (setf (slot-value *browser* 'exit-code) code)
+      (dolist (window (window-list))
+        (window-delete window :force-p (/= 0 code)))
+      (when (socket-thread *browser*)
+        (destroy-thread* (socket-thread *browser*))
+        ;; Warning: Don't attempt to remove socket-path if socket-thread was not
+        ;; running or we risk remove an unrelated file.
+        (let ((socket (files:expand *socket-file*)))
+          (when (uiop:file-exists-p socket)
+            (log:info "Deleting socket ~s." socket)
+            (uiop:delete-file-if-exists socket))))
+      (mapc #'destroy-thread* (non-terminating-threads *browser*))
+      (ffi-kill-browser *browser*)
+      ;; On FreeBSD this may cause freeze. Also we have to pass
+      ;; FINISH-OUTPUT = NIL in FFI-INITIALIZE.
+      #-freebsd
+      (unless *run-from-repl-p*
+        (run-thread "force-quitter"
+          ;; Force-quit in case `ffi-kill-browser' hangs.  Must be run in a
+          ;; separate thread because the renderer loop is waiting for this
+          ;; function to finish.
           (sleep 1)
-          ;; Force-quit in case `ffi-kill-browser' hangs.
-          (uiop:quit code nil)))
-      (log:warn "Cannot quit browser ~a that is not ready." *browser*)))
+          (uiop:quit code nil))))))
 
 (define-command quit-after-clearing-session (&key confirmation-p) ; TODO: Rename?
   "Close all buffers then quit Nyxt."
@@ -195,6 +200,17 @@ Make sure you understand the security risks associated with this
 before running this command."
   (swank:create-server :port swank-port :dont-close t)
   (echo "Swank server started at port ~a" swank-port))
+
+(define-command start-slynk (&optional (slynk-port *slynk-port*))
+  "Start a Slynk server that can be connected to, for instance, in
+Emacs via Sly.
+
+Warning: This allows Nyxt to be controlled remotely, that is, to
+execute arbitrary code with the privileges of the user running Nyxt.
+Make sure you understand the security risks associated with this
+before running this command."
+  (slynk:create-server :port slynk-port :dont-close t)
+  (echo "Slynk server started at port ~a" slynk-port))
 
 ;; From sbcl/src/code/load.lisp
 (defun maybe-skip-shebang-line (stream)
@@ -298,32 +314,29 @@ On error, return the condition as a first value and the backtrace as second valu
 
 (define-command load-file ()
   "Load the prompted Lisp file."
-  (prompt
-   :prompt "Load file"
-   :input (uiop:native-namestring
-           (let ((config-path (files:expand *config-file*)))
-             (if (uiop:file-exists-p config-path)
-                 (uiop:pathname-directory-pathname config-path)
-                 (uiop:getcwd))))
-   :extra-modes '(nyxt/file-manager-mode:file-manager-mode)
-   :sources
-   (make-instance 'nyxt/file-manager-mode:file-source
-                  :extensions '("lisp")
-                  :return-actions (list (lambda-command load-file* (files)
-                                   (dolist (file files)
-                                     (load-lisp file)))))))
+  (prompt :prompt "Load file"
+          :input (uiop:native-namestring
+                  (let ((config-path (files:expand *config-file*)))
+                    (if (uiop:file-exists-p config-path)
+                        (uiop:pathname-directory-pathname config-path)
+                        (uiop:getcwd))))
+          :extra-modes 'nyxt/file-manager-mode:file-manager-mode
+          :sources
+          (make-instance 'nyxt/file-manager-mode:file-source
+                         :extensions '("lisp")
+                         :return-actions (list (lambda-command load-file* (files)
+                                                 (dolist (file files)
+                                                   (load-lisp file)))))))
 
 (define-command clean-configuration ()
   "Clean all the user configuration created with `define-configuration' or `customize-instance'."
-  (dolist (class (sera:filter (lambda (class) (user-class-p class))
-                              (mapcar #'find-class (package-classes))))
+  (dolist (class (sera:filter #'user-class-p (mapcar #'find-class (package-classes))))
     (setf (hooks:handlers-alist (slot-value class 'customize-hook)) nil))
   (dolist (method (mopu:generic-function-methods #'customize-instance))
-    (unless (equal (list (find-class t)) ; Don't remove default method.
-                   (mopu:method-specializers method ))
-      (match (method-qualifiers method)
-        ((or (list :before) (list :after) (list :around)) nil)
-        (_ (remove-method #'customize-instance method))))))
+    (unless (or (equal (list (find-class t)) ; Don't remove default method.
+                       (mopu:method-specializers method))
+                ;; We only preserve :after methods for ourselves.
+                (equal (list :after) (method-qualifiers method))))))
 
 (define-command load-config-file (&key (config-file (files:expand *config-file*)))
   "Load or reload the CONFIG-FILE."

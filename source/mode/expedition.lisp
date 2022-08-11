@@ -9,16 +9,16 @@
   "Mode for traversing a set of URLs."
   ((urls (list))
    (index 0 :documentation "The index of the current element in URLs.")
-   (keymap-scheme
-    (define-scheme "expedition"
-      scheme:cua
+   (keyscheme-map
+    (define-keyscheme-map "expedition-mode" ()
+      keyscheme:cua
       (list
-       "C-]" 'expedition-next
-       "C-[" 'expedition-previous)
-      scheme:emacs
+       "C-[" 'expedition-previous
+       "C-]" 'expedition-next)
+      keyscheme:emacs
       (list
-       "M-n" 'expedition-next
-       "M-p" 'expedition-previous)))
+       "M-p" 'expedition-previous
+       "M-n" 'expedition-next)))
    (rememberable-p nil)))
 
 (define-command expedition-next (&key (expedition (find-submode 'expedition-mode)))
@@ -39,16 +39,14 @@
 
 (define-command-global select-frame-expedition (&key (buffer (current-buffer)))
   "Run an expedition through a set of URLs selected with a rectangle."
-  (let* ((urls (reverse
-                (prompt
-                 :prompt "Start expedition with the following links"
-                 :sources (list (make-instance 'nyxt/document-mode::frame-source
-                                               :buffer buffer
-                                               :multi-selection-p t))
-                 :after-destructor
-                 (lambda ()
-                   (with-current-buffer buffer
-                     (nyxt/document-mode::frame-element-clear))))))
+  (let* ((urls (reverse (prompt :prompt "Start expedition with the following links"
+                                :sources (make-instance 'nyxt/document-mode::frame-source
+                                                        :buffer buffer
+                                                        :multi-selection-p t)
+                                :after-destructor
+                                (lambda ()
+                                  (with-current-buffer buffer
+                                    (nyxt/document-mode::frame-element-clear))))))
          (urls (mapcar #'quri:uri urls))
          (buffer (make-buffer :title "" :url (first urls))))
     (enable (make-instance 'expedition-mode :urls urls :buffer buffer))

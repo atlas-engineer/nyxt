@@ -9,9 +9,9 @@
   "Mode for help and documentation pages."
   ((visible-in-status-p nil)
    (rememberable-p nil)
-   (keymap-scheme
-    (define-scheme "help-mode"
-      scheme:cua
+   (keyscheme-map
+    (define-keyscheme-map "help-mode" ()
+      keyscheme:default
       (list
        "q" 'delete-current-buffer
        "n" 'nyxt/document-mode:next-heading

@@ -1,9 +1,11 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
+(in-package cl-user)
+(uiop:define-package :theme/tests
+  (:use #:common-lisp #:lisp-unit2)
+  (:import-from #:theme))
 (in-package :theme/tests)
-
-(prove:plan nil)
 
 (defvar *theme* (make-instance 'theme:theme
                                :dark-p t
@@ -17,45 +19,43 @@
                                :on-accent-color "black")
   "Dummy theme for testing.")
 
-(prove:subtest "Basic CSS substitution"
-  (prove:is (theme:themed-css *theme*
-              (a
-               :background-color theme:background
-               :color theme:primary))
-            "a { background-color: black; color: yellow; }
-"))
+(define-test basic-css-substitution ()
+  (assert-equality 'string= "a { background-color: black; color: yellow; }
+"
+                   (theme:themed-css *theme*
+                     (a
+                      :background-color theme:background
+                      :color theme:primary))))
 
-(prove:subtest "Multi-rule/multi-color substitution"
-  (prove:is (theme:themed-css *theme*
-              (a
-               :background-color theme:background
-               :color theme:primary)
-              (body
-               :background-color theme:primary
-               :color theme:on-background)
-              (h1
-               :color theme:accent))
-            "a { background-color: black; color: yellow; }
+(define-test multi-rule/multi-color-substitution ()
+  (assert-equality 'string= "a { background-color: black; color: yellow; }
 body { background-color: yellow; color: white; }
 h1 { color: magenta; }
-"))
+"
+                   (theme:themed-css *theme*
+                     (a
+                      :background-color theme:background
+                      :color theme:primary)
+                     (body
+                      :background-color theme:primary
+                      :color theme:on-background)
+                     (h1
+                      :color theme:accent))))
 
-(prove:subtest "Inline function execution"
-  (prove:is  (theme:themed-css *theme*
-               (body
-                :background-color theme:primary
-                :color (concatenate 'string theme:accent " !important")))
-             "body { background-color: yellow; color: magenta !important; }
-"))
+(define-test inline-function-execution ()
+  (assert-equality 'string=  "body { background-color: yellow; color: magenta !important; }
+"
+                   (theme:themed-css *theme*
+                     (body
+                      :background-color theme:primary
+                      :color (concatenate 'string theme:accent " !important")))))
 
-(prove:subtest "Inline macro/special form invocation"
-  (prove:is (theme:themed-css *theme*
-              (body
-               :color (if (theme:dark-p theme:theme)
-                          theme:background
-                          theme:on-background)
-               :background-color theme:primary))
-            "body { color: black; background-color: yellow; }
-"))
-
-(prove:finalize)
+(define-test inline-macro/special-form-invocation ()
+  (assert-equality 'string= "body { color: black; background-color: yellow; }
+"
+                   (theme:themed-css *theme*
+                     (body
+                      :color (if (theme:dark-p theme:theme)
+                                 theme:background
+                                 theme:on-background)
+                      :background-color theme:primary))))

@@ -19,7 +19,7 @@
                           (parse-integer
                            (prompt1
                              :prompt (format nil "Time interval (~a)" unit)
-                             :sources (make-instance 'prompter:raw-source))
+                             :sources 'prompter:raw-source)
                            :junk-allowed t))
                         active-time-units))
          (to-seconds-multipliers
@@ -40,6 +40,6 @@
         (buffer-load (nyxt/process-mode:path-url mode) :buffer (buffer mode))))))
 
 (define-command-global watch-buffer (&optional (buffer (current-buffer)))
-  "Reload BUFFER at a prompted interval"
+  "Reload BUFFER at a prompted interval."
   (let ((interval (seconds-from-user-input)))
     (enable-modes 'watch-mode buffer (list :repeat-interval interval))))

@@ -127,7 +127,7 @@
    ;;
    ;; The official Guix package should use `sbcl-*' inputs though.
    (native-inputs
-    (list cl-prove
+    (list cl-lisp-unit2
           sbcl
           ;; Only for development, uneeded for the upstream Guix package:
           cl-trivial-benchmark))
@@ -143,6 +143,8 @@
           cl-cluffer
           cl-custom-hash-table
           cl-dexador
+          cl-dissect
+          cl-trivial-custom-debugger
           cl-enchant
           cl-flexi-streams
           cl-fset
@@ -157,20 +159,25 @@
           cl-mk-string-metrics
           cl-moptilities
           cl-named-readtables
+          cl-ndebug
           cl-nfiles
           cl-nhooks
+          cl-nkeymaps
           cl-osicat ; Not needed for SBCL, remove it in Guix upstream package.
+          cl-ospm
           cl-parenscript
           cl-phos
           cl-plump
           cl-ppcre
           cl-prevalence
+          cl-py-configparser
           cl-qrencode
           cl-quri
           cl-serapeum
           cl-spinneret
           cl-str
           cl-slime-swank
+          cl-slynk
           cl-tld
           cl-trivia
           cl-trivial-clipboard

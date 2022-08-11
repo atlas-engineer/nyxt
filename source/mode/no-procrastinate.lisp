@@ -19,8 +19,7 @@
    (no-procrastinate-hosts-file
     (make-instance 'no-procrastinate-hosts-file)
     :type no-procrastinate-hosts-file
-    :documentation "The file where to save hosts associated to procrastination
-and that should be blocked.")
+    :documentation "File where hosts associated to procrastination are saved.")
    (style (theme:themed-css (theme *browser*)
             ("summary"
              :background-color theme:secondary
@@ -210,13 +209,10 @@ page(s) in the active buffer."
 (define-command no-procrastinate-host (&key url)
   "Allow the user to avoid procrastination on a HOST via prompt buffer input."
   (let* ((url (or url
-                  (ignore-errors
-                   (quri:uri
-                    (prompt1
-                     :prompt "Avoid procrastination the URL's host"
-                     :sources (list
-                               (make-instance 'prompter:raw-source
-                                              :name "New URL")))))))
+                  (ignore-errors (quri:uri
+                    (prompt1 :prompt "Avoid procrastination the URL's host"
+                             :sources (make-instance 'prompter:raw-source
+                                                     :name "New URL"))))))
          (homepage-url-string (render-host-and-scheme url))
          (homepage-title (fetch-url-title url))
          (homepage-url-object (quri:uri homepage-url-string))

@@ -23,24 +23,65 @@ Accept-Language HTTP header.")
     :documentation "The user agent to set when enabling `reduce-tracking-mode'.
 It's Safari on macOS by default, because this way we break fewer websites while
 still being less noticeable in the crowd.")
+   ;; Taken from https://github.com/brave/brave-core/blob/master/browser/net/brave_site_hacks_network_delegate_helper.cc#L31
+   ;; Also see https://gitlab.com/ClearURLs/rules/-/blob/master/data.min.json
+   (query-tracking-parameters
+    '("fbclid" "gclid" "msclkid" "mc_eid"
+      "dclid"
+      "oly_anon_id" "oly_enc_id"
+      "_openstat"
+      "vero_conv" "vero_id"
+      "wickedid"
+      "yclid"
+      "__s"
+      "rb_clickid"
+      "s_cid"
+      "ml_subscriber" "ml_subscriber_hash"
+      "twclid"
+      "gbraid" "wbraid"
+      "_hsenc" "__hssc" "__hstc" "__hsfp" "hsCtaTracking"
+      "oft_id" "oft_k" "oft_lk" "oft_d" "oft_c" "oft_ck" "oft_ids"
+      "oft_sk"
+      "igshid"))
    (old-user-agent
     nil
     :type (or null string)
     :export nil
-    :documentation "The User Agent the browser had before enabling this mode.")))
+    :documentation "The User Agent the browser had before enabling this mode.")
+   (old-timezone
+    nil
+    :export nil
+    :documentation "The timezone the system had before enabling this mode.")))
+
+(defun strip-tracking-parameters (request-data)
+  (let ((mode (find-submode 'reduce-tracking-mode)))
+    (when (and mode (not (uiop:emptyp (quri:uri-query (url request-data)))))
+      (setf (quri:uri-query-params (url request-data))
+            (remove-if (alexandria:rcurry #'member (query-tracking-parameters mode)
+                                          :test #'string-equal)
+                       (quri:url-decode-params (quri:uri-query (url request-data)) :lenient t)
+                       :key #'first)))
+    request-data))
 
 (defmethod enable ((mode reduce-tracking-mode) &key)
-  (setf (old-user-agent mode) (ffi-buffer-user-agent (buffer mode)))
-  (setf (ffi-buffer-user-agent (buffer mode)) (preferred-user-agent mode))
-  (setf (ffi-preferred-languages (buffer mode))
-        (preferred-languages mode))
-  (setf (ffi-tracking-prevention (buffer mode)) t))
+  (setf (old-timezone mode) (uiop:getenv "TZ")
+        (uiop:getenv "TZ") "UTC")
+  (setf (old-user-agent mode) (ffi-buffer-user-agent (buffer mode))
+        (ffi-buffer-user-agent (buffer mode)) (preferred-user-agent mode))
+  (setf (ffi-preferred-languages (buffer mode)) (preferred-languages mode))
+  (setf (ffi-tracking-prevention (buffer mode)) t)
+  (hooks:add-hook
+   (request-resource-hook (buffer mode))
+   #'strip-tracking-parameters))
 
 (defmethod disable ((mode reduce-tracking-mode) &key)
+  (setf (uiop:getenv "TZ") (old-timezone mode))
   (setf (ffi-buffer-user-agent (buffer mode)) (old-user-agent mode))
   (setf (ffi-preferred-languages (buffer mode))
         (list (first
                (str:split
                 "."
                 (or (uiop:getenv "LANG") "")))))
-  (setf (ffi-tracking-prevention (buffer mode)) nil))
+  (setf (ffi-tracking-prevention (buffer mode)) nil)
+  (hooks:remove-hook (request-resource-hook (buffer mode))
+                     #'strip-tracking-parameters))

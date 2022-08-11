@@ -13,14 +13,14 @@
     "en_US"
     :documentation "Spell check language used by Nyxt. For
 a list of more languages available, see `spell-check-list-languages'.")
-   (keymap-scheme
-    (define-scheme "visual"
-      scheme:cua
+   (keyscheme-map
+    (define-keyscheme-map "spell-check-mode" ()
+      keyscheme:cua
       (list)                            ; TODO: Add CUA bindings!
-      scheme:emacs
+      keyscheme:emacs
       (list
        "M-$" 'spell-check-word)
-      scheme:vi-normal
+      keyscheme:vi-normal
       (list
        "z =" 'spell-check-word)))))
 
@@ -39,7 +39,7 @@ a list of more languages available, see `spell-check-list-languages'.")
   (let ((word (or (and word-supplied-p word)
                   (prompt1
                    :prompt "Spell check word"
-                   :sources (make-instance 'prompter:raw-source)))))
+                   :sources 'prompter:raw-source))))
     (if (spell-dict-check-p word)
         (echo "~s is spelled correctly." word)
         (echo "~s is NOT correctly spelled." word))))
@@ -70,11 +70,11 @@ suggestions."
 (define-command spell-check-suggest-word (&key word)
   "Suggest a spelling for a given word."
   (let ((selected-word (prompt1
-                        :input word
                         :prompt "Suggest spelling (3+ characters)"
-                        :sources (make-instance 'enchant-source))))
+                        :input word
+                        :sources 'enchant-source)))
     (trivial-clipboard:text selected-word)
-    (echo "Word copied to clipboard.")))
+    (echo "Word saved to clipboard.")))
 
 (define-class enchant-source (prompter:source)
   ((case-sensitive-p nil)
@@ -102,11 +102,11 @@ suggestions."
 
 (define-command spell-check-text-input (&key text)
   "Spell check full text input provided by the user."
-  (let ((selected-text (prompt :input text
-                               :prompt "Suggest spelling"
-                               :sources (make-instance 'enchant-text-input))))
+  (let ((selected-text (prompt :prompt "Suggest spelling"
+                               :input text
+                               :sources 'enchant-text-input)))
     (trivial-clipboard:text selected-text)
-    (echo "Text copied to clipboard.")))
+    (echo "Text saved to clipboard.")))
 
 (define-class enchant-text-input (prompter:source)
   ((case-sensitive-p nil)

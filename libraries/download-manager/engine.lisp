@@ -52,7 +52,7 @@ This may be different from the URL the user requested, see REQUESTED-URL.")
    (file :accessor file
          :initarg :file
          :initform ""
-         :documentation "The path to the local storage location of the
+         :documentation "Path pointing to the local storage location of the
 downloaded file.")
    (downstream :accessor downstream
                :initarg :downstream
@@ -153,5 +153,6 @@ PROXY is the full proxy address, e.g. \"socks5://127.0.0.1:9050\"."
     ;; watch for unfinished downloads and warn the user before closing.
     (bt:make-thread
      (lambda ()
-       (fetch download)))
+       (fetch download))
+     :name "download-manager")
     download))

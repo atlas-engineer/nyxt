@@ -4,17 +4,15 @@
 (in-package :nyxt)
 
 (defmacro command-markup (fn &key (modes nil explicit-modes-p))
-  "Print FN in HTML followed its bindings in parentheses."
+  "Print FN in HTML followed by its keybinding in parentheses."
   `(let ((spinneret:*suppress-inserted-spaces* t))
-     (spinneret:with-html (:span
-                           (:a :href (nyxt-url 'describe-command :command ,fn)
-                               (:code (let ((*print-case* :downcase))
-                                        (format nil "~a" ,fn))))
-                           " ("
-                           (:code (apply #'binding-keys ,fn (if ,explicit-modes-p
-                                                                (list :modes ,modes)
-                                                                '())))
-                           ")"))))
+     (spinneret:with-html
+      (:span (:nxref :command ,fn)
+             " ("
+             (:code (apply #'binding-keys ,fn (if ,explicit-modes-p
+                                                  (list :modes ,modes)
+                                                '())))
+             ")"))))
 
 (defmacro command-docstring-first-sentence (fn &key (sentence-case-p nil))
   "Print FN first docstring sentence in HTML."
@@ -28,7 +26,7 @@
        (error "~a is not a function." ,fn)))
 
 (defmacro command-information (fn)
-  "Print FN binding and first docstring's sentence in HTML."
+  "Print FN keybinding and first docstring sentence in HTML."
   `(spinneret:with-html (:li (command-markup ,fn) ": " (command-docstring-first-sentence ,fn))))
 
 (defun list-command-information (fns)
@@ -39,13 +37,13 @@
 (defun configure-slot (slot class &key
                                     (type (getf (mopu:slot-properties (find-class class) slot)
                                                 :type)))
-  "Set the value of a slot in `*auto-config-file*'.
+  "Set value of CLASS' SLOT in `*auto-config-file*'.
 CLASS is a class symbol."
   (sera:nlet lp ()
     (let ((input (read-from-string
                   (prompt1
                     :prompt (format nil "Configure slot value ~a" slot)
-                    :sources (make-instance 'prompter:raw-source)))))
+                    :sources 'prompter:raw-source))))
       (cond
         ((and type (not (typep input type)))
          (echo-warning "Type mismatch for ~a: got ~a, expected ~a."
@@ -151,8 +149,7 @@ disabling compositing, you will need to restart Nyxt."))
           (:p "Edit user configuration and other files in external text editor.")))))
 
 (define-command print-bindings-cheatsheet ()
-  "Print the buffer with the list of all known bindings for the current buffer
-optimizing the use of space."
+  "Print a buffer listing all known bindings for the current buffer."
   (nyxt::html-set-style (theme:themed-css (theme *browser*)
                           (h3
                            :font-size "10px"
@@ -166,8 +163,7 @@ optimizing the use of space."
   (nyxt/document-mode:print-buffer))
 
 (defun tls-help (buffer url)
-  "This function is invoked upon TLS certificate errors to give users
-help on how to proceed."
+  "Helper function invoked upon TLS certificate errors."
   (setf (status buffer) :failed)
   (html-set
    (spinneret:with-html-string
@@ -192,13 +188,13 @@ file, see the "
 
 (define-command nyxt-version ()
   "Version number of this version of Nyxt.
-The version number is stored in the clipboard."
+The version number is saved to clipboard."
   (trivial-clipboard:text +version+)
   (echo "Version ~a" +version+))
 
 (define-internal-page-command-global new ()
     (buffer "*New buffer*")
-  "Open up a buffer with useful links suitable for a `default-new-buffer-url'."
+  "Open up a buffer with useful links suitable for `default-new-buffer-url'."
   (spinneret:with-html-string
     (:style (:raw (theme:themed-css (theme *browser*)
                     (body
@@ -313,7 +309,7 @@ the "
 (define-internal-page-command-global show-system-information ()
     (buffer "*System information*")
   "Show buffer with Lisp version, Lisp features, OS kernel, etc.
-System information is also saved into the clipboard."
+System information is also saved to clipboard."
   (let* ((*print-length* nil)
          (nyxt-information (system-information)))
     (prog1
@@ -322,7 +318,7 @@ System information is also saved into the clipboard."
           (:pre nyxt-information))
       (copy-to-clipboard nyxt-information)
       (log:info nyxt-information)
-      (echo "System information copied to clipboard."))))
+      (echo "System information saved to clipboard."))))
 
 (define-internal-page-command-global dashboard ()
     (buffer "*Dashboard*")

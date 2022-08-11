@@ -25,8 +25,8 @@ corresponding mode is active.
                  :type boolean
                  :reader t
                  :writer nil
-                 :documentation "Mark the command as superseded by something else.
-If non-nil, report a warning before executing the command.")
+                 :documentation "Whether a warning before executing a deprecated
+                 command is signalled.")
    (last-access (local-time:now)
                 :type local-time:timestamp
                 :documentation "Last time this command was called from prompt buffer.
@@ -220,8 +220,6 @@ A subpackage has a name that starts with that of PACKAGE followed by a '/' separ
                                       '(class-star
                                         download-manager
                                         history-tree
-                                        keymap
-                                        keymap/scheme
                                         password
                                         analysis
                                         text-buffer))
@@ -359,7 +357,7 @@ With MODE-SYMBOLS and GLOBAL-P, include global commands."
   (with-current-buffer (current-buffer)
     (let ((*interactive-p* t))
       (handler-case (apply #'funcall command args)
-        (nyxt-prompt-buffer-canceled ()
+        (prompt-buffer-canceled ()
           (log:debug "Prompt buffer interrupted")
           nil)))))
 

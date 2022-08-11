@@ -103,12 +103,9 @@
 
 (define-command add-command (&optional (macro-editor (find-submode 'macro-edit-mode)))
   "Add a command to the macro."
-  (let ((command
-          (first
-           (prompt
-            :prompt "Add command"
-            :sources (make-instance 'command-source)))))
-    (add-function macro-editor command)))
+  (add-function macro-editor (prompt1
+                              :prompt "Add command"
+                              :sources 'command-source)))
 
 (defmethod macro-form-valid-p ((macro-editor macro-edit-mode))
   (and (name macro-editor)

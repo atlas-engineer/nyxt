@@ -64,13 +64,18 @@ A handler can be added with:
 The handlers take no argument.")
 
 (defvar *interactive-p* nil
-  "When non-nil, allow prompt buffers in during BODY execution.
-This is useful to ensure that non-interactive code (for instance scripts) won't
-be blocked by prompt buffer prompts.")
+  "When non-nil, allow prompt buffers during BODY execution.
+This is useful to spot potential blocks when non-interactive code (for instance
+scripts) tries to invoke the prompt buffer.")
 
 (export-always '*swank-port*)
 (defvar *swank-port* 4006
   "The port that Swank will open a new server on (default Emacs SLIME port
+is 4005, default set to 4006 in Nyxt to avoid collisions).")
+
+(export-always '*slynk-port*)
+(defvar *slynk-port* 4006
+  "The port that Slynk will open a new server on (default Emacs Sly port
 is 4005, default set to 4006 in Nyxt to avoid collisions).")
 
 (defparameter +renderer+ nil "The renderer used by Nyxt. This value is meant to
@@ -124,30 +129,30 @@ Don't set this, it would lose its meaning.")
   :test #'equal)
 
 (defun version ()
-  "Return (MAJOR MINOR PATCH COMMIT)."
-  (destructuring-bind (version &optional commits commit)
-      (str:split "-" +version+)
-    (let* ((commits (and commits (parse-integer commits)))
-           (parsed-version (uiop:parse-version version))
-           (major (first parsed-version))
-           (minor (second parsed-version))
-           (patch (third parsed-version)))
-      (values (list major minor patch commit)
-              commits))))
+  "Return 4 values: MAJOR, MINOR, PATCH and COMMIT.
+Return nil on error."
+  (ignore-errors
+   ;; Pre-releases are falling outside the conventional version values.
+   (if (str:containsp "pre-release" +version+)
+       (first (str:split "-" +version+))
+       (destructuring-bind (version &optional commits commit)
+           (str:split "-" +version+)
+         (let* ((commits (and commits (parse-integer commits))))
+           (destructuring-bind (&optional major minor patch)
+               (uiop:parse-version version)
+             (values major minor patch commit commits)))))))
 
-(multiple-value-bind (version commits)
+(multiple-value-bind (major minor patch commit commits)
     (version)
-  (destructuring-bind (major minor patch commit)
-      version
-    (flet ((push-feature (string)
-             (pushnew (intern (uiop:strcat "NYXT-" (princ-to-string string)) "KEYWORD") *features*)))
-      (when major
-        (push-feature major))
-      (when minor
-        (push-feature (format nil "~a.~a" major minor)))
-      (when patch
-        (push-feature (format nil "~a.~a.~a" major minor patch)))
-      (when commit
-        (push-feature (string-upcase commit)))
-      (when (and commits (not (zerop commits)))
-        (push-feature "UNSTABLE")))))
+  (flet ((push-feature (string)
+           (pushnew (intern (uiop:strcat "NYXT-" (princ-to-string string)) "KEYWORD") *features*)))
+    (when major
+      (push-feature major))
+    (when minor
+      (push-feature (format nil "~a.~a" major minor)))
+    (when patch
+      (push-feature (format nil "~a.~a.~a" major minor patch)))
+    (when commit
+      (push-feature (string-upcase commit)))
+    (when (and commits (not (zerop commits)))
+      (push-feature "UNSTABLE"))))

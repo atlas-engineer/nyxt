@@ -13,8 +13,21 @@
   ()
   (:metaclass interface-class))
 
+(defvar %default-modes '(base-mode)
+  "The default modes for unspecialized buffers.
+This is useful when there is no current buffer.")
+
 (define-class buffer (renderer-buffer)
-  ((id
+  ((default-modes
+    %default-modes
+    :accessor nil
+    :type list
+    :documentation "The symbols of the modes to instantiate on buffer creation.
+The mode instances are stored in the `modes' BUFFER slot.
+
+The default modes returned by this method are appended to the default modes
+inherited from the superclasses.")
+   (id
     (new-id)
     :type unsigned-byte
     :documentation "Unique identifier for a buffer.")
@@ -116,6 +129,13 @@ representation of HTML documents.
 Rendered URLs or the Nyxt's manual qualify as examples.  Buffers are fully
 separated from one another, so that each has its own behaviour and settings."))
 
+(defmethod request-resource-hook ((buffer buffer))
+  "A method to not error out if the buffer has no `request-resource-hook'.
+
+Useful in FFI functions where we usually specialize things against
+`renderer-buffer', not knowing the exact class of those."
+  nil)
+
 (defmethod initialize-instance :after ((buffer buffer) &key
                                        &allow-other-keys)
   "Dummy method to allow forwarding other key arguments."
@@ -158,14 +178,15 @@ hook."))
   "Finalize instantiation of modable BUFFER.
 In particular,
 - run `buffer-make-hook';
-- initialize the default modes plus EXTRA-MODES,
+- `enable' the modes from the `modes' slot, the `default-modes' and the EXTRA-MODES,
 - run `buffer-after-make-hook'.
 This method should be called by the renderer after instantiating the web view
 of BUFFER."
   (unless no-hook-p
     (hooks:run-hook (buffer-make-hook browser) buffer))
+  (mapc #'enable (modes buffer))
   (enable-modes (append (reverse (default-modes buffer))
-                        extra-modes)
+                        (uiop:ensure-list extra-modes))
                 buffer)
   (unless no-hook-p
     (hooks:run-hook (buffer-after-make-hook browser) buffer)))
@@ -182,9 +203,9 @@ To access all modes, including disabled ones, use `slot-value'."
   (sera:filter #'enabled-p (slot-value buffer 'modes)))
 
 (define-class input-buffer (buffer)
-  ((keymap-scheme-name
-    scheme:cua
-    :documentation "The keymap scheme that will be used for all modes in the current buffer.")
+  ((keyscheme
+    keyscheme:cua
+    :documentation "The keyscheme that will be used for all modes in the current buffer.")
    (current-keymaps-hook
     (make-instance 'hook-keymaps-buffer
                    :combination #'hooks:combine-composed-hook)
@@ -247,8 +268,8 @@ on may want to have dynamic interactions."))
 (define-class document-buffer (buffer)
   ((document-model-delta-threshold
     10
-    :documentation "Update the document model when the amount of elements on the
-    page change greater than this amount."
+    :documentation "The `document-model' is updated when the changed elements
+exceed this amount."
     :export nil)
    (document-model
     nil
@@ -256,8 +277,8 @@ on may want to have dynamic interactions."))
     :writer t
     :export t
     :type (or null plump:node)
-    :documentation "A parsed representation of the page currently opened.
-Created from the page code with the help of `plump:parse'. See `update-document-model'.")
+    :documentation "A parsed representation of the rendered buffer.
+Computed by `plump:parse', see `update-document-model' for details.")
    (search-auto-complete-p
     t
     :type boolean
@@ -265,12 +286,13 @@ Created from the page code with the help of `plump:parse'. See `update-document-
    (search-always-auto-complete-p
     t
     :type boolean
-    :documentation "Whether auto-completion works even for non-prefixed search.
-Auto-completions come from the default search engine.")
+    :documentation "Whether auto-completion acts on non-prefixed searches.
+Suggestions are computed by the default search engine.")
    (keep-search-hints-p
     t
     :type boolean
-    :documentation "Whether to keep search hints when the search prompt for the `search-buffer' command is closed.")
+    :documentation "Whether to keep search hints when the search prompt for the
+`search-buffer' command is closed.")
    (scroll-distance
     50
     :type integer
@@ -281,8 +303,8 @@ Auto-completions come from the default search engine.")
    (horizontal-scroll-distance
     50
     :type integer
-    :documentation "Horizontal scroll distance. The
-distance scroll-left or scroll-right will scroll.")
+    :documentation "Horizontal scroll distance. The distance scroll-left or
+scroll-right will scroll.")
    (current-zoom-ratio
     1.0
     :type float
@@ -363,13 +385,14 @@ query is not a valid URL, or the first keyword is not recognized.")
    (download-engine
     :initform :renderer
     :type symbol
-    :documentation "Select a download engine to use,
-such as :lisp or :renderer.")
+    :documentation "Select a download engine to use, such as `:lisp' or
+`:renderer'.")
    (history-file
-    (make-instance 'history-file)
+    (history-file *browser*)
     :type history-file
-    :documentation "
-The file where the system will create/save the global history.")
+    :documentation "File where to save the global history used by this buffer.
+See also `history-file' in `browser' for the global history restored on startup,
+which is not necessarily the same.")
    (standard-output-file
     (make-instance 'standard-output-file)
     :type standard-output-file
@@ -406,46 +429,37 @@ the buffer (which gives us more flexibility)."))
   (call-next-method)
   (set-window-title))
 
-(defvar %default-modes '(base-mode)
-  "The default modes for unspecialized buffers.
-This is useful when there is no current buffer.")
-
 (export-always 'default-modes)
 (defgeneric default-modes (buffer)
   (:method-combination append)
+  ;; TODO: Add a warning method when passing NIL to guard the current buffer not
+  ;; bound errors?
+  (:method append ((buffer t))
+    %default-modes)
   (:method append ((buffer buffer))
-    '())
+    (slot-value buffer 'default-modes))
+  (:method :around ((buffer buffer))
+    "Remove the duplicates from the `default-modes'."
+    (remove-duplicates (call-next-method)
+                       ;; Modes at the beginning of the list have higher priority.
+                       :from-end t))
   (:method append ((buffer context-buffer))
-    (append
-     (list
-      ;; TODO: No need for `resolve-symbol' if we move `context-buffer'
-      ;; declaration in a separate file, loaded after modes.
-      (resolve-symbol :annotate-mode :mode)
-      (resolve-symbol :bookmark-mode :mode)
-      (resolve-symbol :history-mode :mode)
-      (resolve-symbol :password-mode :mode))
-     %default-modes))
+    (list
+     ;; TODO: No need for `resolve-symbol' if we move `context-buffer'
+     ;; declaration in a separate file, loaded after modes.
+     (resolve-symbol :annotate-mode :mode)
+     (resolve-symbol :bookmark-mode :mode)
+     (resolve-symbol :history-mode :mode)
+     (resolve-symbol :password-mode :mode)))
   (:method append ((buffer document-buffer))
-    (append
-     (list
-      ;; TODO: No need for `resolve-symbol' if we move `document-buffer'
-      ;; declaration in a separate file, loaded after modes.
-      (resolve-symbol :hint-mode :mode)
-      (resolve-symbol :search-buffer-mode :mode)
-      (resolve-symbol :autofill-mode :mode) ; TODO: Remove from default?
-      (resolve-symbol :spell-check-mode :mode))
-     %default-modes))
-  (:documentation "The symbols of the modes to instantiate on buffer creation.
-The mode instances are stored in the `modes' BUFFER slot.
-
-The default modes returned by this method are appended to the default modes
-inherited from the superclasses."))
-
-(defmethod default-modes :around ((buffer buffer))
-  "Remove the duplicates from the `default-modes'."
-  (remove-duplicates (call-next-method)
-                     ;; Mode at the beginning of the list have higher priorities.
-                     :from-end t))
+    (list
+     ;; TODO: No need for `resolve-symbol' if we move `document-buffer'
+     ;; declaration in a separate file, loaded after modes.
+     (resolve-symbol :hint-mode :mode)
+     (resolve-symbol :document-mode :mode)
+     (resolve-symbol :search-buffer-mode :mode)
+     (resolve-symbol :autofill-mode :mode) ; TODO: Remove from default?
+     (resolve-symbol :spell-check-mode :mode))))
 
 (define-class network-buffer (buffer)
   ((status
@@ -484,16 +498,15 @@ The handlers take the buffer as argument.")
 One example of its application is `auto-mode' that changes mode setup. Any
 action on modes that can possibly change the handlers in `request-resource-hook'
 should find its place there.")
-   (request-resource-scheme
-    (define-scheme "request-resource"
-      scheme:cua
+   (request-resource-keyscheme-map
+    (define-keyscheme-map "request-resource" ()
+      keyscheme:cua
       (list
        "C-button1" 'request-resource-open-url-focus
        "button2" 'request-resource-open-url-focus
        "C-shift-button1" 'request-resource-open-url))
-    :documentation "This keymap can be looked up when
-`request-resource-hook' handlers run.
-The functions are expected to take key arguments like `:url'.")
+    :documentation "Looked up when `request-resource-hook' handlers run.  The
+keymap takes functions whose key arguments are `:url' and `:buffer'.")
    (request-resource-hook
     (make-instance 'hook-resource
                    :combination #'combine-composed-hook-until-nil)
@@ -657,9 +670,9 @@ store them somewhere and `ffi-buffer-delete' them once done."))
              :clip-path "polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0% 50%)"
              :margin-left "-10px")
             ("#container"
-             :display "grid"
+             :display "flex"
              ;; Columns: controls, url, tabs, modes
-             :grid-template-columns "90px minmax(auto, 30ch) 1fr 45px"
+             :justify-content "space-between"
              :overflow-y "hidden")
             ("#controls"
              :background-color theme:secondary
@@ -670,7 +683,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
              :overflow "hidden"
              :white-space "nowrap"
              :z-index "3"
-             )
+             :flex-basis "6em")
             ("#url"
              :background-color theme:primary
              :color theme:on-primary
@@ -681,7 +694,9 @@ store them somewhere and `ffi-buffer-delete' them once done."))
              :padding-right "10px"
              :padding-left "15px"
              :z-index "2"
-             )
+             :flex-grow "3"
+             :flex-shrink "2"
+             :flex-basis "10em")
             ("#tabs"
              :background-color theme:secondary
              :color theme:on-secondary
@@ -692,7 +707,9 @@ store them somewhere and `ffi-buffer-delete' them once done."))
              :padding-left "15px"
              :padding-right "10px"
              :z-index "1"
-             )
+             :flex-grow "10"
+             :flex-shrink "4"
+             :flex-basis "10em")
             ("#tabs::-webkit-scrollbar"
              :display "none")
             (.tab
@@ -712,7 +729,9 @@ store them somewhere and `ffi-buffer-delete' them once done."))
              :overflow-x "scroll"
              :white-space "nowrap"
              :z-index "2"
-             )
+             :flex-grow "2"
+             :flex-shrink "1"
+             :flex-basis "10em")
             ("#modes::-webkit-scrollbar"
              :display "none")
             (button
@@ -793,7 +812,7 @@ Return the created buffer."
           (nyxt/dom::named-json-parse body-json))))
 
 (defun dead-buffer-p (buffer)           ; TODO: Use this wherever needed.
-  (buffers-get (id buffer)))
+  (not (buffers-get (id buffer))))
 
 (-> resurrect-buffer (buffer) (values &optional buffer))
 (defun resurrect-buffer (dead-buffer)
@@ -823,10 +842,6 @@ Return the created buffer."
                         (document-model-delta-threshold buffer)))
                 value
                 (update-document-model :buffer buffer)))))))
-
-(export-always 'get-nyxt-id)
-(defmethod get-nyxt-id ((element plump:element))
-  (plump:get-attribute element "nyxt-identifier"))
 
 (defmethod proxy ((buffer buffer))
   (slot-value buffer 'proxy))
@@ -1010,8 +1025,9 @@ See `make-buffer' for a description of the arguments."
 (-> add-to-recent-buffers (buffer) *)
 (defun add-to-recent-buffers (buffer)
   "Create a recent-buffer from given buffer and add it to `recent-buffers'."
-  (containers:delete-item-if (recent-buffers *browser*) (buffer-match-predicate buffer))
-  (containers:insert-item (recent-buffers *browser*) buffer))
+  (when (web-buffer-p buffer)
+    (containers:delete-item-if (recent-buffers *browser*) (buffer-match-predicate buffer))
+    (containers:insert-item (recent-buffers *browser*) buffer)))
 
 
 (defmethod buffer-delete ((buffer buffer))
@@ -1035,7 +1051,7 @@ associated to the buffer is already killed."
     (when parent-window
       (let ((replacement-buffer (or (first (get-inactive-buffers))
                                     (make-buffer :load-url-p nil
-                                                 :url (quri:uri "about:blank")))))
+                                                 :url (default-new-buffer-url *browser*)))))
         (window-set-buffer parent-window replacement-buffer)))
     (buffers-delete (id buffer))
     (add-to-recent-buffers buffer)))
@@ -1116,7 +1132,7 @@ proceeding."
     (setf (last-access buffer) (local-time:now)))
   (when (and (network-buffer-p buffer)
              (eq (slot-value buffer 'status) :unloaded))
-    (reload-buffers (list buffer))))
+    (reload-buffer buffer)))
 
 (defun last-active-buffer ()
   "Return buffer with most recent `last-access'."
@@ -1173,12 +1189,14 @@ proceeding."
 (defmethod prompter:object-attributes ((buffer buffer) (source prompter:source))
   (declare (ignore source))
   `(("URL" ,(render-url (url buffer)))
-    ("Title" ,(title buffer))))
+    ("Title" ,(title buffer))
+    ("ID" ,(princ-to-string (id buffer)))))
 
 (defmethod prompter:object-attributes ((buffer web-buffer) (source buffer-source))
   (declare (ignore source))
   `(("URL" ,(render-url (url buffer)))
     ("Title" ,(title buffer))
+    ("ID" ,(princ-to-string (id buffer)))
     ("Keywords" ,(lambda (buffer) (format nil "~:{~a~^ ~}" (keywords buffer))))))
 
 (define-command switch-buffer (&key buffer (current-is-last-p nil))
@@ -1190,9 +1208,9 @@ second latest buffer first."
       (set-current-buffer buffer)
       (prompt
        :prompt "Switch to buffer"
-       :sources (list (make-instance 'buffer-source
-                                     :constructor (buffer-initial-suggestions
-                                                   :current-is-last-p current-is-last-p))))))
+       :sources (make-instance 'buffer-source
+                               :constructor (buffer-initial-suggestions
+                                             :current-is-last-p current-is-last-p)))))
 
 (define-command switch-buffer-domain (&key domain (buffer (current-buffer)))
   "Switch the active buffer in the current window from the current domain."
@@ -1531,22 +1549,30 @@ any.")
      :sources (url-sources (current-buffer) return-actions))
     (current-buffer)))
 
+(define-command reload-buffer
+    (&optional (buffer
+                (prompt
+                 :prompt "Reload buffer(s)"
+                 :sources (make-instance 'buffer-source))))
+  "Reload BUFFER.
+Return it."
+  (when buffer
+    (buffer-load (url buffer) :buffer buffer)))
+
 (define-command reload-current-buffer ()
   "Reload current buffer.
 Return it."
-  (reload-buffers (list (current-buffer)))
-  (current-buffer))
+  (reload-buffer (current-buffer)))
 
-(define-command reload-buffers (&optional buffers)
+(define-command reload-buffers
+    (&optional (buffers
+                (prompt
+                 :prompt "Reload buffer(s)"
+                 :sources (make-instance 'buffer-source :multi-selection-p t))))
   "Prompt for BUFFERS to be reloaded.
 Return BUFFERS."
-  (if buffers
-      (mapcar (lambda (buffer) (buffer-load (url buffer) :buffer buffer)) (alex:ensure-list buffers))
-      (prompt
-       :prompt "Reload buffer(s)"
-       :sources (make-instance 'buffer-source
-                               :multi-selection-p t
-                               :return-actions (list 'reload-buffers))))
+  (when buffers
+    (mapcar #'reload-buffer (alex:ensure-list buffers)))
   buffers)
 
 (defun buffer-parent (&optional (buffer (current-buffer)))

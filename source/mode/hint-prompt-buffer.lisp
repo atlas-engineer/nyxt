@@ -22,9 +22,9 @@
 (define-mode hint-prompt-buffer-mode (nyxt/prompt-buffer-mode:prompt-buffer-mode)
   "Prompt buffer mode for element hinting."
   ((visible-in-status-p nil)
-   (keymap-scheme
-    (define-scheme "hint"
-      scheme:cua
+   (keyscheme-map
+    (define-keyscheme-map "hint-prompt-buffer-mode" ()
+      keyscheme:default
       (list
        "M-i" 'toggle-hints-transparency
        "C-l" 'scroll-to-hint)))))

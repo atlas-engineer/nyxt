@@ -224,7 +224,7 @@ the description of the mechanism that sends the results back."
                   (calispel:! channel nil)))))
         (if (not (member (slot-value buffer 'nyxt::status) '(:finished :failed)))
             (let ((channel (nyxt::make-channel 1)))
-               (once-on (buffer-loaded-hook buffer) _
+               (hooks:once-on (buffer-loaded-hook buffer) _
                 (calispel:! channel (send-message result-channel)))
               (calispel:? channel))
             (send-message result-channel))))
@@ -255,14 +255,19 @@ the description of the mechanism that sends the results back."
          (style-sheet (when (nyxt/web-extensions:tab-apis-enabled-p extension buffer-to-insert)
                         (ffi-buffer-add-user-style
                          buffer-to-insert
-                         (if file
-                             (uiop:read-file-string (uiop:merge-pathnames*
-                                                     file (nyxt/web-extensions:extension-directory
-                                                           extension)))
-                             code)
-                         :inject-as-author-p (not (and level (stringp level) (string= level "user")))
-                         :all-frames-p (gethash "allFrames" css-data)
-                         :world-name (name extension)))))
+                         (apply #'make-instance
+                                'nyxt/user-script-mode:user-style
+                                :level (if (not (and level (stringp level) (string= level "user")))
+                                           :author
+                                           :user)
+                                :all-frames-p (gethash "allFrames" css-data)
+                                :world-name (name extension)
+                                (if file
+                                    (list :base-path
+                                          (uiop:merge-pathnames*
+                                           file (nyxt/web-extensions:extension-directory
+                                                 extension)))
+                                    (list :code code)))))))
     (when style-sheet
       (setf (gethash message-params %style-sheets%)
             style-sheet))
@@ -473,13 +478,13 @@ there. `reply-user-mesage' takes care of sending the response back."
         ("runtime.getBrowserInfo"
          (wrap-in-channel
           (encode-json
-           (let ((nyxt-version (str:split "-" nyxt:+version+)))
+           (multiple-value-bind (major _ patch)
+               (nyxt::version)
+             (declare (ignore _))
              `(("name" . "Nyxt")
                ("vendor" . "Atlas Engineer LLC")
-               ("version" ,(first nyxt-version))
-               ("build" ,(if (rest nyxt-version)
-                             (third nyxt-version)
-                             "")))))))
+               ("version" ,(or major ""))
+               ("build" ,(or patch "")))))))
         ("storage.local.get"
          (wrap-in-channel (storage-local-get buffer message-params)))
         ("storage.local.set"

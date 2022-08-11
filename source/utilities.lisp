@@ -18,6 +18,11 @@
 (export-always '+escape+)
 (alex:define-constant +escape+ (string #\escape) :test #'equal)
 
+(export-always 'new-id)
+(defun new-id ()
+  "Generate a new unique numeric ID."
+  (parse-integer (symbol-name (gensym ""))))
+
 (export-always 'defmemo)
 (defmacro defmemo (name params &body body) ; TODO: Replace with https://github.com/AccelerationNet/function-cache?
   (multiple-value-bind (required optional rest keyword)
@@ -73,10 +78,17 @@ Return the lambda s-expression as a second value, if possible."
     (or (alex:when-let* ((full-definition (swank:find-definition-for-thing fun))
                          (definition (and (not (eq :error (first full-definition)))
                                           (rest full-definition)))
-                         (*package* (symbol-package (swank-backend:function-name
-                                                     (if (functionp fun)
-                                                         fun
-                                                         (closer-mop:method-generic-function fun)))))
+                         ;; REVIEW: Returns (:macro name) for macros on
+                         ;; SBCL. What does it do on CCL, ECL etc?
+                         (name (swank-backend:function-name
+                                (typecase fun
+                                  ;; REVIEW: How do we handle macros here?
+                                  (method (closer-mop:method-generic-function fun))
+                                  (function fun))))
+                         (*package* (if (and (listp name)
+                                             (eq :macro (first name)))
+                                        (symbol-package (second name))
+                                        (symbol-package name)))
                          (file (uiop:file-exists-p (first (alexandria:assoc-value definition :file))))
                          (file-content (alexandria:read-file-into-string
                                         file
@@ -113,41 +125,6 @@ Return the lambda s-expression as a second value, if possible."
   "Return a new ring buffer."
   (containers:make-ring-buffer size :last-in-first-out))
 
-(export-always 'on)
-(defmacro on (hook args &body body)
-  "Attach a handler with ARGS and BODY to the HOOK.
-
-ARGS can be
-- A symbol if there's only one argument to the callback.
-- A list of arguments.
-- An empty list, if the hook handlers take no argument."
-  (let ((handler-name (gensym "on-hook-handler"))
-        (args (alex:ensure-list args)))
-    `(nhooks:add-hook
-      ,hook (make-instance 'nhooks:handler
-                           :fn (lambda ,args
-                                 (declare (ignorable ,@args))
-                                 ,@body)
-                           :name (quote ,handler-name)))))
-
-(export-always 'once-on)
-(defmacro once-on (hook args &body body)
-  "Attach a handler with ARGS and BODY to the HOOK.
-
-Remove the handler after it fires the first time.
-
-See `on'."
-  (let ((handler-name (gensym "once-on-hook-handler"))
-        (args (alex:ensure-list args)))
-    (alex:once-only (hook)
-      `(nhooks:add-hook
-        ,hook (make-instance 'nhooks:handler
-                             :fn (lambda ,args
-                                   (declare (ignorable ,@args))
-                                   (nhooks:remove-hook ,hook (quote ,handler-name))
-                                   ,@body)
-                             :name (quote ,handler-name))))))
-
 (export-always 'public-initargs)
 (defun public-initargs (class-specifier)
   "Return the list of initargs for CLASS-SPECIFIER direct slots."
@@ -165,15 +142,17 @@ See `on'."
   "Like `read' with standard IO syntax but does not accept reader macros ('#.').
 UIOP has `uiop:safe-read-from-string' but no `read' equivalent.
 This is useful if you do not trust the input."
-  (uiop:with-safe-io-syntax (:package *package*)
-    (read input-stream eof-error-p eof-value recursive-p)))
+  (let ((package *package*))
+    (uiop:with-safe-io-syntax (:package package)
+      (read input-stream eof-error-p eof-value recursive-p))))
 
 (export-always 'safe-slurp-stream-forms)
 (defun safe-slurp-stream-forms (stream)
   "Like `uiop:slurp-stream-forms' but wrapped in `uiop:with-safe-io-syntax' and
 package set to current package."
-  (uiop:with-safe-io-syntax (:package *package*)
-    (uiop:slurp-stream-forms stream)))
+  (let ((package *package*))
+    (uiop:with-safe-io-syntax (:package package)
+      (uiop:slurp-stream-forms stream))))
 
 (export-always 'reduce/append)
 (defun reduce/append (list-of-lists)

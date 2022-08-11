@@ -32,13 +32,12 @@
 
 (define-command load-system ()
   "Load a system from Quicklisp."
-  (prompt
-   :prompt "Load system"
-   :sources (make-instance 'quicklisp-source)))
+  (prompt :prompt "Load system"
+          :sources 'quicklisp-source))
 
 (define-command add-distribution ()
   "Add a new Quicklisp distribution."
   (let ((url (prompt1
                :prompt "New distribution URL"
-               :sources (make-instance 'prompter:raw-source))))
+               :sources 'prompter:raw-source)))
     (ql-dist:install-dist url :prompt nil)))

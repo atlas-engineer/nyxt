@@ -35,6 +35,10 @@ chosen suggestions inside brackets.")
      ;; You will want edit this to match the changes done to `style'.")
      (hide-single-source-header-p nil
                                   :documentation "Hide source header when there is only one.")
+     (mouse-support-p t
+                      :type boolean
+                      :documentation "Whether to allow mouse events to set and return a selection over prompt
+ buffer suggestions.")
      (style (theme:themed-css (theme *browser*)
               (*
                :font-family "monospace,monospace"
@@ -116,7 +120,7 @@ chosen suggestions inside brackets.")
                :color theme:on-primary))
             :documentation "The CSS applied to a prompt-buffer when it is set-up.")
      (override-map (make-keymap "override-map")
-                   :type keymap:keymap
+                   :type keymaps:keymap
                    :documentation "Keymap that takes precedence over all modes' keymaps.
 See `buffer's `override-map' for more details."))
     (:export-class-name-p t)
@@ -133,7 +137,7 @@ See `prompt' for how to invoke prompts.")
                                       &key extra-modes &allow-other-keys)
   (hooks:run-hook (prompt-buffer-make-hook *browser*) prompt-buffer)
   (enable-modes (append (reverse (default-modes prompt-buffer))
-                        extra-modes)
+                        (uiop:ensure-list extra-modes))
                 prompt-buffer))
 
 (export-always 'current-source)
@@ -292,28 +296,32 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                      for suggestion-index from (max 0 (- cursor-index (/ max-suggestion-count 2)))
                                      for suggestion in (nthcdr suggestion-index (prompter:suggestions source))
                                      collect
-                                     (:tr :id (when (equal (list suggestion source)
-                                                           (multiple-value-list (prompter:selected-suggestion prompt-buffer)))
-                                                "selection")
-                                          :class (when (prompter:marked-p source (prompter:value suggestion))
-                                                   "marked")
-                                          :onmouseover (ps:ps
-                                                         ;; FIXME: A better way to set selection?
-                                                         (nyxt/ps:lisp-eval
-                                                          (:title "set-selection")
-                                                          ;; TODO: Export?
-                                                          (prompter::select
-                                                              (current-prompt-buffer)
-                                                            (- suggestion-index cursor-index))
-                                                          (prompt-render-suggestions
-                                                           (current-prompt-buffer))))
-                                          :onmousedown (ps:ps
-                                                         (nyxt/ps:lisp-eval
-                                                          (:title "return-selection")
-                                                          (prompter:return-selection
-                                                           (nyxt::current-prompt-buffer))))
-                                          (loop for (nil attribute) in (prompter:active-attributes suggestion :source source)
-                                                collect (:td (:mayberaw attribute)))))))))))
+                                     (let ((suggestion-index suggestion-index)
+                                           (cursor-index cursor-index))
+                                       (:tr :id (when (equal (list suggestion source)
+                                                             (multiple-value-list (prompter:selected-suggestion prompt-buffer)))
+                                                  "selection")
+                                            :class (when (prompter:marked-p source (prompter:value suggestion))
+                                                     "marked")
+                                            :onmouseover (when (mouse-support-p prompt-buffer)
+                                                           (ps:ps
+                                                             ;; FIXME: A better way to set selection?
+                                                             (nyxt/ps:lisp-eval
+                                                              (:title "set-selection" :buffer prompt-buffer)
+                                                              ;; TODO: Export?
+                                                              (prompter::select
+                                                                  (current-prompt-buffer)
+                                                                (- suggestion-index cursor-index))
+                                                              (prompt-render-suggestions
+                                                               (current-prompt-buffer)))))
+                                            :onmousedown (when (mouse-support-p prompt-buffer)
+                                                           (ps:ps
+                                                             (nyxt/ps:lisp-eval
+                                                              (:title "return-selection" :buffer prompt-buffer)
+                                                              (prompter:return-selection
+                                                               (nyxt::current-prompt-buffer)))))
+                                            (loop for (nil attribute) in (prompter:active-attributes suggestion :source source)
+                                                  collect (:td (:mayberaw attribute))))))))))))
       (ffi-buffer-evaluate-javascript
        prompt-buffer
        (ps:ps
@@ -420,7 +428,7 @@ See `update-prompt-input' to update the changes visually."
        results)
       ((calispel:? (prompter:interrupt-channel prompt-buffer))
        (hide-prompt-buffer prompt-buffer)
-       (error 'nyxt-prompt-buffer-canceled)))))
+       (error 'prompt-buffer-canceled)))))
 
 (sera:eval-always
   (defvar %prompt-args (delete-duplicates
@@ -438,18 +446,17 @@ prompt-buffer constructor.
 
 Example use:
 
-\(prompt
-  :prompt \"Test prompt\"
-  :sources (list (make-instance 'prompter:source :name \"Test\"
-                                                 :constructor '(\"foo\" \"bar\"))))
+\(prompt :prompt \"Test prompt\"
+         :sources (make-instance 'prompter:source :name \"Test\"
+                                                  :constructor '(\"foo\" \"bar\")))
 
 See the documentation of `prompt-buffer' to know more about the options."
     (declare #.(cons 'ignorable %prompt-args))
     (unless *interactive-p*
       (restart-case
-          (error 'nyxt-prompt-buffer-non-interactively :name prompter:prompt)
+          (error 'prompt-buffer-non-interactive :name prompter:prompt)
         (prompt-anyway () nil)
-        (cancel () (error 'nyxt-prompt-buffer-canceled))))
+        (cancel () (error 'prompt-buffer-canceled))))
     (alex:when-let ((prompt-text (getf args :prompt)))
       (when (str:ends-with-p ":" prompt-text)
         (log:warn "Prompt text ~s should not end with a ':'." prompt-text)
@@ -489,11 +496,9 @@ See the documentation of `prompt-buffer' to know more about the options."
 
 (define-command resume-prompt ()
   "Query an older prompt and resume it."
-  (let ((old-prompt
-          (prompt1
-            :resumable-p nil
-            :prompt "Resume prompt session"
-            :sources (list (make-instance 'resume-prompt-source)))))
+  (let ((old-prompt (prompt1 :prompt "Resume prompt session"
+                             :resumable-p nil
+                             :sources 'resume-prompt-source)))
     (when old-prompt
       (prompter:resume old-prompt)
       (wait-on-prompt-buffer old-prompt))))

@@ -5,7 +5,7 @@
   (:documentation "VI-style bindings."))
 (in-package :nyxt/vi-mode)
 
-(define-mode vi-normal-mode (nyxt/keymap-scheme-mode:keymap-scheme-mode)
+(define-mode vi-normal-mode (nyxt/keyscheme-mode:keyscheme-mode)
   "Enable VI-style modal bindings (normal mode).
 To enable these bindings by default, add the mode to the list of default modes
 in your configuration file.
@@ -13,7 +13,7 @@ in your configuration file.
 Example:
 
 \(define-configuration buffer
-  ((default-modes (append '(vi-normal-mode) %slot-default%))))
+  ((default-modes (append '(vi-normal-mode) %slot-value%))))
 
 In `vi-insert-mode', CUA bindings are still available unless
 `passthrough-mode-p' is non-nil in `vi-insert-mode'.
@@ -22,29 +22,29 @@ the web page.
 
 See also `vi-insert-mode'."
   ((glyph "vi:N")
-   (nyxt/keymap-scheme-mode:scheme-name scheme:vi-normal)
-   (keymap-scheme
-    (define-scheme "vi"
-      scheme:vi-normal
+   (keyscheme keyscheme:vi-normal)
+   (keyscheme-map
+    (define-keyscheme-map "vi-normal-mode" ()
+      keyscheme:vi-normal
       (list
        "i" 'vi-insert-mode
        "button1" 'vi-button1)))))
 
 
 ;; TODO: Move ESCAPE binding to the override map?
-(define-mode vi-insert-mode (nyxt/keymap-scheme-mode:keymap-scheme-mode)
+(define-mode vi-insert-mode (nyxt/keyscheme-mode:keyscheme-mode)
   "Enable VI-style modal bindings (insert mode).
 See `vi-normal-mode'."
   ;; We could inherit from vi-normal-mode to save the declaration of this slot
   ;; but then (find-submode ... 'vi-normal-mode) would match vi-insert-mode.
   ((glyph "vi:I")
-   (nyxt/keymap-scheme-mode:scheme-name scheme:vi-insert)
+   (keyscheme keyscheme:vi-insert)
    (previous-vi-normal-mode nil
     :type (or vi-normal-mode null)
     :documentation "The `vi-normal-mode' that this insert mode is tied to.")
-   (keymap-scheme
-    (define-scheme "vi"
-      scheme:vi-insert
+   (keyscheme-map
+    (define-keyscheme-map "vi-insert-mode" ()
+      keyscheme:vi-insert
       (list
        "C-z" 'nyxt/passthrough-mode:passthrough-mode
        "escape" 'switch-to-vi-normal-mode)))
@@ -56,13 +56,13 @@ See `vi-normal-mode'."
 (defmethod enable ((mode vi-normal-mode) &key)
   (with-accessors ((buffer buffer)) mode
     (let ((vi-insert (find-submode 'vi-insert-mode buffer)))
-      (setf (nyxt/keymap-scheme-mode:previous-keymap-scheme-name mode)
+      (setf (nyxt/keyscheme-mode:previous-keyscheme mode)
             (if vi-insert
-                (nyxt/keymap-scheme-mode:previous-keymap-scheme-name vi-insert)
-                (keymap-scheme-name buffer)))
+                (nyxt/keyscheme-mode:previous-keyscheme vi-insert)
+                (keyscheme buffer)))
       (when vi-insert
-        ;; Destroy vi-normal mode after setting previous-keymap-scheme-name, or
-        ;; else we can't save the previous keymap scheme.
+        ;; Destroy vi-normal mode after setting previous-keyscheme, or else we
+        ;; can't save the previous keyscheme.
         (disable vi-insert)))
     (call-next-method)
     (setf (forward-input-events-p buffer) nil)))
@@ -84,10 +84,10 @@ See also `vi-normal-mode' and `vi-insert-mode'."
 (defmethod enable ((mode vi-insert-mode) &key)
   (with-accessors ((buffer buffer)) mode
     (let ((vi-normal (find-submode 'vi-normal-mode buffer)))
-      (setf (nyxt/keymap-scheme-mode:previous-keymap-scheme-name mode)
+      (setf (nyxt/keyscheme-mode:previous-keyscheme mode)
             (if vi-normal
-                (nyxt/keymap-scheme-mode:previous-keymap-scheme-name vi-normal)
-                (keymap-scheme-name buffer))
+                (nyxt/keyscheme-mode:previous-keyscheme vi-normal)
+                (keyscheme buffer))
             (previous-vi-normal-mode mode)
             vi-normal)
       (when vi-normal

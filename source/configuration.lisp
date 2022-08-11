@@ -26,7 +26,7 @@
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-class auto-config-file (config-special-file nyxt-lisp-file)
-  ((files:base-path (files:join #p"auto-config." (princ-to-string (first (version)))))
+  ((files:base-path (files:join #p"auto-config." (princ-to-string (version))))
    (command-line-option :auto-config
                         :accessor nil
                         :type keyword))
@@ -72,10 +72,15 @@ Consider porting your configuration to ~a."
   "The configuration file entry point.")
 
 (define-class nyxt-source-directory (nyxt-file)
-  ((files:base-path nyxt-asdf:*dest-source-dir*)
-   (files:name "source"))
+  ((files:name "source"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(defmethod files:resolve ((profile nyxt-profile) (directory nyxt-source-directory))
+  (let ((asd-path (ignore-errors (asdf:system-source-directory :nyxt-asdf))))
+    (if (uiop:directory-exists-p asd-path)
+        asd-path
+        nyxt-asdf:*dest-source-dir*)))
 
 (export-always '*source-directory*)
 (defvar *source-directory* (make-instance 'nyxt-source-directory)
@@ -252,37 +257,67 @@ Return NIL if not a class form."
 
 (export-always 'define-configuration)
 (defmacro define-configuration (classes &body slots-and-values)
-  `(progn
-     ,@(loop
-         for class in (uiop:ensure-list classes)
-         for handler-name = (gensym "DEFINE-CONFIGURATION")
-         collect
-         `(hooks:add-hook
-           (slot-value (find-class (quote ,class)) 'nyxt::customize-hook)
-           (make-instance
-            'hooks:handler
-            :fn (lambda (object)
-                  (declare (ignorable object))
-                  ,@(loop for ((slot value)) on (first slots-and-values)
-                          when (find slot (mopu:slot-names class))
-                            collect `(setf (slot-value object (quote ,slot))
-                                           (let* ((%slot-value% (slot-value object (quote ,slot)))
-                                                  (%slot-default%
-                                                    ,(if (c2mop:class-finalized-p (find-class class))
-                                                         (getf (mopu:slot-properties class slot) :initform)
-                                                         (progn
-                                                           (echo-warning
-                                                            "Slot default not found for slot ~a of class ~a, falling back to its current value"
-                                                            slot class)
-                                                           '%slot-value%))))
-                                             (declare (ignorable %slot-value% %slot-default%))
-                                             ,value))
-                          else
-                            collect `(defmethod ,slot :around ((object ,class))
+  "Helper macro to customize the class slots of the CLASSES.
+CLASSES is either a symbol or a list of symbols.
+
+Classes can be modes or a one of the user-configurable classes like `browser',
+`buffer', `prompt-buffer', `window'.
+
+The `%slot-default%' variable is replaced by the slot initform, the
+`%slot-value%' is replaced by the current calue of the slot.
+
+Example that sets some defaults for all buffers:
+
+\(define-configuration (buffer web-buffer)
+  ((status-buffer-height (* 2 %slot-value%))
+   (default-modes (append '(vi-normal-mode) %slot-default%))))
+
+In the above, `%slot-default%' will be substituted with the return value of
+`default-modes', and `%slot-value%' will be substituted with the value of
+`status-buffer-height' at the moment of configuration code running.
+
+Example to get the `blocker-mode' command to use a new default hostlists:
+
+\(define-configuration nyxt/blocker-mode:blocker-mode
+  ((nyxt/blocker-mode:hostlists (append (list *my-blocked-hosts*) %slot-default%))))
+
+To discover the default value of a slot or all slots of a class, use the
+`describe-slot' or `describe-class' commands respectively."
+  (alex:with-gensyms (handler hook)
+    `(progn
+       ,@(loop
+           for class in (uiop:ensure-list classes)
+           append (loop for ((slot value)) on (first slots-and-values)
+                        ;; TODO: Shall we really make the name unique?  Since we
+                        ;; are configuring slots, maybe not.
+                        for handler-name = (gensym (format nil "CONFIGURE-~a" slot))
+                        when (find slot (mopu:slot-names class))
+                          collect
+                        `(let ((,hook (slot-value (find-class (quote ,class)) 'nyxt::customize-hook))
+                               (,handler (make-instance
+                                          'hooks:handler
+                                          :fn (lambda (object)
+                                                (declare (ignorable object))
+                                                (setf (slot-value object (quote ,slot))
+                                                      (let* ((%slot-value% (slot-value object (quote ,slot)))
+                                                             (%slot-default%
+                                                               ,(if (c2mop:class-finalized-p (find-class class))
+                                                                    (getf (mopu:slot-properties class slot) :initform)
+                                                                    (progn
+                                                                      (echo-warning
+                                                                       "Slot default not found for slot ~a of class ~a, falling back to its current value"
+                                                                       slot class)
+                                                                      '%slot-value%))))
+                                                        (declare (ignorable %slot-value% %slot-default%))
+                                                        ,value)))
+                                          :name (quote ,handler-name))))
+                           (hooks:add-hook ,hook ,handler))
+                        else
+                          collect `(handler-bind ((warning #'muffle-warning))
+                                     (defmethod ,slot :around ((object ,class))
                                        (let* ((%slot-value% (call-next-method))
                                               (%slot-default% %slot-value%))
-                                         ,value))))
-            :name (quote ,handler-name))))))
+                                         ,value))))))))
 
 
 (defparameter %buffer nil)              ; TODO: Make a monad?
@@ -315,12 +350,12 @@ Return NIL if not a class form."
   "Ask the user for confirmation before executing either YES-FORM or NO-FORM.
 YES-FORM is executed on  \"yes\" answer, NO-FORM -- on \"no\".
 PROMPT is a list fed to `format nil'."
-  `(let ((answer (first (handler-case
-                            (prompt
-                             :prompt (format nil ,@prompt)
-                             :sources '(prompter:yes-no-source)
-                             :hide-suggestion-count-p t)
-                          (nyxt-prompt-buffer-canceled (c) (declare (ignore c)) '("no"))))))
+  `(let ((answer (handler-case
+                     (prompt1
+                      :prompt (format nil ,@prompt)
+                      :sources '(prompter:yes-no-source)
+                      :hide-suggestion-count-p t)
+                   (prompt-buffer-canceled () "no"))))
      (if (string= "yes" answer)
          ,yes-form
          ,no-form)))
@@ -341,23 +376,62 @@ Call this function from your initialization file to re-enable the default ASDF r
           asdf/source-registry:default-system-source-registry))
   (asdf:clear-configuration))
 
+(defun set-as-default-browser (&key (name "nyxt")
+                                 (targets
+                                  (list (uiop:xdg-config-home "mimeapps.list")
+                                        (uiop:xdg-data-home "applications/mimeapps.list"))))
+  "Return the modified MIME apps list.
+Return the persisted file as second value."
+  #+(and unix (not darwin))
+  (let* ((target (or (first (sera:filter #'uiop:file-exists-p targets))
+                     (first targets)))
+         (config (py-configparser:read-files (py-configparser:make-config)
+                                             (list target)))
+         (desktop-file (uiop:strcat name ".desktop")))
+    (dolist (section '("Added Associations" "Default Applications"))
+      (dolist (key '("text/html"
+                     "text/gemini"
+                     "x-scheme-handler/http"
+                     "x-scheme-handler/https"
+                     "x-scheme-handler/chrome"
+                     "application/x-extension-htm"
+                     "application/x-extension-html"
+                     "application/x-extension-shtml"
+                     "application/xhtml+xml"
+                     "application/x-extension-xhtml"
+                     "application/x-extension-xht"))
+        (py-configparser:set-option config section key desktop-file)))
+    (with-open-file (s target
+                       :direction :output
+                       :if-does-not-exist :create
+                       :if-exists :supersede)
+      (py-configparser:write-stream config s))
+
+    (values config target))
+  #-(and unix (not darwin))
+  (log:warn "Only supported on GNU / BSD systems running XDG-compatible desktop environments."))
 
 
 ;; TODO: Report compilation errors.
 
 (export-always 'nyxt-user-system)
-(defclass nyxt-user-system (asdf:system) ()
+(defclass nyxt-user-system (asdf:system)
+  ;; We cannot use :pathname because ASDF forces its value.
+  ((config-directory
+    :initarg :config-directory
+    :initform nil
+    :accessor config-directory))
   (:documentation "Specialized systems for Nyxt users.
-This automatically defaults :pathname to the `*config-file*' directory.
+This automatically defaults :pathname to the `*config-file*' directory unless
+overridden by the `:config-directory' option.
 See `define-nyxt-user-system' and `define-nyxt-user-system-and-load'."))
 
 (defvar *nyxt-user-systems-with-missing-dependencies* '())
 
 (defmethod asdf:component-pathname ((system nyxt-user-system))
   "Default to `config-directory-file'."
-  (let ((path (call-next-method)))
-    (or path
-        (nfiles:expand (make-instance 'config-directory-file)))))
+  (or (config-directory system)
+      (nfiles:expand (make-instance 'config-directory-file))) )
 
 (export-always 'load-system*)
 (defun load-system* (system &rest keys &key force force-not verbose version &allow-other-keys)
@@ -375,7 +449,7 @@ to load and attempts to load them if their dependencies now seem to be met."
     (flet ((report (c)
              (pushnew (asdf:coerce-name system) *nyxt-user-systems-with-missing-dependencies*
                       :test #'string=)
-             (echo-warning "Could not load system ~a: ~a" system c)
+             (log:warn "Could not load system ~a: ~a" system c)
              (return-from done nil)))
       (handler-bind ((asdf:missing-dependency #'report)
                      (asdf:missing-dependency-of-version #'report))
@@ -392,6 +466,8 @@ to load and attempts to load them if their dependencies now seem to be met."
   (if (consp component-designator)
       component-designator
       (list :file (sera:drop-suffix ".lisp" component-designator :test #'string-equal))))
+
+(asdf:defsystem "nyxt-user") ; Dummy parent needs to exist for `define-nyxt-user-system' to define subsystems.
 
 (export-always 'define-nyxt-user-system)
 (defmacro define-nyxt-user-system (name &rest args &key depends-on components
@@ -419,11 +495,13 @@ you can write
 :components `(\"foo\" #p\"bar\")
 
 It only works for top-level components, so if you introduce a module you'll have
-to use the full syntax."
+to use the full syntax.
+
+To change the base directory, pass the `:config-directory' option."
   ;; We specify DEPENDS-ON to emphasize its availability.
   (declare (ignore depends-on))
-  (unless (sera:string-prefix-p "nyxt/user/" (string name) )
-    (error "User system name must start with 'nyxt/user/'."))
+  (unless (sera:string-prefix-p "nyxt-user/" (string name) )
+    (error "User system name must start with 'nyxt-user/'."))
   ;; We cannot call `make-instance 'asdf:system' because we need to register the
   ;; system, and `register-system' is unexported.
   `(asdf:defsystem ,name
@@ -435,7 +513,9 @@ to use the full syntax."
 (export-always 'define-nyxt-user-system-and-load)
 (defmacro define-nyxt-user-system-and-load (name &rest args &key depends-on components
                                             &allow-other-keys)
-  "Like `define-nyxt-user-system' but immediately call `load-system*' on the system.
+  "Like `define-nyxt-user-system' but schedule to load the system when all
+DEPENDS-ON packages are loaded.
+If they already are, load the system now.
 Return the system."
   ;; We specify DEPENDS-ON and COMPONENTS to emphasize their availability.
   (declare (ignore depends-on components))

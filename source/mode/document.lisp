@@ -18,12 +18,21 @@ It does not assume being online."))
   "Base mode for interacting with documents."
   ((visible-in-status-p nil)
    (rememberable-p nil)
-   (keymap-scheme
-    (define-scheme "web"
-      scheme:cua
+   (keyscheme-map
+    (define-keyscheme-map "document-mode" ()
+      keyscheme:default
       (list
        "C-M-Z" 'nyxt/passthrough-mode:passthrough-mode
        "M-i" 'focus-first-input-field
+       "C-M-c" 'open-inspector
+       "C-S-c" 'open-inspector
+       "C-." 'jump-to-heading
+       "C-M-." 'jump-to-heading-buffers
+       "M-{" 'previous-heading
+       "M-}" 'next-heading
+       "C-p" 'print-buffer)
+      keyscheme:cua
+      (list
        "C-c" 'copy
        "C-v" 'paste
        "C-x" 'cut
@@ -32,82 +41,75 @@ It does not assume being online."))
        "C-Z" 'redo
        "C-+" 'zoom-page
        "C-=" 'zoom-page              ; Because + shifted = on QWERTY.
-       "C-hyphen" 'unzoom-page
-       "C-0" 'reset-page-zoom
        "C-button4" 'zoom-page
+       "C-hyphen" 'unzoom-page
        "C-button5" 'unzoom-page
-       "C-M-c" 'open-inspector
-       "C-." 'jump-to-heading
-       "M-{" 'previous-heading
-       "M-}" 'next-heading
-       "end" 'maybe-scroll-to-bottom
-       "home" 'maybe-scroll-to-top
+       "C-0" 'reset-page-zoom
        "C-down" 'scroll-to-bottom
        "C-up" 'scroll-to-top
-       "C-u C-o" 'edit-with-external-editor
        ;; Leave SPACE and arrow keys unbound so that the renderer decides whether to
        ;; navigate textboxes (arrows), insert or scroll (space).
        ;; keypad, gtk:
        "keypadleft" 'scroll-left
-       "keypaddown" 'scroll-down
-       "keypadup" 'scroll-up
        "keypadright" 'scroll-right
-       "keypadend" 'scroll-to-bottom
+       "keypadup" 'scroll-up
+       "keypaddown" 'scroll-down
        "keypadhome" 'scroll-to-top
-       "keypadnext" 'scroll-page-down
+       "keypadend" 'scroll-to-bottom
        "keypadpageup" 'scroll-page-up
        "keypadprior" 'scroll-page-up
-       "C-p" 'print-buffer)
-      scheme:emacs
+       "keypadnext" 'scroll-page-down
+       "end" 'maybe-scroll-to-bottom
+       "home" 'maybe-scroll-to-top
+       "C-u C-o" 'edit-with-external-editor)
+      keyscheme:emacs
       (list
        "C-g" 'nothing              ; Emacs users may hit C-g out of habit.
-       "C-y" 'paste
        "M-w" 'copy
-       "C-/" 'undo
-       "C-?" 'redo ; / shifted on QWERTY
+       "C-y" 'paste
        "C-w" 'cut
        "C-x h" 'select-all
-       "C-p" 'scroll-up
-       "C-n" 'scroll-down
+       "C-/" 'undo
+       "C-?" 'redo ; / shifted on QWERTY
        "C-x C-+" 'zoom-page
        "C-x C-=" 'zoom-page ; Because + shifted = on QWERTY.
        "C-x C-hyphen" 'unzoom-page
        "C-x C-0" 'reset-page-zoom
-       "C-." 'jump-to-heading
-       "M->" 'scroll-to-bottom
+       "C-p" 'scroll-up
+       "C-n" 'scroll-down
        "M-<" 'scroll-to-top
-       "C-v" 'scroll-page-down
+       "M->" 'scroll-to-bottom
        "M-v" 'scroll-page-up
+       "C-v" 'scroll-page-down
        "C-u C-x C-f" 'edit-with-external-editor)
-
-      scheme:vi-normal
+      keyscheme:vi-normal
       (list
+       "g h" 'jump-to-heading
+       "g H" 'jump-to-heading-buffers
+       "{" 'previous-heading
+       "}" 'next-heading
        "y y" 'copy
        "p" 'paste
        "d d" 'cut
        "u" 'undo
        "C-r" 'redo
        "+" 'zoom-page
-       "hyphen" 'unzoom-page
-       "0" 'reset-page-zoom
        "z i" 'zoom-page
+       "hyphen" 'unzoom-page
        "z o" 'unzoom-page
+       "0" 'reset-page-zoom
        "z z" 'reset-page-zoom
-       "g h" 'jump-to-heading
-       "g H" 'jump-to-heading-buffers
-       "{" 'previous-heading
-       "}" 'next-heading
        "h" 'scroll-left
-       "j" 'scroll-down
-       "k" 'scroll-up
        "l" 'scroll-right
-       "G" 'scroll-to-bottom
+       "k" 'scroll-up
+       "j" 'scroll-down
        "g g" 'scroll-to-top
-       "C-f" 'scroll-page-down
+       "G" 'scroll-to-bottom
        "C-b" 'scroll-page-up
-       "space" 'scroll-page-down
        "s-space" 'scroll-page-up
        "pageup" 'scroll-page-up
+       "C-f" 'scroll-page-down
+       "space" 'scroll-page-down
        "pagedown" 'scroll-page-down)))))
 
 (sera:export-always '%clicked-in-input?)
@@ -187,10 +189,8 @@ It does not assume being online."))
 
 (define-command paste-from-clipboard-ring ()
   "Show `*browser*' clipboard ring and paste selected entry."
-  (prompt
-   :prompt "Paste from ring"
-   :sources (list (make-instance 'ring-source
-                                 :ring (nyxt::clipboard-ring *browser*)))))
+  (prompt :prompt "Paste from ring"
+          :sources (make-instance 'ring-source :ring (nyxt::clipboard-ring *browser*))))
 
 (define-command copy (&optional (buffer (current-buffer)))
   "Copy selected text to clipboard."
@@ -406,7 +406,7 @@ ID is a buffer `id'."
 (defun get-headings (&key (buffer (current-buffer)))
   (pflet ((heading-scroll-position
            (element)
-           (ps:chain (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element)))
+           (ps:chain (nyxt/ps:qs-nyxt-id document (ps:lisp (nyxt/dom:get-nyxt-id element)))
                      (get-bounding-client-rect) y)))
     (with-current-buffer buffer
       (sort (map 'list
@@ -419,7 +419,7 @@ ID is a buffer `id'."
                                                        (plump:text (plump:next-element e))))
                                            :scroll-position (heading-scroll-position e)))
                  (clss:select "h1, h2, h3, h4, h5, h6" (document-model buffer)))
-            #'< :key (compose #'parse-integer #'get-nyxt-id #'element)))))
+            #'< :key (compose #'parse-integer #'nyxt/dom:get-nyxt-id #'element)))))
 
 (defun current-heading (&optional (buffer (current-buffer)))
   (alex:when-let* ((scroll-position (document-scroll-position buffer))
@@ -430,14 +430,10 @@ ID is a buffer `id'."
                    (< (abs (- (scroll-position h1) vertical-scroll-position))
                       (abs (- (scroll-position h2) vertical-scroll-position))))))))
 
-(define-parenscript scroll-to-element (&key nyxt-identifier)
-  (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier)))
-            (scroll-into-view t)))
-
 ;; TODO: Make a method on plump:node? Extract to nyxt/dom?
 (defun scroll-page-to-heading (heading)
   (set-current-buffer (buffer heading) :focus nil)
-  (scroll-to-element :nyxt-identifier (get-nyxt-id (element heading))))
+  (nyxt/dom:scroll-to-element (element heading)))
 
 (define-command next-heading (&optional (buffer (current-buffer)))
   "Scroll to the next heading of the BUFFER."
@@ -477,10 +473,8 @@ ID is a buffer `id'."
 
 (define-command jump-to-heading (&key (buffer (current-buffer)))
   "Jump to a particular heading, of type h1, h2, h3, h4, h5, or h6."
-  (prompt
-   :prompt "Jump to heading"
-   :sources (list (make-instance 'heading-source
-                                 :buffer buffer))))
+  (prompt :prompt "Jump to heading"
+          :sources (make-instance 'heading-source :buffer buffer)))
 
 (define-command jump-to-heading-buffers ()
   "Jump to a particular heading, of type h1, h2, h3, h4, h5, or h6 across a set
@@ -523,8 +517,7 @@ of buffers."
                              (ps:ps (nyxt/ps:lisp-eval
                                      (:title "switch-buffer-scroll")
                                      (switch-buffer :buffer (buffer heading))
-                                     (scroll-to-element :nyxt-identifier
-                                                        (get-nyxt-id (element heading)))))
+                                     (nyxt/dom:scroll-to-element (element heading))))
                              (title heading)))
                     (when (rest group)
                       (:raw (sera:mapconcat #'headings->html (list (group-headings (rest group))) "")))))))))
@@ -706,19 +699,17 @@ of buffers."
 
 (define-command select-frame-new-buffer (&key (buffer (current-buffer)))
   "Select a frame and open the links in new buffers."
-  (prompt
-   :prompt "Open selected links in new buffers"
-   :sources (list
-             (make-instance
-              'frame-source
-              :buffer buffer
-              :multi-selection-p t
-              :return-actions (list (lambda-command open-new-buffers (urls)
-                                      (mapcar (lambda (i) (make-buffer :url (quri:uri i))) urls)))))
-   :after-destructor
-   (lambda ()
-     (with-current-buffer buffer
-       (frame-element-clear)))))
+  (prompt :prompt "Open selected links in new buffers"
+          :sources (make-instance
+                    'frame-source
+                    :buffer buffer
+                    :multi-selection-p t
+                    :return-actions (list (lambda-command open-new-buffers (urls)
+                                            (mapcar (lambda (i)
+                                                      (make-buffer :url (quri:uri i)))
+                                                    urls))))
+          :after-destructor (lambda () (with-current-buffer buffer
+                                    (frame-element-clear)))))
 
 (defun frame-source-selection ()
   (remove-duplicates (mapcar #'url (frame-element-get-selection))

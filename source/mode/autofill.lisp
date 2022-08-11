@@ -22,9 +22,9 @@ Use this slot to customize the autofill values available.
 
 The fill can be a string value or a function.  The latter allows you to provide
 content dynamic to the context.")
-   (keymap-scheme
-    (define-scheme "autofill"
-      scheme:cua
+   (keyscheme-map
+    (define-keyscheme-map "autofill-mode" ()
+      keyscheme:default
       (list
        "C-i" 'autofill)))))
 
@@ -75,6 +75,5 @@ it will be in conflict with common-lisp:fill."))
 
 (define-command autofill ()
   "Fill in a field with a value from a saved list."
-  (prompt
-   :prompt "Autofill"
-   :sources (make-instance 'autofill-source)))
+  (prompt :prompt "Autofill"
+          :sources 'autofill-source))

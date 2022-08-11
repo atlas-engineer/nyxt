@@ -11,13 +11,13 @@
 
 (define-mode passthrough-mode ()
   "Mode that forwards all keys to the renderer.
-See the mode `keymap-scheme' for special bindings."
+See the mode `keyscheme-map' for special bindings."
   ((visible-in-status-p nil)
-   (keymap-scheme
-    (define-scheme "application"
-      scheme:cua
+   (keyscheme-map
+    (define-keyscheme-map "passthrough-mode" ()
+      keyscheme:default
       (list
-       "C-z" 'passthrough-mode)))))
+       "C-M-z" 'passthrough-mode)))))
 
 (defmethod enable ((mode passthrough-mode) &key)
   (hooks:add-hook (current-keymaps-hook (buffer mode)) 'keep-override-map)

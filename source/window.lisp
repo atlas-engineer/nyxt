@@ -42,7 +42,7 @@ The channel is popped when a prompt buffer is hidden.")
    (last-key
     nil
     :export nil
-    :type (or null keymap:key)
+    :type (or null keymaps:key)
     :documentation "Last pressed key.  Useful for `self-insert'.")
    (fullscreen-p
     nil
@@ -50,6 +50,11 @@ The channel is popped when a prompt buffer is hidden.")
     :type boolean
     :documentation "Whether the window is displayed in fullscreen.")
    ;; TODO: each frame should have a status buffer, not each window
+   (maximized-p
+    nil
+    :export nil
+    :type boolean
+    :documentation "Whether the window is maximized.")
    (status-buffer
     (make-instance 'status-buffer)
     :type status-buffer
@@ -184,9 +189,7 @@ not try to quit the browser."
 
 (define-command delete-window ()
   "Delete the queried window(s)."
-  (prompt
-   :prompt "Delete window(s)"
-   :sources (make-instance 'window-source)))
+   (prompt :prompt "Delete window(s)" :sources 'window-source))
 
 (define-command delete-current-window (&optional (window (current-window)))
   "Delete WINDOW, or the current window, when omitted."
@@ -214,6 +217,13 @@ When `skip-renderer-resize' is non-nil, don't ask the renderer to "
           (ffi-window-fullscreen window)))
     (toggle-status-buffer :show-p (not fullscreen))
     (toggle-message-buffer :show-p (not fullscreen))))
+
+(define-command toggle-maximize (&key (window (current-window)))
+  "Maximize WINDOW, or the current window, when omitted."
+  (let ((maximized (maximized-p window)))
+    (if maximized
+        (ffi-window-unmaximize window)
+        (ffi-window-maximize window))))
 
 (defun enable-status-buffer (&optional (window (current-window)))
   (setf (ffi-window-status-buffer-height window) (height (status-buffer window))))

@@ -6,63 +6,70 @@
 (in-package :nyxt/hint-mode)
 
 (define-mode hint-mode ()
-  "Mode to interact with links using keyword only."
+  "Interact with elements by typing a short character sequence."
   ((visible-in-status-p nil)
    (rememberable-p nil)
    (auto-follow-hints-p
     nil
     :type boolean
     :documentation "Whether the hints are automatically followed when matching user input.")
-   (box-style (theme:themed-css (theme *browser*)
-                (".nyxt-hint"
-                 :background-color theme:primary
-                 :color theme:on-primary
-                 :font-weight "bold"
-                 :padding "0px 3px 0px 3px"
-                 :border-radius "2px"
-                 :z-index #.(1- (expt 2 31))))
-              :documentation "The style of the boxes, e.g. link hints.")
-   (highlighted-box-style (theme:themed-css (theme *browser*)
-                            (".nyxt-hint.nyxt-highlight-hint"
-                             :background-color theme:accent
-                             :color theme:on-accent))
-                          :documentation "The style of highlighted boxes, e.g. link hints.")
+   (box-style
+    (theme:themed-css (theme *browser*)
+      (".nyxt-hint"
+       :background-color theme:primary
+       :color theme:on-primary
+       :font-family "monospace,monospace"
+       :padding "0px 0.3em"
+       :border-radius "0.3em"
+       :z-index #.(1- (expt 2 31))))
+    :documentation "The style of the boxes, e.g. link hints.")
+   (highlighted-box-style
+    (theme:themed-css (theme *browser*)
+      (".nyxt-hint.nyxt-highlight-hint"
+       :background-color theme:accent
+       :color theme:on-accent))
+    :documentation "The style of highlighted boxes, e.g. link hints.")
+   (hints-alphabet
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    :type string
+    :documentation "The alphabet (charset) to use for hints.
+Order matters -- the ones that go first are more likely to appear more often and
+to index the top of the page.")
+   (hints-selector
+    "a, button, input, textarea, details, select"
+    :type string
+    :documentation "The elements to be hinted.
+The hints-selector syntax is that of CLSS, and broadly, that of CSS. Use it to
+define which elements are picked up by element hinting.
 
-   (hints-alphabet "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                   :type string
-                   :documentation "The alphabet (charset) to use for hints.
-Order matters -- the ones that go first are more likely to appear more often
-and to index the top of the page.")
-   (hints-selector "a, button, input, textarea, details, select, img:not([alt=\"\"])"
-                   :type string
-                   :documentation "Defines which elements are to be hinted. The
-hints-selector syntax is that of CLSS, and broadly, that of CSS. Use it to
-define which elements are picked up by element hinting.")
-   (keymap-scheme
-    (define-scheme "web"
-      scheme:cua
+For instance, to include images:
+
+    a, button, input, textarea, details, select, img:not([alt=\"\"])")
+   (keyscheme-map
+    (define-keyscheme-map "hint-mode" ()
+      keyscheme:cua
       (list
        "C-j" 'follow-hint
-       "C-u C-j" 'follow-hint-new-buffer-focus
        "C-J" 'follow-hint-new-buffer
-       "C-M-j" 'follow-hint-nosave-buffer-focus
+       "C-u C-j" 'follow-hint-new-buffer-focus
        "C-u C-M-j" 'follow-hint-nosave-buffer
+       "C-M-j" 'follow-hint-nosave-buffer-focus
        "M-c h" 'copy-hint-url)
-      scheme:emacs
+      keyscheme:emacs
       (list
        "M-g M-g" 'follow-hint           ; Corresponds to Emacs' `goto-line'.
-       "M-g g" 'follow-hint-new-buffer-focus
        "C-u M-g M-g" 'follow-hint-new-buffer
        "C-u M-g g" 'follow-hint-new-buffer
-       "C-M-g C-M-g" 'follow-hint-nosave-buffer-focus
+       "M-g g" 'follow-hint-new-buffer-focus
        "C-M-g g" 'follow-hint-nosave-buffer
+       "C-M-g C-M-g" 'follow-hint-nosave-buffer-focus
        "C-x C-w" 'copy-hint-url)
-
-      scheme:vi-normal
+      keyscheme:vi-normal
       (list
+       ;; TODO bind copy-hint-url!
        "f" 'follow-hint
-       "F" 'follow-hint-new-buffer-focus
        "; f" 'follow-hint-new-buffer
+       "F" 'follow-hint-new-buffer-focus
        "g f" 'follow-hint-nosave-buffer
        "g F" 'follow-hint-nosave-buffer-focus)))))
 
@@ -131,7 +138,7 @@ define which elements are picked up by element hinting.")
     (run-thread "stylesheet adder"
       (add-stylesheet))
     (run-thread "element hint drawing"
-      (hint-elements (map 'list #'get-nyxt-id hintable-elements) hints))
+      (hint-elements (map 'list #'nyxt/dom:get-nyxt-id hintable-elements) hints))
     (loop for elem across hintable-elements
           for hint in hints
           do (plump:set-attribute elem "nyxt-hint" hint)
@@ -191,18 +198,18 @@ define which elements are picked up by element hinting.")
    (prompter:return-actions (list 'identity
                            (lambda-command click* (elements)
                              (dolist (element (rest elements))
-                               (nyxt/dom:click-element :nyxt-identifier (get-nyxt-id element)))
-                             (nyxt/dom:click-element :nyxt-identifier (get-nyxt-id (first elements)))
+                               (nyxt/dom:click-element element))
+                             (nyxt/dom:click-element (first elements))
                              nil)
                            (lambda-command focus* (elements)
                              (dolist (element (rest elements))
-                               (nyxt/dom:focus-select-element :nyxt-identifier (get-nyxt-id element)))
-                             (nyxt/dom:focus-select-element :nyxt-identifier (get-nyxt-id (first elements)))
+                               (nyxt/dom:focus-select-element element))
+                             (nyxt/dom:focus-select-element (first elements))
                              nil)
                            (lambda-command hover* (elements)
                              (dolist (element (rest elements))
-                               (nyxt/dom:hover-element :nyxt-identifier (get-nyxt-id element)))
-                             (nyxt/dom:hover-element :nyxt-identifier (get-nyxt-id (first elements)))
+                               (nyxt/dom:hover-element element))
+                             (nyxt/dom:hover-element (first elements))
                              nil)))))
 
 (serapeum:export-always 'query-hints)
@@ -295,20 +302,20 @@ FUNCTION is the action to perform on the selected elements."
     `(("Body" ,(str:shorten 80 (nyxt/dom:body img)))))))
 
 (defmethod %follow-hint ((element plump:element))
-  (nyxt/dom:click-element :nyxt-identifier (get-nyxt-id element)))
+  (nyxt/dom:click-element element))
 
 (defmethod %follow-hint ((input nyxt/dom:input-element))
   (str:string-case (plump:get-attribute input "type")
-    ("button" (nyxt/dom:click-element :nyxt-identifier (get-nyxt-id input)))
-    ("radio" (nyxt/dom:check-element :nyxt-identifier (get-nyxt-id input)))
-    ("checkbox" (nyxt/dom:check-element :nyxt-identifier (get-nyxt-id input)))
-    (otherwise (nyxt/dom:focus-select-element :nyxt-identifier (get-nyxt-id input)))))
+    ("button" (nyxt/dom:click-element input))
+    ("radio" (nyxt/dom:check-element input))
+    ("checkbox" (nyxt/dom:check-element input))
+    (otherwise (nyxt/dom:focus-select-element input))))
 
 (defmethod %follow-hint ((textarea nyxt/dom:textarea-element))
-  (nyxt/dom:focus-select-element :nyxt-identifier (get-nyxt-id textarea)))
+  (nyxt/dom:focus-select-element textarea))
 
 (defmethod %follow-hint ((details nyxt/dom:details-element))
-  (nyxt/dom:toggle-details-element :nyxt-identifier (get-nyxt-id details)))
+  (nyxt/dom:toggle-details-element details))
 
 (define-class options-source (prompter:source)
   ((prompter:name "Options"))
@@ -324,8 +331,7 @@ FUNCTION is the action to perform on the selected elements."
                                                           :multi-selection-p
                                                           (plump:get-attribute select "multiple")))))
     (dolist (option (mapcar (rcurry #'find options :test #'equalp) values))
-      (nyxt/dom:select-option-element :nyxt-identifier (get-nyxt-id option)
-                                      :parent-select-identifier (get-nyxt-id select)))))
+      (nyxt/dom:select-option-element option select))))
 
 (defmethod %follow-hint-new-buffer-focus ((a nyxt/dom:a-element) &optional parent-buffer)
   (make-buffer-focus :url (url a)

@@ -107,8 +107,8 @@ The `implicit-visits' count is incremented."
   "Delete queried history entries."
   (let ((entries (prompt
                   :prompt "Delete entries"
-                  :sources (list (make-instance 'history-disowned-source
-                                                :buffer buffer)))))
+                  :sources (make-instance 'history-disowned-source
+                                          :buffer buffer))))
     (files:with-file-content (history (history-file buffer))
       (dolist (entry entries)
         (htree:delete-data history entry)))))
@@ -120,10 +120,9 @@ This removes the parenthood with the parent buffer, if there was any.
 When called over many or all buffers, it may free many history entries which
 then become available for deletion with `delete-history-entry'."
   (let ((buffers (or (alex:ensure-list buffer)
-                     (prompt
-                      :prompt "Reset histories of buffer(s)"
-                      :sources (list (make-instance 'buffer-source
-                                                    :return-actions '()))))))
+                     (prompt :prompt "Reset histories of buffer(s)"
+                             :sources (make-instance 'buffer-source
+                                                     :return-actions '())))))
     (files:with-file-content (history (history-file (current-buffer)))
       (dolist (buffer buffers)
         (htree:reset-owner history (id buffer))))))
@@ -223,7 +222,8 @@ lot."
 (defun history-deserialize-sexp (stream &optional (serialization-state (s-serialization::make-serialization-state)))
   "Read and return an s-expression serialized version of a lisp object from stream, optionally reusing a serialization state"
   (s-serialization::reset serialization-state)
-  (let ((sexp (safe-read stream nil stream)))
+  (let* ((*package* (find-package :nyxt))
+         (sexp (safe-read stream nil stream)))
     (if (eq sexp stream)
         nil
         (history-deserialize-sexp-internal sexp (s-serialization::get-hashtable serialization-state)))))
@@ -315,7 +315,9 @@ lot."
 This modifies the history owners as follows.
 For each owner, make a buffer, swap old owner identifier for the new buffer ID
 and maintain a table of (old-id -> new-id).
-Finally go through all the owners and update their creator."
+Finally go through all the owners and update their creator.
+
+Return non-NIL of history was restored, NIL otherwise."
   (when history
     (log:info "Restoring ~a buffer~:p from history."
               (hash-table-count (htree:owners history)))
@@ -380,7 +382,7 @@ Finally go through all the owners and update their creator."
 
 (define-class history-name-source (prompter:source)
   ((prompter:name "Histories")
-   (prompter:constructor (histories-list))
+   (prompter:constructor (mapcar #'pathname-name (histories-list)))
    (prompter:hide-attribute-header-p :single)))
 
 (define-command store-history-by-name ()
@@ -388,7 +390,7 @@ Finally go through all the owners and update their creator."
 Useful for session snapshots, as `restore-history-by-name' will restore opened buffers."
   (sera:and-let* ((name (prompt1
                           :prompt "The name to store history with"
-                          :sources (list (make-instance 'prompter:raw-source)
+                          :sources (list 'prompter:raw-source
                                          (make-instance 'history-name-source))))
                   (new-file (make-instance 'history-file
                                            :base-path (make-pathname
@@ -406,11 +408,12 @@ The imported history file is untouched while the current one is overwritten.
 If you want to save the current history file beforehand, call
 `store-history-by-name' to save it under a new name."
   ;; TODO: backup current history?
-  (sera:and-let* ((name (prompt1
-                          :prompt "The name of the history to restore"
-                          :sources (list (make-instance 'history-name-source))))
+  (sera:and-let* ((name (prompt1 :prompt "The name of the history to restore"
+                                 :sources 'history-name-source))
                   (new-file (make-instance 'history-file
-                                           :base-path (uiop:ensure-pathname name :truename t))))
+                                           :base-path (make-pathname
+                                                       :name name
+                                                       :directory (pathname-directory (histories-directory))))))
     (let ((old-buffers (buffer-list))
           (new-history (files:content new-file)))
       (restore-history-buffers new-history (history-file (current-buffer)))

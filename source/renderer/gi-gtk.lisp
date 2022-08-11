@@ -16,8 +16,8 @@
 (setf +renderer+ "GI-GTK")
 (handler-bind ((warning #'muffle-warning))
   (let ((renderer-thread-name "Nyxt renderer thread"))
-    (defun renderer-thread-p ()
-      (string= (bt:thread-name (bt:current-thread))
+    (defun renderer-thread-p (&optional (thread (bt:current-thread)))
+      (string= (bt:thread-name thread)
                #+darwin
                "thread"
                #-darwin
@@ -40,7 +40,8 @@ interface. On Darwin, we must run the GTK thread on the main thread."
         (let ((main-thread (bt:make-thread #'main-func :name renderer-thread-name)))
           (unless *run-from-repl-p*
             (bt:join-thread main-thread)
-            (uiop:quit (slot-value browser 'exit-code))))
+            ;; See comment about FreeBSD in gtk.lisp
+            (uiop:quit (slot-value browser 'exit-code) #+freebsd nil)))
         #+darwin
         (main-func)))
 

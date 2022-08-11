@@ -2,7 +2,18 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/repl-mode
-    (:documentation "Mode for programming in Common Lisp."))
+    (:documentation "Mode for programming in Common Lisp.
+
+It has a multi-cell/panel/input environment that evaluates the inputted code on `evaluate-cell'.
+
+Features:
+- Creating additional cells using the bottom cell.
+- Moving cells with `move-cell-down', `move-cell-up', and dedicated cell UI buttons.
+- Basic tab-completion of the inputted symbols.
+- Multiple evaluation results.
+- Standard output recording.
+- Binding results to the automatically-generated variables.
+- Inline debugging (similar to Nyxt-native debugging with `*debug-on-error*' on.)"))
 (in-package :nyxt/repl-mode)
 
 (define-class evaluation ()
@@ -21,12 +32,15 @@
    (results
     nil
     :documentation "The results (as a list) of `input' evaluation.")
+   (output
+    nil
+    :documentation "The text printed out during evaluation.")
    (ready-p
     nil
     :documentation "The evaluation is terminated.")
    (raised-condition
     nil
-    :type (maybe condition)
+    :type (maybe ndebug:condition-wrapper)
     :documentation "The condition that was raised during the `input' execution."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
@@ -34,7 +48,23 @@
 
 (defmethod initialize-instance :after ((evaluation evaluation) &key)
   (run-thread "repl cell evaluation"
-    (setf (results evaluation) (nyxt::evaluate (input evaluation)))
+    (let ((nyxt::*interactive-p* t)
+          (*standard-output* (make-string-output-stream))
+          (*package* (find-package :nyxt-user)))
+      (ndebug:with-debugger-hook
+          (:wrapper-class 'nyxt::debug-wrapper
+           :ui-display (setf (ready-p evaluation) t
+                             (raised-condition evaluation) %wrapper%)
+           :ui-cleanup (lambda (wrapper)
+                         (declare (ignore wrapper))
+                         (setf (raised-condition evaluation) nil)
+                         (reload-current-buffer)))
+        (with-input-from-string (input (input evaluation))
+          (alex:lastcar
+           (mapcar (lambda (s-exp)
+                     (setf (results evaluation) (multiple-value-list (eval s-exp))
+                           (output evaluation) (get-output-stream-string *standard-output*)))
+                   (safe-slurp-stream-forms input))))))
     (setf (ready-p evaluation) t)
     (peval (setf (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "#evaluation-result-~a" (id evaluation))))
                            |innerHTML|)
@@ -43,42 +73,43 @@
 (define-mode repl-mode ()
   "Mode for interacting with the REPL."
   ((rememberable-p nil)
-   (keymap-scheme
-    (define-scheme "repl"
-      scheme:cua
+   (keyscheme-map
+    (define-keyscheme-map "repl-mode" ()
+      keyscheme:default
       (list
        "C-return" 'evaluate-cell
        "(" 'paren
        "tab" 'tab-complete-symbol)
-      scheme:emacs
+      keyscheme:emacs
       (list
-       "C-f" 'nyxt/input-edit-mode:cursor-forwards
-       "C-b" 'nyxt/input-edit-mode:cursor-backwards
-       "M-f" 'nyxt/input-edit-mode:cursor-forwards-word
-       "M-b" 'nyxt/input-edit-mode:cursor-backwards-word
-       "C-d" 'nyxt/input-edit-mode:delete-forwards
-       "M-backspace" 'nyxt/input-edit-mode:delete-backwards-word
-       "M-d" 'nyxt/input-edit-mode:delete-forwards-word
        "C-M-x" 'evaluate-cell
-       ;; FIXME: Org uses C-c C-_ and C-c C-^, but those are shadowed by C-c in Nyxt.
-       "C-_" 'move-cell-down
-       "C-^" 'move-cell-up
+       "C-b" 'nyxt/input-edit-mode:cursor-backwards
+       "C-f" 'nyxt/input-edit-mode:cursor-forwards
+       "C-d" 'nyxt/input-edit-mode:delete-forwards
+       "M-b" 'nyxt/input-edit-mode:cursor-backwards-word
+       "M-f" 'nyxt/input-edit-mode:cursor-forwards-word
+       "M-backspace" 'nyxt/input-edit-mode:delete-backwards-word
+       "C-backspace" 'nyxt/input-edit-mode:delete-backwards-word
+       "M-d" 'nyxt/input-edit-mode:delete-forwards-word
        "M-p" 'previous-cell
-       "M-n" 'next-cell)
-      scheme:vi-normal
+       "M-n" 'next-cell
+       ;; FIXME: Org uses C-c C-_ and C-c C-^, but those are shadowed by C-c in Nyxt.
+       "C-^" 'move-cell-up
+       "C-_" 'move-cell-down)
+      keyscheme:vi-normal
       (list
        ;; TODO: deleting chars/words
-       "l" 'nyxt/input-edit-mode:cursor-forwards
        "h" 'nyxt/input-edit-mode:cursor-backwards
+       "l" 'nyxt/input-edit-mode:cursor-forwards
+       "x" 'nyxt/input-edit-mode:delete-forwards
+       "b" 'nyxt/input-edit-mode:cursor-backwards-word
+       "w" 'nyxt/input-edit-mode:cursor-forwards-word
+       "d b" 'nyxt/input-edit-mode:delete-backwards-word
+       "d w" 'nyxt/input-edit-mode:delete-forwards-word
        "k" 'previous-cell
        "j" 'next-cell
-       "K" 'move-cell-down
-       "J" 'move-cell-up
-       "w" 'nyxt/input-edit-mode:cursor-forwards-word
-       "b" 'nyxt/input-edit-mode:cursor-backwards-word
-       "x" 'nyxt/input-edit-mode:delete-forwards
-       "d b" 'nyxt/input-edit-mode:delete-backwards-word
-       "d w" 'nyxt/input-edit-mode:delete-forwards-word)))
+       "K" 'move-cell-up
+       "J" 'move-cell-down)))
    (style (theme:themed-css (theme *browser*)
             (*
              :font-family "monospace,monospace")
@@ -92,7 +123,7 @@
              :grid-template-columns "auto 1fr"
              :width "100%"
              :padding 0
-             :margin 0)
+             :margin "1em 0")
             (.prompt
              :color theme:on-accent
              :padding-right "4px"
@@ -106,6 +137,8 @@
              :padding "3px"
              :autofocus "true"
              :width "100%")
+            (.button
+             :display "block")
             ("#evaluations"
              :font-size "12px"
              :flex-grow "1"
@@ -184,7 +217,7 @@
                   (current-evaluation repl) id)
             (setf (current-evaluation repl) (length (evaluations repl))
                   (evaluations repl) (append (evaluations repl) (list evaluation))))
-        (reload-buffers (list (buffer repl)))))))
+        (reload-buffer (buffer repl))))))
 
 (define-command previous-cell (&optional (repl (find-submode 'repl-mode)))
   "Move to the previous input cell."
@@ -215,7 +248,7 @@
       (psetf (elt evals (1- id)) (elt evals id)
              (elt evals id) (elt evals (1- id))
              (current-evaluation repl) (1- id)))
-    (reload-buffers (list (buffer repl)))))
+    (reload-buffer (buffer repl))))
 
 (define-command move-cell-down (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
   "Move the current code cell down, swapping it with the one below."
@@ -224,7 +257,7 @@
       (psetf (elt evals (1+ id)) (elt evals id)
              (elt evals id) (elt evals (1+ id))
              (current-evaluation repl) (1+ id)))
-    (reload-buffers (list (buffer repl)))))
+    (reload-buffer (buffer repl))))
 
 (define-command paren (&optional (repl (find-submode 'repl-mode)))
   ;; FIXME: Not an intuitive behavior? What does Emacs do?
@@ -263,14 +296,15 @@
            (previous-delimiter (if previous-delimiter (1+ previous-delimiter) 0))
            (symbol-to-complete (subseq input previous-delimiter cursor))
            (completion (handler-case
-                           (prompt1 :prompt "Symbol to complete"
-                             :input symbol-to-complete
-                             :sources (list (make-instance
-                                             'prompter:source
-                                             :name "Completions"
-                                             :constructor (first (swank:simple-completions
-                                                                  symbol-to-complete *package*)))))
-                         (nyxt::nyxt-prompt-buffer-canceled () nil))))
+                           (prompt1
+                            :prompt "Symbol to complete"
+                            :input symbol-to-complete
+                            :sources (make-instance
+                                      'prompter:source
+                                      :name "Completions"
+                                      :constructor (first (swank:simple-completions
+                                                           symbol-to-complete *package*))))
+                         (nyxt::prompt-buffer-canceled () nil))))
       (when completion
         (setf (input repl) (str:concat (subseq input 0 previous-delimiter)
                                        completion (subseq input cursor))
@@ -278,20 +312,37 @@
 
 (defun html-result (evaluation)
   (spinneret:with-html-string
-    (if (ready-p evaluation)
-        (loop
-          for result in (results evaluation)
-          for sub-order from 0
-          for name = (if (serapeum:single (results evaluation))
-                         (intern (format nil "V~d" (id evaluation)))
-                         (intern (format nil "V~d.~d" (id evaluation) sub-order)))
-          do (setf (symbol-value name) result)
-          collect (:div
-                   (format nil "~(~a~) = " name)
-                   (:raw
-                    (value->html result (or (typep result 'standard-object)
-                                            (typep result 'structure-object))))))
-        (:span "Calculating..."))))
+    (unless (uiop:emptyp (output evaluation))
+      (:pre (output evaluation)))
+    (cond
+      ((and (ready-p evaluation)
+            (raised-condition evaluation))
+       (let ((wrapper (raised-condition evaluation)))
+         (:pre (format nil "~a" (ndebug:condition-itself wrapper)))
+         (dolist (restart (ndebug:restarts wrapper))
+           (:button :class "button"
+                    :onclick (ps:ps (nyxt/ps:lisp-eval
+                                     (:title "condition")
+                                     (ndebug:invoke wrapper restart)))
+                    (format nil "[~a] ~a" (dissect:name restart) (dissect:report restart))))
+         (:h3 "Backtrace:")
+         (:raw (nyxt::backtrace->html wrapper))))
+      ((ready-p evaluation)
+       (if (results evaluation)
+           (loop
+             for result in (results evaluation)
+             for sub-order from 0
+             for name = (if (serapeum:single (results evaluation))
+                            (intern (format nil "V~d" (id evaluation)))
+                            (intern (format nil "V~d.~d" (id evaluation) sub-order)))
+             do (setf (symbol-value name) result)
+             collect (:div
+                      (format nil "~(~a~) = " name)
+                      (:raw
+                       (value->html result (or (typep result 'standard-object)
+                                               (typep result 'structure-object))))))
+           (:span "No values.")))
+      (t (:span "Calculating...")))))
 
 (define-internal-page-command-global lisp-repl ()
     (repl-buffer "*Lisp REPL*" 'repl-mode)

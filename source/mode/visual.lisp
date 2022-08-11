@@ -13,66 +13,66 @@
 strong, sub, sup, listing, xmp, plaintext, basefont, big, blink, center, font,
 marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
     :type string)
-   (keymap-scheme
-    (define-scheme "visual"
-      scheme:cua
+   (keyscheme-map
+    (define-keyscheme-map "visual-mode" ()
+      keyscheme:cua
       (list
        "up" 'backward-line
        "down" 'forward-line
        "left" 'backward-char
        "right" 'forward-char
-       "escape" 'visual-mode
-       "delete" 'clear-selection
-       "keypadend" 'end-line
-       "space" 'forward-char
        "backspace" 'backward-char
-       "keypadhome" 'beginning-line
-       "shift-down" 'forward-line-with-selection
-       "shift-up" 'backward-line-with-selection
+       "space" 'forward-char
        "shift-left" 'backward-char-with-selection
        "shift-right" 'forward-char-with-selection
        "C-shift-left" 'backward-word-with-selection
        "C-shift-right" 'forward-word-with-selection
+       "keypadhome" 'beginning-line
+       "keypadend" 'end-line
+       "shift-up" 'backward-line-with-selection
+       "shift-down" 'forward-line-with-selection
        "C-shift-up" 'beginning-line-with-selection
        "C-shift-down" 'end-line-with-selection
+       "escape" 'visual-mode
+       "delete" 'clear-selection
        "C-c" 'visual-mode)
-      scheme:emacs
+      keyscheme:emacs
       (list
-       "C-h" 'select-paragraph
-       "shift-space" 'toggle-mark
-       "C-space" 'toggle-mark
-       "C-g" 'visual-mode
-       "C-f" 'forward-char
-       "C-b" 'backward-char
-       "M-f" 'forward-word
-       "M-b" 'backward-word
-       "C-n" 'forward-line
        "C-p" 'backward-line
-       "C-a" 'beginning-line
-       "C-e" 'end-line
+       "C-n" 'forward-line
+       "C-b" 'backward-char
+       "C-f" 'forward-char
+       "M-b" 'backward-word
+       "M-f" 'forward-word
        "M-a" 'backward-sentence
        "M-e" 'forward-sentence
-       "M-}" 'forward-paragraph
        "M-{" 'backward-paragraph
+       "M-}" 'forward-paragraph
+       "C-h" 'select-paragraph
+       "M-<" 'backward-document
        "M->" 'forward-document
-       "M-<" 'backward-document)
+       "C-a" 'beginning-line
+       "C-e" 'end-line
+       "C-g" 'visual-mode
+       "shift-space" 'toggle-mark
+       "C-space" 'toggle-mark)
       ;; vi keybindings only enable use of vim's plain "visual" mode for now
-      scheme:vi-normal
+      keyscheme:vi-normal
       (list
        "h" 'backward-char
-       "j" 'forward-line
-       "k" 'backward-line
        "l" 'forward-char
-       "w" 'forward-word
+       "k" 'backward-line
+       "j" 'forward-line
        "b" 'backward-word
-       "$" 'end-line
-       ")" 'forward-sentence
+       "w" 'forward-word
        "(" 'backward-sentence
-       "}" 'forward-paragraph
+       ")" 'forward-sentence
        "{" 'backward-paragraph
-       "G" 'forward-document
+       "}" 'forward-paragraph
        "g g" 'backward-document
+       "G" 'forward-document
        "0" 'beginning-line
+       "$" 'end-line
        "v" 'toggle-mark
        "C-c" 'visual-mode)))
    (mark-set nil)))
@@ -82,7 +82,7 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
   (block-page-keypresses)
   (select-paragraph mode)
   ;; imitating visual mode in vim
-  (when (equal (keymap-scheme-name (buffer mode)) scheme:vi-normal)
+  (when (equal (keyscheme (buffer mode)) keyscheme:vi-normal)
     (setf (mark-set mode) t)))
 
 (defmethod disable ((mode visual-mode) &key)
@@ -94,18 +94,8 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
   `(("Hint" ,(plump:get-attribute element "nyxt-hint"))
     ("Text" ,(plump:text element))))
 
-(define-parenscript set-caret-on-start (&key nyxt-identifier)
-  (let ((el (nyxt/ps:qs-nyxt-id document nyxt-identifier))
-        (range (ps:chain document (create-range)))
-        (sel (ps:chain window (get-selection))))
-    (ps:chain window (focus))
-    (ps:chain range (set-start (ps:@ el child-nodes 0) 0))
-    (ps:chain range (collapse true))
-    (ps:chain sel (remove-all-ranges))
-    (ps:chain sel (add-range range))))
-
 (defmethod %follow-hint ((element nyxt/dom:text-element))
-  (set-caret-on-start :nyxt-identifier (get-nyxt-id element)))
+  (nyxt/dom:set-caret-on-start element))
 
 (defmethod caret-action ((mode visual-mode))
   (if (mark-set mode)

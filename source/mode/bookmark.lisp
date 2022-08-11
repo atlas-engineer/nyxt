@@ -25,39 +25,38 @@ Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
    (bookmarks-file
     (make-instance 'bookmarks-file)
     :type bookmarks-file
-    :documentation "The file where the system will create/save the bookmarks.")
-   (keymap-scheme
-    (define-scheme "bookmarks"
-      scheme:cua
+    :documentation "File where bookmarks are saved.")
+   (keyscheme-map
+    (define-keyscheme-map "bookmarks-mode" ()
+      keyscheme:default
+      (list
+       "C-b" 'list-bookmarks
+       "C-m g" 'bookmark-hint)
+      keyscheme:cua
       (list
        "C-m o" 'set-url-from-bookmark
        "C-m s" 'bookmark-current-url
        "C-d" 'bookmark-current-url
        "C-m C-s" 'bookmark-buffer-url
-       "C-m k" 'delete-bookmark
        "C-m l" 'bookmark-url
-       "C-b" 'list-bookmarks
-       "C-m g" 'bookmark-hint)
-
-      scheme:emacs
+       "C-m k" 'delete-bookmark)
+      keyscheme:emacs
       (list
        "C-x r j" 'set-url-from-bookmark
        "C-x r M" 'bookmark-current-url
        "C-x r m" 'bookmark-buffer-url
-       "C-x r k" 'delete-bookmark
        "C-x r l" 'bookmark-url
-       "C-m g" 'bookmark-hint)
-
-      scheme:vi-normal
+       "C-x r k" 'delete-bookmark)
+      keyscheme:vi-normal
       (list
-       "m u" 'bookmark-url
-       "m d" 'delete-bookmark
-       "m o" 'set-url-from-bookmark
-       "m m" 'bookmark-buffer-url
-       "m M" 'bookmark-current-url
        "m l" 'list-bookmarks
-       "m f" 'bookmark-hint))
-    :type keymap:scheme)
+       "m f" 'bookmark-hint
+       "m o" 'set-url-from-bookmark
+       "m M" 'bookmark-current-url
+       "m m" 'bookmark-buffer-url
+       "m u" 'bookmark-url
+       "m d" 'delete-bookmark))
+    :type keymaps:keyscheme)
    (style (theme:themed-css (theme *browser*)
             ("summary"
              :background-color theme:secondary
@@ -255,14 +254,10 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                            :return-actions (list (lambda-mapped-command bookmark-current-url)))))
 
 (define-command bookmark-url
-    (&key (url (ignore-errors
-                (quri:uri
-                 (first
-                  (prompt
-                   :prompt "Bookmark URL"
-                   :sources (list
-                             (make-instance 'prompter:raw-source
-                                            :name "New URL"))))))))
+    (&key (url (ignore-errors (quri:uri (prompt1
+                                         :prompt "Bookmark URL"
+                                         :sources (make-instance 'prompter:raw-source
+                                                                 :name "New URL"))))))
   "Prompt for a URL to bookmark."
   (if (not (valid-url-p url))
       (echo "Invalid URL '~a'" url)
@@ -408,7 +403,8 @@ rest in background buffers."
           (files:expand file))))
 
 (defmethod files:deserialize ((profile nyxt-profile) (path bookmarks-file) raw-content &key)
-  (let ((entries (safe-read raw-content)))
+  (let ((*package* (find-package :nyxt))
+        (entries (safe-read raw-content)))
     (mapcar (lambda (entry)
               (when (getf entry :url)
                 (setf (getf entry :url)
@@ -424,7 +420,7 @@ rest in background buffers."
     (&key (html-file (prompt1
                        ;; TODO: Is there a more intuitive directory for bookmarks?
                        :input (uiop:native-namestring (uiop:getcwd))
-                       :extra-modes '(nyxt/file-manager-mode:file-manager-mode)
+                       :extra-modes 'nyxt/file-manager-mode:file-manager-mode
                        :sources (make-instance
                                  'nyxt/file-manager-mode:file-source
                                  :extensions '("html")))))

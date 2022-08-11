@@ -43,21 +43,21 @@ A list of objects. Does not necessarily have the same order as `files' of the sc
   (remove-content-script buffer extension script)
   (dolist (file (files script))
     (if (equal (pathname-type file) "css")
-        (push (ffi-buffer-add-user-style buffer (uiop:read-file-string
-                                                  (merge-extension-path extension file))
-                                          :inject-as-author-p t
-                                          :all-frames-p t
-                                          :world-name (name extension)
-                                          :allow-list (match-patterns script))
+        (push (ffi-buffer-add-user-style
+               buffer (make-instance 'nyxt/user-script-mode:user-style
+                                     :base-path (merge-extension-path extension file)
+                                     :world-name (name extension)
+                                     :allow-list (match-patterns script)))
               (user-styles script))
         (push
-         (ffi-buffer-add-user-script buffer (make-instance 'nyxt/user-script-mode:user-script
-                                                           :code (uiop:read-file-string
-                                                                  (merge-extension-path extension file))
-                                                           :all-frames-p t
-                                                           :world-name (name extension)
-                                                           :run-at :document-start
-                                                           :include (match-patterns script)))
+         (ffi-buffer-add-user-script
+          buffer (make-instance 'nyxt/user-script-mode:user-script
+                                :code (uiop:read-file-string
+                                       (merge-extension-path extension file))
+                                :all-frames-p t
+                                :world-name (name extension)
+                                :run-at :document-start
+                                :include (match-patterns script)))
          (user-scripts script)))))
 
 (defun make-content-script (json)
@@ -151,22 +151,27 @@ https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.
                                              (gethash "dark" max-icon))))))
 
 (define-class browser-action ()
-  ((default-popup nil
-                  :type (or null string pathname)
-                  :documentation "An HTML file for the popup to open when its icon is clicked.")
-   (default-title nil
-                  :type (or null string)
-                  :documentation "The title to label the popup with.")
-   (default-icon nil
-                 :type (or null string)
-                 :documentation "The extension icon to use in mode line.")
+  ((default-popup
+     nil
+     :type (or null string pathname)
+     :documentation "An HTML file for the popup to open when its icon is clicked.")
+   (default-title
+     nil
+     :type (or null string)
+     :documentation "The title to label the popup with.")
+   (default-icon
+     nil
+     :type (or null string)
+     :documentation "The extension icon to use in status buffer.")
    ;; TODO: Use those.
-   (default-light-icon nil
-                       :type (or null string)
-                       :documentation "The extension icon for use in mode line in the light theme.")
-   (default-dark-icon nil
-                       :type (or null string)
-                       :documentation "The extension icon for use in mode line in the dark theme."))
+   (default-light-icon
+     nil
+     :type (or null string)
+     :documentation "The extension icon for use in status buffer in the light theme.")
+   (default-dark-icon
+     nil
+     :type (or null string)
+     :documentation "The extension icon for use in status buffer in the dark theme."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
@@ -231,7 +236,7 @@ Value is the loadable URL of that file.")
                    :documentation "Configuration for popup opening on extension icon click.")
    (storage-path nil
                  :type (or null extension-storage-file)
-                 :documentation "The path that the storage API stores data in.")
+                 :documentation "Path that the storage API stores data in.")
    (destructor (lambda (mode)
                  (dolist (script (content-scripts mode))
                    (remove-content-script (buffer mode) mode script))))
@@ -255,7 +260,12 @@ Value is the loadable URL of that file.")
                                                (format nil "file://~a" file)
                                                (make-data-url file)))))
                                  (nyxt/file-manager-mode:recursive-directory-elements
-                                  (extension-directory mode)))))))))
+                                  (extension-directory mode))))))))
+  (:toggler-command-p nil))
+
+(defmethod initialize-instance :after ((mode extension) &key)
+  (when (eq 'extension (sera:class-name-of mode))
+    (error "Cannot initialize `extension', you must subclass it.")))
 
 (export-always 'has-permission-p)
 (defmethod has-permission-p ((extension extension) (permission string))
@@ -388,7 +398,7 @@ DIRECTORY should be the one containing manifest.json file for the extension in q
     (lambda (url buffer)
       (let ((data "<h1>Resource not found</h1>")
             (type "text/html;charset=utf8"))
-        (with-protect ("Error while processing the web-extension scheme: ~a" :condition)
+        (with-protect ("Error while processing the web-extension keyscheme: ~a" :condition)
           (sera:and-let* ((url (quri:uri url))
                           (path (quri:uri-path url))
                           (parts (str:split "/" path :limit 2))

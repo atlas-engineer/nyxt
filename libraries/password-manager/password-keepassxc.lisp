@@ -20,10 +20,12 @@
 (defmethod list-passwords ((password-interface keepassxc-interface))
   (or (entries-cache password-interface)
       (let* ((st (make-string-input-stream (master-password password-interface)))
-             (output (execute password-interface (list "ls" (password-file password-interface))
+             (output (execute password-interface
+                              (list "ls" "-Rf" ; Recursive flattened.
+                                    (password-file password-interface))
                        :input st :output '(:string :stripped t))))
         (setf (entries-cache password-interface)
-              (remove "Recycle Bin/" (sera:lines output) :test #'equal)))))
+              (remove-if (alexandria:curry #'str:ends-with-p "/") (sera:lines output))))))
 
 (defmethod clip-password ((password-interface keepassxc-interface) &key password-name service)
   (declare (ignore service))
@@ -31,7 +33,8 @@
     (execute password-interface (list "clip"
                                       (password-file password-interface)
                                       password-name)
-      :input st)))
+      :input st
+      :wait-p nil)))
 
 (defmethod clip-username ((password-interface keepassxc-interface) &key password-name service)
   (declare (ignore service))
@@ -40,7 +43,8 @@
                                       "--attribute" "username"
                                       (password-file password-interface)
                                       password-name)
-             :input st)))
+             :input st
+             :wait-p nil)))
 
 (defmethod save-password ((password-interface keepassxc-interface)
                           &key password-name username password service)

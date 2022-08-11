@@ -17,12 +17,12 @@
 (define-mode file-manager-mode (nyxt/prompt-buffer-mode:prompt-buffer-mode)
   "Prompt buffer mode for file choosing."
   ((visible-in-status-p nil)
-   (keymap-scheme
-    (define-scheme "hint"
-      scheme:cua
+   (keyscheme-map
+    (define-keyscheme-map "file-manager-mode" ()
+      keyscheme:default
       (list
        "C-backspace" 'directory-up)
-      scheme:emacs
+      keyscheme:emacs
       (list
        "C-l" 'directory-up)))))
 
@@ -219,16 +219,15 @@ See `supported-media-types' of `file-mode'."
                  "Rename the first chosen file."
                  (let* ((file (first files))
                         (name (files:basename file)))
-                   (rename-file file (prompt1
-                                       :prompt (format nil "New name for ~a" name)
-                                       :sources (list (make-instance 'prompter:raw-source))
-                                       :input name))))
+                   (rename-file file (prompt1 :prompt (format nil "New name for ~a" name)
+                                              :sources 'prompter:raw-source
+                                              :input name))))
                ;; TODO: File/directory copying.
                (lambda-command open-with* (files)
                  "Open files with the selected program."
                  (let* ((program (prompt1
-                                   :prompt "The program to open the selected files with"
-                                   :sources (list (make-instance 'program-source)))))
+                                  :prompt "The program to open the selected files with"
+                                  :sources 'program-source)))
                    (uiop:launch-program (cons (uiop:native-namestring program) (mapcar #'uiop:native-namestring files))))))
          (slot-value source 'prompter:return-actions))))
 
@@ -268,7 +267,11 @@ Can be used as a `open-file-function'."
     ;; We can probably signal something and display a notification.
     (error (c) (log:error "Opening ~a: ~a~&" filename c))))
 
-(define-command-global open-file (&key (default-directory *default-pathname-defaults*))
+(define-command-global open-file (&key (default-directory
+                                        (if (quri:uri-file-p (url (current-buffer)))
+                                            (uiop:pathname-directory-pathname
+                                             (quri:uri-path (url (current-buffer))))
+                                            *default-pathname-defaults*)))
   "Open a file from the filesystem.
 
 The user is prompted with the prompt-buffer, files are browsable with
@@ -283,11 +286,10 @@ directory name) as parameter.
 
 `file-source' also has `supported-media-types'. You can append new types to
 it. Every type in `supported-media-types' will be opened directly in Nyxt."
-  (prompt
-   :extra-modes '(file-manager-mode)
-   :input (uiop:native-namestring default-directory)
-   :prompt "Open file"
-   :sources (list (make-instance 'open-file-source))))
+  (prompt :prompt "Open file"
+          :extra-modes 'file-manager-mode
+          :input (uiop:native-namestring default-directory)
+          :sources 'open-file-source))
 
 (define-command-global download-open-file ()
   "Open file in Nyxt or externally."

@@ -18,6 +18,7 @@ A naive benchmark on a 16 Mbps bandwidth gives us
     4 jobs: 2m51s
     8 jobs: 2m21s")
 
+(export-always 'nyxt-submodule-system)
 (defclass nyxt-submodule-system (asdf:system) ()
   (:documentation "This system sole purpose is to fetch the Git submodules found in '.gitmodules' next to the system definition file."))
 (import 'nyxt-submodule-system  :asdf-user)

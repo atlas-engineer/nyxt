@@ -118,29 +118,52 @@ major versions."
 
 (define-migration "3"
   (download-directory)
-  (:p (:code "download-directory") " is in " (:nxref "context-buffer") ".")
+  (:p (:nxref :slot 'download-directory :class-name 'context-buffer)
+      " is in " (:nxref :class-name 'context-buffer) ".")
 
   (history-file)
-  (:p (:code "history-file") " is in " (:nxref "context-buffer") ".")
+  (:p (:nxref :slot 'history-file :class-name 'context-buffer)
+      " is in " (:nxref :class-name 'context-buffer) ".")
 
   (standard-output-file standard-error-file)
-  (:p (:nxref "standard-output-file") " and " (:nxref "standard-error-file")
-      " are in " (:code "context-buffer") ".")
+  (:p (:nxref :slot 'nyxt:standard-output-file :class-name 'context-buffer) " and "
+      (:nxref :slot 'nyxt:error-output-file :class-name 'context-buffer)
+      " are in " (:nxref :class-name 'context-buffer) ".")
 
   (annotations-file)
-  (:p (:nxref "annotations-file") " is in " (:nxref "nyxt/annotate-mode:annotate-mode") ".")
+  (:p (:nxref :slot 'nyxt/annotate-mode:annotations-file :class-name 'nyxt/annotate-mode:annotate-mode)
+      " is in " (:nxref :class-name 'nyxt/annotate-mode:annotate-mode) ".")
 
   (auto-mode-rules-file)
-  (:p (:nxref "auto-mode-rules-file") " is in " (:nxref "nyxt/auto-mode:auto-mode") ".")
+  (:p (:nxref :slot 'nyxt/auto-mode:auto-mode-rules-file :class-name 'nyxt/auto-mode:auto-mode)
+      " is in " (:nxref :class-name 'nyxt/auto-mode:auto-mode) ".")
 
   (bookmarks-file)
-  (:p (:nxref "bookmarks-file") " is in " (:nxref "nyxt/bookmark-mode:bookmark-mode") ".")
+  (:p (:nxref :slot 'nyxt/bookmark-mode:bookmarks-file :class-name 'nyxt/bookmark-mode:bookmark-mode)
+      " is in " (:nxref :class-name 'nyxt/bookmark-mode:bookmark-mode) ".")
 
   (expand-path)
-  (:p (:code "expand-path") " is replaced by " (:nxref "nfiles:expand") ".")
+  (:p (:code "expand-path") " is replaced by " (:nxref :function 'nfiles:expand) ".")
 
   (get-data get-user-data)
-  (:p (:code "get-data") " and " (:code "get-user-data") " are replaced by " (:nxref "nfiles:content") ".")
+  (:p (:code "get-data") " and " (:code "get-user-data") " are replaced by "
+      (:nxref :function 'nfiles:content) ".")
 
   (with-data-access with-data-unsafe)
-  (:p (:code "with-data-access") " and " (:code "with-data-unsafe") " are replaced by " (:nxref "nfiles:with-file-content") "."))
+  (:p (:code "with-data-access") " and " (:code "with-data-unsafe")
+      " are replaced by " (:code "nfiles:with-file-content") ".")
+
+  (copy-password copy-password-prompt-details save-new-password copy-username)
+  (:p (:code "copy-password") ", "
+      (:code "copy-password-prompt-details") ", "
+      (:code "save-new-password") "  and "
+      (:code "copy-username")
+      " have been moved to the " (:code "nyxt/password-mode") " mode package.")
+
+  (session-restore-prompt)
+  (:p (:code "session-restore-prompt") " is now "
+      (:code "restore-session-on-startup-p") " and is a boolean.")
+
+  (scheme-keymap)
+  (:p (:code "scheme-keymap") " is now "
+      (:code "get-keymap") "."))

@@ -13,8 +13,8 @@
 (defun reopen-dead-buffer (buffer)
   (containers:delete-item-if (recent-buffers *browser*)
                              (buffer-match-predicate buffer))
-    (reload-buffers (list (resurrect-buffer buffer)))
-    buffer)
+  (reload-buffer (resurrect-buffer buffer))
+  buffer)
 
 (define-class recent-buffer-source (prompter:source)
   ((prompter:name "Deleted buffers")
@@ -32,9 +32,7 @@
 
 (define-command reopen-buffer ()
   "Reopen queried deleted buffer(s)."
-  (prompt
-   :prompt "Reopen buffer(s)"
-   :sources (make-instance 'recent-buffer-source)))
+  (prompt :prompt "Reopen buffer(s)" :sources 'recent-buffer-source))
 
 (define-command reopen-last-buffer ()
   "Open a new buffer with the URL of the most recently deleted buffer."

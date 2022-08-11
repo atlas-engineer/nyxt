@@ -14,7 +14,7 @@ To work around this issue, we store them in this list while they are pressed.
 See `push-modifiers', `pop-modifiers' and `key-event-modifiers'.")
    (modifier-translator #'translate-modifiers
                         :documentation "Function that returns a list of
-modifiers understood by `keymap:make-key'.  You can customize this slot if you
+modifiers understood by `keymaps:make-key'.  You can customize this slot if you
 want to change the behaviour of modifiers, for instance swap 'control' and
 'meta':
 
@@ -140,7 +140,7 @@ failures."))
 
 (defmethod initialize-instance :after ((web-context webkit-web-context-ephemeral) &key)
   (unless (webkit:webkit-web-context-is-ephemeral web-context)
-    (error 'nyxt-web-context-condition :context web-context
+    (error 'web-context-error :context web-context
                                        :message "Web Contexts of class webkit-web-context-ephemeral must be ephemeral")))
 
 (defclass webkit-website-data-manager (webkit:webkit-website-data-manager) ()
@@ -151,7 +151,7 @@ failures."))
 
 (defmethod initialize-instance :after ((data-manager webkit-website-data-manager-ephemeral) &key)
   (unless (webkit:webkit-website-data-manager-is-ephemeral data-manager)
-    (error 'nyxt-web-context-condition :context data-manager
+    (error 'web-context-error :context data-manager
                                        :message "Data Managers of class webkit-website-data-manager-ephemeral must be ephemeral")))
 
 (defvar gtk-running-p nil
@@ -163,11 +163,11 @@ As a workaround, we never leave the GTK main loop when running from a REPL.
 
 See https://github.com/atlas-engineer/nyxt/issues/740")
 
-(defun renderer-thread-p ()
+(defun renderer-thread-p (&optional (thread (bt:current-thread)))
   #+darwin
-  (string= "main thread" (bt:thread-name (bt:current-thread)))
+  (string= "main thread" (bt:thread-name thread))
   #-darwin
-  (string= "cl-cffi-gtk main thread" (bt:thread-name (bt:current-thread))))
+  (string= "cl-cffi-gtk main thread" (bt:thread-name thread)))
 
 (defmacro within-gtk-thread (&body body)
   "Protected `gtk:within-gtk-thread'."
@@ -259,7 +259,15 @@ the renderer thread, use `defmethod' instead."
             (finalize browser urls startup-timestamp)))
         (unless *run-from-repl-p*
           (gtk:join-gtk-main)
-          (uiop:quit (slot-value browser 'exit-code))))
+          ;; KLUDGE: On FreeBSD nyxt is stuck inside some blocking
+          ;; syscall if FINISH-OUTPUT is T. In this case the
+          ;; "force-quitter" thread created by QUIT command will not
+          ;; help and nyxt can only be killed with SIGKILL,
+          ;; e.g. executing "killall -9 nyxt". A workaround is to call
+          ;; UIOP:QUIT with FINISH-OUTPUT = NIL in the first place.
+          ;;
+          ;; FIXME: This also can be true for other BSD systems.
+          (uiop:quit (slot-value browser 'exit-code) #+freebsd nil)))
       #+darwin
       (progn
         (setf gtk-running-p t)
@@ -345,7 +353,7 @@ By default it is found in the source directory."))
 
 (defmethod initialize-instance :after ((web-view webkit-web-view-ephemeral) &key web-context)
   (unless (webkit:webkit-web-view-is-ephemeral web-view)
-    (error 'nyxt-web-context-condition :context web-context
+    (error 'web-context-error :context web-context
                                        :message "Tried to make an ephemeral web-view in a non-ephemeral context")))
 
 (defmethod make-web-view ((profile nyxt-profile) (buffer t))
@@ -465,7 +473,9 @@ response.  The BODY is wrapped with `with-protect'."
                                                :orientation :vertical
                                                :spacing 0))
          (setf key-string-buffer (make-instance 'gtk:gtk-entry))
-         (setf active-buffer (make-instance 'buffer))
+         ;; Dummy buffer is an `input-buffer' so that an empty window can still
+         ;; receive input, for instance to create a new buffer.
+         (setf active-buffer (make-instance 'input-buffer))
 
          ;; Add the views to the box layout and to the window
          (gtk:gtk-box-pack-start main-buffer-container (gtk-object active-buffer) :expand t :fill t)
@@ -511,6 +521,9 @@ response.  The BODY is wrapped with `with-protect'."
            (setf (fullscreen-p window)
                  (find :fullscreen
                        (gdk:gdk-event-window-state-new-window-state event)))
+           (setf (maximized-p window)
+                 (find :maximized
+                       (gdk:gdk-event-window-state-new-window-state event)))
            nil))
 
        (unless *headless-p*
@@ -521,8 +534,8 @@ response.  The BODY is wrapped with `with-protect'."
   (customize-instance window))
 
 (define-ffi-method on-signal-destroy ((window gtk-window))
-  ;; remove buffer from window to avoid corruption of buffer
-  (gtk:gtk-container-remove (root-box-layout window) (gtk-object (active-buffer window)))
+  ;; Then remove buffer from window container to avoid corruption of buffer.
+  (gtk:gtk-container-remove (main-buffer-container window) (gtk-object (active-buffer window)))
   (window-delete window))
 
 (define-ffi-method ffi-window-delete ((window gtk-window))
@@ -533,6 +546,12 @@ response.  The BODY is wrapped with `with-protect'."
 
 (define-ffi-method ffi-window-unfullscreen ((window gtk-window))
   (gtk:gtk-window-unfullscreen (gtk-object window)))
+
+(define-ffi-method ffi-window-maximize ((window gtk-window))
+  (gtk:gtk-window-maximize (gtk-object window)))
+
+(define-ffi-method ffi-window-unmaximize ((window gtk-window))
+  (gtk:gtk-window-unmaximize (gtk-object window)))
 
 (defun derive-key-string (keyval character)
   "Return string representation of a keyval.
@@ -601,7 +620,7 @@ Return nil when key must be discarded, e.g. for modifiers."
 
 (-> translate-modifiers (list &optional gdk:gdk-event) list)
 (defun translate-modifiers (modifier-state &optional event)
-  "Return list of modifiers fit for `keymap:make-key'.
+  "Return list of modifiers fit for `keymaps:make-key'.
 See `gtk-browser's `modifier-translator' slot."
   (declare (ignore event))
   (let ((plist '(:control-mask "control"
@@ -697,10 +716,10 @@ See `gtk-browser's `modifier-translator' slot."
     (if key-string
         (progn
           (alex:appendf (key-stack sender)
-                        (list (keymap:make-key :code keycode
-                                               :value key-string
-                                               :modifiers modifiers
-                                               :status :pressed)))
+                        (list (keymaps:make-key :code keycode
+                                                :value key-string
+                                                :modifiers modifiers
+                                                :status :pressed)))
           (funcall (input-dispatcher sender) event
                    buffer
                    sender printable-value))
@@ -736,10 +755,9 @@ See `gtk-browser's `modifier-translator' slot."
       (update-prompt buffer))
     (when key-string
       (alex:appendf (key-stack window)
-                    (list (keymap:make-key
-                           :value key-string
-                           :modifiers modifiers
-                           :status :pressed)))
+                    (list (keymaps:make-key :value key-string
+                                            :modifiers modifiers
+                                            :status :pressed)))
       (funcall (input-dispatcher window) event sender window nil))))
 
 (define-ffi-method on-signal-scroll-event ((sender gtk-buffer) event)
@@ -765,10 +783,9 @@ See `gtk-browser's `modifier-translator' slot."
                              event)))
     (when key-string
       (alex:appendf (key-stack window)
-                    (list (keymap:make-key
-                           :value key-string
-                           :modifiers modifiers
-                           :status :pressed)))
+                    (list (keymaps:make-key :value key-string
+                                            :modifiers modifiers
+                                            :status :pressed)))
       (funcall (input-dispatcher window) event sender window nil))))
 
 (define-class gtk-scheme ()
@@ -965,28 +982,28 @@ See `finalize-buffer'."
                                (webkit:webkit-navigation-action-get-modifiers navigation-action))))
     (setf url (quri:uri (webkit:webkit-uri-request-uri request)))
     (let* ((request-data
-            (hooks:run-hook
-             (request-resource-hook buffer)
-             (hooks:run-hook (pre-request-hook buffer)
-                             (make-instance 'request-data
-                                            :buffer buffer
-                                            :url (quri:copy-uri url)
-                                            :keys (unless (uiop:emptyp mouse-button)
-                                                    (list (keymap:make-key
-                                                           :value mouse-button
-                                                           :modifiers modifiers)))
-                                            :event-type event-type
-                                            :new-window-p is-new-window
-                                            :http-method method
-                                            :toplevel-p (quri:uri=
-                                                         url (quri:uri (webkit:webkit-web-view-uri
-                                                                        (gtk-object buffer))))
-                                            :mime-type mime-type
-                                            :known-type-p is-known-type
-                                            :file-name file-name))))
-           (keymap (scheme-keymap (buffer request-data) (request-resource-scheme (buffer request-data))))
-           (bound-function (the (or symbol keymap:keymap null)
-                                (keymap:lookup-key (keys request-data) keymap))))
+             (hooks:run-hook
+              (request-resource-hook buffer)
+              (hooks:run-hook (pre-request-hook buffer)
+                              (make-instance 'request-data
+                                             :buffer buffer
+                                             :url (quri:copy-uri url)
+                                             :keys (unless (uiop:emptyp mouse-button)
+                                                     (list (keymaps:make-key :value mouse-button
+                                                                             :modifiers modifiers)))
+                                             :event-type event-type
+                                             :new-window-p is-new-window
+                                             :http-method method
+                                             :toplevel-p (quri:uri=
+                                                          url (quri:uri (webkit:webkit-web-view-uri
+                                                                         (gtk-object buffer))))
+                                             :mime-type mime-type
+                                             :known-type-p is-known-type
+                                             :file-name file-name))))
+           (keymap (get-keymap (buffer request-data)
+                               (request-resource-keyscheme-map (buffer request-data))))
+           (bound-function (the (or symbol keymaps:keymap null)
+                                (keymaps:lookup-key (keys request-data) keymap))))
       (cond
        ((not (typep request-data 'request-data))
         (log:debug "Don't forward to ~s's renderer (non request data)."
@@ -1021,8 +1038,9 @@ See `finalize-buffer'."
        ((and (toplevel-p request-data)
              (not (quri:uri= (quri:uri (webkit:webkit-uri-request-uri request))
                              (url request-data))))
-        ;; Low-level URL string, we must not render the puni codes so use
+        ;; Low-level URL string, we must not render punycode so use
         ;; `quri:render-uri'.
+        ;; See https://datatracker.ietf.org/doc/html/rfc3492.
         (setf (webkit:webkit-uri-request-uri request) (quri:render-uri (url request-data)))
         (log:debug "Don't forward to ~s's renderer (resource request replaced with ~s)."
                    buffer
@@ -1109,6 +1127,8 @@ See `finalize-buffer'."
 (define-ffi-method ffi-window-set-buffer ((window gtk-window) (buffer gtk-buffer) &key (focus t))
   "Set BROWSER's WINDOW buffer to BUFFER."
   (let ((old-buffer (active-buffer window)))
+    ;; Just a precaution for the buffer to not be destroyed until we say so.
+    (g:g-object-ref (g:pointer (gtk-object old-buffer)))
     (gtk:gtk-container-remove (main-buffer-container window) (gtk-object old-buffer))
     (gtk:gtk-box-pack-start (main-buffer-container window) (gtk-object buffer) :expand t :fill t)
     (unless *headless-p*
@@ -1191,9 +1211,9 @@ See `finalize-buffer'."
                                              (webkit:webkit-file-chooser-request-selected-files
                                               file-chooser-request)))
                                            (uiop:native-namestring (uiop:getcwd)))
-                                   :extra-modes '(nyxt/file-manager-mode:file-manager-mode)
-                                   :sources (list (make-instance 'nyxt/file-manager-mode:file-source)))
-                         (nyxt-prompt-buffer-canceled ()
+                                   :extra-modes 'nyxt/file-manager-mode:file-manager-mode
+                                   :sources 'nyxt/file-manager-mode:file-source)
+                         (prompt-buffer-canceled ()
                            nil)))))
           (if files
               (webkit:webkit-file-chooser-request-select-files
@@ -1288,7 +1308,7 @@ See `finalize-buffer'."
                                                      (round (* 255 (cffi:mem-aref rgba :double 1)))
                                                      (round (* 255 (cffi:mem-aref rgba :double 2)))
                                                      (round (* 255 (cffi:mem-aref rgba :double 3))))
-                                      :sources (list (make-instance 'color-source))))
+                                      :sources 'color-source))
                  (color (get-rgba color-name))
                  (opacity (sera:parse-float (get-opacity color-name)))
                  (rgba (progn
@@ -1318,10 +1338,10 @@ See `finalize-buffer'."
             (:webkit-script-dialog-prompt
              (let ((text (first (handler-case
                                     (prompt
-                                     :input (webkit:webkit-script-dialog-prompt-get-default-text dialog)
                                      :prompt (webkit:webkit-script-dialog-get-message dialog)
-                                     :sources (list (make-instance 'prompter:raw-source)))
-                                  (nyxt-prompt-buffer-canceled (c) (declare (ignore c)) nil)))))
+                                     :input (webkit:webkit-script-dialog-prompt-get-default-text dialog)
+                                     :sources 'prompter:raw-source)
+                                  (prompt-buffer-canceled (c) (declare (ignore c)) nil)))))
                (if text
                    (webkit:webkit-script-dialog-prompt-set-text dialog text)
                    (progn
@@ -1391,6 +1411,11 @@ See `finalize-buffer'."
     (setf (gtk-object buffer) (make-web-view (profile buffer) buffer)))
   (when (document-buffer-p buffer)
     (setf (ffi-buffer-smooth-scrolling-enabled-p buffer) (smooth-scrolling buffer)))
+  ;; TODO: Maybe define an FFI method?
+  (when (getf *options* :verbose)
+    (setf (webkit:webkit-settings-enable-write-console-messages-to-stdout
+           (webkit:webkit-web-view-get-settings (gtk-object buffer)))
+          t))
   (connect-signal-function buffer "decide-policy" (make-decide-policy-handler buffer))
   (connect-signal buffer "resource-load-started" nil (web-view resource request)
     (declare (ignore web-view))
@@ -1510,8 +1535,6 @@ See `finalize-buffer'."
       (buffer-load (quri:uri url) :buffer new-buffer)
       (window-set-buffer (current-window) new-buffer)
       (gtk-object new-buffer)))
-  ;; Remove "download to disk" from the right click context menu because it
-  ;; bypasses request resource signal
   (connect-signal buffer "context-menu" nil (web-view context-menu event hit-test-result)
     (declare (ignore web-view event hit-test-result))
     (let ((length (webkit:webkit-context-menu-get-n-items context-menu)))
@@ -1643,39 +1666,52 @@ local anyways, and it's better to refresh it if a load was queried."
                           :null-terminated-p t)
       (cffi:null-pointer)))
 
-(define-ffi-method ffi-buffer-add-user-style ((buffer gtk-buffer) css &key
-                                              world-name all-frames-p inject-as-author-p
-                                              allow-list block-list)
+(define-class gtk-user-style ()
+  ((gtk-object))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(without-package-locks ;; FIXME
+  (handler-bind ((warning #'muffle-warning))
+    (defclass nyxt/user-script-mode:renderer-user-style (gtk-user-style)
+      ()
+      (:metaclass interface-class))))
+
+(define-ffi-method ffi-buffer-add-user-style ((buffer gtk-buffer) (style gtk-user-style))
   (let* ((content-manager
            (webkit:webkit-web-view-get-user-content-manager
             (gtk-object buffer)))
-         (frames (if all-frames-p
+         (frames (if (nyxt/user-script-mode:all-frames-p style)
                      :webkit-user-content-inject-all-frames
                      :webkit-user-content-inject-top-frame))
-         (style-level (if inject-as-author-p
+         (style-level (if (eq (nyxt/user-script-mode:level style) :author)
                           :webkit-user-style-level-author
                           :webkit-user-style-level-user))
          (style-sheet
-           (if world-name
+           (if (nyxt/user-script-mode:world-name style)
                (webkit:webkit-user-style-sheet-new-for-world
-                css frames style-level world-name
-                (list-of-string-to-foreign allow-list)
-                (list-of-string-to-foreign block-list))
+                (nyxt/user-script-mode:code style)
+                frames style-level
+                (nyxt/user-script-mode:world-name style)
+                (list-of-string-to-foreign (nyxt/user-script-mode:include style))
+                (list-of-string-to-foreign (nyxt/user-script-mode:exclude style)))
                (webkit:webkit-user-style-sheet-new
-                css frames style-level
-                (list-of-string-to-foreign allow-list)
-                (list-of-string-to-foreign block-list)))))
+                (nyxt/user-script-mode:code style)
+                frames style-level
+                (list-of-string-to-foreign (nyxt/user-script-mode:include style))
+                (list-of-string-to-foreign (nyxt/user-script-mode:exclude style))))))
+    (setf (gtk-object style) style-sheet)
     (webkit:webkit-user-content-manager-add-style-sheet
      content-manager style-sheet)
-    style-sheet))
+    style))
 
-(define-ffi-method ffi-buffer-remove-user-style ((buffer gtk-buffer) style-sheet)
+(define-ffi-method ffi-buffer-remove-user-style ((buffer gtk-buffer) (style gtk-user-style))
   (let ((content-manager
           (webkit:webkit-web-view-get-user-content-manager
            (gtk-object buffer))))
-    (when style-sheet
-      (webkit:webkit-user-content-manager-remove-style-sheet
-       content-manager style-sheet))))
+    (webkit:webkit-user-content-manager-remove-style-sheet
+     content-manager (gtk-object style))))
 
 (define-class gtk-user-script ()
   ((gtk-object))
@@ -1691,7 +1727,7 @@ local anyways, and it's better to refresh it if a load was queried."
       (:metaclass interface-class))))
 
 (define-ffi-method ffi-buffer-add-user-script ((buffer gtk-buffer) (script gtk-user-script))
-  (alex:if-let ((code (nfiles:content script)))
+  (alex:if-let ((code (nyxt/user-script-mode:code script)))
     (let* ((content-manager
              (webkit:webkit-web-view-get-user-content-manager
               (gtk-object buffer)))
@@ -1760,6 +1796,7 @@ local anyways, and it's better to refresh it if a load was queried."
                                        :url (webkit:webkit-uri-request-uri
                                              (webkit:webkit-download-get-request webkit-download))
                                        :gtk-object webkit-download)))
+    (nyxt/download-mode:list-downloads)
     (setf (nyxt/download-mode::cancel-function download)
           #'(lambda ()
               (setf (nyxt/download-mode:status download) :canceled)
@@ -1792,10 +1829,7 @@ local anyways, and it's better to refresh it if a load was queried."
       (setf (nyxt/download-mode:destination-path download)
             (uiop:ensure-pathname
              (quri:uri-path (quri:uri
-                             (webkit:webkit-download-destination webkit-download)))))
-      ;; TODO: We should not have to update the buffer, button actions should be
-      ;; dynamic.  Bug in `user-interface'?
-      (nyxt/download-mode:list-downloads))
+                             (webkit:webkit-download-destination webkit-download))))))
     (connect-signal download "failed" nil (webkit-download error)
       (declare (ignore error))
       (unless (eq (nyxt/download-mode:status download) :canceled)
@@ -1845,7 +1879,7 @@ Note: WebKit supports three proxy 'modes': default (the system proxy),
 custom (the specified proxy) and none."
   (let ((proxy-url (first (alex:ensure-list proxy-specifier)))
         (ignore-hosts (or (second (alex:ensure-list proxy-specifier))
-                          (list nil))))
+                          nil)))
     (declare (type quri:uri proxy-url))
     (setf (gtk-proxy-url buffer) proxy-url)
     (setf (proxy-ignored-hosts buffer) ignore-hosts)
