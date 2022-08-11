@@ -264,7 +264,7 @@ For instance, to include images:
                              (nyxt/dom:hover-element (first elements))
                              nil)))))
 
-(serapeum:export-always 'query-hints)
+(export-always 'query-hints)
 (defun query-hints (prompt function
                     &key (multi-selection-p t)
                          (selector "[nyxt-hintable]"))
