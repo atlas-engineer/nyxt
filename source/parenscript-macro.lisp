@@ -91,7 +91,7 @@
 
 (export-always 'element-editable-p)
 (defpsmacro element-editable-p (element)
-  "Is the element editable?"
+  "Whether ELEMENT is editable."
   `(let ((tag (chain ,element tag-name)))
      (if (or (string= tag "INPUT")
              (string= tag "TEXTAREA")
@@ -100,7 +100,7 @@
 
 (export-always 'element-drawable-p)
 (defpsmacro element-drawable-p (element)
-  "Is the element drawable?"
+  "Whether ELEMENT is drawable."
   `(if (or (chain ,element offset-width)
            (chain ,element offset-height)
            (chain ,element (get-client-rects) length))
@@ -108,7 +108,7 @@
 
 (export-always 'element-in-view-port-p)
 (defpsmacro element-in-view-port-p (element)
-  "Is the element in the view port?"
+  "Whether ELEMENT is in viewport."
   `(let* ((rect (chain ,element (get-bounding-client-rect)))
           (computed-style (chain window (get-computed-style ,element))))
      (if (and (>= (chain rect top) 0)
