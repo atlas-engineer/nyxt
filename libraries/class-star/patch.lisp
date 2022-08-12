@@ -1,4 +1,4 @@
-;;;; SPDX-License-Identifier: Public Domain
+;;;; SPDX-License-Identifier: CC0-1.0 Public Domain
 
 ;; This is a hotpatch for hu.dwim.defclass-star which is under the public
 ;; domain.
