@@ -25,23 +25,17 @@
        :font-family "monospace,monospace"
        :padding "0px 0.3em"
        :border-radius "0.3em"
-       :z-index #.(1- (expt 2 31))))
-    :documentation "The style of the hint overlays.")
-   (selection-style
-    (theme:themed-css (theme *browser*)
+       :z-index #.(1- (expt 2 31)))
       (".nyxt-hint.nyxt-highlight-hint"
        :background-color theme:accent
-       :color theme:on-accent))
-    :documentation "The style of selected hints.")
+       :color theme:on-accent)
+      (".nyxt-element-hint"
+       :background-color theme:accent))
+    :documentation "The style of the hint overlays.")
    (show-hint-scope-p
     nil
     :type boolean
     :documentation "Whether the hinted element should display its visual scope.")
-   (hint-scope-style
-    (theme:themed-css (theme *browser*)
-      (".nyxt-element-hint"
-       :background-color theme:accent))
-    :documentation "The style of the hinted elements.")
    (hints-alphabet
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     :type string
@@ -95,16 +89,8 @@ For instance, to include images:
      (ps:let ((style-element (ps:chain document (create-element "style"))))
        (setf (ps:@ style-element id) "nyxt-stylesheet")
        (ps:chain document head (append-child style-element))
-       (ps:chain style-element
-                 sheet
-                 (insert-rule (ps:lisp (style (find-submode 'hint-mode))) 0))
-       (ps:chain style-element
-                 sheet
-                 (insert-rule (ps:lisp (selection-style (find-submode 'hint-mode))) 1))
-       (when (ps:lisp (show-hint-scope-p (find-submode 'hint-mode)))
-         (ps:chain style-element
-                   sheet
-                   (insert-rule (ps:lisp (hint-scope-style (find-submode 'hint-mode))) 2))))
+       (setf (ps:chain style-element inner-text)
+             (ps:lisp (style (find-submode 'hint-mode)))))
      (:catch (error)))))
 
 (define-parenscript hint-elements (hints)
