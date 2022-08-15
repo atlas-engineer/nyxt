@@ -1,4 +1,4 @@
-;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
+b;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (in-package :nyxt)
@@ -109,6 +109,8 @@ various parts, such as the path of all data files.")
              :background-color theme:primary
              :color theme:on-primary
              :text-align "left")
+            (dt
+             :font-weight "bold")
             ("::selection"
              :color theme:on-accent
              :background-color theme:accent)))
