@@ -90,13 +90,13 @@ The prefix is discarded from the result and returned."
 (defmethod save-password ((password-interface password-store-interface)
                           &key password-name username password service)
   (declare (ignore service))
+  (with-open-stream (st (make-string-input-stream (format nil "~a~%username:~a"
+                                                          password
+                                                          username)))
+    (execute password-interface (list "insert" "--multiline" password-name)
+      :input st))
   (if (str:emptyp password)
-      (execute password-interface (list "generate" password-name))
-      (with-open-stream (st (make-string-input-stream (format nil "~a~&username:~a"
-                                                              password
-                                                              username)))
-        (execute password-interface (list "insert" "--multiline" password-name)
-          :input st))))
+    (execute password-interface (list "generate" "--in-place" password-name))))
 
 (defmethod password-correct-p ((password-interface password-store-interface))
   t)
