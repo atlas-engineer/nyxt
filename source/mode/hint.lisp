@@ -83,7 +83,7 @@ For instance, to include images:
        "g f" 'follow-hint-nosave-buffer
        "g F" 'follow-hint-nosave-buffer-focus)))))
 
-(define-parenscript add-stylesheet ()
+(define-parenscript-async add-stylesheet ()
   (unless (nyxt/ps:qs document "#nyxt-stylesheet")
     (ps:try
      (ps:let ((style-element (ps:chain document (create-element "style"))))
@@ -93,7 +93,7 @@ For instance, to include images:
              (ps:lisp (style (find-submode 'hint-mode)))))
      (:catch (error)))))
 
-(define-parenscript hint-elements (hints)
+(define-parenscript-async hint-elements (hints)
   (defun create-hint-overlay (original-element hint)
     "Create a DOM element to be used as a hint."
     (ps:let* ((rect (ps:chain original-element (get-bounding-client-rect)))
@@ -152,21 +152,18 @@ For instance, to include images:
     (ps:chain element (remove-attribute "nyxt-hintable"))))
 
 (defun add-hints (&key selector (buffer (current-buffer)))
-  (run-thread "add CSS stylesheet" (add-stylesheet))
+  (add-stylesheet)
   (set-hintable-attribute)
   (setf (document-model buffer) (nyxt/dom::named-json-parse (nyxt/dom::get-document-body-json)))
   (let* ((hintable-elements (clss:select selector (document-model buffer)))
          (hints (generate-hints (length hintable-elements))))
-    (run-thread "stylesheet adder"
-      (add-stylesheet))
-    (run-thread "element hint drawing"
-      (hint-elements (map 'list #'nyxt/dom:get-nyxt-id hintable-elements) hints))
+    (hint-elements hints)
     (loop for elem across hintable-elements
           for hint in hints
           do (plump:set-attribute elem "nyxt-hint" hint)
           collect elem)))
 
-(define-parenscript remove-hint-elements ()
+(define-parenscript-async remove-hint-elements ()
   (ps:dolist (element (nyxt/ps:qsa document ":not(.nyxt-search-node) > .nyxt-hint"))
     (ps:chain element (remove)))
   (when (ps:lisp (show-hint-scope-p (find-submode 'hint-mode)))
@@ -174,7 +171,7 @@ For instance, to include images:
       (ps:chain element class-list (remove "nyxt-element-hint")))))
 
 (defun remove-hints (&key (buffer (current-buffer)))
-  (run-thread "remove element hints overlays" (remove-hint-elements))
+  (remove-hint-elements)
   (remove-hintable-attribute)
   (setf (document-model buffer) (nyxt/dom::named-json-parse (nyxt/dom::get-document-body-json))))
 
