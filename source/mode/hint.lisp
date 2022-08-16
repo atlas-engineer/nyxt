@@ -120,9 +120,9 @@ For instance, to include images:
     ;; Returning fragment makes WebKit choke.
     nil))
 
-(-> select-from-alphabet (t fixnum string) (values string &optional))
-(defun select-from-alphabet (code char-length alphabet)
-  (let* ((exponents (nreverse (loop for pow below char-length
+(-> select-from-alphabet (t alex:positive-integer string) (values string &optional))
+(defun select-from-alphabet (code subsequence-length alphabet)
+  (let* ((exponents (nreverse (loop for pow below subsequence-length
                                     collect (expt (length alphabet) pow)))))
     (coerce (loop for exp in exponents
                   for quotinent = (floor (/ code exp))
@@ -130,12 +130,19 @@ For instance, to include images:
                   do (decf code (* quotinent exp)))
             'string)))
 
-(-> generate-hints (integer) (list-of string))
+(-> generate-hints (alex:positive-integer) (list-of string))
 (defun generate-hints (length)
-  (unless (zerop length)
-    (let* ((alphabet (hints-alphabet (find-submode 'hint-mode)))
-           (char-length (ceiling (log length (length alphabet)))))
-      (loop for i below length collect (select-from-alphabet i char-length alphabet)))))
+  (let ((alphabet (hints-alphabet (find-submode 'hint-mode))))
+    (cond
+      ((sera:single alphabet)
+       (loop for i from 1 to length
+             collect (select-from-alphabet 0 i alphabet)))
+      (t
+       (loop for i below length
+             collect (select-from-alphabet i
+                                           (max (ceiling (log length (length alphabet)))
+                                                1)
+                                           alphabet))))))
 
 (define-parenscript set-hintable-attribute ()
   (let ((elements (nyxt/ps:qsa document
