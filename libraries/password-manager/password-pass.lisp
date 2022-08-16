@@ -95,7 +95,7 @@ The prefix is discarded from the result and returned."
                                                           username)))
     (execute password-interface (list "insert" "--multiline" password-name)
       :input st))
-  (if (str:emptyp password)
+  (when (str:emptyp password)
     (execute password-interface (list "generate" "--in-place" password-name))))
 
 (defmethod password-correct-p ((password-interface password-store-interface))
