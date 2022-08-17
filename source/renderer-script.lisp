@@ -25,8 +25,32 @@ The function can be passed ARGS."
        ,@body)))
 
 (export-always 'peval)
-(defmacro peval (&body body)
-  `(ffi-buffer-evaluate-javascript (current-buffer) (ps:ps ,@body)))
+(defmacro peval (&rest args)
+  "Generate the JavaScript code and run it right away.
+
+If :ASYNC is provided as T before the body, then the code is ran asynchronously.
+If :BUFFER is provided before the body, the code is evaluated in the provided
+buffer, instead of the default `current-buffer'.
+
+The body of the code is expanded in the implicit `ps:ps'.
+
+Examples:
+;; Set input in the `current-prompt-buffer' asynchronously.
+\(peval :buffer (current-prompt-buffer) :async t
+  (setf (ps:@ (nyxt/ps:qs document \"#input\") value) \"foo\"))
+
+;; Get the class of the active element in the `current-buffer'
+\(peval (ps:@ document active-element class-name))"
+  `(,(if (second (member :async args))
+         'ffi-buffer-evaluate-javascript-async
+         'ffi-buffer-evaluate-javascript)
+    ,(or (second (member :buffer args))
+         '(current-buffer))
+    (ps:ps ,@(loop for index below (length args)
+                   for arg = (nth index args)
+                   when (member arg '(:buffer :async))
+                     do (incf index 1)
+                   else collect arg))))
 
 (define-parenscript %document-scroll-position (&optional (y 0 y-provided-p) (x 0 x-provided-p))
   (let ((x (ps:lisp x))
