@@ -184,7 +184,7 @@ For instance, to include images:
 
 (export-always 'identifier)
 (defmethod identifier ((element plump:element))
-  (plump:get-attribute element "nyxt-hint"))
+  (plump:attribute element "nyxt-hint"))
 
 (define-parenscript highlight-selected-hint (&key element scroll)
   (defun update-hints ()
@@ -226,9 +226,7 @@ For instance, to include images:
       (multiple-value-bind (matching-hints other-hints)
           (sera:partition
            (lambda (element)
-             (str:starts-with-p input
-                                (plump:get-attribute element "nyxt-hint")
-                                :ignore-case t))
+             (str:starts-with-p input (plump:attribute element "nyxt-hint") :ignore-case t))
            suggestions
            :key #'prompter:value)
         (append matching-hints other-hints))))
@@ -283,8 +281,8 @@ FUNCTION is the action to perform on the selected elements."
     (funcall function result)))
 
 (defmethod prompter:object-attributes :around ((element plump:element) (source hint-source))
-  `(,@(when (plump:get-attribute element "nyxt-hint")
-        `(("Hint" ,(plump:get-attribute element "nyxt-hint"))))
+  `(,@(when (plump:attribute element "nyxt-hint")
+        `(("Hint" ,(plump:attribute element "nyxt-hint"))))
     ;; Ensure that all of Body, URL and Value are there, even if empty.
     ,@(let ((attributes (call-next-method)))
        (dolist (attr '("Body" "URL" "Value"))
@@ -311,7 +309,7 @@ FUNCTION is the action to perform on the selected elements."
   (declare (ignore source))
   (append
    (sera:and-let* ((has-href? (plump:has-attribute a "href"))
-                   (url-string (plump:get-attribute a "href")))
+                   (url-string (plump:attribute a "href")))
      `(("URL" ,url-string)))
    (when (nyxt/dom:body a)
     `(("Body" ,(str:shorten 80 (nyxt/dom:body a)))))))
@@ -333,13 +331,13 @@ FUNCTION is the action to perform on the selected elements."
 (defmethod prompter:object-attributes ((option nyxt/dom:option-element) (source prompter:source))
   (declare (ignore source))
   `(("Body" ,(nyxt/dom:body option))
-    ,@(when (plump:get-attribute option "value")
-        `(("Value" ,(plump:get-attribute option "value"))))))
+    ,@(when (plump:attribute option "value")
+        `(("Value" ,(plump:attribute option "value"))))))
 
 (defmethod prompter:object-attributes ((img nyxt/dom:img-element) (source hint-source))
   (append
    (sera:and-let* ((has-href? (plump:has-attribute img "href"))
-                   (url-string (plump:get-attribute img "href")))
+                   (url-string (plump:attribute img "href")))
      `(("URL" ,url-string)))
    (when (nyxt/dom:body img)
     `(("Body" ,(str:shorten 80 (nyxt/dom:body img)))))))
@@ -348,7 +346,7 @@ FUNCTION is the action to perform on the selected elements."
   (nyxt/dom:click-element element))
 
 (defmethod %follow-hint ((input nyxt/dom:input-element))
-  (str:string-case (plump:get-attribute input "type")
+  (str:string-case (plump:attribute input "type")
     ("button" (nyxt/dom:click-element input))
     ("radio" (nyxt/dom:check-element input))
     ("checkbox" (nyxt/dom:check-element input))
@@ -372,7 +370,7 @@ FUNCTION is the action to perform on the selected elements."
                                   :sources (make-instance 'options-source
                                                           :constructor options
                                                           :multi-selection-p
-                                                          (plump:get-attribute select "multiple")))))
+                                                          (plump:attribute select "multiple")))))
     (dolist (option (mapcar (rcurry #'find options :test #'equalp) values))
       (nyxt/dom:select-option-element option select))))
 

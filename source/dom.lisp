@@ -316,11 +316,11 @@ Return two values:
 
 (defmethod body ((img img-element))
   (when (plump:has-attribute img "alt")
-    (plump:get-attribute img "alt")))
+    (plump:attribute img "alt")))
 
 (export-always 'get-nyxt-id)
 (defmethod get-nyxt-id ((element plump:element))
-  (plump:get-attribute element "nyxt-identifier"))
+  (plump:attribute element "nyxt-identifier"))
 
 (export-always 'click-element)
 (define-parenscript click-element (element)

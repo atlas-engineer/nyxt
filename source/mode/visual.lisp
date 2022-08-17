@@ -91,7 +91,7 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
   (setf (mark-set mode) nil))
 
 (defmethod prompter:object-attributes ((element nyxt/dom:text-element) (source prompter:source))
-  `(("Hint" ,(plump:get-attribute element "nyxt-hint"))
+  `(("Hint" ,(plump:attribute element "nyxt-hint"))
     ("Text" ,(plump:text element))))
 
 (defmethod %follow-hint ((element nyxt/dom:text-element))
