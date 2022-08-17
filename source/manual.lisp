@@ -263,7 +263,7 @@ opened in.")
 bytes are recognized), and they are capable of being "
             (:nxref :class-name 'scheme :slot 'cors-enabled-p "CORS-enabled")
             ", " (:nxref :class-name 'scheme :slot 'local-p "protected")
-            " and are in general capable of whatever the renderer-provided schemes do.")
+            ", and are in general capable of whatever the renderer-provided schemes do.")
 
         (:nsection :title "nyxt: URLs and internal pages"
           (:p "You can create pages out of Lisp commands, and make arbitrary computations for

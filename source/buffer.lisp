@@ -109,6 +109,8 @@ various parts, such as the path of all data files.")
              :background-color theme:primary
              :color theme:on-primary
              :text-align "left")
+            (dt
+             :font-weight "bold")
             ("::selection"
              :color theme:on-accent
              :background-color theme:accent)))
