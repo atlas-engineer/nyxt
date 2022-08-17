@@ -455,27 +455,27 @@ Only available if `prompter:multi-selection-p' is non-nil."
                                                &key (scroll-distance
                                                      (scroll-distance (current-buffer))))
   "Scroll up the buffer behind the prompt."
-  (with-current-buffer (current-buffer)
-    (peval (ps:chain window (scroll-by 0 (ps:lisp (- scroll-distance)))))))
+  (peval :buffer (current-buffer)
+    (ps:chain window (scroll-by 0 (ps:lisp (- scroll-distance))))))
 
 (define-command-prompt scroll-other-buffer-down (prompt-buffer
                                                  &key (scroll-distance
                                                        (scroll-distance (current-buffer))))
   "Scroll down the buffer behind the prompt."
-  (with-current-buffer (current-buffer)
-    (peval (ps:chain window (scroll-by 0 (ps:lisp scroll-distance))))))
+  (peval :buffer (current-buffer)
+    (ps:chain window (scroll-by 0 (ps:lisp scroll-distance)))))
 
 (define-command-prompt scroll-page-up-other-buffer (prompt-buffer)
   "Scroll up the buffer behind the prompt by one page."
-  (with-current-buffer (current-buffer)
-    (peval (ps:chain window (scroll-by 0 (- (* (ps:lisp (page-scroll-ratio (current-buffer)))
-                                               (ps:@ window inner-height))))))))
+  (peval :buffer (current-buffer)
+    (ps:chain window (scroll-by 0 (- (* (ps:lisp (page-scroll-ratio (current-buffer)))
+                                        (ps:@ window inner-height)))))))
 
 (define-command-prompt scroll-page-down-other-buffer (prompt-buffer)
   "Scroll down the buffer behind the prompt by one page."
-  (with-current-buffer (current-buffer)
-    (peval (ps:chain window (scroll-by 0 (* (ps:lisp (page-scroll-ratio (current-buffer)))
-                                            (ps:@ window inner-height)))))))
+  (peval :buffer (current-buffer)
+    (ps:chain window (scroll-by 0 (* (ps:lisp (page-scroll-ratio (current-buffer)))
+                                     (ps:@ window inner-height))))))
 
 (defmethod default-modes append ((buffer prompt-buffer))
   '(prompt-buffer-mode))

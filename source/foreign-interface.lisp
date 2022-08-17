@@ -183,16 +183,15 @@ PROXY-URL is a `quri:uri' and IGNORE-HOSTS a list of strings."))
 
 (define-ffi-generic ffi-buffer-zoom-level (buffer)
   (:method ((buffer t))
-    (with-current-buffer buffer
-      (peval (ps:chain document body style zoom))))
+    (peval :buffer buffer (ps:chain document body style zoom)))
   (:setter-p t)
   (:documentation "Return the zoom level of the document.
 Setf-able."))
 (defmethod (setf ffi-buffer-zoom-level) (value (buffer buffer))
-  (with-current-buffer buffer
-      (peval (ps:let ((style (ps:chain document body style)))
-               (setf (ps:@ style zoom)
-                     (ps:lisp value))))))
+  (peval :buffer buffer
+    (ps:let ((style (ps:chain document body style)))
+      (setf (ps:@ style zoom)
+            (ps:lisp value)))))
 
 (define-ffi-generic ffi-buffer-get-document (buffer)
   (:method ((buffer t))

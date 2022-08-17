@@ -41,8 +41,8 @@
       (set-content content))))
 
 (defmethod get-content ((editor plaintext-editor-mode))
-  (with-current-buffer (buffer editor)
-    (peval (ps:chain (nyxt/ps:qs document "#editor") value))))
+  (peval :buffer (buffer editor)
+    (ps:chain (nyxt/ps:qs document "#editor") value)))
 
 (defmethod nyxt:default-modes append ((buffer editor-buffer))
   '(plaintext-editor-mode))
