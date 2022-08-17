@@ -25,7 +25,7 @@ The function can be passed ARGS."
        ,@body)))
 
 (export-always 'peval)
-(defmacro peval (&rest args)
+(defmacro peval (&body args)
   "Generate the JavaScript code and run it right away.
 
 If :ASYNC is provided as T before the body, then the code is ran asynchronously.
