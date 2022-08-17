@@ -313,11 +313,13 @@ To discover the default value of a slot or all slots of a class, use the
                                           :name (quote ,handler-name))))
                            (hooks:add-hook ,hook ,handler))
                         else
-                          collect `(handler-bind ((warning #'muffle-warning))
-                                     (defmethod ,slot :around ((object ,class))
-                                       (let* ((%slot-value% (call-next-method))
-                                              (%slot-default% %slot-value%))
-                                         ,value))))))))
+                          do (log:warn "Not found slot ~a in class ~a, generating the wrapper method for configuration."
+                                       slot class)
+                          and collect `(handler-bind ((warning #'muffle-warning))
+                                         (defmethod ,slot :around ((object ,class))
+                                           (let* ((%slot-value% (call-next-method))
+                                                  (%slot-default% %slot-value%))
+                                             ,value))))))))
 
 
 (defparameter %buffer nil)              ; TODO: Make a monad?
