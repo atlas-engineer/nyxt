@@ -293,18 +293,29 @@ Warning: URL is a string."
    (buffer-load (nyxt-url 'show-url-qrcode :url (quri:render-uri (url buffer)))
                 :buffer (ensure-internal-page-buffer 'show-url-qrcode))))
 
-(define-internal-page-command-global view-source (&key (url (render-url (url (current-buffer)))))
-  (source-buffer (format nil "*Source of ~a" url))
-  "View source of the URL (by default current page) in a separate buffer."
-  (let ((buffer (or (find (quri:uri url) (buffer-list) :test #'quri:uri= :key #'url)
-                    (make-background-buffer :url url))))
+(export-always 'get-url-source)
+(defun get-url-source (url)
+  (let ((buffer (or (find (url url) (buffer-list) :test #'quri:uri= :key #'url)
+                    (make-background-buffer :url (url url)))))
     (unwind-protect
-         (spinneret:with-html-string
-           (:pre (if (web-buffer-p buffer)
-                     (plump:serialize (document-model buffer) nil)
-                     (ffi-buffer-get-document buffer))))
+         (if (web-buffer-p buffer)
+             (plump:serialize (document-model buffer) nil)
+             (ffi-buffer-get-document buffer))
       (when (background-buffer-p buffer)
         (ffi-buffer-delete buffer)))))
+
+(define-internal-scheme "view-source"
+  (lambda (url buffer)
+    (declare (ignore buffer))
+    (values
+     (get-url-source (quri:url-decode (quri:uri-path (quri:uri url))))
+     "text/plain"))
+  :no-access-p t)
+
+(define-command-global view-source (&key (url (url (current-buffer))))
+  "View source of the URL (by default current page) in a separate buffer."
+  (make-buffer-focus :url (quri:make-uri :scheme "view-source"
+                                         :path (quri:url-encode (quri:render-uri url)))))
 
 (define-command scroll-to-top ()
   "Scroll to the top of the current page."
