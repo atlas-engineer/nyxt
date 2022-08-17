@@ -17,11 +17,22 @@ The function can be passed ARGS."
 
 (export-always 'pflet)
 (defmacro pflet (functions &body body)
-  (flet ((transform-definition (name args body)
-           `(,name ,args
-                   (ffi-buffer-evaluate-javascript (current-buffer) (ps:ps . ,body)))))
-    `(flet ,(loop for (name lambda-list . body) in functions
-                  collect (transform-definition name lambda-list body))
+  (flet ((transform-definition (name rest)
+           (let ((buffer (second (member :buffer rest)))
+                 (async (second (member :async rest)))
+                 (rest (loop for index below (length rest)
+                             for arg = (nth index rest)
+                             when (member arg '(:buffer :async))
+                               do (incf index 1)
+                             else collect arg)))
+             `(,name ,(first rest)
+                     (,(if async
+                           'ffi-buffer-evaluate-javascript-async
+                           'ffi-buffer-evaluate-javascript)
+                      ,(or buffer '(current-buffer))
+                      (ps:ps ,@(rest rest)))))))
+    `(flet ,(loop for (name . rest) in functions
+                  collect (transform-definition name rest))
        ,@body)))
 
 (export-always 'peval)

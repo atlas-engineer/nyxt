@@ -195,16 +195,17 @@ Setf-able."))
 
 (define-ffi-generic ffi-buffer-get-document (buffer)
   (:method ((buffer t))
-    (pflet ((get-html (start end)
-                      (ps:chain document document-element |innerHTML| (slice (ps:lisp start)
-                                                                             (ps:lisp end))))
-            (get-html-length ()
-                             (ps:chain document document-element |innerHTML| length)))
-      (with-current-buffer buffer
-        (let ((slice-size 10000))
-          (reduce #'str:concat
-                  (loop for i from 0 to (truncate (get-html-length)) by slice-size
-                        collect (get-html i (+ i slice-size))))))))
+    (pflet ((get-html
+             :buffer buffer (start end)
+             (ps:chain document document-element |innerHTML| (slice (ps:lisp start)
+                                                                    (ps:lisp end))))
+            (get-html-length
+             :buffer buffer ()
+             (ps:chain document document-element |innerHTML| length)))
+      (let ((slice-size 10000))
+        (reduce #'str:concat
+                (loop for i from 0 to (truncate (get-html-length)) by slice-size
+                      collect (get-html i (+ i slice-size)))))))
   (:documentation "Return the BUFFER raw HTML as a string."))
 
 (define-ffi-generic ffi-generate-input-event (window event)

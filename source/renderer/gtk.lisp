@@ -1268,11 +1268,10 @@ See `finalize-buffer'."
    (prompter:selection-actions
     (lambda (color)
       (pflet ((color-input-area
-               (color)
+               :buffer (current-prompt-buffer) (color)
                (setf (ps:chain (nyxt/ps:qs document "#input") style background-color)
                      (ps:lisp color))))
-        (with-current-buffer (current-prompt-buffer)
-          (color-input-area color))))))
+        (color-input-area color)))))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defmethod prompter:object-attributes ((color string) (source color-source))

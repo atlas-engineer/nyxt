@@ -34,11 +34,11 @@
     (ffi-buffer-evaluate-javascript-async (buffer editor) insert-content)))
 
 (defmethod set-content ((editor plaintext-editor-mode) content)
-  (with-current-buffer (buffer editor)
-    (pflet ((set-content (content)
-                         (setf (ps:chain (nyxt/ps:qs document "#editor") value)
-                               (ps:lisp content))))
-      (set-content content))))
+  (pflet ((set-content
+           :async t :buffer (buffer editor) (content)
+           (setf (ps:chain (nyxt/ps:qs document "#editor") value)
+                 (ps:lisp content))))
+    (set-content content)))
 
 (defmethod get-content ((editor plaintext-editor-mode))
   (peval :buffer (buffer editor)
