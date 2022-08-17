@@ -47,21 +47,24 @@ Can be:
 
 Please note that this accessor cannot be renamed to `fill' because
 it will be in conflict with common-lisp:fill."))
+  (:metaclass closer-mop:funcallable-standard-class)
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(defmethod initialize-instance :after ((autofill autofill) &key &allow-other-keys)
+  (closer-mop:set-funcallable-instance-function
+   autofill (typecase (autofill-fill autofill)
+              (string (lambda () (autofill-fill autofill)))
+              (function (autofill-fill autofill))) ))
 
 (define-class autofill-source (prompter:source)
   ((prompter:name "Autofills")
    (prompter:constructor (autofills (find-submode 'autofill-mode)))
    (prompter:return-actions
     (list (lambda-command autofill* (autofills)
-            (let ((selected-fill (first autofills)))
-              (cond ((stringp (autofill-fill selected-fill))
-                     (%paste :input-text (autofill-fill selected-fill)))
-                    ((functionp (autofill-fill selected-fill))
-                     (%paste :input-text (funcall (autofill-fill selected-fill))))))))))
+            (%paste :input-text (first autofills))))))
   (:export-class-name-p t)
   (:metaclass user-class))
 
