@@ -18,8 +18,10 @@ By default, this mode does nothing but expose the default bookmarklets."
   ((visible-in-status-p nil)))
 
 (defmacro define-bookmarklet-command (name documentation source) ; TODO: Should it really belong to the `nyxt' package?
-  "Define a bookmarklet command, the source can either be a JavaScript string to
-evaluate, or a `cl:pathname' to a JavaScript source file."
+  "Define a bookmarklet command, the source can either be
+- a JavaScript string to evaluate,
+- a `cl:pathname' to a JavaScript source file,
+- or a form evaluating to a JavaScript string."
   `(define-command ,name (&optional (buffer (current-buffer)))
      ,documentation
      (let* ((source ,source)

@@ -237,20 +237,18 @@ See also `show-prompt-buffer'."
          ;; TODO: Should prompt-buffer be a status-buffer?
          ;; Then no need to depend on the current status buffer.
          (status-buffer (status-buffer (current-window))))
-    (ffi-buffer-evaluate-javascript-async
-     prompt-buffer
-     (ps:ps
-       (setf (ps:chain document (get-element-by-id "prompt-extra") |innerHTML|)
-             (ps:lisp
-              (suggestion-and-mark-count
-               prompt-buffer suggestions marks
-               :pad-p t
-               :multi-selection-p (some #'prompter:multi-selection-p
-                                        (prompter:sources prompt-buffer)))))
-       (setf (ps:chain document (get-element-by-id "prompt-modes") |innerHTML|)
-             (ps:lisp (str:join " "
-                                (mapcar (curry #'mode-status status-buffer)
-                                        (sort-modes-for-status (modes prompt-buffer))))))))))
+    (peval :async t :buffer prompt-buffer
+      (setf (ps:chain document (get-element-by-id "prompt-extra") |innerHTML|)
+            (ps:lisp
+             (suggestion-and-mark-count
+              prompt-buffer suggestions marks
+              :pad-p t
+              :multi-selection-p (some #'prompter:multi-selection-p
+                                       (prompter:sources prompt-buffer)))))
+      (setf (ps:chain document (get-element-by-id "prompt-modes") |innerHTML|)
+            (ps:lisp (str:join " "
+                               (mapcar (curry #'mode-status status-buffer)
+                                       (sort-modes-for-status (modes prompt-buffer)))))))))
 
 (export 'prompt-render-suggestions)
 (defmethod prompt-render-suggestions ((prompt-buffer prompt-buffer))
@@ -334,11 +332,9 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
     (prompt-render-prompt prompt-buffer)))
 
 (defun erase-document (prompt-buffer)
-  (ffi-buffer-evaluate-javascript-async
-   prompt-buffer
-   (ps:ps
-     (ps:chain document (open))
-     (ps:chain document (close)))))
+  (peval :async t :buffer prompt-buffer
+    (ps:chain document (open))
+    (ps:chain document (close))))
 
 (defun prompt-render-skeleton (prompt-buffer)
   (erase-document prompt-buffer)
@@ -361,11 +357,8 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
             prompt-buffer))
 
 (defun prompt-render-focus (prompt-buffer)
-  (ffi-buffer-evaluate-javascript-async
-   prompt-buffer
-   (ps:ps (ps:chain document
-                    (get-element-by-id "input")
-                    (focus)))))
+  (peval :async t :buffer prompt-buffer
+    (ps:chain document (get-element-by-id "input") (focus))))
 
 (defmethod prompt-render ((prompt-buffer prompt-buffer)) ; TODO: Merge into `show-prompt-buffer'?
   (prompt-render-skeleton prompt-buffer)

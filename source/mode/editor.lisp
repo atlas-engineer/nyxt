@@ -26,11 +26,11 @@ get/set-content (which is necessary for operation)."
   (:toggler-command-p nil))
 
 (defmethod enable ((editor editor-mode) &key) ; TODO: Use an internal page instead of this HTML injection?
-  (let* ((content (spinneret:with-html-string
-                    (:head (:style (style (buffer editor))))
-                    (:body (:p "Please configure an editor mode to use an editor buffer."))))
-         (insert-content (ps:ps (ps:chain document (write (ps:lisp content))))))
-    (ffi-buffer-evaluate-javascript-async (buffer editor) insert-content)))
+  (let ((content (spinneret:with-html-string
+                   (:head (:style (style (buffer editor))))
+                   (:body (:p "Please configure an editor mode to use an editor buffer.")))))
+    (peval :async t :buffer (buffer editor)
+      (ps:chain document (write (ps:lisp content))))))
 
 (define-class editor-buffer (context-buffer modable-buffer document-buffer input-buffer)
   ((nyxt:url (quri:uri ""))

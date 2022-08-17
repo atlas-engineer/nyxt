@@ -26,12 +26,12 @@
   (:toggler-command-p nil))
 
 (defmethod enable ((editor plaintext-editor-mode) &key)
-  (let* ((content (spinneret:with-html-string
-                    (:head (:style (style editor)))
-                    (:body
-                     (:textarea :id "editor" :name "editor" :autofocus t))))
-         (insert-content (ps:ps (ps:chain document (write (ps:lisp content))))))
-    (ffi-buffer-evaluate-javascript-async (buffer editor) insert-content)))
+  (let ((content (spinneret:with-html-string
+                   (:head (:style (style editor)))
+                   (:body
+                    (:textarea :id "editor" :name "editor" :autofocus t)))))
+    (peval :async t :buffer (buffer editor)
+      (ps:chain document (write (ps:lisp content))))))
 
 (defmethod set-content ((editor plaintext-editor-mode) content)
   (pflet ((set-content

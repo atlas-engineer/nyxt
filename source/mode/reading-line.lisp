@@ -73,14 +73,13 @@ screen as well."
   (enable mode))
 
 (defmethod enable ((mode reading-line-mode) &key)
-  (let* ((content (spinneret:with-html-string
-                    (:style (style mode))
-                    (:span :id "reading-line-cursor" "")))
-         (insert-content (ps:ps
-                           (ps:chain document body (|insertAdjacentHTML| "afterbegin" (ps:lisp content)))
-                           (setf (ps:@ (nyxt/ps:qs document "#reading-line-cursor") style top) "10px"))))
-    (ffi-buffer-evaluate-javascript-async (buffer mode) insert-content)))
+  (let ((content (spinneret:with-html-string
+                   (:style (style mode))
+                   (:span :id "reading-line-cursor" ""))))
+    (peval :async t :buffer (buffer mode)
+      (ps:chain document body (|insertAdjacentHTML| "afterbegin" (ps:lisp content)))
+      (setf (ps:@ (nyxt/ps:qs document "#reading-line-cursor") style top) "10px"))))
 
 (defmethod disable ((mode reading-line-mode) &key)
-  (let ((destroy-content (ps:ps (setf (ps:chain (nyxt/ps:qs document "#reading-line-cursor") |outerHTML|) ""))))
-    (ffi-buffer-evaluate-javascript-async (buffer mode) destroy-content)))
+  (peval :async t :buffer (buffer mode)
+    (setf (ps:chain (nyxt/ps:qs document "#reading-line-cursor") |outerHTML|) "")))
