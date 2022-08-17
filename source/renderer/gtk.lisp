@@ -1297,31 +1297,28 @@ See `finalize-buffer'."
                                      (ps:lisp color))
                                (ps:chain document body (append-child div))
                                (ps:stringify (ps:chain window (get-computed-style div) opacity)))))
-          (let* ((rgba (cffi:foreign-alloc :double :count 4))
+          (let* ((rgba (gdk:make-gdk-rgba))
                  (rgba (progn (webkit:webkit-color-chooser-request-get-rgba
                                color-chooser-request rgba)
                               rgba))
                  (*interactive-p* t)
                  (color-name (prompt1 :prompt "Color"
                                       :input (format nil "rgba(~d, ~d, ~d, ~d)"
-                                                     (round (* 255 (cffi:mem-aref rgba :double 0)))
-                                                     (round (* 255 (cffi:mem-aref rgba :double 1)))
-                                                     (round (* 255 (cffi:mem-aref rgba :double 2)))
-                                                     (round (* 255 (cffi:mem-aref rgba :double 3))))
+                                                     (round (* 255 (gdk:gdk-rgba-red rgba)))
+                                                     (round (* 255 (gdk:gdk-rgba-green rgba)))
+                                                     (round (* 255 (gdk:gdk-rgba-blue rgba)))
+                                                     (round (* 255 (gdk:gdk-rgba-alpha rgba))))
                                       :sources 'color-source))
                  (color (get-rgba color-name))
                  (opacity (sera:parse-float (get-opacity color-name)))
-                 (rgba (progn
-                         (cffi:foreign-free rgba)
-                         (gdk:gdk-rgba-parse color))))
+                 (rgba (gdk:gdk-rgba-parse color)))
             (unless (uiop:emptyp color)
               (webkit:webkit-color-chooser-request-set-rgba
                color-chooser-request
-               (cffi:foreign-alloc
-                :double
-                :count 4
-                :initial-contents (list (gdk:gdk-rgba-red rgba) (gdk:gdk-rgba-green rgba)
-                                        (gdk:gdk-rgba-blue rgba) (coerce opacity 'double-float))))
+               (gdk:make-gdk-rgba :red (gdk:gdk-rgba-red rgba)
+                                  :green (gdk:gdk-rgba-green rgba)
+                                  :blue (gdk:gdk-rgba-blue rgba)
+                                  :alpha (coerce opacity 'double-float)))
               (webkit:webkit-color-chooser-request-finish (g:pointer color-chooser-request))))))
       t)))
 
