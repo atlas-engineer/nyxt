@@ -348,10 +348,24 @@ Objects are transformed to the hash-tables instead.")
   *json-object-accumulator*)
 
 ;; TODO: Decode arrays as vectors?
-(sera:-> decode-json (string) t)
 (export-always 'decode-json)
-(defun decode-json (string)
-  "An overridden version of `cl-json:decode-json-from-string'.
+(defgeneric decode-json (source)
+  (:method :around ((source t))
+    (let ((json::+json-lisp-symbol-tokens+
+            '(("true" . t)
+              ("false" . nil)
+              ("null" . :null)
+              ("undefined" . :undefined)))
+          (json:*object-scope-variables* '(json:*internal-decoder* *json-object-accumulator* *json-last-object-key*))
+          (json:*beginning-of-object-handler* #'json-object-init)
+          (json:*object-key-handler* #'json-object-add-key)
+          (json:*object-value-handler* #'json-object-add-value)
+          (json:*end-of-object-handler* #'json-object-get))
+      (call-next-method)))
+  (:method ((source t))
+    (json:decode-json-from-source source))
+  (:documentation
+   "An overridden version of `cl-json:decode-json-from-source'.
 Distinguishes between null/false and arrays/objects.
 Decodes:
 - null as :NULL,
@@ -360,33 +374,40 @@ Decodes:
 - true as t,
 - objects as hash-tables.
 
-Otherwise behaves like plain `cl-json:decode-json-from-string'."
-  (let ((json::+json-lisp-symbol-tokens+
-          '(("true" . t)
-            ("false" . nil)
-            ("null" . :null)
-            ("undefined" . :undefined)))
-        (json:*object-scope-variables* '(json:*internal-decoder* *json-object-accumulator* *json-last-object-key*))
-        (json:*beginning-of-object-handler* #'json-object-init)
-        (json:*object-key-handler* #'json-object-add-key)
-        (json:*object-value-handler* #'json-object-add-value)
-        (json:*end-of-object-handler* #'json-object-get))
-    (json:decode-json-from-string string)))
+Otherwise behaves like plain `cl-json:decode-json-from-source'."))
 
-(sera:-> encode-json (t) (values string &optional))
 (export-always 'encode-json)
-(defun encode-json (data)
-  "Overridden version of `cl-json:encode-json-to-string'.
+;; TODO: Should TO be &optional instead?
+(defgeneric encode-json (data to)
+  (:method :around ((data t) to)
+    (let ((json::+json-lisp-symbol-tokens+
+            '(("true" . t)
+              ("false" . nil)
+              ("null" . :null)
+              ("undefined" . :undefined))))
+      (call-next-method)))
+  (:method ((data t) (to pathname))
+    (with-open-file (f to :direction :output
+                          :if-exists :supersede
+                          :if-does-not-exist :create)
+      (encode-json data f)))
+  (:method ((data t) (to null))
+    (json:encode-json-to-string data))
+  (:method ((data t) (to symbol))
+    (when (eq t to)
+      (encode-json data *standard-output*)))
+  (:method ((data t) (to stream))
+    (json:encode-json data to))
+  (:documentation "Overridden version of `cl-json:encode-json'.
 Distinguishes between null and false.
 Encodes:
 - :NULL as null,
 - :UNDEFINED as undefined,
 - nil as false.
 
-Otherwise behaves the same as `cl-json:encode-json-to-string'."
-  (let ((json::+json-lisp-symbol-tokens+
-          '(("true" . t)
-            ("false" . nil)
-            ("null" . :null)
-            ("undefined" . :undefined))))
-    (json:encode-json-to-string data)))
+Where the encoded JSON is written depends on the type of TO:
+NULL     -- writing to string and returning it (same as
+            `cl-json:encode-json-to-string').
+(eql T)  -- writing to `*standard-output*'.
+PATHNAME -- writing to a file designated by the pathname.
+STREAM   -- writing to a stream."))

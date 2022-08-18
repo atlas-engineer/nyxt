@@ -450,11 +450,12 @@ TITLE is purely informative."
                         ;; supports, then we can override the encoding and
                         ;; decoding methods and allow arbitrary objects (like
                         ;; buffers) in the nyxt:// URL arguments..
-                        (cl-json:encode-json-to-string
+                        (encode-json
                          (when (or (scalar-p result)
                                    (and (sequence-p result)
                                         (every #'scalar-p result)))
-                           result)))
+                           result)
+                         nil))
                       "application/json"))
             (values "undefined" "application/json;charset=utf8"))))
   :cors-enabled-p t

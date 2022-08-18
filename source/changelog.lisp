@@ -445,6 +445,11 @@ SLY install.")
         " due to finally having an underlying slot.")
    (:li "New " (:code "toggle-maximize") " command for maximizing a window."))
 
+  (:h3 "Programming interface")
+  (:ul
+   (:li (:code "encode-json") " and " (:code "decode-json")
+        " functions are now capable of encoding from/decoding to files, strings and streams."))
+
   (:h3 "Bug fixes")
   (:ul
    (:li "The version parsing (that features like " (:code "#+nyxt-3")

@@ -111,7 +111,7 @@
      extension tabs on-created
      ;; buffer->tab-description returns the representation that Parenscript has
      ;; trouble encoding, thus this JSON parsing hack.
-     (ps:chain *j-s-o-n (parse (ps:lisp (encode-json (buffer->tab-description (buffer extension)))))))))
+     (ps:chain *j-s-o-n (parse (ps:lisp (encode-json (buffer->tab-description (buffer extension)) nil)))))))
 
 (defmethod tabs-on-updated ((buffer buffer) properties)
   "Invoke the browser.tabs.onUpdated event with PROPERTIES being an alist of BUFFER changes."
@@ -119,10 +119,10 @@
     (fire-extension-event
      extension tabs on-updated
      (ps:lisp (parse-integer (id buffer)))
-     (ps:chain *j-s-o-n (parse (ps:lisp (encode-json properties))))
+     (ps:chain *j-s-o-n (parse (ps:lisp (encode-json properties nil))))
      ;; buffer->tab-description returns the representation that Parenscript has
      ;; trouble encoding, thus this JSON parsing hack.
-     (ps:chain *j-s-o-n (parse (ps:lisp (encode-json (buffer->tab-description (buffer extension)))))))))
+     (ps:chain *j-s-o-n (parse (ps:lisp (encode-json (buffer->tab-description (buffer extension)) nil)))))))
 
 (defmethod tabs-on-removed ((buffer buffer))
   (flet ((integer-id (object)
@@ -152,7 +152,8 @@
                      (vector))
                  buffer-descriptions))))
     (encode-json
-     (%tabs-query (decode-json (or query-object "{}"))))))
+     (%tabs-query (decode-json (or query-object "{}")))
+     nil)))
 
 (-> tabs-create ((or null string)) (values string &optional))
 (defun tabs-create (create-properties)
@@ -173,7 +174,7 @@
     (when (or (gethash "active" properties)
               (gethash "selected" properties))
       (set-current-buffer buffer))
-    (encode-json (buffer->tab-description buffer))))
+    (encode-json (buffer->tab-description buffer) nil)))
 
 (defvar %message-channels% (make-hash-table)
   "A hash-table mapping message pointer addresses to the channels they return values from.
@@ -205,7 +206,8 @@ the description of the mechanism that sends the results back."
                                               ("tlsChannelId" . "")
                                               ("frameId" . 0)
                                               ("id" . "")))
-                                 ("extensionName" . ,(name extension))))))
+                                 ("extensionName" . ,(name extension)))
+                               nil)))
                 (lambda (reply)
                   (calispel:! channel (webkit:g-variant-get-maybe-string
                                        (webkit:webkit-user-message-get-parameters reply))))
@@ -334,7 +336,8 @@ the description of the mechanism that sends the results back."
                                  (cons (first key-value) value))))
                            keys))
              (string (or (gethash keys data)
-                         (vector)))))))))
+                         (vector))))
+           nil)))))
 
 (-> storage-local-set (buffer string) string)
 (defun storage-local-set (buffer message-params)
@@ -424,11 +427,12 @@ there. `reply-user-mesage' takes care of sending the response back."
         ;;   (nyxt::gtk-object buffer)
         ;;   (webkit:webkit-user-message-new
         ;;    "injectAPIs" (glib:g-variant-new-string
-        ;;                  (encode-json (mapcar #'extension->cons extensions))))))
+        ;;                  (encode-json (mapcar #'extension->cons extensions) nil)))))
         ("management.getSelf"
          (wrap-in-channel
           (encode-json (extension->extension-info (find message-params extensions
-                                                        :key #'name :test #'string=)))))
+                                                        :key #'name :test #'string=))
+                       nil)))
         ("runtime.sendMessage"
          (sera:and-let* ((json (decode-json message-params))
                          (extension-instances
@@ -465,7 +469,8 @@ there. `reply-user-mesage' takes care of sending the response back."
                    "x86-64"
                    #+(or X86 X86-32)
                    "x86-32"
-                   "arm")))))
+                   "arm"))
+           nil)))
         ("runtime.getBrowserInfo"
          (wrap-in-channel
           (encode-json
@@ -475,7 +480,8 @@ there. `reply-user-mesage' takes care of sending the response back."
              `(("name" . "Nyxt")
                ("vendor" . "Atlas Engineer LLC")
                ("version" ,(or major ""))
-               ("build" ,(or patch "")))))))
+               ("build" ,(or patch ""))))
+           nil)))
         ("storage.local.get"
          (wrap-in-channel (storage-local-get buffer message-params)))
         ("storage.local.set"
@@ -492,12 +498,12 @@ there. `reply-user-mesage' takes care of sending the response back."
           (tabs-create message-params)))
         ("tabs.getCurrent"
          (wrap-in-channel
-          (encode-json (buffer->tab-description buffer))))
+          (encode-json (buffer->tab-description buffer) nil)))
         ("tabs.print"
          (wrap-in-channel (nyxt/document-mode:print-buffer)))
         ("tabs.get"
          (wrap-in-channel
-          (encode-json (buffer->tab-description (nyxt::buffers-get message-params)))))
+          (encode-json (buffer->tab-description (nyxt::buffers-get message-params)) nil)))
         ("tabs.sendMessage"
          (let* ((json (decode-json message-params))
                 (id (gethash "tabId" json))
