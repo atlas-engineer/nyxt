@@ -64,7 +64,7 @@ it will be in conflict with common-lisp:fill."))
    (prompter:constructor (autofills (find-submode 'autofill-mode)))
    (prompter:return-actions
     (list (lambda-command autofill* (autofills)
-            (%paste :input-text (first autofills))))))
+            (ffi-buffer-paste (current-buffer) (first autofills))))))
   (:export-class-name-p t)
   (:metaclass user-class))
 

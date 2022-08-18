@@ -106,30 +106,6 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
                              (ps:chain element text-content))))
     (ps:chain result (slice 0 (ps:lisp limit)))))
 
-(export-always '%paste)
-(define-parenscript %paste (&key (input-text (ring-insert-clipboard (clipboard-ring *browser*))))
-  (let ((active-element (ps:chain document active-element))
-        (tag (ps:chain document active-element tag-name)))
-    (when (nyxt/ps:element-editable-p active-element)
-      (nyxt/ps:insert-at active-element (ps:lisp input-text)))))
-
-(export-always '%copy)
-(define-parenscript %copy ()
-  "Return selected text from javascript."
-  (ps:chain window (get-selection) (to-string)))
-
-(define-parenscript %cut ()
-  (let ((active-element (ps:chain document active-element)))
-    (when (nyxt/ps:element-editable-p active-element)
-      (let ((selection-text (ps:chain window (get-selection) (to-string))))
-        (nyxt/ps:insert-at active-element "")
-        selection-text))))
-
-(define-parenscript %select-all ()
-  (let ((active-element (ps:chain document active-element)))
-    (when (nyxt/ps:element-editable-p active-element)
-      (ps:chain active-element (set-selection-range 0 (ps:@ active-element value length))))))
-
 (defun html-write (content &optional (buffer (current-buffer)))
   (ffi-buffer-evaluate-javascript-async
    buffer

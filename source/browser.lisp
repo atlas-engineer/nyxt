@@ -82,7 +82,8 @@ and that ought to be killed when quitting.")
 Most recent messages are first.")
    (clipboard-ring
     (make-ring)
-    :export nil)
+    :documentation "The ring with all the clipboard contents Nyxt could cache.
+Note that it may be incomplete.")
    (prompt-buffer-generic-history
     (make-ring)
     :documentation "The default history of all prompt buffer entries.

@@ -371,10 +371,10 @@ FUNCTION is the action to perform on the selected elements."
   (echo "Unsupported operation for hint: can't open in new buffer."))
 
 (defmethod %copy-hint-url ((a nyxt/dom:a-element))
-  (trivial-clipboard:text (render-url (url a))))
+  (ffi-buffer-copy (current-buffer) (render-url (url a))))
 
 (defmethod %copy-hint-url ((img nyxt/dom:img-element))
-  (trivial-clipboard:text (render-url (url img))))
+  (ffi-buffer-copy (current-buffer) (render-url (url img))))
 
 (defmethod %copy-hint-url ((element plump:element))
   (echo "Unsupported operation for hint: can't copy URL."))

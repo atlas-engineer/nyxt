@@ -271,11 +271,16 @@ Setf-able, where the languages value is a list of strings like '(\"en_US\"
   (:documentation "Return if Intelligent Tracking Prevention (ITP) is enabled.
 Setf-able."))
 
-(define-ffi-generic ffi-buffer-copy (buffer)
-  (:method :after ((buffer t))
-    (ring-insert-clipboard (clipboard-ring *browser*)))
-  (:method ((buffer t))
-    (with-current-buffer buffer
+(define-ffi-generic ffi-buffer-copy (buffer &optional text)
+  (:method :around ((buffer t) &optional text)
+    (declare (ignore text))
+    ;; Save the top of clipboard before it's overriden.
+    (ring-insert-clipboard (clipboard-ring *browser*))
+    (sera:lret ((result (call-next-method)))
+      (ring-insert-clipboard (clipboard-ring *browser*))))
+  (:method ((buffer t) &optional (text nil text-provided-p))
+    (pflet ((copy :buffer buffer ()
+                  (ps:chain window (get-selection) (to-string))))
       ;; On some systems like Xorg, clipboard pasting happens just-in-time.  So if we
       ;; copy something from the context menu 'Copy' action, upon pasting we will
       ;; retrieve the text from the GTK thread.  This is prone to create
@@ -285,36 +290,66 @@ Setf-able."))
       ;; is present the clipboard and need not be retrieved from the GTK thread.
       ;; TODO: Do we still need to flush now that we have multiple threads?
       ;; (trivial-clipboard:text (trivial-clipboard:text))
-      (let ((input (%copy)))
+
+      (sera:lret ((input (if text-provided-p text (copy))))
         (copy-to-clipboard input)
         (echo "Text copied: ~s" input))))
-  (:documentation "Copy selected text in BUFFER to the system clipboard."))
+  (:documentation "Copy selected text in BUFFER to the system clipboard.
+If TEXT is provided, add it to system clipboard instead of selected text.
+Should return the copied text or NIL, if something goes wrong."))
 
-(define-ffi-generic ffi-buffer-paste (buffer)
+(define-ffi-generic ffi-buffer-paste (buffer &optional text)
   ;; While it may sound unintuitive, it helps keeping track of system clipboard,
   ;; both in Nyxt->OS and OS->Nyxt directions.
-  (:method :after ((buffer t))
-    (ring-insert-clipboard (clipboard-ring *browser*)))
-  (:method ((buffer t))
-    (with-current-buffer buffer
-      (%paste)))
-  (:documentation "Paste the last clipboard entry into BUFFER."))
+  (:method :around ((buffer t) &optional text)
+    (declare (ignore text))
+    ;; Save the top of clipboard before it's overriden.
+    (ring-insert-clipboard (clipboard-ring *browser*))
+    (sera:lret ((result (call-next-method)))
+      (ring-insert-clipboard (clipboard-ring *browser*))))
+  (:method ((buffer t) &optional (text nil text-provided-p))
+    (pflet ((paste
+             :buffer buffer (&optional (input-text (ring-insert-clipboard (clipboard-ring *browser*))))
+             (let ((active-element (ps:chain document active-element))
+                   (tag (ps:chain document active-element tag-name))
+                   (text-to-paste (or (ps:lisp input-text)
+                                      (ps:chain navigator clipboard (read-text)))))
+               (when (nyxt/ps:element-editable-p active-element)
+                 (nyxt/ps:insert-at active-element text-to-paste))
+               text-to-paste)))
+      (if text-provided-p
+          (paste text)
+          (paste))))
+  (:documentation "Paste the last clipboard entry into BUFFER.
+If TEXT is provided, paste it instead."))
 
 (define-ffi-generic ffi-buffer-cut (buffer)
-  (:method :after ((buffer t))
-    (ring-insert-clipboard (clipboard-ring *browser*)))
+  (:method :around ((buffer t))
+    ;; Save the top of clipboard before it's overriden.
+    (ring-insert-clipboard (clipboard-ring *browser*))
+    (sera:lret ((result (call-next-method)))
+      (ring-insert-clipboard (clipboard-ring *browser*))))
   (:method ((buffer t))
-    (with-current-buffer buffer
-      (let ((input (%cut)))
+    (pflet ((cut
+             :buffer buffer ()
+             (let ((active-element (ps:chain document active-element)))
+               (when (nyxt/ps:element-editable-p active-element)
+                 (let ((selection-text (ps:chain window (get-selection) (to-string))))
+                   (nyxt/ps:insert-at active-element "")
+                   selection-text)))))
+      (sera:lret ((input (cut)))
         (when input
           (copy-to-clipboard input)
           (echo "Text cut: ~s" input)))))
-  (:documentation "Cut selected text in BUFFER to the system clipboard."))
+  (:documentation "Cut selected text in BUFFER to the system clipboard.
+Return the text cut."))
 
 (define-ffi-generic ffi-buffer-select-all (buffer)
   (:method ((buffer t))
-    (with-current-buffer buffer
-      (%select-all)))
+    (peval :async t :buffer buffer
+      (let ((active-element (ps:chain document active-element)))
+        (when (nyxt/ps:element-editable-p active-element)
+          (ps:chain active-element (set-selection-range 0 (ps:@ active-element value length)))))))
   (:documentation "Select all text in BUFFER web view."))
 
 (define-ffi-generic ffi-buffer-undo (buffer)

@@ -116,9 +116,10 @@ See `*debug-on-error*'."
         (nyxt:peval :buffer buffer
           (ps:chain (nyxt/ps:qs document "#issue_body") (focus))
           (setf (ps:@ document active-element value) ""))
-        (%paste
-         :input-text (format
-                      nil "**Describe the bug**
+        (ffi-buffer-paste
+         buffer
+         (format
+          nil "**Describe the bug**
 
 **Precise recipe to reproduce the issue**
 
@@ -134,7 +135,7 @@ Can you reproduce this issue with Epiphany / GNOME Web (https://wiki.gnome.org/A
 ``` sh
 
 ```
-- Desktop environment / Window manager name+version: 
+- Desktop environment / Window manager name+version:
 - How you installed Nyxt (Guix pack, package manager, build from source):
 - Information from `show-system-information`:
 ```
@@ -142,4 +143,4 @@ Can you reproduce this issue with Epiphany / GNOME Web (https://wiki.gnome.org/A
 ```
 
 **Output when started from a shell** "
-                      (nyxt::system-information)))))))
+          (nyxt::system-information)))))))

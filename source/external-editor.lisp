@@ -64,7 +64,7 @@ so invoke on a separate thread when possible."
   (if (external-editor-program *browser*)
       (run-thread "external editor"
         (select-input-field)
-        (%paste :input-text (%edit-with-external-editor (%copy)))
+        (ffi-buffer-paste (current-buffer) (%edit-with-external-editor (ffi-buffer-copy (current-buffer))))
         (move-caret-to-end))
       (echo-warning "Please set `external-editor-program' browser slot.")))
 

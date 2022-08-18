@@ -47,7 +47,7 @@ a list of more languages available, see `spell-check-list-languages'.")
 (define-command spell-check-highlighted-word ()
   "Spell check a highlighted word. If a word is incorrectly spelled,
 pull up a prompt of suggestions."
-  (let ((word (%copy)))
+  (let ((word (ffi-buffer-copy (current-buffer))))
     (if (str:blankp word)
         (echo "No word highlighted to spell check!")
         (spell-check-prompt word))))

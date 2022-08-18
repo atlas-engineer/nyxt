@@ -93,25 +93,24 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
 
 (define-command annotate-highlighted-text (&optional (buffer (current-buffer)))
   "Create an annotation for the highlighted text of BUFFER."
-  (with-current-buffer buffer
-    (let* ((snippet (%copy))
-           (data (prompt1 :prompt "Annotation"
-                          :sources (make-instance 'prompter:raw-source
-                                                  :name "Note")))
-           (tags (prompt
-                  :prompt "Tag(s)"
-                  :sources (list (make-instance 'prompter:word-source
-                                                :name "New tags"
-                                                :multi-selection-p t)
-                                 (make-instance 'keyword-source :buffer buffer)
-                                 (make-instance 'annotation-tag-source))))
-           (annotation (make-instance 'snippet-annotation
-                                      :snippet snippet
-                                      :url (url buffer)
-                                      :page-title (title buffer)
-                                      :data data
-                                      :tags tags)))
-      (annotation-add annotation))))
+  (let* ((snippet (ffi-buffer-copy buffer))
+         (data (prompt1 :prompt "Annotation"
+                        :sources (make-instance 'prompter:raw-source
+                                                :name "Note")))
+         (tags (prompt
+                :prompt "Tag(s)"
+                :sources (list (make-instance 'prompter:word-source
+                                              :name "New tags"
+                                              :multi-selection-p t)
+                               (make-instance 'keyword-source :buffer buffer)
+                               (make-instance 'annotation-tag-source))))
+         (annotation (make-instance 'snippet-annotation
+                                    :snippet snippet
+                                    :url (url buffer)
+                                    :page-title (title buffer)
+                                    :data data
+                                    :tags tags)))
+    (annotation-add annotation)))
 
 (defun render-annotations (&key annotations)
   "Show the ANNOTATIONS in a new buffer"
