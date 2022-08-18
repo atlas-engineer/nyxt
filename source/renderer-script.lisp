@@ -10,7 +10,7 @@ SCRIPT-BODY must be a valid parenscript and will be wrapped in (PS:PS ...).
 Any Lisp expression must be wrapped in (PS:LISP ...).
 
 The returned function sends the compiled Javascript to the current buffer webview.
-The function can be passed ARGS."
+The function can be passed Lisp ARGS."
   `(defun ,script-name ,args
      (ffi-buffer-evaluate-javascript (current-buffer)
                                      (ps:ps ,@script-body))))
@@ -30,7 +30,9 @@ The function can be passed ARGS."
                            'ffi-buffer-evaluate-javascript-async
                            'ffi-buffer-evaluate-javascript)
                       ,(or buffer '(current-buffer))
-                      (ps:ps ,@(rest rest)))))))
+                      (ps:ps ,@(rest rest)))
+                     ;; This is to not return anything in async invocations.
+                     ,@(when async '(nil))))))
     `(flet ,(loop for (name . rest) in functions
                   collect (transform-definition name rest))
        ,@body)))
@@ -45,6 +47,8 @@ buffer, instead of the default `current-buffer'.
 
 The body of the code is expanded in the implicit `ps:ps'.
 
+Returns the transformed result of evaluating JavaScript code or NIL if :ASYNC.
+
 Examples:
 ;; Set input in the `current-prompt-buffer' asynchronously.
 \(peval :buffer (current-prompt-buffer) :async t
@@ -52,16 +56,20 @@ Examples:
 
 ;; Get the class of the active element in the `current-buffer'
 \(peval (ps:@ document active-element class-name))"
-  `(,(if (second (member :async args))
-         'ffi-buffer-evaluate-javascript-async
-         'ffi-buffer-evaluate-javascript)
-    ,(or (second (member :buffer args))
-         '(current-buffer))
-    (ps:ps ,@(loop for index below (length args)
-                   for arg = (nth index args)
-                   when (member arg '(:buffer :async))
-                     do (incf index 1)
-                   else collect arg))))
+  (let ((async (second (member :async args))))
+    `(progn
+       (,(if async
+             'ffi-buffer-evaluate-javascript-async
+             'ffi-buffer-evaluate-javascript)
+        ,(or (second (member :buffer args))
+             '(current-buffer))
+        (ps:ps ,@(loop for index below (length args)
+                       for arg = (nth index args)
+                       when (member arg '(:buffer :async))
+                         do (incf index 1)
+                       else collect arg)))
+       ;; This is to not return anything in async invocations.
+       ,@(when (second (member :async args)) '(nil)))))
 
 (define-parenscript %document-scroll-position (&optional (y 0 y-provided-p) (x 0 x-provided-p))
   (let ((x (ps:lisp x))
