@@ -132,8 +132,8 @@ contains an `nyxt/editor-mode:editor-mode' instance (or a subclass thereof)."))
         (write-file-with-editor buffer :if-exists if-exists)
         (echo "File ~s saved." (file buffer)))))
 
-(define-command-global open-new-editor-with-file (&optional (file (prompt-for-editor-file)))
-  "Open a new editor and query a file."
+(define-command-global edit-file (&optional (file (prompt-for-editor-file)))
+  "Open a new editor and query a FILE to edit in it."
   (let ((buffer (make-instance 'editor-buffer
                                :url (quri:make-uri :scheme "editor" :path file))))
     (set-current-buffer buffer)))
