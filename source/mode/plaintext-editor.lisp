@@ -4,7 +4,11 @@
 (in-package :nyxt/editor-mode)
 
 (define-mode plaintext-editor-mode (editor-mode)
-  "Mode for basic plaintext editing."
+  "Mode for basic plaintext editing.
+
+To enable it, add this to your configuration file:
+\(define-configuration nyxt/editor-mode::editor-buffer
+  ((default-modes (cons 'nyxt/editor-mode::plaintext-editor-mode %slot-value%))))"
   ((visible-in-status-p nil)
    (rememberable-p nil)
    (style (theme:themed-css (theme *browser*)
@@ -25,13 +29,11 @@
              :color theme:on-background))))
   (:toggler-command-p nil))
 
-(defmethod enable ((editor plaintext-editor-mode) &key)
-  (let ((content (spinneret:with-html-string
-                   (:head (:style (style editor)))
-                   (:body
-                    (:textarea :id "editor" :name "editor" :autofocus t)))))
-    (peval :async t :buffer (buffer editor)
-      (ps:chain document (write (ps:lisp content))))))
+(defmethod markup ((editor plaintext-editor-mode))
+  (spinneret:with-html-string
+    (:head (:style (style editor)))
+    (:body
+     (:textarea :id "editor" :name "editor" :autofocus t))))
 
 (defmethod set-content ((editor plaintext-editor-mode) content)
   (pflet ((set-content
@@ -43,6 +45,3 @@
 (defmethod get-content ((editor plaintext-editor-mode))
   (peval :buffer (buffer editor)
     (ps:chain (nyxt/ps:qs document "#editor") value)))
-
-(defmethod nyxt:default-modes append ((buffer editor-buffer))
-  '(plaintext-editor-mode))
