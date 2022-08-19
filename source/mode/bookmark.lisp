@@ -9,7 +9,7 @@
 ;;; - It's too verbose, e.g. a list is
 ;;; (:SEQUENCE 3 :CLASS CL:LIST :SIZE 2 :ELEMENTS ( "bar" "baz" ) )
 ;;;
-;;; - We lack control on the linebreaks.
+;;; - We lack control on the line breaks.
 ;;;
 ;;; - It needs IDs for every object, which makes it hard for the user to
 ;;;   hand-edit the file without breaking it.

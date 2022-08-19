@@ -23,7 +23,7 @@ standard locations."))
    (editable-p
     t
     :type boolean
-    :documentation "Whether the file can be editted using a text editor.
+    :documentation "Whether the file can be edited using a text editor.
 It's not always the case, take the socket for instance."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)

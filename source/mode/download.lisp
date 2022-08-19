@@ -50,7 +50,7 @@ disk.")
                     :export t
                     :type (or null function)
                     :documentation "The function to call when
-cancelling a download. This can be set by the download engine.")
+canceling a download. This can be set by the download engine.")
    (cancel-button (make-instance 'user-interface:button
                                  :text "✕"
                                  :action (ps:ps (nyxt/ps:lisp-eval () (echo "Can't cancel download."))))
@@ -63,7 +63,7 @@ cancel-download with an argument of the URL to cancel.")
                                :action (ps:ps (nyxt/ps:lisp-eval () (echo "Can't open file, file path unknown."))))
                 :export nil
                 :documentation "The file name to open is encoded
-within the button's URL when the destinaton path is set.")
+within the button's URL when the destination path is set.")
    (progress-text (make-instance 'user-interface:paragraph)
                   :export nil)
    (progress (make-instance 'user-interface:progress-bar)
@@ -81,7 +81,7 @@ the URL. It will search the URLs of all the existing downloads, if it
 finds it, it will invoke its cancel-function."
   (alex:when-let ((download (find url (downloads *browser*) :key #'url :test #'equal)))
     (funcall (cancel-function download))
-    (echo "Download cancelled: ~a." url)))
+    (echo "Download canceled: ~a." url)))
 
 (defmethod (setf cancel-function) (cancel-function (download download))
   (setf (slot-value download 'cancel-function) cancel-function)

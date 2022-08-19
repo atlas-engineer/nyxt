@@ -31,7 +31,7 @@
      (current-buffer)
      (ps:ps (ps:chain document
                       (write (ps:lisp (spinneret:with-html-string
-                                        (:p "Operation cancelled.")))))))))
+                                        (:p "Operation canceled.")))))))))
 
 (defmethod prompter:object-attributes ((pkg ospm:os-package) (source prompter:source))
   (declare (ignore source))
@@ -280,7 +280,7 @@ OBJECTS can be a list of packages, a generation, etc."
               (format-command-stream
                process-info
                (lambda (s)
-                 ;; TODO: Make shell formating function and add support for
+                 ;; TODO: Make shell formatting function and add support for
                  ;; special characters, e.g. progress bars.
                  (nyxt::html-write
                   (spinneret:with-html-string

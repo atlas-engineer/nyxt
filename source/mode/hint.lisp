@@ -119,9 +119,9 @@ For instance, to include images:
   (let* ((exponents (nreverse (loop for pow below char-length
                                     collect (expt (length alphabet) pow)))))
     (coerce (loop for exp in exponents
-                  for quotinent = (floor (/ code exp))
-                  collect (aref alphabet quotinent)
-                  do (decf code (* quotinent exp)))
+                  for quotient = (floor (/ code exp))
+                  collect (aref alphabet quotient)
+                  do (decf code (* quotient exp)))
             'string)))
 
 (-> generate-hints (integer) list-of-strings)
@@ -236,7 +236,7 @@ FUNCTION is the action to perform on the selected elements."
                                             (declare (ignore source))
                                             (add-hints :selector selector)))
                             :after-destructor (lambda () (with-current-buffer buffer
-                                                      (remove-hints))))))
+                                                           (remove-hints))))))
     (funcall function result)))
 
 (defmethod prompter:object-attributes :around ((element plump:element) (source hint-source))

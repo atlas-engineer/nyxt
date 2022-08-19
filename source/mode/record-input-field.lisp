@@ -125,8 +125,8 @@ See `save-input-data' and `set-input-data-from-saved'."
 
 (define-command set-input-data-from-saved
     (&key (return-actions (list (lambda-command set-input-data* (suggestion-values)
-                           "Load selected input-entry in current buffer's input fields."
-                           (ps-write-input-data (input-data (first suggestion-values)))))))
+                                  "Load selected input-entry in current buffer's input fields."
+                                  (ps-write-input-data (input-data (first suggestion-values)))))))
   "Set the input data from a list of saved data into the current buffer.
 See also `set-input-data-from-saved-domain'."
   (prompt :prompt "Write input data from"
@@ -135,12 +135,12 @@ See also `set-input-data-from-saved-domain'."
 
 (define-command set-input-data-from-saved-domain
     (&key (return-actions (list (lambda-command buffer-load* (suggestion-values)
-                           "Load selected input-entry in current buffer's input fields."
-                           (ps-write-input-data (input-data (first suggestion-values)))))))
+                                  "Load selected input-entry in current buffer's input fields."
+                                  (ps-write-input-data (input-data (first suggestion-values)))))))
   "Set the input data from a list of saved data filtered by current domain into
 the current buffer.
 
-See alsy `set-input-data-from-saved'."
+See also `set-input-data-from-saved'."
   (prompt :prompt "Write input data from"
           :sources (make-instance 'filtered-domain-input-data-source
                                   :return-actions return-actions)))

@@ -268,7 +268,7 @@ Features:
             (cursor repl) (1+ cursor)))))
 
 (define-command closing-paren (&optional (repl (find-submode 'repl-mode)))
-  "Automatically closes all the open parens before the cursor."
+  "Automatically closes all the open parentheses before the cursor."
   (when (input-focus-p repl)
     (let* ((input (input repl))
            (cursor (cursor repl))
@@ -281,7 +281,7 @@ Features:
 
 (defparameter +delimiters+
   (uiop:strcat "()"
-          sera:whitespace)
+               sera:whitespace)
   "Non-symbol Lisp delimiters.")
 
 (define-command tab-complete-symbol (&optional (repl (find-submode 'repl-mode)))
@@ -381,7 +381,7 @@ Features:
                                                                          'current-evaluation)
                                                              order)))
                                                (input evaluation)))
-                              (:div :class "evalution-result"
+                              (:div :class "evaluation-result"
                                     :id (format nil "evaluation-result-~a" (id evaluation))
                                     (:raw (html-result evaluation)))))
                    (:div :class "input"
