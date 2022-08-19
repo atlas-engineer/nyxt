@@ -222,7 +222,7 @@ See `find-internal-page-buffer'."))
 
 (defmethod (setf page-mode) (new-value (page internal-page))
   ;; FIXME: Better rule?
-  (when (and new-value (rememberable-p (mode-invocation new-value)))
+  (when (and new-value (rememberable-p new-value))
     (define-auto-rule `(lambda (url)
                          (str:starts-with-p ,(nyxt-url (name page))
                                             (render-url url)))

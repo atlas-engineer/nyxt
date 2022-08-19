@@ -9,67 +9,46 @@
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-;; REVIEW: Do we still need this?
-(define-class mode-invocation ()
-  ((name
-    (error "Mode invocation should have a name to call mode through.")
-    :type symbol
-    :documentation "Mode symbol to call the mode with.
-Package prefix is optional.")
-   (arguments
-    nil
-    :type list
-    :documentation "Arguments to activate the mode with."))
-  (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+(defmethod rememberable-p ((mode list))
+  (check-type (first mode) mode-symbol)
+  (rememberable-p (apply #'make-instance (first mode) (rest mode))))
 
-(export-always 'equals)
-(defmethod equals ((object1 t) (object2 t))
-  (equalp object1 object2))
-(defmethod equals ((mode1 mode-invocation) (mode2 mode-invocation))
-  (eq (name mode1)
-      (name mode2)))
+(defmethod rememberable-p ((mode symbol))
+  (check-type mode mode-symbol)
+  (rememberable-p (make-instance mode)))
 
-(defgeneric mode-invocation (mode)
-  (:method ((mode mode-invocation))
-    mode)
-  (:method ((mode nyxt:mode))
-    (when (rememberable-p mode)
-      (make-instance 'mode-invocation :name (sera:class-name-of mode))))
-  (:method ((mode symbol))
-    (alex:if-let ((full-mode-symbol (if (and (not (keywordp mode)) (mode-class mode))
-                                        mode
-                                        (if (keywordp mode)
-                                            (resolve-symbol mode :mode)
-                                            (alex:when-let ((resolved-symbol (nyxt::resolve-symbol (string mode) :mode)))
-                                              (log:warn "Auto-rule: non-package-prefixed symbols are deprecated, use prefixed symbols or keywords instead: ~s" mode)
-                                              resolved-symbol)))))
-      (when (rememberable-p (make-instance full-mode-symbol))
-        (make-instance 'mode-invocation :name full-mode-symbol))
-      (log:warn "Auto-rule: unknown mode symbol ~s" mode)))
-  (:method ((mode list))
-    (check-type mode (cons symbol *))
-    (when (rememberable-p (make-instance (sera:class-name-of (first mode))))
-      (make-instance 'mode-invocation
-                     :name (sera:class-name-of (first mode))
-                     :arguments (rest mode)))))
+(deftype mode-invocation ()
+  `(cons mode-symbol *))
 
-(defun mode-invocations (mode-list)
-  "Return the mode invocations corresponding to mode specifiers in MODE-LIST.
-If the mode specifier is not known, it's omitted from the results."
-  (delete nil (mapcar #'mode-invocation mode-list)))
+(deftype rememberable-mode-invocation ()
+  `(and mode-invocation (satisfies rememberable-p)))
 
-(defmethod rememberable-p ((mode-invocation mode-invocation))
-  (rememberable-p (apply #'make-instance (name mode-invocation)
-                         (arguments mode-invocation))))
+(-> normalize-mode (t) (maybe mode-invocation))
+(defun normalize-mode (mode)
+  "Get MODE to the normalized state:
+- a mode symbol,
+- or list with mode symbol in the head."
+  (typecase mode
+    (mode (list (name mode)))
+    ((cons mode-symbol *) mode)
+    (mode-symbol (list mode))
+    (t nil)))
+
+(-> normalize-modes (list) (maybe (cons mode-invocation *)))
+(defun normalize-modes (modes)
+  "Apply `normalize-mode' to all the MODES."
+  (mapcar #'normalize-mode modes))
 
 (-> rememberable-of
-    ((or (cons (or mode-invocation mode) *) null))
-    (values (or (cons mode-invocation *) null) &optional))
+    ((or (cons t *) null))
+    (values (maybe (cons mode-invocation *)) &optional))
 (defun rememberable-of (modes)
   "Filter MODES based on `rememberable-p'."
-  (mode-invocations (sera:filter #'rememberable-p modes)))
+  (normalize-modes (sera:filter #'rememberable-p modes)))
+
+(defun mode= (m1 m2)
+  (eq (first (normalize-mode m1))
+      (first (normalize-mode m2))))
 
 (define-class auto-rule ()
   ((test
@@ -77,12 +56,12 @@ If the mode specifier is not known, it's omitted from the results."
     :type list)
    (included
     '()
-    :type (or (cons mode-invocation *) null)
-    :documentation "The list of `mode-invocation's to enable on rule activation.")
+    :type (or (cons rememberable-mode-invocation *) null)
+    :documentation "The list of `mode-invocations' to enable on rule activation.")
    (excluded
     '()
-    :type (or (cons mode-invocation *) null)
-    :documentation "The list of `mode-invocation's to disable on rule activation.")
+    :type (or (cons rememberable-mode-invocation *) null)
+    :documentation "The list of `mode-invocations' to disable on rule activation.")
    (exact-p
     nil
     :type boolean
@@ -110,9 +89,9 @@ ARGS as in make-instance of `auto-rule'."
                          test)
                (append
                 (when included
-                  (list :included (mode-invocations included)))
+                  (list :included (normalize-modes included)))
                 (when excluded
-                  (list :excluded (mode-invocations excluded)))))
+                  (list :excluded (normalize-modes excluded)))))
         *default-rules*))
 
 (-> matching-auto-rules (quri:uri modable-buffer) (values list &optional))
@@ -138,20 +117,21 @@ ARGS as in make-instance of `auto-rule'."
 (defun enable-matching-modes (url buffer)
   (alex:when-let ((rules (matching-auto-rules url buffer)))
     (dolist (rule rules)
-      (dolist (mode-invocation (set-difference
-                                (included rule)
-                                (rememberable-of (modes buffer))
-                                :test #'equals))
-        (check-type mode-invocation mode-invocation)
-        (apply #'enable-modes :modes (name mode-invocation)
+      (dolist (mode (set-difference
+                     (included rule)
+                     (rememberable-of (modes buffer))
+                     :test #'mode=))
+        (check-type mode rememberable-mode-invocation)
+        (apply #'enable-modes :modes (first mode)
                               :buffers buffer
                               :bypass-auto-rules-p t
-                              (arguments mode-invocation)))
-      (alex:when-let ((modes (mapcar #'name
+                              (rest mode)))
+      (alex:when-let ((modes (mapcar #'first
                                      (if (exact-p rule)
                                          (set-difference
                                           (rememberable-of (modes buffer))
-                                          (included rule) :test #'equals)
+                                          (included rule)
+                                          :test #'mode=)
                                          (excluded rule)))))
         (disable-modes :modes modes :buffers buffer :bypass-auto-rules-p t)))))
 
@@ -161,19 +141,19 @@ ARGS as in make-instance of `auto-rule'."
 
 (defun save-last-active-modes (buffer url)
   (when (can-save-last-active-modes buffer url)
-    (setf (last-active-modes buffer) (mode-invocations (modes buffer))
+    (setf (last-active-modes buffer) (normalize-modes (modes buffer))
           (last-active-modes-url buffer) url)))
 
 (defun reapply-last-active-modes (buffer)
-  (alex:when-let ((modes (mapcar #'name
-                                 (set-difference (mode-invocations (modes buffer))
+  (alex:when-let ((modes (mapcar #'first
+                                 (set-difference (normalize-modes (modes buffer))
                                                  (last-active-modes buffer)
-                                                 :test #'equals))))
+                                                 :test #'mode=))))
     (disable-modes :modes modes :buffers buffer :bypass-auto-rules-p t))
-  (alex:when-let ((modes (mapcar #'name
+  (alex:when-let ((modes (mapcar #'first
                                  (set-difference (last-active-modes buffer)
-                                                 (mode-invocations (modes buffer))
-                                                 :test #'equals))))
+                                                 (normalize-modes (modes buffer))
+                                                 :test #'mode=))))
     (enable-modes :modes modes :buffest buffer :bypass-auto-rules-p t)))
 
 (-> url-infer-match (string) list)
@@ -198,9 +178,9 @@ The rules are:
   #'(lambda (mode)
       (sera:and-let* ((_ (not (bypass-auto-rules-p buffer)))
                       (_ (prompt-on-mode-toggle-p buffer))
-                      (invocation (mode-invocation mode))
+                      (invocation (normalize-mode mode))
                       (*interactive-p* t))
-        (when (not (mode-covered-by-auto-rules-p mode buffer enable-p))
+        (unless (mode-covered-by-auto-rules-p mode buffer enable-p)
           (if-confirm ((format nil
                                "Permanently ~:[disable~;enable~] ~a for this URL?"
                                enable-p (sera:class-name-of mode)))
@@ -215,14 +195,14 @@ The rules are:
                       (setf (last-active-modes buffer)
                             (if enable-p
                                 (union (list invocation) (last-active-modes buffer)
-                                       :test #'equals)
+                                       :test #'mode=)
                                 (remove invocation (last-active-modes buffer)
-                                        :test #'equals))))))))
+                                        :test #'mode=))))))))
 
 (defmethod customize-instance :after ((buffer modable-buffer) &key &allow-other-keys)
   (unless (last-active-modes buffer)
     (setf (last-active-modes buffer)
-          (mode-invocations (default-modes buffer))))
+          (normalize-modes (default-modes buffer))))
   (when (prompt-on-mode-toggle-p buffer)
     (hooks:add-hook (enable-mode-hook buffer)
                     (make-instance 'hooks:handler
@@ -246,9 +226,9 @@ Mode is covered if:
   - when mode is not ENABLED-P and part of `excluded' modes in the rule.
 - If there's no matching rule but it's part of `last-active-modes' and needs to be ENABLED-P.
 - If it's getting disabled (not ENABLED-P) after being enabled by a rule on the previous page."
-  (let ((invocation (mode-invocation mode)))
+  (let ((mode (normalize-mode mode)))
     (flet ((invocation-member (list)
-             (member invocation list :test #'equals)))
+             (member mode list :test #'mode=)))
       (or (not (rememberable-p mode))
           (alex:when-let ((matching-rules (matching-auto-rules (url buffer) buffer)))
             (or (and enable-p (invocation-member (alex:mappend #'included matching-rules)))
@@ -304,12 +284,12 @@ For the storage format see the comment in the head of your `auto-rules-file'."
       (setf url (url url)))
     (add-modes-to-auto-rules
      (url-infer-match url)
-     :include (set-difference (mode-invocations (modes (current-buffer)))
-                              (mode-invocations (default-modes (current-buffer)))
-                              :test #'equals)
-     :exclude (set-difference (mode-invocations (default-modes (current-buffer)))
-                              (mode-invocations (modes (current-buffer)))
-                              :test #'equals))))
+     :include (set-difference (normalize-modes (modes (current-buffer)))
+                              (normalize-modes (default-modes (current-buffer)))
+                              :test #'mode=)
+     :exclude (set-difference (normalize-modes (default-modes (current-buffer)))
+                              (normalize-modes (modes (current-buffer)))
+                              :test #'mode=))))
 
 (define-command-global save-exact-modes-for-future-visits ()
   "Store the exact list of enabled modes to auto-rules for all the future visits of this
@@ -333,15 +313,15 @@ For the storage format see the comment in the head of your `auto-rules-file'."
     (when (typep url 'nyxt::history-entry)
       (setf url (url url)))
     (add-modes-to-auto-rules (url-infer-match url)
-                             :include (mode-invocations (modes (current-buffer)))
+                             :include (rememberable-of (modes (current-buffer)))
                              :exact-p t)))
 
 (-> add-modes-to-auto-rules
     (list &key
           (:append-p boolean)
-          (:exclude (or (cons mode-invocation *) null))
+          (:exclude (or (cons rememberable-mode-invocation *) null))
           (:buffer modable-buffer)
-          (:include (or (cons mode-invocation *) null))
+          (:include (or (cons rememberable-mode-invocation *) null))
           (:exact-p boolean))
     (values list &optional))
 (export-always 'add-modes-to-auto-rules)
@@ -350,17 +330,17 @@ For the storage format see the comment in the head of your `auto-rules-file'."
     (let* ((rule (or (find test rules
                            :key #'test :test #'equal)
                      (make-instance 'auto-rule :test test)))
-           (include (rememberable-of include))
-           (exclude (rememberable-of exclude)))
+           (include include)
+           (exclude exclude))
       (setf (exact-p rule) exact-p
             (included rule) (union include
                                    (when append-p
                                      (set-difference (included rule) exclude
-                                                     :test #'equals)))
+                                                     :test #'mode=)))
             (excluded rule) (union exclude
                                    (when append-p
                                      (set-difference (excluded rule) include
-                                                     :test #'equals)))
+                                                     :test #'mode=)))
             rules (delete-duplicates
                    (append (when (or (included rule) (excluded rule))
                              (list rule))
@@ -376,10 +356,10 @@ For the storage format see the comment in the head of your `auto-rules-file'."
                        (if modes-p
                            (mapcar
                             #'(lambda (mode-invocation)
-                                (if (arguments mode-invocation)
-                                    `(,(name mode-invocation)
-                                      ,@(arguments mode-invocation))
-                                    (name mode-invocation)))
+                                (if (rest mode-invocation)
+                                    `(,(first mode-invocation)
+                                      ,@(rest mode-invocation))
+                                    (first mode-invocation)))
                             value)
                            value))))))
     (let ((*standard-output* stream)
@@ -447,8 +427,8 @@ For the storage format see the comment in the head of your `auto-rules-file'."
         (rules (safe-read raw-content)))
     (mapcar #'(lambda (rule)
                 (let ((rule (append '(:test) rule)))
-                  (setf (getf rule :included) (mode-invocations (getf rule :included))
-                        (getf rule :excluded) (mode-invocations (getf rule :excluded)))
+                  (setf (getf rule :included) (normalize-modes (getf rule :included))
+                        (getf rule :excluded) (normalize-modes (getf rule :excluded)))
                   (when (stringp (getf rule :test))
                     (setf (getf rule :test) `(match-url ,(getf rule :test))))
                   (apply #'make-instance 'auto-rule rule)))
