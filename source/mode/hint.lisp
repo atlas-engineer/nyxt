@@ -127,9 +127,9 @@ For instance, to include images:
   (let* ((exponents (nreverse (loop for pow below subsequence-length
                                     collect (expt (length alphabet) pow)))))
     (coerce (loop for exp in exponents
-                  for quotinent = (floor (/ code exp))
-                  collect (aref alphabet quotinent)
-                  do (decf code (* quotinent exp)))
+                  for quotient = (floor (/ code exp))
+                  collect (aref alphabet quotient)
+                  do (decf code (* quotient exp)))
             'string)))
 
 (-> generate-hints (alex:positive-integer) (list-of string))

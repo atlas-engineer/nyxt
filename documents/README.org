@@ -617,6 +617,7 @@ When =slot-value= is the only parameter specified then:
   exceptionally =condition= (for instance if you do not control the called code, and
   some libraries subclass =condition= instead of =error=).
 - Dummy variables are called =_=.
+- Prefer American spelling.
 
 # - Conversion functions =FROM->TO= or =->TO= for generic functions.  The
 #   only one that comes to mind is =url= which does not follow this convention...

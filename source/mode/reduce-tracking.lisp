@@ -7,7 +7,7 @@
 
 (define-mode reduce-tracking-mode ()
   "Set specific settings in the web view in order to mitigate fingerprinting,
-(how third-party trackers attempt to indentify you).
+(how third-party trackers attempt to identify you).
 
 Fingerprinting can be tested with https://panopticlick.eff.org/."
   ((preferred-languages

@@ -80,7 +80,7 @@ Example:
 (defmethod files:write-file ((profile nyxt-profile) (hostlist hostlist) &key destination)
   "Write the downloaded hostlist to disk.
 This is the raw downloaded content and not the serialized parsed content.
-This gives more integrity guaranteees to the user and allows external manipulation."
+This gives more integrity guarantees to the user and allows external manipulation."
   (unless (uiop:emptyp (files:url-content hostlist))
     (alex:write-string-into-file (files:url-content hostlist) destination :if-exists :supersede)))
 

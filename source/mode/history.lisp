@@ -16,7 +16,7 @@
                       :type (list-of string)
                       :documentation "URL prefixes to not save in history.
 Example: DuckDuckGo redirections should be ignored or else going backward in
-history after consulting a result reloads the result, not the duckduckgo
+history after consulting a result reloads the result, not the DuckDuckGo
 search.")
    (conservative-history-movement-p
     nil
@@ -137,9 +137,9 @@ This saves the history to disk when BODY exits."
 (define-command history-backwards-query (&optional (buffer (current-buffer)))
   "Query parent URL to navigate back to."
   (let ((input (prompt1
-                 :prompt "Navigate backwards to"
-                 :sources (make-instance 'history-backwards-source
-                                         :buffer buffer))))
+                :prompt "Navigate backwards to"
+                :sources (make-instance 'history-backwards-source
+                                        :buffer buffer))))
     (when input
       (with-history-access (history buffer)
         (loop until (eq input (htree:owner-node history (id buffer)))
@@ -162,9 +162,9 @@ This saves the history to disk when BODY exits."
 (define-command history-forwards-direct-children (&optional (buffer (current-buffer)))
   "Query child URL to navigate to."
   (let ((input (prompt1
-                 :prompt "Navigate forwards to"
-                 :sources (make-instance 'direct-history-forwards-source
-                                         :buffer buffer))))
+                :prompt "Navigate forwards to"
+                :sources (make-instance 'direct-history-forwards-source
+                                        :buffer buffer))))
     (when input
       (with-history-access (history buffer)
         (htree:go-to-child (htree:data input) history (id buffer)))

@@ -588,7 +588,7 @@ of buffers."
                                       :top "0"
                                       :left "0"
                                       :border-style "dotted"
-                                      :bordeer-width "1px"
+                                      :border-width "1px"
                                       :border-color theme:on-background
                                       :background-color theme:on-background
                                       :opacity 0.05
@@ -732,7 +732,7 @@ of buffers."
                                                       (make-buffer :url (quri:uri i)))
                                                     urls))))
           :after-destructor (lambda () (with-current-buffer buffer
-                                    (frame-element-clear)))))
+                                         (frame-element-clear)))))
 
 (defun frame-source-selection ()
   (remove-duplicates (mapcar #'url (frame-element-get-selection))

@@ -90,7 +90,7 @@ It takes a `repeat-mode' instance as argument.")))
 
 (defun skip-repeat-dispatch (keyspec)
   (declare (ignore keyspec))
-  (echo "Cancelled repeat-key.")
+  (echo "Canceled repeat-key.")
   (setf (command-dispatcher (current-window)) #'dispatch-command
         (input-skip-dispatcher (current-window)) #'dispatch-input-skip))
 

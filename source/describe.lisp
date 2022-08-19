@@ -534,7 +534,7 @@ A command is a special kind of function that can be called with
 
 (defun skip-describe-dispatch (keyspec)
   (declare (ignore keyspec))
-  (echo "Cancelled describe-key.")
+  (echo "Canceled describe-key.")
   (setf (command-dispatcher (current-window)) #'dispatch-command
         (input-skip-dispatcher (current-window)) #'dispatch-input-skip))
 

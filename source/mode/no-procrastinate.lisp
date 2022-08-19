@@ -14,7 +14,7 @@
   "Default hostlist for `no-procrastinate-mode'.")
 
 (define-mode no-procrastinate-mode (nyxt/blocker-mode:blocker-mode)
-  "Mode to block access to hosts associated to procrastination."
+  "Mode to block access to hosts associated with procrastination."
   ((rememberable-p nil)
    (no-procrastinate-hosts-file
     (make-instance 'no-procrastinate-hosts-file)

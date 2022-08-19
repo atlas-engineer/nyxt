@@ -1,6 +1,6 @@
 ;;;; This package and file serves as a source for bookmarklets that
 ;;;; originate outside of the Nyxt codebase. Eventually, the goal is
-;;;; to translate these bookmarklets into their equivalent parenscript
+;;;; to translate these bookmarklets into their equivalent Parenscript
 ;;;; forms for easier interaction and editing.
 
 ;;;; The Bookmarklets in this file are copyright Jesse Ruderman and
