@@ -68,8 +68,7 @@ The handlers take the mode as argument.")
     :documentation "Hook run when disabling the mode, before the destructor.
 The handlers take the mode as argument.")
    (keyscheme-map
-    (make-hash-table :size 0)
-    :type keymaps:keyscheme))
+    (make-hash-table :size 0)))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
