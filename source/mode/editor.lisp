@@ -111,11 +111,11 @@ contains an `nyxt/editor-mode:editor-mode' instance (or a subclass thereof)."))
      :extra-modes 'nyxt/file-manager-mode:file-manager-mode
      :input (uiop:native-namestring (uiop:getcwd))
      :sources
-     (list (make-instance 'prompter:raw-source
-                          :name "New file")
-           (make-instance 'nyxt/file-manager-mode:file-source
+     (list (make-instance 'nyxt/file-manager-mode:file-source
                           :name "Existing file"
-                          :return-actions '(identity)))))))
+                          :return-actions '(identity))
+           (make-instance 'prompter:raw-source
+                          :name "Create new file"))))))
 
 (define-command editor-open-file (&key (buffer (current-buffer)) (file (prompt-for-editor-file)))
   "Open a file in the internal editor."
