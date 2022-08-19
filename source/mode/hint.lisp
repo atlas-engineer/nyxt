@@ -144,9 +144,8 @@ For instance, to include images:
                                                 1)
                                            alphabet))))))
 
-(define-parenscript set-hintable-attribute ()
-  (let ((elements (nyxt/ps:qsa document
-                               (ps:lisp (hints-selector (find-submode 'hint-mode))))))
+(define-parenscript set-hintable-attribute (selector)
+  (let ((elements (nyxt/ps:qsa document (ps:lisp selector))))
     (if (ps:lisp (compute-hints-in-view-port-p (find-submode 'hint-mode)))
         (ps:dolist (element elements)
           (when (nyxt/ps:element-in-view-port-p element)
@@ -160,9 +159,9 @@ For instance, to include images:
 
 (defun add-hints (&key selector (buffer (current-buffer)))
   (add-stylesheet)
-  (set-hintable-attribute)
+  (set-hintable-attribute selector)
   (setf (document-model buffer) (nyxt/dom::named-json-parse (nyxt/dom::get-document-body-json)))
-  (let* ((hintable-elements (clss:select selector (document-model buffer)))
+  (let* ((hintable-elements (clss:select "[nyxt-hintable]" (document-model buffer)))
          (hints (generate-hints (length hintable-elements))))
     (hint-elements hints)
     (loop for elem across hintable-elements
@@ -255,7 +254,7 @@ For instance, to include images:
 (export-always 'query-hints)
 (defun query-hints (prompt function
                     &key (multi-selection-p t)
-                         (selector "[nyxt-hintable]"))
+                         (selector (hints-selector (find-submode 'hint-mode))))
   "Prompt for elements matching SELECTOR, hinting them visually.
 MULTI-SELECTION-P defines whether several elements can be chosen.
 PROMPT is a text to show while prompting for hinted elements.
