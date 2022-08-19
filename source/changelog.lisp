@@ -443,10 +443,27 @@ SLY install.")
    (:li "Remove image support from " (:code "hint-mode") ".")
    (:li (:code "default-modes") " can be configured with " (:code "%slot-value%")
         " due to finally having an underlying slot.")
-   (:li "New " (:code "toggle-maximize") " command for maximizing a window."))
+   (:li "New " (:code "toggle-maximize") " command for maximizing a window.")
+   (:li "All the copying and pasting commands now fill the "
+        (:code "clipboad-ring") " of the browser reliably, thus making "
+        (:code "paste-from-clipboard-ring") " useful again.")
+   (:li (:code "editor-mode") " is improved and cleaned up in general."))
+
+  (:h3 "Bindings")
+  (:ul
+   (:li (:code "editor-mode") " now has an equally powerful set of bindings in all key schemes, allowing one
+to open a file, save it, switch buffer or delete current buffer.")
+   (:li (:code "paste-from-clipboard-ring") " is now conveniently bound to "
+        (:code "M-y") " in Emacs scheme of " (:code "document-mode") "."))
 
   (:h3 "Programming interface")
   (:ul
+   (:li (:code "ffi-buffer-copy") " and " (:code "ffi-buffer-paste")
+        " now accept optional second argument — string to put into clipboard instead of
+the selection, and the string to paste instead of the clipboard (respectively).")
+   (:li (:code "editor-mode") " now has an additional method to implement for the backends:"
+        (:code "nyxt/editor-mode:markup")
+        ". This method defines how the initial editor markup (not necessarily HTML one) will look like.")
    (:li (:code "encode-json") " and " (:code "decode-json")
         " functions are now capable of encoding from/decoding to files, strings and streams."))
 
