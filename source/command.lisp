@@ -343,8 +343,13 @@ With MODE-SYMBOLS and GLOBAL-P, include global commands."
                   (not (eq :global (visibility command))))
               (notany
                (lambda (mode-symbol)
-                 (eq (symbol-package (name command))
-                     (symbol-package mode-symbol)))
+                 (or (eq (symbol-package (name command))
+                         (symbol-package mode-symbol))
+                     (member
+                      (symbol-package (name command))
+                      (mapcar #'symbol-package
+                              (sera:filter (lambda (s) (typep s 'mode-symbol))
+                                           (mapcar #'class-name (mopu:superclasses mode-symbol)))))))
                mode-symbols)))
        *command-list*)
       *command-list*))
