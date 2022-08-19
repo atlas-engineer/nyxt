@@ -77,7 +77,7 @@ contains an `nyxt/editor-mode:editor-mode' instance (or a subclass thereof)."))
 (defmethod nyxt:default-modes :around ((buffer editor-buffer))
   ;; REVIEW: Really remove document-mode from editor-buffer?
   ;; FIXME: How to disable the annoying base-mode bindings in the editor!?
-  (set-difference '(document-mode base-mode) (call-next-method)))
+  (set-difference (call-next-method) '(document-mode base-mode)))
 
 (defmethod file ((buffer editor-buffer))
   (uiop:parse-native-namestring (quri:uri-path (url buffer))))
