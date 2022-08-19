@@ -15,6 +15,13 @@ The function can be passed Lisp ARGS."
      (ffi-buffer-evaluate-javascript (current-buffer)
                                      (ps:ps ,@script-body))))
 
+(export-always 'define-parenscript-async)
+(defmacro define-parenscript-async (script-name args &body script-body)
+  "Like `define-parenscript', but Javascript runs asynchronously."
+  `(defun ,script-name ,args
+     (ffi-buffer-evaluate-javascript-async (current-buffer)
+                                           (ps:ps ,@script-body))))
+
 (export-always 'pflet)
 (defmacro pflet (functions &body body)
   (flet ((transform-definition (name rest)
