@@ -17,17 +17,29 @@ To install the mode implementing the following, add this snippet to your config
   ((default-modes (cons 'your-editor-mode %slot-value%))))"
   ((keyscheme-map
     (define-keyscheme-map "editor-mode" ()
+      keyscheme:default
+      (list
+       "C-r" 'reload-current-buffer
+       "f11" 'toggle-fullscreen)
       keyscheme:cua
       (list
        "C-o" 'editor-open-file
-       "C-s" 'editor-write-file)
+       "C-s" 'editor-write-file
+       "C-q" 'delete-current-buffer
+       "C-tab" 'switch-buffer)
       keyscheme:emacs
       (list
        "C-x C-f" 'editor-open-file
-       "C-x C-s" 'editor-write-file)
+       "C-x C-s" 'editor-write-file
+       "C-x C-k" 'delete-current-buffer
+       "C-x b" 'switch-buffer)
       keyscheme:vi-normal
       (list
-       "C-o" 'editor-open-file))
+       "C-o" 'editor-open-file
+       "w" 'editor-write-file
+       "R" 'reload-current-buffer
+       "g b" 'switch-buffer
+       "D" 'delete-current-buffer))
     :type keymaps:keyscheme))
   (:toggler-command-p nil))
 
