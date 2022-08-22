@@ -1020,7 +1020,7 @@ See `make-buffer' for a description of the arguments."
 
 (define-command duplicate-buffer (&key parent-buffer)
   "Duplicate current buffer in a new buffer."
-  (duplicate-buffer-with-current-modes :modes '(document-mode base-mode)
+  (duplicate-buffer-with-current-modes :modes (list (resolve-symbol :document-mode :mode) 'base-mode)
                                        :parent-buffer parent-buffer))
 
 (-> add-to-recent-buffers (buffer) *)
