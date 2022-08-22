@@ -35,7 +35,9 @@
    (show-hint-scope-p
     nil
     :type boolean
-    :documentation "Whether the hinted element should display its visual scope.")
+    :documentation "Whether `style' is applied to the hinted element.
+When t, the hinted element is, by default, shown its scope by applying a
+background color.")
    (hints-alphabet
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     :type string
