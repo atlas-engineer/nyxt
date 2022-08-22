@@ -212,7 +212,8 @@ For instance, to include images:
   ((prompter:name "Hints")
    (prompter:selection-actions-enabled-p t)
    (prompter:filter
-    (if (fit-to-prompt-p (find-submode 'hint-mode))
+    (if (and (auto-follow-hints-p (find-submode 'hint-mode))
+             (fit-to-prompt-p (find-submode 'hint-mode)))
         (lambda (suggestion source input)
           (declare (ignore source))
           (str:starts-with-p input
