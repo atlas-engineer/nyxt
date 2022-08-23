@@ -31,7 +31,7 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
     :documentation "The annotation data.")
    (tags
     '()
-    :type list-of-strings)
+    :type (list-of string))
    (date (local-time:now)))
   (:export-class-name-p t)
   (:export-accessor-names-p t)

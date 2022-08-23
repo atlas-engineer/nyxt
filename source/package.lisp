@@ -11,7 +11,7 @@
 
 (uiop:define-package nyxt
   (:use #:common-lisp)
-  (:use-reexport #:nyxt/utilities)
+  (:use-reexport #:nyxt/utilities #:nyxt/types)
   #+nyxt-debug-make-instance
   (:shadow #:make-instance)
   (:export #:use-nyxt-package-nicknames)

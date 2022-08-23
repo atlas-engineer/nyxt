@@ -37,7 +37,7 @@ include implicit visits.")
 Number of times the URL was visited by following a link on a page.  This does
 not include explicit visits.")
    (scroll-position '()
-                    :type list-of-numbers
+                    :type (list-of numbers)
                     :documentation "The scroll position user was at when last visiting the page.
 It's a list of a form (Y &OPTIONAL X)."))
   (:accessor-name-transformer (class*:make-name-transformer name))

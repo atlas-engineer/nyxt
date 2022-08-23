@@ -108,7 +108,7 @@ Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
    (date (local-time:now))
    (tags
     '()
-    :type list-of-strings))
+    :type (list-of string)))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))

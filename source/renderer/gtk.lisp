@@ -1860,7 +1860,7 @@ local anyways, and it's better to refresh it if a load was queried."
 
 (define-ffi-method ffi-buffer-proxy ((buffer gtk-buffer))
   "Return the proxy URL and list of ignored hosts (a list of strings) as second value."
-  (the (values (or quri:uri null) list-of-strings)
+  (the (values (or quri:uri null) (list-of string))
        (values (gtk-proxy-url buffer)
                (proxy-ignored-hosts buffer))))
 (define-ffi-method (setf ffi-buffer-proxy) (proxy-specifier

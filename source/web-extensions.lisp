@@ -226,10 +226,10 @@ Is only set when popup is active.")
 Key is the relative path to the file.
 Value is the loadable URL of that file.")
    (permissions nil
-                :type list-of-strings
+                :type (list-of string)
                 :documentation "List of API permissions extension requires.")
    (content-scripts nil
-                    :type list
+                    :type (list-of content-script)
                     :documentation "A list of `content-script's used by this extension.")
    (browser-action nil
                    :type (or null browser-action)

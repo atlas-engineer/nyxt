@@ -148,7 +148,7 @@ It's suitable for `prompter:filter-preprocessor'."
    (prompter:multi-selection-p t)
    (open-file-in-new-buffer-p t :documentation "If nil, don't open files and directories in a new buffer.")
    (extensions nil
-               :type list-of-strings
+               :type (list-of string)
                :documentation "File extensions that this source lists.
 If nil, allow everything.")
    (allow-directories t
@@ -163,7 +163,7 @@ Takes a pathname and returns:
 - True if the pathname should stay.
 - False if the pathname should not be listed.")
    (supported-media-types '("xhtml" "html" "mp3" "ogg" "mp4" "flv" "wmv" "webm" "mkv")
-                          :type list-of-strings
+                          :type (list-of string)
                           :documentation "Media types that Nyxt can open.
 Others are opened with OS-specific mechanisms.")
    (open-file-function #'default-open-file-function

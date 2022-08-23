@@ -13,7 +13,7 @@
                       ;; TODO: Find a more automated way to do it.  WebKitGTK
                       ;; automatically removes such redirections from its
                       ;; history.  How?
-                      :type list-of-strings
+                      :type (list-of string)
                       :documentation "URL prefixes to not save in history.
 Example: DuckDuckGo redirections should be ignored or else going backward in
 history after consulting a result reloads the result, not the duckduckgo

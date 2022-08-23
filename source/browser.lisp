@@ -15,7 +15,7 @@ It's made of three components: protocol, host and port.
 Example: \"http://192.168.1.254:8080\".")
    (allowlist
     '("localhost" "localhost:8080")
-    :type list-of-strings
+    :type (list-of string)
     :documentation "A list of URIs not to forward to the proxy.")
    (proxied-downloads-p
     t
@@ -70,7 +70,7 @@ See `*socket-file*'.
 This slot is mostly meant to clean up the thread if necessary.")
    (non-terminating-threads
     '()
-    :type (or list (cons bt:thread *))
+    :type (list-of bt:thread)
     :documentation "List of threads that don't terminate
 and that ought to be killed when quitting.")
    (messages-content

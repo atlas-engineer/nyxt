@@ -82,14 +82,14 @@
                nyxt/theme)
   :pathname #p"NYXT:source;"
   :components ((:file "utilities")
-               (:file "package" :depends-on ("utilities"))
+               (:file "types")
+               (:file "package" :depends-on ("utilities" "types"))
                (:module "Utilities"
                 :pathname ""
                 :depends-on ("package")
                 :components
                 ((:file "time")
-                 (:file "types")
-                 (:file "keyscheme" :depends-on ("types"))
+                 (:file "keyscheme")
                  (:file "conditions")
                  (:file "debug")
                  (:file "user-interface")))

@@ -18,7 +18,7 @@ instance from the `set-url' commands.")
 query.  This is optional: if nil, use `search-url' instead with ~a expanded to
 the empty string.")
    (completion-function nil
-                        :type (or null (function (string) list-of-strings))
+                        :type (or null (function (string) (list-of string)))
                         :documentation "A function taking a user input and returning a list of suggested search queries.
 Can be built via `make-search-completion-function'"))
   (:export-class-name-p t)
@@ -41,8 +41,8 @@ Can be built via `make-search-completion-function'"))
     (&key (:base-url string)
           (:request-function (function (string &rest list) t))
           (:request-args list)
-          (:processing-function (function (t) list-of-strings)))
-    (function (string) list-of-strings))
+          (:processing-function (function (t) (list-of string))))
+    (function (string) (list-of string)))
 (defun make-search-completion-function (&key base-url
                                           (request-function
                                            #'(lambda (url &rest args)

@@ -16,7 +16,7 @@ This can apply to specific buffers.
 See the `add-domain-to-certificate-exceptions' command."
   ((visible-in-status-p nil)
    (certificate-exceptions *default-certificate-exceptions*
-                           :type list-of-strings)))
+                           :type (list-of string))))
 
 (defmethod enable ((mode certificate-exception-mode) &key)
   (setf (certificate-exceptions (buffer mode)) (certificate-exceptions mode)))

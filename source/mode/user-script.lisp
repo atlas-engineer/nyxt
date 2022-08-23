@@ -23,12 +23,12 @@
    (user-scripts
     nil
     :reader user-scripts
-    :type list
+    :type (list-of user-script)
     :documentation "List of `user-script'-s to attach via renderer-specific mechanisms.")
    (user-styles
     nil
     :reader user-styles
-    :type list
+    :type (list-of user-style)
     :documentation "List of `user-style'-s to attach via renderer-specific mechanisms.")))
 
 (defmethod enable ((mode user-script-mode) &key)
@@ -70,10 +70,10 @@
     :type (maybe hash-table))
    (include
     '("http://*/*" "https://*/*")
-    :type list-of-strings)
+    :type (list-of string))
    (exclude
     '()
-    :type list-of-strings)
+    :type (list-of string))
    (all-frames-p
     t
     :type boolean
@@ -224,10 +224,10 @@ Return:
     :documentation "The JavaScript world to inject the style in.")
    (include
     '("http://*/*" "https://*/*")
-    :type list-of-strings)
+    :type (list-of string))
    (exclude
     '()
-    :type list-of-strings)
+    :type (list-of string))
    (all-frames-p
     t
     :type boolean

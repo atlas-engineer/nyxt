@@ -124,7 +124,7 @@ For instance, to include images:
                   do (decf code (* quotinent exp)))
             'string)))
 
-(-> generate-hints (integer) list-of-strings)
+(-> generate-hints (integer) (list-of string))
 (defun generate-hints (length)
   (unless (zerop length)
     (let* ((alphabet (hints-alphabet (find-submode 'hint-mode)))

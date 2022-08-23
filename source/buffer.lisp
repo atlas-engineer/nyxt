@@ -3,8 +3,8 @@
 
 (in-package :nyxt)
 
-(hooks:define-hook-type keymaps-buffer (function (list-of-keymaps buffer)
-                                                 (values &optional list-of-keymaps buffer)))
+(hooks:define-hook-type keymaps-buffer (function ((list-of keymaps:keymap) buffer)
+                                                 (values &optional (list-of keymaps:keymap) buffer)))
 (export-always '(hook-keymaps-buffer))
 (hooks:define-hook-type url->url (function (quri:uri) quri:uri))
 
@@ -21,7 +21,7 @@ This is useful when there is no current buffer.")
   ((default-modes
     %default-modes
     :accessor nil
-    :type list
+    :type (list-of symbol)
     :documentation "The symbols of the modes to instantiate on buffer creation.
 The mode instances are stored in the `modes' BUFFER slot.
 
@@ -541,7 +541,7 @@ Example:
     :documentation "Proxy for buffer.")
    (certificate-exceptions
     '()
-    :type list-of-strings
+    :type (list-of strings)
     :documentation "A list of hostnames for which certificate errors shall be ignored."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)

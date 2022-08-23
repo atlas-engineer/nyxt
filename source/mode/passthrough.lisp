@@ -28,7 +28,7 @@ See the mode `keyscheme-map' for special bindings."
                      'keep-override-map)
   (echo "passthrough-mode disabled."))
 
-(-> keep-override-map (list-of-keymaps buffer) (values list-of-keymaps buffer))
+(-> keep-override-map ((list-of keymaps:keymap) buffer) (values (list-of keymaps:keymap) buffer))
 (defun keep-override-map (keymaps buffer)
   (if (nyxt::active-prompt-buffers (current-window))
       (values keymaps buffer)

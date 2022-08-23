@@ -553,6 +553,7 @@ We've also developed some of our own:
   value in the docstring.
 - Use the =maybe= and =maybe*= types instead of =(or null ...)= and =(or null
   (array * (0)) ...)= respectively.
+- Use the =list-of= type for typed lists.
 - We make heavy use of Alexandria and Serapeum, remember to use them instead of
   writing the same boilerplate over and over.  In particular, note these
   systematic uses of Serapeum:

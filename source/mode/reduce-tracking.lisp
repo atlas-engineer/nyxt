@@ -12,7 +12,7 @@
 Fingerprinting can be tested with https://panopticlick.eff.org/."
   ((preferred-languages
     '("en_US")
-    :type list-of-strings
+    :type (list-of string)
     :documentation "The list of languages that will be sent as part of the
 Accept-Language HTTP header.")
    (preferred-user-agent
@@ -42,7 +42,9 @@ still being less noticeable in the crowd.")
       "_hsenc" "__hssc" "__hstc" "__hsfp" "hsCtaTracking"
       "oft_id" "oft_k" "oft_lk" "oft_d" "oft_c" "oft_ck" "oft_ids"
       "oft_sk"
-      "igshid"))
+      "igshid")
+    :type (list-of string)
+    :documentation "The list of query parameters to clean from the URLs.")
    (old-user-agent
     nil
     :type (or null string)
