@@ -404,6 +404,11 @@ Only available if `prompter:multi-selection-p' is non-nil."
   (ffi-buffer-paste prompt-buffer)
   (nyxt::update-prompt-input prompt-buffer))
 
+(define-command-prompt cut (prompt-buffer)
+  "Cut the input text to clipboard."
+  (ffi-buffer-cut prompt-buffer)
+  (nyxt::update-prompt-input prompt-buffer))
+
 (defun history-entries (&optional (window (current-window)))
   (sera:and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
     (containers:container->list
