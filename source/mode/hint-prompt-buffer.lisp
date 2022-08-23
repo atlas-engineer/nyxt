@@ -8,7 +8,7 @@
 (define-command toggle-hints-transparency (&key (buffer (current-buffer)))
   "Toggle the on-screen element hints transparency."
   (with-current-buffer buffer
-    (peval (ps:dolist (element (nyxt/ps:qsa document ".nyxt-hint"))
+    (ps-eval (ps:dolist (element (nyxt/ps:qsa document ".nyxt-hint"))
              (if (or (= (ps:@ element style opacity) "1")
                      (= (ps:@ element style opacity) ""))
                  (setf (ps:@ element style opacity) "0.2")

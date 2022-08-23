@@ -250,7 +250,7 @@ For instance, to include images:
     (lambda (marks)
       (let ((%marks (mapcar (lambda (mark) (str:concat "#nyxt-hint-" (identifier mark)))
                             marks)))
-        (peval
+        (ps-eval
           (dolist (marked-overlay (nyxt/ps:qsa document ".nyxt-mark-hint"))
             (ps:chain marked-overlay class-list (remove "nyxt-mark-hint")))
           (dolist (mark (ps:lisp (list 'quote %marks)))

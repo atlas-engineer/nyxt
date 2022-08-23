@@ -27,7 +27,7 @@
   (serapeum:and-let* ((process-info (current-process-info
                                      (find-submode 'os-package-manager-mode))))
     (uiop:terminate-process process-info)
-    (peval :async t
+    (ps-eval :async t
       (ps:chain document (write (ps:lisp (spinneret:with-html-string
                                            (:p "Operation cancelled."))))))))
 

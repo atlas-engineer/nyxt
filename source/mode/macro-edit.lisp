@@ -63,7 +63,7 @@
                                         (if (str:upcase? name)
                                             (string-downcase name)
                                             name)))))))))
-    (peval :async t :buffer (buffer macro-editor)
+    (ps-eval :async t :buffer (buffer macro-editor)
       (setf (ps:chain document (get-element-by-id "commands") |innerHTML|)
             (ps:lisp
              (render-functions))))))
@@ -84,7 +84,7 @@
   (render-functions macro-editor))
 
 (defmethod name ((macro-editor macro-edit-mode))
-  (let ((name (peval :buffer (buffer macro-editor)
+  (let ((name (ps-eval :buffer (buffer macro-editor)
                 (ps:chain document (get-element-by-id "macro-name") value))))
     (cond ((not (str:emptyp name)) (setf (slot-value macro-editor 'name) (string-upcase name)))
           ((slot-value macro-editor 'name) (slot-value macro-editor 'name))

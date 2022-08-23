@@ -755,7 +755,7 @@ See `gtk-browser's `modifier-translator' slot."
     (run-thread "vi mode click listener"
       (when (and (= 1 button)
                  (nyxt/document-mode:input-tag-p
-                  (peval (ps:@ document active-element tag-name)))
+                  (ps-eval (ps:@ document active-element tag-name)))
                  (find-submode 'nyxt/vi-mode:vi-normal-mode buffer))
         (enable-modes '(nyxt/vi-mode:vi-insert-mode) buffer)))
     (when (prompt-buffer-p buffer)
@@ -1274,7 +1274,7 @@ See `finalize-buffer'."
    (prompter:selection-actions-enabled-p t)
    (prompter:selection-actions
     (lambda (color)
-      (pflet ((color-input-area
+      (ps-flet ((color-input-area
                :buffer (current-prompt-buffer) (color)
                (setf (ps:chain (nyxt/ps:qs document "#input") style background-color)
                      (ps:lisp color))))
@@ -1291,7 +1291,7 @@ See `finalize-buffer'."
       (gobject:g-object-ref (gobject:pointer color-chooser-request))
       (run-thread
           "color chooser"
-        (pflet ((get-rgba (color)
+        (ps-flet ((get-rgba (color)
                           (let ((div (ps:chain document (create-element "div"))))
                             (setf (ps:chain div style color)
                                   (ps:lisp color))

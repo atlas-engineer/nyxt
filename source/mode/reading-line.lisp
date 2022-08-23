@@ -44,14 +44,14 @@ mode."
 (define-command jump-to-reading-line-cursor (&key (buffer (current-buffer)))
   "Move the view port to show the reading line cursor."
   (with-current-buffer buffer
-    (peval (ps:chain (nyxt/ps:qs document "#reading-line-cursor")
+    (ps-eval (ps:chain (nyxt/ps:qs document "#reading-line-cursor")
                      (scroll-into-view-if-needed)))))
 
 (define-command reading-line-cursor-up (&key (step-size 20) (buffer (current-buffer)))
   "Move the reading line cursor up. If scrolling off screen, move the
 screen as well."
   (with-current-buffer buffer
-    (peval (let ((original-position
+    (ps-eval (let ((original-position
                    (ps:chain (parse-int
                               (ps:@ (nyxt/ps:qs document "#reading-line-cursor") style top) 10))))
              (setf (ps:@ (nyxt/ps:qs document "#reading-line-cursor") style top)
@@ -61,7 +61,7 @@ screen as well."
 (define-command reading-line-cursor-down (&key (step-size 20) (buffer (current-buffer)))
   "Move the reading line cursor down. If scrolling off screen, move the screen as well."
   (with-current-buffer buffer
-    (peval (let ((original-position
+    (ps-eval (let ((original-position
                    (ps:chain (parse-int
                               (ps:@ (nyxt/ps:qs document "#reading-line-cursor") style top) 10))))
              (setf (ps:@ (nyxt/ps:qs document "#reading-line-cursor") style top)
@@ -76,10 +76,10 @@ screen as well."
   (let ((content (spinneret:with-html-string
                    (:style (style mode))
                    (:span :id "reading-line-cursor" ""))))
-    (peval :async t :buffer (buffer mode)
+    (ps-eval :async t :buffer (buffer mode)
       (ps:chain document body (|insertAdjacentHTML| "afterbegin" (ps:lisp content)))
       (setf (ps:@ (nyxt/ps:qs document "#reading-line-cursor") style top) "10px"))))
 
 (defmethod disable ((mode reading-line-mode) &key)
-  (peval :async t :buffer (buffer mode)
+  (ps-eval :async t :buffer (buffer mode)
     (setf (ps:chain (nyxt/ps:qs document "#reading-line-cursor") |outerHTML|) "")))

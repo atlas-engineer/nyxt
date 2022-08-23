@@ -118,7 +118,7 @@ It does not assume being online."))
 
 (export-always '%clicked-in-input?)
 (defun %clicked-in-input? (&optional (buffer (current-buffer)))
-  (peval :buffer buffer (ps:chain document active-element tag-name)))
+  (ps-eval :buffer buffer (ps:chain document active-element tag-name)))
 
 (export-always 'input-tag-p)
 (-> input-tag-p ((or string null)) boolean)
@@ -143,11 +143,11 @@ It does not assume being online."))
 
 (define-command go-next ()
   "Navigate to the next element according to the HTML 'rel' attribute."
-  (peval (ps:chain (nyxt/ps:qsa document "rel=next") 0 (click))))
+  (ps-eval (ps:chain (nyxt/ps:qsa document "rel=next") 0 (click))))
 
 (define-command go-previous ()
   "Navigate to the previous element according to the HTML 'rel' attribute."
-  (peval (ps:chain (nyxt/ps:qsa document "rel=prev") 0 (click))))
+  (ps-eval (ps:chain (nyxt/ps:qsa document "rel=prev") 0 (click))))
 
 (define-command go-to-homepage ()
   "Navigate to the homepage."
@@ -198,7 +198,7 @@ It does not assume being online."))
 
 (define-command copy-placeholder ()
   "Copy placeholder text to clipboard."
-  (let ((current-value (peval (ps:@ document active-element placeholder))))
+  (let ((current-value (ps-eval (ps:@ document active-element placeholder))))
     (if (eq current-value :undefined)
         (echo "No active selected placeholder.")
         (progn (copy-to-clipboard current-value)
@@ -232,7 +232,7 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
   (alex:with-gensyms (element)
     (alex:once-only (buffer)
       `(progn
-         (peval :buffer ,buffer (let ((,element (progn ,@element-script)))
+         (ps-eval :buffer ,buffer (let ((,element (progn ,@element-script)))
                                   (ps:chain ,element (focus))
                                   (ps:chain ,element (select))))
          (dolist (mode (modes ,buffer))
@@ -246,7 +246,7 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
   ;; https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input
   ;; TODO: The following results in 2 DOM traversal.  We should probably do the
   ;; whole thing in a single Parenscript instead.
-  (pflet ((nth-input-type (i)
+  (ps-flet ((nth-input-type (i)
                           (let* ((input (ps:chain document
                                                   (get-elements-by-tag-name "INPUT")))
                                  (item (when input (ps:chain input (item (ps:lisp i))))))
@@ -325,42 +325,42 @@ Warning: URL is a string."
 
 (define-command scroll-to-top ()
   "Scroll to the top of the current page."
-  (peval (ps:chain window (scroll-by 0 (- (ps:chain document document-element scroll-height))))))
+  (ps-eval (ps:chain window (scroll-by 0 (- (ps:chain document document-element scroll-height))))))
 
 (define-command scroll-to-bottom ()
   "Scroll to the bottom of the current page."
-  (peval (ps:chain window (scroll-by 0 (ps:chain document document-element scroll-height)))))
+  (ps-eval (ps:chain window (scroll-by 0 (ps:chain document document-element scroll-height)))))
 
 (define-command scroll-down (&key (scroll-distance (scroll-distance (current-buffer))))
   "Scroll down the current page.
 The amount scrolled is determined by the buffer's `scroll-distance'."
-  (peval (ps:chain window (scroll-by 0 (ps:lisp scroll-distance)))))
+  (ps-eval (ps:chain window (scroll-by 0 (ps:lisp scroll-distance)))))
 
 (define-command scroll-up (&key (scroll-distance (scroll-distance (current-buffer))))
   "Scroll up the current page.
 The amount scrolled is determined by the buffer's `scroll-distance'."
-  (peval (ps:chain window (scroll-by 0 (ps:lisp (- scroll-distance))))))
+  (ps-eval (ps:chain window (scroll-by 0 (ps:lisp (- scroll-distance))))))
 
 (define-command scroll-left (&key (horizontal-scroll-distance
                                    (horizontal-scroll-distance (current-buffer))))
   "Scroll left the current page.
 The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
-  (peval (ps:chain window (scroll-by (ps:lisp (- horizontal-scroll-distance)) 0))))
+  (ps-eval (ps:chain window (scroll-by (ps:lisp (- horizontal-scroll-distance)) 0))))
 
 (define-command scroll-right (&key (horizontal-scroll-distance
                                     (horizontal-scroll-distance (current-buffer))))
   "Scroll right the current page.
 The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
-  (peval (ps:chain window (scroll-by (ps:lisp horizontal-scroll-distance) 0))))
+  (ps-eval (ps:chain window (scroll-by (ps:lisp horizontal-scroll-distance) 0))))
 
 (define-command scroll-page-down ()
   "Scroll down by one page height."
-  (peval (ps:chain window (scroll-by 0 (* (ps:lisp (page-scroll-ratio (current-buffer)))
+  (ps-eval (ps:chain window (scroll-by 0 (* (ps:lisp (page-scroll-ratio (current-buffer)))
                                           (ps:@ window inner-height))))))
 
 (define-command scroll-page-up ()
   "Scroll up by one page height."
-  (peval (ps:chain window (scroll-by 0 (- (* (ps:lisp (page-scroll-ratio (current-buffer)))
+  (ps-eval (ps:chain window (scroll-by 0 (- (* (ps:lisp (page-scroll-ratio (current-buffer)))
                                              (ps:@ window inner-height)))))))
 
 (defun ensure-zoom-ratio-range (zoom &optional (buffer (current-buffer)))
@@ -421,7 +421,7 @@ ID is a buffer `id'."
   (subseq (inner-text heading) 0 (position #\[ (inner-text heading))))
 
 (defun get-headings (&key (buffer (current-buffer)))
-  (pflet ((heading-scroll-position
+  (ps-flet ((heading-scroll-position
            :buffer buffer (element)
            (ps:chain (nyxt/ps:qs-nyxt-id document (ps:lisp (nyxt/dom:get-nyxt-id element)))
                      (get-bounding-client-rect) y)))
@@ -545,7 +545,7 @@ of buffers."
 (export-always 'print-buffer)
 (define-command print-buffer ()
   "Print the current buffer."
-  (peval (print)))
+  (ps-eval (print)))
 
 
 
@@ -587,7 +587,7 @@ of buffers."
                                       :background-color theme:on-background
                                       :opacity 0.05
                                       :z-index #.(1- (expt 2 30))))))
-    (pflet ((add-overlay
+    (ps-flet ((add-overlay
              :async t (overlay-style selection-rectangle-style)
              "Add a selectable overlay to the screen."
              (defparameter selection
@@ -656,7 +656,7 @@ of buffers."
 
 (defun frame-element-get-selection ()
   "Get the selected elements drawn by the user."
-  (pflet ((get-selection ()
+  (ps-flet ((get-selection ()
             (defun qsa (context selector)
               "Alias of document.querySelectorAll"
               (ps:chain context (query-selector-all selector)))
@@ -699,7 +699,7 @@ of buffers."
 
 (defun frame-element-clear ()
   "Clear the selection frame created by the user."
-  (peval
+  (ps-eval
     (ps:chain document (get-element-by-id "nyxt-rectangle-selection") (remove))
     (ps:chain document (get-element-by-id "nyxt-overlay") (remove))))
 

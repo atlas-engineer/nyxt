@@ -798,7 +798,7 @@ Return the created buffer."
 (define-command update-document-model (&key (buffer (current-buffer)))
   "Update BUFFER's `document-model' with the page source augmented with Nyxt
 identifiers."
-  (peval :buffer buffer
+  (ps-eval :buffer buffer
     (defvar nyxt-identifier-counter 0)
     (defun add-nyxt-identifiers (node)
       (unless (ps:chain node (has-attribute "nyxt-identifier"))
@@ -821,7 +821,7 @@ identifiers."
   dead-buffer)
 
 (defmethod document-model ((buffer buffer))
-  (pflet ((%count-dom-elements
+  (ps-flet ((%count-dom-elements
            :buffer buffer ()
            (defvar dom-counter 0)
            (defun count-dom-elements (node)

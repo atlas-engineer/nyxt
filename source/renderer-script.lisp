@@ -3,8 +3,8 @@
 
 (in-package :nyxt)
 
-(export-always 'peval)
-(defmacro peval (&body args)
+(export-always 'ps-eval)
+(defmacro ps-eval (&body args)
   "Generate the JavaScript code and run it right away.
 
 If :ASYNC is provided as T before the body, then the code is ran asynchronously.
@@ -17,11 +17,11 @@ Returns the transformed result of evaluating JavaScript code or NIL if :ASYNC.
 
 Examples:
 ;; Set input in the `current-prompt-buffer' asynchronously.
-\(peval :buffer (current-prompt-buffer) :async t
+\(ps-eval :buffer (current-prompt-buffer) :async t
   (setf (ps:@ (nyxt/ps:qs document \"#input\") value) \"foo\"))
 
 ;; Get the class of the active element in the `current-buffer'
-\(peval (ps:@ document active-element class-name))"
+\(ps-eval (ps:@ document active-element class-name))"
   (let ((async-p (second (member :async args))))
     `(progn
        (,(if async-p
@@ -44,15 +44,15 @@ Any Lisp expression must be wrapped in (PS:LISP ...).
 
 The returned function sends the compiled Javascript to the current buffer webview.
 The function can be passed Lisp ARGS."
-  `(defun ,script-name ,args (peval :buffer (current-buffer) ,@script-body)))
+  `(defun ,script-name ,args (ps-eval :buffer (current-buffer) ,@script-body)))
 
 (export-always 'define-parenscript-async)
 (defmacro define-parenscript-async (script-name args &body script-body)
   "Like `define-parenscript', but Javascript runs asynchronously."
-  `(defun ,script-name ,args (peval :async t :buffer (current-buffer) ,@script-body)))
+  `(defun ,script-name ,args (ps-eval :async t :buffer (current-buffer) ,@script-body)))
 
-(export-always 'pflet)
-(defmacro pflet (functions &body body)
+(export-always 'ps-flet)
+(defmacro ps-flet (functions &body body)
   (flet ((transform-definition (name rest)
            (let ((buffer (second (member :buffer rest)))
                  (async-p (second (member :async rest)))
@@ -109,16 +109,16 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
     (ps:chain result (slice 0 (ps:lisp limit)))))
 
 (defun html-write (content &optional (buffer (current-buffer)))
-  (peval :async t :buffer buffer
+  (ps-eval :async t :buffer buffer
    (ps:chain document (write (ps:lisp content)))))
 
 (defun html-set (content &optional (buffer (current-buffer)))
-  (peval :async t :buffer buffer
+  (ps-eval :async t :buffer buffer
     (setf (ps:@ document body |innerHTML|) (ps:lisp content))))
 
 (defun html-set-style (style-string &optional (buffer (current-buffer)))
   (let ((style (spinneret:with-html-string (:style style-string))))
-    (peval :async t :buffer buffer
+    (ps-eval :async t :buffer buffer
      (ps:chain document body (|insertAdjacentHTML| "afterbegin" (ps:lisp style))))))
 
 (sera:eval-always

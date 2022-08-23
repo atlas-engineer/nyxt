@@ -164,7 +164,7 @@
 
 (define-command remove-search-hints ()
   "Remove all search hints."
-  (peval (ps:dolist (node (nyxt/ps:qsa document ".nyxt-search-node"))
+  (ps-eval (ps:dolist (node (nyxt/ps:qsa document ".nyxt-search-node"))
              (ps:chain node (replace-with (aref *nodes* (ps:@ node id)))))))
 
 (defun prompt-buffer-selection-highlight-hint (&key suggestions scroll follow

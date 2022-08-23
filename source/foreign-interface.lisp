@@ -183,19 +183,19 @@ PROXY-URL is a `quri:uri' and IGNORE-HOSTS a list of strings."))
 
 (define-ffi-generic ffi-buffer-zoom-level (buffer)
   (:method ((buffer t))
-    (peval :buffer buffer (ps:chain document body style zoom)))
+    (ps-eval :buffer buffer (ps:chain document body style zoom)))
   (:setter-p t)
   (:documentation "Return the zoom level of the document.
 Setf-able."))
 (defmethod (setf ffi-buffer-zoom-level) (value (buffer buffer))
-  (peval :buffer buffer
+  (ps-eval :buffer buffer
     (ps:let ((style (ps:chain document body style)))
       (setf (ps:@ style zoom)
             (ps:lisp value)))))
 
 (define-ffi-generic ffi-buffer-get-document (buffer)
   (:method ((buffer t))
-    (pflet ((get-html
+    (ps-flet ((get-html
              :buffer buffer (start end)
              (ps:chain document document-element |innerHTML| (slice (ps:lisp start)
                                                                     (ps:lisp end))))
@@ -279,7 +279,7 @@ Setf-able."))
     (sera:lret ((result (call-next-method)))
       (ring-insert-clipboard (clipboard-ring *browser*))))
   (:method ((buffer t) &optional (text nil text-provided-p))
-    (pflet ((copy :buffer buffer ()
+    (ps-flet ((copy :buffer buffer ()
                   (ps:chain window (get-selection) (to-string))))
       ;; On some systems like Xorg, clipboard pasting happens just-in-time.  So if we
       ;; copy something from the context menu 'Copy' action, upon pasting we will
@@ -308,7 +308,7 @@ Should return the copied text or NIL, if something goes wrong."))
     (sera:lret ((result (call-next-method)))
       (ring-insert-clipboard (clipboard-ring *browser*))))
   (:method ((buffer t) &optional (text nil text-provided-p))
-    (pflet ((paste
+    (ps-flet ((paste
              :buffer buffer (&optional (input-text (ring-insert-clipboard (clipboard-ring *browser*))))
              (let ((active-element (ps:chain document active-element))
                    (tag (ps:chain document active-element tag-name))
@@ -330,7 +330,7 @@ If TEXT is provided, paste it instead."))
     (sera:lret ((result (call-next-method)))
       (ring-insert-clipboard (clipboard-ring *browser*))))
   (:method ((buffer t))
-    (pflet ((cut
+    (ps-flet ((cut
              :buffer buffer ()
              (let ((active-element (ps:chain document active-element)))
                (when (nyxt/ps:element-editable-p active-element)
@@ -346,7 +346,7 @@ Return the text cut."))
 
 (define-ffi-generic ffi-buffer-select-all (buffer)
   (:method ((buffer t))
-    (peval :async t :buffer buffer
+    (ps-eval :async t :buffer buffer
       (let ((active-element (ps:chain document active-element)))
         (when (nyxt/ps:element-editable-p active-element)
           (ps:chain active-element (set-selection-range 0 (ps:@ active-element value length)))))))
