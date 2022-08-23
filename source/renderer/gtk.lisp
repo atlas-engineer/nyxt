@@ -1797,6 +1797,7 @@ local anyways, and it's better to refresh it if a load was queried."
           #'(lambda ()
               (setf (nyxt/download-mode:status download) :canceled)
               (webkit:webkit-download-cancel webkit-download)))
+    (hooks:run-hook (nyxt/download-mode:before-download-hook download) download)
     (push download (downloads *browser*))
     (connect-signal download "received-data" nil (webkit-download data-length)
       (declare (ignore data-length))
@@ -1839,14 +1840,13 @@ local anyways, and it's better to refresh it if a load was queried."
         (setf (nyxt/download-mode:status download) :finished)
         ;; If download was too small, it may not have been updated.
         (setf (nyxt/download-mode:completion-percentage download) 100)
-        (hooks:run-hook (after-download-hook *browser*) download)))))
+        (hooks:run-hook (nyxt/download-mode:after-download-hook download) download)))))
 
 (defmethod ffi-buffer-download ((buffer gtk-buffer) url)
   (let* ((webkit-download (webkit:webkit-web-view-download-uri (gtk-object buffer) url))
          (download (make-instance 'nyxt/download-mode:download
                                   :url url
                                   :gtk-object webkit-download)))
-    (hooks:run-hook (before-download-hook *browser*) url)
     (wrap-download webkit-download)
     download))
 

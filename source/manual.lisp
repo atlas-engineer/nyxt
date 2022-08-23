@@ -387,7 +387,12 @@ you can safely set new inputs and select the necessary suggestions."))
           (:li "Try, for example, "
                (:code "(defmethod set-url :after (&key (prefill-current-url-p t)) ...)")
                " to do something after the set-url finishes executing."))
-         (:li "Modes 'enable' and 'disable' methods and their :before, :after, and :around methods."))
+         (:li "Modes 'enable' and 'disable' methods and their :before, :after, and :around methods.")
+         (:li "Mode-specific hooks, like " (:nxref :slot 'nyxt/download-mode:before-download-hook
+                                             :class-name 'nyxt/download-mode:download-mode)
+              " and " (:nxref :slot 'nyxt/download-mode:after-download-hook
+                        :class-name 'nyxt/download-mode:download-mode)
+              " for " (:nxref :class-name 'nyxt/download-mode:download) "."))
         (:p "For instance, if you want to force 'old.reddit.com' over 'www.reddit.com', you
 can set a hook like the following in your configuration file:")
         (:pre (:code "(defun old-reddit-handler (request-data)

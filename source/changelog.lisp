@@ -474,4 +474,6 @@ the selection, and the string to paste instead of the clipboard (respectively)."
    (:li "Opening files via a relative path (for instance, " (:code "buffer.html")
         ") is now correctly processed to an absolute path.")
    (:li "Setting " (:code "restore-session-on-startup-p") "to nil no longer hangs the browser.")
-   (:li "Fix buffer re-attachment from the deleted window.")))
+   (:li "Fix buffer re-attachment from the deleted window.")
+   (:li "Download hooks are properly typed and belong to " (:code "nyxt/download-mode:download")
+        " now, allowing to add handlers to them.")))

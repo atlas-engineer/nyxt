@@ -45,6 +45,38 @@ been downloaded.")
                      :type pathname
                      :documentation "Where the file will be downloaded to
 disk.")
+   (before-download-hook
+    (make-instance 'hook-download)
+    :type hook-download
+    :documentation "Hook run before downloading a file.
+The handlers take the `download' instance as argument.
+
+Example: echo the file name to be downloaded
+
+\(define-configuration nyxt/download-mode:download
+  ((nyxt/download-mode:before-download-hook
+    (hooks:add-hook %slot-value%
+                    (make-instance 'hooks:handler
+                                   :fn (lambda (download)
+                                         (echo \"The URL for the download is ~a\" (render-url (url download))))
+                                   :name 'echo-name)))))")
+   (after-download-hook
+    (make-instance 'hook-download)
+    :type hook-download
+    :documentation "Hook run after a download has completed.
+The handlers take the `download' instance as argument.
+
+Example: open the loaded files with XDG-open
+\(define-configuration nyxt/download-mode:download
+  ((nyxt/download-mode:after-download-hook
+    (hooks:add-hook
+     %slot-value%
+     (make-instance 'hooks:handler
+                    :fn (lambda (download)
+                          (uiop:launch-program
+                           (list \"xdg-open\" (uiop:native-namestring
+                                             (nyxt/download-mode:destination-path download)))))
+                    :name 'xdg-open-download)))))")
    (cancel-function nil
                     :reader t
                     :export t
@@ -68,12 +100,15 @@ within the button's URL when the destinaton path is set.")
                   :export nil)
    (progress (make-instance 'user-interface:progress-bar)
              :export nil))
+  (:metaclass user-class)
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:export-accessor-names-p t)
   (:export-class-name-p t)
   (:documentation "This class is used to represent a download within
 the *Downloads* buffer. The browser class contains a list of these
 download objects: `downloads'."))
+
+(hooks:define-hook-type download (function (download)))
 
 (defun cancel-download (url)
   "This function is called by the cancel-button with an argument of
@@ -121,7 +156,6 @@ appearance in the buffer when they are setf'd."
   (user-interface:connect (cancel-button download) buffer)
   (user-interface:connect (progress download) buffer))
 
-;; TODO: Move to separate package
 (define-mode download-mode ()
   "Display list of downloads."
   ((rememberable-p nil)
@@ -217,7 +251,6 @@ When PROXY-URL is :AUTO (the default), the proxy address is guessed from the
 current buffer.
 
 Return the download object matching the download."
-  (hooks:run-hook (before-download-hook *browser*) url) ; TODO: Set URL to download-hook result?
   (prog1
       (match (download-engine buffer)
         (:lisp
@@ -236,6 +269,7 @@ Return the download object matching the download."
                  (push download downloads)
                  ;; Add a watcher / renderer for monitoring download
                  (let ((download-render (make-instance 'download :url (render-url url))))
+                   (hooks:run-hook (before-download-hook download) download)
                    (setf (destination-path download-render)
                          (uiop:ensure-pathname
                           (download-manager:filename download)))

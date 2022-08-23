@@ -4,7 +4,6 @@
 (in-package :nyxt)
 
 (hooks:define-hook-type prompt-buffer (function (prompt-buffer)))
-(hooks:define-hook-type download (function (download)))
 (hooks:define-hook-type resource (function (request-data) (or request-data null)))
 (export-always '(hook-resource))
 
@@ -216,16 +215,6 @@ The handlers take the `prompt-buffer' as argument.")
     :type hook-prompt-buffer
     :documentation "Hook run while waiting for the prompt buffer to be available.
 The handlers take the `prompt-buffer' as argument.")
-   (before-download-hook
-    (make-instance 'hook-download)
-    :type hook-download
-    :documentation "Hook run before downloading a URL.
-The handlers take the URL as argument.")
-   (after-download-hook
-    (make-instance 'hook-download)
-    :type hook-download
-    :documentation "Hook run after a download has completed.
-The handlers take the `download-manager:download' class instance as argument.")
    (external-editor-program
     (or (uiop:getenv "VISUAL")
         (uiop:getenv "EDITOR"))
