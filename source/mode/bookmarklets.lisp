@@ -17,19 +17,33 @@ the content of HTML pages."))
 By default, this mode does nothing but expose the default bookmarklets."
   ((visible-in-status-p nil)))
 
-(defmacro define-bookmarklet-command (name documentation source) ; TODO: Should it really belong to the `nyxt' package?
-  "Define a bookmarklet command, the source can either be
+(sera:eval-always
+  (flet ((generate-body (source)
+           `(let* ((source ,source)
+                   (source (etypecase source
+                             (pathname (nfiles:content (make-instance 'nfiles:file :base-path source)))
+                             (string source))))
+              (ffi-buffer-evaluate-javascript-async buffer source))))
+    (export 'define-bookmarklet-command)
+    (defmacro define-bookmarklet-command (name documentation source)
+      "Define a bookmarklet command of name NAME.
+
+The SOURCE can either be
 - a JavaScript string to evaluate,
 - a `cl:pathname' to a JavaScript source file,
 - or a form evaluating to a JavaScript string."
-  `(define-command ,name (&optional (buffer (current-buffer)))
-     ,documentation
-     (let* ((source ,source)
-            (source (etypecase source
-                      (pathname (nfiles:content (make-instance 'nfiles:file :base-path source)))
-                      (string source))))
-       (ffi-buffer-evaluate-javascript-async buffer source))))
-(sera:export-always 'define-bookmarklet-command)
+      `(define-command ,name (&optional (buffer (current-buffer)))
+         ,documentation
+         ,(generate-body source)))
+
+    (export 'define-bookmarklet-command-global)
+    (defmacro define-bookmarklet-command-global (name documentation source)
+      "Define a global bookmarklet command of name NAME.
+See `define-bookmarklet-command'."
+      `(define-command-global ,name (&optional (buffer (current-buffer)))
+         ,documentation
+         ,(generate-body source)))))
+
 
 (define-bookmarklet-command color-internal-external-links
   "Color internal links red, external links blue, and in-page links orange."
