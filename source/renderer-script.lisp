@@ -22,20 +22,20 @@ The function can be passed Lisp ARGS."
 (defmacro pflet (functions &body body)
   (flet ((transform-definition (name rest)
            (let ((buffer (second (member :buffer rest)))
-                 (async (second (member :async rest)))
+                 (async-p (second (member :async rest)))
                  (rest (loop for index below (length rest)
                              for arg = (nth index rest)
                              when (member arg '(:buffer :async))
                                do (incf index 1)
                              else collect arg)))
              `(,name ,(first rest)
-                     (,(if async
+                     (,(if async-p
                            'ffi-buffer-evaluate-javascript-async
                            'ffi-buffer-evaluate-javascript)
                       ,(or buffer '(current-buffer))
                       (ps:ps ,@(rest rest)))
                      ;; This is to not return anything in async invocations.
-                     ,@(when async '(nil))))))
+                     ,@(when async-p '(nil))))))
     `(flet ,(loop for (name . rest) in functions
                   collect (transform-definition name rest))
        ,@body)))
@@ -59,9 +59,9 @@ Examples:
 
 ;; Get the class of the active element in the `current-buffer'
 \(peval (ps:@ document active-element class-name))"
-  (let ((async (second (member :async args))))
+  (let ((async-p (second (member :async args))))
     `(progn
-       (,(if async
+       (,(if async-p
              'ffi-buffer-evaluate-javascript-async
              'ffi-buffer-evaluate-javascript)
         ,(or (second (member :buffer args))
@@ -72,7 +72,7 @@ Examples:
                          do (incf index 1)
                        else collect arg)))
        ;; This is to not return anything in async invocations.
-       ,@(when (second (member :async args)) '(nil)))))
+       ,@(when async-p '(nil)))))
 
 (define-parenscript %document-scroll-position (&optional (y 0 y-provided-p) (x 0 x-provided-p))
   (let ((x (ps:lisp x))
