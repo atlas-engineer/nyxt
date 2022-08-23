@@ -199,28 +199,26 @@ default)."
 If N is negative, go to previous pages instead."
   (unless (= 0 n)
     (let ((step-page-index              ; TODO: Add multi-source support.
-            (ffi-buffer-evaluate-javascript
-             prompt-buffer
-             (ps:ps
-               (defun step-row (row)
-                 (ps:chain
-                  (aref (ps:chain row parent-node rows)
-                        (max 0
-                             (min (- (ps:chain row parent-node rows length) 1)
-                                  (+ (if (< 0 (ps:lisp n)) 1 -1)
-                                     (ps:chain row row-index)))))))
-               (defun find-first-element-out-of-view (row)
-                 (if (nyxt/ps:element-in-view-port-p row)
-                     (let ((new-row (step-row row)))
-                       (if (eq new-row row)
-                           row
-                           (find-first-element-out-of-view new-row)))
-                     row))
-               (-
+            (peval :buffer prompt-buffer
+              (defun step-row (row)
                 (ps:chain
-                 (find-first-element-out-of-view (ps:chain document (get-element-by-id "selection")))
-                 row-index)
-                (ps:chain (ps:chain document (get-element-by-id "selection")) row-index))))))
+                 (aref (ps:chain row parent-node rows)
+                       (max 0
+                            (min (- (ps:chain row parent-node rows length) 1)
+                                 (+ (if (< 0 (ps:lisp n)) 1 -1)
+                                    (ps:chain row row-index)))))))
+              (defun find-first-element-out-of-view (row)
+                (if (nyxt/ps:element-in-view-port-p row)
+                    (let ((new-row (step-row row)))
+                      (if (eq new-row row)
+                          row
+                          (find-first-element-out-of-view new-row)))
+                    row))
+              (-
+               (ps:chain
+                (find-first-element-out-of-view (ps:chain document (get-element-by-id "selection")))
+                row-index)
+               (ps:chain (ps:chain document (get-element-by-id "selection")) row-index)))))
       (sera:and-let* ((index-diff step-page-index))
         (prompter:select-next prompt-buffer
                               index-diff)))
@@ -436,21 +434,17 @@ Only available if `prompter:multi-selection-p' is non-nil."
 
 (define-command-prompt move-start-of-input (prompt-buffer)
   "Move to the beginning of PROMPT-BUFFER input."
-  (ffi-buffer-evaluate-javascript
-   prompt-buffer
-   (ps:ps
-     (let ((input (ps:chain document (get-element-by-id "input"))))
-       (setf (ps:@ input selection-start) 0
-             (ps:@ input selection-end) 0)))))
+  (peval :buffer prompt-buffer
+    (let ((input (ps:chain document (get-element-by-id "input"))))
+      (setf (ps:@ input selection-start) 0
+            (ps:@ input selection-end) 0))))
 
 (define-command-prompt move-end-of-input (prompt-buffer)
   "Move to the end of PROMPT-BUFFER input."
-  (ffi-buffer-evaluate-javascript
-   prompt-buffer
-   (ps:ps
-     (let ((input (ps:chain document (get-element-by-id "input"))))
-       (setf (ps:@ input selection-start) (ps:@ input value length)
-             (ps:@ input selection-end) (ps:@ input value length))))))
+  (peval :buffer prompt-buffer
+    (let ((input (ps:chain document (get-element-by-id "input"))))
+      (setf (ps:@ input selection-start) (ps:@ input value length)
+            (ps:@ input selection-end) (ps:@ input value length)))))
 
 (define-command-prompt select-all (prompt-buffer)
   "Select all the text in the prompt input."

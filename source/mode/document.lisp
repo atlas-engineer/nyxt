@@ -118,12 +118,7 @@ It does not assume being online."))
 
 (export-always '%clicked-in-input?)
 (defun %clicked-in-input? (&optional (buffer (current-buffer)))
-  ;; We don't use define-parenscript because we need to control over which
-  ;; buffer we query.
-  (ffi-buffer-evaluate-javascript buffer
-                                  (ps:ps
-                                    (ps:chain document active-element
-                                              tag-name))))
+  (peval :buffer buffer (ps:chain document active-element tag-name)))
 
 (export-always 'input-tag-p)
 (-> input-tag-p ((or string null)) boolean)
@@ -237,10 +232,9 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
   (alex:with-gensyms (element)
     (alex:once-only (buffer)
       `(progn
-         (ffi-buffer-evaluate-javascript ,buffer
-                                         (ps:ps (let ((,element (progn ,@element-script)))
-                                                  (ps:chain ,element (focus))
-                                                  (ps:chain ,element (select)))))
+         (peval :buffer ,buffer (let ((,element (progn ,@element-script)))
+                                  (ps:chain ,element (focus))
+                                  (ps:chain ,element (select))))
          (dolist (mode (modes ,buffer))
            (element-focused mode))))))
 

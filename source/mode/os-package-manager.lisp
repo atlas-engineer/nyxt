@@ -27,11 +27,9 @@
   (serapeum:and-let* ((process-info (current-process-info
                                      (find-submode 'os-package-manager-mode))))
     (uiop:terminate-process process-info)
-    (ffi-buffer-evaluate-javascript-async
-     (current-buffer)
-     (ps:ps (ps:chain document
-                      (write (ps:lisp (spinneret:with-html-string
-                                        (:p "Operation canceled.")))))))))
+    (peval :async t
+      (ps:chain document (write (ps:lisp (spinneret:with-html-string
+                                           (:p "Operation cancelled."))))))))
 
 (defmethod prompter:object-attributes ((pkg ospm:os-package) (source prompter:source))
   (declare (ignore source))

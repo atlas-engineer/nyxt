@@ -63,12 +63,10 @@
                                         (if (str:upcase? name)
                                             (string-downcase name)
                                             name)))))))))
-    (ffi-buffer-evaluate-javascript-async
-     (buffer macro-editor)
-     (ps:ps
-       (setf (ps:chain document (get-element-by-id "commands") |innerHTML|)
-             (ps:lisp
-              (render-functions)))))))
+    (peval :async t :buffer (buffer macro-editor)
+      (setf (ps:chain document (get-element-by-id "commands") |innerHTML|)
+            (ps:lisp
+             (render-functions))))))
 
 (defmethod command-help ((macro-editor macro-edit-mode) command-index)
   (nyxt::describe-command :command (name (nth command-index (functions macro-editor)))))
@@ -86,10 +84,8 @@
   (render-functions macro-editor))
 
 (defmethod name ((macro-editor macro-edit-mode))
-  (let ((name (ffi-buffer-evaluate-javascript
-               (buffer macro-editor)
-               (ps:ps
-                 (ps:chain document (get-element-by-id "macro-name") value)))))
+  (let ((name (peval :buffer (buffer macro-editor)
+                (ps:chain document (get-element-by-id "macro-name") value))))
     (cond ((not (str:emptyp name)) (setf (slot-value macro-editor 'name) (string-upcase name)))
           ((slot-value macro-editor 'name) (slot-value macro-editor 'name))
           (t nil))))
