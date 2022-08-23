@@ -822,6 +822,10 @@ prompt-buffer content might be too tiny.")
         (:p "To fix this issue when using the WebKitGTK render, export the
 following environment variable before starting Nyxt:")
         (:pre (:code "export GDK_SCALE=2
+nyxt
+"))
+        (:p "If that doesn't look satisfactory, try exporting the following environment variables before starting Nyxt:")
+        (:pre (:code "export GDK_SCALE=2
 export GDK_DPI_SCALE=0.5
 nyxt
 ")))
