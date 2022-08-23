@@ -57,7 +57,8 @@ default)."
        "C-down" 'select-last
        "C-pageup" 'select-previous-source
        "C-pagedown" 'select-next-source
-       "C-v" 'paste)
+       "C-v" 'paste
+       "C-x" 'cut)
       keyscheme:emacs
       (list
        "C-p" 'select-previous
@@ -86,8 +87,9 @@ default)."
        "M-backspace" 'nyxt/input-edit-mode:delete-backwards-word
        "M-d" 'nyxt/input-edit-mode:delete-forwards-word
        "C-x h" 'select-all
-       "C-w" 'copy-selection
+       "M-w" 'copy-selection
        "C-y" 'paste
+       "C-w" 'cut
        "C-h b" 'run-prompt-buffer-command
        "C-j" 'run-selection-action)
       keyscheme:vi-normal
@@ -123,6 +125,7 @@ default)."
        "z f" 'toggle-selection-actions-enabled
        "z a" 'toggle-attributes-display
        "y" 'copy-selection
+       "d d" 'cut
        "p" 'paste)
       keyscheme:vi-insert
       (list
