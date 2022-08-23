@@ -13,7 +13,11 @@
     nil
     :type boolean
     :documentation "Whether the hints are automatically followed when matching user input.")
-   (box-style
+   (fit-to-prompt-p
+    nil
+    :type boolean
+    :documentation "Whether the hinting prompt buffer is collapsed to the input line.")
+   (style
     (theme:themed-css (theme *browser*)
       (".nyxt-hint"
        :background-color theme:primary
@@ -21,14 +25,19 @@
        :font-family "monospace,monospace"
        :padding "0px 0.3em"
        :border-radius "0.3em"
-       :z-index #.(1- (expt 2 31))))
-    :documentation "The style of the boxes, e.g. link hints.")
-   (highlighted-box-style
-    (theme:themed-css (theme *browser*)
+       :z-index #.(1- (expt 2 31)))
       (".nyxt-hint.nyxt-highlight-hint"
        :background-color theme:accent
-       :color theme:on-accent))
-    :documentation "The style of highlighted boxes, e.g. link hints.")
+       :color theme:on-accent)
+      (".nyxt-element-hint"
+       :background-color theme:accent))
+    :documentation "The style of the hint overlays.")
+   (show-hint-scope-p
+    nil
+    :type boolean
+    :documentation "Whether `style' is applied to the hinted element.
+When t, the hinted element is, by default, shown its scope by applying a
+background color.")
    (hints-alphabet
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     :type string
@@ -45,6 +54,9 @@ define which elements are picked up by element hinting.
 For instance, to include images:
 
     a, button, input, textarea, details, select, img:not([alt=\"\"])")
+   (compute-hints-in-view-port-p
+    nil
+    :documentation "Whether hints are computed in view port.")
    (keyscheme-map
     (define-keyscheme-map "hint-mode" ()
       keyscheme:cua
@@ -73,21 +85,19 @@ For instance, to include images:
        "g f" 'follow-hint-nosave-buffer
        "g F" 'follow-hint-nosave-buffer-focus)))))
 
-(define-parenscript add-stylesheet ()
+(define-parenscript-async add-stylesheet ()
   (unless (nyxt/ps:qs document "#nyxt-stylesheet")
     (ps:try
-     (ps:let* ((style-element (ps:chain document (create-element "style")))
-               (box-style (ps:lisp (box-style (find-submode 'nyxt/hint-mode:hint-mode))))
-               (highlighted-style (ps:lisp (highlighted-box-style (find-submode 'nyxt/hint-mode:hint-mode)))))
+     (ps:let ((style-element (ps:chain document (create-element "style"))))
        (setf (ps:@ style-element id) "nyxt-stylesheet")
        (ps:chain document head (append-child style-element))
-       (ps:chain style-element sheet (insert-rule box-style 0))
-       (ps:chain style-element sheet (insert-rule highlighted-style 1)))
+       (setf (ps:chain style-element inner-text)
+             (ps:lisp (style (find-submode 'hint-mode)))))
      (:catch (error)))))
 
-(define-parenscript hint-elements (nyxt-identifiers hints)
-  (defun hint-create-element (original-element hint)
-    "Creates a DOM element to be used as a hint"
+(define-parenscript-async hint-elements (hints)
+  (defun create-hint-overlay (original-element hint)
+    "Create a DOM element to be used as a hint."
     (ps:let* ((rect (ps:chain original-element (get-bounding-client-rect)))
               (element (ps:chain document (create-element "span"))))
       (setf (ps:@ element class-name) "nyxt-hint")
@@ -99,24 +109,22 @@ For instance, to include images:
       element))
 
   (let ((fragment (ps:chain document (create-document-fragment)))
-        (ids (ps:lisp (list 'quote nyxt-identifiers)))
-        (hints (ps:lisp (list 'quote hints))))
-    (dotimes (i (ps:lisp (length nyxt-identifiers)))
-      (let ((element (nyxt/ps:qs document (+ "[nyxt-identifier=\""
-                                             (aref ids i)
-                                             "\"]")))
-            (hint (aref hints i)))
-        (when element
-          (ps:chain element (set-attribute "nyxt-hint" hint))
-          (ps:let ((hint-element (hint-create-element element hint)))
-            (ps:chain fragment (append-child hint-element))))))
+        (hints (ps:lisp (list 'quote hints)))
+        (i 0))
+    (dolist (element (nyxt/ps:qsa document "[nyxt-hintable]"))
+      (let ((hint (aref hints i)))
+        (ps:chain element (set-attribute "nyxt-hint" hint))
+        (ps:chain fragment (append-child (create-hint-overlay element hint)))
+        (when (ps:lisp (show-hint-scope-p (find-submode 'hint-mode)))
+          (ps:chain element class-list (add "nyxt-element-hint")))
+        (setf i (1+ i))))
     (ps:chain document body (append-child fragment))
     ;; Returning fragment makes WebKit choke.
     nil))
 
-(-> select-from-alphabet (t fixnum string) (values string &optional))
-(defun select-from-alphabet (code char-length alphabet)
-  (let* ((exponents (nreverse (loop for pow below char-length
+(-> select-from-alphabet (t alex:positive-integer string) (values string &optional))
+(defun select-from-alphabet (code subsequence-length alphabet)
+  (let* ((exponents (nreverse (loop for pow below subsequence-length
                                     collect (expt (length alphabet) pow)))))
     (coerce (loop for exp in exponents
                   for quotinent = (floor (/ code exp))
@@ -124,36 +132,60 @@ For instance, to include images:
                   do (decf code (* quotinent exp)))
             'string)))
 
-(-> generate-hints (integer) (list-of string))
+(-> generate-hints (alex:positive-integer) (list-of string))
 (defun generate-hints (length)
-  (unless (zerop length)
-    (let* ((alphabet (hints-alphabet (find-submode 'hint-mode)))
-           (char-length (ceiling (log length (length alphabet)))))
-      (loop for i below length collect (select-from-alphabet i char-length alphabet)))))
+  (let ((alphabet (hints-alphabet (find-submode 'hint-mode))))
+    (cond
+      ((sera:single alphabet)
+       (loop for i from 1 to length
+             collect (select-from-alphabet 0 i alphabet)))
+      (t
+       (loop for i below length
+             collect (select-from-alphabet i
+                                           (max (ceiling (log length (length alphabet)))
+                                                1)
+                                           alphabet))))))
 
-(defun add-hints (&key selector)
-  (let* ((dom (document-model (current-buffer)))
-         (hintable-elements (clss:select selector dom))
+(define-parenscript set-hintable-attribute (selector)
+  (let ((elements (nyxt/ps:qsa document (ps:lisp selector)))
+        (in-view-port-p (ps:lisp (compute-hints-in-view-port-p (find-submode 'hint-mode)))))
+    (ps:dolist (element elements)
+      (if in-view-port-p
+          (when (nyxt/ps:element-in-view-port-p element)
+            (ps:chain element (set-attribute "nyxt-hintable" "")))
+          (ps:chain element (set-attribute "nyxt-hintable" ""))))))
+
+(define-parenscript remove-hintable-attribute ()
+  (ps:dolist (element (nyxt/ps:qsa document "[nyxt-hintable]"))
+    (ps:chain element (remove-attribute "nyxt-hintable"))))
+
+(defun add-hints (&key selector (buffer (current-buffer)))
+  (add-stylesheet)
+  (set-hintable-attribute selector)
+  (setf (document-model buffer) (nyxt/dom::named-json-parse (nyxt/dom::get-document-body-json)))
+  (let* ((hintable-elements (clss:select "[nyxt-hintable]" (document-model buffer)))
          (hints (generate-hints (length hintable-elements))))
-    (run-thread "stylesheet adder"
-      (add-stylesheet))
-    (run-thread "element hint drawing"
-      (hint-elements (map 'list #'nyxt/dom:get-nyxt-id hintable-elements) hints))
+    (hint-elements hints)
     (loop for elem across hintable-elements
           for hint in hints
           do (plump:set-attribute elem "nyxt-hint" hint)
           collect elem)))
 
-(define-parenscript remove-hints ()
-  (defun hints-remove-all ()
-    "Removes all the elements"
-    (ps:dolist (element (nyxt/ps:qsa document ":not(.nyxt-search-node) > .nyxt-hint"))
-      (ps:chain element (remove))))
-  (hints-remove-all))
+(define-parenscript-async remove-hint-elements ()
+  (ps:dolist (element (nyxt/ps:qsa document ":not(.nyxt-search-node) > .nyxt-hint"))
+    (ps:chain element (remove)))
+  (when (ps:lisp (show-hint-scope-p (find-submode 'hint-mode)))
+    (ps:dolist (element (nyxt/ps:qsa document ".nyxt-element-hint"))
+      (ps:chain element class-list (remove "nyxt-element-hint")))))
+
+(defun remove-hints (&key (buffer (current-buffer)))
+  (remove-hint-elements)
+  (remove-hintable-attribute)
+  (setf (document-model buffer) (nyxt/dom::named-json-parse (nyxt/dom::get-document-body-json))))
 
 (export-always 'identifier)
 (defmethod identifier ((element plump:element))
-  (plump:get-attribute element "nyxt-hint"))
+  (plump:attribute element "nyxt-hint"))
 
 (define-parenscript highlight-selected-hint (&key element scroll)
   (defun update-hints ()
@@ -181,20 +213,30 @@ For instance, to include images:
 (define-class hint-source (prompter:source)
   ((prompter:name "Hints")
    (prompter:selection-actions-enabled-p t)
+   (prompter:filter
+    (if (and (auto-follow-hints-p (find-submode 'hint-mode))
+             (fit-to-prompt-p (find-submode 'hint-mode)))
+        (lambda (suggestion source input)
+          (declare (ignore source))
+          (str:starts-with-p input
+                             (prompter:attributes-default suggestion)
+                             :ignore-case t))
+        #'prompter:fuzzy-match))
    (prompter:filter-postprocessor
     (lambda (suggestions source input)
       (declare (ignore source))
       (multiple-value-bind (matching-hints other-hints)
           (sera:partition
            (lambda (element)
-             (str:starts-with-p input (plump:get-attribute element "nyxt-hint") :ignore-case t))
+             (str:starts-with-p input (plump:attribute element "nyxt-hint") :ignore-case t))
            suggestions
            :key #'prompter:value)
         (append matching-hints other-hints))))
    (prompter:selection-actions
-    (lambda (suggestion)
-      (highlight-selected-hint :element suggestion
-                               :scroll nil)))
+    (unless (fit-to-prompt-p (find-submode 'hint-mode))
+      (lambda (suggestion)
+        (highlight-selected-hint :element suggestion
+                                 :scroll nil))))
    (prompter:return-actions (list 'identity
                            (lambda-command click* (elements)
                              (dolist (element (rest elements))
@@ -212,36 +254,37 @@ For instance, to include images:
                              (nyxt/dom:hover-element (first elements))
                              nil)))))
 
-(serapeum:export-always 'query-hints)
+(export-always 'query-hints)
 (defun query-hints (prompt function
                     &key (multi-selection-p t)
-                      (selector (hints-selector (find-submode 'hint-mode))))
+                         (selector (hints-selector (find-submode 'hint-mode))))
   "Prompt for elements matching SELECTOR, hinting them visually.
 MULTI-SELECTION-P defines whether several elements can be chosen.
 PROMPT is a text to show while prompting for hinted elements.
 FUNCTION is the action to perform on the selected elements."
-  (alex:when-let* ((buffer (current-buffer))
-                   (result (prompt
-                            :prompt prompt
-                            ;; TODO: No need to find the symbol if we move this code (and
-                            ;; the rest) to the hint-mode package.
-                            :extra-modes (list (resolve-symbol :hint-prompt-buffer-mode :mode))
-                            :auto-return-p (auto-follow-hints-p (find-submode 'hint-mode))
-                            :history nil
-                            :sources
-                            (make-instance
-                             'hint-source
-                             :multi-selection-p multi-selection-p
-                             :constructor (lambda (source)
-                                            (declare (ignore source))
-                                            (add-hints :selector selector)))
-                            :after-destructor (lambda () (with-current-buffer buffer
-                                                      (remove-hints))))))
+  (alex:when-let*
+      ((buffer (current-buffer))
+       (result (prompt
+                :prompt prompt
+                ;; TODO: No need to find the symbol if we move this code (and
+                ;; the rest) to the hint-mode package.
+                :extra-modes (list (resolve-symbol :hint-prompt-buffer-mode :mode))
+                :auto-return-p (auto-follow-hints-p (find-submode 'hint-mode))
+                :history nil
+                :height (if (fit-to-prompt-p (find-submode 'hint-mode))
+                            :fit-to-prompt
+                            :default)
+                :hide-suggestion-count-p (fit-to-prompt-p (find-submode 'hint-mode))
+                :sources (make-instance 'hint-source
+                                        :multi-selection-p multi-selection-p
+                                        :constructor (lambda (source) (declare (ignore source))
+                                                       (add-hints :selector selector)))
+                :after-destructor (lambda () (with-current-buffer buffer (remove-hints))))))
     (funcall function result)))
 
 (defmethod prompter:object-attributes :around ((element plump:element) (source hint-source))
-  `(,@(when (plump:get-attribute element "nyxt-hint")
-        `(("Hint" ,(plump:get-attribute element "nyxt-hint"))))
+  `(,@(when (plump:attribute element "nyxt-hint")
+        `(("Hint" ,(plump:attribute element "nyxt-hint"))))
     ;; Ensure that all of Body, URL and Value are there, even if empty.
     ,@(let ((attributes (call-next-method)))
        (dolist (attr '("Body" "URL" "Value"))
@@ -268,7 +311,7 @@ FUNCTION is the action to perform on the selected elements."
   (declare (ignore source))
   (append
    (sera:and-let* ((has-href? (plump:has-attribute a "href"))
-                   (url-string (plump:get-attribute a "href")))
+                   (url-string (plump:attribute a "href")))
      `(("URL" ,url-string)))
    (when (nyxt/dom:body a)
     `(("Body" ,(str:shorten 80 (nyxt/dom:body a)))))))
@@ -290,13 +333,13 @@ FUNCTION is the action to perform on the selected elements."
 (defmethod prompter:object-attributes ((option nyxt/dom:option-element) (source prompter:source))
   (declare (ignore source))
   `(("Body" ,(nyxt/dom:body option))
-    ,@(when (plump:get-attribute option "value")
-        `(("Value" ,(plump:get-attribute option "value"))))))
+    ,@(when (plump:attribute option "value")
+        `(("Value" ,(plump:attribute option "value"))))))
 
 (defmethod prompter:object-attributes ((img nyxt/dom:img-element) (source hint-source))
   (append
    (sera:and-let* ((has-href? (plump:has-attribute img "href"))
-                   (url-string (plump:get-attribute img "href")))
+                   (url-string (plump:attribute img "href")))
      `(("URL" ,url-string)))
    (when (nyxt/dom:body img)
     `(("Body" ,(str:shorten 80 (nyxt/dom:body img)))))))
@@ -305,7 +348,7 @@ FUNCTION is the action to perform on the selected elements."
   (nyxt/dom:click-element element))
 
 (defmethod %follow-hint ((input nyxt/dom:input-element))
-  (str:string-case (plump:get-attribute input "type")
+  (str:string-case (plump:attribute input "type")
     ("button" (nyxt/dom:click-element input))
     ("radio" (nyxt/dom:check-element input))
     ("checkbox" (nyxt/dom:check-element input))
@@ -329,7 +372,7 @@ FUNCTION is the action to perform on the selected elements."
                                   :sources (make-instance 'options-source
                                                           :constructor options
                                                           :multi-selection-p
-                                                          (plump:get-attribute select "multiple")))))
+                                                          (plump:attribute select "multiple")))))
     (dolist (option (mapcar (rcurry #'find options :test #'equalp) values))
       (nyxt/dom:select-option-element option select))))
 
@@ -382,7 +425,7 @@ FUNCTION is the action to perform on the selected elements."
 (define-command follow-hint ()
   "Prompt for element hints and open them in the current buffer."
   (let ((buffer (current-buffer)))
-    (query-hints "Go to element"
+    (query-hints "Interact with element"
                  (lambda (results)
                    (%follow-hint (first results))
                    (mapcar (rcurry #'%follow-hint-new-buffer buffer)
@@ -398,7 +441,7 @@ FUNCTION is the action to perform on the selected elements."
 (define-command follow-hint-new-buffer-focus ()
   "Like `follow-hint-new-buffer', but with focus."
   (let ((buffer (current-buffer)))
-    (query-hints "Go to element in new buffer"
+    (query-hints "Open element in new buffer"
                  (lambda (result)
                    (%follow-hint-new-buffer-focus (first result) buffer)
                    (mapcar (rcurry #'%follow-hint-new-buffer buffer)
@@ -412,7 +455,7 @@ focus)."
 
 (define-command follow-hint-nosave-buffer-focus ()
   "Like `follow-hint-nosave-buffer', but with focus."
-  (query-hints "Go to element in new buffer"
+  (query-hints "Open element in new buffer"
                (lambda (result)
                  (%follow-hint-nosave-buffer-focus (first result))
                  (mapcar #'%follow-hint-nosave-buffer (rest result)))))

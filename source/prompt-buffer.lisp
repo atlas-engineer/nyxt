@@ -5,10 +5,19 @@
 
 (sera:eval-always
   (define-class prompt-buffer (network-buffer input-buffer modable-buffer prompter:prompter)
-    ((window nil
-             :type (or null window)
-             :export nil
-             :documentation "The window in which the prompt buffer is showing.")
+    ((window
+      nil
+      :type (or null window)
+      :export nil
+      :documentation "The window in which the prompt buffer is showing.")
+     (height
+      :default
+      :type (or keyword integer)
+      :documentation "The height occupied by the prompt buffer.
+The options are:
+- `:default', which sets it to the value of `prompt-buffer-open-height';
+- `:fit-to-prompt', which shrinks the height to fit the input area;
+- an integer, which corresponds to the height in pixels.")
      (resumable-p t
                   :type boolean)
      (prompter:history (prompt-buffer-generic-history *browser*)
@@ -20,108 +29,116 @@
 new history for each new prompt buffer.  Here we set the history to be shared globally.")
      ;; TODO: Need a changed-callback?  Probably not, see `search-buffer'.  But
      ;; can we run the postprocessor without running the filter?
-     (invisible-input-p nil
-                        :documentation "Whether to replace input by a
-placeholder character.  This is useful to conceal passwords.")
-     (hide-suggestion-count-p nil
-                              :documentation "Whether to show the number of
-chosen suggestions inside brackets.")
-     (max-suggestions 0
-                      :export nil
-                      :documentation "Maximum number of total suggestions that were listed at some point.")
+     (invisible-input-p
+      nil
+      :documentation "Whether to replace input by a placeholder character.  This
+is useful to conceal passwords.")
+     (hide-suggestion-count-p
+      nil
+      :documentation "Whether to show the number of chosen suggestions inside
+brackets.")
+     (max-suggestions
+      0
+      :export nil
+      :documentation "Maximum number of total suggestions that were listed at
+some point.")
      ;; TODO: Need max-lines?
      ;; (max-lines 10
      ;;               :documentation "Max number of suggestion lines to show.
      ;; You will want edit this to match the changes done to `style'.")
-     (hide-single-source-header-p nil
-                                  :documentation "Hide source header when there is only one.")
-     (mouse-support-p t
-                      :type boolean
-                      :documentation "Whether to allow mouse events to set and return a selection over prompt
- buffer suggestions.")
-     (style (theme:themed-css (theme *browser*)
-              (*
-               :font-family "monospace,monospace"
-               :font-size "14px"
-               :line-height "18px")
-              (body
-               :overflow "hidden"
-               :margin "0"
-               :padding "0")
-              ("#prompt-area"
-               :background-color theme:primary
-               :color theme:on-primary
-               :display "grid"
-               :grid-template-columns "auto auto 1fr auto"
-               :width "100%")
-              ("#prompt"
-               :padding-left "10px"
-               :line-height "26px")
-              ("#prompt-extra"
-               :line-height "26px"
-               :padding-right "7px")
-              ("#prompt-modes"
-               :line-height "26px"
-               :padding-left "3px"
-               :padding-right "3px")
-              ("#input"
-               :background-color theme:background
-               :color theme:on-background
-               :opacity 0.9
-               :border "none"
-               :outline "none"
-               :padding "3px"
-               :width "100%"
-               :autofocus "true")
-              (".source"
-               :margin-left "10px"
-               :margin-top "15px")
-              (".source-glyph"
-               :margin-right "3px")
-              (".source-name"
-               :background-color theme:secondary
-               :color theme:on-secondary
-               :padding-left "5px"
-               :line-height "24px")
-              ("#suggestions"
-               :background-color theme:background
-               :color theme:on-background
-               :overflow-y "hidden"
-               :overflow-x "hidden"
-               :height "100%"
-               :width "100%")
-              (".source-content"
-               :background-color theme:background
-               :color theme:on-background
-               :margin-left "16px"
-               :width "100%"
-               :table-layout "fixed")
-              (".source-content td"
-               :white-space "nowrap"
-               :height "20px"
-               :overflow "auto")
-              (".source-content th"
-               :background-color theme:primary
-               :color theme:on-primary
-               :font-weight "normal"
-               :padding-left "3px"
-               :text-align "left")
-              (".source-content td::-webkit-scrollbar"
-               :display "none")
-              ("#selection"
-               :background-color theme:accent
-               :color theme:on-accent)
-              (.marked
-               :background-color theme:secondary
-               :color theme:on-secondary
-               :font-weight "bold")
-              (.selected
-               :background-color theme:primary
-               :color theme:on-primary))
-            :documentation "The CSS applied to a prompt-buffer when it is set-up.")
-     (override-map (make-keymap "override-map")
-                   :type keymaps:keymap
-                   :documentation "Keymap that takes precedence over all modes' keymaps.
+     (hide-single-source-header-p
+      nil
+      :documentation "Hide source header when there is only one.")
+     (mouse-support-p
+      t
+      :type boolean
+      :documentation "Whether to allow mouse events to set and return a
+selection over prompt buffer suggestions.")
+     (style
+      (theme:themed-css (theme *browser*)
+        (*
+         :font-family "monospace,monospace"
+         :font-size "14px"
+         :line-height "18px")
+        (body
+         :overflow "hidden"
+         :margin "0"
+         :padding "0")
+        ("#prompt-area"
+         :background-color theme:primary
+         :color theme:on-primary
+         :display "grid"
+         :grid-template-columns "auto auto 1fr auto"
+         :width "100%")
+        ("#prompt"
+         :padding-left "10px"
+         :line-height "26px")
+        ("#prompt-extra"
+         :line-height "26px"
+         :padding-right "7px")
+        ("#prompt-modes"
+         :line-height "26px"
+         :padding-left "3px"
+         :padding-right "3px")
+        ("#input"
+         :background-color theme:background
+         :color theme:on-background
+         :opacity 0.9
+         :border "none"
+         :outline "none"
+         :padding "3px"
+         :width "100%"
+         :autofocus "true")
+        (".source"
+         :margin-left "10px"
+         :margin-top "15px")
+        (".source-glyph"
+         :margin-right "3px")
+        (".source-name"
+         :background-color theme:secondary
+         :color theme:on-secondary
+         :padding-left "5px"
+         :line-height "24px")
+        ("#suggestions"
+         :background-color theme:background
+         :color theme:on-background
+         :overflow-y "hidden"
+         :overflow-x "hidden"
+         :height "100%"
+         :width "100%")
+        (".source-content"
+         :background-color theme:background
+         :color theme:on-background
+         :margin-left "16px"
+         :width "100%"
+         :table-layout "fixed")
+        (".source-content td"
+         :white-space "nowrap"
+         :height "20px"
+         :overflow "auto")
+        (".source-content th"
+         :background-color theme:primary
+         :color theme:on-primary
+         :font-weight "normal"
+         :padding-left "3px"
+         :text-align "left")
+        (".source-content td::-webkit-scrollbar"
+         :display "none")
+        ("#selection"
+         :background-color theme:accent
+         :color theme:on-accent)
+        (.marked
+         :background-color theme:secondary
+         :color theme:on-secondary
+         :font-weight "bold")
+        (.selected
+         :background-color theme:primary
+         :color theme:on-primary))
+      :documentation "The CSS applied to a prompt-buffer when it is set-up.")
+     (override-map
+      (make-keymap "override-map")
+      :type keymaps:keymap
+      :documentation "Keymap that takes precedence over all modes' keymaps.
 See `buffer's `override-map' for more details."))
     (:export-class-name-p t)
     (:export-accessor-names-p t)
@@ -138,7 +155,9 @@ See `prompt' for how to invoke prompts.")
   (hooks:run-hook (prompt-buffer-make-hook *browser*) prompt-buffer)
   (enable-modes (append (reverse (default-modes prompt-buffer))
                         (uiop:ensure-list extra-modes))
-                prompt-buffer))
+                prompt-buffer)
+  (when (invisible-input-p prompt-buffer)
+    (setf (height prompt-buffer) :fit-to-prompt)))
 
 (export-always 'current-source)
 (defun current-source (&optional (prompt-buffer (current-prompt-buffer)))
@@ -153,7 +172,7 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
       (prompter:selected-suggestion prompt-buffer)
     (values (when suggestion (prompter:value suggestion)) source)))
 
-(defun show-prompt-buffer (prompt-buffer &key height)
+(defun show-prompt-buffer (prompt-buffer &key (height (height prompt-buffer)))
   "Show the last active prompt-buffer, if any.
 This is a low-level display function.
 See also `hide-prompt-buffer'."
@@ -163,8 +182,13 @@ See also `hide-prompt-buffer'."
     (calispel:! (prompt-buffer-channel (window prompt-buffer)) prompt-buffer)
     (prompt-render prompt-buffer)
     (setf (ffi-window-prompt-buffer-height (window prompt-buffer))
-          (or height
-              (prompt-buffer-open-height (window prompt-buffer))))
+          (case height
+            (:default (prompt-buffer-open-height (window prompt-buffer)))
+            (:fit-to-prompt
+             (ffi-buffer-evaluate-javascript
+              prompt-buffer
+              (ps:ps (ps:chain (nyxt/ps:qs document "#prompt") offset-height))))
+            (t height)))
     (run-thread "Show prompt watcher"
       (let ((prompt-buffer prompt-buffer))
         (update-prompt-input prompt-buffer)

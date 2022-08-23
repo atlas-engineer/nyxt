@@ -91,7 +91,7 @@
 
 (export-always 'element-editable-p)
 (defpsmacro element-editable-p (element)
-  "Is the element editable?"
+  "Whether ELEMENT is editable."
   `(let ((tag (chain ,element tag-name)))
      (if (or (string= tag "INPUT")
              (string= tag "TEXTAREA")
@@ -100,7 +100,7 @@
 
 (export-always 'element-drawable-p)
 (defpsmacro element-drawable-p (element)
-  "Is the element drawable?"
+  "Whether ELEMENT is drawable."
   `(if (or (chain ,element offset-width)
            (chain ,element offset-height)
            (chain ,element (get-client-rects) length))
@@ -108,10 +108,18 @@
 
 (export-always 'element-in-view-port-p)
 (defpsmacro element-in-view-port-p (element)
-  "Is the element in the view port?"
-  `(let* ((rect (chain ,element (get-bounding-client-rect))))
+  "Whether ELEMENT is in viewport."
+  `(let* ((rect (chain ,element (get-bounding-client-rect)))
+          (computed-style (chain window (get-computed-style ,element))))
      (if (and (>= (chain rect top) 0)
+              ;; a partially visible element is still visible
+              (<= (chain rect top) (- (chain window inner-height) 1))
               (>= (chain rect left) 0)
-              (<= (chain rect right) (chain window inner-width))
-              (<= (chain rect bottom) (chain window inner-height)))
+              ;; a partially visible element is still visible
+              (<= (chain rect left) (- (chain window inner-width) 1))
+              ;; some elements have top=bottom=left=right
+              (> (chain rect width) 3)
+              (> (chain rect height) 3)
+              (not (= (chain computed-style "visibility") "hidden"))
+              (not (= (chain computed-style "display") "none")))
          t nil)))

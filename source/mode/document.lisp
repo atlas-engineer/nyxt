@@ -116,7 +116,7 @@ It does not assume being online."))
        "space" 'scroll-page-down
        "pagedown" 'scroll-page-down)))))
 
-(sera:export-always '%clicked-in-input?)
+(export-always '%clicked-in-input?)
 (defun %clicked-in-input? (&optional (buffer (current-buffer)))
   ;; We don't use define-parenscript because we need to control over which
   ;; buffer we query.
@@ -125,7 +125,7 @@ It does not assume being online."))
                                     (ps:chain document active-element
                                               tag-name))))
 
-(sera:export-always 'input-tag-p)
+(export-always 'input-tag-p)
 (-> input-tag-p ((or string null)) boolean)
 (defun input-tag-p (tag)
   (or (string= tag "INPUT")
@@ -595,7 +595,7 @@ of buffers."
                           set1 false
                           set2 false))
              (defun add-stylesheet ()
-               (unless (ps:chain document (get-element-by-id "nyxt-stylesheet"))
+               (unless (nyxt/ps:qs document "#nyxt-stylesheet")
                  (ps:let ((style-element (ps:chain document (create-element "style"))))
                    (setf (ps:@ style-element id) "nyxt-stylesheet")
                    (ps:chain document head (append-child style-element)))))

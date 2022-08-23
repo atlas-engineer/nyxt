@@ -358,7 +358,7 @@ SLY install.")
         " You can freely use them in your config.")
    (:li "New " (:code "define-internal-scheme") " helper to define custom schemes.")
    (:li (:code "jump-to-heading") " command now sort and indent the headings in a natural fashion.")
-   (:li "New" (:code "next-heading") " and " (:code "previous-heading")
+   (:li "New " (:code "next-heading") " and " (:code "previous-heading")
         " commands to jump between neighboring headings.")
    (:li "New " (:code "match-port") " URL designator predicate for auto-mode rules.")
    (:li "New " (:code "toggle-message-buffer") " and " (:code "toggle-status-buffer") " commands.")
@@ -440,7 +440,19 @@ SLY install.")
 (define-version "3.0.0"
   (:ul
    (:li (:code "reduce-tracking-mode") " now cleans widely known tracking query parameters.")
+   (:li "Improve the algorithm that determines if an element is in viewport.")
+   (:li (:code "nyxt/hint-mode:box-style") "renamed
+   to " (:code "nyxt/hint-mode:style") ".")
+   (:li (:code "nyxt/hint-mode:highlighted-box-style") "is deprecated as it was
+   merged into " (:code "nyxt/hint-mode:style") ".")
    (:li "Remove image support from " (:code "hint-mode") ".")
+   (:li "Hints are now computed in viewport.")
+   (:li "Add " (:code "nyxt/hint-mode:fit-to-prompt-p") "to configure whether
+   the prompt takes the bare minimum of the screen space.")
+   (:li "Add " (:code "nyxt/hint-mode:show-hint-scope-p") "for element
+   highlighting of hinted elements.")
+   (:li "Add " (:code "height") "so that every prompt has a configurable
+   height.")
    (:li (:code "default-modes") " can be configured with " (:code "%slot-value%")
         " due to finally having an underlying slot.")
    (:li "New " (:code "toggle-maximize") " command for maximizing a window.")
