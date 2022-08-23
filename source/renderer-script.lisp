@@ -27,8 +27,7 @@ Examples:
        (,(if async-p
              'ffi-buffer-evaluate-javascript-async
              'ffi-buffer-evaluate-javascript)
-        ,(or (second (member :buffer args))
-             '(current-buffer))
+        ,(or (second (member :buffer args)) '(current-buffer))
         (ps:ps ,@(loop for index below (length args)
                        for arg = (nth index args)
                        when (member arg '(:buffer :async))
