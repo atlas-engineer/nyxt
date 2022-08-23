@@ -125,8 +125,8 @@ default)."
        "z f" 'toggle-selection-actions-enabled
        "z a" 'toggle-attributes-display
        "y" 'copy-selection
-       "d d" 'cut
-       "p" 'paste)
+       "p" 'paste
+       "d d" 'cut)
       keyscheme:vi-insert
       (list
        "C-k" 'select-previous
