@@ -484,4 +484,4 @@ modes."
                          ;; TODO: sleep should NOT be necessary to avoid breaking download
                          do (nyxt/download-mode:download buffer (url link))
                             (sleep 0.25)))
-                 :selector "a, img")))
+                 :selector "a")))
