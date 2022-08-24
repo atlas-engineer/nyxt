@@ -22,18 +22,16 @@ Examples:
 
 ;; Get the class of the active element in the `current-buffer'
 \(ps-eval (ps:@ document active-element class-name))"
-  (let ((async-p (second (member :async args))))
+  (let ((async-p (second (member :async args)))
+        (buffer (second (member :buffer args))))
     `(progn
        (,(if async-p
              'ffi-buffer-evaluate-javascript-async
              'ffi-buffer-evaluate-javascript)
-        ,(or (second (member :buffer args)) '(current-buffer))
-        (ps:ps ,@(loop for index below (length args)
-                       for arg = (nth index args)
-                       when (member arg '(:buffer :async))
-                         do (incf index 1)
-                       else collect arg)))
-       ;; This is to not return anything in async invocations.
+        ,(or buffer '(current-buffer))
+        (ps:ps ,@(remove-if (lambda (arg) (position arg `(:buffer ,buffer :async ,async-p)))
+                            args)))
+       ;; Return nil on async invocations.
        ,@(when async-p '(nil)))))
 
 (export-always 'define-parenscript)
@@ -53,24 +51,28 @@ The function can be passed Lisp ARGS."
 
 (export-always 'ps-flet)
 (defmacro ps-flet (functions &body body)
-  (flet ((transform-definition (name rest)
-           (let ((buffer (second (member :buffer rest)))
-                 (async-p (second (member :async rest)))
-                 (rest (loop for index below (length rest)
-                             for arg = (nth index rest)
+  (flet ((transform-definition (name args)
+           (let ((buffer (second (member :buffer args)))
+                 (async-p (second (member :async args)))
+                 (args (loop for index below (length args)
+                             for arg = (nth index args)
                              when (member arg '(:buffer :async))
                                do (incf index 1)
-                             else collect arg)))
-             `(,name ,(first rest)
+                             else collect arg)
+                       ;; why doesn't this work?
+                       ;; (remove-if (lambda (arg) (position arg `(:buffer ,buffer :async ,async-p)))
+                       ;;            args)
+                       ))
+             `(,name ,(first args)
                      (,(if async-p
                            'ffi-buffer-evaluate-javascript-async
                            'ffi-buffer-evaluate-javascript)
                       ,(or buffer '(current-buffer))
-                      (ps:ps ,@(rest rest)))
-                     ;; This is to not return anything in async invocations.
+                      (ps:ps ,@(rest args)))
+                     ;; Return nil on async invocations.
                      ,@(when async-p '(nil))))))
-    `(flet ,(loop for (name . rest) in functions
-                  collect (transform-definition name rest))
+    `(flet ,(loop for (name . args) in functions
+                  collect (transform-definition name args))
        ,@body)))
 
 (define-parenscript %document-scroll-position (&optional (y 0 y-provided-p) (x 0 x-provided-p))
