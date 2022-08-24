@@ -67,8 +67,8 @@ Features:
                    (safe-slurp-stream-forms input))))))
     (setf (ready-p evaluation) t)
     (ps-eval (setf (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "#evaluation-result-~a" (id evaluation))))
-                           |innerHTML|)
-                 (ps:lisp (html-result evaluation))))))
+                             |innerHTML|)
+                   (ps:lisp (html-result evaluation))))))
 
 (define-mode repl-mode ()
   "Mode for interacting with the REPL."
@@ -166,8 +166,8 @@ Features:
 
 (defmethod (setf input) (new-text (mode repl-mode))
   (ps-flet ((set-input-text
-           :async t :buffer (buffer mode) (text)
-           (setf (ps:@ document active-element value) (ps:lisp text))))
+             :async t :buffer (buffer mode) (text)
+             (setf (ps:@ document active-element value) (ps:lisp text))))
     (set-input-text new-text)))
 
 (defmethod cursor ((mode repl-mode))
@@ -180,10 +180,10 @@ Features:
 
 (defmethod (setf cursor) (new-position (mode repl-mode))
   (ps-flet ((selection-start
-           :buffer (buffer mode) (position)
-           (setf (ps:@ document active-element selection-start)
-                 (setf (ps:@ document active-element selection-end)
-                       (ps:lisp position)))))
+             :buffer (buffer mode) (position)
+             (setf (ps:@ document active-element selection-start)
+                   (setf (ps:@ document active-element selection-end)
+                         (ps:lisp position)))))
     (selection-start new-position)))
 
 (define-parenscript focus (selector)
@@ -201,7 +201,7 @@ Features:
 
 (defmethod current-cell-id ((mode repl-mode))
   (ps-flet ((get-id :buffer (buffer mode) ()
-            (ps:chain document active-element (get-attribute "data-repl-id"))))
+                    (ps:chain document active-element (get-attribute "data-repl-id"))))
     (ignore-errors (parse-integer (get-id)))))
 
 (sera:eval-always

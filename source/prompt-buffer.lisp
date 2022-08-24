@@ -186,7 +186,7 @@ See also `hide-prompt-buffer'."
             (:default (prompt-buffer-open-height (window prompt-buffer)))
             (:fit-to-prompt
              (ps-eval :buffer prompt-buffer
-              (ps:chain (nyxt/ps:qs document "#prompt") offset-height)))
+               (ps:chain (nyxt/ps:qs document "#prompt") offset-height)))
             (t height)))
     (run-thread "Show prompt watcher"
       (let ((prompt-buffer prompt-buffer))
@@ -344,12 +344,12 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                             (loop for (nil attribute) in (prompter:active-attributes suggestion :source source)
                                                   collect (:td (:mayberaw attribute))))))))))))
       (ps-eval :buffer prompt-buffer
-       (setf (ps:chain document (get-element-by-id "suggestions") |innerHTML|)
-             (ps:lisp
-              (sera:string-join (loop for i from current-source-index to last-source-index
-                                      for source = (nth i sources)
-                                      collect (source->html source))
-                                +newline+)))))
+        (setf (ps:chain document (get-element-by-id "suggestions") |innerHTML|)
+              (ps:lisp
+               (sera:string-join (loop for i from current-source-index to last-source-index
+                                       for source = (nth i sources)
+                                       collect (source->html source))
+                                 +newline+)))))
     (prompt-render-prompt prompt-buffer)))
 
 (defun erase-document (prompt-buffer)
@@ -393,7 +393,7 @@ If you want to set the input, see `set-prompt-buffer-input'."
   ;; TODO: This function is not thread-safe, add a lock?
   (let ((input (or input
                    (ps-eval :buffer prompt-buffer
-                    (ps:chain document (get-element-by-id "input") value)))))
+                     (ps:chain document (get-element-by-id "input") value)))))
     (setf (prompter:input prompt-buffer) input)
     ;; TODO: Stop loop when prompt-buffer is no longer current.
     (labels ((maybe-update-view ()
@@ -407,7 +407,7 @@ If you want to set the input, see `set-prompt-buffer-input'."
                     ;; what was send as input to the prompter sources.  Thus when we are done
                     ;; watching, check if we are in sync; if not, try again.
                     (let ((input (ps-eval :buffer prompt-buffer
-                                  (ps:chain document (get-element-by-id "input") value))))
+                                   (ps:chain document (get-element-by-id "input") value))))
                       (unless (string= input (prompter:input prompt-buffer))
                         (update-prompt-input prompt-buffer input)))
                     t)
@@ -422,8 +422,8 @@ If you want to set the input, see `set-prompt-buffer-input'."
   "Set HTML INPUT in PROMPT-BUFFER.
 See `update-prompt-input' to update the changes visually."
   (ps-eval :buffer prompt-buffer
-   (setf (ps:chain document (get-element-by-id "input") value)
-         (ps:lisp input)))
+    (setf (ps:chain document (get-element-by-id "input") value)
+          (ps:lisp input)))
   (update-prompt-input prompt-buffer input))
 
 (defun wait-on-prompt-buffer (prompt-buffer) ; TODO: Export?  Better name?

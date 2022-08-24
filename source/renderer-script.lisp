@@ -110,7 +110,7 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
 
 (defun html-write (content &optional (buffer (current-buffer)))
   (ps-eval :async t :buffer buffer
-   (ps:chain document (write (ps:lisp content)))))
+    (ps:chain document (write (ps:lisp content)))))
 
 (defun html-set (content &optional (buffer (current-buffer)))
   (ps-eval :async t :buffer buffer
@@ -119,7 +119,7 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
 (defun html-set-style (style-string &optional (buffer (current-buffer)))
   (let ((style (spinneret:with-html-string (:style style-string))))
     (ps-eval :async t :buffer buffer
-     (ps:chain document body (|insertAdjacentHTML| "afterbegin" (ps:lisp style))))))
+      (ps:chain document body (|insertAdjacentHTML| "afterbegin" (ps:lisp style))))))
 
 (sera:eval-always
   (defvar *nyxt-url-commands* (make-hash-table) ; TODO: Rename to `*internal-pages-command-list*'.

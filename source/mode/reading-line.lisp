@@ -45,27 +45,27 @@ mode."
   "Move the view port to show the reading line cursor."
   (with-current-buffer buffer
     (ps-eval (ps:chain (nyxt/ps:qs document "#reading-line-cursor")
-                     (scroll-into-view-if-needed)))))
+                       (scroll-into-view-if-needed)))))
 
 (define-command reading-line-cursor-up (&key (step-size 20) (buffer (current-buffer)))
   "Move the reading line cursor up. If scrolling off screen, move the
 screen as well."
   (with-current-buffer buffer
     (ps-eval (let ((original-position
-                   (ps:chain (parse-int
-                              (ps:@ (nyxt/ps:qs document "#reading-line-cursor") style top) 10))))
-             (setf (ps:@ (nyxt/ps:qs document "#reading-line-cursor") style top)
-                   (+ (- original-position (ps:lisp step-size)) "px")))))
+                     (ps:chain (parse-int
+                                (ps:@ (nyxt/ps:qs document "#reading-line-cursor") style top) 10))))
+               (setf (ps:@ (nyxt/ps:qs document "#reading-line-cursor") style top)
+                     (+ (- original-position (ps:lisp step-size)) "px")))))
   (jump-to-reading-line-cursor :buffer buffer))
 
 (define-command reading-line-cursor-down (&key (step-size 20) (buffer (current-buffer)))
   "Move the reading line cursor down. If scrolling off screen, move the screen as well."
   (with-current-buffer buffer
     (ps-eval (let ((original-position
-                   (ps:chain (parse-int
-                              (ps:@ (nyxt/ps:qs document "#reading-line-cursor") style top) 10))))
-             (setf (ps:@ (nyxt/ps:qs document "#reading-line-cursor") style top)
-                   (+ (+ original-position (ps:lisp step-size)) "px")))))
+                     (ps:chain (parse-int
+                                (ps:@ (nyxt/ps:qs document "#reading-line-cursor") style top) 10))))
+               (setf (ps:@ (nyxt/ps:qs document "#reading-line-cursor") style top)
+                     (+ (+ original-position (ps:lisp step-size)) "px")))))
   (jump-to-reading-line-cursor :buffer buffer))
 
 (defmethod on-signal-load-finished ((mode reading-line-mode) url)

@@ -37,9 +37,9 @@ To enable it, add this to your configuration file:
 
 (defmethod set-content ((editor plaintext-editor-mode) content)
   (ps-flet ((set-content
-           :async t :buffer (buffer editor) (content)
-           (setf (ps:chain (nyxt/ps:qs document "#editor") value)
-                 (ps:lisp content))))
+             :async t :buffer (buffer editor) (content)
+             (setf (ps:chain (nyxt/ps:qs document "#editor") value)
+                   (ps:lisp content))))
     (set-content content)))
 
 (defmethod get-content ((editor plaintext-editor-mode))

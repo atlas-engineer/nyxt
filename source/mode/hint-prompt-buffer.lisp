@@ -9,10 +9,10 @@
   "Toggle the on-screen element hints transparency."
   (with-current-buffer buffer
     (ps-eval (ps:dolist (element (nyxt/ps:qsa document ".nyxt-hint"))
-             (if (or (= (ps:@ element style opacity) "1")
-                     (= (ps:@ element style opacity) ""))
-                 (setf (ps:@ element style opacity) "0.2")
-                 (setf (ps:@ element style opacity) "1.0"))))))
+               (if (or (= (ps:@ element style opacity) "1")
+                       (= (ps:@ element style opacity) ""))
+                   (setf (ps:@ element style opacity) "0.2")
+                   (setf (ps:@ element style opacity) "1.0"))))))
 
 (define-command scroll-to-hint (&key (buffer (current-buffer)))
   "Show the selected hint on screen."
