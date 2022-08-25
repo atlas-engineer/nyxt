@@ -70,8 +70,8 @@ The function can be passed Lisp ARGS."
                       (ps:ps ,@(rest args)))
                      ;; Return nil on async invocations.
                      ,@(when async-p '(nil))))))
-    `(flet ,(loop for (name . args) in functions
-                  collect (transform-definition name args))
+    `(labels ,(loop for (name . args) in functions
+                    collect (transform-definition name args))
        ,@body)))
 
 (define-parenscript %document-scroll-position (&optional (y 0 y-provided-p) (x 0 x-provided-p))
