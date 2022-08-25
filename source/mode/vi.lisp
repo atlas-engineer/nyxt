@@ -27,8 +27,7 @@ See also `vi-insert-mode'."
     (define-keyscheme-map "vi-normal-mode" ()
       keyscheme:vi-normal
       (list
-       "i" 'vi-insert-mode
-       "button1" 'vi-button1)))))
+       "i" 'vi-insert-mode)))))
 
 
 ;; TODO: Move ESCAPE binding to the override map?
@@ -96,17 +95,6 @@ See also `vi-normal-mode' and `vi-insert-mode'."
     (when (passthrough-mode-p mode)
       (enable-modes '(nyxt/passthrough-mode:passthrough-mode)
                     buffer))))
-
-(define-command vi-button1 (&optional (buffer (focused-buffer)))
-  "Enable VI insert mode when focus is on an input element on the web page.
-See also `vi-normal-mode' and `vi-insert-mode'."
-  ;; First we generate a button1 event so that the web view element is clicked
-  ;; (e.g. a text field gets focus).
-  (forward-to-renderer :window (current-window) :buffer buffer)
-  (let ((response (nyxt/document-mode:%clicked-in-input? buffer)))
-    (when (and (nyxt/document-mode:input-tag-p response)
-               (find-submode 'vi-normal-mode buffer))
-      (enable-modes '(vi-insert-mode) buffer))))
 
 (defmethod on-signal-load-finished ((mode vi-insert-mode) url)
   (declare (ignore url))

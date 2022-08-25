@@ -751,6 +751,13 @@ See `gtk-browser's `modifier-translator' slot."
                              event))
          (buffer (or (current-prompt-buffer)
                      sender)))
+    ;; Enable insert mode here to not interfere with regular keybinding logic.
+    (run-thread "vi mode click listener"
+      (when (and (= 1 button)
+                 (nyxt/document-mode:input-tag-p
+                  (peval (ps:@ document active-element tag-name)))
+                 (find-submode 'nyxt/vi-mode:vi-normal-mode buffer))
+        (enable-modes '(nyxt/vi-mode:vi-insert-mode) buffer)))
     (when (prompt-buffer-p buffer)
       (update-prompt buffer))
     (when key-string
