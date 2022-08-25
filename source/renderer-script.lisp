@@ -53,26 +53,35 @@ The function can be passed Lisp ARGS."
   `(defun ,script-name ,args (ps-eval :async t :buffer (current-buffer) ,@script-body)))
 
 (export-always 'ps-flet)
-(defmacro ps-flet (functions &body body)
-  (flet ((transform-definition (name args)
-           (let ((buffer (second (member :buffer args)))
-                 (async-p (second (member :async args)))
-                 (args (loop for index below (length args)
-                             for arg = (nth index args)
-                             when (member arg '(:buffer :async))
-                               do (incf index 1)
-                             else collect arg)))
-             `(,name ,(first args)
-                     (,(if async-p
-                           'ffi-buffer-evaluate-javascript-async
-                           'ffi-buffer-evaluate-javascript)
-                      ,(or buffer '(current-buffer))
-                      (ps:ps ,@(rest args)))
-                     ;; Return nil on async invocations.
-                     ,@(when async-p '(nil))))))
-    `(labels ,(loop for (name . args) in functions
-                    collect (transform-definition name args))
-       ,@body)))
+(defmacro ps-flet (&body args)
+  (let* ((global-buffer (second (member :buffer args)))
+         (global-async (second (member :async args)))
+         (functions (find-if (lambda (e) (and (listp e) (every #'listp e)))
+                             args))
+         (body (rest (member functions args))))
+    (flet ((transform-definition (name args)
+             (let ((buffer (if (member :buffer args)
+                               (second (member :buffer args))
+                               global-buffer))
+                   (async-p (if (member :async args)
+                                (second (member :async args))
+                                global-async))
+                   (args (loop for index below (length args)
+                               for arg = (nth index args)
+                               when (member arg '(:buffer :async))
+                                 do (incf index 1)
+                               else collect arg)))
+               `(,name ,(first args)
+                       (,(if async-p
+                             'ffi-buffer-evaluate-javascript-async
+                             'ffi-buffer-evaluate-javascript)
+                        ,(or buffer '(current-buffer))
+                        (ps:ps ,@(rest args)))
+                       ;; Return nil on async invocations.
+                       ,@(when async-p '(nil))))))
+      `(labels ,(loop for (name . args) in functions
+                      collect (transform-definition name args))
+         ,@body))))
 
 (define-parenscript %document-scroll-position (&optional (y 0 y-provided-p) (x 0 x-provided-p))
   (let ((x (ps:lisp x))
