@@ -98,10 +98,10 @@ See also `vi-normal-mode' and `vi-insert-mode'."
 
 (defmethod on-signal-load-finished ((mode vi-insert-mode) url)
   (declare (ignore url))
-  (enable-modes '(vi-normal-mode)))
+  (enable-modes '(vi-normal-mode) (buffer mode)))
 
 (defmethod nyxt/document-mode:element-focused ((mode vi-normal-mode))
-  (enable-modes '(vi-insert-mode)))
+  (enable-modes '(vi-insert-mode) (buffer mode)))
 
 (defmethod nyxt:mode-status ((status status-buffer) (vi-normal vi-normal-mode))
   (spinneret:with-html-string
