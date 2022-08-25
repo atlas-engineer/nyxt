@@ -52,8 +52,8 @@ The function can be passed Lisp ARGS."
   "Like `define-parenscript', but Javascript runs asynchronously."
   `(defun ,script-name ,args (ps-eval :async t :buffer (current-buffer) ,@script-body)))
 
-(export-always 'ps-flet)
-(defmacro ps-flet (&body args)
+(export-always 'ps-labels)
+(defmacro ps-labels (&body args)
   (let* ((global-buffer (second (member :buffer args)))
          (global-async (second (member :async args)))
          (functions (find-if (lambda (e) (and (listp e) (every #'listp e)))

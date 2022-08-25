@@ -821,16 +821,17 @@ identifiers."
   dead-buffer)
 
 (defmethod document-model ((buffer buffer))
-  (ps-flet ((%count-dom-elements
-             :buffer buffer ()
-             (defvar dom-counter 0)
-             (defun count-dom-elements (node)
-               (incf dom-counter)
-               (dolist (child (ps:chain node children))
-                 (count-dom-elements child))
-               dom-counter)
-             (setf dom-counter 0)
-             (count-dom-elements (nyxt/ps:qs document "html"))))
+  (ps-labels :buffer buffer
+    ((%count-dom-elements
+      ()
+      (defvar dom-counter 0)
+      (defun count-dom-elements (node)
+        (incf dom-counter)
+        (dolist (child (ps:chain node children))
+          (count-dom-elements child))
+        dom-counter)
+      (setf dom-counter 0)
+      (count-dom-elements (nyxt/ps:qs document "html"))))
     (if (dead-buffer-p buffer)
         (slot-value buffer 'document-model)
         (let ((value (slot-value buffer 'document-model))

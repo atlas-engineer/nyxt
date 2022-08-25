@@ -165,9 +165,10 @@ Features:
     (ps-eval (ps:@ document active-element value))))
 
 (defmethod (setf input) (new-text (mode repl-mode))
-  (ps-flet ((set-input-text
-             :async t :buffer (buffer mode) (text)
-             (setf (ps:@ document active-element value) (ps:lisp text))))
+  (ps-labels :async t :buffer (buffer mode)
+    ((set-input-text
+      (text)
+      (setf (ps:@ document active-element value) (ps:lisp text))))
     (set-input-text new-text)))
 
 (defmethod cursor ((mode repl-mode))
@@ -179,11 +180,12 @@ Features:
           0))))
 
 (defmethod (setf cursor) (new-position (mode repl-mode))
-  (ps-flet ((selection-start
-             :buffer (buffer mode) (position)
-             (setf (ps:@ document active-element selection-start)
-                   (setf (ps:@ document active-element selection-end)
-                         (ps:lisp position)))))
+  (ps-labels :buffer (buffer mode)
+    ((selection-start
+      (position)
+      (setf (ps:@ document active-element selection-start)
+            (setf (ps:@ document active-element selection-end)
+                  (ps:lisp position)))))
     (selection-start new-position)))
 
 (define-parenscript focus (selector)
@@ -200,8 +202,8 @@ Features:
   (setf (slot-value mode 'current-evaluation) new-index))
 
 (defmethod current-cell-id ((mode repl-mode))
-  (ps-flet ((get-id :buffer (buffer mode) ()
-                    (ps:chain document active-element (get-attribute "data-repl-id"))))
+  (ps-labels :buffer (buffer mode)
+    ((get-id () (ps:chain document active-element (get-attribute "data-repl-id"))))
     (ignore-errors (parse-integer (get-id)))))
 
 (sera:eval-always

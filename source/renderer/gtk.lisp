@@ -1274,10 +1274,11 @@ See `finalize-buffer'."
    (prompter:selection-actions-enabled-p t)
    (prompter:selection-actions
     (lambda (color)
-      (ps-flet ((color-input-area
-                 :buffer (current-prompt-buffer) (color)
-                 (setf (ps:chain (nyxt/ps:qs document "#input") style background-color)
-                       (ps:lisp color))))
+      (ps-labels :buffer (current-prompt-buffer)
+        ((color-input-area
+          (color)
+          (setf (ps:chain (nyxt/ps:qs document "#input") style background-color)
+                (ps:lisp color))))
         (color-input-area color)))))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
@@ -1291,18 +1292,20 @@ See `finalize-buffer'."
       (gobject:g-object-ref (gobject:pointer color-chooser-request))
       (run-thread
           "color chooser"
-        (ps-flet ((get-rgba (color)
-                            (let ((div (ps:chain document (create-element "div"))))
-                              (setf (ps:chain div style color)
-                                    (ps:lisp color))
-                              (ps:chain document body (append-child div))
-                              (ps:stringify (ps:chain window (get-computed-style div) color))))
-                  (get-opacity (color)
-                               (let ((div (ps:chain document (create-element "div"))))
-                                 (setf (ps:chain div style color)
-                                       (ps:lisp color))
-                                 (ps:chain document body (append-child div))
-                                 (ps:stringify (ps:chain window (get-computed-style div) opacity)))))
+        (ps-labels
+          ((get-rgba
+            (color)
+            (let ((div (ps:chain document (create-element "div"))))
+              (setf (ps:chain div style color)
+                    (ps:lisp color))
+              (ps:chain document body (append-child div))
+              (ps:stringify (ps:chain window (get-computed-style div) color))))
+           (get-opacity (color)
+                        (let ((div (ps:chain document (create-element "div"))))
+                          (setf (ps:chain div style color)
+                                (ps:lisp color))
+                          (ps:chain document body (append-child div))
+                          (ps:stringify (ps:chain window (get-computed-style div) opacity)))))
           (let* ((rgba (gdk:make-gdk-rgba))
                  (rgba (progn (webkit:webkit-color-chooser-request-get-rgba
                                color-chooser-request rgba)
