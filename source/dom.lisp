@@ -15,6 +15,7 @@ The most useful functions are:
 - `named-html-parse' and `named-json-parse' to turn HTML and JSON documents into
   a representation of type `plump:root', converting elements into its matching
   classes.
+- `copy' to produce a full recursive copy of a DOM.
 - `parents', `url' and `body' to access element-specific features in a unified
   fashion.
 - `click-element', `focus-select-element', `select-option-element' and others to
@@ -177,6 +178,47 @@ JSON should have the format like what `get-document-body-json' produces:
           (root (plump:make-root)))
       (json-to-plump json root)
       (name-dom-elements root))))
+
+(export-always 'copy)
+(defgeneric copy (node &optional parent)
+  (:method ((element plump:root) &optional parent)
+    (declare (ignore parent))
+    (serapeum:lret ((copy (plump:make-root)))
+      (map nil (lambda (c) (plump:append-child copy (copy c copy))) (plump:children element))))
+  (:method ((element plump:element) &optional parent)
+    (serapeum:lret ((copy (make-instance
+                           'plump:element
+                           :parent parent
+                           :attributes (alexandria:copy-hash-table (plump:attributes element))
+                           :tag-name (plump:tag-name element))))
+      (map nil (lambda (c) (plump:append-child copy (copy c copy))) (plump:children element))))
+  (:method ((element plump:text-node) &optional parent)
+    (make-instance 'plump:text-node
+                   :parent parent
+                   :text (plump:text element)))
+  (:method ((element plump:comment) &optional parent)
+    (make-instance 'plump:comment
+                   :parent parent
+                   :text (plump:text element)))
+  (:method ((element plump:doctype) &optional parent)
+    (make-instance 'plump:doctype
+                   :parent parent
+                   :doctype (plump:doctype element)))
+  (:method ((element plump:xml-header) &optional parent)
+    (make-instance 'plump:xml-header
+                   :parent parent
+                   :attributes (alexandria:copy-hash-table (plump:attributes element))))
+  (:method ((element plump:cdata) &optional parent)
+    (make-instance 'plump:cdata
+                   :parent parent
+                   :text (plump:text element)))
+  (:method ((element plump:processing-instruction) &optional parent)
+    (make-instance 'plump:processing-instruction
+                   :parent parent
+                   :text (plump:text element)
+                   :tag-name (plump:tag-name element)))
+  (:documentation "Produce a full copy of NODE as belonging to the PARENT node.
+Full copy means recursively descending to the children of the NODE too."))
 
 (export-always 'parents)
 (defgeneric parents (node)
