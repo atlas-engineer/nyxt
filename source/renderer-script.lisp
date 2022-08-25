@@ -29,8 +29,11 @@ Examples:
              'ffi-buffer-evaluate-javascript-async
              'ffi-buffer-evaluate-javascript)
         ,(or buffer '(current-buffer))
-        (ps:ps ,@(remove-if (lambda (arg) (position arg `(:buffer ,buffer :async ,async-p)))
-                            args)))
+        (ps:ps ,@(loop for index below (length args)
+                       for arg = (nth index args)
+                       when (member arg '(:buffer :async))
+                         do (incf index 1)
+                       else collect arg)))
        ;; Return nil on async invocations.
        ,@(when async-p '(nil)))))
 
@@ -58,11 +61,7 @@ The function can be passed Lisp ARGS."
                              for arg = (nth index args)
                              when (member arg '(:buffer :async))
                                do (incf index 1)
-                             else collect arg)
-                       ;; why doesn't this work?
-                       ;; (remove-if (lambda (arg) (position arg `(:buffer ,buffer :async ,async-p)))
-                       ;;            args)
-                       ))
+                             else collect arg)))
              `(,name ,(first args)
                      (,(if async-p
                            'ffi-buffer-evaluate-javascript-async
