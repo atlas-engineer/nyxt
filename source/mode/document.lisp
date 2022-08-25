@@ -303,9 +303,16 @@ Warning: URL is a string."
   (let ((buffer (or (find (url url) (buffer-list) :test #'quri:uri= :key #'url)
                     (make-background-buffer :url (url url)))))
     (unwind-protect
-         (if (web-buffer-p buffer)
-             (plump:serialize (document-model buffer) nil)
-             (ffi-buffer-get-document buffer))
+         (let ((dom (if (web-buffer-p buffer)
+                        (nyxt/dom:copy (document-model buffer))
+                        (plump:parse (ffi-buffer-get-document buffer)))))
+           (loop for e across (clss:select "[nyxt-identifier]" dom)
+                 do (plump:remove-attribute e "nyxt-identifier"))
+           (map nil #'plump:remove-child
+                ;; FIXME: This selector implies a certain set of
+                ;; identifiers/classes that we use. Update whever we change it?
+                (reverse (clss:select ".nyxt-hint, .nyxt-search-node, .nyxt-highlight-hint" dom)))
+           (plump:serialize dom nil))
       (when (background-buffer-p buffer)
         (ffi-buffer-delete buffer)))))
 
