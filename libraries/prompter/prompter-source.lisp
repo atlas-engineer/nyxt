@@ -16,6 +16,36 @@
 (deftype function-symbol ()
   `(and symbol (satisfies fboundp)))
 
+(defmacro with-protect ((format-string &rest args) &body body) ; TODO: Inspired by Nyxt.  Move to serapeum?
+  "Run body while capturing all conditions and echoing them as a warning.
+The warning is reported to the user as per
+FORMAT-STRING and ARGS.
+As a special case, the first `:condition' keyword in ARGS is replaced with the
+raised condition."
+  (alex:with-gensyms (c)
+    `(handler-case (progn ,@body)
+       (error (,c)
+         (declare (ignorable ,c))
+         ,(let* ((condition-index (position :condition args))
+                 (new-args (if condition-index
+                               (append (subseq args 0 condition-index)
+                                       `(,c)
+                                       (subseq args (1+ condition-index)))
+                               args)))
+            `(warn ,format-string ,@new-args))))))
+
+(defmacro run-thread (name &body body)   ; TODO: Copied from Nyxt.  Move to serapeum?
+  "Run body in a new protected new thread.
+This is a \"safe\" wrapper around `bt:make-thread'."
+  `(bt:make-thread
+    (lambda ()
+      ,(if *debug-on-error*
+           `(progn
+              ,@body)
+           `(with-protect ("Error on separate prompter thread: ~a" :condition)
+              ,@body)))
+    :name ,name))
+
 (defun object-public-slots (object-specifier)
   "Return the list of exported slots."
   (delete-if
@@ -554,36 +584,6 @@ If you are looking for a source that just returns its plain suggestions, use `so
                   suggestion-value
                   source)))
    (uiop:ensure-list elements)))
-
-(defmacro with-protect ((format-string &rest args) &body body) ; TODO: Inspired by Nyxt.  Move to serapeum?
-  "Run body while capturing all conditions and echoing them as a warning.
-The warning is reported to the user as per
-FORMAT-STRING and ARGS.
-As a special case, the first `:condition' keyword in ARGS is replaced with the
-raised condition."
-  (alex:with-gensyms (c)
-    `(handler-case (progn ,@body)
-       (error (,c)
-         (declare (ignorable ,c))
-         ,(let* ((condition-index (position :condition args))
-                 (new-args (if condition-index
-                               (append (subseq args 0 condition-index)
-                                       `(,c)
-                                       (subseq args (1+ condition-index)))
-                               args)))
-            `(warn ,format-string ,@new-args))))))
-
-(defmacro run-thread (name &body body)   ; TODO: Copied from Nyxt.  Move to serapeum?
-  "Run body in a new protected new thread.
-This is a \"safe\" wrapper around `bt:make-thread'."
-  `(bt:make-thread
-    (lambda ()
-      ,(if *debug-on-error*
-           `(progn
-              ,@body)
-           `(with-protect ("Error on separate prompter thread: ~a" :condition)
-              ,@body)))
-    :name ,name))
 
 (defmethod initialize-instance :after ((source source) &key)
   "See the `constructor' documentation of `source'."
