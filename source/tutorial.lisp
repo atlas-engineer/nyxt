@@ -197,10 +197,10 @@ Bookmarks can have the following settings:")
          (:li (:nxref :slot 'nyxt/annotate-mode:snippet
                       :class-name 'nyxt/annotate-mode:snippet-annotation)
               ": The snippet which was highlighted by the user.")
-         (:li (:nxref :slot 'nyxt:url
+         (:li (:nxref :slot 'nyxt/annotate-mode::url
                       :class-name 'nyxt/annotate-mode:url-annotation)
               ": The URL of the annotation.")
-         (:li (:nxref :slot 'nyxt:title
+         (:li (:nxref :slot 'nyxt/annotate-mode:page-title
                       :class-name 'nyxt/annotate-mode:url-annotation)
               ": The title of the annotation.")
          (:li (:nxref :slot 'nyxt/annotate-mode::data
