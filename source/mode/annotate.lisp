@@ -112,7 +112,7 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
                                     :tags tags)))
     (annotation-add annotation)))
 
-(defun render-annotations (&key annotations)
+(defun render-annotations (annotations)
   "Show the ANNOTATIONS in a new buffer"
   (spinneret:with-html-string
     (:h1 "Annotations")
@@ -163,10 +163,9 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
            :prompt "Show annotation(s)"
            :sources (make-instance 'annotation-source
                                    :return-actions nil))))
-    (render-annotations :annotations selected-annotations)))
+    (render-annotations selected-annotations)))
 
 (define-internal-page-command-global show-annotations ()
     (buffer "*Annotations*")
   "Show all annotations"
-  (let ((annotations (files:content (annotations-file buffer))))
-    (render-annotations :annotations annotations)))
+  (render-annotations (files:content (annotations-file buffer))))
