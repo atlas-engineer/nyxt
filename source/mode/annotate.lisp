@@ -72,45 +72,50 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
 (defun annotations ()
   (files:content (annotations-file (current-buffer))))
 
-(define-command annotate-current-url (&optional (buffer (current-buffer)))
-  "Create an annotation of the URL of BUFFER."
-  (let* ((data (prompt1 :prompt "Annotation"
-                        :sources (make-instance 'prompter:raw-source
-                                                :name "Note")))
-         (tags (prompt
-                :prompt "Tag(s)"
-                :sources (list (make-instance 'prompter:word-source
-                                              :name "New tags"
-                                              :multi-selection-p t)
-                               (make-instance 'keyword-source :buffer buffer)
-                               (make-instance 'annotation-tag-source))))
-         (annotation (make-instance 'url-annotation
-                                    :url (url buffer)
-                                    :data data
-                                    :page-title (title buffer)
-                                    :tags tags)))
-    (annotation-add annotation)))
+(define-command annotate-current-url
+    (&key (buffer (current-buffer))
+     (data (prompt1 :prompt "Annotation"
+                    :sources (make-instance 'prompter:raw-source
+                                            :name "Note")))
+     (tags (prompt
+            :prompt "Tag(s)"
+            :sources (list (make-instance 'prompter:word-source
+                                          :name "New tags"
+                                          :multi-selection-p t)
+                           (make-instance 'keyword-source :buffer buffer)
+                           (make-instance 'annotation-tag-source)))))
+  "Create an annotation of the URL of BUFFER.
 
-(define-command annotate-highlighted-text (&optional (buffer (current-buffer)))
-  "Create an annotation for the highlighted text of BUFFER."
-  (let* ((snippet (ffi-buffer-copy buffer))
-         (data (prompt1 :prompt "Annotation"
-                        :sources (make-instance 'prompter:raw-source
-                                                :name "Note")))
-         (tags (prompt
-                :prompt "Tag(s)"
-                :sources (list (make-instance 'prompter:word-source
-                                              :name "New tags"
-                                              :multi-selection-p t)
-                               (make-instance 'keyword-source :buffer buffer)
-                               (make-instance 'annotation-tag-source))))
-         (annotation (make-instance 'snippet-annotation
-                                    :snippet snippet
-                                    :url (url buffer)
-                                    :page-title (title buffer)
-                                    :data data
-                                    :tags tags)))
-    (annotation-add annotation)))
+DATA and TAGS are passed as arguments to `url-annotation' make-instance."
+  (annotation-add (make-instance 'url-annotation
+                                 :url (url buffer)
+                                 :data data
+                                 :page-title (title buffer)
+                                 :tags tags)))
+
+(define-command annotate-highlighted-text
+    (&key (buffer (current-buffer))
+     (snippet (ffi-buffer-copy buffer))
+     (data (prompt1 :prompt "Annotation"
+                    :sources (make-instance 'prompter:raw-source
+                                            :name "Note")))
+     (tags (prompt
+            :prompt "Tag(s)"
+            :sources (list (make-instance 'prompter:word-source
+                                          :name "New tags"
+                                          :multi-selection-p t)
+                           (make-instance 'keyword-source :buffer buffer)
+                           (make-instance 'annotation-tag-source)))))
+  "Create an annotation for the highlighted text of BUFFER.
+
+DATA, SNIPPET, and TAGS are passed as arguments to `snippet-annotation'
+make-instance."
+  (annotation-add (make-instance 'snippet-annotation
+                                 :snippet snippet
+                                 :url (url buffer)
+                                 :page-title (title buffer)
+                                 :data data
+                                 :tags tags)))
 
 (defun render-annotations (annotations)
   "Show the ANNOTATIONS in a new buffer"
