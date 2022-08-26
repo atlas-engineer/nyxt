@@ -288,9 +288,9 @@ FUNCTION is the action to perform on the selected elements."
         `(("Hint" ,(plump:attribute element "nyxt-hint"))))
     ;; Ensure that all of Body, URL and Value are there, even if empty.
     ,@(let ((attributes (call-next-method)))
-       (dolist (attr '("Body" "URL" "Value"))
-         (unless (assoc attr attributes :test 'string=)
-           (alex:nconcf attributes `((,attr "")))))
+        (dolist (attr '("Body" "URL" "Value"))
+          (unless (assoc attr attributes :test 'string=)
+            (alex:nconcf attributes `((,attr "")))))
         attributes)
     ("Type" ,(str:capitalize (str:string-case
                                  (plump:tag-name element)
@@ -315,7 +315,7 @@ FUNCTION is the action to perform on the selected elements."
                    (url-string (plump:attribute a "href")))
      `(("URL" ,url-string)))
    (when (nyxt/dom:body a)
-    `(("Body" ,(str:shorten 80 (nyxt/dom:body a)))))))
+     `(("Body" ,(str:shorten 80 (nyxt/dom:body a)))))))
 
 (defmethod prompter:object-attributes ((button nyxt/dom:button-element) (source prompter:source))
   (declare (ignore source))
@@ -343,7 +343,7 @@ FUNCTION is the action to perform on the selected elements."
                    (url-string (plump:attribute img "href")))
      `(("URL" ,url-string)))
    (when (nyxt/dom:body img)
-    `(("Body" ,(str:shorten 80 (nyxt/dom:body img)))))))
+     `(("Body" ,(str:shorten 80 (nyxt/dom:body img)))))))
 
 (defmethod %follow-hint ((element plump:element))
   (nyxt/dom:click-element element))
@@ -472,7 +472,8 @@ modes."
 
 (define-command copy-hint-url ()
   "Prompt for element hints and save its corresponding URLs to clipboard."
-  (query-hints "Copy element URL" (lambda (result)  (%copy-hint-url (first result)))
+  (query-hints "Copy element URL"
+               (lambda (result)  (%copy-hint-url (first result)))
                :multi-selection-p nil
                :selector "a, img"))
 
