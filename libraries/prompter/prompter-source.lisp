@@ -82,6 +82,16 @@ are marked, subsequent `return-actions' run over all marked suggestions.
 We store the values instead of the `suggestion' because `suggestion' objects are
 reinstantiated between each input processing.")
 
+   (marks-actions
+    '()
+    :type (or null
+              (or function function-symbol)
+              (cons (or function function-symbol) *))
+    :documentation "The first function of this list is called automatically on
+the mark when it's changed.  It does not interrupt or return the prompter.  For
+convenience, it may be initialized with a single function, in which case it will
+be automatically turned into a list.")
+
    (active-attributes-keys
     '()
     :export t
