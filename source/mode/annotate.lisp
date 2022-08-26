@@ -50,20 +50,30 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
+;; TODO: Wrap in <div>s with special CSS classes.
 (defmethod render ((annotation url-annotation))
   (spinneret:with-html-string
-    (:p (:b "URL: ") (render-url (url annotation)))
-    (:p (:b "Title: ") (page-title annotation))
-    (:p (:b "Annotation: ") (data annotation))
-    (:p (:b "Tags: ") (format nil "~{~a ~}" (tags annotation)))))
+    (:dl
+     (:dt "URL")
+     (:dd (render-url (url annotation)))
+     (:dt "Title")
+     (:dd (snippet annotation))
+     (:dt "Tags")
+     (:dd (format nil "~{~a ~}" (tags annotation))))
+    (:p (data annotation))))
 
 (defmethod render ((annotation snippet-annotation))
   (spinneret:with-html-string
-    (:p (:b "Snippet: ") (snippet annotation))
-    (:p (:b "URL: ") (render-url (url annotation)))
-    (:p (:b "Title: ") (page-title annotation))
-    (:p (:b "Annotation: ") (data annotation))
-    (:p (:b "Tags: ") (format nil "~{~a ~}" (tags annotation)))))
+    (:dl
+     (:dt "URL")
+     (:dd (render-url (url annotation)))
+     (:dt "Title")
+     (:dd (page-title annotation))
+     (:dt "Snippet")
+     (:dd (snippet annotation))
+     (:dt "Tags")
+     (:dd (format nil "~{~a ~}" (tags annotation))))
+    (:p (data annotation))))
 
 (defun annotation-add (annotation)
   (files:with-file-content (annotations (annotations-file (current-buffer)))
