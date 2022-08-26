@@ -59,7 +59,7 @@ so invoke on a separate thread when possible."
 ;; can't be achieved since not all editors, e.g. vi, accept the syntax
 ;; `+line:column' as an option to start the editor.
 
-(define-command edit-with-external-editor ()
+(define-command-global edit-with-external-editor ()
   "Edit the current input field using `external-editor-program'."
   (if (external-editor-program *browser*)
       (run-thread "external editor"
@@ -68,7 +68,7 @@ so invoke on a separate thread when possible."
         (move-caret-to-end))
       (echo-warning "Please set `external-editor-program' browser slot.")))
 
-(define-command edit-user-file-with-external-editor ()
+(define-command-global edit-user-file-with-external-editor ()
   "Edit the queried user file using `external-editor-program'.
 If the user file is GPG-encrypted, the editor must be capable of decrypting it."
   (if (external-editor-program *browser*)
