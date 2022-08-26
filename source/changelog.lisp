@@ -483,7 +483,9 @@ the selection, and the string to paste instead of the clipboard (respectively)."
    (:li (:code "nyxt/dom:copy") " generic to copy elements and whole DOMs.")
    (:li "New " (:code "define-bookmarklet-command-global")
         " that allows to define bookmarklets globally.")
-   (:li (:code "open-new-editor-with-file") " renamed to " (:code "edit-file") "."))
+   (:li (:code "open-new-editor-with-file") " renamed to " (:code "edit-file") ".")
+   (:li "Add " (:code "edit-file-with-external-editor")
+        " to edit arbitrary files in the editor of choice."))
 
   (:h3 "Bug fixes")
   (:ul

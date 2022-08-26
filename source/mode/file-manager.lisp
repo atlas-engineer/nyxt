@@ -197,6 +197,18 @@ See `supported-media-types' of `file-mode'."
                       (extensions (supported-media-types file-source)))
         (find extension extensions :test #'string-equal))))
 
+(define-command-global edit-file-with-external-editor
+    (&optional (files (prompt :input "File(s) to edit"
+                              :source 'file-source)))
+  "Edit the FILES using `external-editor-program'.
+If FILES are not provided, prompt for them."
+  (if (external-editor-program *browser*)
+      (progn
+        (echo "Using \"~{~a~^ ~}\" to edit ~s." (external-editor-program *browser*) files)
+        (uiop:launch-program `(,@(external-editor-program *browser*)
+                               ,@(mapcar #'uiop:native-namestring files))))
+      (echo-warning "Please set `external-editor-program' browser slot.")))
+
 (defmethod initialize-instance :after ((source open-file-source) &key)
   (setf (slot-value source 'prompter:return-actions)
         (append
@@ -222,6 +234,10 @@ See `supported-media-types' of `file-mode'."
                    (rename-file file (prompt1 :prompt (format nil "New name for ~a" name)
                                               :sources 'prompter:raw-source
                                               :input name))))
+               (lambda-command edit-file-with-external-editor* (files)
+                 "Edit files in external editor."
+                 (edit-file-with-external-editor files))
+               ;; TODO: Edit files in Nyxt-internal editor.
                ;; TODO: File/directory copying.
                (lambda-command open-with* (files)
                  "Open files with the selected program."
