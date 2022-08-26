@@ -229,7 +229,7 @@ For instance, to include images:
           (sera:partition
            (lambda (element)
              (str:starts-with-p input (plump:attribute element "nyxt-hint") :ignore-case t))
-           suggestions
+           (delete-duplicates suggestions :test #'quri:uri= :key #'url)
            :key #'prompter:value)
         (append matching-hints other-hints))))
    (prompter:selection-actions
