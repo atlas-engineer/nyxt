@@ -459,14 +459,16 @@ SLY install.")
    (:li "All the copying and pasting commands now fill the "
         (:code "clipboad-ring") " of the browser reliably, thus making "
         (:code "paste-from-clipboard-ring") " useful again.")
-   (:li (:code "editor-mode") " is improved and cleaned up in general."))
+   (:li (:code "editor-mode") " is improved and cleaned up in general.")
+   (:li (:code "hint-mode") " no longer hints images by default."))
 
   (:h3 "Bindings")
   (:ul
    (:li (:code "editor-mode") " now has an equally powerful set of bindings in all key schemes, allowing one
 to open a file, save it, switch buffer or delete current buffer.")
    (:li (:code "paste-from-clipboard-ring") " is now conveniently bound to "
-        (:code "M-y") " in Emacs scheme of " (:code "document-mode") "."))
+        (:code "M-y") " in Emacs scheme of " (:code "document-mode") ".")
+   (:li "Prompt-buffer now has familiar bindings for text cutting."))
 
   (:h3 "Programming interface")
   (:ul
@@ -477,15 +479,23 @@ the selection, and the string to paste instead of the clipboard (respectively)."
         (:code "nyxt/editor-mode:markup")
         ". This method defines how the initial editor markup (not necessarily HTML one) will look like.")
    (:li (:code "encode-json") " and " (:code "decode-json")
-        " functions are now capable of encoding from/decoding to files, strings and streams."))
+        " functions are now capable of encoding from/decoding to files, strings and streams.")
+   (:li (:code "nyxt/dom:copy") " generic to copy elements and whole DOMs.")
+   (:li "New " (:code "define-bookmarklet-command-global")
+        " that allows to define bookmarklets globally.")
+   (:li (:code "open-new-editor-with-file") " renamed to " (:code "edit-file") "."))
 
   (:h3 "Bug fixes")
   (:ul
    (:li "The version parsing (that features like " (:code "#+nyxt-3")
         " depend on) is more robust and pre-release-aware now.")
+   (:li "Touchscreen gestures fixed for VI mode.")
    (:li "Opening files via a relative path (for instance, " (:code "buffer.html")
         ") is now correctly processed to an absolute path.")
    (:li "Setting " (:code "restore-session-on-startup-p") "to nil no longer hangs the browser.")
    (:li "Fix buffer re-attachment from the deleted window.")
    (:li "Download hooks are properly typed and belong to " (:code "nyxt/download-mode:download")
-        " now, allowing to add handlers to them.")))
+        " now, allowing to add handlers to them.")
+   (:li "Clipboard ring is properly filled on every clipboard action happening inside Nyxt.")
+   (:li (:code "view-source") " now shows a cleaned-up version of the pages without "
+        (:code "nyxt-identifier") "s and other Nyxt-specific helpers.")))
