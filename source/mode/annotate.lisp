@@ -38,8 +38,16 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-class url-annotation (annotation)
-  ((url nil)
-   (page-title ""))
+  ((url
+    nil
+    :type (maybe quri:uri))
+   (selector
+       nil
+       :type (maybe string)
+     :documentation "A more detailed part of the document designated by `url'.")
+   (title
+    ""
+    :type string))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
@@ -53,7 +61,7 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
 (defmethod render ((annotation url-annotation))
   (spinneret:with-html-string
     (:p (:b "URL: ") (render-url (url annotation)))
-    (:p (:b "Title: ") (page-title annotation))
+    (:p (:b "Title: ") (title annotation))
     (:p (:b "Annotation: ") (data annotation))
     (:p (:b "Tags: ") (format nil "~{~a ~}" (tags annotation)))))
 
@@ -61,7 +69,7 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
   (spinneret:with-html-string
     (:p (:b "Snippet: ") (snippet annotation))
     (:p (:b "URL: ") (render-url (url annotation)))
-    (:p (:b "Title: ") (page-title annotation))
+    (:p (:b "Title: ") (title annotation))
     (:p (:b "Annotation: ") (data annotation))
     (:p (:b "Tags: ") (format nil "~{~a ~}" (tags annotation)))))
 
@@ -87,7 +95,7 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
          (annotation (make-instance 'url-annotation
                                     :url (url buffer)
                                     :data data
-                                    :page-title (title buffer)
+                                    :title (title buffer)
                                     :tags tags)))
     (annotation-add annotation)))
 
@@ -107,7 +115,7 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
          (annotation (make-instance 'snippet-annotation
                                     :snippet snippet
                                     :url (url buffer)
-                                    :page-title (title buffer)
+                                    :title (title buffer)
                                     :data data
                                     :tags tags)))
     (annotation-add annotation)))
