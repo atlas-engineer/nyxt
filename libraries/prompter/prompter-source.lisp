@@ -289,6 +289,11 @@ call."))
 (defun default-object-attributes (object)
   `(("Default" ,(princ-to-string object))))
 
+(defmethod (setf marks) (value (source prompter:source))
+  (setf (slot-value source 'marks) value)
+  (alex:when-let ((action (first (marks-actions source))))
+    (run-thread "Prompter mark action thread" (funcall action (marks source)))))
+
 (export-always 'object-attributes)
 (defgeneric object-attributes (object source)
   (:method ((object t) (source prompter:source))
