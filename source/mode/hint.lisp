@@ -492,7 +492,7 @@ modes."
   (query-hints "Copy element URL"
                (lambda (result)  (%copy-hint-url (first result)))
                :multi-selection-p nil
-               :selector "a, img"))
+               :selector "a"))
 
 (define-command download-hint-url ()
   "Prompt for element hints and download them."

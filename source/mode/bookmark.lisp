@@ -458,4 +458,4 @@ rest in background buffers."
                               (make-instance 'tag-source
                                              :marks (nyxt/bookmark-mode:url-bookmark-tags url))))))
          (nyxt/bookmark-mode:bookmark-add url :tags tags :title (fetch-url-title url)))))
-   :selector "a, img"))
+   :selector "a"))
