@@ -118,9 +118,10 @@ reinstantiated between each input processing.")
               (or function function-symbol)
               (cons (or function function-symbol) *))
     :documentation "The first function of this list is called automatically on
-the mark when it's changed.  It does not interrupt or return the prompter.  For
-convenience, it may be initialized with a single function, in which case it will
-be automatically turned into a list.")
+the mark when it's changed.
+It does not interrupt or return the prompter.
+For convenience, it may be initialized with a single function, in which case it
+will be automatically turned into a list.")
 
    (active-attributes-keys
     '()
@@ -285,7 +286,8 @@ See `resume-sources'.")
               (or function function-symbol)
               (cons (or function function-symbol) *))
     :documentation "The first function of this list is called automatically on
-the selection when it's changed.  It does not interrupt or return the prompter.
+the selection when it's changed.
+It does not interrupt or return the prompter.
 For convenience, it may be initialized with a single function, in which case it
 will be automatically turned into a list.")
 
