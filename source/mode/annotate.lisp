@@ -140,9 +140,8 @@ make-instance."
     (buffer "*Annotations*")
   "Create a new buffer with the annotations of the current URL of BUFFER."
   (let ((annotations (files:content (annotations-file buffer))))
-    (let ((filtered-annotations (remove-if-not (lambda (i)
-                                                 (url-equal (quri:uri (url i)) (url source-buffer)))
-                                               annotations)))
+    (let ((filtered-annotations (sera:filter (alex:curry #'url-equal (url source-buffer))
+                                             annotations :key #'url)))
       (render-annotations :annotations filtered-annotations))))
 
 (define-class annotation-source (prompter:source)
