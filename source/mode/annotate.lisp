@@ -142,7 +142,7 @@ make-instance."
   (let ((annotations (files:content (annotations-file buffer))))
     (let ((filtered-annotations (sera:filter (alex:curry #'url-equal (url source-buffer))
                                              annotations :key #'url)))
-      (render-annotations :annotations filtered-annotations))))
+      (render-annotations filtered-annotations))))
 
 (define-class annotation-source (prompter:source)
   ((prompter:name "Annotations")
