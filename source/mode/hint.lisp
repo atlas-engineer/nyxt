@@ -20,13 +20,20 @@
    (style
     (theme:themed-css (theme *browser*)
       (".nyxt-hint"
-       :background-color theme:primary
-       :color theme:on-primary
+       :background-color theme:background
+       :color theme:on-background
        :font-family "monospace,monospace"
        :padding "0px 0.3em"
+       :border-color theme:primary
        :border-radius "0.3em"
+       :border-width "0.2em"
+       :border-style "solid"
        :z-index #.(1- (expt 2 31)))
-      (".nyxt-hint.nyxt-highlight-hint"
+      (".nyxt-hint.nyxt-mark-hint"
+       :background-color theme:secondary
+       :color theme:on-secondary
+       :font-weight "bold")
+      (".nyxt-hint.nyxt-select-hint"
        :background-color theme:accent
        :color theme:on-accent)
       (".nyxt-element-hint"
@@ -194,19 +201,20 @@ For instance, to include images:
                                                  nil "#nyxt-hint-~a"
                                                  (identifier element))))))
       (when new-element
-        (unless ((ps:@ new-element class-list contains) "nyxt-highlight-hint")
-          (ps:let ((old-elements (nyxt/ps:qsa document ".nyxt-highlight-hint")))
+        (unless ((ps:@ new-element class-list contains) "nyxt-select-hint")
+          (ps:let ((old-elements (nyxt/ps:qsa document ".nyxt-select-hint")))
             (ps:dolist (e old-elements)
               (setf (ps:@ e class-name) "nyxt-hint"))))
-        (setf (ps:@ new-element class-name) "nyxt-hint nyxt-highlight-hint")
+        (setf (ps:@ new-element class-name) "nyxt-hint nyxt-select-hint")
         (when (ps:lisp scroll)
           (ps:chain new-element (scroll-into-view (ps:create block "nearest")))))))
 
   (update-hints))
 
+
 (export-always 'remove-focus)
 (define-parenscript remove-focus ()
-  (ps:let ((old-elements (nyxt/ps:qsa document ".nyxt-highlight-hint")))
+  (ps:let ((old-elements (nyxt/ps:qsa document ".nyxt-select-hint")))
     (ps:dolist (e old-elements)
       (setf (ps:@ e class-name) "nyxt-hint"))))
 
@@ -237,6 +245,15 @@ For instance, to include images:
       (lambda (suggestion)
         (highlight-selected-hint :element suggestion
                                  :scroll nil))))
+   (prompter:marks-actions
+    (lambda (marks)
+      (let ((%marks (mapcar (lambda (mark) (str:concat "#nyxt-hint-" (identifier mark)))
+                            marks)))
+        (peval
+          (dolist (marked-overlay (nyxt/ps:qsa document ".nyxt-mark-hint"))
+            (ps:chain marked-overlay class-list (remove "nyxt-mark-hint")))
+          (dolist (mark (ps:lisp (list 'quote %marks)))
+            (ps:chain (nyxt/ps:qs document mark) class-list (add "nyxt-mark-hint")))))))
    (prompter:return-actions
     (list 'identity
           (lambda-command click* (elements)

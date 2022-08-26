@@ -311,7 +311,7 @@ Warning: URL is a string."
            (map nil #'plump:remove-child
                 ;; FIXME: This selector implies a certain set of
                 ;; identifiers/classes that we use. Update whever we change it?
-                (reverse (clss:select ".nyxt-hint, .nyxt-search-node, .nyxt-highlight-hint" dom)))
+                (reverse (clss:select ".nyxt-hint, .nyxt-search-node, .nyxt-select-hint" dom)))
            (plump:serialize dom nil))
       (when (background-buffer-p buffer)
         (ffi-buffer-delete buffer)))))
