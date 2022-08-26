@@ -605,8 +605,7 @@ This is a \"safe\" wrapper around `bt:make-thread'."
         (calispel:! wait-channel t)))
     ;; Wait until above thread has acquired the `initial-suggestions-lock'.
     (calispel:? wait-channel))
-  (setf (selection-actions source)
-        (uiop:ensure-list (selection-actions source)))
+  (setf (selection-actions source) (uiop:ensure-list (selection-actions source)))
   source)
 
 (export-always 'attributes-keys-non-default)
