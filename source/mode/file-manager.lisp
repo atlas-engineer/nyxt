@@ -199,7 +199,7 @@ See `supported-media-types' of `file-mode'."
 
 (define-command-global edit-file-with-external-editor
     (&optional (files (prompt :input "File(s) to edit"
-                              :source 'file-source)))
+                              :sources 'file-source)))
   "Edit the FILES using `external-editor-program'.
 If FILES are not provided, prompt for them."
   (if (external-editor-program *browser*)
