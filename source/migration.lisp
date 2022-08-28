@@ -66,9 +66,9 @@ Order is stable."
                                                :test #'string=)
                                     result)))
              +migration-suggestions+)
-    (sort  (delete-duplicates result)
-           #'string<
-           :key (compose #'first #'uiop:ensure-list #'symbols))))
+    (sort (delete-duplicates result)
+          #'string<
+          :key (compose #'first #'uiop:ensure-list #'symbols))))
 
 (defmethod tip ((suggestion suggestion))
   (if (stringp (slot-value suggestion 'tip))
@@ -95,8 +95,8 @@ major versions."
   (spinneret:with-html-string
     (:style (style buffer))
     (:h1 "Migration guide")
-    (:p "See also the " (:code "changelog") ".")
-    (:raw (render-version-migration (write-to-string (first (nyxt::version)))))))
+    (:p "See also the " (:a :href (nyxt-url 'changelog) (:code "changelog")) ".")
+    (:raw (render-version-migration (nyxt::version)))))
 
 
 (export-always 'find-suggestions)
