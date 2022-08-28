@@ -94,23 +94,20 @@ Return the lambda s-expression as a second value, if possible."
                                         file
                                         :external-format (guess-external-format file)))
                          (start-position (first (alexandria:assoc-value definition :position))))
-          (restart-case
-              (handler-bind ((reader-error (lambda (c)
-                                             (declare (ignore c))
-                                             (invoke-restart 'use-value
-                                                             (str:trim-right
-                                                              (subseq file-content
-                                                                      (max 0 (1- start-position))
-                                                                      (search (uiop:strcat +newline+ "(") file-content :start2 start-position)))))))
-                (let ((*read-eval* nil))
-                  (let ((expression (read-from-string file-content t nil
-                                                      :start (1- start-position))))
-                    (values (let ((*print-case* :downcase)
-                                  (*print-pretty* t))
-                              (write-to-string expression))
-                            expression))))
-            (use-value (arg)
-              arg)))
+          (handler-case
+              (let ((*read-eval* nil))
+                (let ((expression (read-from-string file-content t nil
+                                                    :start (1- start-position))))
+                  (values (let ((*print-case* :downcase)
+                                (*print-pretty* t))
+                            (write-to-string expression))
+                          expression)))
+            (reader-error ()
+              (str:trim-right
+               (subseq file-content
+                       (max 0 (1- start-position))
+                       (or (search (uiop:strcat +newline+ "(") file-content :start2 start-position)
+                           (1- (length file-content))))))))
         "")))
 
 (-> last-word (string) string)
