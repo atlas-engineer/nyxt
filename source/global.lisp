@@ -142,14 +142,16 @@ Return nil on error."
        (parse-integer (first (str:split "-" +version+)))
        (destructuring-bind (version &optional commits commit)
            (str:split "-" +version+)
-         (let* ((commits (or (and commits (every #'digit-char-p commits) (parse-integer commits))
-                             0))
-                (commit (if (and commits (every #'digit-char-p commits))
+         (let* ((integer-commits-p (and commits (every #'digit-char-p commits)))
+                (commits-number (if integer-commits-p
+                                    (parse-integer commits)
+                                    0))
+                (commit (if integer-commits-p
                             commit
                             commits)))
            (destructuring-bind (&optional major minor patch)
                (uiop:parse-version version)
-             (values major minor patch commit commits)))))))
+             (values major minor patch commit commits-number)))))))
 
 (multiple-value-bind (major minor patch commit commits)
     (version)
