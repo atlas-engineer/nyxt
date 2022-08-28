@@ -196,22 +196,19 @@ For instance, to include images:
 
 (export-always 'highlight-selected-hint)
 (define-parenscript highlight-selected-hint (&key element scroll)
-  (defun update-hints ()
-    (ps:let* ((new-element (nyxt/ps:qs document
-                                       (ps:lisp (format
-                                                 nil "#nyxt-hint-~a"
-                                                 (identifier element))))))
-      (when new-element
-        (unless ((ps:@ new-element class-list contains) "nyxt-select-hint")
-          (ps:let ((old-elements (nyxt/ps:qsa document ".nyxt-select-hint")))
-            (ps:dolist (e old-elements)
-              (setf (ps:@ e class-name) "nyxt-hint"))))
-        (setf (ps:@ new-element class-name) "nyxt-hint nyxt-select-hint")
-        (when (ps:lisp scroll)
-          (ps:chain new-element (scroll-into-view (ps:create block "nearest")))))))
-
-  (update-hints))
-
+  (let ((%element (nyxt/ps:qs document (ps:lisp (format nil "#nyxt-hint-~a"
+                                                        (identifier element))))))
+    (when %element
+      (unless (ps:chain %element class-list (contains "nyxt-select-hint"))
+        ;; There should be, at most, a unique element with the
+        ;; "nyxt-select-hint" class.
+        ;; querySelectAll, unlike querySelect, handles the case when none are
+        ;; found.
+        (ps:dolist (selected-hint (nyxt/ps:qsa document ".nyxt-select-hint"))
+          (ps:chain selected-hint class-list (remove "nyxt-select-hint"))))
+      (ps:chain %element class-list (add "nyxt-select-hint"))
+      (when (ps:lisp scroll)
+        (ps:chain %element (scroll-into-view (ps:create block "nearest")))))))
 
 (export-always 'remove-focus)
 (define-parenscript remove-focus ()
