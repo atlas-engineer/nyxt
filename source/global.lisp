@@ -129,16 +129,21 @@ Don't set this, it would lose its meaning.")
   :test #'equal)
 
 (defun version ()
-  "Return 5 maybe string values: MAJOR, MINOR, PATCH, COMMITS, and COMMIT.
+  "Return 5 values:
+- MAJOR version as integer,
+- MINOR version as integer,
+- PATCH version as integer,
+- COMMITS as number of commits from the last release,
+- and current COMMIT as string.
 Return nil on error."
   (ignore-errors
    ;; Pre-releases are falling outside the conventional version values.
    (if (search "pre-release" +version+)
-       (first (str:split "-" +version+))
+       (parse-integer (first (str:split "-" +version+)))
        (destructuring-bind (version &optional commits commit)
            (str:split "-" +version+)
-         (let* ((commits (or (and commits (every #'digit-char-p commits))
-                             ""))
+         (let* ((commits (or (and commits (every #'digit-char-p commits) (parse-integer commits))
+                             0))
                 (commit (if (and commits (every #'digit-char-p commits))
                             commit
                             commits)))
