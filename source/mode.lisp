@@ -224,8 +224,8 @@ PACKAGES should be a list of package designators."
                              (:slot (mapcar #'name (package-slots subpackages)))
                              (:command (mapcar #'name (list-commands))))))
     (let ((results (delete designator symbols :key #'symbol-name :test #'string/=)))
-      (unless (sera:single results)
-        (log:warn "Multiple ~a modes found: ~a" designator results))
+      (when (> 1 (length results))
+        (log:warn "Multiple ~a symbols found: ~a" designator results))
       (values (first results)
               results))))
 
