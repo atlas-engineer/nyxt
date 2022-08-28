@@ -209,7 +209,7 @@ See `package-symbols' for details on the arguments."
 PACKAGES should be a list of package designators."
   (sera:and-let* ((designator (string designator))
                   (subpackages (append
-                                (mapcar #'find-package packages)
+                                (delete-duplicates (mapcar #'find-package packages))
                                 (sera:filter
                                  (apply #'alex:disjoin
                                         (mapcar (lambda (pkg)
