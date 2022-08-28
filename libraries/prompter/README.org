@@ -15,4 +15,5 @@ Non-exhaustive list of features:
 - Per-source history.
 - Resumable prompters.
 - Selection actions (automatically run persistent actions on selection change).
+- Marks actions (automatically run persistent actions on marks change).
 - Automatically return the prompt when narrowed down to a single suggestion.
