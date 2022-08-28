@@ -133,7 +133,7 @@ Don't set this, it would lose its meaning.")
 Return nil on error."
   (ignore-errors
    ;; Pre-releases are falling outside the conventional version values.
-   (if (str:containsp "pre-release" +version+)
+   (if (search "pre-release" +version+)
        (first (str:split "-" +version+))
        (destructuring-bind (version &optional commits commit)
            (str:split "-" +version+)
