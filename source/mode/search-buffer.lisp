@@ -176,7 +176,8 @@
            (and (slot-exists-p hint 'buffer)
                 (equal (buffer hint) buffer)))
           (with-current-buffer buffer
-            (nyxt/hint-mode::highlight-selected-hint :element hint :scroll scroll))
+            (nyxt/hint-mode:highlight-selected-hint :element hint
+                                                    :scroll scroll))
           (nyxt/hint-mode:remove-focus)))))
 
 (define-class search-buffer-source (prompter:source)

@@ -194,6 +194,7 @@ For instance, to include images:
 (defmethod identifier ((element plump:element))
   (plump:attribute element "nyxt-hint"))
 
+(export-always 'highlight-selected-hint)
 (define-parenscript highlight-selected-hint (&key element scroll)
   (defun update-hints ()
     (ps:let* ((new-element (nyxt/ps:qs document
