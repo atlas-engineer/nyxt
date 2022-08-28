@@ -38,7 +38,7 @@
          (setf (ps:@ style-element id) "nyxt-stylesheet")
          (ps:chain document head (append-child style-element))
          (setf (ps:chain style-element inner-text)
-               (ps:lisp (style (find-submode 'hint-mode)))))
+               (ps:lisp (style (find-submode 'nyxt/hint-mode:hint-mode)))))
        (:catch (error)))))
 
   (defun create-match-object (body identifier)
