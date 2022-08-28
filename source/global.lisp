@@ -129,7 +129,7 @@ Don't set this, it would lose its meaning.")
   :test #'equal)
 
 (defun version ()
-  "Return 4 values: MAJOR, MINOR, PATCH and COMMIT.
+  "Return 5 maybe string values: MAJOR, MINOR, PATCH, COMMITS, and COMMIT.
 Return nil on error."
   (ignore-errors
    ;; Pre-releases are falling outside the conventional version values.
@@ -137,7 +137,11 @@ Return nil on error."
        (first (str:split "-" +version+))
        (destructuring-bind (version &optional commits commit)
            (str:split "-" +version+)
-         (let* ((commits (and commits (parse-integer commits))))
+         (let* ((commits (or (and commits (every #'digit-char-p commits))
+                             ""))
+                (commit (if (and commits (every #'digit-char-p commits))
+                            commit
+                            commits)))
            (destructuring-bind (&optional major minor patch)
                (uiop:parse-version version)
              (values major minor patch commit commits)))))))
