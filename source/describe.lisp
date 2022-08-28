@@ -156,25 +156,46 @@ for matches."
 (defun resolve-backtick-quote-links (string parent-symbol)
   "Return the STRING documentation with symbols surrounded by the (` ') pair
 turned into links to their respective description page."
-  (flet ((resolve-regex (target-string start end match-start match-end reg-starts reg-ends)
-           (declare (ignore start end reg-starts reg-ends))
-           ;; Excluding backtick & quote.
-           (let* ((name (subseq target-string (1+ match-start) (1- match-end)))
-                  (symbol (let ((*package* (symbol-package parent-symbol)))
-                            (ignore-errors (read-from-string name nil))))
-                  (url (when symbol
-                         (ps:ps (nyxt/ps:lisp-eval
-                                 (:title "describe-any")
-                                 (nyxt::describe-any (princ-to-string symbol)))))))
-             (let ((*print-pretty* nil))
-               ;; Disable pretty-printing to avoid spurious space insertion within links:
-               ;; https://github.com/ruricolist/spinneret/issues/37#issuecomment-884740046
-               (spinneret:with-html-string
-                 (if url
-                     (:a :href (javascript-url url)
-                         (:code name))
-                     (:code name)))))))
-    (if string
+  (labels ((resolve-as (symbol type)
+             (resolve-symbol (symbol-name symbol) type
+                             (list :nyxt :nyxt-user (symbol-package parent-symbol))))
+           (resolve-regex (target-string start end match-start match-end reg-starts reg-ends)
+             (declare (ignore start end reg-starts reg-ends))
+             ;; Excluding backtick & quote.
+             (let* ((name (subseq target-string (1+ match-start) (1- match-end)))
+                    (symbol (ignore-errors (let ((*package* (symbol-package parent-symbol)))
+                                             (read-from-string name nil))))
+                    (function (and (fboundp symbol)
+                                   (resolve-as symbol :function)))
+                    (variable (resolve-as symbol :variable))
+                    (class (resolve-as symbol :class))
+                    ;; TODO: No way to determine the class reliably based on the slot name?
+                    ;; (slot (resolve-symbol name :slot (list :nyxt :nyxt-user *package*)))
+                    (command (and function
+                                  (resolve-as symbol :command)))
+                    (url (cond
+                           ((and variable (not function) (not class))
+                            (nyxt-url 'describe-variable :variable variable :universal t))
+                           ((and command (not class) (not variable))
+                            (nyxt-url 'describe-command :command command))
+                           ((and function (not class) (not variable) (not command))
+                            (nyxt-url 'describe-function :fn function :universal t))
+                           (class
+                            (nyxt-url 'describe-class :class class :universal t))
+                           (symbol
+                            (javascript-url
+                             (ps:ps (nyxt/ps:lisp-eval
+                                     (:title "describe-any")
+                                     (nyxt::describe-any (princ-to-string symbol))))))
+                           (t nil))))
+               (let ((*print-pretty* nil))
+                 ;; Disable pretty-printing to avoid spurious space insertion within links:
+                 ;; https://github.com/ruricolist/spinneret/issues/37#issuecomment-884740046
+                 (spinneret:with-html-string
+                   (if url
+                       (:a :href url (:code name))
+                       (:code name)))))))
+    (if (not (uiop:emptyp string))
         ;; FIXME: Spaces are disallowed, but |one can use anything in a symbol|.
         ;; Maybe allow it?  The problem then is that it increases the chances of
         ;; false-positives when the "`" character is used for other reasons.
