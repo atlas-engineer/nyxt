@@ -212,9 +212,12 @@ For instance, to include images:
 
 (export-always 'remove-focus)
 (define-parenscript remove-focus ()
-  (ps:let ((old-elements (nyxt/ps:qsa document ".nyxt-select-hint")))
-    (ps:dolist (e old-elements)
-      (setf (ps:@ e class-name) "nyxt-hint"))))
+  ;; There should be, at most, a unique element with the
+  ;; "nyxt-select-hint" class.
+  ;; querySelectAll, unlike querySelect, handles the case when none are
+  ;; found.
+  (ps:dolist (selected-hint (nyxt/ps:qsa document ".nyxt-select-hint"))
+    (ps:chain selected-hint class-list (remove "nyxt-select-hint"))))
 
 (define-class hint-source (prompter:source)
   ((prompter:name "Hints")
