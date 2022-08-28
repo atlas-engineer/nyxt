@@ -96,7 +96,7 @@ major versions."
     (:style (style buffer))
     (:h1 "Migration guide")
     (:p "See also the " (:a :href (nyxt-url 'changelog) (:code "changelog")) ".")
-    (:raw (render-version-migration (nyxt::version)))))
+    (:raw (render-version-migration (write-to-string (nyxt::version))))))
 
 
 (export-always 'find-suggestions)
