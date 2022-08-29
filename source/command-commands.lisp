@@ -194,7 +194,7 @@ User input is evaluated Lisp."
   ((prompter:constructor (lambda (source)
                            (hooks:disabled-handlers (hook source))))))
 
-(define-command disable-hook-handler ()
+(define-command-global disable-hook-handler ()
   "Remove handler(s) from a hook."
   (let* ((hook-desc (prompt1
                       :prompt "Hook where to disable handler"
@@ -205,7 +205,7 @@ User input is evaluated Lisp."
                                             :hook (value hook-desc)))))
     (hooks:disable-hook (value hook-desc) handler)))
 
-(define-command enable-hook-handler ()
+(define-command-global enable-hook-handler ()
   "Enable handler(s) from a hook."
   (let* ((hook-desc (prompt1
                       :prompt "Hook where to enable handler"
