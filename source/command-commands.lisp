@@ -102,7 +102,7 @@ Includes all commands and modes, and adds arbitrary Lisp functions on top of tha
   (declare (ignore source))
   (let ((*print-case* :downcase))
     (if (fboundp extended-command)
-        (let ((function (symbol-function (first extended-command))))
+        (let ((function (symbol-function extended-command)))
           `(("Expression" ,(format nil "~s" extended-command))
             ("Arguments" ,(remove #\newline (format nil "~{~a~^ ~}" (arglist function))))
             ("Docstring" ,(or (first (sera::lines (documentation function 'function)))
