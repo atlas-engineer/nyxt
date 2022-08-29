@@ -31,7 +31,7 @@
       `(let ((,memo-table (make-hash-table :test 'equal)))
          (defun ,name (,@params)
            (let ((,args (append (list ,@required)
-                                (list ,@optional)
+                                (list ,@(mapcar #'first optional))
                                 ,rest
                                 (list ,@(alex:mappend #'first keyword)))))
              (alex:ensure-gethash
