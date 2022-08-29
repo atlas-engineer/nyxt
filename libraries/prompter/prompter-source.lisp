@@ -16,6 +16,36 @@
 (deftype function-symbol ()
   `(and symbol (satisfies fboundp)))
 
+(defmacro with-protect ((format-string &rest args) &body body) ; TODO: Inspired by Nyxt.  Move to serapeum?
+  "Run body while capturing all conditions and echoing them as a warning.
+The warning is reported to the user as per
+FORMAT-STRING and ARGS.
+As a special case, the first `:condition' keyword in ARGS is replaced with the
+raised condition."
+  (alex:with-gensyms (c)
+    `(handler-case (progn ,@body)
+       (error (,c)
+         (declare (ignorable ,c))
+         ,(let* ((condition-index (position :condition args))
+                 (new-args (if condition-index
+                               (append (subseq args 0 condition-index)
+                                       `(,c)
+                                       (subseq args (1+ condition-index)))
+                               args)))
+            `(warn ,format-string ,@new-args))))))
+
+(defmacro run-thread (name &body body)   ; TODO: Copied from Nyxt.  Move to serapeum?
+  "Run body in a new protected new thread.
+This is a \"safe\" wrapper around `bt:make-thread'."
+  `(bt:make-thread
+    (lambda ()
+      ,(if *debug-on-error*
+           `(progn
+              ,@body)
+           `(with-protect ("Error on separate prompter thread: ~a" :condition)
+              ,@body)))
+    :name ,name))
+
 (defun object-public-slots (object-specifier)
   "Return the list of exported slots."
   (delete-if
@@ -81,6 +111,17 @@ are marked, subsequent `return-actions' run over all marked suggestions.
 
 We store the values instead of the `suggestion' because `suggestion' objects are
 reinstantiated between each input processing.")
+
+   (marks-actions
+    '()
+    :type (or null
+              (or function function-symbol)
+              (cons (or function function-symbol) *))
+    :documentation "The first function of this list is called automatically on
+the mark when it's changed.
+It does not interrupt or return the prompter.
+For convenience, it may be initialized with a single function, in which case it
+will be automatically turned into a list.")
 
    (active-attributes-keys
     '()
@@ -245,7 +286,8 @@ See `resume-sources'.")
               (or function function-symbol)
               (cons (or function function-symbol) *))
     :documentation "The first function of this list is called automatically on
-the selection when it's changed.  It does not interrupt or return the prompter.
+the selection when it's changed.
+It does not interrupt or return the prompter.
 For convenience, it may be initialized with a single function, in which case it
 will be automatically turned into a list.")
 
@@ -278,6 +320,11 @@ call."))
 
 (defun default-object-attributes (object)
   `(("Default" ,(princ-to-string object))))
+
+(defmethod (setf marks) (value (source prompter:source))
+  (setf (slot-value source 'marks) value)
+  (alex:when-let ((action (first (marks-actions source))))
+    (run-thread "Prompter mark action thread" (funcall action (marks source)))))
 
 (export-always 'object-attributes)
 (defgeneric object-attributes (object source)
@@ -540,36 +587,6 @@ If you are looking for a source that just returns its plain suggestions, use `so
                   source)))
    (uiop:ensure-list elements)))
 
-(defmacro with-protect ((format-string &rest args) &body body) ; TODO: Inspired by Nyxt.  Move to serapeum?
-  "Run body while capturing all conditions and echoing them as a warning.
-The warning is reported to the user as per
-FORMAT-STRING and ARGS.
-As a special case, the first `:condition' keyword in ARGS is replaced with the
-raised condition."
-  (alex:with-gensyms (c)
-    `(handler-case (progn ,@body)
-       (error (,c)
-         (declare (ignorable ,c))
-         ,(let* ((condition-index (position :condition args))
-                 (new-args (if condition-index
-                               (append (subseq args 0 condition-index)
-                                       `(,c)
-                                       (subseq args (1+ condition-index)))
-                               args)))
-            `(warn ,format-string ,@new-args))))))
-
-(defmacro run-thread (name &body body)   ; TODO: Copied from Nyxt.  Move to serapeum?
-  "Run body in a new protected new thread.
-This is a \"safe\" wrapper around `bt:make-thread'."
-  `(bt:make-thread
-    (lambda ()
-      ,(if *debug-on-error*
-           `(progn
-              ,@body)
-           `(with-protect ("Error on separate prompter thread: ~a" :condition)
-              ,@body)))
-    :name ,name))
-
 (defmethod initialize-instance :after ((source source) &key)
   "See the `constructor' documentation of `source'."
   (let ((wait-channel (make-channel)))
@@ -595,8 +612,8 @@ This is a \"safe\" wrapper around `bt:make-thread'."
         (calispel:! wait-channel t)))
     ;; Wait until above thread has acquired the `initial-suggestions-lock'.
     (calispel:? wait-channel))
-  (setf (selection-actions source)
-        (uiop:ensure-list (selection-actions source)))
+  (setf (selection-actions source) (uiop:ensure-list (selection-actions source)))
+  (setf (marks-actions source) (uiop:ensure-list (marks-actions source)))
   source)
 
 (export-always 'attributes-keys-non-default)

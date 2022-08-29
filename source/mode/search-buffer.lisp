@@ -176,8 +176,9 @@
            (and (slot-exists-p hint 'buffer)
                 (equal (buffer hint) buffer)))
           (with-current-buffer buffer
-            (nyxt/hint-mode::highlight-selected-hint :element hint :scroll scroll))
-          (nyxt/hint-mode:remove-focus)))))
+            (nyxt/hint-mode:highlight-selected-hint :element hint
+                                                    :scroll scroll))
+          (nyxt/hint-mode:unhighlight-selected-hint)))))
 
 (define-class search-buffer-source (prompter:source)
   ((case-sensitive-p nil)
@@ -209,7 +210,7 @@
                           (declare (ignore prompter source))
                           (unless (keep-search-hints-p (current-buffer))
                             (remove-search-hints))
-                          (nyxt/hint-mode:remove-focus))))
+                          (nyxt/hint-mode:unhighlight-selected-hint))))
   (:export-accessor-names-p t)
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
