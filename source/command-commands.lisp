@@ -112,7 +112,11 @@ Includes all commands and modes, and adds arbitrary Lisp functions on top of tha
           ("Documentation" ,(or (documentation extended-command 'variable) ""))))))
 
 (define-command execute-command ()
-  "Execute a command by name."
+  "Execute a command by name.
+
+Also accepts arbitrary Lisp expressions (even without the outermost level of
+parentheses), and lists the possible completions for the incomplete symbols,
+together with the arglists and documentations of the functions typed in."
   (unless (active-prompt-buffers (current-window))
     (prompt
      :prompt "Execute command"
