@@ -210,8 +210,8 @@ For instance, to include images:
       (when (ps:lisp scroll)
         (ps:chain %element (scroll-into-view (ps:create block "nearest")))))))
 
-(export-always 'remove-focus)
-(define-parenscript remove-focus ()
+(export-always 'unhighlight-selected-hint)
+(define-parenscript unhighlight-selected-hint ()
   ;; There should be, at most, a unique element with the
   ;; "nyxt-select-hint" class.
   ;; querySelectAll, unlike querySelect, handles the case when none are
