@@ -9,6 +9,19 @@
   "Mode for searching text withing."
   ((visible-in-status-p nil)
    (rememberable-p nil)
+   (style
+    (theme:themed-css (theme *browser*)
+      (".nyxt-hint"
+       :background-color theme:secondary
+       :color theme:on-secondary
+       :font-family "monospace,monospace"
+       :padding "0px 0.3em"
+       :border-radius "0.3em"
+       :z-index #.(1- (expt 2 31)))
+      (".nyxt-hint.nyxt-select-hint"
+       :background-color theme:accent
+       :color theme:on-accent))
+    :documentation "The style of the search overlays.")
    (keyscheme-map
     (define-keyscheme-map "search-buffer-mode" ()
       keyscheme:cua
@@ -38,7 +51,7 @@
          (setf (ps:@ style-element id) "nyxt-stylesheet")
          (ps:chain document head (append-child style-element))
          (setf (ps:chain style-element inner-text)
-               (ps:lisp (style (find-submode 'nyxt/hint-mode:hint-mode)))))
+               (ps:lisp (style (find-submode 'nyxt/search-buffer-mode:search-buffer-mode)))))
        (:catch (error)))))
 
   (defun create-match-object (body identifier)
