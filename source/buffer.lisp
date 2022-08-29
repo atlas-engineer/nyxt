@@ -1240,7 +1240,7 @@ second latest buffer first."
   "Query the buffer(s) to delete.
 
 BUFFERS should be a list of `buffer's."
-  (mapcar #'buffer-delete buffers))
+  (mapcar #'buffer-delete (alex:ensure-list buffers)))
 
 (define-command delete-all-buffers (&key (confirmation-p t))
   "Delete all buffers, with confirmation."
