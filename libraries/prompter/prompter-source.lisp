@@ -280,10 +280,73 @@ call."))
   `(("Default" ,(princ-to-string object))))
 
 (export-always 'object-attributes)
-(defmethod object-attributes ((object t) (source prompter:source))
-  "Return an alist of non-dotted pairs (ATTRIBUTE-KEY ATTRIBUTE-VALUE) for OBJECT.
+(defgeneric object-attributes (object source)
+  (:method ((object t) (source prompter:source))
+    (declare (ignorable source))
+    (default-object-attributes object))
+  (:method :around ((object t) (source prompter:source))
+    (declare (ignorable source))
+    (loop for pair in (call-next-method)
+          for key = (first pair)
+          for value = (second pair)
+          ;; REVIEW: Can keys actually be non-string? Maybe type those?
+          if (and (stringp key) (stringp value))
+            collect pair
+          ;; FIXME: Having four branches would be more correct, but does that
+          ;; matter enough to bother?
+          else
+            collect (list (princ-to-string key) (princ-to-string value))))
+  (:method ((object hash-table) (source prompter:source))
+    (declare (ignorable source))
+    (let ((result))
+      (maphash (lambda (key value)
+                 (push (list (princ-to-string key)
+                             (princ-to-string value))
+                       result))
+               object)
+      (sort result #'string< :key #'first)))
+  (:method ((object standard-object) (source prompter:source))
+    (declare (ignorable source))
+    (or
+     (mapcar (lambda (slot)
+               (list (string-capitalize (string slot))
+                     (princ-to-string (slot-value object slot))))
+             (object-public-slots object))
+     (call-next-method)))
+  (:method ((object structure-object) (source prompter:source))
+    (declare (ignorable source))
+    (or
+     (mapcar (lambda (slot)
+               (list (string-capitalize (string slot))
+                     (princ-to-string (slot-value object slot))))
+             (object-public-slots object))
+     (call-next-method)))
+  (:method ((object list) (source prompter:source))
+    (declare (ignorable source))
+    (cond
+      ((plist-p object)
+       (let ((result '()))
+         (alex:doplist (key value object result)
+                       (push (list (string-capitalize key) (princ-to-string value))
+                             result))
+         (nreverse result)))
+      ((undotted-alist-p object)
+       (mapcar (lambda (pair)
+                 (list
+                  (princ-to-string (first pair))
+                  (princ-to-string (second pair))))
+               object))
+      ((alist-p object)
+       (mapcar (lambda (pair)
+                 (list
+                  (princ-to-string (first pair))
+                  (princ-to-string (rest pair))))
+               object))
+      (t (call-next-method))))
+  (:documentation "Return an alist of non-dotted pairs (ATTRIBUTE-KEY ATTRIBUTE-VALUE) for OBJECT.
 Attributes are meant to describe the OBJECT in the context of the SOURCE.
-Both attribute-keys and attribute-values are strings.
+Both returned attribute-keys and attribute-values are strings (if not, they are
+automatically converted to `princ-to-string').
 
 For structure and class instances, the alist is made of the exported slots: the
 keys are the sentence-cased slot names and the values the slot values passed to
@@ -293,44 +356,7 @@ It's used in `make-suggestion' which can be used as a `suggestion-maker' for `so
 
 It's useful to separate concerns and compose between different object attributes
 and different sources (for instance, the same `object-attributes' method can be
-inherited or used across different sources)."
-  (declare (ignorable source))
-  (cond
-    ((hash-table-p object)
-     (let ((result))
-       (maphash (lambda (key value)
-                  (push (list (princ-to-string key)
-                              (princ-to-string value))
-                        result))
-                object)
-       (sort result #'string< :key #'first)))
-    ((or (typep object 'standard-object)
-         (typep object 'structure-object))
-     (or
-      (mapcar (lambda (slot)
-                (list (string-capitalize (string slot))
-                      (princ-to-string (slot-value object slot))))
-              (object-public-slots object))
-      (default-object-attributes object)))
-    ((plist-p object)
-     (let ((result '()))
-       (alex:doplist (key value object result)
-                     (push (list (string-capitalize key) (princ-to-string value))
-                           result))
-       (nreverse result)))
-    ((undotted-alist-p object)
-     (mapcar (lambda (pair)
-               (list
-                (princ-to-string (first pair))
-                (princ-to-string (second pair))))
-             object))
-    ((alist-p object)
-     (mapcar (lambda (pair)
-               (list
-                (princ-to-string (first pair))
-                (princ-to-string (rest pair))))
-             object))
-    (t (default-object-attributes object))))
+inherited or used across different sources)."))
 
 (define-class suggestion ()
   ((value
