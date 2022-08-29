@@ -289,13 +289,15 @@ call."))
     (loop for pair in (call-next-method)
           for key = (first pair)
           for value = (second pair)
+          ;; FIXME: Having six (string-t for keys and string-function-t for
+          ;; values) branches would be more correct, but does that matter enough
+          ;; to bother?
+          if (functionp value)
+            collect (list (princ-to-string key) value)
           ;; REVIEW: Can keys actually be non-string? Maybe type those?
-          if (and (stringp key) (stringp value))
-            collect pair
-          ;; FIXME: Having four branches would be more correct, but does that
-          ;; matter enough to bother?
-          else
-            collect (list (princ-to-string key) (princ-to-string value))))
+          else if (and (stringp key) (stringp value))
+                 collect pair
+          else collect (list (princ-to-string key) (princ-to-string value))))
   (:method ((object hash-table) (source prompter:source))
     (declare (ignorable source))
     (let ((result))
@@ -345,8 +347,11 @@ call."))
       (t (call-next-method))))
   (:documentation "Return an alist of non-dotted pairs (ATTRIBUTE-KEY ATTRIBUTE-VALUE) for OBJECT.
 Attributes are meant to describe the OBJECT in the context of the SOURCE.
+
 Both returned attribute-keys and attribute-values are strings (if not, they are
-automatically converted to `princ-to-string').
+automatically converted to `princ-to-string'). If the attribute value is a
+function, it's not converted, but rather used for asynchronous attribute
+computation.
 
 For structure and class instances, the alist is made of the exported slots: the
 keys are the sentence-cased slot names and the values the slot values passed to
