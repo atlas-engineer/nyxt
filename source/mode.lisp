@@ -204,18 +204,21 @@ See `package-symbols' for details on the arguments."
 ;; TODO: Should allow search all packages, e.g. when PACKAGES is NIL.
 (-> resolve-symbol ((or keyword string) (member :function :variable :class :mode :slot :command) &optional (cons *)) symbol)
 (export-always 'resolve-symbol)
-(defun resolve-symbol (designator type &optional (packages (list :nyxt :nyxt-user)))
+(defmemo resolve-symbol (designator type &optional (packages (list :nyxt :nyxt-user)))
   "Find the symbol (of TYPE) designated by DESIGNATOR in PACKAGE.
 PACKAGES should be a list of package designators."
   (sera:and-let* ((designator (string designator))
-                  (subpackages (append
-                                (delete-duplicates (mapcar #'find-package packages))
-                                (sera:filter
-                                 (apply #'alex:disjoin
-                                        (mapcar (lambda (pkg)
-                                                  (rcurry #'subpackage-p (find-package pkg)))
-                                                packages))
-                                 (list-all-packages))))
+                  (all-packages (list-all-packages))
+                  (subpackages (if (equal packages all-packages)
+                                   all-packages
+                                   (append
+                                    (delete-duplicates (mapcar #'find-package packages))
+                                    (sera:filter
+                                     (apply #'alex:disjoin
+                                            (mapcar (lambda (pkg)
+                                                      (rcurry #'subpackage-p (find-package pkg)))
+                                                    packages))
+                                     all-packages))))
                   (symbols (case type
                              (:function (package-functions subpackages))
                              (:variable (package-variables subpackages))
