@@ -156,7 +156,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
     ("Hostname" ,(quri:uri-host (url entry)))
     ("Title" ,(title entry))
     ("Tags" ,(format nil "~{~a ~}" (tags entry)))
-    ("Date" ,(princ-to-string (date entry)))))
+    ("Date" ,(date entry))))
 
 (defun url-no-procrastinate-host-tags (url)
   "Return the list of tags of the host corresponding to URL."

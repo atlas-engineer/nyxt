@@ -138,8 +138,8 @@
 
 (defmethod prompter:object-attributes ((match search-match) (source prompter:source))
   `(("Default" ,(body match))
-    ("ID" ,(princ-to-string (identifier match)))
-    ("Buffer ID" ,(princ-to-string (id (buffer match))))
+    ("ID" ,(identifier match))
+    ("Buffer ID" ,(id (buffer match)))
     ("Buffer title" ,(title (buffer match)))))
 
 (defun matches-from-js (matches-js-array &optional (buffer (current-buffer)))

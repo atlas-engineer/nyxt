@@ -176,7 +176,7 @@ User input is evaluated Lisp."
 (defmethod prompter:object-attributes ((hook-description hook-description) (source hook-source))
   (declare (ignore source))
   `(("Name" ,(name hook-description))
-    ("Value" ,(princ-to-string (value hook-description)))))
+    ("Value" ,(value hook-description))))
 
 (define-class handler-source (prompter:source)
   ((prompter:name "Handlers")

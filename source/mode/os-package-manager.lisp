@@ -58,10 +58,10 @@
 
 (defmethod prompter:object-attributes ((gen ospm:os-generation) (source prompter:source))
   (declare (ignore source))
-  `(("ID" ,(princ-to-string (ospm:id gen)))
+  `(("ID" ,(ospm:id gen))
     ("Date" ,(local-time:format-timestring nil (ospm:date gen)
                                            :format local-time:+asctime-format+))
-    ("Package count" ,(princ-to-string (ospm:package-count gen)))
+    ("Package count" ,(ospm:package-count gen))
     ("Current?" ,(if (ospm:current? gen) "yes" ""))))
 
 (defmethod prompter:object-attributes ((pkg ospm:guix-package) (source prompter:source))

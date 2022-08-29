@@ -287,7 +287,7 @@ For production code, see `find-submode' instead."
 
 (defmethod prompter:object-attributes ((mode mode) (source prompter:source))
   (declare (ignore source))
-  `(("Name" ,(princ-to-string mode))))
+  `(("Name" ,mode)))
 
 (define-class active-mode-source (mode-source)
   ((prompter:name "Active modes")

@@ -118,7 +118,7 @@ Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
   `(("URL" ,(render-url (url entry)))
     ("Title" ,(title entry))
     ("Tags" ,(format nil "~{~a ~}" (tags entry)))
-    ("Date" ,(princ-to-string (date entry)))))
+    ("Date" ,(date entry))))
 
 (export-always 'equals)
 (defmethod equals ((e1 bookmark-entry) (e2 bookmark-entry))
