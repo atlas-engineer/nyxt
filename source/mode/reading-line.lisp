@@ -82,4 +82,5 @@ screen as well."
 
 (defmethod disable ((mode reading-line-mode) &key)
   (ps-eval :async t :buffer (buffer mode)
-    (setf (ps:chain (nyxt/ps:qs document "#reading-line-cursor") |outerHTML|) "")))
+    (setf (ps:@ (nyxt/ps:qs document "#reading-line-cursor") |outerHTML|)
+          "")))

@@ -64,9 +64,8 @@
                                             (string-downcase name)
                                             name)))))))))
     (ps-eval :async t :buffer (buffer macro-editor)
-      (setf (ps:chain document (get-element-by-id "commands") |innerHTML|)
-            (ps:lisp
-             (render-functions))))))
+      (setf (ps:@ (nyxt/ps:qs document "#commands") |innerHTML|)
+            (ps:lisp (render-functions))))))
 
 (defmethod command-help ((macro-editor macro-edit-mode) command-index)
   (nyxt::describe-command :command (name (nth command-index (functions macro-editor)))))
@@ -85,7 +84,7 @@
 
 (defmethod name ((macro-editor macro-edit-mode))
   (let ((name (ps-eval :buffer (buffer macro-editor)
-                (ps:chain document (get-element-by-id "macro-name") value))))
+                (ps:chain (nyxt/ps:qs document "#macro-name") value))))
     (cond ((not (str:emptyp name)) (setf (slot-value macro-editor 'name) (string-upcase name)))
           ((slot-value macro-editor 'name) (slot-value macro-editor 'name))
           (t nil))))

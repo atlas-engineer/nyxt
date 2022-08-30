@@ -1277,7 +1277,7 @@ See `finalize-buffer'."
       (ps-labels :buffer (current-prompt-buffer)
         ((color-input-area
           (color)
-          (setf (ps:chain (nyxt/ps:qs document "#input") style background-color)
+          (setf (ps:@ (nyxt/ps:qs document "#input") style background-color)
                 (ps:lisp color))))
         (color-input-area color)))))
   (:accessor-name-transformer (class*:make-name-transformer name)))

@@ -39,7 +39,7 @@ To enable it, add this to your configuration file:
   (ps-labels :async t :buffer (buffer editor)
     ((set-content
       (content)
-      (setf (ps:chain (nyxt/ps:qs document "#editor") value)
+      (setf (ps:@ (nyxt/ps:qs document "#editor") value)
             (ps:lisp content))))
     (set-content content)))
 

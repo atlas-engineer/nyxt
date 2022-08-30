@@ -216,9 +216,9 @@ If N is negative, go to previous pages instead."
                     row))
               (-
                (ps:chain
-                (find-first-element-out-of-view (ps:chain document (get-element-by-id "selection")))
+                (find-first-element-out-of-view (nyxt/ps:qs document "#selection"))
                 row-index)
-               (ps:chain (ps:chain document (get-element-by-id "selection")) row-index)))))
+               (ps:chain (nyxt/ps:qs document "#selection") row-index)))))
       (sera:and-let* ((index-diff step-page-index))
         (prompter:select-next prompt-buffer
                               index-diff)))
@@ -435,14 +435,14 @@ Only available if `prompter:multi-selection-p' is non-nil."
 (define-command-prompt move-start-of-input (prompt-buffer)
   "Move to the beginning of PROMPT-BUFFER input."
   (ps-eval :buffer prompt-buffer
-    (let ((input (ps:chain document (get-element-by-id "input"))))
+    (let ((input (nyxt/ps:qs document "#input")))
       (setf (ps:@ input selection-start) 0
             (ps:@ input selection-end) 0))))
 
 (define-command-prompt move-end-of-input (prompt-buffer)
   "Move to the end of PROMPT-BUFFER input."
   (ps-eval :buffer prompt-buffer
-    (let ((input (ps:chain document (get-element-by-id "input"))))
+    (let ((input (nyxt/ps:qs document "#input")))
       (setf (ps:@ input selection-start) (ps:@ input value length)
             (ps:@ input selection-end) (ps:@ input value length)))))
 
