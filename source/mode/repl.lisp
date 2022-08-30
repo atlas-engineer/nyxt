@@ -161,8 +161,7 @@ Features:
                #'string<)))
 
 (defmethod input ((mode repl-mode))
-  (with-current-buffer (buffer mode)
-    (ps-eval (ps:@ document active-element value))))
+  (ps-eval :buffer (buffer mode) (ps:@ document active-element value)))
 
 (defmethod (setf input) (new-text (mode repl-mode))
   (ps-labels :async t :buffer (buffer mode)
@@ -172,12 +171,11 @@ Features:
     (set-input-text new-text)))
 
 (defmethod cursor ((mode repl-mode))
-  (with-current-buffer (buffer mode)
-    (let ((cursor (ps-eval
-                    (ps:chain (nyxt/ps:qs document "#input-buffer") selection-start))))
-      (if (numberp cursor)
-          cursor
-          0))))
+  (let ((cursor (ps-eval :buffer (buffer mode)
+                  (ps:chain (nyxt/ps:qs document "#input-buffer") selection-start))))
+    (if (numberp cursor)
+        cursor
+        0)))
 
 (defmethod (setf cursor) (new-position (mode repl-mode))
   (ps-labels :buffer (buffer mode)
