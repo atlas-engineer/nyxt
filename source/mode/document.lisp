@@ -118,7 +118,7 @@ It does not assume being online."))
 
 (export-always '%clicked-in-input?)
 (defun %clicked-in-input? (&optional (buffer (current-buffer)))
-  (ps-eval :buffer buffer (ps:chain document active-element tag-name)))
+  (ps-eval :buffer buffer (ps:@ document active-element tag-name)))
 
 (export-always 'input-tag-p)
 (-> input-tag-p ((or string null)) boolean)
