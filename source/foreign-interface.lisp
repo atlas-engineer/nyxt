@@ -183,25 +183,26 @@ PROXY-URL is a `quri:uri' and IGNORE-HOSTS a list of strings."))
 
 (define-ffi-generic ffi-buffer-zoom-level (buffer)
   (:method ((buffer t))
-    (peval :buffer buffer (ps:chain document body style zoom)))
+    (ps-eval :buffer buffer (ps:chain document body style zoom)))
   (:setter-p t)
   (:documentation "Return the zoom level of the document.
 Setf-able."))
 (defmethod (setf ffi-buffer-zoom-level) (value (buffer buffer))
-  (peval :buffer buffer
+  (ps-eval :buffer buffer
     (ps:let ((style (ps:chain document body style)))
       (setf (ps:@ style zoom)
             (ps:lisp value)))))
 
 (define-ffi-generic ffi-buffer-get-document (buffer)
   (:method ((buffer t))
-    (pflet ((get-html
-             :buffer buffer (start end)
-             (ps:chain document document-element |innerHTML| (slice (ps:lisp start)
-                                                                    (ps:lisp end))))
-            (get-html-length
-             :buffer buffer ()
-             (ps:chain document document-element |innerHTML| length)))
+    (ps-labels :buffer buffer
+      ((get-html
+        (start end)
+        (ps:chain document document-element |innerHTML| (slice (ps:lisp start)
+                                                               (ps:lisp end))))
+       (get-html-length
+        ()
+        (ps:chain document document-element |innerHTML| length)))
       (let ((slice-size 10000))
         (reduce #'str:concat
                 (loop for i from 0 to (truncate (get-html-length)) by slice-size
@@ -279,21 +280,20 @@ Setf-able."))
     (sera:lret ((result (call-next-method)))
       (ring-insert-clipboard (clipboard-ring *browser*))))
   (:method ((buffer t) &optional (text nil text-provided-p))
-    (pflet ((copy :buffer buffer ()
-                  (ps:chain window (get-selection) (to-string))))
-      ;; On some systems like Xorg, clipboard pasting happens just-in-time.  So if we
-      ;; copy something from the context menu 'Copy' action, upon pasting we will
-      ;; retrieve the text from the GTK thread.  This is prone to create
-      ;; dead-locks (e.g. when executing a Parenscript that acts upon the clipboard).
-      ;;
-      ;; To avoid this, we can 'flush' the clipboard to ensure that the copied text
-      ;; is present the clipboard and need not be retrieved from the GTK thread.
-      ;; TODO: Do we still need to flush now that we have multiple threads?
-      ;; (trivial-clipboard:text (trivial-clipboard:text))
+    (ps-labels :buffer buffer ((copy () (ps:chain window (get-selection) (to-string))))
+     ;; On some systems like Xorg, clipboard pasting happens just-in-time.  So if we
+     ;; copy something from the context menu 'Copy' action, upon pasting we will
+     ;; retrieve the text from the GTK thread.  This is prone to create
+     ;; dead-locks (e.g. when executing a Parenscript that acts upon the clipboard).
+     ;;
+     ;; To avoid this, we can 'flush' the clipboard to ensure that the copied text
+     ;; is present the clipboard and need not be retrieved from the GTK thread.
+     ;; TODO: Do we still need to flush now that we have multiple threads?
+     ;; (trivial-clipboard:text (trivial-clipboard:text))
 
-      (sera:lret ((input (if text-provided-p text (copy))))
-        (copy-to-clipboard input)
-        (echo "Text copied: ~s" input))))
+     (sera:lret ((input (if text-provided-p text (copy))))
+       (copy-to-clipboard input)
+       (echo "Text copied: ~s" input))))
   (:documentation "Copy selected text in BUFFER to the system clipboard.
 If TEXT is provided, add it to system clipboard instead of selected text.
 Should return the copied text or NIL, if something goes wrong."))
@@ -308,15 +308,16 @@ Should return the copied text or NIL, if something goes wrong."))
     (sera:lret ((result (call-next-method)))
       (ring-insert-clipboard (clipboard-ring *browser*))))
   (:method ((buffer t) &optional (text nil text-provided-p))
-    (pflet ((paste
-             :buffer buffer (&optional (input-text (ring-insert-clipboard (clipboard-ring *browser*))))
-             (let ((active-element (ps:chain document active-element))
-                   (tag (ps:chain document active-element tag-name))
-                   (text-to-paste (or (ps:lisp input-text)
-                                      (ps:chain navigator clipboard (read-text)))))
-               (when (nyxt/ps:element-editable-p active-element)
-                 (nyxt/ps:insert-at active-element text-to-paste))
-               text-to-paste)))
+    (ps-labels :buffer buffer
+      ((paste
+        (&optional (input-text (ring-insert-clipboard (clipboard-ring *browser*))))
+        (let ((active-element (ps:chain document active-element))
+              (tag (ps:chain document active-element tag-name))
+              (text-to-paste (or (ps:lisp input-text)
+                                 (ps:chain navigator clipboard (read-text)))))
+          (when (nyxt/ps:element-editable-p active-element)
+            (nyxt/ps:insert-at active-element text-to-paste))
+          text-to-paste)))
       (if text-provided-p
           (paste text)
           (paste))))
@@ -330,13 +331,14 @@ If TEXT is provided, paste it instead."))
     (sera:lret ((result (call-next-method)))
       (ring-insert-clipboard (clipboard-ring *browser*))))
   (:method ((buffer t))
-    (pflet ((cut
-             :buffer buffer ()
-             (let ((active-element (ps:chain document active-element)))
-               (when (nyxt/ps:element-editable-p active-element)
-                 (let ((selection-text (ps:chain window (get-selection) (to-string))))
-                   (nyxt/ps:insert-at active-element "")
-                   selection-text)))))
+    (ps-labels :buffer buffer
+      ((cut
+        ()
+        (let ((active-element (ps:chain document active-element)))
+          (when (nyxt/ps:element-editable-p active-element)
+            (let ((selection-text (ps:chain window (get-selection) (to-string))))
+              (nyxt/ps:insert-at active-element "")
+              selection-text)))))
       (sera:lret ((input (cut)))
         (when input
           (copy-to-clipboard input)
@@ -346,7 +348,7 @@ Return the text cut."))
 
 (define-ffi-generic ffi-buffer-select-all (buffer)
   (:method ((buffer t))
-    (peval :async t :buffer buffer
+    (ps-eval :async t :buffer buffer
       (let ((active-element (ps:chain document active-element)))
         (when (nyxt/ps:element-editable-p active-element)
           (ps:chain active-element (set-selection-range 0 (ps:@ active-element value length)))))))

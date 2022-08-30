@@ -113,7 +113,7 @@ See `*debug-on-error*'."
         (buffer)
       (when (and (equalp (quri:uri-host (url buffer)) "github.com")
                  (equalp (quri:uri-path (url buffer)) "/atlas-engineer/nyxt/issues/new"))
-        (nyxt:peval :buffer buffer
+        (nyxt:ps-eval :buffer buffer
           (ps:chain (nyxt/ps:qs document "#issue_body") (focus))
           (setf (ps:@ document active-element value) ""))
         (ffi-buffer-paste

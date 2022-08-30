@@ -118,12 +118,7 @@ It does not assume being online."))
 
 (export-always '%clicked-in-input?)
 (defun %clicked-in-input? (&optional (buffer (current-buffer)))
-  ;; We don't use define-parenscript because we need to control over which
-  ;; buffer we query.
-  (ffi-buffer-evaluate-javascript buffer
-                                  (ps:ps
-                                    (ps:chain document active-element
-                                              tag-name))))
+  (ps-eval :buffer buffer (ps:@ document active-element tag-name)))
 
 (export-always 'input-tag-p)
 (-> input-tag-p ((or string null)) boolean)
@@ -148,11 +143,11 @@ It does not assume being online."))
 
 (define-command go-next ()
   "Navigate to the next element according to the HTML 'rel' attribute."
-  (peval (ps:chain (nyxt/ps:qsa document "rel=next") 0 (click))))
+  (ps-eval (ps:chain (nyxt/ps:qs document "[rel=next]") 0 (click))))
 
 (define-command go-previous ()
   "Navigate to the previous element according to the HTML 'rel' attribute."
-  (peval (ps:chain (nyxt/ps:qsa document "rel=prev") 0 (click))))
+  (ps-eval (ps:chain (nyxt/ps:qs document "[rel=prev]") 0 (click))))
 
 (define-command go-to-homepage ()
   "Navigate to the homepage."
@@ -203,7 +198,7 @@ It does not assume being online."))
 
 (define-command copy-placeholder ()
   "Copy placeholder text to clipboard."
-  (let ((current-value (peval (ps:@ document active-element placeholder))))
+  (let ((current-value (ps-eval (ps:@ document active-element placeholder))))
     (if (eq current-value :undefined)
         (echo "No active selected placeholder.")
         (progn (copy-to-clipboard current-value)
@@ -237,10 +232,9 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
   (alex:with-gensyms (element)
     (alex:once-only (buffer)
       `(progn
-         (ffi-buffer-evaluate-javascript ,buffer
-                                         (ps:ps (let ((,element (progn ,@element-script)))
-                                                  (ps:chain ,element (focus))
-                                                  (ps:chain ,element (select)))))
+         (ps-eval :buffer ,buffer (let ((,element (progn ,@element-script)))
+                                    (ps:chain ,element (focus))
+                                    (ps:chain ,element (select))))
          (dolist (mode (modes ,buffer))
            (element-focused mode))))))
 
@@ -252,12 +246,14 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
   ;; https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input
   ;; TODO: The following results in 2 DOM traversal.  We should probably do the
   ;; whole thing in a single Parenscript instead.
-  (pflet ((nth-input-type (i)
-                          (let* ((input (ps:chain document
-                                                  (get-elements-by-tag-name "INPUT")))
-                                 (item (when input (ps:chain input (item (ps:lisp i))))))
-                            (when item
-                              (ps:chain item type)))))
+  (ps-labels
+    ((nth-input-type
+      (i)
+      (let* ((input (ps:chain document
+                              (get-elements-by-tag-name "INPUT")))
+             (item (when input (ps:chain input (item (ps:lisp i))))))
+        (when item
+          (ps:chain item type)))))
     (let ((i (do ((i 0 (1+ i)))
                  ((notany
                    (lambda (type) (equalp (nth-input-type i) type))
@@ -331,42 +327,42 @@ Warning: URL is a string."
 
 (define-command scroll-to-top ()
   "Scroll to the top of the current page."
-  (peval (ps:chain window (scroll-by 0 (- (ps:chain document document-element scroll-height))))))
+  (ps-eval (ps:chain window (scroll-by 0 (- (ps:chain document document-element scroll-height))))))
 
 (define-command scroll-to-bottom ()
   "Scroll to the bottom of the current page."
-  (peval (ps:chain window (scroll-by 0 (ps:chain document document-element scroll-height)))))
+  (ps-eval (ps:chain window (scroll-by 0 (ps:chain document document-element scroll-height)))))
 
 (define-command scroll-down (&key (scroll-distance (scroll-distance (current-buffer))))
   "Scroll down the current page.
 The amount scrolled is determined by the buffer's `scroll-distance'."
-  (peval (ps:chain window (scroll-by 0 (ps:lisp scroll-distance)))))
+  (ps-eval (ps:chain window (scroll-by 0 (ps:lisp scroll-distance)))))
 
 (define-command scroll-up (&key (scroll-distance (scroll-distance (current-buffer))))
   "Scroll up the current page.
 The amount scrolled is determined by the buffer's `scroll-distance'."
-  (peval (ps:chain window (scroll-by 0 (ps:lisp (- scroll-distance))))))
+  (ps-eval (ps:chain window (scroll-by 0 (ps:lisp (- scroll-distance))))))
 
 (define-command scroll-left (&key (horizontal-scroll-distance
                                    (horizontal-scroll-distance (current-buffer))))
   "Scroll left the current page.
 The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
-  (peval (ps:chain window (scroll-by (ps:lisp (- horizontal-scroll-distance)) 0))))
+  (ps-eval (ps:chain window (scroll-by (ps:lisp (- horizontal-scroll-distance)) 0))))
 
 (define-command scroll-right (&key (horizontal-scroll-distance
                                     (horizontal-scroll-distance (current-buffer))))
   "Scroll right the current page.
 The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
-  (peval (ps:chain window (scroll-by (ps:lisp horizontal-scroll-distance) 0))))
+  (ps-eval (ps:chain window (scroll-by (ps:lisp horizontal-scroll-distance) 0))))
 
 (define-command scroll-page-down ()
   "Scroll down by one page height."
-  (peval (ps:chain window (scroll-by 0 (* (ps:lisp (page-scroll-ratio (current-buffer)))
+  (ps-eval (ps:chain window (scroll-by 0 (* (ps:lisp (page-scroll-ratio (current-buffer)))
                                           (ps:@ window inner-height))))))
 
 (define-command scroll-page-up ()
   "Scroll up by one page height."
-  (peval (ps:chain window (scroll-by 0 (- (* (ps:lisp (page-scroll-ratio (current-buffer)))
+  (ps-eval (ps:chain window (scroll-by 0 (- (* (ps:lisp (page-scroll-ratio (current-buffer)))
                                              (ps:@ window inner-height)))))))
 
 (defun ensure-zoom-ratio-range (zoom &optional (buffer (current-buffer)))
@@ -427,10 +423,11 @@ ID is a buffer `id'."
   (subseq (inner-text heading) 0 (position #\[ (inner-text heading))))
 
 (defun get-headings (&key (buffer (current-buffer)))
-  (pflet ((heading-scroll-position
-           :buffer buffer (element)
-           (ps:chain (nyxt/ps:qs-nyxt-id document (ps:lisp (nyxt/dom:get-nyxt-id element)))
-                     (get-bounding-client-rect) y)))
+  (ps-labels :buffer buffer
+    ((heading-scroll-position
+      (element)
+      (ps:chain (nyxt/ps:qs-nyxt-id document (ps:lisp (nyxt/dom:get-nyxt-id element)))
+                (get-bounding-client-rect) y)))
     (sort (map 'list
                (lambda (e)
                  (make-instance 'heading :inner-text (plump:text e)
@@ -551,7 +548,7 @@ of buffers."
 (export-always 'print-buffer)
 (define-command print-buffer ()
   "Print the current buffer."
-  (peval (print)))
+  (ps-eval (print)))
 
 
 
@@ -593,67 +590,68 @@ of buffers."
                                       :background-color theme:on-background
                                       :opacity 0.05
                                       :z-index #.(1- (expt 2 30))))))
-    (pflet ((add-overlay
-             :async t (overlay-style selection-rectangle-style)
-             "Add a selectable overlay to the screen."
-             (defparameter selection
-               (ps:create x1 0 y1 0
-                          x2 0 y2 0
-                          set1 false
-                          set2 false))
-             (defun add-stylesheet ()
-               (unless (nyxt/ps:qs document "#nyxt-stylesheet")
-                 (ps:let ((style-element (ps:chain document (create-element "style"))))
-                   (setf (ps:@ style-element id) "nyxt-stylesheet")
-                   (ps:chain document head (append-child style-element)))))
-             (defun add-style (style)
-               (ps:let ((style-element (ps:chain document (get-element-by-id "nyxt-stylesheet"))))
-                 (ps:chain style-element sheet (insert-rule style 0))))
-             (defun add-overlay ()
-               (ps:let ((element (ps:chain document (create-element "div"))))
-                 (add-style (ps:lisp overlay-style))
-                 (setf (ps:@ element id) "nyxt-overlay")
-                 (ps:chain document body (append-child element))))
-             (defun add-selection-rectangle ()
-               (ps:let ((element (ps:chain document (create-element "div"))))
-                 (add-style (ps:lisp selection-rectangle-style))
-                 (setf (ps:@ element id) "nyxt-rectangle-selection")
-                 (ps:chain document body (append-child element))))
-             (defun update-selection-rectangle ()
-               (ps:let ((element (ps:chain document (get-element-by-id "nyxt-rectangle-selection"))))
-                 (setf (ps:@ element style left) (+ (ps:chain selection x1) "px"))
-                 (setf (ps:@ element style top) (+ (ps:chain selection y1) "px"))
-                 (setf (ps:@ element style width)
-                       (+ (- (ps:chain selection x2)
-                             (ps:chain selection x1))
-                          "px"))
-                 (setf (ps:@ element style height)
-                       (+ (- (ps:chain selection y2)
-                             (ps:chain selection y1))
-                          "px"))))
-             (defun add-listeners ()
-               (setf (ps:chain document (get-element-by-id "nyxt-overlay") onmousemove)
-                     (lambda (e)
-                       (when (and (ps:chain selection set1)
-                                  (not (ps:chain selection set2)))
-                         (setf (ps:chain selection x2) (ps:chain e |pageX|))
-                         (setf (ps:chain selection y2) (ps:chain e |pageY|))
-                         (update-selection-rectangle))))
-               (setf (ps:chain document (get-element-by-id "nyxt-overlay") onclick)
-                     (lambda (e)
-                       (if (not (ps:chain selection set1))
-                           (progn
-                             (setf (ps:chain selection x1) (ps:chain e |pageX|))
-                             (setf (ps:chain selection y1) (ps:chain e |pageY|))
-                             (setf (ps:chain selection set1) true))
-                           (progn
-                             (setf (ps:chain selection x2) (ps:chain e |pageX|))
-                             (setf (ps:chain selection y2) (ps:chain e |pageY|))
-                             (setf (ps:chain selection set2) true))))))
-             (add-stylesheet)
-             (add-overlay)
-             (add-selection-rectangle)
-             (add-listeners)))
+    (ps-labels :async t
+      ((add-overlay
+        (overlay-style selection-rectangle-style)
+        "Add a selectable overlay to the screen."
+        (defparameter selection
+          (ps:create x1 0 y1 0
+                     x2 0 y2 0
+                     set1 false
+                     set2 false))
+        (defun add-stylesheet ()
+          (unless (nyxt/ps:qs document "#nyxt-stylesheet")
+            (ps:let ((style-element (ps:chain document (create-element "style"))))
+              (setf (ps:@ style-element id) "nyxt-stylesheet")
+              (ps:chain document head (append-child style-element)))))
+        (defun add-style (style)
+          (ps:let ((style-element (nyxt/ps:qs document "#nyxt-stylesheet")))
+            (ps:chain style-element sheet (insert-rule style 0))))
+        (defun add-overlay ()
+          (ps:let ((element (ps:chain document (create-element "div"))))
+            (add-style (ps:lisp overlay-style))
+            (setf (ps:@ element id) "nyxt-overlay")
+            (ps:chain document body (append-child element))))
+        (defun add-selection-rectangle ()
+          (ps:let ((element (ps:chain document (create-element "div"))))
+            (add-style (ps:lisp selection-rectangle-style))
+            (setf (ps:@ element id) "nyxt-rectangle-selection")
+            (ps:chain document body (append-child element))))
+        (defun update-selection-rectangle ()
+          (ps:let ((element (nyxt/ps:qs document "#nyxt-rectangle-selection")))
+            (setf (ps:@ element style left) (+ (ps:chain selection x1) "px"))
+            (setf (ps:@ element style top) (+ (ps:chain selection y1) "px"))
+            (setf (ps:@ element style width)
+                  (+ (- (ps:chain selection x2)
+                        (ps:chain selection x1))
+                     "px"))
+            (setf (ps:@ element style height)
+                  (+ (- (ps:chain selection y2)
+                        (ps:chain selection y1))
+                     "px"))))
+        (defun add-listeners ()
+          (setf (ps:@ (nyxt/ps:qs document "#nyxt-overlay") onmousemove)
+                (lambda (e)
+                  (when (and (ps:chain selection set1)
+                             (not (ps:chain selection set2)))
+                    (setf (ps:chain selection x2) (ps:chain e |pageX|))
+                    (setf (ps:chain selection y2) (ps:chain e |pageY|))
+                    (update-selection-rectangle))))
+          (setf (ps:@ (nyxt/ps:qs document "#nyxt-overlay") onclick)
+                (lambda (e)
+                  (if (not (ps:chain selection set1))
+                      (progn
+                        (setf (ps:chain selection x1) (ps:chain e |pageX|))
+                        (setf (ps:chain selection y1) (ps:chain e |pageY|))
+                        (setf (ps:chain selection set1) true))
+                      (progn
+                        (setf (ps:chain selection x2) (ps:chain e |pageX|))
+                        (setf (ps:chain selection y2) (ps:chain e |pageY|))
+                        (setf (ps:chain selection set2) true))))))
+        (add-stylesheet)
+        (add-overlay)
+        (add-selection-rectangle)
+        (add-listeners)))
       ;; Invoke the JavaScript asynchronously, otherwise this function is
       ;; blocking
       (bt:make-thread
@@ -662,36 +660,35 @@ of buffers."
 
 (defun frame-element-get-selection ()
   "Get the selected elements drawn by the user."
-  (pflet ((get-selection ()
-            (defun qsa (context selector)
-              "Alias of document.querySelectorAll"
-              (ps:chain context (query-selector-all selector)))
-            (defun element-in-selection-p (selection element)
-              "Determine if a element is bounded within a selection."
-              (ps:let* ((element-rect (ps:chain element (get-bounding-client-rect)))
-                        (offsetX (ps:chain window |pageXOffset|))
-                        (offsetY (ps:chain window |pageYOffset|))
-                        (element-left (+ (ps:chain element-rect left) offsetX))
-                        (element-right (+ (ps:chain element-rect right) offsetX))
-                        (element-top (+ (ps:chain element-rect top) offsetY))
-                        (element-bottom (+ (ps:chain element-rect bottom) offsetY)))
-                (if (and
-                     (<= element-left (ps:chain selection x2))
-                     (>= element-right (ps:chain selection x1))
-                     (<= element-top (ps:chain selection y2))
-                     (>= element-bottom (ps:chain selection y1)))
-                    t nil)))
-            (defun object-create (element)
-              (cond ((equal "A" (ps:@ element tag-name))
-                     (ps:create "type" "link" "href" (ps:@ element href) "body" (ps:@ element |innerHTML|)))
-                    ((equal "IMG" (ps:@ element tag-name))
-                     (ps:create "type" "img" "src" (ps:@ element src) "alt" (ps:@ element alt)))))
-            (defun collect-selection (elements selection)
-              "Collect elements within a selection"
-              (loop for element in elements
-                    when (element-in-selection-p selection element)
-                      collect (object-create element)))
-            (collect-selection (qsa document (list "a")) selection)))
+  (ps-labels
+    ((get-selection
+      ()
+      (defun element-in-selection-p (selection element)
+        "Determine if a element is bounded within a selection."
+        (ps:let* ((element-rect (ps:chain element (get-bounding-client-rect)))
+                  (offsetX (ps:chain window |pageXOffset|))
+                  (offsetY (ps:chain window |pageYOffset|))
+                  (element-left (+ (ps:chain element-rect left) offsetX))
+                  (element-right (+ (ps:chain element-rect right) offsetX))
+                  (element-top (+ (ps:chain element-rect top) offsetY))
+                  (element-bottom (+ (ps:chain element-rect bottom) offsetY)))
+          (if (and
+               (<= element-left (ps:chain selection x2))
+               (>= element-right (ps:chain selection x1))
+               (<= element-top (ps:chain selection y2))
+               (>= element-bottom (ps:chain selection y1)))
+              t nil)))
+      (defun object-create (element)
+        (cond ((equal "A" (ps:@ element tag-name))
+               (ps:create "type" "link" "href" (ps:@ element href) "body" (ps:@ element |innerHTML|)))
+              ((equal "IMG" (ps:@ element tag-name))
+               (ps:create "type" "img" "src" (ps:@ element src) "alt" (ps:@ element alt)))))
+      (defun collect-selection (elements selection)
+        "Collect elements within a selection"
+        (loop for element in elements
+              when (element-in-selection-p selection element)
+                collect (object-create element)))
+      (collect-selection (nyxt/ps:qsa document (list "a")) selection)))
     (loop for element in (get-selection)
           collect (str:string-case (gethash "type" element )
                     ("link"
@@ -705,9 +702,9 @@ of buffers."
 
 (defun frame-element-clear ()
   "Clear the selection frame created by the user."
-  (peval
-    (ps:chain document (get-element-by-id "nyxt-rectangle-selection") (remove))
-    (ps:chain document (get-element-by-id "nyxt-overlay") (remove))))
+  (ps-eval
+    (ps:chain (nyxt/ps:qs document "#nyxt-rectangle-selection") (remove))
+    (ps:chain (nyxt/ps:qs document "#nyxt-overlay") (remove))))
 
 (define-class frame-source (prompter:source)
   ((prompter:name "Selection Frame")

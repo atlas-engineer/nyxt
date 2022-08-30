@@ -11,8 +11,8 @@
    (rememberable-p t)
    (spell-check-language
     "en_US"
-    :documentation "Spell check language used by Nyxt. For
-a list of more languages available, see `spell-check-list-languages'.")
+    :documentation "Spell check language used by Nyxt.
+For a list of more languages available, see `spell-check-list-languages'.")
    (keyscheme-map
     (define-keyscheme-map "spell-check-mode" ()
       keyscheme:cua

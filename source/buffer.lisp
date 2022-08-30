@@ -796,22 +796,20 @@ Return the created buffer."
   buffer)
 
 (define-command update-document-model (&key (buffer (current-buffer)))
-  "Update BUFFER's `document-model' with the page source augmented with Nyxt identifiers."
-  (ffi-buffer-evaluate-javascript
-   buffer
-   (ps:ps
-     (defvar nyxt-identifier-counter 0)
-     (defun add-nyxt-identifiers (node)
-       (unless (ps:chain node (has-attribute "nyxt-identifier"))
-         (ps:chain node (set-attribute "nyxt-identifier" (ps:stringify nyxt-identifier-counter))))
-       (incf nyxt-identifier-counter)
-       (dolist (child (ps:chain node children))
-         (add-nyxt-identifiers child))
-       nyxt-identifier-counter)
-     (setf nyxt-identifier-counter (add-nyxt-identifiers (ps:chain document body)))))
+  "Update BUFFER's `document-model' with the page source augmented with Nyxt
+identifiers."
+  (ps-eval :buffer buffer
+    (defvar nyxt-identifier-counter 0)
+    (defun add-nyxt-identifiers (node)
+      (unless (ps:chain node (has-attribute "nyxt-identifier"))
+        (ps:chain node (set-attribute "nyxt-identifier"
+                                      (ps:stringify nyxt-identifier-counter))))
+      (incf nyxt-identifier-counter)
+      (dolist (child (ps:chain node children)) (add-nyxt-identifiers child))
+      nyxt-identifier-counter)
+    (setf nyxt-identifier-counter (add-nyxt-identifiers (ps:chain document body))))
   (alex:when-let ((body-json (nyxt/dom::get-document-body-json)))
-    (setf (document-model buffer)
-          (nyxt/dom::named-json-parse body-json))))
+    (setf (document-model buffer) (nyxt/dom::named-json-parse body-json))))
 
 (defun dead-buffer-p (buffer)           ; TODO: Use this wherever needed.
   (not (buffers-get (id buffer))))
@@ -823,16 +821,17 @@ Return the created buffer."
   dead-buffer)
 
 (defmethod document-model ((buffer buffer))
-  (pflet ((%count-dom-elements
-           :buffer buffer ()
-           (defvar dom-counter 0)
-           (defun count-dom-elements (node)
-             (incf dom-counter)
-             (dolist (child (ps:chain node children))
-               (count-dom-elements child))
-             dom-counter)
-           (setf dom-counter 0)
-           (count-dom-elements (nyxt/ps:qs document "html"))))
+  (ps-labels :buffer buffer
+    ((%count-dom-elements
+      ()
+      (defvar dom-counter 0)
+      (defun count-dom-elements (node)
+        (incf dom-counter)
+        (dolist (child (ps:chain node children))
+          (count-dom-elements child))
+        dom-counter)
+      (setf dom-counter 0)
+      (count-dom-elements (nyxt/ps:qs document "html"))))
     (if (dead-buffer-p buffer)
         (slot-value buffer 'document-model)
         (let ((value (slot-value buffer 'document-model))

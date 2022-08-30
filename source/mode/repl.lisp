@@ -66,9 +66,9 @@ Features:
                            (output evaluation) (get-output-stream-string *standard-output*)))
                    (safe-slurp-stream-forms input))))))
     (setf (ready-p evaluation) t)
-    (peval (setf (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "#evaluation-result-~a" (id evaluation))))
-                           |innerHTML|)
-                 (ps:lisp (html-result evaluation))))))
+    (ps-eval (setf (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "#evaluation-result-~a" (id evaluation))))
+                             |innerHTML|)
+                   (ps:lisp (html-result evaluation))))))
 
 (define-mode repl-mode ()
   "Mode for interacting with the REPL."
@@ -161,29 +161,29 @@ Features:
                #'string<)))
 
 (defmethod input ((mode repl-mode))
-  (with-current-buffer (buffer mode)
-    (peval (ps:@ document active-element value))))
+  (ps-eval :buffer (buffer mode) (ps:@ document active-element value)))
 
 (defmethod (setf input) (new-text (mode repl-mode))
-  (pflet ((set-input-text
-           :async t :buffer (buffer mode) (text)
-           (setf (ps:@ document active-element value) (ps:lisp text))))
+  (ps-labels :async t :buffer (buffer mode)
+    ((set-input-text
+      (text)
+      (setf (ps:@ document active-element value) (ps:lisp text))))
     (set-input-text new-text)))
 
 (defmethod cursor ((mode repl-mode))
-  (with-current-buffer (buffer mode)
-    (let ((cursor (peval
-                    (ps:chain (nyxt/ps:qs document "#input-buffer") selection-start))))
-      (if (numberp cursor)
-          cursor
-          0))))
+  (let ((cursor (ps-eval :buffer (buffer mode)
+                  (ps:chain (nyxt/ps:qs document "#input-buffer") selection-start))))
+    (if (numberp cursor)
+        cursor
+        0)))
 
 (defmethod (setf cursor) (new-position (mode repl-mode))
-  (pflet ((selection-start
-           :buffer (buffer mode) (position)
-           (setf (ps:@ document active-element selection-start)
-                 (setf (ps:@ document active-element selection-end)
-                       (ps:lisp position)))))
+  (ps-labels :buffer (buffer mode)
+    ((selection-start
+      (position)
+      (setf (ps:@ document active-element selection-start)
+            (setf (ps:@ document active-element selection-end)
+                  (ps:lisp position)))))
     (selection-start new-position)))
 
 (define-parenscript focus (selector)
@@ -191,7 +191,7 @@ Features:
 
 (defmethod input-focus-p (&optional (repl (find-submode 'repl-mode)))
   (declare (ignore repl))
-  (string= "input-buffer" (peval (ps:@ document active-element class-name))))
+  (string= "input-buffer" (ps-eval (ps:@ document active-element class-name))))
 
 (defmethod (setf current-evaluation) (new-index (mode repl-mode))
   (if new-index
@@ -200,8 +200,8 @@ Features:
   (setf (slot-value mode 'current-evaluation) new-index))
 
 (defmethod current-cell-id ((mode repl-mode))
-  (pflet ((get-id :buffer (buffer mode) ()
-            (ps:chain document active-element (get-attribute "data-repl-id"))))
+  (ps-labels :buffer (buffer mode)
+    ((get-id () (ps:chain document active-element (get-attribute "data-repl-id"))))
     (ignore-errors (parse-integer (get-id)))))
 
 (sera:eval-always

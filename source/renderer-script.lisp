@@ -3,49 +3,8 @@
 
 (in-package :nyxt)
 
-(export-always 'define-parenscript)
-(defmacro define-parenscript (script-name args &body script-body)
-  "Define parenscript function SCRIPT-NAME.
-SCRIPT-BODY must be a valid parenscript and will be wrapped in (PS:PS ...).
-Any Lisp expression must be wrapped in (PS:LISP ...).
-
-The returned function sends the compiled Javascript to the current buffer webview.
-The function can be passed Lisp ARGS."
-  `(defun ,script-name ,args
-     (ffi-buffer-evaluate-javascript (current-buffer)
-                                     (ps:ps ,@script-body))))
-
-(export-always 'define-parenscript-async)
-(defmacro define-parenscript-async (script-name args &body script-body)
-  "Like `define-parenscript', but Javascript runs asynchronously."
-  `(defun ,script-name ,args
-     (ffi-buffer-evaluate-javascript-async (current-buffer)
-                                           (ps:ps ,@script-body))))
-
-(export-always 'pflet)
-(defmacro pflet (functions &body body)
-  (flet ((transform-definition (name rest)
-           (let ((buffer (second (member :buffer rest)))
-                 (async (second (member :async rest)))
-                 (rest (loop for index below (length rest)
-                             for arg = (nth index rest)
-                             when (member arg '(:buffer :async))
-                               do (incf index 1)
-                             else collect arg)))
-             `(,name ,(first rest)
-                     (,(if async
-                           'ffi-buffer-evaluate-javascript-async
-                           'ffi-buffer-evaluate-javascript)
-                      ,(or buffer '(current-buffer))
-                      (ps:ps ,@(rest rest)))
-                     ;; This is to not return anything in async invocations.
-                     ,@(when async '(nil))))))
-    `(flet ,(loop for (name . rest) in functions
-                  collect (transform-definition name rest))
-       ,@body)))
-
-(export-always 'peval)
-(defmacro peval (&body args)
+(export-always 'ps-eval)
+(defmacro ps-eval (&body args)
   "Generate the JavaScript code and run it right away.
 
 If :ASYNC is provided as T before the body, then the code is ran asynchronously.
@@ -58,25 +17,71 @@ Returns the transformed result of evaluating JavaScript code or NIL if :ASYNC.
 
 Examples:
 ;; Set input in the `current-prompt-buffer' asynchronously.
-\(peval :buffer (current-prompt-buffer) :async t
+\(ps-eval :buffer (current-prompt-buffer) :async t
   (setf (ps:@ (nyxt/ps:qs document \"#input\") value) \"foo\"))
 
 ;; Get the class of the active element in the `current-buffer'
-\(peval (ps:@ document active-element class-name))"
-  (let ((async (second (member :async args))))
+\(ps-eval (ps:@ document active-element class-name))"
+  (let ((async-p (second (member :async args)))
+        (buffer (second (member :buffer args))))
     `(progn
-       (,(if async
+       (,(if async-p
              'ffi-buffer-evaluate-javascript-async
              'ffi-buffer-evaluate-javascript)
-        ,(or (second (member :buffer args))
-             '(current-buffer))
+        ,(or buffer '(current-buffer))
         (ps:ps ,@(loop for index below (length args)
                        for arg = (nth index args)
                        when (member arg '(:buffer :async))
                          do (incf index 1)
                        else collect arg)))
-       ;; This is to not return anything in async invocations.
-       ,@(when (second (member :async args)) '(nil)))))
+       ;; Return nil on async invocations.
+       ,@(when async-p '(nil)))))
+
+(export-always 'define-parenscript)
+(defmacro define-parenscript (script-name args &body script-body)
+  "Define parenscript function SCRIPT-NAME.
+SCRIPT-BODY must be a valid parenscript and will be wrapped in (PS:PS ...).
+Any Lisp expression must be wrapped in (PS:LISP ...).
+
+The returned function sends the compiled Javascript to the current buffer webview.
+The function can be passed Lisp ARGS."
+  `(defun ,script-name ,args (ps-eval :buffer (current-buffer) ,@script-body)))
+
+(export-always 'define-parenscript-async)
+(defmacro define-parenscript-async (script-name args &body script-body)
+  "Like `define-parenscript', but Javascript runs asynchronously."
+  `(defun ,script-name ,args (ps-eval :async t :buffer (current-buffer) ,@script-body)))
+
+(export-always 'ps-labels)
+(defmacro ps-labels (&body args)
+  (let* ((global-buffer (second (member :buffer args)))
+         (global-async (second (member :async args)))
+         (functions (find-if (lambda (e) (and (listp e) (every #'listp e)))
+                             args))
+         (body (rest (member functions args))))
+    (flet ((transform-definition (name args)
+             (let ((buffer (if (member :buffer args)
+                               (second (member :buffer args))
+                               global-buffer))
+                   (async-p (if (member :async args)
+                                (second (member :async args))
+                                global-async))
+                   (args (loop for index below (length args)
+                               for arg = (nth index args)
+                               when (member arg '(:buffer :async))
+                                 do (incf index 1)
+                               else collect arg)))
+               `(,name ,(first args)
+                       (,(if async-p
+                             'ffi-buffer-evaluate-javascript-async
+                             'ffi-buffer-evaluate-javascript)
+                        ,(or buffer '(current-buffer))
+                        (ps:ps ,@(rest args)))
+                       ;; Return nil on async invocations.
+                       ,@(when async-p '(nil))))))
+      `(labels ,(loop for (name . args) in functions
+                      collect (transform-definition name args))
+         ,@body))))
 
 (define-parenscript %document-scroll-position (&optional (y 0 y-provided-p) (x 0 x-provided-p))
   (let ((x (ps:lisp x))
@@ -114,24 +119,17 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
     (ps:chain result (slice 0 (ps:lisp limit)))))
 
 (defun html-write (content &optional (buffer (current-buffer)))
-  (ffi-buffer-evaluate-javascript-async
-   buffer
-   (ps:ps (ps:chain document
-                    (write (ps:lisp content))))))
+  (ps-eval :async t :buffer buffer
+    (ps:chain document (write (ps:lisp content)))))
 
 (defun html-set (content &optional (buffer (current-buffer)))
-  (ffi-buffer-evaluate-javascript-async
-   buffer
-   (ps:ps (setf (ps:@ document body |innerHTML|)
-                (ps:lisp content)))))
+  (ps-eval :async t :buffer buffer
+    (setf (ps:@ document body |innerHTML|) (ps:lisp content))))
 
 (defun html-set-style (style-string &optional (buffer (current-buffer)))
   (let ((style (spinneret:with-html-string (:style style-string))))
-    (ffi-buffer-evaluate-javascript-async
-     buffer
-     (ps:ps (ps:chain document body
-                      (|insertAdjacentHTML| "afterbegin"
-                                            (ps:lisp style)))))))
+    (ps-eval :async t :buffer buffer
+      (ps:chain document body (|insertAdjacentHTML| "afterbegin" (ps:lisp style))))))
 
 (sera:eval-always
   (defvar *nyxt-url-commands* (make-hash-table) ; TODO: Rename to `*internal-pages-command-list*'.
