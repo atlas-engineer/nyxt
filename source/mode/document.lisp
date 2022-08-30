@@ -143,11 +143,11 @@ It does not assume being online."))
 
 (define-command go-next ()
   "Navigate to the next element according to the HTML 'rel' attribute."
-  (ps-eval (ps:chain (nyxt/ps:qsa document "rel=next") 0 (click))))
+  (ps-eval (ps:chain (nyxt/ps:qs document "[rel=next]") 0 (click))))
 
 (define-command go-previous ()
   "Navigate to the previous element according to the HTML 'rel' attribute."
-  (ps-eval (ps:chain (nyxt/ps:qsa document "rel=prev") 0 (click))))
+  (ps-eval (ps:chain (nyxt/ps:qs document "[rel=prev]") 0 (click))))
 
 (define-command go-to-homepage ()
   "Navigate to the homepage."
