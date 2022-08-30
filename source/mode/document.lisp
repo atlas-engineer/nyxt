@@ -663,9 +663,6 @@ of buffers."
   (ps-labels
     ((get-selection
       ()
-      (defun qsa (context selector)
-        "Alias of document.querySelectorAll"
-        (ps:chain context (query-selector-all selector)))
       (defun element-in-selection-p (selection element)
         "Determine if a element is bounded within a selection."
         (ps:let* ((element-rect (ps:chain element (get-bounding-client-rect)))
@@ -691,7 +688,7 @@ of buffers."
         (loop for element in elements
               when (element-in-selection-p selection element)
                 collect (object-create element)))
-      (collect-selection (qsa document (list "a")) selection)))
+      (collect-selection (nyxt/ps:qsa document (list "a")) selection)))
     (loop for element in (get-selection)
           collect (str:string-case (gethash "type" element )
                     ("link"
