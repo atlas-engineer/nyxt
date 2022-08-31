@@ -385,6 +385,20 @@ By default it is found in the source directory."))
                  :web-context (get-context *browser* (context-name buffer)
                                            :ephemeral-p t)))
 
+(define-class gtk-request-data ()
+  (gtk-request
+   gtk-response
+   gtk-resource)
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name))
+  (:metaclass user-class))
+
+(handler-bind ((warning #'muffle-warning))
+  (defclass renderer-request-data (gtk-request-data)
+    ()
+    (:metaclass interface-class)))
+
 (defun make-decide-policy-handler (buffer)
   (lambda (web-view response-policy-decision policy-decision-type-response)
     (declare (ignore web-view))
@@ -954,7 +968,8 @@ See `finalize-buffer'."
         (mouse-button nil) (modifiers ())
         (url nil) (request nil)
         (mime-type nil)
-        (method nil) (file-name nil))
+        (method nil) (file-name nil)
+        response)
     (match policy-decision-type-response
       (:webkit-policy-decision-type-navigation-action
        (setf navigation-type (webkit:webkit-navigation-policy-decision-navigation-type response-policy-decision)))
@@ -966,9 +981,10 @@ See `finalize-buffer'."
        (setf is-known-type
              (webkit:webkit-response-policy-decision-is-mime-type-supported
               response-policy-decision))
-       (setf mime-type (webkit:webkit-uri-response-mime-type (webkit:webkit-response-policy-decision-response response-policy-decision)))
+       (setf response (webkit:webkit-response-policy-decision-response response-policy-decision))
+       (setf mime-type (webkit:webkit-uri-response-mime-type response))
        (setf method (webkit:webkit-uri-request-get-http-method request))
-       (setf file-name (webkit:webkit-uri-response-suggested-filename (webkit:webkit-response-policy-decision-response response-policy-decision)))))
+       (setf file-name (webkit:webkit-uri-response-suggested-filename response))))
     ;; Set Event-Type
     (setf event-type
           (match navigation-type
@@ -993,21 +1009,23 @@ See `finalize-buffer'."
              (hooks:run-hook
               (request-resource-hook buffer)
               (hooks:run-hook (pre-request-hook buffer)
-                              (make-instance 'request-data
-                                             :buffer buffer
-                                             :url (quri:copy-uri url)
-                                             :keys (unless (uiop:emptyp mouse-button)
-                                                     (list (keymaps:make-key :value mouse-button
-                                                                             :modifiers modifiers)))
-                                             :event-type event-type
-                                             :new-window-p is-new-window
-                                             :http-method method
-                                             :toplevel-p (quri:uri=
-                                                          url (quri:uri (webkit:webkit-web-view-uri
-                                                                         (gtk-object buffer))))
-                                             :mime-type mime-type
-                                             :known-type-p is-known-type
-                                             :file-name file-name))))
+                              (sera:lret ((data (make-instance 'request-data
+                                                               :buffer buffer
+                                                               :url (quri:copy-uri url)
+                                                               :keys (unless (uiop:emptyp mouse-button)
+                                                                       (list (keymaps:make-key :value mouse-button
+                                                                                               :modifiers modifiers)))
+                                                               :event-type event-type
+                                                               :new-window-p is-new-window
+                                                               :http-method method
+                                                               :toplevel-p (quri:uri=
+                                                                            url (quri:uri (webkit:webkit-web-view-uri
+                                                                                           (gtk-object buffer))))
+                                                               :mime-type mime-type
+                                                               :known-type-p is-known-type
+                                                               :file-name file-name)))
+                                (setf (gtk-request data) request
+                                      (gtk-response data) response)))))
            (keymap (get-keymap (buffer request-data)
                                (request-resource-keyscheme-map (buffer request-data))))
            (bound-function (the (or symbol keymaps:keymap null)
@@ -1426,19 +1444,22 @@ See `finalize-buffer'."
   (connect-signal-function buffer "decide-policy" (make-decide-policy-handler buffer))
   (connect-signal buffer "resource-load-started" nil (web-view resource request)
     (declare (ignore web-view))
-    (let ((response (webkit:webkit-web-resource-response resource)))
-      (hooks:run-hook (request-resource-hook buffer)
-                      (make-instance 'request-data
-                                     :buffer buffer
-                                     :url (quri:uri (webkit:webkit-uri-request-get-uri request))
-                                     :event-type :other
-                                     :new-window-p nil
-                                     :resource-p t
-                                     :http-method (webkit:webkit-uri-request-get-http-method request)
-                                     :toplevel-p nil
-                                     :mime-type (when response
-                                                  (webkit:webkit-uri-response-mime-type response))
-                                     :known-type-p t))))
+    (let* ((response (webkit:webkit-web-resource-response resource))
+           (request-data (make-instance 'request-data
+                                        :buffer buffer
+                                        :url (quri:uri (webkit:webkit-uri-request-get-uri request))
+                                        :event-type :other
+                                        :new-window-p nil
+                                        :resource-p t
+                                        :http-method (webkit:webkit-uri-request-get-http-method request)
+                                        :toplevel-p nil
+                                        :mime-type (when response
+                                                     (webkit:webkit-uri-response-mime-type response))
+                                        :known-type-p t)))
+      (setf (gtk-resource request-data) resource
+            (gtk-request request-data) request
+            (gtk-resource request-data) resource)
+      (hooks:run-hook (request-resource-hook buffer) request-data)))
   (connect-signal buffer "load-changed" t (web-view load-event)
     (declare (ignore web-view))
     (on-signal-load-changed buffer load-event))

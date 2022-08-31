@@ -366,7 +366,12 @@ If none is found, fall back to `keyscheme:cua'."
 (defun request-resource-open-url-focus (&key url buffer &allow-other-keys)
   (make-buffer-focus :url url :parent-buffer buffer))
 
-(define-class request-data ()
+(export-always 'renderer-request-data)
+(defclass renderer-request-data ()
+  ()
+  (:metaclass interface-class))
+
+(define-class request-data (renderer-request-data)
   ((buffer
     (current-buffer)
     :type buffer
