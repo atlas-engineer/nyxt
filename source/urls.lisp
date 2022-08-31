@@ -43,8 +43,9 @@ If the URL contains hexadecimal-encoded characters, return their unicode counter
                  url
                  (quri:render-uri url))))
     (the (values (or string null) &optional)
-         (or (ignore-errors (ffi-display-url *browser* url))
-             url))))
+         (quri:url-decode
+          (or (ignore-errors (ffi-display-url *browser* url))
+              url)))))
 
 (export-always 'render-host-and-scheme)
 (defun render-host-and-scheme (url)
