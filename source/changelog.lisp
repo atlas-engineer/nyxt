@@ -485,7 +485,9 @@ the selection, and the string to paste instead of the clipboard (respectively)."
         " that allows to define bookmarklets globally.")
    (:li (:code "open-new-editor-with-file") " renamed to " (:code "edit-file") ".")
    (:li "Add " (:code "edit-file-with-external-editor")
-        " to edit arbitrary files in the editor of choice."))
+        " to edit arbitrary files in the editor of choice.")
+   (:li (:code "peval") " and " (:code "pflet") " renamed to " (:code "ps-eval") " and "
+        (:code "ps-labels") " (respectively)."))
 
   (:h3 "Bug fixes")
   (:ul
