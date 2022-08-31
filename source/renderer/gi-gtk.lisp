@@ -14,6 +14,7 @@
 (in-package :nyxt)
 
 (setf +renderer+ "GI-GTK")
+(push :nyxt-gi-gtk *features*)
 (handler-bind ((warning #'muffle-warning))
   (let ((renderer-thread-name "Nyxt renderer thread"))
     (defun renderer-thread-p (&optional (thread (bt:current-thread)))

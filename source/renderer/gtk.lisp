@@ -4,6 +4,7 @@
 (in-package :nyxt)
 
 (setf +renderer+ "GTK")
+(push :nyxt-gtk *features*)
 
 (define-class gtk-browser ()
   (#+darwin
