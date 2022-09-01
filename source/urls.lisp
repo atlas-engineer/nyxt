@@ -347,10 +347,9 @@ Example:
 (defun query-params->arglist (params)
   "Process the PARAMS (an alist of strings, as returned by QURI) to a regular Lisp argument plist."
   (mappend (lambda (pair)
-             (let* ((*read-eval* nil)
-                    (key (intern (str:upcase (first pair)) :keyword))
+             (let* ((key (intern (str:upcase (first pair)) :keyword))
                     (value (if (str:starts-with-p +escape+ (rest pair))
-                               (read-from-string (subseq (rest pair) 1))
+                               (uiop:safe-read-from-string (subseq (rest pair) 1))
                                (rest pair))))
                (list key value)))
            params))
