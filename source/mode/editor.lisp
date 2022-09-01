@@ -98,6 +98,7 @@ contains an `nyxt/editor-mode:editor-mode' instance (or a subclass thereof)."))
     (lambda (url buffer)
       (let ((mode (find-submode 'editor-mode buffer))
             (file (quri:uri-path (quri:uri url))))
+        (uiop:chdir (uiop:pathname-directory-pathname file))
         (run-thread "editor content setting"
           (sleep 2)
           (set-content mode (uiop:read-file-string file)))
