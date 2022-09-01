@@ -13,7 +13,7 @@
 
 (define-internal-page-command-global list-buffers (&key (cluster nil)
                                                   linear-view-p) ; TODO: Document `cluster'.
-    (buffer "*Buffers*" 'nyxt/buffer-listing-mode:buffer-listing-mode)
+    (listing-buffer "*Buffers*" 'nyxt/buffer-listing-mode:buffer-listing-mode)
   "Show a buffer listing all buffer trees.
 Buffers have relationships.  When a buffer is spawned from another one (e.g. by
 middle-clicking on a link), the new buffer is a child buffer.
@@ -43,7 +43,8 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                  (:p (:button :class "button"
                               :onclick (ps:ps (nyxt/ps:lisp-eval
                                                (:title "delete-buffer")
-                                               (nyxt::delete-buffer :buffers buffer))) "✕")
+                                               (nyxt::delete-buffer :buffers buffer)
+                                               (reload-buffer listing-buffer))) "✕")
                      (:button :class "button"
                               :onclick (ps:ps (nyxt/ps:lisp-eval
                                                (:title "switch-buffer")
@@ -66,7 +67,7 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                      (loop for document in cluster
                            collect (buffer-markup (analysis::source document)))))))
     (spinneret:with-html-string
-      (:style (style buffer))
+      (:style (style listing-buffer))
       (:h1 "Buffers")
       (:button :class "button"
                :onclick (ps:ps (nyxt/ps:lisp-eval (:title "tree-display") (nyxt/buffer-listing-mode::list-buffers)))
