@@ -43,7 +43,7 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                  (:p (:button :class "button"
                               :onclick (ps:ps (nyxt/ps:lisp-eval
                                                (:title "delete-buffer")
-                                               (nyxt::delete-buffer :buffer buffer))) "✕")
+                                               (nyxt::delete-buffer :buffers buffer))) "✕")
                      (:button :class "button"
                               :onclick (ps:ps (nyxt/ps:lisp-eval
                                                (:title "switch-buffer")
