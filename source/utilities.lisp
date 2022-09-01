@@ -106,8 +106,7 @@ Return the lambda s-expression as a second value, if possible."
               (str:trim-right
                (subseq file-content
                        (max 0 (1- start-position))
-                       (or (search (uiop:strcat +newline+ "(") file-content :start2 start-position)
-                           (1- (length file-content))))))))
+                       (search (uiop:strcat +newline+ "(") file-content :start2 start-position))))))
         "")))
 
 (-> last-word (string) string)
