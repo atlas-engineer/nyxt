@@ -440,26 +440,32 @@ The following example does a few things:
 - Open magnet links with Transmission.
 - Open local files (file:// URIs) with Emacs.
 
-\(defmethod configure-instance ((buffer buffer))
-  (reduce #'hooks:add-hook
-          (list (url-dispatching-handler
-                 'doi-link-dispatcher
-                 (match-scheme \"doi\")
-                 (lambda (url)
-                   (quri:uri (format nil \"https://doi.org/~a\"
-                                     (quri:uri-path url)))))
-                (url-dispatching-handler
-                 'transmission-magnet-links
-                 (match-scheme \"magnet\")
-                 \"transmission-remote --add ~a\")
-                (url-dispatching-handler
-                 'emacs-file
-                 (match-scheme \"file\")
-                 (lambda (url)
-                   (uiop:launch-program
-                    `(\"emacs\" ,(quri:uri-path url)))
-                   nil)))
-          :initial-value (request-resource-hook buffer)))"
+\(define-configuration web-buffer
+  (request-resource-hook
+   (hooks:add-hook %slot-value%
+                   (url-dispatching-handler
+                    'doi-link-dispatcher
+                    (match-scheme \"doi\")
+                    (lambda (url)
+                      (quri:uri (format nil \"https://doi.org/~a\"
+                                        (quri:uri-path url))))))))
+
+\(defmethod customize-instance ((buffer web-buffer))
+  (hooks:add-hook
+   (request-resource-hook buffer)
+   (url-dispatching-handler
+    'transmission-magnet-links
+    (match-scheme \"magnet\")
+    \"transmission-remote --add ~a\"))
+  (hooks:add-hook
+   (request-resource-hook buffer)
+   (url-dispatching-handler
+    'emacs-file
+    (match-scheme \"file\")
+    (lambda (url)
+      (uiop:launch-program
+       `(\"emacs\" ,(quri:uri-path url)))
+      nil))))"
   (make-instance
    'hooks:handler
    :fn (lambda (request-data)

@@ -196,12 +196,6 @@ follows.")
                            (mapcar (lambda (engine) (apply 'make-search-engine engine))
                                    *my-search-engines*)))))")))
 
-      (:nsection :title "URL-dispatchers"
-        (:p "You can configure which actions to take depending on the URL to be
-loaded.  For instance, you can configure which Torrent program to start to load
-magnet links.  See the" (:nxref :function 'url-dispatching-handler) " function
-documentation."))
-
       (:nsection :title "Downloads"
         (:p "See the " (command-markup 'nyxt/download-mode:list-downloads) " command and the "
             (:nxref :slot 'download-path :class-name 'buffer) " buffer slot documentation."))
