@@ -1,12 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/activitypub-mode
-  (:use :common-lisp :nyxt)
-  (:import-from #:class-star #:define-class)
-  (:import-from #:keymap #:define-key #:define-scheme)
-  (:import-from #:serapeum #:-> #:export-always)
-  (:documentation "Mode for ActivityPub browsing."))
+(nyxt:define-package :nyxt/activitypub-mode
+    (:shadow #:profile)
+    (:documentation "Mode for ActivityPub browsing."))
 (in-package :nyxt/activitypub-mode)
 (use-nyxt-package-nicknames)
 
@@ -75,8 +72,7 @@ Rendering may be different for different types.")
 
 (define-command activitypub-login
   (&key
-   (mode (find-submode (current-buffer)
-                       'nyxt/activitypub-mode:activitypub-mode))
+   (mode (find-submode 'nyxt/activitypub-mode:activitypub-mode))
    (nickname (prompt1
                :prompt "Username"
                :sources (list (make-instance 'prompter:raw-source))))
@@ -129,7 +125,7 @@ Possibly contains additional Lisp-inaccessible properties."))
                  (decode-json
                   (dex:get object :headers
                            `(("Accept" . "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")
-                             ,@(alex:when-let* ((mode (find-submode (current-buffer) 'nyxt/activitypub-mode:activitypub-mode))
+                             ,@(alex:when-let* ((mode (find-submode 'nyxt/activitypub-mode:activitypub-mode))
                                                 (auth (auth-token mode)))
                                  `(("Authorization" . ,(str:concat "Bearer " auth)))))))))))
         (or (alex:ensure-gethash object *url->object* (get-object))
@@ -143,8 +139,8 @@ Possibly contains additional Lisp-inaccessible properties."))
   (:method ((object list))
     (lpara:pmapcar #'send-object object))
   (:method ((object base))
-    (alex:if-let ((mode (find-submode (current-buffer) 'nyxt/activitypub-mode:activitypub-mode))
-                  (prof (profile (find-submode (current-buffer) 'nyxt/activitypub-mode:activitypub-mode))))
+    (alex:if-let ((mode (find-submode 'nyxt/activitypub-mode:activitypub-mode))
+                  (prof (profile (find-submode 'nyxt/activitypub-mode:activitypub-mode))))
       (multiple-value-bind (content code headers)
           (dex:post (slot-value prof 'outbox)
                     :headers `(("Content-Type" . "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")
@@ -214,7 +210,8 @@ Possibly recurse to the nested sub-objects."))
                        (when (id object)
                          (setf (gethash "id" hash) (id object)))
                        (setf (gethash "type" hash) (object-type object))
-                       (setf (gethash "@context" hash) "https://www.w3.org/ns/activitystreams")))))
+                       (setf (gethash "@context" hash) "https://www.w3.org/ns/activitystreams")))
+                 nil))
   (:documentation "Produce the JSON for the OBJECT.
 Should always CALL-NEXT-METHOD with the half-filled HASH so that superclass methods fill it too."))
 
@@ -742,7 +739,7 @@ FORMAT can be one of
          (ordered-items (ordered-items object))
          (items (or items ordered-items))
          (first-item (first-item object))
-         (id (nyxt::get-unique-identifier *browser*)))
+         (id (nyxt:new-id)))
     (spinneret:with-html-string
       (:div
        :id id
@@ -807,7 +804,7 @@ FORMAT can be one of
 (define-internal-scheme "ap"
     (lambda (url buffer)
       (enable-modes '(activitypub-mode) buffer)
-      (let ((mode (current-mode 'activitypub)))
+      (let ((mode (find-submode 'activitypub-mode buffer)))
         (values
          (alex:if-let ((object (setf (model mode)
                                      (ignore-errors

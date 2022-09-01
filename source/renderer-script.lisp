@@ -369,6 +369,8 @@ Objects are transformed to the hash-tables instead.")
       (call-next-method)))
   (:method ((source t))
     (json:decode-json-from-source source))
+  (:method ((source string))
+    (json:decode-json-from-string source))
   (:method ((source array))
     (call-next-method (swank/backend:utf8-to-string source)))
   (:documentation
