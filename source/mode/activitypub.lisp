@@ -146,11 +146,13 @@ Possibly contains additional Lisp-inaccessible properties."))
                                                    (_ (eq :mastodon (instance-type mode))))
                                  `(("Signature"
                                     ;; FIXME: Maybe set the Date header too?
-                                    . ,(format nil "keyId=~s,headers=\"host\",signature=~s"
+                                    . ,(format nil "keyId=~s,headers=\"(request-target) host\",signature=~s"
                                                (sera:@ (original-object profile) "publicKey" "id")
                                                (encrypt-with-profile
                                                 profile
-                                                (format nil "host: ~a" (quri:uri-host (quri:uri object)))))))))))))))
+                                                (format nil "(request-target): get ~a
+host: ~a" (quri:uri-path (quri:uri object))
+(quri:uri-host (quri:uri object)))))))))))))))
         (or (alex:ensure-gethash object *url->object* (get-object))
             (get-object)))))
   (:method ((object quri:uri))
@@ -174,12 +176,13 @@ Possibly contains additional Lisp-inaccessible properties."))
                                                      (_ (eq :mastodon (instance-type mode))))
                                    `(("Signature"
                                       ;; FIXME: Maybe set the Date header too?
-                                      . ,(format nil "keyId=~s,headers=\"host\",signature=~s"
+                                      . ,(format nil "keyId=~s,headers=\"(request-target) host\",signature=~s"
                                                  (sera:@ (original-object profile) "publicKey" "id")
                                                  (encrypt-with-profile
                                                   profile
-                                                  (format nil "host: ~a"
-                                                          (quri:uri-host (quri:uri (slot-value prof 'outbox))))))))))
+                                                  (format nil "(request-target): get ~a
+host: ~a" (quri:uri-path (quri:uri object))
+(quri:uri-host (quri:uri object)))))))))
                     :content (unparse-object object))
         (declare (ignore content))
         (cond
