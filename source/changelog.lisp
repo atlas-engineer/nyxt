@@ -505,4 +505,6 @@ the selection, and the string to paste instead of the clipboard (respectively)."
         " now, allowing to add handlers to them.")
    (:li "Clipboard ring is properly filled on every clipboard action happening inside Nyxt.")
    (:li (:nxref :command 'view-source) " now shows a cleaned-up version of the pages without "
-        (:code "nyxt-identifier") "s and other Nyxt-specific helpers.")))
+        (:code "nyxt-identifier") "s and other Nyxt-specific helpers.")
+   (:li (:nxref :command 'nyxt/history-mode:history-backwards)
+        " does no longer skip pages when going back from pages that are not yet done loading.")))

@@ -99,9 +99,17 @@ This saves the history to disk when BODY exits."
   "Go to parent URL in history."
   (let ((new-node
           (with-history-access (history buffer)
-            (if (conservative-history-movement-p (find-submode 'history-mode buffer))
-                (htree:backward-owned-parents history (id buffer))
-                (htree:backward history (id buffer)))
+            (cond
+              ;; Skip going backwards if the current URL is not in history. If
+              ;; it's not in history, then going backwards means canceling the
+              ;; current load operation.
+              ((not (quri:uri= (url buffer)
+                               (url (htree:data (htree:owner-node history (id buffer))))))
+               nil)
+              ((conservative-history-movement-p (find-submode 'history-mode buffer))
+               (htree:backward-owned-parents history (id buffer)))
+              (t
+               (htree:backward history (id buffer))))
             (htree:owner-node history (id buffer)))))
     (load-history-url new-node
                       :message "No backward history.")))
