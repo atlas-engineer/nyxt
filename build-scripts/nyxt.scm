@@ -157,6 +157,7 @@
           cl-lparallel
           cl-log4cl
           cl-mk-string-metrics
+          cl-montezuma
           cl-moptilities
           cl-named-readtables
           cl-ndebug
