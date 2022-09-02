@@ -160,7 +160,7 @@ See `prompt' for how to invoke prompts.")
             (and (sera:single (prompter:sources prompt-buffer))
                  ;; Using eq here because we don't want to trigger it for
                  ;; raw-source subclasses, don't we?
-                 (eq 'prompter:raw-source-p
+                 (eq 'prompter:raw-source
                      (sera:class-name-of (first (prompter:sources prompt-buffer))))))
     (setf (height prompt-buffer) :fit-to-prompt)))
 
