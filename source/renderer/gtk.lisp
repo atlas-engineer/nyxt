@@ -1542,8 +1542,11 @@ See `finalize-buffer'."
       (t
        (echo "Failed to load URL ~a in buffer ~a." failing-url (id buffer))
        (setf (status buffer) :failed)
-       (html-set
+       (ffi-buffer-load-alternate-html
+        buffer
         (spinneret:with-html-string
+          (:head
+           (:style (style buffer)))
           (:h1 "Page could not be loaded.")
           (:h2 "URL: " failing-url)
           (:ul
@@ -1552,7 +1555,8 @@ See `finalize-buffer'."
            (:li "Make sure the URL is valid."
                 (when (quri:uri-https-p (quri:uri failing-url))
                   "If this site does not support HTTPS, try with HTTP (insecure)."))))
-        buffer)))
+        failing-url
+        failing-url)))
     t)
   (connect-signal buffer "create" nil (web-view navigation-action)
     (declare (ignore web-view))
@@ -1646,13 +1650,13 @@ local anyways, and it's better to refresh it if a load was queried."
                                         (render-url url))))
 
 (define-ffi-method ffi-buffer-load-alternate-html ((buffer gtk-buffer) html-content content-url url)
-  (declare (type quri:uri url))
   (webkit:webkit-web-view-load-alternate-html (gtk-object buffer)
                                               html-content
-                                              content-url
-                                              (if (url-empty-p url)
-                                                  "about:blank"
-                                                  (render-url url))))
+                                              (quri:render-uri (ensure-url content-url))
+                                              (let ((url (ensure-url url)))
+                                                (if (url-empty-p url)
+                                                    "about:blank"
+                                                    (quri:render-uri url)))))
 
 (defmethod ffi-buffer-evaluate-javascript ((buffer gtk-buffer) javascript &optional world-name)
   (%within-renderer-thread
