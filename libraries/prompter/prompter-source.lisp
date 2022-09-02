@@ -103,6 +103,9 @@ list.")
 
    (marks
     '()
+    :type list
+    :reader t
+    :writer nil
     :documentation "The list of `suggestion' values which have been marked by
 the user.
 
