@@ -80,9 +80,10 @@ The most useful functions are:
   noscript-element object-element (ol-element list-element) optgroup-element
   (option-element text-element) output-element (p-element text-element) param-element
   (pre-element text-element) progress-element q-element rp-element rt-element rtc-element
-  ruby-element samp-element script-element (section-element semantic-element) select-element
-  small-element source-element (span-element text-element) (strong-element text-element)
-  style-element (sub-element text-element) summary-element (sup-element text-element) table-element
+  ruby-element samp-element (script-element plump:fulltext-element)
+  (section-element semantic-element) select-element small-element source-element
+  (span-element text-element) (strong-element text-element) (style-element plump:fulltext-element)
+  (sub-element text-element) summary-element (sup-element text-element) table-element
   tbody-element td-element textarea-element tfoot-element th-element thead-element
   (time-element semantic-element) title-element tr-element track-element (ul-element list-element)
   var-element video-element
