@@ -181,8 +181,8 @@ host: ~a" (quri:uri-path (quri:uri object))
                                                  (encrypt-with-profile
                                                   profile
                                                   (format nil "(request-target): get ~a
-host: ~a" (quri:uri-path (quri:uri object))
-(quri:uri-host (quri:uri object)))))))))
+host: ~a" (quri:uri-path (quri:uri (slot-value profile 'outbox)))
+(quri:uri-host (quri:uri (slot-value profile 'outbox))))))))))
                     :content (unparse-object object))
         (declare (ignore content))
         (cond
