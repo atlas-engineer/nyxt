@@ -42,6 +42,7 @@
                flexi-streams
                iolib
                iolib/os
+               ironclad
                local-time
                lparallel
                log4cl

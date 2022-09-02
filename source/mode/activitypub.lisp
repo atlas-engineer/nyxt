@@ -112,6 +112,19 @@ Possibly contains additional Lisp-inaccessible properties."))
 (defvar *url->object* (make-hash-table :test 'equal)
   "A memoization table from URL string to the fetched objects.")
 
+(defun encrypt-with-profile (profile content)
+  "Encrypt the string CONTENT with the public key of PROFILE."
+  (base64:usb8-array-to-base64-string
+   (ironclad:sign-message
+    (ironclad:make-private-key
+     :ed25519
+     :x (base64:base64-string-to-usb8-array
+         (apply #'str:concat
+                (butlast (rest (str:lines
+                                (serapeum:@ (nyxt/activitypub-mode:original-object profile)
+                                            "publicKey" "publicKeyPem")))))))
+    (ironclad:digest-sequence (ironclad:make-digest :sha256) (flex:string-to-octets content)))))
+
 (export-always 'fetch-object)
 (defgeneric fetch-object (object)
   (:method ((object list))
@@ -125,9 +138,19 @@ Possibly contains additional Lisp-inaccessible properties."))
                  (decode-json
                   (dex:get object :headers
                            `(("Accept" . "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")
-                             ,@(alex:when-let* ((mode (find-submode 'nyxt/activitypub-mode:activitypub-mode))
-                                                (auth (auth-token mode)))
-                                 `(("Authorization" . ,(str:concat "Bearer " auth)))))))))))
+                             ,@(serapeum:and-let* ((mode (find-submode 'nyxt/activitypub-mode:activitypub-mode))
+                                                   (auth (auth-token mode)))
+                                 `(("Authorization" . ,(str:concat "Bearer " auth))))
+                             ,@(serapeum:and-let* ((mode (find-submode 'nyxt/activitypub-mode:activitypub-mode))
+                                                   (profile (profile mode))
+                                                   (_ (eq :mastodon (instance-type mode))))
+                                 `(("Signature"
+                                    ;; FIXME: Maybe set the Date header too?
+                                    . ,(format nil "keyId=~s,headers=\"host\",signature=~s"
+                                               (sera:@ (original-object profile) "publicKey" "id")
+                                               (encrypt-with-profile
+                                                profile
+                                                (format nil "host: ~a" (quri:uri-host (quri:uri object)))))))))))))))
         (or (alex:ensure-gethash object *url->object* (get-object))
             (get-object)))))
   (:method ((object quri:uri))
@@ -145,7 +168,18 @@ Possibly contains additional Lisp-inaccessible properties."))
           (dex:post (slot-value prof 'outbox)
                     :headers `(("Content-Type" . "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")
                                ,@(alex:when-let* ((auth (auth-token mode)))
-                                   `(("Authorization" . ,(str:concat "Bearer " auth)))))
+                                   `(("Authorization" . ,(str:concat "Bearer " auth))))
+                               ,@(serapeum:and-let* ((mode (find-submode 'nyxt/activitypub-mode:activitypub-mode))
+                                                     (profile (profile mode))
+                                                     (_ (eq :mastodon (instance-type mode))))
+                                   `(("Signature"
+                                      ;; FIXME: Maybe set the Date header too?
+                                      . ,(format nil "keyId=~s,headers=\"host\",signature=~s"
+                                                 (sera:@ (original-object profile) "publicKey" "id")
+                                                 (encrypt-with-profile
+                                                  profile
+                                                  (format nil "host: ~a"
+                                                          (quri:uri-host (quri:uri (slot-value prof 'outbox))))))))))
                     :content (unparse-object object))
         (declare (ignore content))
         (cond
