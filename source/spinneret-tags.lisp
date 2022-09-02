@@ -25,7 +25,7 @@
                   (function `(nyxt:nyxt-url (read-from-string "nyxt:describe-function")
                                             :universal t :fn ,function))
                   (command `(nyxt:nyxt-url (read-from-string "nyxt:describe-command")
-                                           :universal t :command ,command))
+                                           :command ,command))
                   (slot `(nyxt:nyxt-url (read-from-string "nyxt:describe-slot")
                                         :universal t :name ,slot :class ,class-name))
                   (class-name `(nyxt:nyxt-url (read-from-string "nyxt:describe-class")
