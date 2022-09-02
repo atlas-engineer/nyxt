@@ -439,55 +439,57 @@ SLY install.")
 
 (define-version "3.0.0"
   (:ul
-   (:li (:code "reduce-tracking-mode") " now cleans widely known tracking query parameters.")
+   (:li (:nxref :class-name 'nyxt/reduce-tracking-mode:reduce-tracking-mode)
+        " now cleans widely known tracking query parameters.")
    (:li "Improve the algorithm that determines if an element is in viewport.")
    (:li (:code "nyxt/hint-mode:box-style") "renamed
-   to " (:code "nyxt/hint-mode:style") ".")
+   to " (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'style) ".")
    (:li (:code "nyxt/hint-mode:highlighted-box-style") "is deprecated as it was
-   merged into " (:code "nyxt/hint-mode:style") ".")
-   (:li "Remove image support from " (:code "hint-mode") ".")
+   merged into " (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'style) ".")
+   (:li "Remove image support from " (:nxref :class-name 'nyxt/hint-mode:hint-mode) ".")
    (:li "Hints are now computed in viewport.")
-   (:li "Add " (:code "nyxt/hint-mode:fit-to-prompt-p") "to configure whether
-   the prompt takes the bare minimum of the screen space.")
-   (:li "Add " (:code "nyxt/hint-mode:show-hint-scope-p") "for element
-   highlighting of hinted elements.")
-   (:li "Add " (:code "height") "so that every prompt has a configurable
-   height.")
+   (:li "Add " (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'nyxt/hint-mode:fit-to-prompt-p)
+        "to configure whether the prompt takes the bare minimum of the screen space.")
+   (:li "Add " (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'nyxt/hint-mode:show-hint-scope-p)
+        "for element highlighting of hinted elements.")
+   (:li "Add " (:nxref :class-name 'prompt-buffer :slot 'height)
+        "so that every prompt has a configurable height.")
    (:li (:code "default-modes") " can be configured with " (:code "%slot-value%")
         " due to finally having an underlying slot.")
-   (:li "New " (:code "toggle-maximize") " command for maximizing a window.")
+   (:li "New " (:nxref :command 'toggle-maximize) " command for maximizing a window.")
    (:li "All the copying and pasting commands now fill the "
-        (:code "clipboad-ring") " of the browser reliably, thus making "
-        (:code "paste-from-clipboard-ring") " useful again.")
-   (:li (:code "editor-mode") " is improved and cleaned up in general.")
-   (:li (:code "hint-mode") " no longer hints images by default."))
+        (:nxref :class-name 'browser :slot 'clipboard-ring) " reliably, thus making "
+        (:nxref :command 'paste-from-clipboard-ring) " useful again.")
+   (:li (:nxref :class-name 'nyxt/editor-mode:editor-mode) " is improved and cleaned up in general."))
 
   (:h3 "Bindings")
   (:ul
-   (:li (:code "editor-mode") " now has an equally powerful set of bindings in all key schemes, allowing one
+   (:li (:nxref :class-name 'nyxt/editor-mode:editor-mode)
+        " now has an equally powerful set of bindings in all key schemes, allowing one
 to open a file, save it, switch buffer or delete current buffer.")
-   (:li (:code "paste-from-clipboard-ring") " is now conveniently bound to "
-        (:code "M-y") " in Emacs scheme of " (:code "document-mode") ".")
+   (:li (:nxref :command 'paste-from-clipboard-ring) " is now conveniently bound to "
+        (:code "M-y") " in Emacs scheme of "
+        (:nxref :class-name 'nyxt/document-mode:document-mode) ".")
    (:li "Prompt-buffer now has familiar bindings for text cutting."))
 
   (:h3 "Programming interface")
   (:ul
-   (:li (:code "ffi-buffer-copy") " and " (:code "ffi-buffer-paste")
+   (:li (:nxref :function 'ffi-buffer-copy) " and " (:nxref :function 'ffi-buffer-paste)
         " now accept optional second argument — string to put into clipboard instead of
 the selection, and the string to paste instead of the clipboard (respectively).")
-   (:li (:code "editor-mode") " now has an additional method to implement for the backends:"
-        (:code "nyxt/editor-mode:markup")
+   (:li (:nxref :class-name 'nyxt/editor-mode:editor-mode) " now has an additional method to implement for the backends:"
+        (:nxref :function 'nyxt/editor-mode:markup)
         ". This method defines how the initial editor markup (not necessarily HTML one) will look like.")
-   (:li (:code "encode-json") " and " (:code "decode-json")
+   (:li (:nxref :function 'encode-json) " and " (:nxref :function 'decode-json)
         " functions are now capable of encoding from/decoding to files, strings and streams.")
-   (:li (:code "nyxt/dom:copy") " generic to copy elements and whole DOMs.")
-   (:li "New " (:code "define-bookmarklet-command-global")
+   (:li (:nxref :function 'nyxt/dom:copy) " generic to copy elements and whole DOMs.")
+   (:li "New " (:nxref :command 'define-bookmarklet-command-global)
         " that allows to define bookmarklets globally.")
-   (:li (:code "open-new-editor-with-file") " renamed to " (:code "edit-file") ".")
-   (:li "Add " (:code "edit-file-with-external-editor")
+   (:li (:code "open-new-editor-with-file") " renamed to " (:nxref :command 'edit-file) ".")
+   (:li "Add " (:nxref :command 'edit-file-with-external-editor)
         " to edit arbitrary files in the editor of choice.")
-   (:li (:code "peval") " and " (:code "pflet") " renamed to " (:code "ps-eval") " and "
-        (:code "ps-labels") " (respectively)."))
+   (:li (:code "peval") " and " (:code "pflet") " renamed to " (:nxref :function 'ps-eval) " and "
+        (:nxref :function 'ps-labels) " (respectively)."))
 
   (:h3 "Bug fixes")
   (:ul
@@ -496,10 +498,11 @@ the selection, and the string to paste instead of the clipboard (respectively)."
    (:li "Touchscreen gestures fixed for VI mode.")
    (:li "Opening files via a relative path (for instance, " (:code "buffer.html")
         ") is now correctly processed to an absolute path.")
-   (:li "Setting " (:code "restore-session-on-startup-p") "to nil no longer hangs the browser.")
+   (:li "Setting " (:nxref :slot 'restore-session-on-startup-p :class-name 'browser)
+        "to nil no longer hangs the browser.")
    (:li "Fix buffer re-attachment from the deleted window.")
-   (:li "Download hooks are properly typed and belong to " (:code "nyxt/download-mode:download")
+   (:li "Download hooks are properly typed and belong to " (:nxref :class-name 'nyxt/download-mode:download)
         " now, allowing to add handlers to them.")
    (:li "Clipboard ring is properly filled on every clipboard action happening inside Nyxt.")
-   (:li (:code "view-source") " now shows a cleaned-up version of the pages without "
+   (:li (:nxref :command 'view-source) " now shows a cleaned-up version of the pages without "
         (:code "nyxt-identifier") "s and other Nyxt-specific helpers.")))
