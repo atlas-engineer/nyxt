@@ -7,29 +7,31 @@
   "The list of known commands, for internal use only.")
 
 (define-class command (standard-generic-function)
-  ((visibility :mode                    ; So that `define-command' registers into `*command-list*'.
-               :type (member :global :mode :anonymous)
-               :reader t
-               :writer nil
-               :documentation "
-- `:global'  means it will be listed in `command-source' when the global option is on.
-This is mostly useful for third-party packages to define globally-accessible
-commands without polluting the official Nyxt packages.
+  ((visibility
+    :mode
+    :type (member :global :mode :anonymous)
+    :reader t
+    :writer nil
+    :documentation "Sets whether command is listed in `command-source'.
 
-- `:mode' means the command is only listed in `command-source' when the
-corresponding mode is active.
+- `:global' always lists it.  This is mostly useful for third-party packages to
+define globally-accessible commands without polluting the official Nyxt
+packages.
 
-- `:anonymous' is for local definitions; the command is never listed in
-`command-source'. ")
-   (deprecated-p nil
-                 :type boolean
-                 :reader t
-                 :writer nil
-                 :documentation "Whether a warning before executing a deprecated
-                 command is signalled.")
-   (last-access (local-time:now)
-                :type local-time:timestamp
-                :documentation "Last time this command was called from prompt buffer.
+- `:mode' lists it when the corresponding mode is active.
+
+- `:anonymous' never lists it.")
+   (deprecated-p
+    nil
+    :type boolean
+    :reader t
+    :writer nil
+    :documentation "Whether a warning before executing a deprecated command is
+signalled.")
+   (last-access
+    (local-time:now)
+    :type local-time:timestamp
+    :documentation "Last time this command was called from prompt buffer.
 Useful to sort the commands by most recent use."))
   (:metaclass closer-mop:funcallable-standard-class)
   (:accessor-name-transformer (class*:make-name-transformer name))
