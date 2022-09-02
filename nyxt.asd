@@ -138,6 +138,7 @@
                  (:file "passthrough")
                  (:file "history-tree")
                  (:file "list-history")
+                 (:file "remembrance")
                  (:file "document" :depends-on ("passthrough"))
                  (:file "hint" :depends-on ("document"))
                  (:file "search-buffer" :depends-on ("hint"))
