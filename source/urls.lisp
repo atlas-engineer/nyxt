@@ -38,14 +38,19 @@ Members of URL-STRINGS corresponding to the empty URL are discarded."
 (-> render-url ((or quri:uri string)) string)
 (defun render-url (url)
   "Return decoded URL.
-If the URL contains hexadecimal-encoded characters, return their unicode counterpart."
-  (let ((url (if (stringp url)
-                 url
-                 (quri:render-uri url))))
+If the URL contains hexadecimal-encoded characters, return their unicode
+counterpart, unless there are unprintable characters."
+  (let* ((url (if (stringp url)
+                  url
+                  (quri:render-uri url)))
+         (displayed (or (ignore-errors (ffi-display-url *browser* url))
+                        url))
+         ;; FIXME: This only checks for ASCII non-printable characters. Is that enough?
+         (decoded (if (some (lambda (c) (< (char-code c) 32)) (quri:url-decode displayed))
+                      displayed
+                      (quri:url-decode displayed))))
     (the (values (or string null) &optional)
-         (quri:url-decode
-          (or (ignore-errors (ffi-display-url *browser* url))
-              url)))))
+         decoded)))
 
 (export-always 'render-host-and-scheme)
 (defun render-host-and-scheme (url)
