@@ -1466,7 +1466,7 @@ See `finalize-buffer'."
   (connect-signal buffer "focus-out-event" t (web-view event)
     (declare (ignore web-view event))
     (when (fullscreen-p (current-window))
-      (ffi-window-unfullscreen (current-window)))
+      (toggle-fullscreen :window (current-window)))
     nil)
   (connect-signal buffer "mouse-target-changed" nil (web-view hit-test-result modifiers)
     (declare (ignore web-view))
