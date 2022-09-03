@@ -89,21 +89,18 @@ This leverages `mode-status' which can be specialized for individual modes."
 
 (export-always 'format-status-url)
 (defmethod format-status-url ((status status-buffer))
-  (let ((buffer (current-buffer (window status))))
+  (let* ((buffer (current-buffer (window status)))
+         (content (format nil " ~a — ~a~@[ ~a~]" (render-url (url buffer)) (title buffer)
+                          (when (find (url buffer) (remove buffer (buffer-list))
+                                      :test #'url-equal :key #'url)
+                            (format nil "(~a)" (id buffer))))))
     (spinneret:with-html-string
       (:button :type "button" :class "button"
+               :title content
                :onclick (ps:ps (nyxt/ps:lisp-eval
                                 (:title "set-url" :buffer status)
                                 (nyxt:set-url)))
-               (format nil " ~a — ~a~a"
-                       (render-url (url buffer))
-                       (title buffer)
-                       (if (find (url buffer)
-                                 (remove buffer (buffer-list))
-                                 :test #'url-equal
-                                 :key #'url)
-                           (format nil " (~a)" (id buffer))
-                           ""))))))
+               content))))
 
 (export-always 'format-status-tabs)
 (defmethod format-status-tabs ((status status-buffer))
