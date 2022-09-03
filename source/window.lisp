@@ -209,7 +209,7 @@ not try to quit the browser."
 (define-command toggle-fullscreen (&key (window (current-window))
                                    skip-renderer-resize)
   "Fullscreen WINDOW, or the current window, when omitted.
-When `skip-renderer-resize' is non-nil, don't ask the renderer to "
+When `skip-renderer-resize' is non-nil, don't ask the renderer to fullscreen the window."
   (let ((fullscreen (fullscreen-p window)))
     (unless skip-renderer-resize
       (if fullscreen
