@@ -354,7 +354,8 @@ Example:
   (mappend (lambda (pair)
              (let* ((key (intern (str:upcase (first pair)) :keyword))
                     (value (if (str:starts-with-p +escape+ (rest pair))
-                               (uiop:safe-read-from-string (subseq (rest pair) 1) :package *package*)
+                               (uiop:safe-read-from-string (subseq (rest pair) 1)
+                                                           :package (find-package :nyxt))
                                (rest pair))))
                (list key value)))
            params))
@@ -375,7 +376,7 @@ guarantee of the same result."
          ;; it would be nice to ensure it processes even the malformed URLs.
          (params (quri:uri-query-params url))
          (internal-page-name (uiop:safe-read-from-string (str:upcase symbol)
-                                                         :package *package*)))
+                                                         :package (find-package :nyxt))))
     (if (gethash internal-page-name *nyxt-url-commands*)
         (values internal-page-name (query-params->arglist params))
         (error "There's no nyxt:~a internal-page defined" symbol))))

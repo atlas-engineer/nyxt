@@ -101,7 +101,8 @@ major versions."
 
 (export-always 'find-suggestions)
 (defun find-suggestions (string)
-  (alex:when-let ((sym (ignore-errors (uiop:safe-read-from-string string))))
+  (alex:when-let ((sym (ignore-errors (uiop:safe-read-from-string
+                                       string :package (find-package :nyxt)))))
     (gethash (symbol-name sym) +migration-suggestions+)))
 
 (defmacro define-migration (major-version-string &body body)
