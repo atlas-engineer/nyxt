@@ -82,6 +82,9 @@ See `ndebug:condition-wrapper' for documentation."))
        (:h* "Backtrace")
        (:raw (backtrace->html wrapper))))))
 
+;; FIXME: If this is not exported, `nyxt-url' cannot find it and spirals into an
+;; endless debugging tantrum.
+(export-always 'open-debugger)
 (define-internal-page open-debugger (&key id)
     ;; TODO: Introduce debug-mode with keys invoking restarts and toggling backtrace.
     (:title "*Debugger*")
