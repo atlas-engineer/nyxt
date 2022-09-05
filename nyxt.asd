@@ -326,6 +326,7 @@
   :components ((:file "tests/renderer-package")
                (:file "tests/renderer-offline/set-url")
                (:file "tests/renderer-offline/execute-command-eval")
+               (:file "tests/renderer-offline/remembrance")
                (:file "tests/renderer-online/set-url")))
 
 (defsystem "nyxt/qt"
