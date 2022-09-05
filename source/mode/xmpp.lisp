@@ -110,7 +110,7 @@ One of :PLAIN, :SASL-PLAIN, :DIGEST-MD5, :SASL-DIGEST-MD5.")
 (define-command send-message ()
   "Send the inputted message to the person the chat happens with."
   (let ((mode (find-submode 'xmpp-mode))
-        (message-body (peval (ps:@ (nyxt/ps:qs document "#new") value))))
+        (message-body (ps-eval (ps:@ (nyxt/ps:qs document "#new") value))))
     (flet ((send-message ()
              (xmpp:message (connection mode) (recipient mode) message-body)))
       (handler-case
