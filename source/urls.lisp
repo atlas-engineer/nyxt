@@ -44,13 +44,9 @@ counterpart, unless there are unprintable characters."
                   url
                   (quri:render-uri url)))
          (displayed (or (ignore-errors (ffi-display-url *browser* url))
-                        url))
-         ;; FIXME: This only checks for ASCII non-printable characters. Is that enough?
-         (decoded (if (some (lambda (c) (< (char-code c) 32)) (quri:url-decode displayed))
-                      displayed
-                      (quri:url-decode displayed))))
+                        url)))
     (the (values (or string null) &optional)
-         decoded)))
+         displayed)))
 
 (export-always 'render-host-and-scheme)
 (defun render-host-and-scheme (url)
