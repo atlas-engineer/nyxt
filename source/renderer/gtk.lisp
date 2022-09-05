@@ -1026,10 +1026,12 @@ See `finalize-buffer'."
                                                                :file-name file-name)))
                                 (setf (gtk-request data) request
                                       (gtk-response data) response)))))
-           (keymap (get-keymap (buffer request-data)
-                               (request-resource-keyscheme-map (buffer request-data))))
-           (bound-function (the (or symbol keymaps:keymap null)
-                                (keymaps:lookup-key (keys request-data) keymap))))
+           (keymap (when request-data
+                     (get-keymap (buffer request-data)
+                                 (request-resource-keyscheme-map (buffer request-data)))))
+           (bound-function (when request-data
+                             (the (or symbol keymaps:keymap null)
+                                  (keymaps:lookup-key (keys request-data) keymap)))))
       (cond
        ((not (typep request-data 'request-data))
         (log:debug "Don't forward to ~s's renderer (non request data)."
