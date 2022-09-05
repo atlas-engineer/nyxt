@@ -87,23 +87,24 @@ One of :PLAIN, :SASL-PLAIN, :DIGEST-MD5, :SASL-DIGEST-MD5.")
         (run-thread "XMPP receiver thread"
           (flet ((reconnect (err)
                    (declare (ignorable err))
-                   (xmpp-reconnect)))
-            (loop (handler-bind ((error #'reconnect))
-                    (xmpp:receive-stanza
-                     (connection mode)
-                     :stanza-callback (lambda (stanza connection &key dom-repr)
-                                        (declare (ignore dom-repr))
-                                        (let ((events (cl-xmpp::dom-to-event
-                                                       connection (cl-xmpp::parse-result connection stanza))))
-                                          (dolist (event (alex:ensure-list events))
-                                            (push event (messages mode)))
-                                          (reload-buffers (list (buffer mode)))
-                                          events))
-                     :dom-repr t)))))))
+                   (let ((nyxt::*interactive-p* t))
+                     (xmpp-reconnect))))
+            (handler-bind ((error #'reconnect))
+              (xmpp:receive-stanza-loop
+               (connection mode)
+               :stanza-callback (lambda (stanza connection &key dom-repr)
+                                  (declare (ignore dom-repr))
+                                  (let ((events (cl-xmpp::dom-to-event
+                                                 connection (cl-xmpp::parse-result connection stanza))))
+                                    (dolist (event (alex:ensure-list events))
+                                      (push event (messages mode)))
+                                    (reload-buffers (list (buffer mode)))
+                                    events))
+               :dom-repr t))))))
 
 (defmethod connection ((mode xmpp-mode))
   (or (slot-value mode 'connection)
-      (progn
+      (let ((nyxt::*interactive-p* t))
         (xmpp-connect mode)
         (connection mode))))
 
@@ -116,7 +117,8 @@ One of :PLAIN, :SASL-PLAIN, :DIGEST-MD5, :SASL-DIGEST-MD5.")
       (handler-case
           (send-message)
         (error ()
-          (xmpp-reconnect mode)
+          (let ((nyxt::*interactive-p* t))
+            (xmpp-reconnect mode))
           (ignore-errors (send-message)))))
     (push (make-instance 'xmpp:message
                          :to (recipient mode)
@@ -227,7 +229,8 @@ Leaves any other MODE state (`host', `username' etc.) intact to allow
       (let* ((mode (find-submode 'xmpp-mode buffer)))
         (setf (recipient mode) (quri:uri-path (nyxt::ensure-url url)))
         (unless (connection mode)
-          (xmpp-connect mode))
+          (let ((nyxt::*interactive-p* t))
+           (xmpp-connect mode)))
         (values
          (spinneret:with-html-string
            (:head

@@ -584,9 +584,8 @@
 	shallow = true
 [submodule "_build/cl-xmpp"]
 	path = _build/cl-xmpp
-	url = https://gitlab.common-lisp.net/cl-xmpp/cl-xmpp
+	url = https://github.com/atlas-engineer/cl-xmpp
   	shallow = true
-[submodule "_build/cxml"]
-	path = _build/cxml
-	url = https://gitlab.common-lisp.net/cxml/cxml
-  	shallow = true
+[submodule "_build/FXML"]
+	path = _build/FXML
+	url = https://github.com/ruricolist/FXML
