@@ -3,7 +3,6 @@
 
 ;; TODO: Find better name for "cached pages".
 
-;; TODO: Drop # part of URL when indexing.
 ;; TODO: Compress content using montezuma :stored :compress?  Looks like
 ;; `montezuma::compress' is a no-op.
 
@@ -58,6 +57,10 @@ See also `cache'.")
     :type (maybe montezuma:index)
     :export nil
     :documentation "`cache' is separate from `cache-path' because it is managed by `montezuma'.")
+   (auto-cache-on-load-p
+    t
+    :type boolean
+    :documentation "Whether to automatically cache the page content on load.")
    (update-interval
     #.(* 60 60 24)
     :type alex:non-negative-integer
@@ -77,6 +80,9 @@ Set to 0 to disable.")
             (* :margin 0
                :padding 0
                :list-style "none")))))
+
+(defmethod cache-size ((mode remembrance-mode))
+  (length (all-cache-entries (cache mode))))
 
 (defmethod initialize-instance :after ((mode remembrance-mode) &key)
   (setf (cache mode)
@@ -142,7 +148,8 @@ Set to 0 to disable.")
   (montezuma:document-value page-doc "content"))
 
 (defun page-last-update (page-doc)
-  (montezuma:document-value page-doc "last-update"))
+  (local-time:parse-timestring
+   (montezuma:document-value page-doc "last-update")))
 
 (defun buffer-content (buffer)
   (ps-eval :buffer buffer
@@ -154,16 +161,18 @@ Set to 0 to disable.")
 (defun buffer->cache (buffer remembrance-mode)
   "BUFFER is indexed by URL.
 It's only cached if its `last-update' is older than `update-interval'."
-  (let ((page (find-url (url buffer) remembrance-mode)))
+  (let* ((url (sera:lret ((copy (quri:copy-uri (url buffer))))
+                ;; We drop the fragment as it does not change the page content.
+                (setf (quri:uri-fragment copy) nil)))
+         (page (find-url url remembrance-mode)))
     (if (or (not page)
-            (local-time:timestamp<
-             (update-interval remembrance-mode)
-             (local-time:timestamp-difference (local-time:now) (page-last-update page))))
+            (< (update-interval remembrance-mode)
+               (local-time:timestamp-difference (local-time:now) (page-last-update page))))
         (let ((doc (make-instance 'montezuma:document)))
           (flet ((add-field (field value &rest options)
                    (montezuma:add-field doc
                                         (apply #'montezuma:make-field field value options))))
-            (add-field "url" (render-url (url buffer)) :index :untokenized)
+            (add-field "url" (render-url url) :index :untokenized)
             (add-field "title" (title buffer))
             (add-field "content" (buffer-content buffer))
             (add-field "last-update"
@@ -234,3 +243,23 @@ This induces a performance cost."))
   "Cache the current buffer URL, title and textual content."
   ;; TODO: Make this more generic, get it to work on the GHT / buffer list.
   (buffer->cache (current-buffer) (find-submode 'remembrance-mode)))
+
+(defmethod nyxt:on-signal-notify-uri ((mode remembrance-mode) url)
+  (declare (type quri:uri url))
+  (when (auto-cache-on-load-p mode)
+    (let ((buffer (buffer mode)))
+      (when (web-buffer-p buffer)
+        (when (eq :finished (slot-value buffer 'nyxt::status))
+          (buffer->cache buffer mode)))))
+  url)
+
+(defmethod nyxt:on-signal-notify-title ((mode remembrance-mode) title)
+  ;; Title may be updated after the URL, so we need to set the entry again
+  ;; with `on-signal-notify-uri'.
+  (on-signal-notify-uri mode (url (buffer mode)))
+  title)
+
+(defmethod nyxt:on-signal-load-finished ((mode remembrance-mode) url)
+  (when (auto-cache-on-load-p mode)
+    (buffer->cache (buffer mode) mode))
+  url)
