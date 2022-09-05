@@ -363,3 +363,20 @@ Return the text cut."))
   (:method ((buffer t))
     (echo-warning "Redoing edits is not yet implemented for this renderer."))
   (:documentation "Redo the last undone text edit performed in BUFFER's web view."))
+
+(defvar *context-menu-commands* (make-hash-table)
+  "A hash table from command symbols to context menu labels for those.
+Once a context menu appears, those commands will be added to it as actions with
+the labels they have as hash values.")
+
+(define-ffi-generic ffi-add-context-menu-command (command &optional label)
+  (:method :around ((command command) &optional label)
+    (call-next-method command (or label (format nil "~:(~a~)" (str:remove-punctuation (symbol-name (name command)))))))
+  (:method ((command command) &optional label)
+    (setf (gethash (name command) *context-menu-commands*)
+          label))
+  (:method ((command symbol) &optional label)
+    (ffi-add-context-menu-command (symbol-function command) label))
+  (:documentation "Add COMMAND as accessible in context menus with LABEL displayed for it.
+If LABEL is not provided, it's auto-generated from the command name.
+COMMAND should be either a symbol naming an already defined command, or the command object itself."))

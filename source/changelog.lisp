@@ -492,7 +492,9 @@ the selection, and the string to paste instead of the clipboard (respectively)."
    (:li "Add " (:nxref :command 'edit-file-with-external-editor)
         " to edit arbitrary files in the editor of choice.")
    (:li (:code "peval") " and " (:code "pflet") " renamed to " (:nxref :function 'ps-eval) " and "
-        (:nxref :function 'ps-labels) " (respectively)."))
+        (:nxref :function 'ps-labels) " (respectively).")
+   (:li "Add " (:nxref :function 'ffi-add-context-menu-command)
+        " to add custom context menu commands."))
 
   (:h3 "Bug fixes")
   (:ul
