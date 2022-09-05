@@ -8,7 +8,7 @@
 (nyxt::use-nyxt-package-nicknames)
 
 (class-star:define-class nyxt-user::test-profile (nyxt:nyxt-profile)
-  ((files:name :initform "test"))
+  ()
   (:documentation "Test profile."))
 
 (defmethod files:write-file ((profile nyxt-user::test-profile) (file files:file) &key)

@@ -467,7 +467,7 @@ Examples:
        (load-lisp (files:expand *config-file*) :package (find-package :nyxt-user))
        (mapcar (lambda (profile-class)
                  (format t "~a~10t~a~&"
-                         (profile-class-name profile-class)
+                         (profile-name profile-class)
                          (indent (documentation profile-class t) 10)))
                (list-profile-classes)))
 
@@ -523,6 +523,12 @@ Finally, run the browser, load URL-STRINGS if any, then run
       (log:config :backup nil :pattern *log-pattern* :daily log-path)))
   (format t "Nyxt version ~a~&" +version+)
   (log:info "Source location: ~s" (files:expand *source-directory*))
+  (when (getf *options* :profile)
+    (alex:if-let ((profile-class (find-profile-class (getf *options* :profile))))
+      (progn
+        (setf *global-profile* (make-instance profile-class))
+        (log:info "Profile: ~s" (profile-name profile-class)))
+      (log:warn "Profile not found: ~s" (getf *options* :profile))))
   (let* ((urls (strings->urls url-strings))
          (thread (when (files:expand *socket-file*)
                    (listen-or-query-socket urls)))

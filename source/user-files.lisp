@@ -65,7 +65,7 @@ If the file is modified externally, Nyxt automatically reloads it."))
   (:documentation "Nyxt Lisp files."))
 
 (define-class nosave-profile (files:read-only-profile nyxt-profile)
-  ((files:name "nosave"))
+  ()
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
@@ -167,11 +167,10 @@ Example: when passed command line option --with-file foo=bar,
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(export-always 'profile-class-name)
-(defun profile-class-name (profile-class)
-  (getf (mopu:slot-properties (closer-mop:ensure-finalized profile-class)
-                              'files:name)
-        :initform))
+(export-always 'profile-name)
+(defun profile-name (profile-class)
+  (string-downcase
+   (sera:drop-suffix "-PROFILE" (symbol-name (class-name profile-class)))))
 
 (export-always 'list-profile-classes)
 (defun list-profile-classes ()
@@ -180,7 +179,8 @@ Example: when passed command line option --with-file foo=bar,
 
 (export-always 'find-profile-class)
 (defun find-profile-class (name)
-  (find name
+  "Return the `nyxt:nyxt-profile' subclass whose name is NAME-profile."
+  (find (string-downcase name)
         (list-profile-classes)
         :test 'string=
-        :key #'profile-class-name))
+        :key 'profile-name))

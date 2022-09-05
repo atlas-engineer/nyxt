@@ -348,6 +348,10 @@ To discover the default value of a slot or all slots of a class, use the
           (log:debug "No active window, picking last active buffer.")
           (last-active-buffer)))))
 
+(defmethod initialize-instance :after ((file nyxt-file) &key)
+  (when (current-buffer)
+    (setf (files:profile file) (profile (current-buffer)))))
+
 (export-always 'with-current-buffer)
 (defmacro with-current-buffer (buffer &body body)
   "Execute BODY in a context in which `current-buffer' returns BUFFER."
