@@ -53,15 +53,90 @@ from a key binding.")
   (declare (ignore source))
   (command-attributes command))
 
+(define-class extended-command-source (prompter:source)
+  ((prompter:name "Lisp expression")
+   (prompter:filter-preprocessor
+    (lambda (suggestions source input)
+      (unless (uiop:emptyp input)
+        (or
+         (ignore-errors
+          (let* ((proper-input (if (and (str:starts-with-p "(" input)
+                                        (str:ends-with-p ")" input))
+                                   input
+                                   (str:concat "(" input ")")))
+                 (expression (uiop:safe-read-from-string proper-input))
+                 (symbol (symbol-name (first expression)))
+                 (function (or (sera:and-let* ((suggestions suggestions)
+                                               (prev (prompter:value (first suggestions)))
+                                               (prev-symbol (first prev))
+                                               (_ (equalp symbol (symbol-name prev-symbol))))
+                                 prev-symbol)
+                               (resolve-symbol symbol :command (list-all-packages))
+                               (resolve-symbol symbol :function (list-all-packages)))))
+            (when (fboundp function)
+              (list (funcall (prompter:suggestion-maker source)
+                             (cons function (rest expression))
+                             source input)))))
+         (ignore-errors
+          (mapcar (lambda (s)
+                    (funcall (prompter:suggestion-maker source) s source input))
+                  (mapcar #'uiop:safe-read-from-string (first (swank:simple-completions input *package*)))))))))
+   (buffer (current-buffer)
+           :type buffer))
+  (:export-class-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name))
+  (:documentation "Prompter source to execute commands with arguments.
+Includes all commands and modes, and adds arbitrary Lisp functions on top of that.")
+  (:metaclass user-class))
+
+(defmethod prompter:object-attributes ((extended-command list) (source extended-command-source))
+  (declare (ignore source))
+  (let ((function (symbol-function (first extended-command)))
+        (*print-case* :downcase))
+    `(("Expression" ,(format nil "~s" extended-command))
+      ("Arguments" ,(remove #\newline (format nil "~{~a~^ ~}" (arglist function))))
+      ("Docstring" ,(or (first (sera::lines (documentation function 'function)))
+                        "")))))
+
+(defmethod prompter:object-attributes ((extended-command symbol) (source extended-command-source))
+  (declare (ignore source))
+  (let ((*print-case* :downcase))
+    (if (fboundp extended-command)
+        (let ((function (symbol-function extended-command)))
+          `(("Expression" ,(format nil "~s" extended-command))
+            ("Arguments" ,(remove #\newline (format nil "~{~a~^ ~}" (arglist function))))
+            ("Docstring" ,(or (first (sera::lines (documentation function 'function)))
+                              ""))))
+        `(("Name" ,(write-to-string extended-command))
+          ("Documentation" ,(or (documentation extended-command 'variable) ""))))))
+
 (define-command execute-command ()
-  "Execute a command by name."
+  "Execute a command by name.
+
+Also accepts arbitrary Lisp expressions (even without the outermost level of
+parentheses), and lists the possible completions for the incomplete symbols,
+together with the arglists and documentations of the functions typed in."
   (unless (active-prompt-buffers (current-window))
-    (let ((command (prompt1
-                     :prompt "Execute command"
-                     :sources 'command-source
-                     :hide-suggestion-count-p t)))
-      (setf (last-access command) (local-time:now))
-      (run-async command))))
+    (prompt
+     :prompt "Execute command"
+     :sources (list (make-instance
+                     'command-source
+                     :return-actions
+                     (list (lambda-command run-command* (commands)
+                             "Run the chosen command."
+                             (let ((command (first commands)))
+                               (setf (last-access command) (local-time:now))
+                               (run-async command)))))
+                    (make-instance
+                     'extended-command-source
+                     :return-actions
+                     (list
+                      (lambda-command evaluate-lisp-expression* (exprs)
+                        "Evaluate the inputted Lisp expression."
+                        (run-thread "evaluator"
+                          (let ((*interactive-p* t))
+                            (echo "~s" (eval (first exprs)))))))))
+     :hide-suggestion-count-p t)))
 
 (defun parse-function-lambda-list-types (fn)
   #-sbcl

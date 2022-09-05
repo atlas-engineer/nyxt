@@ -460,7 +460,10 @@ SLY install.")
    (:li "All the copying and pasting commands now fill the "
         (:nxref :class-name 'browser :slot 'clipboard-ring) " reliably, thus making "
         (:nxref :command 'paste-from-clipboard-ring) " useful again.")
-   (:li (:nxref :class-name 'nyxt/editor-mode:editor-mode) " is improved and cleaned up in general."))
+   (:li (:nxref :class-name 'nyxt/editor-mode:editor-mode) " is improved and cleaned up in general.")
+   (:li (:code "execute-command")
+        " now can evaluate arbitrary Lisp code and provide you with the inline
+documentation for functions."))
 
   (:h3 "Bindings")
   (:ul
