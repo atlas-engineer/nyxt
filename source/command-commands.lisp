@@ -54,7 +54,7 @@ from a key binding.")
   (command-attributes command))
 
 (define-class extended-command-source (prompter:source)
-  ((prompter:name "Extended command")
+  ((prompter:name "Lisp expression")
    (prompter:filter-preprocessor
     (lambda (suggestions source input)
       (unless (uiop:emptyp input)
@@ -131,8 +131,8 @@ together with the arglists and documentations of the functions typed in."
                      'extended-command-source
                      :return-actions
                      (list
-                      (lambda-command evaluate-extended-command* (exprs)
-                        "Evaluate the inputted extended command."
+                      (lambda-command evaluate-lisp-expression* (exprs)
+                        "Evaluate the inputted Lisp expression."
                         (run-thread "evaluator"
                           (let ((*interactive-p* t))
                             (echo "~s" (eval (first exprs)))))))))
