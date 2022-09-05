@@ -1504,6 +1504,11 @@ any.")
                   "Load URL(s) in new buffer(s)."
                   (mapc (lambda (suggestion) (make-buffer :url (url suggestion))) (rest suggestion-values))
                   (make-buffer-focus :url (url (first suggestion-values))))
+                (lambda-command new-nosave-buffer-load* (suggestion-values)
+                  "Load URL(s) in new buffer(s)."
+                  (mapc (lambda (suggestion) (make-nosave-buffer :url (url suggestion))) (rest suggestion-values))
+                  (set-current-buffer
+                   (make-nosave-buffer :url (url (first suggestion-values))) :focus t))
                 (lambda-command copy-url* (suggestions)
                   "Copy the URL of the chosen suggestion."
                   (trivial-clipboard:text (render-url (url (first suggestions))))))))
