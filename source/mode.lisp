@@ -227,7 +227,7 @@ PACKAGES should be a list of package designators."
                              (:slot (mapcar #'name (package-slots subpackages)))
                              (:command (mapcar #'name (list-commands))))))
     (let ((results (delete designator symbols :key #'symbol-name :test #'string/=)))
-      (when (> 1 (length results))
+      (when (> (length results) 1)
         (log:warn "Multiple ~a symbols found: ~a" designator results))
       (values (first results)
               results))))
