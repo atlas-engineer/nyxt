@@ -306,7 +306,7 @@ Only keyword arguments are accepted."
          (let ((wrapped-body '(lambda (,@arglist)
                                ,@(when documentation (list documentation))
                                ,@declarations
-                               (let ((,buffer-var (current-buffer)))
+                               (let ((,buffer-var (find-internal-page-buffer ',name)))
                                  (declare (ignorable ,buffer-var))
                                  ,@stripped-body))))
            (set-internal-page-method gf wrapped-body)
