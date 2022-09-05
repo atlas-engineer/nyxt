@@ -300,7 +300,8 @@ Authority is compared case-insensitively (RFC 3986)."
   (if (stringp value)
       value
       ;; This is to safely parse the args afterwards
-      (str:concat +escape+ (prin1-to-string value))))
+      (str:concat +escape+ (let ((*package* (find-package :nyxt)))
+                             (prin1-to-string value)))))
 
 (export-always 'nyxt-url)
 (-> nyxt-url (t &rest t &key &allow-other-keys) string)
