@@ -1998,11 +1998,10 @@ custom (the specified proxy) and none."
   (let ((text (spinneret:with-html-string
                (:head (:style (message-buffer-style window)))
                (:body (:raw text)))))
-    (with-slots (message-view) window
-      (webkit2:webkit-web-view-evaluate-javascript
-       (message-view window)
-       (ps:ps (setf (ps:@ document body |innerHTML|)
-                    (ps:lisp text)))))))
+    (webkit2:webkit-web-view-evaluate-javascript
+     (message-view window)
+     (ps:ps (setf (ps:@ document body |innerHTML|)
+                  (ps:lisp text))))))
 
 ;; This method does not need a renderer, so no need to use `define-ffi-method'
 ;; which is prone to race conditions.
