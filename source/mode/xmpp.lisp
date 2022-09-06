@@ -97,10 +97,11 @@ One of :PLAIN, :SASL-PLAIN, :DIGEST-MD5, :SASL-DIGEST-MD5.")
            :dom-repr t))))
 
 (defmethod connection ((mode xmpp-mode))
-  (or (slot-value mode 'connection)
-      (let ((nyxt::*interactive-p* t))
-        (xmpp-connect mode)
-        (connection mode))))
+  (sera:synchronized (mode)
+      (or (slot-value mode 'connection)
+          (let ((nyxt::*interactive-p* t))
+            (xmpp-connect mode)
+            (connection mode)))))
 
 (define-command send-message ()
   "Send the inputted message to the person the chat happens with."
