@@ -251,7 +251,9 @@ See `find-internal-page-buffer'."))
        (format nil "*~a*" (string-downcase (name page)))))))
 
 (defun internal-page-name (url)
-  (read-from-string (str:upcase (quri:uri-path url))))
+  (when (string= "nyxt" (quri:uri-scheme url))
+    (uiop:safe-read-from-string
+     (str:upcase (quri:uri-path url)) :package :nyxt)))
 
 ;; (-> find-internal-page-buffer (internal-page-symbol) (maybe buffer))
 (defun find-internal-page-buffer (name) ; TODO: Test if CCL can catch bad calls at compile-time.
