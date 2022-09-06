@@ -184,7 +184,7 @@ Return NIL if URL is not cached, for instance if it's on
          (page (find-url url remembrance-mode)))
     (let ((history-mode (find-submode 'nyxt/history-mode:history-mode)))
       (unless (and history-mode
-                   (nyxt/history-mode:blocked-p url remembrance-mode))
+                   (nyxt/history-mode:blocked-p url history-mode))
         (prog1
             (if (or (not page)
                     (< (update-interval remembrance-mode)
