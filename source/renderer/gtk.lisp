@@ -1595,9 +1595,8 @@ See `finalize-buffer'."
                                 :global-p t
                                 :mode-symbols (mapcar #'sera:class-name-of
                                                       (sera:filter #'enabled-p (modes buffer))))))
-                      (context-commands (alex:hash-table-keys *context-menu-commands*))
-                      (accessible-context-commands (intersection accessible-commands context-commands)))
-        (dolist (command accessible-context-commands)
+                      (context-commands (alex:hash-table-keys *context-menu-commands*)))
+        (dolist (command (intersection accessible-commands context-commands))
           ;; Using stock actions here, because cl-cffi-gtk has a terrible API
           ;; for GActions, requiring an exact type to be passed and disallowing
           ;; NULL as a type :/
