@@ -329,21 +329,12 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                                   "selection")
                                             :class (when (prompter:marked-p source (prompter:value suggestion))
                                                      "marked")
-                                            :onmouseover (when (mouse-support-p prompt-buffer)
-                                                           (ps:ps
-                                                             ;; FIXME: A better way to set selection?
-                                                             (nyxt/ps:lisp-eval
-                                                              (:title "set-selection" :buffer prompt-buffer)
-                                                              ;; TODO: Export?
-                                                              (prompter::select
-                                                                  (current-prompt-buffer)
-                                                                (- suggestion-index cursor-index))
-                                                              (prompt-render-suggestions
-                                                               (current-prompt-buffer)))))
                                             :onmousedown (when (mouse-support-p prompt-buffer)
                                                            (ps:ps
                                                              (nyxt/ps:lisp-eval
                                                               (:title "return-selection" :buffer prompt-buffer)
+                                                              (prompter::select (current-prompt-buffer)
+                                                                (- suggestion-index cursor-index))
                                                               (prompter:return-selection
                                                                (nyxt::current-prompt-buffer)))))
                                             (loop for (nil attribute) in (prompter:active-attributes suggestion :source source)
