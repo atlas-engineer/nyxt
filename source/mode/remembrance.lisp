@@ -25,23 +25,6 @@ The textual content can be searched and displayed."))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-class cache-entry ()            ; TODO: Do we need this?
-  ((url
-    (quri:uri "")
-    :type quri:uri)
-   (title
-    ""
-    :type string)
-   (content
-    ""
-    :type string)
-   (last-update
-    (local-time:now)
-    :type local-time:timestamp
-    :documentation "See `remembrance-mode' `update-interval'."))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
-
 (define-mode remembrance-mode ()
   "Cache the textual content of visited pages.
 The caching can be done automatically or manually, see `auto-cache-on-load-p'."
