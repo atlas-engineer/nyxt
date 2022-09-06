@@ -10,7 +10,6 @@
 ;; `montezuma::field-name', `montezuma::all-fields', `montezuma:field-data'.
 ;; Not needed though?
 
-;; TODO: Search highlighted terms.  Display count.  Copy URL.
 ;; TODO: Add support for automatic tags?
 ;; TODO: Diff and validation?
 ;; TODO: Add action / command to cache bookmarks / history entries manually.
@@ -141,6 +140,9 @@ Set to 0 to disable.")
 (defun page-url-string (page-doc)
   (montezuma:document-value page-doc "url"))
 
+(defun page-url (page-doc)
+  (quri:uri (page-url-string page-doc)))
+
 (defun page-title (page-doc)
   (montezuma:document-value page-doc "title"))
 
@@ -152,6 +154,7 @@ Set to 0 to disable.")
    (montezuma:document-value page-doc "last-update")))
 
 (defun buffer-content (buffer)
+  ;; TODO: Use cl-readability for better results.
   (ps-eval :buffer buffer
     (ps:@ document body |innerText|)))
 
@@ -220,15 +223,17 @@ This induces a performance cost."))
 (define-command recollect-visited-page
     (&key (return-actions (list (lambda-command buffer-load* (suggestion-values)
                                   "Load first selected cache entry in current buffer and the rest in new buffer(s)."
-                                  (mapc (lambda (url) (make-buffer :url (url url))) (rest suggestion-values))
-                                  (buffer-load (url (first suggestion-values))))
+                                  (mapc (lambda (page-doc) (make-buffer :url (page-url page-doc))) (rest suggestion-values))
+                                  (buffer-load (page-url (first suggestion-values))))
                                 (lambda-command new-buffer-load (suggestion-values)
                                   "Load cache entries in new buffer(s)."
-                                  (mapc (lambda (url) (make-buffer :url (url url))) (rest suggestion-values))
-                                  (make-buffer-focus :url (url (first suggestion-values))))
+                                  (mapc (lambda (page-doc) (make-buffer :url (page-url page-doc))) (rest suggestion-values))
+                                  (make-buffer-focus :url (page-url (first suggestion-values))))
                                 (lambda-command copy-url* (suggestions)
                                   "Copy bookmark URL."
-                                  (trivial-clipboard:text (render-url (url (first suggestions)))))
+                                  (let ((url (page-url-string (first suggestions))))
+                                    (trivial-clipboard:text url)
+                                    (echo "Copied to clipboard: ~s" url)))
                                 (lambda-command view-cached-content (suggestions)
                                   "View content in new buffer."
                                   (set-current-buffer
