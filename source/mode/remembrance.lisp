@@ -56,7 +56,7 @@ Set to 0 to disable.")
    (discard-interval
     #.(* 30 60 60 24)
     :type alex:non-negative-integer
-    :documentation "Discard entry if its `last-update' is older than this.")
+    :documentation "Discard cached entry if its `last-update' is older than this.")
    ;; TODO: `style' belongs to a separate mode, doesn't it?  Same question as with `history-tree-mode'.
    (style (theme:themed-css (theme *browser*)
             (* :margin 0
@@ -144,6 +144,25 @@ Set to 0 to disable.")
 (defun timestamp->string (timestamp)
   (local-time:format-timestring nil timestamp :timezone local-time:+utc-zone+))
 
+(defun out-of-date-p (page mode)
+  (< (discard-interval mode)
+     (local-time:timestamp-difference (local-time:now)
+                                      (page-last-update page))))
+
+(defun out-of-date-pages (mode)
+  (sera:filter (rcurry #'out-of-date-p mode) (all-cache-entries (cache mode))))
+
+(defun delete-cached-pages (urls &optional (mode (find-submode 'remembrance-mode)))
+  (dolist (url (uiop:ensure-list urls) )
+    (montezuma:query-delete (cache mode)
+                            (make-term "url" (render-url url))))
+  ;; Without optimization (or flush?), the deletion is not persisted to disk
+  ;; until next addition.
+  (montezuma:optimize (cache mode)))
+
+(defun delete-out-of-date-pages (&optional (mode (find-submode 'remembrance-mode)))
+  (delete-cached-pages (out-of-date-pages mode) mode))
+
 (defun buffer->cache (buffer remembrance-mode)
   "BUFFER is indexed by URL.
 It's only cached if its `last-update' is older than `update-interval'.
@@ -157,23 +176,25 @@ Return NIL if URL is not cached, for instance if it's on
          (page (find-url url remembrance-mode)))
     (let ((history-mode (find-submode 'nyxt/history-mode:history-mode)))
       (unless (and history-mode
-                   (nyxt/history-mode:blocked-p url mode))
-        (if (or (not page)
-                (< (update-interval remembrance-mode)
-                   (local-time:timestamp-difference (local-time:now) (page-last-update page))))
-            (let ((doc (make-instance 'montezuma:document)))
-              (flet ((add-field (field value &rest options)
-                       (montezuma:add-field doc
-                                            (apply #'montezuma:make-field field value options))))
-                (add-field "url" (render-url url) :index :untokenized)
-                (add-field "title" (title buffer))
-                (add-field "content" (buffer-content buffer))
-                (add-field "last-update"
-                           (timestamp->string (local-time:now))
-                           :index :untokenized))
-              (montezuma:add-document-to-index (cache remembrance-mode) doc)
-              doc)
-            page)))))
+                   (nyxt/history-mode:blocked-p url remembrance-mode))
+        (prog1
+            (if (or (not page)
+                    (< (update-interval remembrance-mode)
+                       (local-time:timestamp-difference (local-time:now) (page-last-update page))))
+                (let ((doc (make-instance 'montezuma:document)))
+                  (flet ((add-field (field value &rest options)
+                           (montezuma:add-field doc
+                                                (apply #'montezuma:make-field field value options))))
+                    (add-field "url" (render-url url) :index :untokenized)
+                    (add-field "title" (title buffer))
+                    (add-field "content" (buffer-content buffer))
+                    (add-field "last-update"
+                               (timestamp->string (local-time:now))
+                               :index :untokenized))
+                  (montezuma:add-document-to-index (cache remembrance-mode) doc)
+                  doc)
+                page)
+          (delete-out-of-date-pages remembrance-mode))))))
 
 (define-class remembrance-source (prompter:source)
   ((prompter:name "Pages")
