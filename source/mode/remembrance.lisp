@@ -235,10 +235,15 @@ This induces a performance cost."))
    :sources (make-instance 'remembrance-source
                            :return-actions return-actions)))
 
-(define-command remember-current-buffer ()
-  "Cache the current buffer URL, title and textual content."
-  ;; TODO: Make this more generic, get it to work on the GHT / buffer list.
-  (buffer->cache (current-buffer) (find-submode 'remembrance-mode)))
+(define-command remember-buffer (&key buffer)
+  "Cache the current buffer URL, title and textual content.
+BUFFER can be a list of buffers."
+  (let ((buffers (or (alex:ensure-list buffer)
+                     (prompt :prompt "Cache content of buffer"
+                             :sources (make-instance 'buffer-source
+                                                     :return-actions '())))))
+    (dolist (buffer buffers)
+      (buffer->cache buffer (find-submode 'remembrance-mode)))))
 
 (defmethod nyxt:on-signal-notify-uri ((mode remembrance-mode) url)
   (declare (type quri:uri url))
