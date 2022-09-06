@@ -1356,35 +1356,35 @@ See `finalize-buffer'."
   (declare (ignore web-view))
   (with-protect ("Failed to process dialog: ~a" :condition)
     (when (native-dialogs *browser*)
-      (let ((dialog (gobject:pointer dialog))
-             (*interactive-p* t))
+      (let ((dialog (gobject:pointer dialog)))
         (webkit:webkit-script-dialog-ref dialog)
         (run-thread "script dialog"
-          (case (webkit:webkit-script-dialog-get-dialog-type dialog)
-            (:webkit-script-dialog-alert (echo (webkit:webkit-script-dialog-get-message dialog)))
-            (:webkit-script-dialog-prompt
-             (let ((text (first (handler-case
-                                    (prompt
-                                     :prompt (webkit:webkit-script-dialog-get-message dialog)
-                                     :input (webkit:webkit-script-dialog-prompt-get-default-text dialog)
-                                     :sources 'prompter:raw-source)
-                                  (prompt-buffer-canceled (c) (declare (ignore c)) nil)))))
-               (if text
-                   (webkit:webkit-script-dialog-prompt-set-text dialog text)
-                   (progn
-                     (webkit:webkit-script-dialog-prompt-set-text dialog (cffi:null-pointer))
-                     (webkit:webkit-script-dialog-close dialog)))))
-            (:webkit-script-dialog-confirm
-             (webkit:webkit-script-dialog-confirm-set-confirmed
-              dialog (if-confirm
-                      ((webkit:webkit-script-dialog-get-message dialog))
-                      t nil)))
-            (:webkit-script-dialog-before-unload-confirm
-             (webkit:webkit-script-dialog-confirm-set-confirmed
-              dialog (if-confirm
-                      ;; FIXME: This asks for keyword override in if-confirm.
-                      ((format nil "~a ['yes' = leave, 'no' = stay]" (webkit:webkit-script-dialog-get-message dialog)))
-                      t nil))))
+          (let ((*interactive-p* t))
+            (case (webkit:webkit-script-dialog-get-dialog-type dialog)
+              (:webkit-script-dialog-alert (echo (webkit:webkit-script-dialog-get-message dialog)))
+              (:webkit-script-dialog-prompt
+               (let ((text (first (handler-case
+                                      (prompt
+                                       :prompt (webkit:webkit-script-dialog-get-message dialog)
+                                       :input (webkit:webkit-script-dialog-prompt-get-default-text dialog)
+                                       :sources 'prompter:raw-source)
+                                    (prompt-buffer-canceled (c) (declare (ignore c)) nil)))))
+                 (if text
+                     (webkit:webkit-script-dialog-prompt-set-text dialog text)
+                     (progn
+                       (webkit:webkit-script-dialog-prompt-set-text dialog (cffi:null-pointer))
+                       (webkit:webkit-script-dialog-close dialog)))))
+              (:webkit-script-dialog-confirm
+               (webkit:webkit-script-dialog-confirm-set-confirmed
+                dialog (if-confirm
+                        ((webkit:webkit-script-dialog-get-message dialog))
+                        t nil)))
+              (:webkit-script-dialog-before-unload-confirm
+               (webkit:webkit-script-dialog-confirm-set-confirmed
+                dialog (if-confirm
+                        ;; FIXME: This asks for keyword override in if-confirm.
+                        ((format nil "~a ['yes' = leave, 'no' = stay]" (webkit:webkit-script-dialog-get-message dialog)))
+                        t nil)))))
           (webkit:webkit-script-dialog-close dialog)
           (webkit:webkit-script-dialog-unref dialog))
         t))))
