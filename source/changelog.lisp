@@ -511,4 +511,6 @@ the selection, and the string to paste instead of the clipboard (respectively)."
    (:li (:nxref :command 'view-source) " now shows a cleaned-up version of the pages without "
         (:code "nyxt-identifier") "s and other Nyxt-specific helpers.")
    (:li (:nxref :command 'nyxt/history-mode:history-backwards)
-        " does no longer skip pages when going back from pages that are not yet done loading.")))
+        " does no longer skip pages when going back from pages that are not yet done loading.")
+   (:li "Fix full-screening event handling — status buffer no longer goes off-sync with
+the full-screened page/video.")))
