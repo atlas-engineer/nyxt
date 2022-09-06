@@ -146,27 +146,34 @@ Set to 0 to disable.")
 
 (defun buffer->cache (buffer remembrance-mode)
   "BUFFER is indexed by URL.
-It's only cached if its `last-update' is older than `update-interval'."
+It's only cached if its `last-update' is older than `update-interval'.
+
+Return cached page.
+Return NIL if URL is not cached, for instance if it's on
+`nyxt/history-mode:history-mode' `history-blocklist'."
   (let* ((url (sera:lret ((copy (quri:copy-uri (url buffer))))
                 ;; We drop the fragment as it does not change the page content.
                 (setf (quri:uri-fragment copy) nil)))
          (page (find-url url remembrance-mode)))
-    (if (or (not page)
-            (< (update-interval remembrance-mode)
-               (local-time:timestamp-difference (local-time:now) (page-last-update page))))
-        (let ((doc (make-instance 'montezuma:document)))
-          (flet ((add-field (field value &rest options)
-                   (montezuma:add-field doc
-                                        (apply #'montezuma:make-field field value options))))
-            (add-field "url" (render-url url) :index :untokenized)
-            (add-field "title" (title buffer))
-            (add-field "content" (buffer-content buffer))
-            (add-field "last-update"
-                       (timestamp->string (local-time:now))
-                       :index :untokenized))
-          (montezuma:add-document-to-index (cache remembrance-mode) doc)
-          doc)
-        page)))
+    (let ((history-mode (find-submode 'nyxt/history-mode:history-mode)))
+      (unless (and history-mode
+                   (nyxt/history-mode:blocked-p url mode))
+        (if (or (not page)
+                (< (update-interval remembrance-mode)
+                   (local-time:timestamp-difference (local-time:now) (page-last-update page))))
+            (let ((doc (make-instance 'montezuma:document)))
+              (flet ((add-field (field value &rest options)
+                       (montezuma:add-field doc
+                                            (apply #'montezuma:make-field field value options))))
+                (add-field "url" (render-url url) :index :untokenized)
+                (add-field "title" (title buffer))
+                (add-field "content" (buffer-content buffer))
+                (add-field "last-update"
+                           (timestamp->string (local-time:now))
+                           :index :untokenized))
+              (montezuma:add-document-to-index (cache remembrance-mode) doc)
+              doc)
+            page)))))
 
 (define-class remembrance-source (prompter:source)
   ((prompter:name "Pages")
