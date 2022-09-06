@@ -371,7 +371,7 @@ the labels they have as hash values.")
 
 (define-ffi-generic ffi-add-context-menu-command (command &optional label)
   (:method :around ((command command) &optional label)
-    (call-next-method command (or label (format nil "~:(~a~)" (str:remove-punctuation (symbol-name (name command)))))))
+    (call-next-method command (or label (str:capitalize (str:remove-punctuation (symbol-name (name command)))))))
   (:method ((command command) &optional label)
     (setf (gethash (name command) *context-menu-commands*)
           label))
