@@ -1598,12 +1598,12 @@ See `finalize-buffer'."
                       (context-commands (alex:hash-table-keys *context-menu-commands*))
                       (accessible-context-commands (intersection accessible-commands context-commands)))
         (dolist (command accessible-context-commands)
-          (let* ((label (gethash command *context-menu-commands*))
-                 ;; Using stock actions here, because cl-cffi-gtk has a
-                 ;; terrible API for GActions, requiring an exact type to be
-                 ;; passed and disallowing NULL as a type :/
-                 (item (webkit:webkit-context-menu-item-new-from-stock-action-with-label
-                        :webkit-context-menu-action-action-custom label)))
+          ;; Using stock actions here, because cl-cffi-gtk has a terrible API
+          ;; for GActions, requiring an exact type to be passed and disallowing
+          ;; NULL as a type :/
+          (let ((item (webkit:webkit-context-menu-item-new-from-stock-action-with-label
+                       :webkit-context-menu-action-action-custom
+                       (gethash command *context-menu-commands*))))
             (gobject:g-signal-connect
              (webkit:webkit-context-menu-item-get-g-action item) "activate"
              (lambda (action parameter)
