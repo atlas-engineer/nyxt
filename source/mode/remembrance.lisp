@@ -94,7 +94,7 @@ Set to 0 to disable.")
                    #'identity))))
 
 (defun all-cache-entries (cache)
-  (search-cache cache "*"))
+  (search-cache cache (make-instance 'montezuma:match-all-query)))
 
 (defun find-url (url remembrance-mode)
   "Return entry matching URL"
