@@ -397,8 +397,7 @@ Useful for session snapshots, as `restore-history-by-name' will restore opened b
                                                        :name name
                                                        :directory (pathname-directory (histories-directory))))))
     (when (or (not (uiop:file-exists-p (files:expand new-file)))
-              (if-confirm ("Overwrite ~s?" (files:expand new-file))
-                          t))
+              (if-confirm ((format nil "Overwrite ~s?" (files:expand new-file)))))
       (setf (files:content new-file) (buffer-history))
       (echo "History stored to ~s." (files:expand new-file)))))
 

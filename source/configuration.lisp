@@ -347,19 +347,41 @@ To discover the default value of a slot or all slots of a class, use the
          ;; TODO: Raise error instead?
          (log:warn "Expected buffer, got ~a" ,buffer))))
 
+;; TODO: Disallow canceling the prompt? Allow changing order of YES and NO so
+;; that one makes a conscious effort to choose a YES?
+;; TODO: Add an "always (yes|no)" and cache the result?
 (export-always 'if-confirm)
-(defmacro if-confirm (prompt yes-form &optional no-form)
+(defmacro if-confirm ((prompt &key (yes "yes" explicit-yes-p) (no "no" explicit-no-p))
+                      &optional yes-form no-form)
   "Ask the user for confirmation before executing either YES-FORM or NO-FORM.
-YES-FORM is executed on  \"yes\" answer, NO-FORM -- on \"no\".
-PROMPT is a list fed to `format nil'."
+YES-FORM is executed on YES answer, NO-FORM -- otherwise (including NO and
+prompt cancellation).
+PROMPT should evaluate to a string.
+
+Examples:
+
+;; Return t/nil on user decision.
+\(if-confirm (\"you agree?\"))
+
+;; Customize the yes/no answers, and get the mood of the user as boolean.
+\(if-confirm ((format nil \"How are you?\") :yes \"Good!\" :no \"Don't even ask...\"))
+
+;; Commit an action in case of yes, clean up on no
+\(if-confirm (\"Overwrite the file?\" :no \"cancel\")
+            (overwrite-file-because-confirmed)
+            (clean-up/abort/stop))"
   `(let ((answer (handler-case
                      (prompt1
-                      :prompt (format nil ,@prompt)
-                      :sources '(prompter:yes-no-source)
+                      :prompt ,prompt
+                      :sources (make-instance 'prompter:yes-no-source
+                                              ,@(when explicit-yes-p
+                                                  (list :yes yes))
+                                              ,@(when explicit-no-p
+                                                  (list :no no)))
                       :hide-suggestion-count-p t)
-                   (prompt-buffer-canceled () "no"))))
-     (if (string= "yes" answer)
-         ,yes-form
+                   (prompt-buffer-canceled () nil))))
+     (if answer
+         (or ,yes-form t)
          ,no-form)))
 
 (export-always 'reset-asdf-registries)

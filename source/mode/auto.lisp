@@ -222,8 +222,9 @@ The rules are:
   #'(lambda (mode)
       (alex:when-let* ((invocation (mode-invocation mode)))
         (when (not (mode-covered-by-auto-mode-p mode auto-mode enable-p))
-          (if-confirm ("Permanently ~:[disable~;enable~] ~a for this URL?"
-                       enable-p (sera:class-name-of mode))
+          (if-confirm ((format nil
+                               "Permanently ~:[disable~;enable~] ~a for this URL?"
+                               enable-p (sera:class-name-of mode)))
                       (let ((url (prompt1
                                    :prompt "URL"
                                    :input (render-url (url (buffer mode)))
