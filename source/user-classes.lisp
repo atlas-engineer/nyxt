@@ -46,6 +46,33 @@ Do not specialize the standard method in public code, prefer
             (sera:filter #'user-class-p (cons class (mopu:superclasses class))))
     (apply #'customize-instance initialized-object initargs)))
 
+(defclass user-funcallable-class (closer-mop:funcallable-standard-class)
+  ((customize-hook :initform (make-instance 'hooks:hook-any)
+                   :documentation "An internal hook to add customization handlers to.
+
+Reserved for `define-configuration'.
+
+Prefer `define-configuration' and `customize-instance' instead."))
+  (:documentation "Classes using this metaclass will call `customize-instance' on instantiation.
+This is useful to expose a class configuration knob to the user."))
+(export-always 'user-funcallable-class)
+
+(defmethod closer-mop:validate-superclass ((class user-funcallable-class)
+                                           (superclass closer-mop:funcallable-standard-class))
+  t)
+
+(defmethod closer-mop:validate-superclass ((superclass closer-mop:funcallable-standard-class)
+                                           (class user-funcallable-class))
+  t)
+
+(defmethod #+nyxt-debug-make-instance cl:make-instance #-nyxt-debug-make-instance make-instance
+  :around ((class user-funcallable-class) &rest initargs &key &allow-other-keys)
+  (sera:lret ((initialized-object (call-next-method)))
+    (mapcar (lambda (class)
+              (hooks:run-hook (slot-value class 'customize-hook) initialized-object))
+            (sera:filter #'user-class-p (cons class (mopu:superclasses class))))
+    (apply #'customize-instance initialized-object initargs)))
+
 (defun user-class-p (class-specifier)
   (let ((metaclass (cond
                      ((symbolp  class-specifier)
@@ -53,7 +80,8 @@ Do not specialize the standard method in public code, prefer
                      ((closer-mop:classp class-specifier)
                       class-specifier)
                      (t (class-of class-specifier)))))
-    (typep metaclass 'user-class)))
+    (or (typep metaclass 'user-class)
+        (typep metaclass 'user-funcallable-class))))
 
 (defclass interface-class (standard-class) ()
   (:documentation "An interface class exists solely for the purpose of
