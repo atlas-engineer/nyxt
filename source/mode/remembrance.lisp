@@ -117,26 +117,32 @@ Set to 0 to disable.")
                   (mapcar #'string-downcase (sera:words input))))
     (search-cache (cache remembrance-mode) query)))
 
+(defun safe-document-value (doc field)
+  "Like `montezuma:document-value' but return NIL when field is missing."
+  (when (montezuma:document-field doc field)
+    (montezuma:document-value doc field)))
+
 ;; We define functions to protect ourselves from typing the string keys manually
 ;; (and risking typos).
 (defun page-url-string (page-doc)
-  (montezuma:document-value page-doc "url"))
+  (safe-document-value page-doc "url"))
 
 (defun page-url (page-doc)
-  (quri:uri (page-url-string page-doc)))
+  (alex:when-let ((url-string (page-url-string page-doc)))
+    (quri:uri url-string )))
 
 (defun page-title (page-doc)
-  (montezuma:document-value page-doc "title"))
+  (safe-document-value page-doc "title"))
 
 (defun page-content (page-doc)
-  (montezuma:document-value page-doc "content"))
+  (safe-document-value page-doc "content"))
 
 (defun page-last-update (page-doc)
-  (local-time:parse-timestring
-   (montezuma:document-value page-doc "last-update")))
+  (alex:when-let ((last-update (montezuma:document-value page-doc "last-update")))
+    (local-time:parse-timestring last-update)))
 
 (defun page-keywords (page-doc)
-  (montezuma:document-value page-doc "keywords"))
+  (safe-document-value page-doc "keywords"))
 
 (defun buffer-content (buffer)
   ;; TODO: Use cl-readability for better results.
