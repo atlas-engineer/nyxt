@@ -187,9 +187,10 @@ It's only cached if its `last-update' is older than `update-interval'."
    (prompter:constructor (all-cache-entries (cache (find-submode 'remembrance-mode))))
    (prompter:filter nil)
    (prompter:filter-preprocessor (lambda (suggestions source input)
-                                   (declare (ignore suggestions))
-                                   (lookup input (find-submode 'remembrance-mode)
-                                           :suffix-matching-p (suffix-matching-p source))))
+                                   (if (uiop:emptyp input)
+                                       suggestions
+                                       (lookup input (find-submode 'remembrance-mode)
+                                               :suffix-matching-p (suffix-matching-p source)))))
    (prompter:multi-selection-p t)
    (prompter:active-attributes-keys '("URL" "Title"))
    (suffix-matching-p
