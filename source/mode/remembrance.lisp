@@ -216,7 +216,7 @@ This induces a performance cost."))
       (:h1 (format nil "Cached content of ~a" url-string))
       (:div (:pre (page-content doc))))))
 
-(define-command look-up-cache
+(define-command recollect-visited-page
     (&key (return-actions (list (lambda-command buffer-load* (suggestion-values)
                                   "Load first selected cache entry in current buffer and the rest in new buffer(s)."
                                   (mapc (lambda (url) (make-buffer :url (url url))) (rest suggestion-values))
