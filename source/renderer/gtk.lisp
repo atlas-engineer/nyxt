@@ -1585,7 +1585,30 @@ See `finalize-buffer'."
                   (webkit:webkit-context-menu-item-new-from-stock-action-with-label
                    :webkit-context-menu-action-open-link-in-new-window
                    "Open Link in New Buffer")
-                  i)))))))
+                  i))))))
+      (webkit:webkit-context-menu-append
+       context-menu (webkit:webkit-context-menu-item-new-separator))
+      (sera:and-let* ((_ (plusp (hash-table-count *context-menu-commands*)))
+                      (accessible-commands
+                       (mapcar #'name
+                               (list-commands
+                                :global-p t
+                                :mode-symbols (mapcar #'sera:class-name-of
+                                                      (sera:filter #'enabled-p (modes buffer))))))
+                      (context-commands (alex:hash-table-keys *context-menu-commands*)))
+        (dolist (command (intersection accessible-commands context-commands))
+          ;; Using stock actions here, because cl-cffi-gtk has a terrible API
+          ;; for GActions, requiring an exact type to be passed and disallowing
+          ;; NULL as a type :/
+          (let ((item (webkit:webkit-context-menu-item-new-from-stock-action-with-label
+                       :webkit-context-menu-action-action-custom
+                       (gethash command *context-menu-commands*))))
+            (gobject:g-signal-connect
+             (webkit:webkit-context-menu-item-get-g-action item) "activate"
+             (lambda (action parameter)
+               (declare (ignore action parameter))
+               (run-async command)))
+            (webkit:webkit-context-menu-append context-menu item)))))
     nil)
   (connect-signal buffer "enter-fullscreen" nil (web-view)
     (declare (ignore web-view))

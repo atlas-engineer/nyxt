@@ -223,7 +223,15 @@ Lisp function, except the form is " (:code "define-command") " instead of "
               :sources 'prompter:raw-source)))
     (bookmark-add url)))"))
         (:p "See the " (:nxref :class-name 'prompt-buffer) " class documentation for how
-to write custom prompt-buffers."))
+to write custom prompt-buffers.")
+        (:p "You can also create your own context menu entries binding those to Lisp commands, using "
+            (:nxref :function 'ffi-add-context-menu-command) " function. You can bind the "
+            (:code "bookmark-url") " like this:")
+        (:pre (:code "(ffi-add-context-menu-command 'boorkmark-url \"Bookmark the chosen URL\")"))
+        (:p "Currently, context menu commands don't have access to the renderer objects (and
+shouldn't hope to). Commands you bind to context menu actions should deduce most
+of the information from their surroundings, using JavaScript and Lisp functions
+Nyxt provides."))
 
       (:nsection :title "Custom URL schemes"
         (:p "If there's a scheme that Nyxt doesn't support, but you want it to, you can
