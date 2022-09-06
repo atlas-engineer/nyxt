@@ -349,10 +349,14 @@ internally, but this display is clearer and more navigable."
     (:p (format nil "The last ~a history entries:" limit))
     (:ul (:raw (nyxt::history-html-list :limit limit)))))
 
+(export-always 'blocked-p)
+(defun blocked-p (url mode)
+  (find-if (rcurry #'str:starts-with? (render-url url))
+           (history-blocklist mode)))
+
 (defun add-url-to-history (url buffer mode)
   (unless (or (url-empty-p url)
-              (find-if (rcurry #'str:starts-with? (render-url url))
-                       (history-blocklist mode)))
+              (blocked-p url mode))
     (log:debug "Notify URL ~a for buffer ~a with load status ~a"
                url
                buffer
