@@ -45,7 +45,7 @@ The textual content can be searched and displayed."))
 
 (define-mode remembrance-mode ()
   "Cache the textual content of visited pages.
-The caching can be done automatically or manually."
+The caching can be done automatically or manually, see `auto-cache-on-load-p'."
   ((visible-in-status-p nil)
    (cache-path
     (make-instance 'cache-path)
@@ -205,7 +205,7 @@ This induces a performance cost."))
   `(("URL" ,(page-url-string doc))
     ("Title" ,(page-title doc))))
 
-(define-internal-page view-cached-page (&key url-string)
+(define-internal-page view-cached-page (&key url-string) ; TODO: `view-remembered-page'?
     (:title "*Cached page*")
   "View textual content of cached page in new buffer."
   (enable-modes 'remembrance-mode (current-buffer))
