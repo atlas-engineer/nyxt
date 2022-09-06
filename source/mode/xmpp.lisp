@@ -96,6 +96,17 @@ One of :PLAIN, :SASL-PLAIN, :DIGEST-MD5, :SASL-DIGEST-MD5.")
                                 events))
            :dom-repr t))))
 
+(defmethod disable ((mode xmpp-mode) &key &allow-other-keys)
+  (bt:destroy-thread (receive-thread mode))
+  (xmpp:disconnect (connection mode))
+  (setf (connection mode) nil
+        (host mode) nil
+        (jid-part mode) nil
+        (username mode) nil
+        (password mode) nil
+        (auth-type mode) nil
+        (recipient mode) nil))
+
 (defmethod connection ((mode xmpp-mode))
   (sera:synchronized (mode)
       (or (slot-value mode 'connection)
