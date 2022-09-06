@@ -225,6 +225,20 @@ For instance 'nana' will match 'banana'.
 This induces a performance cost."))
   (:export-class-name-p t))
 
+(define-class remembrance-exact-source (remembrance-source)
+  ((prompter:name "Exact page matches")
+   (prompter:constructor (all-cache-entries (cache (find-submode 'remembrance-mode))))
+   (prompter:filter (lambda (suggestion source input)
+                      (declare (ignore source))
+                      (when (search input (montezuma:document-value
+                                           (prompter:value suggestion) "content")
+                                    :test #'string-equal)
+                        suggestion)))
+   (prompter:filter-preprocessor nil)
+   (prompter:multi-selection-p t)
+   (prompter:active-attributes-keys '("URL" "Title" "Keywords")))
+  (:export-class-name-p t))
+
 (defmethod prompter:object-attributes ((doc montezuma:document) (source remembrance-source))
   (declare (ignore source))
   `(("URL" ,(page-url-string doc))
@@ -265,8 +279,8 @@ This induces a performance cost."))
   (prompt
    :prompt "Search cache"
    :input (ffi-buffer-copy (current-buffer))
-   :sources (make-instance 'remembrance-source
-                           :return-actions return-actions)))
+   :sources (list (make-instance 'remembrance-source :return-actions return-actions)
+                  (make-instance 'remembrance-exact-source :return-actions return-actions))))
 
 (define-command remember-buffer (&key buffer)
   "Cache the current buffer URL, title and textual content.
