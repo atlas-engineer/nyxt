@@ -401,8 +401,7 @@ down."))
   (:export-predicate-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class)
-  (:documentation "Buffers in which hold structured documents.
-The user can scroll them, zoom, etc."))
+  (:documentation "Buffers holding structured documents."))
 
 (define-class context-buffer (buffer)
   ((last-access
