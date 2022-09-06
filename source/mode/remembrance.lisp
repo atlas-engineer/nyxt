@@ -264,6 +264,7 @@ This induces a performance cost."))
   "Search the local cache for URL, title and content."
   (prompt
    :prompt "Search cache"
+   :input (ffi-buffer-copy (current-buffer))
    :sources (make-instance 'remembrance-source
                            :return-actions return-actions)))
 
