@@ -496,6 +496,7 @@ the selection, and the string to paste instead of the clipboard (respectively)."
 
   (:h3 "Bug fixes")
   (:ul
+   (:li "Security: don't read arbitrary Lisp values from URLs when searching for internal pages.")
    (:li "The version parsing (that features like " (:code "#+nyxt-3")
         " depend on) is more robust and pre-release-aware now.")
    (:li "Touchscreen gestures fixed for VI mode.")
