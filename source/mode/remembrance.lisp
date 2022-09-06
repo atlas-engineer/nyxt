@@ -283,7 +283,7 @@ This induces a performance cost."))
                   (make-instance 'remembrance-exact-source :return-actions return-actions))))
 
 (define-command remember-buffer (&key buffer)
-  "Cache the current buffer URL, title and textual content.
+  "Cache the BUFFER URL, title and textual content.
 BUFFER can be a list of buffers."
   (let ((buffers (or (alex:ensure-list buffer)
                      (prompt :prompt "Cache content of buffer"
@@ -291,6 +291,29 @@ BUFFER can be a list of buffers."
                                                      :return-actions '())))))
     (dolist (buffer buffers)
       (buffer->cache buffer (find-submode 'remembrance-mode)))))
+
+(defun url->cache (url)
+  (let ((background-buffer (make-instance 'background-buffer))
+        (promise (lpara:promise)))
+    ;; TODO: Use nhooks helper macro instead.
+    (hooks:once-on (buffer-loaded-hook background-buffer) (_)
+      (lpara:fulfill promise))
+    (buffer-load url :buffer background-buffer)
+    (lpara:force promise)
+
+    (enable-modes 'remembrance-mode background-buffer)
+    (buffer->cache background-buffer (find-submode 'remembrance-mode background-buffer))
+    (nyxt::buffer-delete background-buffer)))
+
+(define-command remember-bookmark (&key bookmark)
+  "Cache the BOOKMARK URL, title and textual content.
+BOOKMARK can be a list of bookmarks."
+  (let ((bookmarks (or (alex:ensure-list bookmark)
+                       (prompt
+                        :prompt "Cache content of bookmark"
+                        :sources (make-instance 'nyxt/bookmark-mode:bookmark-source
+                                                :multi-selection-p t)))))
+    (mapc (compose #'url->cache #'url) bookmarks)))
 
 (defmethod nyxt:on-signal-notify-uri ((mode remembrance-mode) url)
   (declare (type quri:uri url))
