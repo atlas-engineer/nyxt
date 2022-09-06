@@ -26,10 +26,7 @@
              :border-style "solid"
              :border-radius "0"
              :color theme:on-primary
-             :width "100%"
-             :position "absolute"
-             :bottom "1em"
-             :left "0")
+             :width "100%")
             (.chat
              :display "flex"
              :flex-direction "column-reverse"
@@ -229,6 +226,7 @@ Leaves any other MODE state (`host', `username' etc.) intact to allow
             (:style (style buffer))
             (:style (style mode)))
            (:body
+            (:h1 (recipient mode))
             (:div
              :class "chat"
              (dolist (message (messages mode))
