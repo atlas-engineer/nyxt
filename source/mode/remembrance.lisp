@@ -10,7 +10,6 @@
 ;; `montezuma::field-name', `montezuma::all-fields', `montezuma:field-data'.
 ;; Not needed though?
 
-;; TODO: Add support for automatic tags?
 ;; TODO: Diff and validation?
 ;; TODO: Add action / command to cache bookmarks / history entries manually.
 
@@ -111,7 +110,7 @@ Set to 0 to disable.")
   ;; For prompt-buffer specialization, our own would be better.
   (let ((query (make-instance 'montezuma:boolean-query)))
     (mapc (lambda (term)
-            (dolist (field '("title" "content" "url"))
+            (dolist (field '("title" "content" "url" "keywords"))
               (montezuma:add-query query (make-term* field term) :should-occur)))
           (mapcar (sera:op (str:concat (when suffix-matching-p "*")
                                        _ "*"))
@@ -135,6 +134,9 @@ Set to 0 to disable.")
 (defun page-last-update (page-doc)
   (local-time:parse-timestring
    (montezuma:document-value page-doc "last-update")))
+
+(defun page-keywords (page-doc)
+  (montezuma:document-value page-doc "keywords"))
 
 (defun buffer-content (buffer)
   ;; TODO: Use cl-readability for better results.
@@ -190,7 +192,9 @@ Return NIL if URL is not cached, for instance if it's on
                     (add-field "content" (buffer-content buffer))
                     (add-field "last-update"
                                (timestamp->string (local-time:now))
-                               :index :untokenized))
+                               :index :untokenized)
+                    (add-field "keywords"
+                               (format nil "~:{~a~^ ~}" (nyxt::keywords buffer))))
                   (montezuma:add-document-to-index (cache remembrance-mode) doc)
                   doc)
                 page)
@@ -206,7 +210,7 @@ Return NIL if URL is not cached, for instance if it's on
                                        (lookup input (find-submode 'remembrance-mode)
                                                :suffix-matching-p (suffix-matching-p source)))))
    (prompter:multi-selection-p t)
-   (prompter:active-attributes-keys '("URL" "Title"))
+   (prompter:active-attributes-keys '("URL" "Title" "Keywords"))
    (suffix-matching-p
     t
     :type boolean
@@ -218,7 +222,8 @@ This induces a performance cost."))
 (defmethod prompter:object-attributes ((doc montezuma:document) (source remembrance-source))
   (declare (ignore source))
   `(("URL" ,(page-url-string doc))
-    ("Title" ,(page-title doc))))
+    ("Title" ,(page-title doc))
+    ("Keywords" ,(page-keywords doc))))
 
 (define-internal-page view-cached-page (&key url-string) ; TODO: `view-remembered-page'?
     (:title "*Cached page*")
