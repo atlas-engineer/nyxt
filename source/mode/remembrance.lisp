@@ -100,7 +100,7 @@ Set to 0 to disable.")
   ;; TODO: What to return?  montezuma's doc or our own objects?
   ;; For prompt-buffer specialization, our own would be better.
   (let ((query (make-instance 'montezuma:boolean-query)))
-    (montezuma:add-query query (make-term* "url" (render-url url)) :should-occur)
+    (montezuma:add-query query (make-term "url" (render-url url)) :should-occur)
     (first (search-cache (cache remembrance-mode) query))))
 
 (defun lookup (input remembrance-mode
