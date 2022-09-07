@@ -237,7 +237,7 @@ Otherwise go forward to the only child."
         (htree:visit-all history (id buffer) input))
       (load-history-url input))))
 
-(define-class history-all-source (prompter:source)
+(define-class history-all-owner-nodes-source (prompter:source)
   ((prompter:name "All history URLs")
    (buffer :initarg :buffer :accessor buffer :initform nil)
    (prompter:constructor
@@ -251,14 +251,41 @@ Otherwise go forward to the only child."
   (:export-class-name-p t)
   (:metaclass user-class))
 
-(define-command history-all-query (&optional (buffer (current-buffer)))
-  "Query URL to go to, from the whole history."
+(define-command history-all-owner-nodes-query (&optional (buffer (current-buffer)))
+  "Query URL to go to, from the list of all nodes owned by BUFFER."
   (let ((input (prompt1 :prompt "Navigate to"
-                        :sources (make-instance 'history-all-source :buffer buffer))))
+                        :sources (make-instance 'history-all-owner-nodes-source
+                                                :buffer buffer))))
     (when input
       (with-history-access (history buffer)
         (htree:visit-all history (id buffer) input))
       (load-history-url input))))
+
+(define-class history-all-source (prompter:source)
+  ((prompter:name "All history URLs")
+   (buffer :initarg :buffer :accessor buffer :initform nil)
+   (prompter:constructor
+    (lambda (source)
+      (with-history (history (buffer source))
+        (htree:all-data history)))))
+  (:export-class-name-p t)
+  (:metaclass user-class))
+
+(define-command history-all-query (&optional (buffer (current-buffer)))
+  "Query URL to go to, from the whole history."
+
+  (let ((input (prompt1 :prompt "Navigate to"
+                        :sources (make-instance 'history-all-source :buffer buffer))))
+    (when input
+      (with-history (history buffer)
+        (alex:when-let ((matching-node
+                         (find input
+                               (htree:all-owner-nodes
+                                history
+                                (htree:owner history (id (current-buffer))))
+                               :key (compose #'htree:data #'htree:entry))))
+          (htree:visit-all history (id buffer) matching-node)))
+      (load-history-url (url input)))))
 
 (defun title-or-fallback (history-entry)
   "Return HISTORY-ENTRY title or, if empty, the URL."
