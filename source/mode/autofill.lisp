@@ -57,7 +57,7 @@ it will be in conflict with common-lisp:fill."))
   (closer-mop:set-funcallable-instance-function
    autofill (typecase (autofill-fill autofill)
               (string (lambda () (autofill-fill autofill)))
-              (function (autofill-fill autofill))) ))
+              (function (autofill-fill autofill)))))
 
 (define-class autofill-source (prompter:source)
   ((prompter:name "Autofills")
