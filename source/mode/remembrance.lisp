@@ -183,8 +183,9 @@ Return NIL if URL is not cached, for instance if it's on
                 (setf (quri:uri-fragment copy) nil)))
          (page (find-url url remembrance-mode)))
     (let ((history-mode (find-submode 'nyxt/history-mode:history-mode)))
-      (unless (and history-mode
-                   (nyxt/history-mode:blocked-p url history-mode))
+      (unless (or (internal-url-p url)
+                  (and history-mode
+                       (nyxt/history-mode:blocked-p url history-mode)))
         (prog1
             (if (or (not page)
                     (< (update-interval remembrance-mode)
@@ -293,17 +294,18 @@ BUFFER can be a list of buffers."
       (buffer->cache buffer (find-submode 'remembrance-mode)))))
 
 (defun url->cache (url)
-  (let ((background-buffer (make-instance 'background-buffer))
-        (promise (lpara:promise)))
-    ;; TODO: Use nhooks helper macro instead.
-    (hooks:once-on (buffer-loaded-hook background-buffer) (_)
-      (lpara:fulfill promise))
-    (buffer-load url :buffer background-buffer)
-    (lpara:force promise)
+  (unless (internal-url-p url)
+    (let ((background-buffer (make-instance 'background-buffer))
+          (promise (lpara:promise)))
+      ;; TODO: Use nhooks helper macro instead.
+      (hooks:once-on (buffer-loaded-hook background-buffer) (_)
+        (lpara:fulfill promise))
+      (buffer-load url :buffer background-buffer)
+      (lpara:force promise)
 
-    (enable-modes 'remembrance-mode background-buffer)
-    (buffer->cache background-buffer (find-submode 'remembrance-mode background-buffer))
-    (nyxt::buffer-delete background-buffer)))
+      (enable-modes 'remembrance-mode background-buffer)
+      (buffer->cache background-buffer (find-submode 'remembrance-mode background-buffer))
+      (nyxt::buffer-delete background-buffer))))
 
 (define-command remember-bookmark (&key bookmark)
   "Cache the BOOKMARK URL, title and textual content.
