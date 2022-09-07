@@ -286,7 +286,7 @@ This induces a performance cost."))
   "Cache the BUFFER URL, title and textual content.
 BUFFER can be a list of buffers."
   (let ((buffers (or (alex:ensure-list buffer)
-                     (prompt :prompt "Cache content of buffer"
+                     (prompt :prompt "Cache content of buffers"
                              :sources (make-instance 'buffer-source
                                                      :return-actions '())))))
     (dolist (buffer buffers)
@@ -310,10 +310,17 @@ BUFFER can be a list of buffers."
 BOOKMARK can be a list of bookmarks."
   (let ((bookmarks (or (alex:ensure-list bookmark)
                        (prompt
-                        :prompt "Cache content of bookmark"
+                        :prompt "Cache content of bookmarks"
                         :sources (make-instance 'nyxt/bookmark-mode:bookmark-source
                                                 :multi-selection-p t)))))
     (mapc (compose #'url->cache #'url) bookmarks)))
+
+(define-command remember-history-entry ()
+  "Cache the queried history entries URL, title and textual content."
+  (let ((history-nodes (prompt :prompt "Cache history entries"
+                               :sources (make-instance 'nyxt/history-mode:history-all-source
+                                                       :buffer (current-buffer)))))
+    (mapc (compose #'url->cache #'url) history-nodes)))
 
 (defmethod nyxt:on-signal-notify-uri ((mode remembrance-mode) url)
   (declare (type quri:uri url))
