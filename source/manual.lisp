@@ -119,8 +119,8 @@ add the following to your configuration:")
   ((keyscheme-map
     (define-keyscheme-map \"my-base\" (list :import %slot-default%)
       keyscheme:vi-normal
-      (list \"g b\" (make-command switch-buffer* ()
-                    (switch-buffer :current-is-last-p t)))))))"))
+      (list \"g b\" (lambda-command switch-buffer* ()
+                      (switch-buffer :current-is-last-p t)))))))"))
         (:p "The " (:nxref :slot 'override-map :class-name 'input-buffer) " is a keymap that has priority over
 all other keymaps.  By default, it has few bindings like the one
 for " (command-markup 'execute-command) ".  You can use it to set keys globally:")
