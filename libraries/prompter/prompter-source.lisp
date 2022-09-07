@@ -534,11 +534,16 @@ Attributes are set with `object-attributes'."
 
 (define-class yes-no-source (source)
   ((name "Confirm")
-   (constructor '("yes" "no"))
+   (yes "yes")
+   (no "no")
+   (constructor (list t nil))
    (hide-attribute-header-p :always))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Prompt source for yes-no questions."))
+
+(defmethod object-attributes ((object symbol) (source yes-no-source))
+  `(("Answer" ,(if object (yes source) (no source)))))
 
 (defun make-input-suggestion (suggestions source input)
   (declare (ignore suggestions))

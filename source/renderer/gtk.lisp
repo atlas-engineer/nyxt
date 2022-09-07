@@ -1376,15 +1376,11 @@ See `finalize-buffer'."
                        (webkit:webkit-script-dialog-close dialog)))))
               (:webkit-script-dialog-confirm
                (webkit:webkit-script-dialog-confirm-set-confirmed
-                dialog (if-confirm
-                        ((webkit:webkit-script-dialog-get-message dialog))
-                        t nil)))
+                dialog (if-confirm ((webkit:webkit-script-dialog-get-message dialog)))))
               (:webkit-script-dialog-before-unload-confirm
                (webkit:webkit-script-dialog-confirm-set-confirmed
-                dialog (if-confirm
-                        ;; FIXME: This asks for keyword override in if-confirm.
-                        ((format nil "~a ['yes' = leave, 'no' = stay]" (webkit:webkit-script-dialog-get-message dialog)))
-                        t nil)))))
+                dialog (if-confirm ((webkit:webkit-script-dialog-get-message dialog)
+                                    :yes "leave" :no "stay"))))))
           (webkit:webkit-script-dialog-close dialog)
           (webkit:webkit-script-dialog-unref dialog))
         t))))
@@ -1421,7 +1417,8 @@ See `finalize-buffer'."
                                (webkit:webkit-website-data-access-permission-request-get-requesting-domain
                                 request)
                                (webkit:webkit-website-data-access-permission-request-get-current-domain
-                                request))))))
+                                request)))))
+                   :yes "grant" :no "deny")
                   (webkit:webkit-permission-request-allow request)
                   (webkit:webkit-permission-request-deny request)))))
 

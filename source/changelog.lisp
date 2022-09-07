@@ -429,7 +429,9 @@ SLY install.")
    (:li "Specialize " (:code "prompter:object-attributes") " on " (:code "source") " to o."
         "This offers more customizability.")
    (:li "General purpose helpers can be found in the " (:code "nyxt/utilities") " package.")
-   (:li "New " (:code "nxref") " Spinneret tag for cross-referencing."))
+   (:li "New " (:code "nxref") " Spinneret tag for cross-referencing.")
+   (:li (:nxref :function 'if-confirm)
+        " now allows configuring its yes/no options and can return booleans."))
 
   (:h3 "Bug fixes")
   (:ul
