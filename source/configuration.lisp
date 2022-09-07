@@ -349,7 +349,11 @@ To discover the default value of a slot or all slots of a class, use the
 
 ;; TODO: Disallow canceling the prompt? Allow changing order of YES and NO so
 ;; that one makes a conscious effort to choose a YES?
-;; TODO: Add an "always (yes|no)" and cache the result?
+;; TODO: Add an "always (yes|no)" answers/clauses and do something with those?
+;; - Remembering prompt answers in history.
+;; - Serializing thing (like notification permissions) to disk.
+;; - Or simply leaving the interpretation of this clause to the user.
+;; But maybe that's beyond if-confirm.
 (export-always 'if-confirm)
 (defmacro if-confirm ((prompt &key (yes "yes" explicit-yes-p) (no "no" explicit-no-p))
                       &optional yes-form no-form)
