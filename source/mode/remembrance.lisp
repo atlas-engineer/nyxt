@@ -246,16 +246,24 @@ This induces a performance cost."))
     ("Title" ,(page-title doc))
     ("Keywords" ,(page-keywords doc))))
 
-(define-internal-page view-cached-page (&key url-string) ; TODO: `view-remembered-page'?
+(define-internal-page view-cached-page (&key url-string query) ; TODO: `view-remembered-page'?
     (:title "*Cached page*")
   "View textual content of cached page in new buffer."
   (enable-modes 'remembrance-mode (current-buffer))
   (let* ((mode (find-submode 'remembrance-mode))
-         (doc (find-url url-string mode)))
+         (doc (find-url url-string mode))
+         (content (page-content doc)))
+    (dolist (term (cons query (uiop:split-string query)))
+      (setf content (ppcre:regex-replace-all (uiop:strcat "(?i)" term)
+                                             content
+                                             (spinneret:with-html-string (:b term))
+                                             ;; REVIEW: https://github.com/edicl/cl-ppcre/issues/51
+                                             ;; Only works for whole-word matches.
+                                             :preserve-case t)))
     (spinneret:with-html-string
       (:style (style mode))
       (:h1 (format nil "Cached content of ~a" url-string))
-      (:div (:pre (page-content doc))))))
+      (:div (:pre (:raw content))))))
 
 (define-command recollect-visited-page
     (&key (return-actions (list (lambda-command buffer-load* (suggestion-values)
@@ -273,9 +281,12 @@ This induces a performance cost."))
                                     (echo "Copied to clipboard: ~s" url)))
                                 (lambda-command view-cached-content (suggestions)
                                   "View content in new buffer."
-                                  (set-current-buffer
-                                   (buffer-load (nyxt-url 'view-cached-page :url-string (render-url (page-url-string (first suggestions))))
-                                                :buffer (ensure-internal-page-buffer 'buffer-history-tree)))))))
+                                  (let ((query (prompter:input (current-prompt-buffer))))
+                                    (set-current-buffer
+                                     (buffer-load (nyxt-url 'view-cached-page
+                                                            :url-string (render-url (page-url-string (first suggestions)))
+                                                            :query query)
+                                                  :buffer (ensure-internal-page-buffer 'buffer-history-tree))))))))
   "Search the local cache for URL, title and content."
   (prompt
    :prompt "Search cache"
