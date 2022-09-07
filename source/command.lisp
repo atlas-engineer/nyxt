@@ -169,9 +169,9 @@ Example:
        ;; `ensure-generic-function') so that the compiler stores source location
        ;; information (for "go to definition" to work.
        (sera:lret ((gf (defgeneric ,name (,@(generalize-lambda-list arglist))
-                (:documentation ,doc)
-                (:method (,@arglist) ,@body)
-                (:generic-function-class command))))
+                         (:documentation ,doc)
+                         (:method (,@arglist) ,@body)
+                         (:generic-function-class command))))
          (setf (slot-value gf 'visibility) :mode)))))
 
 (export-always 'define-command-global)
