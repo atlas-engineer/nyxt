@@ -11,7 +11,8 @@
 ;; Not needed though?
 
 ;; TODO: Diff and validation?
-;; TODO: Add action / command to cache bookmarks / history entries manually.
+;; TODO: Turn cache functions into mode methods.
+;; TODO: Add tests for garbage collection, caching history, exact matches.
 
 (nyxt:define-package :nyxt/remembrance-mode
     (:documentation "Mode to cache visited content to disk.
@@ -45,13 +46,9 @@ See also `cache'.")
    (update-interval
     #.(* 60 60 24)
     :type alex:non-negative-integer
-    ;; TODO: 0 to disable?
+    ;; TODO: 0 to disable?  Or use separate slot, e.g. `auto-update-p'?
     :documentation "Update entry if its `last-update' is older than this value.
 Set to 0 to disable.")
-   ;; (auto-update-p
-   ;;  t
-   ;;  :type boolean
-   ;;  :documentation "Automatically refresh the cache when entry is older than `update-interval'.")
    (discard-interval
     #.(* 30 60 60 24)
     :type alex:non-negative-integer
@@ -62,9 +59,6 @@ Set to 0 to disable.")
                :padding 0
                :list-style "none")))))
 
-(defmethod cache-size ((mode remembrance-mode))
-  (length (all-cache-entries (cache mode))))
-
 (defmethod initialize-instance :after ((mode remembrance-mode) &key)
   (setf (cache mode)
         (make-instance 'montezuma:index
@@ -72,6 +66,9 @@ Set to 0 to disable.")
                        ;; Unless otherwise specified, queries will search all
                        ;; these fields simultaneously.
                        :default-field "*")))
+
+(defmethod cache-size ((mode remembrance-mode))
+  (length (all-cache-entries (cache mode))))
 
 (defun make-term (field value)
   (make-instance 'montezuma:term-query
@@ -82,7 +79,7 @@ Set to 0 to disable.")
                  :term (montezuma:make-term field value)))
 
 (defun search-cache (cache query)
-  "Return the list of articles for QUERY."
+  "Return the entries matching QUERY."
   (mapcar (alex:curry #'montezuma:get-document cache)
           (mapcar #'montezuma:doc
                   (montezuma:each
@@ -93,10 +90,11 @@ Set to 0 to disable.")
                    #'identity))))
 
 (defun all-cache-entries (cache)
+  "Return all entries in cache."
   (search-cache cache (make-instance 'montezuma:match-all-query)))
 
 (defun find-url (url remembrance-mode)
-  "Return entry matching URL"
+  "Return cache entry matching URL"
   ;; TODO: What to return?  montezuma's doc or our own objects?
   ;; For prompt-buffer specialization, our own would be better.
   (let ((query (make-instance 'montezuma:boolean-query)))
@@ -105,7 +103,7 @@ Set to 0 to disable.")
 
 (defun lookup (input remembrance-mode
                &key suffix-matching-p)
-  "Return entry matching document."
+  "Return cache entries matching INPUT."
   ;; TODO: What to return?  montezuma's doc or our own objects?
   ;; For prompt-buffer specialization, our own would be better.
   (let ((query (make-instance 'montezuma:boolean-query)))
@@ -174,6 +172,8 @@ Set to 0 to disable.")
 (defun buffer->cache (buffer remembrance-mode)
   "BUFFER is indexed by URL.
 It's only cached if its `last-update' is older than `update-interval'.
+
+Cached pages older than `discard-interval' are automatically purged.
 
 Return cached page.
 Return NIL if URL is not cached, for instance if it's on
@@ -246,7 +246,7 @@ This induces a performance cost."))
     ("Title" ,(page-title doc))
     ("Keywords" ,(page-keywords doc))))
 
-(define-internal-page view-cached-page (&key url-string query) ; TODO: `view-remembered-page'?
+(define-internal-page view-cached-page (&key url-string query) ; TODO: Rename to `view-remembered-page'?
     (:title "*Cached page*")
   "View textual content of cached page in new buffer."
   (enable-modes 'remembrance-mode (current-buffer))
@@ -287,7 +287,16 @@ This induces a performance cost."))
                                                             :url-string (render-url (page-url-string (first suggestions)))
                                                             :query query)
                                                   :buffer (ensure-internal-page-buffer 'buffer-history-tree))))))))
-  "Search the local cache for URL, title and content."
+  "Search the local cache for URL, title and content.
+It lists multiple suggestion sources:
+
+- One set of suggestions comes from natural language processing of the query;
+
+- Another set is the suggestions that contain an exact match of the whole query,
+  as a setence.
+
+The `view-cached-content' action displays the cached content (with highlighted
+query terms), even when offline."
   (prompt
    :prompt "Search cache"
    :input (ffi-buffer-copy (current-buffer))
@@ -305,6 +314,8 @@ BUFFER can be a list of buffers."
       (buffer->cache buffer (find-submode 'remembrance-mode)))))
 
 (defun url->cache (url)
+  "Like `buffer->cache' but works on URL even if it is not currently loaded in a
+buffer."
   (unless (internal-url-p url)
     (let ((background-buffer (make-instance 'background-buffer))
           (promise (lpara:promise)))
