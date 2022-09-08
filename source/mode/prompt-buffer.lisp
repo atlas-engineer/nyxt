@@ -16,9 +16,9 @@ The prompt buffer can have multiple `prompter:source's of suggestions.  Each
 source has its own properties, such as the ability to mark multiple suggestions.
 The same source can be used by different prompt buffers.
 
-Each source offers a set of `return-actions' for its selection(s).  These can be
-listed and run with `return-selection-over-action' (bound to \"M-return\" by
-default)."
+Each source offers a set of `return-actions' for marked items.  These can be
+listed and chosen from with the command `return-marks-action' (bound to
+\"M-return\" by default)."
   ((visible-in-status-p nil)
    (keyscheme-map
     (define-keyscheme-map "prompt-buffer-mode" ()
