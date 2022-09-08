@@ -142,6 +142,11 @@ This is useful if you do not trust the input."
     (uiop:with-safe-io-syntax (:package package)
       (read input-stream eof-error-p eof-value recursive-p))))
 
+(export-always 'safe-sort)
+(defun safe-sort (s &key (predicate #'string-lessp) (key #'string))
+  "Sort sequence S of objects by KEY using PREDICATE."
+  (sort (copy-seq s) predicate :key key))
+
 (export-always 'safe-slurp-stream-forms)
 (defun safe-slurp-stream-forms (stream)
   "Like `uiop:slurp-stream-forms' but wrapped in `uiop:with-safe-io-syntax' and
