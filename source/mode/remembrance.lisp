@@ -11,7 +11,6 @@
 ;; Not needed though?
 
 ;; TODO: Diff and validation?
-;; TODO: Turn cache functions into mode methods.
 ;; TODO: Add tests for garbage collection, caching history, exact matches.
 
 (nyxt:define-package :nyxt/remembrance-mode
@@ -68,7 +67,7 @@ Set to 0 to disable.")
                        :default-field "*")))
 
 (defmethod cache-size ((mode remembrance-mode))
-  (length (all-cache-entries (cache mode))))
+  (length (all-cache-entries mode)))
 
 (defun make-term (field value)
   (make-instance 'montezuma:term-query
@@ -78,20 +77,21 @@ Set to 0 to disable.")
   (make-instance 'montezuma::wildcard-query ; TODO: Not external!
                  :term (montezuma:make-term field value)))
 
-(defun search-cache (cache query)
+(defmethod search-cache ((mode remembrance-mode) query)
   "Return the entries matching QUERY."
-  (mapcar (alex:curry #'montezuma:get-document cache)
-          (mapcar #'montezuma:doc
-                  (montezuma:each
-                   (montezuma:search cache
-                                     query
-                                     ;; TODO: Is there a way to remove the limit?
-                                     :num-docs 10000)
-                   #'identity))))
+  (let ((cache (cache mode)))
+    (mapcar (alex:curry #'montezuma:get-document cache)
+            (mapcar #'montezuma:doc
+                    (montezuma:each
+                     (montezuma:search cache
+                                       query
+                                       ;; TODO: Is there a way to remove the limit?
+                                       :num-docs 10000)
+                     #'identity)))))
 
-(defun all-cache-entries (cache)
+(defmethod all-cache-entries ((mode remembrance-mode))
   "Return all entries in cache."
-  (search-cache cache (make-instance 'montezuma:match-all-query)))
+  (search-cache mode (make-instance 'montezuma:match-all-query)))
 
 (defun find-url (url remembrance-mode)
   "Return cache entry matching URL"
@@ -99,7 +99,7 @@ Set to 0 to disable.")
   ;; For prompt-buffer specialization, our own would be better.
   (let ((query (make-instance 'montezuma:boolean-query)))
     (montezuma:add-query query (make-term "url" (render-url url)) :should-occur)
-    (first (search-cache (cache remembrance-mode) query))))
+    (first (search-cache remembrance-mode query))))
 
 (defun lookup (input remembrance-mode
                &key suffix-matching-p)
@@ -113,7 +113,7 @@ Set to 0 to disable.")
           (mapcar (sera:op (str:concat (when suffix-matching-p "*")
                                        _ "*"))
                   (mapcar #'string-downcase (sera:words input))))
-    (search-cache (cache remembrance-mode) query)))
+    (search-cache remembrance-mode query)))
 
 (defun safe-document-value (doc field)
   "Like `montezuma:document-value' but return NIL when field is missing."
@@ -156,7 +156,7 @@ Set to 0 to disable.")
                                       (page-last-update page))))
 
 (defun out-of-date-pages (mode)
-  (sera:filter (rcurry #'out-of-date-p mode) (all-cache-entries (cache mode))))
+  (sera:filter (rcurry #'out-of-date-p mode) (all-cache-entries mode)))
 
 (defun delete-cached-pages (urls &optional (mode (find-submode 'remembrance-mode)))
   (dolist (url (uiop:ensure-list urls) )
@@ -209,7 +209,7 @@ Return NIL if URL is not cached, for instance if it's on
 
 (define-class remembrance-source (prompter:source)
   ((prompter:name "Pages")
-   (prompter:constructor (all-cache-entries (cache (find-submode 'remembrance-mode))))
+   (prompter:constructor (all-cache-entries (find-submode 'remembrance-mode)))
    (prompter:filter nil)
    (prompter:filter-preprocessor (lambda (suggestions source input)
                                    (if (uiop:emptyp input)
@@ -228,7 +228,7 @@ This induces a performance cost."))
 
 (define-class remembrance-exact-source (remembrance-source)
   ((prompter:name "Exact page matches")
-   (prompter:constructor (all-cache-entries (cache (find-submode 'remembrance-mode))))
+   (prompter:constructor (all-cache-entries (find-submode 'remembrance-mode)))
    (prompter:filter (lambda (suggestion source input)
                       (declare (ignore source))
                       (when (search input (montezuma:document-value
