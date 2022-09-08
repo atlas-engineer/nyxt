@@ -30,7 +30,10 @@ All ARGS are declared as `ignorable'."
                       (first (getf (mopu:slot-properties class-specifier slot) :initargs)))
                      (symbol-package class-specifier)))
                   ;; TODO: `slot-names' or `direct-slot-names'?
-                  (mopu:slot-names class-specifier))))
+                  #-ecl
+                  (mopu:slot-names class-specifier)
+                  #+ecl
+                  (mapcar #'c2mop:slot-definition-name (c2mop:class-slots (find-class 'prompter))))))
 
 (defun exported-p (sym)
   (eq :external
