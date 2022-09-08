@@ -261,7 +261,9 @@ This induces a performance cost."))
                                              :preserve-case t)))
     (spinneret:with-html-string
       (:style (style mode))
-      (:h1 (format nil "Cached content of ~a" url-string))
+      (:h1 "[Cache] " (:a :href url-string (if (uiop:emptyp (page-title doc))
+                                     url-string
+                                     (page-title doc))))
       (:div (:pre (:raw content))))))
 
 (define-command recollect-visited-page
