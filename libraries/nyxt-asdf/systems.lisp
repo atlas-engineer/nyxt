@@ -65,6 +65,7 @@ pathname."
     (if (ignore-errors (logical-pathname-translations host))
         (flet ((set-alist (key value)
                  (let ((pair (assoc key (logical-pathname-translations host)
+                                    :key #'namestring
                                     :test #'string-equal)))
                    (if pair
                        (setf (cdr pair) (list value))
