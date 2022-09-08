@@ -70,13 +70,16 @@ These specializations are reserved to the user."))
   (when (uiop:emptyp (closer-mop:generic-function-name command))
     (alex:required-argument 'name))
   (when lambda-expression
-    (closer-mop:ensure-method command lambda-expression))
-  (when (uiop:emptyp (documentation command t))
-    (let ((doc (nth-value 2 (alex:parse-body (rest (rest lambda-expression)) :documentation t))))
-      (if (and (uiop:emptyp doc)
-               (not (eq :anonymous (visibility command))))
-          (error "Command ~a requires documentation." (name command))
-          (setf (documentation command 'function) doc))))
+    ;; `closer-mop:ensure-method' calls `add-method' which reinitializes the
+    ;; command / generic function, thus running `initialize-command' twice each
+    ;; time.  TODO: Can we avoid this?
+    (closer-mop:ensure-method command lambda-expression)
+    (when (uiop:emptyp (documentation command t))
+      (let ((doc (nth-value 2 (alex:parse-body (rest (rest lambda-expression)) :documentation t))))
+        (if (and (uiop:emptyp doc)
+                 (not (eq :anonymous (visibility command))))
+            (error "Command ~a requires documentation." (name command))
+            (setf (documentation command 'function) doc)))))
   (unless (or (eq :anonymous (visibility command))
               (deprecated-p command))
     ;; Overwrite previous command:
