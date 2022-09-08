@@ -267,7 +267,15 @@ This induces a performance cost."))
       (:div (:pre (:raw content))))))
 
 (define-command recollect-visited-page
-    (&key (return-actions (list (lambda-command buffer-load* (suggestion-values)
+    (&key (return-actions (list (lambda-command view-cached-content (suggestions)
+                                  "View content in new buffer."
+                                  (let ((query (prompter:input (current-prompt-buffer))))
+                                    (set-current-buffer
+                                     (buffer-load (nyxt-url 'view-cached-page
+                                                            :url-string (render-url (page-url-string (first suggestions)))
+                                                            :query query)
+                                                  :buffer (ensure-internal-page-buffer 'buffer-history-tree)))))
+                                (lambda-command buffer-load* (suggestion-values)
                                   "Load first selected cache entry in current buffer and the rest in new buffer(s)."
                                   (mapc (lambda (page-doc) (make-buffer :url (page-url page-doc))) (rest suggestion-values))
                                   (buffer-load (page-url (first suggestion-values))))
@@ -279,15 +287,7 @@ This induces a performance cost."))
                                   "Copy bookmark URL."
                                   (let ((url (page-url-string (first suggestions))))
                                     (trivial-clipboard:text url)
-                                    (echo "Copied to clipboard: ~s" url)))
-                                (lambda-command view-cached-content (suggestions)
-                                  "View content in new buffer."
-                                  (let ((query (prompter:input (current-prompt-buffer))))
-                                    (set-current-buffer
-                                     (buffer-load (nyxt-url 'view-cached-page
-                                                            :url-string (render-url (page-url-string (first suggestions)))
-                                                            :query query)
-                                                  :buffer (ensure-internal-page-buffer 'buffer-history-tree))))))))
+                                    (echo "Copied to clipboard: ~s" url))))))
   "Search the local cache for URL, title and content.
 It lists multiple suggestion sources:
 
