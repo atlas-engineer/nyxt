@@ -112,24 +112,11 @@ Possibly contains additional Lisp-inaccessible properties."))
 (defvar *url->object* (make-hash-table :test 'equal)
   "A memoization table from URL string to the fetched objects.")
 
-(defun encrypt-with-account (account content)
-  "Encrypt the string CONTENT with the public key of ACCOUNT."
-  (base64:usb8-array-to-base64-string
-   (ironclad:sign-message
-    (ironclad:make-private-key
-     :ed25519
-     :x (base64:base64-string-to-usb8-array
-         (apply #'str:concat
-                (butlast (rest (str:lines
-                                (serapeum:@ (nyxt/activitypub-mode:original-object account)
-                                            "publicKey" "publicKeyPem")))))))
-    (ironclad:digest-sequence (ironclad:make-digest :sha256) (flex:string-to-octets content)))))
-
 (export-always 'fetch-object)
-(defgeneric fetch-object (object)
-  (:method ((object list))
+(defgeneric fetch-object (object instance-type)
+  (:method ((object list) instance-type)
     (lpara:pmapcar #'fetch-object object))
-  (:method ((object string))
+  (:method ((object string) instance-type)
     (when (valid-url-p object)
       (log:debug "Fetching ~a." object)
       (flet ((get-object ()
@@ -140,21 +127,11 @@ Possibly contains additional Lisp-inaccessible properties."))
                            `(("Accept" . "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")
                              ,@(serapeum:and-let* ((mode (find-submode 'nyxt/activitypub-mode:activitypub-mode))
                                                    (auth (auth-token mode)))
-                                 `(("Authorization" . ,(str:concat "Bearer " auth))))
-                             ,@(serapeum:and-let* ((mode (find-submode 'nyxt/activitypub-mode:activitypub-mode))
-                                                   (acc (account mode))
-                                                   (_ (eq :mastodon (instance-type mode))))
-                                 `(("Signature"
-                                    ;; FIXME: Maybe set the Date header too?
-                                    . ,(format nil "keyId=~s,headers=\"(request-target) host\",signature=~s"
-                                               (sera:@ (original-object acc) "publicKey" "id")
-                                               (encrypt-with-account acc (format nil "(request-target): get ~a
-host: ~a" (quri:uri-path (quri:uri object))
-(quri:uri-host (quri:uri object)))))))))))))))
+                                 `(("Authorization" . ,(str:concat "Bearer " auth)))))))))))
         (or (alex:ensure-gethash object *url->object* (get-object))
             (get-object)))))
-  (:method ((object quri:uri))
-    (fetch-object (quri:render-uri object)))
+  (:method ((object quri:uri) instance-type)
+    (fetch-object (quri:render-uri object) instance-type))
   (:documentation "Fetch the object from the provided URL."))
 
 (export-always 'send-object)
@@ -168,17 +145,7 @@ host: ~a" (quri:uri-path (quri:uri object))
           (dex:post (slot-value acc 'outbox)
                     :headers `(("Content-Type" . "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")
                                ,@(alex:when-let* ((auth (auth-token mode)))
-                                   `(("Authorization" . ,(str:concat "Bearer " auth))))
-                               ,@(serapeum:and-let* ((_ (eq :mastodon (instance-type mode))))
-                                   `(("Signature"
-                                      ;; FIXME: Maybe set the Date header too?
-                                      . ,(format nil "keyId=~s,headers=\"(request-target) host\",signature=~s"
-                                                 (sera:@ (original-object acc) "publicKey" "id")
-                                                 (encrypt-with-account
-                                                  acc
-                                                  (format nil "(request-target): get ~a
-host: ~a" (quri:uri-path (quri:uri (slot-value acc 'outbox)))
-(quri:uri-host (quri:uri (slot-value acc 'outbox))))))))))
+                                   `(("Authorization" . ,(str:concat "Bearer " auth)))))
                     :content (unparse-object object))
         (declare (ignore content))
         (cond
