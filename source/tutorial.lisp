@@ -63,9 +63,9 @@ matching your input as you type.")
                                :modes (list (make-instance 'nyxt/prompt-buffer-mode:prompt-buffer-mode)))
                ": Validate the selected suggestion(s) or the current input if there is
 no suggestion.")
-         (:li  (command-markup 'nyxt/prompt-buffer-mode:return-selection-over-action
+         (:li  (command-markup 'nyxt/prompt-buffer-mode:return-marks-action
                                :modes (list (make-instance 'nyxt/prompt-buffer-mode:prompt-buffer-mode)))
-               ": Query the user for an action to run over the selected suggestion(s)."))
+               ": Query the user for an action to run over the marked suggestion(s)."))
         (:p " Some commands support multiple selections, for
 instance " (:code "delete-buffer") " can delete all selected buffers at once.
 When the input is changed and the suggestions are re-filtered, the selection is

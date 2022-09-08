@@ -44,8 +44,9 @@ default)."
        "f1 b" 'run-prompt-buffer-command
        "f1 m" 'describe-prompt-buffer
        "return" 'return-selection
-       "M-return" 'return-selection-over-action
+       "M-return" 'return-marks-action
        "C-return" 'run-selection-action
+       "C-c C-j" 'set-selection-action
        "tab" 'insert-selection
        ; TODO: This is the Emacs Helm binding.  Better?
        "C-c C-f" 'toggle-selection-actions-enabled
@@ -305,6 +306,10 @@ current unmarked selection."
   (sera:and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
     (prompter:return-actions first-prompt-buffer)))
 
+(defun prompt-buffer-selection-actions (&optional (window (current-window)))
+  (sera:and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
+    (prompter:selection-actions (prompter:selected-source first-prompt-buffer))))
+
 ;; TODO: Should return-actions be commands?  For now, they can be either
 ;; commands or symbols.
 (defun make-action-suggestion (action &optional source input)
@@ -323,24 +328,34 @@ current unmarked selection."
                                                  (t (documentation action 'function)))))
                                        "")))))
 
-(define-class action-source (prompter:source)
+(define-class return-action-source (prompter:source)
   ((prompter:name "List of return-actions")
    (prompter:constructor (prompt-buffer-return-actions))
    (prompter:suggestion-maker 'make-action-suggestion)))
 
-(define-command-prompt return-selection-over-action (prompt-buffer)
-  "Prompt for an action to run over PROMPT-BUFFER selection."
+(define-class selection-action-source (prompter:source)
+  ((prompter:name "List of selection-actions")
+   (prompter:constructor (prompt-buffer-selection-actions))
+   (prompter:suggestion-maker 'make-action-suggestion)))
+
+(define-command-prompt return-marks-action (prompt-buffer)
+  "Prompt for an action to run over PROMPT-BUFFER `prompter:marks'."
   (if (equal (mapcar #'type-of (prompter:sources (current-prompt-buffer)))
-             '(action-source))
+             '(return-action-source))
       (echo "Already displaying return-actions of previous prompt buffer.")
-      (let ((action (prompt1 :prompt "Action to run on selection"
-                             :sources 'action-source)))
-        (when action
-          (prompter:return-selection prompt-buffer action)))))
+      (alex:when-let ((action (prompt1 :prompt "Action to run on selection"
+                                       :sources 'return-action-source)))
+        (prompter:return-selection prompt-buffer action))))
 
 (define-command-prompt run-selection-action (prompt-buffer)
-  "Run one of `prompter:selection-actions' without closing PROMPT-BUFFER."
+  "Run `prompter::default-selection-action' without closing PROMPT-BUFFER."
   (prompter:call-selection-action prompt-buffer))
+
+(define-command-prompt set-selection-action (prompt-buffer)
+  "Set `prompter:selection-actions' without closing PROMPT-BUFFER."
+  (alex:when-let ((action (prompt1 :prompt "Set selection action"
+                                   :sources 'selection-action-source)))
+    (prompter:set-selection-action action prompt-buffer)))
 
 (define-command-prompt cancel-input (prompt-buffer) ; TODO: Rename.
   "Close the PROMPT-BUFFER without further action."
