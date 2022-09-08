@@ -226,6 +226,7 @@ changes.")
 
    (notification-delay
     0.1
+    :type alex:non-negative-real
     :documentation "Time in seconds after which to notify `update-notifier' if
 `suggestions' was modified.")
 
@@ -301,8 +302,8 @@ executed.  Also see `selection-actions-delay'.")
 
    (selection-actions-delay
     0.0
-    :documentation "Execute the first of `selection-actions' after this delay
-when `selection-actions-enabled-p' is non-nil."))
+    :type alex:non-negative-real
+    :documentation "Time in seconds after which `selection-actions' run."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))

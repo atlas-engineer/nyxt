@@ -38,57 +38,70 @@ Create it if it does not exist."
 The channel return value is a `download'.")
 
 (defclass download ()
-  ((requested-url :accessor requested-url
-                  :initarg :requested-url
-                  :initform (quri:uri "")
-                  :type quri:uri
-                  :documentation "The URL that the user requested.  This may be
-different from the actual location of the download, e.g. in case of automatic
-redirection.  See RESOLVED-URL.")
-   (resolved-url :accessor resolved-url
-                 :initarg :resolved-url
-                 :initform (quri:uri "")
-                 :type quri:uri
-                 :documentation "The actual source of the download.
+  ((requested-url
+    :accessor requested-url
+    :initarg :requested-url
+    :initform (quri:uri "")
+    :type quri:uri
+    :documentation "The URL that the user requested.
+This may be different from the actual location of the download, e.g. in case of
+automatic redirection.  See RESOLVED-URL.")
+   (resolved-url
+    :accessor resolved-url
+    :initarg :resolved-url
+    :initform (quri:uri "")
+    :type quri:uri
+    :documentation "The actual source of the download.
 This may be different from the URL the user requested, see REQUESTED-URL.")
-   (file :accessor file
-         :initarg :file
-         :initform ""
-         :documentation "Path pointing to the local storage location of the
+   (file
+    :accessor file
+    :initarg :file
+    :initform ""
+    :documentation "Path pointing to the local storage location of the
 downloaded file.")
-   (downstream :accessor downstream
-               :initarg :downstream
-               :initform nil
-               :documentation "The stream which can be read from to do the actual
+   (downstream
+    :accessor downstream
+    :initarg :downstream
+    :initform nil
+    :documentation "The stream which can be read from to do the actual
 download.")
-   (status :accessor status
-           :initarg :status
-           ;; TODO: String?
-           :initform nil)
-   (header :accessor header
-           :initarg :header
-           :initform "")
-   (update-interval :accessor update-interval
-                    :initarg :update-interval
-                    :initform 1.0
-                    :documentation "Time in floating seconds to wait before
-sending a notification to the `*notifications*' channel.")
-   (last-update :accessor last-update
-                :initarg :last-update
-                :initform 0.0
-                :documentation "Internal time when last notification was sent.
-This is a floating seconds.")
-   (finished-p :accessor finished-p
-               :initform nil
-               :documentation "Non-nil if it has finished downloading.")
-   (bytes-fetched :accessor bytes-fetched
-                  :initform 0)
-   (bytes-last-update :accessor bytes-last-update
-                      :initform 0
-                      :documentation "Bytes fetched when last `update' was called.")
-   (last-update-speed :accessor last-update-speed
-                      :initform 0
-                      :documentation "Download speed in B/s when last `update' was called.")))
+   (status
+    :accessor status
+    :initarg :status
+    ;; TODO: String?
+    :initform nil)
+   (header
+    :accessor header
+    :initarg :header
+    :initform "")
+   (update-interval
+    :type alexandria:non-negative-real
+    :accessor update-interval
+    :initarg :update-interval
+    :initform 1.0
+    :documentation "Time in seconds after which a notification is sent to the
+`*notifications*' channel.")
+   (last-update
+    :type alexandria:non-negative-real
+    :accessor last-update
+    :initarg :last-update
+    :initform 0.0
+    :documentation "Time in seconds when the last notification was sent.")
+   (finished-p
+    :accessor finished-p
+    :initform nil
+    :documentation "Non-nil if it has finished downloading.")
+   (bytes-fetched
+    :accessor bytes-fetched
+    :initform 0)
+   (bytes-last-update
+    :accessor bytes-last-update
+    :initform 0
+    :documentation "Bytes fetched when last `update' was called.")
+   (last-update-speed
+    :accessor last-update-speed
+    :initform 0
+    :documentation "Download speed in B/s when last `update' was called.")))
 
 (defmethod filename ((download download))
   "Return the full name of this downloaded file, as a string."

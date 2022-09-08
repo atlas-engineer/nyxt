@@ -4,11 +4,14 @@
 (in-package :password)
 
 (define-class password-interface ()
-  ((executable nil
-               :type (or null string)
-               :documentation "The program to query for password information.")
-   (sleep-timer 15
-                :documentation "The amount of time to sleep, in seconds."))
+  ((executable
+    nil
+    :type (or null string)
+    :documentation "The program to query for password information.")
+   (sleep-timer
+    15
+    :type alexandria:non-negative-real
+    :documentation "The amount of time to sleep, in seconds."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
