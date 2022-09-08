@@ -178,9 +178,8 @@ Cached pages older than `discard-interval' are automatically purged.
 Return cached page.
 Return NIL if URL is not cached, for instance if it's on
 `nyxt/history-mode:history-mode' `history-blocklist'."
-  (let* ((url (sera:lret ((copy (quri:copy-uri (url buffer))))
-                ;; We drop the fragment as it does not change the page content.
-                (setf (quri:uri-fragment copy) nil)))
+  ;; We drop the fragment as it does not change the page content.
+  (let* ((url (quri:copy-uri (url buffer) :fragment nil))
          (page (find-url url remembrance-mode)))
     (let ((history-mode (find-submode 'nyxt/history-mode:history-mode)))
       (unless (or (internal-url-p url)
