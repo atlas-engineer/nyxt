@@ -227,11 +227,11 @@ turned into links to their respective description page."
          (:li "Total: " (length total-symbols)))
         (:h2 "Use list:")
         (:ul
-         (dolist (use (package-use-list package))
+         (dolist (use (safe-sort (package-use-list package) :key #'package-name))
            (:li (package-markup use))))
         (:h2 "Used by list:")
         (:ul
-         (dolist (use (package-used-by-list package))
+         (dolist (use (safe-sort (package-used-by-list package) :key #'package-name))
            (:li (package-markup use))))))))
 
 (define-internal-page-command-global describe-variable
@@ -482,7 +482,7 @@ A command is a special kind of function that can be called with
               :sources (make-instance 'class-source :universal universal))))
     (buffer (str:concat "*Help-" (symbol-name class) "*") (resolve-symbol :help-mode :mode))
   "Inspect a class and show it in a help buffer."
-  (let* ((slots (class-public-slots class))
+  (let* ((slots (safe-sort (class-public-slots class)))
          (slot-descs (sera:string-join (mapcar (rcurry #'describe-slot* class) slots) ""))
          (*print-case* :downcase))
     (spinneret:with-html-string
@@ -495,14 +495,15 @@ A command is a special kind of function that can be called with
                    collect (:li (:a :href (nyxt-url 'describe-class :class class-name) class-name)))))
       (when (mopu:direct-subclasses class)
         (:h2 "Direct subclasses:")
-        (:ul (loop for class-name in (mapcar #'class-name (mopu:direct-subclasses class))
+        (:ul (loop for class-name in (safe-sort (mapcar #'class-name (mopu:direct-subclasses class)))
                    collect (:li (:a :href (nyxt-url 'describe-class :class class-name) class-name)))))
       (:h2 "Slots:")
       (:raw slot-descs)
       (:h2 "Methods:")
-      (:ul (loop for method in (remove-if
-                                #'listp (mapcar #'mopu:generic-function-name
-                                                (mopu:generic-functions class)))
+      (:ul (loop for method in (safe-sort
+				(remove-if
+				 #'listp (mapcar #'mopu:generic-function-name
+						 (mopu:generic-functions class))))
                  collect (:li (:a :href (nyxt-url 'describe-function :fn method) method)))))))
 
 (define-command-global universal-describe-class ()
