@@ -129,7 +129,7 @@
    (native-inputs
     (list cl-lisp-unit2
           sbcl
-          ;; Only for development, uneeded for the upstream Guix package:
+          ;; Only for development, unneeded for the upstream Guix package:
           cl-trivial-benchmark))
    (inputs
     (list cl-alexandria
