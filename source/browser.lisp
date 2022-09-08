@@ -144,6 +144,7 @@ issued by Control+<button1> in a new window.")
     :documentation "`time:timestamp' of when Nyxt was started.")
    (init-time
     0.0
+    :type alex:non-negative-real
     :export nil
     :documentation "Initialization time in seconds.")
    (ready-p

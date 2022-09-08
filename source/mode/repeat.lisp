@@ -28,9 +28,9 @@
     :type (or integer null)
     :documentation "The number of times to repeat the commands for.")
    (repeat-interval
-    1
-    :type number
-    :documentation "Time interval (in seconds) to repeat `repeat-action'.")
+    1.0
+    :type alex:non-negative-real
+    :documentation "Time in seconds after which `repeat-action' is repeated.")
    (repeat-action
     nil
     :type (or null (function (repeat-mode)))
