@@ -182,6 +182,11 @@ compution is not finished.")))
             (funcall action (value suggestion)))
           (funcall action (value suggestion))))))
 
+(export-always 'set-selection-action)
+(defmethod set-selection-action (value (prompter prompter))
+  (setf (selection-actions (selected-source prompter))
+        (cons value (delete value (selection-actions (selected-source prompter))))))
+
 (export-always 'input)
 (defmethod (setf input) (text (prompter prompter))
   "Update PROMPTER sources and return TEXT."
