@@ -8,12 +8,12 @@
 (in-package :class-star/tests)
 
 (define-test simple-class ()
-  (assert-equality 'string= "fooname"
-                   (progn
-                     (class-star:define-class foo ()
-                       ((name "fooname")))
-                     (let ((foo (make-instance 'foo)))
-                       (name-of foo)))))
+  (assert-string= "fooname"
+                  (progn
+                    (class-star:define-class foo ()
+                      ((name "fooname")))
+                    (let ((foo (make-instance 'foo)))
+                      (name-of foo)))))
 
 (define-test simple-class-with-custom-accessors ()
   (class-star:define-class bar ()
@@ -27,13 +27,13 @@
   (assert-false (fboundp 'address)))
 
 (define-test simple-class-default-value ()
-  (assert-equality 'string= ""
-                   (progn
-                     (class-star:define-class foo-default ()
-                       ((name :type string)
-                        (age :type number)))
-                     (let ((foo (make-instance 'foo-default)))
-                       (name-of foo)))))
+  (assert-string= ""
+                  (progn
+                    (class-star:define-class foo-default ()
+                      ((name :type string)
+                       (age :type number)))
+                    (let ((foo (make-instance 'foo-default)))
+                      (name-of foo)))))
 
 (define-test no-accessor ()
   (assert-false (progn
@@ -46,8 +46,8 @@
 (define-test initform-inference ()
   (class-star:define-class foo-initform-infer ()
     ((name :type string)))
-  (assert-equality 'string= ""
-                   (name-of (make-instance 'foo-initform-infer)))
+  (assert-string= ""
+                  (name-of (make-instance 'foo-initform-infer)))
   (class-star:define-class foo-initform-infer-no-unbound ()
     ((name :type function))
     (:initform-inference 'class-star:no-unbound-initform-inference))
