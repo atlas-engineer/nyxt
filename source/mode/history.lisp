@@ -355,12 +355,18 @@ internally, but this display is clearer and more navigable."
                url
                buffer
                (slot-value buffer 'nyxt::status))
+    (unless (quri:uri= url (url buffer))
+      (log:debug "Picking different buffer URL instead: ~a"
+                 (url buffer)))
     (when (eq (slot-value buffer 'nyxt::status) :finished)
       ;; We also add history entries here when URL changes without initiating
       ;; any load, e.g. when clicking on an anchor.
       (with-current-buffer buffer
-        (nyxt::history-add url :title (title buffer)
-                               :buffer buffer)))
+        ;; WARNING: We add buffer's URL instead of the URL argument because in
+        ;; case of some redirects (like Wikipedia's) the buffer URL is the final
+        ;; one.
+        (nyxt::history-add (url buffer) :title (title buffer)
+                                        :buffer buffer)))
     url))
 
 (defmethod nyxt:on-signal-notify-uri ((mode history-mode) url)
