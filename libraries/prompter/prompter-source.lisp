@@ -39,11 +39,11 @@ raised condition."
 This is a \"safe\" wrapper around `bt:make-thread'."
   `(bt:make-thread
     (lambda ()
-      ,(if *debug-on-error*
-           `(progn
-              ,@body)
-           `(with-protect ("Error on separate prompter thread: ~a" :condition)
-              ,@body)))
+      (if *debug-on-error*
+          (progn
+            ,@body)
+          (with-protect ("Error on separate prompter thread: ~a" :condition)
+            ,@body)))
     :name ,name))
 
 (defun object-public-slots (object-specifier)
