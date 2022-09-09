@@ -232,8 +232,8 @@ Otherwise go forward to the only child."
                         :sources (make-instance 'all-history-forwards-source
                                                 :buffer buffer))))
     (when input
-      (with-history (history buffer)
-        (htree:forward history (id buffer)))
+      (with-history-access (history buffer)
+        (htree:visit-all history (id buffer) input))
       (load-history-url input))))
 
 (define-class history-all-source (prompter:source)
@@ -255,7 +255,7 @@ Otherwise go forward to the only child."
   (let ((input (prompt1 :prompt "Navigate to"
                         :sources (make-instance 'history-all-source :buffer buffer))))
     (when input
-      (with-history (history buffer)
+      (with-history-access (history buffer)
         (htree:visit-all history (id buffer) input))
       (load-history-url input))))
 
