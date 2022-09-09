@@ -51,7 +51,7 @@ still being less noticeable in the crowd.")
     :export nil
     :documentation "The User Agent the browser had before enabling this mode.")
    (old-timezone
-    nil
+    (uiop:getenv "TZ")
     :export nil
     :documentation "The timezone the system had before enabling this mode.")))
 
@@ -77,7 +77,8 @@ still being less noticeable in the crowd.")
    #'strip-tracking-parameters))
 
 (defmethod disable ((mode reduce-tracking-mode) &key)
-  (setf (uiop:getenv "TZ") (old-timezone mode))
+  (when (old-timezone mode)
+    (setf (uiop:getenv "TZ") (old-timezone mode)))
   (setf (ffi-buffer-user-agent (buffer mode)) (old-user-agent mode))
   (setf (ffi-preferred-languages (buffer mode))
         (list (first
