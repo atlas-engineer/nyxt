@@ -243,7 +243,8 @@ For instance, to include images:
         (append matching-hints other-hints))))
    (prompter:selection-actions
     (unless (fit-to-prompt-p (find-submode 'hint-mode))
-      (lambda (suggestion)
+      (lambda-command highlight-selected-hint* (suggestion)
+        "Highlight hint."
         (highlight-selected-hint :element suggestion
                                  :scroll nil))))
    (prompter:marks-actions

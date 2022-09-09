@@ -219,7 +219,8 @@
           (progn
             (remove-search-hints)
             '()))))
-   (prompter:selection-actions (lambda (suggestion)
+   (prompter:selection-actions (lambda-command highlight-match (suggestion)
+                                 "Scroll to search match."
                                  ;; TODO: rewrite prompt-buffer-selection-highlight-hint
                                  (set-current-buffer (buffer suggestion) :focus nil)
                                  (prompt-buffer-selection-highlight-hint :scroll t)))

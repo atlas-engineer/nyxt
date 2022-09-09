@@ -1230,7 +1230,8 @@ proceeding."
                                   'reload-buffers))
    (prompter:selection-actions-enabled-p t)
    (prompter:selection-actions-delay 0.1)
-   (prompter:selection-actions (lambda (buffer)
+   (prompter:selection-actions (lambda-command set-current-buffer* (buffer)
+                                 "Set current BUFFER for the active window."
                                  (set-current-buffer buffer :focus nil)))
    (prompter:destructor (let ((buffer (current-buffer)))
                           (lambda (prompter source)

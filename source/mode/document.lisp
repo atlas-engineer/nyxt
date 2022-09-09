@@ -471,7 +471,9 @@ ID is a buffer `id'."
   ((prompter:name "Headings")
    (buffer :accessor buffer :initarg :buffer)
    (prompter:selection-actions-enabled-p t)
-   (prompter:selection-actions 'scroll-page-to-heading)
+   (prompter:selection-actions (lambda-command scroll-page-to-heading* (heading)
+                                 "Scroll to heading."
+                                 (scroll-page-to-heading heading)))
    (prompter:constructor (lambda (source)
                            (get-headings :buffer (buffer source))))
    (prompter:return-actions (list (lambda-unmapped-command scroll-page-to-heading)))))
