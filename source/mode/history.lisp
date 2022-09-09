@@ -312,7 +312,9 @@ ID is a buffer `id'."
     (spinneret:with-html-string
       (:style (style mode))
       (:h1 (format nil "History of ~a" buffer))
-      (:div (:raw (render-buffer-history-tree buffer))))))
+      (:div (if buffer
+                (:raw (render-buffer-history-tree buffer))
+                "Buffer no longer exists.")))))
 
 (define-command-global buffer-history-tree (&key (buffer (current-buffer)))
   "Display the history tree of a buffer."
