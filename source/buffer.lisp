@@ -1371,7 +1371,12 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
   (quri:uri
    (cond
      ((and (engine query)
-           (not (uiop:emptyp (query query))))
+           (not (uiop:emptyp (query query)))
+           (not (uiop:emptyp (label query))))
+      (query query))
+     ((and (engine query)
+           (not (uiop:emptyp (query query)))
+           (uiop:emptyp (label query)))
       (format nil (search-url (engine query))
               (str:join ""
                         (mapcar #'encode-url-char
@@ -1387,6 +1392,7 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
                            :check-dns-p check-dns-p
                            :query completion))
     (list (make-instance 'new-url-query
+                         :engine engine
                          :check-dns-p check-dns-p
                          :query (second completion)
                          :label (first completion)))))
