@@ -504,7 +504,7 @@ of buffers."
                   :prompt "Select headings from buffers"
                   :sources (make-instance 'buffer-source
                                           :multi-selection-p t
-                                          :return-actions nil))))
+                                          :return-actions #'identity))))
     (prompt
      :prompt "Jump to heading"
      :sources (loop for buffer in buffers

@@ -262,7 +262,7 @@ Example:
   "Search multiple buffers."
   (let ((buffers (prompt :prompt "Search buffer(s)"
                          :sources (make-instance 'buffer-source ; TODO: Define class?
-                                                 :return-actions '()
+                                                 :return-actions #'identity
                                                  :multi-selection-p t))))
     (prompt
      :prompt "Search text"
