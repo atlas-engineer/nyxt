@@ -248,7 +248,7 @@ If N is negative, go to next pages instead."
   ((prompter:name "List of prompter attributes")
    (prompter:multi-selection-p t)
    (prompter:suggestion-maker 'make-attribute-suggestion)
-   (prompter:return-actions '(return-marks-only))))
+   (prompter:return-actions #'return-marks-only)))
 
 (defun return-marks-only (suggestion-values)
   "Return marked suggestions only.

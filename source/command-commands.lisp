@@ -140,28 +140,27 @@ together with the arglists and documentations of the functions typed in."
      :sources (list (make-instance
                      'command-source
                      :return-actions
-                     (list (lambda-command run-command* (commands)
-                             "Run the chosen command."
-                             (let ((command (first commands)))
-                               (setf (last-access command) (time:now))
-                               (run-async command)))))
+                     (lambda-command run-command* (commands)
+                       "Run the chosen command."
+                       (let ((command (first commands)))
+                         (setf (last-access command) (local-time:now))
+                         (run-async command))))
                     (make-instance
                      'extended-command-source
                      :return-actions
-                     (list
-                      (lambda-command evaluate-lisp-expression* (exprs)
-                        "Evaluate the inputted Lisp expression."
-                        (run-thread "evaluator"
-                          (let ((*interactive-p* t))
-                            (echo "~s" (eval (first exprs))))))))
+                     (lambda-command evaluate-lisp-expression* (exprs)
+                       "Evaluate the inputted Lisp expression."
+                       (run-thread "evaluator"
+                         (let ((*interactive-p* t))
+                           (echo "~s" (eval (first exprs)))))))
                     (make-instance
                      'predicted-command-source
                      :return-actions
-                     (list (lambda-command run-command* (commands)
-                             "Run the chosen command."
-                             (let ((command (first commands)))
-                               (setf (last-access command) (time:now))
-                               (run-async command))))))
+                     (lambda-command run-command* (commands)
+                       "Run the chosen command."
+                       (let ((command (first commands)))
+                         (setf (last-access command) (time:now))
+                         (run-async command)))))
      :hide-suggestion-count-p t)))
 
 (defun parse-function-lambda-list-types (fn)

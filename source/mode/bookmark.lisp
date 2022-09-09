@@ -250,7 +250,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
    :prompt "Bookmark URL from buffer(s)"
    :sources (make-instance 'buffer-source
                            :multi-selection-p t
-                           :return-actions (list (lambda-mapped-command bookmark-current-url)))))
+                           :return-actions (lambda-mapped-command bookmark-current-url))))
 
 (define-command bookmark-url
     (&key (url (ignore-errors (quri:uri (prompt1

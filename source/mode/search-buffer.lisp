@@ -253,10 +253,10 @@ Example:
           :sources (make-instance 'search-buffer-source
                                   :case-sensitive-p case-sensitive-p
                                   :return-actions
-                                  (list (lambda (search-match)
-                                          (unless (keep-search-hints-p (current-buffer))
-                                            (remove-search-hints))
-                                          search-match)))))
+                                  (lambda (search-match)
+                                    (unless (keep-search-hints-p (current-buffer))
+                                      (remove-search-hints))
+                                    search-match))))
 
 (define-command search-buffers (&key case-sensitive-p)
   "Search multiple buffers."

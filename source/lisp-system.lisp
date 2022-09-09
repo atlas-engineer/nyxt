@@ -27,8 +27,8 @@
 (define-class quicklisp-source (prompter:source)
   ((prompter:name "Quicklisp systems")
    (prompter:constructor (mapcar #'ql-dist:short-description (ql:system-list)))
-   (prompter:return-actions (list (lambda-command quickload* (systems)
-                                    (ql:quickload (first systems)))))))
+   (prompter:return-actions (lambda-command quickload* (systems)
+                              (ql:quickload (first systems))))))
 
 (define-command load-system ()
   "Load a system from Quicklisp."
