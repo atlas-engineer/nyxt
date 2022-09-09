@@ -124,7 +124,7 @@ add the following to your configuration:")
         (:p "The " (:nxref :slot 'override-map :class-name 'input-buffer) " is a keymap that has priority over
 all other keymaps.  By default, it has few bindings like the one
 for " (command-markup 'execute-command) ".  You can use it to set keys globally:")
-        (:pre (:code "(define-configuration buffer
+        (:pre (:code "(define-configuration context-buffer
   ((override-map (let ((map (make-keymap \"override-map\")))
                    (define-key map
                      \"M-x\" 'execute-command
