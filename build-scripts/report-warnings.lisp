@@ -44,9 +44,9 @@ they are not included but their dependencies are."
                                           (osicat-warning-p c))
                                 (push c conditions)))))
       (asdf:load-system system :force t))
-    (let ((report (mapcar (lambda (c) (format nil "~a~%" c))
+    (let ((report (mapcar (lambda (c) (format nil "~t~a~%" c))
                           (nreverse conditions))))
       (when report
-        (format t "~a~&Found ~a warnings when loading ~s."
-                report (length report) system)
+        (format t "~&Found ~a warnings when loading ~s:~%~a"
+                (length report) system report)
         (uiop:quit 19)))))
