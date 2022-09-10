@@ -12,13 +12,9 @@
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defun command-attributes (command &optional (buffer (active-buffer (current-window :no-rescan))))
-  (let* ((keyscheme (keyscheme buffer))
-         (bindings (keymaps:binding-keys
+  (let* ((bindings (keymaps:binding-keys
                     (name command)
-                    (delete nil
-                            (mapcar (lambda (mode)
-                                      (keymaps:get-keymap keyscheme (keyscheme-map mode)))
-                                    (modes buffer))))))
+                    (current-keymaps buffer))))
     `(("Name" ,(string-downcase (closer-mop:generic-function-name command)))
       ("Bindings" ,(format nil "~{~a~^, ~}" bindings))
       ("Docstring" ,(or (first (sera::lines (documentation command 'function)))
