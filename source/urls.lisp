@@ -389,6 +389,9 @@ guarantee of the same result."
               (alex:when-let ((internal-page (gethash internal-page-name *nyxt-url-commands*)))
                 (enable-modes (page-mode internal-page) buffer)
                 (setf (title buffer) (apply #'dynamic-title internal-page args))
+                ;; FIXME: This allows `find-internal-page-buffer' to find the
+                ;; buffer and `form' to have this buffer as the buffer-var.
+                (setf (url buffer) (quri:uri url))
                 (apply (form internal-page) args)))))))
   :local-p t)
 
