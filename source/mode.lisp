@@ -204,7 +204,7 @@ See `package-symbols' for details on the arguments."
 ;; TODO: Should allow search all packages, e.g. when PACKAGES is NIL.
 (-> resolve-symbol ((or keyword string) (member :function :variable :class :mode :slot :command) &optional (cons *)) symbol)
 (export-always 'resolve-symbol)
-(defmemo resolve-symbol (designator type &optional (packages (list :nyxt :nyxt-user)))
+(defun resolve-symbol (designator type &optional (packages (list :nyxt :nyxt-user)))
   "Find the symbol (of TYPE) designated by DESIGNATOR in PACKAGE.
 PACKAGES should be a list of package designators."
   (sera:and-let* ((designator (string designator))
@@ -213,12 +213,7 @@ PACKAGES should be a list of package designators."
                                    all-packages
                                    (append
                                     (delete-duplicates (mapcar #'find-package packages))
-                                    (sera:filter
-                                     (apply #'alex:disjoin
-                                            (mapcar (lambda (pkg)
-                                                      (rcurry #'subpackage-p (find-package pkg)))
-                                                    packages))
-                                     all-packages))))
+                                    (mappend #'subpackages packages))))
                   (symbols (case type
                              (:function (package-functions subpackages))
                              (:variable (package-variables subpackages))
@@ -226,7 +221,8 @@ PACKAGES should be a list of package designators."
                              (:mode (package-modes subpackages))
                              (:slot (mapcar #'name (package-slots subpackages)))
                              (:command (mapcar #'name (list-commands))))))
-    (let ((results (delete designator symbols :key #'symbol-name :test #'string/=)))
+    (let* ((results (sera:filter (lambda (sym) (string= designator (symbol-name sym)))
+                                 symbols)))
       (when (> (length results) 1)
         (log:warn "Multiple ~a symbols found: ~a" designator results))
       (values (first results)

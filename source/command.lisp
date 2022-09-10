@@ -202,6 +202,15 @@ deprecated and by what in the docstring."
      (setf (slot-value #',name 'visibility) :mode
            (slot-value #'name 'deprecated-p) t)))
 
+(-> list-all-maybe-subpackages () (list-of package))
+(defun list-all-maybe-subpackages ()
+  (sera:filter (lambda (pkg) (find #\/ (package-name pkg)))
+               (list-all-packages)))
+
+(-> subpackages (trivial-types:package-designator) (list-of package))
+(defun subpackages (package)
+  (sera:filter (lambda (p) (subpackage-p p package))
+               (list-all-maybe-subpackages)))
 
 (-> subpackage-p (trivial-types:package-designator trivial-types:package-designator) boolean)
 (defun subpackage-p (subpackage package)
