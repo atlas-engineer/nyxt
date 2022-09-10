@@ -331,8 +331,8 @@ To discover the default value of a slot or all slots of a class, use the
       (alex:if-let ((w (or window (current-window))))
         (active-buffer w)
         (when *browser*
-             (log:debug "No active window, picking last active buffer.")
-             (last-active-buffer)))))
+          (log:debug "No active window, picking last active buffer.")
+          (last-active-buffer)))))
 
 (export-always 'with-current-buffer)
 (defmacro with-current-buffer (buffer &body body)
