@@ -15,7 +15,6 @@ particular revision.")
     (buffer "*Changelog*")
   "Show the changelog."
   (spinneret:with-html-string
-    (:style (style buffer))
     (:h1 "Change Log")
     (:p "Nyxt tries to use semantic versioning.")
     (:p "Given a version number MAJOR.MINOR.PATCH, we increment:")

@@ -287,7 +287,7 @@ The version number is saved to clipboard."
   (define-internal-page-command-global manual ()
       (buffer "*Manual*" 'nyxt/help-mode:help-mode)
     "Show the manual."
-    (spinneret:with-html-string (:style (style buffer))
+    (spinneret:with-html-string
       (:style (cl-css:css '(("body"
                              :max-width "80ch"))))
       (:raw (manual-content)))))
@@ -296,7 +296,6 @@ The version number is saved to clipboard."
     (buffer "*Tutorial*" 'nyxt/help-mode:help-mode)
   "Show the tutorial."
   (spinneret:with-html-string
-    (:style (style buffer))
     (:style (cl-css:css '(("body"
                            :max-width "80ch"))))
     (:h1 "Nyxt tutorial")
