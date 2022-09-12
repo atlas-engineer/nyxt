@@ -37,7 +37,8 @@
        "/" 'search-buffer
        "?" 'remove-search-hints)))))
 
-(define-parenscript query-buffer (&key query (case-sensitive-p nil))
+(define-parenscript query-buffer (&key query (case-sensitive-p nil)
+                                       keep-previous-hints)
   (defvar *identifier* 0)
   (defvar *matches* (array))
   (defvar *nodes* (ps:new (-Object)))
@@ -133,7 +134,8 @@
         (*node-replacements* (array))
         (*identifier* 0))
     (add-stylesheet)
-    (remove-search-nodes)
+    (unless (ps:lisp keep-previous-hints)
+      (remove-search-nodes))
     (setf (ps:chain *nodes* identifier) 0)
     (walk-document (ps:chain document body) matches-from-node)
     (replace-original-nodes)
