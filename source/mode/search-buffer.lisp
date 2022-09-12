@@ -37,8 +37,11 @@
        "/" 'search-buffer
        "?" 'remove-search-hints)))))
 
+(defvar *node-class-name* "nyxt-search-node")
+
 (define-parenscript query-buffer (&key query (case-sensitive-p nil)
-                                       keep-previous-hints)
+                                       keep-previous-hints
+                                       (node-class-name *node-class-name*))
   (defvar *identifier* 0)
   (defvar *matches* (array))
   (defvar *nodes* (ps:new (-Object)))
@@ -96,7 +99,7 @@
              (substring-indices (get-substring-indices query node-text))
              (node-identifier (incf (ps:chain *nodes* identifier)))
              (new-node (ps:chain document (create-element "span"))))
-        (setf (ps:@ new-node class-name) "nyxt-search-node")
+        (setf (ps:@ new-node class-name) (ps:lisp node-class-name))
         (setf (ps:@ new-node id) node-identifier)
         (setf (aref *nodes* node-identifier) node)
         (when (> (length substring-indices) 0)
@@ -127,7 +130,7 @@
 
   (defun remove-search-nodes ()
     "Removes all the search elements"
-    (ps:dolist (node (nyxt/ps:qsa document ".nyxt-search-node"))
+    (ps:dolist (node (nyxt/ps:qsa document (+ "." (ps:lisp node-class-name))))
       (ps:chain node (replace-with (aref *nodes* (ps:@ node id))))))
 
   (let ((*matches* (array))
@@ -163,9 +166,9 @@
                                :body (gethash "body" element)
                                :buffer buffer)))
 
-(define-command remove-search-hints ()
+(define-command remove-search-hints (&key (node-class-name *node-class-name*))
   "Remove all search hints."
-  (ps-eval (ps:dolist (node (nyxt/ps:qsa document ".nyxt-search-node"))
+  (ps-eval (ps:dolist (node (nyxt/ps:qsa document (+ "." (ps:lisp node-class-name))))
              (ps:chain node (replace-with (aref *nodes* (ps:@ node id)))))))
 
 (defun prompt-buffer-selection-highlight-hint (&key suggestions scroll follow
