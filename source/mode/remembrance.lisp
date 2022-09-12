@@ -137,6 +137,9 @@ Set to 0 to disable.")
 (defun page-content (page-doc)
   (safe-document-value page-doc "content"))
 
+(defun page-html-content (page-doc)
+  (safe-document-value page-doc "html-content"))
+
 (defun page-last-update (page-doc)
   (alex:when-let ((last-update (montezuma:document-value page-doc "last-update")))
     (local-time:parse-timestring last-update)))
@@ -148,6 +151,10 @@ Set to 0 to disable.")
   ;; TODO: Use cl-readability for better results.
   (ps-eval :buffer buffer
     (ps:@ document body |innerText|)))
+
+(defun buffer-html-content (buffer)
+  (ps-eval :buffer buffer
+    (ps:@ document body |innerHTML|)))
 
 (defun timestamp->string (timestamp)
   (local-time:format-timestring nil timestamp :timezone local-time:+utc-zone+))
@@ -198,6 +205,8 @@ Return NIL if URL is not cached, for instance if it's on
                     (add-field "url" (render-url url) :index :untokenized)
                     (add-field "title" (title buffer))
                     (add-field "content" (buffer-content buffer))
+                    (add-field "html-content" (buffer-html-content buffer)
+                               :index :untokenized)
                     (add-field "last-update"
                                (timestamp->string (local-time:now))
                                :index :untokenized)
@@ -247,26 +256,34 @@ This induces a performance cost."))
     ("Title" ,(page-title doc))
     ("Keywords" ,(page-keywords doc))))
 
+(defvar *remembrance-node-class-name* "nyxt-remembrance-highlight-node")
+
+(defun add-search-hint (buffer term)
+  ;; TODO: Add this to the  `nyxt/search-buffer-mode' API?
+  (with-current-buffer buffer
+    (nyxt/search-buffer-mode::query-buffer
+     :query term
+     :keep-previous-hints t
+     :node-class-name *remembrance-node-class-name*
+     :case-sensitive-p nil)))
+
 (define-internal-page view-cached-page (&key url-string query) ; TODO: Rename to `view-remembered-page'?
     (:title "*Cached page*")
   "View textual content of cached page in new buffer."
-  (enable-modes 'remembrance-mode (current-buffer))
-  (let* ((mode (find-submode 'remembrance-mode))
-         (doc (find-url url-string mode))
-         (content (page-content doc)))
-    (dolist (term (cons query (uiop:split-string query)))
-      (setf content (ppcre:regex-replace-all (uiop:strcat "(?i)" term)
-                                             content
-                                             (spinneret:with-html-string (:b term))
-                                             ;; REVIEW: https://github.com/edicl/cl-ppcre/issues/51
-                                             ;; Only works for whole-word matches.
-                                             :preserve-case t)))
-    (spinneret:with-html-string
-      (:style (style mode))
-      (:h1 "[Cache] " (:a :href url-string (if (uiop:emptyp (page-title doc))
-                                     url-string
-                                     (page-title doc))))
-      (:div (:pre (:raw content))))))
+  (let ((buffer (current-buffer)))
+    (enable-modes 'remembrance-mode buffer)
+    (let* ((mode (find-submode 'remembrance-mode))
+           (doc (find-url url-string mode)))
+      (hooks:once-on (buffer-loaded-hook buffer) (_)
+        (dolist (term (cons query (uiop:split-string query)))
+          (add-search-hint buffer term)))
+      (spinneret:with-html-string
+        (:style (style mode))
+        (:h1 "[Cache] " (:a :href url-string (if (uiop:emptyp (page-title doc))
+                                                 url-string
+                                                 (page-title doc))))
+        (:hr)
+        (:div (:raw (page-html-content doc)))))))
 
 (define-command recollect-visited-page
     (&key (return-actions (list (lambda-command view-cached-content (suggestions)
