@@ -862,17 +862,16 @@ identifiers."
 
 (defmethod keywords ((buffer web-buffer))
   "Calculate the keywords for a given buffer."
-  (ignore-errors
-   (if (not (eq (document-model buffer)
-                (keywords-document-model buffer)))
-       (let ((contents (serapeum:string-join
-                        (map 'list (lambda (e) (plump:text e))
-                             (clss:select "p" (document-model buffer))) " ")))
-         (setf (keywords-document-model buffer)
-               (document-model buffer)
-               (slot-value buffer 'keywords)
-               (analysis:extract-keywords contents)))
-       (slot-value buffer 'keywords))))
+  (if (not (eq (document-model buffer)
+               (keywords-document-model buffer)))
+      (let ((contents (serapeum:string-join
+                       (map 'list (lambda (e) (plump:text e))
+                            (clss:select "p" (document-model buffer))) " ")))
+        (setf (keywords-document-model buffer)
+              (document-model buffer)
+              (slot-value buffer 'keywords)
+              (ignore-errors (analysis:extract-keywords contents))))
+      (slot-value buffer 'keywords)))
 
 (define-class keyword-source (prompter:source)
   ((prompter:name "Keywords")
