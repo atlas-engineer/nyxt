@@ -231,6 +231,13 @@ For instance, to include images:
                              (prompter:attributes-default suggestion)
                              :ignore-case t))
         #'prompter:fuzzy-match))
+   (prompter:filter-preprocessor
+    (lambda (suggestions source input)
+      (declare (ignore source input))
+      (delete-duplicates suggestions :test (lambda (url1 url2)
+                                             ;; Not all DOM elements have a URL.
+                                             (and url1 url2 (quri:uri= url1 url2)))
+                                     :key (compose #'url #'prompter:value))))
    (prompter:filter-postprocessor
     (lambda (suggestions source input)
       (declare (ignore source))
@@ -238,11 +245,7 @@ For instance, to include images:
           (sera:partition
            (lambda (element)
              (str:starts-with-p input (plump:attribute element "nyxt-hint") :ignore-case t))
-           (delete-duplicates suggestions :test (lambda (url1 url2)
-                                                  ;; Not all DOM elements have a URL.
-                                                  (when (and url1 url2)
-                                                    (quri:uri= url1 url2)))
-                                          :key (compose #'url #'prompter:value))
+           suggestions
            :key #'prompter:value)
         (append matching-hints other-hints))))
    (prompter:selection-actions
