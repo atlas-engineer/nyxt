@@ -59,12 +59,14 @@ Set to 0 to disable.")
                :list-style "none")))))
 
 (defmethod initialize-instance :after ((mode remembrance-mode) &key)
-  (setf (cache mode)
-        (make-instance 'montezuma:index
-                       :path (files:expand (cache-path mode))
-                       ;; Unless otherwise specified, queries will search all
-                       ;; these fields simultaneously.
-                       :default-field "*")))
+  (let ((path (files:expand (cache-path mode))))
+    (log:info "Remembrance cache at ~s" path)
+    (setf (cache mode)
+          (make-instance 'montezuma:index
+                         :path path
+                         ;; Unless otherwise specified, queries will search all
+                         ;; these fields simultaneously.
+                         :default-field "*"))))
 
 (defmethod cache-size ((mode remembrance-mode))
   (length (all-cache-entries mode)))
