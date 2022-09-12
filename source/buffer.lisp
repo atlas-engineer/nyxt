@@ -874,10 +874,12 @@ identifiers."
 
 (define-class keyword-source (prompter:source)
   ((prompter:name "Keywords")
-   (buffer :accessor buffer :initarg :buffer)
+   (buffer
+    (current-buffer)
+    :type buffer)
    (prompter:multi-selection-p t)
    (prompter:constructor (lambda (source)
-                           (mapcar #'car (nyxt::keywords (buffer source))))))
+                           (mapcar #'first (nyxt::keywords (buffer source))))))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:export-class-name-p t))
 
