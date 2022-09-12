@@ -123,7 +123,6 @@
                  (:file "input")
                  (:file "prompt-buffer")
                  (:file "command-commands")
-                 (:file "configuration-commands")
                  (:file "describe")
                  (:file "debugger")
                  (:file "recent-buffers")
@@ -173,9 +172,10 @@
                  (:file "about")
                  (:file "tutorial")
                  (:file "changelog")
-                 (:file "migration")
-                 (:file "manual")))
-               (:file "start" :depends-on ("Help"))
+                 (:file "migration")))
+               (:file "configuration-commands" :depends-on ("Help"))
+               (:file "start" :depends-on ("configuration-commands"))
+               (:file "manual" :depends-on ("configuration-commands"))
                (:module "Modes"
                 :pathname "mode"
                 :depends-on ("Core modes")
