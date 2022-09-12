@@ -582,3 +582,11 @@
 	path = _build/ospm
 	url = https://github.com/atlas-engineer/ospm
 	shallow = true
+[submodule "_build/njson"]
+	path = _build/njson
+	url = https://github.com/atlas-engineer/njson
+	shallow = true
+[submodule "_build/nactivitypub"]
+	path = _build/nactivitypub
+	url = https://github.com/atlas-engineer/nactivitypub
+	shallow = true

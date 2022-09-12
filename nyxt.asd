@@ -50,6 +50,8 @@
                nfiles
                nhooks
                nkeymaps
+               njson
+               nactivitypub
                #-sbcl
                osicat
                ospm
