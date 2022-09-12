@@ -129,6 +129,5 @@ This mode is a good candidate to be passed to `make-buffer'."
        "7" (read-from-string "nyxt/repeat-mode:repeat-key")
        "8" (read-from-string "nyxt/repeat-mode:repeat-key")
        "9" (read-from-string "nyxt/repeat-mode:repeat-key")
-       "Z Z" 'quit))
-    :type keymaps:keyscheme))
+       "Z Z" 'quit))))
   (:toggler-command-p nil))
