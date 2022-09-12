@@ -808,8 +808,11 @@ identifiers."
       (dolist (child (ps:chain node children)) (add-nyxt-identifiers child))
       nyxt-identifier-counter)
     (setf nyxt-identifier-counter (add-nyxt-identifiers (ps:chain document body))))
-  (alex:when-let ((body-json (nyxt/dom::get-document-body-json)))
-    (setf (document-model buffer) (nyxt/dom::named-json-parse body-json))))
+  (alex:when-let ((body-json (with-current-buffer buffer
+                               (nyxt/dom::get-document-body-json))))
+    (let ((dom (nyxt/dom::named-json-parse body-json)))
+      (unless (uiop:emptyp (plump:text dom))
+        (setf (document-model buffer) dom)))))
 
 (defun dead-buffer-p (buffer)           ; TODO: Use this wherever needed.
   (not (buffers-get (id buffer))))
