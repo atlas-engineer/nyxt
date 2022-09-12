@@ -123,6 +123,7 @@
                  (:file "input")
                  (:file "prompt-buffer")
                  (:file "command-commands")
+                 (:file "configuration-commands")
                  (:file "describe")
                  (:file "debugger")
                  (:file "recent-buffers")
