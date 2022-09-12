@@ -844,7 +844,9 @@ identifiers."
                    (< (abs (- (length (clss:select "*" value)) (truncate element-count)))
                       (document-model-delta-threshold buffer)))
               value
-              (update-document-model :buffer buffer))))))
+              (progn
+                (update-document-model :buffer buffer)
+                (slot-value buffer 'document-model)))))))
 
 (defmethod proxy ((buffer buffer))
   (slot-value buffer 'proxy))
