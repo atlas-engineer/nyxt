@@ -195,7 +195,7 @@
 (define-class search-buffer-source (prompter:source)
   ((case-sensitive-p nil)
    (buffer (current-buffer))
-   (minimum-search-length 3)
+   (minimum-search-length 1)
    (prompter:name "Search buffer")
    (prompter:selection-actions-enabled-p t)
    (prompter:filter nil)
