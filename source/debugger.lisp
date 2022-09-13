@@ -26,10 +26,8 @@ See `ndebug:condition-wrapper' for documentation."))
 
 (defmethod ndebug:ui-display ((wrapper debug-wrapper))
   (setf (gethash (id wrapper) *debug-conditions*) wrapper)
-  (set-current-buffer
-   (setf (buffer wrapper)
-         (buffer-load (nyxt-url 'open-debugger :id (id wrapper))
-                      :buffer (ensure-internal-page-buffer 'open-debugger)))))
+  (setf (buffer wrapper)
+        (buffer-load-internal-page-focus 'open-debugger :id (id wrapper))))
 
 (defmethod ndebug:ui-cleanup ((wrapper debug-wrapper))
   (remhash (id wrapper) *debug-conditions*)
