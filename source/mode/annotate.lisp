@@ -135,14 +135,20 @@ make-instance."
           collect (:div (:raw (render annotation))
                         (:hr)))))
 
-(define-internal-page-command-global show-annotations-for-current-url
-    (&key (source-buffer (current-buffer)))
-    (buffer "*Annotations*")
+(define-internal-page show-annotations-for-current-url (&key (id (id (current-buffer))))
+    (:title "*Annotations*")
   "Create a new buffer with the annotations of the current URL of BUFFER."
-  (let ((annotations (files:content (annotations-file buffer))))
+  (let ((source-buffer (nyxt::buffers-get id))
+        (annotations (files:content (annotations-file buffer))))
     (let ((filtered-annotations (sera:filter (alex:curry #'url-equal (url source-buffer))
                                              annotations :key #'url)))
       (render-annotations filtered-annotations))))
+
+(define-command-global show-annotations-for-current-url (&key (buffer (current-buffer)))
+  "Create a new buffer with the annotations of the current URL of BUFFER."
+  (set-current-buffer
+   (buffer-load (nyxt-url 'show-annotations-for-current-url :id (id buffer))
+                :buffer (ensure-internal-page-buffer 'show-annotations-for-current-url))))
 
 (define-class annotation-source (prompter:source)
   ((prompter:name "Annotations")
