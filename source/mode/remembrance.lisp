@@ -263,12 +263,13 @@ This induces a performance cost."))
 
 (defun add-search-hint (buffer term)
   ;; TODO: Add this to the  `nyxt/search-buffer-mode' API?
-  (with-current-buffer buffer
-    (nyxt/search-buffer-mode::query-buffer
-     :query term
-     :keep-previous-hints t
-     :node-class-name *remembrance-node-class-name*
-     :case-sensitive-p nil)))
+  (unless (uiop:emptyp term)
+    (with-current-buffer buffer
+      (nyxt/search-buffer-mode::query-buffer
+       :query term
+       :keep-previous-hints t
+       :node-class-name *remembrance-node-class-name*
+       :case-sensitive-p nil))))
 
 ;; TODO: Turn `view-cached-page' into a nyxt: scheme?
 ;; Think `view-source'.
