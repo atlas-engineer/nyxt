@@ -299,7 +299,7 @@ This induces a performance cost."))
                                      (buffer-load (nyxt-url 'view-cached-page
                                                             :url-string (render-url (page-url-string (first suggestions)))
                                                             :query query)
-                                                  :buffer (ensure-internal-page-buffer 'buffer-history-tree)))))
+                                                  :buffer (ensure-internal-page-buffer 'view-cached-page)))))
                                 (lambda-command buffer-load* (suggestion-values)
                                   "Load first selected cache entry in current buffer and the rest in new buffer(s)."
                                   (mapc (lambda (page-doc) (make-buffer :url (page-url page-doc))) (rest suggestion-values))
