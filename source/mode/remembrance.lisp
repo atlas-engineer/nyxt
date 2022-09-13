@@ -273,35 +273,43 @@ This induces a performance cost."))
        :node-class-name *remembrance-node-class-name*
        :case-sensitive-p nil))))
 
-;; TODO: Turn `view-cached-page' into a nyxt: scheme?
-;; Think `view-source'.
-(define-internal-page view-cached-page (&key url-string query) ; TODO: Rename to `view-remembered-page'?
-    (:title "*Cached page*")
-  "View textual content of cached page in new buffer."
-  (let ((buffer (current-buffer)))
-    (enable-modes 'remembrance-mode (current-buffer))
-    (let* ((mode (find-submode 'remembrance-mode))
-           (doc (find-url url-string mode)))
-      (hooks:once-on (buffer-loaded-hook buffer) (_)
-        (dolist (term (cons query (uiop:split-string query)))
-          (add-search-hint buffer term)))
-      (spinneret:with-html-string
-        (:style (style mode))
-        (:h1 "[Cache] " (:a :href url-string (if (uiop:emptyp (page-title doc))
-                                                 url-string
-                                                 (page-title doc))))
-        (:hr)
-        (:div (:raw (page-html-content doc)))))))
+(define-internal-scheme "view-remembered-page"
+    (lambda (url buffer)
+      (let ((url (quri:uri url)))
+        (flet ((query-param (url param)
+                 (quri:url-decode
+                  (alex:assoc-value (quri:uri-query-params url)
+                                    param
+                                    :test #'string=))))
+          (alex:if-let ((origin-buffer (ignore-errors (nyxt::buffers-get (parse-integer (query-param url "origin-buffer-id"))))))
+            (let* ((mode (find-submode 'remembrance-mode origin-buffer))
+                   (query (query-param url "query"))
+                   (url-string (quri:url-decode (quri:uri-path url)))
+                   (doc (find-url url-string mode)))
+              (hooks:once-on (buffer-loaded-hook buffer) (_)
+                (dolist (term (cons query (uiop:split-string query)))
+                  (add-search-hint buffer term)))
+              (spinneret:with-html-string
+                (:style (style mode))
+                (:h1 "[Cache] " (:a :href url-string (if (uiop:emptyp (page-title doc))
+                                                         url-string
+                                                         (page-title doc))))
+                (:hr)
+                (:div (:raw (page-html-content doc)))))
+            (echo-warning "Origin buffer does not exist.")))))
+  :no-access-p t)
 
 (define-command recollect-visited-page
-    (&key (return-actions (list (lambda-command view-cached-content (suggestions)
+    (&key (return-actions (list (lambda-command view-remembered-content (suggestions)
                                   "View content in new buffer."
                                   (let ((query (prompter:input (current-prompt-buffer))))
-                                    (set-current-buffer
-                                     (buffer-load (nyxt-url 'view-cached-page
-                                                            :url-string (render-url (page-url-string (first suggestions)))
-                                                            :query query)
-                                                  :buffer (ensure-internal-page-buffer 'view-cached-page)))))
+                                    (make-buffer-focus
+                                     :url (quri:make-uri
+                                           :scheme "view-remembered-page"
+                                           :path (quri:url-encode (render-url (page-url-string (first suggestions))))
+                                           :query (list (cons "query" (quri:url-encode query))
+                                                        (cons "origin-buffer-id"
+                                                              (quri:url-encode (write-to-string (id (current-buffer))))))))))
                                 (lambda-command buffer-load* (suggestion-values)
                                   "Load first selected cache entry in current buffer and the rest in new buffer(s)."
                                   (mapc (lambda (page-doc) (make-buffer :url (page-url page-doc))) (rest suggestion-values))
@@ -323,8 +331,9 @@ It lists multiple suggestion sources:
 - Another set is the suggestions that contain an exact match of the whole query,
   as a setence.
 
-The `view-cached-content' action displays the cached content (with highlighted
+The `view-remembered-content' action displays the cached content (with highlighted
 query terms), even when offline."
+  ;; TODO: Add selection action to preview the search matches.
   (prompt
    :prompt "Search cache"
    :input (ffi-buffer-copy (current-buffer))
