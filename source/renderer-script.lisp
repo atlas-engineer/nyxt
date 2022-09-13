@@ -272,9 +272,14 @@ If it already exists, reload it.
 ARGS are passed to the internal page parameters.
 
 Return internal-page buffer."
-  (set-current-buffer
-   (buffer-load (apply #'nyxt-url name args)
-                :buffer (ensure-internal-page-buffer name))))
+  (flet ((ensure-internal-page-buffer (name)
+           "Return first buffer which URL is a NAME internal page, or create it if it does
+not exist."
+           (or (find-internal-page-buffer name)
+               (make-instance 'web-buffer))))
+    (set-current-buffer
+     (buffer-load (apply #'nyxt-url name args)
+                  :buffer (ensure-internal-page-buffer name)))))
 
 (export-always 'define-internal-page)
 (defmacro define-internal-page (name (&rest form-args) (&rest initargs) &body body)
