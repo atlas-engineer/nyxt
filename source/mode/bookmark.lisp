@@ -55,8 +55,7 @@ Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
        "m M" 'bookmark-current-url
        "m m" 'bookmark-buffer-url
        "m u" 'bookmark-url
-       "m d" 'delete-bookmark))
-    :type keymaps:keyscheme)
+       "m d" 'delete-bookmark)))
    (style (theme:themed-css (theme *browser*)
             ("summary"
              :background-color theme:secondary

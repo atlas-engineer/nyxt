@@ -12,7 +12,6 @@ Ensures that a single keybindings mode, such as `nyxt/emacs-mode', is enabled."
   ((rememberable-p nil)
    (keyscheme                           ; This specialized `nyxt:keyscheme'.
     keyscheme:cua
-    :type keymaps:keyscheme
     :documentation "The `keymaps:keyscheme' to enable.")
    (previous-keyscheme
     nil

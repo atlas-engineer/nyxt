@@ -39,8 +39,7 @@ To install the mode implementing the following, add this snippet to your config
        "w" 'editor-write-file
        "R" 'reload-current-buffer
        "g b" 'switch-buffer
-       "D" 'delete-current-buffer))
-    :type keymaps:keyscheme))
+       "D" 'delete-current-buffer))))
   (:toggler-command-p nil))
 
 ;; IMPORTANT: Implement this method specializing on your class extending editor-mode.
