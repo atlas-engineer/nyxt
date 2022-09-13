@@ -7,7 +7,7 @@
 (defmacro ps-eval (&body args)
   "Generate the JavaScript code and run it right away.
 
-If :ASYNC is provided as T before the body, then the code is ran asynchronously.
+If :ASYNC is provided as T before the body, then the code is run asynchronously.
 If :BUFFER is provided before the body, the code is evaluated in the provided
 buffer, instead of the default `current-buffer'.
 
