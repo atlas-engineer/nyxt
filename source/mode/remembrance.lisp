@@ -353,21 +353,20 @@ See also `auto-cache-on-load-p' in `remembrance-mode'."
 (define-internal-page view-diff (&key diff (id (id (current-buffer))))
     (:title "*Cache diff*")
   "Display HTML DIFF associated to buffer with ID."
-  (let ((buffer (nyxt::buffers-get id)))
-    (enable-modes 'remembrance-mode (current-buffer))
-    (let* ((mode (find-submode 'remembrance-mode)))
-      (spinneret:with-html-string
-        (:style (style mode))
-        ;; TODO: Add button to switch to buffer.
-        (:h1 "[Cache diff] " (:button :class "link"
-                                      :onclick
-                                      (ps:ps (nyxt/ps:lisp-eval
-                                              (:title "switch-to-buffer")
-                                              (switch-buffer :buffer buffer)))
-                                      (title buffer)))
-        (:h2 (render-url (url buffer)))
-        (:hr)
-        (:div (:raw diff))))))
+  (let* ((buffer (nyxt::buffers-get id))
+         (mode (find-submode 'remembrance-mode buffer)))
+    (spinneret:with-html-string
+      (:style (style mode))
+      ;; TODO: Add button to switch to buffer.
+      (:h1 "[Cache diff] " (:button :class "link"
+                                    :onclick
+                                    (ps:ps (nyxt/ps:lisp-eval
+                                            (:title "switch-to-buffer")
+                                            (switch-buffer :buffer buffer)))
+                                    (title buffer)))
+      (:h2 (render-url (url buffer)))
+      (:hr)
+      (:div (:raw diff)))))
 
 (define-command view-page-changes (&key buffer)
   "View BUFFER changes (diff) compared to the last content that was cached."
