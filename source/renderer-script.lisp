@@ -222,9 +222,7 @@ See `find-internal-page-buffer'."))
        `(lambda (,@arglist)
           ,@(when documentation (list documentation))
           (declare (ignorable ,@(mappend #'cdar keywords)))
-          (set-current-buffer
-           (buffer-load (nyxt-url (name ,page) ,@(mappend #'first keywords))
-                        :buffer (ensure-internal-page-buffer (name ,page)))))))))
+          (buffer-load-internal-page-focus (name ,page) ,@(mappend #'first keywords)))))))
 
 (defmethod initialize-instance :after ((page internal-page) &key form &allow-other-keys)
   "Register PAGE into the globally known nyxt:// URLs."
@@ -267,11 +265,16 @@ See `find-internal-page-buffer'."))
         (internal-page-name url)
         *nyxt-url-commands*)))
 
-(export-always 'ensure-internal-page-buffer)
-(defun ensure-internal-page-buffer (name)
-  "Return first buffer which URL is a NAME internal page, or create it if it does not exist."
-  (or (find-internal-page-buffer name)
-      (make-instance 'web-buffer)))
+(export-always 'buffer-load-internal-page-focus)
+(defun buffer-load-internal-page-focus (name &rest args)
+  "Make internal-page for NAME (a symbol) and switch to it.
+If it already exists, reload it.
+ARGS are passed to the internal page parameters.
+
+Return internal-page buffer."
+  (set-current-buffer
+   (buffer-load (apply #'nyxt-url name args)
+                :buffer (ensure-internal-page-buffer name))))
 
 (export-always 'define-internal-page)
 (defmacro define-internal-page (name (&rest form-args) (&rest initargs) &body body)

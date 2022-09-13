@@ -200,10 +200,8 @@ PACKAGES is a list of `ospm:package' IDs created by `nyxt::ensure-inspected-id'.
                                                             :prompt "Describe OS package(s)"
                                                             :sources '(os-package-source))))
   "Show description of PACKAGES."
-  (set-current-buffer
-   (buffer-load (nyxt-url 'describe-os-package
-                          :packages (nyxt::ensure-inspected-id (alex:ensure-list packages)))
-                :buffer (ensure-internal-page-buffer 'describe-os-package))))
+  (buffer-load-internal-page-focus
+   'describe-os-package :packages (nyxt::ensure-inspected-id (alex:ensure-list packages))))
 
 (defun viewable-file-type-p (path)
   (let ((path-suffix (string-downcase (uiop:native-namestring path))))

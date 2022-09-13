@@ -146,9 +146,7 @@ make-instance."
 
 (define-command-global show-annotations-for-current-url (&key (buffer (current-buffer)))
   "Create a new buffer with the annotations of the current URL of BUFFER."
-  (set-current-buffer
-   (buffer-load (nyxt-url 'show-annotations-for-current-url :id (id buffer))
-                :buffer (ensure-internal-page-buffer 'show-annotations-for-current-url))))
+  (buffer-load-internal-page-focus 'show-annotations-for-current-url :id (id buffer)))
 
 (define-class annotation-source (prompter:source)
   ((prompter:name "Annotations")

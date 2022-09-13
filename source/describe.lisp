@@ -528,10 +528,8 @@ A command is a special kind of function that can be called with
                                          (:td (format nil "~(~a~)" bound-value)))))))))))
 
 (define-command-global describe-bindings (&key (buffer (current-buffer)))
-    "Show a buffer with the list of all known bindings for the current buffer."
-  (set-current-buffer
-   (buffer-load (nyxt-url 'describe-bindings :id (id buffer))
-                :buffer (ensure-internal-page-buffer 'describe-bindings))))
+  "Show a buffer with the list of all known bindings for the current buffer."
+  (buffer-load-internal-page-focus 'describe-bindings :id (id buffer)))
 
 (defun describe-key-dispatch (command)
   (unwind-protect

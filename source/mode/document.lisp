@@ -290,9 +290,7 @@ Warning: URL is a string."
 
 (define-command-global show-url-qrcode (&key (buffer (current-buffer)))
   "Display the QR code containing the URL of BUFFER in a new page."
-  (set-current-buffer
-   (buffer-load (nyxt-url 'show-url-qrcode :url (quri:render-uri (url buffer)))
-                :buffer (ensure-internal-page-buffer 'show-url-qrcode))))
+  (buffer-load-internal-page-focus 'show-url-qrcode :url (quri:render-uri (url buffer))))
 
 (export-always 'get-url-source)
 (defun get-url-source (url)
@@ -405,9 +403,7 @@ ID is a buffer `id'."
 
 (define-command-global summarize-buffer (&key (summary-length 5) (buffer (current-buffer)))
   "Summarize the current buffer by creating a new summary buffer."
-  (set-current-buffer
-   (buffer-load (nyxt-url 'summarize-buffer :summary-length summary-length :id (id buffer))
-                :buffer (ensure-internal-page-buffer 'summarize-buffer))))
+  (buffer-load-internal-page-focus 'summarize-buffer :summary-length summary-length :id (id buffer)))
 
 (define-class heading ()
   ((inner-text "" :documentation "The inner text of the heading within the document.")

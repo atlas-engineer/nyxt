@@ -318,9 +318,7 @@ ID is a buffer `id'."
 
 (define-command-global buffer-history-tree (&key (buffer (current-buffer)))
   "Display the history tree of a buffer."
-  (set-current-buffer
-   (buffer-load (nyxt-url 'buffer-history-tree :id (id buffer))
-                :buffer (ensure-internal-page-buffer 'buffer-history-tree))))
+  (buffer-load-internal-page-focus 'buffer-history-tree :id (id buffer)))
 
 (define-internal-page-command-global history-tree ()
   (output-buffer "*History*" 'nyxt/history-tree-mode:history-tree-mode)
