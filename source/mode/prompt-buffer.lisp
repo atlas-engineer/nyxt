@@ -362,8 +362,10 @@ current unmarked selection."
   (prompter:destroy prompt-buffer))
 
 (define-command-prompt toggle-selection-actions-enabled (prompt-buffer)
-  "Close the PROMPT-BUFFER without further action."
-  (prompter:toggle-selection-actions-enabled prompt-buffer))
+  "Toggle whether `prompter:selection-actions' are enabled for PROMPT-BUFFER."
+  (prompter:toggle-selection-actions-enabled prompt-buffer)
+  (echo "Selection actions: ~:[dis~;en~]abled."
+        (prompter:selection-actions-enabled-p (current-source prompt-buffer))))
 
 (define-command-prompt toggle-mark (prompt-buffer &key (direction :forward))
   "Mark selection.
