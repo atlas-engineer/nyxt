@@ -10,7 +10,6 @@
 ;; `montezuma::field-name', `montezuma::all-fields', `montezuma:field-data'.
 ;; Not needed though?
 
-;; TODO: Diff and validation?
 ;; TODO: Add tests for garbage collection, caching history, exact matches.
 
 (nyxt:define-package :nyxt/remembrance-mode
@@ -331,6 +330,49 @@ query terms), even when offline."
    :input (ffi-buffer-copy (current-buffer))
    :sources (list (make-instance 'remembrance-source :return-actions return-actions)
                   (make-instance 'remembrance-exact-source :return-actions return-actions))))
+
+(define-command toggle-auto-cache (&key (buffer (current-buffer)))
+  "Whether to cache on URL load.
+See also `auto-cache-on-load-p' in `remembrance-mode'."
+  (let ((mode (find-submode 'remembrance-mode buffer)))
+    (setf (auto-cache-on-load-p mode)
+          (not (auto-cache-on-load-p mode)))
+    (if (auto-cache-on-load-p mode)
+        (echo "Auto-cache enabled.")
+        (echo "Auto-cache disabled."))))
+
+(define-internal-page view-diff (&key diff (id (id (current-buffer))))
+    (:title "*Cache diff*")
+  "Display HTML DIFF associated to buffer with ID."
+  (let ((buffer (nyxt::buffers-get id)))
+    (enable-modes 'remembrance-mode (current-buffer))
+    (let* ((mode (find-submode 'remembrance-mode)))
+      (spinneret:with-html-string
+        (:style (style mode))
+        ;; TODO: Add button to switch to buffer.
+        (:h1 "[Cache diff] " (:button :class "link"
+                                      :onclick
+                                      (ps:ps (nyxt/ps:lisp-eval
+                                              (:title "switch-to-buffer")
+                                              (switch-buffer :buffer buffer)))
+                                      (title buffer)))
+        (:h2 (render-url (url buffer)))
+        (:hr)
+        (:div (:raw diff))))))
+
+(define-command view-page-changes (&key buffer)
+  "View BUFFER changes (diff) compared to the last content that was cached."
+  (let ((buffer (or buffer
+                    (prompt1 :prompt "View changes for buffer"
+                             :sources (make-instance 'buffer-source
+                                                     :return-actions '()))))
+        (mode (find-submode 'remembrance-mode)))
+    (alex:when-let ((doc (find-url (url buffer) mode)))
+      ;; TODO: Display in internal page.
+      (buffer-load-internal-page-focus 'view-diff
+                                       :id (id buffer)
+                                       :diff (html-diff:html-diff (page-html-content doc)
+                                                                  (buffer-html-content buffer))))))
 
 (define-command remember-buffer (&key buffer)
   "Cache the BUFFER URL, title and textual content.
