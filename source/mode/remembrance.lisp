@@ -186,7 +186,8 @@ Cached pages older than `discard-interval' are automatically purged.
 
 Return cached page.
 Return NIL if URL is not cached, for instance if it's on
-`nyxt/history-mode:history-mode' `history-blocklist'."
+`nyxt/history-mode:history-mode' `history-blocklist'.
+Return NIL if page content is empty."
   ;; We drop the fragment as it does not change the page content.
   (let* ((url (quri:copy-uri (url buffer) :fragment nil))
          (page (find-url url remembrance-mode)))
@@ -199,24 +200,26 @@ Return NIL if URL is not cached, for instance if it's on
                     (not page)
                     (< (update-interval remembrance-mode)
                        (local-time:timestamp-difference (local-time:now) (page-last-update page))))
-                (let ((doc (make-instance 'montezuma:document)))
-                  (when page
-                    (delete-cached-pages url remembrance-mode))
-                  (flet ((add-field (field value &rest options)
-                           (montezuma:add-field doc
-                                                (apply #'montezuma:make-field field value options))))
-                    (add-field "url" (render-url url) :index :untokenized)
-                    (add-field "title" (title buffer))
-                    (add-field "content" (buffer-content buffer))
-                    (add-field "html-content" (buffer-html-content buffer)
-                               :index :untokenized)
-                    (add-field "last-update"
-                               (timestamp->string (local-time:now))
-                               :index :untokenized)
-                    (add-field "keywords"
-                               (format nil "~:{~a~^ ~}" (nyxt::keywords buffer))))
-                  (montezuma:add-document-to-index (cache remembrance-mode) doc)
-                  doc)
+                (let ((content (buffer-content buffer))
+                      (doc (make-instance 'montezuma:document)))
+                  (unless (uiop:emptyp content)
+                    (when page
+                      (delete-cached-pages url remembrance-mode))
+                    (flet ((add-field (field value &rest options)
+                             (montezuma:add-field doc
+                                                  (apply #'montezuma:make-field field value options))))
+                      (add-field "url" (render-url url) :index :untokenized)
+                      (add-field "title" (title buffer))
+                      (add-field "content" (buffer-content buffer))
+                      (add-field "html-content" (buffer-html-content buffer)
+                                 :index :untokenized)
+                      (add-field "last-update"
+                                 (timestamp->string (local-time:now))
+                                 :index :untokenized)
+                      (add-field "keywords"
+                                 (format nil "~:{~a~^ ~}" (nyxt::keywords buffer))))
+                    (montezuma:add-document-to-index (cache remembrance-mode) doc)
+                    doc))
                 page)
           (delete-out-of-date-pages remembrance-mode))))))
 
