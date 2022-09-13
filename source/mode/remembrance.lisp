@@ -6,7 +6,7 @@
 ;; TODO: Compress content using montezuma :stored :compress?  Looks like
 ;; `montezuma::compress' is a no-op.
 
-;; TODO: Note that field access can be programmatic too:
+;; TODO: Note that field can be accessed programmatically too:
 ;; `montezuma::field-name', `montezuma::all-fields', `montezuma:field-data'.
 ;; Not needed though?
 
@@ -168,7 +168,7 @@ Set to 0 to disable.")
   (sera:filter (rcurry #'out-of-date-p mode) (all-cache-entries mode)))
 
 (defun delete-cached-pages (urls &optional (mode (find-submode 'remembrance-mode)))
-  (dolist (url (uiop:ensure-list urls) )
+  (dolist (url (uiop:ensure-list urls))
     (montezuma:query-delete (cache mode)
                             (make-term "url" (render-url url))))
   ;; Without optimization (or flush?), the deletion is not persisted to disk
@@ -178,7 +178,7 @@ Set to 0 to disable.")
 (defun delete-out-of-date-pages (&optional (mode (find-submode 'remembrance-mode)))
   (delete-cached-pages (out-of-date-pages mode) mode))
 
-(defun buffer->cache (buffer remembrance-mode)
+(defun buffer->cache (buffer remembrance-mode &key force)
   "BUFFER is indexed by URL.
 It's only cached if its `last-update' is older than `update-interval'.
 
@@ -195,10 +195,13 @@ Return NIL if URL is not cached, for instance if it's on
                   (and history-mode
                        (nyxt/history-mode:blocked-p url history-mode)))
         (prog1
-            (if (or (not page)
+            (if (or force
+                    (not page)
                     (< (update-interval remembrance-mode)
                        (local-time:timestamp-difference (local-time:now) (page-last-update page))))
                 (let ((doc (make-instance 'montezuma:document)))
+                  (when page
+                    (delete-cached-pages url remembrance-mode))
                   (flet ((add-field (field value &rest options)
                            (montezuma:add-field doc
                                                 (apply #'montezuma:make-field field value options))))
@@ -267,6 +270,8 @@ This induces a performance cost."))
      :node-class-name *remembrance-node-class-name*
      :case-sensitive-p nil)))
 
+;; TODO: Turn `view-cached-page' into a nyxt: scheme?
+;; Think `view-source'.
 (define-internal-page view-cached-page (&key url-string query) ; TODO: Rename to `view-remembered-page'?
     (:title "*Cached page*")
   "View textual content of cached page in new buffer."
