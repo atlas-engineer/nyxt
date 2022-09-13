@@ -813,7 +813,7 @@ See `gtk-browser's `modifier-translator' slot."
 (define-class gtk-scheme ()
   ((display-isolated-p
     nil
-    :documentation "Display isolated schemes cannot be displayed (in iframes, for example) by other schemes.")
+    :documentation "Display-isolated schemes cannot be displayed (in iframes, for example) by other schemes.")
    (empty-document-p
     nil
     :documentation "Empty document schemes can be loaded synchronously by websites referring to them."))
