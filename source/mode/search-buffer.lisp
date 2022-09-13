@@ -11,14 +11,13 @@
    (rememberable-p nil)
    (style
     (theme:themed-css (theme *browser*)
-      (".nyxt-hint"
+      (".nyxt-search-node .nyxt-hint"
        :background-color theme:secondary
        :color theme:on-secondary
-       :font-family "monospace,monospace"
-       :padding "0px 0.3em"
-       :border-radius "0.3em"
+       :padding "0px"
+       :border-radius "0px"
        :z-index #.(1- (expt 2 31)))
-      (".nyxt-hint.nyxt-select-hint"
+      (".nyxt-search-node > .nyxt-hint.nyxt-select-hint"
        :background-color theme:accent
        :color theme:on-accent))
     :documentation "The style of the search overlays.")
