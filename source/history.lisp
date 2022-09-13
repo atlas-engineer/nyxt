@@ -352,23 +352,20 @@ Return non-NIL of history was restored, NIL otherwise."
 
 (defmethod files:deserialize ((profile nyxt-profile) (file history-file) raw-content &key)
   "Restore the global/buffer-local history and session from the PATH."
-  ;; TODO: Move `with-protect' to a more general `files:deserialize' method?
-  (with-protect ("Failed to restore history from ~a: ~a"
-                 (files:expand file) :condition)
-    (let ((data (let ((*package* (find-package :nyxt)))
-                  ;; We need to make sure current package is :nyxt so that
-                  ;; symbols are printed with consistent namespaces.
-                  (history-deserialize-sexp raw-content))))
-      (match data
-        (nil nil)
-        ((guard (list version history) t)
-         (unless (string= version +version+)
-           (log:warn "History version ~s differs from current version ~s"
-                     version +version+))
-         history)
-        (_ (progn
-             (error "Expected (list version history) structure.")
-             nil))))))
+  (let ((data (let ((*package* (find-package :nyxt)))
+                ;; We need to make sure current package is :nyxt so that
+                ;; symbols are printed with consistent namespaces.
+                (history-deserialize-sexp raw-content))))
+    (match data
+      (nil nil)
+      ((guard (list version history) t)
+       (unless (string= version +version+)
+         (log:warn "History version ~s differs from current version ~s"
+                   version +version+))
+       history)
+      (_ (progn
+           (error "Expected (list version history) structure.")
+           nil)))))
 
 (defun histories-directory (&optional (buffer (current-buffer)))
   (when (context-buffer-p buffer)
