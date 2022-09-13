@@ -277,7 +277,7 @@ This induces a performance cost."))
     (:title "*Cached page*")
   "View textual content of cached page in new buffer."
   (let ((buffer (current-buffer)))
-    (enable-modes 'remembrance-mode buffer)
+    (enable-modes 'remembrance-mode (current-buffer))
     (let* ((mode (find-submode 'remembrance-mode))
            (doc (find-url url-string mode)))
       (hooks:once-on (buffer-loaded-hook buffer) (_)
