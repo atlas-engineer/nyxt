@@ -510,21 +510,28 @@ A command is a special kind of function that can be called with
   "Inspect a Nyxt-accessible class and show it in a help buffer."
   (describe-class :universal t))
 
-(define-internal-page-command-global describe-bindings ()
-    (buffer "*Help-bindings*" (resolve-symbol :help-mode :mode))
+(define-internal-page describe-bindings (&key (id (id (current-buffer))))
+    (:title "*Help-bindings*" :page-mode (resolve-symbol :help-mode :mode))
   "Show a buffer with the list of all known bindings for the current buffer."
-  (spinneret:with-html-string
-    (:h1 "Bindings")
-    (:p (loop for keymap in (current-keymaps (current-buffer))
-              collect (:div
-                       (:h3 (keymaps:name keymap))
-                       (:table
-                        (loop for keyspec being the hash-keys
-                                in (keymaps:keymap-with-parents->map keymap)
-                                  using (hash-value bound-value)
-                              collect (:tr
-                                       (:td keyspec)
-                                       (:td (format nil "~(~a~)" bound-value))))))))))
+  (let ((buffer (nyxt::buffers-get id)))
+    (spinneret:with-html-string
+      (:h1 "Bindings")
+      (:p (loop for keymap in (current-keymaps buffer)
+                collect (:div
+                         (:h3 (keymaps:name keymap))
+                         (:table
+                          (loop for keyspec being the hash-keys
+                                  in (keymaps:keymap-with-parents->map keymap)
+                                    using (hash-value bound-value)
+                                collect (:tr
+                                         (:td keyspec)
+                                         (:td (format nil "~(~a~)" bound-value)))))))))))
+
+(define-command-global describe-bindings (&key (buffer (current-buffer)))
+    "Show a buffer with the list of all known bindings for the current buffer."
+  (set-current-buffer
+   (buffer-load (nyxt-url 'describe-bindings :id (id buffer))
+                :buffer (ensure-internal-page-buffer 'describe-bindings))))
 
 (defun describe-key-dispatch (command)
   (unwind-protect
