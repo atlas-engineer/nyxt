@@ -243,25 +243,30 @@ turned into links to their respective description page."
     (buffer (str:concat "*Help-" (symbol-name variable) "*") (resolve-symbol :help-mode :mode))
   "Inspect a variable and show it in a help buffer."
   (let ((*print-case* :downcase))
-    (spinneret:with-html-string
-      (:style (style buffer))
-      (:h1 (format nil "~s" variable)) ; Use FORMAT to keep package prefix.
-      (:raw (resolve-backtick-quote-links (documentation variable 'variable) variable))
-      (:h2 "Current Value:")
-      (:button
-       :class "button"
-       :onclick (ps:ps (nyxt/ps:lisp-eval
-                        (:title "change-value")
-                        (handler-case
-                            (setf variable
-                                  (first
-                                   (evaluate
-                                    (prompt1
-                                      :prompt (format nil "Set ~a to" variable)
-                                      :sources 'prompter:raw-source))))
-                          (prompt-buffer-canceled nil))))
-       "Change value")
-      (:p (:raw (value->html (symbol-value variable)))))))
+    (if (boundp variable)
+        (spinneret:with-html-string
+          (:style (style buffer))
+          (:h1 (format nil "~s" variable)) ; Use FORMAT to keep package prefix.
+          (:raw (resolve-backtick-quote-links (documentation variable 'variable) variable))
+          (:h2 "Current Value:")
+          (:button
+           :class "button"
+           :onclick (ps:ps (nyxt/ps:lisp-eval
+                            (:title "change-value")
+                            (handler-case
+                                (setf variable
+                                      (first
+                                       (evaluate
+                                        (prompt1
+                                         :prompt (format nil "Set ~a to" variable)
+                                         :sources 'prompter:raw-source))))
+                              (prompt-buffer-canceled nil))))
+           "Change value")
+          (:p (:raw (value->html (symbol-value variable)))))
+        (spinneret:with-html-string
+          (:style (style buffer))
+          (:h1 (format nil "~s" variable))
+          (:p "Unbound")))))
 
 (define-command-global universal-describe-variable ()
   "Inspect a variable from any Nyxt-accessible package and show it in a help buffer."
