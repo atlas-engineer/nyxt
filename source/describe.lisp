@@ -359,23 +359,30 @@ For generic functions, describe all the methods."
                                      (file (rest (getf definition :location))))
                       (:h2 (format nil "Source ~a" file))
                       (:pre (function-lambda-string method)))))))
-          (if (typep (symbol-function input) 'generic-function)
-              (spinneret:with-html-string
-                (:style (style buffer))
-                (:h1 (format nil "~s" input) ; Use FORMAT to keep package prefix.
-                     (when (macro-function input) " (macro)"))
-                (:raw (fun-desc input))
-                (:h2 "Methods")
-                (:raw (sera:string-join
-                       (mapcar #'method-desc
-                               (mopu:generic-function-methods
-                                (symbol-function input)))
-                       "")))
-              (spinneret:with-html-string
-                (:style (style buffer))
-                (:h1 (format nil "~s" input) ; Use FORMAT to keep package prefix.
-                     (when (macro-function input) " (macro)"))
-                (:raw (fun-desc input))))))
+          (cond
+            ((not (fboundp input))
+             (spinneret:with-html-string
+               (:style (style buffer))
+               (:h1 (format nil "~s" input))
+               (:p "Unbound.")))
+            ((typep (symbol-function input) 'generic-function)
+             (spinneret:with-html-string
+               (:style (style buffer))
+               (:h1 (format nil "~s" input) ; Use FORMAT to keep package prefix.
+                    (when (macro-function input) " (macro)"))
+               (:raw (fun-desc input))
+               (:h2 "Methods")
+               (:raw (sera:string-join
+                      (mapcar #'method-desc
+                              (mopu:generic-function-methods
+                               (symbol-function input)))
+                      ""))))
+            (t
+             (spinneret:with-html-string
+               (:style (style buffer))
+               (:h1 (format nil "~s" input) ; Use FORMAT to keep package prefix.
+                    (when (macro-function input) " (macro)"))
+               (:raw (fun-desc input)))))))
       (prompt :prompt "Describe function"
               :sources 'function-source)))
 
