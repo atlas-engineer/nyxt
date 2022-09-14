@@ -47,3 +47,14 @@
         (assert-eq 2
                    (length (htree:all-data (files:content file))))
         (uiop:delete-file-if-exists (files:expand (history-file buffer)))))))
+
+(define-test history-restoration ()
+  (let* ((nyxt:*global-profile* (make-instance 'test-profile))
+         (history-path (make-instance 'history-file
+                                      :base-path (asdf:system-relative-pathname
+                                                  :nyxt "tests/test-data/broken-history.lisp")))
+         (history (nfiles:read-file nyxt:*global-profile* history-path)))
+    (assert-eq 2
+               (hash-table-count (htree:owners history)))
+    (assert-eq 3
+               (hash-table-count (htree:entries history)))))
