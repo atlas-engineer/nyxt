@@ -126,10 +126,8 @@ major versions."
   (:p (:nxref :slot 'history-file :class-name 'context-buffer)
       " is in " (:nxref :class-name 'context-buffer) ".")
 
-  (standard-output-file standard-error-file)
-  (:p (:nxref :slot 'nyxt:standard-output-file :class-name 'context-buffer) " and "
-      (:nxref :slot 'nyxt:error-output-file :class-name 'context-buffer)
-      " are in " (:nxref :class-name 'context-buffer) ".")
+  (standard-output-file error-output-file)
+  (:p (:nxref :variable 'nyxt:*log-file*))
 
   (annotations-file)
   (:p (:nxref :slot 'nyxt/annotate-mode:annotations-file :class-name 'nyxt/annotate-mode:annotate-mode)
