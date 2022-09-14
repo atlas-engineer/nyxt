@@ -115,18 +115,19 @@ Example:
     \"Open files in some way.\"
     ;; Note that `source' is captured in the closure.
     (mapc (opener source) files)))"
-  (alex:with-gensyms (closed-over-body)
-    ;; Warning: `make-command' takes a lambda-expression as an unevaluated list,
-    ;; thus the BODY environment is not that of the lexical environment
-    ;; (closures would thus fail to close over).  To avoid this problem, we capture
-    ;; the lexical environment in a lambda.
-    ;;
-    ;; Note that this relies on the assumption that ARGS is just a list of
-    ;; _required arguments_, which is a same assumption for prompt buffer actions.
-    ;; We could remove this limitation with some argument parsing.
-    `(let ((,closed-over-body (lambda ,args ,@body)))
-       (make-command ',name
-                     (list 'lambda ',args (list 'apply ,closed-over-body  '(list ,@args)))))))
+  (let ((doc (nth-value 2 (alex:parse-body body :documentation t))) )
+    (alex:with-gensyms (closed-over-body)
+      ;; Warning: `make-command' takes a lambda-expression as an unevaluated list,
+      ;; thus the BODY environment is not that of the lexical environment
+      ;; (closures would thus fail to close over).  To avoid this problem, we capture
+      ;; the lexical environment in a lambda.
+      ;;
+      ;; Note that this relies on the assumption that ARGS is just a list of
+      ;; _required arguments_, which is a same assumption for prompt buffer actions.
+      ;; We could remove this limitation with some argument parsing.
+      `(let ((,closed-over-body (lambda ,args ,@body)))
+         (make-command ',name
+                       (list 'lambda ',args ,doc (list 'apply ,closed-over-body  '(list ,@args))))))))
 
 (export-always 'lambda-mapped-command)
 (defmacro lambda-mapped-command (function-symbol)
