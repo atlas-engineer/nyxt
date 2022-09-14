@@ -44,7 +44,7 @@ are fully separated, each buffer having its own behavior and settings."))
         (:p "Each buffer has its own list of modes, ordered by priority.  A mode is a
 set of functions, hooks, keybindings and other facilities that may modify the
 behavior of a buffer.  For example, 'blocker-mode' can be used for domain-based
-adblocking while 'no-script-mode' disables JavaScript.")
+ad-blocking while 'no-script-mode' disables JavaScript.")
         (:p "Each buffer has separate instances of modes, which means that altering
 the settings of a mode in a buffer does not impact other buffers.  Mode specific
 functions/commands are only available when a mode is enabled for the current
@@ -195,20 +195,20 @@ Bookmarks can have the following settings:")
         (:p "Annotations can have the following settings:")
         (:ul
          (:li (:nxref :slot 'nyxt/annotate-mode:snippet
-                      :class-name 'nyxt/annotate-mode:snippet-annotation)
+                :class-name 'nyxt/annotate-mode:snippet-annotation)
               ": The snippet which was highlighted by the user.")
          (:li (:nxref :slot 'nyxt/annotate-mode::url
-                      :class-name 'nyxt/annotate-mode:url-annotation)
+                :class-name 'nyxt/annotate-mode:url-annotation)
               ": The URL of the annotation.")
          (:li (:nxref :slot 'nyxt/annotate-mode:page-title
-                      :class-name 'nyxt/annotate-mode:url-annotation)
+                :class-name 'nyxt/annotate-mode:url-annotation)
               ": The title of the annotation.")
          (:li (:nxref :slot 'nyxt/annotate-mode::data
-                      :class-name 'nyxt/annotate-mode:annotation)
+                :class-name 'nyxt/annotate-mode:annotation)
               ": The comment about the highlighted snippet or
 the URL.")
          (:li (:nxref :slot 'nyxt/annotate-mode:tags
-                      :class-name 'nyxt/annotate-mode:annotation)
+                :class-name 'nyxt/annotate-mode:annotation)
               ": A list of strings.  Useful to categorize and filter annotations."))
         (:p "Annotate-related commands")
         (:ul

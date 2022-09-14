@@ -7,12 +7,12 @@
   "Print FN in HTML followed by its keybinding in parentheses."
   `(let ((spinneret:*suppress-inserted-spaces* t))
      (spinneret:with-html
-      (:span (:nxref :command ,fn)
-             " ("
-             (:code (apply #'binding-keys ,fn (if ,explicit-modes-p
-                                                  (list :modes ,modes)
-                                                '())))
-             ")"))))
+       (:span (:nxref :command ,fn)
+              " ("
+              (:code (apply #'binding-keys ,fn (if ,explicit-modes-p
+                                                   (list :modes ,modes)
+                                                   '())))
+              ")"))))
 
 (defmacro command-docstring-first-sentence (fn &key (sentence-case-p nil))
   "Print FN first docstring sentence in HTML."
@@ -42,8 +42,8 @@ CLASS is a class symbol."
   (sera:nlet lp ()
     (let ((input (read-from-string
                   (prompt1
-                    :prompt (format nil "Configure slot value ~a" slot)
-                    :sources 'prompter:raw-source))))
+                   :prompt (format nil "Configure slot value ~a" slot)
+                   :sources 'prompter:raw-source))))
       (cond
         ((and type (not (typep input type)))
          (echo-warning "Type mismatch for ~a: got ~a, expected ~a."
@@ -100,9 +100,9 @@ CLASS is a class symbol."
                             :onclick (ps:ps (nyxt/ps:lisp-eval
                                              (:title "set-theme")
                                              (nyxt::auto-configure
-                                               :class-name 'browser
-                                               :slot 'theme
-                                               :slot-value theme-symbol)))
+                                              :class-name 'browser
+                                              :slot 'theme
+                                              :slot-value theme-symbol)))
                             text))
                (:p "Colors:")
                (:dl

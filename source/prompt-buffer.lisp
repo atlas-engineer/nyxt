@@ -235,12 +235,12 @@ See also `show-prompt-buffer'."
   (alex:maxf (max-suggestions prompt-buffer)
              (length suggestions))
   (labels ((decimals (n)
-           (cond
-             ((< n 0)
-              (decimals (- n)))
-             ((< n 10)
-              1)
-             (t (1+ (decimals (truncate n 10)))))))
+             (cond
+               ((< n 0)
+                (decimals (- n)))
+               ((< n 10)
+                1)
+               (t (1+ (decimals (truncate n 10)))))))
     (cond
       ((not suggestions)
        "")

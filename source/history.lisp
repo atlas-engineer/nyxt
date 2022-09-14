@@ -89,7 +89,7 @@ class."
   "Add URL to the global/buffer-local history.
 The `implicit-visits' count is incremented."
   (files:with-file-content (history (history-file (current-buffer))
-                                     :default (make-history-tree))
+                            :default (make-history-tree))
     (unless (or (url-empty-p url)
                 ;; If buffer was not registered in the global history, don't
                 ;; proceed.  See `buffer's `customize-instance' `:after' method..
@@ -394,9 +394,9 @@ Return non-NIL of history was restored, NIL otherwise."
   "Store the history data in the file named by user input.
 Useful for session snapshots, as `restore-history-by-name' will restore opened buffers."
   (sera:and-let* ((name (prompt1
-                          :prompt "The name to store history with"
-                          :sources (list 'prompter:raw-source
-                                         (make-instance 'history-name-source))))
+                         :prompt "The name to store history with"
+                         :sources (list 'prompter:raw-source
+                                        (make-instance 'history-name-source))))
                   (new-file (make-instance 'history-file
                                            :base-path (make-pathname
                                                        :name name

@@ -67,8 +67,8 @@ A list of objects. Does not necessarily have the same order as `files' of the sc
 MATCHES, JS, and CSS are all keys of the \"content_scripts\" manifest.json keys:
 https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts"
   (let ((sanitize-mozilla-regex (curry #'str:replace-using '("*." "*"
-                                                                  "?" "*"
-                                                                  "<all_urls>" "*://*/*"))))
+                                                             "?" "*"
+                                                             "<all_urls>" "*://*/*"))))
     (make-instance
      'content-script
      :match-patterns (mapcar sanitize-mozilla-regex (uiop:ensure-list (gethash "matches" json)))
@@ -132,7 +132,7 @@ For info on its structure, see
 https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/browser_action"
   (let* ((browser-action (gethash "browser_action" json))
          (icons (when browser-action
-                     (gethash "theme_icons" browser-action)))
+                  (gethash "theme_icons" browser-action)))
          (sorted-icons (when icons
                          (sort icons
                                #'> :key (curry #'gethash "size"))))
@@ -153,26 +153,26 @@ https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.
 
 (define-class browser-action ()
   ((default-popup
-     nil
-     :type (or null string pathname)
-     :documentation "An HTML file for the popup to open when its icon is clicked.")
+    nil
+    :type (or null string pathname)
+    :documentation "An HTML file for the popup to open when its icon is clicked.")
    (default-title
-     nil
-     :type (or null string)
-     :documentation "The title to label the popup with.")
+    nil
+    :type (or null string)
+    :documentation "The title to label the popup with.")
    (default-icon
-     nil
-     :type (or null string)
-     :documentation "The extension icon to use in status buffer.")
+    nil
+    :type (or null string)
+    :documentation "The extension icon to use in status buffer.")
    ;; TODO: Use those.
    (default-light-icon
-     nil
-     :type (or null string)
-     :documentation "The extension icon for use in status buffer in the light theme.")
+    nil
+    :type (or null string)
+    :documentation "The extension icon for use in status buffer in the light theme.")
    (default-dark-icon
-     nil
-     :type (or null string)
-     :documentation "The extension icon for use in status buffer in the dark theme."))
+    nil
+    :type (or null string)
+    :documentation "The extension icon for use in status buffer in the dark theme."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
@@ -323,11 +323,11 @@ slash. WebExtensions require this :/"
 If the popup already exists, close it."
   (let ((extension-class (or extension-class
                              (prompt1
-                               :prompt "Extension to toggle the popup of"
-                               :sources (make-instance 'active-mode-source
-                                                       :constructor (sera:filter
-                                                                     #'nyxt/web-extensions::extension-p
-                                                                     (modes buffer)))))))
+                              :prompt "Extension to toggle the popup of"
+                              :sources (make-instance 'active-mode-source
+                                                      :constructor (sera:filter
+                                                                    #'nyxt/web-extensions::extension-p
+                                                                    (modes buffer)))))))
     (with-current-buffer buffer
       ;;TODO: Send click message to background script if there's no popup.
       (sera:and-let* ((extension (nyxt:find-submode extension-class (nyxt:current-buffer)))

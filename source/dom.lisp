@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/dom
-  (:documentation "Nyxt-specific DOM classes and functions operating on them.
+    (:documentation "Nyxt-specific DOM classes and functions operating on them.
 
 The classes are generated for every HTML element, including `h1-element',
 `div-element', `img-element' and others.
@@ -285,7 +285,7 @@ Return two values:
       (when attributes
         (mapc (lambda (attribute)
                 (when (unique-p (selconcat :sel "[" attribute "=\""
-                                            (plump:attribute element attribute) "\"]"))
+                                           (plump:attribute element attribute) "\"]"))
                   (selreturn)))
               attributes))
       ;; Check for short and nice parent-child relations, like :only-child,
@@ -315,7 +315,7 @@ Return two values:
       (when (and parents
                  (unique-p (selconcat (get-unique-selector (first parents)) " > " :sel)))
         (selreturn))
-      (error "There's no unique selector for ~a, the best quess is ~s" element selector))))
+      (error "There's no unique selector for ~a, the best guess is ~s" element selector))))
 
 (defmethod url :around ((element plump:element))
   (alex:when-let* ((result (call-next-method))

@@ -92,13 +92,13 @@ values in help buffers, REPL and elsewhere."))
         ((and name (eq name 'lambda))
          (multiple-value-bind (expression closure-p name)
              (function-lambda-expression value)
-             (:dl
-              (:dt "name")
-              (:dd (:raw (escaped-literal-print name)))
-              (:dt "code")
-              (:dd (:raw (escaped-literal-print expression)))
-              (:dt "closure-p")
-              (:dd (:raw (value->html closure-p))))))
+           (:dl
+            (:dt "name")
+            (:dd (:raw (escaped-literal-print name)))
+            (:dt "code")
+            (:dd (:raw (escaped-literal-print expression)))
+            (:dt "closure-p")
+            (:dd (:raw (value->html closure-p))))))
         (name
          (:a :href (nyxt-url 'describe-function :fn name)
              (:raw (escaped-literal-print value))))
@@ -256,8 +256,8 @@ values in help buffers, REPL and elsewhere."))
                                               (first
                                                (evaluate
                                                 (prompt1
-                                                  :prompt (format nil "Set ~a to" slot-name)
-                                                  :sources 'prompter:raw-source))))
+                                                 :prompt (format nil "Set ~a to" slot-name)
+                                                 :sources 'prompter:raw-source))))
                                       (prompt-buffer-canceled nil))))
                    "change "))
              (:dd (:raw (value->html (slot-value value slot-name) t)))))

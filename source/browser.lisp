@@ -156,7 +156,7 @@ If nil, renderer-provided dialogs are used.")
     (make-instance 'history-file)
     :type history-file
     :documentation "History file to read from when restoring session.
-See `restore-session-on-startup-p' to c ontrol this behaviour.
+See `restore-session-on-startup-p' to control this behavior.
 See also `history-file' in `context-buffer' for per-buffer history files.")
    (restore-session-on-startup-p
     t
@@ -227,7 +227,7 @@ strings."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
-  (:documentation "The browser class defines the overall behaviour of Nyxt, in
+  (:documentation "The browser class defines the overall behavior of Nyxt, in
 the sense that it manages the display of buffers.  For instance, it abstracts
 the renderer, and lays the foundations to track and manipulate buffers and
 windows.

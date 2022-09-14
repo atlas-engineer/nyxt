@@ -158,7 +158,7 @@ keymap.")
 shifts.  For instance if " (:code "C-x C-F") " fails to match anything " (:code "C-x C-f")
             " is tried."
             "See the default value of " (:nxref :variable 'nkeymaps:*translator*) " to learn how to
-         custsomize it or set it to " (:code "nil") " to disable all forms of
+         customize it or set it to " (:code "nil") " to disable all forms of
          translation."))
 
       (:nsection :title "Search engines"
@@ -204,7 +204,7 @@ follows.")
         (:p "See the " (:nxref :class-name 'nyxt/proxy-mode:proxy-mode) " documentation."))
 
       (:nsection :title "Blocker mode"
-        (:p "This mode blocks access to websites related to especific hosts. To see
+        (:p "This mode blocks access to websites related to specific hosts. To see
 all hosts being blocked, execute command " (:code "describe-variable") ", choose variable "
 (:code "NYXT/BLOCKER-MODE:*DEFAULT-HOSTLIST*") ", and read data on "
 (:code "nyxt/blocker-mode:url-body") " slot." " To customize host blocking, read the "
@@ -227,7 +227,7 @@ to write custom prompt-buffers.")
         (:p "You can also create your own context menu entries binding those to Lisp commands, using "
             (:nxref :function 'ffi-add-context-menu-command) " function. You can bind the "
             (:code "bookmark-url") " like this:")
-        (:pre (:code "(ffi-add-context-menu-command 'boorkmark-url \"Bookmark the chosen URL\")"))
+        (:pre (:code "(ffi-add-context-menu-command 'bookmark-url \"Bookmark the chosen URL\")"))
         (:p "Currently, context menu commands don't have access to the renderer objects (and
 shouldn't hope to). Commands you bind to context menu actions should deduce most
 of the information from their surroundings, using JavaScript and Lisp functions
@@ -236,7 +236,7 @@ Nyxt provides."))
       (:nsection :title "Custom URL schemes"
         (:p "If there's a scheme that Nyxt doesn't support, but you want it to, you can
 always define the handler for this scheme so that it's Nyxt-openable.")
-        (:p "As a totally hypothetical example, you can define a nonsence scheme "
+        (:p "As a totally hypothetical example, you can define a nonsense scheme "
             (:code "bleep") " to generate a page with random text:")
         (:pre (:code "(define-internal-scheme \"bleep\"
     (lambda (url buffer)
@@ -335,7 +335,7 @@ still define it as:")
               (:nxref :function 'define-internal-page) ".")))
 
       (:nsection :title "Hooks"
-        (:p "Hooks provide a powerful mechanism to tweak the behaviour of various
+        (:p "Hooks provide a powerful mechanism to tweak the behavior of various
 events that occur in the context of windows, buffers, modes, etc.")
         (:p "A hook holds a list of " (:i "handlers") ".  Handlers are named and
 typed functions.  Each hook has a dedicated handler constructor.")
@@ -656,7 +656,7 @@ mode's configuration file:")
 exec nyxt --headless --no-auto-config --profile nosave --config \"$0\"
 |#
 
-;; Disable session restoration to speed up startup and get more reproducible behaviour.
+;; Disable session restoration to speed up startup and get more reproducible behavior.
 \(define-configuration browser
   ((restore-session-on-startup-p nil)))
 
@@ -767,7 +767,7 @@ core to finalize the instance.")))
           (:nxref :variable '*extensions-directory*) " (default to "
           (:code "~/.local/share/nyxt/extensions")").")
       (:p "Extensions are regular Common Lisp systems.")
-      (:p "A catalogue of extensions is available in the "
+      (:p "A catalog of extensions is available in the "
           (:code "document/EXTENSIONS.org") " file in the source repository."))
 
     (:nsection :title "Troubleshooting"
@@ -805,7 +805,7 @@ following packages:")
 
       (:nsection :title "Website crashes"
         (:p "If some websites systematically crash, try to install all the required
-Gstreamer plugins as mentioned in the 'Playing videos' section."))
+GStreamer plugins as mentioned in the 'Playing videos' section."))
 
       (:nsection :title "Input method support (CJK, etc.)"
         (:p "Depending on your setup, you might have to set some environment variables

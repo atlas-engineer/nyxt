@@ -55,9 +55,9 @@
                   (format nil "~a" ,printable))))))
 
 (deftag :nsection (body attrs &key (title (alexandria:required-argument 'title))
-                                   (id (str:remove-punctuation (str:downcase title)
-                                                               :replacement "-"))
-                              &allow-other-keys)
+                        (id (str:remove-punctuation (str:downcase title)
+                                                    :replacement "-"))
+                        &allow-other-keys)
   `(:section
     :id ,id
     (:h* ,@attrs ,title)

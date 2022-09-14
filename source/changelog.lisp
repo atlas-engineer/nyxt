@@ -46,7 +46,7 @@ particular revision.")
         define globally visible commands.")
    (:li "Removed the " (:code "notify") " function, also removing the
         dependency on notify-osd. This function was not generic enough and only
-        used in one place. Notifications will be reintrocued with a more generic
+        used in one place. Notifications will be reintroduced with a more generic
         interface.")
    (:li "Remove " (:code "set-url-from-bookmark-new-buffer") " It is
         redundant with set-url and set-url-from-bookmark.")
@@ -220,15 +220,15 @@ particular revision.")
   (:ul
    (:li "Quicklisp is no longer used to fetch dependencies.  Instead, all Lisp
    dependencies are pinned and fetched via Git submodules into the "
-   (:code "_build") " subdirectory.  This should improve reproducibility.
+        (:code "_build") " subdirectory.  This should improve reproducibility.
    The " (:code "NYXT_QUICKLISP") " environment variable has been replaced by "
-   (:code "NYXT_SUBMODULES") "."))
+        (:code "NYXT_SUBMODULES") "."))
   (:h3 "Platform support")
   (:ul
    (:li "Quicklisp can now be properly loaded when Nyxt was installed via the .deb file."))
   (:h3 "Bug fixes")
   (:ul
-   (:li "Properly handle cancelation in yes/no prompt-buffers.")
+   (:li "Properly handle cancellation in yes/no prompt-buffers.")
    (:li "Fix sandboxing.  (Thanks to @tiberious726!)")
    (:li "Fix toggle-mark in visual-mode.  (Thanks to @hendursaga!)")
    (:li "Report load-after-system warnings.  (Thanks to @hendursaga!)")
@@ -268,7 +268,7 @@ used to happen when loading resource-intensive pages.")
    (:li "New common text editing bindings (select-all, undo, redo, cut, etc.).")
    (:li "Display source code in " (:code "describe-function") " whenever possible.")
    (:li "Allow for arbitrary HTML in the prompt buffer (both attributes and the prompt).")
-   (:li "Permission requests are now handled (such geolocalization access).")
+   (:li "Permission requests are now handled (such as geolocation access).")
    (:li "Intelligent Tracking Prevention is no longer systematically enabled. "
         "This should fix some website incompatibilities. "
         "ITP can be selectively enabled with " (:code "reduce-tracking-mode") ".")
@@ -299,7 +299,7 @@ SLY install.")
    (:li "Prompt buffer attributes can now be computed asynchronously."
         "This is used for instance to speed up " (:code "switch-buffer") ".")
    (:li "Non-prefixed completion is now enabled for the default search engine."
-        "You can turn off this behaviour it with the "
+        "You can turn off this behavior it with the "
         (:code "search-always-auto-complete-p") " slot option.")
    (:li "New " (:code "delete-command") " command.  (Thanks to @BlueFlo0d!)")
    (:li "More bindings and some minor improvements to " (:code "visual-mode") ".  (Thanks to @hendursaga!)"))

@@ -27,7 +27,7 @@ packages.
     :reader t
     :writer nil
     :documentation "Whether a warning before executing a deprecated command is
-signalled.")
+signaled.")
    (last-access
     (local-time:now)
     :type local-time:timestamp
@@ -329,11 +329,11 @@ See `package-symbols' for details on the arguments."
   "Return the list of all slot symbols in PACKAGES and USER-PACKAGES.
 See `package-symbols' for details on the arguments."
   (mappend (lambda (class-sym)
-                  (mapcar (lambda (slot) (make-instance 'slot
-                                                        :name slot
-                                                        :class-sym class-sym))
-                          (class-public-slots class-sym)))
-                (package-classes packages user-packages)))
+             (mapcar (lambda (slot) (make-instance 'slot
+                                                   :name slot
+                                                   :class-sym class-sym))
+                     (class-public-slots class-sym)))
+           (package-classes packages user-packages)))
 
 (defun package-methods (&optional (packages (nyxt-packages)) ; TODO: Unused.  Remove?
                           (user-packages (nyxt-user-packages)))
