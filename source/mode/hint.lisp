@@ -501,14 +501,3 @@ modes."
                (lambda (result)  (%copy-hint-url (first result)))
                :multi-selection-p nil
                :selector "a"))
-
-(define-command download-hint-url ()
-  "Prompt for element hints and download them."
-  (let ((buffer (current-buffer)))
-    (query-hints "Download link URL"
-                 (lambda (selected-links)
-                   (loop for link in selected-links
-                         ;; TODO: sleep should NOT be necessary to avoid breaking download
-                         do (nyxt/download-mode:download buffer (url link))
-                            (sleep 0.25)))
-                 :selector "a")))

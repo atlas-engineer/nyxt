@@ -285,3 +285,15 @@ Return the download object matching the download."
 (define-command-global download-url ()
   "Download the page or file of the current buffer."
   (download (current-buffer) (url (current-buffer))))
+
+(define-command download-hint-url ()
+  "Prompt for element hints and download them."
+  (let ((buffer (current-buffer)))
+    (nyxt/hint-mode:query-hints
+     "Download link URL"
+     (lambda (selected-links)
+       (loop for link in selected-links
+             ;; TODO: sleep should NOT be necessary to avoid breaking download
+             do (nyxt/download-mode:download buffer (url link))
+                (sleep 0.25)))
+     :selector "a")))
