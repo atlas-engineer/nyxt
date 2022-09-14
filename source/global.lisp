@@ -84,9 +84,9 @@ reporting by users, it does not create any functional differences in the
 execution of Nyxt.")
 
 (alex:define-constant +nyxt-critical-dependencies+
-  '(:cl-cffi-gtk
-    :cl-gobject-introspection
-    :cl-webkit2)
+    '(:cl-cffi-gtk
+      :cl-gobject-introspection
+      :cl-webkit2)
   :test #'equal)
 
 (defvar +asdf-build-information+
@@ -120,12 +120,12 @@ Don't set this, it would lose its meaning.")
 
 (export-always '+version+)
 (alex:define-constant +version+
-  (or (uiop:getenv "NYXT_VERSION")      ; This is useful for build systems without Git.
-      (ignore-errors
-       (uiop:with-current-directory ((asdf:system-source-directory :nyxt))
-         (uiop:run-program (list "git" "describe" "--always" "--tags")
-                           :output '(:string :stripped t))))
-      (asdf/component:component-version (asdf:find-system :nyxt)))
+    (or (uiop:getenv "NYXT_VERSION")      ; This is useful for build systems without Git.
+        (ignore-errors
+         (uiop:with-current-directory ((asdf:system-source-directory :nyxt))
+           (uiop:run-program (list "git" "describe" "--always" "--tags")
+                             :output '(:string :stripped t))))
+        (asdf/component:component-version (asdf:find-system :nyxt)))
   :test #'equal)
 
 (defun version ()

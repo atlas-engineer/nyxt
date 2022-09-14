@@ -12,9 +12,9 @@ the amount of CPU cores."
 (defun restart-browser (c)
   "Restart browser reporting condition C."
   (funcall 'restart-with-message        ; Not defined yet.
-   :condition c
-   :backtrace (with-output-to-string (stream)
-                (uiop:print-backtrace :stream stream :condition c))))
+           :condition c
+           :backtrace (with-output-to-string (stream)
+                        (uiop:print-backtrace :stream stream :condition c))))
 
 (export-always 'with-protect)
 (defmacro with-protect ((format-string &rest args) &body body)

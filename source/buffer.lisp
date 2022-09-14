@@ -37,7 +37,7 @@ inherited from the superclasses.")
       (make-instance profile-class)
       *global-profile*)
     :type nyxt-profile
-    :documentation "Buffer profiles are used to specialize the behaviour of
+    :documentation "Buffer profiles are used to specialize the behavior of
 various parts, such as the path of all data files.")
    (url (quri:uri ""))
    (url-at-point (quri:uri ""))
@@ -129,7 +129,7 @@ Buffers result from the computations of a web renderer, which generates a visual
 representation of HTML documents.
 
 Rendered URLs or the Nyxt's manual qualify as examples.  Buffers are fully
-separated from one another, so that each has its own behaviour and settings."))
+separated from one another, so that each has its own behavior and settings."))
 
 (defmethod request-resource-hook ((buffer buffer))
   "A method to not error out if the buffer has no `request-resource-hook'.
@@ -174,7 +174,7 @@ hook."))
   (:export-predicate-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class)
-  (:documentation "A buffer whose behaviour can be modified with `mode's."))
+  (:documentation "A buffer whose behavior can be modified with `mode's."))
 
 (defmethod finalize-buffer ((buffer modable-buffer) &key (browser *browser*) no-hook-p extra-modes)
   "Finalize instantiation of modable BUFFER.
@@ -409,7 +409,7 @@ which is not necessarily the same.")
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class)
   (:documentation "A buffer which focus sets the current context, that is, the
-buffer-specific values of various settings like the various file paths, promp
+buffer-specific values of various settings like the various file paths, prompt
 options, download options, etc.
 
 Every setting that can be buffer-specific should be stored here; settings that
@@ -636,8 +636,8 @@ store them somewhere and `ffi-buffer-delete' them once done."))
 
 (define-class status-buffer (input-buffer)
   ((window nil
-    :type (maybe window)
-    :documentation "The `window' to which the status buffer is attached.")
+           :type (maybe window)
+           :documentation "The `window' to which the status buffer is attached.")
    (height
     24
     :type integer
@@ -884,7 +884,7 @@ identifiers."
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:export-class-name-p t))
 
-(-> proxy-adress (buffer &key (:downloads-only boolean)) *)
+(-> proxy-url (buffer &key (:downloads-only boolean)) *)
 (defun proxy-url (buffer &key (downloads-only nil))
   "Return the proxy address, nil if not set.
 If DOWNLOADS-ONLY is non-nil, then it only returns the proxy address (if any)
@@ -1423,24 +1423,24 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
                                    :query       input
                                    :check-dns-p check-dns-p)))
             (or (mappend (lambda (engine)
-                                (append
-                                 (list (make-instance 'new-url-query
-                                                      :query       (str:join " " (rest terms))
-                                                      :engine      engine
-                                                      :check-dns-p check-dns-p))
-                                 ;; Some engines (I'm looking at you, Wikipedia!)
-                                 ;; return garbage in response to an empty request.
-                                 (when (and engine-completion-p
-                                            (search-auto-complete-p (current-buffer))
-                                            (completion-function engine)
-                                            (rest terms))
-                                   (mapcar (rcurry #'make-completion-query
-                                                        :engine      engine
-                                                        :check-dns-p check-dns-p)
-                                           (with-protect ("Error while completing search: ~a" :condition)
-                                             (funcall (completion-function engine)
-                                                      (str:join " " (rest terms))))))))
-                              engines)
+                           (append
+                            (list (make-instance 'new-url-query
+                                                 :query       (str:join " " (rest terms))
+                                                 :engine      engine
+                                                 :check-dns-p check-dns-p))
+                            ;; Some engines (I'm looking at you, Wikipedia!)
+                            ;; return garbage in response to an empty request.
+                            (when (and engine-completion-p
+                                       (search-auto-complete-p (current-buffer))
+                                       (completion-function engine)
+                                       (rest terms))
+                              (mapcar (rcurry #'make-completion-query
+                                              :engine      engine
+                                              :check-dns-p check-dns-p)
+                                      (with-protect ("Error while completing search: ~a" :condition)
+                                        (funcall (completion-function engine)
+                                                 (str:join " " (rest terms))))))))
+                         engines)
                 (sera:and-let* ((completion engine-completion-p)
                                 (buffer (current-buffer))
                                 (complete (search-auto-complete-p buffer))
@@ -1449,8 +1449,8 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
                                 (completion (completion-function engine))
                                 (all-terms (str:join " " terms)))
                   (mapcar (rcurry #'make-completion-query
-                                       :engine      engine
-                                       :check-dns-p check-dns-p)
+                                  :engine      engine
+                                  :check-dns-p check-dns-p)
                           (with-protect ("Error while completing default search: ~a" :condition)
                             (funcall (completion-function engine) all-terms))))))))
 
@@ -1620,7 +1620,7 @@ HISTORY may be NIL for buffers without history."
          (buffers (buffers-with-history history)))
     (flet ((existing-creator-id (owner)
              "If owner's creator does not exist anymore
-(that is, parent has been deleted), return NIL so has mimick top-level owners."
+(that is, parent has been deleted), return NIL so it can mimic top-level owners."
              (if (htree:owner history (htree:creator-id owner))
                  (htree:creator-id owner)
                  nil)))

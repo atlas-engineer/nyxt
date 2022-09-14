@@ -76,7 +76,7 @@ prompt-buffer keymaps."
 
 (export-always 'keyspecs-with-optional-keycode)
 (defun keyspecs-with-optional-keycode (keys) ; TODO: Remove "optional" from name.
-  "Like `keymaps:keyspecs' but displayes keys with keycodes like this:
+  "Like `keymaps:keyspecs' but displays keys with keycodes like this:
 KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
   (let ((no-code-specs (keyspecs-without-keycode keys)))
     (if (find-if (complement #'zerop) keys :key #'keymaps:key-code)

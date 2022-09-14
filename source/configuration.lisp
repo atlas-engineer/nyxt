@@ -114,11 +114,11 @@ translations for \"NYXT:source;\" and \"NYXT:libraries;\". Other \"NYXT:\"
 translations are preserved."
   (let ((truename (truename pathname))
         (current-translations
-         (remove-if (lambda (translation)
-                      (or (pathname-match-p "NYXT:source;" translation)
-                          (pathname-match-p "NYXT:libraries;" translation)))
-                    (logical-pathname-translations "NYXT")
-                    :key #'first)))
+          (remove-if (lambda (translation)
+                       (or (pathname-match-p "NYXT:source;" translation)
+                           (pathname-match-p "NYXT:libraries;" translation)))
+                     (logical-pathname-translations "NYXT")
+                     :key #'first)))
     (flet ((physical-target (component)
              (merge-pathnames
               (make-pathname :directory (list :relative component
@@ -264,7 +264,7 @@ Classes can be modes or a one of the user-configurable classes like `browser',
 `buffer', `prompt-buffer', `window'.
 
 The `%slot-default%' variable is replaced by the slot initform, the
-`%slot-value%' is replaced by the current calue of the slot.
+`%slot-value%' is replaced by the current value of the slot.
 
 Example that sets some defaults for all buffers:
 
@@ -468,7 +468,7 @@ dependency, it warns the user, skips the load gracefully and returns NIL.
 
 When loading succeeds, it goes through the list of all the systems that failed
 to load and attempts to load them if their dependencies now seem to be met."
-  ;; TODO: Ideally we would make this the default behaviour of
+  ;; TODO: Ideally we would make this the default behavior of
   ;; `nyxt-user-system' by specializing a method Unfortunately
   ;; `resolve-dependency-name' is a function and `find-component' is called
   ;; against the `depends-on' element but not the system itself.

@@ -214,10 +214,10 @@ turned into links to their respective description page."
         (*print-case* :downcase))
     (flet ((package-markup (package)
              (spinneret:with-html
-                 (:a :href (nyxt-url 'describe-package :package (package-name package))
-                     (package-name package)))))
+               (:a :href (nyxt-url 'describe-package :package (package-name package))
+                   (package-name package)))))
       (spinneret:with-html-string
-          (:style (style buffer))
+        (:style (style buffer))
         (:h1 (package-name package))
         (:raw (resolve-backtick-quote-links (documentation (find-package package) t) package))
         (:h2 "Symbols:")
@@ -326,27 +326,27 @@ For generic functions, describe all the methods."
                  (spinneret:with-html-string
                    (:details
                     (:summary
-                        (:h3 :style "display: inline"
-                             (format nil "~s" input) " "
-                             (:raw (format
-                                    nil "(~{~a~^ ~})"
-                                    (mapcar (lambda (class)
-                                              (cond
-                                                ((ignore-errors (mopu:subclassp class 'standard-object))
-                                                 (spinneret:with-html-string
-                                                   (:a :href (nyxt-url 'describe-class
-                                                                       :class (class-name class))
-                                                       (write-to-string (class-name class)))))
-                                                ((ignore-errors (eq t (class-name class)))
-                                                 "t")
-                                                (t (nyxt::escaped-literal-print class))))
-                                            (mopu:method-specializers method))))))
+                     (:h3 :style "display: inline"
+                          (format nil "~s" input) " "
+                          (:raw (format
+                                 nil "(~{~a~^ ~})"
+                                 (mapcar (lambda (class)
+                                           (cond
+                                             ((ignore-errors (mopu:subclassp class 'standard-object))
+                                              (spinneret:with-html-string
+                                                (:a :href (nyxt-url 'describe-class
+                                                                    :class (class-name class))
+                                                    (write-to-string (class-name class)))))
+                                             ((ignore-errors (eq t (class-name class)))
+                                              "t")
+                                             (t (nyxt::escaped-literal-print class))))
+                                         (mopu:method-specializers method))))))
                     (:button
                      :class "button"
                      :onclick (ps:ps (nyxt/ps:lisp-eval (:buffer buffer :title "describe-function")
-                                                         (remove-method (closer-mop:method-generic-function method)
-                                                                        method)
-                                                         (reload-current-buffer)))
+                                                        (remove-method (closer-mop:method-generic-function method)
+                                                                       method)
+                                                        (reload-current-buffer)))
                      "Remove method")
                     (:raw (resolve-backtick-quote-links (documentation method 't)
                                                         (mopu:method-name method)))
@@ -441,8 +441,8 @@ A command is a special kind of function that can be called with
   "Inspect a slot and show it in a help buffer."
   (unless (and class name)
     (let ((slot (prompt1
-                  :prompt "Describe slot"
-                  :sources (make-instance 'slot-source :universal universal))))
+                 :prompt "Describe slot"
+                 :sources (make-instance 'slot-source :universal universal))))
       (setf name (name slot)
             class (class-sym slot))
       ""))
@@ -494,8 +494,8 @@ A command is a special kind of function that can be called with
     (&key
      universal
      (class (prompt1
-              :prompt "Describe class"
-              :sources (make-instance 'class-source :universal universal))))
+             :prompt "Describe class"
+             :sources (make-instance 'class-source :universal universal))))
     (buffer (str:concat "*Help-" (symbol-name class) "*") (resolve-symbol :help-mode :mode))
   "Inspect a class and show it in a help buffer."
   (if (find-class class nil)
@@ -518,9 +518,9 @@ A command is a special kind of function that can be called with
           (:raw slot-descs)
           (:h2 "Methods:")
           (:ul (loop for method in (safe-sort
-				    (remove-if
-				     #'listp (mapcar #'mopu:generic-function-name
-						     (mopu:generic-functions class))))
+                                    (remove-if
+                                     #'listp (mapcar #'mopu:generic-function-name
+                                                     (mopu:generic-functions class))))
                      collect (:li (:a :href (nyxt-url 'describe-function :fn method) method))))))
       (spinneret:with-html-string
         (:style (style buffer))
@@ -552,7 +552,7 @@ A command is a special kind of function that can be called with
       (:p (format nil "Buffer with ID ~a does not exist." id)))))
 
 (define-command-global describe-bindings (&key (buffer (current-buffer)))
-    "Show a buffer with the list of all known bindings for the current buffer."
+  "Show a buffer with the list of all known bindings for the current buffer."
   (set-current-buffer
    (buffer-load (nyxt-url 'describe-bindings :id (id buffer))
                 :buffer (ensure-internal-page-buffer 'describe-bindings))))

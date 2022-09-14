@@ -45,10 +45,10 @@ so invoke on a separate thread when possible."
 
 ;; TODO:
 
-;; BUG: Fails when the input field loses its focus, e.g the duckduckgo search
+;; BUG: Fails when the input field loses its focus, e.g the DuckDuckGo search
 ;; bar.  Can probably be solved with JS.
 
-;; There could be an optional exiting behaviour -- set-caret-on-end or
+;; There could be an optional exiting behavior -- set-caret-on-end or
 ;; undo-selection.
 
 ;; (define-parenscript undo-selection ()

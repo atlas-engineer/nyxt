@@ -38,6 +38,6 @@
 (define-command add-distribution ()
   "Add a new Quicklisp distribution."
   (let ((url (prompt1
-               :prompt "New distribution URL"
-               :sources 'prompter:raw-source)))
+              :prompt "New distribution URL"
+              :sources 'prompter:raw-source)))
     (ql-dist:install-dist url :prompt nil)))

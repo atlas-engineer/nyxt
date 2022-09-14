@@ -73,7 +73,7 @@
 (defun all-extensions (&key (buffers (buffer-list)))
   (loop for buffer in buffers
         when (modable-buffer-p buffer)
-        append (sera:filter #'nyxt/web-extensions::extension-p (modes buffer))))
+          append (sera:filter #'nyxt/web-extensions::extension-p (modes buffer))))
 
 (defmacro fire-extension-event (extension object event &rest args)
   (alex:once-only (extension)
@@ -193,7 +193,7 @@ See `%message-channels%',`process-user-message', and `reply-user-message' for
 the description of the mechanism that sends the results back."
   (let ((result-channel (nyxt::make-channel 1)))
     (run-thread
-      "Send the message"
+        "Send the message"
       (flet ((send-message (channel)
                (webkit:webkit-web-view-send-message-to-page
                 (nyxt::gtk-object buffer)
@@ -217,7 +217,7 @@ the description of the mechanism that sends the results back."
                   (calispel:! channel nil)))))
         (if (not (member (slot-value buffer 'nyxt::status) '(:finished :failed)))
             (let ((channel (nyxt::make-channel 1)))
-               (hooks:once-on (buffer-loaded-hook buffer) _
+              (hooks:once-on (buffer-loaded-hook buffer) _
                 (calispel:! channel (send-message result-channel)))
               (calispel:? channel))
             (send-message result-channel))))
@@ -391,7 +391,7 @@ Uses name of the MESSAGE as the type to dispatch on.
 
 Creates a result channel for almost every message type (with the exception of
 those using `trigger-message') and sends the response of the helper function
-there. `reply-user-mesage' takes care of sending the response back."
+there. `reply-user-message' takes care of sending the response back."
   (let* ((message-name (webkit:webkit-user-message-get-name message))
          (message-params (webkit:g-variant-get-maybe-string
                           (webkit:webkit-user-message-get-parameters message)))
@@ -437,7 +437,7 @@ there. `reply-user-mesage' takes care of sending the response back."
          (sera:and-let* ((json (decode-json message-params))
                          (extension-instances
                           (sera:filter (curry #'string=
-                                                   (gethash "extensionId" json))
+                                              (gethash "extensionId" json))
                                        extensions
                                        :key #'id))
                          (context (webkit:jsc-context-new)))

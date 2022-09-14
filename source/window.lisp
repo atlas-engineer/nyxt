@@ -60,7 +60,7 @@ The channel is popped when a prompt buffer is hidden.")
     :type status-buffer
     :documentation "The `status-buffer' instance for this window.
 
-To modify the status buffer appearance and behaviour, subclass it and specialize
+To modify the status buffer appearance and behavior, subclass it and specialize
 the generic functions on `status-buffer'.  Finally set the `window'
 `status-buffer' slot to an instance of this subclass.")
    (message-buffer-height
@@ -189,7 +189,7 @@ not try to quit the browser."
 
 (define-command delete-window ()
   "Delete the queried window(s)."
-   (prompt :prompt "Delete window(s)" :sources 'window-source))
+  (prompt :prompt "Delete window(s)" :sources 'window-source))
 
 (define-command delete-current-window (&optional (window (current-window)))
   "Delete WINDOW, or the current window, when omitted."

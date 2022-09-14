@@ -104,8 +104,7 @@ Includes all commands and modes, and adds arbitrary Lisp functions on top of tha
         (let ((function (symbol-function extended-command)))
           `(("Expression" ,(format nil "~s" extended-command))
             ("Arguments" ,(remove #\newline (format nil "~{~a~^ ~}" (arglist function))))
-            ("Documentation" ,(or (first (sera::lines (documentation function 'function)))
-                              ""))))
+            ("Documentation" ,(or (first (sera::lines (documentation function 'function))) ""))))
         `(("Expression" ,(write-to-string extended-command))
           ("Arguments" "")
           ("Documentation" ,(or (documentation extended-command 'variable) ""))))))
@@ -162,12 +161,12 @@ together with the arglists and documentations of the functions typed in."
           (first
            (evaluate
             (prompt1
-              :prompt (if type
-                          (format nil "~a (~a)" prompt type)
-                          prompt)
-              :input (write-to-string input)
-              :sources (make-instance 'prompter:raw-source
-                                      :name "Evaluated input"))))))
+             :prompt (if type
+                         (format nil "~a (~a)" prompt type)
+                         prompt)
+             :input (write-to-string input)
+             :sources (make-instance 'prompter:raw-source
+                                     :name "Evaluated input"))))))
     (if (or (not type)
             (typep value type))
         value
@@ -198,9 +197,9 @@ User input is evaluated Lisp."
   ;; TODO: Add support for &rest arguments.
   (let* ((command (or command
                       (prompt1
-                        :prompt "Execute extended command"
-                        :sources 'command-source
-                        :hide-suggestion-count-p t)))
+                       :prompt "Execute extended command"
+                       :sources 'command-source
+                       :hide-suggestion-count-p t)))
          (lambda-list (arglist (slot-value command 'fn))))
     (multiple-value-match (alex:parse-ordinary-lambda-list lambda-list)
       ((required-arguments optional-arguments _ keyword-arguments)
@@ -221,9 +220,9 @@ User input is evaluated Lisp."
             (run-async
              command
              (mappend #'parse-args
-                           (list (pairlis required-arguments required-types)
-                                 (pairlis optional-arguments optional-types)
-                                 (pairlis keyword-arguments (mapcar #'second keyword-types))))))))))))
+                      (list (pairlis required-arguments required-types)
+                            (pairlis optional-arguments optional-types)
+                            (pairlis keyword-arguments (mapcar #'second keyword-types))))))))))))
 
 (defun get-hooks ()
   (flet ((list-hooks (object)
@@ -272,21 +271,21 @@ User input is evaluated Lisp."
 (define-command-global disable-hook-handler ()
   "Remove handler(s) from a hook."
   (let* ((hook-desc (prompt1
-                      :prompt "Hook where to disable handler"
-                      :sources 'hook-source))
+                     :prompt "Hook where to disable handler"
+                     :sources 'hook-source))
          (handler (prompt1
-                    :prompt (format nil "Disable handler from ~a" (name hook-desc))
-                    :sources (make-instance 'handler-source
-                                            :hook (value hook-desc)))))
+                   :prompt (format nil "Disable handler from ~a" (name hook-desc))
+                   :sources (make-instance 'handler-source
+                                           :hook (value hook-desc)))))
     (hooks:disable-hook (value hook-desc) handler)))
 
 (define-command-global enable-hook-handler ()
   "Enable handler(s) from a hook."
   (let* ((hook-desc (prompt1
-                      :prompt "Hook where to enable handler"
-                      :sources 'hook-source))
+                     :prompt "Hook where to enable handler"
+                     :sources 'hook-source))
          (handler (prompt1
-                    :prompt (format nil "Enable handler from ~a" (name hook-desc))
-                    :sources (make-instance 'disabled-handler-source
-                                            :hook (value hook-desc)))))
+                   :prompt (format nil "Enable handler from ~a" (name hook-desc))
+                   :sources (make-instance 'disabled-handler-source
+                                           :hook (value hook-desc)))))
     (hooks:enable-hook (value hook-desc) handler)))

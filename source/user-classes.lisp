@@ -27,7 +27,7 @@ This is useful to expose a class configuration knob to the user."))
 (defgeneric customize-instance (object &key &allow-other-keys)
   (:method ((class t) &key) t)
   (:documentation "Specialize this method to customize the default values and
-behaviour of some CLASS instance.
+behavior of some CLASS instance.
 
 This method is run after the instance has been initialized (in particular, after
 the `initialize-instance' :after method).
@@ -39,7 +39,7 @@ Do not specialize the standard method in public code, prefer
 `customize-instance :after' for code that relies on finalized slot values."))
 
 (defmethod #+nyxt-debug-make-instance cl:make-instance #-nyxt-debug-make-instance make-instance
-    :around ((class user-class) &rest initargs &key &allow-other-keys)
+  :around ((class user-class) &rest initargs &key &allow-other-keys)
   (sera:lret ((initialized-object (call-next-method)))
     (mapcar (lambda (class)
               (hooks:run-hook (slot-value class 'customize-hook) initialized-object))

@@ -257,7 +257,7 @@ Don't run this from a REPL, prefer `start' instead."
     (apply #'start (append options (list :urls free-args)))))
 
 (defun eval-expr (expr)
-  "Evaluate the form EXPR (string) and print the result of the last expresion."
+  "Evaluate the form EXPR (string) and print the result of the last expression."
   (with-input-from-string (input expr)
     (let ((*package* (find-package :nyxt-user)))
       (flet ((eval-protect (s-exp)
@@ -383,8 +383,8 @@ Otherwise bind socket and return the listening thread."
 
 (sera:eval-always
   (defvar %start-args (mapcar (compose #'intern
-                                            #'symbol-name
-                                            #'opts::name)
+                                       #'symbol-name
+                                       #'opts::name)
                               opts::*options*)))
 (export-always 'start)
 (defun start #.(append '(&rest options &key urls) %start-args)
@@ -408,7 +408,7 @@ Examples:
   (nyxt:start :urls '(\"https://nyxt.atlas.engineer\" \"https://en.wikipedia.org\")
               :verbose t
               :with-file '(\"history\" \"/tmp/nyxt/history.lisp\"))"
-    (with-output-to-string (s) (opts:describe :stream s)))
+            (with-output-to-string (s) (opts:describe :stream s)))
   ;; Extensions should be made accessible straight from the beginning,
   ;; e.g. before a script is run.
   (declare #.(cons 'ignorable %start-args))

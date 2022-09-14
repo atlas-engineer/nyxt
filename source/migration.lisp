@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/migration
-  (:documentation "Nyxt-specific DOM classes and functions operating on them."))
+    (:documentation "Nyxt-specific DOM classes and functions operating on them."))
 (in-package :nyxt/migration)
 
 (defparameter +migration-suggestions+ (sera:dict)
@@ -109,13 +109,13 @@ major versions."
   (let ((result '()))
     (cons 'progn
           (alex:doplist (symbols tip body result)
-            (push `(make-instance 'suggestion
-                                  :symbols (uiop:ensure-list ',symbols)
-                                  :tip ,(if (stringp tip)
-                                            tip
-                                            `(lambda () (spinneret:with-html-string ,tip)))
-                                  :version ,major-version-string)
-                  result)))))
+                        (push `(make-instance 'suggestion
+                                              :symbols (uiop:ensure-list ',symbols)
+                                              :tip ,(if (stringp tip)
+                                                        tip
+                                                        `(lambda () (spinneret:with-html-string ,tip)))
+                                              :version ,major-version-string)
+                              result)))))
 
 (define-migration "3"
   (download-directory)

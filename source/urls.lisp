@@ -38,7 +38,7 @@ Members of URL-STRINGS corresponding to the empty URL are discarded."
 (-> render-url ((or quri:uri string)) string)
 (defun render-url (url)
   "Return decoded URL.
-If the URL contains hexadecimal-encoded characters, return their unicode
+If the URL contains hexadecimal-encoded characters, return their Unicode
 counterpart, unless there are unprintable characters."
   (let* ((url (if (stringp url)
                   url
@@ -95,7 +95,7 @@ Optionally returns two values:
    (error-callback
     nil
     :type (or null (function (condition)))
-    :documentation "Callback to use when a condition is signalled.")
+    :documentation "Callback to use when a condition is signaled.")
    (local-p
     nil
     :documentation "Local schemes are not accessible to the pages of other schemes.")
@@ -126,12 +126,12 @@ Keys are scheme strings, values are `scheme' objects.")
 
 (export-always 'define-internal-scheme)
 (defun define-internal-scheme (scheme-name callback
-                      &rest keys
-                      &key local-p
-                        no-access-p
-                        secure-p
-                        cors-enabled-p
-                      &allow-other-keys)
+                               &rest keys
+                               &key local-p
+                                 no-access-p
+                                 secure-p
+                                 cors-enabled-p
+                               &allow-other-keys)
   "Define a handler (running CALLBACK) for SCHEME-NAME scheme.
 
 CALLBACK is called with two arguments:
