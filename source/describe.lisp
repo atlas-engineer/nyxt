@@ -498,29 +498,34 @@ A command is a special kind of function that can be called with
               :sources (make-instance 'class-source :universal universal))))
     (buffer (str:concat "*Help-" (symbol-name class) "*") (resolve-symbol :help-mode :mode))
   "Inspect a class and show it in a help buffer."
-  (let* ((slots (safe-sort (class-public-slots class)))
-         (slot-descs (sera:string-join (mapcar (rcurry #'describe-slot* class) slots) ""))
-         (*print-case* :downcase))
-    (spinneret:with-html-string
-      (:style (style buffer))
-      (:h1 (symbol-name class) " (" (sera:class-name-of (find-class class)) ")")
-      (:p (:raw (resolve-backtick-quote-links (documentation class 'type) class)))
-      (when (mopu:direct-superclasses class)
-        (:h2 "Direct superclasses:")
-        (:ul (loop for class-name in (mapcar #'class-name (mopu:direct-superclasses class))
-                   collect (:li (:a :href (nyxt-url 'describe-class :class class-name) class-name)))))
-      (when (mopu:direct-subclasses class)
-        (:h2 "Direct subclasses:")
-        (:ul (loop for class-name in (safe-sort (mapcar #'class-name (mopu:direct-subclasses class)))
-                   collect (:li (:a :href (nyxt-url 'describe-class :class class-name) class-name)))))
-      (:h2 "Slots:")
-      (:raw slot-descs)
-      (:h2 "Methods:")
-      (:ul (loop for method in (safe-sort
-				(remove-if
-				 #'listp (mapcar #'mopu:generic-function-name
-						 (mopu:generic-functions class))))
-                 collect (:li (:a :href (nyxt-url 'describe-function :fn method) method)))))))
+  (if (find-class class nil)
+      (let* ((slots (safe-sort (class-public-slots class)))
+             (slot-descs (sera:string-join (mapcar (rcurry #'describe-slot* class) slots) ""))
+             (*print-case* :downcase))
+        (spinneret:with-html-string
+          (:style (style buffer))
+          (:h1 (symbol-name class) " (" (sera:class-name-of (find-class class)) ")")
+          (:p (:raw (resolve-backtick-quote-links (documentation class 'type) class)))
+          (when (mopu:direct-superclasses class)
+            (:h2 "Direct superclasses:")
+            (:ul (loop for class-name in (mapcar #'class-name (mopu:direct-superclasses class))
+                       collect (:li (:a :href (nyxt-url 'describe-class :class class-name) class-name)))))
+          (when (mopu:direct-subclasses class)
+            (:h2 "Direct subclasses:")
+            (:ul (loop for class-name in (safe-sort (mapcar #'class-name (mopu:direct-subclasses class)))
+                       collect (:li (:a :href (nyxt-url 'describe-class :class class-name) class-name)))))
+          (:h2 "Slots:")
+          (:raw slot-descs)
+          (:h2 "Methods:")
+          (:ul (loop for method in (safe-sort
+				    (remove-if
+				     #'listp (mapcar #'mopu:generic-function-name
+						     (mopu:generic-functions class))))
+                     collect (:li (:a :href (nyxt-url 'describe-function :fn method) method))))))
+      (spinneret:with-html-string
+        (:style (style buffer))
+        (:h2 (format nil "~s" class))
+        (:p "Unbound."))))
 
 (define-command-global universal-describe-class ()
   "Inspect a Nyxt-accessible class and show it in a help buffer."
