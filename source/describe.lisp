@@ -390,39 +390,43 @@ For generic functions, describe all the methods."
   "Inspect a command and show it in a help buffer.
 A command is a special kind of function that can be called with
 `execute-command' and can be bound to a key."
-  (let* ((command (find command (list-commands) :key #'name))
-         (key-keymap-pairs (nth-value 1 (keymaps:binding-keys
-                                         (name command)
-                                         (all-keymaps))))
-         (key-keymapname-pairs (mapcar (lambda (pair)
-                                         (list (first pair)
-                                               (keymaps:name (second pair))))
-                                       key-keymap-pairs))
-         (source-file
-           (alex:when-let ((location (getf (swank:find-definition-for-thing command)
-                                           :location)))
-             (alex:last-elt location)))
-         (*print-case* :downcase))
+  (alex:if-let ((command-object (find command (list-commands) :key #'name)))
+    (let* ((key-keymap-pairs (nth-value 1 (keymaps:binding-keys
+                                           (name command-object)
+                                           (all-keymaps))))
+           (key-keymapname-pairs (mapcar (lambda (pair)
+                                           (list (first pair)
+                                                 (keymaps:name (second pair))))
+                                         key-keymap-pairs))
+           (source-file
+             (alex:when-let ((location (getf (swank:find-definition-for-thing command-object)
+                                             :location)))
+               (alex:last-elt location)))
+           (*print-case* :downcase))
+      (spinneret:with-html-string
+        (:style (style buffer))
+        (:h1 (symbol-name (name command-object))
+             (unless (eq (find-package :nyxt)
+                         (symbol-package (name command-object)))
+               (format nil " (~a)"
+                       (package-name (symbol-package (name command-object))))))
+        (:p (:raw
+             ;; TODO: This only displays the first method,
+             ;; i.e. the first command of one of the modes.
+             ;; Ask for modes instead?
+             (resolve-backtick-quote-links (documentation command-object t)
+                                           (name command-object))))
+        (:h2 "Bindings")
+        (:p (format nil "~:{ ~S (~a)~:^, ~}" key-keymapname-pairs))
+        (:h2 (format nil "Source~a: " (if source-file
+                                          (format nil " (~a)" source-file)
+                                          "")))
+        (alex:when-let ((code (ignore-errors (function-lambda-string command-object))))
+          (:pre (:code code)))))
     (spinneret:with-html-string
       (:style (style buffer))
-      (:h1 (symbol-name (name command))
-           (unless (eq (find-package :nyxt)
-                       (symbol-package (name command)))
-             (format nil " (~a)"
-                     (package-name (symbol-package (name command))))))
-      (:p (:raw
-           ;; TODO: This only displays the first method,
-           ;; i.e. the first command of one of the modes.
-           ;; Ask for modes instead?
-           (resolve-backtick-quote-links (documentation command t)
-                                         (name command))))
-      (:h2 "Bindings")
-      (:p (format nil "~:{ ~S (~a)~:^, ~}" key-keymapname-pairs))
-      (:h2 (format nil "Source~a: " (if source-file
-                                        (format nil " (~a)" source-file)
-                                        "")))
-      (alex:when-let ((code (ignore-errors (function-lambda-string command))))
-        (:pre (:code code))))))
+      (:h1 (format nil "~s" command))
+      (:p "Unbound"))))
 
 (define-internal-page-command-global describe-slot
     (&key class name universal)
