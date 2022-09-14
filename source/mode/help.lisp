@@ -19,5 +19,5 @@
        "m" 'nyxt/document-mode:jump-to-heading
        "s" 'nyxt/search-buffer-mode:search-buffer
        "t" 'nyxt/document-mode:headings-panel
-       "?" 'describe-bindings))))
+       "?" (resolve-symbol :describe-bindings :command)))))
   (:toggler-command-p nil))
