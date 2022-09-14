@@ -958,6 +958,11 @@ BUFFER's modes."
   (dolist (mode (modes buffer))
     (on-signal-load-failed mode url)))
 
+(export-always 'on-signal-button-press)
+(defmethod on-signal-button-press ((buffer buffer) button-key)
+  (dolist (mode (modes buffer))
+    (on-signal-button-press mode button-key)))
+
 (hooks:define-hook-type buffer (function (buffer)))
 
 (define-command make-buffer (&rest args &key (title "") modes (url (default-new-buffer-url *browser*)) parent-buffer

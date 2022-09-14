@@ -766,21 +766,21 @@ See `gtk-browser's `modifier-translator' slot."
                              event))
          (buffer (or (current-prompt-buffer)
                      sender)))
-    ;; Enable insert mode here to not interfere with regular keybinding logic.
-    (run-thread "vi mode click listener"
-      (when (and (= 1 button)
-                 (nyxt/document-mode:input-tag-p
-                  (ps-eval (ps:@ document active-element tag-name)))
-                 (find-submode 'nyxt/vi-mode:vi-normal-mode buffer))
-        (enable-modes '(nyxt/vi-mode:vi-insert-mode) buffer)))
-    (when (prompt-buffer-p buffer)
-      (update-prompt buffer))
-    (when key-string
-      (alex:appendf (key-stack window)
-                    (list (keymaps:make-key :value key-string
-                                            :modifiers modifiers
-                                            :status :pressed)))
-      (funcall (input-dispatcher window) event sender window nil))))
+    ;; Handle mode-specific logic here (e.g. VI switch to insertion) to not
+    ;; interfere with regular keybinding logic.
+    (flet ((key ()
+             ;; It's a function so we instantiate multiple objects and avoid sharing.
+             (keymaps:make-key :value key-string
+                               :modifiers modifiers
+                               :status :pressed)))
+      (run-thread "on-signal-button-press"
+        (on-signal-button-press buffer (key)))
+      (when (prompt-buffer-p buffer)
+        (update-prompt buffer))
+      (when key-string
+        (alex:appendf (key-stack window)
+                      (list (key)))
+        (funcall (input-dispatcher window) event sender window nil)))))
 
 (define-ffi-method on-signal-scroll-event ((sender gtk-buffer) event)
   (let* ((button (match (gdk:gdk-event-scroll-direction event)
