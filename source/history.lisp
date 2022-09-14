@@ -222,11 +222,19 @@ lot."
 (defun history-deserialize-sexp (stream &optional (serialization-state (s-serialization::make-serialization-state)))
   "Read and return an s-expression serialized version of a lisp object from stream, optionally reusing a serialization state"
   (s-serialization::reset serialization-state)
-  (let* ((*package* (find-package :nyxt))
-         (sexp (safe-read stream nil stream)))
-    (if (eq sexp stream)
-        nil
-        (history-deserialize-sexp-internal sexp (s-serialization::get-hashtable serialization-state)))))
+  (handler-bind ((reader-error (lambda (c)
+                                 (log:warn "~a" c)
+                                 (continue)))
+                 ;; CCL unintuitively raises simple-errors...
+                 #+ccl
+                 (simple-error (lambda (c)
+                                 (log:warn "~a" c)
+                                 (continue))))
+    (let* ((*package* (find-package :nyxt))
+           (sexp (safe-read stream nil stream)))
+      (if (eq sexp stream)
+          nil
+          (history-deserialize-sexp-internal sexp (s-serialization::get-hashtable serialization-state))))))
 
 ;; Hack of cl-prevalence to support the history-tree custom hash tables:
 (defun history-deserialize-sexp-internal (sexp deserialized-objects)
