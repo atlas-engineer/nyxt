@@ -534,7 +534,7 @@ A command is a special kind of function that can be called with
 (define-internal-page describe-bindings (&key (id (id (current-buffer))))
     (:title "*Help-bindings*" :page-mode (resolve-symbol :help-mode :mode))
   "Show a buffer with the list of all known bindings for the current buffer."
-  (let ((buffer (nyxt::buffers-get id)))
+  (alex:if-let ((buffer (nyxt::buffers-get id)))
     (spinneret:with-html-string
       (:h1 "Bindings")
       (:p (loop for keymap in (current-keymaps buffer)
@@ -546,7 +546,10 @@ A command is a special kind of function that can be called with
                                     using (hash-value bound-value)
                                 collect (:tr
                                          (:td keyspec)
-                                         (:td (format nil "~(~a~)" bound-value)))))))))))
+                                         (:td (format nil "~(~a~)" bound-value)))))))))
+    (spinneret:with-html-string
+      (:h1 "Bindings")
+      (:p (format nil "Buffer with ID ~a does not exist." id)))))
 
 (define-command-global describe-bindings (&key (buffer (current-buffer)))
     "Show a buffer with the list of all known bindings for the current buffer."
