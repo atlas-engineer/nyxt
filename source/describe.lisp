@@ -209,7 +209,7 @@ turned into links to their respective description page."
                     :sources 'package-source)))
     (buffer (str:concat "*Help-" (package-name package) "*") (resolve-symbol :help-mode :mode))
   "Inspect a package and show it in a help buffer."
-  (let ((total-symbols (package-symbols nil (list package)))
+  (let ((total-symbols (package-symbols (list package) (list package)))
         (external-symbols (package-symbols (list package) nil))
         (*print-case* :downcase))
     (flet ((package-markup (package)
