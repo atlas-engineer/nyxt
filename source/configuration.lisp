@@ -71,6 +71,20 @@ Consider porting your configuration to ~a."
 (defvar *config-file* (make-instance 'config-file)
   "The configuration file entry point.")
 
+(define-class log-file (files:data-file nyxt-file)
+  ((files:base-path #p"nyxt.log")
+   (files:name "log-file"))
+  (:export-class-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(export-always '*log-file*)
+(defvar *log-file* (make-instance 'log-file)
+  "Path to the file where log is saved.
+This is global because logging starts before the `*browser*' is even initialized.")
+
+(defvar *log-pattern* "<%p> [%D{%H:%M:%S}] %m%n"
+  "Non-verbose log pattern.")
+
 (define-class nyxt-source-directory (nyxt-file)
   ((files:name "source"))
   (:export-class-name-p t)

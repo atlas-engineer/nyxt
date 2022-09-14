@@ -445,7 +445,7 @@ Examples:
         (progn
           (log:config :debug)
           (format t "Arguments parsed: ~a and ~a~&" options urls))
-        (log:config :pattern "<%p> [%D{%H:%M:%S}] %m%n"))
+        (log:config :pattern *log-pattern*))
 
     ;; TODO: Deprecated, remove in 4.0.
     (when (and init (not config))
@@ -516,6 +516,11 @@ Then load `*config-file*' if any.
 Instantiate `*browser*'.
 Finally, run the browser, load URL-STRINGS if any, then run
 `*after-init-hook*'."
+  (let ((log-path (files:expand *log-file*)))
+    (unless (files:nil-pathname-p log-path)
+      (uiop:delete-file-if-exists log-path) ; Otherwise `log4cl' appends.
+      ;; REVIEW: Do we want to back up the log?
+      (log:config :backup nil :pattern *log-pattern* :daily log-path)))
   (format t "Nyxt version ~a~&" +version+)
   (log:info "Source location: ~s" (files:expand *source-directory*))
   (let* ((urls (strings->urls url-strings))
