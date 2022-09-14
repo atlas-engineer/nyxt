@@ -148,18 +148,6 @@ Example: when passed command line option --with-file foo=bar,
                                  (setf (gethash full-path path-map) file))))
                            (alexandria:hash-table-values path-map)))))
 
-(define-class standard-output-file (files:data-file nyxt-file)
-  ((files:base-path #p"standard-output.txt")
-   (files:name "standard-output"))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
-
-(define-class error-output-file (files:data-file nyxt-file)
-  ((files:base-path #p"error-output.txt")
-   (files:name "error-output"))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
-
 (export-always 'xdg-download-dir)
 (defun xdg-download-dir ()
   (let ((dir (ignore-errors (uiop:run-program '("xdg-user-dir" "DOWNLOAD")

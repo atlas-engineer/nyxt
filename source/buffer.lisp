@@ -394,15 +394,7 @@ query is not a valid URL, or the first keyword is not recognized.")
     :type history-file
     :documentation "File where to save the global history used by this buffer.
 See also `history-file' in `browser' for the global history restored on startup,
-which is not necessarily the same.")
-   (standard-output-file
-    (make-instance 'standard-output-file)
-    :type standard-output-file
-    :documentation "File `*standard-output*' can be written to.")
-   (error-output-file
-    (make-instance 'error-output-file)
-    :type error-output-file
-    :documentation "File `*error-output*' can be written to."))
+which is not necessarily the same."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)

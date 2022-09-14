@@ -542,23 +542,6 @@ Return BUFFER."
                  (active-buffer window)
                  (status-buffer window))))
 
-(defmethod write-output-to-log ((browser browser))
-  "Set the *standard-output* and *error-output* to write to a log file."
-  (let ((buffer (current-buffer)))
-    (values
-     (sera:and-let* ((path (files:expand (standard-output-file buffer))))
-       (setf *standard-output*
-             (open path
-                   :direction :output
-                   :if-does-not-exist :create
-                   :if-exists :append)))
-     (sera:and-let* ((path (files:expand (error-output-file buffer))))
-       (setf *error-output*
-             (open path
-                   :direction :output
-                   :if-does-not-exist :create
-                   :if-exists :append))))))
-
 (define-internal-page-command-global reduce-to-buffer (&key (delete t))
     (reduced-buffer "*Reduced Buffers*")
   "Query the buffer(s) to \"reduce \" by copying their titles/URLs to a
