@@ -270,13 +270,14 @@ For production code, see `find-submode' instead."
   (mapcar #'class-name (mopu:subclasses 'mode)))
 
 (defun make-mode-suggestion (mode &optional source input)
-  "Return a `suggestion' wrapping around ATTRIBUTE. "
+  "Return a `suggestion' wrapping around MODE. "
   (declare (ignore source input))
   (make-instance 'prompter:suggestion
                  :value mode
                  :attributes `(("Mode" ,(string-downcase (symbol-name mode)))
                                ("Documentation" ,(or (first (sera:lines (documentation mode 'function)))
-                                                     "")))))
+                                                     ""))
+                               ("Package" ,(string-downcase (package-name (symbol-package mode)))))))
 
 (define-class mode-source (prompter:source)
   ((prompter:name "Modes")
@@ -296,12 +297,14 @@ For production code, see `find-submode' instead."
    (prompter:multi-selection-p t)
    (prompter:constructor (lambda (source)
                            (delete-duplicates
-                            (mappend
-                             #'modes
-                             (uiop:ensure-list (buffers source)))
-                            :test (lambda (i y) (eq (sera:class-name-of i)
-                                                    (sera:class-name-of y)))))))
+                            (mapcar
+                             #'name
+                             (mappend
+                              #'modes
+                              (uiop:ensure-list (buffers source))))))))
   (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class))
 
 (define-class inactive-mode-source (mode-source)
@@ -312,10 +315,12 @@ For production code, see `find-submode' instead."
                            (let ((common-modes
                                    (reduce #'intersection
                                            (mapcar (lambda (b)
-                                                     (mapcar #'sera:class-name-of (modes b)))
+                                                     (mapcar #'name (modes b)))
                                                    (uiop:ensure-list (buffers source))))))
                              (set-difference (all-mode-symbols) common-modes)))))
   (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class))
 
 (define-command enable-modes (&optional (modes nil explicit-modes-p)
@@ -377,8 +382,8 @@ If it's a single buffer, return it directly (not as a list)."
                     (uiop:ensure-list modes)
                     (unless explicit-modes-p
                       (prompt
-                       :prompt "Enable mode(s)"
-                       :sources (make-instance 'inactive-mode-source
+                       :prompt "Disable mode(s)"
+                       :sources (make-instance 'active-mode-source
                                                :buffers buffers))))))
     (dolist (mode modes)
       (check-type mode mode-symbol))
