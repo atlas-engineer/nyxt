@@ -485,6 +485,10 @@ If there is no corresponding keymap, return nil."
 (defmethod on-signal-load-failed ((mode mode) url)
   url)
 
+(defmethod on-signal-button-press ((mode mode) button-key)
+  (declare (ignorable button-key))
+  nil)
+
 (defmethod url-sources ((mode mode) return-actions)
   (declare (ignore return-actions))
   nil)

@@ -100,6 +100,13 @@ See also `vi-normal-mode' and `vi-insert-mode'."
   (declare (ignore url))
   (enable-modes '(vi-normal-mode) (buffer mode)))
 
+(defmethod on-signal-button-press ((mode vi-normal-mode) button-key)
+  (let ((buffer (buffer mode)))
+    (when (and (string= "button1" (keymaps:key-value button-key))
+               (nyxt/document-mode:input-tag-p
+                (ps-eval (ps:@ document active-element tag-name))))
+      (enable-modes '(nyxt/vi-mode:vi-insert-mode) buffer))))
+
 (defmethod nyxt/document-mode:element-focused ((mode vi-normal-mode))
   (enable-modes '(vi-insert-mode) (buffer mode)))
 
