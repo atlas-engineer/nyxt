@@ -278,6 +278,7 @@ Clicking on a link navigates the history in the corresponding buffer."
                             (spinneret:with-html-string
                               (:li
                                (:button :class "link"
+                                        :title (render-url (url (htree:data node)))
                                         :onclick (ps:ps (nyxt/ps:lisp-eval
                                                          (:title "visit-history-for-buffer")
                                                          (let ((url (url (htree:data node))))
