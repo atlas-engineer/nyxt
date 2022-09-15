@@ -327,7 +327,7 @@ It takes URL-STRINGS so that the URL argument can be `cl-read' in case
                    ;; If we get pinged too early, we do not have a current-window yet.
                    (when (current-window)
                      (ffi-window-to-foreground (current-window)))))))
-    (log:info "Listening on socket ~s" socket-path)))
+    (log:info "Listening to socket: ~s" socket-path)))
 
 (defun listening-socket-p ()
   (ignore-errors
@@ -357,7 +357,6 @@ Otherwise bind socket and return the listening thread."
        (log:error "Could not bind socket ~a, non-socket file exists." socket-path)
        nil)
       (t
-       (log:info "Listening to socket ~s." socket-path)
        (uiop:delete-file-if-exists socket-path) ; Safe since socket-path is a :socket at this point.
        (run-thread "socket listener"
          (listen-socket))))))
