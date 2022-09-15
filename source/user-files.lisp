@@ -72,6 +72,13 @@ If the file is modified externally, Nyxt automatically reloads it."))
   (:documentation "With the nosave profile no data should be persisted to disk.
 No data should be shared with other nosave buffers either."))
 
+(define-class nofile-profile (files:virtual-profile nyxt-profile)
+  ((files:name "nofile"))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name))
+  (:documentation "Data is neither read nor persisted persisted to disk."))
+
 (defun find-file-name-path (ref)
   "Return the value of the REF found in `*options*'s `:with-file'.
 An empty path can be used to disable file persistence for the referenced `nyxt-file'.
