@@ -133,7 +133,7 @@ to go to the compilation error location."
                                 ;; this point, so we remake the pathname.
                                 (make-pathname :defaults path))
                               path))))
-        (if (string-equal "true" (uiop:getenv "NYXT_USE_LOGICAL_PATHS"))
+        (if (env-true-p "NYXT_USE_LOGICAL_PATHS")
             final-path
             (translate-logical-pathname final-path))))))
 

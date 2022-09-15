@@ -8,5 +8,10 @@
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      (export ,symbols ,@(and package-supplied? (list package)))))
 
+(defun env-true-p (env-variable)
+  (let ((value (uiop:getenv env-variable)))
+    (or (string-equal "true" value)
+        (string-equal "1" value))))
+
 (export-always '*git-program*)
 (defvar *git-program* "git")
