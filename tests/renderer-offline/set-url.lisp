@@ -36,7 +36,7 @@
            (nyxt:start :no-config t :no-auto-config t
                        :socket "/tmp/nyxt-test.socket"
                        :profile "test")
-           (assert-string= url (calispel:? url-channel 5))
+           (lisp-unit2::assert-string= url (calispel:? url-channel 5))
            (nyxt:quit))
       (setf nyxt::*headless-p* old-headless-p))))
 
