@@ -1610,7 +1610,7 @@ HISTORY may be NIL for buffers without history."
            buffers
            :key (lambda (b) (alex:when-let ((owner (htree:owner history (id b))))
                               (htree:creator-id owner))))
-          #'string< :key #'id)))
+          #'< :key #'id)))
 
 (defun buffer-siblings (&optional (buffer (current-buffer)))
   (let* ((history (buffer-history buffer))
