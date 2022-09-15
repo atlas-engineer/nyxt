@@ -147,7 +147,11 @@ Known profiles are found among subclasses of `nyxt-profile'.")
        :description "Set path reference to the given path.
 Can be specified multiple times.  An empty path means it won't be used.
 Example: --with-file bookmarks=/path/to/bookmarks
-         --with-file session="))))
+         --with-file session=")
+      (:name :failsafe
+       :long "failsafe"
+       :description "Ensure Nyxt starts in a vanilla environment.
+It skips configuration files and other data files like the history."))))
 ;; Also define command line options at read-time because we parse
 ;; `opts::*options*' in `start'.
 (sera:eval-always (define-opts))
@@ -435,11 +439,20 @@ Examples:
                          help version system-information
                          list-profiles script
                          config no-config init no-init ; TODO: Deprecated, remove in 4.0.
+                         failsafe
                          load eval quit remote
                        &allow-other-keys)
       options
     (when headless
       (setf *headless-p* t))
+
+    (when failsafe
+      (setf
+       (getf *options* :verbose) t
+       (getf *options* :no-config) t
+       (getf *options* :no-auto-config) t
+       (getf *options* :no-socket) t
+       (getf *options* :profile) (profile-name (find-class 'nofile-profile))))
 
     (if verbose
         (progn
