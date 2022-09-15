@@ -273,7 +273,7 @@ the content of those. More so: these pages can invoke Lisp commands on demand,
 be it on button click or on some page event. The macros and functions to look at are:")
           (:ul
            (:li (:nxref :function 'define-internal-page) " to create new pages.")
-           (:li (:nxref :function 'ensure-internal-page-buffer)
+           (:li (:nxref :function 'buffer-load-internal-page-focus)
                 " to either get or create the buffer for the page.")
            (:li (:nxref :function 'nyxt-url) " to reference the internal pages by their name.")
            (:li (:nxref :function 'define-internal-page-command)
@@ -329,9 +329,7 @@ still define it as:")
     (:title \"*Hello*\" :page-mode 'base-mode)
   \"Hello there!\")"))
           (:p " and use as:")
-          (:pre (:code "(set-current-buffer
- (buffer-load (nyxt-url 'not-a-command)
-              :buffer (ensure-internal-page-buffer 'not-a-command)))"))
+          (:pre (:code "(buffer-load-internal-page-focus 'not-a-command)"))
           (:p "See the slots and documentation of " (:nxref :class-name 'internal-page)
               " to understand what you can pass to "
               (:nxref :function 'define-internal-page) ".")))
