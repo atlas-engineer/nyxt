@@ -299,17 +299,10 @@ FUNCTION is the action to perform on the selected elements."
                                         :constructor
                                         (lambda (source)
                                           (declare (ignore source))
-                                          (multiple-value-bind (no-url-hints url-hints)
-                                              (sera:partition #'null
-                                                              (add-hints :selector selector)
-                                                              :key (alex:rcurry #'plump:attribute "href"))
-                                            (append no-url-hints
-                                                    (delete-duplicates
-                                                     url-hints
-                                                     :test (lambda (h1 h2)
-                                                             (quri:uri-equal h1 h2))
-                                                     :key (compose (alex:rcurry #'quri:merge-uris (url buffer))
-                                                                   (alex:rcurry #'plump:attribute "href")))))))
+                                          (delete-duplicates
+                                           (add-hints :selector selector)
+                                           :test (lambda (h1 h2) (and h1 h2 (string= h1 h2)))
+                                           :key (alex:rcurry #'plump:attribute "href"))))
                 :after-destructor (lambda () (with-current-buffer buffer (remove-hints))))))
     (funcall function result)))
 
