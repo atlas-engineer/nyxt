@@ -296,8 +296,14 @@ FUNCTION is the action to perform on the selected elements."
                 :hide-suggestion-count-p (fit-to-prompt-p (find-submode 'hint-mode))
                 :sources (make-instance 'hint-source
                                         :multi-selection-p multi-selection-p
-                                        :constructor (lambda (source) (declare (ignore source))
-                                                       (add-hints :selector selector)))
+                                        :constructor
+                                        (lambda (source) (declare (ignore source))
+                                          (delete-duplicates
+                                           (add-hints :selector selector)
+                                           :test (lambda (h1 h2)
+                                                   (let ((h1 (plump:attribute h1 "href"))
+                                                         (h2 (plump:attribute h2 "href")))
+                                                     (and h1 h2 (string= h1 h2)))))))
                 :after-destructor (lambda () (with-current-buffer buffer (remove-hints))))))
     (funcall function result)))
 
