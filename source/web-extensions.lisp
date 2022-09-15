@@ -11,25 +11,26 @@
 (sera:eval-always
   (sb-ext:add-implementation-package :nyxt/web-extensions :nyxt))
 
-(define-class content-script ()
-  ((match-patterns (error "Match pattern is required.")
-                   :type list
-                   :documentation "The match-pattern for URLs the script should run on.
+(sera:eval-always
+  (define-class content-script ()
+    ((match-patterns (error "Match pattern is required.")
+                     :type list
+                     :documentation "The match-pattern for URLs the script should run on.
 Not a WebExtensions match pattern, but a renderer-friendly one.")
-   (files nil
-          :type list
-          :documentation "The .js or .css files of the script as a list.")
-   (user-styles nil
-                :type list
-                :documentation "The renderer-friendly representation of the CSS style sheets.
+     (files nil
+            :type list
+            :documentation "The .js or .css files of the script as a list.")
+     (user-styles nil
+                  :type list
+                  :documentation "The renderer-friendly representation of the CSS style sheets.
 A list of objects. Does not necessarily have the same order as `files' of the script.")
-   (user-scripts nil
-                 :type list
-                 :documentation "The renderer-friendly representation of the JS scripts.
+     (user-scripts nil
+                   :type list
+                   :documentation "The renderer-friendly representation of the JS scripts.
 A list of objects. Does not necessarily have the same order as `files' of the script."))
-  (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+    (:export-class-name-p t)
+    (:export-accessor-names-p t)
+    (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))))
 
 (defmethod remove-content-script ((buffer buffer) extension (script content-script))
   (declare (ignore extension))
