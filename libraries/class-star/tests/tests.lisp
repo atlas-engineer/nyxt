@@ -8,7 +8,7 @@
 (in-package :class-star/tests)
 
 (define-test simple-class ()
-  (assert-string= "fooname"
+  (lisp-unit2::assert-string= "fooname"
                   (progn
                     (class-star:define-class foo ()
                       ((name "fooname")))
@@ -27,7 +27,7 @@
   (assert-false (fboundp 'address)))
 
 (define-test simple-class-default-value ()
-  (assert-string= ""
+  (lisp-unit2::assert-string= ""
                   (progn
                     (class-star:define-class foo-default ()
                       ((name :type string)
@@ -46,7 +46,7 @@
 (define-test initform-inference ()
   (class-star:define-class foo-initform-infer ()
     ((name :type string)))
-  (assert-string= ""
+  (lisp-unit2::assert-string= ""
                   (name-of (make-instance 'foo-initform-infer)))
   (class-star:define-class foo-initform-infer-no-unbound ()
     ((name :type function))

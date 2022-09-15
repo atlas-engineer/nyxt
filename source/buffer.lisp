@@ -541,7 +541,7 @@ Example:
     :documentation "Proxy for buffer.")
    (certificate-exceptions
     '()
-    :type (list-of strings)
+    :type (list-of string)
     :documentation "A list of hostnames for which certificate errors shall be ignored."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)

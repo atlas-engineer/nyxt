@@ -42,38 +42,38 @@
                                      (prompter:fuzzy-match suggestion source input))
                                    (prompter::ensure-suggestions-list source list))
                            #'prompter:score>)))))
-      (assert-string= "help"
+      (lisp-unit2::assert-string= "help"
                       (match "hel" '("help-mode" "help" "foo-help" "help-foo-bar")))
       ;; match 'help' with real suggestions list
-      (assert-string= "HELP"
+      (lisp-unit2::assert-string= "HELP"
                       (match "hel" *suggestions*))
       ;; match 'swit buf' (small list)
-      (assert-string= "switch-buffer"
+      (lisp-unit2::assert-string= "switch-buffer"
                       (match "swit buf" '("about" "switch-buffer-next" "switch-buffer" "delete-buffer")))
       ;; match 'swit buf' with real suggestions list
-      (assert-string= "SWITCH-BUFFER"
+      (lisp-unit2::assert-string= "SWITCH-BUFFER"
                       (match "swit buf" *suggestions*))
       ;; reverse match 'buf swit' (small list)
-      (assert-string= "switch-buffer"
+      (lisp-unit2::assert-string= "switch-buffer"
                       (match "buf swit" '("about" "switch-buffer-next" "switch-buffer" "delete-buffer")))
       ;; reverse match 'buf swit' with real suggestions list
-      (assert-string= "SWITCH-BUFFER"
+      (lisp-unit2::assert-string= "SWITCH-BUFFER"
                       (match "buf swit" *suggestions*))
       ;; suggestions beginning with the first word appear first
-      (assert-string= "delete-foo"
+      (lisp-unit2::assert-string= "delete-foo"
                       (match "de" '("some-mode" "delete-foo")))
       ;; search without a space. All characters count (small list).
-      (assert-string= "foo-bar"
+      (lisp-unit2::assert-string= "foo-bar"
                       (match "foobar" '("foo-dash-bar" "foo-bar")))
       ;; search without a space. All characters count, real list.
-      (assert-string= "SWITCH-BUFFER"
+      (lisp-unit2::assert-string= "SWITCH-BUFFER"
                       (match "sbf" *suggestions*))
       ;; input is uppercase (small list).
-      (assert-string= "FOO-BAR"
+      (lisp-unit2::assert-string= "FOO-BAR"
                       (match "FOO" '("foo-dash-bar" "FOO-BAR")))
       ;; lowercase matches uppercase
-      (assert-string= "FOO-BAR"
+      (lisp-unit2::assert-string= "FOO-BAR"
                       (match "foo" '("zzz" "FOO-BAR")))
       ;; match regex meta-characters
-      (assert-string= "http://[1:0:0:2::3:0.]/"
+      (lisp-unit2::assert-string= "http://[1:0:0:2::3:0.]/"
                       (match "[" '("test1" "http://[1:0:0:2::3:0.]/" "test2"))))))

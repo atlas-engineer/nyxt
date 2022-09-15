@@ -47,12 +47,16 @@ A new object is created on every new input."))
 
      (sources
       '()
+      :initarg nil
       :type (or null source (cons source))
       :documentation "List of `source's.
 For convenience, if the initarg is a single source (that is, not inside a list),
 it is automatically wrapped into a list upon initialization.
+
 If the source is designated by a symbol, then it is automatically instantiated
-with `make-instance'.")
+with `make-instance' and the result is used in this slot.
+
+See also `make'.")
 
      (selection
       '()
@@ -139,7 +143,8 @@ compution is not finished.")))
   (mapc (lambda (source) (update source text (ready-channel (sync-queue prompter))))
         (sources prompter)))
 
-(defmethod initialize-instance :after ((prompter prompter) &key)
+(defmethod initialize-instance :after ((prompter prompter) &key sources
+                                       &allow-other-keys)
   (unless (stringp (prompt prompter))
     (setf (prompt prompter) (write-to-string (prompt prompter))))
   (unless (stringp (input prompter))
@@ -154,7 +159,7 @@ compution is not finished.")))
                         (make-instance source-specifier))
                        (t (error "Bad source specifier ~s." source-specifier))))
                    (uiop:ensure-list specifiers))))
-    (setf (sources prompter) (ensure-sources (sources prompter))))
+    (alex:appendf (sources prompter) (ensure-sources sources)))
   (select-first prompter)
   (maybe-funcall (constructor prompter) prompter)
   (update-sources prompter (input prompter))
@@ -466,8 +471,14 @@ After timeout has elapsed for one source, return nil."
 (export-always 'make)
 (define-function make
     (append '(&rest args)
-            `(&key ,@(public-initargs 'prompter)))
-  "Return prompter object."
+            `(&key sources ,@(public-initargs 'prompter)))
+  "Return prompter object.
+The arguments are the initargs of the `prompter' class.
+
+As a special case, the `:sources' keyword argument not only accepts `source'
+objects but also symbols.  Example:
+
+  (prompter:make :sources 'prompter:raw-source)"
   (apply #'make-instance 'prompter args))
 
 (export-always 'selected-source)

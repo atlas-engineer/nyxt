@@ -17,81 +17,43 @@
 (defun de-inject-user-styles (styles buffer)
   (mapcar (lambda (style) (ffi-buffer-remove-user-style buffer style)) styles))
 
-(define-mode user-script-mode ()
-  "Load user scripts such as GreaseMonkey scripts."
-  ((rememberable-p nil)
-   (user-scripts
-    nil
-    :reader user-scripts
-    :type (list-of user-script)
-    :documentation "List of `user-script'-s to attach via renderer-specific mechanisms.")
-   (user-styles
-    nil
-    :reader user-styles
-    :type (list-of user-style)
-    :documentation "List of `user-style'-s to attach via renderer-specific mechanisms.")))
-
-(defmethod enable ((mode user-script-mode) &key)
-  (inject-user-scripts (user-scripts mode) (buffer mode))
-  (inject-user-styles (user-styles mode) (buffer mode)))
-
-(defmethod disable ((mode user-script-mode) &key)
-  (de-inject-user-scripts (user-scripts mode) (buffer mode))
-  (de-inject-user-styles (user-styles mode) (buffer mode)))
-
-(export-always 'user-scripts)
-(defmethod (setf user-scripts) (new-value (mode user-script-mode))
-  (inject-user-scripts (slot-value mode 'user-scripts) (buffer mode))
-  (inject-user-scripts new-value (buffer mode))
-  (setf (slot-value mode 'user-scripts) new-value))
-
-(export-always 'user-styles)
-(defmethod (setf user-styles) (new-value (mode user-script-mode))
-  (de-inject-user-styles (slot-value mode 'user-styles) (buffer mode))
-  (inject-user-styles new-value (buffer mode))
-  (setf (slot-value mode 'user-styles) new-value))
-
-(export-always 'renderer-user-script)
-(defclass renderer-user-script ()
-  ()
-  (:metaclass interface-class))
-
-(define-class user-script (renderer-user-script nfiles:data-file nyxt-remote-file)
-  ((code "" :type (maybe string))
-   (version "")
-   (description "")
-   (namespace "")
-   (world-name
-    nil
-    :type (maybe string)
-    :documentation "The JavaScript world to run the `code' in.")
-   (requires
-    nil
-    :type (maybe hash-table))
-   (include
-    '("http://*/*" "https://*/*")
-    :type (list-of string))
-   (exclude
-    '()
-    :type (list-of string))
-   (all-frames-p
-    t
-    :type boolean
-    :documentation "Whether to run on both top-level frame and all the subframes.
+(sera:eval-always
+  (define-class user-script (renderer-user-script nfiles:data-file nyxt-remote-file)
+    ((code "" :type (maybe string))
+     (version "")
+     (description "")
+     (namespace "")
+     (world-name
+      nil
+      :type (maybe string)
+      :documentation "The JavaScript world to run the `code' in.")
+     (requires
+      nil
+      :type (maybe hash-table))
+     (include
+      '("http://*/*" "https://*/*")
+      :type (list-of string))
+     (exclude
+      '()
+      :type (list-of string))
+     (all-frames-p
+      t
+      :type boolean
+      :documentation "Whether to run on both top-level frame and all the subframes.
 If false, runs on the toplevel frame only.")
-   (run-at
-    :document-end
-    :type (member :document-start :document-end :document-idle)
-    :documentation "When to run the script.
+     (run-at
+      :document-end
+      :type (member :document-start :document-end :document-idle)
+      :documentation "When to run the script.
 Possible values:
 - :document-start (page started loading).
 - :document-end (page loaded, resources aren't).
 - :document-idle (page and resources are loaded)."))
-  (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
-  (:documentation "The Nyxt-internal representation of user scripts to bridge with the renderer.")
-  (:metaclass user-class))
+    (:export-class-name-p t)
+    (:export-accessor-names-p t)
+    (:accessor-name-transformer (class*:make-name-transformer name))
+    (:documentation "The Nyxt-internal representation of user scripts to bridge with the renderer.")
+    (:metaclass user-class)))
 
 (sera:-> get-script-url
          (string (maybe nyxt::url-designator pathname))
@@ -216,33 +178,34 @@ Return:
   ()
   (:metaclass interface-class))
 
-(define-class user-style (renderer-user-style nfiles:data-file nyxt-remote-file)
-  ((code "" :type (maybe string))
-   (world-name
-    nil
-    :type (maybe string)
-    :documentation "The JavaScript world to inject the style in.")
-   (include
-    '("http://*/*" "https://*/*")
-    :type (list-of string))
-   (exclude
-    '()
-    :type (list-of string))
-   (all-frames-p
-    t
-    :type boolean
-    :documentation "Whether to run on both top-level frame and all the subframes.
+(sera:eval-always
+  (define-class user-style (renderer-user-style nfiles:data-file nyxt-remote-file)
+    ((code "" :type (maybe string))
+     (world-name
+      nil
+      :type (maybe string)
+      :documentation "The JavaScript world to inject the style in.")
+     (include
+      '("http://*/*" "https://*/*")
+      :type (list-of string))
+     (exclude
+      '()
+      :type (list-of string))
+     (all-frames-p
+      t
+      :type boolean
+      :documentation "Whether to run on both top-level frame and all the subframes.
 If false, runs on the toplevel frame only.")
-   (level
-    :user
-    :type (member :user :author)
-    :documentation "The level of authority (:USER > :AUTHOR) with which to inject the style.
+     (level
+      :user
+      :type (member :user :author)
+      :documentation "The level of authority (:USER > :AUTHOR) with which to inject the style.
 :USER styles override everything else."))
-  (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
-  (:documentation "The Nyxt-internal representation of user styles to bridge with the renderer.")
-  (:metaclass user-class))
+    (:export-class-name-p t)
+    (:export-accessor-names-p t)
+    (:accessor-name-transformer (class*:make-name-transformer name))
+    (:documentation "The Nyxt-internal representation of user styles to bridge with the renderer.")
+    (:metaclass user-class)))
 
 (defmethod nfiles:write-file ((profile nyxt-profile) (style user-style) &key destination)
   "Persist the script body if it has a URL and associated content."
@@ -253,3 +216,42 @@ If false, runs on the toplevel frame only.")
   ;; TODO: Somehow parse @-moz-document patterns?
   (when (uiop:emptyp (code style))
     (setf (code style) (nfiles:content style))))
+
+(define-mode user-script-mode ()
+  "Load user scripts such as GreaseMonkey scripts."
+  ((rememberable-p nil)
+   (user-scripts
+    nil
+    :reader user-scripts
+    :type (list-of user-script)
+    :documentation "List of `user-script'-s to attach via renderer-specific mechanisms.")
+   (user-styles
+    nil
+    :reader user-styles
+    :type (list-of user-style)
+    :documentation "List of `user-style'-s to attach via renderer-specific mechanisms.")))
+
+(defmethod enable ((mode user-script-mode) &key)
+  (inject-user-scripts (user-scripts mode) (buffer mode))
+  (inject-user-styles (user-styles mode) (buffer mode)))
+
+(defmethod disable ((mode user-script-mode) &key)
+  (de-inject-user-scripts (user-scripts mode) (buffer mode))
+  (de-inject-user-styles (user-styles mode) (buffer mode)))
+
+(export-always 'user-scripts)
+(defmethod (setf user-scripts) (new-value (mode user-script-mode))
+  (inject-user-scripts (slot-value mode 'user-scripts) (buffer mode))
+  (inject-user-scripts new-value (buffer mode))
+  (setf (slot-value mode 'user-scripts) new-value))
+
+(export-always 'user-styles)
+(defmethod (setf user-styles) (new-value (mode user-script-mode))
+  (de-inject-user-styles (slot-value mode 'user-styles) (buffer mode))
+  (inject-user-styles new-value (buffer mode))
+  (setf (slot-value mode 'user-styles) new-value))
+
+(export-always 'renderer-user-script)
+(defclass renderer-user-script ()
+  ()
+  (:metaclass interface-class))

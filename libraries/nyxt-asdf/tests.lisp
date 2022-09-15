@@ -36,16 +36,22 @@ If the NYXT_TESTS_NO_NETWORK environment variable is set, tests with the `:onlin
       (let ((missing-packages (remove-if  #'find-package (uiop:ensure-list package))))
         (when missing-packages
           (logger "Undefined test packages: ~s" missing-packages)))
-      (when (and
-             (uiop:symbol-call :lisp-unit2 :failed
-                               (uiop:symbol-call :lisp-unit2 :run-tests
-                                                 :package package
-                                                 :tags tags
-                                                 :exclude-tags exclude-tags
-                                                 :run-contexts (find-symbol "WITH-SUMMARY-CONTEXT" :lisp-unit2)))
-             (getenv "NYXT_TESTS_ERROR_ON_FAIL"))
-        ;; Arbitrary but hopefully recognizable exit code.
-        (quit 18)))))
+      (let ((*debugger-hook* (if (env-true-p "NYXT_TESTS_ERROR_ON_FAIL")
+                                 nil    ; We are non-interactive.
+                                 *debugger-hook*)))
+        (let ((test-results
+                (uiop:symbol-call :lisp-unit2 :run-tests
+                                  :package package
+                                  :tags tags
+                                  :exclude-tags exclude-tags
+                                  :run-contexts (find-symbol "WITH-SUMMARY-CONTEXT" :lisp-unit2))))
+          (when (and
+                 (or
+                  (uiop:symbol-call :lisp-unit2 :failed test-results)
+                  (uiop:symbol-call :lisp-unit2 :errors test-results))
+                 (getenv "NYXT_TESTS_ERROR_ON_FAIL"))
+            ;; Arbitrary but hopefully recognizable exit code.
+            (quit 18)))))))
 
 (export-always 'print-benchmark)
 (defun print-benchmark (benchmark-results)
