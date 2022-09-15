@@ -25,6 +25,8 @@ functions for the `satisfies' type condition."))
   "The empty list or a proper list of TYPE elements.
 Unlike `(cons TYPE *)', it checks all the elements.
 `(cons TYPE *)' does not accept the empty list."
+  (unless (trivial-types:type-specifier-p type)
+    (error "Invalid type specifier: ~a" type))
   (let ((predicate-name (intern (uiop:strcat "LIST-OF-" (symbol-name type) "-P")
                                 (find-package :nyxt/types))))
     (unless (fboundp predicate-name)
