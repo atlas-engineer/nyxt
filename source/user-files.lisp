@@ -74,6 +74,8 @@ No data should be shared with other nosave buffers either."))
 
 (defun find-file-name-path (ref)
   "Return the value of the REF found in `*options*'s `:with-file'.
+An empty path can be used to disable file persistence for the referenced `nyxt-file'.
+
 Example: when passed command line option --with-file foo=bar,
 \(find-file-name-path \"foo\") returns \"bar\"."
   (unless (uiop:emptyp ref)
@@ -86,7 +88,8 @@ Example: when passed command line option --with-file foo=bar,
              :test #'string=)))))
 
 (defmethod files:resolve ((profile files:profile) (file nyxt-file))
-  (sera:path-join (uiop:ensure-directory-pathname (files:name profile)) (call-next-method)))
+  (or (find-file-name-path (files:name file))
+      (sera:path-join (uiop:ensure-directory-pathname (files:name profile)) (call-next-method))))
 
 (defmethod files:read-file :around ((profile nyxt-profile) (file nyxt-file) &key)
   (unless (typep file 'files:virtual-file)
