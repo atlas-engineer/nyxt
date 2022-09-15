@@ -224,6 +224,11 @@ lot."
   (s-serialization::reset serialization-state)
   (handler-bind ((reader-error (lambda (c)
                                  (log:warn "~a" c)
+                                 (continue)))
+                 ;; CCL unintuitively raises simple-errors...
+                 #+ccl
+                 (simple-error (lambda (c)
+                                 (log:warn "~a" c)
                                  (continue))))
     (let* ((*package* (find-package :nyxt))
            (sexp (safe-read stream nil stream)))
