@@ -231,13 +231,6 @@ For instance, to include images:
                              (prompter:attributes-default suggestion)
                              :ignore-case t))
         #'prompter:fuzzy-match))
-   (prompter:filter-preprocessor
-    (lambda (suggestions source input)
-      (declare (ignore source input))
-      (delete-duplicates suggestions :test (lambda (url1 url2)
-                                             ;; Not all DOM elements have a URL.
-                                             (and url1 url2 (quri:uri= url1 url2)))
-                                     :key (compose #'url #'prompter:value))))
    (prompter:filter-postprocessor
     (lambda (suggestions source input)
       (declare (ignore source))
@@ -303,8 +296,13 @@ FUNCTION is the action to perform on the selected elements."
                 :hide-suggestion-count-p (fit-to-prompt-p (find-submode 'hint-mode))
                 :sources (make-instance 'hint-source
                                         :multi-selection-p multi-selection-p
-                                        :constructor (lambda (source) (declare (ignore source))
-                                                       (add-hints :selector selector)))
+                                        :constructor
+                                        (lambda (source)
+                                          (declare (ignore source))
+                                          (delete-duplicates
+                                           (add-hints :selector selector)
+                                           :test (lambda (h1 h2) (and h1 h2 (string= h1 h2)))
+                                           :key (alex:rcurry #'plump:attribute "href"))))
                 :after-destructor (lambda () (with-current-buffer buffer (remove-hints))))))
     (funcall function result)))
 
