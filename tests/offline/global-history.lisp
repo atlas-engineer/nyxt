@@ -49,8 +49,7 @@
         (uiop:delete-file-if-exists (files:expand (history-file buffer)))))))
 
 (define-test history-restoration ()
-  (let* ((nyxt:*global-profile* (make-instance 'test-profile))
-         (history-path (make-instance 'history-file
+  (let* ((history-path (make-instance 'history-file
                                       :base-path (asdf:system-relative-pathname
                                                   :nyxt "tests/test-data/broken-history.lisp")))
          (history (nfiles:read-file nyxt:*global-profile* history-path)))
