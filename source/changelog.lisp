@@ -518,7 +518,7 @@ the selection, and the string to paste instead of the clipboard (respectively)."
         that it propagates to reader macros such as "
         (:code "#+nyxt-3-pre-release-2") ".")
    (:li "Fix touchscreen gestures for VI mode.")
-   (:li "Fix processing absolute paths via relative paths when opening files.")
+   (:li "Fix processing via relative paths when opening files.")
    (:li "Setting " (:nxref :slot 'restore-session-on-startup-p :class-name 'browser)
         "no longer hangs the browser.")
    (:li "Fix buffer re-attachment from the deleted window.")
