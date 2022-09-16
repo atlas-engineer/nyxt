@@ -147,7 +147,11 @@ Known profiles are found among subclasses of `nyxt-profile'.")
        :description "Set path reference to the given path.
 Can be specified multiple times.  An empty path means it won't be used.
 Example: --with-file bookmarks=/path/to/bookmarks
-         --with-file session="))))
+         --with-file session=")
+      (:name :failsafe
+       :long "failsafe"
+       :description "Ensure Nyxt starts in a vanilla environment.
+It skips configuration files and other data files like the history."))))
 ;; Also define command line options at read-time because we parse
 ;; `opts::*options*' in `start'.
 (sera:eval-always (define-opts))
@@ -323,7 +327,7 @@ It takes URL-STRINGS so that the URL argument can be `cl-read' in case
                    ;; If we get pinged too early, we do not have a current-window yet.
                    (when (current-window)
                      (ffi-window-to-foreground (current-window)))))))
-    (log:info "Listening on socket ~s" socket-path)))
+    (log:info "Listening to socket: ~s" socket-path)))
 
 (defun listening-socket-p ()
   (ignore-errors
@@ -353,7 +357,6 @@ Otherwise bind socket and return the listening thread."
        (log:error "Could not bind socket ~a, non-socket file exists." socket-path)
        nil)
       (t
-       (log:info "Listening to socket ~s." socket-path)
        (uiop:delete-file-if-exists socket-path) ; Safe since socket-path is a :socket at this point.
        (run-thread "socket listener"
          (listen-socket))))))
@@ -435,11 +438,20 @@ Examples:
                          help version system-information
                          list-profiles script
                          config no-config init no-init ; TODO: Deprecated, remove in 4.0.
+                         failsafe
                          load eval quit remote
                        &allow-other-keys)
       options
     (when headless
       (setf *headless-p* t))
+
+    (when failsafe
+      (setf
+       (getf *options* :verbose) t
+       (getf *options* :no-config) t
+       (getf *options* :no-auto-config) t
+       (getf *options* :no-socket) t
+       (getf *options* :profile) (profile-name (find-class 'nofile-profile))))
 
     (if verbose
         (progn
