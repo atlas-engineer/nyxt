@@ -441,37 +441,49 @@ SLY install.")
 (define-version "3.0.0"
   (:ul
    (:li (:nxref :class-name 'nyxt/reduce-tracking-mode:reduce-tracking-mode)
-        " now cleans widely known tracking query parameters.")
-   (:li "Improve the algorithm that determines if an element is in viewport.")
-   (:li (:code "nyxt/hint-mode:box-style") "renamed
-   to " (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'style) ".")
-   (:li (:code "nyxt/hint-mode:highlighted-box-style") "is deprecated as it was
-   merged into " (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'style) ".")
-   (:li "Remove image support from " (:nxref :class-name 'nyxt/hint-mode:hint-mode) ".")
-   (:li "Hints are now computed in viewport.")
-   (:li "Add " (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'nyxt/hint-mode:fit-to-prompt-p)
-        "to configure whether the prompt takes the bare minimum of the screen space.")
-   (:li "Add " (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'nyxt/hint-mode:show-hint-scope-p)
+        " cleans widely known tracking query parameters.")
+   (:li "Improve the algorithm that determines whether an element is in viewport.")
+   (:li "Rename " (:code "nyxt/hint-mode:box-style") " to "
+        (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'style) ".")
+   (:li "Deprecate "(:code "nyxt/hint-mode:highlighted-box-style") "and merge
+        into " (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'style) ".")
+   (:li "Remove " (:nxref :class-name 'nyxt/hint-mode:hint-mode) " image support
+        by default.")
+   (:li "Add "
+        (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'nyxt/hint-mode:compute-hints-in-view-port-p)
+        " allowing hints to be optionally computed in viewport.")
+   (:li "Add " (:nxref :class-name 'prompt-buffer :slot 'height) ".")
+   (:li "Add "
+        (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'nyxt/hint-mode:fit-to-prompt-p)
+        " minimizing the space taken by the prompt-buffer while navigating hints.")
+   (:li "Add "
+        (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'nyxt/hint-mode:show-hint-scope-p)
         "for element highlighting of hinted elements.")
-   (:li "Add " (:nxref :class-name 'prompt-buffer :slot 'height)
-        "so that every prompt has a configurable height.")
-   (:li (:code "default-modes") " can be configured with " (:code "%slot-value%")
-        " due to finally having an underlying slot.")
-   (:li "New " (:nxref :command 'toggle-maximize) " command for maximizing a window.")
-   (:li "All the copying and pasting commands now fill the "
-        (:nxref :class-name 'browser :slot 'clipboard-ring) " reliably, thus making "
-        (:nxref :command 'paste-from-clipboard-ring) " useful again.")
-   (:li (:nxref :class-name 'nyxt/editor-mode:editor-mode) " is improved and cleaned up in general.")
+   (:li "Add " (:nxref :class-name 'prompter:source :slot 'prompter:marks-actions)
+        " that run when marked items on prompt-buffer change.")
+   (:li "Extend " (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'style)
+        " to accommodate for marked hints.")
+   (:li (:code "default-modes") " can be configured with "
+        (:code "%slot-value%") " .")
+   (:li "Add " (:nxref :command 'toggle-maximize) " command for maximizing a window.")
+   (:li "All copying and pasting commands populate "
+        (:nxref :class-name 'browser :slot 'clipboard-ring) " reliably, thus fixing the "
+        (:nxref :command 'nyxt/document-mode:paste-from-clipboard-ring) " command.")
+   (:li "Major improvement of " (:nxref :class-name 'nyxt/editor-mode:editor-mode) ".")
    (:li (:code "execute-command")
-        " now can evaluate arbitrary Lisp code and provide you with the inline
-documentation for functions."))
+        " evaluates arbitrary Lisp code and provides inline documentation for symbols.")
+   (:li "Extend keybinding for all keyschemes in "
+        (:nxref :class-name 'nyxt/editor-mode:editor-mode) " .")
+   (:li "Bind " (:nxref :command 'nyxt/document-mode:paste-from-clipboard-ring)
+        " to " (:code "M-y") " in Emacs keyscheme.")
+   (:li "Bind familiar keys for text cutting in prompt-buffer."))
 
   (:h3 "Bindings")
   (:ul
    (:li (:nxref :class-name 'nyxt/editor-mode:editor-mode)
         " now has an equally powerful set of bindings in all key schemes, allowing one
 to open a file, save it, switch buffer or delete current buffer.")
-   (:li (:nxref :command 'paste-from-clipboard-ring) " is now conveniently bound to "
+   (:li (:nxref :command 'nyxt/document-mode:paste-from-clipboard-ring) " is now conveniently bound to "
         (:code "M-y") " in Emacs scheme of "
         (:nxref :class-name 'nyxt/document-mode:document-mode) ".")
    (:li "Prompt-buffer now has familiar bindings for text cutting."))
@@ -487,10 +499,11 @@ the selection, and the string to paste instead of the clipboard (respectively)."
    (:li (:nxref :function 'encode-json) " and " (:nxref :function 'decode-json)
         " functions are now capable of encoding from/decoding to files, strings and streams.")
    (:li (:nxref :function 'nyxt/dom:copy) " generic to copy elements and whole DOMs.")
-   (:li "New " (:nxref :command 'define-bookmarklet-command-global)
+   (:li "New " (:code 'nyxt/bookmarklets-mode:define-bookmarklet-command-global)
         " that allows to define bookmarklets globally.")
-   (:li (:code "open-new-editor-with-file") " renamed to " (:nxref :command 'edit-file) ".")
-   (:li "Add " (:nxref :command 'edit-file-with-external-editor)
+   (:li (:code "open-new-editor-with-file") " renamed to "
+        (:nxref :command 'nyxt/editor-mode:edit-file) ".")
+   (:li "Add " (:nxref :command 'nyxt/file-manager-mode:edit-file-with-external-editor)
         " to edit arbitrary files in the editor of choice.")
    (:li (:code "peval") " and " (:code "pflet") " renamed to " (:nxref :function 'ps-eval) " and "
         (:nxref :function 'ps-labels) " (respectively).")
@@ -499,21 +512,24 @@ the selection, and the string to paste instead of the clipboard (respectively)."
 
   (:h3 "Bug fixes")
   (:ul
-   (:li "Security: don't read arbitrary Lisp values from URLs when searching for internal pages.")
-   (:li "The version parsing (that features like " (:code "#+nyxt-3")
-        " depend on) is more robust and pre-release-aware now.")
-   (:li "Touchscreen gestures fixed for VI mode.")
-   (:li "Opening files via a relative path (for instance, " (:code "buffer.html")
-        ") is now correctly processed to an absolute path.")
+   (:li "Security: don't read arbitrary Lisp values from URLs when searching for
+        internal pages.")
+   (:li "Improve version parsing so that it is aware of pre-releases (notice
+        that it propagates to reader macros such as "
+        (:code "#+nyxt-3-pre-release-2") ".")
+   (:li "Fix touchscreen gestures for VI mode.")
+   (:li "Fix processing via relative paths when opening files.")
    (:li "Setting " (:nxref :slot 'restore-session-on-startup-p :class-name 'browser)
-        "to nil no longer hangs the browser.")
+        "no longer hangs the browser.")
    (:li "Fix buffer re-attachment from the deleted window.")
-   (:li "Download hooks are properly typed and belong to " (:nxref :class-name 'nyxt/download-mode:download)
-        " now, allowing to add handlers to them.")
-   (:li "Clipboard ring is properly filled on every clipboard action happening inside Nyxt.")
-   (:li (:nxref :command 'view-source) " now shows a cleaned-up version of the pages without "
-        (:code "nyxt-identifier") "s and other Nyxt-specific helpers.")
-   (:li (:nxref :command 'nyxt/history-mode:history-backwards)
-        " does no longer skip pages when going back from pages that are not yet done loading.")
-   (:li "Fix full-screening event handling — status buffer no longer goes off-sync with
-the full-screened page/video.")))
+   (:li "Move download hooks to " (:nxref :class-name 'nyxt/download-mode:download)
+        " enabling proper typing and adding handlers to them.")
+   (:li "Clipboard ring is properly filled on every clipboard action happening
+        inside Nyxt.")
+   (:li (:nxref :command 'nyxt/document-mode:view-source)
+        " returns an unmodified DOM without " (:code "nyxt-identifier")
+        "s or other Nyxt-specific implementation details.")
+   (:li "Fix " (:nxref :command 'nyxt/history-mode:history-backwards)
+        " by gracefully handling pages that are not yet done loading.")
+   (:li "Fix full-screening event handling — status buffer no longer goes
+        off-sync with the full-screened page/video.")))
