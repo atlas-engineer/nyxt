@@ -452,10 +452,7 @@ SLY install.")
    (:li "Add "
         (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'nyxt/hint-mode:compute-hints-in-view-port-p)
         " allowing hints to be optionally computed in viewport.")
-   (:li "Add " (:nxref :class-name 'prompt-buffer :slot 'height) " so that every
-        prompt has a configurable height (options are "
-        (:code ":default") ", " (:code ":fit-to-prompt")
-        " or an integer specifying the height in pixels).")
+   (:li "Add " (:nxref :class-name 'prompt-buffer :slot 'height) ".")
    (:li "Add "
         (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'nyxt/hint-mode:fit-to-prompt-p)
         " minimizing the space taken by the prompt-buffer while navigating hints.")
