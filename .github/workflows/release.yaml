@@ -34,7 +34,7 @@ jobs:
       shell: bash
       run: |
         sudo apt-get update -qq
-        sudo apt-get install -y ruby ruby-dev rubygems dpkg-dev sbcl curl git-core zlib1g-dev
+        sudo apt-get install -y ruby ruby-dev rubygems dpkg-dev sbcl curl git-core libzstd-dev
         sudo apt-get install -y libfixposix3 libfixposix-dev libwebkit2gtk-4.0-dev glib-networking gsettings-desktop-schemas xclip enchant-2
         sudo apt-get install -y gobject-introspection
 
