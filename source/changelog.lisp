@@ -469,8 +469,7 @@ SLY install.")
    (:li "All copying and pasting commands populate "
         (:nxref :class-name 'browser :slot 'clipboard-ring) " reliably, thus fixing the "
         (:nxref :command 'nyxt/document-mode:paste-from-clipboard-ring) " command.")
-   (:li "Major improvement of " (:nxref :class-name 'nyxt/editor-mode:editor-mode)
-        " (try it with " (:a :href "https://github.com/atlas-engineer/nx-ace" "nx-ace") ".")
+   (:li "Major improvement of " (:nxref :class-name 'nyxt/editor-mode:editor-mode) ".")
    (:li (:code "execute-command")
         " evaluates arbitrary Lisp code and provides inline documentation for symbols.")
    (:li "Extend keybinding for all keyschemes in "
