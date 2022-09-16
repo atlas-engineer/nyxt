@@ -195,12 +195,11 @@ Return NIL if it's not a mode."
     (when (mopu:subclassp class (find-class 'mode))
       class)))
 
-(defun package-modes (&optional (packages (nyxt-packages))
-                        (user-packages (nyxt-user-packages)))
-  "Return the list of mode symbols in PACKAGES and USER-PACKAGES.
-See `package-symbols' for details on the arguments."
+(defun package-modes (packages &key (status :any))
+  "Return the list of mode symbols in PACKAGES.
+See `package-symbols'."
   (delete-if (complement #'mode-class)
-             (package-symbols packages user-packages)))
+             (package-symbols packages :status status)))
 
 ;; TODO: Should allow search all packages, e.g. when PACKAGES is NIL.
 (-> resolve-symbol ((or keyword string) (member :function :variable :class :mode :slot :command) &optional (cons *)) symbol)

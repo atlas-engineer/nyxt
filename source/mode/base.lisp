@@ -72,16 +72,12 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-h r" 'manual
        "C-h b" 'describe-bindings
        "C-h C" 'describe-class
-       "C-h u C" 'universal-describe-class
        "C-h c" 'describe-command
        "C-h f" 'describe-function
-       "C-h u f" 'universal-describe-function
        "C-h k" 'describe-key
        "C-h p" 'describe-package
        "C-h s" 'describe-slot
-       "C-h u s" 'universal-describe-slot
        "C-h v" 'describe-variable
-       "C-h u v" 'universal-describe-variable
        "C-d" 'nyxt/download-mode:list-downloads
        "C-x 5 2" 'make-window
        "C-x 5 0" 'delete-current-window
