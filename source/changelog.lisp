@@ -450,36 +450,36 @@ SLY install.")
    (:li "Remove " (:nxref :class-name 'nyxt/hint-mode:hint-mode) " image support
         by default.")
    (:li "Add "
-        (:nxref :class-name nyxt/hint-mode:hint-mode :slot 'compute-hints-in-view-port-p=)
+        (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'nyxt/hint-mode:compute-hints-in-view-port-p)
         " allowing hints to be optionally computed in viewport.")
    (:li "Add " (:nxref :class-name 'prompt-buffer :slot 'height) " so that every
         prompt has a configurable height (options are "
-        (:code ":default") (:code ":fit-to-prompt")
+        (:code ":default") ", " (:code ":fit-to-prompt")
         " or an integer specifying the height in pixels).")
    (:li "Add "
-        (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'fit-to-prompt-p)
+        (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'nyxt/hint-mode:fit-to-prompt-p)
         " minimizing the space taken by the prompt-buffer while navigating hints.")
    (:li "Add "
         (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'nyxt/hint-mode:show-hint-scope-p)
         "for element highlighting of hinted elements.")
-   (:li "Add " (:nxref :class-name 'prompter:source :slot 'marks-actions)
+   (:li "Add " (:nxref :class-name 'prompter:source :slot 'prompter:marks-actions)
         " that run when marked items on prompt-buffer change.")
-   (:li "Extend " (nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'style)
+   (:li "Extend " (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'style)
         " to accommodate for marked hints.")
    (:li (:code "default-modes") " can be configured with "
         (:code "%slot-value%") " .")
    (:li "Add " (:nxref :command 'toggle-maximize) " command for maximizing a window.")
    (:li "All copying and pasting commands populate "
         (:nxref :class-name 'browser :slot 'clipboard-ring) " reliably, thus fixing the "
-        (:nxref :command 'paste-from-clipboard-ring) " command.")
+        (:nxref :command 'nyxt/document-mode:paste-from-clipboard-ring) " command.")
    (:li "Major improvement of " (:nxref :class-name 'nyxt/editor-mode:editor-mode)
         " (try it with " (:a :href "https://github.com/atlas-engineer/nx-ace" "nx-ace") ".")
    (:li (:code "execute-command")
         " evaluates arbitrary Lisp code and provides inline documentation for symbols.")
    (:li "Extend keybinding for all keyschemes in "
         (:nxref :class-name 'nyxt/editor-mode:editor-mode) " .")
-   (:li "Bind " (:nxref :command 'paste-from-clipboard-ring) " to " (:code "M-y")
-        " in Emacs keyscheme.")
+   (:li "Bind " (:nxref :command 'nyxt/document-mode:paste-from-clipboard-ring)
+        " to " (:code "M-y") " in Emacs keyscheme.")
    (:li "Bind familiar keys for text cutting in prompt-buffer."))
 
   (:h3 "Bindings")
@@ -487,7 +487,7 @@ SLY install.")
    (:li (:nxref :class-name 'nyxt/editor-mode:editor-mode)
         " now has an equally powerful set of bindings in all key schemes, allowing one
 to open a file, save it, switch buffer or delete current buffer.")
-   (:li (:nxref :command 'paste-from-clipboard-ring) " is now conveniently bound to "
+   (:li (:nxref :command 'nyxt/document-mode:paste-from-clipboard-ring) " is now conveniently bound to "
         (:code "M-y") " in Emacs scheme of "
         (:nxref :class-name 'nyxt/document-mode:document-mode) ".")
    (:li "Prompt-buffer now has familiar bindings for text cutting."))
@@ -503,10 +503,11 @@ the selection, and the string to paste instead of the clipboard (respectively)."
    (:li (:nxref :function 'encode-json) " and " (:nxref :function 'decode-json)
         " functions are now capable of encoding from/decoding to files, strings and streams.")
    (:li (:nxref :function 'nyxt/dom:copy) " generic to copy elements and whole DOMs.")
-   (:li "New " (:nxref :command 'define-bookmarklet-command-global)
+   (:li "New " (:code 'nyxt/bookmarklets-mode:define-bookmarklet-command-global)
         " that allows to define bookmarklets globally.")
-   (:li (:code "open-new-editor-with-file") " renamed to " (:nxref :command 'edit-file) ".")
-   (:li "Add " (:nxref :command 'edit-file-with-external-editor)
+   (:li (:code "open-new-editor-with-file") " renamed to "
+        (:nxref :command 'nyxt/editor-mode:edit-file) ".")
+   (:li "Add " (:nxref :command 'nyxt/file-manager-mode:edit-file-with-external-editor)
         " to edit arbitrary files in the editor of choice.")
    (:li (:code "peval") " and " (:code "pflet") " renamed to " (:nxref :function 'ps-eval) " and "
         (:nxref :function 'ps-labels) " (respectively).")
@@ -529,8 +530,9 @@ the selection, and the string to paste instead of the clipboard (respectively)."
         " enabling proper typing and adding handlers to them.")
    (:li "Clipboard ring is properly filled on every clipboard action happening
         inside Nyxt.")
-   (:li (:nxref :command 'view-source) " returns an unmodified DOM without "
-        (:code "nyxt-identifier") "s or other Nyxt-specific implementation details.")
+   (:li (:nxref :command 'nyxt/document-mode:view-source)
+        " returns an unmodified DOM without " (:code "nyxt-identifier")
+        "s or other Nyxt-specific implementation details.")
    (:li "Fix " (:nxref :command 'nyxt/history-mode:history-backwards)
         " by gracefully handling pages that are not yet done loading.")
    (:li "Fix full-screening event handling — status buffer no longer goes
