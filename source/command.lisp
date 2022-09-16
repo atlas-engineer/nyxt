@@ -292,25 +292,24 @@ If PACKAGES is NIL, process all packages."
                      symbols))))))
 
 (defun package-variables (packages &key (status :any))
-  "Return the list of variable symbols in PACKAGES and USER-PACKAGES.
+  "Return the list of variable symbols in PACKAGES.
 See `package-symbols'."
   (delete-if (complement #'boundp) (package-symbols packages :status status)))
 
 (defun package-functions (packages &key (status :any))
-  "Return the list of function symbols in PACKAGES and USER-PACKAGES.
+  "Return the list of function symbols in PACKAGES.
 See `package-symbols'."
   (delete-if (complement #'fboundp) (package-symbols packages :status status)))
 
-(defun package-classes (&optional (packages (nyxt-packages))
-                          (user-packages (nyxt-user-packages)))
-  "Return the list of class symbols in PACKAGES and USER-PACKAGES.
-See `package-symbols' for details on the arguments."
+(defun package-classes (packages &key (status :any))
+  "Return the list of class symbols in PACKAGES.
+See `package-symbols'."
   (delete-if (lambda (sym)
                (not (and (find-class sym nil)
                          ;; Discard non-standard objects such as structures or
                          ;; conditions because they don't have public slots.
                          (mopu:subclassp (find-class sym) (find-class 'standard-object)))))
-             (package-symbols packages user-packages)))
+             (package-symbols packages :status status)))
 
 (define-class slot ()
   ((name nil
@@ -319,15 +318,10 @@ See `package-symbols' for details on the arguments."
               :type (or symbol null)))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defun exported-p (sym)
-  (eq :external
-      (nth-value 1 (find-symbol (string sym)
-                                (symbol-package sym)))))
-
-(defun class-public-slots (class-sym)
-  "Return the list of exported slots."
-  (delete-if
-   (complement #'exported-p)
+(defun class-slots (class-sym &key (status :any))
+  "Return the list of slots with STATUS."
+  (sera:filter
+   (lambda (s) (eq status (symbol-status s)))
    (mopu:slot-names class-sym)))
 
 (defmethod prompter:object-attributes ((slot slot) (source prompter:source))
@@ -335,22 +329,20 @@ See `package-symbols' for details on the arguments."
   `(("Name" ,(string (name slot)))
     ("Class" ,(string (class-sym slot)))))
 
-(defun package-slots (&optional (packages (nyxt-packages))
-                        (user-packages (nyxt-user-packages)))
-  "Return the list of all slot symbols in PACKAGES and USER-PACKAGES.
-See `package-symbols' for details on the arguments."
+(defun package-slots (packages &key (status :any))
+  "Return the list of all slot symbols in PACKAGES.
+See `package-symbols'."
   (mappend (lambda (class-sym)
              (mapcar (lambda (slot) (make-instance 'slot
                                                    :name slot
                                                    :class-sym class-sym))
-                     (class-public-slots class-sym)))
-           (package-classes packages user-packages)))
+                     (class-slots class-sym :status status)))
+           (package-classes packages)))
 
-(defun package-methods (&optional (packages (nyxt-packages)) ; TODO: Unused.  Remove?
-                          (user-packages (nyxt-user-packages)))
-  "Return the list of all method symbols in PACKAGES and USER-PACKAGES.
-See `package-symbols' for details on the arguments."
-  (loop for sym in (package-symbols packages user-packages)
+(defun package-methods (packages &key (status :any)) ; TODO: Unused.  Remove?
+  "Return the list of all method symbols in PACKAGES.
+See `package-symbols'."
+  (loop for sym in (package-symbols packages :status status)
         append (ignore-errors
                 (closer-mop:generic-function-methods (symbol-function sym)))))
 
