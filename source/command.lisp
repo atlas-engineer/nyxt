@@ -257,38 +257,49 @@ See also `nyxt-packages'."
    (sera:filter #'nyxt-user-subpackage-p
                 (list-all-packages))))
 
-(defun package-symbols (&optional (packages (nyxt-packages))
-                          (user-packages (nyxt-user-packages)))
-  "Return the list of all external symbols from PACKAGES
-and all (possibly unexported) symbols from USER-PACKAGES.
+(defun non-nyxt-packages ()
+  "Return the packages that are not related to Nyxt.
+It's the complement of `nyxt-packages' and `nyxt-user-packages'."
+  (set-difference (list-all-packages)
+                  (append (nyxt-packages) (nyxt-user-packages))))
 
-If PACKAGES is NIL, return all external symbols in all packages."
-  (let* ((user-packages (mapcar #'find-package (alex:ensure-list user-packages)))
-         (packages (or (alex:ensure-list packages)
-                       (set-difference
-                        (list-all-packages)
-                        user-packages)))
-         (symbols))
+(defun symbol-status (symbol)
+  (nth 1 (find-symbol (symbol-name symbol) (symbol-package symbol))))
+
+(-> package-symbols
+    ((list-of package) &key (:status (member :internal :external :inherited :any)))
+    (list-of symbol))
+(defun package-symbols (packages &key (status :any))
+  "Return the list of all symbols from PACKAGES.
+If STATUS is specified, only include symbols with that status.
+If PACKAGES is NIL, process all packages."
+  (let ((packages (or (alex:ensure-list packages)
+                      (list-all-packages)))
+        (symbols))
     (dolist (package (mapcar #'find-package packages))
-      (do-external-symbols (s package symbols)
-        (push s symbols)))
-    (dolist (package user-packages)
-      (do-symbols (s package symbols)
-        (when (eq (symbol-package s) package)
-          (push s symbols))))
-    (delete-duplicates symbols)))
+      (if (eq :external status)
+          (do-external-symbols (s package symbols)
+            (push s symbols))
+          (do-symbols (s package symbols)
+            (when (eq (symbol-package s) package)
+              (push s symbols)))))
+    (delete-duplicates
+     (case status
+       ((:any :external)
+        symbols)
+       ((:internal :inherited)
+        (sera:filter (lambda (s) (eq status (symbol-status s)))
+                     symbols))))))
 
-(defun package-variables (&optional (packages (nyxt-packages))
-                            (user-packages (nyxt-user-packages)))
+(defun package-variables (packages &key (status :any))
   "Return the list of variable symbols in PACKAGES and USER-PACKAGES.
-See `package-symbols' for details on the arguments."
-  (delete-if (complement #'boundp) (package-symbols packages user-packages)))
+See `package-symbols'."
+  (delete-if (complement #'boundp) (package-symbols packages :status status)))
 
-(defun package-functions (&optional (packages (nyxt-packages))
-                            (user-packages (nyxt-user-packages)))
+(defun package-functions (packages &key (status :any))
   "Return the list of function symbols in PACKAGES and USER-PACKAGES.
-See `package-symbols' for details on the arguments."
-  (delete-if (complement #'fboundp) (package-symbols packages user-packages)))
+See `package-symbols'."
+  (delete-if (complement #'fboundp) (package-symbols packages :status status)))
 
 (defun package-classes (&optional (packages (nyxt-packages))
                           (user-packages (nyxt-user-packages)))
