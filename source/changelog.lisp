@@ -515,7 +515,7 @@ the selection, and the string to paste instead of the clipboard (respectively)."
    (:li "Security: don't read arbitrary Lisp values from URLs when searching for
         internal pages.")
    (:li "Improve version parsing so that it is aware of pre-releases (notice
-        that it propagates to reader macro such as "
+        that it propagates to reader macros such as "
         (:code "#+nyxt-3-pre-release-2") ".")
    (:li "Fix touchscreen gestures for VI mode.")
    (:li "Fix processing absolute paths via relative paths when opening files.")
