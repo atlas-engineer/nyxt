@@ -521,7 +521,9 @@ A command is a special kind of function that can be called with
                                     (remove-if
                                      #'listp (mapcar #'mopu:generic-function-name
                                                      (mopu:generic-functions class))))
-                     collect (:li (:a :href (nyxt-url 'describe-function :fn method) method))))))
+                     collect (:li (:a :href (nyxt-url 'describe-function :fn method) method))))
+          (:h2 "Source:")
+          (:pre (:code (source-for-thing (find-class class))))))
       (spinneret:with-html-string
         (:style (style buffer))
         (:h2 (format nil "~s" class))

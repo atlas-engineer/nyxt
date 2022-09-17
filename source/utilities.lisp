@@ -65,6 +65,47 @@ Particularly useful to avoid errors on already terminated threads."
       (swank-backend:find-external-format "latin-1")
       :default))
 
+(export-always 'source-for-thing)
+(-> source-for-thing ((or function method class)) string)
+(defun source-for-thing (thing)
+  "Return the string source for THING, is any.
+If there's no source, returns empty string.
+THING can be a class or a function, not symbol."
+  (or (alex:when-let* ((full-definition (swank:find-definition-for-thing thing))
+                       (definition (and (not (eq :error (first full-definition)))
+                                        (rest full-definition)))
+                       ;; REVIEW: Returns (:macro name) for macros on
+                       ;; SBCL. What does it do on CCL, ECL etc?
+                       (name (typecase thing
+                               ;; REVIEW: How do we handle macros here?
+                               (class (class-name thing))
+                               (method (swank-backend:function-name
+                                        (closer-mop:method-generic-function thing)))
+                               (function (swank-backend:function-name thing))))
+                       (*package* (if (and (listp name)
+                                           (eq :macro (first name)))
+                                      (symbol-package (second name))
+                                      (symbol-package name)))
+                       (file (uiop:file-exists-p (first (alexandria:assoc-value definition :file))))
+                       (file-content (alexandria:read-file-into-string
+                                      file
+                                      :external-format (guess-external-format file)))
+                       (start-position (first (alexandria:assoc-value definition :position))))
+        (handler-case
+            (let ((*read-eval* nil))
+              (let ((expression (read-from-string file-content t nil
+                                                  :start (1- start-position))))
+                (values (let ((*print-case* :downcase)
+                              (*print-pretty* t))
+                          (write-to-string expression))
+                        expression)))
+          (reader-error ()
+            (str:trim-right
+             (subseq file-content
+                     (max 0 (1- start-position))
+                     (search (uiop:strcat +newline+ "(") file-content :start2 start-position))))))
+      ""))
+
 (export-always 'function-lambda-string)
 (defun function-lambda-string (fun)
   "Like `function-lambda-expression' for the first value, but return a string.
@@ -75,39 +116,7 @@ Return the lambda s-expression as a second value, if possible."
                   (*print-pretty* t))
               (write-to-string expression))
             expression)
-    (or (alex:when-let* ((full-definition (swank:find-definition-for-thing fun))
-                         (definition (and (not (eq :error (first full-definition)))
-                                          (rest full-definition)))
-                         ;; REVIEW: Returns (:macro name) for macros on
-                         ;; SBCL. What does it do on CCL, ECL etc?
-                         (name (swank-backend:function-name
-                                (typecase fun
-                                  ;; REVIEW: How do we handle macros here?
-                                  (method (closer-mop:method-generic-function fun))
-                                  (function fun))))
-                         (*package* (if (and (listp name)
-                                             (eq :macro (first name)))
-                                        (symbol-package (second name))
-                                        (symbol-package name)))
-                         (file (uiop:file-exists-p (first (alexandria:assoc-value definition :file))))
-                         (file-content (alexandria:read-file-into-string
-                                        file
-                                        :external-format (guess-external-format file)))
-                         (start-position (first (alexandria:assoc-value definition :position))))
-          (handler-case
-              (let ((*read-eval* nil))
-                (let ((expression (read-from-string file-content t nil
-                                                    :start (1- start-position))))
-                  (values (let ((*print-case* :downcase)
-                                (*print-pretty* t))
-                            (write-to-string expression))
-                          expression)))
-            (reader-error ()
-              (str:trim-right
-               (subseq file-content
-                       (max 0 (1- start-position))
-                       (search (uiop:strcat +newline+ "(") file-content :start2 start-position))))))
-        "")))
+    (source-for-thing fun)))
 
 (-> last-word (string) string)
 (export-always 'last-word)
