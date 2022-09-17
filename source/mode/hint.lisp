@@ -496,6 +496,6 @@ modes."
 (define-command copy-hint-url ()
   "Prompt for element hints and save its corresponding URLs to clipboard."
   (query-hints "Copy element URL"
-               (lambda (result)  (%copy-hint-url (first result)))
+               (lambda (result) (%copy-hint-url (first result)))
                :multi-selection-p nil
                :selector "a"))
