@@ -11,7 +11,7 @@
 (use-nyxt-package-nicknames)
 
 (defmethod j:decode ((from array))
-  (call-next-method (swank/backend:utf8-to-string from)))
+  (j:decode (swank/backend:utf8-to-string from)))
 
 ;; TODO: Compact URLs
 
