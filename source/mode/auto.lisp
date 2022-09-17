@@ -112,8 +112,8 @@ These modes will then be activated on every visit to this domain/host/URL."
    (prompt-on-mode-toggle
     nil
     :type boolean
-    :documentation "Whether the user is asked to confirm adding the rule
-corresponding to a mode toggle.")
+    :documentation "Whether the user is prompted to add the auto-rule on mode
+toggling.")
    (previous-url
     nil
     :type (or quri:uri null)
@@ -136,7 +136,9 @@ to store this to not overwrite the `last-active-modes' for a given URL, if
     :type (or (cons mode-invocation *) null)
     :documentation "The list of `mode-invocation's that were enabled on the last
 URL not covered by `auto-mode'.  This is useful when alternative between
-rule-less and ruled pages.  Example browse sequence:
+rule-less and ruled pages.
+
+Example of browsing sequence:
 
 - https://example.org (no-script-mode no-image-mode) ; No rule.
 - https://nyxt.atlas.engineer (dark-mode) ; Rule
