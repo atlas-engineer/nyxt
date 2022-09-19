@@ -68,7 +68,7 @@ Particularly useful to avoid errors on already terminated threads."
 (export-always 'source-for-thing)
 (-> source-for-thing ((or function method class)) string)
 (defun source-for-thing (thing)
-  "Return the string source for THING, is any.
+  "Return the string source for THING, if any.
 If there's no source, returns empty string.
 THING can be a class or a function, not symbol."
   (or (alex:when-let* ((full-definition (swank:find-definition-for-thing thing))
