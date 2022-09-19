@@ -438,7 +438,7 @@ SLY install.")
         " now default to the " (:code "nyxt-user") " package.")
    (:li "Various " (:code "spell-check-mode") " fixes.  (Thanks to @hendursaga!) ")))
 
-(define-version "3.0.0"
+(define-version "3-pre-release-2"
   (:ul
    (:li (:nxref :class-name 'nyxt/reduce-tracking-mode:reduce-tracking-mode)
         " cleans widely known tracking query parameters.")
