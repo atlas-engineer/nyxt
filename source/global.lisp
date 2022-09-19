@@ -159,6 +159,8 @@ Return nil on error."
            (pushnew (intern (uiop:strcat "NYXT-" (string-upcase (princ-to-string string))) "KEYWORD") *features*)))
     (when +version+
       (push-feature +version+))
+    (when (search "pre-release" +version+)
+      (push-feature (str:join "-" (subseq (str:split "-" +version+) 0 4))))
     (when major
       (push-feature major))
     (when minor
