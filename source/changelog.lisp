@@ -471,12 +471,7 @@ SLY install.")
         (:nxref :command 'nyxt/document-mode:paste-from-clipboard-ring) " command.")
    (:li "Major improvement of " (:nxref :class-name 'nyxt/editor-mode:editor-mode) ".")
    (:li (:code "execute-command")
-        " evaluates arbitrary Lisp code and provides inline documentation for symbols.")
-   (:li "Extend keybinding for all keyschemes in "
-        (:nxref :class-name 'nyxt/editor-mode:editor-mode) " .")
-   (:li "Bind " (:nxref :command 'nyxt/document-mode:paste-from-clipboard-ring)
-        " to " (:code "M-y") " in Emacs keyscheme.")
-   (:li "Bind familiar keys for text cutting in prompt-buffer."))
+        " evaluates arbitrary Lisp code and provides inline documentation for symbols."))
 
   (:h3 "Bindings")
   (:ul
