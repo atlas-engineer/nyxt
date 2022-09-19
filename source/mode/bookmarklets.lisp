@@ -22,7 +22,11 @@ By default, this mode does nothing but expose the default bookmarklets."
            `(let* ((source ,source)
                    (source (etypecase source
                              (pathname (nfiles:content (make-instance 'nfiles:file :base-path source)))
-                             (string source))))
+                             (string source)))
+                   (source (if (str:starts-with-p "javascript:" source)
+                               (or (ignore-errors (quri:url-decode (quri:uri-path (quri:uri source))))
+                                   (subseq source 11))
+                               source)))
               (ffi-buffer-evaluate-javascript-async buffer source))))
     (export 'define-bookmarklet-command)
     (defmacro define-bookmarklet-command (name documentation source)
