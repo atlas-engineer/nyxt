@@ -515,7 +515,7 @@ the selection, and the string to paste instead of the clipboard (respectively)."
    (:li "Fix touchscreen gestures for VI mode.")
    (:li "Fix processing via relative paths when opening files.")
    (:li "Setting " (:nxref :slot 'restore-session-on-startup-p :class-name 'browser)
-        "no longer hangs the browser.")
+        " no longer hangs the browser.")
    (:li "Fix buffer re-attachment from the deleted window.")
    (:li "Move download hooks to " (:nxref :class-name 'nyxt/download-mode:download)
         " enabling proper typing and adding handlers to them.")
