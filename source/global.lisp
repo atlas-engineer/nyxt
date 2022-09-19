@@ -156,7 +156,9 @@ Return nil on error."
 (multiple-value-bind (major minor patch commit commits)
     (version)
   (flet ((push-feature (string)
-           (pushnew (intern (uiop:strcat "NYXT-" (princ-to-string string)) "KEYWORD") *features*)))
+           (pushnew (intern (uiop:strcat "NYXT-" (string-upcase (princ-to-string string))) "KEYWORD") *features*)))
+    (when +version+
+      (push-feature +version+))
     (when major
       (push-feature major))
     (when minor
