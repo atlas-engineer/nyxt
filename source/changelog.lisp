@@ -464,7 +464,7 @@ SLY install.")
    (:li "Extend " (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'style)
         " to accommodate for marked hints.")
    (:li (:code "default-modes") " can be configured with "
-        (:code "%slot-value%") " .")
+        (:code "%slot-value%") ".")
    (:li "Add " (:nxref :command 'toggle-maximize) " command for maximizing a window.")
    (:li "All copying and pasting commands populate "
         (:nxref :class-name 'browser :slot 'clipboard-ring) " reliably, thus fixing the "
