@@ -433,6 +433,13 @@
                (:file "dbscan")
                (:file "section")))
 
+(defsystem "nyxt/analysis/tests"
+  :defsystem-depends-on (nyxt-asdf)
+  :class :nyxt-test-system
+  :depends-on (nyxt/analysis)
+  :targets (:package :analysis/tests)
+  :components ((:file "libraries/analysis/tests/tests")))
+
 (defsystem "nyxt/user-interface"
   :defsystem-depends-on (nyxt-asdf)
   :class :nyxt-system
