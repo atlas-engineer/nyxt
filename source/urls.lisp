@@ -414,8 +414,7 @@ guarantee of the same result."
                 ;; FIXME: This allows `find-internal-page-buffer' to find the
                 ;; buffer and `form' to have this buffer as the buffer-var.
                 (setf (url buffer) (quri:uri url))
-                (apply (form internal-page) args)))))))
-  :local-p t)
+                (apply (form internal-page) args))))))))
 
 (-> lisp-url (&rest t &key
                     (:id string)
