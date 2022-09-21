@@ -27,6 +27,7 @@
                cl-css
                cl-gopher
                cl-html-diff
+               cl-ipfs-api2
                cl-json
                cl-ppcre
                cl-ppcre-unicode
@@ -195,6 +196,7 @@
                  (:file "emacs")
                  (:file "expedition")
                  (:file "force-https")
+                 (:file "ipfs")
                  (:file "macro-edit")
                  (:file "no-image")
                  (:file "no-procrastinate" :depends-on ("blocker"))
