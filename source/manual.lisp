@@ -216,22 +216,29 @@ Lisp function, except the form is " (:code "define-command") " instead of "
 (:code "defun") ". If you want this command to be invocable outside of
         the context of a mode, use " (:code "define-command-global") ".")
         (:p "Example:")
-        (:pre (:code "(define-command-global bookmark-url ()
+        (:pre (:code "(define-command-global my-bookmark-url ()
   \"Query the user which URL to bookmark.\"
   (let ((url (prompt
               :prompt \"Bookmark URL\"
               :sources 'prompter:raw-source)))
-    (bookmark-add url)))"))
+    (nyxt/bookmark-mode:bookmark-add url)))"))
         (:p "See the " (:nxref :class-name 'prompt-buffer) " class documentation for how
 to write custom prompt-buffers.")
         (:p "You can also create your own context menu entries binding those to Lisp commands, using "
             (:nxref :function 'ffi-add-context-menu-command) " function. You can bind the "
             (:code "bookmark-url") " like this:")
-        (:pre (:code "(ffi-add-context-menu-command 'bookmark-url \"Bookmark the chosen URL\")"))
+        (:pre (:code "(ffi-add-context-menu-command \"Bookmark URL\" 'my-bookmark-url)"))
         (:p "Currently, context menu commands don't have access to the renderer objects (and
 shouldn't hope to). Commands you bind to context menu actions should deduce most
 of the information from their surroundings, using JavaScript and Lisp functions
-Nyxt provides."))
+Nyxt provides. For example, one can use the "
+            (:nxref :slot 'url-at-point :class-name 'buffer)
+            " to get thep URL currently under pointer.")
+        (:p "With this, one can improve the bookmarking like this:")
+        (:pre (:code "(ffi-add-context-menu-command
+ \"Bookmark Link\"
+ (lambda ()
+   (nyxt/bookmark-mode:bookmark-add (url-at-point (current-buffer)))))")))
 
       (:nsection :title "Custom URL schemes"
         (:p "If there's a scheme that Nyxt doesn't support, but you want it to, you can
