@@ -78,7 +78,6 @@ Features:
       keyscheme:default
       (list
        "C-return" 'evaluate-cell
-       "(" 'paren
        "tab" 'tab-complete-symbol)
       keyscheme:emacs
       (list
@@ -258,6 +257,7 @@ Features:
              (current-evaluation repl) (1+ id)))
     (reload-buffer (buffer repl))))
 
+;; FIXME: Those (`paren' and `closing-paren') often fail.
 (define-command paren (&optional (repl (find-submode 'repl-mode)))
   ;; FIXME: Not an intuitive behavior? What does Emacs do?
   "Inserts the closing paren after the opening one is inputted."
