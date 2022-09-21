@@ -369,6 +369,8 @@ Return the text cut."))
 Once a context menu appears, those commands will be added to it as actions with
 the labels they have as hash values.")
 
+;; TODO: Allow lambdas and functions.
+;; FIXME: Maybe make labels mandatory?
 (define-ffi-generic ffi-add-context-menu-command (command &optional label)
   (:method :around ((command command) &optional label)
     (call-next-method command (or label (str:capitalize (str:remove-punctuation (symbol-name (name command)))))))
