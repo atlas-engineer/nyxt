@@ -1585,27 +1585,29 @@ See `finalize-buffer'."
                   i))))))
       (webkit:webkit-context-menu-append
        context-menu (webkit:webkit-context-menu-item-new-separator))
-      (sera:and-let* ((_ (plusp (hash-table-count *context-menu-commands*)))
-                      (accessible-commands
-                       (mapcar #'name
-                               (list-commands
-                                :global-p t
-                                :mode-symbols (mapcar #'sera:class-name-of
-                                                      (sera:filter #'enabled-p (modes buffer))))))
-                      (context-commands (alex:hash-table-keys *context-menu-commands*)))
-        (dolist (command (intersection accessible-commands context-commands))
-          ;; Using stock actions here, because cl-cffi-gtk has a terrible API
-          ;; for GActions, requiring an exact type to be passed and disallowing
-          ;; NULL as a type :/
-          (let ((item (webkit:webkit-context-menu-item-new-from-stock-action-with-label
-                       :webkit-context-menu-action-action-custom
-                       (gethash command *context-menu-commands*))))
-            (gobject:g-signal-connect
-             (webkit:webkit-context-menu-item-get-g-action item) "activate"
-             (lambda (action parameter)
-               (declare (ignore action parameter))
-               (run-async command)))
-            (webkit:webkit-context-menu-append context-menu item)))))
+      (let* ((accessible-commands
+               (mapcar #'name
+                       (list-commands
+                        :global-p t
+                        :mode-symbols (mapcar #'sera:class-name-of
+                                              (sera:filter #'enabled-p (modes buffer)))))))
+        (maphash (lambda (label function)
+                   (when (or (and (command-p function)
+                                  (member function accessible-commands))
+                             (functionp function))
+                     ;; Using stock actions here, because cl-cffi-gtk has a terrible API
+                     ;; for GActions, requiring an exact type to be passed and disallowing
+                     ;; NULL as a type :/
+                     (let ((item (webkit:webkit-context-menu-item-new-from-stock-action-with-label
+                                  :webkit-context-menu-action-action-custom
+                                  label)))
+                       (gobject:g-signal-connect
+                        (webkit:webkit-context-menu-item-get-g-action item) "activate"
+                        (lambda (action parameter)
+                          (declare (ignore action parameter))
+                          (run-async function)))
+                       (webkit:webkit-context-menu-append context-menu item))))
+                 *context-menu-commands*)))
     nil)
   (connect-signal buffer "enter-fullscreen" nil (web-view)
     (declare (ignore web-view))

@@ -369,16 +369,14 @@ Return the text cut."))
 Once a context menu appears, those commands will be added to it as actions with
 the labels they have as hash values.")
 
-;; TODO: Allow lambdas and functions.
-;; FIXME: Maybe make labels mandatory?
-(define-ffi-generic ffi-add-context-menu-command (command &optional label)
-  (:method :around ((command command) &optional label)
-    (call-next-method command (or label (str:capitalize (str:remove-punctuation (symbol-name (name command)))))))
-  (:method ((command command) &optional label)
-    (setf (gethash (name command) *context-menu-commands*)
-          label))
-  (:method ((command symbol) &optional label)
-    (ffi-add-context-menu-command (symbol-function command) label))
+(define-ffi-generic ffi-add-context-menu-command (label command)
+  (:method ((label string) (command command))
+    (setf (gethash label *context-menu-commands*)
+          command))
+  (:method ((label string) (command function))
+    (setf (gethash label *context-menu-commands*)
+          command))
+  (:method ((label string) (command symbol))
+    (ffi-add-context-menu-command label (symbol-function command)))
   (:documentation "Add COMMAND as accessible in context menus with LABEL displayed for it.
-If LABEL is not provided, it's auto-generated from the command name.
-COMMAND should be either a symbol naming an already defined command, or the command object itself."))
+COMMAND should be funcallable."))

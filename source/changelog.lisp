@@ -528,3 +528,9 @@ the selection, and the string to paste instead of the clipboard (respectively)."
         " by gracefully handling pages that are not yet done loading.")
    (:li "Fix full-screening event handling — status buffer no longer goes
         off-sync with the full-screened page/video.")))
+
+(define-version "3.0.0"
+  (:h3 "Programming interface")
+  (:ul
+   (:li "Swap the order of the arguments to " (:nxref :function 'ffi-add-context-menu-action)
+        " and allow the command argument to be an arbitrary function.")))
