@@ -1455,7 +1455,7 @@ See `finalize-buffer'."
                                         :mime-type (when response
                                                      (webkit:webkit-uri-response-mime-type response))
                                         :known-type-p t)))
-      (setf (gtk-resource request-data) resource
+      (setf (gtk-response request-data) response
             (gtk-request request-data) request
             (gtk-resource request-data) resource)
       (hooks:run-hook (request-resource-hook buffer) request-data)))
