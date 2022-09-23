@@ -111,7 +111,7 @@ values in help buffers, REPL and elsewhere."))
      (cond
        ((and compact-p (> (length value) *inspector-print-length*))
         (:raw (link-to value)))
-       ((trivial-types:association-list-p value)
+       ((types:association-list-p value)
         (:table
          (unless compact-p
            (:caption "Association list"))
@@ -122,7 +122,7 @@ values in help buffers, REPL and elsewhere."))
           (:tr
            (dolist (e value)
              (:td (:raw (value->html (cdr e) t))))))))
-       ((and (trivial-types:property-list-p value)
+       ((and (types:property-list-p value)
              ;; Stricter understanding of property lists:
              ;; -- Even length.
              ;; -- Keys are strictly keywords.
@@ -144,7 +144,7 @@ values in help buffers, REPL and elsewhere."))
           (:tr
            (loop for val in (rest value) by #'cddr
                  collect (:td (:raw (value->html val t))))))))
-       ((and (trivial-types:proper-list-p value)
+       ((and (types:proper-list-p value)
              (not (alexandria:circular-list-p value))
              (not (alexandria:circular-tree-p value)))
         (:ul

@@ -68,7 +68,7 @@
   #-sbcl
   (osicat-posix:stat-gid (osicat-posix:lstat file)))
 
-(-> executable-p ((or trivial-types:pathname-designator) &key (:user string)) boolean)
+(-> executable-p ((or types:pathname-designator) &key (:user string)) boolean)
 (defun executable-p (file &key (user (current-user)))
   "Return non-nil if FILE is executable for USER name.
 When the user is unspecified, take the current one."

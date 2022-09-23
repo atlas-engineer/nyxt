@@ -29,7 +29,7 @@
     (window-set-buffer window error-buffer)))
 
 (-> load-lisp
-    ((or null trivial-types:pathname-designator) &key (:package (or null package)))
+    ((or null types:pathname-designator) &key (:package (or null package)))
     *)
 (defun load-lisp (file &key package)
   "Load the Lisp FILE (can also be a stream).

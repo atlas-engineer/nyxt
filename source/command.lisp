@@ -208,12 +208,12 @@ deprecated and by what in the docstring."
   (sera:filter (lambda (pkg) (find #\/ (package-name pkg)))
                (list-all-packages)))
 
-(-> subpackages (trivial-types:package-designator) (list-of package))
+(-> subpackages (types:package-designator) (list-of package))
 (defun subpackages (package)
   (sera:filter (lambda (p) (subpackage-p p package))
                (list-all-maybe-subpackages)))
 
-(-> subpackage-p (trivial-types:package-designator trivial-types:package-designator) boolean)
+(-> subpackage-p (types:package-designator types:package-designator) boolean)
 (defun subpackage-p (subpackage package)
   "Return non-nil if SUBPACKAGE is a subpackage of PACKAGE or is PACKAGE itself.
 A subpackage has a name that starts with that of PACKAGE followed by a '/' separator."
@@ -221,12 +221,12 @@ A subpackage has a name that starts with that of PACKAGE followed by a '/' separ
       (sera:string-prefix-p (uiop:strcat (package-name package) "/")
                             (package-name subpackage))))
 
-(-> nyxt-subpackage-p (trivial-types:package-designator) boolean)
+(-> nyxt-subpackage-p (types:package-designator) boolean)
 (defun nyxt-subpackage-p (package)
   "Return non-nil if PACKAGE is a sub-package of `nyxt'."
   (subpackage-p package :nyxt))
 
-(-> nyxt-user-subpackage-p (trivial-types:package-designator) boolean)
+(-> nyxt-user-subpackage-p (types:package-designator) boolean)
 (defun nyxt-user-subpackage-p (package)
   "Return non-nil if PACKAGE is a sub-package of `nyxt' or `nyxt-user'."
   (subpackage-p package :nyxt-user))
