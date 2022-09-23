@@ -582,3 +582,7 @@
 	path = _build/ospm
 	url = https://github.com/atlas-engineer/ospm
 	shallow = true
+[submodule "_build/cl-ipfs-api2"]
+	path = _build/cl-ipfs-api2
+	url = https://github.com/ambrevar/cl-ipfs-api2
+	shallow = true
