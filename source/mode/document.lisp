@@ -279,13 +279,13 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
     (:title "*Buffer URL QR code*")
   "Display the QR code containing URL.
 Warning: URL is a string."
-  (let* ((stream (flexi-streams:make-in-memory-output-stream)))
+  (let* ((stream (flex:make-in-memory-output-stream)))
     (cl-qrencode:encode-png-stream url stream)
     (spinneret:with-html-string
       (:p (:u url))
       (:p (:img :src (str:concat "data:image/png;base64,"
                                  (cl-base64:usb8-array-to-base64-string
-                                  (flexi-streams:get-output-stream-sequence stream)))
+                                  (flex:get-output-stream-sequence stream)))
                 :alt url)))))
 
 (define-command-global show-url-qrcode (&key (buffer (current-buffer)))
