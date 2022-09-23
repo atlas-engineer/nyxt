@@ -533,4 +533,8 @@ the selection, and the string to paste instead of the clipboard (respectively)."
   (:h3 "Programming interface")
   (:ul
    (:li "Swap the order of the arguments to " (:nxref :function 'ffi-add-context-menu-action)
-        " and allow the command argument to be an arbitrary function.")))
+        " and allow the command argument to be an arbitrary function.")
+   (:li "New package nicknames:"
+        (:ul
+         (:li  (:code "time") " for " (:code "local-time"))
+         (:li  (:code "types") " for " (:code "trivial-types"))))))
