@@ -152,6 +152,7 @@
           cl-html-diff
           cl-hu.dwim.defclass-star
           cl-iolib
+          cl-ipfs-api2
           cl-json
           cl-local-time
           cl-lparallel
