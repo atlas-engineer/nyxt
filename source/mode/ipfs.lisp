@@ -1,7 +1,6 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-;; TODO: Support public gateways.
 ;; TODO: Add support for adding files.
 
 ;; TODO: Handle IPNS as well.
@@ -48,11 +47,17 @@ See also the `program' slot.")
     :type alex:non-negative-float
     :documentation "Time in seconds to wait for the daemon to start.
 After this time has elapsed, signal an error.")
-   (public-gateways
-    '("https://dweb.link")
-    :type (list-of (or url string))
-    :documentation "Redirection example:
-https://dweb.link/ipfs/QmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"))
+   (gateway
+    (quri:uri "https://dweb.link")
+    :type quri:uri
+    :documentation "Fallback remote node when local daemon is not running.
+Redirection example:
+
+    ipfs://bafybeiemxf5abjwjbikoz4mc3a3dla6ual3jsgpdr4cjr3oz3evfyavhwq/wiki/Vincent_van_Gogh.html
+
+to
+
+    https://bafybeiemxf5abjwjbikoz4mc3a3dla6ual3jsgpdr4cjr3oz3evfyavhwq.ipfs.dweb.link/wiki/Vincent_van_Gogh.html"))
   (:toggler-command-p nil))
 
 (defmethod daemon-running-p ((mode ipfs-mode)) ; Unused?  Useful for debugging though.
@@ -121,14 +126,37 @@ Return immediately if already started."
    (pre-request-hook (buffer mode))
    'ipfs-mode-disable))
 
+(defmethod url->gateway-url ((mode ipfs-mode) url)
+  "Turn IPFS URL into an HTTP URL on MODE's `gateway' URL."
+  (let ((cid (quri:uri-domain url)))
+    (quri:copy-uri url
+                   :scheme "https"
+                   :port (quri.port:scheme-default-port "https")
+                   :host (uiop:strcat cid ".ipfs." (quri:uri-host (gateway mode))))))
+
 (defmethod fetch ((mode ipfs-mode) url)
   ;; TODO: Fallback to public gateway.
   (start-daemon mode)
-  (let ((mime (or (mimes:mime (pathname (quri:uri-path url)))
-                  "text/html;charset=utf8")))
-    ;; WARNING: Need byte-vector here because strings CL encoding may confuse the browser.
-    (values (flex:string-to-octets (ipfs:cat (nyxt::schemeless-url url))) ; TODO: Export?
-            mime)))
+  (if (daemon mode)
+      (let ((mime (or (mimes:mime (pathname (quri:uri-path url)))
+                      "text/html;charset=utf8")))
+        ;; WARNING: Need byte-vector here because strings CL encoding may confuse the browser.
+        (values (flex:string-to-octets (ipfs:cat (nyxt::schemeless-url url))) ; TODO: Export?
+                mime))
+      (let* ((new-url (url->gateway-url mode url))
+             (redirect-html
+               (spinneret:with-html-string
+                 (:head
+                  (:title "Redirect")
+                  (:style (style (buffer mode))))
+                 (:body
+                  (:h1 "Redirecting...")
+                  (:p
+                   (:a url)
+                   " to "
+                   (:a new-url))))))
+        (buffer-load new-url :buffer (buffer mode))
+        (values redirect-html "text/html;charset=utf8"))))
 
 (define-internal-scheme "ipfs"
     (lambda (url-string buffer)
