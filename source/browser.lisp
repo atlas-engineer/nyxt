@@ -131,9 +131,9 @@ issued by Control+<button1> in a new window.")
    (downloads
     :documentation "List of downloads. Used for rendering by the download manager.")
    (startup-timestamp
-    (local-time:now)
+    (time:now)
     :export nil
-    :documentation "`local-time:timestamp' of when Nyxt was started.")
+    :documentation "`time:timestamp' of when Nyxt was started.")
    (init-time
     0.0
     :export nil
@@ -281,7 +281,7 @@ prevents otherwise.")
   ;; Set `init-time' at the end of finalize to take the complete startup time
   ;; into account.
   (setf (slot-value *browser* 'init-time)
-        (local-time:timestamp-difference (local-time:now) startup-timestamp))
+        (time:timestamp-difference (time:now) startup-timestamp))
   (setf (slot-value *browser* 'ready-p) t))
 
 (defmethod startup ((browser browser) urls)

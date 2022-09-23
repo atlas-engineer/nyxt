@@ -32,7 +32,7 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
    (tags
     '()
     :type (list-of string))
-   (date (local-time:now)))
+   (date (time:now)))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))

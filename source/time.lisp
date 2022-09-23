@@ -6,7 +6,7 @@
 ;; Convenience function for time manipulation.
 ;; This can be useful for user configs.
 
-(-> asctime->timestamp (string) local-time:timestamp)
+(-> asctime->timestamp (string) time:timestamp)
 (export-always 'asctime->timestamp)
 (defun asctime->timestamp (asc-timestring)
   "Convert ASC-TIMESTRING to a timestamp.
@@ -19,11 +19,11 @@ An ASC-TIMESTRING is in the form of `Tue Oct 1 15:55:09 2019'."
                (minute (parse-integer (nth 1 time)))
                (hour (parse-integer (nth 0 time)))
                (day (parse-integer (nth 2 timestring)))
-               (month (position (nth 1 timestring) local-time:+short-month-names+
+               (month (position (nth 1 timestring) time:+short-month-names+
                                 :test #'string-equal))
                (year (parse-integer (nth 4 timestring))))
           (setf timestamp
-                (local-time:universal-to-timestamp
+                (time:universal-to-timestamp
                  (encode-universal-time second minute hour day month year))))
       (error (c)
         (log:debug "Error creating timestamp: ~a" c)
@@ -32,4 +32,4 @@ An ASC-TIMESTRING is in the form of `Tue Oct 1 15:55:09 2019'."
 
 (defun sort-by-time (sequence &key (key #'last-access))
   "Return a timely ordered SEQUENCE by KEY.  More recent elements come first."
-  (sort sequence #'local-time:timestamp> :key key))
+  (sort sequence #'time:timestamp> :key key))

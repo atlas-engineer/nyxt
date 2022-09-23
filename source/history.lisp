@@ -19,7 +19,7 @@
         :type (or quri:uri string))
    (title "")
    (last-access "" ; TODO: Remove with Nyxt 2.0?
-                :type (or string local-time:timestamp)
+                :type (or string time:timestamp)
                 :export nil
                 :documentation "This slot is only kept for backward
 compatibility to import the old flat history.")
@@ -68,13 +68,13 @@ class."
   (declare (ignore serialization-state))
   (prin1 (quri:render-uri uri) stream))
 
-(defmethod s-serialization::serialize-sexp-internal ((timestamp local-time:timestamp)
+(defmethod s-serialization::serialize-sexp-internal ((timestamp time:timestamp)
                                                      stream
                                                      serialization-state)
   "Serialize `history-entry' by turning the URL and last access into strings."
   (declare (ignore serialization-state))
-  (prin1 (local-time:format-timestring nil timestamp
-                                       :timezone local-time:+utc-zone+)
+  (prin1 (time:format-timestring nil timestamp
+                                       :timezone time:+utc-zone+)
          stream))
 
 (defun history-tree-key (history-entry)
@@ -144,7 +144,7 @@ lot."
            (* 1.0
               ;; Inverse number of hours since the last access.
               (/ 1
-                 (1+ (/ (local-time:timestamp-difference (local-time:now)
+                 (1+ (/ (time:timestamp-difference (time:now)
                                                          last-access)
                         (* 60 60)))))
            0))))

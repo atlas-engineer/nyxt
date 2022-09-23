@@ -29,8 +29,8 @@ packages.
     :documentation "Whether a warning before executing a deprecated command is
 signaled.")
    (last-access
-    (local-time:now)
-    :type local-time:timestamp
+    (time:now)
+    :type time:timestamp
     :documentation "Last time this command was called from prompt buffer.
 Useful to sort the commands by most recent use."))
   (:metaclass closer-mop:funcallable-standard-class)

@@ -420,7 +420,7 @@ Examples:
 
 \(progn
  (asdf:load-system :nyxt/gi-gtk)
- (nyxt:ffi-initialize nyxt:*browser* '() (local-time:now)))
+ (nyxt:ffi-initialize nyxt:*browser* '() (time:now)))
 "))
   (pushnew 'nyxt-source-registry asdf:*default-source-registries*)
   (asdf:clear-configuration)
@@ -544,7 +544,7 @@ Finally, run the browser, load URL-STRINGS if any, then run
   (let* ((urls (strings->urls url-strings))
          (thread (when (files:expand *socket-file*)
                    (listen-or-query-socket urls)))
-         (startup-timestamp (local-time:now))
+         (startup-timestamp (time:now))
          (startup-error-reporter nil))
     (when (or thread
               (getf *options* :no-socket)
