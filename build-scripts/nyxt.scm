@@ -163,6 +163,8 @@
           cl-nfiles
           cl-nhooks
           cl-nkeymaps
+          cl-njson
+          cl-nactivitypub
           cl-osicat ; Not needed for SBCL, remove it in Guix upstream package.
           cl-ospm
           cl-parenscript
