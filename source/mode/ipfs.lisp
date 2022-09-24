@@ -1,9 +1,11 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-;; TODO: Add support for adding files.
-
 ;; TODO: Handle IPNS as well.
+
+;; TODO: Add remove command.
+;; TODO: Add pin / unpin command.  Display 'pinned' property.
+
 
 ;; Test data:
 ;; - https://ipfs.io/ipfs/Qme7ss3ARVgxv6rXqVPiikMJ8u2NLgmgszg13pYrDKEoiu
@@ -22,6 +24,13 @@
 (nyxt:define-package :nyxt/ipfs-mode
     (:documentation "Mode for IPFS page browsing."))
 (in-package :nyxt/ipfs-mode)
+
+;; (define-class uploads-file (files:data-file nyxt-lisp-file)
+;;   ((files:base-path #p"ipfs-uploads")
+;;    (files:name "ipfs-uploads"))
+;;   (:export-class-name-p t)
+;;   (:accessor-name-transformer (class*:make-name-transformer name))
+;;   (:documentation "Listing of all files uploaded to IPFS."))
 
 (define-mode ipfs-mode ()
   "Handle ipfs:// URLs."
@@ -163,3 +172,80 @@ Return immediately if already started."
       ;; FIXME: This better become a default auto-mode rule.
       (enable-modes '(ipfs-mode) buffer)
       (fetch (find-submode 'ipfs-mode buffer) (quri:uri url-string))))
+
+(define-class ipfs-file ()
+  ((name
+    ""
+    :type string
+    :documentation "Name as stored on the IPFS network.")
+   (file-type
+    0
+    :type integer)
+   (size
+    0
+    :type integer)
+   (hash
+    ""
+    :type string
+    :documentation "IPFS hash of the file to uniquely identify it."))
+  (:export-class-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(defmethod prompter:object-attributes ((file ipfs-file) (source prompter:source))
+  (declare (ignore source))
+  `(("Name" ,(name file))
+    ("Size" ,(size file))
+    ("Hash" ,(hash file))))
+
+(defmethod all-uploads ((mode ipfs-mode)) ; TODO: Report error when daemon is not running.
+  (when (daemon-running-p mode)
+    (mapcar (lambda (entry)
+              (make-instance 'ipfs-file
+                             :name (alex:assoc-value entry "Name")
+                             :file-type (alex:assoc-value entry "Type")
+                             :size (alex:assoc-value entry "Size")
+                             :hash (alex:assoc-value entry "Hash")))
+            (ipfs:files-ls))))
+
+(defmethod add ((mode ipfs-mode) path)  ; TODO: Report error when daemon is not running.
+  "Add PATH to IPFS and the MFS so that it's listed by 'ipfs files ls'.
+See the help message of 'ipfs files'."
+  (when (daemon-running-p mode)
+    (dolist (result (ipfs:add path))
+      (let ((hash (alex:assoc-value result "Hash"))
+            (name (alex:assoc-value result "Name")))
+        (ipfs:files-cp (uiop:strcat "/ipfs/" hash)
+                       (serapeum:ensure-prefix "/" name))) )))
+
+(define-command upload                 ; TODO: ipfs-companion names it "import".
+    (&key (paths (prompt
+                  :extra-modes 'nyxt/file-manager-mode:file-manager-mode
+                  :sources (make-instance
+                            'nyxt/file-manager-mode:file-source))))
+  "Import files and directories to the IPFS network."
+  (mapc (curry #'add (find-submode 'ipfs-mode)) paths)
+  (echo "Uploaded ~a" paths))
+
+(define-class uploads-source (prompter:source) ; TODO: Use in commands?
+  ((prompter:name "IPFS uploads")
+   (prompter:constructor (all-uploads (find-submode 'ipfs-mode (current-buffer))))
+   (prompter:multi-selection-p t)))
+
+(define-internal-page-command-global list-uploads ()
+    (ipfs-uploads-buffer "*IPFS uploads*")
+  "List all IPFS uploads in a new buffer."
+  (let* ((mode (find-submode 'bookmark-mode (current-buffer)))
+         (uploads (all-uploads)))
+    (spinneret:with-html-string
+      (:style (style mode))
+      (:h1 "IPFS Uploads")
+      (cond
+        ((null uploads)
+         (:p "No IPFS uploads."))
+        (t
+         (:ul (mapc
+               (lambda (upload)
+                 (:div :class "upload"
+                       (:li (name upload)
+                            (:pre (hash upload)))))
+               uploads)))))))
