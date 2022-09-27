@@ -271,25 +271,22 @@ It's the complement of `nyxt-packages' and `nyxt-user-packages'."
     (list-of symbol))
 (defun package-symbols (packages &key (status :any))
   "Return the list of all symbols from PACKAGES.
-If STATUS is specified, only include symbols with that status.
-If PACKAGES is NIL, process all packages."
-  (let ((packages (or (alex:ensure-list packages)
-                      (list-all-packages)))
+If STATUS is specified, only include symbols with that status."
+  (let ((packages (alex:ensure-list packages))
         (symbols))
     (dolist (package (mapcar #'find-package packages))
       (if (eq :external status)
           (do-external-symbols (s package symbols)
-            (push s symbols))
+            (pushnew s symbols))
           (do-symbols (s package symbols)
             (when (eq (symbol-package s) package)
-              (push s symbols)))))
-    (delete-duplicates
-     (case status
-       ((:any :external)
-        symbols)
-       ((:internal :inherited)
-        (sera:filter (lambda (s) (eq status (symbol-status s)))
-                     symbols))))))
+              (pushnew s symbols)))))
+    (case status
+      ((:any :external)
+       symbols)
+      ((:internal :inherited)
+       (sera:filter (lambda (s) (eq status (symbol-status s)))
+                    symbols)))))
 
 (defun package-variables (packages &key (status :any))
   "Return the list of variable symbols in PACKAGES.
