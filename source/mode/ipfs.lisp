@@ -222,8 +222,13 @@ See the help message of 'ipfs files'."
                   :sources (make-instance
                             'nyxt/file-manager-mode:file-source))))
   "Import files and directories to the IPFS network."
-  (mapc (curry #'add (find-submode 'ipfs-mode)) paths)
-  (echo "Uploaded ~a" paths))
+  (let ((mode (find-submode 'ipfs-mode)))
+    (start-daemon mode)
+    (if (daemon mode)
+        (progn
+          (mapc (curry #'add mode) paths)
+          (echo "Uploaded ~a" paths))
+        (echo "Could not start IPFS daemon required for uploads."))))
 
 (define-class uploads-source (prompter:source) ; TODO: Use in commands?
   ((prompter:name "IPFS uploads")
