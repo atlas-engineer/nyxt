@@ -129,6 +129,18 @@
 (define-class class-internal-source (class-source describe-internal-source)
   ((prompter:name "Internal Classes")))
 
+(define-class slot-source (describe-nyxt-source)
+  ((prompter:name "Slots")
+   (prompter:constructor (description-constructor #'package-slots)))
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(define-class slot-non-nyxt-source (slot-source describe-non-nyxt-source)
+  ((prompter:name "Non-Nyxt Slots")))
+
+(define-class slot-internal-source (slot-source describe-internal-source)
+  ((prompter:name "Internal Slots")))
+
 (define-class variable-source (describe-nyxt-source)
   ((prompter:name "Variables")
    (prompter:constructor (description-constructor #'package-variables)))
