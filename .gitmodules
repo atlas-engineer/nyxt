@@ -598,3 +598,7 @@
 	path = _build/arnesi
 	url = https://github.com/AccelerationNet/arnesi
 	shallow = true
+[submodule "_build/yason"]
+	path = _build/yason
+	url = https://github.com/phmarek/yason
+	shallow = true
