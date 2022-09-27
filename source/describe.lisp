@@ -76,9 +76,11 @@
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-class function-non-nyxt-source (function-source describe-non-nyxt-source) ())
+(define-class function-non-nyxt-source (function-source describe-non-nyxt-source)
+  ((prompter:name "Non-Nyxt Functions")))
 
-(define-class function-internal-source (function-source describe-internal-source) ())
+(define-class function-internal-source (function-source describe-internal-source)
+  ((prompter:name "Internal Functions")))
 
 (defun first-line (string)
   "Return first non-empty line in STRING."
@@ -121,9 +123,11 @@
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-class class-non-nyxt-source (class-source describe-non-nyxt-source) ())
+(define-class class-non-nyxt-source (class-source describe-non-nyxt-source)
+  ((prompter:name "Non-Nyxt Classes")))
 
-(define-class class-internal-source (class-source describe-internal-source) ())
+(define-class class-internal-source (class-source describe-internal-source)
+  ((prompter:name "Internal Classes")))
 
 (define-class variable-source (describe-nyxt-source)
   ((prompter:name "Variables")
@@ -131,9 +135,11 @@
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-class variable-non-nyxt-source (variable-source describe-non-nyxt-source) ())
+(define-class variable-non-nyxt-source (variable-source describe-non-nyxt-source)
+  ((prompter:name "Variables")))
 
-(define-class variable-internal-source (variable-source describe-internal-source) ())
+(define-class variable-internal-source (variable-source describe-internal-source)
+  ((prompter:name "Variables")))
 
 (define-class package-source (prompter:source)
   ((prompter:name "Packages")
