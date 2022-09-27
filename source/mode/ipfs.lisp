@@ -200,11 +200,11 @@ Return immediately if already started."
   (when (daemon-running-p mode)
     (mapcar (lambda (entry)
               (make-instance 'ipfs-file
-                             :name (alex:assoc-value entry "Name")
-                             :file-type (alex:assoc-value entry "Type")
-                             :size (alex:assoc-value entry "Size")
-                             :hash (alex:assoc-value entry "Hash")))
-            (ipfs:files-ls))))
+                             :name (alex:assoc-value entry "Name" :test 'string=)
+                             :file-type (alex:assoc-value entry "Type" :test 'string=)
+                             :size (alex:assoc-value entry "Size" :test 'string=)
+                             :hash (alex:assoc-value entry "Hash" :test 'string=)))
+            (first (ipfs:files-ls)))))
 
 (defmethod add ((mode ipfs-mode) path)  ; TODO: Report error when daemon is not running.
   "Add PATH to IPFS and the MFS so that it's listed by 'ipfs files ls'.
