@@ -285,11 +285,12 @@ If STATUS is specified, only include symbols with that status."
           (do-symbols (s package symbols)
             (when (eq (symbol-package s) package)
               (pushnew s symbols)))))
-    (case status
-      ((:any :external)
-       symbols)
-      ((:internal :inherited)
-       (filter-symbols status symbols)))))
+    (the (values (list-of symbol) &optional)
+         (case status
+           ((:any :external)
+            symbols)
+           ((:internal :inherited)
+            (filter-symbols status symbols))))))
 
 (defun package-variables (packages &key (status :any))
   "Return the list of variable symbols in PACKAGES.
