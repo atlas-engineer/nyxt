@@ -264,7 +264,7 @@ It's the complement of `nyxt-packages' and `nyxt-user-packages'."
                   (append (nyxt-packages) (nyxt-user-packages))))
 
 (defun symbol-status (symbol)
-  (nth 1 (find-symbol (symbol-name symbol) (symbol-package symbol))))
+  (nth-value 1 (find-symbol (symbol-name symbol) (symbol-package symbol))))
 
 (-> package-symbols
     ((list-of package) &key (:status (member :internal :external :inherited :any)))
