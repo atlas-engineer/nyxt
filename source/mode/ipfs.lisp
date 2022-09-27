@@ -6,7 +6,6 @@
 ;; TODO: Add remove command.
 ;; TODO: Add pin / unpin command.  Display 'pinned' property.
 
-
 ;; Test data:
 ;; - https://ipfs.io/ipfs/Qme7ss3ARVgxv6rXqVPiikMJ8u2NLgmgszg13pYrDKEoiu
 ;; - ipfs://bafybeiemxf5abjwjbikoz4mc3a3dla6ual3jsgpdr4cjr3oz3evfyavhwq/wiki/Vincent_van_Gogh.html
@@ -71,9 +70,9 @@ to
 
 (defmethod daemon-running-p ((mode ipfs-mode)) ; Unused?  Useful for debugging though.
   (= 0
-     (nth 2
-          (uiop:run-program (list (program mode) "diag" "cmds")
-                            :ignore-error-status t))))
+     (nth-value 2
+                (uiop:run-program (list (program mode) "diag" "cmds")
+                                  :ignore-error-status t))))
 
 (defmethod start-daemon ((mode ipfs-mode))
   "Wait until IPFS daemon is started.
