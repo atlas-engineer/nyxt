@@ -4,7 +4,8 @@
 (in-package :nyxt)
 
 (defun description-constructor (lister)
-  "LISTER is a symbol lister like `package-functions'."
+  "LISTER is a function return a list of symbols from the given packages.
+See `package-functions' for an example."
   (lambda (source)
     (delete-duplicates
      (append
