@@ -9,7 +9,7 @@ It's useful to have a separate package because some types may need to generate
 functions for the `satisfies' type condition."))
 (in-package :nyxt/types)
 
-;; trivial-types:proper-list doesn't check its element type.
+;; types:proper-list doesn't check its element type.
 
 (export-always 'function-symbol)
 (deftype function-symbol ()

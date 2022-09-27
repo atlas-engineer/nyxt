@@ -41,7 +41,7 @@
       ("highlighted" . ,(eq buffer (nyxt::active-buffer (current-window))))
       ("id" . ,(or (parse-integer (id buffer) :junk-allowed t) 0))
       ("incognito" . ,(nosave-buffer-p buffer))
-      ("lastAccessed" . ,(* 1000 (local-time:timestamp-to-unix (nyxt::last-access buffer))))
+      ("lastAccessed" . ,(* 1000 (time:timestamp-to-unix (nyxt::last-access buffer))))
       ("selected" . ,(eq buffer (nyxt::active-buffer (current-window))))
       ("status" . ,(if (web-buffer-p buffer)
                        (case (slot-value buffer 'nyxt::status)

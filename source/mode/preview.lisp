@@ -8,8 +8,8 @@
 (defun updated-file-p (path-url mode)
   (when (quri:uri-file-p path-url)
     (or (null (last-access mode))
-        (local-time:timestamp>
-         (local-time:universal-to-timestamp
+        (time:timestamp>
+         (time:universal-to-timestamp
           (uiop:safe-file-write-date (quri:uri-path path-url)))
          (last-access mode)))))
 
@@ -21,9 +21,9 @@
    (nyxt/process-mode:action
     #'(lambda (path-url mode)
         (buffer-load path-url :buffer (buffer mode))
-        (setf (last-access mode) (local-time:now))))
+        (setf (last-access mode) (time:now))))
    (last-access nil
-                :type (or local-time:timestamp null)
+                :type (or time:timestamp null)
                 :documentation "The time file was last accessed.")))
 
 (in-package :nyxt)

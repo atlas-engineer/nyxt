@@ -104,7 +104,7 @@ Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
   ((url (quri:uri ""))
    (title "")
    (annotation "")
-   (date (local-time:now))
+   (date (time:now))
    (tags
     '()
     :type (list-of string)))
@@ -126,7 +126,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
   (url-equal (url e1) (url e2)))
 
 (-> bookmark-add
-    (quri:uri &key (:title string) (:date (or local-time:timestamp null)) (:tags t))
+    (quri:uri &key (:title string) (:date (or time:timestamp null)) (:tags t))
     t)
 (export-always 'bookmark-add)
 (defun bookmark-add (url &key date title tags)
@@ -370,8 +370,8 @@ rest in background buffers."
           ;;     2020-12-10T11:46:02.500515+01:00
           ;; instead of
           ;;     2020-12-10T10:46:02.500515Z
-          (format t "~s" (local-time:format-timestring nil (date entry)
-                                                       :timezone local-time:+utc-zone+)))
+          (format t "~s" (time:format-timestring nil (date entry)
+                                                       :timezone time:+utc-zone+)))
         (when (tags entry)
           (write-string " :tags (")
           (format t "~s" (first (tags entry)))
@@ -410,7 +410,7 @@ rest in background buffers."
                       (quri:uri (getf entry :url))))
               (when (getf entry :date)
                 (setf (getf entry :date)
-                      (local-time:parse-timestring (getf entry :date))))
+                      (time:parse-timestring (getf entry :date))))
               (apply #'make-instance 'bookmark-entry
                      entry))
             entries)))
@@ -437,7 +437,7 @@ rest in background buffers."
               (when (str:starts-with? "http" (quri:uri-scheme url-uri))
                 (bookmark-add url-uri
                               :title title
-                              :date (ignore-errors (local-time:unix-to-timestamp (parse-integer date)))
+                              :date (ignore-errors (time:unix-to-timestamp (parse-integer date)))
                               :tags (when tags
                                       (str:split "," tags))))))))
       (echo "The file doesn't exist or is not an HTML file.")))

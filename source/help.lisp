@@ -281,7 +281,7 @@ The version number is saved to clipboard."
      (:p :class "copyright"
          (format nil "Nyxt/~a ~a" +renderer+ +version+)
          (:br)
-         (format nil "Atlas Engineer LLC, 2018-~a" (local-time:timestamp-year (local-time:now)))))))
+         (format nil "Atlas Engineer LLC, 2018-~a" (time:timestamp-year (time:now)))))))
 
 (sera:eval-always ; To satisfy `fboundp' of `manual' at compile-time (e.g. CCL).
   (define-internal-page-command-global manual ()
@@ -355,7 +355,7 @@ System information is also saved to clipboard."
         (:style dashboard-style)
         (:div
          (:h1 :id "title" "Nyxt " (:span :id "subtitle" "browser ☺"))
-         (:h3 (local-time:format-timestring nil (local-time:now) :format local-time:+rfc-1123-format+))
+         (:h3 (time:format-timestring nil (time:now) :format time:+rfc-1123-format+))
          (:button :class "button" :onclick (ps:ps (nyxt/ps:lisp-eval
                                                    (:title "restore-session")
                                                    (nyxt::restore-history-by-name)))

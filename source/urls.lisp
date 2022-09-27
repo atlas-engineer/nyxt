@@ -345,7 +345,7 @@ Example:
 (defun internal-url-p (url)
   (string= "nyxt" (quri:uri-scheme (url url))))
 
-(-> query-params->arglist ((trivial-types:association-list string string)) (values list &optional))
+(-> query-params->arglist ((types:association-list string string)) (values list &optional))
 (defun query-params->arglist (params)
   "Process the PARAMS (an alist of strings, as returned by QURI) to a regular Lisp argument plist."
   (mappend (lambda (pair)

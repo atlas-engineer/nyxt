@@ -41,6 +41,8 @@ modes, commands, etc."))
   (loop :for (nickname package) in
         '((:alex :alexandria-2)
           (:sera :serapeum)
+          (:time :local-time)
+          (:types :trivial-types)
           (:lpara :lparallel)
           (:class* :hu.dwim.defclass-star)
           (:hooks :nhooks)

@@ -339,7 +339,7 @@ The user can scroll them, zoom, etc."))
 
 (define-class context-buffer (buffer)
   ((last-access
-    (local-time:now)
+    (time:now)
     :export nil
     :documentation "Timestamp when the buffer was last switched to.")
    (search-engines
@@ -1100,7 +1100,7 @@ proceeding."
     ;; second newest buffer.  If we didn't update the access time, the buffer
     ;; last-access time could be older than, say, buffers opened in the
     ;; background.
-    (setf (last-access (active-buffer window)) (local-time:now)))
+    (setf (last-access (active-buffer window)) (time:now)))
   ;; So that `current-buffer' returns the new value if buffer was
   ;; switched inside a `with-current-buffer':
   (setf %buffer nil)
@@ -1129,7 +1129,7 @@ proceeding."
               (setf (active-buffer window) buffer)))))
   (when (and focus
              (context-buffer-p buffer))
-    (setf (last-access buffer) (local-time:now)))
+    (setf (last-access buffer) (time:now)))
   (when (and (network-buffer-p buffer)
              (eq (slot-value buffer 'status) :unloaded))
     (reload-buffer buffer)))

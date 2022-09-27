@@ -103,7 +103,7 @@
   ((url (quri:uri ""))
    (hostname "")
    (title "")
-   (date (local-time:now))
+   (date (time:now))
    (tags
     '()
     :type (list-of string)))
@@ -118,7 +118,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 
 (-> no-procrastinate-add
     (quri:uri &key (:title string)
-                   (:date (or local-time:timestamp null))
+                   (:date (or time:timestamp null))
                    (:tags t)
                    (:hostname string))
     t)
@@ -273,8 +273,8 @@ URLS is either a list or a single element."
           ;;     2020-12-10T11:46:02.500515+01:00
           ;; instead of
           ;;     2020-12-10T10:46:02.500515Z
-          (format t "~s" (local-time:format-timestring nil (date entry)
-                                                       :timezone local-time:+utc-zone+)))
+          (format t "~s" (time:format-timestring nil (date entry)
+                                                       :timezone time:+utc-zone+)))
         (when (tags entry)
           (write-string " :tags (")
           (format t "~s" (first (tags entry)))
@@ -304,7 +304,7 @@ URLS is either a list or a single element."
                       (quri:uri (getf entry :url))))
               (when (getf entry :date)
                 (setf (getf entry :date)
-                      (local-time:parse-timestring (getf entry :date))))
+                      (time:parse-timestring (getf entry :date))))
               (apply #'make-instance 'no-procrastinate-entry
                      entry))
             entries)))

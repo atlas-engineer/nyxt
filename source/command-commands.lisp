@@ -124,7 +124,7 @@ together with the arglists and documentations of the functions typed in."
                      (list (lambda-command run-command* (commands)
                              "Run the chosen command."
                              (let ((command (first commands)))
-                               (setf (last-access command) (local-time:now))
+                               (setf (last-access command) (time:now))
                                (run-async command)))))
                     (make-instance
                      'extended-command-source
@@ -216,7 +216,7 @@ User input is evaluated Lisp."
                       ((cons (list name default _) type)
                        (list (prompt-argument name type default))))
                     params)))
-            (setf (last-access command) (local-time:now))
+            (setf (last-access command) (time:now))
             (run-async
              command
              (mappend #'parse-args
