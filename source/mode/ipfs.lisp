@@ -236,20 +236,21 @@ See the help message of 'ipfs files'."
    (prompter:multi-selection-p t)))
 
 (define-internal-page-command-global list-uploads ()
-    (ipfs-uploads-buffer "*IPFS uploads*")
+    (ipfs-uploads-buffer "*IPFS uploads*" 'ipfs-mode)
   "List all IPFS uploads in a new buffer."
-  (let* ((mode (find-submode 'bookmark-mode (current-buffer)))
-         (uploads (all-uploads)))
-    (spinneret:with-html-string
-      (:style (style mode))
-      (:h1 "IPFS Uploads")
-      (cond
-        ((null uploads)
-         (:p "No IPFS uploads."))
-        (t
-         (:ul (mapc
-               (lambda (upload)
-                 (:div :class "upload"
-                       (:li (name upload)
-                            (:pre (hash upload)))))
-               uploads)))))))
+  (let ((mode (find-submode 'ipfs-mode (current-buffer))))
+    (start-daemon mode)
+    (let ((uploads (all-uploads mode)))
+      (spinneret:with-html-string
+        (:style (style ipfs-uploads-buffer))
+        (:h1 "IPFS Uploads")
+        (cond
+          ((null uploads)
+           (:p "No IPFS uploads.  Make sure the IPFS daemon is installed."))
+          (t
+           (:ul (mapc
+                 (lambda (upload)
+                   (:div :class "upload"
+                         (:li (name upload)
+                              (:pre (hash upload)))))
+                 uploads))))))))
