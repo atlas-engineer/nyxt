@@ -158,7 +158,7 @@ See `package-functions' for an example."
   ((prompter:name "Packages")
    (prompter:constructor (mapcar (compose #'intern #'package-name) (list-all-packages)))))
 
-(define-command describe-any (&optional input)
+(define-command-global describe-any (&optional input)
   "Inspect anything and show it in a help buffer.
 When INPUT matches a single item in the sources, describe it.  Otherwise prompt
 for matches."
@@ -252,10 +252,6 @@ for matches."
             :prompt "Describe"
             :input input
             :sources sources))))))
-
-(define-command-global describe-any ()
-  "Inspect anything from any package and show it in a help buffer."
-  (describe-any nil t))
 
 (define-internal-page describe-value
     (&key id)
