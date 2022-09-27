@@ -196,14 +196,17 @@ Return immediately if already started."
     ("Size" ,(size file))
     ("Hash" ,(hash file))))
 
+(defun ipfs-getf (entry key)
+  (alex:assoc-value entry key :test 'string=))
+
 (defmethod all-uploads ((mode ipfs-mode)) ; TODO: Report error when daemon is not running.
   (when (daemon-running-p mode)
     (mapcar (lambda (entry)
               (make-instance 'ipfs-file
-                             :name (alex:assoc-value entry "Name" :test 'string=)
-                             :file-type (alex:assoc-value entry "Type" :test 'string=)
-                             :size (alex:assoc-value entry "Size" :test 'string=)
-                             :hash (alex:assoc-value entry "Hash" :test 'string=)))
+                             :name (ipfs-getf entry "Name")
+                             :file-type (ipfs-getf entry "Type")
+                             :size (ipfs-getf entry "Size")
+                             :hash (ipfs-getf entry "Hash")))
             (first (ipfs:files-ls)))))
 
 (defmethod add ((mode ipfs-mode) path)  ; TODO: Report error when daemon is not running.
@@ -211,8 +214,8 @@ Return immediately if already started."
 See the help message of 'ipfs files'."
   (when (daemon-running-p mode)
     (dolist (result (ipfs:add path))
-      (let ((hash (alex:assoc-value result "Hash" :test 'string=))
-            (name (alex:assoc-value result "Name" :test 'string=)))
+      (let ((hash (ipfs-getf result "Hash"))
+            (name (ipfs-getf result "Name")))
         (ipfs:files-cp (uiop:strcat "/ipfs/" hash)
                        (serapeum:ensure-prefix "/" name))))))
 
