@@ -590,3 +590,7 @@
 	path = _build/symbol-munger
 	url = https://github.com/AccelerationNet/symbol-munger
 	shallow = true
+[submodule "_build/collectors"]
+	path = _build/collectors
+	url = https://github.com/AccelerationNet/collectors
+	shallow = true
