@@ -266,6 +266,10 @@ It's the complement of `nyxt-packages' and `nyxt-user-packages'."
 (defun symbol-status (symbol)
   (nth-value 1 (find-symbol (symbol-name symbol) (symbol-package symbol))))
 
+(defun filter-symbols (status symbols)
+  (sera:filter (lambda (s) (eq status (symbol-status s)))
+               symbols))
+
 (-> package-symbols
     ((list-of package) &key (:status (member :internal :external :inherited :any)))
     (list-of symbol))
@@ -285,8 +289,7 @@ If STATUS is specified, only include symbols with that status."
       ((:any :external)
        symbols)
       ((:internal :inherited)
-       (sera:filter (lambda (s) (eq status (symbol-status s)))
-                    symbols)))))
+       (filter-symbols status symbols)))))
 
 (defun package-variables (packages &key (status :any))
   "Return the list of variable symbols in PACKAGES.
@@ -317,9 +320,7 @@ See `package-symbols'."
 
 (defun class-slots (class-sym &key (status :any))
   "Return the list of slots with STATUS."
-  (sera:filter
-   (lambda (s) (eq status (symbol-status s)))
-   (mopu:slot-names class-sym)))
+  (filter-symbols status (mopu:slot-names class-sym)))
 
 (defmethod prompter:object-attributes ((slot slot) (source prompter:source))
   (declare (ignore source))
