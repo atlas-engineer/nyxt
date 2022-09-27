@@ -20,19 +20,19 @@
     :documentation "Include symbol of this status from `packages'.")
    (packages
     (nyxt-user-packages)
-    :type (maybe (list-of packages))
+    :type (maybe (list-of package))
     :documentation "Include symbols of `status' from the given packages.")
    (internal-status-packages
     nil
-    :type (maybe (list-of packages))
+    :type (maybe (list-of package))
     :documentation "Include internal symbols from the given packages.")
    (external-status-packages
     (nyxt-packages)
-    :type (maybe (list-of packages))
+    :type (maybe (list-of package))
     :documentation "Include internal symbols from the given packages.")
    (inherited-status-packages
     nil
-    :type (maybe (list-of packages))
+    :type (maybe (list-of package))
     :documentation "Include internal symbols from the given packages.")
    (prompter:name (alex:required-argument 'prompter:name))
    (prompter:constructor (alex:required-argument 'prompter:constructor)))
@@ -43,11 +43,11 @@
 (define-class describe-non-nyxt-source (describe-nyxt-source)
   ((packages
     nil
-    :type (maybe (list-of packages))
+    :type (maybe (list-of package))
     :documentation "Include symbols of `status' from the given packages.")
    (external-status-packages
     (non-nyxt-packages)
-    :type (maybe (list-of packages))
+    :type (maybe (list-of package))
     :documentation "Include internal symbols from the given packages."))
   (:export-class-name-p nil)              ; Internal class.
   (:export-accessor-names-p t)
@@ -56,15 +56,15 @@
 (define-class describe-internal-source (describe-nyxt-source)
   ((packages
     nil
-    :type (maybe (list-of packages))
+    :type (maybe (list-of package))
     :documentation "Include symbols of `status' from the given packages.")
    (internal-status-packages
     (nyxt-packages)
-    :type (maybe (list-of packages))
+    :type (maybe (list-of package))
     :documentation "Include internal symbols from the given packages.")
    (external-status-packages
     nil
-    :type (maybe (list-of packages))
+    :type (maybe (list-of package))
     :documentation "Include internal symbols from the given packages."))
   (:export-class-name-p nil)              ; Internal class.
   (:export-accessor-names-p t)
