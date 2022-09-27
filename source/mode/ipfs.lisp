@@ -3,7 +3,6 @@
 
 ;; TODO: Handle IPNS as well.
 
-;; TODO: Add remove command.
 ;; TODO: Add pin / unpin command.  Display 'pinned' property.
 
 ;; Test data:
@@ -190,6 +189,10 @@ Return immediately if already started."
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
+(defmethod print-object ((file ipfs-file) stream)
+  (print-unreadable-object (file stream :type t :identity t)
+     (format stream "~a" (name file))))
+
 (defmethod prompter:object-attributes ((file ipfs-file) (source prompter:source))
   (declare (ignore source))
   `(("Name" ,(name file))
@@ -237,6 +240,22 @@ See the help message of 'ipfs files'."
   ((prompter:name "IPFS uploads")
    (prompter:constructor (all-uploads (find-submode 'ipfs-mode (current-buffer))))
    (prompter:multi-selection-p t)))
+
+(defun ipfs-path (ipfs-file)
+  "Return path (also known as 'name') of IPFS-FILE.
+It's prefixed with '/'."
+  (sera:ensure-prefix "/" (name ipfs-file)))
+
+(define-command delete-ipfs-file
+    (&key (files (prompt :sources 'uploads-source)))
+  "Delete IPFS file(s)."
+  (let ((mode (find-submode 'ipfs-mode (current-buffer))))
+    (start-daemon mode)
+    (if (daemon mode)
+        (progn
+          (mapc (compose #'ipfs:files-rm #'ipfs-path) files)
+          (echo "Deleted IPFS files: ~a" (mapcar #'name files)))
+        (echo "Could not start IPFS daemon required to delete files."))))
 
 (define-internal-page-command-global list-uploads ()
     (ipfs-uploads-buffer "*IPFS uploads*" 'ipfs-mode)
