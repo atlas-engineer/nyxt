@@ -594,3 +594,7 @@
 	path = _build/collectors
 	url = https://github.com/AccelerationNet/collectors
 	shallow = true
+[submodule "_build/arnesi"]
+	path = _build/arnesi
+	url = https://github.com/AccelerationNet/arnesi
+	shallow = true
