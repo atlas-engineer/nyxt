@@ -211,10 +211,10 @@ Return immediately if already started."
 See the help message of 'ipfs files'."
   (when (daemon-running-p mode)
     (dolist (result (ipfs:add path))
-      (let ((hash (alex:assoc-value result "Hash"))
-            (name (alex:assoc-value result "Name")))
+      (let ((hash (alex:assoc-value result "Hash" :test 'string=))
+            (name (alex:assoc-value result "Name" :test 'string=)))
         (ipfs:files-cp (uiop:strcat "/ipfs/" hash)
-                       (serapeum:ensure-prefix "/" name))) )))
+                       (serapeum:ensure-prefix "/" name))))))
 
 (define-command upload                 ; TODO: ipfs-companion names it "import".
     (&key (paths (prompt
