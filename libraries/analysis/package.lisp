@@ -10,4 +10,7 @@
    #:keywords
    #:extract-keywords
    #:extract-sections
-   #:summarize-text))
+   #:summarize-text
+   #:sequence-model
+   #:add-record
+   #:predict))
