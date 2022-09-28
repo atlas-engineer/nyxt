@@ -45,6 +45,19 @@ While disabled-mode commands are not listed, it's still possible to call them
 from a key binding.")
   (:metaclass user-class))
 
+(define-class predicted-command-source (prompter:source)
+  ((prompter:name "Predicted Command")
+   (prompter:constructor
+    (lambda (source)
+      (declare (ignore source))
+      (list (analysis:element
+             (analysis:predict (command-model *browser*)
+                               (list (last-command *browser*))))))))
+  (:export-class-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name))
+  (:documentation "Prompter source to predict commands.")
+  (:metaclass user-class))
+
 (defmethod prompter:object-attributes ((command command) (source prompter:source))
   (declare (ignore source))
   (command-attributes command))
@@ -134,7 +147,15 @@ together with the arglists and documentations of the functions typed in."
                         "Evaluate the inputted Lisp expression."
                         (run-thread "evaluator"
                           (let ((*interactive-p* t))
-                            (echo "~s" (eval (first exprs)))))))))
+                            (echo "~s" (eval (first exprs))))))))
+                    (make-instance
+                     'predicted-command-source
+                     :return-actions
+                     (list (lambda-command run-command* (commands)
+                             "Run the chosen command."
+                             (let ((command (first commands)))
+                               (setf (last-access command) (time:now))
+                               (run-async command))))))
      :hide-suggestion-count-p t)))
 
 (defun parse-function-lambda-list-types (fn)
