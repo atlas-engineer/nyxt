@@ -158,7 +158,7 @@ One of :PLAIN, :SASL-PLAIN, :DIGEST-MD5, :SASL-DIGEST-MD5.")
                               (jid-part (if-confirm ("Does the server have matching hostname and JID part?")
                                                     hostname
                                                     (prompt1
-                                                     :prompt "XMPP server JID pard"
+                                                     :prompt "XMPP server JID part"
                                                      :sources (list (make-instance 'prompter:raw-source)))))
                               ;; FIXME: This should better have a default value
                               ;; of prompt, but we need to connect to the server
