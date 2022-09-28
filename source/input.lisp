@@ -86,6 +86,9 @@ KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
 (export-always 'dispatch-command)
 (defun dispatch-command (function)
   (echo-dismiss) ; Clean up message-view on command.
+  (analysis:add-record (command-model *browser*) (list (last-command *browser*)
+                                                       (symbol-function function)))
+  (setf (last-command *browser*) (symbol-function function))
   (run-async function))
 
 (export-always 'dispatch-input-skip)
