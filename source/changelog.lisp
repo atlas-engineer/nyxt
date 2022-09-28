@@ -541,7 +541,14 @@ formatting, deletion, cleaning, and movement."))
         (:ul
          (:li  (:code "time") " for " (:code "local-time"))
          (:li  (:code "types") " for " (:code "trivial-types"))))
+
    (:li "Universal describe-* commands have been replace with new sources for the
 regular commands, suchas "
         (:code "function-non-nyxt-source") ", " (:code "function-internal-source")
-        " and so on.")))
+        " and so on.")
+
+   (:li "New prediction capabilities. Nyxt can now predict your next command, it will
+show up automatically in the execute-command menu. Nyxt uses a stochastic model
+to generate predictions for what your next command will be. The model is stored
+locally and is cleared after every session.")))
+
