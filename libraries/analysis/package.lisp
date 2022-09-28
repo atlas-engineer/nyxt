@@ -13,4 +13,5 @@
    #:summarize-text
    #:sequence-model
    #:add-record
-   #:predict))
+   #:predict
+   #:element))
