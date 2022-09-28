@@ -83,6 +83,13 @@ Most recent messages are first.")
     (make-ring)
     :documentation "The ring with all the clipboard contents Nyxt could cache.
 Note that it may be incomplete.")
+   (command-model
+    (make-instance 'analysis:sequence-model)
+    :documentation "This model is used to generate predictions for what the user will do.
+Which commands will they invoke next?")
+   (last-command
+    nil
+    :documentation "The last command invoked by the user.")
    (prompt-buffer-generic-history
     (make-ring)
     :documentation "The default history of all prompt buffer entries.
