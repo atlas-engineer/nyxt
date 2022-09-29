@@ -551,4 +551,3 @@ regular commands, suchas "
 show up automatically in the execute-command menu. Nyxt uses a stochastic model
 to generate predictions for what your next command will be. The model is stored
 locally and is cleared after every session.")))
-

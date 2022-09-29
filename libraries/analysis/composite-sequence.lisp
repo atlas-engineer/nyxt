@@ -7,19 +7,19 @@
 ;; We would record the following sequences/outcomes.
 ;;
 ;; Chain length of 1:
-;; 1 2
-;; 2 3
-;; 3 4
-;; 4 5
+;; 1 -> 2
+;; 2 -> 3
+;; 3 -> 4
+;; 4 -> 5
 ;;
 ;; Chain length of 2:
-;; 1 2 3
-;; 2 3 4
-;; 3 4 5
+;; 1 2 -> 3
+;; 2 3 -> 4
+;; 3 4 -> 5
 ;;
 ;; Chain length of 3:
-;; 1 2 3 4
-;; 2 3 4 5
+;; 1 2 3 -> 4
+;; 2 3 4 -> 5
 ;;
 ;; As can be seen above, the amount of subsequences within a given sequence is
 ;; equal to (- (length sequence) chain length).
@@ -54,20 +54,18 @@
   (incf (occurrences node)))
 
 (defmethod add-record ((model sequence-model) sequence)
-  (let* ((list-but-last-element (butlast sequence))
-         (last-element (car (last sequence)))
-         (leaf (alexandria:ensure-gethash list-but-last-element
-                                          (edges model)
-                                          (make-instance 'node))))
-    (increment (add-edge leaf (make-instance 'element-node :element last-element)))))
+  (multiple-value-bind (list-but-last-element last-element) (serapeum:halves sequence)
+    (let ((leaf (alexandria:ensure-gethash list-but-last-element
+                                           (edges model)
+                                           (make-instance 'node))))
+      (increment (add-edge leaf (make-instance 'element-node :element (first last-element)))))))
 
 (defmethod add-record-subsequence ((model sequence-model) sequence)
-  "Add a record for all sub sequences. E.g. transform '(3 2 1)' into:
+  "Add a record for all subsequences. E.g. transform '(3 2 1)' into:
 '(3 2 1), '(2 1), '(1)"
-  (let ((sequence (copy-list sequence)))
-    (loop while (> (length sequence) 1)
-          collect (add-record model sequence)
-          do (pop sequence))))
+  (loop while (> (length sequence) 1)
+        collect (add-record model sequence)
+        do (setf sequence (rest sequence))))
 
 (defmethod predict ((model sequence-model) sequence)
   (let* ((leaf (gethash sequence (edges model)))
@@ -76,13 +74,12 @@
 
 (defmethod predict-subsequence-simple ((model sequence-model) sequence)
   "Predict a sequence's next value based on all subsequence predictions. This is
-a naieve implementation which simply considers the amount of occurences without
+a naive implementation which simply considers the amount of occurences without
 regard to the weight of different chain lengths."
-  (let* ((sequence (copy-list sequence))
-         (subsequence-results
+  (let* ((subsequence-results
            (loop while (> (length sequence) 1)
                  collect (let* ((leaf (gethash sequence (edges model)))
                                 (edges (alexandria:hash-table-values (edges leaf))))
                            (first (sort edges #'> :key #'occurrences)))
-                 do (pop sequence))))
+                 do (setf sequence (rest sequence)))))
     (first (sort subsequence-results #'> :key #'occurrences))))
