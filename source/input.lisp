@@ -86,10 +86,16 @@ KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
 (export-always 'dispatch-command)
 (defun dispatch-command (function)
   (echo-dismiss) ; Clean up message-view on command.
-  (analysis:add-record (command-model *browser*) (list (last-command *browser*)
-                                                       (symbol-function function)))
-  (setf (last-command *browser*) (symbol-function function))
-  (run-async function))
+  (let ((ignored-commands '(execute-command
+                            nyxt/prompt-buffer-mode:select-next
+                            nyxt/prompt-buffer-mode:select-previous
+                            nyxt/prompt-buffer-mode:select-next-source
+                            nyxt/prompt-buffer-mode:select-previous-source)))
+    (unless (find (name (symbol-function function)) ignored-commands :test #'equal)
+      (analysis:add-record (command-model *browser*) (list (last-command *browser*)
+                                                           (symbol-function function)))
+      (setf (last-command *browser*) (symbol-function function)))
+    (run-async function)))
 
 (export-always 'dispatch-input-skip)
 (defun dispatch-input-skip (keyspecs)
