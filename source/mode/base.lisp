@@ -33,6 +33,7 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-j" 'nyxt/download-mode:list-downloads
        "C-space" 'execute-command
        "C-M-space" 'execute-extended-command
+       "C-shift-space" 'execute-predicted-command
        "M-space" 'resume-prompt)
       keyscheme:cua
       (list
