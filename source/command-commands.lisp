@@ -45,18 +45,24 @@ While disabled-mode commands are not listed, it's still possible to call them
 from a key binding.")
   (:metaclass user-class))
 
+(defmethod predict-next-command ((browser browser))
+  (analysis:element (analysis:predict (command-model *browser*)
+                                      (list (last-command *browser*)))))
+
 (define-class predicted-command-source (prompter:source)
   ((prompter:name "Predicted Command")
    (prompter:constructor
     (lambda (source)
       (declare (ignore source))
-      (list (analysis:element
-             (analysis:predict (command-model *browser*)
-                               (list (last-command *browser*))))))))
+      (list (predict-next-command *browser*)))))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Prompter source to predict commands.")
   (:metaclass user-class))
+
+(define-command execute-predicted-command ()
+  "Execute the predicted next command."
+  (run-async (predict-next-command *browser*)))
 
 (defmethod prompter:object-attributes ((command command) (source prompter:source))
   (declare (ignore source))
