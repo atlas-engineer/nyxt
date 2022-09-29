@@ -71,26 +71,35 @@ Particularly useful to avoid errors on already terminated threads."
   "Return the string source for THING, if any.
 If there's no source, returns empty string.
 THING can be a class or a function, not symbol."
-  (or (alex:when-let* ((full-definition (swank:find-definition-for-thing thing))
-                       (definition (and (not (eq :error (first full-definition)))
-                                        (rest full-definition)))
-                       ;; REVIEW: Returns (:macro name) for macros on
-                       ;; SBCL. What does it do on CCL, ECL etc?
-                       (name (typecase thing
-                               ;; REVIEW: How do we handle macros here?
-                               (class (class-name thing))
-                               (method (swank-backend:function-name
-                                        (closer-mop:method-generic-function thing)))
-                               (function (swank-backend:function-name thing))))
-                       (*package* (if (and (listp name)
-                                           (eq :macro (first name)))
-                                      (symbol-package (second name))
-                                      (symbol-package name)))
-                       (file (uiop:file-exists-p (first (alexandria:assoc-value definition :file))))
-                       (file-content (alexandria:read-file-into-string
-                                      file
-                                      :external-format (guess-external-format file)))
-                       (start-position (first (alexandria:assoc-value definition :position))))
+  (or (sera:and-let* ((full-definition (swank:find-definition-for-thing thing))
+                      (definition (and (not (eq :error (first full-definition)))
+                                       (rest full-definition)))
+                      ;; REVIEW: Returns (:macro name) for macros on
+                      ;; SBCL. What does it do on CCL, ECL etc?
+                      (name (typecase thing
+                              ;; REVIEW: How do we handle macros here?
+                              (class (class-name thing))
+                              (method (swank-backend:function-name
+                                       (closer-mop:method-generic-function thing)))
+                              (function (swank-backend:function-name thing))))
+                      ;; This one is to clean up the (:macro name) form.
+                      (name (if (and (listp name)
+                                     (eq :macro (first name)))
+                                (second name)
+                                name))
+                      (*package* (symbol-package name))
+                      ;; `swank:find-definition-for-thing' returns nonsense for
+                      ;; macros, need to use `swank-backend:find-definitions'
+                      ;; for those instead.
+                      (definition (if (macro-function name)
+                                      (or (cdadar (swank-backend:find-definitions name))
+                                          definition)
+                                      definition))
+                      (file (uiop:file-exists-p (first (alexandria:assoc-value definition :file))))
+                      (file-content (alexandria:read-file-into-string
+                                     file
+                                     :external-format (guess-external-format file)))
+                      (start-position (first (alexandria:assoc-value definition :position))))
         (handler-case
             (let ((*read-eval* nil))
               (let ((expression (read-from-string file-content t nil
