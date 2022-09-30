@@ -369,14 +369,14 @@ Return the text cut."))
 Once a context menu appears, those commands will be added to it as actions with
 the labels they have as hash values.")
 
-(define-ffi-generic ffi-add-context-menu-command (label command)
-  (:method ((label string) (command command))
+(define-ffi-generic ffi-add-context-menu-command (command label)
+  (:method ((command command) (label string))
     (setf (gethash label *context-menu-commands*)
           command))
-  (:method ((label string) (command function))
+  (:method ((command function) (label string))
     (setf (gethash label *context-menu-commands*)
           command))
-  (:method ((label string) (command symbol))
+  (:method ((command symbol) (label string))
     (ffi-add-context-menu-command label (symbol-function command)))
   (:documentation "Add COMMAND as accessible in context menus with LABEL displayed for it.
 COMMAND should be funcallable."))
