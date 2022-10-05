@@ -115,29 +115,24 @@ Features:
             ("#container"
              :display "flex"
              :flex-flow "column"
-             :height "100%")
+             :height "95vh"
+             :width "95vw")
             (.input
-             :background-color theme:accent
-             :display "grid"
-             :grid-template-columns "auto 1fr"
-             :width "100%"
+             :background-color theme:secondary
+             :width "99%"
              :padding 0
              :margin "1em 0")
-            (.prompt
-             :color theme:on-accent
-             :padding-right "4px"
-             :padding-left "4px"
-             :line-height "30px")
+            (.button
+             :display "inline")
             (.input-buffer
              :color theme:on-accent
              :opacity "0.9"
              :border "none"
              :outline "none"
              :padding "3px"
+             :margin "3px"
              :autofocus "true"
-             :width "100%")
-            (.button
-             :display "block")
+             :width "99%")
             ("#evaluations"
              :font-size "12px"
              :flex-grow "1"
@@ -210,12 +205,22 @@ Features:
            (id (current-cell-id repl))
            (evaluation (make-instance 'evaluation :input input)))
       (unless (uiop:emptyp input)
-        (if id
-            (setf (elt (evaluations repl) id) evaluation
-                  (current-evaluation repl) id)
-            (setf (current-evaluation repl) (length (evaluations repl))
-                  (evaluations repl) (append (evaluations repl) (list evaluation))))
+        (setf (elt (evaluations repl) id) evaluation
+              (current-evaluation repl) id)
         (reload-buffer (buffer repl))))))
+
+(define-command add-cell (&optional (repl (find-submode 'repl-mode)))
+  "Add a new cell ready for evaluation and movement."
+  (setf (evaluations repl)
+        (append (evaluations repl)
+                (list (make-instance 'evaluation :input ""))))
+  (reload-buffer (buffer repl)))
+
+(define-command delete-cell (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
+  "Remove the cell with ID (or current one, if not provided) from the REPL."
+  (setf (evaluations repl)
+        (remove (elt (evaluations repl) id) (evaluations repl)))
+  (reload-buffer (buffer repl)))
 
 (define-command previous-cell (&optional (repl (find-submode 'repl-mode)))
   "Move to the previous input cell."
@@ -280,8 +285,7 @@ Features:
         (setf (cursor repl) cursor)))))
 
 (defparameter +delimiters+
-  (uiop:strcat "()"
-               sera:whitespace)
+  (uiop:strcat "()" sera:whitespace)
   "Non-symbol Lisp delimiters.")
 
 (define-command tab-complete-symbol (&optional (repl (find-submode 'repl-mode)))
@@ -319,11 +323,11 @@ Features:
        (let ((wrapper (raised-condition evaluation)))
          (:pre (format nil "~a" (ndebug:condition-itself wrapper)))
          (dolist (restart (ndebug:restarts wrapper))
-           (:button :class "button"
-                    :onclick (ps:ps (nyxt/ps:lisp-eval
-                                     (:title "condition")
-                                     (ndebug:invoke wrapper restart)))
-                    (format nil "[~a] ~a" (dissect:name restart) (dissect:report restart))))
+           (:button.button
+            :onclick (ps:ps (nyxt/ps:lisp-eval
+                             (:title "condition")
+                             (ndebug:invoke wrapper restart)))
+            (format nil "[~a] ~a" (dissect:name restart) (dissect:report restart))))
          (:h3 "Backtrace:")
          (:raw (nyxt::backtrace->html wrapper))))
       ((ready-p evaluation)
@@ -359,19 +363,6 @@ Features:
                              :class "evaluation"
                              :id (format nil "evaluation-~a" (id evaluation))
                              (:div :class "input"
-                                   (:span :class "prompt"
-                                          (:button
-                                           :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                            (:title "move-cell-up")
-                                                            (move-cell-up :id order)))
-                                           :title "Move this cell up."
-                                           "↑")
-                                          (:button
-                                           :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                            (:title "move-cell-down")
-                                                            (move-cell-down :id order)))
-                                           :title "Move this cell down."
-                                           "↓"))
                                    (:textarea :class "input-buffer" :data-repl-id order
                                               :onfocus
                                               (ps:ps (nyxt/ps:lisp-eval
@@ -379,14 +370,38 @@ Features:
                                                       (setf (slot-value (nyxt:current-mode :repl)
                                                                         'current-evaluation)
                                                             order)))
-                                              (input evaluation)))
+                                              (input evaluation))
+                                   (:br)
+                                   (:button.button.accent
+                                    :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                     (:title "evaluate-cell")
+                                                     (evaluate-cell)))
+                                    :title "Evaluate the current cell and show the result below."
+                                    "Evaluate")
+                                   (:button.button
+                                    :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                     (:title "move-cell-up")
+                                                     (move-cell-up :id order)))
+                                    :title "Move this cell up."
+                                    "↑ Up")
+                                   (:button.button
+                                    :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                     (:title "move-cell-down")
+                                                     (move-cell-down :id order)))
+                                    :title "Move this cell down."
+                                    "↓ Down")
+                                   (:button.button
+                                    :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                     (:title "delete-cell")
+                                                     (delete-cell :id order)))
+                                    :title "Remove this cell from the REPL."
+                                    "✕ Delete"))
                              (:div :class "evaluation-result"
                                    :id (format nil "evaluation-result-~a" (id evaluation))
                                    (:raw (html-result evaluation)))))
-                  (:div :class "input"
-                        (:span :class "prompt" ">")
-                        (:textarea :class "input-buffer"
-                                   :id "input-buffer"
-                                   :data-repl-id ""
-                                   :placeholder (format nil "Press ~a to evaluate the Lisp expression"
-                                                        evaluate-binding))))))))
+                  (:button.button
+                   :onclick (ps:ps (nyxt/ps:lisp-eval
+                                    (:title "add-cell")
+                                    (add-cell)))
+                   :title "Add a new cell for you to evaluate code in."
+                   "+ Add a cell"))))))
