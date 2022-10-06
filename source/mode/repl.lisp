@@ -8,6 +8,7 @@ It has a multi-cell/panel/input environment that evaluates the inputted code on 
 
 Features:
 - Creating additional cells using the `add-cell' and a dedicated button.
+- Reformatting the code using the compiler facilities for pretty-printing (`reformat-cell').
 - Moving cells with `move-cell-down', `move-cell-up', and dedicated cell buttons.
 - Removing unneeded cells with `delete-cell' and dedicated cell buttons.
 - Basic tab-completion of the inputted symbols.
@@ -237,6 +238,23 @@ Features:
         (remove (elt (evaluations repl) id) (evaluations repl)))
   (reload-buffer (buffer repl)))
 
+(define-command reformat-cell (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
+  "Reformat the cell input according to what compiler find aesthetically pleasing."
+  (handler-case
+      (progn
+        (setf (input (elt (evaluations repl) id))
+              (let ((*print-readably* t)
+                    (*print-pretty* t)
+                    (*print-case* :downcase)
+                    (*package* (eval-package (elt (evaluations repl) id))))
+                (write-to-string
+                 (read-from-string
+                  (ps-eval
+                    (ps:@ (nyxt/ps:qs document (ps:lisp (format nil ".input-buffer[data-repl-id=\"~a\"]" id))) value))))))
+        (reload-buffer (buffer repl)))
+    (reader-error ()
+      (echo "The input appears malformed. Stop reformatting."))))
+
 (define-command previous-cell (&optional (repl (find-submode 'repl-mode)))
   "Move to the previous input cell."
   (let ((id (current-evaluation repl))
@@ -411,6 +429,12 @@ Features:
                                       (:option :value (package-name package)
                                                :selected (eq package (eval-package evaluation))
                                                (package-short-name package))))
+                                   (:button.button
+                                    :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                     (:title "reformat-cell")
+                                                     (reformat-cell :id order)))
+                                    :title "Re-indent the cell contents in accordance with compiler aesthetics."
+                                    "Reformat")
                                    (:button.button
                                     :onclick (ps:ps (nyxt/ps:lisp-eval
                                                      (:title "move-cell-up")
