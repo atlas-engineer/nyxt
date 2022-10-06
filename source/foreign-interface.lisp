@@ -377,6 +377,6 @@ the labels they have as hash values.")
     (setf (gethash label *context-menu-commands*)
           command))
   (:method ((command symbol) (label string))
-    (ffi-add-context-menu-command label (symbol-function command)))
+    (ffi-add-context-menu-command (symbol-function command) label))
   (:documentation "Add COMMAND as accessible in context menus with LABEL displayed for it.
 COMMAND should be funcallable."))
