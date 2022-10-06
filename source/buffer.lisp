@@ -70,6 +70,9 @@ various parts, such as the path of all data files.")
              :display "inline-block"
              :text-decoration "none"
              :border-radius "2px"
+             :border-color theme:primary
+             :border-style "solid"
+             :border-width "0px"
              :padding "6px"
              :margin "2px")
             (.link
