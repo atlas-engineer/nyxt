@@ -414,6 +414,7 @@ Features:
                              :id (format nil "evaluation-~a" (id evaluation))
                              (:div :class "input"
                                    (:textarea :class "input-buffer" :data-repl-id order
+                                              :rows (length (str:lines (input evaluation) :omit-nulls nil))
                                               :onfocus
                                               (ps:ps (nyxt/ps:lisp-eval
                                                       (:title "set-current-evaluation")
