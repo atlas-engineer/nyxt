@@ -262,7 +262,9 @@ turned into links to their respective description page."
                                          :sources 'prompter:raw-source))))
                               (prompt-buffer-canceled nil))))
            "Change value")
-          (:p (:raw (value->html (symbol-value variable)))))
+          (:p (:raw (value->html (symbol-value variable))))
+          (:h2 "Describe")
+          (:pre (:code (with-output-to-string (s) (describe variable s)))))
         (spinneret:with-html-string
           (:style (style buffer))
           (:h1 (format nil "~s" variable))
@@ -321,7 +323,9 @@ For generic functions, describe all the methods."
                                     (not-error-p (null (getf definition :error)))
                                     (file (rest (getf definition :location))))
                      (:h2 (format nil "Source ~a" file))
-                     (:pre (function-lambda-string (symbol-function input))))))
+                     (:pre (function-lambda-string (symbol-function input))))
+                   (:h2 "Describe")
+                   (:pre (:code (with-output-to-string (s) (describe (symbol-function input) s))))))
                (method-desc (method)
                  (spinneret:with-html-string
                    (:details
@@ -425,11 +429,13 @@ A command is a special kind of function that can be called with
                                            (name command-object))))
         (:h2 "Bindings")
         (:p (format nil "~:{ ~S (~a)~:^, ~}" key-keymapname-pairs))
-        (:h2 (format nil "Source~a: " (if source-file
-                                          (format nil " (~a)" source-file)
-                                          "")))
         (alex:when-let ((code (ignore-errors (function-lambda-string command-object))))
-          (:pre (:code code)))))
+          (:h2 (format nil "Source~a: " (if source-file
+                                            (format nil " (~a)" source-file)
+                                            "")))
+          (:pre (:code code)))
+        (:h2 "Describe")
+        (:pre (:code (with-output-to-string (s) (describe command-object s))))))
     (spinneret:with-html-string
       (:style (style buffer))
       (:h1 (format nil "~s" command))
@@ -523,7 +529,9 @@ A command is a special kind of function that can be called with
                                                      (mopu:generic-functions class))))
                      collect (:li (:a :href (nyxt-url 'describe-function :fn method) method))))
           (:h2 "Source:")
-          (:pre (:code (source-for-thing (find-class class))))))
+          (:pre (:code (source-for-thing (find-class class))))
+          (:h2 "Describe")
+          (:pre (:code (with-output-to-string (s) (describe class s))))))
       (spinneret:with-html-string
         (:style (style buffer))
         (:h2 (format nil "~s" class))
