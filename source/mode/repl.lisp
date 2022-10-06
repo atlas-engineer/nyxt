@@ -51,7 +51,7 @@ Features:
   (run-thread "repl cell evaluation"
     (let ((nyxt::*interactive-p* t)
           (*standard-output* (make-string-output-stream))
-          (*package* (find-package :nyxt-user)))
+          (*package* (eval-package evaluation)))
       (ndebug:with-debugger-hook
           (:wrapper-class 'nyxt::debug-wrapper
            :ui-display (setf (ready-p evaluation) t
@@ -200,12 +200,25 @@ Features:
     ((get-id () (ps:chain document active-element (get-attribute "data-repl-id"))))
     (ignore-errors (parse-integer (get-id)))))
 
+(defun cell-package (id mode)
+  (find-package
+   (ps-eval :buffer (buffer mode)
+     (ps:chain (nyxt/ps:qs document
+                           (ps:lisp (format nil ".input-buffer[data-repl-id=\"~a\"] ~~ select"
+                                            id)))
+               value))))
+
+(defmethod current-cell-package ((mode repl-mode))
+  (cell-package (current-evaluation mode) mode))
+
 (sera:eval-always
   (define-command evaluate-cell (&optional (repl (find-submode 'repl-mode)))
     "Evaluate the currently focused input cell."
     (let* ((input (input repl))
            (id (current-cell-id repl))
-           (evaluation (make-instance 'evaluation :input input)))
+           (evaluation (make-instance 'evaluation
+                                      :input input
+                                      :eval-package (current-cell-package repl))))
       (unless (uiop:emptyp input)
         (setf (elt (evaluations repl) id) evaluation
               (current-evaluation repl) id)
@@ -380,6 +393,24 @@ Features:
                                                      (evaluate-cell)))
                                     :title "Evaluate the current cell and show the result below."
                                     "Evaluate")
+                                   (:select.button
+                                    :onchange (ps:ps (nyxt/ps:lisp-eval
+                                                      (:title "change-evaluation-package")
+                                                      (setf (eval-package (elt (evaluations repl-mode) order))
+                                                            (cell-package order repl-mode))))
+                                    (dolist (package (append (nyxt::nyxt-packages)
+                                                             (nyxt::nyxt-user-packages)
+                                                             (sort
+                                                              (set-difference
+                                                               (set-difference
+                                                                (list-all-packages)
+                                                                (nyxt::nyxt-packages))
+                                                               (nyxt::nyxt-user-packages))
+                                                              #'string<
+                                                              :key #'package-name)))
+                                      (:option :value (package-name package)
+                                               :selected (eq package (eval-package evaluation))
+                                               (package-short-name package))))
                                    (:button.button
                                     :onclick (ps:ps (nyxt/ps:lisp-eval
                                                      (:title "move-cell-up")
