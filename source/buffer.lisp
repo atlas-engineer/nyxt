@@ -64,6 +64,7 @@ various parts, such as the path of all data files.")
              :font "inherit"
              :outline "inherit")
             (.button
+             :all "unset"
              :background-color theme:primary
              :color theme:on-primary
              :display "inline-block"
