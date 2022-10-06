@@ -27,6 +27,7 @@ Features:
     :documentation "Unique evaluation identifier.")
    (input
     nil
+    :accessor nil
     :type (maybe string)
     :documentation "User input.")
    (eval-package
@@ -49,6 +50,13 @@ Features:
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(defmethod input ((evaluation evaluation) &key &allow-other-keys)
+  (slot-value evaluation 'input))
+
+(defmethod (setf input) ((value string) (evaluation evaluation) &key &allow-other-keys)
+  (setf (slot-value evaluation 'input)
+        value))
 
 (defmethod initialize-instance :after ((evaluation evaluation) &key)
   (run-thread "repl cell evaluation"
@@ -159,15 +167,18 @@ Features:
                #'<
                :key #'length)))
 
-(defmethod input ((mode repl-mode))
-  (ps-eval :buffer (buffer mode) (ps:@ document active-element value)))
+(defmethod input ((mode repl-mode) &key (id (current-evaluation mode)))
+  (ps-eval :buffer (buffer mode)
+    (ps:@ (or (nyxt/ps:qs document (ps:lisp (format nil ".input-buffer[data-repl-id=\"~a\"]" id)))
+              (ps:@ document active-element))
+          value)))
 
-(defmethod (setf input) (new-text (mode repl-mode))
-  (ps-labels :async t :buffer (buffer mode)
-    ((set-input-text
-      (text)
-      (setf (ps:@ document active-element value) (ps:lisp text))))
-    (set-input-text new-text)))
+(defmethod (setf input) (new-text (mode repl-mode) &key (id (current-evaluation mode)))
+  (ps-eval :async t :buffer (buffer mode)
+    (setf (ps:@ (or (nyxt/ps:qs document (ps:lisp (format nil ".input-buffer[data-repl-id=\"~a\"]" id)))
+                    (ps:@ document active-element))
+                value)
+          (ps:lisp new-text))))
 
 (defmethod cursor ((mode repl-mode))
   (let ((cursor (ps-eval :buffer (buffer mode)
@@ -215,13 +226,12 @@ Features:
   (cell-package (current-evaluation mode) mode))
 
 (sera:eval-always
-  (define-command evaluate-cell (&optional (repl (find-submode 'repl-mode)))
+  (define-command evaluate-cell (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
     "Evaluate the currently focused input cell."
-    (let* ((input (input repl))
-           (id (current-cell-id repl))
+    (let* ((input (input repl :id id))
            (evaluation (make-instance 'evaluation
                                       :input input
-                                      :eval-package (current-cell-package repl))))
+                                      :eval-package (cell-package id repl))))
       (unless (uiop:emptyp input)
         (setf (elt (evaluations repl) id) evaluation
               (current-evaluation repl) id)
@@ -257,8 +267,7 @@ Features:
                     (*package* (eval-package (elt (evaluations repl) id))))
                 (write-to-string
                  (read-from-string
-                  (ps-eval
-                    (ps:@ (nyxt/ps:qs document (ps:lisp (format nil ".input-buffer[data-repl-id=\"~a\"]" id))) value))))))
+                  (input repl :id id)))))
         (reload-buffer (buffer repl)))
     (reader-error ()
       (echo "The input appears malformed. Stop reformatting."))))
@@ -416,7 +425,7 @@ Features:
                                    (:button.button.accent
                                     :onclick (ps:ps (nyxt/ps:lisp-eval
                                                      (:title "evaluate-cell")
-                                                     (evaluate-cell)))
+                                                     (evaluate-cell :id order)))
                                     :title "Evaluate the current cell and show the result below."
                                     "Evaluate")
                                    (:select.button
