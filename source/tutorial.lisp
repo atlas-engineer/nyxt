@@ -6,7 +6,6 @@
 (defun tutorial-content ()
   (spinneret:with-html-string
     (:nsection :title "Core concepts"
-
       (:nsection :title "Keybindings and commands"
         (:p "Commands are invoked by pressing specific keys or from
 the " (command-markup 'execute-command)
@@ -99,8 +98,9 @@ messages, invoke the command " (:code "list-messages") "."))
 printed (typically at the bottom of a window). By default, this includes the
 active modes, the URL, and the title of the current buffer.")))
 
-    (:nsection :title "Basic controls"
-
+    (:nsection
+      :title "Basic controls"
+      :open-p nil
       (:nsection :title "Moving within a buffer"
         (:p "To move within a buffer, several commands are provided:")
         (:ul
@@ -381,7 +381,9 @@ creatively tailor-made by users to automate their own use of Nyxt."))
                                      nyxt/file-manager-mode:download-open-file
                                      edit-with-external-editor)))))
 
-    (:nsection :title "The Nyxt help system"
+    (:nsection
+      :title "The Nyxt help system"
+      :open-p nil
       (:p "Nyxt provides introspective and help capabilities.  All commands,
 classes, slots, variables, functions and bindings can be inspected for
 definition and documentation.")
