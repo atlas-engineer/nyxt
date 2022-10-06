@@ -7,8 +7,9 @@
 It has a multi-cell/panel/input environment that evaluates the inputted code on `evaluate-cell'.
 
 Features:
-- Creating additional cells using the bottom cell.
-- Moving cells with `move-cell-down', `move-cell-up', and dedicated cell UI buttons.
+- Creating additional cells using the `add-cell' and a dedicated button.
+- Moving cells with `move-cell-down', `move-cell-up', and dedicated cell buttons.
+- Removing unneeded cells with `delete-cell' and dedicated cell buttons.
 - Basic tab-completion of the inputted symbols.
 - Multiple evaluation results.
 - Standard output recording.
