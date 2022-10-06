@@ -153,7 +153,8 @@ Features:
 (defun package-short-name (package)
   (first (sort (append (package-nicknames package)
                        (list (package-name package)))
-               #'string<)))
+               #'<
+               :key #'length)))
 
 (defmethod input ((mode repl-mode))
   (ps-eval :buffer (buffer mode) (ps:@ document active-element value)))
