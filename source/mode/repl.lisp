@@ -106,7 +106,10 @@ Features:
        "M-n" 'next-cell
        ;; FIXME: Org uses C-c C-_ and C-c C-^, but those are shadowed by C-c in Nyxt.
        "C-^" 'move-cell-up
-       "C-_" 'move-cell-down)
+       "C-_" 'move-cell-down
+       "C-k" 'clean-cell
+       "C-M-k" 'delete-cell
+       "M-q" 'reformat-cell)
       keyscheme:vi-normal
       (list
        ;; TODO: deleting chars/words
