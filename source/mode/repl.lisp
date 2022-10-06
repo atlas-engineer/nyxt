@@ -8,8 +8,10 @@ It has a multi-cell/panel/input environment that evaluates the inputted code on 
 
 Features:
 - Creating additional cells using the `add-cell' and a dedicated button.
-- Reformatting the code using the compiler facilities for pretty-printing (`reformat-cell').
+- Reformatting the code using the compiler facilities for
+  pretty-printing (`reformat-cell' and a dedicated button).
 - Moving cells with `move-cell-down', `move-cell-up', and dedicated cell buttons.
+- Cleaning the cell contents with `clean-cell' and a dedicated button.
 - Removing unneeded cells with `delete-cell' and dedicated cell buttons.
 - Basic tab-completion of the inputted symbols.
 - Multiple evaluation results.
@@ -232,6 +234,12 @@ Features:
                 (list (make-instance 'evaluation :input ""))))
   (reload-buffer (buffer repl)))
 
+(define-command clean-cell (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
+  "Clean the cell with ID (or current one, if not provided), removing all input and state is accumulated."
+  (setf (elt (evaluations repl) id)
+        (make-instance 'evaluation :input ""))
+  (reload-buffer (buffer repl)))
+
 (define-command delete-cell (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
   "Remove the cell with ID (or current one, if not provided) from the REPL."
   (setf (evaluations repl)
@@ -435,6 +443,12 @@ Features:
                                                      (reformat-cell :id order)))
                                     :title "Re-indent the cell contents in accordance with compiler aesthetics."
                                     "Reformat")
+                                   (:button.button
+                                     :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                      (:title "clean-cell")
+                                                      (clean-cell :id order)))
+                                     :title "Clean the cell contents"
+                                     "Clean")
                                    (:button.button
                                     :onclick (ps:ps (nyxt/ps:lisp-eval
                                                      (:title "move-cell-up")
