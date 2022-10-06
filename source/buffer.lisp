@@ -80,7 +80,8 @@ various parts, such as the path of all data files.")
             (".link:hover"
              :opacity 0.8)
             (.accent
-             :color theme:accent)
+             :background-color theme:accent
+             :color theme:on-accent)
             (|.button:hover|
              :opacity 0.8)
             (|.button:visited|
