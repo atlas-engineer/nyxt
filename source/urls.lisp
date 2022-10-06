@@ -404,7 +404,6 @@ TITLE is purely informative."
   `(let ((url (ps:lisp (let ((request-id (string (gensym ""))))
                          (unless ,buffer
                            (error "Cannot `nyxt/ps:lisp-eval' without BUFFER or current-buffer."))
-                         (log:debug "Registering callback ~a for buffer ~a" request-id ,buffer)
                          (sera:synchronized ((nyxt::lisp-url-callbacks ,buffer))
                            (setf (gethash request-id (nyxt::lisp-url-callbacks ,buffer))
                                  (lambda () ,@form)))
