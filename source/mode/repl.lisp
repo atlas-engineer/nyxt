@@ -240,11 +240,16 @@ Features:
               (current-evaluation repl) id)
         (reload-buffer (buffer repl))))))
 
-(define-command add-cell (&optional (repl (find-submode 'repl-mode)))
+(define-command add-cell (&key (repl (find-submode 'repl-mode)) id)
   "Add a new cell ready for evaluation and movement."
   (setf (evaluations repl)
-        (append (evaluations repl)
-                (list (make-instance 'evaluation :input ""))))
+        (if (and id (not (minusp id)))
+            ;; Does CL have some kind of 'insert' function for that?
+            (append (subseq (evaluations repl) 0 id)
+                    (list (make-instance 'evaluation :input ""))
+                    (subseq (evaluations repl) id))
+            (append (evaluations repl)
+                    (list (make-instance 'evaluation :input "")))))
   (reload-buffer (buffer repl)))
 
 (define-command clean-cell (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
