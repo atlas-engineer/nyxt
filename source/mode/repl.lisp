@@ -463,9 +463,15 @@ Features:
                                     "Reformat")
                                    (:button.button
                                      :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                      (:title "add-cell-below")
+                                                      (add-cell :id (1+ order))))
+                                     :title "Add a new empty cell below this one."
+                                     "Add cell below")
+                                    (:button.button
+                                     :onclick (ps:ps (nyxt/ps:lisp-eval
                                                       (:title "clean-cell")
                                                       (clean-cell :id order)))
-                                     :title "Clean the cell contents"
+                                     :title "Clean the cell contents."
                                      "🧹 Clean")
                                    (:button.button
                                     :onclick (ps:ps (nyxt/ps:lisp-eval
@@ -493,4 +499,10 @@ Features:
                                     (:title "add-cell")
                                     (add-cell)))
                    :title "Add a new cell for you to evaluate code in."
-                   "+ Add a cell"))))))
+                   "+ Add a cell")
+                  (:button.button
+                    :onclick (ps:ps (nyxt/ps:lisp-eval
+                                     (:title "delete-all-cells")
+                                     (setf (evaluations repl-mode) nil)))
+                    :title "Delete all cells in this pane."
+                    "✕ Delete all"))))))
