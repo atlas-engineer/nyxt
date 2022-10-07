@@ -504,6 +504,7 @@ Features:
                   (:button.button
                     :onclick (ps:ps (nyxt/ps:lisp-eval
                                      (:title "delete-all-cells")
-                                     (setf (evaluations repl-mode) nil)))
+                                     (setf (evaluations repl-mode) nil)
+                                     (reload-buffer (buffer repl-mode))))
                     :title "Delete all cells in this pane."
                     "✕ Delete all"))))))
