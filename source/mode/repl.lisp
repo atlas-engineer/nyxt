@@ -264,18 +264,19 @@ Features:
         (remove (elt (evaluations repl) id) (evaluations repl)))
   (reload-buffer (buffer repl)))
 
+(defun format-form (form)
+  (let ((*print-readably* t)
+        (*print-pretty* t)
+        (*print-case* :downcase)
+        (*package* (eval-package (elt (evaluations repl) id))))
+    (write-to-string form)))
+
 (define-command reformat-cell (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
   "Reformat the cell input according to what compiler find aesthetically pleasing."
   (handler-case
       (progn
         (setf (input (elt (evaluations repl) id))
-              (let ((*print-readably* t)
-                    (*print-pretty* t)
-                    (*print-case* :downcase)
-                    (*package* (eval-package (elt (evaluations repl) id))))
-                (write-to-string
-                 (read-from-string
-                  (input repl :id id)))))
+              (format-form (read-from-string (input repl :id id))))
         (reload-buffer (buffer repl)))
     (reader-error ()
       (echo "The input appears malformed. Stop reformatting."))))
