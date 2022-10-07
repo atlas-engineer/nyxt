@@ -264,11 +264,11 @@ Features:
         (remove (elt (evaluations repl) id) (evaluations repl)))
   (reload-buffer (buffer repl)))
 
-(defun format-form (form)
+(defun format-form (form package)
   (let ((*print-readably* t)
         (*print-pretty* t)
         (*print-case* :downcase)
-        (*package* (eval-package (elt (evaluations repl) id))))
+        (*package* package))
     (write-to-string form)))
 
 (define-command reformat-cell (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
@@ -276,7 +276,8 @@ Features:
   (handler-case
       (progn
         (setf (input (elt (evaluations repl) id))
-              (format-form (read-from-string (input repl :id id))))
+              (format-form (read-from-string (input repl :id id))
+                           (eval-package (elt (evaluations repl) id))))
         (reload-buffer (buffer repl)))
     (reader-error ()
       (echo "The input appears malformed. Stop reformatting."))))
