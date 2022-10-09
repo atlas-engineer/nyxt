@@ -798,9 +798,10 @@ input area containing familiar code, with some " (:code "v332 = \"Hello, Nyxt!\"
         (:p "While " (:code "define-configuration") " is convenient, it is mostly
 restricted to class slot configuration.  If you want to do anything else on
 class instantiation, you'll have to specialize the
-lower-level " (:nxref :function 'customize-instance) " generic function.  Example:"
-(:pre (:code "(defmethod customize-instance ((buffer buffer) &key)
-  (echo \"Buffer ~a created.\" buffer))")))
+lower-level " (:nxref :function 'customize-instance)
+" generic function.  Example:")
+        (:pre (:code "(defmethod customize-instance ((buffer buffer) &key)
+  (echo \"Buffer ~a created.\" buffer))"))
         (:p "All classes with metaclass " (:nxref :class-name 'user-class) " call "
             (:nxref :function 'customize-instance) " on instantiation,
 after " (:nxref :function 'initialize-instance)(:code " :after") ".  The primary method is reserved
