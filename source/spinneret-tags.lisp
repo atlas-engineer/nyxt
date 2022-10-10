@@ -4,15 +4,18 @@
 (in-package :spinneret)
 
 (deftag :mayberaw (body attrs &key &allow-other-keys)
+  "Spinneret's :raw, but with HTML escaping if BODY _does not_ look like HTML."
   attrs
   `(:raw (if (nyxt:html-string-p (progn ,@body))
              (progn ,@body)
              (escape-string (progn ,@body)))))
 
 (deftag :nstyle (body attrs &key &allow-other-keys)
+  "Regular <style>, but with contents staying unescaped."
   `(:style ,@attrs (:raw ,@body)))
 
 (deftag :nscript (body attrs &key &allow-other-keys)
+  "Regular <script>, but with contents staying unescaped."
   `(:script ,@attrs (:raw ,@body)))
 
 ;; TODO: Store the location it's defined in as a :title or link for discoverability?
@@ -40,6 +43,14 @@ unconditionally converts those to tags unless the whole form is quoted.)"
     `(:pre ,@attr (:code ,code))))
 
 (deftag :nxref (body attr &key slot class-name function command variable package &allow-other-keys)
+  "Create a link to a respective describe-* page for BODY symbol.
+
+Relies on the type keywords (SLOT, CLASS-NAME, FUNCTION, COMMAND, VARIABLE,
+PACKAGE) to guess the right page, always provide those.
+
+CLASS-NAME should be the symbol designating a class. It's not called CLASS
+because Spinneret has special behavior for CLASS pre-defined and
+non-overridable."
   (let ((symbol (or package variable function command slot class-name))
         (printable (or (first body) package variable function command slot class-name)))
     `(:a :href ,(cond
@@ -83,6 +94,13 @@ unconditionally converts those to tags unless the whole form is quoted.)"
                         (id (str:remove-punctuation (str:downcase title)
                                                     :replacement "-"))
                         &allow-other-keys)
+  "Collapsible and reference-able <section> with a neader.
+TITLE should be a human-readable title for a section.
+ID is the identifier with which to reference the section elsewhere. Is
+auto-generated from title by replacing all the punctuation and spaces with
+hyphens.
+OPEN-P mandates whether the section is collapsed or not. True (= not collapsed)
+by default"
   `(:section
     :id ,id
     (:details
