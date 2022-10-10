@@ -42,7 +42,7 @@ unconditionally converts those to tags unless the whole form is quoted.)"
                  (make-string 2 :initial-element #\newline)))))
     `(:pre ,@attrs (:code ,code))))
 
-(deftag :nxref (body attr &key slot class-name function command variable package &allow-other-keys)
+(deftag :nxref (body attrs &key slot class-name function command variable package &allow-other-keys)
   "Create a link to a respective describe-* page for BODY symbol.
 
 Relies on the type keywords (SLOT, CLASS-NAME, FUNCTION, COMMAND, VARIABLE,
@@ -73,19 +73,19 @@ non-overridable."
                                         (princ-to-string ,symbol)))))))
          ;; TODO: Add :title so that documentation is available on hover.
          ;; TODO: Add keybindings for commands, like in `nyxt::command-markup'.
-         ,@(when (and (getf attr :class)
-                      (or (getf attr :slot)
+         ,@(when (and (getf attrs :class)
+                      (or (getf attrs :slot)
                           (every #'null (list slot class-name function command variable package))))
              (error ":class attribute used ambiguously in :nxref tag. Use :class-name instead.")
              nil)
          (:code ,@(progn
-                    (remf attr :class-name)
-                    (remf attr :slot)
-                    (remf attr :function)
-                    (remf attr :command)
-                    (remf attr :variable)
-                    (remf attr :package)
-                    attr)
+                    (remf attrs :class-name)
+                    (remf attrs :slot)
+                    (remf attrs :function)
+                    (remf attrs :command)
+                    (remf attrs :variable)
+                    (remf attrs :package)
+                    attrs)
                 (let ((*print-case* :downcase))
                   (format nil "~a" ,printable))))))
 
