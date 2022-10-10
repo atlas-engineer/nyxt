@@ -321,10 +321,10 @@ To discover the default value of a slot or all slots of a class, use the
                                (,handler (make-instance
                                           'hooks:handler
                                           :fn (lambda (object)
-                                                ,(when (or (getf rest :documentation)
+                                                ,@(when (or (getf rest :documentation)
                                                            (getf rest :doc))
-                                                   (or (getf rest :documentation)
-                                                       (getf rest :doc)))
+                                                    (list (or (getf rest :documentation)
+                                                              (getf rest :doc))))
                                                 (declare (ignorable object))
                                                 (setf (slot-value object (quote ,slot))
                                                       (let* ((%slot-value% (slot-value object (quote ,slot)))
