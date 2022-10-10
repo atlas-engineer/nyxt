@@ -37,7 +37,7 @@ unconditionally converts those to tags unless the whole form is quoted.)"
                                             form))
                          body)
                  (make-string 2 :initial-element #\newline)))))
-    `(:pre (:code ,code))))
+    `(:pre ,@attr (:code ,code))))
 
 (deftag :nxref (body attr &key slot class-name function command variable package &allow-other-keys)
   (let ((symbol (or package variable function command slot class-name))
