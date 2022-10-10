@@ -27,8 +27,10 @@
     (:code
      ,(let ((*package* (find-package package)))
         (serapeum:mapconcat
-         (alexandria:rcurry #'write-to-string :readably t :pretty t :case :downcase)
-         body nyxt:+newline+)))))
+         (alexandria:rcurry #'write-to-string :readably t :pretty t :case :downcase :right-margin 70)
+         ;; Every from starts with QUOTE, so we strip it off.
+         (mapcar (alexandria:compose #'first #'rest) body)
+         (make-string 2 :initial-element #\newline))))))
 
 (deftag :nxref (body attr &key slot class-name function command variable package &allow-other-keys)
   (let ((symbol (or package variable function command slot class-name))
