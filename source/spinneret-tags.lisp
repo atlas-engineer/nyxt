@@ -22,10 +22,10 @@
 (deftag :ncode (body attrs &key (package :nyxt) &allow-other-keys)
   "Generate the <pre> listing from the provided Lisp BODY.
 
-BODY can be unquoted, benefiting from the editor formatting.
+Forms in  BODY can be unquoted, benefiting from the editor formatting.
 
-BODY can be quoted, in which case Spinneret won't even try to look at its
-contents (useful if there are forms that start with a keyword, Spinneret
+Forms in BODY can be quoted, in which case Spinneret won't even try to look at
+its contents (useful if there are forms that start with a keyword, Spinneret
 unconditionally converts those to tags unless the whole form is quoted.)"
   (remf attrs :package)
   (let ((code (let ((*package* (find-package package)))
