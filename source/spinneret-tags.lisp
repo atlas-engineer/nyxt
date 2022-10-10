@@ -40,7 +40,7 @@ unconditionally converts those to tags unless the whole form is quoted.)"
                                             form))
                          body)
                  (make-string 2 :initial-element #\newline)))))
-    `(:pre ,@attr (:code ,code))))
+    `(:pre ,@attrs (:code ,code))))
 
 (deftag :nxref (body attr &key slot class-name function command variable package &allow-other-keys)
   "Create a link to a respective describe-* page for BODY symbol.
