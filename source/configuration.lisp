@@ -277,14 +277,19 @@ CLASSES is either a symbol or a list of symbols.
 Classes can be modes or a one of the user-configurable classes like `browser',
 `buffer', `prompt-buffer', `window'.
 
-The `%slot-default%' variable is replaced by the slot initform, the
+SLOTS-AND-VALUES is a list of slot re-definitions, optionally preceded by a
+docstring. The `%slot-default%' variable is replaced by the slot initform, the
 `%slot-value%' is replaced by the current value of the slot.
 
 Example that sets some defaults for all buffers:
 
 \(define-configuration (buffer web-buffer)
-  ((status-buffer-height (* 2 %slot-value%))
-   (default-modes (append '(vi-normal-mode) %slot-default%))))
+  \"Increase the height of the status buffer (mode line) and use VI keybindings.\"
+  ((status-buffer-height (* 2 %slot-value%)
+                         :doc \"Use this is status buffer is too small.\")
+   (default-modes (append '(vi-normal-mode) %slot-default%)
+                  :documentation \"You can use %SLOT-VALUE% instead.
+This will make your config more composable.\")))
 
 In the above, `%slot-default%' will be substituted with the return value of
 `default-modes', and `%slot-value%' will be substituted with the value of
@@ -293,15 +298,20 @@ In the above, `%slot-default%' will be substituted with the return value of
 Example to get the `blocker-mode' command to use a new default hostlists:
 
 \(define-configuration nyxt/blocker-mode:blocker-mode
-  ((nyxt/blocker-mode:hostlists (append (list *my-blocked-hosts*) %slot-default%))))
+  ((nyxt/blocker-mode:hostlists (append (list *my-blocked-hosts*) %slot-default%)
+                                :doc \"You have to define *my-blocked-hosts* first.\")))
 
 To discover the default value of a slot or all slots of a class, use the
 `describe-slot' or `describe-class' commands respectively."
   (alex:with-gensyms (handler hook)
     `(progn
        ,@(loop
+           ;; Strip off the docstring, it's merely cosmetic
+           with slots-and-values = (if (stringp (first slots-and-values))
+                                       (rest slots-and-values)
+                                       slots-and-values)
            for class in (uiop:ensure-list classes)
-           append (loop for ((slot value)) on (first slots-and-values)
+           append (loop for ((slot value . rest)) on (first slots-and-values)
                         ;; TODO: Shall we really make the name unique?  Since we
                         ;; are configuring slots, maybe not.
                         for handler-name = (gensym (format nil "CONFIGURE-~a" slot))
@@ -311,6 +321,10 @@ To discover the default value of a slot or all slots of a class, use the
                                (,handler (make-instance
                                           'hooks:handler
                                           :fn (lambda (object)
+                                                ,(when (or (getf rest :documentation)
+                                                           (getf rest :doc))
+                                                   (or (getf rest :documentation)
+                                                       (getf rest :doc)))
                                                 (declare (ignorable object))
                                                 (setf (slot-value object (quote ,slot))
                                                       (let* ((%slot-value% (slot-value object (quote ,slot)))
