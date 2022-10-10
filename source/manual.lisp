@@ -54,8 +54,8 @@ similar programming language.")
                                       (echo "Configuration file created at ~s." config-file)))
                           "Create configuration file")))))
         (:p "Example:")
-        (:ncode
-          '(define-configuration buffer
+        (code-example ()
+          (define-configuration buffer
             ((default-modes (pushnew 'no-script-mode %slot-value%))))))
       (:p "The above turns on the 'no-script-mode' (disables JavaScript) by default for
 every buffer.")
@@ -113,29 +113,31 @@ For instance if you configure the " (:nxref :slot 'override-map :class-name 'inp
 add the following to your configuration:")
         (:ul
          (:li "vi bindings:"
-              (:ncode '(define-configuration buffer
-                        ((default-modes (pushnew 'vi-normal-mode %slot-value%))))))
+              (code-example ()
+                (define-configuration buffer
+                  ((default-modes (pushnew 'vi-normal-mode %slot-value%))))))
          (:li "Emacs bindings:"
-              (:ncode '(define-configuration buffer
-                        ((default-modes (pushnew 'emacs-mode %slot-value%)))))))
+              (code-example ()
+                (define-configuration buffer
+                  ((default-modes (pushnew 'emacs-mode %slot-value%)))))))
         (:p "You can create new scheme names with " (:code "keymaps:make-scheme-name")
             ".  Also see the " (:code "scheme-name") " class and the "
             (:code "define-keyscheme-map") " macro.")
         (:p "To extend the bindings of a specific mode, you can extend the mode with "
             (:code "define-configuration") " and extend its binding scheme with "
             (:code "define-keyscheme-map") ". For example:")
-        (:ncode
-          '(define-configuration base-mode
+        (code-example ()
+          (define-configuration base-mode
             ((keyscheme-map
               (define-keyscheme-map
-               "my-base" (list :import %slot-default%)
-               keyscheme:vi-normal
-               (list "g b" (lambda-command switch-buffer* ()
-                             (switch-buffer :current-is-last-p t))))))))
+                  "my-base" (list :import %slot-default%)
+                keyscheme:vi-normal
+                (list "g b" (lambda-command switch-buffer* ()
+                              (switch-buffer :current-is-last-p t))))))))
         (:p "The " (:nxref :slot 'override-map :class-name 'input-buffer) " is a keymap that has priority over
 all other keymaps.  By default, it has few bindings like the one
 for " (command-markup 'execute-command) ".  You can use it to set keys globally:")
-        (:ncode
+        (code-example ()
           '(define-configuration context-buffer
             ((override-map (let ((map (make-keymap "override-map")))
                              (define-key map
@@ -150,20 +152,20 @@ its keybindings have priorities over the other modes.
 Note that this kind of global keymaps also have priority over regular character
 insertion, so you should probably not bind anything without modifiers in such a
 keymap.")
-        (:ncode
-          '(defvar *my-keymap* (make-keymap "my-map"))
-          '(define-key *my-keymap*
+        (code-example ()
+          (defvar *my-keymap* (make-keymap "my-map"))
+          (define-key *my-keymap*
             "C-f" 'nyxt/history-mode:history-forwards
             "C-b" 'nyxt/history-mode:history-backwards)
 
-          '(define-mode my-mode ()
+          (define-mode my-mode ()
             "Dummy mode for the custom key bindings in `*my-keymap*'."
             ((keyscheme-map (keymaps:make-keyscheme-map
                              nyxt/keyscheme:cua *my-keymap*
                              nyxt/keyscheme:emacs *my-keymap*
                              nyxt/keyscheme:vi-normal *my-keymap*))))
 
-          '(define-configuration (buffer web-buffer)
+          (define-configuration (buffer web-buffer)
             "Enable this mode by default."
             ((default-modes (pushnew 'my-mode %slot-value%)))))
         (:p "Bindings are subject to various translations as per "
@@ -189,34 +191,34 @@ corresponding section.")
                                                :initform)))))
             ". "
             "The following example shows one way to add new search engines.")
-        (:ncode
-          '(defvar *my-search-engines*
+        (code-example ()
+          (defvar *my-search-engines*
             (list
              '("python3" "https://docs.python.org/3/search.html?q=~a" "https://docs.python.org/3")
              '("doi" "https://dx.doi.org/~a" "https://dx.doi.org/"))
             "List of search engines.")
 
-          '(define-configuration buffer
+          (define-configuration buffer
             "Go through the search engines above and `make-search-engine' out of them."
             ((search-engines
               (append (mapcar (lambda (engine) (apply 'make-search-engine engine))
-                       *my-search-engines*)
-               %slot-default%)))))
+                              *my-search-engines*)
+                      %slot-default%)))))
         (:p "Note that the last search engine is the default one. For example, in
 order to make python3 the default, the above code can be slightly modified as
 follows.")
-        (:ncode
-          '(defvar *my-search-engines*
+        (code-example ()
+          (defvar *my-search-engines*
             (list
              '("doi" "https://dx.doi.org/~a" "https://dx.doi.org/")
              '("python3" "https://docs.python.org/3/search.html?q=~a" "https://docs.python.org/3"))
             "List of search engines.")
 
-          '(define-configuration buffer
+          (define-configuration buffer
             "Go through the search engines above and `make-search-engine' out of them."
             ((search-engines (append %slot-default%
-                              (mapcar (lambda (engine) (apply 'make-search-engine engine))
-                               *my-search-engines*)))))))
+                                     (mapcar (lambda (engine) (apply 'make-search-engine engine))
+                                             *my-search-engines*)))))))
 
       (:nsection
         :title "Downloads"
@@ -246,8 +248,8 @@ Lisp function, except the form is " (:code "define-command") " instead of "
 (:code "defun") ". If you want this command to be invocable outside of
         the context of a mode, use " (:code "define-command-global") ".")
         (:p "Example:")
-        (:ncode
-          '(define-command-global my-bookmark-url ()
+        (code-example ()
+          (define-command-global my-bookmark-url ()
             "Query which URL to bookmark."
             (let ((url (prompt
                         :prompt "Bookmark URL"
@@ -258,7 +260,8 @@ to write custom prompt-buffers.")
         (:p "You can also create your own context menu entries binding those to Lisp commands, using "
             (:nxref :function 'ffi-add-context-menu-command) " function. You can bind the "
             (:code "bookmark-url") " like this:")
-        (:ncode '(ffi-add-context-menu-command 'my-bookmark-url "Bookmark URL"))
+        (code-example ()
+          (ffi-add-context-menu-command 'my-bookmark-url "Bookmark URL"))
         (:p "Currently, context menu commands don't have access to the renderer objects (and
 shouldn't hope to). Commands you bind to context menu actions should deduce most
 of the information from their surroundings, using JavaScript and Lisp functions
@@ -267,11 +270,11 @@ Nyxt provides. For example, one can use the "
             " to get thep URL currently under pointer.")
         (:p "With this, one can improve the bookmarking using "
             (:nxref :slot 'url-at-point :class-name 'buffer) ":")
-        (:ncode
-          '(ffi-add-context-menu-command
-            (lambda ()
-              (nyxt/bookmark-mode:bookmark-add (url-at-point (current-buffer))))
-            "Bookmark Link")))
+        (code-example ()
+          (ffi-add-context-menu-command
+           (lambda ()
+             (nyxt/bookmark-mode:bookmark-add (url-at-point (current-buffer))))
+           "Bookmark Link")))
 
       (:nsection
         :title "Custom URL schemes"
@@ -280,15 +283,15 @@ Nyxt provides. For example, one can use the "
 always define the handler for this scheme so that it's Nyxt-openable.")
         (:p "As a totally hypothetical example, you can define a nonsense scheme "
             (:code "bleep") " to generate a page with random text:")
-        (:ncode
-          '(define-internal-scheme "bleep"
-            (lambda (url buffer)
-              (values
-               (spinneret:with-html-string
-                 (:h1 "Bleep bloop?")
-                 (:p (loop repeat (parse-integer (quri:uri-path (url url)) :junk-allowed t)
-                           collect (:li (elt '("bleep" "bloop") (random 2))))))
-               "text/html;charset=utf8"))
+        (code-example ()
+          (define-internal-scheme "bleep"
+              (lambda (url buffer)
+                (values
+                 (spinneret:with-html-string
+                   (:h1 "Bleep bloop?")
+                   (:p (loop repeat (parse-integer (quri:uri-path (url url)) :junk-allowed t)
+                             collect (:li (elt '("bleep" "bloop") (random 2))))))
+                 "text/html;charset=utf8"))
             :local-p t))
         (:p "What this piece of code does is")
         (:ul
@@ -325,9 +328,9 @@ be it on button click or on some page event. The macros and functions to look at
                 " to generate a global command loading the internal page."))
           (:p "Using the facilities Nyxt provides, you can make a random number generator
 page:")
-          (:ncode
-            '(define-internal-page-command-global random-number (&key (max 1000000))
-              (buffer "*Random*")
+          (code-example ()
+            (define-internal-page-command-global random-number (&key (max 1000000))
+                (buffer "*Random*")
               "Generates a random number on every reload."
               (spinneret:with-html-string
                 (:h1 (princ-to-string (random max)))
@@ -369,12 +372,13 @@ is enabled. Useful to separate the context-specific commands from the
 universally useful (" (:code "-global")
               ") ones. If there's a page that you'd rather not have a command for, you can
 still define it as:")
-          (:ncode
-            '(define-internal-page not-a-command ()
-              (:title "*Hello*" :page-mode 'base-mode)
+          (code-example ()
+            (define-internal-page not-a-command ()
+                (:title "*Hello*" :page-mode 'base-mode)
               "Hello there!"))
           (:p " and use as:")
-          (:ncode '(buffer-load-internal-page-focus 'not-a-command))
+          (code-example ()
+            (buffer-load-internal-page-focus 'not-a-command))
           (:p "See the slots and documentation of " (:nxref :class-name 'internal-page)
               " to understand what you can pass to "
               (:nxref :function 'define-internal-page) ".")))
@@ -442,8 +446,8 @@ you can safely set new inputs and select the necessary suggestions."))
               " for " (:nxref :class-name 'nyxt/download-mode:download) "."))
         (:p "For instance, if you want to force 'old.reddit.com' over 'www.reddit.com', you
 can set a hook like the following in your configuration file:")
-        (:ncode
-          '(defun old-reddit-handler (request-data)
+        (code-example ()
+          (defun old-reddit-handler (request-data)
             (let ((url (url request-data)))
               (setf (url request-data)
                     (if (search "reddit.com" (quri:uri-host url))
@@ -453,17 +457,18 @@ can set a hook like the following in your configuration file:")
                           url)
                         url)))
             request-data)
-          '(define-configuration web-buffer
+          (define-configuration web-buffer
             ((request-resource-hook
               (hooks:add-hook %slot-default% 'old-reddit-handler)))))
         (:p "(See " (:nxref :function 'url-dispatching-handler)
             " for a simpler way to achieve the same result.)")
         (:p "Or, if you want to set multiple handlers at once,")
-        (:ncode '(define-configuration web-buffer
-                  ((request-resource-hook
-                    (reduce #'hooks:add-hook
-                     '(old-reddit-handler auto-proxy-handler)
-                     :initial-value %slot-default%)))))
+        (code-example ()
+          (define-configuration web-buffer
+            ((request-resource-hook
+              (reduce #'hooks:add-hook
+                      '(old-reddit-handler auto-proxy-handler)
+                      :initial-value %slot-default%)))))
         (:p "Some hooks like the above example expect a return value, so it's
 important to make sure we return " (:nxref :class-name 'request-data) " here.  See the
 documentation of the respective hooks for more details."))
@@ -496,18 +501,18 @@ new socket path.  This is particularly useful in combination with profiles,
 say to develop Nyxt or extensions.")
         (:p "Example to create a development profile that stores all data in "
             (:code "/tmp/nyxt") " and stores bookmark in an encrypted file:")
-        (:ncode
-          '(define-class dev-profile (nyxt-profile)
+        (code-example ()
+          (define-class dev-profile (nyxt-profile)
             ((files:name :initform "nyxt-dev"))
             (:documentation "Development profile."))
-          '(defmethod files:resolve ((profile dev-profile) (path nyxt-file))
+          (defmethod files:resolve ((profile dev-profile) (path nyxt-file))
             "Expand all data paths inside a temporary directory."
             (serapeum:path-join (files:expand (make-instance 'nyxt-temporary-directory))
-             (uiop:relativize-pathname-directory (call-next-method))))
-          '(defmethod files:resolve ((profile dev-profile) (file history-file))
+                                (uiop:relativize-pathname-directory (call-next-method))))
+          (defmethod files:resolve ((profile dev-profile) (file history-file))
             "Persist history to default location."
             (files:resolve *global-profile* file))
-          '(define-configuration buffer
+          (define-configuration buffer
             "Make new profile the default."
             ((profile (make-instance (or (find-profile-class (getf *options* :profile)) 'dev-profile))))))
         (:p "Then you can start a separate instance of Nyxt using this profile
@@ -537,17 +542,18 @@ facilities provided by " (:nxref :package :theme) " and "
 (:nxref :slot 'nyxt:theme :class-name 'nyxt:browser)
 ". For example, to set a theme to a midnight-like one, you can add this snippet
 to your configuration file:")
-        (:ncode '(define-configuration browser
-                  ((theme (make-instance 'theme:theme
-                           :dark-p t
-                           :background-color "black"
-                           :on-background-color "#808080"
-                           :accent-color "#37a8e4"
-                           :on-accent-color "black"
-                           :primary-color "gray"
-                           :on-primary-color "white"
-                           :secondary-color "darkgray"
-                           :on-secondary-color "black")
+        (code-example ()
+          (define-configuration browser
+            ((theme (make-instance 'theme:theme
+                                   :dark-p t
+                                   :background-color "black"
+                                   :on-background-color "#808080"
+                                   :accent-color "#37a8e4"
+                                   :on-accent-color "black"
+                                   :primary-color "gray"
+                                   :on-primary-color "white"
+                                   :secondary-color "darkgray"
+                                   :on-secondary-color "black")
                     :doc "You can omit the colors you like in default theme, and they will stay as they were."))))
         (:p "This, on the next restart of Nyxt, will repaint all the interface elements into
 a dark-ish theme.")
@@ -555,8 +561,8 @@ a dark-ish theme.")
 every individual class controlling Nyxt interface elements. All such classes have a "
             (:nxref :function 'nyxt:style)
             " slot that you can configure with your own CSS like this:")
-        (:ncode
-          '(define-configuration nyxt/style-mode:dark-mode
+        (code-example ()
+          (define-configuration nyxt/style-mode:dark-mode
             ((style
               (theme:themed-css (theme *browser*)
                 (*
@@ -643,16 +649,16 @@ to it.")
 small configuration snippet (note that you'd need to have"
             (:nxref :class-name 'nyxt/user-script-mode:user-script-mode)
             " in your " (:nxref :function 'default-modes "buffer default-modes") " ):")
-        (:ncode
-          '(define-configuration web-buffer
+        (code-example ()
+          (define-configuration web-buffer
             "Enable user-script-mode, if you didn't already."
             ((default-modes (pushnew 'nyxt/user-script-mode:user-script-mode %slot-value%))))
 
-          '(define-configuration nyxt/user-script-mode:user-script-mode
+          (define-configuration nyxt/user-script-mode:user-script-mode
             ((nyxt/user-script-mode:user-scripts
               (list
                (make-instance 'nyxt/user-script-mode:user-script
-                :code "// ==UserScript==
+                              :code "// ==UserScript==
                               // @name          No navbars!
                               // @description	  A simple script to remove navbars
                               // @run-at        document-end
@@ -818,8 +824,8 @@ restricted to class slot configuration.  If you want to do anything else on
 class instantiation, you'll have to specialize the
 lower-level " (:nxref :function 'customize-instance)
 " generic function.  Example:")
-        (:ncode
-          '(defmethod customize-instance ((buffer buffer) &key)
+        (code-example ()
+          (defmethod customize-instance ((buffer buffer) &key)
             (echo "Buffer ~a created." buffer)))
         (:p "All classes with metaclass " (:nxref :class-name 'user-class) " call "
             (:nxref :function 'customize-instance) " on instantiation,
@@ -913,5 +919,5 @@ nyxt
         (:p "If you are experiencing problems with blank web-views on some sites you
     can try to disable compositing. To disable compositing from your
     initialization file, you can do the following: ")
-        (:ncode
-          '(setf (uiop:getenv "WEBKIT_DISABLE_COMPOSITING_MODE") "1"))))))
+        (code-example ()
+          (setf (uiop:getenv "WEBKIT_DISABLE_COMPOSITING_MODE") "1"))))))

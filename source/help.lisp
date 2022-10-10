@@ -3,6 +3,20 @@
 
 (in-package :nyxt)
 
+;; TODO: Store the location it's defined in as a :title or link for discoverability?
+;; TODO: Allow editing it in REPL? Built-in editor? External editor?
+;; TODO: Allow adding the snippet to the config.
+;; FIXME: Maybe use :nyxt-user as the default package to not quarrel with REPL & config?
+(defmacro code-example ((&key (package :nyxt)) &body body)
+  `(spinneret:with-html
+     (:pre
+      (:code
+       ,(let ((*package* (find-package package)))
+          (serapeum:mapconcat
+           (alexandria:rcurry #'write-to-string :readably t :pretty t :case :downcase :right-margin 70)
+           body
+           (make-string 2 :initial-element #\newline)))))))
+
 (defmacro command-markup (fn &key (modes nil explicit-modes-p))
   "Print FN in HTML followed by its keybinding in parentheses."
   `(let ((spinneret:*suppress-inserted-spaces* t))
