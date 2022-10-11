@@ -407,7 +407,7 @@ Features:
            (:span "No values.")))
       (t (:span "Calculating...")))))
 
-(define-internal-page-command-global repl ()
+(define-internal-page-command-global repl (&key (form nil))
     (repl-buffer "*REPL*" 'repl-mode)
   "Show Nyxt REPL, a multi-pane environment to experiment with code."
   (let* ((repl-mode (find-submode 'nyxt/repl-mode:repl-mode repl-buffer)))
@@ -416,7 +416,11 @@ Features:
       (:div :id "container"
             (:div :id "evaluations"
                   (loop
-                    for evaluation in (evaluations repl-mode)
+                    for evaluation in (if form
+                                          (setf (evaluations repl-mode)
+                                                (cons (make-instance 'evaluation :input form)
+                                                      (evaluations repl-mode)))
+                                          (evaluations repl-mode))
                     for order from 0
                     collect (:div
                              :class "evaluation"
