@@ -410,8 +410,7 @@ Features:
 (define-internal-page-command-global repl ()
     (repl-buffer "*REPL*" 'repl-mode)
   "Show Nyxt REPL, a multi-pane environment to experiment with code."
-  (let* ((repl-mode (find-submode 'nyxt/repl-mode:repl-mode repl-buffer))
-         (evaluate-binding (nyxt::binding-keys 'evaluate-cell :modes (list repl-mode))))
+  (let* ((repl-mode (find-submode 'nyxt/repl-mode:repl-mode repl-buffer)))
     (spinneret:with-html-string
       (:style (style repl-mode))
       (:div :id "container"
