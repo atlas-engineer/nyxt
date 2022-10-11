@@ -532,8 +532,7 @@ the selection, and the string to paste instead of the clipboard (respectively)."
 (define-version "3.0.0"
   (:h3 "Programming interface")
   (:ul
-   (:li "Swap the order of the arguments to " (:nxref :function 'ffi-add-context-menu-action)
-        " and allow the command argument to be an arbitrary function.")
+   (:li "Allow the command argument to " (:nxref :function 'ffi-add-context-menu-action) " to be an arbitrary function.")
    (:li "New package nicknames:"
         (:ul
          (:li  (:code "time") " for " (:code "local-time"))
