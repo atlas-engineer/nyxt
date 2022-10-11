@@ -279,8 +279,8 @@ Features:
               (format-form (read-from-string (input repl :id id))
                            (eval-package (elt (evaluations repl) id))))
         (reload-buffer (buffer repl)))
-    (reader-error ()
-      (echo "The input appears malformed. Stop reformatting."))))
+    (error (e)
+      (echo "The input appears malformed. Stop reformatting. Original message: ~a" e))))
 
 (define-command previous-cell (&optional (repl (find-submode 'repl-mode)))
   "Move to the previous input cell."
