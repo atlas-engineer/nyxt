@@ -201,10 +201,10 @@ See `find-internal-page-buffer'."))
             (lambda (&rest args)
               (declare (ignorable args))
               (let ((*print-pretty* nil))
-                (multiple-value-bind (contents &optional (type "text/html;charset=utf8") (status 200))
-                    (apply (compile nil lambda-expression) args)
+                (destructuring-bind (contents &optional (type "text/html;charset=utf8") (status 200))
+                    (multiple-value-list (apply (compile nil lambda-expression) args))
                   (when (str:starts-with-p "text/html" type)
-                    (unless (>= (length (clss:select "head, body" (plump:parse))) 2)
+                    (unless (>= (length (clss:select "head, body" (plump:parse contents))) 2)
                       (setf contents
                             (spinneret:with-html-string
                               (:head
