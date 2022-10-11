@@ -97,3 +97,33 @@
      `(assert (member 'nyxt/reading-line-mode:reading-line-mode (nyxt:default-modes (nyxt:current-buffer))))
      `(assert (member 'nyxt/style-mode:dark-mode (nyxt:default-modes (nyxt:current-buffer))))
      `(nyxt:quit)))))
+
+(define-test manual-examples ()
+  (let* ((*package* (find-package :nyxt))
+         (manual-contents (read-from-string (nyxt:function-lambda-string #'nyxt::manual-sections)))
+         (code-examples nil))
+    (labels ((collect-code-examples (form)
+               (cond
+                 ((and (listp form)
+                       (eq :ncode (car form)))
+                  (push (cdr form) code-examples))
+                 ((listp form)
+                  (mapcar #'collect-code-examples
+                          (cdr form)))
+                 (t nil))))
+      (collect-code-examples manual-contents))
+    (dolist (example code-examples)
+      ;; Clean up the quoted forms (Spinneret hack, see `:ncode' docstring).
+      (let* ((unquoted-example (mapcar (lambda (form) (if (eq 'quote (car form))
+                                                          (cdr form)
+                                                          form))
+                                       example))
+             (progn-example (if (> (length unquoted-example) 1)
+                                `(progn ,@unquoted-example)
+                                unquoted-example)))
+        (assert-eql
+         0
+         (exec-with-config
+          progn-example
+          (eval-on-startup
+           `(nyxt:quit))))))))
