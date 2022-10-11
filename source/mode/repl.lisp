@@ -473,7 +473,7 @@ Features:
                                                       (:title "clean-cell")
                                                       (clean-cell :id order)))
                                      :title "Clean the cell contents."
-                                     "🧹 Clean")
+                                     "Clean")
                                    (:button.button
                                     :onclick (ps:ps (nyxt/ps:lisp-eval
                                                      (:title "move-cell-up")
