@@ -801,7 +801,7 @@ handle. Useful to parallelize computations.")
         :title "Built-in REPL"
         :open-p nil
         (:p "Nyxt has a built-in REPL, available with "
-            (:nxref :command 'nyxt/repl-mode:lisp-repl "lisp-repl command") "."
+            (:nxref :command 'nyxt/repl-mode:repl) " command."
             "The REPL can be used to try out some code snippets for automation or quickly
 make some Lisp calculations. All the packages Nyxt depends on are available in
 REPL with convenient nicknames, and all the code is evaluated in "

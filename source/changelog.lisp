@@ -530,6 +530,9 @@ the selection, and the string to paste instead of the clipboard (respectively)."
         off-sync with the full-screened page/video.")))
 
 (define-version "3.0.0"
+  (:ul
+   (:li (:code "nyxt/repl-mode:lisp-repl") " renamed to " (:nxref :command 'nyxt/repl-mode:repl)
+        " and redesigned for greater usability."))
   (:h3 "Programming interface")
   (:ul
    (:li "Allow the command argument to " (:nxref :function 'ffi-add-context-menu-action) " to be an arbitrary function.")
