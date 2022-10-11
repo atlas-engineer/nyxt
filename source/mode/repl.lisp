@@ -155,7 +155,7 @@ Features:
              :overflow-x "auto"))
           :documentation "The CSS applied to a REPL when it is set-up.")
    (evaluations
-    (list)
+    (list (make-instance 'evaluation :input "\"Hello, Nyxt!\""))
     :documentation "A list of `evaluation's representing the current state of the REPL.")
    (current-evaluation
     nil
