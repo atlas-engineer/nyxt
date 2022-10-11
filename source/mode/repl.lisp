@@ -506,6 +506,24 @@ Features:
                    :title "Add a new cell for you to evaluate code in."
                    "+ Add a cell")
                   (:button.button
+                   :onclick (ps:ps (nyxt/ps:lisp-eval
+                                    (:title "edit-function")
+                                    (let ((functions (prompt :prompt "Function to edit"
+                                                             :sources (make-instance
+                                                                       'nyxt::function-source
+                                                                       :return-actions '(identity)))))
+                                      (setf (evaluations repl-mode)
+                                            (append
+                                             (evaluations repl-mode)
+                                             (mapcar (lambda (sym)
+                                                       (make-instance 'evaluation
+                                                                      :input (function-lambda-string
+                                                                              (symbol-function sym))))
+                                                     functions)))
+                                      (reload-buffer (buffer repl-mode)))))
+                   :title "Edit the source of one of Nyxt commands in REPL."
+                   "Edit Nyxt function")
+                  (:button.button
                     :onclick (ps:ps (nyxt/ps:lisp-eval
                                      (:title "delete-all-cells")
                                      (setf (evaluations repl-mode) nil)
