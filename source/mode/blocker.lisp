@@ -64,16 +64,12 @@ Example:
     :documentation "The set of host names to block.")))
 
 (defmethod enable ((mode blocker-mode) &key)
-  (when (web-buffer-p (buffer mode))
-    (if (request-resource-hook (buffer mode))
-        (hooks:add-hook (request-resource-hook (buffer mode))
-                        'request-resource-block)
-        (make-instance 'hook-resource
-                       :combination #'combine-composed-hook-until-nil
-                       :handlers '(request-resource-block)))))
+  (when (network-buffer-p (buffer mode))
+    (hooks:add-hook (request-resource-hook (buffer mode))
+                    'request-resource-block)))
 
 (defmethod disable ((mode blocker-mode) &key)
-  (when (web-buffer-p (buffer mode))
+  (when (network-buffer-p (buffer mode))
     (hooks:remove-hook (request-resource-hook (buffer mode))
                        'request-resource-block)))
 
