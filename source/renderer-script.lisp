@@ -201,15 +201,20 @@ See `find-internal-page-buffer'."))
             (lambda (&rest args)
               (declare (ignorable args))
               (let ((*print-pretty* nil))
-                (values (spinneret:with-html-string
-                          (:head
-                           (:title (progn
-                                     (apply #'dynamic-title (gethash (name page) *nyxt-url-commands*)
-                                            args)))
-                           (:style (style (current-buffer))))
-                          (:body
-                           (:raw (apply (compile nil lambda-expression) args))))
-                        "text/html;charset=utf8")))))))
+                (multiple-value-bind (contents &optional (type "text/html;charset=utf8") (status 200))
+                    (apply (compile nil lambda-expression) args)
+                  (when (str:starts-with-p "text/html" type)
+                    (unless (>= (length (clss:select "head, body" (plump:parse))) 2)
+                      (setf contents
+                            (spinneret:with-html-string
+                              (:head
+                               (:title (progn
+                                         (apply #'dynamic-title
+                                                (gethash (name page) *nyxt-url-commands*)
+                                                args)))
+                               (:style (style (current-buffer))))
+                              (:body (:raw contents))))))
+                  (values contents type status))))))))
 
 (defmethod set-internal-page-method ((page internal-page) form)
   (when form

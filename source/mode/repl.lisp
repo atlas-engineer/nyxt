@@ -349,45 +349,44 @@ Features:
   (let* ((repl-mode (find-submode 'nyxt/repl-mode:repl-mode repl-buffer))
          (evaluate-binding (nyxt::binding-keys 'evaluate-cell :modes (list repl-mode))))
     (spinneret:with-html-string
-      (:head (:style (style repl-mode)))
-      (:body
-       (:div :id "container"
-             (:div :id "evaluations"
-                   (loop
-                     for evaluation in (evaluations repl-mode)
-                     for order from 0
-                     collect (:div
-                              :class "evaluation"
-                              :id (format nil "evaluation-~a" (id evaluation))
-                              (:div :class "input"
-                                    (:span :class "prompt"
-                                           (:button
-                                            :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                             (:title "move-cell-up")
-                                                             (move-cell-up :id order)))
-                                            :title "Move this cell up."
-                                            "↑")
-                                           (:button
-                                            :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                             (:title "move-cell-down")
-                                                             (move-cell-down :id order)))
-                                            :title "Move this cell down."
-                                            "↓"))
-                                    (:textarea :class "input-buffer" :data-repl-id order
-                                               :onfocus
-                                               (ps:ps (nyxt/ps:lisp-eval
-                                                       (:title "set-current-evaluation")
-                                                       (setf (slot-value (nyxt:current-mode :repl)
-                                                                         'current-evaluation)
-                                                             order)))
-                                               (input evaluation)))
-                              (:div :class "evaluation-result"
-                                    :id (format nil "evaluation-result-~a" (id evaluation))
-                                    (:raw (html-result evaluation)))))
-                   (:div :class "input"
-                         (:span :class "prompt" ">")
-                         (:textarea :class "input-buffer"
-                                    :id "input-buffer"
-                                    :data-repl-id ""
-                                    :placeholder (format nil "Press ~a to evaluate the Lisp expression"
-                                                         evaluate-binding)))))))))
+      (:style (style repl-mode))
+      (:div :id "container"
+            (:div :id "evaluations"
+                  (loop
+                    for evaluation in (evaluations repl-mode)
+                    for order from 0
+                    collect (:div
+                             :class "evaluation"
+                             :id (format nil "evaluation-~a" (id evaluation))
+                             (:div :class "input"
+                                   (:span :class "prompt"
+                                          (:button
+                                           :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                            (:title "move-cell-up")
+                                                            (move-cell-up :id order)))
+                                           :title "Move this cell up."
+                                           "↑")
+                                          (:button
+                                           :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                            (:title "move-cell-down")
+                                                            (move-cell-down :id order)))
+                                           :title "Move this cell down."
+                                           "↓"))
+                                   (:textarea :class "input-buffer" :data-repl-id order
+                                              :onfocus
+                                              (ps:ps (nyxt/ps:lisp-eval
+                                                      (:title "set-current-evaluation")
+                                                      (setf (slot-value (nyxt:current-mode :repl)
+                                                                        'current-evaluation)
+                                                            order)))
+                                              (input evaluation)))
+                             (:div :class "evaluation-result"
+                                   :id (format nil "evaluation-result-~a" (id evaluation))
+                                   (:raw (html-result evaluation)))))
+                  (:div :class "input"
+                        (:span :class "prompt" ">")
+                        (:textarea :class "input-buffer"
+                                   :id "input-buffer"
+                                   :data-repl-id ""
+                                   :placeholder (format nil "Press ~a to evaluate the Lisp expression"
+                                                        evaluate-binding))))))))
