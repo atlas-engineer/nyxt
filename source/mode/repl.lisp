@@ -229,9 +229,14 @@ Features:
 (defmethod current-cell-package ((mode repl-mode))
   (cell-package (current-evaluation mode) mode))
 
+(defun focus-cell (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
+  (when (<= 0 id (1- (length (evaluations repl))))
+    (setf (slot-value repl 'current-evaluation) id)))
+
 (sera:eval-always
   (define-command evaluate-cell (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
     "Evaluate the currently focused input cell."
+    (focus-cell :id id)
     (let* ((input (input repl :id id))
            (evaluation (make-instance 'evaluation
                                       :input input
@@ -251,16 +256,19 @@ Features:
                     (subseq (evaluations repl) id))
             (append (evaluations repl)
                     (list (make-instance 'evaluation :input "")))))
+  (focus-cell :id id)
   (reload-buffer (buffer repl)))
 
 (define-command clean-cell (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
   "Clean the cell with ID (or current one, if not provided), removing all input and accumulated state."
+  (focus-cell :id id)
   (setf (elt (evaluations repl) id)
         (make-instance 'evaluation :input ""))
   (reload-buffer (buffer repl)))
 
 (define-command delete-cell (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
   "Remove the cell with ID (or current one, if not provided) from the REPL."
+  (focus-cell :id (1- id))
   (setf (evaluations repl)
         (remove (elt (evaluations repl) id) (evaluations repl)))
   (reload-buffer (buffer repl)))
@@ -276,6 +284,7 @@ Features:
   "Reformat the cell's input.
 
 Follows what the compiler finds aesthetically pleasing."
+  (focus-cell :id id)
   (handler-case
       (progn
         (setf (input (elt (evaluations repl) id))
@@ -285,27 +294,17 @@ Follows what the compiler finds aesthetically pleasing."
     (error (e)
       (echo "The input appears malformed. Stop reformatting. Original message: ~a" e))))
 
-(define-command previous-cell (&optional (repl (find-submode 'repl-mode)))
+(define-command previous-cell (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
   "Navigate to the previous input cell."
-  (let ((id (current-evaluation repl))
-        (len (length (evaluations repl))))
-    (cond
-      ((zerop len)
-       (setf (current-evaluation repl) nil))
-      ((or (null id) (zerop id))
-       (setf (current-evaluation repl) (1- len)))
-      (t (setf (current-evaluation repl) (1- id))))))
+  (unless (or (null id)
+              (zerop (length (evaluations repl))))
+    (focus-cell :id (1- id))))
 
 (define-command next-cell (&optional (repl (find-submode 'repl-mode)))
   "Navigate to the next input cell."
-  (let ((id (current-evaluation repl))
-        (len (length (evaluations repl))))
-    (cond
-      ((or (zerop len)
-           (null id)
-           (= id (1- len)))
-       (setf (current-evaluation repl) nil))
-      (t (setf (current-evaluation repl) (1+ id))))))
+  (unless (or (null id)
+              (zerop (length (evaluations repl))))
+    (focus-cell :id (1+ id))))
 
 (define-command move-cell-up (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
   "Move the current code cell up, swapping it with the one above."
@@ -365,6 +364,7 @@ Follows what the compiler finds aesthetically pleasing."
                            (prompt1
                             :prompt "Symbol to complete"
                             :input symbol-to-complete
+                            ;; TODO: Make it re-compute on input.
                             :sources (make-instance
                                       'prompter:source
                                       :name "Completions"
@@ -435,6 +435,8 @@ Follows what the compiler finds aesthetically pleasing."
                                    (:div :class "input"
                                          (:textarea :class "input-buffer" :data-repl-id order
                                                     :rows (length (str:lines (input evaluation) :omit-nulls nil))
+                                                    :autofocus (and (current-evaluation repl-mode)
+                                                                    (= order (current-evaluation repl-mode)))
                                                     :onfocus
                                                     (ps:ps (nyxt/ps:lisp-eval
                                                             (:title "set-current-evaluation")
