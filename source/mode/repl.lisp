@@ -300,7 +300,7 @@ Follows what the compiler finds aesthetically pleasing."
               (zerop (length (evaluations repl))))
     (focus-cell :id (1- id))))
 
-(define-command next-cell (&optional (repl (find-submode 'repl-mode)))
+(define-command next-cell (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
   "Navigate to the next input cell."
   (unless (or (null id)
               (zerop (length (evaluations repl))))
