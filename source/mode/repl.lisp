@@ -59,28 +59,29 @@ Features:
         value))
 
 (defmethod initialize-instance :after ((evaluation evaluation) &key)
-  (run-thread "repl cell evaluation"
-    (let ((nyxt::*interactive-p* t)
-          (*standard-output* (make-string-output-stream))
-          (*package* (eval-package evaluation)))
-      (ndebug:with-debugger-hook
-          (:wrapper-class 'nyxt::debug-wrapper
-           :ui-display (setf (ready-p evaluation) t
-                             (raised-condition evaluation) %wrapper%)
-           :ui-cleanup (lambda (wrapper)
-                         (declare (ignore wrapper))
-                         (setf (raised-condition evaluation) nil)
-                         (reload-current-buffer)))
-        (with-input-from-string (input (input evaluation))
-          (alex:lastcar
-           (mapcar (lambda (s-exp)
-                     (setf (results evaluation) (multiple-value-list (eval s-exp))
-                           (output evaluation) (get-output-stream-string *standard-output*)))
-                   (safe-slurp-stream-forms input))))))
-    (setf (ready-p evaluation) t)
-    (ps-eval (setf (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "#evaluation-result-~a" (id evaluation))))
-                             |innerHTML|)
-                   (ps:lisp (html-result evaluation))))))
+  (unless (ready-p evaluation)
+    (run-thread "repl cell evaluation"
+      (let ((nyxt::*interactive-p* t)
+            (*standard-output* (make-string-output-stream))
+            (*package* (eval-package evaluation)))
+        (ndebug:with-debugger-hook
+            (:wrapper-class 'nyxt::debug-wrapper
+             :ui-display (setf (ready-p evaluation) t
+                               (raised-condition evaluation) %wrapper%)
+             :ui-cleanup (lambda (wrapper)
+                           (declare (ignore wrapper))
+                           (setf (raised-condition evaluation) nil)
+                           (reload-current-buffer)))
+          (with-input-from-string (input (input evaluation))
+            (alex:lastcar
+             (mapcar (lambda (s-exp)
+                       (setf (results evaluation) (multiple-value-list (eval s-exp))
+                             (output evaluation) (get-output-stream-string *standard-output*)))
+                     (safe-slurp-stream-forms input))))))
+      (setf (ready-p evaluation) t)
+      (ps-eval (setf (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "#evaluation-result-~a" (id evaluation))))
+                               |innerHTML|)
+                     (ps:lisp (html-result evaluation)))))))
 
 (define-mode repl-mode ()
   "Mode for interacting with the REPL."
