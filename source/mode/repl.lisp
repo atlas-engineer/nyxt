@@ -531,5 +531,5 @@ Follows what the compiler finds aesthetically pleasing."
                                      (:title "delete-all-cells")
                                      (setf (evaluations repl-mode) nil)
                                      (reload-buffer (buffer repl-mode))))
-                    :title "Delete all cells in this pane."
+                    :title "Delete all cells in the REPL buffer."
                     "✕ Delete all"))))))
