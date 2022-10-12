@@ -2,22 +2,22 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/repl-mode
-    (:documentation "Mode for programming in Common Lisp.
+    (:documentation "Common Lisp REPL mode for interactive programming.
 
-It has a multi-cell/panel/input environment that evaluates the inputted code on `evaluate-cell'.
+The interface is composed by cell pairs of input and output that evaluate CL
+symbolic expressions.
 
 Features:
-- Creating additional cells using the `add-cell' and a dedicated button.
-- Reformatting the code using the compiler facilities for
-  pretty-printing (`reformat-cell' and a dedicated button).
-- Moving cells with `move-cell-down', `move-cell-up', and dedicated cell buttons.
-- Cleaning the cell contents with `clean-cell' and a dedicated button.
-- Removing unneeded cells with `delete-cell' and dedicated cell buttons.
-- Basic tab-completion of the inputted symbols.
+- Input/output cells pairs can be added and removed.
+- Reformat code using the compiler facilities.
+- Re-order cell pairs.
+- Clean cell input contents.
+- Symbol completion.
 - Multiple evaluation results.
 - Standard output recording.
 - Binding results to the automatically-generated variables.
-- Inline debugging (similar to Nyxt-native debugging with `*debug-on-error*' on.)"))
+- Inline debugging (similar to Nyxt-native debugging when `*debug-on-error*')
+- Both keyboard and mouse oriented UIs."))
 (in-package :nyxt/repl-mode)
 
 (define-class evaluation ()
