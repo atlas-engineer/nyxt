@@ -323,7 +323,8 @@ For generic functions, describe all the methods."
                                     (not-error-p (null (getf definition :error)))
                                     (file (rest (getf definition :location))))
                      (:h2 (format nil "Source ~a" file))
-                     (:pre (function-lambda-string (symbol-function input))))
+                     (:ncode :literal-p t
+                             (function-lambda-string (symbol-function input))))
                    (:h2 "Describe")
                    (:pre (:code (with-output-to-string (s) (describe (symbol-function input) s))))))
                (method-desc (method)
@@ -362,7 +363,8 @@ For generic functions, describe all the methods."
                                      (not-error-p (null (getf definition :error)))
                                      (file (rest (getf definition :location))))
                       (:h2 (format nil "Source ~a" file))
-                      (:pre (function-lambda-string method)))))))
+                      (:ncode :literal-p t
+                              (function-lambda-string method)))))))
           (cond
             ((not (fboundp input))
              (spinneret:with-html-string
@@ -433,7 +435,7 @@ A command is a special kind of function that can be called with
           (:h2 (format nil "Source~a: " (if source-file
                                             (format nil " (~a)" source-file)
                                             "")))
-          (:pre (:code code)))
+          (:ncode :literal-p t code))
         (:h2 "Describe")
         (:pre (:code (with-output-to-string (s) (describe command-object s))))))
     (spinneret:with-html-string
@@ -484,7 +486,7 @@ A command is a special kind of function that can be called with
                                     (write-to-string (getf props :initform))))
                  (multiline-form? (search +newline+ initform-string)))
             (if multiline-form?
-                (:li "Default value: " (:pre (:code initform-string)))
+                (:li "Default value: " (:ncode :literal-p t initform-string))
                 (:li "Default value: " (:code initform-string)))))
         (when (getf props :documentation)
           (:li "Documentation: " (:raw (resolve-backtick-quote-links
@@ -529,7 +531,7 @@ A command is a special kind of function that can be called with
                                                      (mopu:generic-functions class))))
                      collect (:li (:a :href (nyxt-url 'describe-function :fn method) method))))
           (:h2 "Source:")
-          (:pre (:code (source-for-thing (find-class class))))
+          (:ncode :literal-p t (source-for-thing (find-class class)))
           (:h2 "Describe")
           (:pre (:code (with-output-to-string (s) (describe class s))))))
       (spinneret:with-html-string
