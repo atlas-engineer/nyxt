@@ -46,7 +46,7 @@ Features:
    (raised-condition
     nil
     :type (maybe ndebug:condition-wrapper)
-    :documentation "The condition that was raised during the `input' execution."))
+    :documentation "The condition raised during the `input' execution."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
@@ -253,7 +253,7 @@ Features:
   (reload-buffer (buffer repl)))
 
 (define-command clean-cell (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
-  "Clean the cell with ID (or current one, if not provided), removing all input and state is accumulated."
+  "Clean the cell with ID (or current one, if not provided), removing all input and accumulated state."
   (setf (elt (evaluations repl) id)
         (make-instance 'evaluation :input ""))
   (reload-buffer (buffer repl)))
@@ -272,7 +272,9 @@ Features:
     (write-to-string form)))
 
 (define-command reformat-cell (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
-  "Reformat the cell input according to what compiler find aesthetically pleasing."
+  "Reformat the cell's input.
+
+Follows what the compiler finds aesthetically pleasing."
   (handler-case
       (progn
         (setf (input (elt (evaluations repl) id))
@@ -283,7 +285,7 @@ Features:
       (echo "The input appears malformed. Stop reformatting. Original message: ~a" e))))
 
 (define-command previous-cell (&optional (repl (find-submode 'repl-mode)))
-  "Move to the previous input cell."
+  "Navigate to the previous input cell."
   (let ((id (current-evaluation repl))
         (len (length (evaluations repl))))
     (cond
@@ -294,7 +296,7 @@ Features:
       (t (setf (current-evaluation repl) (1- id))))))
 
 (define-command next-cell (&optional (repl (find-submode 'repl-mode)))
-  "Move to the next input cell."
+  "Navigate to the next input cell."
   (let ((id (current-evaluation repl))
         (len (length (evaluations repl))))
     (cond
@@ -409,7 +411,7 @@ Features:
 
 (define-internal-page-command-global repl (&key (form nil))
     (repl-buffer "*REPL*" 'repl-mode)
-  "Show Nyxt REPL, a multi-pane environment to experiment with code."
+  "Create a Nyxt REPL buffer."
   (let* ((repl-mode (find-submode 'nyxt/repl-mode:repl-mode repl-buffer)))
     (spinneret:with-html-string
       (:style (style repl-mode))
