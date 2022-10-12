@@ -422,83 +422,84 @@ Features:
                                                       (evaluations repl-mode)))
                                           (evaluations repl-mode))
                     for order from 0
-                    collect (:div
-                             :class "evaluation"
-                             :id (format nil "evaluation-~a" (id evaluation))
-                             (:div :class "input"
-                                   (:textarea :class "input-buffer" :data-repl-id order
-                                              :rows (length (str:lines (input evaluation) :omit-nulls nil))
-                                              :onfocus
-                                              (ps:ps (nyxt/ps:lisp-eval
-                                                      (:title "set-current-evaluation")
-                                                      (setf (slot-value (nyxt:current-mode :repl)
-                                                                        'current-evaluation)
-                                                            order)))
-                                              (input evaluation))
-                                   (:br)
-                                   (:button.button.accent
-                                    :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                     (:title "evaluate-cell")
-                                                     (evaluate-cell :id order)))
-                                    :title "Evaluate the current cell and show the result below."
-                                    "Evaluate")
-                                   (:select.button
-                                    :onchange (ps:ps (nyxt/ps:lisp-eval
-                                                      (:title "change-evaluation-package")
-                                                      (setf (eval-package (elt (evaluations repl-mode) order))
-                                                            (cell-package order repl-mode))))
-                                    (dolist (package (append (nyxt::nyxt-packages)
-                                                             (nyxt::nyxt-user-packages)
-                                                             (sort
-                                                              (set-difference
-                                                               (set-difference
-                                                                (list-all-packages)
-                                                                (nyxt::nyxt-packages))
-                                                               (nyxt::nyxt-user-packages))
-                                                              #'string<
-                                                              :key #'package-name)))
-                                      (:option :value (package-name package)
-                                               :selected (eq package (eval-package evaluation))
-                                               (package-short-name package))))
-                                   (:button.button
-                                    :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                     (:title "reformat-cell")
-                                                     (reformat-cell :id order)))
-                                    :title "Re-indent the cell contents in accordance with compiler aesthetics."
-                                    "Reformat")
-                                   (:button.button
-                                     :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                      (:title "add-cell-below")
-                                                      (add-cell :id (1+ order))))
-                                     :title "Add a new empty cell below this one."
-                                     "Add cell below")
-                                    (:button.button
-                                     :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                      (:title "clean-cell")
-                                                      (clean-cell :id order)))
-                                     :title "Clean the cell contents."
-                                     "Clean")
-                                   (:button.button
-                                    :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                     (:title "move-cell-up")
-                                                     (move-cell-up :id order)))
-                                    :title "Move this cell up."
-                                    "↑ Up")
-                                   (:button.button
-                                    :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                     (:title "move-cell-down")
-                                                     (move-cell-down :id order)))
-                                    :title "Move this cell down."
-                                    "↓ Down")
-                                   (:button.button
-                                    :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                     (:title "delete-cell")
-                                                     (delete-cell :id order)))
-                                    :title "Remove this cell from the REPL."
-                                    "✕ Delete"))
-                             (:div :class "evaluation-result"
-                                   :id (format nil "evaluation-result-~a" (id evaluation))
-                                   (:raw (html-result evaluation)))))
+                    collect (let ((order order))
+                              (:div
+                               :class "evaluation"
+                               :id (format nil "evaluation-~a" (id evaluation))
+                               (:div :class "input"
+                                     (:textarea :class "input-buffer" :data-repl-id order
+                                                :rows (length (str:lines (input evaluation) :omit-nulls nil))
+                                                :onfocus
+                                                (ps:ps (nyxt/ps:lisp-eval
+                                                        (:title "set-current-evaluation")
+                                                        (setf (slot-value (nyxt:current-mode :repl)
+                                                                          'current-evaluation)
+                                                              order)))
+                                                (input evaluation))
+                                     (:br)
+                                     (:button.button.accent
+                                      :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                       (:title "evaluate-cell")
+                                                       (evaluate-cell :id order)))
+                                      :title "Evaluate the current cell and show the result below."
+                                      "Evaluate")
+                                     (:select.button
+                                      :onchange (ps:ps (nyxt/ps:lisp-eval
+                                                        (:title "change-evaluation-package")
+                                                        (setf (eval-package (elt (evaluations repl-mode) order))
+                                                              (cell-package order repl-mode))))
+                                      (dolist (package (append (nyxt::nyxt-packages)
+                                                               (nyxt::nyxt-user-packages)
+                                                               (sort
+                                                                (set-difference
+                                                                 (set-difference
+                                                                  (list-all-packages)
+                                                                  (nyxt::nyxt-packages))
+                                                                 (nyxt::nyxt-user-packages))
+                                                                #'string<
+                                                                :key #'package-name)))
+                                        (:option :value (package-name package)
+                                                 :selected (eq package (eval-package evaluation))
+                                                 (package-short-name package))))
+                                     (:button.button
+                                      :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                       (:title "reformat-cell")
+                                                       (reformat-cell :id order)))
+                                      :title "Re-indent the cell contents in accordance with compiler aesthetics."
+                                      "Reformat")
+                                     (:button.button
+                                      :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                       (:title "add-cell-below")
+                                                       (add-cell :id (1+ order))))
+                                      :title "Add a new empty cell below this one."
+                                      "Add cell below")
+                                     (:button.button
+                                      :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                       (:title "clean-cell")
+                                                       (clean-cell :id order)))
+                                      :title "Clean the cell contents."
+                                      "Clean")
+                                     (:button.button
+                                      :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                       (:title "move-cell-up")
+                                                       (move-cell-up :id order)))
+                                      :title "Move this cell up."
+                                      "↑ Up")
+                                     (:button.button
+                                      :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                       (:title "move-cell-down")
+                                                       (move-cell-down :id order)))
+                                      :title "Move this cell down."
+                                      "↓ Down")
+                                     (:button.button
+                                      :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                       (:title "delete-cell")
+                                                       (delete-cell :id order)))
+                                      :title "Remove this cell from the REPL."
+                                      "✕ Delete"))
+                               (:div :class "evaluation-result"
+                                     :id (format nil "evaluation-result-~a" (id evaluation))
+                                     (:raw (html-result evaluation))))))
                   (:button.button
                    :onclick (ps:ps (nyxt/ps:lisp-eval
                                     (:title "add-cell")
