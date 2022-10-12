@@ -441,8 +441,8 @@ Features:
                                       :onclick (ps:ps (nyxt/ps:lisp-eval
                                                        (:title "evaluate-cell")
                                                        (evaluate-cell :id order)))
-                                      :title "Evaluate the current cell and show the result below."
-                                      "Evaluate")
+                                      :title "Run the current cell code and show the result below."
+                                      "Eval")
                                      (:select.button
                                       :onchange (ps:ps (nyxt/ps:lisp-eval
                                                         (:title "change-evaluation-package")
