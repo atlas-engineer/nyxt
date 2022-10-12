@@ -64,11 +64,15 @@ various parts, such as the path of all data files.")
              :font "inherit"
              :outline "inherit")
             (.button
+             :all "unset"
              :background-color theme:primary
              :color theme:on-primary
              :display "inline-block"
              :text-decoration "none"
              :border-radius "2px"
+             :border-color theme:primary
+             :border-style "solid"
+             :border-width "0px"
              :padding "6px"
              :margin "2px")
             (.link
@@ -79,7 +83,8 @@ various parts, such as the path of all data files.")
             (".link:hover"
              :opacity 0.8)
             (.accent
-             :color theme:accent)
+             :background-color theme:accent
+             :color theme:on-accent)
             (|.button:hover|
              :opacity 0.8)
             (|.button:visited|

@@ -2,18 +2,22 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/repl-mode
-    (:documentation "Mode for programming in Common Lisp.
+    (:documentation "Common Lisp REPL mode for interactive programming.
 
-It has a multi-cell/panel/input environment that evaluates the inputted code on `evaluate-cell'.
+The interface is composed by cell pairs of input and output that evaluate CL
+symbolic expressions.
 
 Features:
-- Creating additional cells using the bottom cell.
-- Moving cells with `move-cell-down', `move-cell-up', and dedicated cell UI buttons.
-- Basic tab-completion of the inputted symbols.
+- Input/output cells pairs can be added and removed.
+- Reformat code using the compiler facilities.
+- Re-order cell pairs.
+- Clean cell input contents.
+- Symbol completion.
 - Multiple evaluation results.
 - Standard output recording.
 - Binding results to the automatically-generated variables.
-- Inline debugging (similar to Nyxt-native debugging with `*debug-on-error*' on.)"))
+- Inline debugging (similar to Nyxt-native debugging when `*debug-on-error*')
+- Both keyboard and mouse oriented UIs."))
 (in-package :nyxt/repl-mode)
 
 (define-class evaluation ()
@@ -23,6 +27,7 @@ Features:
     :documentation "Unique evaluation identifier.")
    (input
     nil
+    :accessor nil
     :type (maybe string)
     :documentation "User input.")
    (eval-package
@@ -41,16 +46,23 @@ Features:
    (raised-condition
     nil
     :type (maybe ndebug:condition-wrapper)
-    :documentation "The condition that was raised during the `input' execution."))
+    :documentation "The condition raised during the `input' execution."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(defmethod input ((evaluation evaluation) &key &allow-other-keys)
+  (slot-value evaluation 'input))
+
+(defmethod (setf input) ((value string) (evaluation evaluation) &key &allow-other-keys)
+  (setf (slot-value evaluation 'input)
+        value))
 
 (defmethod initialize-instance :after ((evaluation evaluation) &key)
   (run-thread "repl cell evaluation"
     (let ((nyxt::*interactive-p* t)
           (*standard-output* (make-string-output-stream))
-          (*package* (find-package :nyxt-user)))
+          (*package* (eval-package evaluation)))
       (ndebug:with-debugger-hook
           (:wrapper-class 'nyxt::debug-wrapper
            :ui-display (setf (ready-p evaluation) t
@@ -94,7 +106,10 @@ Features:
        "M-n" 'next-cell
        ;; FIXME: Org uses C-c C-_ and C-c C-^, but those are shadowed by C-c in Nyxt.
        "C-^" 'move-cell-up
-       "C-_" 'move-cell-down)
+       "C-_" 'move-cell-down
+       "C-k" 'clean-cell
+       "C-M-k" 'delete-cell
+       "M-q" 'reformat-cell)
       keyscheme:vi-normal
       (list
        ;; TODO: deleting chars/words
@@ -115,29 +130,24 @@ Features:
             ("#container"
              :display "flex"
              :flex-flow "column"
-             :height "100%")
+             :height "95vh"
+             :width "95vw")
             (.input
-             :background-color theme:accent
-             :display "grid"
-             :grid-template-columns "auto 1fr"
-             :width "100%"
+             :background-color theme:secondary
+             :width "99%"
              :padding 0
              :margin "1em 0")
-            (.prompt
-             :color theme:on-accent
-             :padding-right "4px"
-             :padding-left "4px"
-             :line-height "30px")
+            (.button
+             :display "inline")
             (.input-buffer
              :color theme:on-accent
              :opacity "0.9"
              :border "none"
              :outline "none"
              :padding "3px"
+             :margin "3px"
              :autofocus "true"
-             :width "100%")
-            (.button
-             :display "block")
+             :width "99%")
             ("#evaluations"
              :font-size "12px"
              :flex-grow "1"
@@ -145,7 +155,7 @@ Features:
              :overflow-x "auto"))
           :documentation "The CSS applied to a REPL when it is set-up.")
    (evaluations
-    (list)
+    (list (make-instance 'evaluation :input "\"Hello, Nyxt!\""))
     :documentation "A list of `evaluation's representing the current state of the REPL.")
    (current-evaluation
     nil
@@ -157,17 +167,21 @@ Features:
 (defun package-short-name (package)
   (first (sort (append (package-nicknames package)
                        (list (package-name package)))
-               #'string<)))
+               #'<
+               :key #'length)))
 
-(defmethod input ((mode repl-mode))
-  (ps-eval :buffer (buffer mode) (ps:@ document active-element value)))
+(defmethod input ((mode repl-mode) &key (id (current-evaluation mode)))
+  (ps-eval :buffer (buffer mode)
+    (ps:@ (or (nyxt/ps:qs document (ps:lisp (format nil ".input-buffer[data-repl-id=\"~a\"]" id)))
+              (ps:@ document active-element))
+          value)))
 
-(defmethod (setf input) (new-text (mode repl-mode))
-  (ps-labels :async t :buffer (buffer mode)
-    ((set-input-text
-      (text)
-      (setf (ps:@ document active-element value) (ps:lisp text))))
-    (set-input-text new-text)))
+(defmethod (setf input) (new-text (mode repl-mode) &key (id (current-evaluation mode)))
+  (ps-eval :async t :buffer (buffer mode)
+    (setf (ps:@ (or (nyxt/ps:qs document (ps:lisp (format nil ".input-buffer[data-repl-id=\"~a\"]" id)))
+                    (ps:@ document active-element))
+                value)
+          (ps:lisp new-text))))
 
 (defmethod cursor ((mode repl-mode))
   (let ((cursor (ps-eval :buffer (buffer mode)
@@ -203,22 +217,75 @@ Features:
     ((get-id () (ps:chain document active-element (get-attribute "data-repl-id"))))
     (ignore-errors (parse-integer (get-id)))))
 
+(defun cell-package (id mode)
+  (find-package
+   (ps-eval :buffer (buffer mode)
+     (ps:chain (nyxt/ps:qs document
+                           (ps:lisp (format nil ".input-buffer[data-repl-id=\"~a\"] ~~ select"
+                                            id)))
+               value))))
+
+(defmethod current-cell-package ((mode repl-mode))
+  (cell-package (current-evaluation mode) mode))
+
 (sera:eval-always
-  (define-command evaluate-cell (&optional (repl (find-submode 'repl-mode)))
+  (define-command evaluate-cell (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
     "Evaluate the currently focused input cell."
-    (let* ((input (input repl))
-           (id (current-cell-id repl))
-           (evaluation (make-instance 'evaluation :input input)))
+    (let* ((input (input repl :id id))
+           (evaluation (make-instance 'evaluation
+                                      :input input
+                                      :eval-package (cell-package id repl))))
       (unless (uiop:emptyp input)
-        (if id
-            (setf (elt (evaluations repl) id) evaluation
-                  (current-evaluation repl) id)
-            (setf (current-evaluation repl) (length (evaluations repl))
-                  (evaluations repl) (append (evaluations repl) (list evaluation))))
+        (setf (elt (evaluations repl) id) evaluation
+              (current-evaluation repl) id)
         (reload-buffer (buffer repl))))))
 
+(define-command add-cell (&key (repl (find-submode 'repl-mode)) id)
+  "Add a new cell ready for evaluation and movement."
+  (setf (evaluations repl)
+        (if (and id (not (minusp id)))
+            ;; Does CL have some kind of 'insert' function for that?
+            (append (subseq (evaluations repl) 0 id)
+                    (list (make-instance 'evaluation :input ""))
+                    (subseq (evaluations repl) id))
+            (append (evaluations repl)
+                    (list (make-instance 'evaluation :input "")))))
+  (reload-buffer (buffer repl)))
+
+(define-command clean-cell (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
+  "Clean the cell with ID (or current one, if not provided), removing all input and accumulated state."
+  (setf (elt (evaluations repl) id)
+        (make-instance 'evaluation :input ""))
+  (reload-buffer (buffer repl)))
+
+(define-command delete-cell (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
+  "Remove the cell with ID (or current one, if not provided) from the REPL."
+  (setf (evaluations repl)
+        (remove (elt (evaluations repl) id) (evaluations repl)))
+  (reload-buffer (buffer repl)))
+
+(defun format-form (form package)
+  (let ((*print-readably* t)
+        (*print-pretty* t)
+        (*print-case* :downcase)
+        (*package* package))
+    (write-to-string form)))
+
+(define-command reformat-cell (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
+  "Reformat the cell's input.
+
+Follows what the compiler finds aesthetically pleasing."
+  (handler-case
+      (progn
+        (setf (input (elt (evaluations repl) id))
+              (format-form (read-from-string (input repl :id id))
+                           (eval-package (elt (evaluations repl) id))))
+        (reload-buffer (buffer repl)))
+    (error (e)
+      (echo "The input appears malformed. Stop reformatting. Original message: ~a" e))))
+
 (define-command previous-cell (&optional (repl (find-submode 'repl-mode)))
-  "Move to the previous input cell."
+  "Navigate to the previous input cell."
   (let ((id (current-evaluation repl))
         (len (length (evaluations repl))))
     (cond
@@ -229,7 +296,7 @@ Features:
       (t (setf (current-evaluation repl) (1- id))))))
 
 (define-command next-cell (&optional (repl (find-submode 'repl-mode)))
-  "Move to the next input cell."
+  "Navigate to the next input cell."
   (let ((id (current-evaluation repl))
         (len (length (evaluations repl))))
     (cond
@@ -242,7 +309,7 @@ Features:
 (define-command move-cell-up (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
   "Move the current code cell up, swapping it with the one above."
   (when (and id (not (zerop id)))
-    (let* ((evals (evaluations repl)))
+    (let ((evals (evaluations repl)))
       (psetf (elt evals (1- id)) (elt evals id)
              (elt evals id) (elt evals (1- id))
              (current-evaluation repl) (1- id)))
@@ -251,7 +318,7 @@ Features:
 (define-command move-cell-down (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
   "Move the current code cell down, swapping it with the one below."
   (when (and id (< id (1- (length (evaluations repl)))))
-    (let* ((evals (evaluations repl)))
+    (let ((evals (evaluations repl)))
       (psetf (elt evals (1+ id)) (elt evals id)
              (elt evals id) (elt evals (1+ id))
              (current-evaluation repl) (1+ id)))
@@ -280,8 +347,7 @@ Features:
         (setf (cursor repl) cursor)))))
 
 (defparameter +delimiters+
-  (uiop:strcat "()"
-               sera:whitespace)
+  (uiop:strcat "()" sera:whitespace)
   "Non-symbol Lisp delimiters.")
 
 (define-command tab-complete-symbol (&optional (repl (find-submode 'repl-mode)))
@@ -319,11 +385,11 @@ Features:
        (let ((wrapper (raised-condition evaluation)))
          (:pre (format nil "~a" (ndebug:condition-itself wrapper)))
          (dolist (restart (ndebug:restarts wrapper))
-           (:button :class "button"
-                    :onclick (ps:ps (nyxt/ps:lisp-eval
-                                     (:title "condition")
-                                     (ndebug:invoke wrapper restart)))
-                    (format nil "[~a] ~a" (dissect:name restart) (dissect:report restart))))
+           (:button.button
+            :onclick (ps:ps (nyxt/ps:lisp-eval
+                             (:title "condition")
+                             (ndebug:invoke wrapper restart)))
+            (format nil "[~a] ~a" (dissect:name restart) (dissect:report restart))))
          (:h3 "Backtrace:")
          (:raw (nyxt::backtrace->html wrapper))))
       ((ready-p evaluation)
@@ -343,50 +409,127 @@ Features:
            (:span "No values.")))
       (t (:span "Calculating...")))))
 
-(define-internal-page-command-global repl ()
+(define-internal-page-command-global repl (&key (form nil))
     (repl-buffer "*REPL*" 'repl-mode)
-  "Show Nyxt REPL, a multi-pane environment to experiment with code."
-  (let* ((repl-mode (find-submode 'nyxt/repl-mode:repl-mode repl-buffer))
-         (evaluate-binding (nyxt::binding-keys 'evaluate-cell :modes (list repl-mode))))
+  "Create a Nyxt REPL buffer."
+  (let ((repl-mode (find-submode 'nyxt/repl-mode:repl-mode repl-buffer)))
     (spinneret:with-html-string
       (:style (style repl-mode))
       (:div :id "container"
             (:div :id "evaluations"
                   (loop
-                    for evaluation in (evaluations repl-mode)
+                    for evaluation in (if form
+                                          (setf (evaluations repl-mode)
+                                                (cons (make-instance 'evaluation :input form)
+                                                      (evaluations repl-mode)))
+                                          (evaluations repl-mode))
                     for order from 0
-                    collect (:div
-                             :class "evaluation"
-                             :id (format nil "evaluation-~a" (id evaluation))
-                             (:div :class "input"
-                                   (:span :class "prompt"
-                                          (:button
-                                           :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                            (:title "move-cell-up")
-                                                            (move-cell-up :id order)))
-                                           :title "Move this cell up."
-                                           "↑")
-                                          (:button
-                                           :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                            (:title "move-cell-down")
-                                                            (move-cell-down :id order)))
-                                           :title "Move this cell down."
-                                           "↓"))
-                                   (:textarea :class "input-buffer" :data-repl-id order
-                                              :onfocus
-                                              (ps:ps (nyxt/ps:lisp-eval
-                                                      (:title "set-current-evaluation")
-                                                      (setf (slot-value (nyxt:current-mode :repl)
-                                                                        'current-evaluation)
-                                                            order)))
-                                              (input evaluation)))
-                             (:div :class "evaluation-result"
-                                   :id (format nil "evaluation-result-~a" (id evaluation))
-                                   (:raw (html-result evaluation)))))
-                  (:div :class "input"
-                        (:span :class "prompt" ">")
-                        (:textarea :class "input-buffer"
-                                   :id "input-buffer"
-                                   :data-repl-id ""
-                                   :placeholder (format nil "Press ~a to evaluate the Lisp expression"
-                                                        evaluate-binding))))))))
+                    collect (let ((order order))
+                              (:div
+                               :class "evaluation"
+                               :id (format nil "evaluation-~a" (id evaluation))
+                               (:div :class "input"
+                                     (:textarea :class "input-buffer" :data-repl-id order
+                                                :rows (length (str:lines (input evaluation) :omit-nulls nil))
+                                                :onfocus
+                                                (ps:ps (nyxt/ps:lisp-eval
+                                                        (:title "set-current-evaluation")
+                                                        (setf (slot-value (nyxt:current-mode :repl)
+                                                                          'current-evaluation)
+                                                              order)))
+                                                (input evaluation))
+                                     (:br)
+                                     (:button.button.accent
+                                      :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                       (:title "evaluate-cell")
+                                                       (evaluate-cell :id order)))
+                                      :title "Run the current cell code and show the result below."
+                                      "Eval")
+                                     (:select.button
+                                      :onchange (ps:ps (nyxt/ps:lisp-eval
+                                                        (:title "change-evaluation-package")
+                                                        (setf (eval-package (elt (evaluations repl-mode) order))
+                                                              (cell-package order repl-mode))))
+                                      (dolist (package (append (nyxt::nyxt-packages)
+                                                               (nyxt::nyxt-user-packages)
+                                                               (sort
+                                                                (set-difference
+                                                                 (set-difference
+                                                                  (list-all-packages)
+                                                                  (nyxt::nyxt-packages))
+                                                                 (nyxt::nyxt-user-packages))
+                                                                #'string<
+                                                                :key #'package-name)))
+                                        (:option :value (package-name package)
+                                                 :selected (eq package (eval-package evaluation))
+                                                 (package-short-name package))))
+                                     (:button.button
+                                      :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                       (:title "reformat-cell")
+                                                       (reformat-cell :id order)))
+                                      :title "Re-indent the cell contents in accordance with compiler aesthetics."
+                                      "Reformat")
+                                     (:button.button
+                                      :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                       (:title "add-cell-below")
+                                                       (add-cell :id (1+ order))))
+                                      :title "Add a new empty cell below this one."
+                                      "Add cell below")
+                                     (:button.button
+                                      :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                       (:title "clean-cell")
+                                                       (clean-cell :id order)))
+                                      :title "Clean the cell contents."
+                                      "Clean")
+                                     (:button.button
+                                      :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                       (:title "move-cell-up")
+                                                       (move-cell-up :id order)))
+                                      :title "Move this cell up."
+                                      "↑ Up")
+                                     (:button.button
+                                      :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                       (:title "move-cell-down")
+                                                       (move-cell-down :id order)))
+                                      :title "Move this cell down."
+                                      "↓ Down")
+                                     (:button.button
+                                      :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                       (:title "delete-cell")
+                                                       (delete-cell :id order)))
+                                      :title "Remove this cell from the REPL."
+                                      "✕ Delete"))
+                               (:div :class "evaluation-result"
+                                     :id (format nil "evaluation-result-~a" (id evaluation))
+                                     (:raw (html-result evaluation))))))
+                  (:button.button
+                   :onclick (ps:ps (nyxt/ps:lisp-eval
+                                    (:title "add-cell")
+                                    (add-cell)))
+                   :title "Add a new cell for you to evaluate code in."
+                   "+ Add a cell")
+                  (:button.button
+                   :onclick (ps:ps (nyxt/ps:lisp-eval
+                                    (:title "edit-function")
+                                    (let ((functions (prompt :prompt "Function to edit"
+                                                             :sources (make-instance
+                                                                       'nyxt::function-source
+                                                                       :return-actions '(identity)))))
+                                      (setf (evaluations repl-mode)
+                                            (append
+                                             (evaluations repl-mode)
+                                             (mapcar (lambda (sym)
+                                                       (make-instance 'evaluation
+                                                                      :input (function-lambda-string
+                                                                              (symbol-function sym))))
+                                                     functions)))
+                                      (reload-buffer (buffer repl-mode)))))
+                   :title "Edit the source of one of Nyxt commands in REPL."
+                   "Edit Nyxt function")
+                  (:button.button
+                    :onclick (ps:ps (nyxt/ps:lisp-eval
+                                     (:title "delete-all-cells")
+                                     (setf (evaluations repl-mode) nil)
+                                     (reload-buffer (buffer repl-mode))))
+                    :title "Delete all cells in the REPL buffer."
+                    "✕ Delete all"))))))
