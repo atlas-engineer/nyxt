@@ -440,9 +440,12 @@ Follows what the compiler finds aesthetically pleasing."
                                                     :onfocus
                                                     (ps:ps (nyxt/ps:lisp-eval
                                                             (:title "set-current-evaluation")
-                                                            (setf (slot-value (nyxt:current-mode :repl)
-                                                                              'current-evaluation)
-                                                                  order)))
+                                                            (focus-cell :id order)))
+                                                    :onkeydown
+                                                    (ps:ps (nyxt/ps:lisp-eval
+                                                            (:title "update-repl-input")
+                                                            (setf (input (elt (evaluations repl-mode) order))
+                                                                  (input repl-mode))))
                                                     (input evaluation))
                                          (:br)
                                          (:button.button.accent
