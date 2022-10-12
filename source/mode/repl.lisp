@@ -309,7 +309,7 @@ Follows what the compiler finds aesthetically pleasing."
 (define-command move-cell-up (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
   "Move the current code cell up, swapping it with the one above."
   (when (and id (not (zerop id)))
-    (let* ((evals (evaluations repl)))
+    (let ((evals (evaluations repl)))
       (psetf (elt evals (1- id)) (elt evals id)
              (elt evals id) (elt evals (1- id))
              (current-evaluation repl) (1- id)))
@@ -318,7 +318,7 @@ Follows what the compiler finds aesthetically pleasing."
 (define-command move-cell-down (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
   "Move the current code cell down, swapping it with the one below."
   (when (and id (< id (1- (length (evaluations repl)))))
-    (let* ((evals (evaluations repl)))
+    (let ((evals (evaluations repl)))
       (psetf (elt evals (1+ id)) (elt evals id)
              (elt evals id) (elt evals (1+ id))
              (current-evaluation repl) (1+ id)))
@@ -412,7 +412,7 @@ Follows what the compiler finds aesthetically pleasing."
 (define-internal-page-command-global repl (&key (form nil))
     (repl-buffer "*REPL*" 'repl-mode)
   "Create a Nyxt REPL buffer."
-  (let* ((repl-mode (find-submode 'nyxt/repl-mode:repl-mode repl-buffer)))
+  (let ((repl-mode (find-submode 'nyxt/repl-mode:repl-mode repl-buffer)))
     (spinneret:with-html-string
       (:style (style repl-mode))
       (:div :id "container"
