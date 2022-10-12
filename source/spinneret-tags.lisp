@@ -61,36 +61,39 @@ unconditionally converts those to tags unless the whole form is quoted.)"
                      (make-string 2 :initial-element #\newline))))))
     `(:div (:pre ,@attrs (:code (the string ,code)))
            ;; TODO: Add to config, Open in Nyxt editor, Open in external editor
-           ,@(when repl-p
-               `((:button.button
-                  :onclick (ps:ps (nyxt/ps:lisp-eval
-                                   (:title "edit-ncode-in-repl")
-                                   (nyxt:buffer-load-internal-page-focus
-                                    (read-from-string "nyxt/repl-mode:repl")
-                                    :form ,code)))
-                  :title "Open this code in Nyxt REPL to experiment with it."
-                  "Edit in REPL")))
+           ,@(when  repl-p
+               `((when (nyxt:current-buffer)
+                   (:button.button
+                           :onclick (ps:ps (nyxt/ps:lisp-eval
+                                            (:title "edit-ncode-in-repl")
+                                            (nyxt:buffer-load-internal-page-focus
+                                             (read-from-string "nyxt/repl-mode:repl")
+                                             :form ,code)))
+                           :title "Open this code in Nyxt REPL to experiment with it."
+                           "Edit in REPL"))))
            ,@(when config-p
-               `((:button.button
-                  :onclick (ps:ps (nyxt/ps:lisp-eval
-                                   (:title "append-ncode-to-config")
-                                   (alexandria:write-string-into-file
-                                    ,code (nfiles:expand nyxt::*auto-config-file*)
-                                    :if-exists :append)
-                                   (nyxt:buffer-load-internal-page-focus
-                                    (read-from-string "nyxt/repl-mode:repl")
-                                    :form ,code)))
-                  :title (format nil "Append this code to the auto-configuration file (~a)."
-                                 (nfiles:expand nyxt::*auto-config-file*))
-                  "Add to auto-config")))
+               `((when (nyxt:current-buffer)
+                   (:button.button
+                    :onclick (ps:ps (nyxt/ps:lisp-eval
+                                     (:title "append-ncode-to-config")
+                                     (alexandria:write-string-into-file
+                                      ,code (nfiles:expand nyxt::*auto-config-file*)
+                                      :if-exists :append)
+                                     (nyxt:buffer-load-internal-page-focus
+                                      (read-from-string "nyxt/repl-mode:repl")
+                                      :form ,code)))
+                    :title (format nil "Append this code to the auto-configuration file (~a)."
+                                   (nfiles:expand nyxt::*auto-config-file*))
+                    "Add to auto-config"))))
            ,@(when copy-p
-               `((:button.button
-                  :onclick (ps:ps (nyxt/ps:lisp-eval
-                                   (:title "copy-ncode")
-                                   (funcall (read-from-string "nyxt:ffi-buffer-copy")
-                                            (nyxt:current-buffer) ,code)))
-                  :title "Copy the code to clipboard."
-                  "Copy"))))))
+               `((when (nyxt:current-buffer)
+                   (:button.button
+                    :onclick (ps:ps (nyxt/ps:lisp-eval
+                                     (:title "copy-ncode")
+                                     (funcall (read-from-string "nyxt:ffi-buffer-copy")
+                                              (nyxt:current-buffer) ,code)))
+                    :title "Copy the code to clipboard."
+                    "Copy")))))))
 
 (deftag :nxref (body attrs &key slot class-name function command variable package &allow-other-keys)
   "Create a link to a respective describe-* page for BODY symbol.
