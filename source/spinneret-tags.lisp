@@ -22,12 +22,15 @@
 ;; TODO: Allow editing it in REPL? Built-in editor? External editor?
 ;; TODO: Allow adding the snippet to the config.
 ;; FIXME: Maybe use :nyxt-user as the default package to not quarrel with REPL & config?
-(deftag :ncode (body attrs &key (package :nyxt) literal-p (repl-p t) (config-p t) &allow-other-keys)
+(deftag :ncode (body attrs &key (package :nyxt) literal-p (repl-p t) (config-p t) (copy-p t)
+                     &allow-other-keys)
   "Generate the <pre> listing from the provided Lisp BODY.
 
-REPL-P and CONFIG-P mandate whether to add the buttons for (respectively):
+REPL-P, CONFIG-P, and COPY-P mandate whether to add the buttons
+for (respectively):
 - Editing the BODY in the built-in REPL.
 - Appending the BODY to the auto-config.lisp.
+- Copying the source to clipboard.
 
 Forms in BODY can be unquoted, benefiting from the editor formatting.
 
@@ -42,6 +45,7 @@ unconditionally converts those to tags unless the whole form is quoted.)"
   (remf attrs :literal-p)
   (remf attrs :repl-p)
   (remf attrs :config-p)
+  (remf attrs :copy-p)
   (let ((code (if literal-p
                   (first body)
                   (let ((*package* (find-package package)))
@@ -49,7 +53,8 @@ unconditionally converts those to tags unless the whole form is quoted.)"
                      (alexandria:rcurry #'write-to-string :readably t :pretty t :case :downcase :right-margin 70)
                      ;; Process quoted arguments properly too.
                      (mapcar (lambda (form)
-                               (if (eq 'quote (first form))
+                               (if (and (listp form)
+                                        (eq 'quote (first form)))
                                    (second form)
                                    form))
                              body)
@@ -77,7 +82,15 @@ unconditionally converts those to tags unless the whole form is quoted.)"
                                     :form ,code)))
                   :title (format nil "Append this code to the auto-configuration file (~a)."
                                  (nfiles:expand nyxt::*auto-config-file*))
-                  "Add to auto-config"))))))
+                  "Add to auto-config")))
+           ,@(when copy-p
+               `((:button.button
+                  :onclick (ps:ps (nyxt/ps:lisp-eval
+                                   (:title "copy-ncode")
+                                   (funcall (read-from-string "nyxt:ffi-buffer-copy")
+                                            (nyxt:current-buffer) ,code)))
+                  :title "Copy the code to clipboard."
+                  "Copy"))))))
 
 (deftag :nxref (body attrs &key slot class-name function command variable package &allow-other-keys)
   "Create a link to a respective describe-* page for BODY symbol.
