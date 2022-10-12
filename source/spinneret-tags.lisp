@@ -22,25 +22,62 @@
 ;; TODO: Allow editing it in REPL? Built-in editor? External editor?
 ;; TODO: Allow adding the snippet to the config.
 ;; FIXME: Maybe use :nyxt-user as the default package to not quarrel with REPL & config?
-(deftag :ncode (body attrs &key (package :nyxt) &allow-other-keys)
+(deftag :ncode (body attrs &key (package :nyxt) literal-p (repl-p t) (config-p t) &allow-other-keys)
   "Generate the <pre> listing from the provided Lisp BODY.
 
-Forms in  BODY can be unquoted, benefiting from the editor formatting.
+REPL-P and CONFIG-P mandate whether to add the buttons for (respectively):
+- Editing the BODY in the built-in REPL.
+- Appending the BODY to the auto-config.lisp.
+
+Forms in BODY can be unquoted, benefiting from the editor formatting.
+
+If LITERAL-P, BODY can be a single string that will be inserted verbatim with no
+correctness checks. Try to avoid this option, as it does not guarantee that the
+code is at the very least readable.
 
 Forms in BODY can be quoted, in which case Spinneret won't even try to look at
 its contents (useful if there are forms that start with a keyword, Spinneret
 unconditionally converts those to tags unless the whole form is quoted.)"
   (remf attrs :package)
-  (let ((code (let ((*package* (find-package package)))
-                (serapeum:mapconcat
-                 (alexandria:rcurry #'write-to-string :readably t :pretty t :case :downcase :right-margin 70)
-                 ;; Process quoted arguments properly too.
-                 (mapcar (lambda (form) (if (eq 'quote (first form))
-                                            (second form)
-                                            form))
-                         body)
-                 (make-string 2 :initial-element #\newline)))))
-    `(:pre ,@attrs (:code ,code))))
+  (remf attrs :literal-p)
+  (remf attrs :repl-p)
+  (remf attrs :config-p)
+  (let ((code (if literal-p
+                  (first body)
+                  (let ((*package* (find-package package)))
+                    (serapeum:mapconcat
+                     (alexandria:rcurry #'write-to-string :readably t :pretty t :case :downcase :right-margin 70)
+                     ;; Process quoted arguments properly too.
+                     (mapcar (lambda (form)
+                               (if (eq 'quote (first form))
+                                   (second form)
+                                   form))
+                             body)
+                     (make-string 2 :initial-element #\newline))))))
+    `(:div (:pre ,@attrs (:code (the string ,code)))
+           ;; TODO: Add to config, Open in Nyxt editor, Open in external editor
+           ,@(when repl-p
+               `((:button.button
+                  :onclick (ps:ps (nyxt/ps:lisp-eval
+                                   (:title "edit-ncode-in-repl")
+                                   (nyxt:buffer-load-internal-page-focus
+                                    (read-from-string "nyxt/repl-mode:repl")
+                                    :form ,code)))
+                  :title "Open this code in Nyxt REPL to experiment with it."
+                  "Edit in REPL")))
+           ,@(when config-p
+               `((:button.button
+                  :onclick (ps:ps (nyxt/ps:lisp-eval
+                                   (:title "append-ncode-to-config")
+                                   (alexandria:write-string-into-file
+                                    ,code (nfiles:expand nyxt::*auto-config-file*)
+                                    :if-exists :append)
+                                   (nyxt:buffer-load-internal-page-focus
+                                    (read-from-string "nyxt/repl-mode:repl")
+                                    :form ,code)))
+                  :title (format nil "Append this code to the auto-configuration file (~a)."
+                                 (nfiles:expand nyxt::*auto-config-file*))
+                  "Add to auto-config"))))))
 
 (deftag :nxref (body attrs &key slot class-name function command variable package &allow-other-keys)
   "Create a link to a respective describe-* page for BODY symbol.
