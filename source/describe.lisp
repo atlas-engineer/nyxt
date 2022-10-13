@@ -149,10 +149,10 @@ See `package-functions' for an example."
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-class variable-non-nyxt-source (variable-source describe-non-nyxt-source)
-  ((prompter:name "Variables")))
+  ((prompter:name "Non-Nyxt Variables")))
 
 (define-class variable-internal-source (variable-source describe-internal-source)
-  ((prompter:name "Variables")))
+  ((prompter:name "Internal Variables")))
 
 (define-class package-source (prompter:source)
   ((prompter:name "Packages")
