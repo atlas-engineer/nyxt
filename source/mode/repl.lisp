@@ -404,9 +404,7 @@ Follows what the compiler finds aesthetically pleasing."
              do (setf (symbol-value name) result)
              collect (:div
                       (format nil "~(~a~) = " name)
-                      (:raw
-                       (value->html result (or (typep result 'standard-object)
-                                               (typep result 'structure-object))))))
+                      (:raw (value->html result t))))
            (:span "No values.")))
       (t (:span "Calculating...")))))
 
