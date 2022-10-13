@@ -319,11 +319,12 @@ turned into links to their respective description page."
     (&key (package
            (prompt1 :prompt "Describe package"
                     :sources 'package-source)))
-    (buffer (str:concat "*Help-" (package-name package) "*") 'nyxt/help-mode:help-mode)
+    (buffer (str:concat "*Help-" (package-name (find-package package)) "*") 'nyxt/help-mode:help-mode)
   "Inspect a package and show it in a help buffer."
-  (let ((total-symbols (package-symbols (list package) (list package)))
-        (external-symbols (package-symbols (list package) nil))
-        (*print-case* :downcase))
+  (let* ((package (find-package package))
+         (total-symbols (package-symbols (list package)))
+         (external-symbols (package-symbols (list package) :visibility :external))
+         (*print-case* :downcase))
     (flet ((package-markup (package)
              (spinneret:with-html
                (:a :href (nyxt-url 'describe-package :package (package-name package))
