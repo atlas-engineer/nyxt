@@ -341,9 +341,9 @@ See `package-symbols'."
 (defun package-methods (packages &key (visibility :any)) ; TODO: Unused.  Remove?
   "Return the list of all method symbols in PACKAGES.
 See `package-symbols'."
-  (loop for sym in (package-symbols packages :visibility visibility)
-        append (ignore-errors
-                (closer-mop:generic-function-methods (symbol-function sym)))))
+  (mappend (lambda (symbol) (ignore-errors
+                        (closer-mop:generic-function-methods (symbol-function symbol))))
+           (package-symbols packages :visibility visibility)))
 
 (defun list-commands (&key global-p mode-symbols)
   "List commands.
