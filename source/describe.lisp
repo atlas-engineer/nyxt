@@ -106,8 +106,7 @@ See `package-functions' for an example."
             (t
              (first-line (documentation symbol 'variable))))
           ""))
-    ("Visibility"
-     ,(symbol-visibility symbol))))
+    ("Visibility" ,(symbol-visibility symbol))))
 
 (defmethod prompter:object-attributes ((package package) (source prompter:source))
   (declare (ignore source))
