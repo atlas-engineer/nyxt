@@ -597,7 +597,9 @@ A command is a special kind of function that can be called with
     (&key
      (class (prompt1
              :prompt "Describe class"
-             :sources 'class-source)))
+             :sources (list (make-instance 'class-source)
+                            (make-instance 'class-non-nyxt-source)
+                            (make-instance 'class-internal-source)))))
     (buffer (str:concat "*Help-" (symbol-name class) "*") 'nyxt/help-mode:help-mode)
   "Inspect a class and show it in a help buffer."
   (if (find-class class nil)
