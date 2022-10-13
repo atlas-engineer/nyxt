@@ -107,7 +107,7 @@ See `package-functions' for an example."
              (first-line (documentation symbol 'variable))))
           ""))
     ("Visibility"
-     ,(nth-value 1 (find-symbol (symbol-name symbol) (symbol-package symbol))))))
+     ,(symbol-visibility symbol))))
 
 (defmethod prompter:object-attributes ((package package) (source prompter:source))
   (declare (ignore source))
