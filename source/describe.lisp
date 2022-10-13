@@ -9,29 +9,29 @@ See `package-functions' for an example."
   (lambda (source)
     (delete-duplicates
      (append
-      (funcall lister (packages source) :status (status source))
-      (funcall lister (internal-status-packages source) :status :internal)
-      (funcall lister (external-status-packages source) :status :external)
-      (funcall lister (inherited-status-packages source) :status :inherited)))))
+      (funcall lister (packages source) :visibility (visibility source))
+      (funcall lister (internal-visibility-packages source) :visibility :internal)
+      (funcall lister (external-visibility-packages source) :visibility :external)
+      (funcall lister (inherited-visibility-packages source) :visibility :inherited)))))
 
 (define-class describe-nyxt-source (prompter:source)
-  ((status
+  ((visibility
     :any
     :type (member :internal :external :inherited :any)
-    :documentation "Include symbol of this status from `packages'.")
+    :documentation "Include symbol of this visibility from `packages'.")
    (packages
     (nyxt-user-packages)
     :type (maybe (list-of package))
-    :documentation "Include symbols of `status' from the given packages.")
-   (internal-status-packages
+    :documentation "Include symbols of `visibility' from the given packages.")
+   (internal-visibility-packages
     nil
     :type (maybe (list-of package))
     :documentation "Include internal symbols from the given packages.")
-   (external-status-packages
+   (external-visibility-packages
     (nyxt-packages)
     :type (maybe (list-of package))
     :documentation "Include internal symbols from the given packages.")
-   (inherited-status-packages
+   (inherited-visibility-packages
     nil
     :type (maybe (list-of package))
     :documentation "Include internal symbols from the given packages.")
@@ -45,8 +45,8 @@ See `package-functions' for an example."
   ((packages
     nil
     :type (maybe (list-of package))
-    :documentation "Include symbols of `status' from the given packages.")
-   (external-status-packages
+    :documentation "Include symbols of `visibility' from the given packages.")
+   (external-visibility-packages
     (non-nyxt-packages)
     :type (maybe (list-of package))
     :documentation "Include internal symbols from the given packages."))
@@ -58,12 +58,12 @@ See `package-functions' for an example."
   ((packages
     nil
     :type (maybe (list-of package))
-    :documentation "Include symbols of `status' from the given packages.")
-   (internal-status-packages
+    :documentation "Include symbols of `visibility' from the given packages.")
+   (internal-visibility-packages
     (nyxt-packages)
     :type (maybe (list-of package))
     :documentation "Include internal symbols from the given packages.")
-   (external-status-packages
+   (external-visibility-packages
     nil
     :type (maybe (list-of package))
     :documentation "Include internal symbols from the given packages."))
@@ -106,7 +106,7 @@ See `package-functions' for an example."
             (t
              (first-line (documentation symbol 'variable))))
           ""))
-    ("Status"
+    ("Visibility"
      ,(nth-value 1 (find-symbol (symbol-name symbol) (symbol-package symbol))))))
 
 (defmethod prompter:object-attributes ((package package) (source prompter:source))

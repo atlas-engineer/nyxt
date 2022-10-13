@@ -2,8 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/download-mode
-    (:documentation "Mode to manage downloads and the download listing page.")
-  (:shadow #:status))
+    (:documentation "Mode to manage downloads and the download listing page."))
 (in-package :nyxt/download-mode)
 
 (export-always 'renderer-download)

@@ -195,11 +195,11 @@ Return NIL if it's not a mode."
     (when (mopu:subclassp class (find-class 'mode))
       class)))
 
-(defun package-modes (packages &key (status :any))
+(defun package-modes (packages &key (visibility :any))
   "Return the list of mode symbols in PACKAGES.
 See `package-symbols'."
   (delete-if (complement #'mode-class)
-             (package-symbols packages :status status)))
+             (package-symbols packages :visibility visibility)))
 
 ;; TODO: Should allow search all packages, e.g. when PACKAGES is NIL.
 (-> resolve-symbol ((or keyword string) (member :function :variable :class :mode :slot :command) &optional (cons *)) symbol)

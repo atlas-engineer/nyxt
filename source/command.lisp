@@ -263,46 +263,46 @@ It's the complement of `nyxt-packages' and `nyxt-user-packages'."
   (set-difference (list-all-packages)
                   (append (nyxt-packages) (nyxt-user-packages))))
 
-(defun symbol-status (symbol)
+(defun symbol-visibility (symbol)
   (nth-value 1 (find-symbol (symbol-name symbol) (symbol-package symbol))))
 
-(defun filter-symbols (status symbols)
-  (sera:filter (lambda (s) (eq status (symbol-status s)))
+(defun filter-symbols (visibility symbols)
+  (sera:filter (lambda (s) (eq visibility (symbol-visibility s)))
                symbols))
 
 (-> package-symbols
-    ((list-of package) &key (:status (member :internal :external :inherited :any)))
+    ((list-of package) &key (:visibility (member :internal :external :inherited :any)))
     (list-of symbol))
-(defun package-symbols (packages &key (status :any))
+(defun package-symbols (packages &key (visibility :any))
   "Return the list of all symbols from PACKAGES.
-If STATUS is specified, only include symbols with that status."
+If VISIBILITY is specified, only include symbols with that visibility."
   (let ((packages (alex:ensure-list packages))
         (symbols))
     (dolist (package (mapcar #'find-package packages))
-      (if (eq :external status)
+      (if (eq :external visibility)
           (do-external-symbols (s package symbols)
             (pushnew s symbols))
           (do-symbols (s package symbols)
             (when (eq (symbol-package s) package)
               (pushnew s symbols)))))
     (the (values (list-of symbol) &optional)
-         (case status
+         (case visibility
            ((:any :external)
             symbols)
            ((:internal :inherited)
-            (filter-symbols status symbols))))))
+            (filter-symbols visibility symbols))))))
 
-(defun package-variables (packages &key (status :any))
+(defun package-variables (packages &key (visibility :any))
   "Return the list of variable symbols in PACKAGES.
 See `package-symbols'."
-  (delete-if (complement #'boundp) (package-symbols packages :status status)))
+  (delete-if (complement #'boundp) (package-symbols packages :visibility visibility)))
 
-(defun package-functions (packages &key (status :any))
+(defun package-functions (packages &key (visibility :any))
   "Return the list of function symbols in PACKAGES.
 See `package-symbols'."
-  (delete-if (complement #'fboundp) (package-symbols packages :status status)))
+  (delete-if (complement #'fboundp) (package-symbols packages :visibility visibility)))
 
-(defun package-classes (packages &key (status :any))
+(defun package-classes (packages &key (visibility :any))
   "Return the list of class symbols in PACKAGES.
 See `package-symbols'."
   (delete-if (lambda (sym)
@@ -310,7 +310,7 @@ See `package-symbols'."
                          ;; Discard non-standard objects such as structures or
                          ;; conditions because they don't have public slots.
                          (mopu:subclassp (find-class sym) (find-class 'standard-object)))))
-             (package-symbols packages :status status)))
+             (package-symbols packages :visibility visibility)))
 
 (define-class slot ()
   ((name nil
@@ -319,29 +319,29 @@ See `package-symbols'."
               :type (or symbol null)))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defun class-slots (class-sym &key (status :any))
-  "Return the list of slots with STATUS."
-  (filter-symbols status (mopu:slot-names class-sym)))
+(defun class-slots (class-sym &key (visibility :any))
+  "Return the list of slots with VISIBILITY."
+  (filter-symbols visibility (mopu:slot-names class-sym)))
 
 (defmethod prompter:object-attributes ((slot slot) (source prompter:source))
   (declare (ignore source))
   `(("Name" ,(string (name slot)))
     ("Class" ,(string (class-sym slot)))))
 
-(defun package-slots (packages &key (status :any))
+(defun package-slots (packages &key (visibility :any))
   "Return the list of all slot symbols in PACKAGES.
 See `package-symbols'."
   (mappend (lambda (class-sym)
              (mapcar (lambda (slot) (make-instance 'slot
                                                    :name slot
                                                    :class-sym class-sym))
-                     (class-slots class-sym :status status)))
+                     (class-slots class-sym :visibility visibility)))
            (package-classes packages)))
 
-(defun package-methods (packages &key (status :any)) ; TODO: Unused.  Remove?
+(defun package-methods (packages &key (visibility :any)) ; TODO: Unused.  Remove?
   "Return the list of all method symbols in PACKAGES.
 See `package-symbols'."
-  (loop for sym in (package-symbols packages :status status)
+  (loop for sym in (package-symbols packages :visibility visibility)
         append (ignore-errors
                 (closer-mop:generic-function-methods (symbol-function sym)))))
 
