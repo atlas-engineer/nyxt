@@ -238,7 +238,12 @@ values in help buffers, REPL and elsewhere."))
               (cond
                 ((and (uiop:directory-pathname-p value)
                       (not compact-p))
-                 (dolist (element (nyxt/file-manager-mode:directory-elements value))
+                 ;; REVIEW: This should use
+                 ;; `nyxt/file-manager-mode:directory-elements' (not accessible
+                 ;; at the time this is loaded) or an NFiles equivalent (should
+                 ;; we abstract most of File Manager to Nfiles?)
+                 (dolist (element (append (uiop:subdirectories value)
+                                          (uiop:directory-files value)))
                    (:li (:raw (value->html element t)))))
                 ((and (str:starts-with-p "image/" mime)
                       (not compact-p))
