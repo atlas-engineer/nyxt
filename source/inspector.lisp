@@ -219,23 +219,36 @@ values in help buffers, REPL and elsewhere."))
   (let* ((namestring (uiop:native-namestring value))
          (mime (mimes:mime namestring)))
     (spinneret:with-html-string
-      (:a :href (quri.uri.file:make-uri-file :path namestring)
-          namestring
-          (:br)
-          (cond
-            ((and (str:starts-with-p "image/" mime)
-                  (not compact-p))
-             (:img :src (quri.uri.file:make-uri-file :path namestring)
-                   :alt namestring))
-            ((and (str:starts-with-p "audio/" mime)
-                  (not compact-p))
-             (:audio :src (quri.uri.file:make-uri-file :path namestring)
-                     :controls t))
-            ((and (str:starts-with-p "video/" mime)
-                  (not compact-p))
-             (:video :src (quri.uri.file:make-uri-file :path namestring)
-                     :controls t))
-            (t ""))))))
+      (if compact-p
+          (:raw (link-to value))
+          (:a :href (quri.uri.file:make-uri-file :path namestring)
+              :title (if (uiop:directory-pathname-p value)
+                         "directory"
+                         mime)
+              (cond
+                ((and (uiop:directory-pathname-p value)
+                      (not compact-p))
+                 (dolist (element (nyxt/file-manager-mode:directory-elements value))
+                   (:li (:raw (value->html element t)))))
+                ((and (str:starts-with-p "image/" mime)
+                      (not compact-p))
+                 (:figure
+                  (:figcaption namestring)
+                  (:img :src (quri.uri.file:make-uri-file :path namestring)
+                        :alt namestring)))
+                ((and (str:starts-with-p "audio/" mime)
+                      (not compact-p))
+                 (:figure
+                  (:figcaption namestring)
+                  (:audio :src (quri.uri.file:make-uri-file :path namestring)
+                          :controls t)))
+                ((and (str:starts-with-p "video/" mime)
+                      (not compact-p))
+                 (:figure
+                  (:figcaption namestring)
+                  (:video :src (quri.uri.file:make-uri-file :path namestring)
+                          :controls t)))
+                (t namestring)))))))
 
 (defun print-complex-object (value compact-p)
   (if compact-p
