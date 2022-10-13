@@ -43,7 +43,7 @@
 
 
 (export-always '*inspector-print-length*)
-(defvar *inspector-print-length* 50
+(defvar *inspector-print-length* 20
   "The size of the structure after which to collapse this structure into a link.
 
 Can cause a renderer to choke when set to a high value. Use with caution!")
@@ -51,7 +51,8 @@ Can cause a renderer to choke when set to a high value. Use with caution!")
 (defun escaped-literal-print (value)
   (spinneret:with-html-string
     (:code (:raw (spinneret::escape-string
-                  (let ((*print-lines* 3))
+                  (let ((*print-lines* 2)
+                        (*print-length* *inspector-print-length*))
                     (prin1-to-string value)))))))
 
 (defun link-to (object)
@@ -61,6 +62,18 @@ Can cause a renderer to choke when set to a high value. Use with caution!")
       (spinneret:with-html-string
         (:a :href (nyxt-url 'describe-value :id (ensure-inspected-id object))
             (:raw (escaped-literal-print object))))))
+
+(defun compact-listing (sequence &key table-p)
+  (let ((length (min (length sequence) *inspector-print-length*)))
+    (spinneret:with-html-string
+      (cond
+        (table-p
+         (:table
+          (:tbody
+           (:tr
+            (dotimes (i length)
+              (:td (:raw (value->html (elt sequence i) t))))
+            (:td "More: " (:raw (link-to sequence)))))))))))
 
 (export-always 'value->html)
 (defgeneric value->html (value &optional compact-p)
@@ -109,8 +122,8 @@ values in help buffers, REPL and elsewhere."))
     (:div
      :style "overflow-x: auto"
      (cond
-       ((and compact-p (> (length value) *inspector-print-length*))
-        (:raw (link-to value)))
+       (compact-p
+        (:raw (compact-listing value :table-p t)))
        ((types:association-list-p value)
         (:table
          (unless compact-p
@@ -157,8 +170,8 @@ values in help buffers, REPL and elsewhere."))
     (cond
       ((uiop:emptyp value)
        (:raw (call-next-method)))
-      ((and compact-p (> (length value) *inspector-print-length*))
-       (:raw (link-to value)))
+      (compact-p
+       (:raw (compact-listing value :table-p t)))
       (t (:div
           :style "overflow-x: auto"
           (case (length (array-dimensions value))
@@ -166,16 +179,13 @@ values in help buffers, REPL and elsewhere."))
                 (unless compact-p
                   (:caption "Array")
                   (:thead
-                   (:th :colspan (alex:lastcar (array-dimensions value)) "Elements")))
+                   (:th :colspan (alex:lastcar (array-dimensions value))
+                        "Elements (" (princ-to-string (array-dimension value 0)) ")")))
                 (:tbody
                  (:tr
                   (loop for e across value
                         collect (:td (:raw (value->html e t))))))))
             (2 (:table
-                (unless compact-p
-                  (:caption "Array")
-                  (:thead
-                   (:th :colspan (alex:lastcar (array-dimensions value)) "Elements")))
                 (:tbody
                  (loop with height = (array-dimension value 0)
                        and width = (array-dimension value 1)
@@ -189,8 +199,8 @@ values in help buffers, REPL and elsewhere."))
     (cond
       ((uiop:emptyp value)
        (:raw (escaped-literal-print value)))
-      ((and compact-p (> (length value) *inspector-print-length*))
-       (:raw (link-to value)))
+      (compact-p
+       (:raw (compact-listing value :table-p compact-p)))
       (t (:ul
           (dotimes (i (length value))
             (:li (:raw (value->html (elt value i) t)))))))))
