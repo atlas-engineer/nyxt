@@ -267,8 +267,10 @@ It's the complement of `nyxt-packages' and `nyxt-user-packages'."
   (nth-value 1 (find-symbol (symbol-name symbol) (symbol-package symbol))))
 
 (defun filter-symbols (visibility symbols)
-  (sera:filter (lambda (s) (eq visibility (symbol-visibility s)))
-               symbols))
+  (if (eq visibility :any)
+      symbols
+      (sera:filter (lambda (s) (eq visibility (symbol-visibility s)))
+                   symbols)))
 
 (-> package-symbols
     ((list-of package) &key (:visibility (member :internal :external :inherited :any)))
