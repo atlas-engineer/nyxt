@@ -256,7 +256,8 @@ Features:
                     (subseq (evaluations repl) id))
             (append (evaluations repl)
                     (list (make-instance 'evaluation :input "")))))
-  (focus-cell :id id)
+  (when id
+    (focus-cell :id id))
   (reload-buffer (buffer repl)))
 
 (define-command clean-cell (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
