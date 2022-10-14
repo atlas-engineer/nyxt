@@ -611,7 +611,7 @@ A command is a special kind of function that can be called with
     (buffer (str:concat "*Help-" (symbol-name class) "*") 'nyxt/help-mode:help-mode)
   "Inspect a class and show it in a help buffer."
   (if (find-class class nil)
-      (let* ((slots (safe-sort (class-public-slots class)))
+      (let* ((slots (safe-sort (class-slots class :visibility :external)))
              (slot-descs (sera:string-join (mapcar (rcurry #'describe-slot* class) slots) ""))
              (*print-case* :downcase))
         (spinneret:with-html-string
