@@ -1034,10 +1034,12 @@ See `make-buffer' for a description of the arguments."
     (containers:delete-item-if (recent-buffers *browser*) (buffer-match-predicate buffer))
     (containers:insert-item (recent-buffers *browser*) buffer)))
 
-
-(defmethod buffer-delete ((buffer buffer))
-  (hooks:run-hook (buffer-delete-hook buffer) buffer)
-  (ffi-buffer-delete buffer))
+(export-always 'buffer-delete)
+(defgeneric buffer-delete (buffer)
+  (:method ((buffer buffer))
+    (hooks:run-hook (buffer-delete-hook buffer) buffer)
+    (ffi-buffer-delete buffer))
+  (:documentation "Delete buffer after running `buffer-delete-hook'."))
 
 (defmethod buffer-delete ((buffer context-buffer))
   (files:with-file-content (history (history-file buffer))
@@ -1051,7 +1053,9 @@ See `make-buffer' for a description of the arguments."
 (defun buffer-hide (buffer)
   "Stop showing the buffer in Nyxt.
 Should be called from/instead of `ffi-buffer-delete' when the renderer view
-associated to the buffer is already killed."
+associated to the buffer is already killed.
+
+This is a low-level function.  See `buffer-delete' for the high-level version."
   (let ((parent-window (find buffer (window-list) :key 'active-buffer)))
     (when parent-window
       (let ((replacement-buffer (or (first (get-inactive-buffers))

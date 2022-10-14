@@ -257,49 +257,60 @@ See also `nyxt-packages'."
    (sera:filter #'nyxt-user-subpackage-p
                 (list-all-packages))))
 
-(defun package-symbols (&optional (packages (nyxt-packages))
-                          (user-packages (nyxt-user-packages)))
-  "Return the list of all external symbols from PACKAGES
-and all (possibly unexported) symbols from USER-PACKAGES.
+(defun non-nyxt-packages ()
+  "Return the packages that are not related to Nyxt.
+It's the complement of `nyxt-packages' and `nyxt-user-packages'."
+  (set-difference (list-all-packages)
+                  (append (nyxt-packages) (nyxt-user-packages))))
 
-If PACKAGES is NIL, return all external symbols in all packages."
-  (let* ((user-packages (mapcar #'find-package (alex:ensure-list user-packages)))
-         (packages (or (alex:ensure-list packages)
-                       (set-difference
-                        (list-all-packages)
-                        user-packages)))
-         (symbols))
+(defun symbol-visibility (symbol)
+  (nth-value 1 (find-symbol (symbol-name symbol) (symbol-package symbol))))
+
+(defun filter-symbols (visibility symbols)
+  (sera:filter (lambda (s) (eq visibility (symbol-visibility s)))
+               symbols))
+
+(-> package-symbols
+    ((list-of package) &key (:visibility (member :internal :external :inherited :any)))
+    (list-of symbol))
+(defun package-symbols (packages &key (visibility :any))
+  "Return the list of all symbols from PACKAGES.
+If VISIBILITY is specified, only include symbols with that visibility."
+  (let ((packages (alex:ensure-list packages))
+        (symbols))
     (dolist (package (mapcar #'find-package packages))
-      (do-external-symbols (s package symbols)
-        (push s symbols)))
-    (dolist (package user-packages)
-      (do-symbols (s package symbols)
-        (when (eq (symbol-package s) package)
-          (push s symbols))))
-    (delete-duplicates symbols)))
+      (if (eq :external visibility)
+          (do-external-symbols (s package symbols)
+            (pushnew s symbols))
+          (do-symbols (s package symbols)
+            (when (eq (symbol-package s) package)
+              (pushnew s symbols)))))
+    (the (values (list-of symbol) &optional)
+         (case visibility
+           ((:any :external)
+            symbols)
+           ((:internal :inherited)
+            (filter-symbols visibility symbols))))))
 
-(defun package-variables (&optional (packages (nyxt-packages))
-                            (user-packages (nyxt-user-packages)))
-  "Return the list of variable symbols in PACKAGES and USER-PACKAGES.
-See `package-symbols' for details on the arguments."
-  (delete-if (complement #'boundp) (package-symbols packages user-packages)))
+(defun package-variables (packages &key (visibility :any))
+  "Return the list of variable symbols in PACKAGES.
+See `package-symbols'."
+  (delete-if (complement #'boundp) (package-symbols packages :visibility visibility)))
 
-(defun package-functions (&optional (packages (nyxt-packages))
-                            (user-packages (nyxt-user-packages)))
-  "Return the list of function symbols in PACKAGES and USER-PACKAGES.
-See `package-symbols' for details on the arguments."
-  (delete-if (complement #'fboundp) (package-symbols packages user-packages)))
+(defun package-functions (packages &key (visibility :any))
+  "Return the list of function symbols in PACKAGES.
+See `package-symbols'."
+  (delete-if (complement #'fboundp) (package-symbols packages :visibility visibility)))
 
-(defun package-classes (&optional (packages (nyxt-packages))
-                          (user-packages (nyxt-user-packages)))
-  "Return the list of class symbols in PACKAGES and USER-PACKAGES.
-See `package-symbols' for details on the arguments."
+(defun package-classes (packages &key (visibility :any))
+  "Return the list of class symbols in PACKAGES.
+See `package-symbols'."
   (delete-if (lambda (sym)
                (not (and (find-class sym nil)
                          ;; Discard non-standard objects such as structures or
                          ;; conditions because they don't have public slots.
                          (mopu:subclassp (find-class sym) (find-class 'standard-object)))))
-             (package-symbols packages user-packages)))
+             (package-symbols packages :visibility visibility)))
 
 (define-class slot ()
   ((name nil
@@ -308,40 +319,31 @@ See `package-symbols' for details on the arguments."
               :type (or symbol null)))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defun exported-p (sym)
-  (eq :external
-      (nth-value 1 (find-symbol (string sym)
-                                (symbol-package sym)))))
-
-(defun class-public-slots (class-sym)
-  "Return the list of exported slots."
-  (delete-if
-   (complement #'exported-p)
-   (mopu:slot-names class-sym)))
+(defun class-slots (class-sym &key (visibility :any))
+  "Return the list of slots with VISIBILITY."
+  (filter-symbols visibility (mopu:slot-names class-sym)))
 
 (defmethod prompter:object-attributes ((slot slot) (source prompter:source))
   (declare (ignore source))
   `(("Name" ,(string (name slot)))
     ("Class" ,(string (class-sym slot)))))
 
-(defun package-slots (&optional (packages (nyxt-packages))
-                        (user-packages (nyxt-user-packages)))
-  "Return the list of all slot symbols in PACKAGES and USER-PACKAGES.
-See `package-symbols' for details on the arguments."
+(defun package-slots (packages &key (visibility :any))
+  "Return the list of all slot symbols in PACKAGES.
+See `package-symbols'."
   (mappend (lambda (class-sym)
              (mapcar (lambda (slot) (make-instance 'slot
                                                    :name slot
                                                    :class-sym class-sym))
-                     (class-public-slots class-sym)))
-           (package-classes packages user-packages)))
+                     (class-slots class-sym :visibility visibility)))
+           (package-classes packages)))
 
-(defun package-methods (&optional (packages (nyxt-packages)) ; TODO: Unused.  Remove?
-                          (user-packages (nyxt-user-packages)))
-  "Return the list of all method symbols in PACKAGES and USER-PACKAGES.
-See `package-symbols' for details on the arguments."
-  (loop for sym in (package-symbols packages user-packages)
-        append (ignore-errors
-                (closer-mop:generic-function-methods (symbol-function sym)))))
+(defun package-methods (packages &key (visibility :any)) ; TODO: Unused.  Remove?
+  "Return the list of all method symbols in PACKAGES.
+See `package-symbols'."
+  (mappend (lambda (symbol) (ignore-errors
+                        (closer-mop:generic-function-methods (symbol-function symbol))))
+           (package-symbols packages :visibility visibility)))
 
 (defun list-commands (&key global-p mode-symbols)
   "List commands.

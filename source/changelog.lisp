@@ -540,4 +540,8 @@ formatting, deletion, cleaning, and movement."))
    (:li "New package nicknames:"
         (:ul
          (:li  (:code "time") " for " (:code "local-time"))
-         (:li  (:code "types") " for " (:code "trivial-types"))))))
+         (:li  (:code "types") " for " (:code "trivial-types"))))
+   (:li "Universal describe-* commands have been replace with new sources for the
+regular commands, suchas "
+        (:code "function-non-nyxt-source") ", " (:code "function-internal-source")
+        " and so on.")))

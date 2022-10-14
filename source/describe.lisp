@@ -3,15 +3,85 @@
 
 (in-package :nyxt)
 
-(define-class function-source (prompter:source)
-  ((universal nil)
-   (prompter:name "Functions")
-   (prompter:constructor (lambda (source)
-                           (apply #'package-functions
-                                  (when (universal source)
-                                    (list (list-all-packages)))))))
+(defun description-constructor (lister)
+  "LISTER is a function return a list of symbols from the given packages.
+See `package-functions' for an example."
+  (lambda (source)
+    (delete-duplicates
+     (append
+      (funcall lister (packages source) :visibility (visibility source))
+      (funcall lister (internal-visibility-packages source) :visibility :internal)
+      (funcall lister (external-visibility-packages source) :visibility :external)
+      (funcall lister (inherited-visibility-packages source) :visibility :inherited)))))
+
+(define-class describe-nyxt-source (prompter:source)
+  ((visibility
+    :any
+    :type (member :internal :external :inherited :any)
+    :documentation "Include symbol of this visibility from `packages'.")
+   (packages
+    (nyxt-user-packages)
+    :type (maybe (list-of package))
+    :documentation "Include symbols of `visibility' from the given packages.")
+   (internal-visibility-packages
+    nil
+    :type (maybe (list-of package))
+    :documentation "Include internal symbols from the given packages.")
+   (external-visibility-packages
+    (nyxt-packages)
+    :type (maybe (list-of package))
+    :documentation "Include internal symbols from the given packages.")
+   (inherited-visibility-packages
+    nil
+    :type (maybe (list-of package))
+    :documentation "Include internal symbols from the given packages.")
+   (prompter:name (alex:required-argument 'prompter:name))
+   (prompter:constructor (alex:required-argument 'prompter:constructor)))
+  (:export-class-name-p nil)              ; Internal class.
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(define-class describe-non-nyxt-source (describe-nyxt-source)
+  ((packages
+    nil
+    :type (maybe (list-of package))
+    :documentation "Include symbols of `visibility' from the given packages.")
+   (external-visibility-packages
+    (non-nyxt-packages)
+    :type (maybe (list-of package))
+    :documentation "Include internal symbols from the given packages."))
+  (:export-class-name-p nil)              ; Internal class.
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(define-class describe-internal-source (describe-nyxt-source)
+  ((packages
+    nil
+    :type (maybe (list-of package))
+    :documentation "Include symbols of `visibility' from the given packages.")
+   (internal-visibility-packages
+    (nyxt-packages)
+    :type (maybe (list-of package))
+    :documentation "Include internal symbols from the given packages.")
+   (external-visibility-packages
+    nil
+    :type (maybe (list-of package))
+    :documentation "Include internal symbols from the given packages."))
+  (:export-class-name-p nil)              ; Internal class.
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(define-class function-source (describe-nyxt-source)
+  ((prompter:name "Functions")
+   (prompter:constructor (description-constructor #'package-functions)))
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(define-class function-non-nyxt-source (function-source describe-non-nyxt-source)
+  ((prompter:name "Non-Nyxt Functions")))
+
+(define-class function-internal-source (function-source describe-internal-source)
+  ((prompter:name "Internal Functions")))
 
 (defun first-line (string)
   "Return first non-empty line in STRING."
@@ -35,7 +105,8 @@
              (first-line (documentation (find-package symbol) t)))
             (t
              (first-line (documentation symbol 'variable))))
-          ""))))
+          ""))
+    ("Visibility" ,(symbol-visibility symbol))))
 
 (defmethod prompter:object-attributes ((package package) (source prompter:source))
   (declare (ignore source))
@@ -46,41 +117,47 @@
                                           :uiop :package-local-nicknames package))))
     ("Documentation" ,(or (first-line (documentation package t)) ""))))
 
-(define-class class-source (prompter:source)
-  ((universal nil)
-   (prompter:name "Classes")
-   (prompter:constructor (lambda (source)
-                           (apply #'package-classes
-                                  (when (universal source)
-                                    (list (list-all-packages)))))))
+(define-class class-source (describe-nyxt-source)
+  ((prompter:name "Classes")
+   (prompter:constructor (description-constructor #'package-classes)))
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-class slot-source (prompter:source)
-  ((universal nil)
-   (prompter:name "Slots")
-   (prompter:constructor (lambda (source)
-                           (apply #'package-slots
-                                  (when (universal source)
-                                    (list (list-all-packages)))))))
+(define-class class-non-nyxt-source (class-source describe-non-nyxt-source)
+  ((prompter:name "Non-Nyxt Classes")))
+
+(define-class class-internal-source (class-source describe-internal-source)
+  ((prompter:name "Internal Classes")))
+
+(define-class slot-source (describe-nyxt-source)
+  ((prompter:name "Slots")
+   (prompter:constructor (description-constructor #'package-slots)))
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-class variable-source (prompter:source)
-  ((universal nil)
-   (prompter:name "Variables")
-   (prompter:constructor (lambda (source)
-                           (apply #'package-variables
-                                  (when (universal source)
-                                    (list (list-all-packages)))))))
+(define-class slot-non-nyxt-source (slot-source describe-non-nyxt-source)
+  ((prompter:name "Non-Nyxt Slots")))
+
+(define-class slot-internal-source (slot-source describe-internal-source)
+  ((prompter:name "Internal Slots")))
+
+(define-class variable-source (describe-nyxt-source)
+  ((prompter:name "Variables")
+   (prompter:constructor (description-constructor #'package-variables)))
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(define-class variable-non-nyxt-source (variable-source describe-non-nyxt-source)
+  ((prompter:name "Non-Nyxt Variables")))
+
+(define-class variable-internal-source (variable-source describe-internal-source)
+  ((prompter:name "Internal Variables")))
 
 (define-class package-source (prompter:source)
   ((prompter:name "Packages")
    (prompter:constructor (mapcar (compose #'intern #'package-name) (list-all-packages)))))
 
-(define-command describe-any (&optional input universal)
+(define-command-global describe-any (&optional input)
   "Inspect anything and show it in a help buffer.
 When INPUT matches a single item in the sources, describe it.  Otherwise prompt
 for matches."
@@ -92,14 +169,32 @@ for matches."
                   'variable-source
                   :return-actions (list (lambda-command describe-variable* (variables)
                                           (describe-variable :variable (first variables))))
-                  :filter-preprocessor preprocessor
-                  :universal universal)
+                  :filter-preprocessor preprocessor)
+                 (make-instance
+                  'variable-non-nyxt-source
+                  :return-actions (list (lambda-command describe-variable* (variables)
+                                          (describe-variable :variable (first variables))))
+                  :filter-preprocessor preprocessor)
+                 (make-instance
+                  'variable-internal-source
+                  :return-actions (list (lambda-command describe-variable* (variables)
+                                          (describe-variable :variable (first variables))))
+                  :filter-preprocessor preprocessor)
                  (make-instance
                   'function-source
                   :return-actions (list (lambda-command describe-function* (functions)
                                           (describe-function :fn (first functions))))
-                  :filter-preprocessor preprocessor
-                  :universal universal)
+                  :filter-preprocessor preprocessor)
+                 (make-instance
+                  'function-non-nyxt-source
+                  :return-actions (list (lambda-command describe-function* (functions)
+                                          (describe-function :fn (first functions))))
+                  :filter-preprocessor preprocessor)
+                 (make-instance
+                  'function-internal-source
+                  :return-actions (list (lambda-command describe-function* (functions)
+                                          (describe-function :fn (first functions))))
+                  :filter-preprocessor preprocessor)
                  (make-instance
                   'command-source
                   :return-actions (list (lambda-command describe-command* (commands)
@@ -109,15 +204,35 @@ for matches."
                   'class-source
                   :return-actions (list (lambda-command describe-class* (classes)
                                           (describe-class :class (first classes))))
-                  :filter-preprocessor preprocessor
-                  :universal universal)
+                  :filter-preprocessor preprocessor)
+                 (make-instance
+                  'class-non-nyxt-source
+                  :return-actions (list (lambda-command describe-class* (classes)
+                                          (describe-class :class (first classes))))
+                  :filter-preprocessor preprocessor)
+                 (make-instance
+                  'class-internal-source
+                  :return-actions (list (lambda-command describe-class* (classes)
+                                          (describe-class :class (first classes))))
+                  :filter-preprocessor preprocessor)
                  (make-instance
                   'slot-source
                   :return-actions (list (lambda-command describe-slot** (slots)
                                           (describe-slot :class (class-sym (first slots))
                                                          :name (name (first slots)))))
-                  :filter-preprocessor preprocessor
-                  :universal universal))))
+                  :filter-preprocessor preprocessor)
+                 (make-instance
+                  'slot-non-nyxt-source
+                  :return-actions (list (lambda-command describe-slot** (slots)
+                                          (describe-slot :class (class-sym (first slots))
+                                                         :name (name (first slots)))))
+                  :filter-preprocessor preprocessor)
+                 (make-instance
+                  'slot-internal-source
+                  :return-actions (list (lambda-command describe-slot** (slots)
+                                          (describe-slot :class (class-sym (first slots))
+                                                         :name (name (first slots)))))
+                  :filter-preprocessor preprocessor))))
     (let ((suggestion+action-pairs
             (and input
                  (loop with result = '()
@@ -136,10 +251,6 @@ for matches."
             :prompt "Describe"
             :input input
             :sources sources))))))
-
-(define-command-global universal-describe-any ()
-  "Inspect anything from any package and show it in a help buffer."
-  (describe-any nil t))
 
 (define-internal-page describe-value
     (&key id)
@@ -174,13 +285,13 @@ turned into links to their respective description page."
                                   (resolve-as symbol :command)))
                     (url (cond
                            ((and variable (not function) (not class))
-                            (nyxt-url 'describe-variable :variable variable :universal t))
+                            (nyxt-url 'describe-variable :variable variable))
                            ((and command (not class) (not variable))
                             (nyxt-url 'describe-command :command command))
                            ((and function (not class) (not variable) (not command))
-                            (nyxt-url 'describe-function :fn function :universal t))
+                            (nyxt-url 'describe-function :fn function))
                            (class
-                            (nyxt-url 'describe-class :class class :universal t))
+                            (nyxt-url 'describe-class :class class))
                            (symbol
                             (javascript-url
                              (ps:ps (nyxt/ps:lisp-eval
@@ -207,11 +318,12 @@ turned into links to their respective description page."
     (&key (package
            (prompt1 :prompt "Describe package"
                     :sources 'package-source)))
-    (buffer (str:concat "*Help-" (package-name package) "*") 'nyxt/help-mode:help-mode)
+    (buffer (str:concat "*Help-" (package-name (find-package package)) "*") 'nyxt/help-mode:help-mode)
   "Inspect a package and show it in a help buffer."
-  (let ((total-symbols (package-symbols (list package) (list package)))
-        (external-symbols (package-symbols (list package) nil))
-        (*print-case* :downcase))
+  (let* ((package (find-package package))
+         (total-symbols (package-symbols (list package)))
+         (external-symbols (package-symbols (list package) :visibility :external))
+         (*print-case* :downcase))
     (flet ((package-markup (package)
              (spinneret:with-html
                (:a :href (nyxt-url 'describe-package :package (package-name package))
@@ -236,10 +348,10 @@ turned into links to their respective description page."
 
 (define-internal-page-command-global describe-variable
     (&key
-     universal
      (variable (prompt1 :prompt "Describe variable"
-                        :sources (make-instance 'variable-source
-                                                :universal universal))))
+                        :sources '(variable-source
+                                   variable-non-nyxt-source
+                                   variable-internal-source))))
     (buffer (str:concat "*Help-" (symbol-name variable) "*") 'nyxt/help-mode:help-mode)
   "Inspect a variable and show it in a help buffer."
   (let ((*print-case* :downcase))
@@ -270,10 +382,6 @@ turned into links to their respective description page."
           (:h1 (format nil "~s" variable))
           (:p "Unbound")))))
 
-(define-command-global universal-describe-variable ()
-  "Inspect a variable from any Nyxt-accessible package and show it in a help buffer."
-  (describe-variable :universal t))
-
 (defun format-arglist (arglist)
   (multiple-value-bind (required optional rest keywords aok? aux key?)
       (alex:parse-ordinary-lambda-list arglist
@@ -300,9 +408,10 @@ turned into links to their respective description page."
 
 (define-internal-page-command-global describe-function
     (&key
-     universal
      (fn (prompt1 :prompt "Describe function"
-                  :sources (make-instance 'function-source :universal universal))))
+                  :sources '(function-source
+                             function-non-nyxt-source
+                             function-internal-source))))
     (buffer (str:concat "*Help-" (symbol-name fn) "*") 'nyxt/help-mode:help-mode)
   "Inspect a function and show it in a help buffer.
 For generic functions, describe all the methods."
@@ -392,10 +501,6 @@ For generic functions, describe all the methods."
       (prompt :prompt "Describe function"
               :sources 'function-source)))
 
-(define-command-global universal-describe-function ()
-  "Inspect a function from any Nyxt-accessible package and show it in a help buffer."
-  (describe-function :universal t))
-
 (define-internal-page-command-global describe-command
     (&key (command (name (prompt1 :prompt "Describe command"
                                   :sources 'command-source))))
@@ -444,21 +549,19 @@ A command is a special kind of function that can be called with
       (:p "Unbound"))))
 
 (define-internal-page-command-global describe-slot
-    (&key class name universal)
+    (&key class name)
     (buffer (str:concat "*Help-" (symbol-name name) "*") 'nyxt/help-mode:help-mode)
   "Inspect a slot and show it in a help buffer."
   (unless (and class name)
     (let ((slot (prompt1
                  :prompt "Describe slot"
-                 :sources (make-instance 'slot-source :universal universal))))
+                 :sources '(slot-source
+                            slot-non-nyxt-source
+                            slot-internal-source))))
       (setf name (name slot)
             class (class-sym slot))
       ""))
   (describe-slot* name class :mention-class-p t))
-
-(define-command-global universal-describe-slot ()
-  "Inspect a Nyxt-accessible slot and show it in a help buffer."
-  (describe-slot :universal t))
 
 (defun describe-slot* (slot class &key mention-class-p)
   "Create the HTML that represents a slot."
@@ -500,10 +603,11 @@ A command is a special kind of function that can be called with
 
 (define-internal-page-command-global describe-class
     (&key
-     universal
      (class (prompt1
              :prompt "Describe class"
-             :sources (make-instance 'class-source :universal universal))))
+             :sources '(class-source
+                        class-non-nyxt-source
+                        class-internal-source))))
     (buffer (str:concat "*Help-" (symbol-name class) "*") 'nyxt/help-mode:help-mode)
   "Inspect a class and show it in a help buffer."
   (if (find-class class nil)
@@ -538,10 +642,6 @@ A command is a special kind of function that can be called with
         (:style (style buffer))
         (:h2 (format nil "~s" class))
         (:p "Unbound."))))
-
-(define-command-global universal-describe-class ()
-  "Inspect a Nyxt-accessible class and show it in a help buffer."
-  (describe-class :universal t))
 
 (define-internal-page describe-bindings (&key (id (id (current-buffer))))
     (:title "*Help-bindings*" :page-mode 'nyxt/help-mode:help-mode)
