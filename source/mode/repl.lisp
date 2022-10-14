@@ -275,11 +275,7 @@ Features:
   (reload-buffer (buffer repl)))
 
 (defun format-form (form package)
-  (let ((*print-readably* t)
-        (*print-pretty* t)
-        (*print-case* :downcase)
-        (*package* package))
-    (write-to-string form)))
+  (prini-to-string form :readably t :package package))
 
 (define-command reformat-cell (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
   "Reformat the cell's input.

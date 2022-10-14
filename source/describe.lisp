@@ -93,7 +93,7 @@ See `package-functions' for an example."
 
 (defmethod prompter:object-attributes ((symbol symbol) (source prompter:source))
   (declare (ignore source))
-  `(("Name" ,(write-to-string symbol))
+  `(("Name" ,(prini-to-string symbol))
     ("Documentation"
      ,(or (cond
             ((fboundp symbol)
@@ -106,7 +106,7 @@ See `package-functions' for an example."
             (t
              (first-line (documentation symbol 'variable))))
           ""))
-    ("Visibility" ,(symbol-visibility symbol))))
+    ("Visibility" ,(prini-to-string (symbol-visibility symbol)))))
 
 (defmethod prompter:object-attributes ((package package) (source prompter:source))
   (declare (ignore source))
@@ -288,6 +288,9 @@ Otherwise prompt for matches."
                   (value (inspected-value id)))
     (spinneret:with-html-string
       (:h1 (:raw (escaped-literal-print value)))
+      (:dl
+       (:dt "Type")
+       (:dd (princ-to-string (type-of value))))
       (:p (:raw (value->html value))))))
 
 (export-always 'resolve-backtick-quote-links)
@@ -347,8 +350,7 @@ turned into links to their respective description page."
   "Inspect a package and show it in a help buffer."
   (let* ((package (find-package package))
          (total-symbols (package-symbols (list package)))
-         (external-symbols (package-symbols (list package) :visibility :external))
-         (*print-case* :downcase))
+         (external-symbols (package-symbols (list package) :visibility :external)))
     (flet ((package-markup (package)
              (spinneret:with-html
                (:a :href (nyxt-url 'describe-package :package (package-name package))
@@ -441,8 +443,7 @@ turned into links to their respective description page."
   "Inspect a function and show it in a help buffer.
 For generic functions, describe all the methods."
   (if fn
-      (let ((input fn)
-            (*print-case* :downcase))
+      (let ((input fn))
         (flet ((fun-desc (input)
                  (spinneret:with-html-string
                    (:raw (resolve-backtick-quote-links (documentation input 'function) input))
@@ -475,7 +476,7 @@ For generic functions, describe all the methods."
                                               (spinneret:with-html-string
                                                 (:a :href (nyxt-url 'describe-class
                                                                     :class (class-name class))
-                                                    (write-to-string (class-name class)))))
+                                                    (prini-to-string (class-name class)))))
                                              ((ignore-errors (eq t (class-name class)))
                                               "t")
                                              (t (nyxt::escaped-literal-print class))))
@@ -610,8 +611,7 @@ A command is a special kind of function that can be called with
                                    (getf props :type))
                                (getf props :type)))))))
         (when (getf props :initform)
-          (let* ((initform-string (let ((*print-case* :downcase))
-                                    (write-to-string (getf props :initform))))
+          (let* ((initform-string (prini-to-string (getf props :initform)))
                  (multiline-form? (search +newline+ initform-string)))
             (if multiline-form?
                 (:li "Default value: " (:ncode :literal-p t initform-string))

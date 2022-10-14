@@ -139,8 +139,7 @@ non-overridable."
                     (remf attrs :variable)
                     (remf attrs :package)
                     attrs)
-                (let ((*print-case* :downcase))
-                  (format nil "~a" ,printable))))))
+                (nyxt:prini-to-string ,printable)))))
 
 (deftag :nsection (body attrs &key (title (alexandria:required-argument 'title))
                         (open-p t)

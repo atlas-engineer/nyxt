@@ -65,6 +65,25 @@ Particularly useful to avoid errors on already terminated threads."
       (swank-backend:find-external-format "latin-1")
       :default))
 
+(export-always 'prini)
+(defun prini (value stream &key (case :downcase) (pretty t)  (circle t) (readably nil) (package *package*))
+  "PRINT for Interface: a printing primitive with the best aesthetics for Nyxt interfaces.
+White-s the VALUE to STREAM with CASE, PRETTY, CIRCLE, and READABLY set to the
+most intuitive values."
+  (let ((*print-case* case)
+        (*print-pretty* pretty)
+        (*print-circle* circle)
+        (*print-readably* readably)
+        (*package* package))
+    (write value :stream stream)))
+
+(export-always 'prini-to-string)
+(defun prini-to-string (value &rest keys &key (case :downcase) (pretty t) (circle t) (readably nil) (package *package*))
+  "A string-returning version of `prini'."
+  (declare (ignorable case pretty circle readably package))
+  (with-output-to-string (s)
+    (apply #'prini value s keys)))
+
 (export-always 'source-for-thing)
 (-> source-for-thing ((or function method class)) string)
 (defun source-for-thing (thing)
@@ -104,9 +123,7 @@ THING can be a class or a function, not symbol."
             (let ((*read-eval* nil))
               (let ((expression (read-from-string file-content t nil
                                                   :start (1- start-position))))
-                (values (let ((*print-case* :downcase)
-                              (*print-pretty* t))
-                          (write-to-string expression))
+                (values (prini-to-string expression)
                         expression)))
           (reader-error ()
             (str:trim-right
@@ -121,9 +138,7 @@ THING can be a class or a function, not symbol."
 On failure, fall back to other means of finding the source.
 Return the lambda s-expression as a second value, if possible."
   (alex:if-let ((expression (when (functionp fun) (function-lambda-expression fun))))
-    (values (let ((*print-case* :downcase)
-                  (*print-pretty* t))
-              (write-to-string expression))
+    (values (prini-to-string expression)
             expression)
     (source-for-thing fun)))
 

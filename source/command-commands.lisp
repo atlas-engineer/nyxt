@@ -105,7 +105,7 @@ Includes all commands and modes, and adds arbitrary Lisp functions on top of tha
           `(("Expression" ,(format nil "~s" extended-command))
             ("Arguments" ,(remove #\newline (format nil "~{~a~^ ~}" (arglist function))))
             ("Documentation" ,(or (first (sera::lines (documentation function 'function))) ""))))
-        `(("Expression" ,(write-to-string extended-command))
+        `(("Expression" ,(prini-to-string extended-command))
           ("Arguments" "")
           ("Documentation" ,(or (documentation extended-command 'variable) ""))))))
 
