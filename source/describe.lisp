@@ -157,100 +157,128 @@ See `package-functions' for an example."
   ((prompter:name "Packages")
    (prompter:constructor (mapcar (compose #'intern #'package-name) (list-all-packages)))))
 
-(define-command-global describe-any (&optional input)
+(define-internal-page-command-global describe-any (&key input)
+    (buffer (format nil "*Describe-~a*" input) 'nyxt/help-mode:help-mode)
   "Inspect anything and show it in a help buffer.
-When INPUT matches a single item in the sources, describe it.  Otherwise prompt
-for matches."
-  (let* ((preprocessor (if (uiop:emptyp input)
-                           'prompter:delete-inexact-matches
-                           'prompter:filter-exact-match))
-         (sources
-           (list (make-instance
-                  'variable-source
-                  :return-actions (list (lambda-command describe-variable* (variables)
-                                          (describe-variable :variable (first variables))))
-                  :filter-preprocessor preprocessor)
-                 (make-instance
-                  'variable-non-nyxt-source
-                  :return-actions (list (lambda-command describe-variable* (variables)
-                                          (describe-variable :variable (first variables))))
-                  :filter-preprocessor preprocessor)
-                 (make-instance
-                  'variable-internal-source
-                  :return-actions (list (lambda-command describe-variable* (variables)
-                                          (describe-variable :variable (first variables))))
-                  :filter-preprocessor preprocessor)
-                 (make-instance
-                  'function-source
-                  :return-actions (list (lambda-command describe-function* (functions)
-                                          (describe-function :fn (first functions))))
-                  :filter-preprocessor preprocessor)
-                 (make-instance
-                  'function-non-nyxt-source
-                  :return-actions (list (lambda-command describe-function* (functions)
-                                          (describe-function :fn (first functions))))
-                  :filter-preprocessor preprocessor)
-                 (make-instance
-                  'function-internal-source
-                  :return-actions (list (lambda-command describe-function* (functions)
-                                          (describe-function :fn (first functions))))
-                  :filter-preprocessor preprocessor)
-                 (make-instance
-                  'command-source
-                  :return-actions (list (lambda-command describe-command* (commands)
-                                          (describe-command :command (name (first commands)))))
-                  :filter-preprocessor preprocessor)
-                 (make-instance
-                  'class-source
-                  :return-actions (list (lambda-command describe-class* (classes)
-                                          (describe-class :class (first classes))))
-                  :filter-preprocessor preprocessor)
-                 (make-instance
-                  'class-non-nyxt-source
-                  :return-actions (list (lambda-command describe-class* (classes)
-                                          (describe-class :class (first classes))))
-                  :filter-preprocessor preprocessor)
-                 (make-instance
-                  'class-internal-source
-                  :return-actions (list (lambda-command describe-class* (classes)
-                                          (describe-class :class (first classes))))
-                  :filter-preprocessor preprocessor)
-                 (make-instance
-                  'slot-source
-                  :return-actions (list (lambda-command describe-slot** (slots)
-                                          (describe-slot :class (class-sym (first slots))
-                                                         :name (name (first slots)))))
-                  :filter-preprocessor preprocessor)
-                 (make-instance
-                  'slot-non-nyxt-source
-                  :return-actions (list (lambda-command describe-slot** (slots)
-                                          (describe-slot :class (class-sym (first slots))
-                                                         :name (name (first slots)))))
-                  :filter-preprocessor preprocessor)
-                 (make-instance
-                  'slot-internal-source
-                  :return-actions (list (lambda-command describe-slot** (slots)
-                                          (describe-slot :class (class-sym (first slots))
-                                                         :name (name (first slots)))))
-                  :filter-preprocessor preprocessor))))
-    (let ((suggestion+action-pairs
-            (and input
-                 (loop with result = '()
-                       for source in sources
-                       do (loop for suggestion in (prompter:suggestions source)
-                                while (< (length result) 2)
-                                when (string-equal input (prompter:attributes-default suggestion))
-                                  do (push (list (prompter:value suggestion)
-                                                 (prompter:default-return-action source))
-                                           result))
-                       return result))))
-      (match suggestion+action-pairs
-        ((list (list suggestion action))
-         (funcall action (list suggestion)))
-        (_ (prompt
-            :prompt "Describe"
-            :input input
-            :sources sources))))))
+When input exists, list all the symbols that may match it.
+Otherwise prompt for matches."
+  (typecase input
+    ((or string null)
+     (run-thread "describe-any prompter"
+         (let* ((*interactive-p* t)
+                (preprocessor (if (uiop:emptyp input)
+                                  'prompter:delete-inexact-matches
+                                  'prompter:filter-exact-match))
+                (sources
+                  (list (make-instance
+                         'variable-source
+                         :return-actions (list (lambda-command describe-variable* (variables)
+                                                 (describe-variable :variable (first variables))))
+                         :filter-preprocessor preprocessor)
+                        (make-instance
+                         'variable-non-nyxt-source
+                         :return-actions (list (lambda-command describe-variable* (variables)
+                                                 (describe-variable :variable (first variables))))
+                         :filter-preprocessor preprocessor)
+                        (make-instance
+                         'variable-internal-source
+                         :return-actions (list (lambda-command describe-variable* (variables)
+                                                 (describe-variable :variable (first variables))))
+                         :filter-preprocessor preprocessor)
+                        (make-instance
+                         'function-source
+                         :return-actions (list (lambda-command describe-function* (functions)
+                                                 (describe-function :fn (first functions))))
+                         :filter-preprocessor preprocessor)
+                        (make-instance
+                         'function-non-nyxt-source
+                         :return-actions (list (lambda-command describe-function* (functions)
+                                                 (describe-function :fn (first functions))))
+                         :filter-preprocessor preprocessor)
+                        (make-instance
+                         'function-internal-source
+                         :return-actions (list (lambda-command describe-function* (functions)
+                                                 (describe-function :fn (first functions))))
+                         :filter-preprocessor preprocessor)
+                        (make-instance
+                         'command-source
+                         :return-actions (list (lambda-command describe-command* (commands)
+                                                 (describe-command :command (name (first commands)))))
+                         :filter-preprocessor preprocessor)
+                        (make-instance
+                         'class-source
+                         :return-actions (list (lambda-command describe-class* (classes)
+                                                 (describe-class :class (first classes))))
+                         :filter-preprocessor preprocessor)
+                        (make-instance
+                         'class-non-nyxt-source
+                         :return-actions (list (lambda-command describe-class* (classes)
+                                                 (describe-class :class (first classes))))
+                         :filter-preprocessor preprocessor)
+                        (make-instance
+                         'class-internal-source
+                         :return-actions (list (lambda-command describe-class* (classes)
+                                                 (describe-class :class (first classes))))
+                         :filter-preprocessor preprocessor)
+                        (make-instance
+                         'slot-source
+                         :return-actions (list (lambda-command describe-slot** (slots)
+                                                 (describe-slot :class (class-sym (first slots))
+                                                                :name (name (first slots)))))
+                         :filter-preprocessor preprocessor)
+                        (make-instance
+                         'slot-non-nyxt-source
+                         :return-actions (list (lambda-command describe-slot** (slots)
+                                                 (describe-slot :class (class-sym (first slots))
+                                                                :name (name (first slots)))))
+                         :filter-preprocessor preprocessor)
+                        (make-instance
+                         'slot-internal-source
+                         :return-actions (list (lambda-command describe-slot** (slots)
+                                                 (describe-slot :class (class-sym (first slots))
+                                                                :name (name (first slots)))))
+                         :filter-preprocessor preprocessor))))
+           (let ((suggestion+action-pairs
+                   (and input
+                        (loop with result = '()
+                              for source in sources
+                              do (loop for suggestion in (prompter:suggestions source)
+                                       while (< (length result) 2)
+                                       when (string-equal input (prompter:attributes-default suggestion))
+                                         do (push (list (prompter:value suggestion)
+                                                        (prompter:default-return-action source))
+                                                  result))
+                              return result))))
+             (match suggestion+action-pairs
+               ((list (list suggestion action))
+                (funcall action (list suggestion)))
+               (_ (prompt
+                   :prompt "Describe"
+                   :input input
+                   :sources sources)))))
+       (buffer-delete buffer))
+     "")
+    (symbol
+     (spinneret:with-html-string
+       (:h1 (princ-to-string input))
+       (:p (princ-to-string input)
+           " may refer to several things. Please choose the one that you need.")
+       (:dl
+        (when (fboundp input)
+          (when (command-p (symbol-function input))
+            (:dt "Command")
+            (:dd (:nxref :command input)))
+          (:dt "Function")
+          (:dd (:nxref :function input)))
+        (when (boundp input)
+          (:dt "Variable")
+          (:dd (:nxref :variable input)))
+        (when (find-class input)
+          (:dt "Class")
+          (:dd (:nxref :class-name input)))
+        (when (find-package input)
+          (:dt "Package")
+          (:dd (:nxref :package input))))))))
 
 (define-internal-page describe-value
     (&key id)
@@ -290,13 +318,10 @@ turned into links to their respective description page."
                             (nyxt-url 'describe-command :command command))
                            ((and function (not class) (not variable) (not command))
                             (nyxt-url 'describe-function :fn function))
-                           (class
+                           ((and class (not function) (not variable))
                             (nyxt-url 'describe-class :class class))
                            (symbol
-                            (javascript-url
-                             (ps:ps (nyxt/ps:lisp-eval
-                                     (:title "describe-any")
-                                     (nyxt::describe-any (princ-to-string symbol))))))
+                            (nyxt-url 'describe-any :input symbol))
                            (t nil))))
                (let ((*print-pretty* nil))
                  ;; Disable pretty-printing to avoid spurious space insertion within links:
