@@ -109,8 +109,8 @@ See also `vi-normal-mode' and `vi-insert-mode'."
   (let ((buffer (buffer mode)))
     (when (and (string= "button1" (keymaps:key-value button-key))
                (nyxt/document-mode:input-tag-p
-                (ps-eval (ps:@ document active-element tag-name))))
-      (enable-modes '(nyxt/vi-mode:vi-insert-mode) buffer))))
+                (ps-eval :buffer buffer (ps:@ document active-element tag-name))))
+      (enable-modes :modes 'vi-insert-mode :buffers buffer :bypass-auto-rules-p t))))
 
 (defmethod nyxt/document-mode:element-focused ((mode vi-normal-mode))
   (enable-modes :modes 'vi-insert-mode :buffers (buffer mode) :bypass-auto-rules-p t))
