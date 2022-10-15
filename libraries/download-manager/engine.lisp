@@ -27,9 +27,11 @@ Create it if it does not exist."
   (loop with original-name = file
         with suffix = 1
         while (uiop:file-exists-p file)
-        do (setf file (format nil  "~a.~a" original-name suffix) )
+        do (setf file (make-pathname :defaults file
+                                     :name (format nil "~a.~d" (pathname-name (pathname file))
+                                                   suffix)))
         do (incf suffix))
-  file)
+  (namestring (pathname file)))
 
 (defvar *notifications* nil
   "A channel which can be queried for download notifications.
