@@ -335,7 +335,7 @@ call."))
     (run-thread "Prompter mark action thread" (funcall action (marks source)))))
 
 (defmethod default-selection-action ((source prompter:source))
-  (first (slot-value source 'selection-actions)))
+  (first (selection-actions source)))
 
 (export-always 'object-attributes)
 (defgeneric object-attributes (object source)
