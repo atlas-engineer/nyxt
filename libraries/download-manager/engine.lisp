@@ -27,8 +27,8 @@ Create it if it does not exist."
   (loop with original-name = file
         with suffix = 1
         while (uiop:file-exists-p file)
-        do (setf file (make-pathname :defaults file
-                                     :name (format nil "~a.~d" (pathname-name (pathname file))
+        do (setf file (make-pathname :defaults original-name
+                                     :name (format nil "~a.~d" (pathname-name (pathname original-name))
                                                    suffix)))
         do (incf suffix))
   (namestring (pathname file)))
