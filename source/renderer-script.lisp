@@ -45,12 +45,12 @@ Any Lisp expression must be wrapped in (PS:LISP ...).
 
 The returned function sends the compiled Javascript to the current buffer webview.
 The function can be passed Lisp ARGS."
-  `(defun ,script-name ,args (ps-eval :buffer (current-buffer) ,@script-body)))
+  `(defmethod ,script-name ,args (ps-eval :buffer (current-buffer) ,@script-body)))
 
 (export-always 'define-parenscript-async)
 (defmacro define-parenscript-async (script-name args &body script-body)
   "Like `define-parenscript', but Javascript runs asynchronously."
-  `(defun ,script-name ,args (ps-eval :async t :buffer (current-buffer) ,@script-body)))
+  `(defmethod ,script-name ,args (ps-eval :async t :buffer (current-buffer) ,@script-body)))
 
 (export-always 'ps-labels)
 (defmacro ps-labels (&body args)

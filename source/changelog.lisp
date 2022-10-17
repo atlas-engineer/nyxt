@@ -536,7 +536,11 @@ the selection, and the string to paste instead of the clipboard (respectively)."
 formatting, deletion, cleaning, and movement."))
   (:h3 "Programming interface")
   (:ul
-   (:li "Allow the command argument to " (:nxref :function 'ffi-add-context-menu-action) " to be an arbitrary function.")
+   (:li "Generate methods instead of functions in" (:nxref :function 'define-parenscript)
+        " and " (:nxref :function 'define-parenscript-async)
+        " to ease hooking into those with, for example, " (:code ":around") " methods.")
+   (:li "Allow the command argument to " (:nxref :function 'ffi-add-context-menu-action)
+        " to be an arbitrary function.")
    (:li "New package nicknames:"
         (:ul
          (:li  (:code "time") " for " (:code "local-time"))
