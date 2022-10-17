@@ -415,7 +415,7 @@ Follows what the compiler finds aesthetically pleasing."
 (define-internal-page-command-global repl (&key (form nil))
     (repl-buffer "*REPL*" 'repl-mode)
   "Create a Nyxt REPL buffer."
-  (let ((repl-mode (find-submode 'nyxt/repl-mode:repl-mode repl-buffer)))
+  (let ((repl-mode (find-submode 'repl-mode repl-buffer)))
     (if form
         (progn
           (setf (evaluations repl-mode)
