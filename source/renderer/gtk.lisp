@@ -1240,17 +1240,18 @@ See `finalize-buffer'."
                                               file-chooser-request)))
                                            (uiop:native-namestring (uiop:getcwd)))
                                    :extra-modes 'nyxt/file-manager-mode:file-manager-mode
-                                   :sources 'nyxt/file-manager-mode:file-source)
+                                   :sources (make-instance
+                                             'nyxt/file-manager-mode:file-source
+                                             :multi-selection-p
+                                             (webkit:webkit-file-chooser-request-select-multiple
+                                              file-chooser-request)))
                          (prompt-buffer-canceled ()
                            nil)))))
           (if files
               (webkit:webkit-file-chooser-request-select-files
                file-chooser-request
                (cffi:foreign-alloc :string
-                                   :initial-contents (if (webkit:webkit-file-chooser-request-select-multiple
-                                                          file-chooser-request)
-                                                         (mapcar #'cffi:foreign-string-alloc files)
-                                                         (list (cffi:foreign-string-alloc (first files))))
+                                   :initial-contents (mapcar #'cffi:foreign-string-alloc files)
                                    :count (if (webkit:webkit-file-chooser-request-select-multiple
                                                file-chooser-request)
                                               (length files)
