@@ -15,9 +15,7 @@ of Nyxt."))
 
 (defun manual-sections ()
   (spinneret:with-html-string
-    (:nsection
-      :title "Configuration"
-      :open-p nil
+    (:nsection :title "Configuration"
       (let ((auto-config-file (files:expand *auto-config-file*))
             (config-file (files:expand *config-file*)))
         (:p "Nyxt is written in the Common Lisp programming language which offers a
@@ -65,9 +63,7 @@ class and slot documentation for the individual details.")
       (:p "To find out about all modes known to Nyxt,
 run " (command-markup 'describe-command) " and type 'mode'.")
 
-      (:nsection
-        :title "Slot configuration"
-        :open-p nil
+      (:nsection :title "Slot configuration"
         (:p "Slots store values that can be either accessed (get) or changed
 (set). Setting new values for slots allows many possibilities of customization.
 For instance, keyboard layouts vary across the world. The slot "
@@ -86,9 +82,7 @@ addition, other similar approaches of customization can be applied to slots
 such as " (:nxref :slot 'nyxt/spell-check-mode:spell-check-language :class-name 'nyxt/spell-check-mode:spell-check-mode)
 ", which can be expanded to do the spelling-check of other languages besides English."))
 
-      (:nsection
-        :title "Different types of buffers"
-        :open-p nil
+      (:nsection :title "Different types of buffers"
         (:p "There are multiple buffer classes, such as "
             (:nxref :class-name 'document-buffer) " (for structured documents) and "
             (:nxref :class-name 'input-buffer) " (for buffers that can receive user input).  A "
@@ -103,9 +97,7 @@ For instance if you configure the " (:nxref :slot 'override-map :class-name 'inp
 " slot in " (:nxref :class-name 'input-buffer) ", both " (:nxref :class-name 'panel-buffer) " and "
 (:nxref :class-name 'web-buffer) " classes will inherit from the new value."))
 
-      (:nsection
-        :title "Keybinding configuration"
-        :open-p nil
+      (:nsection :title "Keybinding configuration"
         (:p "Nyxt supports multiple " (:i "bindings schemes") " such as CUA (the
     default), Emacs or vi.  Changing scheme is as simple as setting the
     corresponding mode as default, e.g. "
@@ -177,9 +169,7 @@ shifts.  For instance if " (:code "C-x C-F") " fails to match anything " (:code 
          customize it or set it to " (:code "nil") " to disable all forms of
          translation."))
 
-      (:nsection
-        :title "Search engines"
-        :open-p nil
+      (:nsection :title "Search engines"
         (:p "See the " (:nxref :slot 'search-engines :class-name 'context-buffer) " buffer slot
 documentation.  Bookmarks can also be used as search engines, see the
 corresponding section.")
@@ -220,29 +210,21 @@ follows.")
                                      (mapcar (lambda (engine) (apply 'make-search-engine engine))
                                              *my-search-engines*)))))))
 
-      (:nsection
-        :title "Downloads"
-        :open-p nil
+      (:nsection :title "Downloads"
         (:p "See the " (command-markup 'nyxt/download-mode:list-downloads) " command and the "
             (:nxref :slot 'download-path :class-name 'buffer) " buffer slot documentation."))
 
-      (:nsection
-        :title "Proxy and Tor"
-        :open-p nil
+      (:nsection :title "Proxy and Tor"
         (:p "See the " (:nxref :class-name 'nyxt/proxy-mode:proxy-mode) " documentation."))
 
-      (:nsection
-        :title "Blocker mode"
-        :open-p nil
+      (:nsection :title "Blocker mode"
         (:p "This mode blocks access to websites related to specific hosts. To see
 all hosts being blocked, execute command " (:code "describe-variable") ", choose variable "
 (:code "NYXT/BLOCKER-MODE:*DEFAULT-HOSTLIST*") ", and read data on "
 (:code "nyxt/blocker-mode:url-body") " slot." " To customize host blocking, read the "
 (:nxref :class-name 'nyxt/blocker-mode:blocker-mode) " documentation."))
 
-      (:nsection
-        :title "Custom commands"
-        :open-p nil
+      (:nsection :title "Custom commands"
         (:p "Creating your own invocable commands is similar to creating a Common
 Lisp function, except the form is " (:code "define-command") " instead of "
 (:code "defun") ". If you want this command to be invocable outside of
@@ -276,9 +258,7 @@ Nyxt provides. For example, one can use the "
              (nyxt/bookmark-mode:bookmark-add (url-at-point (current-buffer))))
            "Bookmark Link")))
 
-      (:nsection
-        :title "Custom URL schemes"
-        :open-p nil
+      (:nsection :title "Custom URL schemes"
         (:p "If there's a scheme that Nyxt doesn't support, but you want it to, you can
 always define the handler for this scheme so that it's Nyxt-openable.")
         (:p "As a totally hypothetical example, you can define a nonsense scheme "
@@ -383,9 +363,7 @@ still define it as:")
               " to understand what you can pass to "
               (:nxref :function 'define-internal-page) ".")))
 
-      (:nsection
-        :title "Hooks"
-        :open-p nil
+      (:nsection :title "Hooks"
         (:p "Hooks provide a powerful mechanism to tweak the behavior of various
 events that occur in the context of windows, buffers, modes, etc.")
         (:p "A hook holds a list of " (:i "handlers") ".  Handlers are named and
@@ -473,9 +451,7 @@ can set a hook like the following in your configuration file:")
 important to make sure we return " (:nxref :class-name 'request-data) " here.  See the
 documentation of the respective hooks for more details."))
 
-      (:nsection
-        :title "Data paths and data profiles"
-        :open-p nil
+      (:nsection :title "Data paths and data profiles"
         (:p "Nyxt provides a uniform configuration interface for all data files
 persisted to disk (bookmarks, cookies, etc.).  To each file corresponds
 a " (:nxref :class-name 'nyxt-file) " object. An " (:nxref :class-name 'nyxt-profile) " is a
@@ -518,9 +494,7 @@ say to develop Nyxt or extensions.")
         (:p "Then you can start a separate instance of Nyxt using this profile
 with " (:code "nyxt --profile dev --socket /tmp/nyxt.socket") "."))
 
-      (:nsection
-        :title "Password management"
-        :open-p nil
+      (:nsection :title "Password management"
         (:p "Nyxt provides a uniform interface to some password managers including "
             (:a :href "https://keepassxc.org/" "KeepassXC")
             " and " (:a :href "https://www.passwordstore.org/" "Password Store") ". "
@@ -534,9 +508,7 @@ the " (:code "define-configuration") " macro.")
          (:li (command-markup 'nyxt/password-mode:save-new-password) ": Query for name and new password to persist in the database.")
          (:li (command-markup 'nyxt/password-mode:copy-password) ": " (command-docstring-first-sentence 'nyxt/password-mode:copy-password))))
 
-      (:nsection
-        :title "Appearance"
-        :open-p nil
+      (:nsection :title "Appearance"
         (:p "Much of the visual style can be configured by the user. You can use the
 facilities provided by " (:nxref :package :theme) " and "
 (:nxref :slot 'nyxt:theme :class-name 'nyxt:browser)
@@ -609,9 +581,7 @@ variables like " (:code "theme:on-primary") ".)")
               " functions, you might need to add more rules or replace the "
               (:nxref :slot 'style :class-name 'status-buffer "style of status buffer") ".")))
 
-      (:nsection
-        :title "Scripting"
-        :open-p nil
+      (:nsection :title "Scripting"
         (:p "You can evaluate code from the command line with "
             (:code "--eval") " and " (:code "--load") ".  From a shell:")
         (:pre (:code "$ nyxt --no-config --eval '+version+' \
@@ -637,9 +607,7 @@ instance must be non-nil.")
 `foo' function:")
         (:pre (:code "nyxt --profile nosave --remote --load foo.lisp --eval '(foo)'")))
 
-      (:nsection
-        :title "User scripts"
-        :open-p nil
+      (:nsection :title "User scripts"
         (:p "User scripts are a conventional and lightweight way to run arbitrary JavaScript
 code on some set of pages/conditions. While not as powerful as either
 WebExtensions on Lisp-native extensions to Nyxt, those hook into the tenderer
@@ -700,9 +668,7 @@ document-idle (in Nyxt implementation, same as document-end).")
          (:dd "Allows including arbitrary JS files hosted on the Internet or loaded from the
 same place as the script itself. Neat for including some JS libraries, like jQuery.")))
 
-      (:nsection
-        :title "Headless mode"
-        :open-p nil
+      (:nsection :title "Headless mode"
         (:p "Similarly to Nyxt's scripting functionality, headless mode runs without a
 graphical user interface. Possible use-cases for this mode are web scraping,
 automations and web page analysis.")
@@ -797,9 +763,7 @@ handle. Useful to parallelize computations.")
          (:li (:code "--profile nosave")
               " to not pollute your history and cache with the script-accessed pages.")))
 
-      (:nsection
-        :title "Built-in REPL"
-        :open-p nil
+      (:nsection :title "Built-in REPL (" (:nxref :package :nyxt/repl-mode) ")"
         (:p "Nyxt has a built-in REPL, available with "
             (:nxref :command 'nyxt/repl-mode:repl) " command."
             "The REPL can be used to try out some code snippets for automation or quickly
@@ -816,9 +780,7 @@ input area containing familiar code, with some " (:code "v332 = \"Hello, Nyxt!\"
         (:p "This cell-based code evaluation is the basis of the Nyxt REPL. For more features, see "
             (:nxref :package :nyxt/repl-mode "REPL mode documentation") "."))
 
-      (:nsection
-        :title "Advanced configuration"
-        :open-p nil
+      (:nsection :title "Advanced configuration"
         (:p "While " (:code "define-configuration") " is convenient, it is mostly
 restricted to class slot configuration.  If you want to do anything else on
 class instantiation, you'll have to specialize the
@@ -833,9 +795,7 @@ after " (:nxref :function 'initialize-instance)(:code " :after") ".  The primary
 to the user, however the " (:code ":after") " method is reserved to the Nyxt
 core to finalize the instance.")))
 
-    (:nsection
-      :title "Extensions"
-      :open-p nil
+    (:nsection :title "Extensions"
       (:p "To install an extension, copy inside the "
           (:nxref :variable '*extensions-directory*) " (default to "
           (:code "~/.local/share/nyxt/extensions")").")
@@ -843,9 +803,8 @@ core to finalize the instance.")))
       (:p "A catalog of extensions is available in the "
           (:code "document/EXTENSIONS.org") " file in the source repository."))
 
-    (:nsection
-      :title "Troubleshooting"
-      :open-p nil
+    (:nsection :title "Troubleshooting"
+
       (:nsection :title "Debugging and reporting errors"
         (:p "If you experience hangs or errors you can reproduce, you can use the "
             (:nxref :command 'nyxt:toggle-debug-on-error)
