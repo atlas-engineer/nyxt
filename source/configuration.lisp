@@ -388,7 +388,7 @@ To discover the default value of a slot or all slots of a class, use the
 ;; But maybe that's beyond if-confirm.
 (export-always 'if-confirm)
 (defmacro if-confirm ((prompt &key (yes "yes" explicit-yes-p) (no "no" explicit-no-p))
-                      &optional yes-form no-form)
+                      &optional (yes-form t) no-form)
   "Ask the user for confirmation before executing either YES-FORM or NO-FORM.
 YES-FORM is executed on YES answer, NO-FORM -- otherwise (including NO and
 prompt cancellation).
@@ -417,7 +417,7 @@ Examples:
                       :hide-suggestion-count-p t)
                    (prompt-buffer-canceled () nil))))
      (if answer
-         (or ,yes-form t)
+         ,yes-form
          ,no-form)))
 
 (export-always 'reset-asdf-registries)
