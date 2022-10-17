@@ -34,6 +34,11 @@ Features:
     *package*
     :type package
     :documentation "The package that the evaluation happens in.")
+   (thread
+    nil
+    :export nil
+    :type (maybe thread)
+    :documentation "The thread that evaluation happens on.")
    (results
     nil
     :documentation "The results (as a list) of `input' evaluation.")
@@ -58,30 +63,32 @@ Features:
   (setf (slot-value evaluation 'input)
         value))
 
-(defmethod initialize-instance :after ((evaluation evaluation) &key)
+(defmethod initialize-instance :after ((evaluation evaluation)
+                                       &key (mode (find-submode 'repl-mode)) &allow-other-keys)
   (unless (ready-p evaluation)
-    (run-thread "repl cell evaluation"
-      (let ((nyxt::*interactive-p* t)
-            (*standard-output* (make-string-output-stream))
-            (*package* (eval-package evaluation)))
-        (ndebug:with-debugger-hook
-            (:wrapper-class 'nyxt::debug-wrapper
-             :ui-display (setf (ready-p evaluation) t
-                               (raised-condition evaluation) %wrapper%)
-             :ui-cleanup (lambda (wrapper)
-                           (declare (ignore wrapper))
-                           (setf (raised-condition evaluation) nil)
-                           (reload-current-buffer)))
-          (with-input-from-string (input (input evaluation))
-            (alex:lastcar
-             (mapcar (lambda (s-exp)
-                       (setf (results evaluation) (multiple-value-list (eval s-exp))
-                             (output evaluation) (get-output-stream-string *standard-output*)))
-                     (safe-slurp-stream-forms input))))))
-      (setf (ready-p evaluation) t)
-      (ps-eval (setf (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "#evaluation-result-~a" (id evaluation))))
-                               |innerHTML|)
-                     (ps:lisp (html-result evaluation)))))))
+    (setf (thread evaluation)
+          (run-thread "repl cell evaluation"
+            (let ((nyxt::*interactive-p* t)
+                  (*standard-output* (make-string-output-stream))
+                  (*package* (eval-package evaluation)))
+              (ndebug:with-debugger-hook
+                  (:wrapper-class 'nyxt::debug-wrapper
+                   :ui-display (setf (ready-p evaluation) t
+                                     (raised-condition evaluation) %wrapper%)
+                   :ui-cleanup (lambda (wrapper)
+                                 (declare (ignore wrapper))
+                                 (setf (raised-condition evaluation) nil)
+                                 (when mode
+                                   (reload-buffer (buffer mode)))))
+                (with-input-from-string (input (input evaluation))
+                  (alex:lastcar
+                   (mapcar (lambda (s-exp)
+                             (setf (results evaluation) (multiple-value-list (eval s-exp))
+                                   (output evaluation) (get-output-stream-string *standard-output*)))
+                           (safe-slurp-stream-forms input))))))
+            (setf (ready-p evaluation) t)
+            (when mode
+              (reload-buffer (buffer mode)))))))
 
 (define-mode repl-mode ()
   "Mode for interacting with the REPL."
