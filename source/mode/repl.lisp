@@ -135,11 +135,14 @@ Features:
    (style (theme:themed-css (theme *browser*)
             (*
              :font-family "monospace,monospace")
+            (body
+             :margin "0")
             ("#container"
              :display "flex"
              :flex-flow "column"
              :height "95vh"
-             :width "95vw")
+             :width "97vw"
+             :margin "1em")
             (.input
              :background-color theme:secondary
              :width "99%"
