@@ -410,7 +410,14 @@ Follows what the compiler finds aesthetically pleasing."
                       (format nil "~(~a~) = " name)
                       (:raw (value->html result t))))
            (:span "No values.")))
-      (t (:span "Calculating...")))))
+      (t (:span (:button.button
+                 :onclick (ps:ps (nyxt/ps:lisp-eval
+                                  (:title "abort-evaluation")
+                                  (bt:destroy-thread (thread evaluation))
+                                  (setf (ready-p evaluation) t)
+                                  (reload-current-buffer)))
+                 "Abort!")
+                "Calculating...")))))
 
 (define-internal-page-command-global repl (&key (form nil))
     (repl-buffer "*REPL*" 'repl-mode)
