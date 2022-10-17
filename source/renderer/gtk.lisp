@@ -1364,7 +1364,7 @@ See `finalize-buffer'."
                                        :prompt (webkit:webkit-script-dialog-get-message dialog)
                                        :input (webkit:webkit-script-dialog-prompt-get-default-text dialog)
                                        :sources 'prompter:raw-source)
-                                    (prompt-buffer-canceled (c) (declare (ignore c)) nil)))))
+                                    (prompt-buffer-canceled () nil)))))
                  (if text
                      (webkit:webkit-script-dialog-prompt-set-text dialog text)
                      (progn
