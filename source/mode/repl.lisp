@@ -163,7 +163,11 @@ Features:
              :font-size "12px"
              :flex-grow "1"
              :overflow-y "auto"
-             :overflow-x "auto"))
+             :overflow-x "auto")
+            (.controls
+             :position "absolute"
+             :bottom "1em"
+             :right "1em"))
           :documentation "The CSS applied to a REPL when it is set-up.")
    (evaluations
     (list (make-instance 'evaluation :input "\"Hello, Nyxt!\""))
@@ -522,35 +526,36 @@ Follows what the compiler finds aesthetically pleasing."
                                           "✕ Delete"))
                                    (:div :class "evaluation-result"
                                          :id (format nil "evaluation-result-~a" (id evaluation))
-                                         (:raw (html-result evaluation))))))
-                      (:button.button
-                       :onclick (ps:ps (nyxt/ps:lisp-eval
-                                        (:title "add-cell")
-                                        (add-cell)))
-                       :title "Add a new cell for you to evaluate code in."
-                       "+ Add a cell")
-                      (:button.button
-                       :onclick (ps:ps (nyxt/ps:lisp-eval
-                                        (:title "edit-function")
-                                        (let ((functions (prompt :prompt "Function to edit"
-                                                                 :sources (make-instance
-                                                                           'nyxt::function-source
-                                                                           :return-actions '(identity)))))
-                                          (setf (evaluations repl-mode)
-                                                (append
-                                                 (evaluations repl-mode)
-                                                 (mapcar (lambda (sym)
-                                                           (make-instance 'evaluation
-                                                                          :input (function-lambda-string
-                                                                                  (symbol-function sym))))
-                                                         functions)))
-                                          (reload-buffer (buffer repl-mode)))))
-                       :title "Edit the source of one of Nyxt commands in REPL."
-                       "Edit Nyxt function")
-                      (:button.button
-                       :onclick (ps:ps (nyxt/ps:lisp-eval
-                                        (:title "delete-all-cells")
-                                        (setf (evaluations repl-mode) nil)
-                                        (reload-buffer (buffer repl-mode))))
-                       :title "Delete all cells in the REPL buffer."
-                       "✕ Delete all")))))))
+                                         (:raw (html-result evaluation))))))))
+          (:div.controls
+           (:button.button
+            :onclick (ps:ps (nyxt/ps:lisp-eval
+                             (:title "add-cell")
+                             (add-cell)))
+            :title "Add a new cell for you to evaluate code in."
+            "+ Add a cell")
+           (:button.button
+            :onclick (ps:ps (nyxt/ps:lisp-eval
+                             (:title "edit-function")
+                             (let ((functions (prompt :prompt "Function to edit"
+                                                      :sources (make-instance
+                                                                'nyxt::function-source
+                                                                :return-actions '(identity)))))
+                               (setf (evaluations repl-mode)
+                                     (append
+                                      (evaluations repl-mode)
+                                      (mapcar (lambda (sym)
+                                                (make-instance 'evaluation
+                                                               :input (function-lambda-string
+                                                                       (symbol-function sym))))
+                                              functions)))
+                               (reload-buffer (buffer repl-mode)))))
+            :title "Edit the source of one of Nyxt commands in REPL."
+            "Edit Nyxt function")
+           (:button.button
+            :onclick (ps:ps (nyxt/ps:lisp-eval
+                             (:title "delete-all-cells")
+                             (setf (evaluations repl-mode) nil)
+                             (reload-buffer (buffer repl-mode))))
+            :title "Delete all cells in the REPL buffer."
+            "✕ Delete all"))))))
