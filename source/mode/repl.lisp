@@ -63,33 +63,6 @@ Features:
   (setf (slot-value evaluation 'input)
         value))
 
-(defmethod initialize-instance :after ((evaluation evaluation)
-                                       &key (mode (find-submode 'repl-mode)) &allow-other-keys)
-  (unless (ready-p evaluation)
-    (setf (thread evaluation)
-          (run-thread "repl cell evaluation"
-            (let ((nyxt::*interactive-p* t)
-                  (*standard-output* (make-string-output-stream))
-                  (*package* (eval-package evaluation)))
-              (ndebug:with-debugger-hook
-                  (:wrapper-class 'nyxt::debug-wrapper
-                   :ui-display (setf (ready-p evaluation) t
-                                     (raised-condition evaluation) %wrapper%)
-                   :ui-cleanup (lambda (wrapper)
-                                 (declare (ignore wrapper))
-                                 (setf (raised-condition evaluation) nil)
-                                 (when mode
-                                   (reload-buffer (buffer mode)))))
-                (with-input-from-string (input (input evaluation))
-                  (alex:lastcar
-                   (mapcar (lambda (s-exp)
-                             (setf (results evaluation) (multiple-value-list (eval s-exp))
-                                   (output evaluation) (get-output-stream-string *standard-output*)))
-                           (safe-slurp-stream-forms input))))))
-            (setf (ready-p evaluation) t)
-            (when mode
-              (reload-buffer (buffer mode)))))))
-
 (define-mode repl-mode ()
   "Mode for interacting with the REPL."
   ((rememberable-p nil)
@@ -178,6 +151,33 @@ Features:
     :reader t
     :documentation "Index of the evaluation currently being focused."))
   (:toggler-command-p nil))
+
+(defmethod initialize-instance :after ((evaluation evaluation)
+                                       &key (mode (find-submode 'repl-mode)) &allow-other-keys)
+  (unless (ready-p evaluation)
+    (setf (thread evaluation)
+          (run-thread "repl cell evaluation"
+            (let ((nyxt::*interactive-p* t)
+                  (*standard-output* (make-string-output-stream))
+                  (*package* (eval-package evaluation)))
+              (ndebug:with-debugger-hook
+                  (:wrapper-class 'nyxt::debug-wrapper
+                   :ui-display (setf (ready-p evaluation) t
+                                     (raised-condition evaluation) %wrapper%)
+                   :ui-cleanup (lambda (wrapper)
+                                 (declare (ignore wrapper))
+                                 (setf (raised-condition evaluation) nil)
+                                 (when mode
+                                   (reload-buffer (buffer mode)))))
+                (with-input-from-string (input (input evaluation))
+                  (alex:lastcar
+                   (mapcar (lambda (s-exp)
+                             (setf (results evaluation) (multiple-value-list (eval s-exp))
+                                   (output evaluation) (get-output-stream-string *standard-output*)))
+                           (safe-slurp-stream-forms input))))))
+            (setf (ready-p evaluation) t)
+            (when mode
+              (reload-buffer (buffer mode)))))))
 
 (defun package-short-name (package)
   (first (sort (append (package-nicknames package)
