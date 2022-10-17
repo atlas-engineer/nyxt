@@ -1224,13 +1224,12 @@ See `finalize-buffer'."
       (gobject:g-object-ref (gobject:pointer file-chooser-request))
       (run-thread "file chooser"
         (let* ((*interactive-p* t)
+               (multiple (webkit:webkit-file-chooser-request-select-multiple
+                          file-chooser-request))
                (files (mapcar
                        #'uiop:native-namestring
                        (handler-case
-                           (prompt :prompt (format
-                                            nil "File~@[s~*~] to input"
-                                            (webkit:webkit-file-chooser-request-select-multiple
-                                             file-chooser-request))
+                           (prompt :prompt (format nil "File~@[s~*~] to input" multiple)
                                    :input (or
                                            (and
                                             (webkit:webkit-file-chooser-request-selected-files
@@ -1240,11 +1239,8 @@ See `finalize-buffer'."
                                               file-chooser-request)))
                                            (uiop:native-namestring (uiop:getcwd)))
                                    :extra-modes 'nyxt/file-manager-mode:file-manager-mode
-                                   :sources (make-instance
-                                             'nyxt/file-manager-mode:file-source
-                                             :multi-selection-p
-                                             (webkit:webkit-file-chooser-request-select-multiple
-                                              file-chooser-request)))
+                                   :sources (make-instance 'nyxt/file-manager-mode:file-source
+                                                           :multi-selection-p multiple))
                          (prompt-buffer-canceled ()
                            nil)))))
           (if files
@@ -1252,8 +1248,7 @@ See `finalize-buffer'."
                file-chooser-request
                (cffi:foreign-alloc :string
                                    :initial-contents (mapcar #'cffi:foreign-string-alloc files)
-                                   :count (if (webkit:webkit-file-chooser-request-select-multiple
-                                               file-chooser-request)
+                                   :count (if multiple
                                               (length files)
                                               1)
                                    :null-terminated-p t))
