@@ -159,9 +159,12 @@ ARGS as in make-instance of `auto-rule'."
 (-> url-infer-match (string) list)
 (defun url-infer-match (url)
   "Infer the best `test' for `auto-rule', based on the form of URL.
+
 The rules are:
-- If it's a plain domain-only URL (i.e. \"http://domain.com\") -- then use `match-domain'.
-- If it's host with subdomains (\"http://whatever.subdomain.domain.com\") -- use `match-host'.
+- If it's a plain domain-only URL (i.e. \"http://domain.com\") -- then use
+  `match-domain'.
+- If it's host with subdomains (\"http://whatever.subdomain.domain.com\") -- use
+  `match-host'.
 - Use `match-url' otherwise."
   (let ((url (or (ignore-errors (quri:uri url)) url)))
     (if (and (quri:uri-p url)
@@ -218,14 +221,18 @@ The rules are:
     (values (or list boolean) &optional))
 (defun mode-covered-by-auto-rules-p (mode buffer enable-p)
   "Says whether auto-rules in BUFFER already knows what to do with MODE.
+
 ENABLE-P is whether mode is being enabled (non-nil) or disabled (nil).
+
 Mode is covered if:
-- It's not rememberable (has `rememberable-p' set to nil).
+- `rememberable-p' is nil.
 - There is a rule it matches and:
   - when mode is ENABLED-P and part of `included' modes in the rule, or
   - when mode is not ENABLED-P and part of `excluded' modes in the rule.
-- If there's no matching rule but it's part of `last-active-modes' and needs to be ENABLED-P.
-- If it's getting disabled (not ENABLED-P) after being enabled by a rule on the previous page."
+- If there's no matching rule but it's part of `last-active-modes' and needs to
+  be ENABLED-P.
+- If it's getting disabled (not ENABLED-P) after being enabled by a rule on the
+  previous page."
   (let ((mode (normalize-mode mode)))
     (flet ((invocation-member (list)
              (member mode list :test #'mode=)))
@@ -247,7 +254,7 @@ Mode is covered if:
 (export-always 'apply-auto-rules)
 (defun apply-auto-rules (url buffer)
   "Apply the rules based on the URL being loaded.
-Implies that the request is a top-level one"
+Implies that the request is a top-level one."
   (unless (bypass-auto-rules-p buffer)
     (let* ((rules (matching-auto-rules url buffer))
            (previous-url (previous-url buffer))
@@ -262,10 +269,10 @@ Implies that the request is a top-level one"
       (setf (previous-url buffer) url))))
 
 (define-command-global save-non-default-modes-for-future-visits ()
-  "Save the modes present in `default-modes' and not present in current modes as :excluded,
-and modes that are present in mode list but not in `default-modes' as :included,
-to one of auto-rules. Apply the resulting rule for all the future visits to this URL,
-inferring the matching condition with `url-infer-match'.
+  "Save the modes present in `default-modes' and not present in current modes as
+:excluded, and modes that are present in mode list but not in `default-modes' as
+:included, to one of auto-rules. Apply the resulting rule for all the future
+visits to this URL, inferring the matching condition with `url-infer-match'.
 
 This command does not save non-rememberable modes. If you want auto-rules to
 remember a particular mode, configure it to be `rememberable-p' in your
@@ -292,8 +299,9 @@ For the storage format see the comment in the head of your `auto-rules-file'."
                               :test #'mode=))))
 
 (define-command-global save-exact-modes-for-future-visits ()
-  "Store the exact list of enabled modes to auto-rules for all the future visits of this
-domain/host/URL/group of websites inferring the suitable matching condition by user input.
+  "Store the exact list of enabled modes to auto-rules for all the future visits
+of this domain/host/URL/group of websites inferring the suitable matching
+condition by user input.
 Uses `url-infer-match', see its documentation for matching rules.
 
 This command does not save non-rememberable modes. If you want auto-rules to
@@ -378,42 +386,60 @@ For the storage format see the comment in the head of your `auto-rules-file'."
   (let ((rules (files:content file)))
     (let ((*standard-output* stream)
           (*package* (find-package :nyxt)))
-      (write-string ";; List of auto-rules.
-;; It is made to be easily readable and editable, but you still need to remember some things:
-;;
-;; Every rule starts on a new line and consists of one or more of the following elements:
-;; - Condition for rule activation. It is either (match-domain ...),
-;;   (match-host ...), (match-regex ...), (match-port ...), some other condition
-;;   you define, or a string.
+      (write-string ";;; List of auto-rules (meant to be readable and writable)
+
+;; Rules start on a new line and consist of one or more of the following:
+
+;; - Conditions for rule activation. One of match-domain, match-host,
+;;   match-regex or match-port (please refer to help system); a user-defined
+;;   condition; or a URL between string quotes.
+
 ;; - :included (optional) -- List of the modes to enable on condition.
+
 ;; - :excluded (optional) -- List of the modes to disable on condition.
+
 ;; - :exact-p  (optional) -- Whether to enable only :included modes and disable
-;;    everything else (if :exact-p is t), or just add :included and exclude :excluded
-;;    modes from the current modes list (if :exact-p is nil or not present).
-;;
-;; Included modes is a list of mode symbols, or a list of lists in the form
-;; of (MODE-SYMBOL INIT-ARGS), where init-args are passed to the mode when instantiated.
-;;
+;;    everything else (if :exact-p is t), or just add :included and exclude
+;;    :excluded modes from the current modes list (if :exact-p is nil or not
+;;    present).
+
+;; Included modes is a list of mode symbols, or a list of lists in the form of
+;; (MODE-SYMBOL INIT-ARGS), where init-args are passed to the mode when
+;; instantiated.
+
 ;; Conditions work this way:
 ;; - match-domain matches the URL domains only.
 ;;   Example: (match-domain \"reddit.com\") will work for all of Reddit.
-;; - match-host is more specific -- it activates only on certain subdomains of the website.
+
+;; - match-host is more specific -- it activates only on certain subdomains of
+;;   the website.
 ;;   Example: (match-host \"old.reddit.com\") will work on old Reddit only.
-;; - match-regex works for any address that matches a given regex. You can add these manually,
-;;   but remember: with great regex comes great responsibility!
-;;   Example: (match-regex \"https://github\\.com/.*/.*\") will activate only in repos on GitHub.
+
+;; - match-regex works for any address that matches a given regex. You can add
+;;   these manually, but remember: with great regex comes great responsibility!
+;;   Example: (match-regex \"https://github\\.com/.*/.*\") will activate only in
+;;   repos on GitHub.
+
 ;; - match-port matches the port number(s) only.
-;;   Example: (match-port 8000 8080) will work for e.g. localhost:8000, 127.0.0.1:8080, etc.
+;;   Example: (match-port 8000 8080) will work for e.g. localhost:8000,
+;;   127.0.0.1:8080, etc.
+
 ;; - String format matches the exact URL and nothing else
 ;;   Example: \"https://lispcookbook.github.io/cl-cookbook/pattern_matching.html\"
-;;            will work on the Pattern Matching article of CL Cookbook, and nowhere else.
+;;   will work on the Pattern Matching article of CL Cookbook, and nowhere else.
+
 ;; - Any other Lisp form is evaluated and the result of it is called with the
-;;   URL as an argument. This means you can write arbitrary Lisp code to activate auto-rules.
+;;   URL as an argument. This means you can write arbitrary Lisp code to
+;;   activate auto-rules.
 ;;   Note: The URL is passed as quri:uri object.
 ;;   Example: (lambda (url) (string= \"/my/path\" (quri:uri-path url)))
-;;
-;; You can write additional URLs in the parenthesized conditions, to reuse the rule for other URL
+
+;; You can write additional URLs in the parenthesized conditions, to reuse the
+;; rule for other URL.
 ;; Example: (match-host \"reddit.com\" \"old.reddit.com\" \"www6.reddit.com\")
+
+;;; Rules:
+
 ")
       (write-string "(")
       (dolist (rule rules)
