@@ -109,15 +109,15 @@ non-overridable."
     `(:a :href ,(cond
                   (package `(nyxt:nyxt-url (read-from-string "nyxt:describe-package") :package ,package))
                   (variable `(nyxt:nyxt-url (read-from-string "nyxt:describe-variable")
-                                            :universal t :variable ,variable))
+                                            :variable ,variable))
                   (function `(nyxt:nyxt-url (read-from-string "nyxt:describe-function")
-                                            :universal t :fn ,function))
+                                            :fn ,function))
                   (command `(nyxt:nyxt-url (read-from-string "nyxt:describe-command")
                                            :command ,command))
                   (slot `(nyxt:nyxt-url (read-from-string "nyxt:describe-slot")
-                                        :universal t :name ,slot :class ,class-name))
+                                        :name ,slot :class ,class-name))
                   (class-name `(nyxt:nyxt-url (read-from-string "nyxt:describe-class")
-                                              :universal t :class ,class-name))
+                                              :class ,class-name))
                   (t `(nyxt:javascript-url
                        (ps:ps (nyxt/ps:lisp-eval
                                (:title "describe-any")
