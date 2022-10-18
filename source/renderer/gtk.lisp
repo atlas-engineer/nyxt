@@ -1555,13 +1555,10 @@ See `finalize-buffer'."
     t)
   (connect-signal buffer "create" nil (web-view navigation-action)
     (declare (ignore web-view))
-    (let ((new-buffer (make-instance 'web-buffer :parent-buffer (current-buffer)))
-          (url (webkit:webkit-uri-request-uri
+    (let ((url (webkit:webkit-uri-request-uri
                 (webkit:webkit-navigation-action-get-request
                  (gobject:pointer navigation-action)))))
-      (buffer-load (quri:uri url) :buffer new-buffer)
-      (window-set-buffer (current-window) new-buffer)
-      (gtk-object new-buffer)))
+      (gtk-object (make-buffer-focus :url (quri:uri url) :parent-buffer (current-buffer)))))
   (connect-signal buffer "context-menu" nil (web-view context-menu event hit-test-result)
     (declare (ignore web-view event hit-test-result))
     (let ((length (webkit:webkit-context-menu-get-n-items context-menu)))
