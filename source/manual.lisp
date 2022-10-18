@@ -15,10 +15,10 @@ of Nyxt."))
 
 (defun manual-sections ()
   (spinneret:with-html-string
-    (:nsection :title "Configuration"
-      (let ((auto-config-file (namestring (files:expand *auto-config-file*)))
+    (let ((auto-config-file (namestring (files:expand *auto-config-file*)))
             (config-file (namestring (files:expand *config-file*)))
             (rules-file (namestring (files:expand (make-instance 'auto-rules-file)))))
+    (:nsection :title "Configuration"
         (:p "Nyxt is written in the Common Lisp programming language which offers a
 great perk: everything in the browser can be customized by the user, even while
 it's running!")
@@ -838,7 +838,7 @@ lower-level " (:nxref :function 'customize-instance)
             (:nxref :function 'customize-instance) " on instantiation,
 after " (:nxref :function 'initialize-instance)(:code " :after") ".  The primary method is reserved
 to the user, however the " (:code ":after") " method is reserved to the Nyxt
-core to finalize the instance.")))
+core to finalize the instance."))
 
     (:nsection :title "Extensions"
       (:p "To install an extension, copy inside the "
@@ -924,4 +924,4 @@ nyxt
     can try to disable compositing. To disable compositing from your
     initialization file, you can do the following: ")
         (:ncode
-          (setf (uiop:getenv "WEBKIT_DISABLE_COMPOSITING_MODE") "1"))))))
+          (setf (uiop:getenv "WEBKIT_DISABLE_COMPOSITING_MODE") "1")))))))
