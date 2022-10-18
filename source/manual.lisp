@@ -16,8 +16,8 @@ of Nyxt."))
 (defun manual-sections ()
   (spinneret:with-html-string
     (:nsection :title "Configuration"
-      (let ((auto-config-file (files:expand *auto-config-file*))
-            (config-file (files:expand *config-file*)))
+      (let ((auto-config-file (namestring (files:expand *auto-config-file*)))
+            (config-file (namestring (files:expand *config-file*))))
         (:p "Nyxt is written in the Common Lisp programming language which offers a
 great perk: everything in the browser can be customized by the user, even while
 it's running!")
