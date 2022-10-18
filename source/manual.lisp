@@ -17,7 +17,8 @@ of Nyxt."))
   (spinneret:with-html-string
     (:nsection :title "Configuration"
       (let ((auto-config-file (namestring (files:expand *auto-config-file*)))
-            (config-file (namestring (files:expand *config-file*))))
+            (config-file (namestring (files:expand *config-file*)))
+            (rules-file (namestring (files:expand (make-instance 'auto-rules-file)))))
         (:p "Nyxt is written in the Common Lisp programming language which offers a
 great perk: everything in the browser can be customized by the user, even while
 it's running!")
@@ -249,12 +250,11 @@ toggled exclusively for a given URL.")
               " to non-nil (refer to the "
               (:a :href "#configuration" "configuration section") " for help)."))
         (:p "All rules are stored in the corresponding auto-rules file, "
-            (:code "(files:expand (make-instance 'auto-rules-file))")
-            ", which " (:u "is intended for read and write purposes")". You can
-find instructions at the top of mentioned file. The gist is that rules are
-mere Lisp lists which start with a condition that checks the URL. When
-conditions are met, modes are toggled. Besides user-defined conditions, the
-following are often useful: "
+            (:code rules-file) ", which " (:u "is intended for read and write
+purposes")". You can find instructions at the top of mentioned file. The gist is
+that rules are mere Lisp lists which start with a condition that checks the
+URL. When conditions are met, modes are toggled. Besides user-defined
+conditions, the following are often useful: "
             (:ul
              (:li (:nxref :function 'match-domain))
              (:li (:nxref :function 'match-host))
