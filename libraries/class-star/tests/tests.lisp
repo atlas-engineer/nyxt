@@ -66,7 +66,8 @@
      (age 1)
      (height 2.0)
      (width 2 :type number)
-     (lisper nil)
+     (lisper t)
+     (nil-is-not-bool nil)
      (empty-list '())
      (nonempty-list '(1 2 3))
      (mark :foo)
@@ -85,6 +86,8 @@
              (getf (mopu:slot-properties 'foo-type-infer 'width) :type))
   (assert-eq 'boolean
              (getf (mopu:slot-properties 'foo-type-infer 'lisper) :type))
+  (assert (not (eq 'boolean
+                   (getf (mopu:slot-properties 'foo-type-infer 'nil-is-not-bool) :type))))
   (assert-eq 'list
              (getf (mopu:slot-properties 'foo-type-infer 'empty-list) :type))
   (assert-eq 'list
