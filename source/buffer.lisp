@@ -172,23 +172,24 @@ access the initialized buffer.")
    (apply-all-matching-auto-rules-p
     nil
     :type boolean
-    :documentation "Whether all matching auto-rules should be applied to the URL.
-The default behavior is to only apply the most specific rule.")
+    :documentation "Whether matching auto-rules are applied to the URL.
+By default, the most specific rule is applied.")
    (bypass-auto-rules-p
     nil
     :type boolean
-    :documentation "Whether to temporarily bypass the auto-rules.")
+    :documentation "Whether to bypass auto-rules.")
    (prompt-on-mode-toggle-p
     nil
     :type boolean
-    :documentation "Whether the user is asked to confirm adding the auto-rule on mode toggling")
+    :documentation "Whether the user is prompted to confirm adding the auto-rule
+on mode toggling.")
    (previous-url
     nil
     :export nil
     :type (or quri:uri null)
-    :documentation "The last URL for which auto-rules were applied.  We
-need to know if the auto-rule has been applied before to avoid re-applying
-a rule for a sequence of pages that match the same rule.
+    :documentation "The last URL for which auto-rules were applied.
+We need to know if the auto-rule has been applied before to avoid re-applying a
+rule for a sequence of pages that match the same rule.
 
 We can't rely on the previous history entry because dead buffers and
 session-restored buffers may have a history with a previous URL matching the
@@ -198,15 +199,17 @@ buffer.")
     nil
     :export nil
     :type (or quri:uri null)
-    :documentation "The last URL that the active modes were saved for.  We need
-to store this to not overwrite the `last-active-modes' for a given URL if it's being reloaded.")
+    :documentation "The last URL that the active modes were saved for.
+We need to store this to not overwrite the `last-active-modes' for a given URL
+if it's being reloaded.")
    (last-active-modes
     '()
     :export nil
     :type (or (cons mode-invocation *) null)
     :documentation "The list of `mode-invocation's that were enabled on the last
-URL not covered by auto-rules.  This is useful when alternating between URLs for
-which auto-rules are enabled or disabled.  Example browsing sequence:
+URL not covered by auto-rules.
+This is useful when alternating between URLs for which auto-rules are enabled or
+disabled.  Example browsing sequence:
 
 - https://example.org (no-script-mode no-image-mode) ; No rule.
 - https://nyxt.atlas.engineer (dark-mode) ; Rule
