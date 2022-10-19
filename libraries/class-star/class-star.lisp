@@ -69,6 +69,10 @@ Non-basic scalar types are derived to their own type (with `type-of')."
               (not (eq (first value) 'quote)))
          ;; Non-basic form.
          nil)
+        ;; This is necessary to prevent nil-initform slots to be recognized as
+        ;; boolean-typed ones. Nil does not guarantee any type.
+        ((null value)
+         nil)
         (t (let* ((type (if (symbolp value)
                             (handler-case
                                 ;; We can get type of externally defined symbol.
