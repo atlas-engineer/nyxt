@@ -84,7 +84,7 @@ The URL is fetched, which explains possible bottlenecks."
 For instance, \"gopher\", \"irc\".")
    (callback
     nil
-    :type (or null (function (url-designator buffer) t))
+    :type (or null function)
     :documentation "Callback to get the page contents when accessing resource with this scheme.
 
 Takes two arguments: the URL with scheme and the buffer it was requested in.
@@ -94,8 +94,10 @@ Optionally returns two values:
 - The MIME type for the contents.")
    (error-callback
     nil
-    :type (or null (function (condition)))
-    :documentation "Callback to use when a condition is signaled.")
+    :type (or null function)
+    :documentation "Callback to use when a condition is signaled.
+
+Accepts only one argument: the signaled condition.")
    (local-p
     nil
     :documentation "Local schemes are not accessible to the pages of other schemes.")
