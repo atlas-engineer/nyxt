@@ -60,7 +60,7 @@ another.")
 
    (constructor
     nil
-    :type (or null list function)
+    :type (or list function)
     :documentation "Function or list to set `initial-suggestions'.
 If a function, it's called asynchronously with the source as argument.
 The returned value is assigned to `initial-suggestions'.
@@ -118,8 +118,7 @@ reinstantiated between each input processing.")
 
    (marks-actions
     '()
-    :type (or null
-              (or function function-symbol)
+    :type (or null function function-symbol
               (cons (or function function-symbol) *))
     :documentation "The first function of this list is called automatically on
 the mark when it's changed.
@@ -204,7 +203,7 @@ recompute the match-data for instance.")
 
    (sort-predicate
     #'score>
-    :type (or null (function (suggestion suggestion) boolean))
+    :type (or null function)
     :documentation "A predicate used to sort the `suggestion's once filtered.
 The predicate works the same as the `sort' predicate.")
 
@@ -286,8 +285,7 @@ See `resume-sources'.")
 
    (selection-actions
     '()
-    :type (or null
-              (or function function-symbol)
+    :type (or null function function-symbol
               (cons (or function function-symbol) *))
     :documentation "The first function of this list is called automatically on
 the selection when it's changed.

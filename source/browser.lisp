@@ -89,6 +89,7 @@ Note that it may be incomplete.")
 Which commands will they invoke next?")
    (last-command
     nil
+    :type function
     :documentation "The last command invoked by the user.")
    (prompt-buffer-generic-history
     (make-ring)
@@ -397,6 +398,7 @@ If none is found, fall back to `keyscheme:cua'."
 new window.")
    (http-method
     nil
+    :type (maybe string)
     :documentation "The HTTP method (GET, POST and friends) of the request.")
    (toplevel-p
     nil
@@ -407,6 +409,7 @@ new window.")
 Resource requests cannot be redirected or blocked.")
    (mime-type
     nil
+    :type (maybe string)
     :documentation "The MIME type of the resource at the other end of the request.")
    (known-type-p
     nil
@@ -415,9 +418,11 @@ supported MIME-type, such as a picture that can be displayed in the web
 view.")
    (file-name
     nil
+    :type (maybe string)
     :documentation "The name this file will be saved on disk with, if downloaded.")
    (keys
     '()
+    :type list
     :documentation "The key sequence that generated the request."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)

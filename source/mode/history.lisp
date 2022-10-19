@@ -157,7 +157,7 @@ This saves the history to disk when BODY exits."
 
 (define-class direct-history-forwards-source (prompter:source)
   ((prompter:name "First child of all forward-branches")
-   (buffer :initarg :buffer :accessor buffer :initform nil)
+   (buffer nil :type (maybe buffer))
    (prompter:constructor
     (lambda (source)
       (with-history (history (buffer source))
