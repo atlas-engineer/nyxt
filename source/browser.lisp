@@ -89,7 +89,7 @@ Note that it may be incomplete.")
 Which commands will they invoke next?")
    (last-command
     nil
-    :type function
+    :type (maybe function)
     :documentation "The last command invoked by the user.")
    (prompt-buffer-generic-history
     (make-ring)
