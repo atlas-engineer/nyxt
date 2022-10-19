@@ -89,9 +89,12 @@ For instance, \"gopher\", \"irc\".")
 
 Takes two arguments: the URL with scheme and the buffer it was requested in.
 
-Optionally returns two values:
+Returns up to five values:
 - The data for page contents (either as string or as a unsigned byte array).
-- The MIME type for the contents.")
+- The MIME type for the contents.
+- The status code for the request.
+- An alist of headers for the request.
+- A status reason phrase.")
    (error-callback
     nil
     :type (or null function)
