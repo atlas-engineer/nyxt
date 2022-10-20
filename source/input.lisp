@@ -99,8 +99,8 @@ KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
     (unless (find (name function-function)
                   ignored-commands
                   :test (lambda (x y) (search (symbol-name x) (symbol-name y))))
-      (analysis:add-record (command-model *browser*) (list (last-command *browser*)
-                                                           (symbol-function function)))
+      (analysis:add-record (command-model *browser*)
+                           (list (last-command *browser*) function))
       (setf (last-command *browser*) function-function))
     (run-async function)))
 
