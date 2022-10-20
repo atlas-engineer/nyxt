@@ -968,7 +968,7 @@ See `finalize-buffer'."
         (mouse-button nil) (modifiers ())
         (url nil) (request nil)
         (mime-type nil)
-        (method nil) (file-name nil)
+        (method nil) (headers nil) (file-name nil)
         response)
     (match policy-decision-type-response
       (:webkit-policy-decision-type-navigation-action
@@ -1005,6 +1005,9 @@ See `finalize-buffer'."
       (setf modifiers (funcall (modifier-translator *browser*)
                                (webkit:webkit-navigation-action-get-modifiers navigation-action))))
     (setf url (quri:uri (webkit:webkit-uri-request-uri request)))
+    (setf headers (let ((headers (webkit:webkit-uri-request-get-http-headers request)))
+                    (unless (cffi:null-pointer-p headers)
+                      (webkit:soup-message-headers-get-headers headers))))
     (let* ((request-data
              (hooks:run-hook
               (request-resource-hook buffer)
@@ -1018,6 +1021,7 @@ See `finalize-buffer'."
                                                                :event-type event-type
                                                                :new-window-p is-new-window
                                                                :http-method method
+                                                               :http-headers headers
                                                                :toplevel-p (quri:uri=
                                                                             url (quri:uri (webkit:webkit-web-view-uri
                                                                                            (gtk-object buffer))))
@@ -1447,6 +1451,9 @@ See `finalize-buffer'."
                                         :new-window-p nil
                                         :resource-p t
                                         :http-method (webkit:webkit-uri-request-get-http-method request)
+                                        :http-headers (let ((headers (webkit:webkit-uri-request-get-http-headers request)))
+                                                        (unless (cffi:null-pointer-p headers)
+                                                          (webkit:soup-message-headers-get-headers headers)))
                                         :toplevel-p nil
                                         :mime-type (when response
                                                      (webkit:webkit-uri-response-mime-type response))

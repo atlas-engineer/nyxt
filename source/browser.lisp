@@ -400,6 +400,10 @@ new window.")
     nil
     :type (maybe string)
     :documentation "The HTTP method (GET, POST and friends) of the request.")
+   (http-headers
+    nil
+    :type trivial-types:association-list
+    :documentation "Dotted alist of headers for the request.")
    (toplevel-p
     nil
     :documentation "Whether the request happens in a toplevel frame.")
