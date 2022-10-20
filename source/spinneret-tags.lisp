@@ -66,21 +66,22 @@ unconditionally converts those to tags unless the whole form is quoted.)"
              :style ,(unless inline-p
                        "position: absolute; top: 0; right: 0; margin: 0; padding: 2px")
              :onchange
-             (ps:ps (nyxt/ps:lisp-eval
-                     (:title "change-evaluation-package")
-                     (let ((value (nyxt:ps-eval
-                                    (ps:chain (nyxt/ps:qs document (+ "#" (ps:lisp ,id))) value))))
-                       (str:string-case value
-                         ("repl" (nyxt:buffer-load-internal-page-focus
-                                  (read-from-string "nyxt/repl-mode:repl")
-                                  :form ,code))
-                         ("config"
-                          (alexandria:write-string-into-file
-                           ,code (nfiles:expand nyxt::*auto-config-file*)
-                           :if-exists :append))
-                         ("copy"
-                          (funcall (read-from-string "nyxt:ffi-buffer-copy")
-                                   (nyxt:current-buffer) ,code))))))
+             (when (nyxt:current-buffer)
+               (ps:ps (nyxt/ps:lisp-eval
+                       (:title "change-evaluation-package")
+                       (let ((value (nyxt:ps-eval
+                                      (ps:chain (nyxt/ps:qs document (+ "#" (ps:lisp ,id))) value))))
+                         (str:string-case value
+                           ("repl" (nyxt:buffer-load-internal-page-focus
+                                    (read-from-string "nyxt/repl-mode:repl")
+                                    :form ,code))
+                           ("config"
+                            (alexandria:write-string-into-file
+                             ,code (nfiles:expand nyxt::*auto-config-file*)
+                             :if-exists :append))
+                           ("copy"
+                            (funcall (read-from-string "nyxt:ffi-buffer-copy")
+                                     (nyxt:current-buffer) ,code)))))))
              ;; TODO: Open in Nyxt editor, Open in external editor
              ,@(when copy-p
                  `((when (nyxt:current-buffer)
