@@ -83,6 +83,7 @@ KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
         (format nil "~s [~a]" no-code-specs (keymaps:keys->keyspecs keys))
         (format nil "~s" no-code-specs))))
 
+(-> dispatch-command ((or function-symbol function)) *)
 (export-always 'dispatch-command)
 (defun dispatch-command (function)
   (echo-dismiss) ; Clean up message-view on command.
@@ -92,7 +93,10 @@ KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
                             select-previous
                             select-next-source
                             select-previous-source)))
-    (unless (find (name (symbol-function function)) ignored-commands
+    (unless (find (name (typecase function
+                          (symbol (symbol-function function))
+                          (function function)))
+                  ignored-commands
                   :test (lambda (x y) (search (symbol-name x) (symbol-name y))))
       (analysis:add-record (command-model *browser*) (list (last-command *browser*)
                                                            (symbol-function function)))
