@@ -102,7 +102,7 @@ PACKAGE) to guess the right page, always provide those.
 CLASS-NAME should be the symbol designating a class. It's not called CLASS
 because Spinneret has special behavior for CLASS pre-defined and
 non-overridable."
-  (let ((symbol (or package variable function command slot class-name))
+  (let ((symbol (or package variable function command slot class-name (first body)))
         (printable (or (first body) package variable function command slot class-name)))
     `(:a :href ,(cond
                   (package `(nyxt:nyxt-url (read-from-string "nyxt:describe-package") :package ,package))
@@ -116,12 +116,8 @@ non-overridable."
                                         :name ,slot :class ,class-name))
                   (class-name `(nyxt:nyxt-url (read-from-string "nyxt:describe-class")
                                               :class ,class-name))
-                  (t `(nyxt:javascript-url
-                       (ps:ps (nyxt/ps:lisp-eval
-                               (:title "describe-any")
-                               ;; Not defined yet:
-                               (funcall (nyxt:resolve-symbol :describe-any :function)
-                                        (princ-to-string ,symbol)))))))
+                  (t `(nyxt:nyxt-url (read-from-string "nyxt:describe-any")
+                                     :input ,symbol)))
          ;; TODO: Add :title so that documentation is available on hover.
          ;; TODO: Add keybindings for commands, like in `nyxt::command-markup'.
          ,@(when (and (getf attrs :class)
