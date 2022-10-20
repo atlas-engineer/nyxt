@@ -10,7 +10,7 @@
       (:nsection :title "Keybindings and commands"
         (:p "Commands are invoked by pressing specific keys or from
 the " (command-markup 'execute-command)
-").")
+".")
         (:p "Keybindings are represented like this: 'C-x'. In this example, 'C' is a
 shortcut for the modifier 'control', and 'x' represents the character 'x'. To
 input the 'C-x' keybinding you would keep 'control' pressed and then hit 'x'.
@@ -258,7 +258,9 @@ buffer."))
 
       (:nsection :title "Spelling check"
         (:p "Several commands are provided to spell check words. The default is
-English but it is possible to change the slot for other languages:")
+English but it is possible to change the slot"
+            (:nxref :slot 'nyxt/spell-check-mode:spell-check-language :class-name 'nyxt/spell-check-mode:spell-check-mode)
+            " for other languages:")
         (:ul
          (list-command-information '(nyxt/spell-check-mode:spell-check-word
                                      nyxt/spell-check-mode:spell-check-word-at-cursor
