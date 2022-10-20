@@ -453,8 +453,10 @@ ID is a buffer `id'."
 (define-command next-heading (&optional (buffer (current-buffer)))
   "Scroll to the next heading of the BUFFER."
   (sera:and-let* ((headings (get-headings :buffer buffer))
-                  (current (current-heading buffer)))
-    (scroll-page-to-heading (elt headings (1+ (position (element current) headings :key #'element))))))
+                  (current (current-heading buffer))
+                  (pos (position (element current) headings :key #'element))
+                  (_ (not (< (1+ pos) (length headings)))))
+    (scroll-page-to-heading (elt headings (1+ pos)))))
 
 (define-command previous-heading (&optional (buffer (current-buffer)))
   "Scroll to the previous heading of the BUFFER."
