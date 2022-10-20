@@ -628,7 +628,7 @@ small configuration snippet (note that you'd need to have "
                (make-instance 'nyxt/user-script-mode:user-script
                               :code "// ==UserScript==
                               // @name          No navbars!
-                              // @description	  A simple script to remove navbars
+                              // @description	A simple script to remove navbars
                               // @run-at        document-end
                               // @include       http://*/*
                               // @include       https://*/*
