@@ -614,7 +614,7 @@ WebExtensions on Lisp-native extensions to Nyxt, those hook into the tenderer
 inner working and allow you to change the page and JavaScript objects associated
 to it.")
         (:p "As an example, you can remove navbars from all the pages you visit with this
-small configuration snippet (note that you'd need to have"
+small configuration snippet (note that you'd need to have "
             (:nxref :class-name 'nyxt/user-script-mode:user-script-mode)
             " in your " (:nxref :function 'default-modes "buffer default-modes") " ):")
         (:ncode
@@ -647,7 +647,7 @@ url (quri:uri \"https://example.com/script.user.js\")"))))
             " lists all the possible properties that a user script might have. To Nyxt
 implementation, only those are meaningful:")
         (:dl
-         (:dt "@include and" (:nxref :function 'nyxt/user-script-mode:include))
+         (:dt "@include and " (:nxref :function 'nyxt/user-script-mode:include))
          (:dd "Sets the URL pattern to enable this script for. Follows the pattern "
               (:code "scheme://host/path")
               ", where scheme is either a literal scheme or and asterisk (matching any
