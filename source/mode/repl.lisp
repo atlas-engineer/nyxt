@@ -37,7 +37,7 @@ Features:
    (thread
     nil
     :export nil
-    :type (maybe thread)
+    :type (maybe bt:thread)
     :documentation "The thread that evaluation happens on.")
    (results
     nil
