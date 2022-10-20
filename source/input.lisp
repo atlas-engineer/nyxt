@@ -92,15 +92,16 @@ KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
                             select-next
                             select-previous
                             select-next-source
-                            select-previous-source)))
-    (unless (find (name (typecase function
-                          (symbol (symbol-function function))
-                          (function function)))
+                            select-previous-source))
+        (function-function (typecase function
+                             (symbol (symbol-function function))
+                             (function function))))
+    (unless (find (name function-function)
                   ignored-commands
                   :test (lambda (x y) (search (symbol-name x) (symbol-name y))))
       (analysis:add-record (command-model *browser*) (list (last-command *browser*)
                                                            (symbol-function function)))
-      (setf (last-command *browser*) (symbol-function function)))
+      (setf (last-command *browser*) function-function))
     (run-async function)))
 
 (export-always 'dispatch-input-skip)
