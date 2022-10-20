@@ -32,7 +32,7 @@ A new object is created on every new input."))
   (the (values cl-containers:ring-buffer-reverse &optional)
        (containers:make-ring-buffer size :last-in-first-out)))
 
-;; Same as `source' as to why we wrap in `eval-always'.
+;; Eval at read-time because `make' is generated using the class' initargs.
 (sera:eval-always
   (define-class prompter ()
     ((input
