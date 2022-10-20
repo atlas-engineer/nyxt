@@ -102,8 +102,11 @@ PACKAGE) to guess the right page, always provide those.
 CLASS-NAME should be the symbol designating a class. It's not called CLASS
 because Spinneret has special behavior for CLASS pre-defined and
 non-overridable."
-  (let ((symbol (or package variable function command slot class-name (first body)))
-        (printable (or (first body) package variable function command slot class-name)))
+  (let* ((first (first body))
+         (symbol (or package variable function command slot class-name (when (symbolp first) first)))
+         (printable (or (when (and (symbolp first) (eq first symbol))
+                          (second body))
+                        (first body) package variable function command slot class-name)))
     `(:a :href ,(cond
                   (package `(nyxt:nyxt-url (read-from-string "nyxt:describe-package") :package ,package))
                   (variable `(nyxt:nyxt-url (read-from-string "nyxt:describe-variable")
@@ -133,7 +136,8 @@ non-overridable."
                     (remf attrs :variable)
                     (remf attrs :package)
                     attrs)
-                (nyxt:prini-to-string ,printable)))))
+                (let ((*print-escape* nil))
+                  (nyxt:prini-to-string ,printable))))))
 
 (deftag :nsection (body attrs &key (title (alexandria:required-argument 'title))
                         level
