@@ -19,8 +19,6 @@
   `(:script ,@attrs (:raw ,@body)))
 
 ;; TODO: Store the location it's defined in as a :title or link for discoverability?
-;; TODO: Allow editing it in REPL? Built-in editor? External editor?
-;; TODO: Allow adding the snippet to the config.
 ;; FIXME: Maybe use :nyxt-user as the default package to not quarrel with REPL & config?
 (deftag :ncode (body attrs &key (package :nyxt) literal-p (repl-p t) (config-p t) (copy-p t)
                      &allow-other-keys)
