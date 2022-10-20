@@ -386,9 +386,15 @@ By default it is found in the source directory."))
                                            :ephemeral-p t)))
 
 (define-class gtk-request-data ()
-  (gtk-request
-   gtk-response
-   gtk-resource)
+  ((gtk-request
+    nil
+    :type (maybe webkit:webkit-uri-request))
+   (gtk-response
+    nil
+    :type (maybe webkit:webkit-uri-response))
+   (gtk-resource
+    nil
+    :type (maybe webkit:webkit-web-resource)))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
