@@ -136,20 +136,29 @@ non-overridable."
                 (nyxt:prini-to-string ,printable)))))
 
 (deftag :nsection (body attrs &key (title (alexandria:required-argument 'title))
+                        level
                         (open-p t)
                         (id (str:remove-punctuation (str:downcase title)
                                                     :replacement "-"))
                         &allow-other-keys)
   "Collapsible and reference-able <section> with a neader.
 TITLE should be a human-readable title for a section.
+LEVEL (if provided), is the level of heading for the section. If it's 1, the
+heading is <h1>, if it's 2, then <h2> etc. If not provided, uses <h*> Spinneret
+tag to intelligently guess the current heading level.
 ID is the identifier with which to reference the section elsewhere. Is
 auto-generated from title by replacing all the punctuation and spaces with
-hyphens.
+hyphens, if not provided.
 OPEN-P mandates whether the section is collapsed or not. True (= not collapsed)
 by default"
+  (check-type level (or null (integer 1 6)))
   `(:section
     :id ,id
     (:details
      :open ,open-p
-     (:summary (:h* :style "display: inline" ,@attrs ,title))
+     (:summary (,(if level
+                     (alexandria:make-keyword (format nil "H~d" level))
+                     :h*)
+                :style "display: inline" ,@attrs ,title
+                " " (:a :href ,(uiop:strcat "#" id) "#")))
      ,@body)))
