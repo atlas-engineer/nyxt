@@ -366,7 +366,7 @@ Empty sources are skipped."
                     (union marks suggestion-values)
                     (intersection marks suggestion-values))))))))))
 
-(defun resolve-selection (prompter)     ; TODO: Write tests for this!
+(defun resolve-marks (prompter)     ; TODO: Write tests for this!
   "Return the list of marked `suggestion's.
 When `marks' is nil, the current selection value is returned as a list of one
 element.
@@ -407,17 +407,14 @@ If input is already in history, move to first position."
 (export-always 'return-selection)
 (defun return-selection (prompter
                          &optional (return-action (default-return-action prompter)))
-  "Call RETURN-ACTION over selection and send the results to PROMPTER's `result-channel'.
-The selection is the collection of marked suggestions across all sources.
-If there is no marked suggestion, send the currently selected suggestion
-instead."
-  (unless return-action
-    (setf return-action #'identity))
+  "Call RETURN-ACTION over `marks' and send the results to PROMPTER's `result-channel'.
+See `resolve-marks' for a reference on how `marks' are handled."
+  (unless return-action (setf return-action #'identity))
   (setf (returned-p prompter) t)
   (add-input-to-history prompter)
-  (alex:when-let ((selection-values (resolve-selection prompter)))
-    (let ((return-action-result (funcall return-action selection-values)))
-      (calispel:! (result-channel prompter) return-action-result)))
+  (alex:when-let ((marks (resolve-marks prompter)))
+    (calispel:! (result-channel prompter)
+                (funcall return-action marks)))
   (destroy prompter))
 
 (export-always 'toggle-selection-actions-enabled)
