@@ -62,7 +62,7 @@ This leverages `mode-status' which can be specialized for individual modes."
              :title "Backwards"
              :onclick (ps:ps (nyxt/ps:lisp-eval
                               (:title "history-backwards" :buffer status)
-                              (nyxt/history-mode:history-backwards))) "«")
+                              (nyxt/history-mode:history-backwards))) "◄")
     (:button :type "button" :class "button"
              :title "Reload"
              :onclick (ps:ps (nyxt/ps:lisp-eval
@@ -72,7 +72,7 @@ This leverages `mode-status' which can be specialized for individual modes."
              :title "Forwards"
              :onclick (ps:ps (nyxt/ps:lisp-eval
                               (:title "history-forwards" :buffer status)
-                              (nyxt/history-mode:history-forwards))) "»")
+                              (nyxt/history-mode:history-forwards))) "►")
     (:button :type "button" :class "button"
              :title "Execute"
              :onclick (ps:ps (nyxt/ps:lisp-eval
