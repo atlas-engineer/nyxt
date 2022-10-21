@@ -172,6 +172,10 @@ hyphens, if not provided.
 OPEN-P mandates whether the section is collapsed or not. True (= not collapsed)
 by default"
   (check-type level (or null (integer 1 6)))
+  (remf attrs :title)
+  (remf attrs :level)
+  (remf attrs :open-p)
+  (remf attrs :id)
   `(:section
     :id ,id
     (:details
