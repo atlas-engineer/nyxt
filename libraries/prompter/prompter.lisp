@@ -377,16 +377,15 @@ there is no element, NIL is returned."
 
 (export-always 'return-actions)
 (defun return-actions (prompter)
-  (alex:if-let ((marked-sources
-                 (remove-if (complement #'marks) (sources prompter))))
-    (reduce #'intersection (mapcar (lambda (source)
-                                     (slot-value source 'return-actions))
-                                   marked-sources))
   "Return the list of contextual `return-actions'.
 
 When `marks' is non-nil, return the list of `return-actions' shared by every
 marked element; otherwise return the list of `return-actions' for the current
 `source'."
+  (alex:if-let ((marked-sources (remove-if (complement #'marks) (sources prompter))))
+    (reduce #'intersection
+            (mapcar (lambda (source) (slot-value source 'return-actions))
+                    marked-sources))
     (slot-value (selected-source prompter) 'return-actions)))
 
 (defun history-pushnew (history element &key (test #'equal) )
