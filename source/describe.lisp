@@ -552,10 +552,7 @@ A command is a special kind of function that can be called with
       (spinneret:with-html-string
         (:style (style buffer))
         (:h1 (symbol-name (name command-object))
-             (unless (eq (find-package :nyxt)
-                         (symbol-package (name command-object)))
-               (format nil " (~a)"
-                       (package-name (symbol-package (name command-object))))))
+             " (" (nyxt-url 'describe-package :package (symbol-package (name command-object))) ")")
         (:p (:raw
              ;; TODO: This only displays the first method,
              ;; i.e. the first command of one of the modes.
@@ -589,44 +586,47 @@ A command is a special kind of function that can be called with
       (setf name (name slot)
             class (class-sym slot))
       ""))
-  (describe-slot* name class :mention-class-p t))
+  (describe-slot* name class :independent-p t))
 
-(defun describe-slot* (slot class &key mention-class-p)
+(defun describe-slot* (slot class &key independent-p)
   "Create the HTML that represents a slot."
   ;; TODO: Adapt HTML sections / lists to describe-slot and describe-class.
   ;; TODO: Parse docstrings and highlight code samples.
   (let ((props (mopu:slot-properties (find-class class) slot))
-        (*print-case* :downcase))
+        (*package* (symbol-package slot)))
     (spinneret:with-html-string
-      (:ul
-       (:li (symbol-name slot))
-       (:ul
-        (when mention-class-p
-          (:li "Class " (:a :href (nyxt-url 'describe-class :class class) class)))
-        (when (getf props :type)
-          (:li
-           (:raw (format nil "Type: ~a"
-                         (if (and (subtypep (getf props :type) 'standard-object))
-                             (spinneret:with-html-string
-                               (:a :href (nyxt-url 'describe-class
-                                                   :class (getf props :type))
-                                   (getf props :type))
-                               (getf props :type)))))))
-        (when (getf props :initform)
-          (let* ((initform-string (prini-to-string (getf props :initform)))
-                 (multiline-form? (search +newline+ initform-string)))
-            (if multiline-form?
-                (:li "Default value: " (:ncode :literal-p t initform-string))
-                (:li "Default value: " (:code initform-string)))))
-        (when (getf props :documentation)
-          (:li "Documentation: " (:raw (resolve-backtick-quote-links
-                                        (getf props :documentation) slot))))
-        (when (user-class-p class)
-          (:li (:button :class "button"
-                        :onclick (ps:ps (nyxt/ps:lisp-eval
-                                         (:title "configure-slot")
-                                         (nyxt::configure-slot slot class :type (getf props :type))))
-                        "Configure"))))))))
+      (if independent-p
+          (:h1 (prini-to-string slot))
+          (:h3 (prini-to-string slot)))
+      (when (user-class-p class)
+        (:button :class "button"
+                 :onclick (ps:ps (nyxt/ps:lisp-eval
+                                  (:title "configure-slot")
+                                  (nyxt::configure-slot slot class :type (getf props :type))))
+                 "Configure"))
+      (:dl
+       (when independent-p
+         (:dt "Class")
+         (:dd (:a :href (nyxt-url 'describe-class :class class) class)))
+       (when (getf props :type)
+         (:dt "Type ")
+         (:dd (if (or (subtypep (getf props :type) 'standard-object)
+                      (subtypep (getf props :type) 'structure-object))
+                  (:a :href (nyxt-url 'describe-class
+                                      :class (getf props :type))
+                      (prini-to-string (getf props :type)))
+                  (prini-to-string (getf props :type)))))
+       (when (getf props :initform)
+         (let* ((initform-string (prini-to-string (getf props :initform)))
+                (multiline-form? (search +newline+ initform-string)))
+           (:dt "Default value")
+           (:dd (if multiline-form?
+                    (:ncode :literal-p t initform-string)
+                    (:ncode :literal-p t :inline-p t initform-string)))))
+       (when (getf props :documentation)
+         (:dt "Documentation")
+         (:dd (:raw (resolve-backtick-quote-links
+                     (getf props :documentation) slot))))))))
 
 (define-internal-page-command-global describe-class
     (&key
