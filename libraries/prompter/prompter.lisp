@@ -424,14 +424,11 @@ See `resolve-marks' for a reference on how `marks' are handled."
   (setf (selection-actions-enabled-p source) (not (selection-actions-enabled-p source))))
 
 (export-always 'next-ready-p)
-(defun next-ready-p (prompter &optional timeout)
+(defun next-ready-p (prompter)
   "Block and return next PROMPTER ready source.
 It's the next source that's done updating.
 If all sources are done, return T.
-This is unblocked when the PROMPTER is `destroy'ed.
-
-TIMEOUT is deprecated."
-  (declare (ignore timeout)) ; Deprecated.
+This is unblocked when the PROMPTER is `destroy'ed."
   (when prompter
     ;; We let-bind `sync-queue' here so that it remains the same object throughout
     ;; this function, since the slot is subject to be changed concurrently when
@@ -457,17 +454,16 @@ TIMEOUT is deprecated."
       t)))
 
 (export-always 'all-ready-p)
-(defun all-ready-p (prompter &optional timeout)
-  "Return non-nil when all prompter sources are ready.
-After timeout has elapsed for one source, return nil."
-  (sera:nlet check ((next-source (next-ready-p prompter timeout)))
+(defun all-ready-p (prompter)
+  "Return non-nil when all PROMPTER sources are ready."
+  (sera:nlet check ((next-source (next-ready-p prompter)))
     (cond
       ((eq t next-source)
        t)
       ((null next-source)
        nil)
       (t
-       (check (next-ready-p prompter timeout))))))
+       (check (next-ready-p prompter))))))
 
 (export-always 'make)
 (define-function make
