@@ -497,8 +497,9 @@ Example:
 (defun selected-suggestion (prompter)
   "Return selected PROMPTER `suggestion'.
 Return source as second value."
-  (let* ((source (first (selection prompter))))
-    (values (nth (second (selection prompter)) (suggestions source)) source)))
+  (let ((source (first (selection prompter))))
+    (values (nth (second (selection prompter)) (suggestions source))
+            source)))
 
 (export-always 'selected-suggestion-position)
 (defun selected-suggestion-position (prompter)
