@@ -97,8 +97,7 @@ when the suggestions are narrowed down to just one item.")
      (history
       (make-history)
       :type (or containers:ring-buffer-reverse null)
-      :documentation
-      "History of inputs for the prompter.
+      :documentation "History of inputs for the prompter.
 If nil, no history is used.")
 
      (result-channel
@@ -127,16 +126,16 @@ See also `result-channel'.")
     (:export-accessor-names-p t)
     (:accessor-name-transformer (class*:make-name-transformer name))
     (:documentation "The prompter is an interface for user interactions.
-A prompter object holds multiple sources (of type `source') which
-contain a list of `suggestion's.
+A prompter object holds multiple `source's which contain a list of
+`suggestion's.
 
-You can call `destroy' to call the registered termination functions of the
-prompter and its sources.
+Call `destroy' to the register termination functions of the prompter and its
+sources.
 
-Suggestions are computed asynchronously when `input' is updated.
-Use `all-ready-p' and `next-ready-p' to know when the prompter is ready.
-Sources suggestions can be retrieved, possibly partially, even when the
-compution is not finished.")))
+`suggestion's are computed asynchronously when `input' is updated.
+Use `all-ready-p' and `next-ready-p' to access whether the prompter is ready.
+Sources' suggestions can be retrieved, possibly partially, even when the
+computation is not finished.")))
 
 (defun update-sources (prompter &optional (text ""))
   (setf (sync-queue prompter) (make-instance 'sync-queue))
@@ -368,24 +367,26 @@ Empty sources are skipped."
                     (intersection marks suggestion-values))))))))))
 
 (defun resolve-selection (prompter)     ; TODO: Write tests for this!
-  "Return the list of selected values.
-If there is no marks, the current selection value is returned as a list of one element.
-For instance, if the selected element value is NIL, this returns '(NIL).
-If there is no element, NIL is returned."
+  "Return the list of marked `suggestion's.
+When `marks' is nil, the current selection value is returned as a list of one
+element.
+For instance, if the selected element value is NIL, this returns '(NIL).  If
+there is no element, NIL is returned."
   (or (all-marks prompter)
       (mapcar #'value (uiop:ensure-list (selected-suggestion prompter)))))
 
 (export-always 'return-actions)
 (defun return-actions (prompter)
-  "Return the list of contextual return-actions.
-Without marks, it's the list of return-actions for the current source.
-With marks, it's the intersection of the return-actions of the sources that contain the
-marked elements."
   (alex:if-let ((marked-sources
                  (remove-if (complement #'marks) (sources prompter))))
     (reduce #'intersection (mapcar (lambda (source)
                                      (slot-value source 'return-actions))
                                    marked-sources))
+  "Return the list of contextual `return-actions'.
+
+When `marks' is non-nil, return the list of `return-actions' shared by every
+marked element; otherwise return the list of `return-actions' for the current
+`source'."
     (slot-value (selected-source prompter) 'return-actions)))
 
 (defun history-pushnew (history element &key (test #'equal) )
@@ -453,7 +454,7 @@ TIMEOUT is deprecated."
                   nil)
                  (t
                   (push next-source (ready-sources sync-queue))
-                  ;; Update selection when update is done:
+                  ;; Update selection when update is done
                   (select-first prompter)
                   next-source)))
               ((calispel:? (sync-interrupt-channel sync-queue))
@@ -478,13 +479,14 @@ After timeout has elapsed for one source, return nil."
 (define-function make
     (append '(&rest args)
             `(&key sources ,@(public-initargs 'prompter)))
-  "Return prompter object.
+  "Return `prompter' object.
 The arguments are the initargs of the `prompter' class.
 
 As a special case, the `:sources' keyword argument not only accepts `source'
-objects but also symbols.  Example:
+objects but also symbols.
 
-  (prompter:make :sources 'prompter:raw-source)"
+Example:
+(prompter:make :sources 'prompter:raw-source)"
   (apply #'make-instance 'prompter args))
 
 (export-always 'selected-source)
@@ -493,25 +495,27 @@ objects but also symbols.  Example:
 
 (export-always 'selected-suggestion)
 (defun selected-suggestion (prompter)
-  "Return selected prompt-buffer suggestion.
+  "Return selected PROMPTER `suggestion'.
 Return source as second value."
   (let* ((source (first (selection prompter))))
     (values (nth (second (selection prompter)) (suggestions source)) source)))
 
 (export-always 'selected-suggestion-position)
 (defun selected-suggestion-position (prompter)
-  "Return selected prompt-buffer suggestion position among current source
+  "Return selected PROMPTER `suggestion' position among current `source'
 suggestions."
   (second (selection prompter)))
 
 (export-always 'all-marks)
 (defun all-marks (prompter)
-  "Return the list of the marked suggestions in the prompter."
+  "Return the list of `prompter''s `marks'.
+Note that `marks' is a slot of `source', and `prompter' may have multiple
+sources."
   (alex:mappend #'marks (sources prompter)))
 
 (export-always 'all-suggestions)
 (defun all-suggestions (prompter)
-  "Return the list of the suggestions in the prompter."
+  "Return the list of PROMPTER's `suggestion's."
   (alex:mappend #'suggestions (sources prompter)))
 
 (export-always 'default-return-action)

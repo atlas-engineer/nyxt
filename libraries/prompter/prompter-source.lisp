@@ -279,7 +279,7 @@ to compute asynchronously.")
    (multi-selection-p
     nil
     :type boolean
-    :documentation "Whether multiple candidates can be marked.")
+    :documentation "Whether multiple `suggestion's can be marked.")
 
    (resumer
     nil
