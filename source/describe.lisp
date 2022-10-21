@@ -387,6 +387,8 @@ turned into links to their respective description page."
           (:style (style buffer))
           (:h1 (format nil "~s" variable)) ; Use FORMAT to keep package prefix.
           (:raw (resolve-backtick-quote-links (documentation variable 'variable) variable))
+          (:h2 "Type")
+          (:p (princ-to-string (type-of (symbol-value variable))))
           (:h2 "Current Value:")
           (:button
            :class "button"
