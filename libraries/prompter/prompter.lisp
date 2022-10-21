@@ -437,19 +437,18 @@ This is unblocked when the PROMPTER is `destroy'ed."
       (if (= (length (ready-sources sync-queue))
              (length (sources prompter)))
           t
-          (progn
-            (calispel:fair-alt
-              ((calispel:? (ready-channel sync-queue) next-source)
-               (cond
-                 ((null next-source)
-                  nil)
-                 (t
-                  (push next-source (ready-sources sync-queue))
-                  ;; Update selection when update is done
-                  (select-first prompter)
-                  next-source)))
-              ((calispel:? (sync-interrupt-channel sync-queue))
-               nil))))
+          (calispel:fair-alt
+            ((calispel:? (ready-channel sync-queue) next-source)
+             (cond
+               ((null next-source)
+                nil)
+               (t
+                (push next-source (ready-sources sync-queue))
+                ;; Update selection when update is done:
+                (select-first prompter)
+                next-source)))
+            ((calispel:? (sync-interrupt-channel sync-queue))
+             nil)))
       ;; No sync-queue if no input was ever set.
       t)))
 
