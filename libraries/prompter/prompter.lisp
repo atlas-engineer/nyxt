@@ -390,12 +390,10 @@ marked element; otherwise return the list of `return-actions' for the current
     (slot-value (selected-source prompter) 'return-actions)))
 
 (defun history-pushnew (history element &key (test #'equal) )
-  (alex:when-let ((previous-element-index (containers:element-position
-                                     history
-                                     element
-                                     :test test)))
-    (containers:delete-item-at history
-                               previous-element-index))
+  (alex:when-let ((previous-element-index (containers:element-position history
+                                                                       element
+                                                                       :test test)))
+    (containers:delete-item-at history previous-element-index))
   (containers:insert-item history element))
 
 
