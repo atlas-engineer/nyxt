@@ -524,8 +524,7 @@ sources."
 
 (export-always 'resume)
 (defun resume (prompter)
-  "Calls each source `resumer' function over the source.
-This is meant to be called when a prompter is resumed."
-  (mapc (lambda (source)
-          (maybe-funcall (resumer source) source))
+  "Call each source `resumer' function over the source.
+Meant to be called when PROMPTER is resumed."
+  (mapc (lambda (source) (maybe-funcall (resumer source) source))
         (sources prompter)))
