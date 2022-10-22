@@ -456,13 +456,9 @@ This is unblocked when the PROMPTER is `destroy'ed."
 (defun all-ready-p (prompter)
   "Return non-nil when all PROMPTER sources are ready."
   (sera:nlet check ((next-source (next-ready-p prompter)))
-    (cond
-      ((eq t next-source)
-       t)
-      ((null next-source)
-       nil)
-      (t
-       (check (next-ready-p prompter))))))
+    (if (typep next-source 'boolean)
+        next-source
+        (check (next-ready-p prompter)))))
 
 (export-always 'make)
 (define-function make
