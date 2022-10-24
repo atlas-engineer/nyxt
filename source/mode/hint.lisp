@@ -299,10 +299,7 @@ FUNCTION is the action to perform on the selected elements."
                                         :constructor
                                         (lambda (source)
                                           (declare (ignore source))
-                                          (delete-duplicates
-                                           (add-hints :selector selector)
-                                           :test (lambda (h1 h2) (and h1 h2 (string= h1 h2)))
-                                           :key (alex:rcurry #'plump:attribute "href"))))
+                                          (add-hints :selector selector)))
                 :after-destructor (lambda () (with-current-buffer buffer (remove-hints))))))
     (funcall function result)))
 
