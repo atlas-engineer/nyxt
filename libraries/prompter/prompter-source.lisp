@@ -149,7 +149,7 @@ be displayed or not.
 
    (suggestion-maker
     #'make-suggestion
-    :type function
+    :type (or function function-symbol)
     :documentation "Function that wraps an arbitrary object into a source
 `suggestion'.
 This is useful to set the `suggestion' slots such as `attributes' and
