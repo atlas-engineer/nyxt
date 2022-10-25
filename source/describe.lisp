@@ -458,10 +458,12 @@ For generic functions, describe all the methods."
                      (:p (:pre (format-function-type (sb-introspect:function-type input)))))
                    (alex:when-let* ((definition (swank:find-definition-for-thing (symbol-function input)))
                                     (not-error-p (null (getf definition :error)))
-                                    (file (rest (getf definition :location))))
-                     (:h2 (format nil "Source ~a" file))
-                     (:ncode :literal-p t
-                             (function-lambda-string (symbol-function input))))
+                                    (file (first (rest (getf definition :location)))))
+                     (:h2 (format nil "Source (~a)" file))
+                     (:ncode
+                       :file file
+                       :literal-p t
+                       (function-lambda-string (symbol-function input))))
                    (:h2 "Describe")
                    (:pre (:code (with-output-to-string (s) (describe (symbol-function input) s))))))
                (method-desc (method)
@@ -498,10 +500,12 @@ For generic functions, describe all the methods."
                            (format-arglist (closer-mop:method-lambda-list method)))))
                     (alex:when-let* ((definition (swank:find-definition-for-thing method))
                                      (not-error-p (null (getf definition :error)))
-                                     (file (rest (getf definition :location))))
-                      (:h2 (format nil "Source ~a" file))
-                      (:ncode :literal-p t
-                              (function-lambda-string method)))))))
+                                     (file (first (rest (getf definition :location)))))
+                      (:h2 (format nil "Source (~a)" file))
+                      (:ncode
+                        :file file
+                        :literal-p t
+                        (function-lambda-string method)))))))
           (cond
             ((not (fboundp input))
              (spinneret:with-html-string
@@ -565,7 +569,10 @@ A command is a special kind of function that can be called with
           (:h2 (format nil "Source~a: " (if source-file
                                             (format nil " (~a)" source-file)
                                             "")))
-          (:ncode :literal-p t code))
+          (:ncode
+            :file source-file
+            :literal-p t
+            code))
         (:h2 "Describe")
         (:pre (:code (with-output-to-string (s) (describe command-object s))))))
     (spinneret:with-html-string
@@ -662,7 +669,12 @@ A command is a special kind of function that can be called with
                                                      (mopu:generic-functions class))))
                      collect (:li (:a :href (nyxt-url 'describe-function :fn method) method))))
           (:h2 "Source:")
-          (:ncode :literal-p t (source-for-thing (find-class class)))
+          (multiple-value-bind (source s-expr file)
+              (source-for-thing (find-class class))
+            (:ncode
+              :file file
+              :literal-p t
+              source))
           (:h2 "Describe")
           (:pre (:code (with-output-to-string (s) (describe class s))))))
       (spinneret:with-html-string
