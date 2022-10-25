@@ -1238,17 +1238,46 @@ second latest buffer first."
         (set-current-buffer (first matching-buffers))
         (switch-buffer-domain :domain domain))))
 
-(define-command delete-buffer
-    (&key (buffers
-           (prompt
-            :prompt "Delete buffer(s)"
-            :sources (make-instance 'buffer-source
-                                    :multi-selection-p t
-                                    :return-actions (list 'identity)))))
-  "Query the buffer(s) to delete.
+(flet ((delete-all (buffers &optional predicate)
+         (mapcar #'buffer-delete
+                 (sera:filter (or predicate #'identity) buffers))))
+  (define-command delete-buffer
+      (&key (buffers (prompt
+                      :prompt "Delete buffer(s)"
+                      :sources (make-instance
+                                'buffer-source
+                                :multi-selection-p t
+                                :return-actions
+                                (list (lambda-mapped-command buffer-delete)
+                                      (lambda-command buffer-delete-duplicates* (buffers)
+                                        "Delete all buffers with same URLs, except the chosen ones."
+                                        (delete-all
+                                         (set-difference (buffer-list) buffers)
+                                         (lambda (buffer)
+                                           (member (url buffer) buffers
+                                                   :key #'url :test #'quri:uri-equal))))
+                                      (lambda-command buffer-delete-same-host* (buffers)
+                                        "Delete all the buffers with the same website open."
+                                        (delete-all
+                                         (buffer-list)
+                                         (lambda (buffer)
+                                           (member (quri:uri-host (url buffer))
+                                                   (mapcar #'url buffers)
+                                                   :key #'quri:uri-host
+                                                   :test #'string-equal))))
+                                      (lambda-command buffer-delete-same-url* (buffers)
+                                        "Delete all the buffers with the same page open."
+                                        (delete-all
+                                         (buffer-list)
+                                         (lambda (buffer)
+                                           (member (url buffer) buffers
+                                                   :key #'url :test #'quri:uri-equal)))))))
+                     explicit-buffers-p))
+    "Query the buffer(s) to delete.
 
 BUFFERS should be a list of `buffer's."
-  (mapcar #'buffer-delete (alex:ensure-list buffers)))
+    (when explicit-buffers-p
+      (delete-all (uiop:ensure-list buffers)))))
 
 (define-command delete-all-buffers (&key (confirmation-p t))
   "Delete all buffers, with confirmation."
