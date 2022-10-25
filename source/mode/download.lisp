@@ -209,10 +209,10 @@ download."
            do (connect download buffer)
            collect
            (:div :class "download"
-                 (:p :class "download-buttons"
-                     ;; TODO: Disable the buttons when download status is failed / canceled.
-                     (:raw (user-interface:object-string cancel-button))
-                     (:raw (user-interface:object-string open-button)))
+                 (when (member (status download) '(:unloaded :loading))
+                   (:raw (user-interface:object-string cancel-button)))
+                 (when (eq (status download) :finished)
+                   (:raw (user-interface:object-string open-button)))
                  (:p :class "download-url" (:a :href url url))
                  (:div :class "progress-bar-container"
                        (:raw (user-interface:object-string progress)))
