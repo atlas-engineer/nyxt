@@ -208,7 +208,7 @@ For instance, to include images:
           (ps:chain selected-hint class-list (remove "nyxt-select-hint"))))
       (ps:chain %element class-list (add "nyxt-select-hint"))
       (when (ps:lisp scroll)
-        (ps:chain %element (scroll-into-view (ps:create block "nearest")))))))
+        (ps:chain %element (scroll-into-view (ps:create block "center")))))))
 
 (export-always 'unhighlight-selected-hint)
 (define-parenscript unhighlight-selected-hint ()
