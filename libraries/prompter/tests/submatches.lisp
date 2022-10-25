@@ -11,7 +11,6 @@
                          (when res
                            (prompter:value res))))
                      (prompter::ensure-suggestions-list source list)))))
-
     (assert-equal '(nil "category" nil)
                   (submatch "cat" '("cstheory" "category" "candidate")))
     (assert-equal '("care" nil nil)
