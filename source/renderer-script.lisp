@@ -205,7 +205,8 @@ See `find-internal-page-buffer'."))
                                                 headers reason)
                     (multiple-value-list (apply (compile nil lambda-expression) args))
                   (when (str:starts-with-p "text/html" type)
-                    (unless (>= (length (clss:select "head, body" (plump:parse contents))) 2)
+                    (when (or (null contents)
+                              (< (length (clss:select "head, body" (plump:parse contents))) 2))
                       (setf contents
                             (spinneret:with-html-string
                               (:head
