@@ -21,14 +21,17 @@
 ;; TODO: Store the location it's defined in as a :title or link for discoverability?
 ;; FIXME: Maybe use :nyxt-user as the default package to not quarrel with REPL & config?
 (deftag :ncode (body attrs &key (package :nyxt) inline-p literal-p (repl-p t) (config-p t) (copy-p t)
+                     file (editor-p file) (external-editor-p file)
                      &allow-other-keys)
   "Generate the <pre> listing from the provided Lisp BODY.
 
-REPL-P, CONFIG-P, and COPY-P mandate whether to add the buttons
-for (respectively):
-- Editing the BODY in the built-in REPL.
-- Appending the BODY to the auto-config.lisp.
-- Copying the source to clipboard.
+Most *-P arguments mandate whether to add the buttons for:
+- Editing the BODY in the built-in REPL (REPL-P).
+- Appending the BODY to the auto-config.lisp (CONFIG-P).
+- Copying the source to clipboard (COPY-P).
+- Editing the FILE it comes from (if present), in
+  - Nyxt built-in `editor-mode' (EDITOR-P).
+  - External-editor (EXTERNAL-EDITOR-P).
 
 Forms in BODY can be unquoted, benefiting from the editor formatting.
 
@@ -45,6 +48,9 @@ unconditionally converts those to tags unless the whole form is quoted.)"
   (remf attrs :repl-p)
   (remf attrs :config-p)
   (remf attrs :copy-p)
+  (remf attrs :file)
+  (remf attrs :editor-p)
+  (remf attrs :external-editor-p)
   (let* ((code (if literal-p
                    (first body)
                    (let ((*package* (find-package package)))
@@ -81,8 +87,15 @@ unconditionally converts those to tags unless the whole form is quoted.)"
                              :if-exists :append))
                            ("copy"
                             (funcall (read-from-string "nyxt:ffi-buffer-copy")
-                                     (nyxt:current-buffer) ,code)))))))
-             ;; TODO: Open in Nyxt editor, Open in external editor
+                                     (nyxt:current-buffer) ,code))
+                           ("editor"
+                            (funcall (read-from-string "nyxt/editor-mode:edit-file")
+                                     ,file))
+                           ("external-editor"
+                            (uiop:launch-program
+                             (append (funcall (read-from-string "nyxt:external-editor-program")
+                                              (symbol-value (read-from-string "nyxt:*browser*")))
+                                     (list (uiop:native-namestring ,file))))))))))
              ,@(when copy-p
                  `((when (nyxt:current-buffer)
                      (:option
@@ -101,7 +114,19 @@ unconditionally converts those to tags unless the whole form is quoted.)"
                      (:option
                       :value "repl"
                       :title "Open this code in Nyxt REPL to experiment with it."
-                      "Try in REPL")))))))
+                      "Try in REPL"))))
+             ,@(when (and file editor-p)
+                 `((when (nyxt:current-buffer)
+                     (:option
+                      :value "editor"
+                      :title "Open the file this code comes from in Nyxt built-in editor-mode."
+                      "Open in built-in editor"))))
+             ,@(when (and file external-editor-p)
+                 `((when (nyxt:current-buffer)
+                     (:option
+                      :value "external-editor"
+                      :title "Open the file this code comes from in external editor."
+                      "Open in external editor")))))))
     (if inline-p
         `(:span (:code ,@attrs (the string ,code)) ,select-code)
         ;; https://spdevuk.com/how-to-create-code-copy-button/
