@@ -87,8 +87,12 @@ most intuitive values."
 (export-always 'source-for-thing)
 (-> source-for-thing ((or function method class)) string)
 (defun source-for-thing (thing)
-  "Return the string source for THING, if any.
-If there's no source, returns empty string.
+  "Return
+- the string source for THING, if any,
+- the s-expression for THING, if parseable,
+- the file source belongs to.
+
+If there's no source, return empty string.
 THING can be a class or a function, not symbol."
   (or (sera:and-let* ((full-definition (swank:find-definition-for-thing thing))
                       (definition (and (not (eq :error (first full-definition)))
@@ -124,13 +128,16 @@ THING can be a class or a function, not symbol."
               (let ((expression (read-from-string file-content t nil
                                                   :start (1- start-position))))
                 (values (prini-to-string expression)
-                        expression)))
+                        expression
+                        file)))
           (reader-error ()
             (str:trim-right
-             (subseq file-content
-                     (max 0 (1- start-position))
-                     (search (uiop:strcat +newline+ "(") file-content :start2 start-position))))))
-      ""))
+             (values (subseq file-content
+                             (max 0 (1- start-position))
+                             (search (uiop:strcat +newline+ "(") file-content :start2 start-position))
+                     nil
+                     file)))))
+      (values "" nil nil)))
 
 (export-always 'function-lambda-string)
 (defun function-lambda-string (fun)
