@@ -84,14 +84,14 @@ Example: open the loaded files with XDG-open
                     :documentation "The function to call when
 canceling a download. This can be set by the download engine.")
    (cancel-button (make-instance 'user-interface:button
-                                 :text "✕"
+                                 :text "✕ Cancel"
                                  :action (ps:ps (nyxt/ps:lisp-eval () (echo "Can't cancel download."))))
                   :export nil
                   :documentation "The download is referenced by its
 URL. The URL for this button is therefore encoded as a funcall to
 cancel-download with an argument of the URL to cancel.")
    (open-button (make-instance 'user-interface:button
-                               :text "🗁"
+                               :text "🗁 Open"
                                :action (ps:ps (nyxt/ps:lisp-eval () (echo "Can't open file, file path unknown."))))
                 :export nil
                 :documentation "The file name to open is encoded
