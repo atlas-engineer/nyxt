@@ -546,8 +546,8 @@ formatting, deletion, cleaning, and movement."))
          (:li  (:code "time") " for " (:code "local-time"))
          (:li  (:code "types") " for " (:code "trivial-types"))))
 
-   (:li "Universal describe-* commands have been replace with new sources for the
-regular commands, suchas "
+   (:li "Universal describe-* commands have been replaced with new sources for the
+regular commands, such as "
         (:code "function-non-nyxt-source") ", " (:code "function-internal-source")
         " and so on.")
 
