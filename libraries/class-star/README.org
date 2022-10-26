@@ -26,7 +26,7 @@ read slots by their name, not by their properties).
 - The initform can be specified as usual with =:initform= or directly in second
   position, right after the slot name.
 - Class option to toggle the default slot exportation.
-- The `:export' slot option allows to specify the exportation of individual slots.
+- The =:export= slot option allows to specify the exportation of individual slots.
 - Implicit, customizable predicate generator.
 
 * Examples
