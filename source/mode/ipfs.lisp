@@ -145,9 +145,7 @@ Return non-nil immediately if already started."
                    :host (uiop:strcat cid ".ipfs." (quri:uri-host (gateway mode))))))
 
 (defmethod fetch ((mode ipfs-mode) url)
-  ;; TODO: Fallback to public gateway.
-  (start-daemon mode)
-  (if (daemon mode)
+  (if (start-daemon mode)
       (let ((mime (or (mimes:mime (pathname (quri:uri-path url)))
                       "text/html;charset=utf8")))
         ;; WARNING: Need byte-vector here because strings CL encoding may confuse the browser.
@@ -206,7 +204,7 @@ Return non-nil immediately if already started."
   (alex:assoc-value entry key :test 'string=))
 
 (defmethod all-uploads ((mode ipfs-mode)) ; TODO: Report error when daemon is not running.
-  (when (daemon-running-p mode)
+  (when (start-daemon mode)
     (mapcar (lambda (entry)
               (make-instance 'ipfs-file
                              :name (ipfs-getf entry "Name")
@@ -218,7 +216,7 @@ Return non-nil immediately if already started."
 (defmethod add ((mode ipfs-mode) path)  ; TODO: Report error when daemon is not running.
   "Add PATH to IPFS and the MFS so that it's listed by 'ipfs files ls'.
 See the help message of 'ipfs files'."
-  (when (daemon-running-p mode)
+  (when (start-daemon mode)
     (dolist (result (ipfs:add path))
       (let ((hash (ipfs-getf result "Hash"))
             (name (ipfs-getf result "Name")))
@@ -232,8 +230,7 @@ See the help message of 'ipfs files'."
                             'nyxt/file-manager-mode:file-source))))
   "Import files and directories to the IPFS network."
   (let ((mode (find-submode 'ipfs-mode)))
-    (start-daemon mode)
-    (if (daemon mode)
+    (if (start-daemon mode)
         (progn
           (mapc (curry #'add mode) paths)
           (echo "Uploaded ~a" paths))
@@ -253,8 +250,7 @@ It's prefixed with '/'."
     (&key (files (prompt :sources 'uploads-source)))
   "Delete IPFS file(s)."
   (let ((mode (find-submode 'ipfs-mode (current-buffer))))
-    (start-daemon mode)
-    (if (daemon mode)
+    (if (start-daemon mode)
         (progn
           (mapc (compose #'ipfs:files-rm #'ipfs-path) files)
           (echo "Deleted IPFS files: ~a" (mapcar #'name files)))
