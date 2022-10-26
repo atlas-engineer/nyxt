@@ -298,9 +298,9 @@
 (defsystem "nyxt/gtk"
   :defsystem-depends-on (nyxt-asdf)
   :class :nyxt-system
-  :depends-on (nyxt
-               cl-cffi-gtk
-               cl-webkit2)
+  :depends-on (cl-cffi-gtk
+               cl-webkit2
+               nyxt)
   :pathname #p"NYXT:source;"
   :serial t
   :components ((:file "web-extensions")
@@ -311,9 +311,9 @@
 (defsystem "nyxt/gi-gtk"
   :defsystem-depends-on (nyxt-asdf)
   :class :nyxt-system
-  :depends-on (nyxt/gtk
+  :depends-on (bordeaux-threads
                cl-gobject-introspection
-               bordeaux-threads)
+               nyxt/gtk)
   :pathname #p"NYXT:source;"
   :components ((:file "renderer/gi-gtk"))
   :in-order-to ((test-op (test-op "nyxt/gi-gtk/tests"))))
@@ -331,8 +331,8 @@
                (:file "tests/renderer-online/set-url")))
 
 (defsystem "nyxt/qt"
-  :depends-on (nyxt
-               cl-webengine
+  :depends-on (cl-webengine
+               nyxt
                trivial-main-thread)
   :pathname #p"NYXT:source;"
   :components ((:file "renderer/qt")))
@@ -387,8 +387,8 @@
   :defsystem-depends-on (nyxt-asdf)
   :class :nyxt-renderer-system
   :depends-on (alexandria
-               str
-               nyxt/version)
+               nyxt/version
+               str)
   :components ((:nyxt-desktop-file "assets/nyxt.desktop")
                (:nyxt-icon-directory "assets/")
                (:nyxt-binary-file "nyxt")
@@ -421,10 +421,10 @@
 (defsystem "nyxt/analysis"
   :defsystem-depends-on (nyxt-asdf)
   :class :nyxt-system
-  :depends-on (str
+  :depends-on (alexandria
+               cl-ppcre
                serapeum
-               alexandria
-               cl-ppcre)
+               str)
   :pathname #p"NYXT:libraries;analysis;"
   :components ((:file "package")
                (:file "composite-sequence")
@@ -477,7 +477,8 @@
 (defsystem "nyxt/history-tree/tests"
   :defsystem-depends-on (nyxt-asdf)
   :class :nyxt-test-system
-  :depends-on (nyxt/history-tree str)
+  :depends-on (nyxt/history-tree
+               str)
   :targets (:package :history-tree/tests)
   :components ((:file "libraries/history-tree/tests/tests")))
 
@@ -486,11 +487,11 @@
   :class :nyxt-system
   :depends-on (bordeaux-threads
                cl-ppcre
+               nyxt/class-star
+               serapeum
                str
                trivial-clipboard
-               uiop
-               nyxt/class-star
-               serapeum)
+               uiop)
   :pathname #p"NYXT:libraries;password-manager;"
   :components ((:file "package")
                (:file "password")
@@ -502,7 +503,9 @@
 (defsystem "nyxt/class-star"
   :defsystem-depends-on (nyxt-asdf)
   :class :nyxt-system
-  :depends-on (hu.dwim.defclass-star moptilities alexandria)
+  :depends-on (alexandria
+               hu.dwim.defclass-star
+               moptilities)
   :pathname #p"NYXT:libraries;class-star;"
   :components ((:file "package")
                (:file "patch")
@@ -526,10 +529,10 @@
                closer-mop
                lparallel
                moptilities
+               nyxt/class-star
                serapeum
                str
-               trivial-package-local-nicknames
-               nyxt/class-star)
+               trivial-package-local-nicknames)
   :pathname #p"NYXT:libraries;prompter;"
   :components ((:file "package")
                (:file "filter-preprocessor")
