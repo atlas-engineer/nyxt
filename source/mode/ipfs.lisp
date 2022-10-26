@@ -103,7 +103,13 @@ Return non-nil immediately if already started."
                       (when (and (uiop:process-alive-p p-i)
                                  (string= "Daemon is ready" (read-line (uiop:process-info-output p-i))))
                         (return 'ready))))
-                  (setf (daemon mode) p-i))
+                  (setf (daemon mode) p-i)
+                  ;; Terminate daemon on exit since it's an expensive operation.
+                  (hooks:add-hook
+                   (before-exit-hook *browser*)
+                   (make-instance 'hooks:handler
+                                  :fn (lambda () (quit-daemon mode))
+                                  :name 'kill-ipfs)))
               (bt:timeout ()
                 (uiop:terminate-process p-i :urgent t)
 
@@ -139,8 +145,6 @@ Return non-nil immediately if already started."
     :name 'ipfs-mode-disable)))
 
 (defmethod disable ((mode ipfs-mode) &key)
-  ;; TODO: Terminate daemon here?  Maybe not, since it's an expensive operation.
-  ;; But when then?  In (before-exit-hook *browser*)?
   (hooks:remove-hook
    (pre-request-hook (buffer mode))
    'ipfs-mode-disable))
