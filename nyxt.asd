@@ -435,7 +435,8 @@
                (:file "document-vector")
                (:file "text-rank")
                (:file "dbscan")
-               (:file "section")))
+               (:file "section"))
+  :in-order-to ((test-op (test-op "nyxt/analysis/tests"))))
 
 (defsystem "nyxt/analysis/tests"
   :defsystem-depends-on (nyxt-asdf)
