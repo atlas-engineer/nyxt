@@ -73,6 +73,14 @@ to
                 (uiop:run-program (list (program mode) "diag" "cmds")
                                   :ignore-error-status t))))
 
+(defmethod ipfs-init ((mode ipfs-mode))
+  (unless (uiop:directory-exists-p (or (uiop:getenv "IPFS_PATH")
+                                       (nfiles:join (user-homedir-pathname) ".ipfs")))
+    (handler-case (uiop:run-program (append (list (program mode) "init"))
+                                    :output t :error-output t)
+      (t (c)
+        (log:error "Error while initializing IPFS: ~a" c)))))
+
 (defmethod start-daemon ((mode ipfs-mode))
   "Wait until IPFS daemon is started.
 Return non-nil immediately if already started."
@@ -81,6 +89,7 @@ Return non-nil immediately if already started."
         (daemon-running-p mode)
         (when (and (not (daemon mode))
                    (sera:resolve-executable (program mode)))
+          (ipfs-init mode)              ; TODO: Handle errors gracefully.
           (let ((p-i (uiop:launch-program (append (list (program mode) "daemon")
                                                   (arguments mode))
                                           :output :stream
