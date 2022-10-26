@@ -18,4 +18,7 @@
     (assert-equal '(nil nil nil)
                   (submatch "careful" '("care" "ful" "ness")))
     (assert-equal '(nil "switch-buffer-next" "switch-buffer" nil)
-                  (submatch "swit buf" '("about" "switch-buffer-next" "switch-buffer" "delete-buffer")))))
+                  (submatch "swit buf" '("about"
+                                         "switch-buffer-next"
+                                         "switch-buffer"
+                                         "delete-buffer")))))
