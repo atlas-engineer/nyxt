@@ -75,32 +75,35 @@ to
 
 (defmethod start-daemon ((mode ipfs-mode))
   "Wait until IPFS daemon is started.
-Return immediately if already started."
+Return non-nil immediately if already started."
   (sera:synchronized ((daemon mode))
-    (when (and (not (daemon mode))
-               (sera:resolve-executable (program mode)))
-      (let ((p-i (uiop:launch-program (append (list (program mode) "daemon")
-                                              (arguments mode))
-                                      :output :stream
-                                      :error-output :stream)))
-        (handler-case
-            (progn
-              (bt:with-timeout ((daemon-timeout mode))
-                (loop
-                  (unless (uiop:process-alive-p p-i)
-                    (error "Already started?"))
-                  (when (and (uiop:process-alive-p p-i)
-                             (string= "Daemon is ready" (read-line (uiop:process-info-output p-i))))
-                    (return 'ready))))
-              (setf (daemon mode) p-i))
-          (bt:timeout ()
-            (uiop:terminate-process p-i :urgent t)
-            (error "IPFS daemon timed out before it could start:~&~a"
-                   (uiop:slurp-stream-string (uiop:process-info-output p-i))))
-          (t ()
-            (uiop:terminate-process p-i :urgent t)
-            (error "IPFS daemon failed to start:~&~a"
-                   (uiop:slurp-stream-string (uiop:process-info-error-output p-i)))))))))
+    (or (daemon mode)
+        (daemon-running-p mode)
+        (when (and (not (daemon mode))
+                   (sera:resolve-executable (program mode)))
+          (let ((p-i (uiop:launch-program (append (list (program mode) "daemon")
+                                                  (arguments mode))
+                                          :output :stream
+                                          :error-output :stream)))
+            (handler-case
+                (progn
+                  (bt:with-timeout ((daemon-timeout mode))
+                    (loop
+                      (unless (uiop:process-alive-p p-i)
+                        (error "Already started?"))
+                      (when (and (uiop:process-alive-p p-i)
+                                 (string= "Daemon is ready" (read-line (uiop:process-info-output p-i))))
+                        (return 'ready))))
+                  (setf (daemon mode) p-i))
+              (bt:timeout ()
+                (uiop:terminate-process p-i :urgent t)
+
+                (log:error "IPFS daemon timed out before it could start:~&~a"
+                           (uiop:slurp-stream-string (uiop:process-info-output p-i))))
+              (t ()
+                (uiop:terminate-process p-i :urgent t)
+                (log:error "IPFS daemon failed to start:~&~a"
+                           (uiop:slurp-stream-string (uiop:process-info-error-output p-i))))))))))
 
 (defmethod quit-daemon ((mode ipfs-mode))
   (when (daemon mode)
