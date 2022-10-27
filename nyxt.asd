@@ -34,8 +34,8 @@
                cl-qrencode
                cl-tld
                cl-xmpp
-               cl-xmpp-tls
-               cl-xmpp-sasl
+               cl-xmpp/tls
+               cl-xmpp/sasl
                closer-mop
                cl-containers
                dissect
