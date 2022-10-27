@@ -55,9 +55,9 @@ Possible values:
     (:documentation "The Nyxt-internal representation of user scripts to bridge with the renderer.")
     (:metaclass user-class)))
 
-(sera:-> get-script-url
-         (string (maybe nyxt::url-designator pathname))
-         (values (maybe quri:uri) boolean))
+(-> get-script-url
+    (string (maybe nyxt::url-designator pathname))
+    (values (maybe quri:uri) boolean))
 (defun get-script-url (script original-url)
   "A helper to get the URL to a SCRIPT string.
 Return:
@@ -84,10 +84,10 @@ Return:
            (values full-url nil))))
     (t (values nil nil))))
 
-(sera:-> get-script-text
-         ((or string nyxt::url-designator pathname)
-          &optional (maybe nyxt::url-designator pathname))
-         (values (maybe string) &optional))
+(-> get-script-text
+    ((or string nyxt::url-designator pathname)
+     &optional (maybe nyxt::url-designator pathname))
+    (values (maybe string) &optional))
 (defun get-script-text (script &optional original-url)
   (etypecase script
     (pathname

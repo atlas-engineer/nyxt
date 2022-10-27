@@ -81,7 +81,7 @@ Set to 0 to disable.")
 (defmethod search-cache ((mode remembrance-mode) query)
   "Return the entries matching QUERY."
   (let ((cache (cache mode)))
-    (mapcar (alex:curry #'montezuma:get-document cache)
+    (mapcar (curry #'montezuma:get-document cache)
             (mapcar #'montezuma:doc
                     (montezuma:each
                      (montezuma:search cache

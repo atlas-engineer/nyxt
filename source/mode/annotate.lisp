@@ -140,7 +140,7 @@ make-instance."
   "Create a new buffer with the annotations of the current URL of BUFFER."
   (let ((source-buffer (nyxt::buffers-get id))
         (annotations (files:content (annotations-file buffer))))
-    (let ((filtered-annotations (sera:filter (alex:curry #'url-equal (url source-buffer))
+    (let ((filtered-annotations (sera:filter (curry #'url-equal (url source-buffer))
                                              annotations :key #'url)))
       (render-annotations filtered-annotations))))
 

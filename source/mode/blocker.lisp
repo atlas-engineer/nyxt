@@ -24,14 +24,14 @@ seconds."))
   (:documentation "A hostlist `blocker-mode' can use for its `hostlists' slot.
 See `*default-hostlist*' for an example."))
 
-(sera:export-always 'make-hostlist)
+(export-always 'make-hostlist)
 (defun make-hostlist (&rest args)
   "Return a new `hostlist'.
 See the `hostlist' class documentation."
   (apply #'make-instance 'hostlist args))
 
 
-(sera:export-always '*default-hostlist*)
+(export-always '*default-hostlist*)
 (defparameter *default-hostlist*
   (make-instance 'hostlist
                  :url (quri:uri "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts")

@@ -6,7 +6,7 @@
   (:documentation "Block resource queries for listed hosts."))
 (in-package :nyxt/no-procrastinate-mode)
 
-(sera:export-always '*default-hostlist-no-procrastinate*)
+(export-always '*default-hostlist-no-procrastinate*)
 (defparameter *default-hostlist-no-procrastinate*
   (make-instance 'hostlist
                  :url (quri:uri "https://raw.githubusercontent.com/atlas-engineer/default-hosts-no-procrastinate/main/hosts")
