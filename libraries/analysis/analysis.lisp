@@ -95,5 +95,5 @@ operations available, some examples:
 
 (defun extract-keywords (text &key (limit 5))
   "Extract keywords from a string of text."
-  (serapeum:take limit (keywords (make-instance 'analysis:document 
+  (serapeum:take limit (keywords (make-instance 'analysis:document
                                                 :string-contents text))))
