@@ -5,12 +5,4 @@
 
 (uiop:define-package :analysis
   (:use :cl)
-  (:export #:document
-           #:keywords
-           #:extract-keywords
-           #:extract-sections
-           #:summarize-text
-           #:sequence-model
-           #:add-record
-           #:predict
-           #:element))
+  (:import-from :serapeum #:export-always))
