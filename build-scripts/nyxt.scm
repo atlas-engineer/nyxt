@@ -201,6 +201,7 @@ JSON handling.  Load the parser backend you prefer!
           cl-html-diff
           cl-hu.dwim.defclass-star
           cl-iolib
+          cl-ironclad
           cl-json
           cl-local-time
           cl-lparallel
