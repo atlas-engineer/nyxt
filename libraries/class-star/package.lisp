@@ -3,7 +3,7 @@
 
 (in-package :cl-user)
 
-(defpackage :class-star
+(uiop:define-package :class-star
   (:use :cl)
   (:import-from :hu.dwim.defclass-star)
   (:export #:define-class
