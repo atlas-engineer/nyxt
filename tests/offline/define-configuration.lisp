@@ -2,7 +2,6 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (in-package :nyxt/tests)
-(use-nyxt-package-nicknames)
 
 (define-test simple-configuration ()
   (let ((test-url (quri:uri "about:blank")))

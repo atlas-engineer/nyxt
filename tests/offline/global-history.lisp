@@ -2,7 +2,6 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (in-package :nyxt/tests)
-(use-nyxt-package-nicknames)
 
 (define-class test-profile (nosave-profile)
   ((files:name :initform "test"))
