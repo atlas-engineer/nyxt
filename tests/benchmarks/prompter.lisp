@@ -13,7 +13,7 @@ The build time for the Guix package database is not taken into account."
              (make-instance 'nyxt/os-package-manager-mode::os-package-source))))
 
 (define-benchmark measure-score-suggestion-docstring ()
-  "Measure the time needed to match against all Nyxt command docstring.
+  "Measure the time needed to match against all Nyxt command docstrings.
 Inputs are random character sequences taken from the docstrings."
   (let* ((suggestions (loop for command in nyxt::*command-list*
                             if (> (length (slot-value command 'nyxt::docstring)) 0)
