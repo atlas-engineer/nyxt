@@ -9,7 +9,7 @@
   (:documentation "Test profile that does not read nor write to disk."))
 
 (defmethod files:read-file ((profile test-profile) (file nyxt-file) &key &allow-other-keys)
-  "This method guarantees FILE will not be loaded from disk in TEST-PROFILE."
+  "This method guarantees FILE will not be loaded from disk in PROFILE."
   nil)
 
 (define-test global-history ()
