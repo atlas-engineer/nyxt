@@ -1233,6 +1233,13 @@ See `finalize-buffer'."
   (setf (gtk:gtk-widget-size-request (message-container window))
         (list -1 height)))
 
+(define-ffi-method ffi-buffer-height ((buffer gtk-buffer))
+  (gdk:gdk-rectangle-height
+   (gtk:gtk-widget-get-allocation (nyxt/renderer/gtk::gtk-object buffer))))
+(define-ffi-method ffi-buffer-width ((buffer gtk-buffer))
+  (gdk:gdk-rectangle-width
+   (gtk:gtk-widget-get-allocation (nyxt/renderer/gtk::gtk-object buffer))))
+
 (defun process-file-chooser-request (web-view file-chooser-request)
   (declare (ignore web-view))
   (with-protect ("Failed to process file chooser request: ~a" :condition)
@@ -2121,6 +2128,9 @@ As a second value, return the current buffer index starting from 0."
 (define-ffi-method ffi-focused-p ((buffer gtk-buffer))
   (gtk:gtk-widget-is-focus (gtk-object buffer)))
 
+(define-ffi-method ffi-muted-p ((buffer gtk-buffer))
+  (webkit:webkit-web-view-is-muted (gtk-object buffer)))
+
 (define-ffi-method ffi-tracking-prevention ((buffer gtk-buffer))
   #+webkit2-tracking
   (webkit:webkit-website-data-manager-get-itp-enabled
@@ -2132,6 +2142,16 @@ As a second value, return the current buffer index starting from 0."
    (webkit:webkit-web-context-website-data-manager
     (webkit:webkit-web-view-web-context (gtk-object buffer)))
    value))
+
+(define-ffi-method ffi-web-extension-send-message ((buffer gtk-buffer)
+                                                   javascript
+                                                   result-callback
+                                                   error-callback)
+  (webkit:webkit-web-view-send-message-to-page
+   (gtk-object buffer)
+   javascript
+   result-callback
+   error-callback))
 
 (defmethod ffi-buffer-copy ((gtk-buffer gtk-buffer) &optional (text nil text-provided-p))
   (if text-provided-p
