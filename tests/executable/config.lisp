@@ -105,17 +105,17 @@
     (labels ((collect-code-examples (form)
                (cond
                  ((and (listp form)
-                       (eq :ncode (car form)))
-                  (push (cdr form) code-examples))
+                       (eq :ncode (first form)))
+                  (push (rest form) code-examples))
                  ((listp form)
                   (mapcar #'collect-code-examples
-                          (cdr form)))
+                          (rest form)))
                  (t nil))))
       (collect-code-examples manual-contents))
     (dolist (example code-examples)
       ;; Clean up the quoted forms (Spinneret hack, see `:ncode' docstring).
-      (let* ((unquoted-example (mapcar (lambda (form) (if (eq 'quote (car form))
-                                                          (cdr form)
+      (let* ((unquoted-example (mapcar (lambda (form) (if (eq 'quote (first form))
+                                                          (rest form)
                                                           form))
                                        example))
              (progn-example (if (> (length unquoted-example) 1)
