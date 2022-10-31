@@ -396,7 +396,7 @@ If none is found, fall back to `keyscheme:cua'."
     nil
     :documentation "Whether the request takes place in a
 new window.")
-   (method
+   (http-method
     nil
     :type (maybe string)
     :documentation "The HTTP method (GET, POST and friends) of the request.")

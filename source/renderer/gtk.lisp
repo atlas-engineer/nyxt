@@ -1029,7 +1029,7 @@ See `finalize-buffer'."
                                                                                                :modifiers modifiers)))
                                                                :event-type event-type
                                                                :new-window-p is-new-window
-                                                               :method method
+                                                               :http-method method
                                                                :request-headers request-headers
                                                                :response-headers response-headers
                                                                :toplevel-p (quri:uri=
@@ -1460,7 +1460,7 @@ See `finalize-buffer'."
                                         :event-type :other
                                         :new-window-p nil
                                         :resource-p t
-                                        :method (webkit:webkit-uri-request-get-http-method request)
+                                        :http-method (webkit:webkit-uri-request-get-http-method request)
                                         :response-headers (when response
                                                             (let ((headers (webkit:webkit-uri-response-http-headers request)))
                                                               (unless (cffi:null-pointer-p headers)
