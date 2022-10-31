@@ -86,7 +86,9 @@ KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
 (-> dispatch-command ((or function-symbol function)) *)
 (export-always 'dispatch-command)
 (defun dispatch-command (function)
-  (echo-dismiss) ; Clean up message-view on command.
+  (echo-dismiss)                        ; Clean up message-view on command.
+  ;; TODO: Instead of hard-coding these ignored-commands, we could add a boolean
+  ;; slot to the `command' class.
   (let ((ignored-commands '(execute-command
                             execute-predicted-command
                             select-next
