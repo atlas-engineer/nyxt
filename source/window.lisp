@@ -156,6 +156,7 @@ The handlers take the window as argument."))
     (hooks:run-hook (window-make-hook browser) window)
     window))
 
+(export-always 'window-delete)
 (-> window-delete (window &key (:force-p boolean)) *)
 (defun window-delete (window &key force-p)
   "Remove WINDOW from list of known windows.

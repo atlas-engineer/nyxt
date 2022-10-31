@@ -146,6 +146,7 @@ Useful in FFI functions where we usually specialize things against
   "Dummy method to allow forwarding other key arguments."
   buffer)
 
+(export-always 'finalize-buffer)
 (defmethod finalize-buffer ((buffer buffer) &key (browser *browser*) &allow-other-keys)
   "Finalize instantiation of BUFFER.
 Nothing to do for the simplest `buffer' type."
