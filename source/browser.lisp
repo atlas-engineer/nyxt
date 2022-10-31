@@ -396,14 +396,18 @@ If none is found, fall back to `keyscheme:cua'."
     nil
     :documentation "Whether the request takes place in a
 new window.")
-   (http-method
+   (method
     nil
     :type (maybe string)
     :documentation "The HTTP method (GET, POST and friends) of the request.")
-   (http-headers
+   (request-headers
     nil
     :type trivial-types:association-list
     :documentation "Dotted alist of headers for the request.")
+   (response-headers
+    nil
+    :type trivial-types:association-list
+    :documentation "Dotted alist of headers for the response to the given request.")
    (toplevel-p
     nil
     :documentation "Whether the request happens in a toplevel frame.")

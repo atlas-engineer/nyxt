@@ -972,10 +972,9 @@ See `finalize-buffer'."
   (let ((is-new-window nil) (is-known-type t) (event-type :other)
         (navigation-action nil) (navigation-type nil)
         (mouse-button nil) (modifiers ())
-        (url nil) (request nil)
-        (mime-type nil)
-        (method nil) (headers nil) (file-name nil)
-        response)
+        (url nil) (request nil) (response nil)
+        (method nil) (request-headers nil) (response-headers nil)
+        (file-name nil) (mime-type nil))
     (match policy-decision-type-response
       (:webkit-policy-decision-type-navigation-action
        (setf navigation-type (webkit:webkit-navigation-policy-decision-navigation-type response-policy-decision)))
@@ -1011,9 +1010,13 @@ See `finalize-buffer'."
       (setf modifiers (funcall (modifier-translator *browser*)
                                (webkit:webkit-navigation-action-get-modifiers navigation-action))))
     (setf url (quri:uri (webkit:webkit-uri-request-uri request)))
-    (setf headers (let ((headers (webkit:webkit-uri-request-get-http-headers request)))
-                    (unless (cffi:null-pointer-p headers)
-                      (webkit:soup-message-headers-get-headers headers))))
+    (setf request-headers (let ((headers (webkit:webkit-uri-request-get-http-headers request)))
+                            (unless (cffi:null-pointer-p headers)
+                              (webkit:soup-message-headers-get-headers headers))))
+    (setf response-headers (when response
+                             (let ((headers (webkit:webkit-uri-response-http-headers response)))
+                               (unless (cffi:null-pointer-p headers)
+                                 (webkit:soup-message-headers-get-headers headers)))))
     (let* ((request-data
              (hooks:run-hook
               (request-resource-hook buffer)
@@ -1026,8 +1029,9 @@ See `finalize-buffer'."
                                                                                                :modifiers modifiers)))
                                                                :event-type event-type
                                                                :new-window-p is-new-window
-                                                               :http-method method
-                                                               :http-headers headers
+                                                               :method method
+                                                               :request-headers request-headers
+                                                               :response-headers response-headers
                                                                :toplevel-p (quri:uri=
                                                                             url (quri:uri (webkit:webkit-web-view-uri
                                                                                            (gtk-object buffer))))
