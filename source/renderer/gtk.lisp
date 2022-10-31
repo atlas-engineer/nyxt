@@ -1,9 +1,14 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :nyxt)
+(nyxt:define-package :nyxt/renderer/gtk
+    (:documentation "GTK renderer using direct CFFI bindings."))
+(in-package :nyxt/renderer/gtk)
 
-(setf +renderer+ "GTK")
+#+sbcl
+(sb-ext:add-implementation-package *package* (find-package :nyxt))
+
+(setf nyxt::+renderer+ "GTK")
 (push :nyxt-gtk *features*)
 
 (define-class gtk-browser ()
@@ -186,7 +191,7 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
 Otherwise run the THUNK on the renderer thread by passing it a channel and wait on the channel's result."
   (if (renderer-thread-p)
       (funcall thunk)
-      (let ((channel (make-channel 1)))
+      (let ((channel (nyxt::make-channel 1)))
         (within-gtk-thread
           (funcall thunk channel))
         (calispel:? channel))))
@@ -199,6 +204,7 @@ not return."
       (within-gtk-thread
         (funcall thunk))))
 
+(export-always 'define-ffi-method)
 (defmacro define-ffi-method (name args &body body)
   "Define an FFI method to run in the renderer thread.
 
@@ -214,13 +220,13 @@ the renderer thread, use `defmethod' instead."
        ,@declares
        (if (renderer-thread-p)
            (progn ,@forms)
-           (let ((channel (make-channel 1))
-                 (error-channel (make-channel 1)))
+           (let ((channel (nyxt::make-channel 1))
+                 (error-channel (nyxt::make-channel 1)))
              (within-gtk-thread
                ;; We do not include `*debug-on-error*' for now, since we need to
                ;; first improve the debugger to properly handle the GTK thread.
                ;; TODO: Abstract this into `with-protect-from-thread'?
-               (if (or *run-from-repl-p* *restart-on-error*)
+               (if (or nyxt::*run-from-repl-p* nyxt::*restart-on-error*)
                    (let ((current-condition nil))
                      (restart-case
                          (handler-bind ((condition (lambda (c) (setf current-condition c))))
@@ -249,7 +255,7 @@ the renderer thread, use `defmethod' instead."
   (setf (uiop:getenv "WEBKIT_FORCE_SANDBOX") "0")
   (if gtk-running-p
       (within-gtk-thread
-        (finalize browser urls startup-timestamp))
+        (call-next-method))
       #-darwin
       (progn
         (setf gtk-running-p t)
@@ -257,8 +263,8 @@ the renderer thread, use `defmethod' instead."
         (gdk:gdk-set-program-class "Nyxt")
         (gtk:within-main-loop
           (with-protect ("Error on GTK thread: ~a" :condition)
-            (finalize browser urls startup-timestamp)))
-        (unless *run-from-repl-p*
+            (call-next-method)))
+        (unless nyxt::*run-from-repl-p*
           (gtk:join-gtk-main)
           ;; KLUDGE: On FreeBSD nyxt is stuck inside some blocking
           ;; syscall if FINISH-OUTPUT is T. In this case the
@@ -280,7 +286,7 @@ the renderer thread, use `defmethod' instead."
 (define-ffi-method ffi-kill-browser ((browser gtk-browser))
   ;; TODO: Terminating the GTK thread from the REPL seems to prevent Nyxt from
   ;; starting again.
-  (unless *run-from-repl-p*
+  (unless nyxt::*run-from-repl-p*
     (gtk:leave-gtk-main)))
 
 (define-class data-manager-file (nyxt-file)
@@ -343,7 +349,7 @@ By default it is found in the source directory."))
     :documentation "See `gtk-buffer' slot of the same name."))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(without-package-locks ; TODO: Is there a cleaner way to update the mode class?  Maybe move it to the core?
+(nyxt::without-package-locks ; TODO: Is there a cleaner way to update the mode class?  Maybe move it to the core?
   (handler-bind ((warning #'muffle-warning))
     (defclass nyxt/download-mode:renderer-download (gtk-download)
       ()
@@ -416,7 +422,7 @@ By default it is found in the source directory."))
       (handler-bind ((error (lambda (c)
                               (echo-warning "decide policy error: ~a" c)
                               ;; TODO: Don't automatically call the restart when from the REPL?
-                              ;; (unless *run-from-repl-p*
+                              ;; (unless nyxt::*run-from-repl-p*
                               ;;   (invoke-restart 'ignore-policy-decision))
                               (invoke-restart 'ignore-policy-decision))))
         (restart-case (on-signal-decide-policy buffer response-policy-decision policy-decision-type-response)
@@ -459,7 +465,7 @@ response.  The BODY is wrapped with `with-protect'."
                   panel-buffer-container-left
                   panel-buffer-container-right
                   main-buffer-container
-                  active-buffer prompt-buffer-container
+                  nyxt::active-buffer prompt-buffer-container
                   prompt-buffer-view
                   status-buffer status-container
                   message-container message-view
@@ -496,10 +502,10 @@ response.  The BODY is wrapped with `with-protect'."
          (setf key-string-buffer (make-instance 'gtk:gtk-entry))
          ;; Dummy buffer is an `input-buffer' so that an empty window can still
          ;; receive input, for instance to create a new buffer.
-         (setf active-buffer (make-instance 'input-buffer))
+         (setf nyxt::active-buffer (make-instance 'input-buffer))
 
          ;; Add the views to the box layout and to the window
-         (gtk:gtk-box-pack-start main-buffer-container (gtk-object active-buffer) :expand t :fill t)
+         (gtk:gtk-box-pack-start main-buffer-container (gtk-object nyxt::active-buffer) :expand t :fill t)
          (gtk:gtk-box-pack-start horizontal-box-layout panel-buffer-container-left :expand nil)
          (gtk:gtk-box-pack-start horizontal-box-layout main-buffer-container :expand t :fill t)
          (gtk:gtk-box-pack-start horizontal-box-layout panel-buffer-container-right :expand nil)
@@ -539,15 +545,15 @@ response.  The BODY is wrapped with `with-protect'."
            (on-signal-destroy window))
          (connect-signal window "window-state-event" nil (widget event)
            (declare (ignore widget))
-           (setf (fullscreen-p window)
+           (setf (nyxt::fullscreen-p window)
                  (find :fullscreen
                        (gdk:gdk-event-window-state-new-window-state event)))
-           (setf (maximized-p window)
+           (setf (nyxt::maximized-p window)
                  (find :maximized
                        (gdk:gdk-event-window-state-new-window-state event)))
            nil))
 
-       (unless *headless-p*
+       (unless nyxt::*headless-p*
          (gtk:gtk-widget-show-all gtk-object))))))
 
 (defmethod update-instance-for-redefined-class :after ((window window) added deleted plist &key)
@@ -556,7 +562,7 @@ response.  The BODY is wrapped with `with-protect'."
 
 (define-ffi-method on-signal-destroy ((window gtk-window))
   ;; Then remove buffer from window container to avoid corruption of buffer.
-  (gtk:gtk-container-remove (main-buffer-container window) (gtk-object (active-buffer window)))
+  (gtk:gtk-container-remove (main-buffer-container window) (gtk-object (nyxt::active-buffer window)))
   (window-delete window))
 
 (define-ffi-method ffi-window-delete ((window gtk-window))
@@ -714,7 +720,7 @@ See `gtk-browser's `modifier-translator' slot."
     ;; Rebind prompt-buffer to ensure the watcher does not mix up the
     ;; different prompt-buffers.
     (let ((prompt-buffer buffer))
-      (update-prompt-input prompt-buffer))))
+      (nyxt::update-prompt-input prompt-buffer))))
 
 (define-ffi-method on-signal-key-press-event ((sender gtk-window) event)
   (let* ((keycode (gdk:gdk-event-key-hardware-keycode event))
@@ -728,11 +734,11 @@ See `gtk-browser's `modifier-translator' slot."
                              (key-event-modifiers event)
                              event))
          (buffer (or (current-prompt-buffer)
-                     (active-buffer sender))))
+                     (nyxt::active-buffer sender))))
     (if modifiers
         (log:debug key-string keycode character keyval-name modifiers)
         (log:debug key-string keycode character keyval-name))
-    (when (prompt-buffer-p buffer)
+    (when (nyxt::prompt-buffer-p buffer)
       (update-prompt buffer))
     (if key-string
         (progn
@@ -756,8 +762,8 @@ See `gtk-browser's `modifier-translator' slot."
   nil)
 
 (defun sender-window (sender)
-  (or (find sender (window-list) :key #'active-prompt-buffers)
-      (find sender (window-list) :key #'active-buffer)
+  (or (find sender (window-list) :key #'nyxt::active-prompt-buffers)
+      (find sender (window-list) :key #'nyxt::active-buffer)
       (current-window)))
 
 (define-ffi-method on-signal-button-press-event ((sender gtk-buffer) event)
@@ -875,7 +881,7 @@ See `gtk-browser's `modifier-translator' slot."
        (webkit:webkit-web-context-register-uri-scheme-callback
         context scheme
         (lambda (request)
-          (let ((*interactive-p* t)
+          (let ((nyxt::*interactive-p* t)
                 ;; Look up the scheme-object again so that we can live-update
                 ;; the callback without having to create a new view with a new
                 ;; context.
@@ -885,8 +891,8 @@ See `gtk-browser's `modifier-translator' slot."
                       (find (webkit:webkit-uri-scheme-request-get-web-view request)
                             (delete nil
                                     (append (list (status-buffer (current-window)))
-                                            (active-prompt-buffers (current-window))
-                                            (panel-buffers (current-window))
+                                            (nyxt::active-prompt-buffers (current-window))
+                                            (nyxt::panel-buffers (current-window))
                                             (buffer-list))) :key #'gtk-object))))
         (or (error-callback scheme-object)
             (lambda (condition)
@@ -965,7 +971,7 @@ See `finalize-buffer'."
           (buffer-load url :buffer buffer)
           t)
         (progn
-          (tls-help buffer url)
+          (nyxt::tls-help buffer url)
           t))))
 
 (define-ffi-method on-signal-decide-policy ((buffer gtk-buffer) response-policy-decision policy-decision-type-response)
@@ -1037,8 +1043,8 @@ See `finalize-buffer'."
                                 (setf (gtk-request data) request
                                       (gtk-response data) response)))))
            (keymap (when request-data
-                     (get-keymap (buffer request-data)
-                                 (request-resource-keyscheme-map (buffer request-data)))))
+                     (nyxt::get-keymap (buffer request-data)
+                                       (request-resource-keyscheme-map (buffer request-data)))))
            (bound-function (when request-data
                              (the (or symbol keymaps:keymap null)
                                   (keymaps:lookup-key (keys request-data) keymap)))))
@@ -1054,7 +1060,7 @@ See `finalize-buffer'."
         (webkit:webkit-policy-decision-ignore response-policy-decision))
        ((new-window-p request-data)
         (log:debug "Load URL in new buffer: ~a" (render-url (url request-data)))
-        (open-urls (list (url request-data)))
+        (nyxt::open-urls (list (url request-data)))
         (webkit:webkit-policy-decision-ignore response-policy-decision))
        ((not (valid-scheme-p (quri:uri-scheme (url request-data))))
         (uiop:launch-program (list *open-program* (quri:render-uri (url request-data)))))
@@ -1105,7 +1111,7 @@ See `finalize-buffer'."
                     (url buffer)
                     url)))
       (cond ((eq load-event :webkit-load-started)
-             (setf (status buffer) :loading)
+             (setf (nyxt::status buffer) :loading)
              (nyxt/web-extensions::tabs-on-updated buffer '(("status" . "loading")))
              (nyxt/web-extensions::tabs-on-updated buffer `(("url" . ,(render-url url))))
              (on-signal-load-started buffer url)
@@ -1122,8 +1128,8 @@ See `finalize-buffer'."
              (on-signal-load-committed buffer url))
             ((eq load-event :webkit-load-finished)
              (setf (loading-webkit-history-p buffer) nil)
-             (unless (eq (slot-value buffer 'status) :failed)
-               (setf (status buffer) :finished))
+             (unless (eq (slot-value buffer 'nyxt::status) :failed)
+               (setf (nyxt::status buffer) :finished))
              (nyxt/web-extensions::tabs-on-updated buffer '(("status" . "complete")))
              (nyxt/web-extensions::tabs-on-updated buffer `(("url" . ,(render-url url))))
              (on-signal-load-finished buffer url)
@@ -1136,10 +1142,10 @@ See `finalize-buffer'."
                          (webkit:webkit-hit-test-result-image-uri hit-test-result)
                          (webkit:webkit-hit-test-result-media-uri hit-test-result))))
     (progn
-      (print-message (str:concat "→ " (quri:url-decode url :lenient t)))
+      (nyxt::print-message (str:concat "→ " (quri:url-decode url :lenient t)))
       (setf (url-at-point buffer) (quri:uri url)))
     (progn
-      (print-message "")
+      (nyxt::print-message "")
       (setf (url-at-point buffer) (quri:uri "")))))
 
 (define-ffi-method ffi-window-make ((browser gtk-browser))
@@ -1148,7 +1154,7 @@ See `finalize-buffer'."
 
 (define-ffi-method ffi-window-to-foreground ((window gtk-window))
   "Show window in foreground."
-  (unless *headless-p*
+  (unless nyxt::*headless-p*
     (gtk:gtk-window-present (gtk-object window)))
   (call-next-method))
 
@@ -1164,12 +1170,12 @@ See `finalize-buffer'."
 
 (define-ffi-method ffi-window-set-buffer ((window gtk-window) (buffer gtk-buffer) &key (focus t))
   "Set BROWSER's WINDOW buffer to BUFFER."
-  (let ((old-buffer (active-buffer window)))
+  (let ((old-buffer (nyxt::active-buffer window)))
     ;; Just a precaution for the buffer to not be destroyed until we say so.
     (g:g-object-ref (g:pointer (gtk-object old-buffer)))
     (gtk:gtk-container-remove (main-buffer-container window) (gtk-object old-buffer))
     (gtk:gtk-box-pack-start (main-buffer-container window) (gtk-object buffer) :expand t :fill t)
-    (unless *headless-p*
+    (unless nyxt::*headless-p*
       (gtk:gtk-widget-show (gtk-object buffer)))
     (when focus
       (gtk:gtk-widget-grab-focus (gtk-object buffer)))
@@ -1188,7 +1194,7 @@ See `finalize-buffer'."
             (push buffer (panel-buffers-right window))))
   (setf (gtk:gtk-widget-size-request (gtk-object buffer))
         (list (width buffer) -1))
-  (unless *headless-p*
+  (unless nyxt::*headless-p*
     (gtk:gtk-widget-show (gtk-object buffer))))
 
 (define-ffi-method ffi-window-panel-buffer-width ((window gtk-window) (buffer panel-buffer))
@@ -1212,7 +1218,7 @@ See `finalize-buffer'."
   (setf (gtk:gtk-widget-size-request (prompt-buffer-container window))
         (list -1 height))
   (if (eql 0 height)
-      (gtk:gtk-widget-grab-focus (gtk-object (active-buffer window)))
+      (gtk:gtk-widget-grab-focus (gtk-object (nyxt::active-buffer window)))
       (gtk:gtk-widget-grab-focus (prompt-buffer-view window))))
 
 (define-ffi-method ffi-window-status-buffer-height ((window gtk-window))
@@ -1233,7 +1239,7 @@ See `finalize-buffer'."
     (when (native-dialogs *browser*)
       (gobject:g-object-ref (gobject:pointer file-chooser-request))
       (run-thread "file chooser"
-        (let* ((*interactive-p* t)
+        (let* ((nyxt::*interactive-p* t)
                (multiple (webkit:webkit-file-chooser-request-select-multiple
                           file-chooser-request))
                (files (mapcar
@@ -1337,7 +1343,7 @@ See `finalize-buffer'."
                  (rgba (progn (webkit:webkit-color-chooser-request-get-rgba
                                color-chooser-request rgba)
                               rgba))
-                 (*interactive-p* t)
+                 (nyxt::*interactive-p* t)
                  (color-name (prompt1 :prompt "Color"
                                       :input (format nil "rgba(~d, ~d, ~d, ~d)"
                                                      (round (* 255 (gdk:gdk-rgba-red rgba)))
@@ -1365,7 +1371,7 @@ See `finalize-buffer'."
       (let ((dialog (gobject:pointer dialog)))
         (webkit:webkit-script-dialog-ref dialog)
         (run-thread "script dialog"
-          (let ((*interactive-p* t))
+          (let ((nyxt::*interactive-p* t))
             (case (webkit:webkit-script-dialog-get-dialog-type dialog)
               (:webkit-script-dialog-alert (echo (webkit:webkit-script-dialog-get-message dialog)))
               (:webkit-script-dialog-prompt
@@ -1394,7 +1400,7 @@ See `finalize-buffer'."
 (defun process-permission-request (web-view request)
   (g:g-object-ref (g:pointer request))
   (run-thread "permission requester"
-    (let ((*interactive-p* t))
+    (let ((nyxt::*interactive-p* t))
       (if-confirm ((format
                     nil "[~a] ~a"
                     (webkit:webkit-web-view-uri web-view)
@@ -1473,7 +1479,7 @@ See `finalize-buffer'."
     (on-signal-load-changed buffer load-event))
   (connect-signal buffer "focus-out-event" t (web-view event)
     (declare (ignore web-view event))
-    (when (fullscreen-p (current-window))
+    (when (nyxt::fullscreen-p (current-window))
       (toggle-fullscreen :window (current-window)))
     nil)
   (connect-signal buffer "mouse-target-changed" nil (web-view hit-test-result modifiers)
@@ -1523,7 +1529,7 @@ See `finalize-buffer'."
             (gobject:g-signal-handler-disconnect web-view handler-id))
           (handler-ids buffer))
     (nyxt/web-extensions::tabs-on-removed buffer)
-    (buffer-hide buffer)
+    (nyxt::buffer-hide buffer)
     (gtk:gtk-widget-destroy web-view)
     (setf (gtk-object buffer) nil))
   (connect-signal buffer "load-failed" nil (web-view load-event failing-url error)
@@ -1537,7 +1543,7 @@ See `finalize-buffer'."
        (setf (loading-webkit-history-p buffer) nil))
       ((= 302 (webkit::g-error-code error))
        (on-signal-load-canceled buffer (quri:uri failing-url)))
-      ((or (member (slot-value buffer 'status) '(:finished :failed))
+      ((or (member (slot-value buffer 'nyxt::status) '(:finished :failed))
            ;; WebKitGTK emits the WEBKIT_PLUGIN_ERROR_WILL_HANDLE_LOAD
            ;; (204) if the plugin will handle loading content of the
            ;; URL. This often happens with videos. The only thing we
@@ -1549,7 +1555,7 @@ See `finalize-buffer'."
        nil)
       (t
        (echo "Failed to load URL ~a in buffer ~a." failing-url (id buffer))
-       (setf (status buffer) :failed)
+       (setf (nyxt::status buffer) :failed)
        (ffi-buffer-load-alternate-html
         buffer
         (spinneret:with-html-string
@@ -1593,7 +1599,7 @@ See `finalize-buffer'."
        context-menu (webkit:webkit-context-menu-item-new-separator))
       (let* ((accessible-commands
                (mapcar #'name
-                       (list-commands
+                       (nyxt::list-commands
                         :global-p t
                         :mode-symbols (mapcar #'sera:class-name-of
                                               (sera:filter #'enabled-p (modes buffer)))))))
@@ -1611,18 +1617,18 @@ See `finalize-buffer'."
                         (webkit:webkit-context-menu-item-get-g-action item) "activate"
                         (lambda (action parameter)
                           (declare (ignore action parameter))
-                          (run-async function)))
+                          (nyxt::run-async function)))
                        (webkit:webkit-context-menu-append context-menu item))))
-                 *context-menu-commands*)))
+                 nyxt::*context-menu-commands*)))
     nil)
   (connect-signal buffer "enter-fullscreen" nil (web-view)
     (declare (ignore web-view))
-    (setf (fullscreen-p (current-window)) t)
+    (setf (nyxt::fullscreen-p (current-window)) t)
     (toggle-fullscreen :skip-renderer-resize t)
     nil)
   (connect-signal buffer "leave-fullscreen" nil (web-view)
     (declare (ignore web-view))
-    (setf (fullscreen-p (current-window)) nil)
+    (setf (nyxt::fullscreen-p (current-window)) nil)
     (toggle-fullscreen :skip-renderer-resize t)
     nil)
   (when (context-buffer-p buffer)
@@ -1643,7 +1649,7 @@ See `finalize-buffer'."
 (define-ffi-method ffi-buffer-delete ((buffer gtk-buffer))
   (if (slot-value buffer 'gtk-object) ; Not all buffers have their own web view, e.g. prompt buffers.
       (webkit:webkit-web-view-try-close (gtk-object buffer))
-      (buffer-hide buffer)))
+      (nyxt::buffer-hide buffer)))
 
 (define-ffi-method ffi-buffer-load ((buffer gtk-buffer) url)
   "Load URL in BUFFER.
@@ -1664,7 +1670,7 @@ local anyways, and it's better to refresh it if a load was queried."
     ;; don't try to reload if they are called before the "load-changed" signal
     ;; is emitted.
     (when (web-buffer-p buffer)
-      (setf (status buffer) :loading))
+      (setf (nyxt::status buffer) :loading))
     (if (and entry
              (not (internal-url-p url))
              (not (quri:uri= url (url buffer))))
@@ -1705,7 +1711,7 @@ local anyways, and it's better to refresh it if a load was queried."
               (declare (ignore jsc-result))
               result))
         (lambda (condition)
-          (javascript-error-handler condition)
+          (nyxt::javascript-error-handler condition)
           ;; Notify the listener that we are done.
           (when channel
             (calispel:! channel nil)))
@@ -1719,7 +1725,7 @@ local anyways, and it's better to refresh it if a load was queried."
         (gtk-object buffer)
         javascript
         nil
-        #'javascript-error-handler
+        #'nyxt::javascript-error-handler
         world-name)))))
 
 (defun list-of-string-to-foreign (list)
@@ -1736,7 +1742,7 @@ local anyways, and it's better to refresh it if a load was queried."
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(without-package-locks ;; FIXME
+(nyxt::without-package-locks ;; FIXME
   (handler-bind ((warning #'muffle-warning))
     (defclass nyxt/user-script-mode:renderer-user-style (gtk-user-style)
       ()
@@ -1784,7 +1790,7 @@ local anyways, and it's better to refresh it if a load was queried."
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 
-(without-package-locks ; TODO: Is there a cleaner way to update the mode class?  Maybe move it to the core?
+(nyxt::without-package-locks ; TODO: Is there a cleaner way to update the mode class?  Maybe move it to the core?
   (handler-bind ((warning #'muffle-warning))
     (defclass nyxt/user-script-mode:renderer-user-script (gtk-user-script)
       ()
@@ -2022,7 +2028,7 @@ custom (the specified proxy) and none."
       (progn
         (log:warn "Querying cookie policy in WebKitGTK is only supported from a non-renderer thread.")
         nil)
-      (let ((result-channel (make-channel 1)))
+      (let ((result-channel (nyxt::make-channel 1)))
         (run-thread "WebKitGTK cookie-policy"
           (within-gtk-thread
             (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
@@ -2130,7 +2136,7 @@ As a second value, return the current buffer index starting from 0."
 (defmethod ffi-buffer-copy ((gtk-buffer gtk-buffer) &optional (text nil text-provided-p))
   (if text-provided-p
       (trivial-clipboard:text text)
-      (let ((channel (make-channel 1)))
+      (let ((channel (nyxt::make-channel 1)))
         (webkit:webkit-web-view-can-execute-editing-command
          (gtk-object gtk-buffer) webkit2:+webkit-editing-command-copy+
          (lambda (can-execute?)
@@ -2157,7 +2163,7 @@ As a second value, return the current buffer index starting from 0."
    (lambda (e) (echo-warning "Cannot paste: ~a" e))))
 
 (defmethod ffi-buffer-cut ((gtk-buffer gtk-buffer))
-  (let ((channel (make-channel 1)))
+  (let ((channel (nyxt::make-channel 1)))
     (webkit:webkit-web-view-can-execute-editing-command
      (gtk-object gtk-buffer) webkit2:+webkit-editing-command-cut+
      (lambda (can-execute?)
@@ -2207,9 +2213,9 @@ As a second value, return the current buffer index starting from 0."
                                'string<)))
   (:export-class-name-p t))
 
-(define-command make-buffer-with-context (&rest args
-                                          &key title modes url load-url-p
-                                          context-name)
+(define-command-global make-buffer-with-context (&rest args
+                                                 &key title modes url load-url-p
+                                                 context-name)
   "Create a new buffer with a given context (separate cookies and data).
 See the `context-name' documentation.
 See `make-buffer' for a description of the other arguments."

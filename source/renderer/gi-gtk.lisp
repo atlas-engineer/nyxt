@@ -11,19 +11,28 @@
 ;;;; them), then these errors will disappear, as there will be no
 ;;;; reliance on renderer-gtk (and thus, no redefinition).
 
-(in-package :nyxt)
+(nyxt:define-package :nyxt/renderer/gi-gtk
+    (:documentation "GTK renderer leveraging GObject Introspection.
+For now it is also partly based on `nyxt/renderer/gtk'."))
+(in-package :nyxt/renderer/gi-gtk)
 
-(setf +renderer+ "GI-GTK")
+#+sbcl
+(progn
+  (sb-ext:add-implementation-package *package* (find-package :nyxt))
+  ;; TODO: Remove this package from nyxt/renderer/gtk when GI-GTK is fully independent.
+  (sb-ext:add-implementation-package *package* (find-package :nyxt/renderer/gtk)))
+
+(setf nyxt::+renderer+ "GI-GTK")
 (push :nyxt-gi-gtk *features*)
 (handler-bind ((warning #'muffle-warning))
   (let ((renderer-thread-name "Nyxt renderer thread"))
-    (defun renderer-thread-p (&optional (thread (bt:current-thread)))
+    (defun nyxt/renderer/gtk::renderer-thread-p (&optional (thread (bt:current-thread)))
       (string= (bt:thread-name thread)
                #+darwin
                "thread"
                #-darwin
                renderer-thread-name))
-    (defmethod ffi-initialize ((browser gtk-browser) urls startup-timestamp)
+    (defmethod ffi-initialize ((browser nyxt/renderer/gtk:gtk-browser) urls startup-timestamp)
       "On GNU/Linux we can create a separate thread to launch the GTK
 interface. On Darwin, we must run the GTK thread on the main thread."
       (declare (ignore urls startup-timestamp))
@@ -39,13 +48,13 @@ interface. On Darwin, we must run the GTK thread on the main thread."
         (call-next-method)
         #-darwin
         (let ((main-thread (bt:make-thread #'main-func :name renderer-thread-name)))
-          (unless *run-from-repl-p*
+          (unless nyxt::*run-from-repl-p*
             (bt:join-thread main-thread)
             ;; See comment about FreeBSD in gtk.lisp
             (uiop:quit (slot-value browser 'exit-code) #+freebsd nil)))
         #+darwin
         (main-func)))
 
-    (define-ffi-method ffi-kill-browser ((browser gtk-browser))
-      (unless *run-from-repl-p*
+    (nyxt/renderer/gtk:define-ffi-method ffi-kill-browser ((browser nyxt/renderer/gtk:gtk-browser))
+      (unless nyxt::*run-from-repl-p*
         (gir:invoke ((gir:ffi "Gtk" "3.0") 'main-quit))))))

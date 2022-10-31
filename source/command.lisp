@@ -37,6 +37,7 @@ Useful to sort the commands by most recent use."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
+  (:export-predicate-name-p t)
   (:documentation "Commands are interactive functions.
 (As in Emacs.)
 

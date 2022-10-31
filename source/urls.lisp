@@ -218,6 +218,7 @@ name validation may take significant time since it looks up the DNS."
                    (lookup-hostname (quri:uri-host url)))))))))
 
 (-> ensure-url (t) quri:uri)
+(export-always 'ensure-url)
 (defun ensure-url (thing)
   "Return `quri:uri' derived from THING.
 If it cannot be derived, return an empty `quri:uri'."
