@@ -498,8 +498,8 @@ Only available if `prompter:multi-selection-p' is non-nil."
   '(prompt-buffer-mode))
 (defmethod default-modes :around ((buffer prompt-buffer))
   ;; TODO: `prompt-buffer' should not be a web-buffer.
-  (set-difference (call-next-method) (list (resolve-symbol :document-mode :mode)
-                                           (resolve-symbol :base-mode :mode))))
+  (set-difference (call-next-method) (list (sym:resolve-symbol :document-mode :mode)
+                                           (sym:resolve-symbol :base-mode :mode))))
 
 ;; FIXME: Arglist used to have prompt-buffer, but it's not URL-serializable.
 ;; Maybe have prompt-buffers have IDs so that we can identify those by IDs?
@@ -507,7 +507,7 @@ Only available if `prompter:multi-selection-p' is non-nil."
 (define-internal-page-command describe-prompt-buffer ()
     (buffer (str:concat "*Help-" (prompter:prompt (current-prompt-buffer)) "-prompter*")
             ;; TODO: Can we somehow fix the load order in the .asd?
-            (resolve-symbol :help-mode :mode))
+            (sym:resolve-symbol :help-mode :mode))
   "Describe a prompt buffer instance."
   (let* ((prompt-buffer (current-prompt-buffer))
          (modes (modes prompt-buffer))

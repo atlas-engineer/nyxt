@@ -77,7 +77,7 @@ On error, return the condition as a first value and the backtrace as second valu
 
 (define-command clean-configuration ()
   "Clean all the user configuration created with `define-configuration' or `customize-instance'."
-  (dolist (class (sera:filter #'user-class-p (mapcar #'find-class (package-classes (nyxt-packages)))))
+  (dolist (class (sera:filter #'user-class-p (sym:package-classes* (nyxt-packages))))
     (setf (hooks:handlers-alist (slot-value class 'customize-hook)) nil))
   (dolist (method (mopu:generic-function-methods #'customize-instance))
     (unless (or (equal (list (find-class t)) ; Don't remove default method.

@@ -200,51 +200,15 @@ When unset, it corresponds to the mode name."
                                  suffix name ""
                                  :start (- (length name ) (length suffix)))))))
 
-(-> mode-class (symbol) (maybe class))
+(sym:define-symbol-type mode (class)
+  (alex:when-let ((class (find-class sym:%symbol% nil)))
+    (mopu:subclassp class (find-class 'mode))))
+
 (defun mode-class (symbol)
-  "Return the mode class associated to SYMBOL.
-Return NIL if it's not a mode."
-  (alex:when-let ((class (find-class symbol nil)))
-    (when (mopu:subclassp class (find-class 'mode))
-      class)))
+  (when (sym:mode-symbol-p symbol)
+    (find-class symbol)))
 
-(defun package-modes (packages &key (visibility :any))
-  "Return the list of mode symbols in PACKAGES.
-See `package-symbols'."
-  (delete-if (complement #'mode-class)
-             (package-symbols packages :visibility visibility)))
-
-;; TODO: Should allow search all packages, e.g. when PACKAGES is NIL.
-(-> resolve-symbol ((or keyword string) (member :function :variable :class :mode :slot :command) &optional (cons *)) symbol)
-(export-always 'resolve-symbol)
-(defun resolve-symbol (designator type &optional (packages (list :nyxt :nyxt-user)))
-  "Find the symbol (of TYPE) designated by DESIGNATOR in PACKAGE.
-PACKAGES should be a list of package designators."
-  (sera:and-let* ((designator (string designator))
-                  (all-packages (list-all-packages))
-                  (subpackages (if (equal packages all-packages)
-                                   all-packages
-                                   (append
-                                    (delete-duplicates (mapcar #'find-package packages))
-                                    (mappend #'subpackages packages))))
-                  (symbols (case type
-                             (:function (package-functions subpackages))
-                             (:variable (package-variables subpackages))
-                             (:class (package-classes subpackages))
-                             (:mode (package-modes subpackages))
-                             (:slot (mapcar #'name (package-slots subpackages)))
-                             (:command (mapcar #'name (list-commands))))))
-    (let* ((results (sera:filter (lambda (sym) (string= designator (symbol-name sym)))
-                                 symbols)))
-      (when (> (length results) 1)
-        (log:warn "Multiple ~a symbols found: ~a" designator results))
-      (values (first results)
-              results))))
-
-(deftype mode-symbol ()
-  `(and symbol (satisfies mode-class)))
-
-(-> find-submode (mode-symbol &optional (maybe buffer)) (maybe mode))
+(-> find-submode (sym:mode-symbol &optional buffer) (maybe mode))
 (export-always 'find-submode)
 (defun find-submode (mode-symbol &optional (buffer (current-buffer)))
   "Return the first submode instance of MODE-SYMBOL in BUFFER.
@@ -274,7 +238,7 @@ The \"-mode\" suffix is automatically appended to MODE-KEYWORD if missing.
 This is convenience function for interactive use.
 For production code, see `find-submode' instead."
   (let ((mode-designator (sera:ensure-suffix (string mode-designator) "-MODE")))
-    (find-submode (resolve-symbol mode-designator :mode)
+    (find-submode (sym:resolve-symbol mode-designator :mode)
                   buffer)))
 
 (defun all-mode-symbols ()
@@ -336,7 +300,7 @@ For production code, see `find-submode' instead."
   (:metaclass user-class))
 
 (export-always 'enable-modes*)
-(-> enable-modes* ((or mode-symbol (list-of mode-symbol))
+(-> enable-modes* ((or sym:mode-symbol (list-of sym:mode-symbol))
                    (or buffer (list-of buffer))
                    &key &allow-other-keys) *)
 (defun enable-modes* (modes buffers &rest args &key &allow-other-keys)
@@ -345,7 +309,7 @@ ARGS are the keyword arguments for `make-instance' on MODES."
   (let ((modes (uiop:ensure-list modes))
         (buffers (uiop:ensure-list buffers)))
     (dolist (mode modes)
-      (check-type mode mode-symbol))
+      (check-type mode sym:mode-symbol))
     (dolist (buffer buffers)
       (check-type buffer buffer))
     (mapcar (lambda (buffer)
@@ -386,13 +350,13 @@ If it's a single buffer, return it directly (not as a list)."
   buffers)
 
 (export-always 'disable-modes*)
-(-> disable-modes* ((or mode-symbol (list-of mode-symbol)) (or buffer (list-of buffer))) *)
+(-> disable-modes* ((or sym:mode-symbol (list-of sym:mode-symbol)) (or buffer (list-of buffer))) *)
 (defun disable-modes* (modes buffers)
   "Disable MODES in BUFFERS."
   (let ((modes (uiop:ensure-list modes))
         (buffers (uiop:ensure-list buffers)))
     (dolist (mode modes)
-      (check-type mode mode-symbol))
+      (check-type mode sym:mode-symbol))
     (dolist (buffer buffers)
       (check-type buffer buffer))
     (mapcar (lambda (buffer)

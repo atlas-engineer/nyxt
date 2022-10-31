@@ -5,14 +5,14 @@
 
 (defun description-constructor (lister)
   "LISTER is a function return a list of symbols from the given packages.
-See `package-functions' for an example."
+See `sym:package-functions' for an example."
   (lambda (source)
     (delete-duplicates
      (append
-      (funcall lister (packages source) :visibility (visibility source))
-      (funcall lister (internal-visibility-packages source) :visibility :internal)
-      (funcall lister (external-visibility-packages source) :visibility :external)
-      (funcall lister (inherited-visibility-packages source) :visibility :inherited)))))
+      (funcall lister (packages source) (visibility source))
+      (funcall lister (internal-visibility-packages source) :internal)
+      (funcall lister (external-visibility-packages source) :external)
+      (funcall lister (inherited-visibility-packages source) :inherited)))))
 
 (define-class describe-nyxt-source (prompter:source)
   ((visibility
@@ -73,7 +73,7 @@ See `package-functions' for an example."
 
 (define-class function-source (describe-nyxt-source)
   ((prompter:name "Functions")
-   (prompter:constructor (description-constructor #'package-functions)))
+   (prompter:constructor (description-constructor #'sym:package-functions)))
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
@@ -106,7 +106,7 @@ See `package-functions' for an example."
             (t
              (first-line (documentation symbol 'variable))))
           ""))
-    ("Visibility" ,(prini-to-string (symbol-visibility symbol)))))
+    ("Visibility" ,(prini-to-string (sym:symbol-visibility symbol)))))
 
 (defmethod prompter:object-attributes ((package package) (source prompter:source))
   (declare (ignore source))
@@ -119,7 +119,7 @@ See `package-functions' for an example."
 
 (define-class class-source (describe-nyxt-source)
   ((prompter:name "Classes")
-   (prompter:constructor (description-constructor #'package-classes)))
+   (prompter:constructor (description-constructor #'sym:package-classes)))
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
@@ -143,7 +143,7 @@ See `package-functions' for an example."
 
 (define-class variable-source (describe-nyxt-source)
   ((prompter:name "Variables")
-   (prompter:constructor (description-constructor #'package-variables)))
+   (prompter:constructor (description-constructor #'sym:package-variables)))
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
@@ -298,8 +298,8 @@ Otherwise prompt for matches."
   "Return the STRING documentation with symbols surrounded by the (` ') pair
 turned into links to their respective description page."
   (labels ((resolve-as (symbol type)
-             (resolve-symbol (symbol-name symbol) type
-                             (list :nyxt :nyxt-user (symbol-package parent-symbol))))
+             (sym:resolve-symbol symbol type
+                                 (list :nyxt :nyxt-user (symbol-package parent-symbol))))
            (resolve-regex (target-string start end match-start match-end reg-starts reg-ends)
              (declare (ignore start end reg-starts reg-ends))
              ;; Excluding backtick & quote.
@@ -349,8 +349,8 @@ turned into links to their respective description page."
     (buffer (str:concat "*Help-" (package-name (find-package package)) "*") 'nyxt/help-mode:help-mode)
   "Inspect a package and show it in a help buffer."
   (let* ((package (find-package package))
-         (total-symbols (package-symbols (list package)))
-         (external-symbols (package-symbols (list package) :visibility :external)))
+         (total-symbols (sym:package-symbols (list package)))
+         (external-symbols (sym:package-symbols (list package) :visibility :external)))
     (flet ((package-markup (package)
              (spinneret:with-html
                (:a :href (nyxt-url 'describe-package :package (package-name package))

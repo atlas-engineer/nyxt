@@ -586,3 +586,7 @@
 	path = _build/montezuma
 	url = https://github.com/sharplispers/montezuma
 	shallow = true
+[submodule "_build/nsymbols"]
+	path = _build/nsymbols
+	url = https://github.com/atlas-engineer/nsymbols
+  	shallow = true

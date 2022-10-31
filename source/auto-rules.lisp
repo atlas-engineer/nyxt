@@ -10,7 +10,7 @@
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defmethod rememberable-p ((mode symbol))
-  (check-type mode mode-symbol)
+  (check-type mode sym:mode-symbol)
   ;; FIXME: Can this finalization shoot us in the foot?
   (closer-mop:ensure-finalized (find-class mode) nil)
   (closer-mop:slot-definition-initform
@@ -18,12 +18,12 @@
          :key #'closer-mop:slot-definition-name)))
 
 (defmethod rememberable-p ((mode list))
-  (check-type (first mode) mode-symbol)
+  (check-type (first mode) sym:mode-symbol)
   (rememberable-p (first mode)))
 
 (deftype mode-invocation ()
   ;; First mode name, then `make-instance' args for it.
-  `(cons mode-symbol trivial-types:property-list))
+  `(cons sym:mode-symbol trivial-types:property-list))
 
 (deftype rememberable-mode-invocation ()
   `(and mode-invocation (satisfies rememberable-p)))
@@ -35,8 +35,8 @@
 - or list with mode symbol in the head."
   (typecase mode
     (mode (list (name mode)))
-    ((cons mode-symbol *) mode)
-    (mode-symbol (list mode))
+    ((cons sym:mode-symbol *) mode)
+    (sym:mode-symbol (list mode))
     (t nil)))
 
 (-> normalize-modes (list) (maybe (cons mode-invocation *)))
