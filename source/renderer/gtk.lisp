@@ -1460,10 +1460,14 @@ See `finalize-buffer'."
                                         :event-type :other
                                         :new-window-p nil
                                         :resource-p t
-                                        :http-method (webkit:webkit-uri-request-get-http-method request)
-                                        :http-headers (let ((headers (webkit:webkit-uri-request-get-http-headers request)))
-                                                        (unless (cffi:null-pointer-p headers)
-                                                          (webkit:soup-message-headers-get-headers headers)))
+                                        :method (webkit:webkit-uri-request-get-http-method request)
+                                        :response-headers (when response
+                                                            (let ((headers (webkit:webkit-uri-response-http-headers request)))
+                                                              (unless (cffi:null-pointer-p headers)
+                                                                (webkit:soup-message-headers-get-headers headers))))
+                                        :request-headers (let ((headers (webkit:webkit-uri-request-get-http-headers request)))
+                                                           (unless (cffi:null-pointer-p headers)
+                                                             (webkit:soup-message-headers-get-headers headers)))
                                         :toplevel-p nil
                                         :mime-type (when response
                                                      (webkit:webkit-uri-response-mime-type response))
