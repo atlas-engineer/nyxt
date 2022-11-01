@@ -251,6 +251,7 @@ the renderer thread, use `defmethod' instead."
    drawing happens. Drawing operations on Darwin MUST originate from
    the main thread, which the GTK main loop is not guaranteed to be
    on."
+  (declare (ignore urls startup-timestamp))
   (log:debug "Initializing GTK Interface")
   (setf (uiop:getenv "WEBKIT_FORCE_SANDBOX") "0")
   (if gtk-running-p
@@ -280,7 +281,7 @@ the renderer thread, use `defmethod' instead."
         (setf gtk-running-p t)
         (glib:g-set-prgname "nyxt")
         (gdk:gdk-set-program-class "Nyxt")
-        (finalize browser urls startup-timestamp)
+        (call-next-method)
         (gtk:gtk-main))))
 
 (define-ffi-method ffi-kill-browser ((browser gtk-browser))
