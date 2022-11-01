@@ -243,7 +243,7 @@ Mode is covered if:
                 (and (not enable-p) (invocation-member (alex:mappend #'excluded matching-rules)))))
           ;; Mode is covered by auto-rules only if it is both in
           ;; last-active-modes and gets enabled.  If it gets disabled, user
-          ;; should be prompted, because they may want to persist it.
+          ;; should be prompted, because they may want to persist the disabled mode.
           (and enable-p (invocation-member (last-active-modes buffer)))
           (and (not enable-p)
                (invocation-member
