@@ -177,7 +177,10 @@ By default, the most specific rule is applied.")
    (bypass-auto-rules-p
     nil
     :type boolean
-    :documentation "Whether to bypass auto-rules.")
+    :documentation "Whether to bypass auto-rules.
+
+This is meant to be used when one wants to enable/disable modes, but doesn't
+want to trigger auto-rules, especially the interactive version of those.")
    (prompt-on-mode-toggle-p
     nil
     :type boolean
@@ -246,8 +249,8 @@ of BUFFER."
   (enable-modes :modes (append (reverse (default-modes buffer))
                                (uiop:ensure-list extra-modes))
                 :buffers buffer
-                ;; XXX: We don't want to trigger auto-rules when enabling
-                ;; extra-modes, don't we?
+                ;; NOTE: We don't want to trigger auto-rules when enabling
+                ;; extra-modes, do we?
                 :bypass-auto-rules-p t)
   (unless no-hook-p
     (hooks:run-hook (buffer-after-make-hook browser) buffer)))

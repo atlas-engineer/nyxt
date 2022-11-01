@@ -227,9 +227,9 @@ ENABLE-P is whether mode is being enabled (non-nil) or disabled (nil).
 
 Mode is covered if:
 - `rememberable-p' is nil.
-- There is a rule it matches and:
-  - when mode is ENABLED-P and part of `included' modes in the rule, or
-  - when mode is not ENABLED-P and part of `excluded' modes in the rule.
+- There is a matching rule and:
+  - mode is ENABLED-P and is part of `included' modes in the rule, or
+  - mode is not ENABLED-P and is part of `excluded' modes in the rule.
 - If there's no matching rule but it's part of `last-active-modes' and needs to
   be ENABLED-P.
 - If it's getting disabled (not ENABLED-P) after being enabled by a rule on the
@@ -272,14 +272,14 @@ Implies that the request is a top-level one."
 (define-command-global save-non-default-modes-for-future-visits ()
   "Save the modes present in `default-modes' and not present in current modes as
 :excluded, and modes that are present in mode list but not in `default-modes' as
-:included, to one of auto-rules. Apply the resulting rule for all the future
+:included, to one of the auto-rules. Apply the resulting rule for all the future
 visits to this URL, inferring the matching condition with `url-infer-match'.
 
 This command does not save non-rememberable modes. If you want auto-rules to
 remember a particular mode, configure it to be `rememberable-p' in your
-initfile.
+configuration file.
 
-For the storage format see the comment in the head of your `auto-rules-file'."
+For the storage format see the comment in the header of your `auto-rules-file'."
   (let ((url (prompt1
               :prompt "URL"
               :input (render-url (url (current-buffer)))
@@ -306,9 +306,10 @@ condition by user input.
 Uses `url-infer-match', see its documentation for matching rules.
 
 This command does not save non-rememberable modes. If you want auto-rules to
-save a particular mode, configure it to be `rememberable-p' in your initfile.
+save a particular mode, configure it to be `rememberable-p' in your
+configuration file.
 
-For the storage format see the comment in the head of your `auto-rules-file'."
+For the storage format see the comment in the header of your `auto-rules-file'."
   ;; TODO: Should it prompt for modes to save?
   ;; One may want to adjust the modes before persisting them as :exact-p rule.
   (let ((url (prompt1
@@ -319,8 +320,7 @@ For the storage format see the comment in the head of your `auto-rules-file'."
                                        :name "New URL")
                         (make-instance 'global-history-source
                                        :return-actions '())))))
-    (when (typep url 'nyxt::history-entry)
-      (setf url (url url)))
+    (setf url (url url))
     (add-modes-to-auto-rules (url-infer-match url)
                              :include (rememberable-of (modes (current-buffer)))
                              :exact-p t)))
@@ -387,7 +387,7 @@ For the storage format see the comment in the head of your `auto-rules-file'."
   (let ((rules (files:content file)))
     (let ((*standard-output* stream)
           (*package* (find-package :nyxt)))
-      (write-string ";;; List of auto-rules (meant to be readable and writable)
+      (write-string ";; List of auto-rules (meant to be human-readable and human-writable)
 
 ;; Rules start on a new line and consist of one or more of the following:
 
@@ -412,13 +412,13 @@ For the storage format see the comment in the head of your `auto-rules-file'."
 ;; - match-domain matches the URL domains only.
 ;;   Example: (match-domain \"reddit.com\") will work for all of Reddit.
 
-;; - match-host is more specific -- it activates only on certain subdomains of
+;; - match-host is more specific -- it matches only on certain subdomains of
 ;;   the website.
 ;;   Example: (match-host \"old.reddit.com\") will work on old Reddit only.
 
 ;; - match-regex works for any address that matches a given regex. You can add
 ;;   these manually, but remember: with great regex comes great responsibility!
-;;   Example: (match-regex \"https://github\\.com/.*/.*\") will activate only in
+;;   Example: (match-regex \"https://github\\.com/.*/.*\") will match only in
 ;;   repos on GitHub.
 
 ;; - match-port matches the port number(s) only.
