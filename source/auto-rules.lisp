@@ -136,12 +136,12 @@ ARGS as in make-instance of `auto-rule'."
                                          (excluded rule)))))
         (disable-modes :modes modes :buffers buffer :bypass-auto-rules-p t)))))
 
-(defun can-save-last-active-modes (buffer url)
+(defun can-save-last-active-modes-p (buffer url)
   (or (null (last-active-modes-url buffer))
       (not (quri:uri= url (last-active-modes-url buffer)))))
 
 (defun save-last-active-modes (buffer url)
-  (when (can-save-last-active-modes buffer url)
+  (when (can-save-last-active-modes-p buffer url)
     (setf (last-active-modes buffer) (normalize-modes (modes buffer))
           (last-active-modes-url buffer) url)))
 
