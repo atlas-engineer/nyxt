@@ -1305,12 +1305,9 @@ See `finalize-buffer'."
    (prompter:selection-actions-enabled-p t)
    (prompter:selection-actions
     (lambda (color)
-      (ps-labels :buffer (current-prompt-buffer)
-        ((color-input-area
-          (color)
-          (setf (ps:@ (nyxt/ps:qs document "#input") style background-color)
-                (ps:lisp color))))
-        (color-input-area color)))))
+      (ps-eval :buffer (current-prompt-buffer)
+        (setf (ps:@ (nyxt/ps:qs document "#input") style background-color)
+              (ps:lisp color))))))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defmethod prompter:object-attributes ((color string) (source color-source))
