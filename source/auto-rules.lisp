@@ -167,15 +167,18 @@ The rules are:
 - If it's host with subdomains (\"http://whatever.subdomain.domain.com\") -- use
   `match-host'.
 - Use `match-url' otherwise."
-  (let ((url (or (ignore-errors (quri:uri url)) url)))
-    (if (and (quri:uri-p url)
-             (empty-path-url-p url)
-             (host-only-url-p url))
-        (if (string= (quri:uri-domain url)
-                     (ppcre:regex-replace "www[0-9]?\\." (quri:uri-host url) ""))
-            `(match-domain ,(quri:uri-domain url))
-            `(match-host ,(quri:uri-host url)))
-        `(match-url ,(render-url url)))))
+  (let* ((url (or (ignore-errors (quri:uri url)) url))
+         (host-url-p (and (quri:uri-p url)
+                          (empty-path-url-p url)
+                          (host-only-url-p url))))
+    (cond
+      ((and host-url-p
+            (string= (quri:uri-domain url)
+                     (ppcre:regex-replace "www[0-9]?\\." (quri:uri-host url) "")))
+       `(match-domain ,(quri:uri-domain url)))
+      (host-url-p
+       `(match-host ,(quri:uri-host url)))
+      (t `(match-url ,(render-url url))))))
 
 (-> make-mode-toggle-prompting-handler (boolean modable-buffer) (function (mode)))
 (defun make-mode-toggle-prompting-handler (enable-p buffer)
