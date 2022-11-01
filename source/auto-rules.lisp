@@ -188,20 +188,20 @@ The rules are:
           (if-confirm ((format nil
                                "Permanently ~:[disable~;enable~] ~a for this URL?"
                                enable-p (sera:class-name-of mode)))
-                      (let ((url (prompt1
-                                   :prompt "URL"
-                                   :input (render-url (url (buffer mode)))
-                                   :sources 'prompter:raw-source)))
-                        (add-modes-to-auto-rules (url-infer-match url)
-                                                 :append-p t
-                                                 :include (when enable-p (list invocation))
-                                                 :exclude (unless enable-p (list invocation))))
-                      (setf (last-active-modes buffer)
-                            (if enable-p
-                                (union (list invocation) (last-active-modes buffer)
-                                       :test #'mode=)
-                                (remove invocation (last-active-modes buffer)
-                                        :test #'mode=))))))))
+              (let ((url (prompt1
+                          :prompt "URL"
+                          :input (render-url (url (buffer mode)))
+                          :sources 'prompter:raw-source)))
+                (add-modes-to-auto-rules (url-infer-match url)
+                                         :append-p t
+                                         :include (when enable-p (list invocation))
+                                         :exclude (unless enable-p (list invocation))))
+              (setf (last-active-modes buffer)
+                    (if enable-p
+                        (union (list invocation) (last-active-modes buffer)
+                               :test #'mode=)
+                        (remove invocation (last-active-modes buffer)
+                                :test #'mode=))))))))
 
 (defmethod customize-instance :after ((buffer modable-buffer) &key &allow-other-keys)
   (unless (last-active-modes buffer)
