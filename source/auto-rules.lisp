@@ -172,7 +172,7 @@ The rules are:
              (empty-path-url-p url)
              (host-only-url-p url))
         (if (string= (quri:uri-domain url)
-                     (cl-ppcre:regex-replace "www[0-9]?\\." (quri:uri-host url) ""))
+                     (ppcre:regex-replace "www[0-9]?\\." (quri:uri-host url) ""))
             `(match-domain ,(quri:uri-domain url))
             `(match-host ,(quri:uri-host url)))
         `(match-url ,(render-url url)))))
