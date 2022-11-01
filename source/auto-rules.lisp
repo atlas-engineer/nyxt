@@ -53,7 +53,8 @@
 (define-class auto-rule ()
   ((test
     (error "Slot `test' should be set.")
-    :type list)
+    :type list
+    :documentation "The s-expression evaluating to a one-argument predicate for URL.")
    (included
     '()
     :type (or (cons rememberable-mode-invocation *) null)
