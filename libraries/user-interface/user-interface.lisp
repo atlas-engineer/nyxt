@@ -17,9 +17,8 @@
   (setf (id element) (unique-id)))
 
 (defmethod object-string ((element ui-element))
-  ;; TODO: figure out how to remove `eval'
-  (eval `(spinneret:with-html-string
-           ,(object-expression element))))
+  (with-output-to-string (spinneret:*html*)
+    (spinneret:interpret-html-tree (object-expression element))))
 
 (defmethod connect ((element ui-element) buffer)
   (setf (buffer element) buffer))
