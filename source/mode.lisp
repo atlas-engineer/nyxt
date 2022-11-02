@@ -398,7 +398,8 @@ ARGS are the keyword arguments for `make-instance' on MODES."
             (echo "~@(~a~) mode enabled." mode))
           (when existing-instance
             (disable existing-instance)
-            (echo "~@(~a~) mode disabled." existing-instance))))))
+            (echo "~@(~a~) mode disabled." existing-instance)))
+      (prompt-on-mode-toggle mode-sym buffer activate))))
 
 (define-command-global reload-with-modes (&optional (buffer (current-buffer)))
   "Reload the BUFFER with the queried modes.
