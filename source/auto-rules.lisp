@@ -291,7 +291,7 @@ If it's a single buffer, return it directly (not as a list)."
           (normalize-modes (default-modes buffer)))))
 
 (-> mode-covered-by-auto-rules-p
-    (mode buffer boolean)
+    (mode-invocation buffer boolean)
     (values (or list boolean) &optional))
 (defun mode-covered-by-auto-rules-p (mode buffer enable-p)
   "Says whether auto-rules in BUFFER already knows what to do with MODE.
@@ -307,22 +307,21 @@ Mode is covered if:
   be ENABLED-P.
 - If it's getting disabled (not ENABLED-P) after being enabled by a rule on the
   previous page."
-  (let ((mode (normalize-mode mode)))
-    (flet ((invocation-member (list)
-             (member mode list :test #'mode=)))
-      (or (not (rememberable-p mode))
-          (alex:when-let ((matching-rules (matching-auto-rules (url buffer) buffer)))
-            (or (and enable-p (invocation-member (alex:mappend #'included matching-rules)))
-                (and (not enable-p) (invocation-member (alex:mappend #'excluded matching-rules)))))
-          ;; Mode is covered by auto-rules only if it is both in
-          ;; last-active-modes and gets enabled.  If it gets disabled, user
-          ;; should be prompted, because they may want to persist the disabled mode.
-          (and enable-p (invocation-member (last-active-modes buffer)))
-          (and (not enable-p)
-               (invocation-member
-                (alex:when-let* ((previous-url (previous-url buffer))
-                                 (matching-rules (matching-auto-rules previous-url buffer)))
-                  (alex:mappend #'included matching-rules))))))))
+  (flet ((invocation-member (list)
+           (member mode list :test #'mode=)))
+    (or (not (rememberable-p mode))
+        (alex:when-let ((matching-rules (matching-auto-rules (url buffer) buffer)))
+          (or (and enable-p (invocation-member (alex:mappend #'included matching-rules)))
+              (and (not enable-p) (invocation-member (alex:mappend #'excluded matching-rules)))))
+        ;; Mode is covered by auto-rules only if it is both in
+        ;; last-active-modes and gets enabled.  If it gets disabled, user
+        ;; should be prompted, because they may want to persist the disabled mode.
+        (and enable-p (invocation-member (last-active-modes buffer)))
+        (and (not enable-p)
+             (invocation-member
+              (alex:when-let* ((previous-url (previous-url buffer))
+                               (matching-rules (matching-auto-rules previous-url buffer)))
+                (alex:mappend #'included matching-rules)))))))
 
 (-> apply-auto-rules (quri:uri buffer) *)
 (export-always 'apply-auto-rules)
