@@ -221,9 +221,10 @@ See `find-internal-page-buffer'."))
                   (values contents type status headers reason))))))))
 
 (defmethod (setf page-mode) (new-value (page internal-page))
-  ;; FIXME: Better rule?
   (when (and new-value (rememberable-p new-value))
     (define-auto-rule `(lambda (url)
+                         ;; FIXME: Better rule? We need a more structured one,
+                         ;; because strings are not predictable.
                          (str:starts-with-p ,(nyxt-url (name page))
                                             (render-url url)))
       :included (list new-value))))
