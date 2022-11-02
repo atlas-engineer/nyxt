@@ -18,7 +18,8 @@
   (rememberable-p (make-instance mode)))
 
 (deftype mode-invocation ()
-  `(cons mode-symbol *))
+  ;; First mode name, then `make-instance' args for it.
+  `(cons mode-symbol trivial-types:property-list))
 
 (deftype rememberable-mode-invocation ()
   `(and mode-invocation (satisfies rememberable-p)))
