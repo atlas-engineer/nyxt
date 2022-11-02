@@ -107,6 +107,16 @@ ARGS as in make-instance of `auto-rule'."
     (if (apply-all-matching-auto-rules-p buffer)
         matching-rules
         (flet ((priority (test1 test2)
+                 "Prioritize the rules based on their predicate.
+
+- MATCH-REGEX is the last option one has for granular matching, so we put it as
+  highest priority.
+- MATCH-URL matches just one page, so it follows regex in granularity.
+- And then, host, domain, and sheme all go in the decreasing order of
+  specificity and priority.  It's made this way so that more specific rules can
+  override/circumvent the less specific rules.
+- User-defined and other predicates always go last, because those are
+  unpredictable and should only be used when the default ones don't fit."
                  (let ((priority-list '(match-regex match-url match-host match-domain match-scheme)))
                    (< (or (position (first test1) priority-list) (length priority-list))
                       (or (position (first test2) priority-list) (length priority-list))))))
