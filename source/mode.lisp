@@ -100,20 +100,14 @@ functionality. A `cascade' method combination is used for that.
 
 See also `disable'."))
 
-(defmethod enable :around ((mode mode) &key bypass-auto-rules-p &allow-other-keys)
+(defmethod enable :around ((mode mode) &key &allow-other-keys)
   (let* ((buffer (buffer mode))
          (existing-instance (find (sera:class-name-of mode)
                                   (remove-if (sera:eqs mode) (slot-value buffer 'modes))
                                   :key #'sera:class-name-of)))
     (if existing-instance
         (log:debug "Not enabling ~s since other ~s instance is already in buffer ~a" mode existing-instance buffer)
-        (if bypass-auto-rules-p
-            (let ((old-bypass (bypass-auto-rules-p (buffer mode))))
-              (setf (bypass-auto-rules-p (buffer mode)) t)
-              (unwind-protect
-                   (call-next-method)
-                (setf (bypass-auto-rules-p (buffer mode)) old-bypass)))
-            (call-next-method)))))
+        (call-next-method))))
 
 (defmethod enable :after ((mode mode) &key)
   (setf (enabled-p mode) t)
@@ -145,14 +139,8 @@ functionality. A `cascade' method combination is used for that.
 
 See also `enable'."))
 
-(defmethod disable :around ((mode mode) &key bypass-auto-rules-p &allow-other-keys)
-  (if bypass-auto-rules-p
-      (let ((old-bypass (bypass-auto-rules-p (buffer mode))))
-        (setf (bypass-auto-rules-p (buffer mode)) t)
-        (unwind-protect
-             (call-next-method)
-          (setf (bypass-auto-rules-p (buffer mode)) old-bypass)))
-      (call-next-method)))
+(defmethod disable :around ((mode mode) &key &allow-other-keys)
+  (call-next-method))
 
 (defmethod disable :after ((mode mode) &key)
   (setf (enabled-p mode) nil)

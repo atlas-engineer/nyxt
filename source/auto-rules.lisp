@@ -329,18 +329,17 @@ Mode is covered if:
 (defun apply-auto-rules (url buffer)
   "Apply the rules based on the URL being loaded.
 Implies that the request is a top-level one."
-  (unless (bypass-auto-rules-p buffer)
-    (let* ((rules (matching-auto-rules url buffer))
-           (previous-url (previous-url buffer))
-           (previous-rules (when previous-url (matching-auto-rules previous-url buffer))))
-      (when (and rules previous-url (not previous-rules))
-        (save-last-active-modes buffer previous-url))
-      (cond
-        ((not rules)
-         (reapply-last-active-modes buffer))
-        ((and rules (not (eq rules previous-rules)))
-         (enable-matching-modes url buffer)))
-      (setf (previous-url buffer) url))))
+  (let* ((rules (matching-auto-rules url buffer))
+         (previous-url (previous-url buffer))
+         (previous-rules (when previous-url (matching-auto-rules previous-url buffer))))
+    (when (and rules previous-url (not previous-rules))
+      (save-last-active-modes buffer previous-url))
+    (cond
+      ((not rules)
+       (reapply-last-active-modes buffer))
+      ((and rules (not (eq rules previous-rules)))
+       (enable-matching-modes url buffer)))
+    (setf (previous-url buffer) url)))
 
 (define-command-global save-non-default-modes-for-future-visits ()
   "Save the modes present in `default-modes' and not present in current modes as

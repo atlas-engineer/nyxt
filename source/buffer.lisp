@@ -174,13 +174,6 @@ access the initialized buffer.")
     :type boolean
     :documentation "Whether matching auto-rules are applied to the URL.
 By default, the most specific rule is applied.")
-   (bypass-auto-rules-p
-    nil
-    :type boolean
-    :documentation "Whether to bypass auto-rules.
-
-This is meant to be used when one wants to enable/disable modes, but doesn't
-want to trigger auto-rules, especially the interactive version of those.")
    (prompt-on-mode-toggle-p
     nil
     :type boolean
