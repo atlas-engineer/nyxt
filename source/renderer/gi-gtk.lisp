@@ -16,17 +16,11 @@
 For now it is also partly based on `nyxt/renderer/gtk'."))
 (in-package :nyxt/renderer/gi-gtk)
 
-#+sbcl
-(progn
-  (sb-ext:add-implementation-package *package* (find-package :nyxt))
-  ;; TODO: Remove this package from nyxt/renderer/gtk when GI-GTK is fully independent.
-  (sb-ext:add-implementation-package *package* (find-package :nyxt/renderer/gtk)))
-
 (setf nyxt::+renderer+ "GI-GTK")
 (push :nyxt-gi-gtk *features*)
 (handler-bind ((warning #'muffle-warning))
   (let ((renderer-thread-name "Nyxt renderer thread"))
-    (defun nyxt/renderer/gtk::renderer-thread-p (&optional (thread (bt:current-thread)))
+    (defmethod nyxt/renderer/gtk::renderer-thread-p ((renderer (eql "GI-GTK")) &optional (thread (bt:current-thread)))
       (string= (bt:thread-name thread)
                #+darwin
                "thread"
