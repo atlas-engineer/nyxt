@@ -288,16 +288,7 @@ If it's a single buffer, return it directly (not as a list)."
 (defmethod customize-instance :after ((buffer modable-buffer) &key &allow-other-keys)
   (unless (last-active-modes buffer)
     (setf (last-active-modes buffer)
-          (normalize-modes (default-modes buffer))))
-  (when (prompt-on-mode-toggle-p buffer)
-    (hooks:add-hook (enable-mode-hook buffer)
-                    (make-instance 'hooks:handler
-                                   :fn (make-mode-toggle-prompting-handler t buffer)
-                                   :name 'enable-mode-auto-rules-handler))
-    (hooks:add-hook (disable-mode-hook buffer)
-                    (make-instance 'hooks:handler
-                                   :fn (make-mode-toggle-prompting-handler nil buffer)
-                                   :name 'disable-mode-auto-rules-handler))))
+          (normalize-modes (default-modes buffer)))))
 
 (-> mode-covered-by-auto-rules-p
     (mode buffer boolean)
