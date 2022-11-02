@@ -356,6 +356,35 @@ ARGS are the keyword arguments for `make-instance' on MODES."
                       modes))
             (sera:filter #'modable-buffer-p buffers))))
 
+(define-command enable-modes (&key
+                              (modes nil explicit-modes-p)
+                              (buffers (current-buffer) explicit-buffers-p))
+  "Enable MODES for BUFFERS prompting for either or both.
+MODES should be a list of mode symbols or a mode symbol.
+BUFFERS and MODES are automatically coerced into a list.
+
+If BUFFERS is a list, return it.
+If it's a single buffer, return it directly (not as a list)."
+  ;; We allow NIL values for MODES and BUFFERS in case they are forms, in which
+  ;; case it's handy that this function does not error, it simply does nothing.
+  ;; REVIEW: But we wrap commands into `with-protect' for this, don't we?
+  (let* ((buffers (or buffers
+                      (unless explicit-buffers-p
+                        (prompt
+                         :prompt "Enable mode(s) for buffer(s)"
+                         :sources (make-instance 'buffer-source
+                                                 :multi-selection-p t
+                                                 :return-actions '())))))
+         (modes (or modes
+                    (unless explicit-modes-p
+                      (prompt
+                       :prompt "Enable mode(s)"
+                       :sources (make-instance 'inactive-mode-source
+                                               :buffers buffers))))))
+    (enable-modes* modes buffers)
+    (prompt-on-mode-toggle modes buffers t))
+  buffers)
+
 (export-always 'disable-modes*)
 (-> disable-modes* ((or mode-symbol (list-of mode-symbol)) (or buffer (list-of buffer))) *)
 (defun disable-modes* (modes buffers)
@@ -371,6 +400,47 @@ ARGS are the keyword arguments for `make-instance' on MODES."
                       (delete nil (mapcar (lambda (mode) (find mode (modes buffer) :key #'name))
                                           modes))))
             buffers)))
+
+(define-command disable-modes (&key (modes nil explicit-modes-p)
+                               (buffers (current-buffer) explicit-buffers-p))
+  "Disable MODES for BUFFERS.
+MODES should be a list of mode symbols.
+BUFFERS and MODES are automatically coerced into a list.
+
+If BUFFERS is a list, return it.
+If it's a single buffer, return it directly (not as a list)."
+  (let* ((buffers (or buffers
+                      (unless explicit-buffers-p
+                        (prompt
+                         :prompt "Enable mode(s) for buffer(s)"
+                         :sources (make-instance 'buffer-source
+                                                 :multi-selection-p t
+                                                 :return-actions '())))))
+         (modes (or modes
+                    (unless explicit-modes-p
+                      (prompt
+                       :prompt "Disable mode(s)"
+                       :sources (make-instance 'active-mode-source
+                                               :buffers buffers))))))
+    (disable-modes* modes buffers)
+    (prompt-on-mode-toggle modes buffers nil))
+  buffers)
+
+(define-command toggle-modes (&key (buffer (current-buffer)))
+  "Enable marked modes, disable unmarked modes for BUFFER."
+  (let* ((modes-to-enable
+           (prompt
+            :prompt "Mark modes to enable, unmark to disable"
+            :sources (make-instance
+                      'mode-source
+                      :marks (mapcar #'sera:class-name-of (modes buffer)))))
+         (modes-to-disable (set-difference (all-mode-symbols) modes-to-enable
+                                           :test #'string=)))
+    (disable-modes* modes-to-disable buffer)
+    (prompt-on-mode-toggle modes-to-disable buffer nil)
+    (enable-modes* modes-to-enable buffer)
+    (prompt-on-mode-toggle modes-to-enable buffer t))
+  buffer)
 
 ;; TODO: Factor `toggle-mode' and `toggle-modes' somehow?
 ;; TODO: Shall we have a function that returns the focused buffer?
