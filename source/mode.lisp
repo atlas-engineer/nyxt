@@ -256,7 +256,7 @@ PACKAGES should be a list of package designators."
 (deftype mode-symbol ()
   `(satisfies mode-class))
 
-(-> find-submode (mode-symbol &optional buffer) (maybe mode))
+(-> find-submode (mode-symbol &optional (maybe buffer)) (maybe mode))
 (export-always 'find-submode)
 (defun find-submode (mode-symbol &optional (buffer (current-buffer)))
   "Return the first submode instance of MODE-SYMBOL in BUFFER.
