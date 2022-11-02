@@ -9,6 +9,8 @@
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
+;; FIXME: Initializing mode is BAD, because mode initialization can be extremely
+;; stateful.
 (defmethod rememberable-p ((mode list))
   (check-type (first mode) mode-symbol)
   (rememberable-p (apply #'make-instance (first mode) (rest mode))))
@@ -134,10 +136,7 @@ ARGS as in make-instance of `auto-rule'."
                      (rememberable-of (modes buffer))
                      :test #'mode=))
         (check-type mode rememberable-mode-invocation)
-        (apply #'enable-modes :modes (first mode)
-                              :buffers buffer
-                              :bypass-auto-rules-p t
-                              (rest mode)))
+        (apply #'enable-modes* (first mode) buffer (rest mode)))
       (alex:when-let ((modes (mapcar #'first
                                      (if (exact-p rule)
                                          (set-difference
@@ -145,7 +144,7 @@ ARGS as in make-instance of `auto-rule'."
                                           (included rule)
                                           :test #'mode=)
                                          (excluded rule)))))
-        (disable-modes :modes modes :buffers buffer :bypass-auto-rules-p t)))))
+        (disable-modes* modes buffer)))))
 
 (defun can-save-last-active-modes-p (buffer url)
   (or (null (last-active-modes-url buffer))
@@ -161,12 +160,12 @@ ARGS as in make-instance of `auto-rule'."
                                  (set-difference (normalize-modes (modes buffer))
                                                  (last-active-modes buffer)
                                                  :test #'mode=))))
-    (disable-modes :modes modes :buffers buffer :bypass-auto-rules-p t))
+    (disable-modes* modes buffer))
   (alex:when-let ((modes (mapcar #'first
                                  (set-difference (last-active-modes buffer)
                                                  (normalize-modes (modes buffer))
                                                  :test #'mode=))))
-    (enable-modes :modes modes :buffest buffer :bypass-auto-rules-p t)))
+    (enable-modes* modes buffer)))
 
 (-> url-infer-match (string) list)
 (defun url-infer-match (url)
@@ -191,31 +190,98 @@ The rules are:
        `(match-host ,(quri:uri-host url)))
       (t `(match-url ,(render-url url))))))
 
-(-> make-mode-toggle-prompting-handler (boolean modable-buffer) (function (mode)))
-(defun make-mode-toggle-prompting-handler (enable-p buffer)
-  #'(lambda (mode)
-      (sera:and-let* ((_ (not (bypass-auto-rules-p buffer)))
-                      (_ (prompt-on-mode-toggle-p buffer))
-                      (invocation (normalize-mode mode))
-                      (*interactive-p* t))
-        (unless (mode-covered-by-auto-rules-p mode buffer enable-p)
-          (if-confirm ((format nil
-                               "Permanently ~:[disable~;enable~] ~a for this URL?"
-                               enable-p (sera:class-name-of mode)))
-              (let ((url (prompt1
-                          :prompt "URL"
-                          :input (render-url (url (buffer mode)))
-                          :sources 'prompter:raw-source)))
-                (add-modes-to-auto-rules (url-infer-match url)
-                                         :append-p t
-                                         :include (when enable-p (list invocation))
-                                         :exclude (unless enable-p (list invocation))))
-              (setf (last-active-modes buffer)
-                    (if enable-p
-                        (union (list invocation) (last-active-modes buffer)
-                               :test #'mode=)
-                        (remove invocation (last-active-modes buffer)
-                                :test #'mode=))))))))
+(defun prompt-on-mode-toggle (modes buffers enable-p)
+  (dolist (buffer (uiop:ensure-list buffers))
+    (sera:and-let* ((_ (prompt-on-mode-toggle-p buffer))
+                    (invocations (mapcar #'normalize-mode (uiop:ensure-list modes)))
+                    (invocations (remove-if (rcurry #'mode-covered-by-auto-rules-p buffer enable-p) invocations)))
+      (if-confirm ((format nil
+                           "Permanently ~:[disable~;enable~] ~{~a~^, ~} for ~a?"
+                           enable-p (mapcar #'first invocations) (url buffer)))
+          (let ((url (prompt1
+                      :prompt "URL"
+                      :input (render-url (url buffer))
+                      :sources 'prompter:raw-source)))
+            (add-modes-to-auto-rules (url-infer-match url)
+                                     :append-p t
+                                     :include (when enable-p invocations)
+                                     :exclude (unless enable-p invocations)))
+          (setf (last-active-modes buffer)
+                (if enable-p
+                    (union invocations (last-active-modes buffer)
+                           :test #'mode=)
+                    (set-difference (last-active-modes buffer) invocations
+                                    :test #'mode=)))))))
+
+(define-command enable-modes (&key
+                              (modes nil explicit-modes-p)
+                              (buffers (current-buffer) explicit-buffers-p))
+  "Enable MODES for BUFFERS prompting for either or both.
+MODES should be a list of mode symbols or a mode symbol.
+BUFFERS and MODES are automatically coerced into a list.
+
+If BUFFERS is a list, return it.
+If it's a single buffer, return it directly (not as a list)."
+  ;; We allow NIL values for MODES and BUFFERS in case they are forms, in which
+  ;; case it's handy that this function does not error, it simply does nothing.
+  ;; REVIEW: But we wrap commands into `with-protect' for this, don't we?
+  (let* ((buffers (or buffers
+                      (unless explicit-buffers-p
+                        (prompt
+                         :prompt "Enable mode(s) for buffer(s)"
+                         :sources (make-instance 'buffer-source
+                                                 :multi-selection-p t
+                                                 :return-actions '())))))
+         (modes (or modes
+                    (unless explicit-modes-p
+                      (prompt
+                       :prompt "Enable mode(s)"
+                       :sources (make-instance 'inactive-mode-source
+                                               :buffers buffers))))))
+    (enable-modes* modes buffers)
+    (prompt-on-mode-toggle modes buffers t))
+  buffers)
+
+(define-command disable-modes (&key (modes nil explicit-modes-p)
+                               (buffers (current-buffer) explicit-buffers-p))
+  "Disable MODES for BUFFERS.
+MODES should be a list of mode symbols.
+BUFFERS and MODES are automatically coerced into a list.
+
+If BUFFERS is a list, return it.
+If it's a single buffer, return it directly (not as a list)."
+  (let* ((buffers (or buffers
+                      (unless explicit-buffers-p
+                        (prompt
+                         :prompt "Enable mode(s) for buffer(s)"
+                         :sources (make-instance 'buffer-source
+                                                 :multi-selection-p t
+                                                 :return-actions '())))))
+         (modes (or modes
+                    (unless explicit-modes-p
+                      (prompt
+                       :prompt "Disable mode(s)"
+                       :sources (make-instance 'active-mode-source
+                                               :buffers buffers))))))
+    (disable-modes* modes buffers)
+    (prompt-on-mode-toggle modes buffers nil))
+  buffers)
+
+(define-command toggle-modes (&key (buffer (current-buffer)))
+  "Enable marked modes, disable unmarked modes for BUFFER."
+  (let* ((modes-to-enable
+           (prompt
+            :prompt "Mark modes to enable, unmark to disable"
+            :sources (make-instance
+                      'mode-source
+                      :marks (mapcar #'sera:class-name-of (modes buffer)))))
+         (modes-to-disable (set-difference (all-mode-symbols) modes-to-enable
+                                           :test #'string=)))
+    (disable-modes* modes-to-disable buffer)
+    (prompt-on-mode-toggle modes-to-disable buffer nil)
+    (enable-modes* modes-to-enable buffer)
+    (prompt-on-mode-toggle modes-to-enable buffer t))
+  buffer)
 
 (defmethod customize-instance :after ((buffer modable-buffer) &key &allow-other-keys)
   (unless (last-active-modes buffer)

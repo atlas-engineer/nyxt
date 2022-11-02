@@ -347,37 +347,15 @@ For production code, see `find-submode' instead."
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class))
 
-(define-command enable-modes (&rest args &key
-                              (modes nil explicit-modes-p)
-                              (buffers (current-buffer) explicit-buffers-p)
-                              bypass-auto-rules-p
-                              &allow-other-keys)
-  "Enable MODES for BUFFERS.
-MODES should be a list of mode symbols.
-BUFFERS and MODES are automatically coerced into a list.
-ARGS are passed to the mode `enable' method.
-
-If BUFFERS is a list, return it.
-If it's a single buffer, return it directly (not as a list)."
-  (declare (ignorable bypass-auto-rules-p))
-  ;; We allow NIL values for MODES and BUFFERS in case they are forms, in which
-  ;; case it's handy that this function does not error, it simply does nothing.
-  ;; REVIEW: But we wrap commands into `with-protect' for this, don't we?
-  (let* ((buffers (if buffers
-                      (uiop:ensure-list buffers)
-                      (unless explicit-buffers-p
-                        (prompt
-                         :prompt "Enable mode(s) for buffer(s)"
-                         :sources (make-instance 'buffer-source
-                                                 :multi-selection-p t
-                                                 :return-actions '())))))
-         (modes (if modes
-                    (uiop:ensure-list modes)
-                    (unless explicit-modes-p
-                      (prompt
-                       :prompt "Enable mode(s)"
-                       :sources (make-instance 'inactive-mode-source
-                                               :buffers buffers))))))
+(export-always 'enable-modes*)
+(-> enable-modes* ((or mode-symbol (list-of mode-symbol))
+                   (or buffer (list-of buffer))
+                   &key &allow-other-keys) *)
+(defun enable-modes* (modes buffers &rest args &key &allow-other-keys)
+  "Enable MODES in BUFFERS.
+ARGS are the keyword arguments for `make-instance' on MODES."
+  (let ((modes (uiop:ensure-list modes))
+        (buffers (uiop:ensure-list buffers)))
     (dolist (mode modes)
       (check-type mode mode-symbol))
     (dolist (buffer buffers)
@@ -386,45 +364,25 @@ If it's a single buffer, return it directly (not as a list)."
               (mapcar (lambda (mode-sym)
                         (apply #'enable (or (find mode-sym (slot-value buffer 'modes) :key #'name)
                                             (make-instance mode-sym :buffer buffer))
-                               (alex:remove-from-plist args :buffers :modes)))
+                               args))
                       modes))
-            (sera:filter #'modable-buffer-p buffers)))
-  buffers)
+            (sera:filter #'modable-buffer-p buffers))))
 
-(define-command disable-modes (&key (modes nil explicit-modes-p)
-                               (buffers (current-buffer) explicit-buffers-p) bypass-auto-rules-p
-                               &allow-other-keys)
-  "Disable MODES for BUFFERS.
-MODES should be a list of mode symbols.
-BUFFERS and MODES are automatically coerced into a list.
-
-If BUFFERS is a list, return it.
-If it's a single buffer, return it directly (not as a list)."
-  (let* ((buffers (if buffers
-                      (uiop:ensure-list buffers)
-                      (unless explicit-buffers-p
-                        (prompt
-                         :prompt "Enable mode(s) for buffer(s)"
-                         :sources (make-instance 'buffer-source
-                                                 :multi-selection-p t
-                                                 :return-actions '())))))
-         (modes (if modes
-                    (uiop:ensure-list modes)
-                    (unless explicit-modes-p
-                      (prompt
-                       :prompt "Disable mode(s)"
-                       :sources (make-instance 'active-mode-source
-                                               :buffers buffers))))))
+(export-always 'disable-modes*)
+(-> disable-modes* ((or mode-symbol (list-of mode-symbol)) (or buffer (list-of buffer))) *)
+(defun disable-modes* (modes buffers)
+  "Disable MODES in BUFFERS."
+  (let ((modes (uiop:ensure-list modes))
+        (buffers (uiop:ensure-list buffers)))
     (dolist (mode modes)
       (check-type mode mode-symbol))
     (dolist (buffer buffers)
       (check-type buffer buffer))
     (mapcar (lambda (buffer)
-              (mapcar (alex:rcurry #'disable :bypass-auto-rules-p bypass-auto-rules-p)
+              (mapcar #'disable
                       (delete nil (mapcar (lambda (mode) (find mode (modes buffer) :key #'name))
-                                          (uiop:ensure-list modes)))))
-            buffers))
-  buffers)
+                                          modes))))
+            buffers)))
 
 ;; TODO: Factor `toggle-mode' and `toggle-modes' somehow?
 ;; TODO: Shall we have a function that returns the focused buffer?
@@ -454,32 +412,10 @@ If it's a single buffer, return it directly (not as a list)."
             (disable existing-instance)
             (echo "~@(~a~) mode disabled." existing-instance))))))
 
-(define-command toggle-modes (&key (buffer (current-buffer)))
-  "Enable marked modes, disable unmarked modes for BUFFER."
-  (let* ((bypass-auto-rules-p nil)
-         (modes-to-enable
-           (prompt
-            :prompt "Mark modes to enable, unmark to disable"
-            :sources (make-instance
-                      'mode-source
-                      :return-actions (list 'identity
-                                            (lambda-command force-disable-auto-rules (modes)
-                                              "Return selection but force disabling auto-rules.
-This is convenient when you use auto-rules by default and you want to toggle a
-mode permanently for this buffer."
-                                                            (setf bypass-auto-rules-p t)
-                                                            modes))
-                      :marks (mapcar #'sera:class-name-of (modes buffer)))))
-         (modes-to-disable (set-difference (all-mode-symbols) modes-to-enable
-                                           :test #'string=)))
-    (disable-modes :modes modes-to-disable :buffers buffer :bypass-auto-rules-p bypass-auto-rules-p)
-    (enable-modes :modes modes-to-enable :buffers buffer :bypass-auto-rules-p bypass-auto-rules-p))
-  buffer)
-
 (define-command-global reload-with-modes (&optional (buffer (current-buffer)))
-  "Reload the buffer with the queried modes.
+  "Reload the BUFFER with the queried modes.
 This bypasses auto-rules.
-Auto-rules are re-applied once the page is reloaded."
+Auto-rules are re-applied once the page is reloaded once again."
   (let* ((modes-to-enable (prompt
                            :prompt "Mark modes to enable, unmark to disable"
                            :sources (make-instance 'mode-source
@@ -488,13 +424,11 @@ Auto-rules are re-applied once the page is reloaded."
                                            :test #'string=)))
     (hooks:once-on (request-resource-hook buffer)
         (request-data)
-      (setf (bypass-auto-rules-p (buffer request-data)) nil)
+      (when modes-to-enable
+        (disable-modes* modes-to-disable buffer))
+      (when modes-to-disable
+        (enable-modes* modes-to-enable buffer))
       request-data)
-    (setf (bypass-auto-rules-p buffer) t)
-    (when modes-to-enable
-      (disable-modes :modes modes-to-disable :buffers buffer))
-    (when modes-to-disable
-      (enable-modes :modes (uiop:ensure-list modes-to-enable) :buffer buffer))
     (reload-buffer buffer)))
 
 (export-always 'find-buffer)

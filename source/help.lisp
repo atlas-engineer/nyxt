@@ -104,10 +104,7 @@ CLASS is a class symbol."
                                            :bypass-auto-rules-p t))
                                   (nyxt::auto-configure
                                    :class-name 'input-buffer
-                                   :form '(enable-modes
-                                           :modes '(nyxt/vi-mode:vi-normal-mode)
-                                           :buffers input-buffer
-                                           :bypass-auto-rules-p t))))
+                                   :form '(enable-modes* 'nyxt/vi-mode:vi-normal-mode input-buffer))))
                  "Use vi"))
     (flet ((generate-colors (theme-symbol text)
              (spinneret:with-html-string

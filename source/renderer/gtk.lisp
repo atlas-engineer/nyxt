@@ -1077,7 +1077,7 @@ See `finalize-buffer'."
        ((and (quri:uri= url (url request-data))
              (str:starts-with-p "text/gemini" (mime-type request-data)))
         (log:debug "Processing gemtext from ~a." (render-url url))
-        (enable-modes :modes 'nyxt/small-web-mode:small-web-mode :buffers (buffer request-data))
+        (enable-modes* 'nyxt/small-web-mode:small-web-mode (buffer request-data))
         (webkit:webkit-policy-decision-ignore response-policy-decision)
         (ffi-buffer-load-html
          buffer (nyxt/small-web-mode:gemtext-render (or (ignore-errors (dex:get (quri:render-uri url))) "") buffer)

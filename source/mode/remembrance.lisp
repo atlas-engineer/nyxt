@@ -404,7 +404,7 @@ buffer."
       (buffer-load url :buffer background-buffer)
       (lpara:force promise)
 
-      (enable-modes 'remembrance-mode background-buffer)
+      (enable-modes* 'remembrance-mode background-buffer)
       (buffer->cache background-buffer (find-submode 'remembrance-mode background-buffer))
       (nyxt::buffer-delete background-buffer))))
 

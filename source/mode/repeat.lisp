@@ -57,10 +57,9 @@ It takes a `repeat-mode' instance as argument.")))
                                  :input "5"
                                  :sources 'prompter:raw-source))))))
     (when seconds
-      (enable-modes :mode 'repeat-mode
-                    :buffers (current-buffer)
-                    :repeat-interval seconds
-                    :repeat-action function))))
+      (enable-modes* 'repeat-mode (current-buffer)
+                     :repeat-interval seconds
+                     :repeat-action function))))
 
 (define-command-global repeat-times (&optional times function)
   "Prompt for FUNCTION to be run a number of TIMES."
@@ -71,12 +70,11 @@ It takes a `repeat-mode' instance as argument.")))
                               :input "4"
                               :sources 'prompter:raw-source))))))
     (when times
-      (enable-modes :modes 'repeat-mode
-                    :buffers (current-buffer)
-                    :repeat-count times
-                    :repeat-action #'(lambda (mode)
-                                       (declare (ignore mode))
-                                       (nyxt::run function))))))
+      (enable-modes* 'repeat-mode (current-buffer)
+                     :repeat-count times
+                     :repeat-action #'(lambda (mode)
+                                        (declare (ignore mode))
+                                        (nyxt::run function))))))
 
 (defvar *repeat-times-stack* 0
   "The current number of repetitions.")
