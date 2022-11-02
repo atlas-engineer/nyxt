@@ -9,15 +9,17 @@
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-;; FIXME: Initializing mode is BAD, because mode initialization can be extremely
-;; stateful.
-(defmethod rememberable-p ((mode list))
-  (check-type (first mode) mode-symbol)
-  (rememberable-p (apply #'make-instance (first mode) (rest mode))))
-
 (defmethod rememberable-p ((mode symbol))
   (check-type mode mode-symbol)
-  (rememberable-p (make-instance mode)))
+  ;; FIXME: Can this finalization shoot us in the foot?
+  (closer-mop:ensure-finalized (find-class mode) nil)
+  (closer-mop:slot-definition-initform
+   (find 'rememberable-p (closer-mop:class-slots (find-class mode))
+         :key #'closer-mop:slot-definition-name)))
+
+(defmethod rememberable-p ((mode list))
+  (check-type (first mode) mode-symbol)
+  (rememberable-p (first mode)))
 
 (deftype mode-invocation ()
   ;; First mode name, then `make-instance' args for it.
