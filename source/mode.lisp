@@ -242,7 +242,7 @@ PACKAGES should be a list of package designators."
               results))))
 
 (deftype mode-symbol ()
-  `(satisfies mode-class))
+  `(and symbol (satisfies mode-class)))
 
 (-> find-submode (mode-symbol &optional (maybe buffer)) (maybe mode))
 (export-always 'find-submode)
