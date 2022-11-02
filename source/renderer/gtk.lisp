@@ -5,9 +5,6 @@
     (:documentation "GTK renderer using direct CFFI bindings."))
 (in-package :nyxt/renderer/gtk)
 
-#+sbcl
-(sb-ext:add-implementation-package *package* (find-package :nyxt))
-
 (setf nyxt::+renderer+ "GTK")
 (push :nyxt-gtk *features*)
 
@@ -53,10 +50,11 @@ See also the `web-contexts' slot."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class))
 
-(handler-bind ((warning #'muffle-warning))
-  (defclass renderer-browser (gtk-browser)
-    ()
-    (:metaclass interface-class)))
+(nyxt::without-package-locks
+  (handler-bind ((warning #'muffle-warning))
+    (defclass renderer-browser (gtk-browser)
+      ()
+      (:metaclass interface-class))))
 
 (alex:define-constant +internal+ "internal" :test 'equal)
 (alex:define-constant +default+ "default" :test 'equal)
@@ -90,10 +88,11 @@ See also the `web-contexts' slot."))
   (:export-accessor-names-p t)          ; TODO: Unexport?
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(handler-bind ((warning #'muffle-warning))
-  (defclass renderer-window (gtk-window)
-    ()
-    (:metaclass interface-class)))
+(nyxt::without-package-locks
+  (handler-bind ((warning #'muffle-warning))
+    (defclass renderer-window (gtk-window)
+      ()
+      (:metaclass interface-class))))
 
 (define-class gtk-buffer ()
   ((gtk-object)
@@ -120,10 +119,11 @@ failures."))
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(handler-bind ((warning #'muffle-warning))
-  (defclass renderer-buffer (gtk-buffer)
-    ()
-    (:metaclass interface-class)))
+(nyxt::without-package-locks
+  (handler-bind ((warning #'muffle-warning))
+    (defclass renderer-buffer (gtk-buffer)
+      ()
+      (:metaclass interface-class))))
 
 (defclass webkit-web-context (webkit:webkit-web-context) ()
   (:metaclass gobject:gobject-class))
@@ -169,7 +169,7 @@ As a workaround, we never leave the GTK main loop when running from a REPL.
 
 See https://github.com/atlas-engineer/nyxt/issues/740")
 
-(defun renderer-thread-p (&optional (thread (bt:current-thread)))
+(defmethod renderer-thread-p ((renderer string) &optional (thread (bt:current-thread)))
   #+darwin
   (string= "main thread" (bt:thread-name thread))
   #-darwin
@@ -189,7 +189,7 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
 (defun %within-renderer-thread (thunk)
   "If the current thread is the renderer thread, execute THUNK with `funcall'.
 Otherwise run the THUNK on the renderer thread by passing it a channel and wait on the channel's result."
-  (if (renderer-thread-p)
+  (if (renderer-thread-p nyxt::+renderer+)
       (funcall thunk)
       (let ((channel (nyxt::make-channel 1)))
         (within-gtk-thread
@@ -199,7 +199,7 @@ Otherwise run the THUNK on the renderer thread by passing it a channel and wait 
 (defun %within-renderer-thread-async (thunk)
   "Same as `%within-renderer-thread' but THUNK is not blocking and does
 not return."
-  (if (renderer-thread-p)
+  (if (renderer-thread-p nyxt::+renderer+)
       (funcall thunk)
       (within-gtk-thread
         (funcall thunk))))
@@ -218,7 +218,7 @@ the renderer thread, use `defmethod' instead."
     `(defmethod ,name ,args
        ,@(sera:unsplice docstring)
        ,@declares
-       (if (renderer-thread-p)
+       (if (renderer-thread-p nyxt::+renderer+)
            (progn ,@forms)
            (let ((channel (nyxt::make-channel 1))
                  (error-channel (nyxt::make-channel 1)))
@@ -407,10 +407,11 @@ By default it is found in the source directory."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class))
 
-(handler-bind ((warning #'muffle-warning))
-  (defclass renderer-request-data (gtk-request-data)
-    ()
-    (:metaclass interface-class)))
+(nyxt::without-package-locks
+  (handler-bind ((warning #'muffle-warning))
+    (defclass renderer-request-data (gtk-request-data)
+      ()
+      (:metaclass interface-class))))
 
 (defun make-decide-policy-handler (buffer)
   (lambda (web-view response-policy-decision policy-decision-type-response)
@@ -834,10 +835,11 @@ See `gtk-browser's `modifier-translator' slot."
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(handler-bind ((warning #'muffle-warning))
-  (defclass renderer-scheme (gtk-scheme)
-    ()
-    (:metaclass interface-class)))
+(nyxt::without-package-locks
+  (handler-bind ((warning #'muffle-warning))
+    (defclass renderer-scheme (gtk-scheme)
+      ()
+      (:metaclass interface-class))))
 
 (defun make-context (name &key ephemeral-p)
   (let* ((context
@@ -2037,7 +2039,7 @@ custom (the specified proxy) and none."
   (webkit:webkit-uri-for-display text))
 
 (defmethod ffi-buffer-cookie-policy ((buffer gtk-buffer))
-  (if (renderer-thread-p)
+  (if (renderer-thread-p nyxt::+renderer+)
       (progn
         (log:warn "Querying cookie policy in WebKitGTK is only supported from a non-renderer thread.")
         nil)
