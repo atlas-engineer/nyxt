@@ -8,6 +8,9 @@
 (defun unique-id ()
   (format nil "ui-element-~d" (incf *id*)))
 
+(defgeneric to-html-string (object)
+  (:documentation "The string HTML representation of OBJECT."))
+
 (defclass ui-element ()
   ((id :accessor id)
    (buffer :accessor buffer :initarg :buffer
@@ -15,10 +18,6 @@
 
 (defmethod initialize-instance :after ((element ui-element) &key)
   (setf (id element) (unique-id)))
-
-(defmethod object-string ((element ui-element))
-  (with-output-to-string (spinneret:*html*)
-    (spinneret:interpret-html-tree (object-expression element))))
 
 (defmethod connect ((element ui-element) buffer)
   (setf (buffer element) buffer))
@@ -46,12 +45,13 @@
   (when (slot-boundp button 'buffer)
     (update button)))
 
-(defmethod object-expression ((button button))
-  `(:button :id ,(id button)
-            :class "button"
-            :title ,(alt-text button)
-            :onclick ,(action button)
-            ,(text button)))
+(defmethod to-html-string ((button button))
+  (spinneret:with-html-string
+      (:button :id (id button)
+               :class "button"
+               :title (alt-text button)
+               :onclick (action button)
+               (text button))))
 
 (defclass paragraph (ui-element)
   ((text :initform "" :initarg :text :accessor text)))
@@ -61,8 +61,9 @@
   (when (slot-boundp paragraph 'buffer)
     (update paragraph)))
 
-(defmethod object-expression ((paragraph paragraph))
-  `(:p :id ,(id paragraph) ,(text paragraph)))
+(defmethod to-html-string ((paragraph paragraph))
+  (spinneret:with-html-string
+      (:p :id (id paragraph) (text paragraph))))
 
 (defclass progress-bar (ui-element)
   ((percentage :initform 0
@@ -71,12 +72,13 @@
                :documentation "The percentage the progress bar is
 filled up, use a number between 0 and 100.")))
 
-(defmethod object-expression ((progress-bar progress-bar))
-  `(:div :class "progress-bar-base"
-         (:div :class "progress-bar-fill"
-               :id ,(id progress-bar)
-               ;; empty string to force markup to make closing :div tag
-               "")))
+(defmethod to-html-string ((progress-bar progress-bar))
+  (spinneret:with-html-string
+      (:div :class "progress-bar-base"
+            (:div :class "progress-bar-fill"
+                  :id (id progress-bar)
+                  ;; empty string to force markup to make closing :div tag
+                  ""))))
 
 (defmethod (setf percentage) :after (percentage (progress-bar progress-bar))
   (declare (ignorable percentage))

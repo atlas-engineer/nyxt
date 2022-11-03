@@ -11,10 +11,9 @@
    #:update
    #:text
    #:action
-   #:object-expression
+   #:to-html-string
    #:paragraph
    #:progress-bar
    #:button
    #:percentage
-   #:object-string
    #:connect))

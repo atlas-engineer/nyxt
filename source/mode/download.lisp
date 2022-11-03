@@ -210,16 +210,16 @@ download."
            collect
            (:div :class "download"
                  (when (member (status download) '(:unloaded :loading))
-                   (:raw (user-interface:object-string cancel-button)))
+                   (:raw (user-interface:to-html-string cancel-button)))
                  (when (eq (status download) :finished)
-                   (:raw (user-interface:object-string open-button)))
+                   (:raw (user-interface:to-html-string open-button)))
                  (:p :class "download-url" (:a :href url url))
                  (:div :class "progress-bar-container"
-                       (:raw (user-interface:object-string progress)))
+                       (:raw (user-interface:to-html-string progress)))
                  (:div :class "status"
-                       (:raw (user-interface:object-string progress-text))
-                       (:raw (user-interface:object-string bytes-text))
-                       (:raw (user-interface:object-string status-text))))))))
+                       (:raw (user-interface:to-html-string progress-text))
+                       (:raw (user-interface:to-html-string bytes-text))
+                       (:raw (user-interface:to-html-string status-text))))))))
 
 
 (defun download-watch (download-render download-object)
