@@ -1014,7 +1014,7 @@ See `finalize-buffer'."
                             (unless (cffi:null-pointer-p headers)
                               (webkit:soup-message-headers-get-headers headers))))
     (setf response-headers (when response
-                             (let ((headers (webkit:webkit-uri-response-http-headers response)))
+                             (let ((headers (webkit:webkit-uri-response-get-http-headers response)))
                                (unless (cffi:null-pointer-p headers)
                                  (webkit:soup-message-headers-get-headers headers)))))
     (let* ((request-data
@@ -1459,7 +1459,7 @@ See `finalize-buffer'."
                                         :resource-p t
                                         :http-method (webkit:webkit-uri-request-get-http-method request)
                                         :response-headers (when response
-                                                            (let ((headers (webkit:webkit-uri-response-http-headers request)))
+                                                            (let ((headers (webkit:webkit-uri-response-get-http-headers request)))
                                                               (unless (cffi:null-pointer-p headers)
                                                                 (webkit:soup-message-headers-get-headers headers))))
                                         :request-headers (let ((headers (webkit:webkit-uri-request-get-http-headers request)))
