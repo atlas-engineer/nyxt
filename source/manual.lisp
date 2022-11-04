@@ -32,10 +32,10 @@ or " (command-markup 'describe-slot) ".  You can press the button marked 'Config
 change the value of a setting. The settings will be applied immediately and
 saved for future sessions. Please note that these settings will not alter
 existing object instances.")
-        (:p "Settings created by Nyxt are stored in "
-            (:code auto-config-file) ".")
-        (:p "Any settings can be overridden manually by "
-            (:code config-file) ".")
+        (unless (str:empty? auto-config-file)
+          (:p "Settings created by Nyxt are stored in " (:code auto-config-file) "."))
+        (unless (str:empty? config-file)
+          (:p "Any settings can be overridden manually by " (:code config-file) "."))
         (:p "The following section assumes knowledge of basic Common Lisp or a
 similar programming language.")
         (:p "The user needs to manually create the Nyxt configuration file, and the parent folders if necessary."
