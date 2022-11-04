@@ -1,0 +1,9 @@
+#+TITLE:theme library for Nyxt
+
+Based on Google Material Design Guidelines, we've decided to have consistent themes working all across Nyxt. These themes consist of contrasting pairs of colors, mirroring Google's "on-*" colors approach. We've ended up with 4 pairs:
+- ~background-color~ and ~on-background-color~ :: background and text colors, respectively.
+- ~primary-color~ and ~on-primary-color~ :: the color of interactive interface elements and the most neutral palette color we can find. ~on-primary-color~ is, respectively, the color of the text on interface elements.
+- ~secondary-color~ and ~on-secondary-color~ :: the color that more or less contrasts with ~primary-color~ and can be used for more varied interface styles. With its own ~on-*~ color.
+- ~accent-color~ and ~on-accent-color~ :: the color (and contrasting text color for it) to highlight certain actionable interface elements and focus one's attention on some part of the screen. Light (default) theme has Carribean Blue (that John has suggested as a signature color for Nyxt), dark theme has #FCBA04 ("Selective Yellow" is what Coolors.co dubs it as) as their accent colors.
+
+We also have ~font-family~ configurable for themes, but that part of theming it currently under-developed. Right now this font family (defaults to Helvetica Neue + Helvetica) is only used for headings in the built-in docs. We'd want to have both heading/brand/accent font and a basic text/widget font, because that's the natural separation of fonts—there are title fonts and text fonts—and because that'll be more than enough to bring more personality into Nyxt interfaces.
