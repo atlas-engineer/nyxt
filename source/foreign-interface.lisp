@@ -103,6 +103,11 @@ Setf-able."))
   (:documentation "Return the WINDOW message buffer height as a number.
 Setf-able."))
 
+(define-ffi-generic ffi-buffer-height (buffer)
+  (:documentation "Return the BUFFER height in pixels as a number."))
+(define-ffi-generic ffi-buffer-width (buffer)
+  (:documentation "Return the BUFFER width in pixels as a number."))
+
 (define-ffi-generic ffi-buffer-make (buffer)
   (:documentation "Make BUFFER widget."))
 (define-ffi-generic ffi-buffer-delete (buffer)
@@ -267,6 +272,9 @@ Setf-able, where the languages value is a list of strings like '(\"en_US\"
 (define-ffi-generic ffi-focused-p (buffer)
   (:documentation "Return non-nil if the BUFFER widget is the one with focus."))
 
+(define-ffi-generic ffi-muted-p (buffer)
+  (:documentation "Return non-nil if the BUFFER cannot produce any sound."))
+
 (define-ffi-generic ffi-tracking-prevention (buffer)
   (:setter-p t)
   (:documentation "Return if Intelligent Tracking Prevention (ITP) is enabled.
@@ -380,3 +388,24 @@ the labels they have as hash values.")
     (ffi-add-context-menu-command (symbol-function command) label))
   (:documentation "Add COMMAND as accessible in context menus with LABEL displayed for it.
 COMMAND should be funcallable."))
+
+(define-ffi-generic ffi-add-context-menu-command (command label)
+  (:method ((command command) (label string))
+    (setf (gethash label *context-menu-commands*)
+          command))
+  (:method ((command function) (label string))
+    (setf (gethash label *context-menu-commands*)
+          command))
+  (:method ((command symbol) (label string))
+    (ffi-add-context-menu-command (symbol-function command) label))
+  (:documentation "Add COMMAND as accessible in context menus with LABEL displayed for it.
+COMMAND should be funcallable."))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Web Extension support
+;; TODO: Move to separate file?
+
+(define-ffi-generic ffi-web-extension-send-message (buffer javascript
+                                                           result-callback
+                                                           error-callback)
+  (:documentation "Send message to WebExtensions pages."))

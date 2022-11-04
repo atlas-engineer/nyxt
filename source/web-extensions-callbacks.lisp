@@ -33,11 +33,9 @@
                                               (alex:hash-table-values (nyxt::windows *browser*))))
                        t nil))
       #+webkit2-mute
-      ("audible" . ,(not (webkit:webkit-web-view-is-muted (nyxt::gtk-object buffer))))
-      ("height" . ,(gdk:gdk-rectangle-height
-                    (gtk:gtk-widget-get-allocation (nyxt::gtk-object buffer))))
-      ("width" . ,(gdk:gdk-rectangle-width
-                   (gtk:gtk-widget-get-allocation (nyxt::gtk-object buffer))))
+      ("audible" . ,(not (ffi-muted-p buffer)))
+      ("height" . ,(ffi-buffer-height buffer))
+      ("width" . ,(ffi-buffer-width buffer))
       ("highlighted" . ,(eq buffer (nyxt::active-buffer (current-window))))
       ("id" . ,(or (parse-integer (id buffer) :junk-allowed t) 0))
       ("incognito" . ,(nosave-buffer-p buffer))
@@ -195,8 +193,8 @@ the description of the mechanism that sends the results back."
     (run-thread
         "Send the message"
       (flet ((send-message (channel)
-               (webkit:webkit-web-view-send-message-to-page
-                (nyxt::gtk-object buffer)
+               (ffi-web-extension-send-message
+                buffer
                 (webkit:webkit-user-message-new
                  "message"
                  (glib:g-variant-new-string
@@ -423,8 +421,8 @@ there. `reply-user-message' takes care of sending the response back."
       (str:string-case message-name
         ;;; Commented out due to CPU hogging when enabled.
         ;; ("ready"
-        ;;  (webkit:webkit-web-view-send-message-to-page
-        ;;   (nyxt::gtk-object buffer)
+        ;;  (ffi-web-extension-send-message
+        ;;   buffer
         ;;   (webkit:webkit-user-message-new
         ;;    "injectAPIs" (glib:g-variant-new-string
         ;;                  (encode-json (mapcar #'extension->cons extensions) nil)))))

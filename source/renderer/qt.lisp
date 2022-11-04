@@ -1,7 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :nyxt)
+(nyxt:define-package :nyxt/renderer/qt
+    (:documentation "Qt renderer."))
+(in-package :nyxt/renderer/qt)
 
 (define-class qt-browser ()
   ((application :accessor application))
@@ -77,7 +79,7 @@
                                           :modifiers (qt:modifiers event)
                                           :status :pressed)))
     (funcall (input-dispatcher sender)
-             event (active-buffer sender)
+             event (nyxt::active-buffer sender)
              sender (printable-p sender event))))
 
 (defmethod on-signal-destroy ((window qt-window))
@@ -132,10 +134,10 @@
 
 (defmethod ffi-window-set-buffer ((window qt-window) (buffer qt-buffer))
   "Set BROWSER's WINDOW buffer to BUFFER."
-  (qt:widget-set-parent (qt-object (active-buffer window)) (cffi:null-pointer))
+  (qt:widget-set-parent (qt-object (nyxt::active-buffer window)) (cffi:null-pointer))
   (qt:layout-insert-widget (box-layout window) 0 (qt-object buffer))
   (qt:widget-show (qt-object buffer))
-  (setf (active-buffer window) buffer))
+  (setf (nyxt::active-buffer window) buffer))
 
 (defmethod ffi-window-set-prompt-buffer-height ((window qt-window) height)
   (qt:widget-set-fixed-height (minibuffer-view window) height))
