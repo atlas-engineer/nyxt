@@ -275,7 +275,7 @@ the renderer thread, use `defmethod' instead."
           ;; UIOP:QUIT with FINISH-OUTPUT = NIL in the first place.
           ;;
           ;; FIXME: This also can be true for other BSD systems.
-          (uiop:quit (slot-value browser 'exit-code) #+freebsd nil)))
+          (uiop:quit (slot-value browser 'nyxt::exit-code) #+freebsd nil)))
       #+darwin
       (progn
         (setf gtk-running-p t)

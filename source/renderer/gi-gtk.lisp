@@ -46,7 +46,7 @@ interface. On Darwin, we must run the GTK thread on the main thread."
           (unless nyxt::*run-from-repl-p*
             (bt:join-thread main-thread)
             ;; See comment about FreeBSD in gtk.lisp
-            (uiop:quit (slot-value browser 'exit-code) #+freebsd nil)))
+            (uiop:quit (slot-value browser 'nyxt::exit-code) #+freebsd nil)))
         #+darwin
         (main-func)))
 
