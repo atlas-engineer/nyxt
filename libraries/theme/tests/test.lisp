@@ -59,3 +59,46 @@ h1 { color: magenta; }
                                 theme:background
                                 theme:on-background)
                      :background-color theme:primary))))
+
+(defun hex-to-rgb (hex)
+  "Convert HEX to an RGB triple."
+  (declare (string hex))
+  (let ((hex (if (uiop:string-prefix-p "#" hex) (subseq hex 1) hex)))
+    (mapcar (lambda (x) (/ x 255.0))
+            (list (parse-integer (subseq hex 0 2) :radix 16)
+                  (parse-integer (subseq hex 2 4) :radix 16)
+                  (parse-integer (subseq hex 4 6) :radix 16)))))
+
+(defun relative-luminance (hex)
+  "Compute relative luminance of HEX."
+  ;; See https://www.w3.org/TR/WCAG20-TECHS/G18.html
+  (loop for const in '(0.2126 0.7152 0.0722)
+        for rgb-component in (hex-to-rgb hex)
+        sum (* const (if (<= rgb-component 0.03928)
+                         (/ rgb-component 12.92)
+                         (expt (/ (+ rgb-component 0.055) 1.055) 2.4)))))
+
+(defun contrast-ratio (hex1 hex2)
+  "Compute contrast ratio between HEX1 and HEX2."
+  (let ((ratio (/ (+ (relative-luminance hex1) 0.05)
+                  (+ (relative-luminance hex2) 0.05))))
+    (max ratio (/ ratio))))
+
+(defvar *minimum-contrast-ratio* 7.0
+  "The minimum contrast ratio required between color and on-color.")
+
+(define-test contrast-ratio-between-color-and-on-color ()
+  (flet ((assert-contrast-ratio (hex)
+           (assert-true
+            ;; This avoids handling the fact that on-colors are set as color
+            ;; strings (i.e. "black" and "white")
+            (or (> (contrast-ratio hex "ffffff") *minimum-contrast-ratio*)
+                (> (contrast-ratio hex "000000") *minimum-contrast-ratio*)))))
+    ;; No need to test the ratio between background and on-background since it's
+    ;; trivially close to the largest possible value of 21:1.
+    (assert-contrast-ratio (theme:primary-color theme:+light-theme+))
+    (assert-contrast-ratio (theme:secondary-color theme:+light-theme+))
+    (assert-contrast-ratio (theme:accent-color theme:+light-theme+))
+    (assert-contrast-ratio (theme:primary-color theme:+dark-theme+))
+    (assert-contrast-ratio (theme:secondary-color theme:+dark-theme+))
+    (assert-contrast-ratio (theme:accent-color theme:+dark-theme+))))
