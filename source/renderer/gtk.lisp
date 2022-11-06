@@ -1149,7 +1149,7 @@ See `finalize-buffer'."
                          (webkit:webkit-hit-test-result-image-uri hit-test-result)
                          (webkit:webkit-hit-test-result-media-uri hit-test-result))))
     (progn
-      (nyxt::print-message (str:concat "→ " (quri:url-decode url :lenient t)))
+      (nyxt::print-message (str:concat "→ " (ffi-display-url *browser* url)))
       (setf (url-at-point buffer) (quri:uri url)))
     (progn
       (nyxt::print-message "")
