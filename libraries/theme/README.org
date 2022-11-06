@@ -1,9 +1,77 @@
-#+TITLE:theme library for Nyxt
+#+TITLE: Theme library for Nyxt
 
-Based on Google Material Design Guidelines, we've decided to have consistent themes working all across Nyxt. These themes consist of contrasting pairs of colors, mirroring Google's "on-*" colors approach. We've ended up with 4 pairs:
-- ~background-color~ and ~on-background-color~ :: background and text colors, respectively.
-- ~primary-color~ and ~on-primary-color~ :: the color of interactive interface elements and the most neutral palette color we can find. ~on-primary-color~ is, respectively, the color of the text on interface elements.
-- ~secondary-color~ and ~on-secondary-color~ :: the color that more or less contrasts with ~primary-color~ and can be used for more varied interface styles. With its own ~on-*~ color.
-- ~accent-color~ and ~on-accent-color~ :: the color (and contrasting text color for it) to highlight certain actionable interface elements and focus one's attention on some part of the screen. Light (default) theme has Carribean Blue (that John has suggested as a signature color for Nyxt), dark theme has #FCBA04 ("Selective Yellow" is what Coolors.co dubs it as) as their accent colors.
+* Overview
 
-We also have ~font-family~ configurable for themes, but that part of theming it currently under-developed. Right now this font family (defaults to Helvetica Neue + Helvetica) is only used for headings in the built-in docs. We'd want to have both heading/brand/accent font and a basic text/widget font, because that's the natural separation of fonts—there are title fonts and text fonts—and because that'll be more than enough to bring more personality into Nyxt interfaces.
+Provides the means to customize colors and fonts of Nyxt's UI.  Besides exposing
+the set of tweakable options, opinionated defaults are provided.
+
+** Colors
+
+Based on [[https://m2.material.io/design/material-theming/implementing-your-theme.html][Google Material Design Guidelines]], 4 color pairs (~color~, ~on-color~)
+are defined to ease attaining a constant contrast ratio for each pair:
+
+- (~background-color~, ~on-background-color~) :: color that covers large
+  surfaces.
+- (~primary-color~, ~on-primary-color~) :: color of interface elements that
+  contrasts with ~background-color~; neutral and harmonious relative to
+  ~secondary-color~.
+- (~secondary-color~, ~on-secondary-color~) :: color of interface elements that
+  contrasts with ~on-background-color~; neutral and harmonious relative to
+  ~primary-color~.
+- (~accent-color~, ~on-accent-color~) :: color that highlights actionable
+  interface elements or draws particular attention.
+
+** Fonts
+
+~font-family~ is the only configurable option at the moment.
+
+# TODO Define both a title font and text font.
+
+** Example
+
+#+begin_src lisp
+(defvar my-theme (make-instance 'theme:theme
+                                :dark-p t
+                                :background-color "black"
+                                :on-background-color "white"
+                                :primary-color "#e5cfef"
+                                :on-primary-color "black"
+                                :secondary-color "#7042a2"
+                                :on-secondary-color "white"
+                                :accent-color "#b8e2b8"
+                                :on-accent-color "black"
+                                :font-family "Iosevka"))
+
+;; Set the theme in Nyxt's config file
+(define-configuration browser ((theme my-theme)))
+#+end_src
+
+* Defaults
+We suggest following the WCGA (Web Content Accessibility Guidelines) that
+requires a contrast ratio of at least 7:1 between foreground and background for
+best results.  In our context, that translates to requiring the aforementioned
+contrast ratio between the two colors of each of the color pair.
+
+Find our color schemes in the table below.
+
+| Color        | Light   | Dark    |
+|--------------+---------+---------|
+| ~background~ | #ffffff | #000000 |
+| ~primary~    | #555555 | #D88A52 |
+| ~secondary~  | #A6A6A6 | #753C17 |
+| ~accent~     | #37A8E4 | #FCBA04 |
+
+The font family defaults to Helvetica Neue and Helvetica and is used for
+headings in the built-in help system.
+
+** Remarks
+
+~on-colors~ are either white or black, depending on what results in
+a higher contrast ratio with its corresponding ~color~.
+
+One might be tempted to think that ~on-colors~ are meant to be used solely for
+text.  High contrast ratios are required when placing tiny elements over huge
+surfaces.  Take blue and yellow, colors that have a poor contrast ratio, and
+inscribe a blue circle that covers most of the yellow square's surface.  You can
+still properly discern the circle, whereas if you were to draw a tiny blue cross
+you'd probably struggle to see it.
