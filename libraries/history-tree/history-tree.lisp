@@ -147,6 +147,10 @@ If the node has no owner, return Epoch."
            :type (or null node)
            :documentation "The first node created for this owner.
 Not to be confused with the root, since the owner be go back to a parent of `origin'.")
+   (data nil
+         :type t
+         :documentation "Arbitrary data.
+Use it to persist extra owner information to history.")
    (creator-id nil
             :type t
             :documentation "The owner-id in `origin's parent node that
@@ -360,12 +364,14 @@ OWNER may be an owner ID or owner object."
       (gethash owner-spec (owners history))))
 
 (export-always 'add-owner)
-(declaim (ftype (function (history-tree t &key (:creator-id t))
+(declaim (ftype (function (history-tree t &key (:creator-id t)
+                                        (:data t))
                           (values owner &optional))
                 add-owner))
-(defun add-owner (history owner-id &key creator-id)
+(defun add-owner (history owner-id &key creator-id data)
   "Create and register owner object for OWNER-IDENTIFIER.
 CREATOR-ID is the optional identifier of the parent owner.
+DATA is the optional, arbitrary payload associated to the owner.
 Return the newly created owner.  If the owner with such identifier already
 exists, return it and raise a warning."
   (let ((owner (owner history owner-id)))
@@ -381,6 +387,7 @@ exists, return it and raise a warning."
                    creator-id))
           (let ((owner (make-instance 'owner
                                       :creator-id creator-id
+                                      :data data
                                       :creator-node (when creator-id
                                                       (current creator-owner)))))
             (setf (gethash owner-id (owners history))
