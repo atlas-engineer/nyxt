@@ -32,6 +32,9 @@ _build/submodules/system-index.txt
 # Generated doc
 manual.html
 
+# Generated documentation coverage
+/documentation-coverage.txt
+
 # Ignore flake lockfile
 flake.lock
 
