@@ -73,7 +73,7 @@ If the file is modified externally, Nyxt automatically reloads it."))
 No data should be shared with other nosave buffers either."))
 
 (define-class nofile-profile (files:virtual-profile nyxt-profile)
-  ((files:name "nofile"))
+  ()
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
