@@ -58,10 +58,19 @@ unconditionally converts those to tags unless the whole form is quoted.)"
                       (alexandria:rcurry #'write-to-string :readably t :pretty t :case :downcase :right-margin 70)
                       ;; Process quoted arguments properly too.
                       (mapcar (lambda (form)
-                                (if (and (listp form)
-                                         (eq 'quote (first form)))
-                                    (second form)
-                                    form))
+                                (cond
+                                  ((and (listp form)
+                                        (eq 'quote (first form)))
+                                   (second form))
+                                  ((and (listp form)
+                                        (eq #+sbcl 'sb-int:quasiquote
+                                            #+ecl 'si:quasiquote
+                                            ;; FIXME: CCL expands quasiquote to
+                                            ;; `list*' call.
+                                            ;; TODO: Other implementations?
+                                            (first form)))
+                                   (eval form))
+                                  (t form)))
                               body)
                       (make-string 2 :initial-element #\newline)))))
          (*print-escape* nil)
