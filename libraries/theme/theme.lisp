@@ -109,38 +109,39 @@ out from all of the other theme colors.")
           (theme:font-family (font-family theme:theme)))
      ,@body))
 
-(defun plist-p (object)
-  "Return non-nil if OBJECT is a plist."
-  (and (listp object)
-       (alexandria:proper-list-p object)
-       (evenp (length object))
-       (loop :for x :in object :by #'cddr
-             :always (keywordp x))))
-
-(defun requote-rule (rule)
-  (if (plist-p (rest rule))
-      (cons 'list (mapcar (lambda (elem)
-                            (typecase elem
-                              (symbol (if (equalp "theme" (package-name (symbol-package elem)))
-                                          elem
-                                          `(quote ,elem)))
-                              (atom (if (constantp elem)
-                                        elem `(quote ,elem)))
-                              (list elem)
-                              (t elem)))
-                          rule))
-      (cons 'list (mapcar (lambda (x) `(quote ,x)) rule))))
+(defun %themed-css (theme &rest rules)
+  (lass:compile-and-write
+   (append `(:let
+                ,(list (list (quote theme:background) (background-color theme))
+                       (list (quote theme:on-background) (on-background-color theme))
+                       (list (quote theme:primary) (primary-color theme))
+                       (list (quote theme:on-primary) (on-primary-color theme))
+                       (list (quote theme:secondary) (secondary-color theme))
+                       (list (quote theme:on-secondary) (on-secondary-color theme))
+                       (list (quote theme:accent) (accent-color theme))
+                       (list (quote theme:on-accent) (on-accent-color theme))
+                       (list (quote theme:font-family) (font-family theme))))
+           rules)))
 
 (defmacro themed-css (theme &body rules)
   "Generate a CSS styled according to the THEME.
 
-RULES is a list of CL-CSS rules (with one level of nesting removed). There are
-special symbols that this macro will substitute for theme elements, if
-encountered. See `with-theme' for a list of those.
+RULES is a list of LASS rules. There are special symbols that this macro
+:let-binds with LASS:
+- `theme:background';
+- `theme:on-background';
+- `theme:primary';
+- `theme:on-primary';
+- `theme:secondary';
+- `theme:on-secondary';
+- `theme:accent';
+- `theme:on-accent';
+- `theme:font-family';
 
-Any non-atomic s-expression put as value of CSS property will be
-evaluated too, so you can put arbitrarily complex expressions as
-property values.
+Any LASS-friendly syntax (including quasi-quotes) works, so you can evaluate
+arbitrary code before the rules are compiled. For the convenience of
+quasi-quoted forms, this macro let-binds the set of symbols above around the
+RULES.
 
 Example: color all the paragraph text in accent color if the theme is dark, and
 in secondary color otherwise. Use the text color as background color. Make
@@ -150,13 +151,28 @@ headings have border of secondary color.
                             :dark-p t
                             :on-background-color \"red\"
                             :accent-color \"blue\")
-           (|h1,h2,h3,h4,h5,h6|
-            :border-style \"solid\"
-            :border-width \"1px\"
-            :border-color theme:secondary)
-           (p
-            :color (if (theme:dark-p theme:theme) theme:accent theme:secondary)
-            :background-color theme:background))"
+           '(|h1,h2,h3,h4,h5,h6|
+             :border-style \"solid\"
+             :border-width \"1px\"
+             :border-color #(theme:secondary))
+           `(p
+             :color ,(if (theme:dark-p theme:theme) theme:accent theme:secondary)
+             :background-color #(theme:background)))"
   `(with-theme ,theme
-    (cl-css:css
-     (list ,@(mapcar #'requote-rule rules)))))
+     (funcall #'%themed-css theme:theme
+              ;; NOTE: This loop allows to omit quotes for most trivial rules,
+              ;; mostly preserving backwards-compatibility.
+              ,@(loop for rule in rules
+                      for first = (first rule)
+                      ;; FIXME: This is not perfect, but it's good enough for
+                      ;; 99% of cases. Maybe somehow parse selectors with LASS?
+                      if (or (stringp first)
+                             (keywordp first)
+                             (eq '* first)
+                             (and (symbolp first)
+                                  (eq :internal (nth-value 1 (find-symbol (symbol-name first)
+                                                                          (symbol-package first)))))
+                             (and (listp first)
+                                  (keywordp (first first))))
+                        collect (cons 'quote (list rule))
+                      else collect rule))))
