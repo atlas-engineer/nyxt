@@ -80,7 +80,7 @@
   (print-unreadable-object (rule stream :type t :identity t)
     (princ (sera:ellipsize (format nil "~a" (test rule)) 40) stream)))
 
-(defvar *default-rules* '()
+(defvar *default-auto-rules* '()
   "The list of rules to always use, even when there is no auto-rules file.")
 
 (export-always 'define-auto-rule)
@@ -98,11 +98,11 @@ ARGS as in make-instance of `auto-rule'."
                   (list :included (normalize-modes included)))
                 (when excluded
                   (list :excluded (normalize-modes excluded)))))
-        *default-rules*))
+        *default-auto-rules*))
 
 (-> matching-auto-rules (quri:uri modable-buffer) (values list &optional))
 (defun matching-auto-rules (url buffer)
-  (let* ((rules (append *default-rules*
+  (let* ((rules (append *default-auto-rules*
                         (files:content (auto-rules-file buffer))))
          (matching-rules (remove-if-not
                           #'(lambda (rule)
