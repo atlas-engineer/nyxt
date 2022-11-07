@@ -20,57 +20,7 @@
   :homepage "https://nyxt.atlas.engineer"
   :description "Extensible web browser in Common Lisp"
   :license "BSD 3-Clause"
-  :depends-on (alexandria
-               bordeaux-threads
-               calispel
-               cl-base64
-               cl-css
-               cl-gopher
-               cl-html-diff
-               cl-json
-               cl-ppcre
-               cl-ppcre-unicode
-               cl-prevalence
-               cl-qrencode
-               cl-tld
-               closer-mop
-               cl-containers
-               dissect
-               moptilities
-               dexador
-               enchant
-               flexi-streams
-               iolib
-               iolib/os
-               local-time
-               lparallel
-               log4cl
-               ndebug
-               nfiles
-               nhooks
-               nkeymaps
-               #-sbcl
-               osicat
-               ospm
-               parenscript
-               py-configparser
-               quri
-               serapeum
-               str
-               phos
-               plump
-               clss
-               spinneret
-               slynk
-               swank
-               trivia
-               trivial-clipboard
-               trivial-features
-               trivial-garbage
-               trivial-package-local-nicknames
-               trivial-types
-               unix-opts
-               ;; Local systems:
+  :depends-on (nyxt/external-dependencies
                nyxt/user-interface
                nyxt/text-buffer
                nyxt/analysis
@@ -220,6 +170,59 @@
                          (test-op "nyxt/history-tree/tests")
                          (test-op "nyxt/class-star/tests")
                          (test-op "nyxt/prompter/tests"))))
+
+(defsystem "nyxt/external-dependencies"
+  :description "The external dependencies of Nyxt."
+  :depends-on (alexandria
+               bordeaux-threads
+               calispel
+               cl-base64
+               cl-css
+               cl-gopher
+               cl-html-diff
+               cl-json
+               cl-ppcre
+               cl-ppcre-unicode
+               cl-prevalence
+               cl-qrencode
+               cl-tld
+               closer-mop
+               cl-containers
+               dissect
+               moptilities
+               dexador
+               enchant
+               flexi-streams
+               iolib
+               iolib/os
+               local-time
+               lparallel
+               log4cl
+               ndebug
+               nfiles
+               nhooks
+               nkeymaps
+               #-sbcl
+               osicat
+               ospm
+               parenscript
+               py-configparser
+               quri
+               serapeum
+               str
+               phos
+               plump
+               clss
+               spinneret
+               slynk
+               swank
+               trivia
+               trivial-clipboard
+               trivial-features
+               trivial-garbage
+               trivial-package-local-nicknames
+               trivial-types
+               unix-opts))
 
 (defsystem "nyxt/submodules"
   :defsystem-depends-on (nyxt-asdf)
