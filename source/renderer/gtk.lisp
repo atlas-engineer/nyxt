@@ -114,6 +114,14 @@ failures."))
   (append (call-next-method)
           `(("Context" ,(context-name buffer)))))
 
+(defmethod s-serialization:serializable-slots ((buffer gtk-buffer))
+  "Discard gtk-object which cannot be serialized."
+  (set-difference
+   (mapcar #'closer-mop:slot-definition-name
+           (closer-mop:class-slots (class-of buffer)))
+   '(gtk-object
+     handler-ids)))
+
 (defclass webkit-web-context (webkit:webkit-web-context) ()
   (:metaclass gobject:gobject-class))
 

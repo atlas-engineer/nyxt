@@ -334,10 +334,14 @@ Return non-NIL of history was restored, NIL otherwise."
                                     (htree:owner history owner-id))))
                  ;; Node-less owners can safely be ignored.
                  (when current-node
-                   (let ((new-buffer (make-buffer :title (title (htree:data current-node))
-                                                  :history-file history-file
-                                                  :url (url (htree:data current-node))
-                                                  :load-url-p nil)))
+                   (let ((new-buffer (alex:if-let ((data (htree:data owner)))
+                                       (with-input-from-string (in data)
+                                         (s-serialization:deserialize-sexp in))
+                                       ;; In case buffer was not serialized:
+                                       (make-buffer :title (title (htree:data current-node))
+                                                    :history-file history-file
+                                                    :url (url (htree:data current-node))
+                                                    :load-url-p nil))))
                      (setf (gethash owner-id old-id->new-id) (id new-buffer))
                      (setf (gethash (id new-buffer) new-owners) owner))))))
             (alex:hash-table-alist (htree:owners history)))

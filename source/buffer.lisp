@@ -38,7 +38,8 @@ inherited from the superclasses.")
     :documentation "Buffer profiles are used to specialize the behavior of
 various parts, such as the path of all data files.
 See also the `profile' slot in the `browser' class.")
-   (url (quri:uri ""))
+   (url (quri:uri "")
+        :type quri:uri)
    (url-at-point (quri:uri ""))
    (title "")
 
@@ -284,6 +285,16 @@ buffer, with a meaningful result."
 To access all modes, including disabled ones, use `slot-value'."
   (sera:filter #'enabled-p (slot-value buffer 'modes)))
 
+(defmethod (setf modes) (value (buffer modable-buffer))
+  "Persist buffer state into history when changing mode."
+  (setf (slot-value buffer 'modes) value)
+  (when (context-buffer-p buffer)
+    (files:with-file-content (history (history-file buffer)
+                              :default (make-history-tree))
+      (alex:when-let ((owner (gethash (id buffer) (htree:owners history))))
+        (setf (htree:data (gethash (id buffer) (htree:owners history)))
+              (serialize-buffer buffer))))))
+
 (define-class input-buffer (buffer)
   ((keyscheme
     keyscheme:cua
@@ -412,6 +423,7 @@ down."))
 (define-class context-buffer (buffer)
   ((last-access
     (time:now)
+    :type time:timestamp
     :export nil
     :documentation "Timestamp when the buffer was last switched to.")
    (search-engines
@@ -872,6 +884,10 @@ Return the created buffer."
   ;; Background buffers are invisible to the browser.
   buffer)
 
+(defun serialize-buffer (buffer)
+  (with-output-to-string (out)
+    (s-serialization:serialize-sexp buffer out)))
+
 (defmethod customize-instance :after ((buffer context-buffer)
                                       &key parent-buffer no-history-p
                                       &allow-other-keys)
@@ -893,7 +909,8 @@ Return the created buffer."
                                                 (global-history-p buffer)
                                                 (not (nosave-buffer-p buffer))
                                                 (not (nosave-buffer-p parent-buffer)))
-                                       (id parent-buffer))))))
+                                       (id parent-buffer))
+                         :data (serialize-buffer buffer)))))
   buffer)
 
 (define-command update-document-model (&key (buffer (current-buffer)))
@@ -1069,6 +1086,111 @@ BUFFER's modes."
     (on-signal-key-press mode key)))
 
 (hooks:define-hook-type buffer (function (buffer)))
+
+(defun maybe-function-name (function-designator) ; TODO: Exists already?
+  (etypecase function-designator
+    (symbol function-designator)
+    (function
+     (let ((name (swank/backend:function-name function-designator)))
+       (if (listp name)
+           nil
+           name)))))
+
+(defun url-slot-p (class slot-name)
+  (let ((props (mopu:slot-properties class slot-name)))
+    (or (alex:when-let ((type (getf props :type)))
+          (eq 'quri:uri type))
+        (alex:when-let ((initform (getf props :initform)))
+          (and
+           (listp initform)
+           (eq 'quri:uri (first initform)))))))
+
+(defun timestamp-slot-p (class slot-name)
+  (let ((props (mopu:slot-properties class slot-name)))
+    (or (alex:when-let ((type (getf props :type)))
+          (eq 'time:timestamp type))
+        (alex:when-let ((initform (getf props :initform)))
+          (and
+           (listp initform)
+           (eq 'time:now (first initform)))))))
+
+(defmethod s-serialization::deserialize-sexp-slot ((self buffer) slot-name slot-value deserialized-objects)
+  (declare (ignore deserialized-objects))
+  (cond
+    ((url-slot-p (class-of self) slot-name)
+     (url slot-value))
+    ((timestamp-slot-p (class-of self) slot-name)
+     (time:parse-timestring slot-value))
+    (t (call-next-method))))
+
+(defmethod s-serialization::deserialize-sexp-slot ((self buffer) (slot-name (eql 'previous-url)) slot-value deserialized-objects)
+  ;; Need special case because previous-url can be NIL.
+  (declare (ignore slot-name deserialized-objects))
+  (when slot-value
+    (url slot-value)))
+
+(defmethod s-serialization:serialize-sexp-slot ((self hooks:hook) (slot (eql 'hooks:combination))
+                                                stream serialization-state)
+  (declare (ignore serialization-state))
+  (prin1 (or (maybe-function-name (slot-value self slot))
+             'hooks:default-combine-hook)
+         stream))
+(defmethod s-serialization:serialize-sexp-slot ((hook hooks:hook) (slot (eql 'hooks:handlers-alist))
+                                                stream serialization-sexp-slot)
+  (declare (ignore serialization-sexp-slot))
+  (prin1
+   (delete nil
+           (mapcar (lambda (handler-enable-p)
+                     (alex:when-let ((name (maybe-function-name (first handler-enable-p))))
+                       (cons name (second handler-enable-p))))
+                   (slot-value hook slot)))
+   stream))
+
+
+
+
+(defmethod s-serialization:serialize-sexp-slot ((self files:file) (slot (eql 'nfiles:read-handler))
+                                                stream serialization-state)
+  (declare (ignore serialization-state))
+  (prin1 (or (maybe-function-name (slot-value self slot))
+             'identity)
+         stream))
+(defmethod s-serialization:serialize-sexp-slot ((self files:file) (slot (eql 'nfiles:write-handler))
+                                                stream serialization-state)
+  (declare (ignore serialization-state))
+  (prin1 (or (maybe-function-name (slot-value self slot))
+             'identity)
+         stream))
+
+(defmethod s-serialization:serializable-slots ((buffer buffer))
+  "Discard document-model which is generated."
+  (set-difference (call-next-method)
+                  ;; Style is too big and not very useful to remember.
+                  '(style
+                    url-at-point)))
+
+(defmethod s-serialization:serializable-slots ((buffer document-buffer))
+  "Discard document-model which is generated."
+  (set-difference (call-next-method)
+                  '(document-model)))
+
+(defmethod s-serialization:serializable-slots ((buffer input-buffer))
+  "Discard document-model which is generated."
+  (set-difference (call-next-method)
+                  '(keyscheme
+                    last-event
+                    lisp-url-callbacks
+                    override-map)))
+
+(defmethod s-serialization:serializable-slots ((buffer web-buffer))
+  "Discard document-model which is generated."
+  (set-difference (call-next-method)
+                  '(keywords-document-model)))
+
+(defmethod s-serialization:serializable-slots ((buffer network-buffer))
+  "Discard document-model which is generated."
+  (set-difference (call-next-method)
+                  '(request-resource-keyscheme-map)))
 
 (define-command make-buffer (&rest args &key (title "") modes
                              (url (if *browser*
