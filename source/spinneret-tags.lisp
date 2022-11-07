@@ -62,6 +62,7 @@ unconditionally converts those to tags unless the whole form is quoted.)"
                                   ((and (listp form)
                                         (eq 'quote (first form)))
                                    (second form))
+                                  #+(or sbcl ecl)
                                   ((and (listp form)
                                         (eq #+sbcl 'sb-int:quasiquote
                                             #+ecl 'si:quasiquote
