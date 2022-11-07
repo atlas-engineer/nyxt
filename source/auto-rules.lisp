@@ -116,7 +116,7 @@ ARGS as in make-instance of `auto-rule'."
 - MATCH-REGEX is the last option one has for granular matching, so we put it as
   highest priority.
 - MATCH-URL matches just one page, so it follows regex in granularity.
-- And then, host, domain, and sheme all go in the decreasing order of
+- And then, host, domain, and scheme all go in the decreasing order of
   specificity and priority.  It's made this way so that more specific rules can
   override/circumvent the less specific rules.
 - User-defined and other predicates always go last, because those are

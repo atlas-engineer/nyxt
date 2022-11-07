@@ -172,8 +172,8 @@ access the initialized buffer.")
    (apply-all-matching-auto-rules-p
     nil
     :type boolean
-    :documentation "Whether matching auto-rules are applied to the URL.
-By default, the most specific rule is applied.")
+    :documentation "Whether all matching auto-rules are applied to the URL.
+If nil, the most specific rule is applied.")
    (prompt-on-mode-toggle-p
     nil
     :type boolean
@@ -195,7 +195,7 @@ buffer.")
     nil
     :export nil
     :type (or quri:uri null)
-    :documentation "The last URL that the active modes were saved for.
+    :documentation "The last URL for which the active modes were saved.
 We need to store this to not overwrite the `last-active-modes' for a given URL
 if it's being reloaded.")
    (last-active-modes
