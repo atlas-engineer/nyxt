@@ -75,6 +75,9 @@ various parts, such as the path of all data files.")
              :border-width "0px"
              :padding "6px"
              :margin "2px")
+            (.button.accent
+             :background-color theme:accent
+             :color theme:on-accent)
             (.link
              :all "unset"
              :text-decoration "underline"
@@ -83,8 +86,7 @@ various parts, such as the path of all data files.")
             (".link:hover"
              :opacity 0.8)
             (.accent
-             :background-color theme:accent
-             :color theme:on-accent)
+             :color theme:accent)
             (|.button:hover|
              :opacity 0.8)
             (|.button:visited|
