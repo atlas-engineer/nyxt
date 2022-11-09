@@ -45,6 +45,7 @@
                local-time
                lparallel
                log4cl
+               montezuma
                ndebug
                nfiles
                nhooks
@@ -210,6 +211,7 @@
                  (:file "reduce-tracking")
                  (:file "repeat")
                  (:file "repl")
+                 (:file "remembrance" :depends-on ("bookmark"))
                  (:file "small-web")
                  (:file "style" :depends-on ("bookmarklets"))
                  (:file "tts")
@@ -324,6 +326,7 @@
   :components ((:file "tests/renderer-package")
                (:file "tests/renderer-offline/set-url")
                (:file "tests/renderer-offline/execute-command-eval")
+               (:file "tests/renderer-offline/remembrance")
                (:file "tests/renderer-online/set-url")))
 
 (defsystem "nyxt/qt"
