@@ -330,6 +330,9 @@ call."))
   (alex:when-let ((action (first (marks-actions source))))
     (run-thread "Prompter mark action thread" (funcall action (marks source)))))
 
+(defmethod default-selection-action ((source prompter:source))
+  (first (slot-value source 'selection-actions)))
+
 (export-always 'object-attributes)
 (defgeneric object-attributes (object source)
   (:method ((object t) (source prompter:source))
