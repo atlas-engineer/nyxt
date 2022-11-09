@@ -6,8 +6,10 @@ Nyxt.app
 _build/submodules/system-index.txt
 
 # Ignore PNG and XCF
-*.png
 *.xcf
+*.png
+# Except for this foler
+!libraries/prompter/*.png
 
 # Ignore compiled lisp files
 *.FASL
