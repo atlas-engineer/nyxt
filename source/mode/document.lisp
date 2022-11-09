@@ -118,11 +118,15 @@ It does not assume being online."))
 
 (export-always '%clicked-in-input?)
 (defun %clicked-in-input? (&optional (buffer (current-buffer)))
+  "Get the class of the active element in BUFFER."
   (ps-eval :buffer buffer (ps:@ document active-element tag-name)))
 
 (export-always 'input-tag-p)
 (-> input-tag-p ((or string null)) boolean)
 (defun input-tag-p (tag)
+  "Is this TAG inputtable?
+
+Returns true if TAG is either an input or a textarea HTML tag."
   (or (string= tag "INPUT")
       (string= tag "TEXTAREA")))
 
