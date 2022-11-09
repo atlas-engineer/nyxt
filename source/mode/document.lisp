@@ -117,20 +117,22 @@ It does not assume being online."))
        "space" 'scroll-page-down
        "pagedown" 'scroll-page-down)))))
 
-(export-always '%clicked-in-input?)
-(defun %clicked-in-input? (&optional (buffer (current-buffer)))
+(export-always 'active-element-tag)
+(defun active-element-tag (&optional (buffer (current-buffer)))
+  "The name of the active element in BUFFER."
   (ps-eval :buffer buffer (ps:@ document active-element tag-name)))
 
 (export-always 'input-tag-p)
 (-> input-tag-p ((or string null)) boolean)
 (defun input-tag-p (tag)
+  "Whether TAG is inputtable."
   (or (string= tag "INPUT")
       (string= tag "TEXTAREA")))
 
 (defun call-non-input-command-or-forward (command &key (buffer (current-buffer))
                                                        (window (current-window)))
-  (let ((response (%clicked-in-input?)))
-    (if (input-tag-p response)
+  (let ((tag (active-element-tag)))
+    (if (input-tag-p tag)
         (forward-to-renderer :window window :buffer buffer)
         (funcall command))))
 
