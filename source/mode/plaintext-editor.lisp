@@ -25,8 +25,8 @@ To enable it, add this to your configuration file:
              :outline "none"
              :padding "5px"
              :autofocus "true"
-             :background-color theme:background
-             :color theme:on-background))))
+             :background-color #(theme:background)
+             :color #(theme:on-background)))))
   (:toggler-command-p nil))
 
 (defmethod markup ((editor plaintext-editor-mode))

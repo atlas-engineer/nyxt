@@ -20,24 +20,24 @@
    (style
     (theme:themed-css (theme *browser*)
       (".nyxt-hint"
-       :background-color theme:background
-       :color theme:on-background
+       :background-color #(theme:background)
+       :color #(theme:on-background)
        :font-family "monospace,monospace"
        :padding "0px 0.3em"
-       :border-color theme:primary
+       :border-color #(theme:primary)
        :border-radius "0.3em"
        :border-width "0.2em"
        :border-style "solid"
        :z-index #.(1- (expt 2 31)))
       (".nyxt-hint.nyxt-mark-hint"
-       :background-color theme:secondary
-       :color theme:on-secondary
+       :background-color #(theme:secondary)
+       :color #(theme:on-secondary)
        :font-weight "bold")
       (".nyxt-hint.nyxt-select-hint"
-       :background-color theme:accent
-       :color theme:on-accent)
+       :background-color #(theme:accent)
+       :color #(theme:on-accent))
       (".nyxt-element-hint"
-       :background-color theme:accent))
+       :background-color #(theme:accent)))
     :documentation "The style of the hint overlays.")
    (show-hint-scope-p
     nil

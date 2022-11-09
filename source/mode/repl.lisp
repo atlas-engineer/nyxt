@@ -116,14 +116,14 @@ Features:
              :width "97vw"
              :margin "1em")
             (.input
-             :background-color theme:secondary
+             :background-color #(theme:secondary)
              :width "99%"
              :padding 0
              :margin "1em 0")
             (.button
              :display "inline")
             (.input-buffer
-             :color theme:on-accent
+             :color #(theme:on-accent)
              :opacity "0.9"
              :border "none"
              :outline "none"

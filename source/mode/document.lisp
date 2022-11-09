@@ -575,7 +575,7 @@ of buffers."
                           :left "0"
                           :right "0"
                           :bottom "0"
-                          :background theme:on-background
+                          :background #(theme:on-background)
                           :z-index #.(1- (expt 2 31)))))
         (selection-rectangle-style (theme:themed-css (theme *browser*)
                                      ("#nyxt-rectangle-selection"
@@ -584,8 +584,8 @@ of buffers."
                                       :left "0"
                                       :border-style "dotted"
                                       :border-width "1px"
-                                      :border-color theme:on-background
-                                      :background-color theme:on-background
+                                      :border-color #(theme:on-background)
+                                      :background-color #(theme:on-background)
                                       :opacity 0.05
                                       :z-index #.(1- (expt 2 30))))))
     (ps-labels :async t

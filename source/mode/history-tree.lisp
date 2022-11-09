@@ -13,15 +13,15 @@
                :padding 0
                :list-style "none")
             (body
-             :background theme:background
-             :color theme:on-background
+             :background #(theme:background)
+             :color #(theme:on-background)
              :line-height "initial")
             (".current-buffer a"
-             :color theme:on-background)
+             :color #(theme:on-background))
             (".current-buffer a:hover"
              :opacity 0.5)
             (".other-buffer a"
-             :color theme:primary)
+             :color #(theme:primary))
             (".other-buffer a:hover"
              :opacity 0.5)
             (li
@@ -34,8 +34,8 @@
              :content "' '"
              :position "absolute"
              :width "1px"
-             :background-color theme:on-background ; is this right???
-             :color theme:background
+             :background-color #(theme:on-background) ; is this right???
+             :color #(theme:background)
              :top "5px"
              :bottom "-12px"
              :left "-10px")
@@ -48,8 +48,8 @@
              :content "' '"
              :position "absolute"
              :width "1px"
-             :background-color theme:on-background ; is this right???
-             :color theme:background
+             :background-color #(theme:on-background) ; is this right???
+             :color #(theme:background)
              :top "5px"
              :bottom "7px"
              :height "7px"
@@ -60,7 +60,7 @@
              :left "-10px"
              :width "10px"
              :height "1px"
-             :background-color theme:on-background ; is this right?
-             :color theme:background
+             :background-color #(theme:on-background) ; is this right?
+             :color #(theme:background)
              :top "12px"))))
   (:toggler-command-p nil))

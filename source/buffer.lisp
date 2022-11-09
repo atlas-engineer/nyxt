@@ -43,16 +43,16 @@ various parts, such as the path of all data files.")
 
    (style (theme:themed-css (theme *browser*)
             (body
-             :background-color theme:background
-             :color theme:on-background
+             :background-color #(theme:background)
+             :color #(theme:on-background)
              :margin-left "20px"
              :margin-top "20px")
             ("h1,h2,h3,h4,h5,h6"
-             :color theme:primary
-             :font-family theme:font-family)
+             :color #(theme:primary)
+             :font-family #(theme:font-family))
             (hr
-             :background-color theme:secondary
-             :color theme:on-secondary
+             :background-color #(theme:secondary)
+             :color #(theme:on-secondary)
              :height "3px"
              :border-radius "2px"
              :border-width "0")
@@ -65,60 +65,60 @@ various parts, such as the path of all data files.")
              :outline "inherit")
             (.button
              :all "unset"
-             :background-color theme:primary
-             :color theme:on-primary
+             :background-color #(theme:primary)
+             :color #(theme:on-primary)
              :display "inline-block"
              :text-decoration "none"
              :border-radius "2px"
-             :border-color theme:primary
+             :border-color #(theme:primary)
              :border-style "solid"
              :border-width "0px"
              :padding "6px"
              :margin "2px")
             (.button.accent
-             :background-color theme:accent
-             :color theme:on-accent)
+             :background-color #(theme:accent)
+             :color #(theme:on-accent))
             (.link
              :all "unset"
              :text-decoration "underline"
              :display "inline"
-             :color theme:primary)
+             :color #(theme:primary))
             (".link:hover"
              :opacity 0.8)
             (.accent
-             :color theme:accent)
+             :color #(theme:accent))
             (|.button:hover|
              :opacity 0.8)
             (|.button:visited|
-             :color theme:background)
+             :color #(theme:background))
             (|.button:active|
-             :color theme:background)
+             :color #(theme:background))
             (a
-             :color theme:primary)
+             :color #(theme:primary))
             ("a:hover"
              :opacity 0.8)
             (pre
              :overflow "auto"
-             :color theme:on-background
-             :background-color theme:secondary
+             :color #(theme:on-background)
+             :background-color #(theme:secondary)
              :border-radius "2px"
              :padding "5px")
             ("table, th, td"
-             :border-color theme:secondary
+             :border-color #(theme:secondary)
              :border-collapse "collapse"
              :border-width "1px"
              :border-style "solid"
-             :background-color theme:background
-             :color theme:on-background)
+             :background-color #(theme:background)
+             :color #(theme:on-background))
             (th
-             :background-color theme:primary
-             :color theme:on-primary
+             :background-color #(theme:primary)
+             :color #(theme:on-primary)
              :text-align "left")
             (dt
              :font-weight "bold")
             ("::selection"
-             :color theme:on-accent
-             :background-color theme:accent)))
+             :color #(theme:on-accent)
+             :background-color #(theme:accent))))
    (buffer-delete-hook                  ; TODO: Should we move this to `context-buffer'?
     (make-instance 'hook-buffer)
     :type hook-buffer
@@ -630,18 +630,18 @@ store them somewhere and `ffi-buffer-delete' them once done."))
   ((width 250 :documentation "The width in pixels.")
    (style (theme:themed-css (theme *browser*)
             (body
-             :background-color theme:background
-             :color theme:on-background
+             :background-color #(theme:background)
+             :color #(theme:on-background)
              :margin "0"
              :padding "10px"
              :border-style "solid"
              :border-width "0px 1px"
-             :border-color theme:secondary)
+             :border-color #(theme:secondary))
             ("h1,h2,h3,h4,h5,h6"
-             :font-family theme:font-family
+             :font-family #(theme:font-family)
              :font-weight 500)
             (a
-             :color theme:primary)
+             :color #(theme:primary))
             (button
              :background "transparent"
              :color "inherit"
@@ -650,8 +650,8 @@ store them somewhere and `ffi-buffer-delete' them once done."))
              :font "inherit"
              :outline "inherit")
             (.button
-             :background-color theme:primary
-             :color theme:on-primary
+             :background-color #(theme:primary)
+             :color #(theme:on-primary)
              :display "inline-block"
              :text-decoration "none"
              :border-radius "2px"
@@ -660,9 +660,9 @@ store them somewhere and `ffi-buffer-delete' them once done."))
             (|.button:hover|
              :opacity 0.8)
             (|.button:visited|
-             :color theme:background)
+             :color #(theme:background))
             (|.button:active|
-             :color theme:background))))
+             :color #(theme:background)))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
@@ -691,8 +691,8 @@ store them somewhere and `ffi-buffer-delete' them once done."))
              :border-width "2px"
              :border-style "solid"
              :border-color "transparent"
-             :border-top-color theme:accent
-             :border-left-color theme:accent
+             :border-top-color #(theme:accent)
+             :border-left-color #(theme:accent)
              :border-radius "50%"
              :display "inline-block"
              :width "7px"
@@ -713,8 +713,8 @@ store them somewhere and `ffi-buffer-delete' them once done."))
              :justify-content "space-between"
              :overflow-y "hidden")
             ("#controls"
-             :background-color theme:secondary
-             :color theme:on-secondary
+             :background-color #(theme:secondary)
+             :color #(theme:on-secondary)
              ;; :font-size "16px"
              :font-weight "700"
              :padding-left "5px"
@@ -723,8 +723,8 @@ store them somewhere and `ffi-buffer-delete' them once done."))
              :z-index "3"
              :flex-basis "6em")
             ("#url"
-             :background-color theme:primary
-             :color theme:on-primary
+             :background-color #(theme:primary)
+             :color #(theme:on-primary)
              :min-width "100px"
              :text-overflow "ellipsis"
              :overflow-x "hidden"
@@ -736,8 +736,8 @@ store them somewhere and `ffi-buffer-delete' them once done."))
              :flex-shrink "2"
              :flex-basis "10em")
             ("#tabs"
-             :background-color theme:secondary
-             :color theme:on-secondary
+             :background-color #(theme:secondary)
+             :color #(theme:on-secondary)
              :min-width "100px"
              :white-space "nowrap"
              :overflow-x "scroll"
@@ -751,7 +751,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
             ("#tabs::-webkit-scrollbar"
              :display "none")
             (.tab
-             :color theme:background
+             :color #(theme:background)
              :white-space "nowrap"
              :text-decoration "none"
              :padding-left "5px"
@@ -759,8 +759,8 @@ store them somewhere and `ffi-buffer-delete' them once done."))
             (".tab:hover"
              :opacity 0.8)
             ("#modes"
-             :background-color theme:primary
-             :color theme:on-primary
+             :background-color #(theme:primary)
+             :color #(theme:on-primary)
              :text-align "right"
              :padding-left "10px"
              :padding-right "5px"

@@ -12,14 +12,14 @@
    (style
     (theme:themed-css (theme *browser*)
       (".nyxt-search-node .nyxt-hint"
-       :background-color theme:secondary
-       :color theme:on-secondary
+       :background-color #(theme:secondary)
+       :color #(theme:on-secondary)
        :padding "0px"
        :border-radius "0px"
        :z-index #.(1- (expt 2 31)))
       (".nyxt-search-node > .nyxt-hint.nyxt-select-hint"
-       :background-color theme:accent
-       :color theme:on-accent))
+       :background-color #(theme:accent)
+       :color #(theme:on-accent)))
     :documentation "The style of the search overlays.")
    (keyscheme-map
     (define-keyscheme-map "search-buffer-mode" ()

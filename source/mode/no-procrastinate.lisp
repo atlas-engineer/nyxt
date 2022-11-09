@@ -28,8 +28,8 @@
     :documentation "File where hosts associated to procrastination are saved.")
    (style (theme:themed-css (theme *browser*)
             ("summary"
-             :background-color theme:secondary
-             :color            theme:on-secondary
+             :background-color #(theme:secondary)
+             :color            #(theme:on-secondary)
              :font-size        "14px"
              :padding          "16px"
              :margin           "6px"
