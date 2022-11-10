@@ -12,6 +12,7 @@
   :components ((:file "package")
                (:file "log")
                (:file "nyxt-asdf")
+               (:file "documentation-coverage")
                (:file "install")
                (:file "submodules")
                (:file "systems")

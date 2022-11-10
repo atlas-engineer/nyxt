@@ -12,10 +12,6 @@
 ;; instead.
 (setf (logical-pathname-translations "NYXT") nil)
 
-(defvar *external-packages* '()
-  "Temporary variable for the packages loaded by the
-external-dependencies of nyxt.")
-
 (defsystem "nyxt"
   :defsystem-depends-on (nyxt-asdf)
   :class :nyxt-system
@@ -299,82 +295,29 @@ external-dependencies of nyxt.")
                                        out))
                        (format *error-output* "Manual dumped to ~s.~&" (output-file o c))))
 
-(defun documentation-coverage (package)
-  "Documentation coverage data on PACKAGE.
-
-# Return value
-
-A property list with keys
-
-- :TOTAL, the number of external symbols,
-- :DOCUMENTED, the number of documented external symbols,
-- :UNDOCUMENTED, the list of undocumented external symbols."
-  (let ((total 0)
-        (documented 0)
-        (undocumented '()))
-    (do-external-symbols
-        (s (find-package package)
-           `(:total ,total
-             :documented ,documented
-             :undocumented ,undocumented))
-      (incf total)
-      (if (or (documentation s 'function)
-              (documentation s 'variable)
-              (documentation s 'structure)
-              (documentation s 'type)
-              (documentation s 'setf)
-              (documentation s 'compiler-macro)
-              (documentation s 'method-combination))
-          (incf documented)
-          (push s undocumented)))))
-
-(defun pp-documentation-coverage (percentage package undocumented &optional (destination t))
-  "Pretty prints documentation coverage data on PACKAGE to DESTINATION.
-
-The PACKAGE parameter is a symbol or a string naming a package.
-
-The PERCENTAGE parameter is the completion percentage of documentation.
-
-The UNDOCUMENTED parameter is a list of undocumented symbols.
-
-DESTINATION may be nil, t, a stream, or a string with a fill pointer."
-  (format destination
-          "~3D% ~A: ~{~A~^ ~}~%"
-          percentage
-          package
-          undocumented))
-
-(defun write-documentation-coverage (packages &optional (destination t))
-  "Write a documentation coverage report for the given PACKAGES to DESTINATION.
-
-DESTINATION may be nil, t, a stream, or a string with a fill pointer."
-  (loop for (percentage package undocumented)
-          in (sort (loop for package in packages
-                         for coverage = (documentation-coverage package)
-                         for documented = (getf coverage :documented)
-                         for total = (getf coverage :total)
-                         for undocumented = (getf coverage :undocumented)
-                         for percentage = (if (zerop total) 100 (floor (* 100 documented) total))
-                         ;; sort undocumented symbols
-                         collect (list percentage
-                                       (package-name package)
-                                       (sort undocumented #'string<)))
-                   #'< :key #'car)      ; sort by percentage
-        do (pp-documentation-coverage percentage package undocumented destination)))
+(defvar *external-packages* '()
+  "The documentation coverage subsystem records the packages loaded by
+the external-dependencies of nyxt.")
 
 (defsystem "nyxt/documentation-coverage"
   :long-description "Write documentation coverage for Nyxt packages.
+
+Searches for function, variable, structure, type, setf,
+compiler-macro, and method-combination documentation. Class slot
+documentation is ignored, instead it is recommended to document the
+accessors via `defgeneric'.
 
 This subsystem must be loaded on a fresh lisp image. The output is in
 the file documentation-coverage.txt found in the root directory of the
 distribution. The file is replaced if it exists.
 
-To search for a particular package (on Linux) one may use
+To search for a particular package (on unix) one may use
 
-    grep MYPKG: documentation-coverage.txt | fmt
+    grep MYPKG: documentation-coverage.txt | fold -sw 80
 
 Packages that are marked 100% either have all their symbols documented
 or they have no exported symbols."
+  :defsystem-depends-on (nyxt-asdf)
   :depends-on (nyxt/record-external-packages
                nyxt)
   :output-files (load-op (o c)
@@ -384,7 +327,7 @@ or they have no exported symbols."
                     (with-open-file (out (output-file o c)
                                          :direction :output
                                          :if-exists :supersede)
-                      (write-documentation-coverage
+                      (nyxt-asdf:write-documentation-coverage
                        ;; write a doc coverage for nyxt-created packages only
                        (set-difference (list-all-packages) *external-packages*)
                        out))))
