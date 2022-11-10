@@ -24,3 +24,10 @@
 (defmethod files:resolve ((profile nyxt-user::test-profile) (file files:file))
   "Store all files in a temporary `+test-root+' directory."
   (nfiles:join +test-root+  (call-next-method)))
+
+(defmacro with-headless (&body body)
+  `(let ((old-headless-p nyxt::*headless-p*))
+    (unwind-protect (progn
+                      (setf nyxt::*headless-p* t)
+                      ,@body)
+      (setf nyxt::*headless-p* old-headless-p))))

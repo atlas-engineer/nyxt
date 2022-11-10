@@ -471,7 +471,11 @@ SLY install.")
         (:nxref :command 'nyxt/document-mode:paste-from-clipboard-ring) " command.")
    (:li "Major improvement of " (:nxref :class-name 'nyxt/editor-mode:editor-mode) ".")
    (:li (:code "execute-command")
-        " evaluates arbitrary Lisp code and provides inline documentation for symbols."))
+        " evaluates arbitrary Lisp code and provides inline documentation for symbols.")
+   (:li "New " (:nxref :class-name 'nyxt/remembrance-mode:remembrance-mode)
+        " to automatically cache the visited page content. "
+        "The cache can be looked up and the page textual content can be displayed even offline."
+        "See " (:nxref :function 'nyxt/remembrance-mode:recollect-visited-page) "."))
 
   (:h3 "Bindings")
   (:ul
@@ -481,7 +485,12 @@ to open a file, save it, switch buffer or delete current buffer.")
    (:li (:nxref :command 'nyxt/document-mode:paste-from-clipboard-ring) " is now conveniently bound to "
         (:code "M-y") " in Emacs scheme of "
         (:nxref :class-name 'nyxt/document-mode:document-mode) ".")
-   (:li "Prompt-buffer now has familiar bindings for text cutting."))
+   (:li "Prompt-buffer now has familiar bindings for text cutting.")
+   (:li "Add " (:nxref :command 'nyxt/prompt-buffer-mode:set-selection-action)
+        ", bound to " (:code "C-c C-j") "by default.")
+   (:li (:code "return-selection-over-action") " renamed to "
+        (:nxref :command 'nyxt/prompt-buffer-mode:return-marks-action)
+        ".  The default keybinding is the same."))
 
   (:h3 "Programming interface")
   (:ul
