@@ -228,32 +228,31 @@ all hosts being blocked, execute command " (:code "describe-variable") ", choose
       (:nsection :title "URL-dispatchers"
         (:p "You can configure which actions to take depending on the URL to be
 loaded.  For instance, you can configure which Torrent program to start to load
-magnet links.  See the" (:nxref :function 'url-dispatching-handler) " function
+magnet links.  See the " (:nxref :function 'url-dispatching-handler) " function
 documentation."))
 
       (:nsection :title "Auto rules"
-        (:p "Auto-rules are similar to URL-dispatchers as they also act on
-URLs. However, these are restricted to mode togglers. Given that Nyxt's
-functionality is mode-based, the consequences are far reaching.")
+        (:p "Auto-rules toggle modes when the URL satisfies the given
+conditions. URL-dispatchers can also be used for this, but it is
+simpler to use an auto-rule. Given that Nyxt's functionality is
+mode-based, the consequences are far reaching.")
         (:p "These can be used in the following ways:")
         (:ul
-         (:li "Manually, by calling "
-              (:nxref :command 'save-non-default-modes-for-future-visits)
-              " or " (:nxref :command 'save-exact-modes-for-future-visits) ".")
+         (:li "Manually, by calling:")
          (:ul
-          (:li "The former saves \"unusual\" modes - non-default modes that were
+          (:li (:nxref :command 'save-non-default-modes-for-future-visits) ", which saves \"unusual\" modes - non-default modes that were
 toggled exclusively for a given URL.")
-          (:li "The latter saves the exact list of enabled modes for a given
+          (:li (:nxref :command 'save-exact-modes-for-future-visits) ", which saves the exact list of enabled modes for a given
           URL."))
          (:li "Automatically, by setting "
               (:nxref :slot 'prompt-on-mode-toggle-p :class-name 'modable-buffer)
               " to non-nil (refer to the "
               (:a :href "#configuration" "configuration section") " for help)."))
         (:p "All rules are stored at " (:code rules-file) ", which " (:u "is
-intended for read and write purposes")". You can find instructions at the top of
-mentioned file. The gist is that rules are mere Lisp lists which start with a
-condition that checks the URL. When conditions are met, modes are
-toggled. Besides user-defined conditions, the following are often useful: "
+intended for read and write purposes")". You can find instructions at the top of it.
+The gist is that rules are mere Lisp lists which start with a condition that checks the
+ URL. When conditions are met, modes are toggled. Besides user-defined conditions, the
+following are often useful: "
 (:ul
  (:li (:nxref :function 'match-domain))
  (:li (:nxref :function 'match-host))
