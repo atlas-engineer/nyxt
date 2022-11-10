@@ -116,6 +116,8 @@
                  (:file "window")
                  (:file "panel")
                  (:file "mode")
+                 (:file "history")
+                 (:file "auto-rules")
                  (:file "spinneret-tags")
                  (:file "search-engine")
                  (:file "browser")
@@ -126,14 +128,12 @@
                  (:file "command-commands")
                  (:file "debugger")
                  (:file "recent-buffers")
-                 (:file "history")
                  (:file "external-editor")))
                (:module "Core modes"
                 :pathname "mode"
                 :depends-on ("Core")
                 :components
-                ((:file "auto")
-                 (:file "input-edit")
+                ((:file "input-edit")
                  (:file "buffer-listing")
                  (:file "message")
                  (:file "passthrough")

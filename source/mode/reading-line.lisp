@@ -14,7 +14,8 @@ navigate away from the reading line, you can always invoke the command
 `jump-to-reading-line-cursor' to jump back to your reading
 position. To remove the reading line from the screen, disable this
 mode."
-  ((visible-in-status-p nil)
+  ((rememberable-p nil)
+   (visible-in-status-p nil)
    (keyscheme-map
     (define-keyscheme-map "reading-line-mode" ()
       keyscheme:cua

@@ -15,9 +15,10 @@ of Nyxt."))
 
 (defun manual-sections ()
   (spinneret:with-html-string
-    (:nsection :title "Configuration"
-      (let ((auto-config-file (namestring (files:expand *auto-config-file*)))
-            (config-file (namestring (files:expand *config-file*))))
+    (let ((auto-config-file (namestring (files:expand *auto-config-file*)))
+          (config-file (namestring (files:expand *config-file*)))
+          (rules-file (namestring (files:expand (make-instance 'auto-rules-file)))))
+      (:nsection :title "Configuration"
         (:p "Nyxt is written in the Common Lisp programming language which offers a
 great perk: everything in the browser can be customized by the user, even while
 it's running!")
@@ -53,8 +54,8 @@ similar programming language.")
                           "Create configuration file")))))
         (:p "Example:")
         (:ncode
-         (define-configuration buffer
-           ((default-modes (pushnew 'no-script-mode %slot-value%))))))
+          (define-configuration buffer
+            ((default-modes (pushnew 'no-script-mode %slot-value%))))))
       (:p "The above turns on the 'no-script-mode' (disables JavaScript) by default for
 every buffer.")
       (:p "The " (:code "define-configuration") " macro can be used to customize
@@ -224,7 +225,50 @@ all hosts being blocked, execute command " (:code "describe-variable") ", choose
 (:code "nyxt/blocker-mode:url-body") " slot." " To customize host blocking, read the "
 (:nxref :class-name 'nyxt/blocker-mode:blocker-mode) " documentation."))
 
-      (:nsection :title "Custom commands"
+      (:nsection :title "URL-dispatchers"
+        (:p "You can configure which actions to take depending on the URL to be
+loaded.  For instance, you can configure which Torrent program to start to load
+magnet links.  See the" (:nxref :function 'url-dispatching-handler) " function
+documentation."))
+
+      (:nsection :title "Auto rules"
+        (:p "Auto-rules are similar to URL-dispatchers as they also act on
+URLs. However, these are restricted to mode togglers. Given that Nyxt's
+functionality is mode-based, the consequences are far reaching.")
+        (:p "These can be used in the following ways:")
+        (:ul
+         (:li "Manually, by calling "
+              (:nxref :command 'save-non-default-modes-for-future-visits)
+              " or " (:nxref :command 'save-exact-modes-for-future-visits) ".")
+         (:ul
+          (:li "The former saves \"unusual\" modes - non-default modes that were
+toggled exclusively for a given URL.")
+          (:li "The latter saves the exact list of enabled modes for a given
+          URL."))
+         (:li "Automatically, by setting "
+              (:nxref :slot 'prompt-on-mode-toggle-p :class-name 'modable-buffer)
+              " to non-nil (refer to the "
+              (:a :href "#configuration" "configuration section") " for help)."))
+        (:p "All rules are stored at " (:code rules-file) ", which " (:u "is
+intended for read and write purposes")". You can find instructions at the top of
+mentioned file. The gist is that rules are mere Lisp lists which start with a
+condition that checks the URL. When conditions are met, modes are
+toggled. Besides user-defined conditions, the following are often useful: "
+(:ul
+ (:li (:nxref :function 'match-domain))
+ (:li (:nxref :function 'match-host))
+ (:li (:nxref :function 'match-url))
+ (:li (:nxref :function 'match-regex))
+ (:li (:nxref :function 'match-scheme))))
+        (:p "By default, "
+            (:nxref :slot 'apply-all-matching-auto-rules-p :class-name 'modable-buffer)
+            " is nil meaning that only the most specific rules are honored.")
+        (:p "Auto-rules can also be defined for custom use-cases via "
+            (:nxref :function 'define-auto-rule) "."))
+
+      (:nsection
+        :title "Custom commands"
+        :open-p nil
         (:p "Creating your own invocable commands is similar to creating a Common
 Lisp function, except the form is " (:code "define-command") " instead of "
 (:code "defun") ". If you want this command to be invocable outside of
@@ -793,90 +837,90 @@ lower-level " (:nxref :function 'customize-instance)
             (:nxref :function 'customize-instance) " on instantiation,
 after " (:nxref :function 'initialize-instance)(:code " :after") ".  The primary method is reserved
 to the user, however the " (:code ":after") " method is reserved to the Nyxt
-core to finalize the instance.")))
+core to finalize the instance."))
 
-    (:nsection :title "Extensions"
-      (:p "To install an extension, copy inside the "
-          (:nxref :variable '*extensions-directory*) " (default to "
-          (:code "~/.local/share/nyxt/extensions")").")
-      (:p "Extensions are regular Common Lisp systems.")
-      (:p "A catalog of extensions is available in the "
-          (:code "document/EXTENSIONS.org") " file in the source repository."))
+      (:nsection :title "Extensions"
+        (:p "To install an extension, copy inside the "
+            (:nxref :variable '*extensions-directory*) " (default to "
+            (:code "~/.local/share/nyxt/extensions")").")
+        (:p "Extensions are regular Common Lisp systems.")
+        (:p "A catalog of extensions is available in the "
+            (:code "document/EXTENSIONS.org") " file in the source repository."))
 
-    (:nsection :title "Troubleshooting"
+      (:nsection :title "Troubleshooting"
 
-      (:nsection :title "Debugging and reporting errors"
-        (:p "If you experience hangs or errors you can reproduce, you can use the "
-            (:nxref :command 'nyxt:toggle-debug-on-error)
-            " command to enable Nyxt-native debugger and see the reasons of these. Based on
+        (:nsection :title "Debugging and reporting errors"
+          (:p "If you experience hangs or errors you can reproduce, you can use the "
+              (:nxref :command 'nyxt:toggle-debug-on-error)
+              " command to enable Nyxt-native debugger and see the reasons of these. Based on
 this information, you can report a bug using " (:nxref :command 'nyxt:report-bug) ".")
-        (:p "You can also try to start the browser with the " (:code "--failsafe")
-            " command line option and see if you can reproduce your issue then.  If not,
+          (:p "You can also try to start the browser with the " (:code "--failsafe")
+              " command line option and see if you can reproduce your issue then.  If not,
 then the issue is most likely due to your configuration, an extension, or some
 corrupt data file like the history.")
-        (:p "Note that often errors, hangs, and crashes happen on the side of renderer and
+          (:p "Note that often errors, hangs, and crashes happen on the side of renderer and
 thus are not visible to the Nyxt-native debugger and fixable on the side of
 Nyxt. See below."))
 
-      (:nsection :title "Playing videos"
-        (:p "Nyxt delegates video support to third-party plugins.")
-        (:p "When using the WebKitGTK backends, GStreamer and its plugins are
+        (:nsection :title "Playing videos"
+          (:p "Nyxt delegates video support to third-party plugins.")
+          (:p "When using the WebKitGTK backends, GStreamer and its plugins are
 leveraged.  Depending on the video, you will need to install some of the
 following packages:")
-        (:ul
-         (:li "gst-libav")
-         (:li "gst-plugins-bad")
-         (:li "gst-plugins-base")
-         (:li "gst-plugins-good")
-         (:li "gst-plugins-ugly"))
-        (:p "On Debian-based systems, you might be looking for (adapt the version numbers):")
-        (:ul
-         (:li "libgstreamer1.0-0")
-         (:li "gir1.2-gst-plugins-base-1.0"))
-        (:p "For systems from the Fedora family:")
-        (:ul
-         (:li "gstreamer1-devel")
-         (:li "gstreamer1-plugins-base-devel"))
-        (:p "After the desired plugins have been installed, clear the GStreamer cache at "
-            (:code "~/.cache/gstreamer-1.0") " and restart Nyxt."))
+          (:ul
+           (:li "gst-libav")
+           (:li "gst-plugins-bad")
+           (:li "gst-plugins-base")
+           (:li "gst-plugins-good")
+           (:li "gst-plugins-ugly"))
+          (:p "On Debian-based systems, you might be looking for (adapt the version numbers):")
+          (:ul
+           (:li "libgstreamer1.0-0")
+           (:li "gir1.2-gst-plugins-base-1.0"))
+          (:p "For systems from the Fedora family:")
+          (:ul
+           (:li "gstreamer1-devel")
+           (:li "gstreamer1-plugins-base-devel"))
+          (:p "After the desired plugins have been installed, clear the GStreamer cache at "
+              (:code "~/.cache/gstreamer-1.0") " and restart Nyxt."))
 
-      (:nsection :title "Website crashes"
-        (:p "If some websites systematically crash, try to install all the required
+        (:nsection :title "Website crashes"
+          (:p "If some websites systematically crash, try to install all the required
 GStreamer plugins as mentioned in the 'Playing videos' section."))
 
-      (:nsection :title "Input method support (CJK, etc.)"
-        (:p "Depending on your setup, you might have to set some environment variables
+        (:nsection :title "Input method support (CJK, etc.)"
+          (:p "Depending on your setup, you might have to set some environment variables
 or run some commands before starting Nyxt, for instance")
-        (:pre (:code "GTK_IM_MODULE=xim
+          (:pre (:code "GTK_IM_MODULE=xim
 XMODIFIERS=@im=ibus
 ibus --daemonize --replace --xim"))
-        (:p "You can persist this change by saving the commands in
+          (:p "You can persist this change by saving the commands in
 your " (:code ".xprofile") " or similar."))
 
-      (:nsection :title "Font size on HiDPI displays"
-        (:p "On HiDPI displays, the font size used for displaying web and Nyxt's
+        (:nsection :title "Font size on HiDPI displays"
+          (:p "On HiDPI displays, the font size used for displaying web and Nyxt's
 prompt-buffer content might be too tiny.")
-        (:p "To fix this issue when using the WebKitGTK render, export the
+          (:p "To fix this issue when using the WebKitGTK render, export the
 following environment variable before starting Nyxt:")
-        (:pre (:code "export GDK_SCALE=2
+          (:pre (:code "export GDK_SCALE=2
 nyxt
 "))
-        (:p "If that doesn't look satisfactory, try exporting the following environment variables before starting Nyxt:")
-        (:pre (:code "export GDK_SCALE=2
+          (:p "If that doesn't look satisfactory, try exporting the following environment variables before starting Nyxt:")
+          (:pre (:code "export GDK_SCALE=2
 export GDK_DPI_SCALE=0.5
 nyxt
 ")))
 
-      (:nsection :title "StumpWM mouse scroll"
-        (:p "If the mouse scroll does not work for you, see the "
-            (:a
-             :href "https://github.com/stumpwm/stumpwm/wiki/FAQ#my-mouse-wheel-doesnt-work-with-gtk3-applications-add-the-following-to"
-             "StumpWM FAQ")
-            " for a fix."))
+        (:nsection :title "StumpWM mouse scroll"
+          (:p "If the mouse scroll does not work for you, see the "
+              (:a
+               :href "https://github.com/stumpwm/stumpwm/wiki/FAQ#my-mouse-wheel-doesnt-work-with-gtk3-applications-add-the-following-to"
+               "StumpWM FAQ")
+              " for a fix."))
 
-      (:nsection :title "Blank WebKit web-views"
-        (:p "If you are experiencing problems with blank web-views on some sites you
+        (:nsection :title "Blank WebKit web-views"
+          (:p "If you are experiencing problems with blank web-views on some sites you
     can try to disable compositing. To disable compositing from your
     initialization file, you can do the following: ")
-        (:ncode
-          (setf (uiop:getenv "WEBKIT_DISABLE_COMPOSITING_MODE") "1"))))))
+          (:ncode
+            (setf (uiop:getenv "WEBKIT_DISABLE_COMPOSITING_MODE") "1")))))))

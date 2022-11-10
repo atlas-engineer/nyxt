@@ -475,7 +475,18 @@ SLY install.")
    (:li "New " (:nxref :class-name 'nyxt/remembrance-mode:remembrance-mode)
         " to automatically cache the visited page content. "
         "The cache can be looked up and the page textual content can be displayed even offline."
-        "See " (:nxref :function 'nyxt/remembrance-mode:recollect-visited-page) "."))
+        "See " (:nxref :function 'nyxt/remembrance-mode:recollect-visited-page) ".")
+   (:li (:code "auto-mode")
+        " is incorporated into Nyxt core, with its settings residing in "
+        (:nxref :class-name 'modable-buffer) ".")
+   (:ul
+    (:li "The new "
+         (:nxref :slot 'apply-all-matching-auto-rules-p :class-name 'modable-buffer)
+         " allows you to apply all the matching auto-rules instead of the most
+specific one.")
+    (:li "There are default rules for Gopher, Gemini, and Nyxt-internal-pages.")
+    (:li "The rules file is now moved to auto-rules.lisp (instead of the old
+auto-mode-rules.lisp)")))
 
   (:h3 "Bindings")
   (:ul
@@ -490,7 +501,15 @@ to open a file, save it, switch buffer or delete current buffer.")
         ", bound to " (:code "C-c C-j") "by default.")
    (:li (:code "return-selection-over-action") " renamed to "
         (:nxref :command 'nyxt/prompt-buffer-mode:return-marks-action)
-        ".  The default keybinding is the same."))
+        ".  The default keybinding is the same.")
+   (:li (:code "auto-mode")
+        " is now incorporated into Nyxt core, with its settings residing in "
+        (:nxref :class-name 'modable-buffer) " now.")
+   (:ul
+    (:li "There are default rules for Gopher, Gemini, and
+Nyxt-internal-pages.")
+    (:li "The rules file is now moved to auto-rules.lisp (instead of the old
+auto-mode-rules.lisp)")))
 
   (:h3 "Programming interface")
   (:ul

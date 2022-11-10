@@ -78,9 +78,9 @@
    1
    (exec-with-config
     `(defmethod customize-instance ((buffer buffer) &key)
-       ;; `buffer' does not have an `auto-mode-rules-file' slot.
-       (setf (auto-mode-rules-file buffer) (make-instance 'auto-mode-rules-file
-                                                          :base-path "/path/to/auto/rules")))
+       ;; `buffer' does not have an `auto-rules-file' slot.
+       (setf (auto-rules-file buffer) (make-instance 'auto-rules-file
+                                                     :base-path "/path/to/auto/rules")))
     (eval-on-startup
      `(nyxt:quit)))))
 

@@ -158,8 +158,7 @@ appearance in the buffer when they are setf'd."
 
 (define-mode download-mode ()
   "Display list of downloads."
-  ((rememberable-p nil)
-   (style (theme:themed-css (theme *browser*)
+  ((style (theme:themed-css (theme *browser*)
             (".download"
              :background-color theme:background
              :color theme:on-background

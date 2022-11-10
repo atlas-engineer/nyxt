@@ -134,8 +134,9 @@ major versions."
       " is in " (:nxref :class-name 'nyxt/annotate-mode:annotate-mode) ".")
 
   (auto-mode-rules-file)
-  (:p (:nxref :slot 'nyxt/auto-mode:auto-mode-rules-file :class-name 'nyxt/auto-mode:auto-mode)
-      " is in " (:nxref :class-name 'nyxt/auto-mode:auto-mode) ".")
+  (:p (:code "auto-rules-file") "(previously " (:code "auto-mode-rules-file")
+      " is in " (:nxref :class-name 'modable-buffer)
+      ", like all the other mode-related settings from the deprecated auto-mode.")
 
   (bookmarks-file)
   (:p (:nxref :slot 'nyxt/bookmark-mode:bookmarks-file :class-name 'nyxt/bookmark-mode:bookmark-mode)
