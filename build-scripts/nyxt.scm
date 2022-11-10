@@ -153,6 +153,7 @@
           cl-hu.dwim.defclass-star
           cl-iolib
           cl-json
+          cl-lass
           cl-local-time
           cl-lparallel
           cl-log4cl
