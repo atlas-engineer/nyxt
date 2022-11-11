@@ -233,12 +233,15 @@ A subpackage has a name that starts with that of PACKAGE followed by a '/' separ
   (subpackage-p package :nyxt-user))
 
 (defvar *nyxt-extra-packages* (mapcar #'find-package
-                                      '(class-star
+                                      '(analysis
+                                        class-star
                                         download-manager
                                         history-tree
                                         password
-                                        analysis
-                                        text-buffer))
+                                        prompter
+                                        text-buffer
+                                        theme
+                                        user-interface))
   "Packages to append to the result of `nyxt-packages'.")
 
 (defun nyxt-packages ()
