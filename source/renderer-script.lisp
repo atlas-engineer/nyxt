@@ -375,26 +375,6 @@ Only keyword arguments are accepted."
   `(prog1 (define-internal-page-command ,name (,@arglist) (,buffer-var ,title ,mode) ,@body)
      (setf (slot-value #',name 'visibility) :global)))
 
-(defvar *json-object-accumulator* (make-hash-table :test 'equal)
-  "Our own object accumulator to override the default `cl-json:decode-json' object->alist behavior.
-Objects are transformed to the hash-tables instead.")
-
-(defvar *json-last-object-key* nil
-  "The last key used in `*json-object-accumulator*'.")
-
-(defun json-object-init ()
-  (setf *json-object-accumulator* (make-hash-table :test 'equal)))
-
-(defun json-object-add-key (key)
-  (setf (gethash key *json-object-accumulator*) nil
-        *json-last-object-key* key))
-
-(defun json-object-add-value (value)
-  (setf (gethash *json-last-object-key* *json-object-accumulator*) value))
-
-(defun json-object-get ()
-  *json-object-accumulator*)
-
 ;; TODO: Decode arrays as vectors?
 (export-always 'decode-json)
 (defgeneric decode-json (source)
@@ -424,40 +404,3 @@ Decodes:
 
 Otherwise behaves like plain `cl-json:decode-json-from-source'."))
 
-(export-always 'encode-json)
-;; TODO: Should TO be &optional instead?
-(defgeneric encode-json (data to)
-  (:method :around ((data t) to)
-    (declare (ignorable to))
-    (let ((json::+json-lisp-symbol-tokens+
-            '(("true" . t)
-              ("false" . nil)
-              ("null" . :null)
-              ("undefined" . :undefined))))
-      (call-next-method)))
-  (:method ((data t) (to pathname))
-    (with-open-file (f to :direction :output
-                          :if-exists :supersede
-                          :if-does-not-exist :create)
-      (encode-json data f)))
-  (:method ((data t) (to null))
-    (declare (ignorable to))
-    (json:encode-json-to-string data))
-  (:method ((data t) (to symbol))
-    (when (eq t to)
-      (encode-json data *standard-output*)))
-  (:method ((data t) (to stream))
-    (json:encode-json data to))
-  (:documentation "Overridden version of `cl-json:encode-json'.
-Distinguishes between null and false.
-Encodes:
-- :NULL as null,
-- :UNDEFINED as undefined,
-- nil as false.
-
-Where the encoded JSON is written depends on the type of TO:
-NULL     -- writing to string and returning it (same as
-            `cl-json:encode-json-to-string').
-(eql T)  -- writing to `*standard-output*'.
-PATHNAME -- writing to a file designated by the pathname.
-STREAM   -- writing to a stream."))
