@@ -5,21 +5,6 @@
     (:documentation "Mode for Gopher/Gemini page interaction."))
 (in-package :nyxt/small-web-mode)
 
-(defun update (mode)
-  (let ((url (url (buffer mode))))
-    (run-thread "small-web-mode update thread"
-      (setf (url mode) url
-            (model mode) (str:string-case (quri:uri-scheme url)
-                           ("gopher" (cl-gopher:get-line-contents
-                                      (cl-gopher:parse-gopher-uri (render-url url))))
-                           ("gemini" (multiple-value-bind (status meta body)
-                                         (gemini:request url)
-                                       (if (and (eq :success status)
-                                                (str:starts-with-p "text/gemini" meta)
-                                                (stringp body))
-                                           (gemtext:parse-string body)
-                                           body))))))))
-
 (define-mode small-web-mode ()
   "Gopher/Gemini page interaction mode.
 
@@ -47,7 +32,6 @@ loading, you'd need to override `line->html' in the following way:
 Gemini support is a bit more chaotic, but you can override `line->html' for
 `phos/gemtext' elements too."
   ((visible-in-status-p nil)
-   (rememberable-p nil)
    (url :documentation "The URL being opened.")
    (model :documentation "The contents of the current page.")
    (redirections nil :documentation "The list of redirection Gemini URLs.")
@@ -74,28 +58,6 @@ Gemini support is a bit more chaotic, but you can override `line->html' for
              :padding "1em 0"))))
   (:toggler-command-p nil))
 
-(defmethod enable ((mode small-web-mode) &key)
-  (update mode)
-  (hooks:add-hook
-   (pre-request-hook (buffer mode))
-   (make-instance
-    'hooks:handler
-    :fn (lambda (request-data)
-          (when (toplevel-p request-data)
-            (cond
-              ((str:s-member '("gopher" "gemini") (quri:uri-scheme (url request-data)))
-               (update mode))
-              ((str:starts-with-p "text/gemini" (mime-type request-data))
-               nil)
-              (t (disable-modes 'small-web-mode (buffer mode)))))
-          request-data)
-    :name 'small-web-mode-disable)))
-
-(defmethod disable ((mode small-web-mode) &key)
-  (hooks:remove-hook
-   (pre-request-hook (buffer mode))
-   'small-web-mode-disable))
-
 ;;; Gopher rendering.
 
 (defmethod cl-gopher:display-string :around ((line cl-gopher:gopher-line))
@@ -108,7 +70,9 @@ Gemini support is a bit more chaotic, but you can override `line->html' for
 (export-always 'gopher-render)
 (defgeneric gopher-render (line)
   (:documentation "Produce a Gopher page content string/array given LINE.
-Second return value should be the MIME-type of the content."))
+Second return value should be the MIME-type of the content.
+
+Implies that `small-web-mode' is enabled."))
 
 (defmethod line->html ((line cl-gopher:gopher-line))
   (spinneret:with-html-string
@@ -188,12 +152,13 @@ Second return value should be the MIME-type of the content."))
 (defmethod line->html ((line cl-gopher:unknown)) (file-link->html line))
 
 (defmethod gopher-render ((line cl-gopher:gopher-line))
-  (let ((contents (cl-gopher:get-line-contents line))
-        (spinneret:*html-style* :tree))
+  (alex:when-let ((contents (cl-gopher:get-line-contents line))
+                  (spinneret:*html-style* :tree)
+                  (mode (find-submode 'small-web-mode)))
+    (setf (model mode) contents)
     (values (spinneret:with-html-string
               (:style (style (current-buffer)))
-              (:style (alex:when-let (submode (find-submode 'small-web-mode))
-                        (style submode)))
+              (:style (style mode))
               (loop for line in (cl-gopher:lines contents)
                     collect (:raw (line->html line))))
             "text/html;charset=utf8")))
@@ -230,8 +195,6 @@ Second return value should be the MIME-type of the content."))
           (let* ((line (if (uiop:emptyp (quri:uri-path (quri:uri url)))
                            (buffer-load (str:concat url "/") :buffer buffer)
                            (cl-gopher:parse-gopher-uri url))))
-            ;; FIXME: This better become a default auto-mode rule.
-            (enable-modes '(small-web-mode) buffer)
             (if (and (typep line 'cl-gopher:search-line)
                      (uiop:emptyp (cl-gopher:terms line)))
                 (progn (setf (cl-gopher:terms line)
@@ -239,7 +202,7 @@ Second return value should be the MIME-type of the content."))
                                       :sources 'prompter:raw-source))
                        (buffer-load (cl-gopher:uri-for-gopher-line line) :buffer buffer))
                 (with-current-buffer buffer
-                  (nyxt/small-web-mode:gopher-render line))))
+                  (gopher-render line))))
         (cl-gopher:bad-submenu-error ()
           (error-help (format nil "Malformed line at ~s" url)
                       (format nil "One of the lines on this page has an improper format.
@@ -310,6 +273,7 @@ Implies that `small-web-mode' is enabled."
   (let ((mode (find-submode 'small-web-mode buffer))
         (elements (phos/gemtext:parse-string gemtext))
         (spinneret::*html-style* :tree))
+    (setf (model mode) elements)
     (values (spinneret:with-html-string
               (:style (style buffer))
               (when mode
@@ -323,8 +287,6 @@ Implies that `small-web-mode' is enabled."
     (lambda (url buffer)
       (handler-case
           (sera:mvlet* ((status meta body (gemini:request url)))
-            ;; FIXME: This better become a default auto-mode rule.
-            (enable-modes '(small-web-mode) buffer)
             (unless (member status '(:redirect :permanent-redirect))
               (setf (nyxt/small-web-mode:redirections (find-submode 'small-web-mode)) nil))
             (case status
@@ -373,3 +335,6 @@ Implies that `small-web-mode' is enabled."
         (condition (condition)
           (error-help "Unknown error"
                       (format nil "Original text of ~a:~%~a" (type-of condition) condition))))))
+
+(define-auto-rule '(match-scheme "gopher" "gemini")
+  :included '(small-web-mode))

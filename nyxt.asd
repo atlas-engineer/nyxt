@@ -45,6 +45,7 @@
                local-time
                lparallel
                log4cl
+               montezuma
                ndebug
                nfiles
                nhooks
@@ -115,6 +116,8 @@
                  (:file "window")
                  (:file "panel")
                  (:file "mode")
+                 (:file "history")
+                 (:file "auto-rules")
                  (:file "spinneret-tags")
                  (:file "search-engine")
                  (:file "browser")
@@ -125,14 +128,12 @@
                  (:file "command-commands")
                  (:file "debugger")
                  (:file "recent-buffers")
-                 (:file "history")
                  (:file "external-editor")))
                (:module "Core modes"
                 :pathname "mode"
                 :depends-on ("Core")
                 :components
-                ((:file "auto")
-                 (:file "input-edit")
+                ((:file "input-edit")
                  (:file "buffer-listing")
                  (:file "message")
                  (:file "passthrough")
@@ -210,6 +211,7 @@
                  (:file "reduce-tracking")
                  (:file "repeat")
                  (:file "repl")
+                 (:file "remembrance" :depends-on ("bookmark"))
                  (:file "small-web")
                  (:file "style" :depends-on ("bookmarklets"))
                  (:file "tts")
@@ -324,6 +326,7 @@
   :components ((:file "tests/renderer-package")
                (:file "tests/renderer-offline/set-url")
                (:file "tests/renderer-offline/execute-command-eval")
+               (:file "tests/renderer-offline/remembrance")
                (:file "tests/renderer-online/set-url")))
 
 (defsystem "nyxt/qt"

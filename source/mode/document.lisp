@@ -30,7 +30,8 @@ It does not assume being online."))
        "C-M-." 'jump-to-heading-buffers
        "M-{" 'previous-heading
        "M-}" 'next-heading
-       "C-p" 'print-buffer)
+       "C-p" 'print-buffer
+       "C-R" 'reload-with-modes)
       keyscheme:cua
       (list
        "C-c" 'copy
@@ -551,7 +552,6 @@ of buffers."
 (define-command print-buffer ()
   "Print the current buffer."
   (ps-eval (print)))
-
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

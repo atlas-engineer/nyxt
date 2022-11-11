@@ -66,30 +66,30 @@ CLASS is a class symbol."
                                   (:title "set-cua-scheme")
                                   (nyxt::auto-configure
                                    :class-name 'input-buffer
-                                   :form '(disable-modes '(nyxt/emacs-mode:emacs-mode) input-buffer))
+                                   :form '(disable-modes* 'nyxt/emacs-mode:emacs-mode input-buffer))
                                   (nyxt::auto-configure
                                    :class-name 'input-buffer
-                                   :form '(disable-modes '(nyxt/vi-mode:vi-normal-mode) input-buffer))))
+                                   :form '(disable-modes* 'nyxt/vi-mode:vi-normal-mode input-buffer))))
                  "Use default (CUA)"))
     (:p (:button :class "button"
                  :onclick (ps:ps (nyxt/ps:lisp-eval
                                   (:title "set-emacs-scheme")
                                   (nyxt::auto-configure
                                    :class-name 'input-buffer
-                                   :form '(disable-modes '(nyxt/vi-mode:vi-normal-mode) input-buffer))
+                                   :form '(disable-modes* 'nyxt/vi-mode:vi-normal-mode input-buffer))
                                   (nyxt::auto-configure
                                    :class-name 'input-buffer
-                                   :form '(enable-modes '(nyxt/emacs-mode:emacs-mode) input-buffer))))
+                                   :form '(enable-modes* 'nyxt/emacs-mode:emacs-mode input-buffer))))
                  "Use Emacs"))
     (:p (:button :class "button"
                  :onclick (ps:ps (nyxt/ps:lisp-eval
                                   (:title "set-vi-scheme")
                                   (nyxt::auto-configure
                                    :class-name 'input-buffer
-                                   :form '(disable-modes '(nyxt/emacs-mode:emacs-mode) input-buffer))
+                                   :form '(disable-modes* 'nyxt/emacs-mode:emacs-mode input-buffer))
                                   (nyxt::auto-configure
                                    :class-name 'input-buffer
-                                   :form '(enable-modes '(nyxt/vi-mode:vi-normal-mode) input-buffer))))
+                                   :form '(enable-modes* 'nyxt/vi-mode:vi-normal-mode input-buffer))))
                  "Use vi"))
     (flet ((generate-colors (theme-symbol text)
              (spinneret:with-html-string

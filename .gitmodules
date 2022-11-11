@@ -582,3 +582,7 @@
 	path = _build/ospm
 	url = https://github.com/atlas-engineer/ospm
 	shallow = true
+[submodule "_build/montezuma"]
+	path = _build/montezuma
+	url = https://github.com/sharplispers/montezuma
+	shallow = true
