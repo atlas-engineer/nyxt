@@ -50,10 +50,6 @@
 	path = _build/metatilities-base
 	url = https://github.com/gwkkwg/metatilities-base
 	shallow = true
-[submodule "_build/cl-css"]
-	path = _build/cl-css
-	url = https://github.com/inaimathi/cl-css/
-	shallow = true
 [submodule "_build/cl-custom-hash-table"]
 	path = _build/cl-custom-hash-table
 	url = https://github.com/metawilm/cl-custom-hash-table

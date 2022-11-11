@@ -137,7 +137,6 @@
           cl-base64
           cl-calispel
           cl-containers
-          cl-css
           cl-closer-mop
           cl-clss
           cl-cluffer

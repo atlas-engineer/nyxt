@@ -24,7 +24,6 @@
                bordeaux-threads
                calispel
                cl-base64
-               cl-css
                cl-gopher
                cl-html-diff
                cl-json
@@ -553,7 +552,7 @@
   :defsystem-depends-on (nyxt-asdf)
   :class :nyxt-system
   :depends-on (alexandria
-               cl-css
+               lass
                nyxt/class-star
                serapeum)
   :pathname #p"NYXT:libraries;theme;"

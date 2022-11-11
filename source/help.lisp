@@ -288,16 +288,14 @@ The version number is saved to clipboard."
       (buffer "*Manual*" 'nyxt/help-mode:help-mode)
     "Show the manual."
     (spinneret:with-html-string
-      (:style (cl-css:css '(("body"
-                             :max-width "80ch"))))
+      (:style (lass:compile-and-write '(body :max-width "80ch")))
       (:raw (manual-content)))))
 
 (define-internal-page-command-global tutorial ()
     (buffer "*Tutorial*" 'nyxt/help-mode:help-mode)
   "Show the tutorial."
   (spinneret:with-html-string
-    (:style (cl-css:css '(("body"
-                           :max-width "80ch"))))
+    (:style (lass:compile-and-write '(body :max-width "80ch")))
     (:h1 "Nyxt tutorial")
     (:p "The following tutorial introduces core concepts and
 basic usage.  For more details, especially regarding configuration, see

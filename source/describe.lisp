@@ -749,9 +749,7 @@ A command is a special kind of function that can be called with
                          based features are currently unlisted.")
                      (:h1 "Commands")))
     (format f "~a" (spinneret:with-html-string
-                     (:style (cl-css:css
-                              '((".nyxt-source"
-                                 :overflow "auto"))))))
+                     (:style (lass:compile-and-write '(.nyxt-source :overflow auto)))))
     (format f "~{~a ~%~}"
             (loop for command in (list-commands)
                   collect (spinneret:with-html-string
