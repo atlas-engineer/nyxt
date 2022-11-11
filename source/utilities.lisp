@@ -25,6 +25,12 @@
 
 (export-always 'defmemo)
 (defmacro defmemo (name params &body body) ; TODO: Replace with https://github.com/AccelerationNet/function-cache?
+  "Define a new memoized function named NAME in the global environment.
+
+Functionally equivalent to `defun' but the function stores its
+computations, and remembers its passed parameters when invoked so that
+any expensive computation only takes place once."
+  ;; Parse the functions' arguments and store the parameters in a hash table
   (multiple-value-bind (required optional rest keyword)
       (alex:parse-ordinary-lambda-list params)
     (alex:with-gensyms (memo-table args)
@@ -38,7 +44,7 @@
               ,args ,memo-table
               (apply (lambda ,params
                        ;; This block is here to catch the return-from
-                       ;; FUNCTION-NAME and cache it too.
+                       ;; NAME and cache it too.
                        ;;
                        ;; TODO: Better way? Maybe use methods and
                        ;; :around qualifiers?
@@ -53,6 +59,7 @@ Particularly useful to avoid errors on already terminated threads."
 
 (export-always 'ensure-file-exists)
 (defun ensure-file-exists (pathname)
+  "Create file PATHNAME unless it exists."
   (open pathname :direction :probe :if-does-not-exist :create))
 
 (export-always 'funcall*)
