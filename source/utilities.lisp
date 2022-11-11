@@ -31,10 +31,9 @@
 (defmacro defmemo (name params &body body) ; TODO: Replace with https://github.com/AccelerationNet/function-cache?
   "Define a new memoized function named NAME in the global environment.
 
-Functionally equivalent to (defun NAME PARAMS BODY) but the function
-stores its computations in a hash table, and remembers its passed
-parameters when invoked so that any expensive computation only takes
-place once."
+Functionally equivalent to `defun' but the function stores its
+computations in a hash table, and remembers its passed parameters when
+invoked so that any expensive computation only takes place once."
   (multiple-value-bind (required optional rest keyword)
       (alex:parse-ordinary-lambda-list params)
     (alex:with-gensyms (memo-table args)
