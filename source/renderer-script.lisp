@@ -375,32 +375,3 @@ Only keyword arguments are accepted."
   `(prog1 (define-internal-page-command ,name (,@arglist) (,buffer-var ,title ,mode) ,@body)
      (setf (slot-value #',name 'visibility) :global)))
 
-;; TODO: Decode arrays as vectors?
-(export-always 'decode-json)
-(defgeneric decode-json (source)
-  (:method :around ((source t))
-    (let ((json::+json-lisp-symbol-tokens+
-            '(("true" . t)
-              ("false" . nil)
-              ("null" . :null)
-              ("undefined" . :undefined)))
-          (json:*object-scope-variables* '(json:*internal-decoder* *json-object-accumulator* *json-last-object-key*))
-          (json:*beginning-of-object-handler* #'json-object-init)
-          (json:*object-key-handler* #'json-object-add-key)
-          (json:*object-value-handler* #'json-object-add-value)
-          (json:*end-of-object-handler* #'json-object-get))
-      (call-next-method)))
-  (:method ((source t))
-    (json:decode-json-from-source source))
-  (:documentation
-   "An overridden version of `cl-json:decode-json-from-source'.
-Distinguishes between null/false and arrays/objects.
-Decodes:
-- null as :NULL,
-- undefined as :UNDEFINED,
-- false as nil,
-- true as t,
-- objects as hash-tables.
-
-Otherwise behaves like plain `cl-json:decode-json-from-source'."))
-

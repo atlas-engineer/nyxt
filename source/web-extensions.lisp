@@ -356,13 +356,13 @@ If the popup already exists, close it."
 DIRECTORY should be the one containing manifest.json file for the extension in question."
   (let* ((directory (uiop:parse-native-namestring directory))
          (manifest-text (uiop:read-file-string (uiop:merge-pathnames* "manifest.json" directory)))
-         (json (decode-json manifest-text))
-         (name (gethash "name" json)))
+         (json (j:decode manifest-text))
+         (name (j:get "name" json)))
     `(progn
        (define-mode ,lispy-name (extension)
-         ,(gethash "description" json)
+         ,(j:get "description" json)
          ((name ,name)
-          (version ,(gethash "version" json))
+          (version ,(j:get "version" json))
           (manifest ,manifest-text)
           ;; This :allocation :class is to ensure that the instances of the same
           ;; extension class have the same ID, background-buffer, popup-buffer,
@@ -376,13 +376,13 @@ DIRECTORY should be the one containing manifest.json file for the extension in q
                         :allocation :class)
           (storage-path (make-instance 'extension-storage-file :extension-name ,name)
                         :allocation :class)
-          (description ,(gethash "description" json))
+          (description ,(j:get "description" json))
           (extension-directory ,directory)
-          (homepage-url ,(gethash "homepage_url" json))
+          (homepage-url ,(j:get "homepage_url" json))
           (browser-action ,(make-browser-action json))
-          (permissions (quote ,(gethash "permissions" json)))
+          (permissions (quote ,(j:get "permissions" json)))
           (content-scripts (list ,@(mapcar #'make-content-script
-                                           (gethash "content_scripts" json))))))
+                                           (j:get "content_scripts" json))))))
        (defmethod initialize-instance :after ((extension ,lispy-name) &key)
          ;; This is to simulate the browser action on-click-popup behavior.
          (setf (nyxt:glyph extension)

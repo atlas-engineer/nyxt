@@ -149,11 +149,11 @@
                      ;; nil translates to null, we need to pass empty vector instead.
                      (vector))
                  buffer-descriptions))))
-    (j:encode (%tabs-query (decode-json (or query-object "{}"))))))
+    (j:encode (%tabs-query (j:decode (or query-object "{}"))))))
 
 (-> tabs-create ((or null string)) (values string &optional))
 (defun tabs-create (create-properties)
-  (let* ((properties (decode-json (or create-properties "{}")))
+  (let* ((properties (j:decode (or create-properties "{}")))
          (parent-buffer (when (gethash "openerTabId" properties)
                           (nyxt::buffers-get
                            (format nil "~d" (gethash "openerTabId" properties)))))
@@ -225,13 +225,13 @@ the description of the mechanism that sends the results back."
 
 (-> tabs-insert-css (buffer string) string)
 (defun tabs-insert-css (buffer message-params)
-  (let* ((json (decode-json message-params))
-         (css-data (gethash "css" json))
-         (code (gethash "code" css-data))
-         (file (gethash "file" css-data))
-         (level (gethash "cssOrigin" css-data))
-         (tab-id (gethash "tabId" json))
-         (extension (find (gethash "extensionId" json)
+  (let* ((json (j:decode message-params))
+         (css-data (j:get "css" json))
+         (code (j:get "code" css-data))
+         (file (j:get "file" css-data))
+         (level (j:get "cssOrigin" css-data))
+         (tab-id (j:get "tabId" json))
+         (extension (find (j:get "extensionId" json)
                           (sera:filter #'nyxt/web-extensions::extension-p
                                        (modes buffer))
                           :key #'id
@@ -263,8 +263,8 @@ the description of the mechanism that sends the results back."
 
 (-> tabs-remove-css (string) string)
 (defun tabs-remove-css (message-params)
-  (let* ((json (decode-json message-params))
-         (tab-id (gethash "tabId" json))
+  (let* ((json (j:decode message-params))
+         (tab-id (j:get "tabId" json))
          (buffer-to-remove (if (zerop tab-id)
                                (current-buffer)
                                (or (find (format nil "~d" tab-id) (buffer-list) :key #'id)
@@ -276,16 +276,16 @@ the description of the mechanism that sends the results back."
 
 (-> tabs-execute-script (buffer string) string)
 (defun tabs-execute-script (buffer message-params)
-  (let* ((json (decode-json message-params))
-         (script-data (gethash "script" json))
-         (code (gethash "code" script-data))
-         (file (gethash "file" script-data))
-         (tab-id (gethash "tabId" json))
+  (let* ((json (j:decode message-params))
+         (script-data (j:get "script" json))
+         (code (j:get "code" script-data))
+         (file (j:get "file" script-data))
+         (tab-id (j:get "tabId" json))
          (buffer-to-insert (if (zerop tab-id)
                                (current-buffer)
                                (or (find (format nil "~d" tab-id) (buffer-list) :key #'id)
                                    (current-buffer))))
-         (extension (find (gethash "extensionId" json)
+         (extension (find (j:get "extensionId" json)
                           (sera:filter #'nyxt/web-extensions::extension-p
                                        (modes buffer))
                           :key #'id
@@ -309,13 +309,13 @@ the description of the mechanism that sends the results back."
 
 (-> storage-local-get (buffer string) (values string &optional))
 (defun storage-local-get (buffer message-params)
-  (let* ((json (decode-json message-params))
-         (extension (find (gethash "extensionId" json)
+  (let* ((json (j:decode message-params))
+         (extension (find (j:get "extensionId" json)
                           (sera:filter #'nyxt/web-extensions::extension-p
                                        (modes buffer))
                           :key #'id
                           :test #'string-equal))
-         (keys (gethash "keys" json)))
+         (keys (j:get "keys" json)))
     (let ((data (or (files:content (nyxt/web-extensions:storage-path extension))
                     (make-hash-table))))
       (if (uiop:emptyp keys)
@@ -335,13 +335,13 @@ the description of the mechanism that sends the results back."
 
 (-> storage-local-set (buffer string) string)
 (defun storage-local-set (buffer message-params)
-  (let* ((json (decode-json message-params))
-         (extension (find (gethash "extensionId" json)
+  (let* ((json (j:decode message-params))
+         (extension (find (j:get "extensionId" json)
                           (sera:filter #'nyxt/web-extensions::extension-p
                                        (modes buffer))
                           :key #'id
                           :test #'string-equal))
-         (keys (gethash "keys" json)))
+         (keys (j:get "keys" json)))
     (let ((data (or (files:content (nyxt/web-extensions:storage-path extension))
                     (make-hash-table))))
       (unless (uiop:emptyp keys)
@@ -352,13 +352,13 @@ the description of the mechanism that sends the results back."
 
 (-> storage-local-remove (buffer string) string)
 (defun storage-local-remove (buffer message-params)
-  (let* ((json (decode-json message-params))
-         (extension (find (gethash "extensionId" json)
+  (let* ((json (j:decode message-params))
+         (extension (find (j:get "extensionId" json)
                           (sera:filter #'nyxt/web-extensions::extension-p
                                        (modes buffer))
                           :key #'id
                           :test #'string-equal))
-         (keys (uiop:ensure-list (gethash "keys" json))))
+         (keys (uiop:ensure-list (j:get "keys" json))))
     (let ((data (or (files:content (nyxt/web-extensions:storage-path extension))
                     (make-hash-table))))
       (unless (uiop:emptyp keys)
@@ -427,10 +427,10 @@ there. `reply-user-message' takes care of sending the response back."
           (j:encode (extension->extension-info (find message-params extensions
                                                      :key #'name :test #'string=)))))
         ("runtime.sendMessage"
-         (sera:and-let* ((json (decode-json message-params))
+         (sera:and-let* ((json (j:decode message-params))
                          (extension-instances
                           (sera:filter (curry #'string=
-                                              (gethash "extensionId" json))
+                                              (j:get "extensionId" json))
                                        extensions
                                        :key #'id))
                          (context (webkit:jsc-context-new)))
@@ -438,9 +438,9 @@ there. `reply-user-message' takes care of sending the response back."
            (if (or (background-buffer-p buffer)
                    (nyxt::panel-buffer-p buffer))
                (dolist (instance extension-instances)
-                 (trigger-message (gethash "message" json)
+                 (trigger-message (j:get "message" json)
                                   (buffer instance) instance message))
-               (trigger-message (gethash "message" json)
+               (trigger-message (j:get "message" json)
                                 (background-buffer (first extensions))
                                 (first extensions)
                                 message))))
@@ -496,17 +496,17 @@ there. `reply-user-message' takes care of sending the response back."
          (wrap-in-channel
           (j:encode (buffer->tab-description (nyxt::buffers-get message-params)))))
         ("tabs.sendMessage"
-         (let* ((json (decode-json message-params))
-                (id (gethash "tabId" json))
+         (let* ((json (j:decode message-params))
+                (id (j:get "tabId" json))
                 (buffer (if (zerop id)
                             (current-buffer)
                             (nyxt::buffers-get (format nil "~d" id))))
-                (extension (find (gethash "extensionId" json)
+                (extension (find (j:get "extensionId" json)
                                  (sera:filter #'nyxt/web-extensions::extension-p
                                               (modes buffer))
                                  :key #'id
                                  :test #'string-equal)))
-           (trigger-message (gethash "message" json) buffer extension message)))
+           (trigger-message (j:get "message" json) buffer extension message)))
         ("tabs.insertCSS"
          (wrap-in-channel
           (tabs-insert-css buffer message-params)))
