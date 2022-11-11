@@ -163,9 +163,10 @@ Return the lambda s-expression as a second value, if possible."
 (-> last-word (string) string)
 (export-always 'last-word)
 (defun last-word (s)
-  (if (uiop:emptyp s)
-      ""
-      (the (values string &optional) (alex:last-elt (sera:words s)))))
+  "Last substring of alphanumeric characters, or empty if none."
+  (let ((words (sera:words s)))
+    (the (values string)
+         (if words (alex:last-elt words) ""))))
 
 (export-always 'make-ring)
 (defun make-ring (&key (size 1000))
