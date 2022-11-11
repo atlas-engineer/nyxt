@@ -22,7 +22,7 @@ help on how to proceed."
          (:ul
           (:li "disable "
                (:code "force-https-mode") " temporarily;")
-          (:li "or disable it dynamically with " (:code "auto-mode") "'s "
+          (:li "or disable it dynamically with auto-rules' "
                (:code "save-exact-modes-for-future-visits") "."))))
    buffer))
 

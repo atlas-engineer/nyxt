@@ -8,7 +8,6 @@
 (define-mode history-tree-mode ()
   "Mode for history-tree listing."
   ((visible-in-status-p nil)
-   (rememberable-p nil)
    (style (theme:themed-css (theme *browser*)
             (* :margin 0
                :padding 0

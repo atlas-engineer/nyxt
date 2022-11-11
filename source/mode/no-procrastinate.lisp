@@ -13,6 +13,12 @@
                  :base-path #p"hostlist-no-procrastinate.txt")
   "Default hostlist for `no-procrastinate-mode'.")
 
+(define-class no-procrastinate-hosts-file (files:data-file nyxt-lisp-file)
+  ((files:base-path #p"no-procrastinate-hosts")
+   (files:name "no-procrastinate-hosts"))
+  (:export-class-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
 (define-mode no-procrastinate-mode (nyxt/blocker-mode:blocker-mode)
   "Mode to block access to hosts associated with procrastination."
   ((rememberable-p nil)
@@ -34,7 +40,8 @@
    (nyxt/blocker-mode:hostlists
     (list (nyxt/blocker-mode:make-hostlist
            :hosts (mapcar #'(lambda (y) (hostname y))
-                          (files:content (no-procrastinate-hosts-file (current-buffer)))))
+                          (when (current-buffer)
+                            (files:content (no-procrastinate-hosts-file (current-buffer))))))
           *default-hostlist-no-procrastinate*))))
 
 (defmethod no-procrastinate-hosts-file ((buffer buffer))
@@ -52,7 +59,7 @@
     no-procrastinate-hosts-table))
 
 (define-internal-page-command-global list-no-procrastinate-hosts ()
-    (no-procrastinate-hosts-buffer "*No Procrastinate Hosts*" 'no-procrastinate-mode)
+    (no-procrastinate-hosts-buffer "*No Procrastinate Hosts*")
   "List all hosts to avoid procrastination in a new buffer."
   (let ((no-procrastinate-hosts (group-no-procrastinate-hosts no-procrastinate-hosts-buffer))
         (mode (find-submode 'nyxt/no-procrastinate-mode:no-procrastinate-mode
@@ -91,13 +98,6 @@
                                       "Delete"))
                          (:hr ""))))))
             no-procrastinate-hosts))))))
-
-
-(define-class no-procrastinate-hosts-file (files:data-file nyxt-lisp-file)
-  ((files:base-path #p"no-procrastinate-hosts")
-   (files:name "no-procrastinate-hosts"))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-class no-procrastinate-entry ()
   ((url (quri:uri ""))

@@ -65,8 +65,7 @@ Features:
 
 (define-mode repl-mode ()
   "Mode for interacting with the REPL."
-  ((rememberable-p nil)
-   (keyscheme-map
+  ((keyscheme-map
     (define-keyscheme-map "repl-mode" ()
       keyscheme:default
       (list

@@ -8,8 +8,7 @@
 (export-always 'diff-mode)
 (define-mode diff-mode ()
   "Diff mode is used to view the diffs between two buffers."
-  ((rememberable-p nil)
-   (style (theme:themed-css (theme *browser*)
+  ((style (theme:themed-css (theme *browser*)
             (".nyxt-diff-insert"
              :background-color "#bbeabb"
              :text-decoration "none")
