@@ -13,10 +13,14 @@
 ;; Ensure the top-level exported forms are alphabetically sorted.
 
 (export-always '+newline+)
-(alex:define-constant +newline+ (string #\newline) :test #'equal)
+(alex:define-constant +newline+ (string #\newline)
+  :test #'equal
+  :documentation "A string containing a newline.")
 
 (export-always '+escape+)
-(alex:define-constant +escape+ (string #\escape) :test #'equal)
+(alex:define-constant +escape+ (string #\escape)
+  :test #'equal
+  :documentation "A string containing the escape character.")
 
 (export-always 'new-id)
 (defun new-id ()
@@ -25,6 +29,12 @@
 
 (export-always 'defmemo)
 (defmacro defmemo (name params &body body) ; TODO: Replace with https://github.com/AccelerationNet/function-cache?
+  "Define a new function with a hash table cache.
+
+Functionally equivalent to (defun NAME PARAMS BODY) but the function
+stores its computations in the hash table, and remembers its passed
+parameters when invoked so that any expensive computation only takes
+place once."
   (multiple-value-bind (required optional rest keyword)
       (alex:parse-ordinary-lambda-list params)
     (alex:with-gensyms (memo-table args)
@@ -38,7 +48,7 @@
               ,args ,memo-table
               (apply (lambda ,params
                        ;; This block is here to catch the return-from
-                       ;; FUNCTION-NAME and cache it too.
+                       ;; NAME and cache it too.
                        ;;
                        ;; TODO: Better way? Maybe use methods and
                        ;; :around qualifiers?
@@ -53,7 +63,8 @@ Particularly useful to avoid errors on already terminated threads."
 
 (export-always 'ensure-file-exists)
 (defun ensure-file-exists (pathname)
-  (open pathname :direction :probe :if-does-not-exist :create))
+  "Create file PATHNAME if it does not exist."
+  (open filepath :direction :probe :if-does-not-exist :create))
 
 (export-always 'funcall*)
 (defun funcall* (f &rest args)
