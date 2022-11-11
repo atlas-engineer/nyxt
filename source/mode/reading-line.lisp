@@ -31,15 +31,15 @@ mode."
        "K" 'reading-line-cursor-up
        "J" 'reading-line-cursor-down)))
    (style (theme:themed-css (theme *browser*)
-            ("#reading-line-cursor"
-             :position "absolute"
-             :top "10px"
-             :left "0"
-             :width "100%"
-             :background-color #(theme:primary)
-             :z-index #.(1- (expt 2 31)) ; 32 bit signed integer max
-             :opacity "15%"
-             :height "20px"))
+            `("#reading-line-cursor"
+              :position "absolute"
+              :top "10px"
+              :left "0"
+              :width "100%"
+              :background-color ,theme:primary
+              :z-index #.(1- (expt 2 31)) ; 32 bit signed integer max
+              :opacity "15%"
+              :height "20px"))
           :documentation "The CSS applied to the reading line.")))
 
 (define-command jump-to-reading-line-cursor (&key (buffer (current-buffer)))

@@ -57,28 +57,28 @@ Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
        "m u" 'bookmark-url
        "m d" 'delete-bookmark)))
    (style (theme:themed-css (theme *browser*)
-            ("summary"
-             :background-color #(theme:secondary)
-             :color #(theme:on-secondary)
-             :font-size "14px"
-             :padding "12px"
-             :margin "6px"
-             :border "none"
-             :border-radius "2px"
-             :outline "none"
-             :text-align "left")
+            `("summary"
+              :background-color ,theme:secondary
+              :color ,theme:on-secondary
+              :font-size "14px"
+              :padding "12px"
+              :margin "6px"
+              :border "none"
+              :border-radius "2px"
+              :outline "none"
+              :text-align "left")
             ("dl"
              :margin-left "8px")
             ;; Taken from buffer.lisp to save space for big bookmark lists.
-            (button
-             :background-color #(theme:secondary)
-             :color #(theme:on-secondary)
-             :display "inline-block"
-             :text-decoration "none"
-             :border-radius "2px"
-             :padding "6px"
-             :margin-left "2px"
-             :margin-right "2px")))))
+            `(button
+              :background-color ,theme:secondary
+              :color ,theme:on-secondary
+              :display "inline-block"
+              :text-decoration "none"
+              :border-radius "2px"
+              :padding "6px"
+              :margin-left "2px"
+              :margin-right "2px")))))
 
 (defmethod bookmarks-file ((buffer buffer))
   (bookmarks-file (find-submode 'bookmark-mode buffer)))

@@ -151,13 +151,13 @@ headings have border of secondary color.
                             :dark-p t
                             :on-background-color \"red\"
                             :accent-color \"blue\")
-           '(|h1,h2,h3,h4,h5,h6|
+           `(|h1,h2,h3,h4,h5,h6|
              :border-style \"solid\"
              :border-width \"1px\"
-             :border-color #(theme:secondary))
+             :border-color ,theme:secondary)
            `(p
              :color ,(if (theme:dark-p theme:theme) theme:accent theme:secondary)
-             :background-color #(theme:background)))"
+             :background-color ,theme:background))"
   `(with-theme ,theme
      (funcall #'%themed-css theme:theme
               ;; NOTE: This loop allows to omit quotes for most trivial rules,

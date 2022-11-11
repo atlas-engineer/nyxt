@@ -23,30 +23,30 @@
   (lisp-unit2::assert-string= "a{background-color:black;color:yellow;}"
                   (let ((lass:*pretty* nil))
                     (theme:themed-css *theme*
-                      (a
-                       :background-color #(theme:background)
-                       :color #(theme:primary))))))
+                      `(a
+                        :background-color ,theme:background
+                        :color ,theme:primary)))))
 
 (define-test multi-rule/multi-color-substitution ()
   (lisp-unit2::assert-string= "a{background-color:black;color:yellow;}body{background-color:yellow;color:white;}h1{color:magenta;}"
                   (let ((lass:*pretty* nil))
                     (theme:themed-css *theme*
-                      (a
-                       :background-color #(theme:background)
-                       :color #(theme:primary))
-                      (body
-                       :background-color #(theme:primary)
-                       :color #(theme:on-background))
-                      (h1
-                       :color #(theme:accent))))))
+                      `(a
+                       :background-color ,theme:background
+                       :color ,theme:primary)
+                      `(body
+                       :background-color ,theme:primary
+                       :color ,theme:on-background)
+                      `(h1
+                       :color ,theme:accent)))))
 
 (define-test irregular-args ()
   (lisp-unit2::assert-string=  "body{background-color:yellow;color:magenta !important;}"
                    (let ((lass:*pretty* nil))
                      (theme:themed-css *theme*
-                       (body
-                        :background-color #(theme:primary)
-                        :color #(theme:accent) "!important")))))
+                       `(body
+                         :background-color ,theme:primary
+                         :color ,theme:accent "!important")))))
 
 (define-test quasi-quoted-form ()
   (lisp-unit2::assert-string= "body{color:black;background-color:yellow;}"
@@ -56,7 +56,7 @@
                         :color ,(if (theme:dark-p theme:theme)
                                     theme:background
                                     theme:on-background)
-                        :background-color #(theme:primary))))))
+                        :background-color ,theme:primary)))))
 
 (defun hex-to-rgb (hex)
   "Convert HEX to an RGB triple."

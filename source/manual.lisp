@@ -581,14 +581,14 @@ every individual class controlling Nyxt interface elements. All such classes hav
           (define-configuration nyxt/style-mode:dark-mode
             ((style
               (theme:themed-css (theme *browser*)
-                (*
-                 :background-color #(theme:background) "!important"
-                 :background-image none "!important"
-                 :color "red" "!important")
-                (a
-                 :background-color #(theme:background) "!important"
-                 :background-image none "!important"
-                 :color "#AAAAAA" "!important"))))))
+                `(*
+                  :background-color ,theme:background "!important"
+                  :background-image none "!important"
+                  :color "red" "!important")
+                `(a
+                  :background-color ,theme:background "!important"
+                  :background-image none "!important"
+                  :color "#AAAAAA" "!important"))))))
         (:p "This snippet alters the " (:nxref :slot 'style :class-name 'nyxt/style-mode:dark-mode)
             " of Nyxt dark mode to have a more theme-compliant colors, using the "
             (:code "theme:themed-css")

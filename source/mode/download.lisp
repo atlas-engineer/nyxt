@@ -159,31 +159,31 @@ appearance in the buffer when they are setf'd."
 (define-mode download-mode ()
   "Display list of downloads."
   ((style (theme:themed-css (theme *browser*)
-            (".download"
-             :background-color #(theme:background)
-             :color #(theme:on-background)
-             :margin-top "10px"
-             :padding-left "5px"
-             :brightness "80%"
-             :border-radius "3px")
+            `(".download"
+              :background-color ,theme:background
+              :color ,theme:on-background
+              :margin-top "10px"
+              :padding-left "5px"
+              :brightness "80%"
+              :border-radius "3px")
             (".download-url"
              :overflow "auto"
              :white-space "nowrap")
-            (".download-url a"
-             :color #(theme:on-background)
-             :font-size "small")
+            `(".download-url a"
+              :color ,theme:on-background
+              :font-size "small")
             (".status p"
              :display "inline-block"
              :margin-right "10px")
             (".progress-bar-container"
              :height "20px"
              :width "100%")
-            (".progress-bar-base"
-             :background-color #(theme:primary)
-             :height "100%")
-            (".progress-bar-fill"
-             :background-color #(theme:secondary)
-             :height "100%"))))
+            `(".progress-bar-base"
+              :background-color ,theme:primary
+              :height "100%")
+            `(".progress-bar-fill"
+              :background-color ,theme:secondary
+              :height "100%"))))
   (:toggler-command-p nil))
 
 

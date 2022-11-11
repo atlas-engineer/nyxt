@@ -153,7 +153,7 @@ disabling compositing, you will need to restart Nyxt."))
   (nyxt::html-set-style (theme:themed-css (theme *browser*)
                           (h3
                            :font-size "10px"
-                           :font-family #(theme:font-family)
+                           :font-family ,theme:font-family
                            :font-weight 500)
                           (tr
                            :font-size "7px")
@@ -330,23 +330,23 @@ System information is also saved to clipboard."
                             (render-url (url bookmark)))))
                  (:p (format nil "No bookmarks in ~s." (files:expand (nyxt/bookmark-mode:bookmarks-file mode)))))))))
     (let ((dashboard-style (theme:themed-css (theme *browser*)
-                             (body
-                              :background-color #(theme:background)
-                              :color #(theme:on-background)
-                              :margin-top 0
-                              :margin-bottom 0)
+                             `(body
+                               :background-color ,theme:background
+                               :color ,theme:on-background
+                               :margin-top 0
+                               :margin-bottom 0)
                              ("#title"
                               :font-size "400%")
-                             ("#subtitle"
-                              :color #(theme:secondary))
-                             (.section
-                              :border-style "solid none none none"
-                              :border-color #(theme:secondary)
-                              :margin-top "10px"
-                              :overflow "scroll"
-                              :min-height "150px")
-                             ("h3"
-                              :color #(theme:secondary))
+                             `("#subtitle"
+                               :color ,theme:secondary)
+                             `(.section
+                               :border-style "solid none none none"
+                               :border-color ,theme:secondary
+                               :margin-top "10px"
+                               :overflow "scroll"
+                               :min-height "150px")
+                             `("h3"
+                               :color ,theme:secondary)
                              ("ul"
                               :list-style-type "circle"))))
       (spinneret:with-html-string
