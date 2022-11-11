@@ -671,6 +671,7 @@ A command is a special kind of function that can be called with
           (:h2 "Source:")
           (multiple-value-bind (source s-expr file)
               (source-for-thing (find-class class))
+            (declare (ignore s-expr))
             (:ncode
               :file file
               :literal-p t
