@@ -32,8 +32,9 @@
   "Define a new memoized function named NAME in the global environment.
 
 Functionally equivalent to `defun' but the function stores its
-computations in a hash table, and remembers its passed parameters when
-invoked so that any expensive computation only takes place once."
+computations, and remembers its passed parameters when invoked so that
+any expensive computation only takes place once."
+  ;; Parse the functions' arguments and store the parameters in a hash table
   (multiple-value-bind (required optional rest keyword)
       (alex:parse-ordinary-lambda-list params)
     (alex:with-gensyms (memo-table args)
