@@ -17,18 +17,21 @@
            (if (zerop (repeat-count mode))
                :return
                (decf (repeat-count mode))))
-          (t (sleep (repeat-interval mode)) t))))
+          (t (sleep (repeat-interval mode)) t)))
+    :documentation "See `nyxt/process-mode:firing-condition'.")
    (nyxt/process-mode:action
     #'(lambda (path-url mode)
         (declare (ignore path-url))
-        (funcall* (repeat-action mode) mode)))
+        (funcall* (repeat-action mode) mode))
+    :documentation "See `nyxt/process-mode:action'.")
    (nyxt/process-mode:cleanup
     #'(lambda (path-url mode)
         (declare (ignore path-url))
         ;; Needed since the mode object might not have been garbage collected.
         (setf (repeat-action mode) nil
               (repeat-count mode) nil
-              (repeat-interval mode) 1.0)))
+              (repeat-interval mode) 1.0))
+    :documentation "See `nyxt/process-mode:cleanup'.")
    (repeat-count
     nil
     :type (or integer null)
