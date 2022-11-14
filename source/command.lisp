@@ -279,7 +279,7 @@ See `sym:package-symbols'."
 (setf sym:*default-packages* (list :nyxt :nyxt-user))
 
 (sym:define-symbol-type command (function)
-  (command-p (symbol-function sym:%symbol%)))
+  (command-p (ignore-errors (symbol-function sym:%symbol%))))
 
 (defun list-commands (&key global-p mode-symbols)
   "List commands.
