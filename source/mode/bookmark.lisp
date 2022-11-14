@@ -67,8 +67,8 @@ Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
               :border-radius "2px"
               :outline "none"
               :text-align "left")
-            ("dl"
-             :margin-left "8px")
+            `("dl"
+              :margin-left "8px")
             ;; Taken from buffer.lisp to save space for big bookmark lists.
             `(button
               :background-color ,theme:secondary

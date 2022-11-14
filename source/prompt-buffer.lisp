@@ -56,30 +56,30 @@ some point.")
 selection over prompt buffer suggestions.")
      (style
       (theme:themed-css (theme *browser*)
-        (*
-         :font-family "monospace,monospace"
-         :font-size "14px"
-         :line-height "18px")
-        (body
-         :overflow "hidden"
-         :margin "0"
-         :padding "0")
+        `(*
+          :font-family "monospace,monospace"
+          :font-size "14px"
+          :line-height "18px")
+        `(body
+          :overflow "hidden"
+          :margin "0"
+          :padding "0")
         `("#prompt-area"
          :background-color ,theme:primary
          :color ,theme:on-primary
          :display "grid"
          :grid-template-columns "auto auto 1fr auto"
          :width "100%")
-        ("#prompt"
-         :padding-left "10px"
-         :line-height "26px")
-        ("#prompt-extra"
-         :line-height "26px"
-         :padding-right "7px")
-        ("#prompt-modes"
-         :line-height "26px"
-         :padding-left "3px"
-         :padding-right "3px")
+        `("#prompt"
+          :padding-left "10px"
+          :line-height "26px")
+        `("#prompt-extra"
+          :line-height "26px"
+          :padding-right "7px")
+        `("#prompt-modes"
+          :line-height "26px"
+          :padding-left "3px"
+          :padding-right "3px")
         `("#input"
          :background-color ,theme:background
          :color ,theme:on-background
@@ -89,11 +89,11 @@ selection over prompt buffer suggestions.")
          :padding "3px"
          :width "100%"
          :autofocus "true")
-        (".source"
-         :margin-left "10px"
-         :margin-top "15px")
-        (".source-glyph"
-         :margin-right "3px")
+        `(".source"
+          :margin-left "10px"
+          :margin-top "15px")
+        `(".source-glyph"
+          :margin-right "3px")
         `(".source-name"
          :background-color ,theme:secondary
          :color ,theme:on-secondary
@@ -112,18 +112,18 @@ selection over prompt buffer suggestions.")
          :margin-left "16px"
          :width "100%"
          :table-layout "fixed")
-        (".source-content td"
-         :white-space "nowrap"
-         :height "20px"
-         :overflow "auto")
+        `(".source-content td"
+          :white-space "nowrap"
+          :height "20px"
+          :overflow "auto")
         `(".source-content th"
          :background-color ,theme:primary
          :color ,theme:on-primary
          :font-weight "normal"
          :padding-left "3px"
          :text-align "left")
-        (".source-content td::-webkit-scrollbar"
-         :display "none")
+        `(".source-content td::-webkit-scrollbar"
+          :display "none")
         `("#selection"
          :background-color ,theme:accent
          :color ,theme:on-accent)
@@ -132,8 +132,8 @@ selection over prompt buffer suggestions.")
           :color ,theme:on-secondary
           :font-weight "bold")
         `(.selected
-         :background-color ,theme:primary
-         :color ,theme:on-primary))
+          :background-color ,theme:primary
+          :color ,theme:on-primary))
       :documentation "The CSS applied to a prompt-buffer when it is set-up.")
      (override-map
       (make-keymap "override-map")

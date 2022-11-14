@@ -9,27 +9,27 @@
   "Mode for history-tree listing."
   ((visible-in-status-p nil)
    (style (theme:themed-css (theme *browser*)
-            (* :margin 0
-               :padding 0
-               :list-style "none")
+            `(* :margin 0
+                :padding 0
+                :list-style "none")
             `(body
               :background ,theme:background
               :color ,theme:on-background
               :line-height "initial")
             `(".current-buffer a"
               :color ,theme:on-background)
-            (".current-buffer a:hover"
-             :opacity 0.5)
+            `(".current-buffer a:hover"
+              :opacity 0.5)
             `(".other-buffer a"
               :color ,theme:primary)
-            (".other-buffer a:hover"
-             :opacity 0.5)
-            (li
-             :white-space "nowrap")
-            ("ul li"
-             :margin-left "15px"
-             :position "relative"
-             :padding-left "5px")
+            `(".other-buffer a:hover"
+              :opacity 0.5)
+            `(li
+              :white-space "nowrap")
+            `("ul li"
+              :margin-left "15px"
+              :position "relative"
+              :padding-left "5px")
             `("ul li::before"
               :content "' '"
               :position "absolute"
@@ -39,10 +39,10 @@
               :top "5px"
               :bottom "-12px"
               :left "-10px")
-            ("body > ul > li:first-child::before"
-             :top "12px")
-            ("ul li:not(:first-child):last-child::before"
-             :display "none")
+            `("body > ul > li:first-child::before"
+              :top "12px")
+            `("ul li:not(:first-child):last-child::before"
+              :display "none")
             `("ul li:only-child::before"
               :display "list-item"
               :content "' '"

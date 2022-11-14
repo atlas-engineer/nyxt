@@ -56,13 +56,13 @@ various parts, such as the path of all data files.")
               :height "3px"
               :border-radius "2px"
               :border-width "0")
-            (button
-             :background "transparent"
-             :color "inherit"
-             :border "none"
-             :padding 0
-             :font "inherit"
-             :outline "inherit")
+            `(button
+              :background "transparent"
+              :color "inherit"
+              :border "none"
+              :padding 0
+              :font "inherit"
+              :outline "inherit")
             `(.button
               :all "unset"
               :background-color ,theme:primary
@@ -83,20 +83,20 @@ various parts, such as the path of all data files.")
              :text-decoration "underline"
              :display "inline"
              :color ,theme:primary)
-            (".link:hover"
-             :opacity 0.8)
+            `(".link:hover"
+              :opacity 0.8)
             `(.accent
               :color ,theme:accent)
-            (|.button:hover|
-             :opacity 0.8)
+            `(|.button:hover|
+              :opacity 0.8)
             `(|.button:visited|
              :color ,theme:background)
             `(|.button:active|
              :color ,theme:background)
             `(a
              :color ,theme:primary)
-            ("a:hover"
-             :opacity 0.8)
+            `("a:hover"
+              :opacity 0.8)
             `(pre
              :overflow "auto"
              :color ,theme:on-background
@@ -114,8 +114,8 @@ various parts, such as the path of all data files.")
              :background-color ,theme:primary
              :color ,theme:on-primary
              :text-align "left")
-            (dt
-             :font-weight "bold")
+            `(dt
+              :font-weight "bold")
             `("::selection"
              :color ,theme:on-accent
              :background-color ,theme:accent)))
@@ -642,13 +642,13 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :font-weight 500)
             `(a
               :color ,theme:primary)
-            (button
-             :background "transparent"
-             :color "inherit"
-             :border "none"
-             :padding 0
-             :font "inherit"
-             :outline "inherit")
+            `(button
+              :background "transparent"
+              :color "inherit"
+              :border "none"
+              :padding 0
+              :font "inherit"
+              :outline "inherit")
             `(.button
               :background-color ,theme:primary
               :color ,theme:on-primary
@@ -657,8 +657,8 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :border-radius "2px"
               :padding "6px"
               :margin "2px")
-            (|.button:hover|
-             :opacity 0.8)
+            `(|.button:hover|
+              :opacity 0.8)
             `(|.button:visited|
               :color ,theme:background)
             `(|.button:active|
@@ -682,11 +682,11 @@ store them somewhere and `ffi-buffer-delete' them once done."))
     nil
     :documentation "Display the modes as a list of glyphs.")
    (style (theme:themed-css (theme *browser*)
-            (body
-             :line-height "20px"
-             :font-size "14px"
-             :padding 0
-             :margin 0)
+            `(body
+              :line-height "20px"
+              :font-size "14px"
+              :padding 0
+              :margin 0)
             `(.loader
               :border-width "2px"
               :border-style "solid"
@@ -698,20 +698,20 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :width "7px"
               :height "7px"
               :animation "spin 1s linear infinite")
-            ("@keyframes spin"
-             ("0%" :transform "rotate(0deg)")
-             ("100%" :transform "rotate(360deg)"))
-            (".arrow-right"
-             :clip-path "polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)"
-             :margin-right "-10px")
-            (".arrow-left"
-             :clip-path "polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0% 50%)"
-             :margin-left "-10px")
-            ("#container"
-             :display "flex"
-             ;; Columns: controls, url, tabs, modes
-             :justify-content "space-between"
-             :overflow-y "hidden")
+            `("@keyframes spin"
+              ("0%" :transform "rotate(0deg)")
+              ("100%" :transform "rotate(360deg)"))
+            `(".arrow-right"
+              :clip-path "polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)"
+              :margin-right "-10px")
+            `(".arrow-left"
+              :clip-path "polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0% 50%)"
+              :margin-left "-10px")
+            `("#container"
+              :display "flex"
+              ;; Columns: controls, url, tabs, modes
+              :justify-content "space-between"
+              :overflow-y "hidden")
             `("#controls"
               :background-color ,theme:secondary
               :color ,theme:on-secondary
@@ -748,16 +748,16 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :flex-grow "10"
               :flex-shrink "4"
               :flex-basis "10em")
-            ("#tabs::-webkit-scrollbar"
-             :display "none")
+            `("#tabs::-webkit-scrollbar"
+              :display "none")
             `(.tab
               :color ,theme:background
               :white-space "nowrap"
               :text-decoration "none"
               :padding-left "5px"
               :padding-right "5px")
-            (".tab:hover"
-             :opacity 0.8)
+            `(".tab:hover"
+              :opacity 0.8)
             `("#modes"
               :background-color ,theme:primary
               :color ,theme:on-primary
@@ -770,18 +770,18 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :flex-grow "2"
               :flex-shrink "1"
               :flex-basis "10em")
-            ("#modes::-webkit-scrollbar"
-             :display "none")
-            (button
-             :background "transparent"
-             :color "inherit"
-             :text-decoration "transparent"
-             :border "transparent"
-             :padding 0
-             :font "inherit"
-             :outline "inherit")
-            (|.button:hover|
-             :opacity 0.8))))
+            `("#modes::-webkit-scrollbar"
+              :display "none")
+            `(button
+              :background "transparent"
+              :color "inherit"
+              :text-decoration "transparent"
+              :border "transparent"
+              :padding 0
+              :font "inherit"
+              :outline "inherit")
+            `(|.button:hover|
+              :opacity 0.8))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)

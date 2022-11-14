@@ -151,14 +151,14 @@ disabling compositing, you will need to restart Nyxt."))
 (define-command print-bindings-cheatsheet ()
   "Print a buffer listing all known bindings for the current buffer."
   (nyxt::html-set-style (theme:themed-css (theme *browser*)
-                          (h3
-                           :font-size "10px"
-                           :font-family ,theme:font-family
-                           :font-weight 500)
-                          (tr
-                           :font-size "7px")
-                          (div
-                           :display inline-block))
+                          `(h3
+                            :font-size "10px"
+                            :font-family ,theme:font-family
+                            :font-weight 500)
+                          `(tr
+                            :font-size "7px")
+                          `(div
+                            :display inline-block))
                         (describe-bindings))
   (nyxt/document-mode:print-buffer))
 
@@ -197,33 +197,33 @@ The version number is saved to clipboard."
   "Open up a buffer with useful links suitable for `default-new-buffer-url'."
   (spinneret:with-html-string
     (:style (:raw (theme:themed-css (theme *browser*)
-                    (body
-                     :min-height "100vh")
-                    (nav
-                     :text-align "center"
-                     :top 0)
-                    (details
-                     :display "inline"
-                     :margin "1em")
-                    (h1
-                     :font-size "5em"
-                     :margin "0.1em")
-                    (main
-                     :padding "10%"
-                     :text-align "center"
-                     :display "flex"
-                     :flex-direction "column"
-                     :justify-content "center")
-                    (.centered
-                     :text-align "center")
-                    (.button
-                     :min-width "100px")
-                    (.container
-                     :min-height "100%")
-                    (.copyright
-                     :position "absolute"
-                     :bottom "1em"
-                     :right "1em"))))
+                    `(body
+                      :min-height "100vh")
+                    `(nav
+                      :text-align "center"
+                      :top 0)
+                    `(details
+                      :display "inline"
+                      :margin "1em")
+                    `(h1
+                      :font-size "5em"
+                      :margin "0.1em")
+                    `(main
+                      :padding "10%"
+                      :text-align "center"
+                      :display "flex"
+                      :flex-direction "column"
+                      :justify-content "center")
+                    `(.centered
+                      :text-align "center")
+                    `(.button
+                      :min-width "100px")
+                    `(.container
+                      :min-height "100%")
+                    `(.copyright
+                      :position "absolute"
+                      :bottom "1em"
+                      :right "1em"))))
     (:div
      :class "container"
      (:nav
@@ -335,8 +335,8 @@ System information is also saved to clipboard."
                                :color ,theme:on-background
                                :margin-top 0
                                :margin-bottom 0)
-                             ("#title"
-                              :font-size "400%")
+                             `("#title"
+                               :font-size "400%")
                              `("#subtitle"
                                :color ,theme:secondary)
                              `(.section
@@ -347,8 +347,8 @@ System information is also saved to clipboard."
                                :min-height "150px")
                              `("h3"
                                :color ,theme:secondary)
-                             ("ul"
-                              :list-style-type "circle"))))
+                             `("ul"
+                               :list-style-type "circle"))))
       (spinneret:with-html-string
         (:style dashboard-style)
         (:div

@@ -53,9 +53,9 @@ Set to 0 to disable.")
     :documentation "Discard cached entry if its `last-update' is older than this.")
    ;; TODO: `style' belongs to a separate mode, doesn't it?  Same question as with `history-tree-mode'.
    (style (theme:themed-css (theme *browser*)
-            (* :margin 0
-               :padding 0
-               :list-style "none")))))
+            `(* :margin 0
+                :padding 0
+                :list-style "none")))))
 
 (defmethod initialize-instance :after ((mode remembrance-mode) &key)
   (let ((path (files:expand (cache-path mode))))

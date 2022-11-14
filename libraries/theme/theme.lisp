@@ -109,20 +109,6 @@ out from all of the other theme colors.")
           (theme:font-family (font-family theme:theme)))
      ,@body))
 
-(defun %themed-css (theme &rest rules)
-  (lass:compile-and-write
-   (append `(:let
-                ,(list (list (quote theme:background) (background-color theme))
-                       (list (quote theme:on-background) (on-background-color theme))
-                       (list (quote theme:primary) (primary-color theme))
-                       (list (quote theme:on-primary) (on-primary-color theme))
-                       (list (quote theme:secondary) (secondary-color theme))
-                       (list (quote theme:on-secondary) (on-secondary-color theme))
-                       (list (quote theme:accent) (accent-color theme))
-                       (list (quote theme:on-accent) (on-accent-color theme))
-                       (list (quote theme:font-family) (font-family theme))))
-           rules)))
-
 (defmacro themed-css (theme &body rules)
   "Generate a CSS styled according to the THEME.
 
@@ -159,20 +145,4 @@ headings have border of secondary color.
              :color ,(if (theme:dark-p theme:theme) theme:accent theme:secondary)
              :background-color ,theme:background))"
   `(with-theme ,theme
-     (funcall #'%themed-css theme:theme
-              ;; NOTE: This loop allows to omit quotes for most trivial rules,
-              ;; mostly preserving backwards-compatibility.
-              ,@(loop for rule in rules
-                      for first = (first rule)
-                      ;; FIXME: This is not perfect, but it's good enough for
-                      ;; 99% of cases. Maybe somehow parse selectors with LASS?
-                      if (or (stringp first)
-                             (keywordp first)
-                             (eq '* first)
-                             (and (symbolp first)
-                                  (eq :internal (nth-value 1 (find-symbol (symbol-name first)
-                                                                          (symbol-package first)))))
-                             (and (listp first)
-                                  (keywordp (first first))))
-                        collect (cons 'quote (list rule))
-                      else collect rule))))
+     (lass:compile-and-write ,@rules)))

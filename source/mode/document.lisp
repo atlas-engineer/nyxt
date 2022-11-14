@@ -587,7 +587,7 @@ of buffers."
                                        :border-color ,theme:on-background
                                        :background-color ,theme:on-background
                                        :opacity 0.05
-                                       :z-index #.(1- (expt 2 30))))))
+                                       :z-index ,(1- (expt 2 30))))))
     (ps-labels :async t
       ((add-overlay
         (overlay-style selection-rectangle-style)

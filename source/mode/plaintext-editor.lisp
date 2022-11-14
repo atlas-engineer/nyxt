@@ -12,8 +12,8 @@ To enable it, add this to your configuration file:
   ((visible-in-status-p nil)
    (rememberable-p nil)
    (style (theme:themed-css (theme *browser*)
-            ("body"
-             :margin 0)
+            `("body"
+              :margin 0)
             `("#editor"
               :margin 0
               :position "absolute"

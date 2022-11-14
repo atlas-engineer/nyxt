@@ -46,9 +46,9 @@ Gemini support is a bit more chaotic, but you can override `line->html' for
               :padding "2px"
               :margin "0"
               :border-radius 0)
-            (.button
-             :margin "0 3px 3px 0"
-             :font-size "15px")
+            `(.button
+              :margin "0 3px 3px 0"
+              :font-size "15px")
             `(.search
               :background-color ,theme:accent
               :color ,theme:on-accent)
