@@ -9,6 +9,19 @@
   "Mode to repeat a simple action/function repetitively until stopped."
   ((visible-in-status-p nil)
    (rememberable-p nil)
+   (repeat-count
+    nil
+    :type (or integer null)
+    :documentation "The number of times to repeat the commands for.")
+   (repeat-interval
+    1.0
+    :type alex:non-negative-real
+    :documentation "Time in seconds after which `repeat-action' is repeated.")
+   (repeat-action
+    nil
+    :type (or null (function (repeat-mode)))
+    :documentation "The action to repeat.
+It takes a `repeat-mode' instance as argument.")
    (nyxt/process-mode:firing-condition
     #'(lambda (path-url mode)
         (declare (ignore path-url))
@@ -31,20 +44,7 @@
         (setf (repeat-action mode) nil
               (repeat-count mode) nil
               (repeat-interval mode) 1.0))
-    :documentation "See `nyxt/process-mode:cleanup'.")
-   (repeat-count
-    nil
-    :type (or integer null)
-    :documentation "The number of times to repeat the commands for.")
-   (repeat-interval
-    1.0
-    :type alex:non-negative-real
-    :documentation "Time in seconds after which `repeat-action' is repeated.")
-   (repeat-action
-    nil
-    :type (or null (function (repeat-mode)))
-    :documentation "The action to repeat.
-It takes a `repeat-mode' instance as argument.")))
+    :documentation "See `nyxt/process-mode:cleanup'.")))
 
 (defmethod enable ((mode repeat-mode) &key)
   ;; TODO: Remember prompt input now that we have prompt-buffer hooks.
