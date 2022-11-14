@@ -10,11 +10,11 @@ Returns four values:
 - The number of documented symbols.
 - The number of undocumented symbols."
   (loop for s being the external-symbol in (find-package package)
-        count it into total
+        count 1 into total
         if (loop for doc-type in '(function variable structure type
                                    setf compiler-macro method-combination)
                  thereis (documentation s doc-type))
-          count it into documented
+          count 1 into documented
         else
           collect s into undocumented
         finally (return (values (if (zerop total)
