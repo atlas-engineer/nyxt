@@ -322,8 +322,8 @@ The resulting URL should be perfectly parseable back to the initial form with
 `parse-nyxt-url'.
 
 Example:
-\(nyxt-url 'nyxt:describe-command :value 'nyxt:describe-value)
-=> \"nyxt:describe-command?value=NYXT%3ADESCRIBE-VALUE\"
+\(nyxt-url 'nyxt:describe-function :value 'nyxt:describe-value)
+=> \"nyxt:describe-function?value=NYXT%3ADESCRIBE-VALUE\"
 
 \(parse-nyxt-url (nyxt-url 'nyxt:describe-value :id \"1000\"))
 => NYXT:DESCRIBE-VALUE

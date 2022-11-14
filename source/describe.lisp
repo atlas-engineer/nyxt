@@ -538,52 +538,13 @@ For generic functions, describe all the methods."
       (prompt :prompt "Describe function"
               :sources 'function-source)))
 
-(define-internal-page-command-global describe-command
+(define-command-global describe-command
     (&key (command (name (prompt1 :prompt "Describe command"
                                   :sources 'command-source))))
-    (buffer (str:concat "*Help-" (symbol-name command) "*") 'nyxt/help-mode:help-mode)
   "Inspect a command and show it in a help buffer.
 A command is a special kind of function that can be called with
 `execute-command' and can be bound to a key."
-  (alex:if-let ((command-object (find command (list-commands) :key #'name)))
-    (let* ((key-keymap-pairs (nth-value 1 (keymaps:binding-keys
-                                           (name command-object)
-                                           (all-keymaps))))
-           (key-keymapname-pairs (mapcar (lambda (pair)
-                                           (list (first pair)
-                                                 (keymaps:name (second pair))))
-                                         key-keymap-pairs))
-           (source-file
-             (alex:when-let ((location (getf (swank:find-definition-for-thing command-object)
-                                             :location)))
-               (alex:last-elt location)))
-           (*print-case* :downcase))
-      (spinneret:with-html-string
-        (:style (style buffer))
-        (:h1 (symbol-name (name command-object))
-             " (" (nyxt-url 'describe-package :package (symbol-package (name command-object))) ")")
-        (:p (:raw
-             ;; TODO: This only displays the first method,
-             ;; i.e. the first command of one of the modes.
-             ;; Ask for modes instead?
-             (resolve-backtick-quote-links (documentation command-object t)
-                                           (name command-object))))
-        (:h2 "Bindings")
-        (:p (format nil "~:{ ~S (~a)~:^, ~}" key-keymapname-pairs))
-        (alex:when-let ((code (ignore-errors (function-lambda-string command-object))))
-          (:h2 (format nil "Source~a: " (if source-file
-                                            (format nil " (~a)" source-file)
-                                            "")))
-          (:ncode
-            :file source-file
-            :literal-p t
-            code))
-        (:h2 "Describe")
-        (:pre (:code (with-output-to-string (s) (describe command-object s))))))
-    (spinneret:with-html-string
-      (:style (style buffer))
-      (:h1 (format nil "~s" command))
-      (:p "Unbound"))))
+  (describe-function :fn command))
 
 (define-internal-page-command-global describe-slot
     (&key class name)
