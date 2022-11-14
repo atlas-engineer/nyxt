@@ -313,17 +313,13 @@ turned into links to their respective description page."
                     (class (resolve-as symbol :class))
                     ;; TODO: No way to determine the class reliably based on the slot name?
                     ;; (slot (resolve-symbol name :slot (list :nyxt :nyxt-user *package*)))
-                    (command (and function
-                                  (resolve-as symbol :command)))
                     (url (cond
                            ((and variable (not function) (not class))
                             (nyxt-url 'describe-variable :variable variable))
-                           ((and command (not class) (not variable))
-                            (nyxt-url 'describe-command :command command))
-                           ((and function (not class) (not variable) (not command))
-                            (nyxt-url 'describe-function :fn function))
                            ((and class (not function) (not variable))
                             (nyxt-url 'describe-class :class class))
+                           ((and function (not class) (not variable))
+                            (nyxt-url 'describe-function :fn function))
                            (symbol
                             (nyxt-url 'describe-any :input symbol))
                            (t nil))))
