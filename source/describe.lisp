@@ -650,6 +650,12 @@ A command is a special kind of function that can be called with
         (:h2 (format nil "~s" class))
         (:p "Unbound."))))
 
+(define-command-global describe-mode (&key (mode (prompt1 :prompt "Describe mode"
+                                                          :sources 'mode-source)))
+  "Inspect a mode and show it in a help buffer."
+  (when mode
+    (describe-class :class mode)))
+
 (define-internal-page describe-bindings (&key (id (id (current-buffer))))
     (:title "*Help-bindings*" :page-mode 'nyxt/help-mode:help-mode)
   "Show a buffer with the list of all known bindings for the current buffer."
