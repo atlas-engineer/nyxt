@@ -501,15 +501,7 @@ to open a file, save it, switch buffer or delete current buffer.")
         ", bound to " (:code "C-c C-j") "by default.")
    (:li (:code "return-selection-over-action") " renamed to "
         (:nxref :command 'nyxt/prompt-buffer-mode:return-marks-action)
-        ".  The default keybinding is the same.")
-   (:li (:code "auto-mode")
-        " is now incorporated into Nyxt core, with its settings residing in "
-        (:nxref :class-name 'modable-buffer) " now.")
-   (:ul
-    (:li "There are default rules for Gopher, Gemini, and
-Nyxt-internal-pages.")
-    (:li "The rules file is now moved to auto-rules.lisp (instead of the old
-auto-mode-rules.lisp)")))
+        ".  The default keybinding is the same."))
 
   (:h3 "Programming interface")
   (:ul
@@ -567,7 +559,15 @@ show up automatically in the execute-command menu. Nyxt uses a stochastic model
 to generate predictions for what your next command will be. The model is stored
 locally and is cleared after every session.")
    (:li "New " (:code "describe-mode") " command (an alias for " (:code "describe-class") ").")
-   (:li (:code "describe-command") " became an alias for " (:code "describe-function") "."))
+   (:li (:code "describe-command") " became an alias for " (:code "describe-function") ".")
+   (:li (:code "auto-mode")
+        " is now incorporated into Nyxt core, with its settings residing in "
+        (:nxref :class-name 'modable-buffer) " now.")
+   (:ul
+    (:li "There are default rules for Gopher, Gemini, and
+Nyxt-internal-pages.")
+    (:li "The rules file is now moved to auto-rules.lisp (instead of the old
+auto-mode-rules.lisp).")))
 
   (:h3 "Programming interface")
   (:ul
