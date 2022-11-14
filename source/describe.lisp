@@ -452,8 +452,18 @@ For generic functions, describe all the methods."
                    (:h2 "Argument list")
                    (:p (:pre (let ((*package* (symbol-package input)))
                                (format-arglist (mopu:function-arglist input)))))
+                   (when (sym:command-symbol-p input)
+                     (let* ((key-keymap-pairs (nth-value 1 (keymaps:binding-keys input (all-keymaps))))
+                            (key-keymapname-pairs (mapcar (lambda (pair)
+                                                            (list (first pair)
+                                                                  (keymaps:name (second pair))))
+                                                          key-keymap-pairs)))
+                       (when key-keymapname-pairs
+                         (:h2 "Bindings")
+                         (:p (format nil "~:{ ~S (~a)~:^, ~}" key-keymapname-pairs)))))
                    #+sbcl
-                   (unless (macro-function input)
+                   (unless (or (macro-function input)
+                               (eq 'function (sb-introspect:function-type input)))
                      (:h2 "Type")
                      (:p (:pre (format-function-type (sb-introspect:function-type input)))))
                    (alex:when-let* ((definition (swank:find-definition-for-thing (symbol-function input)))
@@ -506,29 +516,27 @@ For generic functions, describe all the methods."
                         :file file
                         :literal-p t
                         (function-lambda-string method)))))))
-          (cond
-            ((not (fboundp input))
-             (spinneret:with-html-string
-               (:style (style buffer))
-               (:h1 (format nil "~s" input))
-               (:p "Unbound.")))
-            ((typep (symbol-function input) 'generic-function)
-             (spinneret:with-html-string
-               (:style (style buffer))
-               (:h1 (format nil "~s" input) ; Use FORMAT to keep package prefix.
-                    (when (macro-function input) " (macro)"))
+          (spinneret:with-html-string
+            (:style (style buffer))
+            (:h1 (format nil "~s" input) ; Use FORMAT to keep package prefix.
+                 (cond
+                   ((macro-function input) " (macro)")
+                   ((sym:command-symbol-p input)
+                    " (command)")
+                   ((typep (symbol-function input) 'generic-function)
+                    " (generic function)")))
+            (cond
+              ((not (fboundp input))
+               (:p "Unbound."))
+              ((typep (symbol-function input) 'generic-function)
                (:raw (fun-desc input))
                (:h2 "Methods")
                (:raw (sera:string-join
                       (mapcar #'method-desc
                               (mopu:generic-function-methods
                                (symbol-function input)))
-                      ""))))
-            (t
-             (spinneret:with-html-string
-               (:style (style buffer))
-               (:h1 (format nil "~s" input) ; Use FORMAT to keep package prefix.
-                    (when (macro-function input) " (macro)"))
+                      "")))
+              (t
                (:raw (fun-desc input)))))))
       (prompt :prompt "Describe function"
               :sources 'function-source)))
