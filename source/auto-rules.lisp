@@ -169,7 +169,7 @@ ARGS as in make-instance of `auto-rule'."
                                                  :test #'mode=))))
     (enable-modes* modes buffer)))
 
-(-> url-infer-match (string) list)
+(-> url-infer-match (url-designator) list)
 (defun url-infer-match (url)
   "Infer the best `test' for `auto-rule', based on the form of URL.
 
