@@ -24,8 +24,9 @@ It's not necessarily the same as the current buffer's URL.")
     t
     :type (or boolean (function (quri:uri process-mode)))
     :documentation "The condition for triggering the action.
-Can be boolean (T to always fire, NIL to never fire), or function over URL and
-mode instance.  If it is/returns :RETURN, the process is stopped.")
+It's either a boolean (T to always fire, NIL to never fire) or a function of the
+URL and mode instance.  When the functions returns :RETURN, the process is
+stopped.")
    (action
     nil
     :type (or (function (quri:uri process-mode)) null)
