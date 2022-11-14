@@ -561,7 +561,11 @@ the selection, and the string to paste instead of the clipboard (respectively)."
   (:ul
    (:li (:code "nyxt/repl-mode:lisp-repl") " renamed to " (:nxref :command 'nyxt/repl-mode:repl)
         " and redesigned to be more approachable with buttons and commands controlling cell
-formatting, deletion, cleaning, and movement."))
+formatting, deletion, cleaning, and movement.")
+   (:li "New prediction capabilities. Nyxt can now predict your next command, it will
+show up automatically in the execute-command menu. Nyxt uses a stochastic model
+to generate predictions for what your next command will be. The model is stored
+locally and is cleared after every session."))
   (:h3 "Programming interface")
   (:ul
    (:li "Generate methods instead of functions in " (:nxref :function 'define-parenscript)
@@ -572,14 +576,10 @@ formatting, deletion, cleaning, and movement."))
    (:li "New package nicknames:"
         (:ul
          (:li  (:code "time") " for " (:code "local-time"))
-         (:li  (:code "types") " for " (:code "trivial-types"))))
+         (:li  (:code "types") " for " (:code "trivial-types"))
+         (:li  (:code "sym") " for " (:code "nsymbols"))))
 
    (:li "Universal describe-* commands have been replaced with new sources for the
 regular commands, such as "
         (:code "function-non-nyxt-source") ", " (:code "function-internal-source")
-        " and so on.")
-
-   (:li "New prediction capabilities. Nyxt can now predict your next command, it will
-show up automatically in the execute-command menu. Nyxt uses a stochastic model
-to generate predictions for what your next command will be. The model is stored
-locally and is cleared after every session.")))
+        " and so on.")))
