@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/repeat-mode
-    (:documentation "Mode to infinitely repeat commands."))
+    (:documentation "Mode to repeat actions."))
 (in-package :nyxt/repeat-mode)
 
 (define-mode repeat-mode (nyxt/process-mode:process-mode)
