@@ -565,7 +565,10 @@ formatting, deletion, cleaning, and movement.")
    (:li "New prediction capabilities. Nyxt can now predict your next command, it will
 show up automatically in the execute-command menu. Nyxt uses a stochastic model
 to generate predictions for what your next command will be. The model is stored
-locally and is cleared after every session."))
+locally and is cleared after every session.")
+   (:li "New " (:code "describe-mode") " command (an alias for " (:code "describe-class") ").")
+   (:li (:code "describe-command") " became an alias for " (:code "describe-function") "."))
+
   (:h3 "Programming interface")
   (:ul
    (:li "Generate methods instead of functions in " (:nxref :function 'define-parenscript)
