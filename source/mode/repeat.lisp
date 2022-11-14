@@ -6,7 +6,7 @@
 (in-package :nyxt/repeat-mode)
 
 (define-mode repeat-mode (nyxt/process-mode:process-mode)
-  "Mode to repeat a simple action/function repetitively until stopped."
+  "Repeat the execution of a command while enabled."
   ((visible-in-status-p nil)
    (rememberable-p nil)
    (repeat-count
