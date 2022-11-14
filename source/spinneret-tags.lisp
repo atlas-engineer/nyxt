@@ -144,7 +144,7 @@ unconditionally converts those to tags unless the whole form is quoted.)"
                (:pre ,@attrs ,select-code
                      (:code (the string ,code)))))))
 
-(deftag :nxref (body attrs &key slot class-name function command variable package &allow-other-keys)
+(deftag :nxref (body attrs &key slot mode class-name function command variable package &allow-other-keys)
   "Create a link to a respective describe-* page for BODY symbol.
 
 Relies on the type keywords (SLOT, CLASS-NAME, FUNCTION, COMMAND, VARIABLE,
@@ -162,14 +162,13 @@ non-overridable."
                   (package `(nyxt:nyxt-url (read-from-string "nyxt:describe-package") :package ,package))
                   (variable `(nyxt:nyxt-url (read-from-string "nyxt:describe-variable")
                                             :variable ,variable))
-                  (function `(nyxt:nyxt-url (read-from-string "nyxt:describe-function")
-                                            :fn ,function))
-                  (command `(nyxt:nyxt-url (read-from-string "nyxt:describe-command")
-                                           :command ,command))
+                  ((or command function) `(nyxt:nyxt-url (read-from-string "nyxt:describe-function")
+                                              :fn ,(or command function)))
                   (slot `(nyxt:nyxt-url (read-from-string "nyxt:describe-slot")
                                         :name ,slot :class ,class-name))
-                  (class-name `(nyxt:nyxt-url (read-from-string "nyxt:describe-class")
-                                              :class ,class-name))
+                  ((or mode class-name)
+                   `(nyxt:nyxt-url (read-from-string "nyxt:describe-class")
+                                   :class ,(or mode class-name)))
                   (t `(nyxt:nyxt-url (read-from-string "nyxt:describe-any")
                                      :input ,symbol)))
          ;; TODO: Add :title so that documentation is available on hover.
@@ -181,6 +180,7 @@ non-overridable."
              nil)
          (:code ,@(progn
                     (remf attrs :class-name)
+                    (remf attrs :mode)
                     (remf attrs :slot)
                     (remf attrs :function)
                     (remf attrs :command)
