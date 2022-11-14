@@ -84,6 +84,7 @@ When the user is unspecified, take the current one."
 
 (export-always 'executables)
 (defun executables ()
+  "List of pathnames of user-executable programs under PATH enviroment variable."
   (let ((paths (str:split ":" (uiop:getenv "PATH") :omit-nulls t)))
     (sera:filter
      #'executable-p
