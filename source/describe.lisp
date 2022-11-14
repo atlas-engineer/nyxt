@@ -544,7 +544,8 @@ For generic functions, describe all the methods."
   "Inspect a command and show it in a help buffer.
 A command is a special kind of function that can be called with
 `execute-command' and can be bound to a key."
-  (describe-function :fn command))
+  (when command
+    (describe-function :fn command)))
 
 (define-internal-page-command-global describe-slot
     (&key class name)
