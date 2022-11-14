@@ -301,7 +301,8 @@ With MODE-SYMBOLS and GLOBAL-P, include global commands."
                      (member
                       (symbol-package (name command))
                       (mapcar #'symbol-package
-                              (sera:filter (symbol-function (read-from-string "sym:mode-symbol-p"))
+                              (sera:filter (symbol-function (uiop:safe-read-from-string "sym:mode-symbol-p"
+                                                                                        :package :nyxt))
                                            (mapcar #'class-name (mopu:superclasses mode-symbol)))))))
                mode-symbols)))
        *command-list*)
