@@ -204,33 +204,15 @@ deprecated and by what in the docstring."
      (setf (slot-value #',name 'visibility) :mode
            (slot-value #'name 'deprecated-p) t)))
 
-(-> list-all-maybe-subpackages () (list-of package))
-(defun list-all-maybe-subpackages ()
-  (sera:filter (lambda (pkg) (find #\/ (package-name pkg)))
-               (list-all-packages)))
-
-(-> subpackages (types:package-designator) (list-of package))
-(defun subpackages (package)
-  (sera:filter (lambda (p) (subpackage-p p package))
-               (list-all-maybe-subpackages)))
-
-(-> subpackage-p (types:package-designator types:package-designator) boolean)
-(defun subpackage-p (subpackage package)
-  "Return non-nil if SUBPACKAGE is a subpackage of PACKAGE or is PACKAGE itself.
-A subpackage has a name that starts with that of PACKAGE followed by a '/' separator."
-  (or (eq (find-package subpackage) (find-package package))
-      (sera:string-prefix-p (uiop:strcat (package-name package) "/")
-                            (package-name subpackage))))
-
 (-> nyxt-subpackage-p (types:package-designator) boolean)
 (defun nyxt-subpackage-p (package)
   "Return non-nil if PACKAGE is a sub-package of `nyxt'."
-  (subpackage-p package :nyxt))
+  (sym:subpackage-p package :nyxt))
 
 (-> nyxt-user-subpackage-p (types:package-designator) boolean)
 (defun nyxt-user-subpackage-p (package)
   "Return non-nil if PACKAGE is a sub-package of `nyxt' or `nyxt-user'."
-  (subpackage-p package :nyxt-user))
+  (sym:subpackage-p package :nyxt-user))
 
 (defvar *nyxt-extra-packages* (mapcar #'find-package
                                       '(analysis
@@ -267,57 +249,6 @@ It's the complement of `nyxt-packages' and `nyxt-user-packages'."
   (set-difference (list-all-packages)
                   (append (nyxt-packages) (nyxt-user-packages))))
 
-(defun symbol-visibility (symbol)
-  (nth-value 1 (find-symbol (symbol-name symbol) (symbol-package symbol))))
-
-(defun filter-symbols (visibility symbols)
-  (if (eq visibility :any)
-      symbols
-      (sera:filter (lambda (s) (eq visibility (symbol-visibility s)))
-                   symbols)))
-
-(-> package-symbols
-    ((list-of package) &key (:visibility (member :internal :external :inherited :any)))
-    (list-of symbol))
-(defun package-symbols (packages &key (visibility :any))
-  "Return the list of all symbols from PACKAGES.
-If VISIBILITY is specified, only include symbols with that visibility."
-  (let ((packages (alex:ensure-list packages))
-        (symbols))
-    (dolist (package (mapcar #'find-package packages))
-      (if (eq :external visibility)
-          (do-external-symbols (s package symbols)
-            (pushnew s symbols))
-          (do-symbols (s package symbols)
-            (when (eq (symbol-package s) package)
-              (pushnew s symbols)))))
-    (the (values (list-of symbol) &optional)
-         (case visibility
-           ((:any :external)
-            symbols)
-           ((:internal :inherited)
-            (filter-symbols visibility symbols))))))
-
-(defun package-variables (packages &key (visibility :any))
-  "Return the list of variable symbols in PACKAGES.
-See `package-symbols'."
-  (delete-if (complement #'boundp) (package-symbols packages :visibility visibility)))
-
-(defun package-functions (packages &key (visibility :any))
-  "Return the list of function symbols in PACKAGES.
-See `package-symbols'."
-  (delete-if (complement #'fboundp) (package-symbols packages :visibility visibility)))
-
-(defun package-classes (packages &key (visibility :any))
-  "Return the list of class symbols in PACKAGES.
-See `package-symbols'."
-  (delete-if (lambda (sym)
-               (not (and (find-class sym nil)
-                         ;; Discard non-standard objects such as structures or
-                         ;; conditions because they don't have public slots.
-                         (mopu:subclassp (find-class sym) (find-class 'standard-object)))))
-             (package-symbols packages :visibility visibility)))
-
 (define-class slot ()
   ((name nil
          :type (or symbol null))
@@ -327,29 +258,28 @@ See `package-symbols'."
 
 (defun class-slots (class-sym &key (visibility :any))
   "Return the list of slots with VISIBILITY."
-  (filter-symbols visibility (mopu:slot-names class-sym)))
+  (sym:filter-symbols visibility (mopu:slot-names class-sym)))
 
 (defmethod prompter:object-attributes ((slot slot) (source prompter:source))
   (declare (ignore source))
   `(("Name" ,(string (name slot)))
     ("Class" ,(string (class-sym slot)))))
 
-(defun package-slots (packages &key (visibility :any))
+(defun package-slots (packages &optional (visibility :any))
   "Return the list of all slot symbols in PACKAGES.
-See `package-symbols'."
+See `sym:package-symbols'."
   (mappend (lambda (class-sym)
              (mapcar (lambda (slot) (make-instance 'slot
                                                    :name slot
                                                    :class-sym class-sym))
                      (class-slots class-sym :visibility visibility)))
-           (package-classes packages)))
+           (sym:package-classes packages)))
 
-(defun package-methods (packages &key (visibility :any)) ; TODO: Unused.  Remove?
-  "Return the list of all method symbols in PACKAGES.
-See `package-symbols'."
-  (mappend (lambda (symbol) (ignore-errors
-                        (closer-mop:generic-function-methods (symbol-function symbol))))
-           (package-symbols packages :visibility visibility)))
+;; FIXME: Set elsewhere?
+(setf sym:*default-packages* (list :nyxt :nyxt-user))
+
+(sym:define-symbol-type command (function)
+  (command-p (symbol-function sym:%symbol%)))
 
 (defun list-commands (&key global-p mode-symbols)
   "List commands.
@@ -371,7 +301,7 @@ With MODE-SYMBOLS and GLOBAL-P, include global commands."
                      (member
                       (symbol-package (name command))
                       (mapcar #'symbol-package
-                              (sera:filter (lambda (s) (typep s 'mode-symbol))
+                              (sera:filter (symbol-function (read-from-string "sym:mode-symbol-p"))
                                            (mapcar #'class-name (mopu:superclasses mode-symbol)))))))
                mode-symbols)))
        *command-list*)

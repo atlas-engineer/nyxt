@@ -287,7 +287,7 @@ FUNCTION is the action to perform on the selected elements."
                 :prompt prompt
                 ;; TODO: No need to find the symbol if we move this code (and
                 ;; the rest) to the hint-mode package.
-                :extra-modes (list (resolve-symbol :hint-prompt-buffer-mode :mode))
+                :extra-modes (list (sym:resolve-symbol :hint-prompt-buffer-mode :mode))
                 :auto-return-p (auto-follow-hints-p (find-submode 'hint-mode))
                 :history nil
                 :height (if (fit-to-prompt-p (find-submode 'hint-mode))

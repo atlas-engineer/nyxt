@@ -50,6 +50,7 @@
                nfiles
                nhooks
                nkeymaps
+               nsymbols/star
                #-sbcl
                osicat
                ospm

@@ -21,7 +21,7 @@
   (spinneret:with-html-string
     (:style (style buffer))
     (:h1 "Messages")
-    (:p (:button :class "button" :onclick (ps:ps (nyxt/ps:lisp-eval (:title "manual") (funcall (resolve-symbol :manual :function)))) "Manual") ; TODO: Fix load order so that `nyxt:manual' is defined here.
+    (:p (:button :class "button" :onclick (ps:ps (nyxt/ps:lisp-eval (:title "manual") (funcall (sym:resolve-symbol :manual :function)))) "Manual") ; TODO: Fix load order so that `nyxt:manual' is defined here.
         (:small "See the troubleshooting section of the manual if you need help diagnosing warnings and errors."))
     (:p
      (:button :class "button"
