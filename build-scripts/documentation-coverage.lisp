@@ -1,6 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
+;;; Dependencies: Nsymbols, Closer MOP, Swank-MOP---all to list slots.
+
 (defun documentation-coverage (package)
   "Documentation coverage data on PACKAGE.
 
@@ -10,10 +12,19 @@ Returns four values:
 - The number of documented symbols.
 - The number of undocumented symbols."
   (loop for s being the external-symbol in (find-package package)
+        for package-slots = (apply #'append
+                                             (mapcar
+                                              (alexandria:compose #'closer-mop:class-slots
+                                                                  #'closer-mop:ensure-finalized
+                                                                  #'find-class)
+                                              (nsymbols:package-classes package :external)))
         count 1 into total
         if (loop for doc-type in '(function variable structure type
                                    setf compiler-macro method-combination)
-                 thereis (documentation s doc-type))
+                 thereis (or (documentation s doc-type)
+                             (and (member s package-slots :key #'closer-mop:slot-definition-name)
+                                  (swank-mop:slot-definition-documentation
+                                   (find s package-slots :key #'closer-mop:slot-definition-name)))))
           count 1 into documented
         else
           collect s into undocumented
