@@ -79,7 +79,7 @@
         (assert-equal '("foo" "bar")
                       (source1-suggestions prompter))))))
 
-(class-star:define-class url ()
+(define-class url ()
   ((url "")
    (title ""))
   (:accessor-name-transformer (class*:make-name-transformer name)))
@@ -425,7 +425,7 @@
                         (selection-value)))
       (prompter:all-ready-p prompter))))
 
-(class-star:define-class buffer ()
+(define-class buffer ()
   ((title "")
    (keywords '("foo" "bar")))
   (:accessor-name-transformer (class*:make-name-transformer name)))
