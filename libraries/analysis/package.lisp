@@ -5,13 +5,12 @@
 
 (uiop:define-package :analysis
   (:use :common-lisp)
-  (:export
-   #:document
-   #:keywords
-   #:extract-keywords
-   #:extract-sections
-   #:summarize-text
-   #:sequence-model
-   #:add-record
-   #:predict
-   #:element))
+  (:export #:document
+           #:keywords
+           #:extract-keywords
+           #:extract-sections
+           #:summarize-text
+           #:sequence-model
+           #:add-record
+           #:predict
+           #:element))

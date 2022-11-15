@@ -2,9 +2,9 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (in-package :cl-user)
-(uiop:define-package class-star/tests
-  (:use #:common-lisp #:lisp-unit2)
-  (:import-from #:class-star))
+(uiop:define-package :class-star/tests
+  (:use :common-lisp :lisp-unit2)
+  (:import-from :class-star))
 (in-package :class-star/tests)
 
 (define-test simple-class ()

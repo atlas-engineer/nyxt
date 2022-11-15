@@ -4,16 +4,15 @@
 (in-package :cl-user)
 
 (uiop:define-package :user-interface
-  (:use #:common-lisp)
-  (:export
-   #:id
-   #:buffer
-   #:update
-   #:text
-   #:action
-   #:to-html-string
-   #:paragraph
-   #:progress-bar
-   #:button
-   #:percentage
-   #:connect))
+  (:use :common-lisp)
+  (:export #:id
+           #:buffer
+           #:update
+           #:text
+           #:action
+           #:to-html-string
+           #:paragraph
+           #:progress-bar
+           #:button
+           #:percentage
+           #:connect))

@@ -5,9 +5,7 @@
 ;; not depend on Nyxt at all.
 (uiop:define-package :nyxt/keyscheme
   (:use :common-lisp)
-  (:import-from #:serapeum
-                #:export-always
-                #:->)
+  (:import-from :serapeum #:export-always #:->)
   (:documentation "Nyxt type specialization for `keymap' bound values."))
 (in-package :nyxt) ; In case the package is locked.
 (trivial-package-local-nicknames:add-package-local-nickname :keyscheme :nyxt/keyscheme :nyxt)

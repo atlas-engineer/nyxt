@@ -3,7 +3,6 @@
 
 (in-package :cl-user)
 
-(uiop:define-package text-buffer
-  (:use #:common-lisp)
-  (:export #:text-buffer
-           #:cursor))
+(uiop:define-package :text-buffer
+  (:use :common-lisp)
+  (:export #:text-buffer #:cursor))
