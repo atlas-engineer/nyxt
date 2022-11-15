@@ -12,21 +12,21 @@ To enable it, add this to your configuration file:
   ((visible-in-status-p nil)
    (rememberable-p nil)
    (style (theme:themed-css (theme *browser*)
-            ("body"
-             :margin 0)
-            ("#editor"
-             :margin 0
-             :position "absolute"
-             :top "0"
-             :right "0"
-             :bottom "0"
-             :left "0"
-             :border "none"
-             :outline "none"
-             :padding "5px"
-             :autofocus "true"
-             :background-color theme:background
-             :color theme:on-background))))
+            `("body"
+              :margin 0)
+            `("#editor"
+              :margin 0
+              :position "absolute"
+              :top "0"
+              :right "0"
+              :bottom "0"
+              :left "0"
+              :border "none"
+              :outline "none"
+              :padding "5px"
+              :autofocus "true"
+              :background-color ,theme:background
+              :color ,theme:on-background))))
   (:toggler-command-p nil))
 
 (defmethod markup ((editor plaintext-editor-mode))

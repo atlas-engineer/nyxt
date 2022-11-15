@@ -27,16 +27,16 @@
     :type no-procrastinate-hosts-file
     :documentation "File where hosts associated to procrastination are saved.")
    (style (theme:themed-css (theme *browser*)
-            ("summary"
-             :background-color theme:secondary
-             :color            theme:on-secondary
-             :font-size        "14px"
-             :padding          "16px"
-             :margin           "6px"
-             :width            "100%"
-             :border           "none"
-             :outline          "none"
-             :text-align       "left")))
+            `("summary"
+              :background-color ,theme:secondary
+              :color            ,theme:on-secondary
+              :font-size        "14px"
+              :padding          "16px"
+              :margin           "6px"
+              :width            "100%"
+              :border           "none"
+              :outline          "none"
+              :text-align       "left")))
    (nyxt/blocker-mode:hostlists
     (list (nyxt/blocker-mode:make-hostlist
            :hosts (mapcar #'(lambda (y) (hostname y))

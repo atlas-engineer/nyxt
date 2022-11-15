@@ -569,25 +569,25 @@ of buffers."
 (defun frame-element-select ()
   "Allow the user to draw a frame around elements to select them."
   (let ((overlay-style (theme:themed-css (theme *browser*)
-                         ("#nyxt-overlay"
-                          :position "fixed"
-                          :top "0"
-                          :left "0"
-                          :right "0"
-                          :bottom "0"
-                          :background theme:on-background
-                          :z-index #.(1- (expt 2 31)))))
+                         `("#nyxt-overlay"
+                           :position "fixed"
+                           :top "0"
+                           :left "0"
+                           :right "0"
+                           :bottom "0"
+                           :background ,theme:on-background
+                           :z-index #.(1- (expt 2 31)))))
         (selection-rectangle-style (theme:themed-css (theme *browser*)
-                                     ("#nyxt-rectangle-selection"
-                                      :position "absolute"
-                                      :top "0"
-                                      :left "0"
-                                      :border-style "dotted"
-                                      :border-width "1px"
-                                      :border-color theme:on-background
-                                      :background-color theme:on-background
-                                      :opacity 0.05
-                                      :z-index #.(1- (expt 2 30))))))
+                                     `("#nyxt-rectangle-selection"
+                                       :position "absolute"
+                                       :top "0"
+                                       :left "0"
+                                       :border-style "dotted"
+                                       :border-width "1px"
+                                       :border-color ,theme:on-background
+                                       :background-color ,theme:on-background
+                                       :opacity 0.05
+                                       :z-index ,(1- (expt 2 30))))))
     (ps-labels :async t
       ((add-overlay
         (overlay-style selection-rectangle-style)

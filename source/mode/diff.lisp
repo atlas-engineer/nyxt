@@ -9,18 +9,18 @@
 (define-mode diff-mode ()
   "Diff mode is used to view the diffs between two buffers."
   ((style (theme:themed-css (theme *browser*)
-            (".nyxt-diff-insert"
-             :background-color "#bbeabb"
-             :text-decoration "none")
-            ("ins.nyxt-diff-replace"
-             :background-color "#bbeabb"
-             :text-decoration "none")
-            (".nyxt-diff-delete"
-             :background-color "#efcbcf"
-             :text-decoration "none")
-            ("del.nyxt-diff-replace"
-             :background-color "#efcbcf"
-             :text-decoration "none"))
+            `(".nyxt-diff-insert"
+              :background-color "#bbeabb"
+              :text-decoration "none")
+            `("ins.nyxt-diff-replace"
+              :background-color "#bbeabb"
+              :text-decoration "none")
+            `(".nyxt-diff-delete"
+              :background-color "#efcbcf"
+              :text-decoration "none")
+            `("del.nyxt-diff-replace"
+              :background-color "#efcbcf"
+              :text-decoration "none"))
           :documentation "Diff colours for its visual representation.
 They're based on the modus-operandi theme by Protesilaos Stavrou, which follows
 the highest standard on accessibility."))

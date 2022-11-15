@@ -137,7 +137,6 @@
           cl-base64
           cl-calispel
           cl-containers
-          cl-css
           cl-closer-mop
           cl-clss
           cl-cluffer
@@ -153,6 +152,7 @@
           cl-hu.dwim.defclass-star
           cl-iolib
           cl-json
+          cl-lass
           cl-local-time
           cl-lparallel
           cl-log4cl

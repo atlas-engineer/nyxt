@@ -42,83 +42,83 @@ various parts, such as the path of all data files.")
    (title "")
 
    (style (theme:themed-css (theme *browser*)
-            (body
-             :background-color theme:background
-             :color theme:on-background
-             :margin-left "20px"
-             :margin-top "20px")
-            ("h1,h2,h3,h4,h5,h6"
-             :color theme:primary
-             :font-family theme:font-family)
-            (hr
-             :background-color theme:secondary
-             :color theme:on-secondary
-             :height "3px"
-             :border-radius "2px"
-             :border-width "0")
-            (button
-             :background "transparent"
-             :color "inherit"
-             :border "none"
-             :padding 0
-             :font "inherit"
-             :outline "inherit")
-            (.button
-             :all "unset"
-             :background-color theme:primary
-             :color theme:on-primary
-             :display "inline-block"
-             :text-decoration "none"
-             :border-radius "2px"
-             :border-color theme:primary
-             :border-style "solid"
-             :border-width "0px"
-             :padding "6px"
-             :margin "2px")
-            (.button.accent
-             :background-color theme:accent
-             :color theme:on-accent)
-            (.link
+            `(body
+              :background-color ,theme:background
+              :color ,theme:on-background
+              :margin-left "20px"
+              :margin-top "20px")
+            `("h1,h2,h3,h4,h5,h6"
+              :color ,theme:primary
+              :font-family ,theme:font-family)
+            `(hr
+              :background-color ,theme:secondary
+              :color ,theme:on-secondary
+              :height "3px"
+              :border-radius "2px"
+              :border-width "0")
+            `(button
+              :background "transparent"
+              :color "inherit"
+              :border "none"
+              :padding 0
+              :font "inherit"
+              :outline "inherit")
+            `(.button
+              :all "unset"
+              :background-color ,theme:primary
+              :color ,theme:on-primary
+              :display "inline-block"
+              :text-decoration "none"
+              :border-radius "2px"
+              :border-color ,theme:primary
+              :border-style "solid"
+              :border-width "0px"
+              :padding "6px"
+              :margin "2px")
+            `(.button.accent
+              :background-color ,theme:accent
+              :color ,theme:on-accent)
+            `(.link
              :all "unset"
              :text-decoration "underline"
              :display "inline"
-             :color theme:primary)
-            (".link:hover"
-             :opacity 0.8)
-            (.accent
-             :color theme:accent)
-            (|.button:hover|
-             :opacity 0.8)
-            (|.button:visited|
-             :color theme:background)
-            (|.button:active|
-             :color theme:background)
-            (a
-             :color theme:primary)
-            ("a:hover"
-             :opacity 0.8)
-            (pre
+             :color ,theme:primary)
+            `(".link:hover"
+              :opacity 0.8)
+            `(.accent
+              :color ,theme:accent)
+            `(|.button:hover|
+              :opacity 0.8)
+            `(|.button:visited|
+             :color ,theme:background)
+            `(|.button:active|
+             :color ,theme:background)
+            `(a
+             :color ,theme:primary)
+            `("a:hover"
+              :opacity 0.8)
+            `(pre
              :overflow "auto"
-             :color theme:on-background
-             :background-color theme:secondary
+             :color ,theme:on-background
+             :background-color ,theme:secondary
              :border-radius "2px"
              :padding "5px")
-            ("table, th, td"
-             :border-color theme:secondary
+            `("table, th, td"
+             :border-color ,theme:secondary
              :border-collapse "collapse"
              :border-width "1px"
              :border-style "solid"
-             :background-color theme:background
-             :color theme:on-background)
-            (th
-             :background-color theme:primary
-             :color theme:on-primary
+             :background-color ,theme:background
+             :color ,theme:on-background)
+            `(th
+             :background-color ,theme:primary
+             :color ,theme:on-primary
              :text-align "left")
-            (dt
-             :font-weight "bold")
-            ("::selection"
-             :color theme:on-accent
-             :background-color theme:accent)))
+            `(dt
+              :font-weight "bold")
+            `("::selection"
+             :color ,theme:on-accent
+             :background-color ,theme:accent)))
    (buffer-delete-hook                  ; TODO: Should we move this to `context-buffer'?
     (make-instance 'hook-buffer)
     :type hook-buffer
@@ -629,40 +629,40 @@ store them somewhere and `ffi-buffer-delete' them once done."))
 (define-class panel-buffer (input-buffer modable-buffer document-buffer network-buffer)
   ((width 250 :documentation "The width in pixels.")
    (style (theme:themed-css (theme *browser*)
-            (body
-             :background-color theme:background
-             :color theme:on-background
-             :margin "0"
-             :padding "10px"
-             :border-style "solid"
-             :border-width "0px 1px"
-             :border-color theme:secondary)
-            ("h1,h2,h3,h4,h5,h6"
-             :font-family theme:font-family
-             :font-weight 500)
-            (a
-             :color theme:primary)
-            (button
-             :background "transparent"
-             :color "inherit"
-             :border "none"
-             :padding 0
-             :font "inherit"
-             :outline "inherit")
-            (.button
-             :background-color theme:primary
-             :color theme:on-primary
-             :display "inline-block"
-             :text-decoration "none"
-             :border-radius "2px"
-             :padding "6px"
-             :margin "2px")
-            (|.button:hover|
-             :opacity 0.8)
-            (|.button:visited|
-             :color theme:background)
-            (|.button:active|
-             :color theme:background))))
+            `(body
+              :background-color ,theme:background
+              :color ,theme:on-background
+              :margin "0"
+              :padding "10px"
+              :border-style "solid"
+              :border-width "0px 1px"
+              :border-color ,theme:secondary)
+            `("h1,h2,h3,h4,h5,h6"
+              :font-family ,theme:font-family
+              :font-weight 500)
+            `(a
+              :color ,theme:primary)
+            `(button
+              :background "transparent"
+              :color "inherit"
+              :border "none"
+              :padding 0
+              :font "inherit"
+              :outline "inherit")
+            `(.button
+              :background-color ,theme:primary
+              :color ,theme:on-primary
+              :display "inline-block"
+              :text-decoration "none"
+              :border-radius "2px"
+              :padding "6px"
+              :margin "2px")
+            `(|.button:hover|
+              :opacity 0.8)
+            `(|.button:visited|
+              :color ,theme:background)
+            `(|.button:active|
+              :color ,theme:background))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
@@ -682,106 +682,106 @@ store them somewhere and `ffi-buffer-delete' them once done."))
     nil
     :documentation "Display the modes as a list of glyphs.")
    (style (theme:themed-css (theme *browser*)
-            (body
-             :line-height "20px"
-             :font-size "14px"
-             :padding 0
-             :margin 0)
-            (.loader
-             :border-width "2px"
-             :border-style "solid"
-             :border-color "transparent"
-             :border-top-color theme:accent
-             :border-left-color theme:accent
-             :border-radius "50%"
-             :display "inline-block"
-             :width "7px"
-             :height "7px"
-             :animation "spin 1s linear infinite")
-            ("@keyframes spin"
-             ("0%" :transform "rotate(0deg)")
-             ("100%" :transform "rotate(360deg)"))
-            (".arrow-right"
-             :clip-path "polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)"
-             :margin-right "-10px")
-            (".arrow-left"
-             :clip-path "polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0% 50%)"
-             :margin-left "-10px")
-            ("#container"
-             :display "flex"
-             ;; Columns: controls, url, tabs, modes
-             :justify-content "space-between"
-             :overflow-y "hidden")
-            ("#controls"
-             :background-color theme:secondary
-             :color theme:on-secondary
-             ;; :font-size "16px"
-             :font-weight "700"
-             :padding-left "5px"
-             :overflow "hidden"
-             :white-space "nowrap"
-             :z-index "3"
-             :flex-basis "6em")
-            ("#url"
-             :background-color theme:primary
-             :color theme:on-primary
-             :min-width "100px"
-             :text-overflow "ellipsis"
-             :overflow-x "hidden"
-             :white-space "nowrap"
-             :padding-right "10px"
-             :padding-left "15px"
-             :z-index "2"
-             :flex-grow "3"
-             :flex-shrink "2"
-             :flex-basis "10em")
-            ("#tabs"
-             :background-color theme:secondary
-             :color theme:on-secondary
-             :min-width "100px"
-             :white-space "nowrap"
-             :overflow-x "scroll"
-             :text-align "left"
-             :padding-left "15px"
-             :padding-right "10px"
-             :z-index "1"
-             :flex-grow "10"
-             :flex-shrink "4"
-             :flex-basis "10em")
-            ("#tabs::-webkit-scrollbar"
-             :display "none")
-            (.tab
-             :color theme:background
-             :white-space "nowrap"
-             :text-decoration "none"
-             :padding-left "5px"
-             :padding-right "5px")
-            (".tab:hover"
-             :opacity 0.8)
-            ("#modes"
-             :background-color theme:primary
-             :color theme:on-primary
-             :text-align "right"
-             :padding-left "10px"
-             :padding-right "5px"
-             :overflow-x "scroll"
-             :white-space "nowrap"
-             :z-index "2"
-             :flex-grow "2"
-             :flex-shrink "1"
-             :flex-basis "10em")
-            ("#modes::-webkit-scrollbar"
-             :display "none")
-            (button
-             :background "transparent"
-             :color "inherit"
-             :text-decoration "transparent"
-             :border "transparent"
-             :padding 0
-             :font "inherit"
-             :outline "inherit")
-            (|.button:hover|
-             :opacity 0.8))))
+            `(body
+              :line-height "20px"
+              :font-size "14px"
+              :padding 0
+              :margin 0)
+            `(.loader
+              :border-width "2px"
+              :border-style "solid"
+              :border-color "transparent"
+              :border-top-color ,theme:accent
+              :border-left-color ,theme:accent
+              :border-radius "50%"
+              :display "inline-block"
+              :width "7px"
+              :height "7px"
+              :animation "spin 1s linear infinite")
+            `("@keyframes spin"
+              ("0%" :transform "rotate(0deg)")
+              ("100%" :transform "rotate(360deg)"))
+            `(".arrow-right"
+              :clip-path "polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)"
+              :margin-right "-10px")
+            `(".arrow-left"
+              :clip-path "polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0% 50%)"
+              :margin-left "-10px")
+            `("#container"
+              :display "flex"
+              ;; Columns: controls, url, tabs, modes
+              :justify-content "space-between"
+              :overflow-y "hidden")
+            `("#controls"
+              :background-color ,theme:secondary
+              :color ,theme:on-secondary
+              ;; :font-size "16px"
+              :font-weight "700"
+              :padding-left "5px"
+              :overflow "hidden"
+              :white-space "nowrap"
+              :z-index "3"
+              :flex-basis "6em")
+            `("#url"
+              :background-color ,theme:primary
+              :color ,theme:on-primary
+              :min-width "100px"
+              :text-overflow "ellipsis"
+              :overflow-x "hidden"
+              :white-space "nowrap"
+              :padding-right "10px"
+              :padding-left "15px"
+              :z-index "2"
+              :flex-grow "3"
+              :flex-shrink "2"
+              :flex-basis "10em")
+            `("#tabs"
+              :background-color ,theme:secondary
+              :color ,theme:on-secondary
+              :min-width "100px"
+              :white-space "nowrap"
+              :overflow-x "scroll"
+              :text-align "left"
+              :padding-left "15px"
+              :padding-right "10px"
+              :z-index "1"
+              :flex-grow "10"
+              :flex-shrink "4"
+              :flex-basis "10em")
+            `("#tabs::-webkit-scrollbar"
+              :display "none")
+            `(.tab
+              :color ,theme:background
+              :white-space "nowrap"
+              :text-decoration "none"
+              :padding-left "5px"
+              :padding-right "5px")
+            `(".tab:hover"
+              :opacity 0.8)
+            `("#modes"
+              :background-color ,theme:primary
+              :color ,theme:on-primary
+              :text-align "right"
+              :padding-left "10px"
+              :padding-right "5px"
+              :overflow-x "scroll"
+              :white-space "nowrap"
+              :z-index "2"
+              :flex-grow "2"
+              :flex-shrink "1"
+              :flex-basis "10em")
+            `("#modes::-webkit-scrollbar"
+              :display "none")
+            `(button
+              :background "transparent"
+              :color "inherit"
+              :text-decoration "transparent"
+              :border "transparent"
+              :padding 0
+              :font "inherit"
+              :outline "inherit")
+            `(|.button:hover|
+              :opacity 0.8))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)

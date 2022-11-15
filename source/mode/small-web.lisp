@@ -39,23 +39,23 @@ Gemini support is a bit more chaotic, but you can override `line->html' for
     5
     :documentation "The number of redirections that Gemini resources are allowed to make.")
    (style (theme:themed-css (nyxt::theme *browser*)
-            (body
-             :background-color theme:background)
-            (pre
-             :background-color theme:secondary
-             :padding "2px"
-             :margin "0"
-             :border-radius 0)
-            (.button
-             :margin "0 3px 3px 0"
-             :font-size "15px")
-            (.search
-             :background-color theme:accent
-             :color theme:on-accent)
-            (.error
-             :background-color theme:accent
-             :color theme:on-accent
-             :padding "1em 0"))))
+            `(body
+              :background-color ,theme:background)
+            `(pre
+              :background-color ,theme:secondary
+              :padding "2px"
+              :margin "0"
+              :border-radius 0)
+            `(.button
+              :margin "0 3px 3px 0"
+              :font-size "15px")
+            `(.search
+              :background-color ,theme:accent
+              :color ,theme:on-accent)
+            `(.error
+              :background-color ,theme:accent
+              :color ,theme:on-accent
+              :padding "1em 0"))))
   (:toggler-command-p nil))
 
 ;;; Gopher rendering.

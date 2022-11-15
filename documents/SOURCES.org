@@ -12,7 +12,6 @@ which external dependencies we are directly relying on.
 - bordeaux-threads
 - calispel
 - cl-containers
-- cl-css
 - cl-custom-hash-table
 - cl-html-diff
 - cl-json
@@ -28,6 +27,7 @@ which external dependencies we are directly relying on.
 - fset
 - hu.dwim.defclass-star
 - iolib
+- lass
 - local-time
 - log4cl
 - lparallel

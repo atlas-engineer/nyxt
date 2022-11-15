@@ -100,12 +100,12 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                                            (nyxt::switch-buffer :buffer buffer)))
                           (:span :title (title buffer) :class "title" (title buffer)))))))
     (spinneret:with-html-string
-      (:style (cl-css:css
-               '((".button"
-                  :white-space "nowrap"
-                  :overflow-x "hidden"
-                  :display "block"
-                  :text-overflow "ellipsis"))))
+      (:style (lass:compile-and-write
+               '(.button
+                 :white-space nowrap
+                 :overflow-x hidden
+                 :display block
+                 :text-overflow ellipsis)))
       (:body
        (:h1 "Buffers")
        (:button :class "button"

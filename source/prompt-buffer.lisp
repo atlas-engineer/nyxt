@@ -56,84 +56,84 @@ some point.")
 selection over prompt buffer suggestions.")
      (style
       (theme:themed-css (theme *browser*)
-        (*
-         :font-family "monospace,monospace"
-         :font-size "14px"
-         :line-height "18px")
-        (body
-         :overflow "hidden"
-         :margin "0"
-         :padding "0")
-        ("#prompt-area"
-         :background-color theme:primary
-         :color theme:on-primary
+        `(*
+          :font-family "monospace,monospace"
+          :font-size "14px"
+          :line-height "18px")
+        `(body
+          :overflow "hidden"
+          :margin "0"
+          :padding "0")
+        `("#prompt-area"
+         :background-color ,theme:primary
+         :color ,theme:on-primary
          :display "grid"
          :grid-template-columns "auto auto 1fr auto"
          :width "100%")
-        ("#prompt"
-         :padding-left "10px"
-         :line-height "26px")
-        ("#prompt-extra"
-         :line-height "26px"
-         :padding-right "7px")
-        ("#prompt-modes"
-         :line-height "26px"
-         :padding-left "3px"
-         :padding-right "3px")
-        ("#input"
-         :background-color theme:background
-         :color theme:on-background
+        `("#prompt"
+          :padding-left "10px"
+          :line-height "26px")
+        `("#prompt-extra"
+          :line-height "26px"
+          :padding-right "7px")
+        `("#prompt-modes"
+          :line-height "26px"
+          :padding-left "3px"
+          :padding-right "3px")
+        `("#input"
+         :background-color ,theme:background
+         :color ,theme:on-background
          :opacity 0.9
          :border "none"
          :outline "none"
          :padding "3px"
          :width "100%"
          :autofocus "true")
-        (".source"
-         :margin-left "10px"
-         :margin-top "15px")
-        (".source-glyph"
-         :margin-right "3px")
-        (".source-name"
-         :background-color theme:secondary
-         :color theme:on-secondary
+        `(".source"
+          :margin-left "10px"
+          :margin-top "15px")
+        `(".source-glyph"
+          :margin-right "3px")
+        `(".source-name"
+         :background-color ,theme:secondary
+         :color ,theme:on-secondary
          :padding-left "5px"
          :line-height "24px")
-        ("#suggestions"
-         :background-color theme:background
-         :color theme:on-background
+        `("#suggestions"
+         :background-color ,theme:background
+         :color ,theme:on-background
          :overflow-y "hidden"
          :overflow-x "hidden"
          :height "100%"
          :width "100%")
-        (".source-content"
-         :background-color theme:background
-         :color theme:on-background
+        `(".source-content"
+         :background-color ,theme:background
+         :color ,theme:on-background
          :margin-left "16px"
          :width "100%"
          :table-layout "fixed")
-        (".source-content td"
-         :white-space "nowrap"
-         :height "20px"
-         :overflow "auto")
-        (".source-content th"
-         :background-color theme:primary
-         :color theme:on-primary
+        `(".source-content td"
+          :white-space "nowrap"
+          :height "20px"
+          :overflow "auto")
+        `(".source-content th"
+         :background-color ,theme:primary
+         :color ,theme:on-primary
          :font-weight "normal"
          :padding-left "3px"
          :text-align "left")
-        (".source-content td::-webkit-scrollbar"
-         :display "none")
-        ("#selection"
-         :background-color theme:accent
-         :color theme:on-accent)
-        (.marked
-         :background-color theme:secondary
-         :color theme:on-secondary
-         :font-weight "bold")
-        (.selected
-         :background-color theme:primary
-         :color theme:on-primary))
+        `(".source-content td::-webkit-scrollbar"
+          :display "none")
+        `("#selection"
+         :background-color ,theme:accent
+         :color ,theme:on-accent)
+        `(.marked
+          :background-color ,theme:secondary
+          :color ,theme:on-secondary
+          :font-weight "bold")
+        `(.selected
+          :background-color ,theme:primary
+          :color ,theme:on-primary))
       :documentation "The CSS applied to a prompt-buffer when it is set-up.")
      (override-map
       (make-keymap "override-map")

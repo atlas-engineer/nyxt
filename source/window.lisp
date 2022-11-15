@@ -30,7 +30,7 @@ It's a function of the window argument that returns the title as a string.")
     :export nil
     :documentation "A list of panel buffers appearing on the window.")
    (prompt-buffer-channel
-    (make-channel) ; TODO: Rename `prompt-buffer-ready-channel'?
+    (make-channel)                 ; TODO: Rename `prompt-buffer-ready-channel'?
     :export nil
     :documentation "A channel one may listen to if waiting
 for the prompt buffer to be available.
@@ -68,13 +68,13 @@ the generic functions on `status-buffer'.  Finally set the `window'
     :documentation "The height of the message buffer in pixels.")
    (message-buffer-style
     (theme:themed-css (theme *browser*)
-      (body
-       :background-color theme:background
-       :color theme:on-background
-       :font-size "12px"
-       :padding 0
-       :padding-left "4px"
-       :margin 0)))
+      `(body
+        :background-color ,theme:background
+        :color ,theme:on-background
+        :font-size "12px"
+        :padding 0
+        :padding-left "4px"
+        :margin 0)))
    (prompt-buffer-open-height
     256
     :documentation "The height of the prompt buffer when open.")

@@ -57,28 +57,28 @@ Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
        "m u" 'bookmark-url
        "m d" 'delete-bookmark)))
    (style (theme:themed-css (theme *browser*)
-            ("summary"
-             :background-color theme:secondary
-             :color theme:on-secondary
-             :font-size "14px"
-             :padding "12px"
-             :margin "6px"
-             :border "none"
-             :border-radius "2px"
-             :outline "none"
-             :text-align "left")
-            ("dl"
-             :margin-left "8px")
+            `("summary"
+              :background-color ,theme:secondary
+              :color ,theme:on-secondary
+              :font-size "14px"
+              :padding "12px"
+              :margin "6px"
+              :border "none"
+              :border-radius "2px"
+              :outline "none"
+              :text-align "left")
+            `("dl"
+              :margin-left "8px")
             ;; Taken from buffer.lisp to save space for big bookmark lists.
-            (button
-             :background-color theme:secondary
-             :color theme:on-secondary
-             :display "inline-block"
-             :text-decoration "none"
-             :border-radius "2px"
-             :padding "6px"
-             :margin-left "2px"
-             :margin-right "2px")))))
+            `(button
+              :background-color ,theme:secondary
+              :color ,theme:on-secondary
+              :display "inline-block"
+              :text-decoration "none"
+              :border-radius "2px"
+              :padding "6px"
+              :margin-left "2px"
+              :margin-right "2px")))))
 
 (defmethod bookmarks-file ((buffer buffer))
   (bookmarks-file (find-submode 'bookmark-mode buffer)))
@@ -191,15 +191,15 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
     (panel-buffer "*Bookmarks panel*")
   "Shows all the bookmarks in a compact panel-buffer layout."
   (spinneret:with-html-string
-    (:style (cl-css:css
-             '((p
-                :font-size "12px"
-                :margin "0"
-                :white-space "nowrap"
-                :overflow-x "hidden"
-                :text-overflow "ellipsis")
-               (div
-                :padding-bottom "10px"))))
+    (:style (lass:compile-and-write
+             '(p
+               :font-size "12px"
+               :margin 0
+               :white-space nowrap
+               :overflow-x nidden
+               :text-overflow ellipsis)
+             '(div
+               :padding-bottom "10px")))
     (:body
      (:h1 "Bookmarks")
      (or (let ((bookmarks (files:content (bookmarks-file (current-buffer)))))

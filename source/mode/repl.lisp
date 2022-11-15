@@ -105,25 +105,25 @@ Features:
        "K" 'move-cell-up
        "J" 'move-cell-down)))
    (style (theme:themed-css (theme *browser*)
-            (*
-             :font-family "monospace,monospace")
-            (body
-             :margin "0")
-            ("#container"
-             :display "flex"
-             :flex-flow "column"
-             :height "95vh"
-             :width "97vw"
-             :margin "1em")
-            (.input
-             :background-color theme:secondary
+            `(*
+              :font-family "monospace,monospace")
+            `(body
+              :margin "0")
+            `("#container"
+              :display "flex"
+              :flex-flow "column"
+              :height "95vh"
+              :width "97vw"
+              :margin "1em")
+            `(.input
+             :background-color ,theme:secondary
              :width "99%"
              :padding 0
              :margin "1em 0")
-            (.button
-             :display "inline")
-            (.input-buffer
-             :color theme:on-accent
+            `(.button
+              :display "inline")
+            `(.input-buffer
+             :color ,theme:on-accent
              :opacity "0.9"
              :border "none"
              :outline "none"
@@ -131,15 +131,15 @@ Features:
              :margin "3px"
              :autofocus "true"
              :width "99%")
-            ("#evaluations"
-             :font-size "12px"
-             :flex-grow "1"
-             :overflow-y "auto"
-             :overflow-x "auto")
-            (.controls
-             :position "absolute"
-             :bottom "1em"
-             :right "1em"))
+            `("#evaluations"
+              :font-size "12px"
+              :flex-grow "1"
+              :overflow-y "auto"
+              :overflow-x "auto")
+            `(.controls
+              :position "absolute"
+              :bottom "1em"
+              :right "1em"))
           :documentation "The CSS applied to a REPL when it is set-up.")
    (evaluations
     (list (make-instance 'evaluation :input "\"Hello, Nyxt!\""))
