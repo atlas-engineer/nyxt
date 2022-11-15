@@ -1,8 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-;; We use `uiop:define-package' instead of `nyxt:define-package' since this does
-;; not depend on Nyxt at all.
+;; `uiop:define-package' instead of `nyxt:define-package' since it does not
+;; depend on Nyxt.
 (uiop:define-package :nyxt/keyscheme
   (:use :cl)
   (:import-from :serapeum #:export-always #:->)
