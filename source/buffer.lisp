@@ -655,11 +655,12 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :border-radius "2px"
               :padding "6px"
               :margin "2px")
-            `(|.button:hover|
+            `(.button.accent
+              :background-color ,theme:accent
+              :color ,theme:on-accent)
+            `((:and .button :hover)
               :opacity 0.8)
-            `(|.button:visited|
-              :color ,theme:background)
-            `(|.button:active|
+            `((:and .button (:or :visited :active))
               :color ,theme:background))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
@@ -778,8 +779,13 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :padding 0
               :font "inherit"
               :outline "inherit")
-            `(|.button:hover|
-              :opacity 0.8))))
+            `(.button.accent
+              :background-color ,theme:accent
+              :color ,theme:on-accent)
+            `((:and .button :hover)
+              :opacity 0.8)
+            `((:and .button (:or :visited :active))
+              :color ,theme:background))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
