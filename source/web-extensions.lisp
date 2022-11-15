@@ -106,8 +106,8 @@ JSON is the parsed extension manifest."
                                     (abs (- optimal-height b))))
                                :key (compose #'parse-integer #'symbol-name #'first))))))
     (error ()
-      (cdr (first (and (gethash "icons" json)
-                       (alex:hash-table-alist (gethash "icons" json))))))))
+      (rest (first (and (gethash "icons" json)
+                        (alex:hash-table-alist (gethash "icons" json))))))))
 
 (defun encode-browser-action-icon (json extension-directory)
   "Return the proper <img> HTML with the embedded browser action icon.

@@ -24,7 +24,7 @@
                         active-time-units))
          (to-seconds-multipliers
            (mapcar
-            (lambda (elem) (cdr (assoc elem to-seconds-alist :test 'string-equal)))
+            (lambda (elem) (rest (assoc elem to-seconds-alist :test 'string-equal)))
             active-time-units)))
     (echo "Refreshing every ~:@{~{~d ~}~a~:@}"
           (list times active-time-units))

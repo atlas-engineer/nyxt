@@ -68,7 +68,7 @@ pathname."
                                     :key #'namestring
                                     :test #'string-equal)))
                    (if pair
-                       (setf (cdr pair) (list value))
+                       (setf (rest pair) (list value))
                        (push (list key value)
                              (logical-pathname-translations host))))))
           (set-alist logical-path path-translation)

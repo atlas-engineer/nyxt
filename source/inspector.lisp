@@ -133,7 +133,7 @@ values in help buffers, REPL and elsewhere."))
          (:tbody
           (:tr
            (dolist (e value)
-             (:td (:raw (value->html (cdr e) t))))))))
+             (:td (:raw (value->html (rest e) t))))))))
        ((and (types:property-list-p value)
              ;; Stricter understanding of property lists:
              ;; -- Even length.

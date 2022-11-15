@@ -91,11 +91,11 @@ operations available, some examples:
                   collect (cons word (term-frequency-inverse-document-frequency
                                       document document-collection word)))
             #'>
-            :key #'cdr)
+            :key #'rest)
       (sort (loop for word in (dictionary document)
                   collect (cons word (term-frequency document word)))
             #'>
-            :key #'cdr)))
+            :key #'rest)))
 
 (defun extract-keywords (text &key (limit 5))
   "Extract keywords from a string of text."
