@@ -125,7 +125,7 @@ It does not assume being online."))
 (export-always 'input-tag-p)
 (-> input-tag-p ((or string null)) boolean)
 (defun input-tag-p (tag)
-  "Is this TAG inputtable?
+  "Returns true if TAG is inputtable.
 
 Returns true if TAG is either an input or a textarea HTML tag."
   (or (string= tag "INPUT")

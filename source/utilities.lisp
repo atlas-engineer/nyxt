@@ -63,7 +63,7 @@ Particularly useful to avoid errors on already terminated threads."
 
 (export-always 'ensure-file-exists)
 (defun ensure-file-exists (pathname)
-  "Create file PATHNAME if it does not exist."
+  "Create file PATHNAME unless it exists."
   (open pathname :direction :probe :if-does-not-exist :create))
 
 (export-always 'funcall*)
