@@ -79,10 +79,10 @@ various parts, such as the path of all data files.")
               :background-color ,theme:accent
               :color ,theme:on-accent)
             `(.link
-             :all "unset"
-             :text-decoration "underline"
-             :display "inline"
-             :color ,theme:primary)
+              :all "unset"
+              :text-decoration "underline"
+              :display "inline"
+              :color ,theme:primary)
             `(".link:hover"
               :opacity 0.8)
             `(.accent
@@ -90,36 +90,36 @@ various parts, such as the path of all data files.")
             `(|.button:hover|
               :opacity 0.8)
             `(|.button:visited|
-             :color ,theme:background)
+              :color ,theme:background)
             `(|.button:active|
-             :color ,theme:background)
+              :color ,theme:background)
             `(a
-             :color ,theme:primary)
+              :color ,theme:primary)
             `("a:hover"
               :opacity 0.8)
             `(pre
-             :overflow "auto"
-             :color ,theme:on-background
-             :background-color ,theme:secondary
-             :border-radius "2px"
-             :padding "5px")
+              :overflow "auto"
+              :color ,theme:on-background
+              :background-color ,theme:secondary
+              :border-radius "2px"
+              :padding "5px")
             `("table, th, td"
-             :border-color ,theme:secondary
-             :border-collapse "collapse"
-             :border-width "1px"
-             :border-style "solid"
-             :background-color ,theme:background
-             :color ,theme:on-background)
+              :border-color ,theme:secondary
+              :border-collapse "collapse"
+              :border-width "1px"
+              :border-style "solid"
+              :background-color ,theme:background
+              :color ,theme:on-background)
             `(th
-             :background-color ,theme:primary
-             :color ,theme:on-primary
-             :text-align "left")
+              :background-color ,theme:primary
+              :color ,theme:on-primary
+              :text-align "left")
             `(dt
               :font-weight "bold")
             `("::selection"
-             :color ,theme:on-accent
-             :background-color ,theme:accent)))
-   (buffer-delete-hook                  ; TODO: Should we move this to `context-buffer'?
+              :color ,theme:on-accent
+              :background-color ,theme:accent)))
+   (buffer-delete-hook          ; TODO: Should we move this to `context-buffer'?
     (make-instance 'hook-buffer)
     :type hook-buffer
     :documentation "Hook run before `buffer-delete' takes effect.

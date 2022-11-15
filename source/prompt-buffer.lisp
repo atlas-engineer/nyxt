@@ -65,11 +65,11 @@ selection over prompt buffer suggestions.")
           :margin "0"
           :padding "0")
         `("#prompt-area"
-         :background-color ,theme:primary
-         :color ,theme:on-primary
-         :display "grid"
-         :grid-template-columns "auto auto 1fr auto"
-         :width "100%")
+          :background-color ,theme:primary
+          :color ,theme:on-primary
+          :display "grid"
+          :grid-template-columns "auto auto 1fr auto"
+          :width "100%")
         `("#prompt"
           :padding-left "10px"
           :line-height "26px")
@@ -81,52 +81,52 @@ selection over prompt buffer suggestions.")
           :padding-left "3px"
           :padding-right "3px")
         `("#input"
-         :background-color ,theme:background
-         :color ,theme:on-background
-         :opacity 0.9
-         :border "none"
-         :outline "none"
-         :padding "3px"
-         :width "100%"
-         :autofocus "true")
+          :background-color ,theme:background
+          :color ,theme:on-background
+          :opacity 0.9
+          :border "none"
+          :outline "none"
+          :padding "3px"
+          :width "100%"
+          :autofocus "true")
         `(".source"
           :margin-left "10px"
           :margin-top "15px")
         `(".source-glyph"
           :margin-right "3px")
         `(".source-name"
-         :background-color ,theme:secondary
-         :color ,theme:on-secondary
-         :padding-left "5px"
-         :line-height "24px")
+          :background-color ,theme:secondary
+          :color ,theme:on-secondary
+          :padding-left "5px"
+          :line-height "24px")
         `("#suggestions"
-         :background-color ,theme:background
-         :color ,theme:on-background
-         :overflow-y "hidden"
-         :overflow-x "hidden"
-         :height "100%"
-         :width "100%")
+          :background-color ,theme:background
+          :color ,theme:on-background
+          :overflow-y "hidden"
+          :overflow-x "hidden"
+          :height "100%"
+          :width "100%")
         `(".source-content"
-         :background-color ,theme:background
-         :color ,theme:on-background
-         :margin-left "16px"
-         :width "100%"
-         :table-layout "fixed")
+          :background-color ,theme:background
+          :color ,theme:on-background
+          :margin-left "16px"
+          :width "100%"
+          :table-layout "fixed")
         `(".source-content td"
           :white-space "nowrap"
           :height "20px"
           :overflow "auto")
         `(".source-content th"
-         :background-color ,theme:primary
-         :color ,theme:on-primary
-         :font-weight "normal"
-         :padding-left "3px"
-         :text-align "left")
+          :background-color ,theme:primary
+          :color ,theme:on-primary
+          :font-weight "normal"
+          :padding-left "3px"
+          :text-align "left")
         `(".source-content td::-webkit-scrollbar"
           :display "none")
         `("#selection"
-         :background-color ,theme:accent
-         :color ,theme:on-accent)
+          :background-color ,theme:accent
+          :color ,theme:on-accent)
         `(.marked
           :background-color ,theme:secondary
           :color ,theme:on-secondary

@@ -116,21 +116,21 @@ Features:
               :width "97vw"
               :margin "1em")
             `(.input
-             :background-color ,theme:secondary
-             :width "99%"
-             :padding 0
-             :margin "1em 0")
+              :background-color ,theme:secondary
+              :width "99%"
+              :padding 0
+              :margin "1em 0")
             `(.button
               :display "inline")
             `(.input-buffer
-             :color ,theme:on-accent
-             :opacity "0.9"
-             :border "none"
-             :outline "none"
-             :padding "3px"
-             :margin "3px"
-             :autofocus "true"
-             :width "99%")
+              :color ,theme:on-accent
+              :opacity "0.9"
+              :border "none"
+              :outline "none"
+              :padding "3px"
+              :margin "3px"
+              :autofocus "true"
+              :width "99%")
             `("#evaluations"
               :font-size "12px"
               :flex-grow "1"
