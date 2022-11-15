@@ -7,7 +7,7 @@
 (in-package :nyxt/tests/renderer)
 (nyxt::use-nyxt-package-nicknames)
 
-(class-star:define-class nyxt-user::test-profile (nyxt:nyxt-profile)
+(define-class nyxt-user::test-profile (nyxt:nyxt-profile)
   ()
   (:documentation "Test profile."))
 
