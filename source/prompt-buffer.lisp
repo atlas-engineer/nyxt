@@ -111,19 +111,19 @@ selection over prompt buffer suggestions.")
           :color ,theme:on-background
           :margin-left "16px"
           :width "100%"
-          :table-layout "fixed")
-        `(".source-content td"
-          :white-space "nowrap"
-          :height "20px"
-          :overflow "auto")
-        `(".source-content th"
-          :background-color ,theme:primary
-          :color ,theme:on-primary
-          :font-weight "normal"
-          :padding-left "3px"
-          :text-align "left")
-        `(".source-content td::-webkit-scrollbar"
-          :display "none")
+          :table-layout "fixed"
+          (td
+           :white-space "nowrap"
+           :height "20px"
+           :overflow "auto")
+          (th
+           :background-color ,theme:primary
+           :color ,theme:on-primary
+           :font-weight "normal"
+           :padding-left "3px"
+           :text-align "left")
+          ("td::-webkit-scrollbar"
+           :display "none"))
         `("#selection"
           :background-color ,theme:accent
           :color ,theme:on-accent)
