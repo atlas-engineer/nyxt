@@ -30,7 +30,7 @@
                            (quri:uri "http://example.org")
                            (url entry))
           ;; "value has no title"
-          (lisp-unit2::assert-string= ""
+          (assert-string= ""
                           (title entry)))
         (nyxt::history-add (quri:uri "http://example.org") :title "foo")
         ;; "history has still 1 entry after adding same URL"
@@ -40,7 +40,7 @@
                    (nyxt::implicit-visits (first (htree:all-data (files:content file)))))
         (let ((entry (first (htree:all-data (files:content file)))))
           ;; "value now has title"
-          (lisp-unit2::assert-string= "foo"
+          (assert-string= "foo"
                           (title entry)))
         (nyxt::history-add (quri:uri "http://example.org/sub"))
         ;; "history now has 2 entries"

@@ -76,7 +76,7 @@
   (assert-false (nyxt::url-equal (quri:uri "https://example.org")
                                  (quri:uri "https://example.org/foo")))
   ;; "schemeless URL"
-  (lisp-unit2::assert-string= (nyxt::schemeless-url
+  (assert-string= (nyxt::schemeless-url
                    (quri:uri "http://example.org/foo/bar?query=baz#qux"))
                   "example.org/foo/bar?query=baz#qux")
   ;; "comparing same URL"

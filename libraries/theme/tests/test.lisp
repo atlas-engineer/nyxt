@@ -20,7 +20,7 @@
   "Dummy theme for testing.")
 
 (define-test basic-css-substitution ()
-  (lisp-unit2::assert-string= "a{background-color:black;color:yellow;}"
+  (assert-string= "a{background-color:black;color:yellow;}"
                               (let ((lass:*pretty* nil))
                                 (theme:themed-css *theme*
                                   `(a
@@ -28,7 +28,7 @@
                                     :color ,theme:primary)))))
 
 (define-test multi-rule/multi-color-substitution ()
-  (lisp-unit2::assert-string= "a{background-color:black;color:yellow;}body{background-color:yellow;color:white;}h1{color:magenta;}"
+  (assert-string= "a{background-color:black;color:yellow;}body{background-color:yellow;color:white;}h1{color:magenta;}"
                               (let ((lass:*pretty* nil))
                                 (theme:themed-css *theme*
                                   `(a
@@ -41,7 +41,7 @@
                                     :color ,theme:accent)))))
 
 (define-test irregular-args ()
-  (lisp-unit2::assert-string=  "body{background-color:yellow;color:magenta !important;}"
+  (assert-string=  "body{background-color:yellow;color:magenta !important;}"
                                (let ((lass:*pretty* nil))
                                  (theme:themed-css *theme*
                                    `(body
@@ -49,7 +49,7 @@
                                      :color ,theme:accent "!important")))))
 
 (define-test quasi-quoted-form ()
-  (lisp-unit2::assert-string= "body{color:black;background-color:yellow;}"
+  (assert-string= "body{color:black;background-color:yellow;}"
                               (let ((lass:*pretty* nil))
                                 (theme:themed-css *theme*
                                   `(body
