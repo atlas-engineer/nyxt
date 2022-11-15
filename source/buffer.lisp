@@ -78,6 +78,10 @@ various parts, such as the path of all data files.")
             `(.button.accent
               :background-color ,theme:accent
               :color ,theme:on-accent)
+            `((:and .button :hover)
+              :opacity 0.8)
+            `((:and .button (:or :visited :active))
+              :color ,theme:background)
             `(.link
               :all "unset"
               :text-decoration "underline"
@@ -87,12 +91,6 @@ various parts, such as the path of all data files.")
               :opacity 0.8)
             `(.accent
               :color ,theme:accent)
-            `(|.button:hover|
-              :opacity 0.8)
-            `(|.button:visited|
-              :color ,theme:background)
-            `(|.button:active|
-              :color ,theme:background)
             `(a
               :color ,theme:primary)
             `("a:hover"
