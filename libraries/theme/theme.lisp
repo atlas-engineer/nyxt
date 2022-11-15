@@ -110,19 +110,9 @@ out from all of the other theme colors.")
      ,@body))
 
 (defmacro themed-css (theme &body rules)
-  "Generate a CSS styled according to the THEME.
+  "Generate a CSS styled according to the THEME and RULES.
 
-RULES is a list of LASS rules. There are special symbols that this macro
-:let-binds with LASS:
-- `theme:background';
-- `theme:on-background';
-- `theme:primary';
-- `theme:on-primary';
-- `theme:secondary';
-- `theme:on-secondary';
-- `theme:accent';
-- `theme:on-accent';
-- `theme:font-family';
+RULES is a list of LASS rules.
 
 Any LASS-friendly syntax (including quasi-quotes) works, so you can evaluate
 arbitrary code before the rules are compiled. For the convenience of
