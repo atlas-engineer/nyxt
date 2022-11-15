@@ -569,4 +569,4 @@
   :class :nyxt-test-system
   :depends-on (nyxt/theme)
   :targets (:package :theme/tests)
-  :components ((:file "libraries/theme/tests/test")))
+  :components ((:file "libraries/theme/tests/tests")))
