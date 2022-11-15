@@ -5,7 +5,7 @@
 
 (uiop:define-package :history-tree
   (:nicknames :htree)
-  (:use :common-lisp)
+  (:use :cl)
   (:import-from :class-star #:define-class #:make-name-transformer))
 
 (trivial-package-local-nicknames:add-package-local-nickname :class* :hu.dwim.defclass-star :history-tree)

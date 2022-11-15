@@ -4,7 +4,7 @@
 (in-package :cl-user)
 
 (uiop:define-package :theme
-  (:use :common-lisp)
+  (:use :cl)
   (:import-from :serapeum #:export-always)
   (:import-from :class-star #:define-class)
   (:export #:theme

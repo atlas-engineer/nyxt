@@ -3,7 +3,7 @@
 
 (in-package :cl-user)
 (uiop:define-package :class-star/tests
-  (:use :common-lisp :lisp-unit2)
+  (:use :cl :lisp-unit2)
   (:import-from :class-star))
 (in-package :class-star/tests)
 

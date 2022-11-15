@@ -4,5 +4,5 @@
 (in-package :cl-user)
 
 (uiop:define-package :text-buffer
-  (:use :common-lisp)
+  (:use :cl)
   (:export #:text-buffer #:cursor))

@@ -4,7 +4,7 @@
 ;; We use `uiop:define-package' instead of `nyxt:define-package' since this does
 ;; not depend on Nyxt at all.
 (uiop:define-package :nyxt/keyscheme
-  (:use :common-lisp)
+  (:use :cl)
   (:import-from :serapeum #:export-always #:->)
   (:documentation "Nyxt type specialization for `keymap' bound values."))
 (in-package :nyxt) ; In case the package is locked.

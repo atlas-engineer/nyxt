@@ -7,7 +7,7 @@
     (sb-ext:unlock-package :nyxt-asdf)))
 
 (uiop:define-package :nyxt-asdf
-  (:use :common-lisp)
+  (:use :cl)
   (:import-from :uiop
                 #:absolute-pathname-p
                 #:collect-sub*directories

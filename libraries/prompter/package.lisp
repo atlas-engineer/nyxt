@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package :prompter
-  (:use :common-lisp)
+  (:use :cl)
   (:import-from :class-star #:define-class)
   (:import-from :serapeum #:export-always))
 (in-package prompter)

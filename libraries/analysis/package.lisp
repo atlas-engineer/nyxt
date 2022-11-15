@@ -4,7 +4,7 @@
 (in-package :cl-user)
 
 (uiop:define-package :analysis
-  (:use :common-lisp)
+  (:use :cl)
   (:export #:document
            #:keywords
            #:extract-keywords

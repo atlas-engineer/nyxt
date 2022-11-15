@@ -4,7 +4,7 @@
 (in-package :cl-user)
 
 (uiop:define-package :user-interface
-  (:use :common-lisp)
+  (:use :cl)
   (:export #:id
            #:buffer
            #:update

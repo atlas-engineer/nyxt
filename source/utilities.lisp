@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package :nyxt/utilities
-  (:use :common-lisp)
+  (:use :cl)
   (:import-from :serapeum #:export-always #:->))
 
 (in-package :nyxt/utilities)

@@ -3,7 +3,7 @@
 
 (in-package :cl-user)
 (uiop:define-package :history-tree/tests
-  (:use :common-lisp :lisp-unit2)
+  (:use :cl :lisp-unit2)
   (:import-from :class-star #:define-class))
 (in-package :history-tree/tests)
 

@@ -3,7 +3,7 @@
 
 ;; TODO: Rename to `nyxt/develop' to avoid confusion with `debugger'?
 (uiop:define-package :nyxt/debug
-  (:use :common-lisp)
+  (:use :cl)
   (:import-from :class-star #:define-class)
   (:import-from :serapeum #:export-always #:->)
   (:documentation "Development helpers"))

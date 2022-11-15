@@ -4,7 +4,7 @@
 (in-package :cl-user)
 
 (uiop:define-package :download-manager
-  (:use :common-lisp)
+  (:use :cl)
   (:export #:init
            #:*notifications*
            #:default-download-directory

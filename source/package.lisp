@@ -10,7 +10,7 @@
     (sb-ext:unlock-package :nyxt)))
 
 (uiop:define-package :nyxt
-  (:use :common-lisp)
+  (:use :cl)
   (:use-reexport :nyxt/utilities :nyxt/types)
   #+nyxt-debug-make-instance
   (:shadow #:make-instance)
@@ -68,10 +68,10 @@ modes, commands, etc."))
 (serapeum:export-always 'define-package :nyxt)
 (defmacro define-package (name &rest options)
   "A helper around `uiop:define-package'.
-`:common-lisp' and `:nyxt' are automatically used.
+`:cl' and `:nyxt' are automatically used.
 `nyxt::*imports*' are automatically imported."
   (let* ((uses (append (serapeum:keep :use options :key #'first)
-                       '((:use :common-lisp :nyxt :nyxt/utilities))))
+                       '((:use :cl :nyxt :nyxt/utilities))))
          (imports (append (serapeum:keep :import-from options :key #'first)
                           (mapcar (lambda (import) (cons :import-from import))
                                   *imports*)))
@@ -103,14 +103,14 @@ initforms may not be caught."
   (apply #'cl:make-instance sym args))
 
 (uiop:define-package :nyxt-user
-  (:use :common-lisp :nyxt :nyxt/utilities)
+  (:use :cl :nyxt :nyxt/utilities)
   (:import-from :nkeymaps #:define-key #:define-keyscheme-map)
   (:import-from :class-star #:define-class)
   (:documentation "Package left for the user to fiddle with.  If the
 configuration file package is left unspecified, it defaults to this.  It's not
 recommended to use `nyxt' itself to avoid clobbering internal symbols.
 
-By default, the `:nyxt' and `:common-lisp' packages are `:use'd.
+By default, the `:nyxt' and `:cl' packages are `:use'd.
 
 To import more symbols, you can use the `import' function.
 For instance, to access `match' directly (without having to prefix it with

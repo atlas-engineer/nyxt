@@ -3,7 +3,7 @@
 
 (in-package :cl-user)
 (uiop:define-package :analysis/tests
-  (:use :common-lisp :lisp-unit2 :analysis))
+  (:use :cl :lisp-unit2 :analysis))
 (in-package :analysis/tests)
 
 (define-test test-single-length ()

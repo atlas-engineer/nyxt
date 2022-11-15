@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package :nyxt/types
-  (:use :common-lisp)
+  (:use :cl)
   (:import-from :serapeum #:export-always)
   (:documentation "Package for types.
 It's useful to have a separate package because some types may need to generate

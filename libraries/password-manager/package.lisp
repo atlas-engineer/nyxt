@@ -4,7 +4,7 @@
 (in-package :cl-user)
 
 (uiop:define-package :password
-  (:use :common-lisp)
+  (:use :cl)
   (:import-from :class-star #:define-class)
   (:import-from :serapeum #:export-always))
 

@@ -3,7 +3,7 @@
 
 (uiop:define-package :nyxt/parenscript
   (:nicknames :nyxt/ps)
-  (:use :common-lisp :parenscript)
+  (:use :cl :parenscript)
   (:import-from :serapeum #:export-always))
 
 (in-package :nyxt/parenscript)

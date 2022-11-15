@@ -4,7 +4,7 @@
 (in-package :cl-user)
 
 (defpackage :class-star
-  (:use :common-lisp)
+  (:use :cl)
   (:import-from :hu.dwim.defclass-star)
   (:export #:define-class
            #:name-identity
