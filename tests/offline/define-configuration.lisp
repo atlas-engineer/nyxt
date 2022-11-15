@@ -38,12 +38,12 @@
 (define-test test-slot-value ()
   (nyxt:define-configuration nyxt:browser
     ((nyxt:before-exit-hook (hooks:add-hook nyxt:%slot-value%
-                                            (make-instance 'nhooks:handler
+                                            (make-instance 'hooks:handler
                                                            :fn (lambda () (print 'dummy1))
                                                            :name 'dummy1)))))
   (nyxt:define-configuration nyxt:browser
     ((nyxt:before-exit-hook (hooks:add-hook nyxt:%slot-value%
-                                            (make-instance 'nhooks:handler
+                                            (make-instance 'hooks:handler
                                                            :fn (lambda () (print 'dummy2))
                                                            :name 'dummy2)))))
   (let ((browser (make-instance 'browser)))
