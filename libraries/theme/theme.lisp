@@ -59,9 +59,11 @@ out from all of the other theme colors.")
   (:export-predicate-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
+(export-always '+light-theme+)
 (defvar +light-theme+
   (make-instance 'theme))
 
+(export-always '+dark-theme+)
 (defvar +dark-theme+
   (make-instance 'theme
                  :dark-p t
@@ -74,6 +76,16 @@ out from all of the other theme colors.")
                  :accent-color "#FCBA04"
                  :on-accent-color "black"))
 
+(export-always '(theme
+                 background
+                 on-background
+                 primary
+                 on-primary
+                 secondary
+                 on-secondary
+                 accent
+                 on-accent
+                 font-family))
 (defvar theme nil
   "Dynamic variable that binds `theme' in `themed-css'.")
 (defvar background nil
@@ -95,6 +107,7 @@ out from all of the other theme colors.")
 (defvar font-family nil
   "Dynamic variable that binds `font-family' of `theme' in `themed-css'.")
 
+(export-always 'with-theme)
 (defmacro with-theme (theme &body body)
   "Evaluate body with the theme bindings available."
   `(let* ((theme:theme ,theme)
@@ -109,6 +122,7 @@ out from all of the other theme colors.")
           (theme:font-family (font-family theme:theme)))
      ,@body))
 
+(export-always 'themed-css)
 (defmacro themed-css (theme &body blocks)
   "Generate a CSS styled according to the THEME and BLOCKS.
 
