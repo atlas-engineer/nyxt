@@ -39,7 +39,7 @@
   (let ((history (make))
         (url "http://example.org"))
     (htree:add-child url history *owner*)
-    (oassert-string= url
+    (assert-string= url
                     (htree:data (htree:owner-node history *owner*)))))
 
 (define-test multiple-entry ()
