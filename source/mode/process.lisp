@@ -18,20 +18,20 @@ Possible applications:
    (path-url
     nil
     :type (or quri:uri null)
-    :documentation "Path where `process-mode' executes an `action'.
+    :documentation "URL where `action' runs.
 It's not necessarily the same as the current buffer's URL.")
    (firing-condition
     t
     :type (or boolean (function (quri:uri process-mode)))
-    :documentation "The condition for triggering the action.
+    :documentation "The condition for triggering `action'.
 It's either a boolean (T to always fire, NIL to never fire) or a function of the
 URL and mode instance.  When the functions returns :RETURN, the process is
 stopped.")
    (action
     nil
     :type (or (function (quri:uri process-mode)) null)
-    :documentation "The function to do with file URL and `process-mode'
-instance.")
+    :documentation "Function that takes a URL and a `process-mode' instance as
+arguments.")
    (cleanup
     nil
     :type (or (function (quri:uri process-mode)) null)
@@ -41,7 +41,7 @@ Accepts the path to the acted-on document and `process-mode' instance.")
     nil
     :type (or bt:thread null)
     :export nil
-    :documentation "Thread that `action' happen in."))
+    :documentation "Thread where `action' runs."))
   (:toggler-command-p nil))
 
 (defmethod thread-alive-p ((mode process-mode))
