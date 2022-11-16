@@ -18,7 +18,7 @@ instance from the `set-url' commands.")
 query.  This is optional: if nil, use `search-url' instead with ~a expanded to
 the empty string.")
    (completion-function nil
-                        :type (or null (function (string) (list-of (or string (cons string (cons string *))))))
+                        :type (or null function)
                         :documentation "A function taking a user input and returning a list of suggested search queries.
 The list should contain either
 - strings with text completions,
