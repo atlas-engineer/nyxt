@@ -144,8 +144,8 @@ for " (command-markup 'execute-command) ".  You can use it to set keys globally:
 nothing. Note that it's possible to bind any command, including those of
 disabled modes that are not listed in " (command-markup 'execute-command)
 ". Binding to " (:nxref :command 'nothing)
-" and binding to NIL means different things (see the documentation of"
-(:nxref :function 'keymaps:define-key) "for details):")
+" and binding to NIL means different things (see the documentation of "
+(:nxref :function 'keymaps:define-key) " for details):")
         (:dl
          (:dt (:nxref  :command 'nothing))
          (:dd "Binds the key to a command that does nothing. Still discovers the key and
