@@ -2,7 +2,8 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package :analysis/tests
-  (:use :cl :lisp-unit2 :analysis))
+  (:use :cl :lisp-unit2)
+  (:import-from :analysis))
 (in-package :analysis/tests)
 
 (define-test test-single-length ()
