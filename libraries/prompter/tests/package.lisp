@@ -6,4 +6,5 @@
   (:import-from :class-star #:define-class)
   (:import-from :prompter))
 
-(setf lparallel:*kernel* (lparallel:make-kernel (or (serapeum:count-cpus) 1)))
+(unless lparallel:*kernel* (setf lparallel:*kernel*
+                                 (lparallel:make-kernel (or (serapeum:count-cpus) 1))))
