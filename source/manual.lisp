@@ -229,7 +229,19 @@ follows.")
             "Go through the search engines above and `make-search-engine' out of them."
             ((search-engines (append %slot-default%
                                      (mapcar (lambda (engine) (apply 'make-search-engine engine))
-                                             *my-search-engines*)))))))
+                                             *my-search-engines*))))))
+        (:p "If you don't want to use " (:nxref :function 'make-search-engine)
+            " and want to try building the engines yourself, you can always make new "
+            (:nxref :class-name 'search-engine) " and add it to "
+            (:nxref :class-name 'context-buffer :slot 'search-engines) " list:")
+        (:ncode
+          (define-configuration context-buffer
+            "Add a single search engine manually."
+            ((search-engines (pushnew (make-instance 'search-engine
+                                                     :shortcut "r"
+                                                     :search-url "https://reddit.com/search/?q=~a"
+                                                     :fallback-url "https://reddit.com")
+                                      %slot-value%))))))
 
       (:nsection :title "Downloads"
         (:p "See the " (command-markup 'nyxt/download-mode:list-downloads) " command and the "
