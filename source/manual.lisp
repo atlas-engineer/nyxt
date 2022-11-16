@@ -123,7 +123,7 @@ add the following to your configuration:")
           (define-configuration base-mode
             ((keyscheme-map
               (define-keyscheme-map
-                  "my-base" (list :import %slot-default%)
+                  "my-base" (list :import %slot-value%)
                 keyscheme:vi-normal
                 (list "g b" (lambda-command switch-buffer* ()
                               (switch-buffer :current-is-last-p t))))))))
