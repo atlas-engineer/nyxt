@@ -177,7 +177,7 @@ implementation.  Example:
           (let ((status (apply #'call-process
                                (car command)
                                nil (list output t) nil
-                               (rest command))))
+                               (cdr command))))
             (if (= status 0)
                 (kill-buffer output)
               (error "Nyxt Guix environment creation failed, see %S." output)
