@@ -116,11 +116,15 @@ add the following to your configuration:")
         (:p "You can create new scheme names with " (:nxref :function 'nkeymaps:make-keyscheme)
             ".  Also see the "
             (:nxref :function 'keymaps:define-keyscheme-map "define-keyscheme-map macro") ".")
-        (:p "To extend the bindings of a specific mode, you can extend the mode with "
-            (:code "define-configuration") " and extend its binding scheme with "
-            (:code "define-keyscheme-map") ". For example:")
+        (:p "To extend the bindings of a specific mode, you can configure the mode with "
+            (:nxref :function 'define-configuration) " and extend its "
+            (:nxref :slot 'keyscheme-map :class-name 'mode) " with "
+            (:nxref :function 'keymaps:define-keyscheme-map) ". For example:")
         (:ncode
           (define-configuration base-mode
+            "Note the :import part of the define-keyscheme-map.
+It re-uses the other keymap (in this case, the one that was slot value before
+the configuration) and merely adds/modifies it."
             ((keyscheme-map
               (define-keyscheme-map
                   "my-base" (list :import %slot-value%)
