@@ -119,7 +119,7 @@ It does not assume being online."))
 
 (export-always 'active-element-tag)
 (defun active-element-tag (&optional (buffer (current-buffer)))
-  "The tag name of the active element in BUFFER."
+  "The name of the active element in BUFFER."
   (ps-eval :buffer buffer (ps:@ document active-element tag-name)))
 
 (export-always 'input-tag-p)
