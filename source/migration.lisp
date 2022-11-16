@@ -166,4 +166,8 @@ major versions."
 
   (scheme-keymap)
   (:p (:code "scheme-keymap") " is now "
-      (:code "get-keymap") "."))
+      (:code "get-keymap") ".")
+
+  (cl-css:css)
+  (:p "We stopped depending on CL-CSS and use LASS now, so use "
+      (:code "lass:compile-and-write") " and quote your rules instead."))
