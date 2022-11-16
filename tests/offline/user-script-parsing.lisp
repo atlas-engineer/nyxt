@@ -35,4 +35,4 @@
     ;; Virtual user script code equality
     (assert-equal (nyxt/user-script-mode:code virtual-script)
                   (nyxt/user-script-mode:code file-backed-script))
-    (uiop:delete-file-if-exists (nfiles:expand file-backed-script))))
+    (uiop:delete-file-if-exists (files:expand file-backed-script))))

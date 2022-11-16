@@ -259,7 +259,7 @@ Return NIL if not a class form."
                     (setf (forms class-form) (delete-slot-form class-form slot)))
                 (alex:appendf (forms class-form) (list form)))))
         (alex:appendf config (list form))))
-  (echo "Updated configuration in ~s." (nfiles:expand *auto-config-file*)))
+  (echo "Updated configuration in ~s." (files:expand *auto-config-file*)))
 
 (export-always '%slot-value%)
 (defvar %slot-value% nil
@@ -491,7 +491,7 @@ See `define-nyxt-user-system' and `define-nyxt-user-system-and-load'."))
 (defmethod asdf:component-pathname ((system nyxt-user-system))
   "Default to `config-directory-file'."
   (or (config-directory system)
-      (nfiles:expand (make-instance 'config-directory-file))) )
+      (files:expand (make-instance 'config-directory-file))) )
 
 (export-always 'load-system*)
 (defun load-system* (system &rest keys &key force force-not verbose version &allow-other-keys)

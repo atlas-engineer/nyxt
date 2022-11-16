@@ -143,15 +143,15 @@ major versions."
       " is in " (:nxref :class-name 'nyxt/bookmark-mode:bookmark-mode) ".")
 
   (expand-path)
-  (:p (:code "expand-path") " is replaced by " (:nxref :function 'nfiles:expand) ".")
+  (:p (:code "expand-path") " is replaced by " (:nxref :function 'files:expand) ".")
 
   (get-data get-user-data)
   (:p (:code "get-data") " and " (:code "get-user-data") " are replaced by "
-      (:nxref :function 'nfiles:content) ".")
+      (:nxref :function 'files:content) ".")
 
   (with-data-access with-data-unsafe)
   (:p (:code "with-data-access") " and " (:code "with-data-unsafe")
-      " are replaced by " (:code "nfiles:with-file-content") ".")
+      " are replaced by " (:code "files:with-file-content") ".")
 
   (copy-password copy-password-prompt-details save-new-password copy-username)
   (:p (:code "copy-password") ", "

@@ -13,7 +13,7 @@
     :type (or (cons string *) null)
     :documentation "List of hosts to ignore.
 This is useful to reference hosts manually instead of via `nfiles:url'.")
-   (nfiles:update-interval
+   (files:update-interval
     #.(* 60 60 24)
     :type unsigned-byte
     :documentation "If URL is provided, update the list after this amount of

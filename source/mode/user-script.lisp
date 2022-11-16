@@ -18,7 +18,7 @@
   (mapcar (lambda (style) (ffi-buffer-remove-user-style buffer style)) styles))
 
 (sera:eval-always
-  (define-class user-script (renderer-user-script nfiles:data-file nyxt-remote-file)
+  (define-class user-script (renderer-user-script files:data-file nyxt-remote-file)
     ((code "" :type (maybe string))
      (version "")
      (description "")
@@ -91,9 +91,9 @@ Return:
 (defun get-script-text (script &optional original-url)
   (etypecase script
     (pathname
-     (nfiles:content (make-instance 'user-script :base-path script)))
+     (files:content (make-instance 'user-script :base-path script)))
     (quri:uri
-     (nfiles:content
+     (files:content
       (if (quri:uri-file-p script)
           (make-instance 'user-script :base-path (quri:uri-path script))
           (make-instance 'user-script :url script :base-path #p""))))
@@ -102,17 +102,17 @@ Return:
          (get-script-url script original-url)
        (cond
          ((and url file-p)
-          (nfiles:content (make-instance 'user-script :base-path (quri:uri-path url))))
+          (files:content (make-instance 'user-script :base-path (quri:uri-path url))))
          ((and url (not file-p))
-          (nfiles:content (make-instance 'user-script :url (quri:uri script) :base-path #p"")))
+          (files:content (make-instance 'user-script :url (quri:uri script) :base-path #p"")))
          ;; No URL. No need to download anything.
          ;; It's just code (hopefully).
          (t script))))))
 
-(defmethod nfiles:write-file ((profile nyxt-profile) (script user-script) &key destination)
+(defmethod files:write-file ((profile nyxt-profile) (script user-script) &key destination)
   "Persist the script body if it has a URL and associated content."
-  (unless (uiop:emptyp (nfiles:url-content script))
-    (alex:write-string-into-file (nfiles:url-content script) destination :if-exists :supersede)))
+  (unless (uiop:emptyp (files:url-content script))
+    (alex:write-string-into-file (files:url-content script) destination :if-exists :supersede)))
 
 (defmethod parse-user-script ((script user-script))
   (let ((code (if (uiop:emptyp (code script))
@@ -143,7 +143,7 @@ Return:
                                                    (getprop "require"))
                                            code)))
            (setf
-            (nfiles:name script) (or (first (getprop "name")) (alex:required-argument 'name))
+            (files:name script) (or (first (getprop "name")) (alex:required-argument 'name))
             (version script) (first (getprop "version"))
             (description script) (first (getprop "description"))
             (namespace script) (first (getprop "namespace"))
@@ -179,7 +179,7 @@ Return:
   (:metaclass interface-class))
 
 (sera:eval-always
-  (define-class user-style (renderer-user-style nfiles:data-file nyxt-remote-file)
+  (define-class user-style (renderer-user-style files:data-file nyxt-remote-file)
     ((code "" :type (maybe string))
      (world-name
       nil
@@ -207,15 +207,15 @@ If false, runs on the toplevel frame only.")
     (:documentation "The Nyxt-internal representation of user styles to bridge with the renderer.")
     (:metaclass user-class)))
 
-(defmethod nfiles:write-file ((profile nyxt-profile) (style user-style) &key destination)
+(defmethod files:write-file ((profile nyxt-profile) (style user-style) &key destination)
   "Persist the script body if it has a URL and associated content."
-  (unless (uiop:emptyp (nfiles:url-content style))
-    (alex:write-string-into-file (nfiles:url-content style) destination :if-exists :supersede)))
+  (unless (uiop:emptyp (files:url-content style))
+    (alex:write-string-into-file (files:url-content style) destination :if-exists :supersede)))
 
 (defmethod customize-instance :after ((style user-style) &key)
   ;; TODO: Somehow parse @-moz-document patterns?
   (when (uiop:emptyp (code style))
-    (setf (code style) (nfiles:content style))))
+    (setf (code style) (files:content style))))
 
 (define-mode user-script-mode ()
   "Load user scripts such as GreaseMonkey scripts."
