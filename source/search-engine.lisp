@@ -18,9 +18,15 @@ instance from the `set-url' commands.")
 query.  This is optional: if nil, use `search-url' instead with ~a expanded to
 the empty string.")
    (completion-function nil
-                        :type (or null (function (string) (list-of string)))
+                        :type (or null (function (string) (list-of (or string (cons string (cons string *))))))
                         :documentation "A function taking a user input and returning a list of suggested search queries.
-Can be built via `make-search-completion-function'"))
+The list should contain either
+- strings with text completions,
+- or a list of form (TEXT URL), where
+  - TEXT is completion text, and
+  - URL is the string.
+
+Simple completion functions can be built via `make-search-completion-function'"))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
