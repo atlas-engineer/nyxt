@@ -260,7 +260,7 @@ all hosts being blocked, execute command " (:code "describe-variable") ", choose
       (:nsection :title "URL-dispatchers"
         (:p "You can configure which actions to take depending on the URL to be
 loaded.  For instance, you can configure which Torrent program to start to load
-magnet links.  See the" (:nxref :function 'url-dispatching-handler) " function
+magnet links.  See the " (:nxref :function 'url-dispatching-handler) " function
 documentation."))
 
       (:nsection :title "Auto rules"
