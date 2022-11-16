@@ -192,7 +192,7 @@ shifts.  For instance if " (:code "C-x C-F") " fails to match anything " (:code 
         (:p "See the " (:nxref :slot 'search-engines :class-name 'context-buffer) " buffer slot
 documentation.  Bookmarks can also be used as search engines, see the
 corresponding section.")
-        (:p "Nyxt comes with some default search engines for "
+        (:p "Nyxt comes with default search engines for "
             (:code (format nil "~{~a~^, ~}"
                            (mapcar (lambda (engine)
                                      (quri:uri-host (quri:uri (getf engine :search-url))))
