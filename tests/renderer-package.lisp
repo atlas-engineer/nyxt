@@ -1,11 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/tests/renderer
-  (:use :cl :lisp-unit2)
-  (:import-from :class-star #:define-class))
+(nyxt:define-package :nyxt/tests/renderer
+  (:use :lisp-unit2))
 (in-package :nyxt/tests/renderer)
-(nyxt::use-nyxt-package-nicknames)
 
 (define-class nyxt-user::test-profile (nyxt:nyxt-profile)
   ()
