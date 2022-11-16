@@ -153,7 +153,10 @@ recognizes it as pressed.")
          (:dt "NIL")
          (:dd "Un-binds the key, removing all the bindings that it had in a given
 mode/keyscheme-map. If you press the un-bound key, the bindings that used to be
-there will not be found anymore, and the key will be forwarded to the renderer."))
+there will not be found anymore, and the key will be forwarded to the renderer.")
+         (:dt "Any other symbol/command")
+         (:dd "Replaces the command that was there before, with the new one. When the key is
+pressed, the new command will fire instead of the old one."))
         (:p "In addition, a more flexible approach is to create your own mode with
 your custom keybindings.  When this mode is added first to the buffer mode list,
 its keybindings have priorities over the other modes.
