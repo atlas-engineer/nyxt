@@ -142,7 +142,18 @@ for " (command-markup 'execute-command) ".  You can use it to set keys globally:
                                "C-space" 'nothing))))))
         (:p "The " (:nxref  :command 'nothing) " command is useful to override bindings to do
 nothing. Note that it's possible to bind any command, including those of
-disabled modes that are not listed in " (command-markup 'execute-command) ".")
+disabled modes that are not listed in " (command-markup 'execute-command)
+". Binding to " (:nxref :command 'nothing)
+" and binding to NIL means different things (see the documentation of"
+(:nxref :function 'keymaps:define-key) "for details):")
+        (:dl
+         (:dt (:nxref  :command 'nothing))
+         (:dd "Binds the key to a command that does nothing. Still discovers the key and
+recognizes it as pressed.")
+         (:dt "NIL")
+         (:dd "Un-binds the key, removing all the bindings that it had in a given
+mode/keyscheme-map. If you press the un-bound key, the bindings that used to be
+there will not be found anymore, and the key will be forwarded to the renderer."))
         (:p "In addition, a more flexible approach is to create your own mode with
 your custom keybindings.  When this mode is added first to the buffer mode list,
 its keybindings have priorities over the other modes.
