@@ -135,4 +135,20 @@ headings have border of secondary color.
              :color ,(if (theme:dark-p theme:theme) theme:accent theme:secondary)
              :background-color ,theme:background))"
   `(with-theme ,theme
-     (lass:compile-and-write ,@blocks)))
+     (lass:compile-and-write
+      ;; NOTE: This loop allows to omit quotes for most trivial rules,
+      ;; mostly preserving backwards-compatibility.
+      ,@(loop for block in blocks
+              for first = (first block)
+              ;; FIXME: This is not perfect, but it's good enough for
+              ;; 99% of cases. Maybe somehow parse selectors with LASS?
+              if (or (stringp first)
+                     (keywordp first)
+                     (eq '* first)
+                     (and (symbolp first)
+                          (eq :internal (nth-value 1 (find-symbol (symbol-name first)
+                                                                  (symbol-package first)))))
+                     (and (listp first)
+                          (keywordp (first first))))
+                collect (cons 'quote (list block))
+              else collect block))))
