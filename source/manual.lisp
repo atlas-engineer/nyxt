@@ -203,6 +203,7 @@ corresponding section.")
         (:ncode
           '(defvar *my-search-engines*
             (list
+             '("google" "https://google.com/search?q=~a" "https://google.com")
              '("python3" "https://docs.python.org/3/search.html?q=~a" "https://docs.python.org/3")
              '("doi" "https://dx.doi.org/~a" "https://dx.doi.org/"))
             "List of search engines.")
@@ -219,6 +220,7 @@ follows.")
         (:ncode
           (defvar *my-search-engines*
             (list
+             '("google" "https://google.com/search?q=~a" "https://google.com")
              '("doi" "https://dx.doi.org/~a" "https://dx.doi.org/")
              '("python3" "https://docs.python.org/3/search.html?q=~a" "https://docs.python.org/3"))
             "List of search engines.")
