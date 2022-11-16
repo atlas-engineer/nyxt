@@ -650,11 +650,7 @@ of buffers."
         (add-overlay)
         (add-selection-rectangle)
         (add-listeners)))
-      ;; Invoke the JavaScript asynchronously, otherwise this function is
-      ;; blocking
-      (bt:make-thread
-       (lambda ()
-         (add-overlay overlay-style selection-rectangle-style))))))
+      (add-overlay overlay-style selection-rectangle-style))))
 
 (defun frame-element-get-selection ()
   "Get the selected elements drawn by the user."
