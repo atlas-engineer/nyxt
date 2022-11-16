@@ -117,8 +117,8 @@ It does not assume being online."))
        "space" 'scroll-page-down
        "pagedown" 'scroll-page-down)))))
 
-(export-always 'tag-of-active-element)
-(defun tag-of-active-element (&optional (buffer (current-buffer)))
+(export-always 'active-element-tag)
+(defun active-element-tag (&optional (buffer (current-buffer)))
   "The tag name of the active element in BUFFER."
   (ps-eval :buffer buffer (ps:@ document active-element tag-name)))
 
@@ -133,7 +133,7 @@ Returns true if TAG is either an input or a textarea HTML tag."
 
 (defun call-non-input-command-or-forward (command &key (buffer (current-buffer))
                                                        (window (current-window)))
-  (let ((tag (tag-of-active-element)))
+  (let ((tag (active-element-tag)))
     (if (input-tag-p tag)
         (forward-to-renderer :window window :buffer buffer)
         (funcall command))))
