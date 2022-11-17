@@ -318,7 +318,8 @@ ARGS are the keyword arguments for `make-instance' on MODES."
                         (apply #'enable (or (find mode-sym (slot-value buffer 'modes) :key #'name)
                                             (make-instance mode-sym :buffer buffer))
                                args))
-                      modes))
+                      modes)
+              buffer)
             (sera:filter #'modable-buffer-p buffers))))
 
 (define-command enable-modes (&key
