@@ -348,11 +348,12 @@ Return non-NIL of history was restored, NIL otherwise."
                        (gethash (htree:creator-id owner) old-id->new-id)))
                (htree:owners history))
       (setf (htree:owners history) new-owners))
-    (alex:when-let ((latest-id (first
-                                (first
-                                 (sort-by-time (alex:hash-table-alist (htree:owners history))
-                                               :key (compose #'htree:last-access #'rest))))))
-      (switch-buffer :buffer (buffers-get latest-id)))))
+    (alex:when-let* ((latest-id (first
+                                 (first
+                                  (sort-by-time (alex:hash-table-alist (htree:owners history))
+                                                :key (compose #'htree:last-access #'rest)))))
+                     (buffer (buffers-get latest-id)))
+      (switch-buffer :buffer buffer))))
 
 (defmethod files:deserialize ((profile nyxt-profile) (file history-file) raw-content &key)
   "Restore the global/buffer-local history and session from the PATH."
