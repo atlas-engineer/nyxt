@@ -2280,5 +2280,4 @@ See `make-buffer' for a description of the other arguments."
              :prompt "Choose context"
              :sources (list (make-instance 'prompter:raw-source :name "New context")
                             'context-source))))
-  (apply #'make-buffer (append (list :buffer-class 'buffer)
-                               args)))
+  (apply #'make-buffer args))
