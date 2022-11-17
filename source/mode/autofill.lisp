@@ -58,6 +58,17 @@ it will be in conflict with common-lisp:fill."))
               (string (lambda () (autofill-fill autofill)))
               (function (autofill-fill autofill)))))
 
+(defmethod s-serialization:serialize-sexp-slot ((self autofill) (slot (eql 'fill))
+                                      stream serialization-state)
+  (declare (ignore serialization-state))
+  (let ((value (slot-value self slot)))
+    (prin1
+     (or (if (stringp value)
+             value
+             (nyxt::maybe-function-name value))
+         "")
+     stream)))
+
 (define-class autofill-source (prompter:source)
   ((prompter:name "Autofills")
    (prompter:constructor (autofills (find-submode 'autofill-mode)))
