@@ -199,14 +199,11 @@ lot."
         (*print-length* nil))
     ;; We need to make sure current package is :nyxt so that symbols are printed
     ;; with consistent namespaces.
-    (write
-     (with-input-from-string (in (with-output-to-string (out)
-                                   (s-serialization:serialize-sexp
-                                    (list +version+ (files:content file))
-                                    out)))
-       ;; We READ the output of serialize-sexp to make it more
-       ;; human-readable.
-       (safe-read in))
+    (pretty-print
+     (with-output-to-string (out)
+       (s-serialization:serialize-sexp
+        (list +version+ (files:content file))
+        out))
      :stream stream)))
 
 ;; REVIEW: This works around the issue of cl-prevalence to deserialize structs

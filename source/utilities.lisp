@@ -193,6 +193,16 @@ This is useful if you do not trust the input."
     (uiop:with-safe-io-syntax (:package package)
       (read input-stream eof-error-p eof-value recursive-p))))
 
+(export-always 'pretty-print)
+(defun pretty-print (s &key (stream t))
+  "Format s-expression in string S using the pretty printer."
+  (write
+   (with-input-from-string (in s)
+     ;; We READ the output of serialize-sexp to make it more
+     ;; human-readable.
+     (safe-read in))
+   :stream stream))
+
 (export-always 'safe-sort)
 (defun safe-sort (s &key (predicate #'string-lessp) (key #'string))
   "Sort sequence S of objects by KEY using PREDICATE."
