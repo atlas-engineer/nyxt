@@ -93,7 +93,7 @@ The handlers take the mode as argument.")
   (:documentation "Run when enabling a mode.
 The pre-defined `:after' method handles further setup.
 This method is meant to be specialized for every mode.
-It is not meant to be called directly, see `enable-modes' instead.
+It is not meant to be called directly, see `enable-modes*' instead.
 
 All the parent modes' `enable' methods run after the exact mode one, cascading
 upwards to allow a more useful mode inheritance without duplicating the
