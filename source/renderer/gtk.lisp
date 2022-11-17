@@ -1311,6 +1311,23 @@ See `finalize-buffer'."
     "WhiteSmoke" "Yellow" "YellowGreen")
   "All the named CSS colors to construct `color-source' from.")
 
+(defun contrasting-color (color)
+  (let ((rgba (gdk:gdk-rgba-parse color)))
+    (flet ((relative-luminance (components)
+             (loop for const in '(0.2126 0.7152 0.0722)
+                   for rgb-component in components
+                   sum (* const (if (<= rgb-component 0.03928)
+                                    (/ rgb-component 12.92)
+                                    (expt (/ (+ rgb-component 0.055) 1.055) 2.4))))))
+      (if (< (relative-luminance (list (gdk:gdk-rgba-red rgba)
+                                       (gdk:gdk-rgba-green rgba)
+                                       (gdk:gdk-rgba-blue rgba)))
+             ;; Roughly the luminance of #777, the color
+             ;; equally contrasting with black and white.
+             0.2)
+          "white"
+          "black"))))
+
 (define-class color-source (prompter:source)
   ((prompter:name "Color")
    (prompter:constructor *css-colors*)
@@ -1325,12 +1342,18 @@ See `finalize-buffer'."
    (prompter:selection-actions
     (lambda (color)
       (ps-eval :buffer (current-prompt-buffer)
-        (setf (ps:@ (nyxt/ps:qs document "#input") style background-color)
-              (ps:lisp color))))))
+        (setf (ps:@ (nyxt/ps:qs document "#input") style background-color) (ps:lisp color)))
+      (ps-eval :buffer (current-prompt-buffer)
+        (setf (ps:@ (nyxt/ps:qs document "#input") style color) (ps:lisp (contrasting-color color)))))))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defmethod prompter:object-attributes ((color string) (source color-source))
-  `(("Color" ,color)))
+  `(("Name" ,color)
+    ("Color" ,(let ((spinneret:*html-style* :tree))
+                (spinneret:with-html-string
+                  (:span :style (format nil "background-color: ~a; color: ~a; border: 0.3empx solid ~a; border-radius: 0.1em"
+                                        color (contrasting-color color) (contrasting-color color))
+                         color))))))
 
 (defun process-color-chooser-request (web-view color-chooser-request)
   (declare (ignore web-view))
