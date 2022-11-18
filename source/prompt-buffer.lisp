@@ -338,8 +338,12 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                                                 (- suggestion-index cursor-index))
                                                               (prompter:return-selection
                                                                (nyxt::current-prompt-buffer)))))
-                                            (loop for (nil attribute) in (prompter:active-attributes suggestion :source source)
-                                                  collect (:td :title attribute (:mayberaw attribute))))))))))))
+                                            (loop for (nil attribute attribute-display)
+                                                    in (prompter:active-attributes suggestion :source source)
+                                                  collect (:td :title attribute
+                                                               (if attribute-display
+                                                                   (:raw attribute-display)
+                                                                   attribute))))))))))))
       (ps-eval :buffer prompt-buffer
         (setf (ps:@ (nyxt/ps:qs document "#suggestions") |innerHTML|)
               (ps:lisp
