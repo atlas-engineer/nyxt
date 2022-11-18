@@ -1093,11 +1093,12 @@ See `make-buffer' for a description of the arguments."
 
 (defmethod buffer-delete ((buffer context-buffer))
   (files:with-file-content (history (history-file buffer))
-    (sera:and-let* ((owner (htree:owner history (id buffer)))
-                    (current (htree:current owner))
-                    (data (htree:data current)))
-      (setf (nyxt::scroll-position data) (nyxt:document-scroll-position buffer))
-      (htree:delete-owner history (id buffer))))
+    (when history
+      (sera:and-let* ((owner (htree:owner history (id buffer)))
+                      (current (htree:current owner))
+                      (data (htree:data current)))
+        (setf (nyxt::scroll-position data) (nyxt:document-scroll-position buffer))
+        (htree:delete-owner history (id buffer)))))
   (call-next-method))
 
 (defun buffer-hide (buffer)
