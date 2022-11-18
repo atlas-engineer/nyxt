@@ -257,6 +257,16 @@ prevents otherwise.")
   "Get the window containing a buffer."
   (find buffer (alex:hash-table-values (windows browser)) :key #'active-buffer))
 
+(defmacro on-renderer-ready (thread-name &body body)
+  "Run BODY from a new thread when renderer is ready.
+`ffi-within-renderer-thread' runs its body on the renderer thread when it's
+idle, so it should do the job."
+  `(ffi-within-renderer-thread
+    browser
+    (lambda ()
+      (run-thread ,thread-name
+        ,@body))))
+
 (defmethod finalize ((browser browser) urls startup-timestamp)
   "Run `*after-init-hook*' then BROWSER's `startup'."
   ;; `messages-appender' requires `*browser*' to be initialized.
@@ -266,27 +276,22 @@ prevents otherwise.")
   (ignore-errors
    (handler-bind ((error (lambda (c) (log:error "In *after-init-hook*: ~a" c))))
      (hooks:run-hook *after-init-hook*))) ; TODO: Run outside the main loop?
-  ;; `startup' must be run _after_ this function returns;
-  ;; `ffi-within-renderer-thread' runs its body on the renderer thread when it's
-  ;; idle, so it should do the job.  It's not enough since the
-  ;; `startup' may invoke the prompt buffer, which cannot be invoked from
-  ;; the renderer thread: this is why we run the `startup' in a new
-  ;; thread from there.
-  (ffi-within-renderer-thread
-   browser
-   (lambda ()
-     (run-thread "finalization"
-       ;; Restart on init error, in case `*config-file*' broke the state.
-       ;; We only `handler-case' when there is an init file, this way we avoid
-       ;; looping indefinitely.
-       (let ((restart-on-error? (not (or (getf *options* :no-config)
-                                         (getf *options* :no-init) ; TODO: Deprecated, remove in 4.0.
-                                         (not (uiop:file-exists-p (files:expand *config-file*)))))))
-         ;; Set `*restart-on-error*' globally instead of let-binding it to
-         ;; make it visible from all threads.
-         (unwind-protect (progn (setf *restart-on-error* restart-on-error?)
-                                (startup browser urls))
-           (setf *restart-on-error* nil))))))
+  ;; `startup' must be run _after_ this function returns; It's not enough since
+  ;; the `startup' may invoke the prompt buffer, which cannot be invoked from
+  ;; the renderer thread: this is why we run the `startup' in a new thread from
+  ;; there.
+  (on-renderer-ready "finalization"
+    ;; Restart on init error, in case `*config-file*' broke the state.
+    ;; We only `handler-case' when there is an init file, this way we avoid
+    ;; looping indefinitely.
+    (let ((restart-on-error? (not (or (getf *options* :no-config)
+                                      (getf *options* :no-init) ; TODO: Deprecated, remove in 4.0.
+                                      (not (uiop:file-exists-p (files:expand *config-file*)))))))
+      ;; Set `*restart-on-error*' globally instead of let-binding it to
+      ;; make it visible from all threads.
+      (unwind-protect (progn (setf *restart-on-error* restart-on-error?)
+                             (startup browser urls))
+        (setf *restart-on-error* nil))))
   ;; Set `init-time' at the end of finalize to take the complete startup time
   ;; into account.
   (setf (slot-value *browser* 'init-time)
