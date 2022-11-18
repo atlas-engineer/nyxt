@@ -403,8 +403,11 @@ call."))
                   (princ-to-string (rest pair))))
                object))
       (t (call-next-method))))
-  (:documentation "Return an alist of non-dotted pairs (ATTRIBUTE-KEY ATTRIBUTE-VALUE) for OBJECT.
+  (:documentation "Return an alist of non-dotted lists (ATTRIBUTE-KEY ATTRIBUTE-VALUE ...) for OBJECT.
 Attributes are meant to describe the OBJECT in the context of the SOURCE.
+
+The attributes after the first two are for the application specific purposes,
+like format strings or code for element display.
 
 Both returned attribute-keys and attribute-values are strings (if not, they are
 automatically converted to `princ-to-string'). If the attribute value is a
@@ -454,11 +457,6 @@ Suggestions are made with the `suggestion-maker' slot from `source'."))
        (or (not (listp (rest object)))
            (null (rest (rest object))))))
 
-(defun undotted-pair-p (object)
-  (and (listp object)
-       (listp (rest object))
-       (null (rest (rest object)))))
-
 (defun alist-p (object)
   "Return non-nil if OBJECT is an alist, dotted or undotted."
   (and (listp object)
@@ -467,7 +465,7 @@ Suggestions are made with the `suggestion-maker' slot from `source'."))
 (defun undotted-alist-p (object &optional value-type)
   "If VALUE-TYPE is non-nil, check if all values are of the specified type."
   (and (listp object)
-       (every #'undotted-pair-p object)
+       (every #'listp object)
        (or (not value-type)
            (every (lambda (e) (typep (first e) value-type))
                   (mapcar #'rest object)))))
