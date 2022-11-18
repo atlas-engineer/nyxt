@@ -211,13 +211,17 @@ by default"
   (remf attrs :level)
   (remf attrs :open-p)
   (remf attrs :id)
-  `(:section
-    :id ,id
-    (:details
-     :open ,open-p
-     (:summary (,(if level
-                     (alexandria:make-keyword (format nil "H~d" level))
-                     :h*)
-                :style "display: inline" ,@attrs ,title
-                " " (:a :href ,(uiop:strcat "#" id) "#")))
-     ,@body)))
+  `(let ((spinneret::*html-path* (append
+                                  spinneret::*html-path*
+                                  (make-list ,(if level
+                                                  `(1- (- ,level (spinneret::heading-depth)))
+                                                  0)
+                                             :initial-element :section))))
+     (:section
+      :id ,id
+      (:details
+       :open ,open-p
+       (:summary (:h* :style "display: inline"
+                   ,@attrs ,title
+                  " " (:a :href ,(uiop:strcat "#" id) "#")))
+       ,@body))))
