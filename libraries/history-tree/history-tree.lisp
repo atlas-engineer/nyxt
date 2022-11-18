@@ -851,6 +851,8 @@ If nodes are still associated to entry, do nothing."
         (let ((matching-entry (make-entry history data)))
           (remhash matching-entry (entries history)))))))
 
+
+
 (deftype non-negative-integer ()
   `(integer 0 ,most-positive-fixnum))
 
