@@ -88,15 +88,7 @@ The handlers take the mode as argument.")
 (export-always 'enable)
 (defgeneric enable (mode &key &allow-other-keys)
   (:method-combination cascade)
-  (:method ((mode mode) &rest keys &key &allow-other-keys)
-    ;; Using class-direct-slots here because `enable' will cascade to parent modes anyway.
-    ;; FIXME: An easier way to initialize slots given initargs?
-    (loop with slot-defs = (closer-mop:class-direct-slots (class-of mode))
-          for (key value) on keys by #'cddr
-          do (alex:when-let ((slot-name (loop for slot-def in slot-defs
-                                              when (member key (c2mop:slot-definition-initargs slot-def))
-                                                do (return (c2cl:slot-definition-name slot-def)))))
-               (setf (slot-value mode slot-name) value)))
+  (:method ((mode mode) &key &allow-other-keys)
     mode)
   (:documentation "Run when enabling a mode.
 The pre-defined `:after' method handles further setup.
@@ -108,6 +100,16 @@ upwards to allow a more useful mode inheritance without duplicating the
 functionality. A `cascade' method combination is used for that.
 
 See also `disable'."))
+
+(defmethod enable :before ((mode mode) &rest keys &key &allow-other-keys)
+  ;; Using class-direct-slots here because `enable' will cascade to parent modes anyway.
+  ;; FIXME: An easier way to initialize slots given initargs?
+  (loop with slot-defs = (closer-mop:class-direct-slots (class-of mode))
+        for (key value) on keys by #'cddr
+        do (alex:when-let ((slot-name (loop for slot-def in slot-defs
+                                            when (member key (c2mop:slot-definition-initargs slot-def))
+                                              do (return (c2cl:slot-definition-name slot-def)))))
+             (setf (slot-value mode slot-name) value))))
 
 (defmethod enable :around ((mode mode) &key &allow-other-keys)
   (let* ((buffer (buffer mode))
