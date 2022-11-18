@@ -290,7 +290,7 @@ For the storage format see the comment in the header of your `auto-rules-file'."
                         (make-instance 'prompter:raw-source
                                        :name "New URL")
                         (make-instance 'global-history-source
-                                       :return-actions #'identity))))
+                                       :return-actions #'identity)))))
     (when (typep url 'nyxt::history-entry)
       (setf url (url url)))
     (add-modes-to-auto-rules
