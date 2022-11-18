@@ -30,10 +30,10 @@ the highest standard on accessibility."))
 (define-internal-page-command-global diff
     (&key (old-buffer-id (id (prompt1 :prompt "Old buffer"
                                       :sources (make-instance 'buffer-source
-                                                              :return-actions  nil))))
+                                                              :return-actions #'identity))))
           (new-buffer-id (id (prompt1 :prompt "New buffer"
                                       :sources (make-instance 'buffer-source
-                                                              :return-actions  nil)))))
+                                                              :return-actions #'identity)))))
     (diff-buffer "*diff*" 'diff-mode)
   "Show difference between two buffers"
   (let ((old-html (ffi-buffer-get-document (nyxt::buffers-get old-buffer-id)))

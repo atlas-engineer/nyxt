@@ -208,13 +208,17 @@ recompute the match-data for instance.")
 The predicate works the same as the `sort' predicate.")
 
    (return-actions
-    '(identity)
-    :type list
+    #'identity
+    :type (or null
+              (or function function-symbol)
+              (cons (or function function-symbol) *))
     :accessor nil
     :export nil
     :documentation "List of funcallables that can be run on `suggestion's of
 this source.  This is the low-level implementation, see the `return-actions'
-function for the public interface.")
+function for the public interface.
+For convenience, it may be initialized with a single function or symbol, in
+which case it will be automatically turned into a list.")
 
    (update-notifier
     (make-channel)
@@ -275,7 +279,7 @@ to compute asynchronously.")
    (multi-selection-p
     nil
     :type boolean
-    :documentation "Whether multiple candidates can be marked.")
+    :documentation "Whether multiple `suggestion's can be marked.")
 
    (resumer
     nil
@@ -310,7 +314,7 @@ Also see `selection-actions-enabled-p'."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "A prompter source instance is meant to be used by a
 `prompter' object.  See its `sources' slot.  A source is a consistent collection
-of suggestions, filters, return-actions.
+of suggestions, filters and actions.
 
 When a `prompter' `input' is set, the `update' function is called over all
 sources.  This function pipelines `initial-suggestions' through
@@ -331,7 +335,7 @@ call."))
     (run-thread "Prompter mark action thread" (funcall action (marks source)))))
 
 (defmethod default-selection-action ((source prompter:source))
-  (first (slot-value source 'selection-actions)))
+  (first (selection-actions source)))
 
 (export-always 'object-attributes)
 (defgeneric object-attributes (object source)
@@ -626,6 +630,8 @@ If you are looking for a source that just returns its plain suggestions, use `so
     (calispel:? wait-channel))
   (setf (selection-actions source) (uiop:ensure-list (selection-actions source)))
   (setf (marks-actions source) (uiop:ensure-list (marks-actions source)))
+  (setf (slot-value source 'return-actions)
+        (uiop:ensure-list (slot-value source 'return-actions)))
   source)
 
 (export-always 'attributes-keys-non-default)

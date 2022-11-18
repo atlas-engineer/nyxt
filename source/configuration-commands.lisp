@@ -71,9 +71,9 @@ On error, return the condition as a first value and the backtrace as second valu
           :sources
           (make-instance 'nyxt/file-manager-mode:file-source
                          :extensions '("lisp")
-                         :return-actions (list (lambda-command load-file* (files)
-                                                 (dolist (file files)
-                                                   (load-lisp file)))))))
+                         :return-actions (lambda-command load-file* (files)
+                                           (dolist (file files)
+                                             (load-lisp file))))))
 
 (define-command clean-configuration ()
   "Clean all the user configuration created with `define-configuration' or `customize-instance'."

@@ -134,9 +134,9 @@ See also `set-input-data-from-saved-domain'."
                                   :return-actions return-actions)))
 
 (define-command set-input-data-from-saved-domain
-    (&key (return-actions (list (lambda-command buffer-load* (suggestion-values)
-                                  "Load selected input-entry in current buffer's input fields."
-                                  (ps-write-input-data (input-data (first suggestion-values)))))))
+    (&key (return-actions (lambda-command buffer-load* (suggestion-values)
+                            "Load selected input-entry in current buffer's input fields."
+                            (ps-write-input-data (input-data (first suggestion-values))))))
   "Set the input data from a list of saved data filtered by current domain into
 the current buffer.
 

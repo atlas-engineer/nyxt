@@ -32,7 +32,7 @@ A new object is created on every new input."))
   (the (values cl-containers:ring-buffer-reverse &optional)
        (containers:make-ring-buffer size :last-in-first-out)))
 
-;; Same as `source' as to why we wrap in `eval-always'.
+;; Eval at read-time because `make' is generated using the class' initargs.
 (sera:eval-always
   (define-class prompter ()
     ((input
@@ -97,8 +97,7 @@ when the suggestions are narrowed down to just one item.")
      (history
       (make-history)
       :type (or containers:ring-buffer-reverse null)
-      :documentation
-      "History of inputs for the prompter.
+      :documentation "History of inputs for the prompter.
 If nil, no history is used.")
 
      (result-channel
@@ -127,16 +126,16 @@ See also `result-channel'.")
     (:export-accessor-names-p t)
     (:accessor-name-transformer (class*:make-name-transformer name))
     (:documentation "The prompter is an interface for user interactions.
-A prompter object holds multiple sources (of type `source') which
-contain a list of `suggestion's.
+A prompter object holds multiple `source's which contain a list of
+`suggestion's.
 
-You can call `destroy' to call the registered termination functions of the
-prompter and its sources.
+Call `destroy' to the register termination functions of the prompter and its
+sources.
 
-Suggestions are computed asynchronously when `input' is updated.
-Use `all-ready-p' and `next-ready-p' to know when the prompter is ready.
-Sources suggestions can be retrieved, possibly partially, even when the
-compution is not finished.")))
+`suggestion's are computed asynchronously when `input' is updated.
+Use `all-ready-p' and `next-ready-p' to access whether the prompter is ready.
+Sources' suggestions can be retrieved, possibly partially, even when the
+computation is not finished.")))
 
 (defun update-sources (prompter &optional (text ""))
   (setf (sync-queue prompter) (make-instance 'sync-queue))
@@ -367,34 +366,33 @@ Empty sources are skipped."
                     (union marks suggestion-values)
                     (intersection marks suggestion-values))))))))))
 
-(defun resolve-selection (prompter)     ; TODO: Write tests for this!
-  "Return the list of selected values.
-If there is no marks, the current selection value is returned as a list of one element.
-For instance, if the selected element value is NIL, this returns '(NIL).
-If there is no element, NIL is returned."
+(defun resolve-marks (prompter)     ; TODO: Write tests for this!
+  "Return the list of marked `suggestion's.
+When `marks' is nil, the current selection value is returned as a list of one
+element.
+For instance, if the selected element value is NIL, this returns '(NIL).  If
+there is no element, NIL is returned."
   (or (all-marks prompter)
       (mapcar #'value (uiop:ensure-list (selected-suggestion prompter)))))
 
 (export-always 'return-actions)
 (defun return-actions (prompter)
-  "Return the list of contextual return-actions.
-Without marks, it's the list of return-actions for the current source.
-With marks, it's the intersection of the return-actions of the sources that contain the
-marked elements."
-  (alex:if-let ((marked-sources
-                 (remove-if (complement #'marks) (sources prompter))))
-    (reduce #'intersection (mapcar (lambda (source)
-                                     (slot-value source 'return-actions))
-                                   marked-sources))
+  "Return the list of contextual `return-actions'.
+
+When `marks' is non-nil, return the list of `return-actions' shared by every
+marked element; otherwise return the list of `return-actions' for the current
+`source'."
+  (alex:if-let ((marked-sources (remove-if (complement #'marks) (sources prompter))))
+    (reduce #'intersection
+            (mapcar (lambda (source) (slot-value source 'return-actions))
+                    marked-sources))
     (slot-value (selected-source prompter) 'return-actions)))
 
 (defun history-pushnew (history element &key (test #'equal) )
-  (alex:when-let ((previous-element-index (containers:element-position
-                                     history
-                                     element
-                                     :test test)))
-    (containers:delete-item-at history
-                               previous-element-index))
+  (alex:when-let ((previous-element-index (containers:element-position history
+                                                                       element
+                                                                       :test test)))
+    (containers:delete-item-at history previous-element-index))
   (containers:insert-item history element))
 
 
@@ -409,17 +407,14 @@ If input is already in history, move to first position."
 (export-always 'return-selection)
 (defun return-selection (prompter
                          &optional (return-action (default-return-action prompter)))
-  "Call RETURN-ACTION over selection and send the results to PROMPTER's `result-channel'.
-The selection is the collection of marked suggestions across all sources.
-If there is no marked suggestion, send the currently selected suggestion
-instead."
-  (unless return-action
-    (setf return-action #'identity))
+  "Call RETURN-ACTION over `marks' and send the results to PROMPTER's `result-channel'.
+See `resolve-marks' for a reference on how `marks' are handled."
+  (unless return-action (setf return-action #'identity))
   (setf (returned-p prompter) t)
   (add-input-to-history prompter)
-  (alex:when-let ((selection-values (resolve-selection prompter)))
-    (let ((return-action-result (funcall return-action selection-values)))
-      (calispel:! (result-channel prompter) return-action-result)))
+  (alex:when-let ((marks (resolve-marks prompter)))
+    (calispel:! (result-channel prompter)
+                (funcall return-action marks)))
   (destroy prompter))
 
 (export-always 'toggle-selection-actions-enabled)
@@ -429,14 +424,11 @@ instead."
   (setf (selection-actions-enabled-p source) (not (selection-actions-enabled-p source))))
 
 (export-always 'next-ready-p)
-(defun next-ready-p (prompter &optional timeout)
+(defun next-ready-p (prompter)
   "Block and return next PROMPTER ready source.
 It's the next source that's done updating.
 If all sources are done, return T.
-This is unblocked when the PROMPTER is `destroy'ed.
-
-TIMEOUT is deprecated."
-  (declare (ignore timeout)) ; Deprecated.
+This is unblocked when the PROMPTER is `destroy'ed."
   (when prompter
     ;; We let-bind `sync-queue' here so that it remains the same object throughout
     ;; this function, since the slot is subject to be changed concurrently when
@@ -445,46 +437,41 @@ TIMEOUT is deprecated."
       (if (= (length (ready-sources sync-queue))
              (length (sources prompter)))
           t
-          (progn
-            (calispel:fair-alt
-              ((calispel:? (ready-channel sync-queue) next-source)
-               (cond
-                 ((null next-source)
-                  nil)
-                 (t
-                  (push next-source (ready-sources sync-queue))
-                  ;; Update selection when update is done:
-                  (select-first prompter)
-                  next-source)))
-              ((calispel:? (sync-interrupt-channel sync-queue))
-               nil))))
+          (calispel:fair-alt
+            ((calispel:? (ready-channel sync-queue) next-source)
+             (cond
+               ((null next-source)
+                nil)
+               (t
+                (push next-source (ready-sources sync-queue))
+                ;; Update selection when update is done:
+                (select-first prompter)
+                next-source)))
+            ((calispel:? (sync-interrupt-channel sync-queue))
+             nil)))
       ;; No sync-queue if no input was ever set.
       t)))
 
 (export-always 'all-ready-p)
-(defun all-ready-p (prompter &optional timeout)
-  "Return non-nil when all prompter sources are ready.
-After timeout has elapsed for one source, return nil."
-  (sera:nlet check ((next-source (next-ready-p prompter timeout)))
-    (cond
-      ((eq t next-source)
-       t)
-      ((null next-source)
-       nil)
-      (t
-       (check (next-ready-p prompter timeout))))))
+(defun all-ready-p (prompter)
+  "Return non-nil when all PROMPTER sources are ready."
+  (sera:nlet check ((next-source (next-ready-p prompter)))
+    (if (typep next-source 'boolean)
+        next-source
+        (check (next-ready-p prompter)))))
 
 (export-always 'make)
 (define-function make
     (append '(&rest args)
             `(&key sources ,@(public-initargs 'prompter)))
-  "Return prompter object.
+  "Return `prompter' object.
 The arguments are the initargs of the `prompter' class.
 
 As a special case, the `:sources' keyword argument not only accepts `source'
-objects but also symbols.  Example:
+objects but also symbols.
 
-  (prompter:make :sources 'prompter:raw-source)"
+Example:
+(prompter:make :sources 'prompter:raw-source)"
   (apply #'make-instance 'prompter args))
 
 (export-always 'selected-source)
@@ -493,25 +480,28 @@ objects but also symbols.  Example:
 
 (export-always 'selected-suggestion)
 (defun selected-suggestion (prompter)
-  "Return selected prompt-buffer suggestion.
+  "Return selected PROMPTER `suggestion'.
 Return source as second value."
-  (let* ((source (first (selection prompter))))
-    (values (nth (second (selection prompter)) (suggestions source)) source)))
+  (let ((source (first (selection prompter))))
+    (values (nth (second (selection prompter)) (suggestions source))
+            source)))
 
 (export-always 'selected-suggestion-position)
 (defun selected-suggestion-position (prompter)
-  "Return selected prompt-buffer suggestion position among current source
+  "Return selected PROMPTER `suggestion' position among current `source'
 suggestions."
   (second (selection prompter)))
 
 (export-always 'all-marks)
 (defun all-marks (prompter)
-  "Return the list of the marked suggestions in the prompter."
+  "Return the list of `prompter''s `marks'.
+Note that `marks' is a slot of `source', and `prompter' may have multiple
+sources."
   (alex:mappend #'marks (sources prompter)))
 
 (export-always 'all-suggestions)
 (defun all-suggestions (prompter)
-  "Return the list of the suggestions in the prompter."
+  "Return the list of PROMPTER's `suggestion's."
   (alex:mappend #'suggestions (sources prompter)))
 
 (export-always 'default-return-action)
@@ -520,8 +510,7 @@ suggestions."
 
 (export-always 'resume)
 (defun resume (prompter)
-  "Calls each source `resumer' function over the source.
-This is meant to be called when a prompter is resumed."
-  (mapc (lambda (source)
-          (maybe-funcall (resumer source) source))
+  "Call each source `resumer' function over the source.
+Meant to be called when PROMPTER is resumed."
+  (mapc (lambda (source) (maybe-funcall (resumer source) source))
         (sources prompter)))

@@ -16,9 +16,9 @@ The prompt buffer can have multiple `prompter:source's of suggestions.  Each
 source has its own properties, such as the ability to mark multiple suggestions.
 The same source can be used by different prompt buffers.
 
-Each source offers a set of `return-actions' for its selection(s).  These can be
-listed and run with `return-selection-over-action' (bound to \"M-return\" by
-default)."
+Each source offers a set of `return-actions' for marked items.  These can be
+listed and chosen from with the command `return-marks-action' (bound to
+\"M-return\" by default)."
   ((visible-in-status-p nil)
    (keyscheme-map
     (define-keyscheme-map "prompt-buffer-mode" ()
@@ -248,7 +248,7 @@ If N is negative, go to next pages instead."
   ((prompter:name "List of prompter attributes")
    (prompter:multi-selection-p t)
    (prompter:suggestion-maker 'make-attribute-suggestion)
-   (prompter:return-actions '(return-marks-only))))
+   (prompter:return-actions #'return-marks-only)))
 
 (defun return-marks-only (suggestion-values)
   "Return marked suggestions only.
@@ -362,8 +362,10 @@ current unmarked selection."
   (prompter:destroy prompt-buffer))
 
 (define-command-prompt toggle-selection-actions-enabled (prompt-buffer)
-  "Close the PROMPT-BUFFER without further action."
-  (prompter:toggle-selection-actions-enabled prompt-buffer))
+  "Toggle whether `prompter:selection-actions' are enabled for PROMPT-BUFFER."
+  (prompter:toggle-selection-actions-enabled prompt-buffer)
+  (echo "Selection actions: ~:[dis~;en~]abled."
+        (prompter:selection-actions-enabled-p (current-source prompt-buffer))))
 
 (define-command-prompt toggle-mark (prompt-buffer &key (direction :forward))
   "Mark selection.

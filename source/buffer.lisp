@@ -1230,7 +1230,8 @@ proceeding."
                                   'reload-buffers))
    (prompter:selection-actions-enabled-p t)
    (prompter:selection-actions-delay 0.1)
-   (prompter:selection-actions (lambda (buffer)
+   (prompter:selection-actions (lambda-command set-current-buffer* (buffer)
+                                 "Set current BUFFER for the active window."
                                  (set-current-buffer buffer :focus nil)))
    (prompter:destructor (let ((buffer (current-buffer)))
                           (lambda (prompter source)
@@ -1389,7 +1390,7 @@ URL-DESIGNATOR is then transformed by BUFFER's `buffer-load-hook'."
                            (history-initial-suggestions)))
    (prompter:multi-selection-p t)
    (prompter:filter-preprocessor nil)   ; Don't remove non-exact results.
-   (prompter:return-actions '(buffer-load)))
+   (prompter:return-actions #'buffer-load))
   (:export-class-name-p t)
   (:metaclass user-class))
 
@@ -1545,7 +1546,7 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
       (input->queries input
                       :check-dns-p t
                       :engine-completion-p t)))
-   (prompter:return-actions '(buffer-load)))
+   (prompter:return-actions #'buffer-load))
   (:export-class-name-p t)
   (:documentation "This prompter source tries to \"do the right thing\" to
 generate a new URL query from user input.
@@ -1619,11 +1620,11 @@ any.")
 (define-command set-url-new-buffer (&key (prefill-current-url-p t))
   "Prompt for a URL and set it in a new focused buffer."
   (let ((history (set-url-history *browser*))
-        (return-actions (list (lambda-command new-buffer-load (suggestion-values)
-                                "Load URL(s) in new buffer(s)"
-                                (mapc (lambda (suggestion) (make-buffer :url (url suggestion)))
-                                      (rest suggestion-values))
-                                (make-buffer-focus :url (url (first suggestion-values)))))))
+        (return-actions (lambda-command new-buffer-load (suggestion-values)
+                          "Load URL(s) in new buffer(s)"
+                          (mapc (lambda (suggestion) (make-buffer :url (url suggestion)))
+                                (rest suggestion-values))
+                          (make-buffer-focus :url (url (first suggestion-values))))))
     (pushnew-url-history history (url (current-buffer)))
     (prompt
      :prompt "Open URL in new buffer"
@@ -1636,12 +1637,12 @@ any.")
 (define-command set-url-new-nosave-buffer (&key (prefill-current-url-p t))
   "Prompt for a URL and set it in a new focused nosave buffer."
   (let ((return-actions
-          (list (lambda-command new-nosave-buffer-load (suggestion-values)
-                  "Load URL(s) in new nosave buffer(s)"
-                  (mapc (lambda (suggestion) (make-nosave-buffer :url (url suggestion)))
-                        (rest suggestion-values))
-                  (make-buffer-focus :url (url (first suggestion-values))
-                                     :nosave-buffer-p t)))))
+          (lambda-command new-nosave-buffer-load (suggestion-values)
+            "Load URL(s) in new nosave buffer(s)"
+            (mapc (lambda (suggestion) (make-nosave-buffer :url (url suggestion)))
+                  (rest suggestion-values))
+            (make-buffer-focus :url (url (first suggestion-values))
+                               :nosave-buffer-p t))))
     (prompt
      :prompt "Open URL in new nosave buffer"
      :input (if prefill-current-url-p

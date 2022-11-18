@@ -1,6 +1,37 @@
-This prompter library is heavily inspired by Emacs' minibuffer and [[https://emacs-helm.github.io/helm/][Helm]].
+* Class overview
 
-It only deals with the backend side of things, it does not handle any display.
+The key objects are =prompters=, =sources= and =suggestions=.
+
+A =prompt= is an interface for user interactions that holds one or more
+=sources=, and each of those are populated by =suggestions=.
+
+Other central concepts include:
+
+- =prompt=
+   + =selection= :: A single =suggestion=, in any.  Think of it as the currently
+     selected =suggestion=, belonging to a =source=.
+- =source=
+   + =marks= :: A list of =suggestions=, when =multi-selection-p= is non-nil.
+   + =actions= :: A list of functions that run on =suggestions=.
+      - =return-actions= :: General purpose.
+      - =marks-actions= :: On =marks= change (event-driven).
+      - =selection-actions= :: On =selection= change (event-driven).
+
+Example: Find below a graphical visualization of a single prompt with sources 1
+and 2, and suggestions A, B, C and D.  The =marks= is the list composed by
+Suggestions A and C.  The =selection= is Suggestion B.
+
+[[file:example.png]]
+
+Remarks:
+
+A =prompt= always has a single =selection=, whereas a =source= has either a
+single =selection= or none (when =prompt= has multiple =sources=).
+
+=marks= is a concept related to =source= not =prompt=, unlike that of
+=selection=.
+
+* Features
 
 Non-exhaustive list of features:
 
@@ -17,3 +48,6 @@ Non-exhaustive list of features:
 - Selection actions (automatically run persistent actions on selection change).
 - Marks actions (automatically run persistent actions on marks change).
 - Automatically return the prompt when narrowed down to a single suggestion.
+
+This library is heavily inspired by Emacs' minibuffer and [[https://emacs-helm.github.io/helm/][Helm]].  It only deals
+with the backend side of things, it does not handle any display.

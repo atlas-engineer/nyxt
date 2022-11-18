@@ -202,7 +202,7 @@ page(s) in the active buffer."
    :prompt "Avoid procrastination on HOSTS from buffer(s)"
    :sources (make-instance 'buffer-source
                            :multi-selection-p t
-                           :return-actions (list (lambda-mapped-command no-procrastinate-current-host)))))
+                           :return-actions (lambda-mapped-command no-procrastinate-current-host))))
 
 
 

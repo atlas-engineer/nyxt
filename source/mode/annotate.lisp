@@ -180,7 +180,7 @@ make-instance."
           (prompt
            :prompt "Show annotation(s)"
            :sources (make-instance 'annotation-source
-                                   :return-actions nil))))
+                                   :return-actions #'identity))))
     (render-annotations selected-annotations)))
 
 (define-internal-page-command-global show-annotations ()
