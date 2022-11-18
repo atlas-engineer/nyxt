@@ -347,7 +347,7 @@ If it's a single buffer, return it directly (not as a list)."
                        :sources (make-instance 'inactive-mode-source
                                                :buffers buffers))))))
     (enable-modes* modes buffers)
-    (prompt-on-mode-toggle modes buffers :enabled-p t))
+    (remember-on-mode-toggle modes buffers :enabled-p t))
   buffers)
 
 (export-always 'disable-modes*)
@@ -388,7 +388,7 @@ If it's a single buffer, return it directly (not as a list)."
                        :sources (make-instance 'active-mode-source
                                                :buffers buffers))))))
     (disable-modes* modes buffers)
-    (prompt-on-mode-toggle modes buffers :enabled-p nil))
+    (remember-on-mode-toggle modes buffers :enabled-p nil))
   buffers)
 
 (define-command toggle-modes (&key (buffer (current-buffer)))
@@ -402,9 +402,9 @@ If it's a single buffer, return it directly (not as a list)."
          (modes-to-disable (set-difference (all-mode-symbols) modes-to-enable
                                            :test #'string=)))
     (disable-modes* modes-to-disable buffer)
-    (prompt-on-mode-toggle modes-to-disable buffer :enabled-p nil)
+    (remember-on-mode-toggle modes-to-disable buffer :enabled-p nil)
     (enable-modes* modes-to-enable buffer)
-    (prompt-on-mode-toggle modes-to-enable buffer :enabled-p t))
+    (remember-on-mode-toggle modes-to-enable buffer :enabled-p t))
   buffer)
 
 ;; TODO: Factor `toggle-mode' and `toggle-modes' somehow?
@@ -434,7 +434,7 @@ If it's a single buffer, return it directly (not as a list)."
           (when existing-instance
             (disable existing-instance)
             (echo "~@(~a~) mode disabled." existing-instance)))
-      (prompt-on-mode-toggle mode-sym buffer :enabled-p activate))))
+      (remember-on-mode-toggle mode-sym buffer :enabled-p activate))))
 
 (define-command-global reload-with-modes (&optional (buffer (current-buffer)))
   "Reload the BUFFER with the queried modes.

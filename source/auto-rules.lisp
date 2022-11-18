@@ -192,28 +192,30 @@ The rules are:
        `(match-host ,(quri:uri-host url)))
       (t `(match-url ,(render-url url))))))
 
-(defun prompt-on-mode-toggle (modes buffers &key (enabled-p t))
+(defun remember-on-mode-toggle (modes buffers &key (enabled-p t))
   (dolist (buffer (uiop:ensure-list buffers))
-    (sera:and-let* ((_ (prompt-on-mode-toggle-p buffer))
-                    (invocations (mapcar #'normalize-mode (uiop:ensure-list modes)))
-                    (invocations (remove-if (rcurry #'mode-covered-by-auto-rules-p buffer enabled-p) invocations)))
-      (if-confirm ((format nil
-                           "Permanently ~:[disable~;enable~] ~{~a~^, ~} for ~a?"
-                           enabled-p (mapcar #'first invocations) (url buffer)))
-          (let ((url (prompt1
-                      :prompt "URL"
-                      :input (render-url (url buffer))
-                      :sources 'prompter:raw-source)))
-            (add-modes-to-auto-rules (url-infer-match url)
-                                     :append-p t
-                                     :include (when enabled-p invocations)
-                                     :exclude (unless enabled-p invocations)))
-          (setf (last-active-modes buffer)
-                (if enabled-p
-                    (union invocations (last-active-modes buffer)
-                           :test #'mode=)
-                    (set-difference (last-active-modes buffer) invocations
-                                    :test #'mode=)))))))
+    (if (prompt-on-mode-toggle-p buffer)
+        (sera:and-let* ((invocations (mapcar #'normalize-mode (uiop:ensure-list modes)))
+                        (invocations (remove-if (rcurry #'mode-covered-by-auto-rules-p buffer enabled-p) invocations)))
+          (if-confirm ((format nil
+                               "Permanently ~:[disable~;enable~] ~{~a~^, ~} for ~a?"
+                               enabled-p (mapcar #'first invocations) (url buffer)))
+              (let ((url (prompt1
+                          :prompt "URL"
+                          :input (render-url (url buffer))
+                          :sources 'prompter:raw-source)))
+                (add-modes-to-auto-rules (url-infer-match url)
+                                         :append-p t
+                                         :include (when enabled-p invocations)
+                                         :exclude (unless enabled-p invocations)))
+              (setf (last-active-modes buffer)
+                    (if enabled-p
+                        (union invocations (last-active-modes buffer)
+                               :test #'mode=)
+                        (set-difference (last-active-modes buffer) invocations
+                                        :test #'mode=)))))
+        (when (not (matching-auto-rules (url buffer) buffer))
+          (save-last-active-modes buffer (url buffer))))))
 
 (defmethod customize-instance :after ((buffer modable-buffer) &key &allow-other-keys)
   (unless (last-active-modes buffer)
