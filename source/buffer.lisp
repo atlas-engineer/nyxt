@@ -1020,6 +1020,10 @@ LOAD-URL-P controls whether to load URL right at buffer creation."
                         :parent-buffer parent-buffer
                         :no-history-p no-history-p
                         (append
+                         (when no-history-p
+                           (list :history-file
+                                 (make-instance 'history-file
+                                                :profile (make-instance 'nofile-profile))))
                          (unless (url-empty-p url)
                            (list :url url))
                          (uiop:remove-plist-keys '(:title :modes :url :parent-buffer
