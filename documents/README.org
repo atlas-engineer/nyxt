@@ -543,8 +543,9 @@ We've also developed some of our own:
 
 - Prefer =first= and =rest= over =car= and =cdr= respectively.
 - Use =define-class= instead of =defclass=.
-- Use =nyxt:define-package= if you want the default imports and the default
-  package nicknames (e.g. =alex=, =sera=, etc.).
+- Use =nyxt:define-package= for Nyxt-related pacakges.  Notice that it features
+  default imports (e.g. =export-always=) and package nicknames (e.g. =alex=,
+  =sera=, etc.).  Prefer =uiop:define-package= for general purpose packages.
 - Export using =export-always= (from Serapeum) next to the symbol definition.
   This helps prevent exports to go out-of-sync, or catch typos.
   Unlike =export=, =export-always= saves you from surprises upon recompilation.

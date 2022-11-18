@@ -21,7 +21,7 @@ By default, this mode does nothing but expose the default bookmarklets."
   (flet ((generate-body (source)
            `(let* ((source ,source)
                    (source (etypecase source
-                             (pathname (nfiles:content (make-instance 'nfiles:file :base-path source)))
+                             (pathname (files:content (make-instance 'files:file :base-path source)))
                              (string source)))
                    (source (if (str:starts-with-p "javascript:" source)
                                (or (ignore-errors (quri:url-decode (quri:uri-path (quri:uri source))))

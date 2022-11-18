@@ -1,10 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package nyxt/tests/executable
-  (:use #:lisp-unit2))
+(nyxt:define-package :nyxt/tests/executable
+  (:use :lisp-unit2))
 (in-package :nyxt/tests/executable)
-(use-nyxt-package-nicknames)
 
 (defvar *executable* (asdf:system-relative-pathname :nyxt "nyxt"))
 (defvar *timeout* 10

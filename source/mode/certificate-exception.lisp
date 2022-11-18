@@ -5,7 +5,7 @@
     (:documentation "Control which invalid certificates to accept or reject."))
 (in-package :nyxt/certificate-exception-mode)
 
-(sera:export-always '*default-certificate-exceptions*)
+(export-always '*default-certificate-exceptions*)
 (defparameter *default-certificate-exceptions* '()
   "List of hostnames for which to ignore certificate errors.
 See the `add-domain-to-certificate-exceptions' command.")

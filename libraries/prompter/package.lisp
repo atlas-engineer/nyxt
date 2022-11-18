@@ -1,10 +1,10 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package prompter
-  (:use #:common-lisp)
-  (:import-from #:class-star #:define-class)
-  (:import-from #:serapeum #:export-always))
+(uiop:define-package :prompter
+  (:use :cl)
+  (:import-from :class-star #:define-class)
+  (:import-from :serapeum #:export-always))
 (in-package prompter)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -43,7 +43,7 @@ All ARGS are declared as `ignorable'."
   "Return CLASS-SPECIFIER initargs as symbols (not keywords)."
   (delete-if (complement #'exported-p) (initargs class-specifier)))
 
-(sera:export-always '*debug-on-error*)
+(export-always '*debug-on-error*)
 (defvar *debug-on-error* nil
   "When non-nil, the Lisp debugger is invoked when a condition is raised.
 Otherwise all errors occuring in threads are demoted to warnings.")

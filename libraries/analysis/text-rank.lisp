@@ -88,6 +88,7 @@ edge weights."))
                        unless (convergedp old-rank new-rank)
                        do (setf converged nil)))))))
 
+(export-always 'summarize-text)
 (defun summarize-text (text &key (summary-length 3) (show-rank-p nil))
   (let ((collection (make-instance 'document-collection)))
     (loop for sentence in (sentence-tokenize text)

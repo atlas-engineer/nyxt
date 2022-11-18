@@ -2,7 +2,6 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (in-package :nyxt/tests)
-(use-nyxt-package-nicknames)
 
 (define-test user-scripts ()
   (let* ((code "// ==UserScript==
@@ -36,4 +35,4 @@
     ;; Virtual user script code equality
     (assert-equal (nyxt/user-script-mode:code virtual-script)
                   (nyxt/user-script-mode:code file-backed-script))
-    (uiop:delete-file-if-exists (nfiles:expand file-backed-script))))
+    (uiop:delete-file-if-exists (files:expand file-backed-script))))

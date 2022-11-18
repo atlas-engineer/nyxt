@@ -16,8 +16,8 @@ The build time for the Guix package database is not taken into account."
   "Measure the time needed to match against all Nyxt command docstrings.
 Inputs are random character sequences taken from the docstrings."
   (let* ((suggestions (loop for command in nyxt::*command-list*
-                            if (> (length (slot-value command 'nyxt::docstring)) 0)
-                              collect (slot-value command 'nyxt::docstring)))
+                            unless (uiop:emptyp (documentation command 'function))
+                              collect (documentation command 'function)))
          (inverse-probability 3)
          (inputs (mapcar (lambda (suggestion)
                            (remove-if (lambda (c)

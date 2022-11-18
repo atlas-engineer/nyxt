@@ -13,7 +13,7 @@
     :type (or (cons string *) null)
     :documentation "List of hosts to ignore.
 This is useful to reference hosts manually instead of via `nfiles:url'.")
-   (nfiles:update-interval
+   (files:update-interval
     #.(* 60 60 24)
     :type unsigned-byte
     :documentation "If URL is provided, update the list after this amount of
@@ -24,14 +24,14 @@ seconds."))
   (:documentation "A hostlist `blocker-mode' can use for its `hostlists' slot.
 See `*default-hostlist*' for an example."))
 
-(sera:export-always 'make-hostlist)
+(export-always 'make-hostlist)
 (defun make-hostlist (&rest args)
   "Return a new `hostlist'.
 See the `hostlist' class documentation."
   (apply #'make-instance 'hostlist args))
 
 
-(sera:export-always '*default-hostlist*)
+(export-always '*default-hostlist*)
 (defparameter *default-hostlist*
   (make-instance 'hostlist
                  :url (quri:uri "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts")

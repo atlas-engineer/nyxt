@@ -3,8 +3,8 @@
 
 (in-package cl-user)
 (uiop:define-package :theme/tests
-  (:use #:common-lisp #:lisp-unit2)
-  (:import-from #:theme))
+  (:use :cl :lisp-unit2)
+  (:import-from :theme))
 (in-package :theme/tests)
 
 (defvar *theme* (make-instance 'theme:theme

@@ -3,6 +3,13 @@
 
 (in-package :user-interface)
 
+;; Taken from serapeum
+(defmacro export-always (symbols &optional (package nil package-supplied?))
+  "Like `export', but also evaluated at compile time."
+  `(eval-when (:compile-toplevel :load-toplevel :execute)
+     (export ,symbols ,@(and package-supplied? (list package)))))
+
+(export-always 'id)
 (defvar *id* 0 "Counter used to generate a unique ID.")
 
 (defun unique-id ()
@@ -11,6 +18,7 @@
 (defgeneric to-html-string (object)
   (:documentation "The string HTML representation of OBJECT."))
 
+(export-always 'buffer)
 (defclass ui-element ()
   ((id :accessor id)
    (buffer :accessor buffer :initarg :buffer
@@ -19,12 +27,17 @@
 (defmethod initialize-instance :after ((element ui-element) &key)
   (setf (id element) (unique-id)))
 
+(export-always 'connect)
 (defmethod connect ((element ui-element) buffer)
   (setf (buffer element) buffer))
 
+(export-always 'update)
 (defgeneric update (ui-element)
   (:documentation "Propagate changes to the buffer."))
 
+(export-always 'button)
+(export-always 'text)
+(export-always 'action)
 (defclass button (ui-element)
   ((text :initform "" :initarg :text :accessor text)
    (alt-text :initform "" :initarg :alt-text :accessor alt-text)
@@ -45,6 +58,7 @@
   (when (slot-boundp button 'buffer)
     (update button)))
 
+(export-always 'to-html-string)
 (defmethod to-html-string ((button button))
   (spinneret:with-html-string
       (:button :id (id button)
@@ -53,6 +67,7 @@
                :onclick (action button)
                (text button))))
 
+(export-always 'paragraph)
 (defclass paragraph (ui-element)
   ((text :initform "" :initarg :text :accessor text)))
 
@@ -65,6 +80,8 @@
   (spinneret:with-html-string
       (:p :id (id paragraph) (text paragraph))))
 
+(export-always 'progress-bar)
+(export-always 'percentage)
 (defclass progress-bar (ui-element)
   ((percentage :initform 0
                :initarg :percentage

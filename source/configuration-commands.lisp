@@ -87,7 +87,7 @@ On error, return the condition as a first value and the backtrace as second valu
 
 (define-command load-config-file (&key (config-file (files:expand *config-file*)))
   "Load or reload the CONFIG-FILE."
-  (if (nfiles:nil-pathname-p config-file)
+  (if (files:nil-pathname-p config-file)
       (echo "No config file.")
       (progn
         (clean-configuration)

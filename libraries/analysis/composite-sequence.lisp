@@ -26,6 +26,7 @@
 
 (in-package :analysis)
 
+(export-always 'sequence-model)
 (defclass sequence-model (node)
   ()
   (:documentation "The sequence-model class represents the root of a directed
@@ -35,6 +36,7 @@
 (defclass node ()
   ((edges :accessor edges :initform (make-hash-table :test #'equal))))
 
+(export-always 'element)
 (defclass element-node (node)
   ((element :accessor element :initarg :element)
    (occurrences
@@ -53,6 +55,7 @@
 (defmethod increment ((node node))
   (incf (occurrences node)))
 
+(export-always 'add-record)
 (defmethod add-record ((model sequence-model) sequence)
   (multiple-value-bind (list-but-last-element last-element) (serapeum:halves sequence)
     (let ((leaf (alexandria:ensure-gethash list-but-last-element
@@ -67,6 +70,7 @@
         collect (add-record model sequence)
         do (setf sequence (rest sequence))))
 
+(export-always 'predict)
 (defmethod predict ((model sequence-model) sequence)
   (let* ((leaf (gethash sequence (edges model)))
          (edges (alexandria:hash-table-values (edges leaf))))

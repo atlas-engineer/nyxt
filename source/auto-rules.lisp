@@ -338,7 +338,7 @@ For the storage format see the comment in the header of your `auto-rules-file'."
     (values list &optional))
 (export-always 'add-modes-to-auto-rules)
 (defun add-modes-to-auto-rules (test &key (buffer (nyxt:current-buffer)) (append-p nil) exclude include (exact-p nil))
-  (nfiles:with-file-content (rules (auto-rules-file buffer))
+  (files:with-file-content (rules (auto-rules-file buffer))
     (let* ((rule (or (find test rules
                            :key #'test :test #'equal)
                      (make-instance 'auto-rule :test test)))

@@ -377,7 +377,7 @@ Return non-NIL of history was restored, NIL otherwise."
 
 (defun histories-directory (&optional (buffer (current-buffer)))
   (when (context-buffer-p buffer)
-    (files:parent (nfiles:expand (history-file buffer)))))
+    (files:parent (files:expand (history-file buffer)))))
 
 (defun histories-list (&optional (buffer (current-buffer)))
   (alex:when-let ((dir (histories-directory buffer)))

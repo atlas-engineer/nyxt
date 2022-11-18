@@ -3,6 +3,7 @@
 
 (in-package :analysis)
 
+(export-always 'document)
 (defclass document ()
   ((source :accessor source :initarg :source
            :documentation "The source object for the document.")
@@ -85,6 +86,7 @@ operations available, some examples:
           do (alexandria:appendf words (tokens document)))
     (remove-duplicates words :test #'equalp)))
 
+(export-always 'keywords)
 (defmethod keywords ((document document) &optional document-collection)
   (if document-collection
       (sort (loop for word in (dictionary document)
@@ -97,6 +99,7 @@ operations available, some examples:
             #'>
             :key #'rest)))
 
+(export-always 'extract-keywords)
 (defun extract-keywords (text &key (limit 5))
   "Extract keywords from a string of text."
   (serapeum:take limit (keywords (make-instance 'analysis:document

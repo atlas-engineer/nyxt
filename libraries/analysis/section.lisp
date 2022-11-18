@@ -6,6 +6,7 @@
 ;;; section.lisp -- given a document, automatically generate sections
 
 
+(export-always 'extract-sections)
 (defun extract-sections (text &key (epsilon 0.5))
   "Extract the sections from a string of text. Epsilon refers to the
    distance between two points for them to be considered related."

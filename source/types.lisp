@@ -1,9 +1,11 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
+;; `uiop:define-package' instead of `nyxt:define-package' since it does not
+;; depend on Nyxt.
 (uiop:define-package :nyxt/types
-  (:use #:common-lisp)
-  (:import-from #:serapeum :export-always)
+  (:use :cl)
+  (:import-from :serapeum #:export-always)
   (:documentation "Package for types.
 It's useful to have a separate package because some types may need to generate
 functions for the `satisfies' type condition."))

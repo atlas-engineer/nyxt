@@ -2,7 +2,6 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (in-package :nyxt/tests)
-(use-nyxt-package-nicknames)
 
 (define-class test-profile (nosave-profile)
   ((files:name :initform "test"))
@@ -52,7 +51,7 @@
   (let* ((history-path (make-instance 'history-file
                                       :base-path (asdf:system-relative-pathname
                                                   :nyxt "tests/test-data/broken-history.lisp")))
-         (history (nfiles:read-file nyxt:*global-profile* history-path)))
+         (history (files:read-file nyxt:*global-profile* history-path)))
     (assert-eq 2
                (hash-table-count (htree:owners history)))
     (assert-eq 3

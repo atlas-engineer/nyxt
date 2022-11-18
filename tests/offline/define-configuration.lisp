@@ -2,7 +2,6 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (in-package :nyxt/tests)
-(use-nyxt-package-nicknames)
 
 (define-test simple-configuration ()
   (let ((test-url (quri:uri "about:blank")))
@@ -39,12 +38,12 @@
 (define-test test-slot-value ()
   (nyxt:define-configuration nyxt:browser
     ((nyxt:before-exit-hook (hooks:add-hook nyxt:%slot-value%
-                                            (make-instance 'nhooks:handler
+                                            (make-instance 'hooks:handler
                                                            :fn (lambda () (print 'dummy1))
                                                            :name 'dummy1)))))
   (nyxt:define-configuration nyxt:browser
     ((nyxt:before-exit-hook (hooks:add-hook nyxt:%slot-value%
-                                            (make-instance 'nhooks:handler
+                                            (make-instance 'hooks:handler
                                                            :fn (lambda () (print 'dummy2))
                                                            :name 'dummy2)))))
   (let ((browser (make-instance 'browser)))

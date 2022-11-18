@@ -1,10 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :cl-user)
-(uiop:define-package history-tree/tests
-  (:use #:common-lisp #:lisp-unit2)
-  (:import-from #:class-star #:define-class))
+(uiop:define-package :history-tree/tests
+  (:use :cl :lisp-unit2)
+  (:import-from :class-star #:define-class))
 (in-package :history-tree/tests)
 
 (defvar *owner* "test-owner")

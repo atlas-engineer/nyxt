@@ -1,10 +1,12 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package nyxt/parenscript
-  (:nicknames #:nyxt/ps)
-  (:use #:common-lisp #:parenscript)
-  (:import-from #:serapeum #:export-always))
+;; `uiop:define-package' instead of `nyxt:define-package' since it does not
+;; depend on Nyxt.
+(uiop:define-package :nyxt/parenscript
+  (:nicknames :nyxt/ps)
+  (:use :cl :parenscript)
+  (:import-from :serapeum #:export-always))
 
 (in-package :nyxt/parenscript)
 (nyxt:use-nyxt-package-nicknames)
