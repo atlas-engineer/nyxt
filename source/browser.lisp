@@ -290,7 +290,7 @@ idle, so it should do the job."
       ;; Set `*restart-on-error*' globally instead of let-binding it to
       ;; make it visible from all threads.
       (unwind-protect (progn (setf *restart-on-error* restart-on-error?)
-                             (startup browser urls))
+                             (finalize-window browser urls))
         (setf *restart-on-error* nil))))
   ;; Set `init-time' at the end of finalize to take the complete startup time
   ;; into account.
@@ -298,7 +298,26 @@ idle, so it should do the job."
         (time:timestamp-difference (time:now) startup-timestamp))
   (setf (slot-value *browser* 'ready-p) t))
 
-(defmethod startup ((browser browser) urls)
+(defmethod finalize-window ((browser browser) urls)
+  "Startup finalization: Setup initial window and buffer.
+This step is crucial to get Nyxt to reach a usable step and be able to handle
+errors correctly from then on."
+  ;; Remove existing windows.  This may happen if we invoked this function,
+  ;; possibly with a different renderer.  To avoid mixing windows with
+  ;; different renderers.  REVIEW: A better option would be to have
+  ;; `update-instance-for-redefined-class' call `customize-instance', but this
+  ;; is tricky to get right, in particular `ffi-buffer-make' seems to hang on
+  ;; `web-buffer's.
+  (mapcar #'window-delete (window-list))
+  (window-make browser)
+  ;; History restoration and subsequent tasks are error-prone ,thus they should
+  ;; be done once the browser is ready to handle errors ,that is ,once the
+  ;; renderer has displayed the window and its initial buffer.
+  (on-renderer-ready "history-restoration"
+    (finalize-history browser urls)))
+
+(defmethod finalize-history ((browser browser) urls)
+  "Startup finalization: Restore history, open URLs, display startup errors."
   (labels ((clear-history-owners ()
              "Warning: We clear the previous owners here.
 After this, buffers from a previous session are permanently lost, they cannot be
@@ -306,17 +325,13 @@ restored."
              (files:with-file-content (history (history-file *browser*))
                (when history
                  (clrhash (htree:owners history))))))
-    ;; Remove existing windows.  This may happen if we invoked this function,
-    ;; possibly with a different renderer.  To avoid mixing windows with
-    ;; different renderers.  REVIEW: A better option would be to have
-    ;; `update-instance-for-redefined-class' call `customize-instance', but this
-    ;; is tricky to get right, in particular `ffi-buffer-make' seems to hang on
-    ;; `web-buffer's.
-    (mapcar #'window-delete (window-list))
-    (window-make browser)
     (if (restore-session-on-startup-p *browser*)
-        (if (restore-history-buffers (files:content (history-file *browser*))
-                                     (history-file *browser*))
+        (if (with-protect ("Error restoring history ~a: ~a"
+                           (files:expand (history-file *browser*))
+                           :condition)
+              (restore-history-buffers
+               (files:content (history-file *browser*))
+               (history-file *browser*)))
             (open-urls urls)
             (open-urls (or urls (list (default-new-buffer-url browser)))))
         (progn
