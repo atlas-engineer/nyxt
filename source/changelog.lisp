@@ -581,6 +581,9 @@ auto-mode-rules.lisp).")))
          (:li  (:code "time") " for " (:code "local-time"))
          (:li  (:code "types") " for " (:code "trivial-types"))
          (:li  (:code "sym") " for " (:code "nsymbols"))))
+   (:li "The third value in the " (:nxref :function 'prompter:object-attributes)
+        " is interpreted as display HTML for the suggestion. See the color-picker
+support as an example application for this feature.")
 
    (:li "Universal describe-* commands have been replaced with new sources for the
 regular commands, such as "
