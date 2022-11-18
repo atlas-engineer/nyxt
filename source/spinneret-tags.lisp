@@ -211,12 +211,16 @@ by default"
   (remf attrs :level)
   (remf attrs :open-p)
   (remf attrs :id)
-  `(let ((spinneret::*html-path* (append
-                                  spinneret::*html-path*
-                                  (make-list ,(if level
-                                                  `(1- (- ,level (spinneret::heading-depth)))
-                                                  0)
-                                             :initial-element :section))))
+  `(let ((spinneret::*html-path*
+           ;; Push as many :section tags into the path, as necessary to imply
+           ;; LEVEL for the sections inside this one. A trick on Spinneret to
+           ;; make it think it's deeply nested already.
+           (append
+            spinneret::*html-path*
+            (make-list ,(if level
+                            `(1- (- ,level (spinneret::heading-depth)))
+                            0)
+                       :initial-element :section))))
      (:section
       :id ,id
       (:details
