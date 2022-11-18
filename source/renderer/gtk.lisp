@@ -1348,12 +1348,13 @@ See `finalize-buffer'."
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defmethod prompter:object-attributes ((color string) (source color-source))
-  `(("Name" ,color)
-    ("Color" ,(let ((spinneret:*html-style* :tree))
-                (spinneret:with-html-string
-                  (:span :style (format nil "background-color: ~a; color: ~a; border: 0.3empx solid ~a; border-radius: 0.1em"
-                                        color (contrasting-color color) (contrasting-color color))
-                         color))))))
+  `(("Color"
+     ,color
+     ,(let ((spinneret:*html-style* :tree))
+        (spinneret:with-html-string
+          (:span :style (format nil "background-color: ~a; color: ~a; border: 0.1em solid ~a; border-radius: 0.1em"
+                                color (contrasting-color color) (contrasting-color color))
+                 color))))))
 
 (defun process-color-chooser-request (web-view color-chooser-request)
   (declare (ignore web-view))
