@@ -1579,14 +1579,14 @@ any.")
    (list (make-instance 'new-url-or-search-source :return-actions return-actions)
          (make-instance
           'global-history-source
-          :return-actions (append return-actions
+          :return-actions (append (uiop:ensure-list return-actions)
                                   (list (lambda-command delete-history-entry* (suggestion-values)
                                           "Delete chosen history entries (not belonging to open buffers)."
                                           (files:with-file-content (history (history-file buffer))
                                             (dolist (entry suggestion-values)
                                               (htree:delete-data history entry)))))))
          (make-instance 'search-engine-url-source :return-actions return-actions))
-   (mappend (rcurry #'url-sources return-actions) (modes buffer))))
+   (mappend (rcurry #'url-sources (uiop:ensure-list return-actions)) (modes buffer))))
 
 (define-command set-url (&key (prefill-current-url-p t))
   "Set the URL for the current buffer, completing with history."
