@@ -567,7 +567,8 @@ locally and is cleared after every session.")
     (:li "There are default rules for Gopher, Gemini, and
 Nyxt-internal-pages.")
     (:li "The rules file is now moved to auto-rules.lisp (instead of the old
-auto-mode-rules.lisp).")))
+auto-mode-rules.lisp)."))
+   (:li "Startup is more robust against corrupted history files."))
 
   (:h3 "Programming interface")
   (:ul
