@@ -318,28 +318,32 @@ errors correctly from then on."
 
 (defmethod finalize-history ((browser browser) urls)
   "Startup finalization: Restore history, open URLs, display startup errors."
-  (labels ((clear-history-owners ()
-             "Warning: We clear the previous owners here.
+  (macrolet ((with-protected-history (&body body)
+               `(with-protect ("Error restoring history ~a: ~a"
+                               (files:expand (history-file *browser*))
+                               :condition)
+                  ,@body)))
+    (labels ((clear-history-owners ()
+               "Warning: We clear the previous owners here.
 After this, buffers from a previous session are permanently lost, they cannot be
 restored."
-             (files:with-file-content (history (history-file *browser*))
-               (when history
-                 (clrhash (htree:owners history))))))
-    (if (restore-session-on-startup-p *browser*)
-        (if (with-protect ("Error restoring history ~a: ~a"
-                           (files:expand (history-file *browser*))
-                           :condition)
-              (restore-history-buffers
-               (files:content (history-file *browser*))
-               (history-file *browser*)))
-            (open-urls urls)
-            (open-urls (or urls (list (default-new-buffer-url browser)))))
-        (progn
-          (log:info "Not restoring session.")
-          (clear-history-owners)
-          (open-urls (or urls (list (default-new-buffer-url browser))))))
-    (hooks:run-hook *after-startup-hook*)
-    (funcall* (startup-error-reporter-function *browser*))))
+               (with-protected-history
+                   (files:with-file-content (history (history-file *browser*))
+                     (when history
+                       (clrhash (htree:owners history)))))))
+      (if (restore-session-on-startup-p *browser*)
+          (if (with-protected-history
+                  (restore-history-buffers
+                   (files:content (history-file *browser*))
+                   (history-file *browser*)))
+              (open-urls urls)
+              (open-urls (or urls (list (default-new-buffer-url browser)))))
+          (progn
+            (log:info "Not restoring session.")
+            (clear-history-owners)
+            (open-urls (or urls (list (default-new-buffer-url browser))))))
+      (hooks:run-hook *after-startup-hook*)
+      (funcall* (startup-error-reporter-function *browser*)))))
 
 ;; Catch a common case for a better error message.
 (defmethod buffers :before ((browser t))
