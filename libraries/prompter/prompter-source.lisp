@@ -467,6 +467,7 @@ Suggestions are made with the `suggestion-maker' slot from `source'."))
   "If VALUE-TYPE is non-nil, check if all values are of the specified type."
   (and (listp object)
        (every #'listp object)
+       (every #'listp (mapcar #'rest object))
        (or (not value-type)
            (every (lambda (e) (typep (first e) value-type))
                   (mapcar #'rest object)))))
