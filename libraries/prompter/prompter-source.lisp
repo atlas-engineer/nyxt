@@ -407,7 +407,8 @@ call."))
 Attributes are meant to describe the OBJECT in the context of the SOURCE.
 
 The attributes after the first two are for the application specific purposes,
-like format strings or code for element display.
+like format strings or code for element display, the calling code can freely use
+those to store arbitrary data.
 
 Both returned attribute-keys and attribute-values are strings (if not, they are
 automatically converted to `princ-to-string'). If the attribute value is a
