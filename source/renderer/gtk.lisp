@@ -119,6 +119,11 @@ failures."))
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
+(defmethod prompter:object-attributes :around ((buffer gtk-buffer) (source nyxt:buffer-source))
+  (declare (ignore source))
+  (append (call-next-method)
+          `(("Context" ,(context-name buffer)))))
+
 (nyxt::without-package-locks
   (handler-bind ((warning #'muffle-warning))
     (defclass renderer-buffer (gtk-buffer)
