@@ -227,5 +227,5 @@ by default"
        :open ,open-p
        (:summary (:h* :style "display: inline"
                    ,@attrs ,title
-                  " " (:a :href ,(uiop:strcat "#" id) "#")))
+                  " " (:a.link :href ,(uiop:strcat "#" id) "#")))
        ,@body))))
