@@ -257,6 +257,16 @@ prevents otherwise.")
   "Get the window containing a buffer."
   (find buffer (alex:hash-table-values (windows browser)) :key #'active-buffer))
 
+(defmacro on-renderer-ready (thread-name &body body)
+  "Run BODY from a new thread when renderer is ready.
+`ffi-within-renderer-thread' runs its body on the renderer thread when it's
+idle, so it should do the job."
+  `(ffi-within-renderer-thread
+    browser
+    (lambda ()
+      (run-thread ,thread-name
+        ,@body))))
+
 (defmethod finalize ((browser browser) urls startup-timestamp)
   "Run `*after-init-hook*' then BROWSER's `startup'."
   ;; `messages-appender' requires `*browser*' to be initialized.
@@ -266,60 +276,74 @@ prevents otherwise.")
   (ignore-errors
    (handler-bind ((error (lambda (c) (log:error "In *after-init-hook*: ~a" c))))
      (hooks:run-hook *after-init-hook*))) ; TODO: Run outside the main loop?
-  ;; `startup' must be run _after_ this function returns;
-  ;; `ffi-within-renderer-thread' runs its body on the renderer thread when it's
-  ;; idle, so it should do the job.  It's not enough since the
-  ;; `startup' may invoke the prompt buffer, which cannot be invoked from
-  ;; the renderer thread: this is why we run the `startup' in a new
-  ;; thread from there.
-  (ffi-within-renderer-thread
-   browser
-   (lambda ()
-     (run-thread "finalization"
-       ;; Restart on init error, in case `*config-file*' broke the state.
-       ;; We only `handler-case' when there is an init file, this way we avoid
-       ;; looping indefinitely.
-       (let ((restart-on-error? (not (or (getf *options* :no-config)
-                                         (getf *options* :no-init) ; TODO: Deprecated, remove in 4.0.
-                                         (not (uiop:file-exists-p (files:expand *config-file*)))))))
-         ;; Set `*restart-on-error*' globally instead of let-binding it to
-         ;; make it visible from all threads.
-         (unwind-protect (progn (setf *restart-on-error* restart-on-error?)
-                                (startup browser urls))
-           (setf *restart-on-error* nil))))))
+  ;; `startup' must be run _after_ this function returns; It's not enough since
+  ;; the `startup' may invoke the prompt buffer, which cannot be invoked from
+  ;; the renderer thread: this is why we run the `startup' in a new thread from
+  ;; there.
+  (on-renderer-ready "finalization"
+    ;; Restart on init error, in case `*config-file*' broke the state.
+    ;; We only `handler-case' when there is an init file, this way we avoid
+    ;; looping indefinitely.
+    (let ((restart-on-error? (not (or (getf *options* :no-config)
+                                      (getf *options* :no-init) ; TODO: Deprecated, remove in 4.0.
+                                      (not (uiop:file-exists-p (files:expand *config-file*)))))))
+      ;; Set `*restart-on-error*' globally instead of let-binding it to
+      ;; make it visible from all threads.
+      (unwind-protect (progn (setf *restart-on-error* restart-on-error?)
+                             (finalize-window browser urls))
+        (setf *restart-on-error* nil))))
   ;; Set `init-time' at the end of finalize to take the complete startup time
   ;; into account.
   (setf (slot-value *browser* 'init-time)
         (time:timestamp-difference (time:now) startup-timestamp))
   (setf (slot-value *browser* 'ready-p) t))
 
-(defmethod startup ((browser browser) urls)
-  (labels ((clear-history-owners ()
-             "Warning: We clear the previous owners here.
+(defmethod finalize-window ((browser browser) urls)
+  "Startup finalization: Setup initial window and buffer.
+This step is crucial to get Nyxt to reach a usable step and be able to handle
+errors correctly from then on."
+  ;; Remove existing windows.  This may happen if we invoked this function,
+  ;; possibly with a different renderer.  To avoid mixing windows with
+  ;; different renderers.  REVIEW: A better option would be to have
+  ;; `update-instance-for-redefined-class' call `customize-instance', but this
+  ;; is tricky to get right, in particular `ffi-buffer-make' seems to hang on
+  ;; `web-buffer's.
+  (mapcar #'window-delete (window-list))
+  (window-make browser)
+  ;; History restoration and subsequent tasks are error-prone ,thus they should
+  ;; be done once the browser is ready to handle errors ,that is ,once the
+  ;; renderer has displayed the window and its initial buffer.
+  (on-renderer-ready "history-restoration"
+    (finalize-history browser urls)))
+
+(defmethod finalize-history ((browser browser) urls)
+  "Startup finalization: Restore history, open URLs, display startup errors."
+  (macrolet ((with-protected-history (&body body)
+               `(with-protect ("Error restoring history ~a: ~a"
+                               (files:expand (history-file *browser*))
+                               :condition)
+                  ,@body)))
+    (labels ((clear-history-owners ()
+               "Warning: We clear the previous owners here.
 After this, buffers from a previous session are permanently lost, they cannot be
 restored."
-             (files:with-file-content (history (history-file *browser*))
-               (when history
-                 (clrhash (htree:owners history))))))
-    ;; Remove existing windows.  This may happen if we invoked this function,
-    ;; possibly with a different renderer.  To avoid mixing windows with
-    ;; different renderers.  REVIEW: A better option would be to have
-    ;; `update-instance-for-redefined-class' call `customize-instance', but this
-    ;; is tricky to get right, in particular `ffi-buffer-make' seems to hang on
-    ;; `web-buffer's.
-    (mapcar #'window-delete (window-list))
-    (window-make browser)
-    (if (restore-session-on-startup-p *browser*)
-        (if (restore-history-buffers (files:content (history-file *browser*))
-                                     (history-file *browser*))
-            (open-urls urls)
-            (open-urls (or urls (list (default-new-buffer-url browser)))))
-        (progn
-          (log:info "Not restoring session.")
-          (clear-history-owners)
-          (open-urls (or urls (list (default-new-buffer-url browser))))))
-    (hooks:run-hook *after-startup-hook*)
-    (funcall* (startup-error-reporter-function *browser*))))
+               (with-protected-history
+                   (files:with-file-content (history (history-file *browser*))
+                     (when history
+                       (clrhash (htree:owners history)))))))
+      (if (restore-session-on-startup-p *browser*)
+          (if (with-protected-history
+                  (restore-history-buffers
+                   (files:content (history-file *browser*))
+                   (history-file *browser*)))
+              (open-urls urls)
+              (open-urls (or urls (list (default-new-buffer-url browser)))))
+          (progn
+            (log:info "Not restoring session.")
+            (clear-history-owners)
+            (open-urls (or urls (list (default-new-buffer-url browser))))))
+      (hooks:run-hook *after-startup-hook*)
+      (funcall* (startup-error-reporter-function *browser*)))))
 
 ;; Catch a common case for a better error message.
 (defmethod buffers :before ((browser t))

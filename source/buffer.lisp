@@ -1020,6 +1020,10 @@ LOAD-URL-P controls whether to load URL right at buffer creation."
                         :parent-buffer parent-buffer
                         :no-history-p no-history-p
                         (append
+                         (when no-history-p
+                           (list :history-file
+                                 (make-instance 'history-file
+                                                :profile (make-instance 'nofile-profile))))
                          (unless (url-empty-p url)
                            (list :url url))
                          (uiop:remove-plist-keys '(:title :modes :url :parent-buffer
@@ -1089,11 +1093,12 @@ See `make-buffer' for a description of the arguments."
 
 (defmethod buffer-delete ((buffer context-buffer))
   (files:with-file-content (history (history-file buffer))
-    (sera:and-let* ((owner (htree:owner history (id buffer)))
-                    (current (htree:current owner))
-                    (data (htree:data current)))
-      (setf (nyxt::scroll-position data) (nyxt:document-scroll-position buffer))
-      (htree:delete-owner history (id buffer))))
+    (when history
+      (sera:and-let* ((owner (htree:owner history (id buffer)))
+                      (current (htree:current owner))
+                      (data (htree:data current)))
+        (setf (nyxt::scroll-position data) (nyxt:document-scroll-position buffer))
+        (htree:delete-owner history (id buffer)))))
   (call-next-method))
 
 (defun buffer-hide (buffer)
