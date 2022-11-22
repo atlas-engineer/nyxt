@@ -12,14 +12,14 @@
    (prompter:constructor (lambda (source)
                            (panel-buffers (window source))))))
 
-(define-command-global delete-panel-buffer (&key (window (current-window)) panels)
-  "Prompt for a panel buffer to be deleted."
-  (let ((panels (or panels
-                    (prompt
-                     :prompt "Delete a panel buffer"
-                     :sources (make-instance 'panel-buffer-source
-                                             :window window)))))
-    (mapc (lambda (i) (window-delete-panel-buffer window i)) panels)))
+(define-command-global delete-panel-buffer (&key (window (current-window))
+                                            (panels (prompt
+                                                     :prompt "Delete a panel buffer"
+                                                     :sources (make-instance 'panel-buffer-source
+                                                                             :window window))))
+  "Prompt for panel buffer(s) to be deleted.
+When provided, PANELS are deleted instead."
+  (mapc (curry #'window-delete-panel-buffer window) (uiop:ensure-list panels)))
 
 (define-class panel-page (internal-page)
   ((side
