@@ -313,7 +313,7 @@ errors correctly from then on."
   ;; be done once the browser is ready to handle errors ,that is ,once the
   ;; renderer has displayed the window and its initial buffer.
   (on-renderer-ready "finalize-buffer"
-    (finalize-first-buffer browser urls :restart-on-error-p restart-on-error-p)))
+    (finalize-first-buffer browser urls)))
 
 (defmethod finalize-first-buffer ((browser browser) urls)
   "Startup finalization: Set up initial buffer."
