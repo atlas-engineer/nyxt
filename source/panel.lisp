@@ -64,8 +64,8 @@ The main difference is that their command toggles the panel."))
                                 (buffer-var title &optional (side :left))
                                 &body body)
   "Define a panel buffer and:
-- A local command called NAME-panel creating this panel-buffer or closing it if it's shown already.
-- A nyxt:NAME-panel URL for the content of this panel buffer.
+- A local command called NAME, creating this panel-buffer or closing it if it's shown already.
+- A nyxt:NAME URL for the content of this panel buffer.
 
 Should end with a form returning HTML as a string.
 
