@@ -280,7 +280,7 @@ idle, so it should do the job."
   ;; the `startup' may invoke the prompt buffer, which cannot be invoked from
   ;; the renderer thread: this is why we run the `startup' in a new thread from
   ;; there.
-  (on-renderer-ready "finalization"
+  (on-renderer-ready "finalize-window"
     ;; Restart on init error, in case `*config-file*' broke the state.
     ;; We only `handler-case' when there is an init file, this way we avoid
     ;; looping indefinitely.
@@ -289,9 +289,8 @@ idle, so it should do the job."
                                       (not (uiop:file-exists-p (files:expand *config-file*)))))))
       ;; Set `*restart-on-error*' globally instead of let-binding it to
       ;; make it visible from all threads.
-      (unwind-protect (progn (setf *restart-on-error* restart-on-error?)
-                             (finalize-window browser urls))
-        (setf *restart-on-error* nil))))
+      (setf *restart-on-error* restart-on-error?)
+      (finalize-window browser urls)))
   ;; Set `init-time' at the end of finalize to take the complete startup time
   ;; into account.
   (setf (slot-value *browser* 'init-time)
@@ -299,7 +298,7 @@ idle, so it should do the job."
   (setf (slot-value *browser* 'ready-p) t))
 
 (defmethod finalize-window ((browser browser) urls)
-  "Startup finalization: Setup initial window and buffer.
+  "Startup finalization: Set up initial window.
 This step is crucial to get Nyxt to reach a usable step and be able to handle
 errors correctly from then on."
   ;; Remove existing windows.  This may happen if we invoked this function,
@@ -310,10 +309,18 @@ errors correctly from then on."
   ;; `web-buffer's.
   (mapcar #'window-delete (window-list))
   (window-make browser)
-  ;; History restoration and subsequent tasks are error-prone ,thus they should
+  ;; History restoration and subsequent tasks are error-prone, thus they should
   ;; be done once the browser is ready to handle errors ,that is ,once the
   ;; renderer has displayed the window and its initial buffer.
-  (on-renderer-ready "history-restoration"
+  (on-renderer-ready "finalize-buffer"
+    (finalize-first-buffer browser urls :restart-on-error-p restart-on-error-p)))
+
+(defmethod finalize-first-buffer ((browser browser) urls)
+  "Startup finalization: Set up initial buffer."
+  (switch-buffer :buffer (make-buffer :url (quri:uri (nyxt-url 'new)) :no-history-p t))
+  (on-renderer-ready "finalize-history"
+    ;; If we've reached here browser should be functional, no need to restart on error.
+    (setf *restart-on-error* nil)
     (finalize-history browser urls)))
 
 (defmethod finalize-history ((browser browser) urls)
@@ -331,17 +338,25 @@ restored."
                    (files:with-file-content (history (history-file *browser*))
                      (when history
                        (clrhash (htree:owners history)))))))
-      (if (restore-session-on-startup-p *browser*)
-          (if (with-protected-history
-                  (restore-history-buffers
-                   (files:content (history-file *browser*))
-                   (history-file *browser*)))
-              (open-urls urls)
-              (open-urls (or urls (list (default-new-buffer-url browser)))))
-          (progn
-            (log:info "Not restoring session.")
-            (clear-history-owners)
-            (open-urls (or urls (list (default-new-buffer-url browser))))))
+      ;; Must catch all history-related errors, otherwise subsequent code would
+      ;; not be run.
+      (handler-case
+          (let ((init-buffer (current-buffer)))
+            (if (restore-session-on-startup-p *browser*)
+                (if (with-protected-history
+                        (restore-history-buffers
+                         (files:content (history-file *browser*))
+                         (history-file *browser*)))
+                    (open-urls urls)
+                    (open-urls (or urls (list (default-new-buffer-url browser)))))
+                (progn
+                  (log:info "Not restoring session.")
+                  (clear-history-owners)
+                  (open-urls (or urls (list (default-new-buffer-url browser))))))
+            (buffer-delete init-buffer))
+        (error (c)
+          ;; TODO: Clear buffers or back up history?
+          (log:warn c)))
       (hooks:run-hook *after-startup-hook*)
       (funcall* (startup-error-reporter-function *browser*)))))
 
