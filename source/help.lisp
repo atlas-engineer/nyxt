@@ -192,6 +192,35 @@ The version number is saved to clipboard."
   (trivial-clipboard:text +version+)
   (echo "Version ~a" +version+))
 
+(define-panel-command intro ()
+    (panel "*Introduction*" :right)
+  (spinneret:with-html-string
+    (:h1 "Getting Started with Nyxt")
+    (:p "If you want to start browsing right away, then you probably want to use "
+        (command-markup 'set-url)
+        ". As an alternative, you can click on the link currently open, and it will
+bring up the same prompt as " (:code "set-url") " does.")
+    (:p "If you get stuck, you can always use arrow keys in the status bar (this area
+with buttons below the page you browse), or use commands like "
+        (command-markup 'nyxt/history-mode:history-backwards) " and "
+        (command-markup 'nyxt/history-mode:history-forwards)
+        " to navigate around the pages you visited.")
+    (:p "You can run any command you wish and get familiar with all the actions you
+have, using " (command-markup 'execute-command)
+". Nyxt has lots of features represented by commands, so you can find lots of
+useful actions there, including the familiar " (:code "set-url") ", " (:code "history-backwards")
+", and " (:code "history-forwards") ".")
+    (:div (:button.button
+           :onclick (ps:ps (nyxt/ps:lisp-eval
+                            (:title "manual" :buffer panel)
+                            (manual)))
+           "I want to know more, show me the manual!")
+          (:button.button.accent
+           :onclick (ps:ps (nyxt/ps:lisp-eval
+                            (:title "delete-this-panel" :buffer panel)
+                            (delete-panel-buffer :panels panel)))
+           "Got it, close this panel"))))
+
 (define-internal-page-command-global new ()
     (buffer "*New buffer*")
   "Open up a buffer with useful links suitable for `default-new-buffer-url'."
@@ -272,12 +301,16 @@ The version number is saved to clipboard."
      (:main
       (:h1 :class "accent" "Nyxt")
       (:i "The Internet on your terms.")
-      (:p (:button :class "button"
-                   :type "submit"
-                   :onclick (ps:ps (nyxt/ps:lisp-eval
-                                    (:title "search")
-                                    (set-url :prefill-current-url-p nil)))
-                   "Start searching!")))
+      (:div (:button.button
+             :onclick (ps:ps (nyxt/ps:lisp-eval
+                              (:title "search")
+                              (set-url :prefill-current-url-p nil)))
+             "Start searching!"))
+      (:div (:button.button
+             :onclick (ps:ps (nyxt/ps:lisp-eval
+                              (:title "intro-panel")
+                              (intro)))
+             "How do I...")))
      (:p :class "copyright"
          (format nil "Nyxt/~a ~a" +renderer+ +version+)
          (:br)
