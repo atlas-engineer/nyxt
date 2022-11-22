@@ -161,7 +161,7 @@ Return the lambda s-expression as a second value, if possible."
 (defun last-word (s)
   "Last substring of alphanumeric characters, or empty if none."
   (let ((words (sera:words s)))
-    (the (values string)
+    (the (values string &optional)
          (if words (alex:last-elt words) ""))))
 
 (export-always 'make-ring)
