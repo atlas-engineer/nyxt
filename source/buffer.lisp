@@ -267,6 +267,10 @@ This method should be called by the renderer after instantiating the web view
 of BUFFER."
   (unless no-hook-p
     (hooks:run-hook (buffer-make-hook browser) buffer))
+  ;; Modes may be initialized without a `buffer' slot (e.g. when deserialized).
+  (mapc (lambda (mode)
+          (setf (buffer mode) buffer))
+        (slot-value buffer 'modes))
   (mapc #'enable (slot-value buffer 'modes))
   (enable-modes* (append (reverse (default-modes buffer))
                          (uiop:ensure-list extra-modes))
