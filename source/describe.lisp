@@ -437,12 +437,14 @@ turned into links to their respective description page."
      (fn (prompt1 :prompt "Describe function"
                   :sources '(function-source
                              function-non-nyxt-source
-                             function-internal-source))))
-    (buffer (str:concat "*Help-" (symbol-name fn) "*") 'nyxt/help-mode:help-mode)
+                             function-internal-source)))
+     ;; This is to have a full-word alternative to :fn for those that prefer it.
+     (function fn))
+    (buffer (str:concat "*Help-" (symbol-name function) "*") 'nyxt/help-mode:help-mode)
   "Inspect a function and show it in a help buffer.
 For generic functions, describe all the methods."
-  (if fn
-      (let ((input fn))
+  (if function
+      (let ((input function))
         (flet ((fun-desc (input)
                  (spinneret:with-html-string
                    (:raw (resolve-backtick-quote-links (documentation input 'function) input))
