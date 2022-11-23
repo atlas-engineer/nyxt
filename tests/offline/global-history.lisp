@@ -18,7 +18,7 @@
          (buffer (nyxt::make-buffer)))
     (nyxt:with-current-buffer buffer
       (let ((file (history-file buffer)))
-        (nyxt::history-add (quri:uri "http://example.org"))
+        (nyxt/history-mode::history-add (quri:uri "http://example.org"))
         ;; history has 1 entry
         (assert-eq 1
                    (length (htree:all-data (files:content file))))
@@ -30,7 +30,7 @@
           ;; "value has no title"
           (assert-string= ""
                           (title entry)))
-        (nyxt::history-add (quri:uri "http://example.org") :title "foo")
+        (nyxt/history-mode::history-add (quri:uri "http://example.org") :title "foo")
         ;; "history has still 1 entry after adding same URL"
         (assert-eq 1
                    (length (htree:all-data (files:content file))))
@@ -40,7 +40,7 @@
           ;; "value now has title"
           (assert-string= "foo"
                           (title entry)))
-        (nyxt::history-add (quri:uri "http://example.org/sub"))
+        (nyxt/history-mode::history-add (quri:uri "http://example.org/sub"))
         ;; "history now has 2 entries"
         (assert-eq 2
                    (length (htree:all-data (files:content file))))

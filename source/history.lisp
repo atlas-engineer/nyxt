@@ -98,25 +98,6 @@ class."
   "Return a new global history tree for `history-entry' data."
   (htree:make :key 'history-tree-key :initial-owners (when buffer (list (id buffer)))))
 
-(-> history-add (quri:uri &key (:title string) (:buffer buffer)) *)
-(defun history-add (url &key (title "") (buffer (current-buffer)))
-  "Add URL to the global/buffer-local history.
-The `implicit-visits' count is incremented."
-  (files:with-file-content (history (history-file (current-buffer))
-                            :default (make-history-tree))
-    (unless (or (url-empty-p url)
-                ;; If buffer was not registered in the global history, don't
-                ;; proceed.  See `buffer's `customize-instance' `:after' method..
-                (not (htree:owner history (id buffer))))
-      (htree:add-child (make-instance 'history-entry
-                                      :url url
-                                      :title title)
-                       history
-                       (id buffer))
-      (let* ((entry (htree:data (htree:current (htree:owner history (id buffer))))))
-        (setf (title entry) title)
-        (incf (implicit-visits entry))))))
-
 (define-command delete-history-entry (&key (buffer (current-buffer)))
   "Delete queried history entries."
   (let ((entries (prompt

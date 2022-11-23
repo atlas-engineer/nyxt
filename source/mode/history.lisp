@@ -21,6 +21,20 @@ search.")
     nil
     :type boolean
     :documentation "Whether history navigation is restricted by buffer-local history.")
+   (backtrack-to-hubs-p
+    nil
+    :type boolean
+    :documentation "Go back in history when encountering an already visited page.
+For example
+example.com/.../1 ->  example.com/hub -> example.com/.../3 -> example.com/hub
+                                                              ^ current node here
+
+Gets optimized into this structure with this setting on:
+
+example.com/.../1 ->  example.com/hub -> example.com/.../3
+                      ^ current node here
+
+Experimental, may not always produce intuitive enough history trees.")
    (keyscheme-map
     (define-keyscheme-map "history-mode" ()
       keyscheme:default
@@ -382,6 +396,35 @@ internally, but this display is clearer and more navigable."
     (:p (format nil "The last ~a history entries:" limit))
     (:ul (:raw (nyxt::history-html-list :limit limit)))))
 
+(-> history-add (quri:uri &key (:title string) (:buffer buffer)) *)
+(defun history-add (url &key (title "") (buffer (current-buffer)))
+  "Add URL to the global/buffer-local history.
+If `backtrack-to-hubs-p' is on, go back to the matching parent instead.
+The `implicit-visits' count of the `htree:current' node is incremented in any
+case."
+  (files:with-file-content (history (history-file (current-buffer))
+                            :default (nyxt::make-history-tree))
+    (unless (or (url-empty-p url)
+                ;; If buffer was not registered in the global history, don't
+                ;; proceed.  See `buffer's `customize-instance' `:after' method.
+                (not (htree:owner history (id buffer))))
+      (let* ((mode (find-submode 'history-mode))
+             (parent-position (when mode
+                                (and (backtrack-to-hubs-p mode)
+                                     (position url (htree:all-parents history :owner (id buffer))
+                                               :test #'quri:uri-equal
+                                               :key (compose #'url #'htree:data))))))
+        (if parent-position
+            (htree:backward history (id buffer) (1+ parent-position))
+            (htree:add-child (make-instance 'nyxt::history-entry
+                                            :url url
+                                            :title title)
+                             history
+                             (id buffer))))
+      (let* ((entry (htree:data (htree:current (htree:owner history (id buffer))))))
+        (setf (title entry) title)
+        (incf (nyxt::implicit-visits entry))))))
+
 (export-always 'blocked-p)
 (defun blocked-p (url mode)
   (find-if (rcurry #'str:starts-with? (render-url url))
@@ -404,8 +447,8 @@ internally, but this display is clearer and more navigable."
         ;; WARNING: We add buffer's URL instead of the URL argument because in
         ;; case of some redirects (like Wikipedia's) the buffer URL is the final
         ;; one.
-        (nyxt::history-add (url buffer) :title (title buffer)
-                                        :buffer buffer)))
+        (history-add (url buffer) :title (title buffer)
+                                  :buffer buffer)))
     url))
 
 (defmethod nyxt:on-signal-notify-uri ((mode history-mode) url)
