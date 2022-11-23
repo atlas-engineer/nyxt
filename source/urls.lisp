@@ -393,7 +393,7 @@ guarantee of the same result."
 (define-internal-scheme "nyxt"
     (lambda (url buffer)
       (with-protect ("Error while processing the \"nyxt:\" URL: ~a" :condition)
-        (let ((url (quri:uri url)))
+        (let ((url (quri:uri (str:replace-first "://" ":" url))))
           (log:debug "Internal page ~a requested." url)
           (multiple-value-bind (internal-page-name args)
               (parse-nyxt-url url)
