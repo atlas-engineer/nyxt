@@ -134,7 +134,8 @@ This saves the history to disk when BODY exits."
               (htree:all-contiguous-owned-parents history owner)
               (htree:all-parents history :owner owner)))))))
   (:export-class-name-p t)
-  (:metaclass user-class))
+  (:metaclass user-class)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defmethod prompter:object-attributes ((node history-tree:node) (source prompter:source))
   (declare (ignore source))
@@ -165,7 +166,8 @@ This saves the history to disk when BODY exits."
             (htree:children (htree:owner-node history (id (buffer source)))))))))
   (:documentation "Direct children of the current history node.")
   (:export-class-name-p t)
-  (:metaclass user-class))
+  (:metaclass user-class)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-command history-forwards-direct-children (&optional (buffer (current-buffer)))
   "Query child URL to navigate to."
@@ -197,7 +199,8 @@ Otherwise go forward to the only child."
       (with-history (history (buffer source))
         (htree:all-forward-children history (id (buffer source)))))))
   (:export-class-name-p t)
-  (:metaclass user-class))
+  (:metaclass user-class)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-command history-forwards-query (&optional (buffer (current-buffer)))
   "Query forward-URL to navigate to."
@@ -224,7 +227,8 @@ Otherwise go forward to the only child."
               (htree:all-contiguous-owned-children history owner)
               (htree:all-children history :owner owner)))))))
   (:export-class-name-p t)
-  (:metaclass user-class))
+  (:metaclass user-class)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-command history-forwards-all-query (&optional (buffer (current-buffer)))
   "Query URL to forward to, from all child branches."
@@ -248,7 +252,8 @@ Otherwise go forward to the only child."
                  history
                  (htree:owner history (id (buffer source))))))))
   (:export-class-name-p t)
-  (:metaclass user-class))
+  (:metaclass user-class)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-command history-all-owner-nodes-query (&optional (buffer (current-buffer)))
   "Query URL to go to, from the list of all nodes owned by BUFFER."
@@ -268,7 +273,8 @@ Otherwise go forward to the only child."
       (with-history (history (buffer source))
         (htree:all-data history)))))
   (:export-class-name-p t)
-  (:metaclass user-class))
+  (:metaclass user-class)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-command history-all-query (&optional (buffer (current-buffer)))
   "Query URL to go to, from the whole history."
