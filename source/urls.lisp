@@ -58,7 +58,7 @@ counterpart, unless there are unprintable characters."
 (defun fetch-url-title (url)
   "Return URL's title.
 The URL is fetched, which explains possible bottlenecks."
-  (plump:text (aref (clss:select "title" (plump:parse (dex:get url))) 0)))
+  (ignore-errors (plump:text (aref (clss:select "title" (plump:parse (dex:get url))) 0))))
 
 (export-always 'error-help)
 (defun error-help (&optional (title "Unknown error") (text ""))
