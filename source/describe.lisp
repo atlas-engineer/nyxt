@@ -409,21 +409,23 @@ turned into links to their respective description page."
           (:p "Unbound")))))
 
 (defun format-arglist (arglist)
-  (multiple-value-bind (required optional rest keywords aok? aux key?)
-      (alex:parse-ordinary-lambda-list arglist
-                                       :normalize-optional nil
-                                       :normalize-keyword nil)
-    (declare (ignore aux aok? key?))
-    (with-output-to-string (s)
-      (when required
-        (format s "~{~a~^ ~}~&" required))
-      (when optional
-        (format s "&optional ~{~s~^ ~}~&"
-                optional))
-      (when rest
-        (format s "&rest ~a~&" rest))
-      (when keywords
-        (format s "&key ~{~s~^ ~}~&" keywords)))))
+  (if arglist
+      (multiple-value-bind (required optional rest keywords aok? aux key?)
+          (alex:parse-ordinary-lambda-list arglist
+                                           :normalize-optional nil
+                                           :normalize-keyword nil)
+        (declare (ignore aux aok? key?))
+        (with-output-to-string (s)
+          (when required
+            (format s "~{~a~^ ~}~&" required))
+          (when optional
+            (format s "&optional ~{~s~^ ~}~&"
+                    optional))
+          (when rest
+            (format s "&rest ~a~&" rest))
+          (when keywords
+            (format s "&key ~{~s~^ ~}~&" keywords))))
+      "()"))
 
 (defun format-function-type (function-type)
   (match function-type
