@@ -666,12 +666,21 @@ A command is a special kind of function that can be called with
                 collect (:div
                          (:h3 (keymaps:name keymap))
                          (:table
+                          (:tr
+                           (:th "Binding")
+                           (:th "Command")
+                           (:th "Documentation"))
                           (loop for keyspec being the hash-keys
                                   in (keymaps:keymap-with-parents->map keymap)
                                     using (hash-value bound-value)
                                 collect (:tr
                                          (:td keyspec)
-                                         (:td (format nil "~(~a~)" bound-value)))))))))
+                                         (:td (typecase bound-value
+                                                (sym:command-symbol (:nxref :command bound-value))
+                                                (command (:nxref :command (name bound-value)))
+                                                (t (prini-to-string bound-value))))
+                                         (:td (or (first (sera::lines (documentation bound-value 'function)))
+                                                  "")))))))))
     (spinneret:with-html-string
       (:h1 "Bindings")
       (:p (format nil "Buffer with ID ~a does not exist." id)))))
