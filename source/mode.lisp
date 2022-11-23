@@ -121,7 +121,8 @@ See also `disable'."))
                                   :key #'sera:class-name-of)))
     (if existing-instance
         (log:debug "Not enabling ~s since other ~s instance is already in buffer ~a" mode existing-instance buffer)
-        (call-next-method))))
+        (call-next-method))
+    mode))
 
 (defmethod enable :after ((mode mode) &key &allow-other-keys)
   (setf (enabled-p mode) t)
