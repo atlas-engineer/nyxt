@@ -461,7 +461,13 @@ For generic functions, describe all the methods."
                                                           key-keymap-pairs)))
                        (when key-keymapname-pairs
                          (:h2 "Bindings")
-                         (:p (format nil "~:{ ~S (~a)~:^, ~}" key-keymapname-pairs)))))
+                         (:table
+                          (:tr
+                           (:th "Binding")
+                           (:th "Keymap name"))
+                          (loop for (binding keymapname) in key-keymapname-pairs
+                                collect (:tr (:td binding)
+                                             (:td keymapname)))))))
                    #+sbcl
                    (unless (or (macro-function input)
                                (eq 'function (sb-introspect:function-type input)))
