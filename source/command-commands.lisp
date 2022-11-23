@@ -140,11 +140,14 @@ together with the arglists and documentations of the functions typed in."
      :sources (list (make-instance
                      'command-source
                      :return-actions
-                     (lambda-command run-command* (commands)
-                       "Run the chosen command."
-                       (let ((command (first commands)))
-                         (setf (last-access command) (local-time:now))
-                         (run-async command))))
+                     (list (lambda-command run-command* (commands)
+                             "Run the chosen command."
+                             (let ((command (first commands)))
+                               (setf (last-access command) (local-time:now))
+                               (run-async command)))
+                           (lambda-command describe-command* (commands)
+                             "Show the documentation and other properties of this command."
+                             (describe-command :command (name (first commands))))))
                     (make-instance
                      'extended-command-source
                      :return-actions
