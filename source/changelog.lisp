@@ -589,4 +589,8 @@ support as an example application for this feature.")
    (:li "Universal describe-* commands have been replaced with new sources for the
 regular commands, such as "
         (:code "function-non-nyxt-source") ", " (:code "function-internal-source")
-        " and so on.")))
+        " and so on."))
+
+  (:h3 "Bug fixes")
+  (:ul
+   (:li "Fix the display of history suggestions when going forward in history.")))
