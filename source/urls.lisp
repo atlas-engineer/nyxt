@@ -114,7 +114,13 @@ Accepts only one argument: the signaled condition.")
 Requires encryption or other means of security.")
    (cors-enabled-p
     nil
-    :documentation "Whether other pages can do requests to the resources with this scheme."))
+    :documentation "Whether other pages can do requests to the resources with this scheme.")
+   (display-isolated-p
+    nil
+    :documentation "Display-isolated schemes cannot be displayed (in iframes, for example) by other schemes.")
+   (empty-document-p
+    nil
+    :documentation "Empty document schemes can be loaded synchronously by websites referring to them."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))

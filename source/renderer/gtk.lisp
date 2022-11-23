@@ -830,12 +830,7 @@ See `gtk-browser's `modifier-translator' slot."
       (funcall (input-dispatcher window) event sender window nil))))
 
 (define-class gtk-scheme ()
-  ((display-isolated-p
-    nil
-    :documentation "Display-isolated schemes cannot be displayed (in iframes, for example) by other schemes.")
-   (empty-document-p
-    nil
-    :documentation "Empty document schemes can be loaded synchronously by websites referring to them."))
+  ()
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
