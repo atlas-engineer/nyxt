@@ -5,8 +5,13 @@
     (:documentation "GTK renderer using direct CFFI bindings."))
 (in-package :nyxt/renderer/gtk)
 
-(setf nyxt::+renderer+ "GTK")
 (push :nyxt-gtk *features*)
+
+(define-class gtk-renderer (renderer)
+  ((name "GTK"))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-class gtk-browser ()
   (#+darwin
@@ -50,12 +55,6 @@ See also the `web-contexts' slot."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class))
 
-(nyxt::without-package-locks
-  (handler-bind ((warning #'muffle-warning))
-    (defclass renderer-browser (gtk-browser)
-      ()
-      (:metaclass interface-class))))
-
 (alex:define-constant +internal+ "internal" :test 'equal)
 (alex:define-constant +default+ "default" :test 'equal)
 
@@ -88,12 +87,6 @@ See also the `web-contexts' slot."))
   (:export-accessor-names-p t)          ; TODO: Unexport?
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(nyxt::without-package-locks
-  (handler-bind ((warning #'muffle-warning))
-    (defclass renderer-window (gtk-window)
-      ()
-      (:metaclass interface-class))))
-
 (define-class gtk-buffer ()
   ((gtk-object)
    (context-name
@@ -123,12 +116,6 @@ failures."))
   (declare (ignore source))
   (append (call-next-method)
           `(("Context" ,(context-name buffer)))))
-
-(nyxt::without-package-locks
-  (handler-bind ((warning #'muffle-warning))
-    (defclass renderer-buffer (gtk-buffer)
-      ()
-      (:metaclass interface-class))))
 
 (defclass webkit-web-context (webkit:webkit-web-context) ()
   (:metaclass gobject:gobject-class))
@@ -174,7 +161,7 @@ As a workaround, we never leave the GTK main loop when running from a REPL.
 
 See https://github.com/atlas-engineer/nyxt/issues/740")
 
-(defmethod renderer-thread-p ((renderer string) &optional (thread (bt:current-thread)))
+(defmethod renderer-thread-p ((renderer gtk-renderer) &optional (thread (bt:current-thread)))
   #+darwin
   (string= "main thread" (bt:thread-name thread))
   #-darwin
@@ -194,7 +181,7 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
 (defun %within-renderer-thread (thunk)
   "If the current thread is the renderer thread, execute THUNK with `funcall'.
 Otherwise run the THUNK on the renderer thread by passing it a channel and wait on the channel's result."
-  (if (renderer-thread-p nyxt::+renderer+)
+  (if (renderer-thread-p nyxt::*renderer*)
       (funcall thunk)
       (let ((channel (nyxt::make-channel 1)))
         (within-gtk-thread
@@ -204,7 +191,7 @@ Otherwise run the THUNK on the renderer thread by passing it a channel and wait 
 (defun %within-renderer-thread-async (thunk)
   "Same as `%within-renderer-thread' but THUNK is not blocking and does
 not return."
-  (if (renderer-thread-p nyxt::+renderer+)
+  (if (renderer-thread-p nyxt::*renderer*)
       (funcall thunk)
       (within-gtk-thread
         (funcall thunk))))
@@ -223,7 +210,7 @@ the renderer thread, use `defmethod' instead."
     `(defmethod ,name ,args
        ,@(sera:unsplice docstring)
        ,@declares
-       (if (renderer-thread-p nyxt::+renderer+)
+       (if (renderer-thread-p nyxt::*renderer*)
            (progn ,@forms)
            (let ((channel (nyxt::make-channel 1))
                  (error-channel (nyxt::make-channel 1)))
@@ -355,12 +342,6 @@ By default it is found in the source directory."))
     :documentation "See `gtk-buffer' slot of the same name."))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(nyxt::without-package-locks ; TODO: Is there a cleaner way to update the mode class?  Maybe move it to the core?
-  (handler-bind ((warning #'muffle-warning))
-    (defclass nyxt/download-mode:renderer-download (gtk-download)
-      ()
-      (:metaclass interface-class))))
-
 (defclass webkit-web-view-ephemeral (webkit:webkit-web-view) ()
   (:metaclass gobject:gobject-class))
 
@@ -411,12 +392,6 @@ By default it is found in the source directory."))
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class))
-
-(nyxt::without-package-locks
-  (handler-bind ((warning #'muffle-warning))
-    (defclass renderer-request-data (gtk-request-data)
-      ()
-      (:metaclass interface-class))))
 
 (defun make-decide-policy-handler (buffer)
   (lambda (web-view response-policy-decision policy-decision-type-response)
@@ -834,12 +809,6 @@ See `gtk-browser's `modifier-translator' slot."
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
-
-(nyxt::without-package-locks
-  (handler-bind ((warning #'muffle-warning))
-    (defclass renderer-scheme (gtk-scheme)
-      ()
-      (:metaclass interface-class))))
 
 (defun make-context (name &key ephemeral-p)
   (let* ((context
@@ -1784,12 +1753,6 @@ local anyways, and it's better to refresh it if a load was queried."
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(nyxt::without-package-locks ;; FIXME
-  (handler-bind ((warning #'muffle-warning))
-    (defclass nyxt/user-script-mode:renderer-user-style (gtk-user-style)
-      ()
-      (:metaclass interface-class))))
-
 (define-ffi-method ffi-buffer-add-user-style ((buffer gtk-buffer) (style gtk-user-style))
   (let* ((content-manager
            (webkit:webkit-web-view-get-user-content-manager
@@ -1832,11 +1795,7 @@ local anyways, and it's better to refresh it if a load was queried."
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 
-(nyxt::without-package-locks ; TODO: Is there a cleaner way to update the mode class?  Maybe move it to the core?
-  (handler-bind ((warning #'muffle-warning))
-    (defclass nyxt/user-script-mode:renderer-user-script (gtk-user-script)
-      ()
-      (:metaclass interface-class))))
+
 
 (define-ffi-method ffi-buffer-add-user-script ((buffer gtk-buffer) (script gtk-user-script))
   (alex:if-let ((code (nyxt/user-script-mode:code script)))
@@ -2066,7 +2025,7 @@ custom (the specified proxy) and none."
   (webkit:webkit-uri-for-display text))
 
 (defmethod ffi-buffer-cookie-policy ((buffer gtk-buffer))
-  (if (renderer-thread-p nyxt::+renderer+)
+  (if (renderer-thread-p nyxt::*renderer*)
       (progn
         (log:warn "Querying cookie policy in WebKitGTK is only supported from a non-renderer thread.")
         nil)
@@ -2282,3 +2241,33 @@ See `make-buffer' for a description of the other arguments."
              :sources (list (make-instance 'prompter:raw-source :name "New context")
                             'context-source))))
   (apply #'make-buffer args))
+
+(defmethod install ((renderer gtk-renderer))
+  (flet ((set-superclasses (renderer-class-sym+superclasses)
+           (closer-mop:ensure-class (first renderer-class-sym+superclasses)
+                                    :direct-superclasses (rest renderer-class-sym+superclasses)
+                                    :metaclass 'interface-class)))
+    (mapc #'set-superclasses '((renderer-browser gtk-browser)
+                               (renderer-window gtk-window)
+                               (renderer-buffer gtk-buffer)
+                               (nyxt/download-mode:renderer-download gtk-download)
+                               (renderer-request-data gtk-request-data )
+                               (renderer-scheme gtk-scheme)
+                               (nyxt/user-script-mode:renderer-user-style gtk-user-style)
+                               (nyxt/user-script-mode:renderer-user-script gtk-user-script)))))
+
+(defmethod uninstall ((renderer gtk-renderer))
+  (flet ((remove-superclasses (renderer-class-sym)
+           (closer-mop:ensure-class renderer-class-sym
+                                    :direct-superclasses '()
+                                    :metaclass 'interface-class)))
+    (mapc #'remove-superclasses '(renderer-browser
+                                  renderer-window
+                                  renderer-buffer
+                                  nyxt/download-mode:renderer-download
+                                  renderer-request-data
+                                  renderer-scheme
+                                  nyxt/user-script-mode:renderer-user-style
+                                  nyxt/user-script-mode:renderer-user-script))))
+
+(setf nyxt::*renderer* (make-instance 'gtk-renderer))

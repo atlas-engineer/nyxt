@@ -740,7 +740,7 @@ A command is a special kind of function that can be called with
              (getf +guix-build-information+ :version)))
     (str:concat
      "Nyxt version: " +version+ +newline+
-     "Renderer version: " +renderer+ +newline+
+     "Renderer: " (name *renderer*) +newline+
      "Operating system kernel: " (software-type) " " (software-version) +newline+
      "Lisp implementation: " (lisp-implementation-type) " " (lisp-implementation-version)
      #+sbcl

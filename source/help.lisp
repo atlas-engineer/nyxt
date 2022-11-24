@@ -312,7 +312,7 @@ useful actions there, including the familiar " (:code "set-url") ", " (:code "hi
                               (intro)))
              "How do I...")))
      (:p :class "copyright"
-         (format nil "Nyxt/~a ~a" +renderer+ +version+)
+         (format nil "Nyxt/~a ~a" (name *renderer*) +version+)
          (:br)
          (format nil "Atlas Engineer LLC, 2018-~a" (time:timestamp-year (time:now)))))))
 

@@ -418,7 +418,7 @@ Examples:
   ;; Extensions should be made accessible straight from the beginning,
   ;; e.g. before a script is run.
   (declare #.(cons 'ignorable %start-args))
-  (unless +renderer+
+  (unless *renderer*
     (log:warn "No renderer set, Nyxt will not be able to render pages.  Try:
 
 \(progn
@@ -538,6 +538,9 @@ Finally, run the browser, load URL-STRINGS if any, then run
       (log:config :backup nil :pattern *log-pattern* :daily log-path)))
   (format t "Nyxt version ~a~&" +version+)
   (log:info "Source location: ~s" (files:expand *source-directory*))
+
+  (install *renderer*)
+
   (when (getf *options* :profile)
     (alex:if-let ((profile-class (find-profile-class (getf *options* :profile))))
       (log:info "Profile: ~s" (profile-name profile-class))
