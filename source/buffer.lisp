@@ -441,7 +441,9 @@ query is not a valid URL, or the first keyword is not recognized.")
     :documentation "Select a download engine to use, such as `:lisp' or
 `:renderer'.")
    (history-file
-    (history-file *browser*)
+    (if *browser*
+        (history-file *browser*)
+        (make-instance 'history-file))
     :type history-file
     :documentation "File where to save the global history used by this buffer.
 See also `history-file' in `browser' for the global history restored on startup,
@@ -1006,7 +1008,11 @@ BUFFER's modes."
 
 (hooks:define-hook-type buffer (function (buffer)))
 
-(define-command make-buffer (&rest args &key (title "") modes (url (default-new-buffer-url *browser*)) parent-buffer
+(define-command make-buffer (&rest args &key (title "") modes
+                             (url (if *browser*
+                                      (default-new-buffer-url *browser*)
+                                      (quri:uri (nyxt-url 'new))))
+                             parent-buffer
                              no-history-p (load-url-p t) (buffer-class 'web-buffer)
                              &allow-other-keys)
   "Create a new buffer.
