@@ -72,8 +72,8 @@
 
 (export-always 'predict)
 (defmethod predict ((model sequence-model) sequence)
-  (let* ((leaf (gethash sequence (edges model)))
-         (edges (alexandria:hash-table-values (edges leaf))))
+  (serapeum:and-let* ((leaf (gethash sequence (edges model)))
+                      (edges (alexandria:hash-table-values (edges leaf))))
     (first (sort edges #'> :key #'occurrences))))
 
 (defmethod predict-subsequence-simple ((model sequence-model) sequence)
