@@ -14,8 +14,7 @@
 (define-test global-history ()
   ;; Set profile to nosave to inhibit serialization / deserialization.
   ;; TODO: We should still test serialization and deserialization.
-  (let* ((nyxt:*global-profile* (make-instance 'test-profile))
-         (*browser* (make-instance 'browser))
+  (let* ((*browser* (make-instance 'browser :profile (make-instance 'test-profile)))
          (buffer (nyxt::make-buffer)))
     (nyxt:with-current-buffer buffer
       (let ((file (history-file buffer)))
@@ -51,7 +50,7 @@
   (let* ((history-path (make-instance 'history-file
                                       :base-path (asdf:system-relative-pathname
                                                   :nyxt "tests/test-data/broken-history.lisp")))
-         (history (files:read-file nyxt:*global-profile* history-path)))
+         (history (files:read-file (global-profile) history-path)))
     (assert-eq 2
                (hash-table-count (htree:owners history)))
     (assert-eq 3
