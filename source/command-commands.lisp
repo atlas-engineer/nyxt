@@ -46,8 +46,9 @@ from a key binding.")
   (:metaclass user-class))
 
 (defmethod predict-next-command ((browser browser))
-  (analysis:element (analysis:predict (command-model *browser*)
-                                      (list (last-command *browser*)))))
+  (alex:when-let ((prediction (analysis:predict (command-model browser)
+                                                (list (last-command browser)))))
+    (analysis:element prediction)))
 
 (define-class predicted-command-source (prompter:source)
   ((prompter:name "Predicted Command")
@@ -161,7 +162,7 @@ together with the arglists and documentations of the functions typed in."
                      :return-actions
                      (lambda-command run-command* (commands)
                        "Run the chosen command."
-                       (let ((command (first commands)))
+                       (alex:when-let ((command (first commands)))
                          (setf (last-access command) (time:now))
                          (run-async command)))))
      :hide-suggestion-count-p t)))
