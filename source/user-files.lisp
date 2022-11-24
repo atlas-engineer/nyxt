@@ -13,12 +13,17 @@
   (:documentation "With the default profile all data is persisted to the
 standard locations."))
 
-(export-always '*global-profile*)
-(defvar *global-profile* (make-instance 'nyxt-profile)
-  "The profile to use in the absence of buffers and on browser-less variables.")
+(export-always 'global-profile)
+(defun global-profile ()
+  "The profile to use in the absence of buffers and on browser-less variables."
+  (or
+   (when *browser* (profile *browser*))
+   (alex:when-let ((profile-class (find-profile-class (getf *options* :profile))))
+     (make-instance profile-class))
+   (make-instance 'nyxt-profile)))
 
 (define-class nyxt-file (files:gpg-file)
-  ((files:profile *global-profile*)
+  ((files:profile (global-profile))
    (files:on-external-modification 'files:reload)
    (editable-p
     t
