@@ -109,6 +109,9 @@ See also `disable'."))
         do (alex:when-let ((slot-name (loop for slot-def in slot-defs
                                             when (member key (c2mop:slot-definition-initargs slot-def))
                                               do (return (c2cl:slot-definition-name slot-def)))))
+             ;; TODO: Maybe use writer methods, if present? It implies a risk of
+             ;; runtime actions on not-yet-fully-initialized mode instances
+             ;; (because enable is a kind of initialization too).
              (setf (slot-value mode slot-name) value))))
 
 (defmethod enable :around ((mode mode) &key &allow-other-keys)
