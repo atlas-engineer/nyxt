@@ -239,6 +239,7 @@
                (:file "tests/offline/define-configuration")
                (:file "tests/offline/global-history")
                (:file "tests/offline/user-script-parsing")
+               (:file "tests/offline/mode")
                (:file "tests/online/urls")))
 
 (defsystem "nyxt/benchmark"

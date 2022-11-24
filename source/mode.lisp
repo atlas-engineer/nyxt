@@ -88,18 +88,31 @@ The handlers take the mode as argument.")
 (export-always 'enable)
 (defgeneric enable (mode &key &allow-other-keys)
   (:method-combination cascade)
-  (:method ((mode mode) &key)
-    nil)
+  (:method ((mode mode) &key &allow-other-keys)
+    mode)
   (:documentation "Run when enabling a mode.
 The pre-defined `:after' method handles further setup.
 This method is meant to be specialized for every mode.
-It is not meant to be called directly, see `enable-modes' instead.
+It is not meant to be called directly, see `enable-modes*' instead.
 
 All the parent modes' `enable' methods run after the exact mode one, cascading
 upwards to allow a more useful mode inheritance without duplicating the
 functionality. A `cascade' method combination is used for that.
 
 See also `disable'."))
+
+(defmethod enable :before ((mode mode) &rest keys &key &allow-other-keys)
+  ;; Using class-direct-slots here because `enable' will cascade to parent modes anyway.
+  ;; FIXME: An easier way to initialize slots given initargs?
+  (loop with slot-defs = (closer-mop:class-direct-slots (class-of mode))
+        for (key value) on keys by #'cddr
+        do (alex:when-let ((slot-name (loop for slot-def in slot-defs
+                                            when (member key (c2mop:slot-definition-initargs slot-def))
+                                              do (return (c2cl:slot-definition-name slot-def)))))
+             ;; TODO: Maybe use writer methods, if present? It implies a risk of
+             ;; runtime actions on not-yet-fully-initialized mode instances
+             ;; (because enable is a kind of initialization too).
+             (setf (slot-value mode slot-name) value))))
 
 (defmethod enable :around ((mode mode) &key &allow-other-keys)
   (let* ((buffer (buffer mode))
@@ -110,7 +123,7 @@ See also `disable'."))
         (log:debug "Not enabling ~s since other ~s instance is already in buffer ~a" mode existing-instance buffer)
         (call-next-method))))
 
-(defmethod enable :after ((mode mode) &key)
+(defmethod enable :after ((mode mode) &key &allow-other-keys)
   (setf (enabled-p mode) t)
   (hooks:run-hook (enable-hook mode) mode)
   (let ((buffer (buffer mode)))
@@ -143,7 +156,7 @@ See also `enable'."))
 (defmethod disable :around ((mode mode) &key &allow-other-keys)
   (call-next-method))
 
-(defmethod disable :after ((mode mode) &key)
+(defmethod disable :after ((mode mode) &key &allow-other-keys)
   (setf (enabled-p mode) nil)
   (hooks:run-hook (disable-hook mode) mode)
   (let ((buffer (buffer mode)))
@@ -318,7 +331,8 @@ ARGS are the keyword arguments for `make-instance' on MODES."
                         (apply #'enable (or (find mode-sym (slot-value buffer 'modes) :key #'name)
                                             (make-instance mode-sym :buffer buffer))
                                args))
-                      modes))
+                      modes)
+              buffer)
             (sera:filter #'modable-buffer-p buffers))))
 
 (define-command enable-modes (&key
