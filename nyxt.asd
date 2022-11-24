@@ -100,7 +100,8 @@
                 :serial t
                 :depends-on ("Utilities")
                 :components
-                ((:file "global")
+                ((:file "renderer")
+                 (:file "global")
                  (:file "concurrency")
                  (:file "gpg")
                  (:file "user-files")
