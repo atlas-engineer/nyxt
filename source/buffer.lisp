@@ -1148,7 +1148,8 @@ This is a low-level function.  See `buffer-delete' for the high-level version."
 
 (export-always 'window-list)
 (defun window-list ()
-  (alex:hash-table-values (windows *browser*)))
+  (when *browser*
+    (alex:hash-table-values (windows *browser*))))
 
 (defun dummy-buffer-p (buffer)
   (eq 'buffer (type-of buffer)))
