@@ -47,7 +47,14 @@ Without handler, return ARG.  This is an acceptable `combination' for
   (:metaclass interface-class))
 
 (define-class browser (renderer-browser)
-  ((remote-execution-p
+  ((profile
+    (global-profile)
+    :type nyxt-profile
+    :documentation "Global profile used to specialize the behavior of
+various parts, such as the path of all data files.
+This profile is used when there is no context buffer.
+See also the `profile' slot in the `buffer' class.")
+   (remote-execution-p
     nil
     :type boolean
     :documentation "Whether code sent to the socket gets executed.  You must
@@ -244,6 +251,12 @@ windows.
 A typical Nyxt session encompasses a single instance of this class, but nothing
 prevents otherwise.")
   (:metaclass user-class))
+
+(defmethod initialize-instance :after ((browser browser)
+                                       &key (history-file (make-instance 'history-file :profile (profile browser)))
+                                       &allow-other-keys)
+  "Ensure `history-file' uses the browser profile."
+  (setf (history-file browser) history-file))
 
 (defmethod theme ((ignored (eql nil)))
   "Fallback theme in case there `*browser*' is NIL."

@@ -33,10 +33,11 @@ inherited from the superclasses.")
     :documentation "Unique identifier for a buffer.")
    ;; TODO: Or maybe a dead-buffer should just be a buffer history?
    (profile
-    *global-profile*
+    (global-profile)
     :type nyxt-profile
     :documentation "Buffer profiles are used to specialize the behavior of
-various parts, such as the path of all data files.")
+various parts, such as the path of all data files.
+See also the `profile' slot in the `browser' class.")
    (url (quri:uri ""))
    (url-at-point (quri:uri ""))
    (title "")

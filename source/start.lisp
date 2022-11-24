@@ -537,9 +537,7 @@ Finally, run the browser, load URL-STRINGS if any, then run
   (log:info "Source location: ~s" (files:expand *source-directory*))
   (when (getf *options* :profile)
     (alex:if-let ((profile-class (find-profile-class (getf *options* :profile))))
-      (progn
-        (setf *global-profile* (make-instance profile-class))
-        (log:info "Profile: ~s" (profile-name profile-class)))
+      (log:info "Profile: ~s" (profile-name profile-class))
       (log:warn "Profile not found: ~s" (getf *options* :profile))))
   (let* ((urls (strings->urls url-strings))
          (thread (when (files:expand *socket-file*)
