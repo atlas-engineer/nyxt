@@ -178,6 +178,9 @@ It skips configuration files and other data files like the history."))))
             (uiop:delete-file-if-exists socket))))
       (mapc #'destroy-thread* (non-terminating-threads *browser*))
       (ffi-kill-browser *browser*)
+      ;; Reset global state.
+      (setf *browser* nil
+            *options* nil)
       ;; On FreeBSD this may cause freeze. Also we have to pass
       ;; FINISH-OUTPUT = NIL in FFI-INITIALIZE.
       #-freebsd
