@@ -563,7 +563,7 @@ say to develop Nyxt or extensions.")
                                 (uiop:relativize-pathname-directory (call-next-method))))
           (defmethod files:resolve ((profile dev-profile) (file history-file))
             "Persist history to default location."
-            (files:resolve (global-profile) file))
+            (files:resolve (profile *browser*) file))
           (define-configuration buffer
             "Make new profile the default."
             ((profile (make-instance (or (find-profile-class (getf *options* :profile)) 'dev-profile))))))

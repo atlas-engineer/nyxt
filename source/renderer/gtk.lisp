@@ -493,7 +493,7 @@ response.  The BODY is wrapped with `with-protect'."
          (gtk:gtk-box-pack-start horizontal-box-layout panel-buffer-container-right :expand nil)
          (gtk:gtk-box-pack-start root-box-layout horizontal-box-layout :expand t :fill t)
 
-         (setf message-view (make-web-view (global-profile) nil))
+         (setf message-view (make-web-view (profile *browser*) nil))
          (gtk:gtk-box-pack-end root-box-layout message-container :expand nil)
          (gtk:gtk-box-pack-start message-container message-view :expand t)
          (setf (gtk:gtk-widget-size-request message-container)
@@ -504,7 +504,7 @@ response.  The BODY is wrapped with `with-protect'."
          (setf (gtk:gtk-widget-size-request status-container)
                (list -1 (height status-buffer)))
 
-         (setf prompt-buffer-view (make-web-view (global-profile) nil))
+         (setf prompt-buffer-view (make-web-view (profile *browser*) nil))
          (gtk:gtk-box-pack-end root-box-layout prompt-buffer-container :expand nil)
          (gtk:gtk-box-pack-start prompt-buffer-container prompt-buffer-view :expand t)
          (setf (gtk:gtk-widget-size-request prompt-buffer-container)

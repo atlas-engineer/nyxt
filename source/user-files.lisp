@@ -13,13 +13,8 @@
   (:documentation "With the default profile all data is persisted to the
 standard locations."))
 
-(export-always 'global-profile)
-(defun global-profile ()
-  "The profile to use in the absence of buffers and on browser-less variables."
-  (profile *browser*))
-
 (define-class nyxt-file (files:gpg-file)
-  ((files:profile (global-profile))
+  ((files:profile (profile *browser*))
    (files:on-external-modification 'files:reload)
    (editable-p
     t
