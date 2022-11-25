@@ -562,6 +562,7 @@
                serapeum)
   :pathname #p"NYXT:libraries;theme;"
   :components ((:file "package")
+               (:file "color-utils")
                (:file "theme"))
   :in-order-to ((test-op (test-op "nyxt/theme/tests"))))
 

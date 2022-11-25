@@ -1288,49 +1288,17 @@ See `finalize-buffer'."
               (webkit:webkit-file-chooser-request-cancel file-chooser-request))))
       t)))
 
-(defvar *css-colors*
-  '("AliceBlue" "AntiqueWhite" "Aqua" "Aquamarine" "Azure" "Beige" "Bisque" "Black" "BlanchedAlmond"
-    "Blue" "BlueViolet" "Brown" "BurlyWood" "CadetBlue" "Chartreuse" "Chocolate" "Coral"
-    "CornflowerBlue" "Cornsilk" "Crimson" "Cyan" "DarkBlue" "DarkCyan" "DarkGoldenRod" "DarkGray"
-    "DarkGrey" "DarkGreen" "DarkKhaki" "DarkMagenta" "DarkOliveGreen" "DarkOrange" "DarkOrchid"
-    "DarkRed" "DarkSalmon" "DarkSeaGreen" "DarkSlateBlue" "DarkSlateGray" "DarkSlateGrey"
-    "DarkTurquoise" "DarkViolet" "DeepPink" "DeepSkyBlue" "DimGray" "DimGrey" "DodgerBlue"
-    "FireBrick" "FloralWhite" "ForestGreen" "Fuchsia" "Gainsboro" "GhostWhite" "Gold" "GoldenRod"
-    "Gray" "Grey" "Green" "GreenYellow" "HoneyDew" "HotPink" "IndianRed" "Indigo" "Ivory" "Khaki"
-    "Lavender" "LavenderBlush" "LawnGreen" "LemonChiffon" "LightBlue" "LightCoral" "LightCyan"
-    "LightGoldenRodYellow" "LightGray" "LightGrey" "LightGreen" "LightPink" "LightSalmon"
-    "LightSeaGreen" "LightSkyBlue" "LightSlateGray" "LightSlateGrey" "LightSteelBlue" "LightYellow"
-    "Lime" "LimeGreen" "Linen" "Magenta" "Maroon" "MediumAquaMarine" "MediumBlue" "MediumOrchid"
-    "MediumPurple" "MediumSeaGreen" "MediumSlateBlue" "MediumSpringGreen" "MediumTurquoise"
-    "MediumVioletRed" "MidnightBlue" "MintCream" "MistyRose" "Moccasin" "NavajoWhite" "Navy"
-    "OldLace" "Olive" "OliveDrab" "Orange" "OrangeRed" "Orchid" "PaleGoldenRod" "PaleGreen"
-    "PaleTurquoise" "PaleVioletRed" "PapayaWhip" "PeachPuff" "Peru" "Pink" "Plum" "PowderBlue"
-    "Purple" "RebeccaPurple" "Red" "RosyBrown" "RoyalBlue" "SaddleBrown" "Salmon" "SandyBrown"
-    "SeaGreen" "SeaShell" "Sienna" "Silver" "SkyBlue" "SlateBlue" "SlateGray" "SlateGrey" "Snow"
-    "SpringGreen" "SteelBlue" "Tan" "Teal" "Thistle" "Tomato" "Turquoise" "Violet" "Wheat" "White"
-    "WhiteSmoke" "Yellow" "YellowGreen")
-  "All the named CSS colors to construct `color-source' from.")
-
-(defun contrasting-color (color)
-  (let ((rgba (gdk:gdk-rgba-parse color)))
-    (flet ((relative-luminance (components)
-             (loop for const in '(0.2126 0.7152 0.0722)
-                   for rgb-component in components
-                   sum (* const (if (<= rgb-component 0.03928)
-                                    (/ rgb-component 12.92)
-                                    (expt (/ (+ rgb-component 0.055) 1.055) 2.4))))))
-      (if (< (relative-luminance (list (gdk:gdk-rgba-red rgba)
-                                       (gdk:gdk-rgba-green rgba)
-                                       (gdk:gdk-rgba-blue rgba)))
-             ;; Roughly the luminance of #777, the color
-             ;; equally contrasting with black and white.
-             0.2)
-          "white"
-          "black"))))
+;; Using GDK is (temporarily?) more reliable than `theme' build-in parser.
+(setf theme:*parsing-function*
+      (lambda (color)
+        (let ((rgba (gdk:gdk-rgba-parse color)))
+          (list (gdk:gdk-rgba-red rgba)
+                (gdk:gdk-rgba-green rgba)
+                (gdk:gdk-rgba-blue rgba)))))
 
 (define-class color-source (prompter:source)
   ((prompter:name "Color")
-   (prompter:constructor *css-colors*)
+   (prompter:constructor theme:*colors*)
    (prompter:filter-preprocessor
     (lambda (suggestions source input)
       (let ((input-color input))
@@ -1344,7 +1312,7 @@ See `finalize-buffer'."
       (ps-eval :buffer (current-prompt-buffer)
         (setf (ps:@ (nyxt/ps:qs document "#input") style background-color) (ps:lisp color)))
       (ps-eval :buffer (current-prompt-buffer)
-        (setf (ps:@ (nyxt/ps:qs document "#input") style color) (ps:lisp (contrasting-color color)))))))
+        (setf (ps:@ (nyxt/ps:qs document "#input") style color) (ps:lisp (theme:contrasting-color color)))))))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defmethod prompter:object-attributes ((color string) (source color-source))
@@ -1353,7 +1321,7 @@ See `finalize-buffer'."
      ,(let ((spinneret:*html-style* :tree))
         (spinneret:with-html-string
           (:span :style (format nil "background-color: ~a; color: ~a; border: 0.1em solid ~a; border-radius: 0.1em"
-                                color (contrasting-color color) (contrasting-color color))
+                                color (theme:contrasting-color color) (theme:contrasting-color color))
                  color))))))
 
 (defun process-color-chooser-request (web-view color-chooser-request)

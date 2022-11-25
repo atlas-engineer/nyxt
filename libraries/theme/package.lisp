@@ -3,5 +3,6 @@
 
 (uiop:define-package :theme
   (:use :cl)
+  (:import-from :alexandria #:curry #:rcurry #:compose)
   (:import-from :serapeum #:export-always)
   (:import-from :class-star #:define-class))
