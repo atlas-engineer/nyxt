@@ -358,7 +358,7 @@ To discover the default value of a slot or all slots of a class, use the
   (or %buffer
       (alex:if-let ((w (or window (current-window))))
         (active-buffer w)
-        (when *browser*
+        (progn
           (log:debug "No active window, picking last active buffer.")
           (last-active-buffer)))))
 

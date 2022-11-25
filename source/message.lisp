@@ -10,14 +10,13 @@
                       log4cl:+log-level-warn+
                       log4cl:+log-level-error+))
     (uiop:print-backtrace))
-  (when *browser*
-    (push
-     ;; TODO: Include time in *Messages* entries.
-     ;; (make-instance 'log4cl:pattern-layout :conversion-pattern "<%p> [%D{%H:%M:%S}] %m%n" )
-     (with-output-to-string (s)
-       (log4cl-impl:layout-to-stream
-        (slot-value appender 'log4cl-impl:layout) s logger level log-func))
-     (slot-value *browser* 'messages-content))))
+  (push
+   ;; TODO: Include time in *Messages* entries.
+   ;; (make-instance 'log4cl:pattern-layout :conversion-pattern "<%p> [%D{%H:%M:%S}] %m%n" )
+   (with-output-to-string (s)
+     (log4cl-impl:layout-to-stream
+      (slot-value appender 'log4cl-impl:layout) s logger level log-func))
+   (slot-value *browser* 'messages-content)))
 
 (defmacro %echo (text &key (logger 'log:info))
   "Echo TEXT in the message buffer.

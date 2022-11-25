@@ -179,9 +179,9 @@ It skips configuration files and other data files like the history."))))
       (mapc #'destroy-thread* (non-terminating-threads *browser*))
       (ffi-kill-browser *browser*)
       ;; Reset global state.
-      (setf *browser* nil
-            *options* nil)
       (uninstall *renderer*)
+      (setf *browser* (make-instance 'browser)
+            *options* nil)
       ;; On FreeBSD this may cause freeze. Also we have to pass
       ;; FINISH-OUTPUT = NIL in FFI-INITIALIZE.
       #-freebsd
@@ -541,6 +541,10 @@ Finally, run the browser, load URL-STRINGS if any, then run
   (log:info "Source location: ~s" (files:expand *source-directory*))
 
   (install *renderer*)
+
+  (unless (find-if (sera:eqs 'messages-appender) (log4cl:all-appenders)
+                   :key #'sera:class-name-of)
+    (log4cl:add-appender log4cl:*root-logger* (make-instance 'messages-appender)))
 
   (when (getf *options* :profile)
     (alex:if-let ((profile-class (find-profile-class (getf *options* :profile))))

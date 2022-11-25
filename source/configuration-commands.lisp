@@ -54,9 +54,7 @@ On error, return the condition as a first value and the backtrace as second valu
                                       (let ((backtrace (with-output-to-string (stream)
                                                          (uiop:print-backtrace :stream stream :condition c))))
                                         (throw 'lisp-file-error
-                                          (if *browser*
-                                              (error-in-new-window "*Config file errors*" (princ-to-string c) backtrace)
-                                              (values c backtrace)))))))
+                                          (error-in-new-window "*Config file errors*" (princ-to-string c) backtrace))))))
                 (unsafe-load))))))))
 
 (define-command load-file ()
