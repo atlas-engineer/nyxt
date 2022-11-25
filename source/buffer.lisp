@@ -441,9 +441,7 @@ query is not a valid URL, or the first keyword is not recognized.")
     :documentation "Select a download engine to use, such as `:lisp' or
 `:renderer'.")
    (history-file
-    (if *browser*
-        (history-file *browser*)
-        (make-instance 'history-file))
+    (history-file *browser*)
     :type history-file
     :documentation "File where to save the global history used by this buffer.
 See also `history-file' in `browser' for the global history restored on startup,
@@ -1009,9 +1007,7 @@ BUFFER's modes."
 (hooks:define-hook-type buffer (function (buffer)))
 
 (define-command make-buffer (&rest args &key (title "") modes
-                             (url (if *browser*
-                                      (default-new-buffer-url *browser*)
-                                      (quri:uri (nyxt-url 'new))))
+                             (url (default-new-buffer-url *browser*))
                              parent-buffer
                              no-history-p (load-url-p t) (buffer-class 'web-buffer)
                              &allow-other-keys)
@@ -1136,10 +1132,9 @@ This is a low-level function.  See `buffer-delete' for the high-level version."
   (gethash id (slot-value *browser* 'buffers)))
 
 (defun buffers-set (id buffer)
-  (when *browser*
-    (setf (gethash id (slot-value *browser* 'buffers)) buffer)
-    ;; Force setf call so that slot is seen as changed, e.g. by status buffer watcher.
-    (setf (slot-value *browser* 'buffers) (slot-value *browser* 'buffers))))
+  (setf (gethash id (slot-value *browser* 'buffers)) buffer)
+  ;; Force setf call so that slot is seen as changed, e.g. by status buffer watcher.
+  (setf (slot-value *browser* 'buffers) (slot-value *browser* 'buffers)))
 
 (defun buffers-delete (id)
   (remhash id (slot-value *browser* 'buffers))
@@ -1148,8 +1143,7 @@ This is a low-level function.  See `buffer-delete' for the high-level version."
 
 (export-always 'window-list)
 (defun window-list ()
-  (when *browser*
-    (alex:hash-table-values (windows *browser*))))
+  (alex:hash-table-values (windows *browser*)))
 
 (defun dummy-buffer-p (buffer)
   (eq 'buffer (type-of buffer)))

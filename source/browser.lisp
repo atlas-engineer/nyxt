@@ -48,7 +48,10 @@ Without handler, return ARG.  This is an acceptable `combination' for
 
 (define-class browser (renderer-browser)
   ((profile
-    (global-profile)
+    (or
+     (alex:when-let ((profile-class (find-profile-class (getf *options* :profile))))
+       (make-instance profile-class))
+     (make-instance 'nyxt-profile))
     :type nyxt-profile
     :documentation "Global profile used to specialize the behavior of
 various parts, such as the path of all data files.
@@ -258,10 +261,7 @@ prevents otherwise.")
   "Ensure `history-file' uses the browser profile."
   (setf (history-file browser) history-file))
 
-(defmethod theme ((ignored (eql nil)))
-  "Fallback theme in case there `*browser*' is NIL."
-  (declare (ignore ignored))
-  (make-instance 'theme:theme))
+(setf *browser* (make-instance 'browser))
 
 (defmethod external-editor-program ((browser browser))
   (alex:ensure-list (slot-value browser 'external-editor-program)))
@@ -282,10 +282,6 @@ idle, so it should do the job."
 
 (defmethod finalize ((browser browser) urls startup-timestamp)
   "Run `*after-init-hook*' then BROWSER's `startup'."
-  ;; `messages-appender' requires `*browser*' to be initialized.
-  (unless (find-if (sera:eqs 'messages-appender) (log4cl:all-appenders)
-                   :key #'sera:class-name-of)
-    (log4cl:add-appender log4cl:*root-logger* (make-instance 'messages-appender)))
   (ignore-errors
    (handler-bind ((error (lambda (c) (log:error "In *after-init-hook*: ~a" c))))
      (hooks:run-hook *after-init-hook*))) ; TODO: Run outside the main loop?
@@ -372,11 +368,6 @@ restored."
           (log:warn c)))
       (hooks:run-hook *after-startup-hook*)
       (funcall* (startup-error-reporter-function *browser*)))))
-
-;; Catch a common case for a better error message.
-(defmethod buffers :before ((browser t))
-  (when (null browser)
-    (error "There is no current *browser*. Is Nyxt started?")))
 
 (-> set-window-title (&optional window buffer) *)
 (export-always 'set-window-title)
@@ -585,11 +576,10 @@ The following example does a few things:
 If NO-RESCAN is non-nil, fetch the window from the `last-active-window' cache
 instead of asking the renderer for the active window.  It is faster but
 sometimes yields the wrong result."
-  (when *browser*
-    (if (and no-rescan (slot-value *browser* 'last-active-window))
-        (slot-value *browser* 'last-active-window)
-        ;; No window when browser is not started or does not implement `ffi-window-active'.
-        (ignore-errors (ffi-window-active *browser*)))))
+  (if (and no-rescan (slot-value *browser* 'last-active-window))
+      (slot-value *browser* 'last-active-window)
+      ;; No window when browser is not started or does not implement `ffi-window-active'.
+      (ignore-errors (ffi-window-active *browser*))))
 
 (export-always 'set-current-buffer)
 (defun set-current-buffer (buffer &key (focus t))
