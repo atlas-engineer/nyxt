@@ -149,44 +149,39 @@ It's suitable for `prompter:filter-preprocessor'."
    (prompter:multi-selection-p t)
    (open-file-in-new-buffer-p
     t
-    :documentation "If nil, don't open files and directories in a new buffer.")
+    :documentation "Whether to open files and directories in a new buffer.")
    (extensions
     nil
     :type (list-of string)
-    :documentation "File extensions that this source lists.
-If nil, allow everything.")
+    :documentation "List of extensions that are displayed.
+When nil, all extensions are whitelisted.")
    (allow-directories
     t
     :type boolean
-    :documentation "Whether directories are listed too.")
+    :documentation "Whether directories are displayed.")
    (path-filter
     nil
     :type (or null (function (pathname) boolean))
-    :documentation "Function to arbitrarily filter files if directory/extension
-is not enough.
-
-Takes a pathname and returns:
-- True if the pathname should stay.
-- False if the pathname should not be listed.")
+    :documentation "Function defining a predicate to filter files.
+It takes a pathname and returns a boolean.  For simpler cases, use
+`allow-directories'.")
    (supported-media-types
     '("xhtml" "html" "mp3" "ogg" "mp4" "flv" "wmv" "webm" "mkv")
     :type (list-of string)
-    :documentation "Media types that Nyxt can open.
-Others are opened with OS-specific mechanisms.")
+    :documentation "Media types that Nyxt opens.
+Other formats are opened relying on the OS.")
    (open-file-function
     #'default-open-file-function
     ;; TODO: Allow `data-path's?
     :type (function ((or string pathname) &key
                      (:supported-p boolean)
                      (:new-buffer-p boolean)))
-    :documentation "The function to open the file with.
-Accepts the name of the file as the first argument and has two keyword
-arguments:
+    :documentation "Function used to open files.
+Takes the name of the file as the first argument and accepts two keyword arguments:
 
-- :supported-p denotes whether file is considered supported by Nyxt (i.e., its
-  extension is one of `supported-media-types').
-- :new-buffer-p says whether the file needs to be opened in a new buffer. It
-  most probably will be equal to `open-file-in-new-buffer-p'."))
+- :supported-p as to whether the file extension is supported by Nyxt (i.e. its
+  extension is one of `supported-media-types');
+- :new-buffer-p as to whether the file should be opened in a new buffer."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
