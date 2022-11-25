@@ -147,33 +147,41 @@ It's suitable for `prompter:filter-preprocessor'."
     :accessor nil)
    (prompter:filter-preprocessor (make-file-source-preprocessor))
    (prompter:multi-selection-p t)
-   (open-file-in-new-buffer-p t :documentation "If nil, don't open files and directories in a new buffer.")
-   (extensions nil
-               :type (list-of string)
-               :documentation "File extensions that this source lists.
+   (open-file-in-new-buffer-p
+    t
+    :documentation "If nil, don't open files and directories in a new buffer.")
+   (extensions
+    nil
+    :type (list-of string)
+    :documentation "File extensions that this source lists.
 If nil, allow everything.")
-   (allow-directories t
-                      :type boolean
-                      :documentation "Whether directories are listed too.")
+   (allow-directories
+    t
+    :type boolean
+    :documentation "Whether directories are listed too.")
    (path-filter
     nil
     :type (or null (function (pathname) boolean))
-    :documentation "Function to arbitrarily filter files if directory/extension is not enough.
+    :documentation "Function to arbitrarily filter files if directory/extension
+is not enough.
 
 Takes a pathname and returns:
 - True if the pathname should stay.
 - False if the pathname should not be listed.")
-   (supported-media-types '("xhtml" "html" "mp3" "ogg" "mp4" "flv" "wmv" "webm" "mkv")
-                          :type (list-of string)
-                          :documentation "Media types that Nyxt can open.
+   (supported-media-types
+    '("xhtml" "html" "mp3" "ogg" "mp4" "flv" "wmv" "webm" "mkv")
+    :type (list-of string)
+    :documentation "Media types that Nyxt can open.
 Others are opened with OS-specific mechanisms.")
-   (open-file-function #'default-open-file-function
-                       ;; TODO: Allow `data-path's?
-                       :type (function ((or string pathname) &key
-                                        (:supported-p boolean)
-                                        (:new-buffer-p boolean)))
-                       :documentation "The function to open the file with.
-Accepts the name of the file as the first argument and has two keyword arguments:
+   (open-file-function
+    #'default-open-file-function
+    ;; TODO: Allow `data-path's?
+    :type (function ((or string pathname) &key
+                     (:supported-p boolean)
+                     (:new-buffer-p boolean)))
+    :documentation "The function to open the file with.
+Accepts the name of the file as the first argument and has two keyword
+arguments:
 
 - :supported-p denotes whether file is considered supported by Nyxt (i.e., its
   extension is one of `supported-media-types').
