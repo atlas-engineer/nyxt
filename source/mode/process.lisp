@@ -66,10 +66,8 @@ Accepts the path to the acted-on document and `process-mode' instance.")
                   else
                     when condition-value
                       do (with-current-buffer (buffer mode)
-                           (when (action mode)
-                             (funcall (action mode) (path-url mode) mode))))))))
+                           (funcall* (action mode) (path-url mode) mode)))))))
 
 (defmethod disable ((mode process-mode) &key)
-  (and (cleanup mode)
-       (funcall (cleanup mode) (path-url mode) mode))
+  (funcall* (cleanup mode) (path-url mode) mode)
   (destroy-thread* (thread mode)))
