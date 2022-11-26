@@ -459,7 +459,7 @@ ID is a buffer `id'."
                                    (position (element (current-heading buffer))
                                              headings
                                              :key #'element)))
-                  (_ (< 0 new-position (1- (length headings)))))
+                  (_ (<= 0 new-position (1- (length headings)))))
     (scroll-page-to-heading (elt headings new-position))))
 
 (define-command next-heading (&optional (buffer (current-buffer)))
