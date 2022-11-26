@@ -23,6 +23,13 @@
         (declare (ignore path-url))
         (when (repeat-action mode)
           (funcall (repeat-action mode) mode))))
+   (nyxt/process-mode:cleanup
+    #'(lambda (path-url mode)
+        (declare (ignore path-url))
+        ;; Needed since the mode object might not have been garbage collected.
+        (setf (repeat-action mode) nil
+              (repeat-count mode) nil
+              (repeat-interval mode) 1.0)))
    (repeat-count
     nil
     :type (or integer null)
