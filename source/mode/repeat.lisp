@@ -21,8 +21,7 @@
    (nyxt/process-mode:action
     #'(lambda (path-url mode)
         (declare (ignore path-url))
-        (when (repeat-action mode)
-          (funcall (repeat-action mode) mode))))
+        (funcall* (repeat-action mode) mode)))
    (nyxt/process-mode:cleanup
     #'(lambda (path-url mode)
         (declare (ignore path-url))
