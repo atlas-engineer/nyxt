@@ -452,19 +452,23 @@ ID is a buffer `id'."
   (set-current-buffer (buffer heading) :focus nil)
   (nyxt/dom:scroll-to-element (element heading)))
 
+(defun scroll-page-to-n-headings (n &optional (buffer (current-buffer)))
+  "Scroll to the N adjacent heading of the BUFFER."
+  (sera:and-let* ((headings (get-headings :buffer buffer))
+                  (new-position (+ n
+                                   (position (element (current-heading buffer))
+                                             headings
+                                             :key #'element)))
+                  (_ (< 0 new-position (1- (length headings)))))
+    (scroll-page-to-heading (elt headings new-position))))
+
 (define-command next-heading (&optional (buffer (current-buffer)))
   "Scroll to the next heading of the BUFFER."
-  (sera:and-let* ((headings (get-headings :buffer buffer))
-                  (current (current-heading buffer))
-                  (pos (position (element current) headings :key #'element))
-                  (_ (not (< (1+ pos) (length headings)))))
-    (scroll-page-to-heading (elt headings (1+ pos)))))
+  (scroll-page-to-n-headings 1 buffer))
 
 (define-command previous-heading (&optional (buffer (current-buffer)))
   "Scroll to the previous heading of the BUFFER."
-  (sera:and-let* ((headings (get-headings :buffer buffer))
-                  (current (current-heading buffer)))
-    (scroll-page-to-heading (elt headings (1- (position (element current) headings :key #'element))))))
+  (scroll-page-to-n-headings -1 buffer))
 
 (define-class heading-source (prompter:source)
   ((prompter:name "Headings")
