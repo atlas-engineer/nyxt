@@ -76,6 +76,10 @@ the generic functions on `status-buffer'.  Finally set the `window'
         :padding-left "4px"
         :margin 0)))
    (prompt-buffer-open-height
+    ;; Ensures that 10 suggestions are vertically shown, while the last entry
+    ;; appears truncated thus making it clear that more follow.
+    ;; It's also set exactly to a third of the default Nyxt window height
+    ;; (768:256).
     256
     :documentation "The height of the prompt buffer when open.")
    (input-dispatcher
