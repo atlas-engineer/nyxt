@@ -104,6 +104,7 @@ It takes a `repeat-mode' instance as argument.")
   (setf (command-dispatcher (current-window)) #'dispatch-command
         (input-skip-dispatcher (current-window)) #'dispatch-input-skip))
 
+;; TODO It doesn't work.
 (define-command-global repeat-key
     (&key (times (let ((nyxt::*interactive-p* t))
                    (or
