@@ -64,6 +64,7 @@ It takes a `repeat-mode' instance as argument.")
                                 (parse-integer
                                  (prompt1 :prompt "Repeat every X seconds"
                                           :input "5"
+                                          :hide-suggestion-count-p t
                                           :sources 'prompter:raw-source))))))
     (enable-modes* 'repeat-mode
                    (current-buffer)
@@ -77,6 +78,7 @@ It takes a `repeat-mode' instance as argument.")
                               (parse-integer
                                (prompt1 :prompt "Repeat for X times"
                                         :input "4"
+                                        :hide-suggestion-count-p t
                                         :sources 'prompter:raw-source))))))
     (enable-modes* 'repeat-mode
                    (current-buffer)
@@ -112,6 +114,7 @@ It takes a `repeat-mode' instance as argument.")
                      (parse-integer
                       (prompt1 :prompt "Repeat for X times"
                                :input "4"
+                               :hide-suggestion-count-p t
                                :sources 'prompter:raw-source)))))))
   "Repeat the command bound to the user-pressed keybinding TIMES times."
   (setf *repeat-times-stack* (+ times (* 10 *repeat-times-stack*))
