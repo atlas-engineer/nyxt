@@ -81,9 +81,7 @@ It takes a `repeat-mode' instance as argument.")
     (enable-modes* 'repeat-mode
                    (current-buffer)
                    :repeat-count times
-                   :repeat-action #'(lambda (mode)
-                                      (declare (ignore mode))
-                                      (nyxt::run function)))))
+                   :repeat-action function)))
 
 (defvar *repeat-times-stack* 0
   "The current number of repetitions.")
