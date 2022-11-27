@@ -25,12 +25,12 @@ It takes a `repeat-mode' instance as argument.")
    (nyxt/process-mode:firing-condition
     #'(lambda (path-url mode)
         (declare (ignore path-url))
-        (cond
-          ((repeat-count mode)
-           (if (zerop (repeat-count mode))
-               :return
-               (decf (repeat-count mode))))
-          (t (sleep (repeat-interval mode)) t)))
+        (sleep (repeat-interval mode))
+        (cond ((repeat-count mode)
+               (if (zerop (repeat-count mode))
+                   :return
+                   (decf (repeat-count mode))))
+              (t t)))
     :documentation "See `nyxt/process-mode:firing-condition'.")
    (nyxt/process-mode:action
     #'(lambda (path-url mode)
