@@ -70,6 +70,9 @@ Accepts the path to the acted-on document and `process-mode' instance.")
                            (sera:synchronized (mode)
                              (funcall* (action mode) (path-url mode) mode))))))))
 
+(defmethod call-cleanup ((mode process-mode) &key)
+  (funcall* (cleanup mode) (path-url mode) mode))
+
 (defmethod disable ((mode process-mode) &key)
-  (funcall* (cleanup mode) (path-url mode) mode)
+  (call-cleanup mode)
   (destroy-thread* (thread mode)))

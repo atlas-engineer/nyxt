@@ -72,9 +72,7 @@
                               (lambda (path-url mode)
                                 (declare (ignore path-url mode))
                                 (setf clean-p t)))))
-    ;; Notice that an instance of process-mode can be disabled without being
-    ;; enabled!  Bug or feature?
-    (disable mode)
+    (nyxt/process-mode::call-cleanup mode)
     (assert-true clean-p)))
 
 (define-test thread-handling ()
