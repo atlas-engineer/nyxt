@@ -67,7 +67,8 @@ Accepts the path to the acted-on document and `process-mode' instance.")
                   else
                     when condition-value
                       do (with-current-buffer (buffer mode)
-                           (funcall* (action mode) (path-url mode) mode)))))))
+                           (sera:synchronized (mode)
+                             (funcall* (action mode) (path-url mode) mode))))))))
 
 (defmethod disable ((mode process-mode) &key)
   (funcall* (cleanup mode) (path-url mode) mode)
