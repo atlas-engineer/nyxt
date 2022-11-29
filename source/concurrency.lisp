@@ -83,11 +83,9 @@ This is a blocking operation."
   "Run body in a new protected thread.
 This supersedes `bt:make-thread' in Nyxt.  Don't use the latter unless you know
 what you are doing!"
-  `(bt:make-thread
-    (lambda ()
-      (with-protect ("Error on separate thread: ~a" :condition)
-        ,@body))
-    :name (str:concat "Nyxt " ,name)))
+  `(lparallel.thread-util:with-thread (:name ,(str:concat "Nyxt " name))
+     (with-protect ("Error on separate thread: ~a" :condition)
+       ,@body)))
 
 (defun evaluate (string &key interactive-p)
   "Evaluate all expressions in STRING and return the last result as a list of values.
