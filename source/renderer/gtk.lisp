@@ -2225,7 +2225,7 @@ As a second value, return the current buffer index starting from 0."
        (if can-execute?
            (progn
              (webkit:webkit-web-view-execute-editing-command
-              (gtk-object gtk-buffer) webkit2:+webkit-editing-command-copy+)
+              (gtk-object gtk-buffer) webkit2:+webkit-editing-command-cut+)
              (calispel:! channel t))
            (calispel:! channel nil)))
      (lambda (e) (echo-warning "Cannot cut: ~a" e)))
