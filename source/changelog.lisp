@@ -593,4 +593,5 @@ regular commands, such as "
 
   (:h3 "Bug fixes")
   (:ul
+   (:li "Invoke the right WebKit command when cutting text with " (:nxref :function 'ffi-buffer-cut))
    (:li "Fix the display of history suggestions when going forward in history.")))
