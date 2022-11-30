@@ -81,7 +81,8 @@ mapped to query parameters."
     `(progn
        (export-always ',name (symbol-package ',name))
        (sera:lret ((gf (defgeneric ,name (,@(generalize-lambda-list arglist))
-                         (:documentation ,documentation)
+                         ,@(when documentation
+                             `((:documentation ,documentation)))
                          (:generic-function-class panel-page))))
          (let ((wrapped-body '(lambda (,@arglist)
                                ,@(when documentation (list documentation))
