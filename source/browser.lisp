@@ -261,8 +261,6 @@ prevents otherwise.")
   "Ensure `history-file' uses the browser profile."
   (setf (history-file browser) history-file))
 
-(setf *browser* (make-instance 'browser))
-
 (defmethod external-editor-program ((browser browser))
   (alex:ensure-list (slot-value browser 'external-editor-program)))
 

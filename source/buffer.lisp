@@ -1122,11 +1122,14 @@ This is a low-level function.  See `buffer-delete' for the high-level version."
 (export-always 'buffer-list)
 (defun buffer-list ()
   "Order is stable."
-  (sort
-   (alex:hash-table-values (buffers *browser*))
-   #'>
-   ;; TODO: Sort by creation time instead?
-   :key #'id))
+  ;; This function may be invoked during browser creation, so it's safer to
+  ;; check if `*browser*' is bound.
+  (when *browser*
+    (sort
+     (alex:hash-table-values (buffers *browser*))
+     #'>
+     ;; TODO: Sort by creation time instead?
+     :key #'id)))
 
 (defun buffers-get (id)
   (gethash id (slot-value *browser* 'buffers)))

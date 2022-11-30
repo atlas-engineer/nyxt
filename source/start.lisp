@@ -3,6 +3,9 @@
 
 (in-package :nyxt)
 
+;; Define default, dummy browser.
+(setf *browser* (make-instance 'browser))
+
 (define-class socket-file (files:runtime-file nyxt-file)
   ((files:base-path #p"nyxt.socket")
    (editable-p nil))
