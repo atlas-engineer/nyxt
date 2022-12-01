@@ -78,10 +78,10 @@ is 4005, default set to 4006 in Nyxt to avoid collisions).")
   "The port that Slynk will open a new server on (default Emacs Sly port
 is 4005, default set to 4006 in Nyxt to avoid collisions).")
 
-(defparameter +renderer+ nil "The renderer used by Nyxt. This value is meant to
-be set to a string by the renderer itself. This variable exists to allow for
-reporting by users, it does not create any functional differences in the
-execution of Nyxt.")
+(declaim (type (maybe renderer) *renderer*))
+(defparameter *renderer* nil
+  "The renderer used by Nyxt.
+It can be changed between two runs of Nyxt when run from a Lisp REPL.")
 
 (alex:define-constant +nyxt-critical-dependencies+
     '(:cl-cffi-gtk

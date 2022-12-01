@@ -33,10 +33,11 @@ inherited from the superclasses.")
     :documentation "Unique identifier for a buffer.")
    ;; TODO: Or maybe a dead-buffer should just be a buffer history?
    (profile
-    *global-profile*
+    (global-profile)
     :type nyxt-profile
     :documentation "Buffer profiles are used to specialize the behavior of
-various parts, such as the path of all data files.")
+various parts, such as the path of all data files.
+See also the `profile' slot in the `browser' class.")
    (url (quri:uri ""))
    (url-at-point (quri:uri ""))
    (title "")
@@ -440,7 +441,9 @@ query is not a valid URL, or the first keyword is not recognized.")
     :documentation "Select a download engine to use, such as `:lisp' or
 `:renderer'.")
    (history-file
-    (history-file *browser*)
+    (if *browser*
+        (history-file *browser*)
+        (make-instance 'history-file))
     :type history-file
     :documentation "File where to save the global history used by this buffer.
 See also `history-file' in `browser' for the global history restored on startup,
@@ -1005,7 +1008,11 @@ BUFFER's modes."
 
 (hooks:define-hook-type buffer (function (buffer)))
 
-(define-command make-buffer (&rest args &key (title "") modes (url (default-new-buffer-url *browser*)) parent-buffer
+(define-command make-buffer (&rest args &key (title "") modes
+                             (url (if *browser*
+                                      (default-new-buffer-url *browser*)
+                                      (quri:uri (nyxt-url 'new))))
+                             parent-buffer
                              no-history-p (load-url-p t) (buffer-class 'web-buffer)
                              &allow-other-keys)
   "Create a new buffer.
@@ -1141,7 +1148,8 @@ This is a low-level function.  See `buffer-delete' for the high-level version."
 
 (export-always 'window-list)
 (defun window-list ()
-  (alex:hash-table-values (windows *browser*)))
+  (when *browser*
+    (alex:hash-table-values (windows *browser*))))
 
 (defun dummy-buffer-p (buffer)
   (eq 'buffer (type-of buffer)))

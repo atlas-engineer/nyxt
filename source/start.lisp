@@ -178,6 +178,10 @@ It skips configuration files and other data files like the history."))))
             (uiop:delete-file-if-exists socket))))
       (mapc #'destroy-thread* (non-terminating-threads *browser*))
       (ffi-kill-browser *browser*)
+      ;; Reset global state.
+      (setf *browser* nil
+            *options* nil)
+      (uninstall *renderer*)
       ;; On FreeBSD this may cause freeze. Also we have to pass
       ;; FINISH-OUTPUT = NIL in FFI-INITIALIZE.
       #-freebsd
@@ -415,7 +419,7 @@ Examples:
   ;; Extensions should be made accessible straight from the beginning,
   ;; e.g. before a script is run.
   (declare #.(cons 'ignorable %start-args))
-  (unless +renderer+
+  (unless *renderer*
     (log:warn "No renderer set, Nyxt will not be able to render pages.  Try:
 
 \(progn
@@ -535,11 +539,12 @@ Finally, run the browser, load URL-STRINGS if any, then run
       (log:config :backup nil :pattern *log-pattern* :daily log-path)))
   (format t "Nyxt version ~a~&" +version+)
   (log:info "Source location: ~s" (files:expand *source-directory*))
+
+  (install *renderer*)
+
   (when (getf *options* :profile)
     (alex:if-let ((profile-class (find-profile-class (getf *options* :profile))))
-      (progn
-        (setf *global-profile* (make-instance profile-class))
-        (log:info "Profile: ~s" (profile-name profile-class)))
+      (log:info "Profile: ~s" (profile-name profile-class))
       (log:warn "Profile not found: ~s" (getf *options* :profile))))
   (let* ((urls (strings->urls url-strings))
          (thread (when (files:expand *socket-file*)

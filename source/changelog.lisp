@@ -589,7 +589,10 @@ support as an example application for this feature.")
    (:li "Universal describe-* commands have been replaced with new sources for the
 regular commands, such as "
         (:code "function-non-nyxt-source") ", " (:code "function-internal-source")
-        " and so on."))
+        " and so on.")
+   (:li "The " (:code "browser") " class has a " (:code "profile") " slot.")
+   (:li "Renderers are now first class objects, see the " (:code "renderer") " class."
+        " It's possible to change renderer from a same REPL session."))
 
   (:h3 "Bug fixes")
   (:ul
