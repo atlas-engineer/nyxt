@@ -17,11 +17,22 @@
 The textual content can be searched and displayed."))
 (in-package :nyxt/remembrance-mode)
 
-(define-class cache-path (files:cache-file files:virtual-file nyxt-file)
+;; We superclass with `files:read-only-file' instead of `files:virtual-file'
+;; because the latter does not expand to a path on disk.
+(define-class cache-path (files:cache-file nyxt-file files:read-only-file)
   ((files:base-path #p"remembrance.cache")
    (files:name "remembrance"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(defmethod deserialize :around ((profile nyxt-profile) (file cache-path) stream &key)
+  ;; Must be an `:around' method to overrule other possible `:around' specialization.
+  (declare (ignore stream))
+  nil)
+
+(defmethod read-file ((profile nyxt-profile) (file cache-path) &key)
+  "Don't load anything for cache, Montezuma is in charge."
+  nil)
 
 (define-mode remembrance-mode ()
   "Cache the textual content of visited pages.
