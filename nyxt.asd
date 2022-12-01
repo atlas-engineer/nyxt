@@ -221,6 +221,9 @@
                  (:file "watch"))))
   :around-compile "NYXT-ASDF:FAIL-ON-WARNINGS"
   :in-order-to ((test-op (test-op "nyxt/tests")
+                         ;; We test if manual dumping works, since it may catch
+                         ;; some subtle mistakes:
+                         (compile-op "nyxt/documentation")
                          (test-op "nyxt/history-tree/tests")
                          (test-op "nyxt/class-star/tests")
                          (test-op "nyxt/prompter/tests"))))
