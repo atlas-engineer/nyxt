@@ -30,14 +30,6 @@ LOGGER is the log4cl logger to user, for instance `log:warn'."
          ;; Allow empty strings to clear message area.
          (print-message ,expanded-text)))))
 
-(defun %echo-help (args)
-  (log:warn "Failed to echo these args: ~s
-Possible improvements:
-- Pass multiple arguments and use format strings for untrusted content. Don't pre-construct a single string that could contain tildes.
-  Example: do (echo \"directory is\ ~~a \"~~/Downloads/\")
-           instead of (echo \"directory is ~~/Downloads/\")
-- Use the ~~s directive." args))
-
 (export-always 'echo)
 (defun echo (&rest args)
   "Echo ARGS in the message view.
@@ -47,8 +39,8 @@ Untrusted content should be given as argument with a format string."
   (handler-case
       (let ((text (apply #'format nil args)))
         (%echo text))
-    (error ()
-      (%echo-help args))))
+    (error (c)
+      (log:warn "Warning while echoing: ~a" c))))
 
 (export-always 'echo-warning)
 (defun echo-warning (&rest args)
@@ -57,8 +49,8 @@ Untrusted content should be given as argument with a format string."
       (let ((text (apply #'format nil args)))
         (%echo (format nil "Warning: ~a" text)
                :logger log:warn))
-    (error ()
-      (%echo-help args))))
+    (error (c)
+      (log:warn "Warning while echoing: ~a" c))))
 
 (export-always 'echo-dismiss)
 (defmethod echo-dismiss ()
