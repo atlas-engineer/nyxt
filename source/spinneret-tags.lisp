@@ -10,6 +10,14 @@
              (progn ,@body)
              (escape-string (progn ,@body)))))
 
+(deftag :nstyle (body attrs &key &allow-other-keys)
+  "Regular <style>, but with contents staying unescaped."
+  `(:style ,@attrs (:raw ,@body)))
+
+(deftag :nscript (body attrs &key &allow-other-keys)
+  "Regular <script>, but with contents staying unescaped."
+  `(:script ,@attrs (:raw ,@body)))
+
 ;; TODO: Store the location it's defined in as a :title or link for discoverability?
 ;; FIXME: Maybe use :nyxt-user as the default package to not quarrel with REPL & config?
 (deftag :ncode (body attrs &key (package :nyxt) inline-p literal-p (repl-p t) (config-p t) (copy-p t)
