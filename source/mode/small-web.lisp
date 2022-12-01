@@ -157,8 +157,8 @@ Implies that `small-web-mode' is enabled."))
                   (mode (find-submode 'small-web-mode)))
     (setf (model mode) contents)
     (values (spinneret:with-html-string
-              (:style (style (current-buffer)))
-              (:style (style mode))
+              (:nstyle (style (current-buffer)))
+              (:nstyle (style mode))
               (loop for line in (cl-gopher:lines contents)
                     collect (:raw (line->html line))))
             "text/html;charset=utf8")))
@@ -275,9 +275,9 @@ Implies that `small-web-mode' is enabled."
         (spinneret::*html-style* :tree))
     (setf (model mode) elements)
     (values (spinneret:with-html-string
-              (:style (style buffer))
+              (:nstyle (style buffer))
               (when mode
-                (:style (style mode)))
+                (:nstyle (style mode)))
               (loop for element in elements
                     collect (:raw (nyxt/small-web-mode:line->html element))))
             "text/html;charset=utf8")))

@@ -353,7 +353,7 @@ turned into links to their respective description page."
                (:a :href (nyxt-url 'describe-package :package (package-name package))
                    (package-name package)))))
       (spinneret:with-html-string
-        (:style (style buffer))
+        (:nstyle (style buffer))
         (:h1 (package-name package))
         (:raw (resolve-backtick-quote-links (documentation (find-package package) t) package))
         (:h2 "Symbols:")
@@ -381,7 +381,7 @@ turned into links to their respective description page."
   (let ((*print-case* :downcase))
     (if (boundp variable)
         (spinneret:with-html-string
-          (:style (style buffer))
+          (:nstyle (style buffer))
           (:h1 (format nil "~s" variable)) ; Use FORMAT to keep package prefix.
           (:raw (resolve-backtick-quote-links (documentation variable 'variable) variable))
           (:h2 "Type")
@@ -404,7 +404,7 @@ turned into links to their respective description page."
           (:h2 "Describe")
           (:pre (:code (with-output-to-string (s) (describe variable s)))))
         (spinneret:with-html-string
-          (:style (style buffer))
+          (:nstyle (style buffer))
           (:h1 (format nil "~s" variable))
           (:p "Unbound")))))
 
@@ -524,7 +524,7 @@ For generic functions, describe all the methods."
                         :literal-p t
                         (function-lambda-string method)))))))
           (spinneret:with-html-string
-            (:style (style buffer))
+            (:nstyle (style buffer))
             (:h1 (format nil "~s" input) ; Use FORMAT to keep package prefix.
                  (cond
                    ((macro-function input) " (macro)")
@@ -626,7 +626,7 @@ A command is a special kind of function that can be called with
              (slot-descs (sera:string-join (mapcar (rcurry #'describe-slot* class) slots) ""))
              (*print-case* :downcase))
         (spinneret:with-html-string
-          (:style (style buffer))
+          (:nstyle (style buffer))
           (:h1 (symbol-name class) " (" (sera:class-name-of (find-class class)) ")")
           (:p (:raw (resolve-backtick-quote-links (documentation class 'type) class)))
           (when (mopu:direct-superclasses class)
@@ -656,7 +656,7 @@ A command is a special kind of function that can be called with
           (:h2 "Describe")
           (:pre (:code (with-output-to-string (s) (describe class s))))))
       (spinneret:with-html-string
-        (:style (style buffer))
+        (:nstyle (style buffer))
         (:h2 (format nil "~s" class))
         (:p "Unbound."))))
 
@@ -768,7 +768,7 @@ A command is a special kind of function that can be called with
                          based features are currently unlisted.")
                      (:h1 "Commands")))
     (format f "~a" (spinneret:with-html-string
-                     (:style (lass:compile-and-write '(.nyxt-source :overflow auto)))))
+                     (:nstyle (lass:compile-and-write '(.nyxt-source :overflow auto)))))
     (format f "~{~a ~%~}"
             (loop for command in (list-commands)
                   collect (spinneret:with-html-string

@@ -437,7 +437,7 @@ Follows what the compiler finds aesthetically pleasing."
                       (evaluations repl-mode)))
           (buffer-load (nyxt-url 'repl) :buffer repl-buffer))
         (spinneret:with-html-string
-          (:style (style repl-mode))
+          (:nstyle (style repl-mode))
           (:div :id "container"
                 (:div :id "evaluations"
                       (loop

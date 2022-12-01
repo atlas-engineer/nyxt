@@ -361,7 +361,8 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
 (defun prompt-render-skeleton (prompt-buffer)
   (erase-document prompt-buffer)
   (html-set (spinneret:with-html-string
-              (:head (:style (style prompt-buffer)))
+              (:head
+               (:nstyle (style prompt-buffer)))
               (:body
                (:div :id "prompt-area"
                      (:div :id "prompt" (:mayberaw (prompter:prompt prompt-buffer)))

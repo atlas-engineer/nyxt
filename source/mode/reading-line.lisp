@@ -74,7 +74,7 @@ screen as well."
 
 (defmethod enable ((mode reading-line-mode) &key)
   (let ((content (spinneret:with-html-string
-                   (:style (style mode))
+                   (:nstyle (style mode))
                    (:span :id "reading-line-cursor" ""))))
     (ps-eval :async t :buffer (buffer mode)
       (ps:chain document body (|insertAdjacentHTML| "afterbegin" (ps:lisp content)))

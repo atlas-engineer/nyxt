@@ -168,7 +168,7 @@ PACKAGES is a list of `ospm:package' IDs created by `nyxt::ensure-inspected-id'.
                                      (reduce #'+ (mapcar #'ospm:size outputs)))))))))
     (let ((packages (inspected-value packages)))
       (spinneret:with-html-string
-        (:style (style (current-buffer)))
+        (:nstyle (style (current-buffer)))
         (:h1 "Packages")
         (:ul (dolist (package packages)
                (:li (ospm:name package) " " (ospm:version package)
@@ -224,7 +224,7 @@ PACKAGES is a list of `ospm:package' IDs created by `nyxt::ensure-inspected-id'.
     (echo "Computing file list...")
     (nyxt::html-set
      (spinneret:with-html-string
-       (:style (style buffer))
+       (:nstyle (style buffer))
        (:h1 "Package files")
        (:ul
         (dolist (package-or-output packages-or-outputs)
@@ -264,7 +264,7 @@ OBJECTS can be a list of packages, a generation, etc."
               (nyxt::html-set "" buffer) ; Reset content between operations.
               (nyxt::html-write
                (spinneret:with-html-string
-                 (:style (style buffer))
+                 (:nstyle (style buffer))
                  (:h1 title)
                  (:p
                   (:button :class "button"
@@ -339,7 +339,7 @@ OBJECTS can be a list of packages, a generation, etc."
     (echo "Loading package database...")
     (nyxt::html-set
      (spinneret:with-html-string
-       (:style (style buffer))
+       (:nstyle (style buffer))
        (:h2 (format nil "Packages for generation ~a" (ospm:id generation)))
        (:p "Profile " profile)
        (:ul

@@ -1571,7 +1571,7 @@ See `finalize-buffer'."
         buffer
         (spinneret:with-html-string
           (:head
-           (:style (style buffer)))
+           (:nstyle (style buffer)))
           (:h1 "Page could not be loaded.")
           (:h2 "URL: " failing-url)
           (:ul
@@ -2001,8 +2001,10 @@ custom (the specified proxy) and none."
 
 (define-ffi-method ffi-print-status ((window gtk-window) text)
   (let ((text (spinneret:with-html-string
-               (:head (:style (style (status-buffer window))))
-               (:body (:raw text)))))
+               (:head
+                (:nstyle (style (status-buffer window))))
+               (:body
+                (:raw text)))))
     (with-slots (status-buffer) window
       (webkit2:webkit-web-view-evaluate-javascript
        (gtk-object (status-buffer window))
@@ -2011,8 +2013,10 @@ custom (the specified proxy) and none."
 
 (define-ffi-method ffi-print-message ((window gtk-window) text)
   (let ((text (spinneret:with-html-string
-               (:head (:style (message-buffer-style window)))
-               (:body (:raw text)))))
+               (:head
+                (:nstyle (message-buffer-style window)))
+               (:body
+                (:raw text)))))
     (webkit2:webkit-web-view-evaluate-javascript
      (message-view window)
      (ps:ps (setf (ps:@ document body |innerHTML|)

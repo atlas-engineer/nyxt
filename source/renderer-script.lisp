@@ -127,7 +127,7 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
     (setf (ps:@ document body |innerHTML|) (ps:lisp content))))
 
 (defun html-set-style (style-string &optional (buffer (current-buffer)))
-  (let ((style (spinneret:with-html-string (:style style-string))))
+  (let ((style (spinneret:with-html-string (:style (:raw style-string)))))
     (ps-eval :async t :buffer buffer
       (ps:chain document body (|insertAdjacentHTML| "afterbegin" (ps:lisp style))))))
 
@@ -216,7 +216,7 @@ See `find-internal-page-buffer'."))
                                          (apply #'dynamic-title
                                                 (gethash (name page) *nyxt-url-commands*)
                                                 args)))
-                               (:style (style (current-buffer))))
+                               (:style (:raw (style (current-buffer)))))
                               (:body (:raw contents))))))
                   (values contents type status headers reason))))))))
 

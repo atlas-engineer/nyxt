@@ -301,7 +301,7 @@ This induces a performance cost."))
                 (dolist (term (cons query (uiop:split-string query)))
                   (add-search-hint buffer term)))
               (spinneret:with-html-string
-                (:style (style mode))
+                (:nstyle (style mode))
                 (:h1 "[Cache] " (:a :href url-string (if (uiop:emptyp (page-title doc))
                                                          url-string
                                                          (page-title doc))))
@@ -367,7 +367,7 @@ See also `auto-cache-on-load-p' in `remembrance-mode'."
   (let* ((buffer (nyxt::buffers-get id))
          (mode (find-submode 'remembrance-mode buffer)))
     (spinneret:with-html-string
-      (:style (style mode))
+      (:nstyle (style mode))
       ;; TODO: Add button to switch to buffer.
       (:h1 "[Cache diff] " (:button :class "link"
                                     :onclick

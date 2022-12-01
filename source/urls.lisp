@@ -67,7 +67,7 @@ The URL is fetched, which explains possible bottlenecks."
    (spinneret:with-html-string
      (:head
       (:title title)
-      (:style (style (current-buffer))))
+      (:style (:raw (style (current-buffer)))))
      (:body
       (:h1 title)
       (:pre text)))

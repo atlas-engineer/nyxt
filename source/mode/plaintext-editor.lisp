@@ -31,7 +31,8 @@ To enable it, add this to your configuration file:
 
 (defmethod markup ((editor plaintext-editor-mode))
   (spinneret:with-html-string
-    (:head (:style (style editor)))
+    (:head
+     (:nstyle (style editor)))
     (:body
      (:textarea :id "editor" :name "editor" :autofocus t))))
 

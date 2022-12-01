@@ -191,15 +191,15 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
     (panel-buffer "*Bookmarks panel*")
   "Shows all the bookmarks in a compact panel-buffer layout."
   (spinneret:with-html-string
-    (:style (lass:compile-and-write
-             '(p
-               :font-size "12px"
-               :margin 0
-               :white-space nowrap
-               :overflow-x nidden
-               :text-overflow ellipsis)
-             '(div
-               :padding-bottom "10px")))
+    (:nstyle (lass:compile-and-write
+              '(p
+                :font-size "12px"
+                :margin 0
+                :white-space nowrap
+                :overflow-x nidden
+                :text-overflow ellipsis)
+              '(div
+                :padding-bottom "10px")))
     (:body
      (:h1 "Bookmarks")
      (or (let ((bookmarks (files:content (bookmarks-file (current-buffer)))))
@@ -319,7 +319,7 @@ rest in background buffers."
   "List all bookmarks in a new buffer."
   (let ((bookmarks (group-bookmarks bookmarks-buffer)))
     (spinneret:with-html-string
-      (:style (style (find-submode 'bookmark-mode (current-buffer)))) ; TODO: Make sure this is the right buffer
+      (:nstyle (style (find-submode 'bookmark-mode (current-buffer)))) ; TODO: Make sure this is the right buffer
       (:h1 "Bookmarks")
       (cond
         ((zerop (hash-table-count bookmarks))

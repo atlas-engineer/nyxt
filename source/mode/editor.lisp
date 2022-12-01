@@ -65,7 +65,7 @@ See `describe-class editor-mode' for details."))
   (:method ((editor editor-mode))
     (spinneret:with-html-string
       (:head
-       (:style (style (buffer editor))))
+       (:nstyle (style (buffer editor))))
       (:body
        (:p "Please configure an editor mode to use an editor buffer. See "
            (:code "describe-class") " for " (:code "editor-buffer")

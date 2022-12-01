@@ -343,7 +343,7 @@ ID is a buffer `id'."
   (let ((buffer (nyxt::buffers-get id))
         (mode (find-submode 'nyxt/history-tree-mode:history-tree-mode)))
     (spinneret:with-html-string
-      (:style (style mode))
+      (:nstyle (style mode))
       (:h1 (format nil "History of ~a" buffer))
       (:div (if buffer
                 (:raw (render-buffer-history-tree buffer))
@@ -365,18 +365,17 @@ Thus it is not representative of how the Global History Tree deduplicates nodes
 internally, but this display is clearer and more navigable."
   (let ((mode (find-submode 'nyxt/history-tree-mode:history-tree-mode output-buffer)))
     (spinneret:with-html-string
-      (:body (:h1 "History")
-             (:style (style output-buffer))
-             (:style (:raw (style mode)))
-             (dolist (buffer (buffer-list))
-               (:div (:raw (render-buffer-history-tree buffer))))))))
+     (:nstyle (:raw (style mode)))
+     (:body
+      (:h1 "History")
+      (dolist (buffer (buffer-list))
+        (:div (:raw (render-buffer-history-tree buffer))))))))
 
 (define-internal-page-command-global list-history (&key (limit 100))
   (buffer "*History list*" 'nyxt/list-history-mode:list-history-mode) ; TODO: Remove list-history-mode if we add a style slot to `internal-page'.
   "Print the user history as a list."
   (spinneret:with-html-string
-    (:style (style buffer))
-    (:style (style (find-submode 'nyxt/list-history-mode:list-history-mode buffer)))
+    (:nstyle (style (find-submode 'nyxt/list-history-mode:list-history-mode buffer)))
     (:h1 "History")
     (:p (format nil "The last ~a history entries:" limit))
     (:ul (:raw (nyxt::history-html-list :limit limit)))))

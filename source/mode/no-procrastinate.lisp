@@ -65,7 +65,7 @@
         (mode (find-submode 'nyxt/no-procrastinate-mode:no-procrastinate-mode
                             no-procrastinate-hosts-buffer)))
     (spinneret:with-html-string
-      (:style (style mode))
+      (:nstyle (style mode))
       (:h1 "Hosts to avoid procrastination")
       (:body
        (if (zerop (hash-table-count no-procrastinate-hosts))
