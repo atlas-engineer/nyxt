@@ -15,8 +15,9 @@
                (nyxt:set-prompt-buffer-input "1+ 3" prompt-buffer)
                (prompter:all-ready-p prompt-buffer)
                (nyxt/prompt-buffer-mode:select-last prompt-buffer)
+               (nyxt/prompt-buffer-mode:select-previous prompt-buffer)
                (calispel:! channel (nyxt:current-suggestion-value prompt-buffer))
-               (nyxt/prompt-buffer-mode:return-selection prompt-buffer))
+               (nyxt/prompt-buffer-mode:cancel-input prompt-buffer))
              (nyxt:run-thread "run execute-command"
                (let ((nyxt::*interactive-p* t))
                  (nyxt:execute-command))))
