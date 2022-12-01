@@ -93,7 +93,6 @@ Order is stable."
   "Display a guide to migrate configurations and third-party extensions across
 major versions."
   (spinneret:with-html-string
-    (:style (style buffer))
     (:h1 "Migration guide")
     (:p "See also the " (:a :href (nyxt-url 'changelog) (:code "changelog")) ".")
     (:raw (render-version-migration (write-to-string (nyxt::version))))))

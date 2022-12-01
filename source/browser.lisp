@@ -629,7 +629,6 @@ set of useful URLs or preparing a list to send to a someone else."
                                           :multi-selection-p t))))
     (unwind-protect
          (spinneret:with-html-string
-           (:style (style reduced-buffer))
            (:h1 "Reduced Buffers:")
            (:div
             (if buffers

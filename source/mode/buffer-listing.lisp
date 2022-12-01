@@ -66,7 +66,6 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                      (loop for document in cluster
                            collect (buffer-markup (analysis::source document)))))))
     (spinneret:with-html-string
-      (:style (style listing-buffer))
       (:h1 "Buffers")
       (:button :class "button"
                :onclick (ps:ps (nyxt/ps:lisp-eval (:title "tree-display") (nyxt/buffer-listing-mode::list-buffers)))
@@ -100,12 +99,12 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                                            (nyxt::switch-buffer :buffer buffer)))
                           (:span :title (title buffer) :class "title" (title buffer)))))))
     (spinneret:with-html-string
-      (:style (lass:compile-and-write
-               '(.button
-                 :white-space nowrap
-                 :overflow-x hidden
-                 :display block
-                 :text-overflow ellipsis)))
+      (:nstyle (lass:compile-and-write
+                '(.button
+                  :white-space nowrap
+                  :overflow-x hidden
+                  :display block
+                  :text-overflow ellipsis)))
       (:body
        (:h1 "Buffers")
        (:button :class "button"

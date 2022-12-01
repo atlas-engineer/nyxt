@@ -515,7 +515,6 @@ Only available if `prompter:multi-selection-p' is non-nil."
          (modes (modes prompt-buffer))
          (sources (prompter:sources prompt-buffer)))
     (spinneret:with-html-string
-      (:style (style buffer))
       (:h1 (prompter:prompt prompt-buffer))
       (:p (:raw (resolve-backtick-quote-links (documentation 'prompt-buffer 'type) 'prompt-buffer)))
       (:h2 "Modes:")
