@@ -46,23 +46,25 @@ interface. On Darwin, we must run the GTK thread on the main thread."
   (declare (ignore urls startup-timestamp))
   (log:debug "Initializing GI-GTK Interface")
   (setf (uiop:getenv "WEBKIT_FORCE_SANDBOX") "0")
-  ;; TODO: Do not run the GTK loop again when T?
-  (setf nyxt/renderer/gtk::gtk-running-p t)
-  (flet ((main-func ()
-           (with-protect ("Error on GI-GTK thread: ~a" :condition)
-             (glib:g-set-prgname "nyxt")
-             #+GTK-3-4
-             (gdk:gdk-set-program-class "Nyxt")
-             (gir:invoke ((gir:ffi "Gtk" "3.0") 'main)))))
-    (call-next-method)
-    #-darwin
-    (let ((main-thread (bt:make-thread #'main-func :name renderer-thread-name)))
-      (unless nyxt::*run-from-repl-p*
-        (bt:join-thread main-thread)
-        ;; See comment about FreeBSD in gtk.lisp
-        (uiop:quit (slot-value browser 'nyxt::exit-code) #+freebsd nil)))
-    #+darwin
-    (main-func)))
+  (if nyxt/renderer/gtk::gtk-running-p
+      (nyxt/renderer/gtk::within-gtk-thread
+        (call-next-method))
+      (flet ((main-func ()
+               (with-protect ("Error on GI-GTK thread: ~a" :condition)
+                 (glib:g-set-prgname "nyxt")
+                 #+GTK-3-4
+                 (gdk:gdk-set-program-class "Nyxt")
+                 (gir:invoke ((gir:ffi "Gtk" "3.0") 'main)))))
+        (setf nyxt/renderer/gtk::gtk-running-p t)
+        (call-next-method)
+        #-darwin
+        (let ((main-thread (bt:make-thread #'main-func :name renderer-thread-name)))
+          (unless nyxt::*run-from-repl-p*
+            (bt:join-thread main-thread)
+            ;; See comment about FreeBSD in gtk.lisp
+            (uiop:quit (slot-value browser 'nyxt::exit-code) #+freebsd nil)))
+        #+darwin
+        (main-func))))
 
 (nyxt/renderer/gtk:define-ffi-method ffi-kill-browser ((browser gi-gtk-browser))
   (unless nyxt::*run-from-repl-p*
