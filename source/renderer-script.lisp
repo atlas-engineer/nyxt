@@ -142,6 +142,14 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
 (deftype internal-page-symbol ()
   `(and symbol (satisfies internal-page-symbol-p)))
 
+(export-always 'match-internal-page)
+(defun match-internal-page (symbol)
+  "Return a predicate for URL designators matching the page of SYMBOL name."
+  #'(lambda (url)
+      (and (str:starts-with-p "nyxt:" (render-url url))
+           (eq (parse-nyxt-url url)
+               symbol))))
+
 (define-class internal-page (command)
   ((dynamic-title ; Not `title' so that it does not clash with other `title' methods.
     ""
@@ -222,11 +230,8 @@ See `find-internal-page-buffer'."))
 
 (defmethod (setf page-mode) (new-value (page internal-page))
   (when (and new-value (rememberable-p new-value))
-    (define-auto-rule `(lambda (url)
-                         ;; FIXME: Better rule? We need a more structured one,
-                         ;; because strings are not predictable.
-                         (str:starts-with-p ,(nyxt-url (name page))
-                                            (render-url url)))
+    (undefine-auto-rule `(match-internal-page (quote ,(name page))))
+    (define-auto-rule `(match-internal-page (quote ,(name page)))
       :included (list new-value))))
 
 (defmethod set-internal-page-method ((page internal-page) form)
@@ -242,11 +247,14 @@ See `find-internal-page-buffer'."))
           (declare (ignorable ,@(mappend #'cdar keywords)))
           (buffer-load-internal-page-focus (name ,page) ,@(mappend #'first keywords)))))))
 
-(defmethod initialize-instance :after ((page internal-page) &key form &allow-other-keys)
+(defmethod initialize-instance :after ((page internal-page) &key form page-mode &allow-other-keys)
   "Register PAGE into the globally known nyxt:// URLs."
   (when form
     (set-internal-page-method page form)
     (setf (form page) form))
+  (when page-mode
+    ;; NOTE: This is to trigger the auto-rule redefinition.
+    (setf (page-mode page) page-mode))
   (setf (gethash (name page) *nyxt-url-commands*) page))
 
 (defmethod reinitialize-instance :after ((page internal-page) &key form &allow-other-keys)
