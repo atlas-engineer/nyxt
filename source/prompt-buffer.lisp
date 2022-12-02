@@ -280,7 +280,11 @@ See also `show-prompt-buffer'."
                                        (sort-modes-for-status (modes prompt-buffer)))))))))
 
 (defun attribute-widths (source)
-  (loop for key in (prompter:active-attributes-keys source)
+  "Compute the widths of SOURCE attribute columns (as percent).
+Returns a list of integers, the sum of which should be roughly equal to 100.
+Uses the average length of attribute values to derive the width."
+  (loop with suggestions = (prompter:suggestions source)
+        for key in (prompter:active-attributes-keys source)
         for width
           = (loop for suggestion in suggestions
                   sum (length (second (assoc key (prompter:active-attributes suggestion :source source)
