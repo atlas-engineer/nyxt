@@ -4,6 +4,12 @@
 (in-package :nyxt/tests)
 (use-nyxt-package-nicknames)
 
+(define-test toggle-process-mode ()
+  (let ((buffer (make-instance 'modable-buffer)))
+    (with-current-buffer buffer
+      (assert-true (enable-modes* 'nyxt/process-mode:process-mode buffer))
+      (assert-true (disable-modes* 'nyxt/process-mode:process-mode buffer)))))
+
 (define-test run-action-ad-eternum ()
   ;; Runs twice to ensure that mode instances which have not been garbage
   ;; collected still behave as intended.

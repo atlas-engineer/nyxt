@@ -3,6 +3,12 @@
 
 (in-package :nyxt/tests)
 
+(define-class network-and-modable-buffer (network-buffer modable-buffer) ())
+
+(define-class context-and-modable-buffer (context-buffer modable-buffer) ())
+
+(define-class input-and-modable-buffer (input-buffer modable-buffer) ())
+
 (define-test enable-modes-args-honored ()
   (let ((*browser* (make-instance 'browser))
         (buffer (make-instance 'modable-buffer))
