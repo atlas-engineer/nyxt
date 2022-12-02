@@ -568,7 +568,9 @@ locally and is cleared after every session.")
 Nyxt-internal-pages.")
     (:li "The rules file is now moved to auto-rules.lisp (instead of the old
 auto-mode-rules.lisp)."))
-   (:li "Startup is more robust against corrupted history files."))
+   (:li "Startup is more robust against corrupted history files.")
+   (:li "Prompt buffer attribute columns adjust to their content, allowing for a better
+overview of lengthy attributes."))
 
   (:h3 "Programming interface")
   (:ul
