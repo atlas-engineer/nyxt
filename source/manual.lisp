@@ -296,7 +296,8 @@ toggled. Besides user-defined conditions, the following are often useful: "
             (:nxref :slot 'apply-all-matching-auto-rules-p :class-name 'modable-buffer)
             " is nil meaning that only the most specific rules are honored.")
         (:p "Auto-rules can also be defined for custom use-cases via "
-            (:nxref :function 'define-auto-rule) "."))
+            (:nxref :function 'define-auto-rule) " and un-defined with "
+            (:nxref :function 'undefine-auto-rule) "."))
 
       (:nsection
         :title "Custom commands"
