@@ -89,12 +89,12 @@ SIDE is one of `:left' or `:right'."))
 (define-ffi-generic ffi-height (object)
   (:setter-p t)
   (:documentation "Return the OBJECT height in pixels as a number.
-Dispatches over: `buffer', `status-buffer'.
+Dispatches over: `window', `buffer', `status-buffer'.
 Usually setf-able."))
 (define-ffi-generic ffi-width (object)
   (:setter-p t)
   (:documentation "Return the OBJECT width in pixels as a number.
-Dispatches over: `buffer', `panel-buffer'.
+Dispatches over: `window', `buffer', `panel-buffer'.
 Usually setf-able."))
 
 ;; FIXME: Cannot yet be implemented as an `ffi-height', because there's nothing

@@ -1219,6 +1219,13 @@ See `finalize-buffer'."
   (gdk:gdk-rectangle-width
    (gtk:gtk-widget-get-allocation (nyxt/renderer/gtk::gtk-object buffer))))
 
+(define-ffi-method ffi-height ((buffer gtk-window))
+  (gdk:gdk-rectangle-height
+   (gtk:gtk-widget-get-allocation (nyxt/renderer/gtk::gtk-object buffer))))
+(define-ffi-method ffi-width ((buffer gtk-window))
+  (gdk:gdk-rectangle-width
+   (gtk:gtk-widget-get-allocation (nyxt/renderer/gtk::gtk-object buffer))))
+
 (defun process-file-chooser-request (web-view file-chooser-request)
   (declare (ignore web-view))
   (with-protect ("Failed to process file chooser request: ~a" :condition)
