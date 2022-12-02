@@ -86,27 +86,29 @@ SIDE is one of `:left' or `:right'."))
 (define-ffi-generic ffi-window-delete-panel-buffer (window buffer)
   (:documentation "Unbind the panel BUFFER widget from WINDOW."))
 
-(define-ffi-generic ffi-window-panel-buffer-width (window buffer)
+(define-ffi-generic ffi-height (object)
   (:setter-p t)
-  (:documentation "Return the panel BUFFER width as a number.
-Setf-able."))
-(define-ffi-generic ffi-window-prompt-buffer-height (window)
+  (:documentation "Return the OBJECT height in pixels as a number.
+Dispatches over: `buffer', `status-buffer'.
+Usually setf-able."))
+(define-ffi-generic ffi-width (object)
   (:setter-p t)
-  (:documentation "Return the WINDOW prompt buffer height as a number.
-Setf-able."))
-(define-ffi-generic ffi-window-status-buffer-height (window)
-  (:setter-p t)
-  (:documentation "Return the WINDOW status buffer height as a number.
-Setf-able."))
+  (:documentation "Return the OBJECT width in pixels as a number.
+Dispatches over: `buffer', `panel-buffer'.
+Usually setf-able."))
+
+;; FIXME: Cannot yet be implemented as an `ffi-height', because there's nothing
+;; to dispatch on.
 (define-ffi-generic ffi-window-message-buffer-height (window)
   (:setter-p t)
   (:documentation "Return the WINDOW message buffer height as a number.
 Setf-able."))
-
-(define-ffi-generic ffi-buffer-height (buffer)
-  (:documentation "Return the BUFFER height in pixels as a number."))
-(define-ffi-generic ffi-buffer-width (buffer)
-  (:documentation "Return the BUFFER width in pixels as a number."))
+;; FIXME: Is not implemented as `ffi-height', because `hide-prompt-buffer' needs
+;; deleting _prompt container_, not adjusting the size of prompt buffer.
+(define-ffi-generic ffi-window-prompt-buffer-height (window)
+  (:setter-p t)
+  (:documentation "Return the WINDOW prompt buffer height as a number.
+Setf-able. If set to 0, delete the prompt widget."))
 
 (define-ffi-generic ffi-buffer-make (buffer)
   (:documentation "Make BUFFER widget."))

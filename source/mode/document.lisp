@@ -545,7 +545,7 @@ of buffers."
                              (title heading)))
                     (when (rest group)
                       (:raw (sera:mapconcat #'headings->html (list (group-headings (rest group))) "")))))))))
-    (setf (ffi-window-panel-buffer-width (current-window) panel-buffer) 400)
+    (setf (ffi-width panel-buffer) 400)
     (spinneret:with-html-string
       (:h1 "Headings")
       (:raw (headings->html (group-headings (get-headings)))))))

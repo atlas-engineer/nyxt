@@ -231,10 +231,10 @@ When `skip-renderer-resize' is non-nil, don't ask the renderer to fullscreen the
         (ffi-window-maximize window))))
 
 (defun enable-status-buffer (&optional (window (current-window)))
-  (setf (ffi-window-status-buffer-height window) (height (status-buffer window))))
+  (setf (ffi-height (status-buffer window)) (height (status-buffer window))))
 
 (defun disable-status-buffer (&optional (window (current-window)))
-  (setf (ffi-window-status-buffer-height window) 0))
+  (setf (ffi-height (status-buffer window)) 0))
 
 (defun enable-message-buffer (&optional (window (current-window)))
   (setf (ffi-window-message-buffer-height window) (message-buffer-height window)))
@@ -257,7 +257,7 @@ If SHOW-P is provided:
   (cond ((and show-provided-p show-p)
          (enable-status-buffer window))
         ((and (not show-provided-p)
-              (zerop (ffi-window-status-buffer-height window)))
+              (zerop (ffi-height (status-buffer window))))
          (enable-status-buffer window))
         (t (disable-status-buffer window))))
 
