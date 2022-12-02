@@ -100,6 +100,16 @@ ARGS as in make-instance of `auto-rule'."
                   (list :excluded (normalize-modes excluded)))))
         *default-auto-rules*))
 
+(export-always 'undefine-auto-rule)
+(defgeneric undefine-auto-rule (token)
+  (:method ((token list))
+    (loop for rule in *default-auto-rules*
+          when (equal token (test rule))
+            do (alex:deletef *default-auto-rules* rule :test #'equal)))
+  (:method ((token string))
+    (undefine-auto-rule (list 'match-url token)))
+  (:documentation "Remove the rule with TOKEN test."))
+
 (-> matching-auto-rules (quri:uri modable-buffer) (values list &optional))
 (defun matching-auto-rules (url buffer)
   (let* ((rules (append *default-auto-rules*
