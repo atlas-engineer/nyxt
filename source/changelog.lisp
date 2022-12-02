@@ -579,7 +579,9 @@ auto-mode-rules.lisp)."))
 settings changes.")
    (:li "When started with " (:code "--remote") " and without " (:code "--quit")
         ", Nyxt now reads s-expression from standard input and sends it to the remote process. "
-        "This avoids the performance penalty of a new process startup on each iteration."))
+        "This avoids the performance penalty of a new process startup on each iteration.")
+   (:li "Prompt buffer attribute columns adjust to their content, allowing for
+a better overview of lengthy attributes."))
 
   (:h3 "Bindings")
   (:ul
