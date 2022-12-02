@@ -1193,7 +1193,7 @@ See `finalize-buffer'."
 
 (define-ffi-method ffi-window-prompt-buffer-height ((window gtk-window))
   (nth-value 1 (gtk:gtk-widget-size-request (prompt-buffer-container window))))
-(define-ffi-method (setf ffi-window-prompt-buffer-height) (height (window gtk-window))
+(define-ffi-method (setf ffi-window-prompt-buffer-height) ((height integer) (window gtk-window))
   (setf (gtk:gtk-widget-size-request (prompt-buffer-container window))
         (list -1 height))
   (if (eql 0 height)
