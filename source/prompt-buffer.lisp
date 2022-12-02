@@ -111,7 +111,7 @@ selection over prompt buffer suggestions.")
           :color ,theme:on-background
           :margin-left "16px"
           :width "100%"
-          :table-layout "fixed"
+          :table-layout auto ; So that content is laid-out in a smarter way.
           (td
            :white-space "nowrap"
            :height "20px"
