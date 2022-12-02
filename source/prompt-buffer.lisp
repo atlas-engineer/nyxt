@@ -279,6 +279,17 @@ See also `show-prompt-buffer'."
                                (mapcar (curry #'mode-status status-buffer)
                                        (sort-modes-for-status (modes prompt-buffer)))))))))
 
+(defun attribute-widths (source)
+  (loop for key in (prompter:active-attributes-keys source)
+        for width
+          = (loop for suggestion in suggestions
+                  sum (length (second (assoc key (prompter:active-attributes suggestion :source source)
+                                             :test #'string=))))
+        collect width into widths
+        sum width into total
+        finally (return (mapcar (lambda (w) (round (* 100 (/ w total))))
+                                widths))))
+
 (export 'prompt-render-suggestions)
 (defmethod prompt-render-suggestions ((prompt-buffer prompt-buffer))
   "Refresh the rendering of the suggestion list.
@@ -308,13 +319,16 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                "(In progress...)"))
                      (when (prompter:suggestions source)
                        (:table :class "source-content"
+                               (:colgroup
+                                (dolist (width (nyxt::attribute-widths source))
+                                  (:col :style (format nil "width: ~d%" width))))
                                (:tr :style (if (or (eq (prompter:hide-attribute-header-p source) :always)
                                                    (and (eq (prompter:hide-attribute-header-p source) :single)
                                                         (sera:single (prompter:active-attributes-keys source))))
                                                "display:none;"
                                                "display:revert;")
                                     (loop for attribute-key in (prompter:active-attributes-keys source)
-                                          collect (:th attribute-key)))
+                                          collect (:th (spinneret::escape-string attribute-key))))
                                (loop ;; TODO: Only print as many lines as fit the height.  But how can we know in advance?
                                      ;; Maybe first make the table, then add the element one by one _if_ there are into view.
                                      with max-suggestion-count = 10
@@ -343,7 +357,7 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                                   collect (:td :title attribute
                                                                (if attribute-display
                                                                    (:raw attribute-display)
-                                                                   attribute))))))))))))
+                                                                   (spinneret::escape-string attribute)))))))))))))
       (ps-eval :buffer prompt-buffer
         (setf (ps:@ (nyxt/ps:qs document "#suggestions") |innerHTML|)
               (ps:lisp
