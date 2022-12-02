@@ -63,11 +63,9 @@ See `vi-normal-mode'."
         ;; Destroy vi-normal mode after setting previous-keyscheme, or else we
         ;; can't save the previous keyscheme.
         (disable vi-insert)))
-    (call-next-method)
     (setf (forward-input-events-p buffer) nil)))
 
 (defmethod disable ((mode vi-normal-mode) &key)
-  (call-next-method)
   (setf (forward-input-events-p (buffer mode)) t))
 
 (define-command switch-to-vi-normal-mode (&optional (mode (find-submode 'vi-insert-mode
@@ -91,7 +89,6 @@ See also `vi-normal-mode' and `vi-insert-mode'."
             vi-normal)
       (when vi-normal
         (disable vi-normal)))
-    (call-next-method)
     ;; Somehow use inheritance instead?
     (when (passthrough-mode-p mode)
       (enable-modes* 'nyxt/passthrough-mode:passthrough-mode buffer))))
