@@ -288,8 +288,8 @@ Uses the average length of attribute values to derive the width."
         for key in (prompter:active-attributes-keys source)
         for width
           = (loop for suggestion in suggestions
-                  sum (length (second (assoc key (prompter:active-attributes suggestion :source source)
-                                             :test #'string=))))
+                  sum (length (first (str:s-assoc-value
+                                      (prompter:active-attributes suggestion :source source) key))))
         collect width into widths
         sum width into total
         finally (return (mapcar (lambda (w) (+ 10 (round (* (- 100 mandatory-space)
