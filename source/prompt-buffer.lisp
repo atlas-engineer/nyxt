@@ -283,21 +283,20 @@ See also `show-prompt-buffer'."
   "Compute the widths of SOURCE attribute columns (as percent).
 Returns a list of integers, the sum of which should be roughly equal to 100.
 Uses the average length of attribute values to derive the width."
-  (flet ((ratio-widths (widths total mandatory-space)
-           (mapcar (lambda (w) (+ 10 (round (* (- 100 mandatory-space)
-                                               (if (zerop total)
+  (flet ((ratio-widths (widths total)
+           (mapcar (lambda (w) (+ (/ 100 (length widths) 2)
+                                  (round (* 50 (if (zerop total)
                                                    0
                                                    (/ w total))))))
                    widths)))
     (loop with suggestions = (prompter:suggestions source)
-          with mandatory-space = (* 10 (length (prompter:active-attributes-keys source)))
           ;; This is to process column width as fourth object attribute element.
           initially (sera:and-let* ((fourth-attributes
                                      (mapcar #'fourth (prompter:active-attributes (first suggestions) :source source)))
                                     (some-fourth (some #'identity fourth-attributes))
                                     (coefficients (substitute 1 nil fourth-attributes))
                                     (total (reduce #'+ coefficients)))
-                      (return (ratio-widths coefficients total mandatory-space)))
+                      (return (ratio-widths coefficients total)))
           for key in (prompter:active-attributes-keys source)
           for width
             = (loop for suggestion in suggestions
@@ -305,7 +304,7 @@ Uses the average length of attribute values to derive the width."
                                         (prompter:active-attributes suggestion :source source) key))))
           collect width into widths
           sum width into total
-          finally (return (ratio-widths widths total mandatory-space)))))
+          finally (return (ratio-widths widths total)))))
 
 (defun render-attributes (source prompt-buffer)
   (spinneret:with-html-string
