@@ -95,9 +95,9 @@ ARGS as in make-instance of `auto-rule'."
                          test)
                (append
                 (when included
-                  (list :included (normalize-modes included)))
+                  (list :included (normalize-modes (uiop:ensure-list included))))
                 (when excluded
-                  (list :excluded (normalize-modes excluded)))))
+                  (list :excluded (normalize-modes (uiop:ensure-list excluded))))))
         *default-auto-rules*))
 
 (export-always 'undefine-auto-rule)
