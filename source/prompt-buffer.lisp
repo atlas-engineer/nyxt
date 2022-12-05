@@ -281,13 +281,18 @@ See also `show-prompt-buffer'."
   "Compute the widths of SOURCE attribute columns (as percent).
 Returns a list of integers, the sum of which should be roughly equal to 100.
 Uses the average length of attribute values to derive the width."
-  (flet ((ratio-widths (widths total)
-           (mapcar (lambda (w) (+ (/ 100 (length widths) 2)
-                                  (round (* 50 (if (zerop total)
-                                                   0
-                                                   (/ w total))))))
-                   widths)))
+  (labels ((/* (number divisor)
+             (if (zerop divisor)
+                 0
+                 (/ number divisor)))
+           (ratio-widths (widths total)
+             (mapcar (lambda (w) (round (+ (/ 100 (length widths) 2)
+                                           (* 50 (if (zerop total)
+                                                     0
+                                                     (/* w total))))))
+                     widths)))
     (loop with suggestions = (prompter:suggestions source)
+          with attributes = (mapcar (rcurry #'prompter:active-attributes :source source) suggestions)
           ;; This is to process column width as fourth object attribute element.
           initially (sera:and-let* ((fourth-attributes
                                      (mapcar #'fourth (prompter:active-attributes (first suggestions) :source source)))
@@ -297,9 +302,11 @@ Uses the average length of attribute values to derive the width."
                       (return (ratio-widths coefficients total)))
           for key in (prompter:active-attributes-keys source)
           for width
-            = (loop for suggestion in suggestions
-                    sum (length (first (str:s-assoc-value
-                                        (prompter:active-attributes suggestion :source source) key))))
+            = (let* ((values (remove-if #'str:blankp
+                                        (mapcar (compose #'first (rcurry #'str:s-assoc-value key))
+                                                attributes)))
+                     (total (reduce #'+ values :key #'length)))
+                (/* total (length values)))
           collect width into widths
           sum width into total
           finally (return (ratio-widths widths total)))))
