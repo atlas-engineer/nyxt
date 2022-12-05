@@ -332,15 +332,6 @@ exceed this amount."
     :type (or null plump:node)
     :documentation "A parsed representation of the rendered buffer.
 Computed by `plump:parse', see `update-document-model' for details.")
-   (search-auto-complete-p
-    t
-    :type boolean
-    :documentation "Whether search suggestions are requested and displayed.")
-   (search-always-auto-complete-p
-    t
-    :type boolean
-    :documentation "Whether auto-completion acts on non-prefixed searches.
-Suggestions are computed by the default search engine.")
    (keep-search-hints-p
     t
     :type boolean
@@ -431,6 +422,15 @@ FALLBACK-URL is empty, SEARCH-URL is used on an empty search.
 
 The default search engine (as per `default-search-engine') is used when the
 query is not a valid URL, or the first keyword is not recognized.")
+   (search-auto-complete-p
+    t
+    :type boolean
+    :documentation "Whether search suggestions are requested and displayed.")
+   (search-always-auto-complete-p
+    t
+    :type boolean
+    :documentation "Whether auto-completion acts on non-prefixed searches.
+Suggestions are computed by the default search engine.")
    (download-directory
     (make-instance 'download-directory)
     :type download-directory
