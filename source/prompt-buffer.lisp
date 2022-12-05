@@ -187,7 +187,7 @@ See also `hide-prompt-buffer'."
     (push prompt-buffer (active-prompt-buffers (window prompt-buffer)))
     (calispel:! (prompt-buffer-channel (window prompt-buffer)) prompt-buffer)
     (prompt-render prompt-buffer)
-    (setf (ffi-window-prompt-buffer-height (window prompt-buffer))
+    (setf (ffi-height prompt-buffer)
           (case height
             (:default (prompt-buffer-open-height (window prompt-buffer)))
             (:fit-to-prompt
@@ -229,7 +229,7 @@ See also `show-prompt-buffer'."
     (if (active-prompt-buffers window)
         (let ((next-prompt-buffer (first (active-prompt-buffers window))))
           (show-prompt-buffer next-prompt-buffer))
-        (setf (ffi-window-prompt-buffer-height window) 0))))
+        (setf (ffi-height prompt-buffer) 0))))
 
 (defun suggestion-and-mark-count (prompt-buffer suggestions marks
                                   &key multi-selection-p pad-p)

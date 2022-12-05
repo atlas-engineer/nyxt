@@ -103,12 +103,6 @@ Usually setf-able."))
   (:setter-p t)
   (:documentation "Return the WINDOW message buffer height as a number.
 Setf-able."))
-;; FIXME: Is not implemented as `ffi-height', because `hide-prompt-buffer' needs
-;; deleting _prompt container_, not adjusting the size of prompt buffer.
-(define-ffi-generic ffi-window-prompt-buffer-height (window)
-  (:setter-p t)
-  (:documentation "Return the WINDOW prompt buffer height as a number.
-Setf-able. If set to 0, delete the prompt widget."))
 
 (define-ffi-generic ffi-buffer-make (buffer)
   (:documentation "Make BUFFER widget."))
