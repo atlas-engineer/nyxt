@@ -292,7 +292,10 @@ Uses the average length of attribute values to derive the width."
                                              :test #'string=))))
         collect width into widths
         sum width into total
-        finally (return (mapcar (lambda (w) (+ 10 (round (* (- 100 mandatory-space) (/ w total)))))
+        finally (return (mapcar (lambda (w) (+ 10 (round (* (- 100 mandatory-space)
+                                                            (if (zerop total)
+                                                                0
+                                                                (/ w total))))))
                                 widths))))
 
 (defun render-attributes (source prompt-buffer)
