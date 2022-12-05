@@ -284,6 +284,7 @@ See also `show-prompt-buffer'."
 Returns a list of integers, the sum of which should be roughly equal to 100.
 Uses the average length of attribute values to derive the width."
   (loop with suggestions = (prompter:suggestions source)
+        with mandatory-space = (* 10 (length (prompter:active-attributes-keys source)))
         for key in (prompter:active-attributes-keys source)
         for width
           = (loop for suggestion in suggestions
@@ -291,7 +292,7 @@ Uses the average length of attribute values to derive the width."
                                              :test #'string=))))
         collect width into widths
         sum width into total
-        finally (return (mapcar (lambda (w) (round (* 100 (/ w total))))
+        finally (return (mapcar (lambda (w) (+ 10 (round (* (- 100 mandatory-space) (/ w total)))))
                                 widths))))
 
 (export 'prompt-render-suggestions)
