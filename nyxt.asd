@@ -241,6 +241,7 @@
                (:file "tests/offline/global-history")
                (:file "tests/offline/user-script-parsing")
                (:file "tests/offline/mode")
+               (:file "tests/offline/mode/process")
                (:file "tests/online/urls")))
 
 (defsystem "nyxt/benchmark"

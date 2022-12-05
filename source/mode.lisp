@@ -121,7 +121,8 @@ See also `disable'."))
                                   :key #'sera:class-name-of)))
     (if existing-instance
         (log:debug "Not enabling ~s since other ~s instance is already in buffer ~a" mode existing-instance buffer)
-        (call-next-method))))
+        (call-next-method))
+    mode))
 
 (defmethod enable :after ((mode mode) &key &allow-other-keys)
   (setf (enabled-p mode) t)
@@ -154,7 +155,9 @@ functionality. A `cascade' method combination is used for that.
 See also `enable'."))
 
 (defmethod disable :around ((mode mode) &key &allow-other-keys)
-  (call-next-method))
+  (if (enabled-p mode)
+      (call-next-method)
+      (echo-warning "~a is not enabled, cannot disable it." mode)))
 
 (defmethod disable :after ((mode mode) &key &allow-other-keys)
   (setf (enabled-p mode) nil)
