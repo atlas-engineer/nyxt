@@ -93,7 +93,9 @@ It takes a `repeat-mode' instance as argument.")
     (if (eq 'repeat-key command)
         (dispatch-command command)
         (unwind-protect
-             (repeat-times times (symbol-function command))
+             (repeat-times times (lambda (mode)
+                                   (declare (ignore mode))
+                                   (nyxt::run command)))
           (setf (command-dispatcher (current-window)) #'dispatch-command
                 (input-skip-dispatcher (current-window)) #'dispatch-input-skip
                 *repeat-times-stack* 0)))))
