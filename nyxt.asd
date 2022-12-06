@@ -242,6 +242,7 @@
                (:file "tests/offline/user-script-parsing")
                (:file "tests/offline/mode")
                (:file "tests/offline/mode/process")
+               (:file "tests/offline/prompt-buffer")
                (:file "tests/online/urls")))
 
 (defsystem "nyxt/benchmark"
