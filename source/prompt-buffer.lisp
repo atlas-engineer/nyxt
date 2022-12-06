@@ -277,39 +277,64 @@ See also `show-prompt-buffer'."
                                (mapcar (curry #'mode-status status-buffer)
                                        (sort-modes-for-status (modes prompt-buffer)))))))))
 
-(defun attribute-widths (source)
-  "Compute the widths of SOURCE attribute columns (as percent).
+(defun average-attribute-width (attribute-values)
+  (let* ((values (remove-if #'str:blankp attribute-values))
+         (total (reduce #'+ values :key #'length)))
+    (if (zerop (length values))
+        0
+        (/ total (length values)))))
+
+(defgeneric attribute-widths (source &key width-function)
+  (:method (source &key (width-function #'average-attribute-width))
+    (labels ((clip-extremes (widths)
+               (let* ((length (length widths))
+                      (minimal-size (round (/ 100 length 2))))
+                 (cond
+                   ((= 1 length)
+                    (list 100))
+                   ((some (rcurry #'< minimal-size) widths)
+                    (let* ((lacking (remove-if-not #'plusp
+                                                   (mapcar (curry #'- minimal-size) widths)))
+                           (abundant (set-difference widths lacking))
+                           (lack (reduce #'+ lacking)))
+                      (loop for width in widths
+                            when (< width minimal-size)
+                              collect minimal-size into new-widths
+                            else
+                              collect (round (- width
+                                                (* lack
+                                                   (/ width
+                                                      (reduce #'+ abundant)))))
+                                into new-widths
+                            finally (return new-widths))))
+                   (t widths))))
+             (ratio-widths (widths)
+               "Compute the percentage of the screen that attributes with WIDTHS should occupy."
+               (let* ((total (reduce #'+ widths)))
+                 (mapcar (lambda (w) (round (* 100 (if (zerop total)
+                                                       0
+                                                       (/ w total)))))
+                         widths))))
+      (loop with suggestions = (prompter:suggestions source)
+            with attributes = (mapcar (rcurry #'prompter:active-attributes :source source) suggestions)
+            ;; This is to process column width as fourth object attribute element.
+            initially (sera:and-let* ((fourth-attributes
+                                       (mapcar #'fourth (prompter:active-attributes (first suggestions) :source source)))
+                                      (some-fourth (some #'identity fourth-attributes))
+                                      (coefficients (substitute 1 nil fourth-attributes)))
+                        (return (ratio-widths coefficients)))
+            for key in (prompter:active-attributes-keys source)
+            for width
+              = (funcall width-function (mapcar (compose #'first (rcurry #'str:s-assoc-value key))
+                                                attributes))
+            collect width into widths
+            finally (return (clip-extremes (ratio-widths widths))))))
+  (:documentation "Compute the widths of SOURCE attribute columns (as percent).
 Returns a list of integers, the sum of which should be roughly equal to 100.
-Uses the average length of attribute values to derive the width."
-  (labels ((/* (number divisor)
-             (if (zerop divisor)
-                 0
-                 (/ number divisor)))
-           (ratio-widths (widths total)
-             (mapcar (lambda (w) (round (+ (/ 100 (length widths) 2)
-                                           (* 50 (if (zerop total)
-                                                     0
-                                                     (/* w total))))))
-                     widths)))
-    (loop with suggestions = (prompter:suggestions source)
-          with attributes = (mapcar (rcurry #'prompter:active-attributes :source source) suggestions)
-          ;; This is to process column width as fourth object attribute element.
-          initially (sera:and-let* ((fourth-attributes
-                                     (mapcar #'fourth (prompter:active-attributes (first suggestions) :source source)))
-                                    (some-fourth (some #'identity fourth-attributes))
-                                    (coefficients (substitute 1 nil fourth-attributes))
-                                    (total (reduce #'+ coefficients)))
-                      (return (ratio-widths coefficients total)))
-          for key in (prompter:active-attributes-keys source)
-          for width
-            = (let* ((values (remove-if #'str:blankp
-                                        (mapcar (compose #'first (rcurry #'str:s-assoc-value key))
-                                                attributes)))
-                     (total (reduce #'+ values :key #'length)))
-                (/* total (length values)))
-          collect width into widths
-          sum width into total
-          finally (return (ratio-widths widths total)))))
+Uses the WIDTH-FUNCTION (by default computing average length of non-blank
+attribute values) to derive the width of the list of attribute
+values. WIDTH-FUNCTION is a function accepting a list of strings and returning
+an integer."))
 
 (defun render-attributes (source prompt-buffer)
   (spinneret:with-html-string
