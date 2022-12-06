@@ -35,31 +35,31 @@
            (lpara:force ,promise))))))
 
 (define-test remembrance ()
-  (with-headless
-    (nyxt:start :no-config t :no-auto-config t
-                :socket "/tmp/nyxt-test.socket"
-                :profile "test")
-    (wait-on-handler nyxt:*after-startup-hook* ()
-      (nyxt:enable-modes* 'nyxt/remembrance-mode:remembrance-mode (nyxt:current-buffer)))
-    (let ((mode (nyxt:find-submode 'nyxt/remembrance-mode:remembrance-mode)))
-      (assert-equality 'uiop:pathname-equal
-                       (nfiles:join +test-root+
-                                    (uiop:xdg-cache-home "nyxt" "remembrance.cache/"))
-                       (nfiles:expand (nyxt/remembrance-mode::cache-path mode)))
-      (assert-number-equal 0
-                           (nyxt/remembrance-mode::cache-size mode))
-      (set-url-blocking +url1+)
+  (nyxt:start :no-config t :no-auto-config t
+              :headless t
+              :socket "/tmp/nyxt-test.socket"
+              :profile "test")
+  (wait-on-handler nyxt:*after-startup-hook* ()
+    (nyxt:enable-modes* 'nyxt/remembrance-mode:remembrance-mode (nyxt:current-buffer)))
+  (let ((mode (nyxt:find-submode 'nyxt/remembrance-mode:remembrance-mode)))
+    (assert-equality 'uiop:pathname-equal
+                     (nfiles:join +test-root+
+                                  (uiop:xdg-cache-home "nyxt" "remembrance.cache/"))
+                     (nfiles:expand (nyxt/remembrance-mode::cache-path mode)))
+    (assert-number-equal 0
+                         (nyxt/remembrance-mode::cache-size mode))
+    (set-url-blocking +url1+)
 
-      (assert-number-equal 1
-                           (nyxt/remembrance-mode::cache-size mode))
-      (set-url-blocking +url2+)
+    (assert-number-equal 1
+                         (nyxt/remembrance-mode::cache-size mode))
+    (set-url-blocking +url2+)
 
-      ;; TODO: For some reason loading a second URL does not trigger the on-signal-* methods in headless mode.
-      ;; WebKitGTK bug?
+    ;; TODO: For some reason loading a second URL does not trigger the on-signal-* methods in headless mode.
+    ;; WebKitGTK bug?
 
-      ;; (assert-number-equal 2
-      ;;                      (nyxt/remembrance-mode::cache-size mode))
+    ;; (assert-number-equal 2
+    ;;                      (nyxt/remembrance-mode::cache-size mode))
 
-      (uiop:delete-directory-tree (nfiles:expand (nyxt/remembrance-mode::cache-path mode))
-                                  :validate t))
-    (nyxt:quit)))
+    (uiop:delete-directory-tree (nfiles:expand (nyxt/remembrance-mode::cache-path mode))
+                                :validate t))
+  (nyxt:quit))

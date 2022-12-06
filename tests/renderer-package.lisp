@@ -23,12 +23,6 @@
   "Store all files in a temporary `+test-root+' directory."
   (files:join +test-root+  (call-next-method)))
 
-(defmacro with-headless (&body body)
-  `(let ((old-headless-p nyxt::*headless-p*))
-    (unwind-protect (progn
-                      (setf nyxt::*headless-p* t)
-                      ,@body)
-      (setf nyxt::*headless-p* old-headless-p))))
 (defmacro with-prompt-buffer-test (command &body body)
   (alexandria:with-gensyms (thread)
     `(let ((,thread (bt:make-thread (lambda () ,command))))
