@@ -25,4 +25,5 @@
     (let ((result (calispel:? channel)))
       (assert-eq '1+ (first result))
       (assert-eq 3 (second result))))
+  (sleep 1)
   (nyxt:quit))
