@@ -29,3 +29,11 @@
                       (setf nyxt::*headless-p* t)
                       ,@body)
       (setf nyxt::*headless-p* old-headless-p))))
+(defmacro with-prompt-buffer-test (command &body body)
+  (alexandria:with-gensyms (thread)
+    `(let ((,thread (bt:make-thread (lambda () ,command))))
+       (calispel:? (prompt-buffer-channel (current-window)))
+       ,@body
+       (return-selection)
+       (bt:join-thread ,thread))))
+
