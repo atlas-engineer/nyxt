@@ -279,20 +279,26 @@ See also `show-prompt-buffer'."
                                (mapcar (curry #'mode-status status-buffer)
                                        (sort-modes-for-status (modes prompt-buffer)))))))))
 
-(defun attribute-widths (source)
+(defun average-attribute-width (attribute-values)
+  (let* ((values (remove-if #'str:blankp attribute-values))
+         (total (reduce #'+ values :key #'length)))
+    (if (zerop (length values))
+        0
+        (/ total (length values)))))
+
+(defmethod attribute-widths (source &key (width-function #'average-attribute-width))
   "Compute the widths of SOURCE attribute columns (as percent).
 Returns a list of integers, the sum of which should be roughly equal to 100.
-Uses the average length of attribute values to derive the width."
-  (labels ((/* (number divisor)
-             (if (zerop divisor)
-                 0
-                 (/ number divisor)))
-           (ratio-widths (widths total)
-             (mapcar (lambda (w) (round (+ (/ 100 (length widths) 2)
-                                           (* 50 (if (zerop total)
-                                                     0
-                                                     (/* w total))))))
-                     widths)))
+Uses the WIDTH-FUNCTION (by default computing average length of non-blank
+attribute values) to derive the width of the list of attribute
+values. WIDTH-FUNCTION is a function accepting a list of strings and returning
+an integer."
+  (flet ((ratio-widths (widths total)
+           (mapcar (lambda (w) (round (+ (/ 100 (length widths) 2)
+                                         (* 50 (if (zerop total)
+                                                   0
+                                                   (/ w total))))))
+                   widths)))
     (loop with suggestions = (prompter:suggestions source)
           with attributes = (mapcar (rcurry #'prompter:active-attributes :source source) suggestions)
           ;; This is to process column width as fourth object attribute element.
@@ -301,14 +307,11 @@ Uses the average length of attribute values to derive the width."
                                     (some-fourth (some #'identity fourth-attributes))
                                     (coefficients (substitute 1 nil fourth-attributes))
                                     (total (reduce #'+ coefficients)))
-                      (return (ratio-widths coefficients total)))
+                                   (return (ratio-widths coefficients total)))
           for key in (prompter:active-attributes-keys source)
           for width
-            = (let* ((values (remove-if #'str:blankp
-                                        (mapcar (compose #'first (rcurry #'str:s-assoc-value key))
-                                                attributes)))
-                     (total (reduce #'+ values :key #'length)))
-                (/* total (length values)))
+            = (funcall width-function (mapcar (compose #'first (rcurry #'str:s-assoc-value key))
+                                              attributes))
           collect width into widths
           sum width into total
           finally (return (ratio-widths widths total)))))
