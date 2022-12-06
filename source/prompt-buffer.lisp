@@ -294,6 +294,7 @@ Uses the average length of attribute values to derive the width."
                                                      (/* w total))))))
                      widths)))
     (loop with suggestions = (prompter:suggestions source)
+          with attributes = (mapcar (rcurry #'prompter:active-attributes :source source) suggestions)
           ;; This is to process column width as fourth object attribute element.
           initially (sera:and-let* ((fourth-attributes
                                      (mapcar #'fourth (prompter:active-attributes (first suggestions) :source source)))
@@ -304,11 +305,8 @@ Uses the average length of attribute values to derive the width."
           for key in (prompter:active-attributes-keys source)
           for width
             = (let* ((values (remove-if #'str:blankp
-                                        (mapcar (compose
-                                                 #'first
-                                                 (rcurry #'str:s-assoc-value key)
-                                                 (rcurry #'prompter:active-attributes :source source))
-                                                suggestions)))
+                                        (mapcar (compose #'first (rcurry #'str:s-assoc-value key))
+                                                attributes)))
                      (total (reduce #'+ values :key #'length)))
                 (/* total (length values)))
           collect width into widths
