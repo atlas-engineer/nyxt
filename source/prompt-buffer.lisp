@@ -286,35 +286,36 @@ See also `show-prompt-buffer'."
         0
         (/ total (length values)))))
 
-(defmethod attribute-widths (source &key (width-function #'average-attribute-width))
-  "Compute the widths of SOURCE attribute columns (as percent).
+(defgeneric attribute-width (source &key width-function)
+  (:method (source &key (width-function #'average-attribute-width))
+    (flet ((ratio-widths (widths total)
+             (mapcar (lambda (w) (round (+ (/ 100 (length widths) 2)
+                                           (* 50 (if (zerop total)
+                                                     0
+                                                     (/ w total))))))
+                     widths)))
+      (loop with suggestions = (prompter:suggestions source)
+            with attributes = (mapcar (rcurry #'prompter:active-attributes :source source) suggestions)
+            ;; This is to process column width as fourth object attribute element.
+            initially (sera:and-let* ((fourth-attributes
+                                       (mapcar #'fourth (prompter:active-attributes (first suggestions) :source source)))
+                                      (some-fourth (some #'identity fourth-attributes))
+                                      (coefficients (substitute 1 nil fourth-attributes))
+                                      (total (reduce #'+ coefficients)))
+                        (return (ratio-widths coefficients total)))
+            for key in (prompter:active-attributes-keys source)
+            for width
+              = (funcall width-function (mapcar (compose #'first (rcurry #'str:s-assoc-value key))
+                                                attributes))
+            collect width into widths
+            sum width into total
+            finally (return (ratio-widths widths total)))))
+  (:documentation "Compute the widths of SOURCE attribute columns (as percent).
 Returns a list of integers, the sum of which should be roughly equal to 100.
 Uses the WIDTH-FUNCTION (by default computing average length of non-blank
 attribute values) to derive the width of the list of attribute
 values. WIDTH-FUNCTION is a function accepting a list of strings and returning
-an integer."
-  (flet ((ratio-widths (widths total)
-           (mapcar (lambda (w) (round (+ (/ 100 (length widths) 2)
-                                         (* 50 (if (zerop total)
-                                                   0
-                                                   (/ w total))))))
-                   widths)))
-    (loop with suggestions = (prompter:suggestions source)
-          with attributes = (mapcar (rcurry #'prompter:active-attributes :source source) suggestions)
-          ;; This is to process column width as fourth object attribute element.
-          initially (sera:and-let* ((fourth-attributes
-                                     (mapcar #'fourth (prompter:active-attributes (first suggestions) :source source)))
-                                    (some-fourth (some #'identity fourth-attributes))
-                                    (coefficients (substitute 1 nil fourth-attributes))
-                                    (total (reduce #'+ coefficients)))
-                                   (return (ratio-widths coefficients total)))
-          for key in (prompter:active-attributes-keys source)
-          for width
-            = (funcall width-function (mapcar (compose #'first (rcurry #'str:s-assoc-value key))
-                                              attributes))
-          collect width into widths
-          sum width into total
-          finally (return (ratio-widths widths total)))))
+an integer."))
 
 (defun render-attributes (source prompt-buffer)
   (spinneret:with-html-string
