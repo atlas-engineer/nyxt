@@ -25,7 +25,7 @@ Features:
     (nyxt::new-id)
     :type alex:non-negative-integer
     :documentation "Unique evaluation identifier.")
-   (mode
+   (repl-mode
     (find-submode 'repl-mode)
     :type mode
     :documentation "Repl-mode instance this evaluation belong to")
@@ -169,7 +169,7 @@ Features:
                    :ui-cleanup (lambda (wrapper)
                                  (declare (ignore wrapper))
                                  (setf (raised-condition evaluation) nil)
-                                 (reload-buffer (buffer (mode evaluation)))))
+                                 (reload-buffer (buffer (repl-mode evaluation)))))
                 (with-input-from-string (input (input evaluation))
                   (alex:lastcar
                    (mapcar (lambda (s-exp)
@@ -177,7 +177,7 @@ Features:
                                    (output evaluation) (get-output-stream-string *standard-output*)))
                            (safe-slurp-stream-forms input))))))
             (setf (ready-p evaluation) t)
-            (reload-buffer (buffer (mode evaluation)))))))
+            (reload-buffer (buffer (repl-mode evaluation)))))))
 
 (defun package-short-name (package)
   (first (sort (append (package-nicknames package)
@@ -434,7 +434,7 @@ Follows what the compiler finds aesthetically pleasing."
         (progn
           (setf (evaluations repl-mode)
                 (cons (make-instance 'evaluation :input form
-                                                 :mode repl-mode
+                                                 :repl-mode repl-mode
                                                  :ready-p t)
                       (evaluations repl-mode)))
           (buffer-load (nyxt-url 'repl) :buffer repl-buffer))
