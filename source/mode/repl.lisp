@@ -25,6 +25,10 @@ Features:
     (nyxt::new-id)
     :type alex:non-negative-integer
     :documentation "Unique evaluation identifier.")
+   (mode
+    (find-submode 'repl-mode)
+    :type mode
+    :documentation "Repl-mode instance this evaluation belong to")
    (input
     nil
     :accessor nil
@@ -151,8 +155,7 @@ Features:
     :documentation "Index of the evaluation currently being focused."))
   (:toggler-command-p nil))
 
-(defmethod initialize-instance :after ((evaluation evaluation)
-                                       &key (mode (find-submode 'repl-mode)) &allow-other-keys)
+(defmethod initialize-instance :after ((evaluation evaluation) &key &allow-other-keys)
   (unless (ready-p evaluation)
     (setf (thread evaluation)
           (run-thread "repl cell evaluation"
@@ -166,8 +169,7 @@ Features:
                    :ui-cleanup (lambda (wrapper)
                                  (declare (ignore wrapper))
                                  (setf (raised-condition evaluation) nil)
-                                 (when mode
-                                   (reload-buffer (buffer mode)))))
+                                 (reload-buffer (buffer (mode evaluation)))))
                 (with-input-from-string (input (input evaluation))
                   (alex:lastcar
                    (mapcar (lambda (s-exp)
@@ -175,8 +177,7 @@ Features:
                                    (output evaluation) (get-output-stream-string *standard-output*)))
                            (safe-slurp-stream-forms input))))))
             (setf (ready-p evaluation) t)
-            (when mode
-              (reload-buffer (buffer mode)))))))
+            (reload-buffer (buffer (mode evaluation)))))))
 
 (defun package-short-name (package)
   (first (sort (append (package-nicknames package)
@@ -433,6 +434,7 @@ Follows what the compiler finds aesthetically pleasing."
         (progn
           (setf (evaluations repl-mode)
                 (cons (make-instance 'evaluation :input form
+                                                 :mode repl-mode
                                                  :ready-p t)
                       (evaluations repl-mode)))
           (buffer-load (nyxt-url 'repl) :buffer repl-buffer))
