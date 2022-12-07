@@ -5,7 +5,11 @@
 
 (define-test execute-command-1+ ()
   (let ((channel (nyxt::make-channel 1)))
-    (hooks:once-on nyxt:*after-startup-hook* ()
+    (nyxt:start :no-config t :no-auto-config t
+                :headless t
+                :socket "/tmp/nyxt-test.socket"
+                :profile "test")
+    (hooks:once-on (nyxt:after-startup-hook nyxt:*browser*) (browser)
       (hooks:once-on (nyxt:prompt-buffer-ready-hook nyxt:*browser*)
           (prompt-buffer)
         (prompter:all-ready-p prompt-buffer)
@@ -18,10 +22,6 @@
       (nyxt:run-thread "run execute-command"
         (let ((nyxt::*interactive-p* t))
           (nyxt:execute-command))))
-    (nyxt:start :no-config t :no-auto-config t
-                :headless t
-                :socket "/tmp/nyxt-test.socket"
-                :profile "test")
     (let ((result (calispel:? channel)))
       (assert-eq '1+ (first result))
       (assert-eq 3 (second result))))

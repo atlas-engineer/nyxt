@@ -36,10 +36,9 @@
 
 (define-test remembrance ()
   (nyxt:start :no-config t :no-auto-config t
-              :headless t
               :socket "/tmp/nyxt-test.socket"
               :profile "test")
-  (wait-on-handler nyxt:*after-startup-hook* ()
+  (wait-on-handler (nyxt:after-startup-hook nyxt:*browser*) (browser)
     (nyxt:enable-modes* 'nyxt/remembrance-mode:remembrance-mode (nyxt:current-buffer)))
   (let ((mode (nyxt:find-submode 'nyxt/remembrance-mode:remembrance-mode)))
     (assert-equality 'uiop:pathname-equal

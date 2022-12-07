@@ -467,8 +467,8 @@ specify which input and output values are expected.")
                   " that removes the handler right after it's completed.")))
         (:p "Many hooks are executed at different points in Nyxt, among others:")
         (:ul
-         (:li "Global hooks, such as " (:nxref :variable '*after-init-hook*)
-              " or " (:nxref :variable '*after-startup-hook*) ".")
+         (:li "Global hooks, such as " (:nxref :slot 'after-init-hook :class-name 'browser)
+              " or " (:nxref :slot 'after-startup-hook :class-name 'browser) ".")
          (:li "Window- or buffer-related hooks.")
          (:ul
           (:li (:nxref :slot 'window-make-hook :class-name 'window) " for when a new window is created.")
@@ -757,11 +757,11 @@ exec nyxt --headless --no-auto-config --profile nosave --config \"$0\"
   ((restore-session-on-startup-p nil)))
 
 ;; Load the URL of Nyxt repository by default in all new buffers.
-;; Alternatively, call `buffer-load' in `*after-startup-hook*'.
+;; Alternatively, call `buffer-load' in `after-startup-hook'.
 \(define-configuration browser
   ((default-new-buffer-url (quri:uri \"https://github.com/atlas-engineer/nyxt\"))))
 
-\(hooks:on *after-startup-hook* ()
+\(hooks:on (after-startup-hook *browser*) (browser)
   ;; Once the page's done loading, do your thing.
   (hooks:once-on (buffer-loaded-hook (current-buffer)) (buffer)
     ;; It's sometimes necessary to sleep, as `buffer-loaded-hook' fires when the

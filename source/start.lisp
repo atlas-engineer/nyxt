@@ -530,7 +530,7 @@ First load `*auto-config-file*' if any.
 Then load `*config-file*' if any.
 Instantiate `*browser*'.
 Finally, run the browser, load URL-STRINGS if any, then run
-`*after-init-hook*'."
+`after-init-hook'."
   (let ((log-path (files:expand *log-file*)))
     (unless (files:nil-pathname-p log-path)
       (uiop:delete-file-if-exists log-path) ; Otherwise `log4cl' appends.
@@ -583,7 +583,7 @@ Finally, run the browser, load URL-STRINGS if any, then run
            (let ((*package* (find-package :cl))) ; Switch package to use non-nicknamed packages.
              (write-to-string
               `(hooks:add-hook
-                nyxt:*after-init-hook*
+                (nyxt:after-init-hook nyxt:*browser*)
                 (make-instance
                  'hooks:handler
                  :fn (lambda ()
