@@ -288,28 +288,27 @@ See also `show-prompt-buffer'."
 
 (defgeneric attribute-width (source &key width-function)
   (:method (source &key (width-function #'average-attribute-width))
-    (flet ((ratio-widths (widths total)
-             (mapcar (lambda (w) (round (+ (/ 100 (length widths) 2)
-                                           (* 50 (if (zerop total)
-                                                     0
-                                                     (/ w total))))))
-                     widths)))
+    (flet ((ratio-widths (widths)
+             (let ((total (reduce #'+ widths)))
+               (mapcar (lambda (w) (round (+ (/ 100 (length widths) 2)
+                                             (* 50 (if (zerop total)
+                                                       0
+                                                       (/ w total))))))
+                       widths))))
       (loop with suggestions = (prompter:suggestions source)
             with attributes = (mapcar (rcurry #'prompter:active-attributes :source source) suggestions)
             ;; This is to process column width as fourth object attribute element.
             initially (sera:and-let* ((fourth-attributes
                                        (mapcar #'fourth (prompter:active-attributes (first suggestions) :source source)))
                                       (some-fourth (some #'identity fourth-attributes))
-                                      (coefficients (substitute 1 nil fourth-attributes))
-                                      (total (reduce #'+ coefficients)))
-                        (return (ratio-widths coefficients total)))
+                                      (coefficients (substitute 1 nil fourth-attributes)))
+                        (return (ratio-widths coefficients)))
             for key in (prompter:active-attributes-keys source)
             for width
               = (funcall width-function (mapcar (compose #'first (rcurry #'str:s-assoc-value key))
                                                 attributes))
-            collect width into widths
-            sum width into total
-            finally (return (ratio-widths widths total)))))
+            collect width into widtsh
+            finally (return (ratio-widths widths)))))
   (:documentation "Compute the widths of SOURCE attribute columns (as percent).
 Returns a list of integers, the sum of which should be roughly equal to 100.
 Uses the WIDTH-FUNCTION (by default computing average length of non-blank
