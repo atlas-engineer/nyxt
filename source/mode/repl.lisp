@@ -26,7 +26,9 @@ Features:
     :type alex:non-negative-integer
     :documentation "Unique evaluation identifier.")
    (mode-instance
-    (find-submode 'repl-mode)
+    ;; If we use (find-submode 'repl-mode), compiler will scream at us that
+    ;; 'repl-mode is not a mode symbol, because repl-mode is not yet defined.
+    (current-mode :repl)
     :type mode
     :documentation "Repl-mode instance this evaluation belong to")
    (input
