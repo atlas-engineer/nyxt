@@ -83,7 +83,12 @@ This is a blocking operation."
   "Run body in a new protected thread.
 This supersedes `bt:make-thread' in Nyxt.  Don't use the latter unless you know
 what you are doing!"
-  `(lparallel.thread-util:with-thread (:name ,(str:concat "Nyxt " name))
+  `(lparallel.thread-util:with-thread (:name ,(str:concat "Nyxt " name)
+                                       :bindings (append '((*run-from-repl-p* . *run-from-repl-p*)
+                                                           (*headless-p* . *headless-p*)
+                                                           (*debug-on-error* . *debug-on-error*)
+                                                           (*interactive-p* . *interactive-p*))
+                                                         bt:*default-special-bindings*))
      (with-protect ("Error on separate thread: ~a" :condition)
        ,@body)))
 
