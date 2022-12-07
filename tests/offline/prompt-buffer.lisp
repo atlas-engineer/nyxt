@@ -15,12 +15,8 @@
 
 (define-test smart-attribute-widths ()
   (assert-equal
-   ;; This is because we split 50% of the width between all the attributes
-   ;; evenly (thus 25) and then add the average sizes of attributes relative to
-   ;; each other (thus 1*(50/3) and 2*(50/3)---the second attribute is twice as
-   ;; big as the first one).
-   (list (+ 25 (round (/ 50 3)))
-         (+ 25 (round (* 2 (/ 50 3)))))
+   (list (round (/ 100 3))
+         (round (* 2 (/ 100 3))))
    (nyxt::attribute-widths
     (make-instance 'twice-source
                    :constructor (mapcar (curry #'format nil "~R")
