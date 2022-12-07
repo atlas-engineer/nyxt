@@ -592,7 +592,9 @@ regular commands, such as "
         " and so on.")
    (:li "The " (:code "browser") " class has a " (:code "profile") " slot.")
    (:li "Renderers are now first class objects, see the " (:code "renderer") " class."
-        " It's possible to change renderer from a same REPL session."))
+        " It's possible to change renderer from a same REPL session.")
+   (:li (:nxref :command 'set-url) " and " (:nxref :command 'set-url-new-buffer) " accept the "
+        (:code ":URL") " keyword argument and load it when provided."))
 
   (:h3 "Bug fixes")
   (:ul
