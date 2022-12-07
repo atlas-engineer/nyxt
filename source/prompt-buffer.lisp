@@ -286,15 +286,37 @@ See also `show-prompt-buffer'."
         0
         (/ total (length values)))))
 
-(defgeneric attribute-width (source &key width-function)
+(defgeneric attribute-widths (source &key width-function)
   (:method (source &key (width-function #'average-attribute-width))
-    (flet ((ratio-widths (widths)
-             (let ((total (reduce #'+ widths)))
-               (mapcar (lambda (w) (round (+ (/ 100 (length widths) 2)
-                                             (* 50 (if (zerop total)
+    (labels ((clip-extremes (widths)
+               (let* ((length (length widths))
+                      (minimal-size (round (/ 100 length 2))))
+                 (cond
+                   ((= 1 length)
+                    (list 100))
+                   ((some (rcurry #'< minimal-size) widths)
+                    (let* ((lacking (remove-if-not #'plusp
+                                                   (mapcar (curry #'- minimal-size) widths)))
+                           (abundant (set-difference widths lacking))
+                           (lack (reduce #'+ lacking)))
+                      (loop for width in widths
+                            when (< width minimal-size)
+                              collect minimal-size into new-widths
+                            else
+                              collect (round (- width
+                                                (* lack
+                                                   (/ width
+                                                      (reduce #'+ abundant)))))
+                                into new-widths
+                            finally (return new-widths))))
+                   (t widths))))
+             (ratio-widths (widths)
+               "Compute the percentage of the screen that attributes with WIDTHS should occupy."
+               (let* ((total (reduce #'+ widths)))
+                 (mapcar (lambda (w) (round (* 100 (if (zerop total)
                                                        0
-                                                       (/ w total))))))
-                       widths))))
+                                                       (/ w total)))))
+                         widths))))
       (loop with suggestions = (prompter:suggestions source)
             with attributes = (mapcar (rcurry #'prompter:active-attributes :source source) suggestions)
             ;; This is to process column width as fourth object attribute element.
@@ -307,8 +329,8 @@ See also `show-prompt-buffer'."
             for width
               = (funcall width-function (mapcar (compose #'first (rcurry #'str:s-assoc-value key))
                                                 attributes))
-            collect width into widtsh
-            finally (return (ratio-widths widths)))))
+            collect width into widths
+            finally (return (clip-extremes (ratio-widths widths))))))
   (:documentation "Compute the widths of SOURCE attribute columns (as percent).
 Returns a list of integers, the sum of which should be roughly equal to 100.
 Uses the WIDTH-FUNCTION (by default computing average length of non-blank
