@@ -25,7 +25,8 @@ It takes a `repeat-mode' instance as argument.")
    (nyxt/process-mode:firing-condition
     #'(lambda (path-url mode)
         (declare (ignore path-url))
-        (sleep (repeat-interval mode))
+        (when (repeat-interval mode)
+          (sleep (repeat-interval mode)))
         (cond ((repeat-count mode)
                (if (zerop (repeat-count mode))
                    :return
