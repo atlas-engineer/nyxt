@@ -317,7 +317,7 @@ For production code, see `find-submode' instead."
   (:metaclass user-class))
 
 (export-always 'enable-modes*)
-(defgeneric enable-modes* (modes buffers &rest args &key)
+(defgeneric enable-modes* (modes buffers &rest args &key remember-p &allow-other-keys)
   ;; FIXME: Better type dispatching? The types used to be:
   ;; (-> enable-modes* ((or sym:mode-symbol (list-of sym:mode-symbol))
   ;;                    (or buffer (list-of buffer))
@@ -338,7 +338,8 @@ For production code, see `find-submode' instead."
                 buffer)
               (sera:filter #'modable-buffer-p buffers))))
   (:documentation "Enable MODES in BUFFERS.
-ARGS are the keyword arguments for `make-instance' on MODES."))
+ARGS are the keyword arguments for `make-instance' on MODES.
+If REMEMBER-P is true, save active modes so that auto-rules don't override those."))
 
 (define-command enable-modes (&key
                               (modes nil explicit-modes-p)
@@ -370,7 +371,7 @@ If it's a single buffer, return it directly (not as a list)."
   buffers)
 
 (export-always 'disable-modes*)
-(defgeneric disable-modes* (modes buffers &rest args &key)
+(defgeneric disable-modes* (modes buffers &rest args &key remember-p &allow-other-keys)
   ;; FIXME: Better type dispatching?
   (:method (modes buffers &rest args &key &allow-other-keys)
     (declare (ignorable args))
@@ -385,7 +386,8 @@ If it's a single buffer, return it directly (not as a list)."
                         (delete nil (mapcar (lambda (mode) (find mode (modes buffer) :key #'name))
                                             modes))))
               buffers)))
-  (:documentation "Disable MODES in BUFFERS."))
+  (:documentation "Disable MODES in BUFFERS.
+If REMEMBER-P is true, save active modes so that auto-rules don't override those."))
 
 (define-command disable-modes (&key (modes nil explicit-modes-p)
                                (buffers (current-buffer) explicit-buffers-p))
