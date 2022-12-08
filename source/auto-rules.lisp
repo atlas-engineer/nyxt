@@ -227,6 +227,18 @@ The rules are:
         (when (not (matching-auto-rules (url buffer) buffer))
           (save-last-active-modes buffer (url buffer))))))
 
+(defmethod enable-modes* :after (modes buffers &rest keys &key remember-p &allow-other-keys)
+  (declare (ignorable modes keys))
+  (when remember-p
+    (dolist (buffer (uiop:ensure-list buffers))
+      (save-last-active-modes buffer (url buffer)))))
+
+(defmethod disable-modes* :after (modes buffers &rest keys &key remember-p &allow-other-keys)
+  (declare (ignorable modes keys))
+  (when remember-p
+    (dolist (buffer (uiop:ensure-list buffers))
+      (save-last-active-modes buffer (url buffer)))))
+
 (defmethod customize-instance :after ((buffer modable-buffer) &key &allow-other-keys)
   (unless (last-active-modes buffer)
     (setf (last-active-modes buffer)
