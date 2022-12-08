@@ -12,8 +12,8 @@
     :type (or null string pathname)
     :documentation "The key file for `password-file'.")
    (master-password
-    nil
-    :type (or null string)
+    ""
+    :type string
     :documentation "The password to the `password-file'.")
    (entries-cache
     nil
