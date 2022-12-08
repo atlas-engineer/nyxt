@@ -370,8 +370,8 @@ If it's a single buffer, return it directly (not as a list)."
   buffers)
 
 (export-always 'disable-modes*)
-(-> disable-modes* ((or sym:mode-symbol (list-of sym:mode-symbol)) (or buffer (list-of buffer))) *)
 (defgeneric disable-modes* (modes buffers &key)
+  ;; FIXME: Better type dispatching?
   (:method (modes buffers &key &allow-other-keys)
     (let ((modes (uiop:ensure-list modes))
           (buffers (uiop:ensure-list buffers)))
