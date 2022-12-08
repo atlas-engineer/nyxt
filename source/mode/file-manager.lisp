@@ -154,7 +154,7 @@ It's suitable for `prompter:filter-preprocessor'."
     nil
     :type (list-of string)
     :documentation "List of extensions that are displayed.
-When nil, all extensions are whitelisted.")
+When nil, all extensions are allow-listed.")
    (allow-directories
     t
     :type boolean
