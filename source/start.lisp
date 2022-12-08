@@ -438,7 +438,7 @@ Examples:
 
   ;; Options should be accessible anytime, even when run from the REPL.
   (setf *options* options)
-  (destructuring-bind (&key (headless nil explicit-headless-p) verbose
+  (destructuring-bind (&key (headless *headless-p*) verbose
                          help version system-information
                          list-profiles script
                          config no-config init no-init ; TODO: Deprecated, remove in 4.0.
@@ -446,8 +446,7 @@ Examples:
                          load eval quit remote
                        &allow-other-keys)
       options
-    (setf *headless-p* (when explicit-headless-p
-                         headless))
+    (setf *headless-p* headless)
 
     (when failsafe
       (setf
