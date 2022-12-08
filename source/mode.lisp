@@ -370,9 +370,10 @@ If it's a single buffer, return it directly (not as a list)."
   buffers)
 
 (export-always 'disable-modes*)
-(defgeneric disable-modes* (modes buffers &key)
+(defgeneric disable-modes* (modes buffers &rest args &key)
   ;; FIXME: Better type dispatching?
-  (:method (modes buffers &key &allow-other-keys)
+  (:method (modes buffers &rest args &key &allow-other-keys)
+    (declare (ignorable args))
     (let ((modes (uiop:ensure-list modes))
           (buffers (uiop:ensure-list buffers)))
       (dolist (mode modes)
