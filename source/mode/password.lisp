@@ -112,6 +112,13 @@ for which the `executable' slot is non-nil."
                     :extra-modes 'nyxt/file-manager-mode:file-manager-mode
                     :sources (make-instance 'nyxt/file-manager-mode:file-source
                                             :extensions '("kdbx"))))))
+  (unless (password::key-file password-interface)
+    (setf (password::key-file password-interface)
+          (uiop:native-namestring
+           (prompt1
+            :prompt "Password database key file (press escape to choose none)"
+            :extra-modes 'nyxt/file-manager-mode:file-manager-mode
+            :sources (make-instance 'nyxt/file-manager-mode:file-source)))))
   (loop :until (password:password-correct-p password-interface)
         :do (setf (password::master-password password-interface)
                   (prompt1 :prompt "Database password"
