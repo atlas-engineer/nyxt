@@ -194,7 +194,6 @@
                  (:file "bookmark-frequent-visits" :depends-on ("bookmark"))
                  (:file "bookmarklets")
                  (:file "cruise-control" :depends-on ("repeat"))
-                 (:file "diff")
                  (:file "emacs")
                  (:file "expedition")
                  (:file "force-https")
