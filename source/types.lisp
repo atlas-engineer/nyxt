@@ -37,6 +37,10 @@ Unlike `(cons TYPE *)', it checks all the elements.
               (list-of-p object type))))
     `(and list (satisfies ,predicate-name))))
 
+(export-always 'alist-of)
+(deftype alist-of (key-type &optional value-type)
+  `(list-of (cons ,key-type ,(or value-type ,key-type))))
+
 (export-always 'cookie-policy)
 (deftype cookie-policy ()
   `(member :always :never :no-third-party))
