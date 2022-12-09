@@ -39,7 +39,7 @@ Unlike `(cons TYPE *)', it checks all the elements.
 
 (export-always 'alist-of)
 (deftype alist-of (key-type &optional value-type)
-  `(list-of (cons ,key-type ,(or value-type ,key-type))))
+  `(list-of (cons ,key-type ,(or value-type key-type))))
 
 (export-always 'cookie-policy)
 (deftype cookie-policy ()
