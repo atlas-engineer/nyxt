@@ -347,6 +347,13 @@ call."))
     (loop for pair in (call-next-method)
           for key = (first pair)
           for value = (second pair)
+          ;; NOTE: Duplicate keys are bad, because searching the alist by key
+          ;; will always return the first occurrence, and never the second.
+          when (member key keys :test #'string-equal)
+            do (warn "Duplicate attribute names found in ~a: ~a.
+Attribute names should be unique for prompter to correctly filter those."
+                     source key)
+          collect key into keys
           ;; FIXME: Having six (string-t for keys and string-function-t for
           ;; values) branches would be more correct, but does that matter enough
           ;; to bother?
