@@ -227,5 +227,15 @@ by default"
        :open ,open-p
        (:summary (:h* :style "display: inline"
                    ,@attrs ,title
-                  " " (:a.link :href ,(uiop:strcat "#" id) "#")))
+                   " " (:a.link :href ,(uiop:strcat "#" id) "#")))
        ,@body))))
+
+(deftag :nbutton (body attrs &key (title (alexandria:required-argument 'title)) buffer)
+  "A Lisp-invoking button with TITLE text/title and BODY action.
+Evaluates (via `nyxt/ps:lisp-eval') the BODY in BUFFER when clicked."
+  `(:button.button
+    :title title
+    :onclick (nyxt/ps:lisp-eval
+              (:title ,title :buffer ,buffer)
+              ,@body)
+    ,title))
