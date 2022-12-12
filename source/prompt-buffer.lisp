@@ -288,7 +288,7 @@ See also `show-prompt-buffer'."
   (:method (source &key (width-function #'average-attribute-width))
     (labels ((clip-extremes (widths)
                (let* ((length (length widths))
-                      (minimal-size (round (/ 100 length 2))))
+                      (minimal-size (/ 100 length 2)))
                  (cond
                    ((= 1 length)
                     (list 100))
@@ -301,19 +301,19 @@ See also `show-prompt-buffer'."
                             when (< width minimal-size)
                               collect minimal-size into new-widths
                             else
-                              collect (round (- width
-                                                (* lack
-                                                   (/ width
-                                                      (reduce #'+ abundant)))))
+                              collect (- width
+                                         (* lack
+                                            (/ width
+                                               (reduce #'+ abundant))))
                                 into new-widths
                             finally (return new-widths))))
                    (t widths))))
              (ratio-widths (widths)
                "Compute the percentage of the screen that attributes with WIDTHS should occupy."
                (let* ((total (reduce #'+ widths)))
-                 (mapcar (lambda (w) (round (* 100 (if (zerop total)
-                                                       0
-                                                       (/ w total)))))
+                 (mapcar (lambda (w) (* 100 (if (zerop total)
+                                                0
+                                                (/ w total))))
                          widths))))
       ;; FIXME: This loop ignores attribute names in the attribute width
       ;; computation. Because of this, attribute names could theoretically get
@@ -346,7 +346,7 @@ an integer."))
       (:table :class "source-content"
               (:colgroup
                (dolist (width (attribute-widths source))
-                 (:col :style (format nil "width: ~d%" width))))
+                 (:col :style (format nil "width: ~f%" width))))
               (:tr :style (if (or (eq (prompter:hide-attribute-header-p source) :always)
                                   (and (eq (prompter:hide-attribute-header-p source) :single)
                                        (sera:single (prompter:active-attributes-keys source))))
