@@ -288,10 +288,10 @@ See also `show-prompt-buffer'."
   (:method (source &key (width-function #'average-attribute-width))
     (labels ((clip-extremes (widths)
                (let* ((length (length widths))
-                      (minimal-size (/ 100 length 2)))
+                      (minimal-size (/ 1 length 2)))
                  (cond
                    ((= 1 length)
-                    (list 100))
+                    (list 1))
                    ((some (rcurry #'< minimal-size) widths)
                     (let* ((lacking (remove-if-not #'plusp
                                                    (mapcar (curry #'- minimal-size) widths)))
@@ -311,9 +311,7 @@ See also `show-prompt-buffer'."
              (ratio-widths (widths)
                "Compute the percentage of the screen that attributes with WIDTHS should occupy."
                (let* ((total (reduce #'+ widths)))
-                 (mapcar (lambda (w) (* 100 (if (zerop total)
-                                                0
-                                                (/ w total))))
+                 (mapcar (lambda (w) (if (zerop total) 0 (/ w total)))
                          widths))))
       ;; FIXME: This loop ignores attribute names in the attribute width
       ;; computation. Because of this, attribute names could theoretically get
@@ -334,7 +332,7 @@ See also `show-prompt-buffer'."
             collect width into widths
             finally (return (clip-extremes (ratio-widths widths))))))
   (:documentation "Compute the widths of SOURCE attribute columns (as percent).
-Returns a list of integers, the sum of which should be roughly equal to 100.
+Returns a list of ratios that sum up to one.
 Uses the WIDTH-FUNCTION (by default computing average length of non-blank
 attribute values) to derive the width of the list of attribute
 values. WIDTH-FUNCTION is a function accepting a list of strings and returning

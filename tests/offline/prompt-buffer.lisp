@@ -31,17 +31,15 @@ Each element dictates the number of times a suggestion is concatenated."
   (let ((n-attributes (random-in-range 1 10)))
     ;; How to shup up the fact that the method is being redefined?
     (set-test-source-object-attributes (make-list n-attributes :initial-element 1))
-    (assert-equal (make-list n-attributes :initial-element (/ 100 n-attributes))
+    (assert-equal (make-list n-attributes :initial-element (/ 1 n-attributes))
                   (nyxt::attribute-widths (make-instance 'test-source)))))
 
 (define-test ratio-between-two-attributes ()
   (let ((ratio (random-in-range 1 4)))
     (set-test-source-object-attributes `(1 ,ratio))
-    (assert-equal (mapcar (curry #'* 100)
-                          (list (/ 1 (1+ ratio)) (/ ratio (1+ ratio))))
+    (assert-equal (list (/ 1 (1+ ratio)) (/ ratio (1+ ratio)))
                   (nyxt::attribute-widths (make-instance 'test-source)))
     ;; Test symmetry.
     (set-test-source-object-attributes `(,ratio 1))
-    (assert-equal (mapcar (curry #'* 100)
-                          (list (/ ratio (1+ ratio)) (/ 1 (1+ ratio))))
+    (assert-equal (list (/ ratio (1+ ratio)) (/ 1 (1+ ratio)))
                   (nyxt::attribute-widths (make-instance 'test-source)))))
