@@ -312,8 +312,6 @@ See also `show-prompt-buffer'."
                             finally (return new-widths))))
                    (t widths))))
              (width-normalization (width-list)
-               (let ((total (reduce #'+ widths)))
-                 (mapcar (lambda (w) (/ w total)) widths))))
       ;; FIXME: This loop ignores attribute names in the attribute width
       ;; computation. Because of this, attribute names could theoretically get
       ;; cropped if the values are short enough. This is bad, but not exactly
@@ -331,6 +329,8 @@ See also `show-prompt-buffer'."
               = (funcall width-function (mapcar (compose #'first (rcurry #'str:s-assoc-value key))
                                                 attributes))
                ;; this should not eval to (/ 0 0) by construction
+               (let ((total (reduce #'+ width-list)))
+                 (mapcar (lambda (w) (/ w total)) width-list))))
             collect width into widths
   (:documentation "Compute the widths of SOURCE attribute columns (as percent).
             finally (return (clip-extremes (width-normalization widths))))))
