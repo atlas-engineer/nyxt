@@ -282,6 +282,7 @@ See also `show-prompt-buffer'."
 (defun average-attribute-width (attribute-values)
   (let* ((values (remove-if #'str:blankp attribute-values))
          (total (reduce #'+ values :key #'length)))
+    ;; this should not eval to (/ 0 0) by construction
     (if (zerop (length values))
         0
         (/ total (length values)))))
@@ -329,6 +330,7 @@ See also `show-prompt-buffer'."
             for width
               = (funcall width-function (mapcar (compose #'first (rcurry #'str:s-assoc-value key))
                                                 attributes))
+               ;; this should not eval to (/ 0 0) by construction
             collect width into widths
   (:documentation "Compute the widths of SOURCE attribute columns (as percent).
             finally (return (clip-extremes (width-normalization widths))))))
