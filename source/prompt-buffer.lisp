@@ -312,25 +312,13 @@ See also `show-prompt-buffer'."
                             finally (return new-widths))))
                    (t widths))))
              (width-normalization (width-list)
-      ;; FIXME: This loop ignores attribute names in the attribute width
-      ;; computation. Because of this, attribute names could theoretically get
-      ;; cropped if the values are short enough. This is bad, but not exactly
-      ;; critical.
-      (loop with suggestions = (prompter:suggestions source)
-            with attributes = (mapcar (rcurry #'prompter:active-attributes :source source) suggestions)
-            ;; This is to process column width as fourth object attribute element.
-            initially (sera:and-let* ((fourth-attributes
-                                       (mapcar #'fourth (prompter:active-attributes (first suggestions) :source source)))
-                                      (some-fourth (some #'identity fourth-attributes))
-                                      (coefficients (substitute 1 nil fourth-attributes)))
-                        (return (width-normalization coefficients)))
-            for key in (prompter:active-attributes-keys source)
-            for width
-              = (funcall width-function (mapcar (compose #'first (rcurry #'str:s-assoc-value key))
-                                                attributes))
                ;; this should not eval to (/ 0 0) by construction
                (let ((total (reduce #'+ width-list)))
                  (mapcar (lambda (w) (/ w total)) width-list))))
+      (loop for key in (prompter:active-attributes-keys source)
+            for width = (funcall width-function
+                                 (cons key
+                                       (prompter:all-attribute-values key source)))
             collect width into widths
   (:documentation "Compute the widths of SOURCE attribute columns (as percent).
             finally (return (clip-extremes (width-normalization widths))))))
