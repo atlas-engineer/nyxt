@@ -683,6 +683,13 @@ If the `active-attributes' slot is NIL, return all attributes keys."
           (cons (attributes-keys-default source)
                 (apply #'remove-from-seq (attributes-keys-non-default source) value)))))
 
+(export-always 'all-attribute-values)
+(defmethod all-attribute-values (attribute-key (source source))
+  "Return all ATTRIBUTE-KEY values from SOURCE."
+  (mapcar (alex:compose #'first
+                        (alex:rcurry #'str:s-assoc-value attribute-key))
+          (mapcar #'attributes (suggestions source))))
+
 (export-always 'active-attributes)
 (defmethod active-attributes ((suggestion suggestion)
                               &key (source (error "Source required"))
