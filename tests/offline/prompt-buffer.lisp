@@ -18,7 +18,8 @@ Its length LST dictates the number of attributes.
 Each element dictates the number of times a suggestion is concatenated."
   (defmethod prompter:object-attributes ((object string) (source test-source))
     (do ((index 0 (1+ index))
-         (result '() (cons `("Attribute" ,(str:repeat (nth index lst) object))
+         (result '() (cons `(,(str:concat "Attribute" (princ-to-string index))
+                             ,(str:repeat (nth index lst) object))
                            result)))
         ((eq index (length lst)) (nreverse result)))))
 
