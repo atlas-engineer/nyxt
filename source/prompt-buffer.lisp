@@ -317,6 +317,10 @@ See also `show-prompt-buffer'."
                                                        0
                                                        (/ w total)))))
                          widths))))
+      ;; FIXME: This loop ignores attribute names in the attribute width
+      ;; computation. Because of this, attribute names could theoretically get
+      ;; cropped if the values are short enough. This is bad, but not exactly
+      ;; critical.
       (loop with suggestions = (prompter:suggestions source)
             with attributes = (mapcar (rcurry #'prompter:active-attributes :source source) suggestions)
             ;; This is to process column width as fourth object attribute element.
