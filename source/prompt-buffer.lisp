@@ -308,11 +308,9 @@ See also `show-prompt-buffer'."
                                 into new-widths
                             finally (return new-widths))))
                    (t widths))))
-             (ratio-widths (widths)
-               "Compute the percentage of the screen that attributes with WIDTHS should occupy."
-               (let* ((total (reduce #'+ widths)))
-                 (mapcar (lambda (w) (if (zerop total) 0 (/ w total)))
-                         widths))))
+             (width-normalization (widths)
+               (let ((total (reduce #'+ widths)))
+                 (mapcar (lambda (w) (if (zerop total) 0 (/ w total))) widths))))
       ;; FIXME: This loop ignores attribute names in the attribute width
       ;; computation. Because of this, attribute names could theoretically get
       ;; cropped if the values are short enough. This is bad, but not exactly
@@ -324,13 +322,13 @@ See also `show-prompt-buffer'."
                                        (mapcar #'fourth (prompter:active-attributes (first suggestions) :source source)))
                                       (some-fourth (some #'identity fourth-attributes))
                                       (coefficients (substitute 1 nil fourth-attributes)))
-                        (return (ratio-widths coefficients)))
+                        (return (width-normalization coefficients)))
             for key in (prompter:active-attributes-keys source)
             for width
               = (funcall width-function (mapcar (compose #'first (rcurry #'str:s-assoc-value key))
                                                 attributes))
             collect width into widths
-            finally (return (clip-extremes (ratio-widths widths))))))
+            finally (return (clip-extremes (width-normalization widths))))))
   (:documentation "Compute the widths of SOURCE attribute columns (as percent).
 Returns a list of ratios that sum up to one.
 Uses the WIDTH-FUNCTION (by default computing average length of non-blank
