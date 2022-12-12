@@ -130,6 +130,8 @@ listed and chosen from with the command `return-marks-action' (bound to
        "d d" 'cut)
       keyscheme:vi-insert
       (list
+       "return" 'return-selection
+       "M-return" 'return-marks-action
        "C-k" 'select-previous
        "C-j" 'select-next
        "C-b" 'select-previous-page
