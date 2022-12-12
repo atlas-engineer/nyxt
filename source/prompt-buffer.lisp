@@ -344,7 +344,7 @@ an integer."))
       (:table :class "source-content"
               (:colgroup
                (dolist (width (attribute-widths source))
-                 (:col :style (format nil "width: ~f%" width))))
+                 (:col :style (format nil "width: ~,2f%" (* 100 width)))))
               (:tr :style (if (or (eq (prompter:hide-attribute-header-p source) :always)
                                   (and (eq (prompter:hide-attribute-header-p source) :single)
                                        (sera:single (prompter:active-attributes-keys source))))
