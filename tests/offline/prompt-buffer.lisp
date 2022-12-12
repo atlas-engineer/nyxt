@@ -10,7 +10,7 @@
   ;; The number of suggestions is only relevant to access the algorithm's
   ;; performance, so it suffices to use a single suggestion for general testing.
   ((prompter:name "Test")
-   (prompter:constructor '("foo1"))))
+   (prompter:constructor '("Foo1"))))
 
 (defun set-test-source-object-attributes (lst)
   "Set `prompter:object-attributes' following LST properties:
@@ -18,7 +18,8 @@ Its length LST dictates the number of attributes.
 Each element dictates the number of times a suggestion is concatenated."
   (defmethod prompter:object-attributes ((object string) (source test-source))
     (do ((index 0 (1+ index))
-         (result '() (cons `(,(str:concat "foo" (princ-to-string index))
+         (result '() (cons `(,(str:repeat (nth index lst)
+                                (str:concat "Foo" (princ-to-string index)))
                              ,(str:repeat (nth index lst) object))
                            result)))
         ((eq index (length lst)) (nreverse result)))))
