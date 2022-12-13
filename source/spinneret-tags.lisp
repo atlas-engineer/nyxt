@@ -247,9 +247,10 @@ Evaluates (via `nyxt/ps:lisp-eval') the BODY in BUFFER when clicked."
     ,title))
 
 (deftag :ninput (body attrs &key rows &allow-other-keys)
-  "Nicely styled <textarea> with a reasonable number of ROWS to accommodate the VALUE."
-  (once-only ((input-contents `(progn ,@body)))
+  "Nicely styled <textarea> with a reasonable number of ROWS to accommodate the BODY."
+  ;; This is to prevent Spinneret from stripping newlines off the tag contents.
+  (let ((contents (eval (cons 'progn (mapcar #'remove-smart-quoting body)))))
     `(:textarea.input
-      :rows ,(or rows `(length (str:lines ,input-contents :omit-nulls nil)))
+      :rows ,(or rows (1+ (count #\Newline contents)))
       ,@attrs
-      ,input-contents)))
+      (:raw (the string ,contents)))))
