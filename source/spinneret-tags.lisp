@@ -230,7 +230,7 @@ by default"
                    " " (:a.link :href ,(uiop:strcat "#" id) "#")))
        ,@body))))
 
-(deftag :nbutton (body attrs &key (title (alexandria:required-argument 'title)) buffer)
+(deftag :nbutton (body attrs &key (title (alexandria:required-argument 'title)) buffer &allow-other-keys)
   "A Lisp-invoking button with TITLE text/title and BODY action.
 Evaluates (via `nyxt/ps:lisp-eval') the BODY in BUFFER when clicked."
   `(:button.button
@@ -238,4 +238,5 @@ Evaluates (via `nyxt/ps:lisp-eval') the BODY in BUFFER when clicked."
     :onclick (nyxt/ps:lisp-eval
               (:title ,title :buffer ,buffer)
               ,@body)
+    ,@attrs
     ,title))
