@@ -95,6 +95,10 @@ See also the `profile' slot in the `browser' class.")
             `(.accent
               :color ,theme:accent)
             `(.input
+              :all "unset"
+              :display "inline-block"
+              :color "black"
+              :background-color "white"
               :border "0.2em" solid ,theme:secondary
               :border-radius "0.1em"
               :outline "none"
