@@ -234,8 +234,10 @@ by default"
   "A Lisp-invoking button with TITLE text/title and BODY action.
 Evaluates (via `nyxt/ps:lisp-eval') the BODY in BUFFER when clicked."
   `(:button.button
-    :onclick (nyxt/ps:lisp-eval
-              (:title ,title :buffer ,buffer)
-              ,@body)
+    :onclick (ps:ps
+               (nyxt/ps:lisp-eval
+                (:title ,title ,@(when buffer
+                                   (list :buffer buffer)))
+                ,@body))
     ,@attrs
     ,title))
