@@ -43,6 +43,8 @@ See also the `profile' slot in the `browser' class.")
    (title "")
 
    (style (theme:themed-css (theme *browser*)
+            `(*
+              :box-sizing border-box)
             `(body
               :background-color ,theme:background
               :color ,theme:on-background
