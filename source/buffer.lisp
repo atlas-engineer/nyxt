@@ -94,6 +94,12 @@ See also the `profile' slot in the `browser' class.")
               :opacity 0.8)
             `(.accent
               :color ,theme:accent)
+            `(.input
+              :border "0.2em" solid ,theme:secondary
+              :border-radius "0.1em"
+              :outline "none"
+              :padding "0.2em"
+              :margin "0.2em")
             `(a
               :color ,theme:primary)
             `("a:hover"
