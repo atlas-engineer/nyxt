@@ -259,7 +259,7 @@ prevents otherwise.")
   (setf (history-file browser) history-file))
 
 (defmethod theme ((ignored (eql nil)))
-  "Fallback theme in case there `*browser*' is NIL."
+  "Fallback theme in case `*browser*' is NIL."
   (declare (ignore ignored))
   (make-instance 'theme:theme))
 
