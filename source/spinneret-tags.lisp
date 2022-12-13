@@ -18,6 +18,25 @@
   "Regular <script>, but with contents staying unescaped."
   `(:script ,@attrs (:raw ,@body)))
 
+(serapeum:eval-always
+  (defun remove-smart-quoting (form)
+    "If the form is quoted or quazi-quoted, return the unquoted/evaluated variant.
+Otherwise, return the form as is."
+    (cond
+      ((and (listp form)
+            (eq 'quote (first form)))
+       (second form))
+      #+(or sbcl ecl)
+      ((and (listp form)
+            (eq #+sbcl 'sb-int:quasiquote
+                #+ecl 'si:quasiquote
+                ;; FIXME: CCL expands quasiquote to
+                ;; `list*' call.
+                ;; TODO: Other implementations?
+                (first form)))
+       (eval form))
+      (t form))))
+
 ;; TODO: Store the location it's defined in as a :title or link for discoverability?
 ;; FIXME: Maybe use :nyxt-user as the default package to not quarrel with REPL & config?
 (deftag :ncode (body attrs &key (package :nyxt) inline-p literal-p (repl-p t) (config-p t) (copy-p t)
@@ -57,22 +76,7 @@ unconditionally converts those to tags unless the whole form is quoted.)"
                      (serapeum:mapconcat
                       (alexandria:rcurry #'write-to-string :readably t :pretty t :case :downcase :right-margin 70)
                       ;; Process quoted arguments properly too.
-                      (mapcar (lambda (form)
-                                (cond
-                                  ((and (listp form)
-                                        (eq 'quote (first form)))
-                                   (second form))
-                                  #+(or sbcl ecl)
-                                  ((and (listp form)
-                                        (eq #+sbcl 'sb-int:quasiquote
-                                            #+ecl 'si:quasiquote
-                                            ;; FIXME: CCL expands quasiquote to
-                                            ;; `list*' call.
-                                            ;; TODO: Other implementations?
-                                            (first form)))
-                                   (eval form))
-                                  (t form)))
-                              body)
+                      (mapcar #'remove-smart-quoting body)
                       (make-string 2 :initial-element #\newline)))))
          (*print-escape* nil)
          (id (nyxt:prini-to-string (gensym)))
