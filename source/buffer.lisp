@@ -74,12 +74,13 @@ See also the `profile' slot in the `browser' class.")
               :color ,theme:on-primary
               :display "inline-block"
               :text-decoration "none"
-              :border-radius "2px"
+              :border-radius "0.1em"
               :border-color ,theme:primary
               :border-style "solid"
-              :border-width "0px"
-              :padding "6px"
-              :margin "2px")
+              :border-width "0.2em"
+              :padding "0.2em"
+              :margin "0.2em"
+              :min-height "1.5em")
             `(.button.accent
               :background-color ,theme:accent
               :color ,theme:on-accent)
