@@ -241,11 +241,3 @@ Evaluates (via `nyxt/ps:lisp-eval') the BODY in BUFFER when clicked."
                 ,@body))
     ,@attrs
     ,title))
-
-(deftag :ninput (body attrs &key rows &allow-other-keys)
-  "Nicely styled <textarea> with a reasonable number of ROWS to accommodate the VALUE."
-  (once-only ((input-contents `(progn ,@body)))
-    `(:textarea.input
-      :rows ,(or rows `(length (str:lines ,input-contents :omit-nulls nil)))
-      ,@attrs
-      ,input-contents)))
