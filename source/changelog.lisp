@@ -595,7 +595,9 @@ regular commands, such as "
    (:li "Renderers are now first class objects, see the " (:code "renderer") " class."
         " It's possible to change renderer from a same REPL session.")
    (:li (:nxref :command 'set-url) " and " (:nxref :command 'set-url-new-buffer) " accept the "
-        (:code ":URL") " keyword argument and load it when provided."))
+        (:code ":URL") " keyword argument and load it when provided.")
+   (:li "New " (:nxref :function 'ffi-height) " and " (:nxref :function 'ffi-width)
+        " methods to unify most of the height & width methods used before."))
 
   (:h3 "Bug fixes")
   (:ul

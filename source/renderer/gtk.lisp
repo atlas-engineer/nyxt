@@ -1176,9 +1176,9 @@ See `finalize-buffer'."
   (unless nyxt::*headless-p*
     (gtk:gtk-widget-show (gtk-object buffer))))
 
-(define-ffi-method ffi-window-panel-buffer-width ((window gtk-window) (buffer panel-buffer))
+(define-ffi-method ffi-width ((buffer panel-buffer))
   (nth-value 1 (gtk:gtk-widget-size-request (gtk-object buffer))))
-(define-ffi-method (setf ffi-window-panel-buffer-width) (width (window gtk-window) (buffer panel-buffer))
+(define-ffi-method (setf ffi-width) (width (buffer panel-buffer))
   (setf (gtk:gtk-widget-size-request (gtk-object buffer))
         (list width -1)))
 
@@ -1191,19 +1191,22 @@ See `finalize-buffer'."
          (setf (panel-buffers-right window) (remove buffer (panel-buffers-right window)))
          (gtk:gtk-container-remove (panel-buffer-container-right window) (gtk-object buffer)))))
 
-(define-ffi-method ffi-window-prompt-buffer-height ((window gtk-window))
-  (nth-value 1 (gtk:gtk-widget-size-request (prompt-buffer-container window))))
-(define-ffi-method (setf ffi-window-prompt-buffer-height) (height (window gtk-window))
-  (setf (gtk:gtk-widget-size-request (prompt-buffer-container window))
+(define-ffi-method ffi-height ((buffer prompt-buffer))
+  (nth-value 1 (gtk:gtk-widget-size-request (prompt-buffer-container (window buffer)))))
+(define-ffi-method (setf ffi-height) ((height integer) (buffer prompt-buffer))
+  "Sets the prompt height.
+As a special case, setting height to 0 means hiding prompt buffer and focusing
+the `active-buffer'."
+  (setf (gtk:gtk-widget-size-request (prompt-buffer-container (window buffer)))
         (list -1 height))
   (if (eql 0 height)
-      (gtk:gtk-widget-grab-focus (gtk-object (nyxt::active-buffer window)))
-      (gtk:gtk-widget-grab-focus (prompt-buffer-view window))))
+      (gtk:gtk-widget-grab-focus (gtk-object (nyxt::active-buffer (window buffer))))
+      (gtk:gtk-widget-grab-focus (prompt-buffer-view (window buffer)))))
 
-(define-ffi-method ffi-window-status-buffer-height ((window gtk-window))
-  (nth-value 1 (gtk:gtk-widget-size-request (status-container window))))
-(define-ffi-method (setf ffi-window-status-buffer-height) (height (window gtk-window))
-  (setf (gtk:gtk-widget-size-request (status-container window))
+(define-ffi-method ffi-height ((buffer status-buffer))
+  (nth-value 1 (gtk:gtk-widget-size-request (status-container (window buffer)))))
+(define-ffi-method (setf ffi-height) (height (buffer status-buffer))
+  (setf (gtk:gtk-widget-size-request (status-container (window buffer)))
         (list -1 height)))
 
 (define-ffi-method ffi-window-message-buffer-height ((window gtk-window))
@@ -1212,10 +1215,17 @@ See `finalize-buffer'."
   (setf (gtk:gtk-widget-size-request (message-container window))
         (list -1 height)))
 
-(define-ffi-method ffi-buffer-height ((buffer gtk-buffer))
+(define-ffi-method ffi-height ((buffer gtk-buffer))
   (gdk:gdk-rectangle-height
    (gtk:gtk-widget-get-allocation (nyxt/renderer/gtk::gtk-object buffer))))
-(define-ffi-method ffi-buffer-width ((buffer gtk-buffer))
+(define-ffi-method ffi-width ((buffer gtk-buffer))
+  (gdk:gdk-rectangle-width
+   (gtk:gtk-widget-get-allocation (nyxt/renderer/gtk::gtk-object buffer))))
+
+(define-ffi-method ffi-height ((buffer gtk-window))
+  (gdk:gdk-rectangle-height
+   (gtk:gtk-widget-get-allocation (nyxt/renderer/gtk::gtk-object buffer))))
+(define-ffi-method ffi-width ((buffer gtk-window))
   (gdk:gdk-rectangle-width
    (gtk:gtk-widget-get-allocation (nyxt/renderer/gtk::gtk-object buffer))))
 

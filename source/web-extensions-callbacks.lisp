@@ -34,8 +34,8 @@
                        t nil))
       #+webkit2-mute
       ("audible" . ,(not (ffi-muted-p buffer)))
-      ("height" . ,(ffi-buffer-height buffer))
-      ("width" . ,(ffi-buffer-width buffer))
+      ("height" . ,(ffi-height buffer))
+      ("width" . ,(ffi-width buffer))
       ("highlighted" . ,(eq buffer (nyxt::active-buffer (current-window))))
       ("id" . ,(or (parse-integer (id buffer) :junk-allowed t) 0))
       ("incognito" . ,(nosave-buffer-p buffer))
