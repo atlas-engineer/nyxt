@@ -279,6 +279,9 @@ See also `show-prompt-buffer'."
                                (mapcar (curry #'mode-status status-buffer)
                                        (sort-modes-for-status (modes prompt-buffer)))))))))
 
+;; TODO Add filtering of empty string values happen in all-attribute-values.
+;; That would make this more generic -- fn that accepts a list of numbers and
+;; outputs a number.
 (defun average-attribute-width (attribute-values)
   (let* ((values (remove-if #'str:blankp attribute-values))
          (total (reduce #'+ values :key #'length)))
@@ -289,35 +292,16 @@ See also `show-prompt-buffer'."
 
 (defgeneric attribute-widths (source &key width-function)
   (:method (source &key (width-function #'average-attribute-width))
-    (labels ((clip-extremes (widths)
-               (let* ((length (length widths))
-                      (minimal-size (/ 1 length 2)))
-                 (cond
-                   ((= 1 length)
-                    (list 1))
-                   ((some (rcurry #'< minimal-size) widths)
-                    (let* ((lacking (remove-if-not #'plusp
-                                                   (mapcar (curry #'- minimal-size) widths)))
-                           (abundant (set-difference widths lacking))
-                           (lack (reduce #'+ lacking)))
-                      (loop for width in widths
-                            when (< width minimal-size)
-                              collect minimal-size into new-widths
-                            else
-                              collect (- width
-                                         (* lack
-                                            (/ width
-                                               (reduce #'+ abundant))))
-                                into new-widths
-                            finally (return new-widths))))
-                   (t widths))))
-             (width-normalization (width-list)
-               ;; this should not eval to (/ 0 0) by construction
-               (let ((total (reduce #'+ width-list)))
-                 (mapcar (lambda (w) (/ w total)) width-list))))
+    (labels ((width-normalization (widths)
+               "Scale each element of WIDTHS to ratios that sum up to one."
+               (mapcar (rcurry #'/ (reduce #'+ widths)) widths)))
       (loop for key in (prompter:active-attributes-keys source)
             for width = (funcall width-function
                                  (cons key
+                                       ;; TODO Filter empty suggestions in
+                                       ;; all-attribute-values (add as a
+                                       ;; keyword). Let all-attribute-values
+                                       ;; accept a list of keys.
                                        (prompter:all-attribute-values key source)))
             collect width into widths
   (:documentation "Compute the widths of SOURCE attribute columns (as percent).
