@@ -204,9 +204,9 @@ See `find-internal-page-buffer'."))
   (let ((arglist (second lambda-expression)))
     (multiple-value-bind (required optional rest keyword allow-other-keys-p aux key-p)
         (alex:parse-ordinary-lambda-list arglist)
-      (declare (ignore keyword allow-other-keys-p key-p))
-      (when (or required optional rest aux)
-        (error "Only keyword parameters are allowed in an internal-page definition."))
+      (declare (ignore rest keyword allow-other-keys-p key-p))
+      (when (or required optional aux)
+        (error "Only rest and keyword parameters are allowed in an internal-page definition."))
       (setf (slot-value page 'form)
             (lambda (&rest args)
               (declare (ignorable args))
@@ -237,15 +237,17 @@ See `find-internal-page-buffer'."))
 (defmethod set-internal-page-method ((page internal-page) form)
   (when form
     (let* ((arglist (second form))
-           (keywords (nth-value 3 (alex:parse-ordinary-lambda-list arglist)))
            (body (cddr form))
            (documentation (nth-value 2 (alex:parse-body body :documentation t))))
-      (closer-mop:ensure-method
-       page
-       `(lambda (,@arglist)
-          ,@(when documentation (list documentation))
-          (declare (ignorable ,@(mappend #'cdar keywords)))
-          (buffer-load-internal-page-focus (name ,page) ,@(mappend #'first keywords)))))))
+      (multiple-value-bind (required optional rest keywords allow-other-keys-p aux key-p)
+          (alex:parse-ordinary-lambda-list arglist)
+        (declare (ignore required optional allow-other-keys-p aux key-p))
+        (closer-mop:ensure-method
+         page
+         `(lambda (,@(unless rest '(&rest args)) ,@arglist)
+            ,@(when documentation (list documentation))
+            (declare (ignorable ,@(mappend #'cdar keywords) ,(or rest 'args)))
+            (apply #'buffer-load-internal-page-focus (name ,page) ,(or rest 'args))))))))
 
 (defmethod initialize-instance :after ((page internal-page) &key form page-mode &allow-other-keys)
   "Register PAGE into the globally known nyxt:// URLs."
@@ -331,12 +333,14 @@ Example:
                                         &body body)
   "Define a command called NAME creating an `internal-page'.
 
-Only keyword arguments are accepted."
+Only keyword and rest arguments are accepted."
   (multiple-value-bind (stripped-body declarations documentation)
       (alex:parse-body body :documentation t)
     `(progn
        (export-always ',name (symbol-package ',name))
-       (sera:lret ((gf (defgeneric ,name (,@(generalize-lambda-list arglist))
+       (sera:lret ((gf (defgeneric ,name (,@(unless (member '&rest arglist)
+                                              '(&rest args))
+                                          ,@(generalize-lambda-list arglist))
                          (:documentation ,documentation)
                          (:generic-function-class internal-page))))
          (let ((wrapped-body '(lambda (,@arglist)
@@ -351,9 +355,12 @@ Only keyword arguments are accepted."
            (setf (slot-value #',name 'dynamic-title)
                  ,(if (stringp title)
                       title
-                      (let ((keywords (nth-value 3 (alex:parse-ordinary-lambda-list arglist))))
-                        `(lambda (,@arglist)
-                           (declare (ignorable ,@(mappend #'cdar keywords)))
+                      (let ((keywords (nth-value 3 (alex:parse-ordinary-lambda-list arglist)))
+                            (rest (nth-value 2 (alex:parse-ordinary-lambda-list arglist))))
+                        `(lambda (,@(unless (member '&rest arglist)
+                                      '(&rest args))
+                                  ,@arglist)
+                           (declare (ignorable ,@(mappend #'cdar keywords) ,(or rest 'args)))
                            ,title))))
            (setf (form gf) wrapped-body))))))
 
