@@ -112,16 +112,20 @@ for which the `executable' slot is non-nil."
                     :extra-modes 'nyxt/file-manager-mode:file-manager-mode
                     :sources (make-instance 'nyxt/file-manager-mode:file-source
                                             :extensions '("kdbx"))))))
-  (unless (password::key-file password-interface)
-    (setf (password::key-file password-interface)
-          (uiop:native-namestring
-           (prompt1
-            :prompt "Password database key file (press escape to choose none)"
-            :extra-modes 'nyxt/file-manager-mode:file-manager-mode
-            :sources (make-instance 'nyxt/file-manager-mode:file-source)))))
+  (if-confirm ("Do you use key file for password database locking?")
+      (setf (password::key-file password-interface)
+            (uiop:native-namestring
+             (prompt1
+              :prompt "Password database key file"
+              :extra-modes 'nyxt/file-manager-mode:file-manager-mode
+              :sources (make-instance 'nyxt/file-manager-mode:file-source)))))
+  (if-confirm ("Do you use Yubikey for password database locking")
+      (setf (password::yubikey-slot password-interface)
+            (prompt1 :prompt "Yubikey slot"
+                     :sources (make-instance 'prompter:raw-source))))
   (loop :until (password:password-correct-p password-interface)
         :do (setf (password::master-password password-interface)
-                  (prompt1 :prompt "Database password"
+                  (prompt1 :prompt "Database password (leave empty if none)"
                            :sources 'prompter:raw-source
                            :invisible-input-p t))))
 
