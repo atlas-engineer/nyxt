@@ -582,8 +582,32 @@ any of the password interfaces to configure them. Please make sure to
 use the package prefixed class name/slot designators within
 the " (:code "define-configuration") " macro.")
         (:ul
-         (:li (:nxref :command 'nyxt/password-mode:save-new-password) ": Query for name and new password to persist in the database.")
-         (:li (:nxref :command 'nyxt/password-mode:copy-password) ": " (command-docstring-first-sentence 'nyxt/password-mode:copy-password))))
+         (:li (command-markup 'nyxt/password-mode:save-new-password) ": Query for name and new password to persist in the database.")
+         (:li (command-markup 'nyxt/password-mode:copy-password) ": " (command-docstring-first-sentence 'nyxt/password-mode:copy-password)))
+
+        (:nsection :title "KeePassXC support"
+          (:p "The interface for KeePassXC should cover most use-cases for KeePassXC, as it
+supports password database locking with")
+          (:ul
+           (:li (:nxref :slot 'password:master-password :class-name 'password:keepassxc-interface) ",")
+           (:li (:nxref :slot 'password:key-file :class-name 'password:keepassxc-interface) ",")
+           (:li "and " (:nxref :slot 'password:yubikey-slot :class-name 'password:keepassxc-interface)))
+          (:p "To configure KeePassXC interface, you might need to add something like this
+snippet to your config:")
+          (:ncode
+            ;; FIXME: Why does `define-configuration' not work for password
+            ;; interfaces? Something's fishy with user classes...
+            (defmethod initialize-instance :after ((interface password:keepassxc-interface) &key &allow-other-keys)
+              "It's obviously not recommended to set master password here,
+as your config is likely unencrypted and can reveal your password to someone
+peeking at the screen."
+              (setf (password:password-file interface) "/path/to/your/passwords.kdbx"
+                    (password:key-file interface) "/path/to/your/keyfile"
+                    (password:yubikey-slot interface) "1:1111"))
+            (define-configuration nyxt/password-mode:password-mode
+              ((nyxt/password-mode:password-interface (make-instance 'password:keepassxc-interface))))
+            (define-configuration buffer
+              ((default-modes (append (list 'nyxt/password-mode:password-mode) %slot-value%)))))))
 
       (:nsection :title "Appearance"
         (:p "Much of the visual style can be configured by the user. You can use the
