@@ -55,7 +55,7 @@ similar programming language.")
         (:p "Example:")
         (:ncode
           (define-configuration buffer
-            ((default-modes (pushnew 'no-script-mode %slot-value%))))))
+            ((default-modes (pushnew 'nyxt/no-script-mode:no-script-mode %slot-value%))))))
       (:p "The above turns on the 'no-script-mode' (disables JavaScript) by default for
 every buffer.")
       (:p "The " (:code "define-configuration") " macro can be used to customize
@@ -108,11 +108,11 @@ add the following to your configuration:")
          (:li "vi bindings:"
               (:ncode
                 (define-configuration buffer
-                  ((default-modes (pushnew 'vi-normal-mode %slot-value%))))))
+                  ((default-modes (pushnew 'nyxt/vi-mode:vi-normal-mode %slot-value%))))))
          (:li "Emacs bindings:"
               (:ncode
                 (define-configuration buffer
-                  ((default-modes (pushnew 'emacs-mode %slot-value%)))))))
+                  ((default-modes (pushnew 'nyxt/emacs-mode:emacs-mode %slot-value%)))))))
         (:p "You can create new scheme names with " (:nxref :function 'nkeymaps:make-keyscheme)
             ".  Also see the "
             (:nxref :function 'keymaps:define-keyscheme-map "define-keyscheme-map macro") ".")
