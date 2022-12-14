@@ -236,13 +236,14 @@ by default"
 
 (deftag :nbutton (body attrs &key (title (alexandria:required-argument 'title)) buffer &allow-other-keys)
   "A Lisp-invoking button with TITLE text/title and BODY action.
-Evaluates (via `nyxt/ps:lisp-eval') the BODY in BUFFER when clicked."
+Evaluates (via `nyxt/ps:lisp-eval') the BODY in BUFFER when clicked.
+Forms in BODY can be unquoted, benefiting from the editor formatting."
   `(:button.button
     :onclick (ps:ps
                (nyxt/ps:lisp-eval
                 (:title ,title ,@(when buffer
                                    (list :buffer buffer)))
-                ,@body))
+                ,@(mapcar #'remove-smart-quoting body)))
     ,@attrs
     ,title))
 
