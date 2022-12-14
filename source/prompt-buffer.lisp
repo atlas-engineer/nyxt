@@ -304,12 +304,22 @@ See also `show-prompt-buffer'."
                                        ;; accept a list of keys.
                                        (prompter:all-attribute-values key source)))
             collect width into widths
-  (:documentation "Compute the widths of SOURCE attribute columns (as percent).
-            finally (return (clip-extremes (width-normalization widths))))))
-Returns a list of ratios that sum up to one.
-Uses the WIDTH-FUNCTION (by default computing average length of non-blank
-attribute values) to derive the width of the list of attribute
-values. WIDTH-FUNCTION is a function accepting a list of strings and returning
+            ;; Attributes keys set to empty strings aren't allowed, so widths is
+            ;; never a list whose elements are all zeros.  In such a scenario,
+            ;; width-normalization would error with DIVISION-BY-ZERO.
+            finally (return (width-normalization widths)))))
+  (:documentation "Return a list of unit ratio representative of the length of each
+of SOURCE's attributes in terms of number of characters.
+
+The sum of all ratios equals one.
+
+Useful to set column width for each of SOURCE's attributes. The ratios sum to
+one.
+
+Uses WIDTH-FUNCTION to derive the representative width of the list of attribute
+values.
+;; WIDTH-FUNCTION should a rations accepting a list of numbers returning a number.
+WIDTH-FUNCTION is a function accepting a list of strings and returning
 an integer."))
 
 (defun render-attributes (source prompt-buffer)
