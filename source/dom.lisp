@@ -334,9 +334,15 @@ Return two values:
 
 ;; REVIEW: Export to :nyxt? We are forced to use it with nyxt/dom: prefix.
 (export-always 'body)
-(defmethod body ((element plump:element))
-  (when (plump:children element)
-    (plump:text element)))
+(defgeneric body (element)
+  (:method ((element plump:element))
+    (when (plump:children element)
+      (plump:text element)))
+  (:method :around (element)
+    (let ((result (call-next-method)))
+      (when result
+        (sera:collapse-whitespace (sera:trim-whitespace result)))))
+  (:documentation "Return the textual contents of the ELEMENT and its recursive children."))
 
 (defmethod body ((input input-element))
   (alex:when-let ((body (or (plump:get-attribute input "value")
