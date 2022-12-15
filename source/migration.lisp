@@ -165,4 +165,8 @@ major versions."
 
   (scheme-keymap)
   (:p (:code "scheme-keymap") " is now "
-      (:code "get-keymap") "."))
+      (:code "get-keymap") ".")
+
+  (*after-init-hook* *after-startup-hook*)
+  (:p "Those are " (:nxref :slot 'after-init-hook :class-name 'browser) " and "
+      (:nxref :slot 'after-startup-hook :class-name 'browser) "now."))

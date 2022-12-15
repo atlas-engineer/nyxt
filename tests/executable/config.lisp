@@ -49,7 +49,7 @@
    "--eval"
    (let ((*package* #.*package*))
      (write-to-string
-      `(hooks:once-on nyxt:*after-startup-hook* ()
+      `(hooks:once-on (nyxt:after-startup-hook nyxt:*browser*) (browser)
          (handler-case (progn ,@args)
            (condition (c)
              (log:error "~a" c)

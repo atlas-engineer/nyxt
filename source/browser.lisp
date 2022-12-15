@@ -5,6 +5,7 @@
 
 (hooks:define-hook-type prompt-buffer (function (prompt-buffer)))
 (hooks:define-hook-type resource (function (request-data) (or request-data null)))
+(hooks:define-hook-type browser (function (browser)))
 (export-always '(hook-resource))
 
 (define-class proxy ()
@@ -186,6 +187,25 @@ You can store and restore sessions manually to various files with
 Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 `:no-third-party' (accept cookies for current website only).")
    ;; Hooks follow:
+   (after-init-hook
+    (make-instance 'hook-browser)
+    :documentation "The entry-point hook to configure everything in Nyxt.
+The hook takes browser as the argument.
+
+This hook is run after the `*browser*' is instantiated and before the
+`startup' is run.
+
+A handler can be added with:
+\(define-configuration browser
+  (after-init-hook (hooks:add-hook %slot-value% 'my-init-handler)))")
+   (after-startup-hook
+    (make-instance 'hook-browser)
+    :documentation "Hook run when the browser is started and ready for interaction.
+The handlers take browser as the argument.
+
+A handler can be added with:
+\(define-configuration browser
+  (after-startup-hook (hooks:add-hook %slot-value% 'my-startup-handler)))")
    (before-exit-hook
     (make-instance 'hooks:hook-void)
     :type hooks:hook-void
@@ -281,14 +301,14 @@ idle, so it should do the job."
         ,@body))))
 
 (defmethod finalize ((browser browser) urls startup-timestamp)
-  "Run `*after-init-hook*' then BROWSER's `startup'."
+  "Run `after-init-hook' then BROWSER's `startup'."
   ;; `messages-appender' requires `*browser*' to be initialized.
   (unless (find-if (sera:eqs 'messages-appender) (log4cl:all-appenders)
                    :key #'sera:class-name-of)
     (log4cl:add-appender log4cl:*root-logger* (make-instance 'messages-appender)))
   (ignore-errors
-   (handler-bind ((error (lambda (c) (log:error "In *after-init-hook*: ~a" c))))
-     (hooks:run-hook *after-init-hook*))) ; TODO: Run outside the main loop?
+   (handler-bind ((error (lambda (c) (log:error "In after-init-hook: ~a" c))))
+     (hooks:run-hook (after-init-hook browser) browser))) ; TODO: Run outside the main loop?
   ;; `startup' must be run _after_ this function returns; It's not enough since
   ;; the `startup' may invoke the prompt buffer, which cannot be invoked from
   ;; the renderer thread: this is why we run the `startup' in a new thread from
@@ -370,8 +390,8 @@ restored."
         (error (c)
           ;; TODO: Clear buffers or back up history?
           (log:warn c)))
-      (hooks:run-hook *after-startup-hook*)
-      (funcall* (startup-error-reporter-function *browser*)))))
+      (hooks:run-hook (after-startup-hook browser) browser)
+      (funcall* (startup-error-reporter-function browser)))))
 
 ;; Catch a common case for a better error message.
 (defmethod buffers :before ((browser t))
