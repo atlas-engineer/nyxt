@@ -40,10 +40,24 @@ not include explicit visits.")
                     :type (list-of number)
                     :documentation "The scroll position user was at when last visiting the page.
 It's a list of a form (Y &OPTIONAL X)."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "
 Entry for the global history.
 The total number of visit for a given URL is (+ explicit-visits implicit-visits)."))
+
+(defmethod prompter:object-attributes ((entry history-entry) (source prompter:source))
+  (declare (ignore source))
+  `(("URL" ,(render-url (url entry))
+           ,(spinneret::escape-string
+             (multiple-value-bind (aesthetic safe)
+                 (render-url (url entry))
+               (if safe
+                   (format nil "~a (~a)" safe aesthetic)
+                   aesthetic))))
+    ("Title" ,(title entry))
+    ("Visits" ,(+ (implicit-visits entry) (explicit-visits entry)))))
 
 (export-always 'equals)
 (defmethod equals ((e1 history-entry) (e2 history-entry))
