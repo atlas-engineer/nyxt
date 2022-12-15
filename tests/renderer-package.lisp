@@ -33,8 +33,12 @@
 
 (defun test-set-url (url)
   (let ((url-channel (nyxt::make-channel 1)))
-    (hooks:once-on nyxt:*after-startup-hook* ()
-      (hooks:once-on (nyxt:prompt-buffer-ready-hook nyxt:*browser*)
+    (nyxt:start :no-config t :no-auto-config t
+                :headless t
+                :socket "/tmp/nyxt-test.socket"
+                :profile "test")
+    (hooks:once-on (nyxt:after-startup-hook *browser*) (browser)
+      (hooks:once-on (nyxt:prompt-buffer-ready-hook browser)
           (prompt-buffer)
         (prompter:all-ready-p prompt-buffer)
         (nyxt:set-prompt-buffer-input url prompt-buffer)
@@ -46,9 +50,5 @@
         ;; TODO: Test if thread returns.
         (let ((nyxt::*interactive-p* t))
           (nyxt:set-url))))
-    (nyxt:start :no-config t :no-auto-config t
-                :headless t
-                :socket "/tmp/nyxt-test.socket"
-                :profile "test")
     (assert-string= url (calispel:? url-channel 5))
     (nyxt:quit)))
