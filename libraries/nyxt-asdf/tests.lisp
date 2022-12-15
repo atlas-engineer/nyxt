@@ -77,3 +77,23 @@ If the NYXT_TESTS_NO_NETWORK environment variable is set, tests with the `:onlin
       (format t "~a (~a sample~:p):~%" (first mark)
               (getf (rest (second mark)) :samples))
       (mapc #'print-times (rest mark)))))
+
+(defun redefinition-p (condition)       ; From Slynk.
+  (and (typep condition 'style-warning)
+       (every #'char-equal "redefin" (princ-to-string condition))))
+
+#+ccl
+(defun osicat-warning-p (condition)
+  ;; Osicat triggers a warning on CCL because of some unimplemented chunk.
+  ;; See https://github.com/osicat/osicat/issues/37.
+  (and (typep condition 'style-warning)
+       (search "Undefined function OSICAT::MAKE-FD-STREAM" (princ-to-string condition))))
+
+(export-always 'fail-on-warnings)
+(defun fail-on-warnings (thunk) ; TODO: Is it possible to report the offending component?
+  (handler-bind ((warning (lambda (c)
+                            (unless (or (redefinition-p c)
+                                        #+ccl
+                                        (osicat-warning-p c))
+                              (error c) ))))
+    (funcall thunk)))

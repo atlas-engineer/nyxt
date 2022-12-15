@@ -1,6 +1,23 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
+(in-package :nyxt-asdf)
+
+(export-always 'nyxt-compilation-test-system)
+(defclass nyxt-compilation-test-system (asdf:system)
+  ((packages
+    :initform '()  ;; (error "Packages required")
+    :initarg :packages
+    :reader packages
+    :documentation "Packages to check for unbound exports.
+Sub-packages are included in the check."))
+  (:documentation "Specialized systems for Nyxt compilation tests."))
+(import 'nyxt-compilation-test-system  :asdf-user)
+
+(defmethod asdf:component-depends-on ((op asdf:prepare-op) (c nyxt-compilation-test-system))
+  `((asdf:load-op "lisp-unit2")
+    ,@(call-next-method)))
+
 (defun list-unbound-exports (package)
   (let ((result '()))
     (do-external-symbols (s (find-package package) result)
@@ -11,7 +28,7 @@
                  #+sbcl
                  (not (sb-ext:defined-type-name-p s))
                  (and (find-package :parenscript)
-                      (not (gethash s parenscript::*macro-toplevel*))))
+                      (not (gethash s (symbol-value (find-symbol "*MACRO-TOPLEVEL*" :parenscript))))))
         (push s result )))))
 
 (defun subpackage-p (subpackage package)
@@ -38,6 +55,11 @@ A sub-package has a name that starts with that of PACKAGE followed by a '/' sepa
                                        (list package exports))))
                                  (cons (find-package package) (list-subpackages package))))))
     (when report
-      (format t "~a~&Found unbound exported symbols in ~a packages."
-              report (length report))
-      (uiop:quit 20))))
+      (error "~a~&Found unbound exported symbols in ~a packages."
+             report (length report)))))
+
+(defmethod asdf:perform ((op asdf:test-op) (c nyxt-compilation-test-system))
+  (mapc #'unbound-exports (packages c)))
+
+(defmethod asdf:perform ((op asdf:load-op) (c nyxt-compilation-test-system))
+  (mapc #'unbound-exports (packages c)))

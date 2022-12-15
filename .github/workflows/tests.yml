@@ -95,11 +95,6 @@ jobs:
       run: |
         ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)' -e '(handler-case (asdf:load-system :nyxt/tests) (error (a) (format t "caught error ~s~%~a~%" a a) (uiop:quit 17)))' -e '(asdf:test-system :nyxt)'
 
-    - name: Compilation warnings
-      shell: bash
-      run: |
-        ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)' -e '(load "build-scripts/report-warnings.lisp")' -e '(compilation-conditions "nyxt")' -e '(compilation-conditions "nyxt/gtk")'
-
     - name: Validate make-instance symbols
       shell: bash
       run: |
@@ -109,13 +104,3 @@ jobs:
       shell: bash
       run: |
         ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)'  -e '(asdf:load-system :nyxt)' -e '(push :nyxt-debug-keymap *features*)' -e '(handler-case (asdf:load-system :nyxt :force t) (error (a) (format t "caught error ~s~%~a~%" a a) (uiop:quit 17)))'
-
-    - name: Manual dump
-      shell: bash
-      run: |
-        ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)' -e '(handler-case (asdf:load-system :nyxt/documentation) (error (a) (format t "caught error ~s~%~a~%" a a) (uiop:quit 17)))'
-
-    - name: Unbound exports
-      shell: bash
-      run: |
-        ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)' -e '(asdf:load-system :nyxt)' -e '(load "build-scripts/report-unbound-exports.lisp")' -e '(unbound-exports :nyxt)'

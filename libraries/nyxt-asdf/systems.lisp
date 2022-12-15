@@ -113,7 +113,9 @@ pathname."
           (values host
                   (subseq name (1+ (position #\: name)))))))))
 
-;; Both `nasdf:component-pathname' and `asdf:component-pathname' work, but it seems more semantically correct to specialize `asdf:component-pathname' for this.
+;; Both `nasdf:component-pathname' and `asdf:component-pathname' work, but it
+;; seems more semantically correct to specialize `asdf:component-pathname' for
+;; this.
 (defmethod asdf:component-pathname ((system nyxt-system))
   "If NYXT_USE_LOGICAL_PATHS environment variable is set, use logical path source
 location, otherwise use the translated path.
