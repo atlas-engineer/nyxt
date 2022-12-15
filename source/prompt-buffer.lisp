@@ -296,13 +296,14 @@ See also `show-prompt-buffer'."
                "Scale each element of WIDTHS to ratios that sum up to one."
                (mapcar (rcurry #'/ (reduce #'+ widths)) widths)))
       (loop for key in (prompter:active-attributes-keys source)
-            for width = (funcall width-function
-                                 (cons key
-                                       ;; TODO Filter empty suggestions in
-                                       ;; all-attribute-values (add as a
-                                       ;; keyword). Let all-attribute-values
-                                       ;; accept a list of keys.
-                                       (prompter:all-attribute-values key source)))
+            ;; Ensures that the Attribute key string fits into the column.
+            for width = (max (length key)
+                             (funcall width-function
+                                      ;; TODO Filter empty suggestions in
+                                      ;; all-attribute-values (add as a
+                                      ;; keyword). Let all-attribute-values
+                                      ;; accept a list of keys.
+                                      (prompter:all-attribute-values key source)))
             collect width into widths
             ;; Attributes keys set to empty strings aren't allowed, so widths is
             ;; never a list whose elements are all zeros.  In such a scenario,
@@ -327,6 +328,9 @@ an integer."))
     (when (prompter:suggestions source)
       (:table :class "source-content"
               (:colgroup
+               ;; This gets called everytime the prompt-buffer is redrawn, not
+               ;; good.
+               ;; What should be called are the ratio value from the attributes.
                (dolist (width (attribute-widths source))
                  (:col :style (format nil "width: ~,2f%" (* 100 width)))))
               (:tr :style (if (or (eq (prompter:hide-attribute-header-p source) :always)
@@ -393,6 +397,9 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                            (if (prompter:ready-p source)
                                ""
                                "(In progress...)"))
+                     ;; render-attributes, which calls attribute-widths, is
+                     ;; called many times (see that source->html gets called in
+                     ;; a loop)
                      (:raw (render-attributes source prompt-buffer))))))
       (ps-eval :buffer prompt-buffer
         (setf (ps:@ (nyxt/ps:qs document "#suggestions") |innerHTML|)
