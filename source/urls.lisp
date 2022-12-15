@@ -55,7 +55,9 @@ If URL contains non-ascii chars in domain part (IDN), return two values:
             (some (complement #'graphic-char-p) displayed))
        (quri:url-encode displayed))
       (t
-       (values displayed (idna:to-ascii displayed))))))
+       (values displayed (let ((uri (quri:uri displayed)))
+                           (quri:render-uri (quri:make-uri :host (idna:to-ascii (quri:uri-host uri))
+                                                           :defaults uri))))))))
 
 (export-always 'render-host-and-scheme)
 (defun render-host-and-scheme (url)
