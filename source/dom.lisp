@@ -339,6 +339,7 @@ Return two values:
     (when (plump:children element)
       (plump:text element)))
   (:method :around (element)
+    (declare (ignorable element))
     (let ((result (call-next-method)))
       (when result
         (sera:collapse-whitespace (sera:trim-whitespace result)))))
