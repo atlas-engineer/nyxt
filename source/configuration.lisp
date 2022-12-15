@@ -91,10 +91,10 @@ This is global because logging starts before the `*browser*' is even initialized
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defmethod files:resolve ((profile nyxt-profile) (directory nyxt-source-directory))
-  (let ((asd-path (ignore-errors (asdf:system-source-directory :nyxt-asdf))))
+  (let ((asd-path (ignore-errors (asdf:system-source-directory :nyxt))))
     (if (uiop:directory-exists-p asd-path)
         asd-path
-        nyxt-asdf:*dest-source-dir*)))
+        nasdf:*dest-source-dir*)))
 
 (export-always '*source-directory*)
 (defvar *source-directory* (make-instance 'nyxt-source-directory)

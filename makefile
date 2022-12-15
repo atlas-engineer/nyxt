@@ -27,8 +27,8 @@ makefile_dir := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 # TODO: Find a better way to do it.
 lisp_eval:=$(LISP) $(LISP_FLAGS) \
 	--eval '(require "asdf")' \
-	--eval '(when (string= "$(NYXT_SUBMODULES)" "true") (setf asdf:*default-source-registries* (list (quote asdf/source-registry:environment-source-registry))) (asdf:clear-configuration) (asdf:load-asd "$(makefile_dir)/nyxt-asdf.asd") (asdf:load-asd "$(makefile_dir)/nyxt.asd") (asdf:load-system :nyxt/submodules))' \
-	--eval '(asdf:load-asd "$(makefile_dir)/nyxt-asdf.asd")' \
+	--eval '(when (string= "$(NYXT_SUBMODULES)" "true") (setf asdf:*default-source-registries* (list (quote asdf/source-registry:environment-source-registry))) (asdf:clear-configuration) (asdf:load-asd "$(makefile_dir)/libraries/nasdf/nasdf.asd") (asdf:load-asd "$(makefile_dir)/nyxt.asd") (asdf:load-system :nyxt/submodules))' \
+	--eval '(asdf:load-asd "$(makefile_dir)/libraries/nasdf/nasdf.asd")' \
 	--eval '(asdf:load-asd "$(makefile_dir)/nyxt.asd")' \
   --eval '(when (find-package :ql) (funcall (read-from-string "ql:quickload") :cffi))' \
   --eval '(when (and (find-package :cffi) (uiop:getenv "GUIX_ENVIRONMENT")) (pushnew (pathname (format nil "~a/lib/" (uiop:getenv "GUIX_ENVIRONMENT"))) (symbol-value (read-from-string "cffi:*foreign-library-directories*" )) :test (quote equal)))' \
