@@ -100,34 +100,41 @@ for which the `executable' slot is non-nil."
                      (string-downcase
                       (class-name (class-of (password-interface buffer))))))))
 
+(defmethod execute :before ((password-interface password:keepassxc-interface) (arguments list) &rest run-program-args &key &allow-other-keys)
+  (declare (ignore arguments run-program-args))
+  (when (password::yubikey-slot password-interface)
+    (echo "Tap your Yubikey to prove KeePassXC database access")))
+
 (defmethod password:complete-interface ((password-interface password:keepassxc-interface))
-  (loop :until (and (password::password-file password-interface)
+  (loop until (password:password-correct-p password-interface)
+        unless (and (password::password-file password-interface)
                     (string-equal "kdbx"
                                   (pathname-type (pathname (password::password-file
                                                             password-interface)))))
-        :do (setf (password::password-file password-interface)
-                  (uiop:native-namestring
-                   (prompt1
-                    :prompt "Password database file"
-                    :extra-modes 'nyxt/file-manager-mode:file-manager-mode
-                    :sources (make-instance 'nyxt/file-manager-mode:file-source
-                                            :extensions '("kdbx"))))))
-  (if-confirm ("Do you use key file for password database locking?")
-      (setf (password::key-file password-interface)
-            (uiop:native-namestring
-             (prompt1
-              :prompt "Password database key file"
-              :extra-modes 'nyxt/file-manager-mode:file-manager-mode
-              :sources (make-instance 'nyxt/file-manager-mode:file-source)))))
-  (if-confirm ("Do you use Yubikey for password database locking")
-      (setf (password::yubikey-slot password-interface)
-            (prompt1 :prompt "Yubikey slot"
-                     :sources (make-instance 'prompter:raw-source))))
-  (loop :until (password:password-correct-p password-interface)
-        :do (setf (password::master-password password-interface)
-                  (prompt1 :prompt "Database password (leave empty if none)"
-                           :sources 'prompter:raw-source
-                           :invisible-input-p t))))
+          do (setf (password::password-file password-interface)
+                   (uiop:native-namestring
+                    (prompt1
+                     :prompt "Password database file"
+                     :extra-modes 'nyxt/file-manager-mode:file-manager-mode
+                     :sources (make-instance 'nyxt/file-manager-mode:file-source
+                                             :extensions '("kdbx")))))
+        unless (password::key-file password-interface)
+          do (if-confirm ("Do you use key file for password database locking?")
+                 (setf (password::key-file password-interface)
+                       (uiop:native-namestring
+                        (prompt1
+                         :prompt "Password database key file"
+                         :extra-modes 'nyxt/file-manager-mode:file-manager-mode
+                         :sources (make-instance 'nyxt/file-manager-mode:file-source)))))
+        unless (password::yubikey-slot password-interface)
+          do (if-confirm ("Do you use Yubikey for password database locking")
+                 (setf (password::yubikey-slot password-interface)
+                       (prompt1 :prompt "Yubikey slot"
+                                :sources (make-instance 'prompter:raw-source))))
+        do (setf (password::master-password password-interface)
+                 (prompt1 :prompt "Database password (leave empty if none)"
+                          :sources 'prompter:raw-source
+                          :invisible-input-p t))))
 
 (defmacro with-password (password-interface &body body)
   `(if (password:password-correct-p ,password-interface)
