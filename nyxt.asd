@@ -14,7 +14,7 @@
 
 (defsystem "nyxt"
   :defsystem-depends-on ("nasdf")
-  :class :nyxt-system
+  :class :nasdf-system
   :version "3"                          ;  3-pre-release-2 / Development version
   :author "Atlas Engineer LLC"
   :homepage "https://nyxt.atlas.engineer"
@@ -233,18 +233,18 @@
 
 (defsystem "nyxt/submodules"
   :defsystem-depends-on ("nasdf")
-  :class :nyxt-submodule-system)
+  :class :nasdf-submodule-system)
 
 (defsystem "nyxt/tests/compilation"
   :defsystem-depends-on ("nasdf")
-  :class :nyxt-compilation-test-system
+  :class :nasdf-compilation-test-system
   :depends-on (nyxt)
   :packages (:nyxt))
 
 ;; TODO: Test that Nyxt starts and that --help, --version work.
 (defsystem "nyxt/tests"
   :defsystem-depends-on ("nasdf")
-  :class :nyxt-test-system
+  :class :nasdf-test-system
   :depends-on (nyxt nyxt/tests/compilation)
   :targets (:package :nyxt/tests)
   :serial t
@@ -312,7 +312,7 @@
 
 (defsystem "nyxt/gtk"
   :defsystem-depends-on ("nasdf")
-  :class :nyxt-system
+  :class :nasdf-system
   :depends-on (cl-cffi-gtk
                cl-webkit2
                nyxt)
@@ -326,7 +326,7 @@
 
 (defsystem "nyxt/gi-gtk"
   :defsystem-depends-on ("nasdf")
-  :class :nyxt-system
+  :class :nasdf-system
   :depends-on (bordeaux-threads
                cl-gobject-introspection
                nyxt/gtk)
@@ -337,7 +337,7 @@
 
 (defsystem "nyxt/gi-gtk/tests"
   :defsystem-depends-on ("nasdf")
-  :class :nyxt-test-system
+  :class :nasdf-test-system
   :depends-on (nyxt/gi-gtk)
   :targets (:package :nyxt/tests/renderer)
   :serial t
@@ -366,7 +366,7 @@
 
 (defsystem "nyxt/gtk-application"
   :defsystem-depends-on ("nasdf")
-  :class :nyxt-system
+  :class :nasdf-system
   :depends-on (nyxt/gtk)
   :build-operation "program-op"
   :build-pathname "nyxt"
@@ -374,7 +374,7 @@
 
 (defsystem "nyxt/gi-gtk-application"
   :defsystem-depends-on ("nasdf")
-  :class :nyxt-system
+  :class :nasdf-system
   :depends-on (nyxt/gi-gtk)
   :build-operation "program-op"
   :build-pathname "nyxt"
@@ -382,7 +382,7 @@
 
 (defsystem "nyxt/qt-application"
   :defsystem-depends-on ("nasdf")
-  :class :nyxt-system
+  :class :nasdf-system
   :depends-on (nyxt/qt)
   :build-operation "program-op"
   :build-pathname "nyxt-qt"
@@ -390,7 +390,7 @@
 
 (defsystem "nyxt/application/tests"
   :defsystem-depends-on ("nasdf")
-  :class :nyxt-test-system
+  :class :nasdf-test-system
   :depends-on (nyxt)
   :targets (:package :nyxt/tests/executable)
   :components ((:file "tests/package")
@@ -403,18 +403,18 @@
 
 (defsystem "nyxt/install"
   :defsystem-depends-on ("nasdf")
-  :class :nyxt-renderer-system
+  :class :nasdf-renderer-system
   :depends-on (alexandria
                nyxt/version
                str)
-  :components ((:nyxt-desktop-file "assets/nyxt.desktop")
-               (:nyxt-icon-directory "assets/")
-               (:nyxt-binary-file "nyxt")
-               (:nyxt-library-file "libraries/web-extensions/libnyxt.so"
+  :components ((:nasdf-desktop-file "assets/nyxt.desktop")
+               (:nasdf-icon-directory "assets/")
+               (:nasdf-binary-file "nyxt")
+               (:nasdf-library-file "libraries/web-extensions/libnyxt.so"
                                    :if-does-not-exist nil)
-               (:nyxt-source-directory "source")
-               (:nyxt-source-directory "nasdf")
-               (:nyxt-source-directory "libraries"
+               (:nasdf-source-directory "source")
+               (:nasdf-source-directory "nasdf")
+               (:nasdf-source-directory "libraries"
                 :exclude-subpath ("web-extensions") ; Do not install this non-Lisp source.
                 :exclude-types ("o" "c" "h" ; C code and artifacts.
                                     "fasl"))))
@@ -424,7 +424,7 @@
 
 (defsystem "nyxt/download-manager"
   :defsystem-depends-on ("nasdf")
-  :class :nyxt-system
+  :class :nasdf-system
   :depends-on (calispel
                cl-ppcre
                dexador
@@ -438,7 +438,7 @@
 
 (defsystem "nyxt/analysis"
   :defsystem-depends-on ("nasdf")
-  :class :nyxt-system
+  :class :nasdf-system
   :depends-on (alexandria
                cl-ppcre
                serapeum
@@ -458,14 +458,14 @@
 
 (defsystem "nyxt/analysis/tests"
   :defsystem-depends-on ("nasdf")
-  :class :nyxt-test-system
+  :class :nasdf-test-system
   :depends-on (nyxt/analysis)
   :targets (:package :analysis/tests)
   :components ((:file "libraries/analysis/tests/tests")))
 
 (defsystem "nyxt/user-interface"
   :defsystem-depends-on ("nasdf")
-  :class :nyxt-system
+  :class :nasdf-system
   :depends-on (spinneret)
   :pathname #p"NYXT:libraries;user-interface;"
   :components ((:file "package")
@@ -473,7 +473,7 @@
 
 (defsystem "nyxt/text-buffer"
   :defsystem-depends-on ("nasdf")
-  :class :nyxt-system
+  :class :nasdf-system
   :depends-on (cluffer)
   :pathname #p"NYXT:libraries;text-buffer;"
   :components ((:file "package")
@@ -481,7 +481,7 @@
 
 (defsystem "nyxt/history-tree"
   :defsystem-depends-on ("nasdf")
-  :class :nyxt-system
+  :class :nasdf-system
   :depends-on (alexandria
                cl-custom-hash-table
                local-time
@@ -494,7 +494,7 @@
 
 (defsystem "nyxt/history-tree/tests"
   :defsystem-depends-on ("nasdf")
-  :class :nyxt-test-system
+  :class :nasdf-test-system
   :depends-on (nyxt/history-tree
                str)
   :targets (:package :history-tree/tests)
@@ -502,7 +502,7 @@
 
 (defsystem "nyxt/password-manager"
   :defsystem-depends-on ("nasdf")
-  :class :nyxt-system
+  :class :nasdf-system
   :depends-on (bordeaux-threads
                cl-ppcre
                nyxt/class-star
@@ -520,7 +520,7 @@
 
 (defsystem "nyxt/class-star"
   :defsystem-depends-on ("nasdf")
-  :class :nyxt-system
+  :class :nasdf-system
   :depends-on (alexandria
                hu.dwim.defclass-star
                moptilities)
@@ -532,7 +532,7 @@
 
 (defsystem "nyxt/class-star/tests"
   :defsystem-depends-on ("nasdf")
-  :class :nyxt-test-system
+  :class :nasdf-test-system
   :depends-on (nyxt/class-star)
   :targets (:package :class-star/tests)
   :components ((:file "libraries/class-star/tests/tests")
@@ -540,7 +540,7 @@
 
 (defsystem "nyxt/prompter"
   :defsystem-depends-on ("nasdf")
-  :class :nyxt-system
+  :class :nasdf-system
   :depends-on (alexandria
                calispel
                cl-containers
@@ -561,7 +561,7 @@
 
 (defsystem "nyxt/prompter/tests"
   :defsystem-depends-on ("nasdf")
-  :class :nyxt-test-system
+  :class :nasdf-test-system
   :depends-on (nyxt/prompter)
   :targets (:package :prompter/tests)
   :pathname #p"NYXT:libraries;prompter;tests;"
@@ -572,7 +572,7 @@
 
 (defsystem "nyxt/theme"
   :defsystem-depends-on ("nasdf")
-  :class :nyxt-system
+  :class :nasdf-system
   :depends-on (alexandria
                lass
                nyxt/class-star
@@ -584,7 +584,7 @@
 
 (defsystem "nyxt/theme/tests"
   :defsystem-depends-on ("nasdf")
-  :class :nyxt-test-system
+  :class :nasdf-test-system
   :depends-on (nyxt/theme)
   :targets (:package :theme/tests)
   :components ((:file "libraries/theme/tests/tests")))

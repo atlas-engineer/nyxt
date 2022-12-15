@@ -11,7 +11,7 @@ and possibly prone to security issues.  Use at your own risk!
 Set DESTDIR to change the target destination.  It should be
 an absolute path.
 
-Set NYXT_SOURCE_PATH to where the source files will be installed.
+Set NASDF_SOURCE_PATH to where the source files will be installed.
 By default the GTK renderer loads the `libnyxt' library (enabling WebExtension
 support) relatively to the nyxt.asd location.  You can also configure this at
 runtime through the `gtk-extensions-directory' `resolve' method.
@@ -23,19 +23,19 @@ Set NYXT_RENDERER to the renderer of your choice, for instance "gtk".
 Set NYXT_VERSION to force the version number instead of deriving it from Git.
 This is useful for build systems without access to the .git metadata.
 
-Set NYXT_COMPRESS to a compression level (1-19 for Zstd, -1-9 for Zip, or T for
+Set NASDF_COMPRESS to a compression level (1-19 for Zstd, -1-9 for Zip, or T for
 the default level) to generate a compressed executable.  This greatly reduces
 the file size at the expense of a slightly increased startup time.  It's
 recommended to leave this off on file systems with compression.
 
-Set NYXT_TESTS_NO_NETWORK to disable tests that require networking.
+Set NASDF_TESTS_NO_NETWORK to disable tests that require networking.
 
-Set NYXT_TESTS_ERROR_ON_FAIL to error out when a test fails.  This is useful for
+Set NASDF_TESTS_ERROR_ON_FAIL to error out when a test fails.  This is useful for
 continuous integration and build systems.
 
 If NYXT_SUBMODULES is "true" (the default), all Lisp
 dependencies will be fetched with `git submodules' into the
-NYXT_SUBMODULES_DIR directory.
+NASDF_SUBMODULES_DIR directory.
 
 Otherwise, the dependencies will have to be locally installed
 on your system.  You may have to accommodate the LISP_FLAGS
@@ -46,7 +46,7 @@ to use your local install of Quicklisp.  For example:
 But in this case, you don't have to use `make' at all.  Instead, you could build
 Nyxt with an invocation along these lines:
 
-    export NYXT_USE_LOGICAL_PATHS=true # Dynamic relocation of the source code
+    export NASDF_USE_LOGICAL_PATHS=true # Dynamic relocation of the source code
     sbcl --non-interactive --no-userinit --eval '(require "asdf")' --eval '(asdf:make :nyxt/gi-gtk-application)' --quit
 
 (Assuming Nyxt is checked out in a directory traversed by ASDF, like
