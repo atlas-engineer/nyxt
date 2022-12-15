@@ -283,12 +283,13 @@ See also `show-prompt-buffer'."
 ;; That would make this more generic -- fn that accepts a list of numbers and
 ;; outputs a number.
 (defun average-attribute-width (attribute-values)
-  (let* ((values (remove-if #'str:blankp attribute-values))
-         (total (reduce #'+ values :key #'length)))
-    ;; this should not eval to (/ 0 0) by construction
-    (if (zerop (length values))
-        0
-        (/ total (length values)))))
+  ;; The workaround is due to comment on line 401 of this file.
+  ;; While the prompt buffer is being draw some of the attributes are still set
+  ;; to the empty string, and therefore
+  ;; (mapcar #'length (remove-if #'str:blankp attribute-values))
+  ;; can be NIL.
+  (alex:median (uiop:ensure-list (mapcar #'length
+                                         (remove-if #'str:blankp attribute-values)))))
 
 (defgeneric attribute-widths (source &key width-function)
   (:method (source &key (width-function #'average-attribute-width))
