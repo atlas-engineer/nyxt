@@ -35,18 +35,27 @@ Members of URL-STRINGS corresponding to the empty URL are discarded."
   `(satisfies has-url-method-p))
 
 (export-always 'render-url)
-(-> render-url ((or quri:uri string)) string)
+(-> render-url (url-designator) (values (or null string) (or null string) &optional))
 (defun render-url (url)
-  "Return decoded URL.
+  "Return the aesthetic decoded URL.
+
 If the URL contains hexadecimal-encoded characters, return their Unicode
-counterpart, unless there are unprintable characters."
-  (let* ((url (if (stringp url)
-                  url
-                  (quri:render-uri url)))
+counterpart, unless there are unprintable characters.
+
+If URL contains non-ascii chars in domain part (IDN), return two values:
+- The aesthetic decoded URL, and
+- The safe punicode-encoded one."
+  (let* ((url (quri:render-uri (url url)))
          (displayed (or (ignore-errors (ffi-display-url *browser* url))
                         url)))
-    (the (values (or string null) &optional)
-         displayed)))
+    (cond
+      ((every (alex:conjoin #'graphic-char-p #'sera:ascii-char-p) displayed)
+       displayed)
+      ((and (every #'sera:ascii-char-p displayed)
+            (some (complement #'graphic-char-p) displayed))
+       (quri:url-encode displayed))
+      (t
+       (values displayed (idna:to-ascii displayed))))))
 
 (export-always 'render-host-and-scheme)
 (defun render-host-and-scheme (url)

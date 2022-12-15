@@ -39,6 +39,7 @@
                dexador
                enchant
                flexi-streams
+               idna
                iolib
                iolib/os
                lass
