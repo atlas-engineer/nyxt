@@ -88,6 +88,7 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                dexador
                enchant
                flexi-streams
+               history-tree
                idna
                iolib
                iolib/os
@@ -129,7 +130,6 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                nyxt/text-buffer
                nyxt/analysis
                nyxt/download-manager
-               nyxt/history-tree
                nyxt/password-manager
                nyxt/class-star
                nyxt/prompter
@@ -276,7 +276,6 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                          ;; We test if manual dumping works, since it may catch
                          ;; some subtle mistakes:
                          (compile-op "nyxt/documentation")
-                         (test-op "nyxt/history-tree/tests")
                          (test-op "nyxt/class-star/tests")
                          (test-op "nyxt/prompter/tests"))))
 
@@ -590,27 +589,6 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
   :pathname #p"NYXT:libraries;text-buffer;"
   :components ((:file "package")
                (:file "text-buffer")))
-
-(defsystem "nyxt/history-tree"
-  :defsystem-depends-on ("nasdf")
-  :class :nasdf-system
-  :depends-on (alexandria
-               cl-custom-hash-table
-               local-time
-               nyxt/class-star
-               trivial-package-local-nicknames)
-  :pathname #p"NYXT:libraries;history-tree;"
-  :components ((:file "package")
-               (:file "history-tree"))
-  :in-order-to ((test-op (test-op "nyxt/history-tree/tests"))))
-
-(defsystem "nyxt/history-tree/tests"
-  :defsystem-depends-on ("nasdf")
-  :class :nasdf-test-system
-  :depends-on (nyxt/history-tree
-               str)
-  :targets (:package :history-tree/tests)
-  :components ((:file "libraries/history-tree/tests/tests")))
 
 (defsystem "nyxt/password-manager"
   :defsystem-depends-on ("nasdf")
