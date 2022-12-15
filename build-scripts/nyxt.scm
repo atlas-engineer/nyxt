@@ -148,6 +148,7 @@
           cl-flexi-streams
           cl-fset
           cl-gopher
+          cl-history-tree
           cl-html-diff
           cl-hu.dwim.defclass-star
           cl-iolib
