@@ -1,17 +1,16 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(defsystem "nyxt-asdf"
+(defsystem "nasdf"
   :version "1.0.0"
   :author "Atlas Engineer LLC"
-  :homepage "https://nyxt.atlas.engineer"
-  :description "ASDF helpers for Nyxt and its extensions."
+  :homepage "https://github.com/atlas-engineer/ntemplate"
+  :description "ASDF helpers for system setup, testing and installation."
   :license "BSD 3-Clause"
-  :pathname #p"libraries/nyxt-asdf/"
-  ;; It cannot depend on anything because it's in charge of fetching the dependencies.
+  ;; It cannot depend on anything because it's also in charge of fetching dependencies.
   :components ((:file "package")
                (:file "log")
-               (:file "nyxt-asdf")
+               (:file "nasdf")
                (:file "install")
                (:file "submodules")
                (:file "systems")

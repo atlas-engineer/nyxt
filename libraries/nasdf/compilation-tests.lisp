@@ -1,20 +1,20 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :nyxt-asdf)
+(in-package :nasdf)
 
-(export-always 'nyxt-compilation-test-system)
-(defclass nyxt-compilation-test-system (asdf:system)
+(export-always 'nasdf-compilation-test-system)
+(defclass nasdf-compilation-test-system (asdf:system)
   ((packages
     :initform '()  ;; (error "Packages required")
     :initarg :packages
     :reader packages
     :documentation "Packages to check for unbound exports.
 Sub-packages are included in the check."))
-  (:documentation "Specialized systems for Nyxt compilation tests."))
-(import 'nyxt-compilation-test-system  :asdf-user)
+  (:documentation "Specialized systems for compilation tests."))
+(import 'nasdf-compilation-test-system  :asdf-user)
 
-(defmethod asdf:component-depends-on ((op asdf:prepare-op) (c nyxt-compilation-test-system))
+(defmethod asdf:component-depends-on ((op asdf:prepare-op) (c nasdf-compilation-test-system))
   `((asdf:load-op "lisp-unit2")
     ,@(call-next-method)))
 
@@ -58,8 +58,8 @@ A sub-package has a name that starts with that of PACKAGE followed by a '/' sepa
       (error "~a~&Found unbound exported symbols in ~a packages."
              report (length report)))))
 
-(defmethod asdf:perform ((op asdf:test-op) (c nyxt-compilation-test-system))
+(defmethod asdf:perform ((op asdf:test-op) (c nasdf-compilation-test-system))
   (mapc #'unbound-exports (packages c)))
 
-(defmethod asdf:perform ((op asdf:load-op) (c nyxt-compilation-test-system))
+(defmethod asdf:perform ((op asdf:load-op) (c nasdf-compilation-test-system))
   (mapc #'unbound-exports (packages c)))

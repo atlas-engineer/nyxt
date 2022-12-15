@@ -1,7 +1,7 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :nyxt-asdf)
+(in-package :nasdf)
 
 (defmacro export-always (symbols &optional (package nil package-supplied?))
   "Like `export', but also evaluated at compile time."

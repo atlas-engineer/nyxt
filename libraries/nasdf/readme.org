@@ -1,6 +1,6 @@
-#+TITLE: Nyxt-ASDF
+#+TITLE: NASDF
 
-Nyxt-ASDF is an ASDF extension providing utilities to ease system setup, testing
+NASDF is an ASDF extension providing utilities to ease system setup, testing
 and installation.
 
 ** Features
@@ -9,4 +9,4 @@ See [[file:package.lisp]] for more details.
 
 ** History
 
-Nyxt-ASDF was originally developed for [[https://nyxt.atlas.engineer][Nyxt]].
+NASDF was originally developed for [[https://nyxt.atlas.engineer][Nyxt]].
