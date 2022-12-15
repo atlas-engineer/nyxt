@@ -114,7 +114,7 @@ for which the `executable' slot is non-nil."
           do (setf (password::password-file password-interface)
                    (uiop:native-namestring
                     (prompt1
-                     :prompt "Password database file"
+                     :prompt "Password database file (.kdbx)"
                      :extra-modes 'nyxt/file-manager-mode:file-manager-mode
                      :sources (make-instance 'nyxt/file-manager-mode:file-source
                                              :extensions '("kdbx")))))
@@ -129,10 +129,11 @@ for which the `executable' slot is non-nil."
         unless (password::yubikey-slot password-interface)
           do (if-confirm ("Do you use Yubikey for password database locking")
                  (setf (password::yubikey-slot password-interface)
-                       (prompt1 :prompt "Yubikey slot"
+                       (prompt1 :prompt "Yubikey slot[:port]"
                                 :sources (make-instance 'prompter:raw-source))))
         do (setf (password::master-password password-interface)
-                 (prompt1 :prompt "Database password (leave empty if none)"
+                 (prompt1 :prompt (format nil "Database password for ~a (leave empty if none)"
+                                          (password::password-file password-interface))
                           :sources 'prompter:raw-source
                           :invisible-input-p t))))
 
