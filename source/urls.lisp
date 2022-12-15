@@ -35,7 +35,7 @@ Members of URL-STRINGS corresponding to the empty URL are discarded."
   `(satisfies has-url-method-p))
 
 (export-always 'render-url)
-(-> render-url (url-designator) (values (or null string) (or null string) &optional))
+(-> render-url (url-designator) t)
 (defun render-url (url)
   "Return the aesthetic decoded URL.
 
