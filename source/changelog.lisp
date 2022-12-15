@@ -605,4 +605,6 @@ regular commands, such as "
   (:h3 "Bug fixes")
   (:ul
    (:li "Invoke the right WebKit command when cutting text with " (:nxref :function 'ffi-buffer-cut))
-   (:li "Fix the display of history suggestions when going forward in history.")))
+   (:li "Fix the display of history suggestions when going forward in history.")
+   (:li "Security: all the non-ASCII domain names are shown as IDN punycodes in addition
+to aesthetic display in status buffer.")))
