@@ -92,12 +92,15 @@ This leverages `mode-status' which can be specialized for individual modes."
   (let* ((buffer (current-buffer (window status)))
          (content (multiple-value-bind (aesthetic safe)
                       (render-url (url buffer))
-                    (format nil "~:[~*~a~;~a (~a)~] — ~a~:[~; (~a)~]"
-                            safe safe aesthetic
-                            (title buffer)
-                            (find (url buffer) (remove buffer (buffer-list))
-                                  :test #'url-equal :key #'url)
-                            (id buffer)))))
+                    (uiop:strcat
+                     (if safe
+                         (format nil "~a (~a)" safe aesthetic)
+                         aesthetic)
+                     (when (title buffer)
+                       (str:concat " — " (title buffer)))
+                     (when (find (url buffer) (remove buffer (buffer-list))
+                                 :test #'url-equal :key #'url)
+                       (format nil " (buffer ~a)" (id buffer)))))))
     (spinneret:with-html-string
       (:button :type "button" :class "button"
                :title content
