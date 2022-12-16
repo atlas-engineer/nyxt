@@ -288,8 +288,10 @@ See also `show-prompt-buffer'."
   ;; to the empty string, and therefore
   ;; (mapcar #'length (remove-if #'str:blankp attribute-values))
   ;; can be NIL.
-  (alex:median (uiop:ensure-list (mapcar #'length
-                                         (remove-if #'str:blankp attribute-values)))))
+  (alex:if-let ((non-blank-lengths
+                 (uiop:ensure-list (mapcar #'length (remove-if #'str:blankp attribute-values)))))
+    (alex:median non-blank-lengths)
+    0))
 
 (defgeneric attribute-widths (source &key width-function)
   (:method (source &key (width-function #'average-attribute-width))
