@@ -145,18 +145,22 @@ Return nil to forward to renderer or non-nil otherwise."
               (log:debug "Prefix binding ~a" (keyspecs key-stack translated-key))
               t)
 
-             ((typep bound-function '(or function-symbol command)) ; TODO: Only accept commands?
-              (log:debug "Found key binding ~a to ~a" (keyspecs key-stack translated-key) bound-function)
-              ;; We save the last key separately to keep it available to the
-              ;; command even after key-stack has been reset in the other
-              ;; thread.
-              (setf (last-key window) (first key-stack))
-              (unwind-protect
-                   (funcall (command-dispatcher window) bound-function)
-                ;; We must reset the key-stack on errors or else all subsequent
-                ;; keypresses will keep triggering the same erroring command.
-                (setf key-stack nil))
-              t)
+             ((typep bound-function '(or symbol command))
+              (let ((command (typecase bound-function
+                               (symbol (sym:resolve-symbol bound-function :command))
+                               (command command))))
+                (check-type command command)
+                (log:debug "Found key binding ~a to ~a" (keyspecs key-stack translated-key) bound-function)
+                ;; We save the last key separately to keep it available to the
+                ;; command even after key-stack has been reset in the other
+                ;; thread.
+                (setf (last-key window) (first key-stack))
+                (unwind-protect
+                     (funcall (command-dispatcher window) command)
+                  ;; We must reset the key-stack on errors or else all subsequent
+                  ;; keypresses will keep triggering the same erroring command.
+                  (setf key-stack nil))
+                t))
 
              ((or (and (input-buffer-p buffer) (forward-input-events-p buffer))
                   (pointer-event-p (first (last key-stack))))
