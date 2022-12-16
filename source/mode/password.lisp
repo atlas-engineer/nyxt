@@ -100,7 +100,7 @@ for which the `executable' slot is non-nil."
                      (string-downcase
                       (class-name (class-of (password-interface buffer))))))))
 
-(defmethod execute :before ((password-interface password:keepassxc-interface) (arguments list) &rest run-program-args &key &allow-other-keys)
+(defmethod password::execute :before ((password-interface password:keepassxc-interface) (arguments list) &rest run-program-args &key &allow-other-keys)
   (declare (ignore arguments run-program-args))
   (when (password::yubikey-slot password-interface)
     (echo "Tap your Yubikey to prove KeePassXC database access")))
