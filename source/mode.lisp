@@ -221,11 +221,6 @@ When unset, it corresponds to the mode name."
   (alex:when-let ((class (find-class sym:%symbol% nil)))
     (mopu:subclassp class (find-class 'mode))))
 
-(defun resolve-mode-symbols (designators)
-  "Resolve all the DESIGNATORS (be it strings, symbols, keywords) to valid mode name symbols."
-  (mapcar (alex:rcurry #'sym:resolve-symbol :mode (list-all-packages))
-          designators))
-
 (defun mode-class (symbol)
   (when (sym:mode-symbol-p symbol)
     (find-class symbol)))

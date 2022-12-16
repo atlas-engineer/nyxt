@@ -242,7 +242,7 @@ The rules are:
 (defmethod customize-instance :after ((buffer modable-buffer) &key &allow-other-keys)
   (unless (last-active-modes buffer)
     (setf (last-active-modes buffer)
-          (normalize-modes (resolve-mode-symbols (default-modes buffer))))))
+          (normalize-modes (default-modes buffer)))))
 
 (-> mode-covered-by-auto-rules-p
     (mode-invocation buffer boolean)
