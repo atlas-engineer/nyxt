@@ -310,7 +310,14 @@ To discover the default value of a slot or all slots of a class, use the
            with slots-and-values = (if (stringp (first slots-and-values))
                                        (rest slots-and-values)
                                        slots-and-values)
-           for class in (uiop:ensure-list classes)
+           for class-name in (uiop:ensure-list classes)
+           ;; NOTE: `or' here because `sym:resolve-symbol' only searches through
+           ;; Nyxt packages, while one may try to configure the
+           ;; extension/application-specific class too. If `sym:resolve-symbol'
+           ;; fails, then hope that `find-class' will either work or highlight
+           ;; the problem.
+           for class = (or (sym:resolve-symbol class-name :class)
+                           class-name)
            append (loop for ((slot-name value . rest)) on (first slots-and-values)
                         for slot = (find (symbol-name slot-name) (mopu:slot-names class)
                                          :key #'symbol-name :test #'equal)
@@ -324,7 +331,7 @@ To discover the default value of a slot or all slots of a class, use the
                                           'hooks:handler
                                           :fn (lambda (object)
                                                 ,@(when (or (getf rest :documentation)
-                                                           (getf rest :doc))
+                                                            (getf rest :doc))
                                                     (list (or (getf rest :documentation)
                                                               (getf rest :doc))))
                                                 (declare (ignorable object))
