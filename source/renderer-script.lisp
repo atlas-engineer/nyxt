@@ -247,7 +247,7 @@ See `find-internal-page-buffer'."))
          `(lambda (,@(unless rest '(&rest args)) ,@arglist)
             ,@(when documentation (list documentation))
             (declare (ignorable ,@(mappend #'cdar keywords) ,(or rest 'args)))
-            (apply #'buffer-load-internal-page-focus (name ,page) ,@(mappend #'first keywords))))))))
+            (funcall #'buffer-load-internal-page-focus (name ,page) ,@(mappend #'first keywords))))))))
 
 (defmethod initialize-instance :after ((page internal-page) &key form page-mode &allow-other-keys)
   "Register PAGE into the globally known nyxt:// URLs."
