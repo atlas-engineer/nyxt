@@ -319,6 +319,9 @@ To discover the default value of a slot or all slots of a class, use the
            for class = (or (sym:resolve-symbol class-name :class)
                            class-name)
            append (loop for ((slot-name value . rest)) on (first slots-and-values)
+                        ;; FIXME: It's alarming that we resolve the slot name at
+                        ;; compile-time instead of run-time. Move to the handler
+                        ;; body maybe?
                         for slot = (find (symbol-name slot-name) (mopu:slot-names class)
                                          :key #'symbol-name :test #'equal)
                         ;; TODO: Shall we really make the name unique?  Since we
