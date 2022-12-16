@@ -145,9 +145,10 @@ Return nil to forward to renderer or non-nil otherwise."
               (log:debug "Prefix binding ~a" (keyspecs key-stack translated-key))
               t)
 
-             ((typep bound-function '(or symbol command))
+             ((typep bound-function '(and (not null) (or symbol command)))
               (let ((command (typecase bound-function
-                               (symbol (sym:resolve-symbol bound-function :command))
+                               (symbol (symbol-function (or (sym:resolve-symbol bound-function :command)
+                                                            bound-function)))
                                (command bound-function))))
                 (check-type command command)
                 (log:debug "Found key binding ~a to ~a" (keyspecs key-stack translated-key) bound-function)
