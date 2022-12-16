@@ -585,8 +585,11 @@
 [submodule "_build/nsymbols"]
 	path = _build/nsymbols
 	url = https://github.com/atlas-engineer/nsymbols
-  	shallow = true
+	shallow = true
 [submodule "_build/LASS"]
 	path = _build/LASS
 	url = https://github.com/Shinmera/LASS
+[submodule "_build/njson"]
+	path = _build/njson
+	url = https://github.com/atlas-engineer/njson
 	shallow = true

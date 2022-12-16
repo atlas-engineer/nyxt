@@ -162,6 +162,7 @@
           cl-named-readtables
           cl-ndebug
           cl-nfiles
+          cl-njson
           cl-nhooks
           cl-nkeymaps
           cl-nsymbols

@@ -413,8 +413,8 @@ The user can scroll them, zoom, etc."))
                           :processing-function
                           #'(lambda (results)
                               (alex:when-let* ((results results)
-                                               (results (decode-json results)))
-                                (mapcar #'list (second results) (fourth results))))))
+                                               (results (j:decode results)))
+                                (mapcar #'list (j:get 1 results) (j:get 3 results))))))
           (make-instance 'search-engine
                          :shortcut "ddg"
                          :search-url "https://duckduckgo.com/?q=~a"
@@ -427,7 +427,7 @@ The user can scroll them, zoom, etc."))
                               (when results
                                 (mapcar (lambda (hash-table)
                                           (first (alex:hash-table-values hash-table)))
-                                        (decode-json results)))))))
+                                        (j:decode results)))))))
     :type (cons search-engine *)
     :documentation "A list of the `search-engine' objects.
 You can invoke them from the prompt-buffer by prefixing your query with SHORTCUT.

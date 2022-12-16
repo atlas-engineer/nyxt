@@ -49,6 +49,8 @@
                montezuma
                ndebug
                nfiles
+               njson/cl-json
+               njson/aliases
                nhooks
                nkeymaps
                nsymbols/star

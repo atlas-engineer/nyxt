@@ -57,7 +57,7 @@ Simple completion functions can be built via `make-search-completion-function'")
                                                    (echo-warning "There's no Internet connection to make search completion")
                                                    nil))))
                                           request-args
-                                          (processing-function #'decode-json))
+                                          (processing-function #'j:decode))
   "Return a function suitable to be a `completion-function' of `search-engine'.
 
 BASE-URL is a one-placeholder format string (e.g.,
@@ -70,7 +70,7 @@ returns. Should return a list of strings.
 Example (Tor-proxied completion function for Wikipedia):
 \(make-search-completion-function
  :base-url \"https://en.wikipedia.org/w/api.php?action=opensearch&format=json&search=~a\"
- :processing-function (compose #'second #'decode-json)
+ :processing-function (compose #'second #'njson:decode)
  :request-args '(:proxy \"socks5://localhost:9050\"))"
   #'(lambda (input)
       (funcall processing-function
