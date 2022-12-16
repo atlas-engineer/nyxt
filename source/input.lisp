@@ -148,7 +148,7 @@ Return nil to forward to renderer or non-nil otherwise."
              ((typep bound-function '(or symbol command))
               (let ((command (typecase bound-function
                                (symbol (sym:resolve-symbol bound-function :command))
-                               (command command))))
+                               (command bound-function))))
                 (check-type command command)
                 (log:debug "Found key binding ~a to ~a" (keyspecs key-stack translated-key) bound-function)
                 ;; We save the last key separately to keep it available to the
