@@ -311,11 +311,13 @@ To discover the default value of a slot or all slots of a class, use the
                                        (rest slots-and-values)
                                        slots-and-values)
            for class in (uiop:ensure-list classes)
-           append (loop for ((slot value . rest)) on (first slots-and-values)
+           append (loop for ((slot-name value . rest)) on (first slots-and-values)
+                        for slot = (find (symbol-name slot-name) (mopu:slot-names class)
+                                         :key #'symbol-name :test #'equal)
                         ;; TODO: Shall we really make the name unique?  Since we
                         ;; are configuring slots, maybe not.
                         for handler-name = (gensym (format nil "CONFIGURE-~a" slot))
-                        when (find slot (mopu:slot-names class))
+                        when slot
                           collect
                         `(let ((,hook (slot-value (find-class (quote ,class)) 'nyxt::customize-hook))
                                (,handler (make-instance
@@ -342,9 +344,9 @@ To discover the default value of a slot or all slots of a class, use the
                            (hooks:add-hook ,hook ,handler))
                         else
                           do (log:warn "Not found slot ~a in class ~a, generating the wrapper method for configuration."
-                                       slot class)
+                                       slot-name class)
                           and collect `(handler-bind ((warning #'muffle-warning))
-                                         (defmethod ,slot :around ((object ,class))
+                                         (defmethod ,slot-name :around ((object ,class))
                                            (let* ((%slot-value% (call-next-method))
                                                   (%slot-default% %slot-value%))
                                              ,value))))))))
