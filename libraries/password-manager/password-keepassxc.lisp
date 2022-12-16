@@ -91,8 +91,7 @@
              :input st)))
 
 (defmethod password-correct-p ((password-interface keepassxc-interface))
-  (when (master-password password-interface)
-    (handler-case
-        (list-passwords password-interface)
-      (uiop/run-program:subprocess-error ()
-        nil))))
+  (handler-case
+      (list-passwords password-interface)
+    (uiop/run-program:subprocess-error ()
+      nil)))
