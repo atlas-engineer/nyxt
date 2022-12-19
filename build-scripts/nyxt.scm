@@ -94,7 +94,7 @@
          (add-before 'check 'configure-tests
            (lambda _
              (setenv "NASDF_TESTS_NO_NETWORK" "1")
-             (setenv "NASDF_TESTS_ERROR_ON_FAIL" "1")
+             (setenv "NASDF_TESTS_QUIT_ON_FAIL" "1")
              #t))
          (add-after 'install 'wrap-program
            (lambda _
