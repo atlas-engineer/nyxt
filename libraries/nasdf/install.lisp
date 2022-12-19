@@ -115,6 +115,9 @@ Destination directory is given by the `dest-source-dir' generic function."))
 (defparameter *bindir* (path-from-env "BINDIR" (merge-pathnames* "bin/" *prefix*)))
 (export-always '*libdir*)
 (defparameter *libdir* (path-from-env "LIBDIR" (merge-pathnames* "lib/" *prefix*)))
+(export-always 'libdir)
+(defmethod libdir ((component nasdf-library-file))
+  *libdir*)
 
 (export-always '*dest-source-dir*)
 (defvar *dest-source-dir* (path-from-env "NASDF_SOURCE_PATH" *datadir*))
@@ -169,7 +172,7 @@ Destination directory is given by the `dest-source-dir' generic function."))
   nil)
 
 (defmethod asdf:output-files ((op asdf:compile-op) (c nasdf-library-file))
-  (values (list (uiop:merge-pathnames* (basename (asdf:component-name c)) *libdir*))
+  (values (list (uiop:merge-pathnames* (basename (asdf:component-name c)) (libdir c)))
           t))
 
 (defmethod asdf:output-files ((op asdf:compile-op) (c nasdf-desktop-file))
