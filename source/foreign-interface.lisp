@@ -393,18 +393,6 @@ Example:
      (make-nosave-buffer :url (url-at-point (current-buffer)))))
  \"Open Link in New Nosave Buffer\")"))
 
-(define-ffi-generic ffi-add-context-menu-command (command label)
-  (:method ((command command) (label string))
-    (setf (gethash label *context-menu-commands*)
-          command))
-  (:method ((command function) (label string))
-    (setf (gethash label *context-menu-commands*)
-          command))
-  (:method ((command symbol) (label string))
-    (ffi-add-context-menu-command (symbol-function command) label))
-  (:documentation "Add COMMAND as accessible in context menus with LABEL displayed for it.
-COMMAND should be funcallable."))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Web Extension support
 ;; TODO: Move to separate file?
