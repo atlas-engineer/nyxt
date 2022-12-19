@@ -5,7 +5,41 @@ and installation.
 
 ** Features
 
+- Simple way to fetch Git submodules and "do the right thing" for setup.  This
+  may effectively supersede Quicklisp.  A benefit of using Git submodules over
+  the default Quicklisp distribution is improved reproducibility.
+- Test helpers, like distinction between offline and online tests, or continuous
+  integration options, and warning reports.
+- Installation helpers, for instance to install libraries, icons and desktop
+  files to the right directories.
+
 See [[file:package.lisp]] for more details.
+
+** Environment variables
+
+NASDF exposes some environment variables which can be convenient in some cases
+(say for continuous integration) to tweak some options.
+
+- =NASDF_SOURCE_PATH= :: See =nasdf:*dest-source-dir*=.
+- =NASDF_SUBMODULES_DIR= :: See =nasdf:*submodules-directory*=.
+- =NASDF_SUBMODULES_JOBS= :: See =nasdf:*submodules-jobs*=.
+- =NASDF_USE_LOGICAL_PATHS= :: Allow non-expanded logical pathnames in system
+  pathnames.
+  This is particularly useful when shipping the source.
+  Disable it if your tooling (e.g. SLIME) encounters issues to find the
+  definition of symbols.
+  See =asdf:nasdf-file=.
+- =NASDF_COMPRESS= :: Compress the application executable.
+  Only works with some compilers like SBCL.  May increase startup time.
+  See =asdf:nasdf-file=.
+- =NASDF_TESTS_NO_NETWORK= :: Do no run tests that have the =:online= tag.
+  See =nasdf:nasdf-test-system=.
+- =NASDF_TESTS_ERROR_ON_FAIL= :: Quit the Lisp on test failure.  This is useful
+  to tell the continuous integration environment that tests failed, otherwise
+  they silently fail.
+
+All boolean environment variables try to be smart enough to understand what you
+mean; for instance both =on= and =true= are valid values to enable the feature.
 
 ** History
 
