@@ -185,7 +185,7 @@ non-overridable."
           (function "[FUNCTION] ")
           ((and slot class-name) `(format nil "[SLOT in ~s]" ,class-name))
           (mode "[MODE] ")
-          ((and class-name (not slot)) "[CLASS] "))
+          (class-name "[CLASS] "))
        (first (serapeum:lines
                (documentation
                 ,(cond
