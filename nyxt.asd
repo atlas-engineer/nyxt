@@ -44,13 +44,14 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
   ())
 (import 'nyxt-library-file :asdf-user)
 
-(defparameter *nyxt-libdir* (uiop:merge-pathnames* "nyxt/" nasdf:*libdir*))
-(defmethod asdf:output-files ((op asdf:compile-op) (c nyxt-library-file))
+(export '*nyxt-libdir*)
+(defvar *nyxt-libdir* (uiop:merge-pathnames* "nyxt/" nasdf:*libdir*))
+(defmethod nasdf:libdir ((c nyxt-library-file))
   ;; This forces all libraries to lib/MY-APP/* because the subdirectory is
   ;; required in some cases, for instance WebKit extensions.  This could be
   ;; limiting if other cases require the libs to be at the root of the libdir.
-  (values (list (uiop:merge-pathnames* (basename (asdf:component-name c)) *nyxt-libdir*))
-          t))
+  *nyxt-libdir*)
+
 (in-package :asdf-user)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
