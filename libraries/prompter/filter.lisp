@@ -57,7 +57,7 @@ A higher score means the SUGGESTION-STRING comes first."
     score))
 
 (defvar score-threshold 0.0 ; TODO: Learn good value and enable low-score filtering.
-  "The threshold under which suggestions are eleminated.")
+  "The threshold under which suggestions are eliminated.")
 
 (export-always 'score>)
 (defun score> (suggestion1 suggestion2)
