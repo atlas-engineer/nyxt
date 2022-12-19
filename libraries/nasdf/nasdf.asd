@@ -15,5 +15,4 @@
                (:file "submodules")
                (:file "systems")
                (:file "tests")
-               (:file "compilation-tests")
-               (:file "user-systems")))
+               (:file "compilation-tests")))

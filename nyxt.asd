@@ -7,6 +7,27 @@
   (sb-ext:assert-version->= 2 0 0)
   (require 'sb-bsd-sockets))
 
+(uiop:define-package nyxt-asdf
+  (:use :cl))
+(in-package :nyxt-asdf)
+
+;; (export-always 'nyxt-user-system)
+;; (defclass nyxt-user-system (asdf:system) ()
+;;   (:documentation "Specialized systems for Nyxt users."))
+;; (import 'nyxt-user-system :asdf-user)
+
+(defclass nyxt-renderer-system (asdf:system) ()
+  (:documentation "Specialized systems for Nyxt with renderer dependency.
+The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
+
+(export-always '*nyxt-renderer*)
+(defvar *nyxt-renderer* (or (getenv "NYXT_RENDERER")
+                            "gi-gtk"))
+
+(defmethod asdf:component-depends-on ((o asdf:prepare-op) (c nyxt-renderer-system))
+  `((asdf:load-op ,(format nil "nyxt/~a-application" *nyxt-renderer*))
+    ,@(call-next-method)))
+
 ;; WARNING: We _must_ declare the translation host or else ASDF won't recognize
 ;; the pathnames as logical-pathnames, thus returning the system directory
 ;; instead.
@@ -403,7 +424,7 @@
 
 (defsystem "nyxt/install"
   :defsystem-depends-on ("nasdf")
-  :class :nasdf-renderer-system
+  :class :nyxt-renderer-system
   :depends-on (alexandria
                nyxt/version
                str)

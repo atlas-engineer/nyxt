@@ -137,16 +137,3 @@ to go to the compilation error location."
         (if (env-true-p "NASDF_USE_LOGICAL_PATHS")
             final-path
             (translate-logical-pathname final-path))))))
-
-(defclass nyxt-renderer-system (asdf:system) ()
-  (:documentation "Specialized systems for Nyxt with renderer dependency.
-The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
-(import 'nyxt-renderer-system  :asdf-user)
-
-(export-always '*nyxt-renderer*)
-(defvar *nyxt-renderer* (or (getenv "NYXT_RENDERER")
-                            "gi-gtk"))
-
-(defmethod asdf:component-depends-on ((o asdf:prepare-op) (c nyxt-renderer-system))
-  `((asdf:load-op ,(format nil "nyxt/~a-application" *nyxt-renderer*))
-    ,@(call-next-method)))
