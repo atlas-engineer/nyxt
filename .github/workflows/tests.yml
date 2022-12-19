@@ -60,12 +60,8 @@ jobs:
       shell: bash
       run: |
         ros ${{ matrix.rosargs }} -e '(format t "~a:~a on ~a~%...~%~%" (lisp-implementation-type) (lisp-implementation-version) (machine-type))'
-        ros ${{ matrix.rosargs }} -e '(format t " fixnum bits:~a~%" (integer-length most-positive-fixnum))'
-        ros ${{ matrix.rosargs }} -e "(ql:quickload 'trivial-features)" -e '(format t "features = ~s~%" *features*)'
-
-    - name: Update Quickdist if we have one cached
-      shell: bash
-      run: ros -e "(ql:update-all-dists :prompt nil)"
+        ros ${{ matrix.rosargs }} -e '(format t "fixnum bits: ~a~%" (integer-length most-positive-fixnum))'
+        ros ${{ matrix.rosargs }} -e '(format t "features: ~s~%" *features*)'
 
     - name: Fetch Common Lisp third-party dependencies
       shell: bash
