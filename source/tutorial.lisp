@@ -9,7 +9,7 @@
 
       (:nsection :title "Keybindings and commands"
         (:p "Commands are invoked by pressing specific keys or from
-the " (command-markup 'execute-command)
+the " (:nxref :command 'execute-command)
 ".")
         (:p "Keybindings are represented like this: 'C-x'. In this example, 'C' is a
 shortcut for the modifier 'control', and 'x' represents the character 'x'. To
@@ -59,12 +59,12 @@ supply the URL you would like to navigate to.  The prompt buffer can provide
 suggestions.  The list of suggestions will automatically narrow down to those
 matching your input as you type.")
         (:ul
-         (:li  (command-markup 'nyxt/prompt-buffer-mode:return-selection
-                               :modes (list (make-instance 'nyxt/prompt-buffer-mode:prompt-buffer-mode)))
+         (:li  (:nxref :command 'nyxt/prompt-buffer-mode:return-selection
+                 :mode 'nyxt/prompt-buffer-mode:prompt-buffer-mode)
                ": Validate the selected suggestion(s) or the current input if there is
 no suggestion.")
-         (:li  (command-markup 'nyxt/prompt-buffer-mode:return-marks-action
-                               :modes (list (make-instance 'nyxt/prompt-buffer-mode:prompt-buffer-mode)))
+         (:li  (:nxref :command 'nyxt/prompt-buffer-mode:return-marks-action
+                 :mode 'nyxt/prompt-buffer-mode:prompt-buffer-mode)
                ": Query the user for an action to run over the marked suggestion(s)."))
         (:p " Some commands support multiple selections, for
 instance " (:code "delete-buffer") " can delete all selected buffers at once.
@@ -73,26 +73,26 @@ not altered even if the marked elements don't show.")
         (:p "When at least one suggestion is marked, only the marked suggestions are processed
 upon return.  The suggestion under the cursor is not processed if not marked.")
         (:ul
-         (:li  (command-markup 'nyxt/prompt-buffer-mode:toggle-mark
-                               :modes (list (make-instance 'nyxt/prompt-buffer-mode:prompt-buffer-mode)))
+         (:li  (:nxref :command 'nyxt/prompt-buffer-mode:toggle-mark
+                 :mode 'nyxt/prompt-buffer-mode:prompt-buffer-mode)
                ": Select or deselect the current suggestion.")
-         (:li  (command-markup 'nyxt/prompt-buffer-mode:mark-all
-                               :modes (list (make-instance 'nyxt/prompt-buffer-mode:prompt-buffer-mode)))
+         (:li  (:nxref :command 'nyxt/prompt-buffer-mode:mark-all
+                 :mode 'nyxt/prompt-buffer-mode:prompt-buffer-mode)
                ": Select all currently-displayed suggestions.")
-         (:li  (command-markup 'nyxt/prompt-buffer-mode:unmark-all
-                               :modes (list (make-instance 'nyxt/prompt-buffer-mode:prompt-buffer-mode)))
+         (:li  (:nxref :command 'nyxt/prompt-buffer-mode:unmark-all
+                 :mode 'nyxt/prompt-buffer-mode:prompt-buffer-mode)
                ": Deselect all currently-displayed suggestions.")
-         (:li  (command-markup 'nyxt/prompt-buffer-mode:toggle-mark-all
-                               :modes (list (make-instance 'nyxt/prompt-buffer-mode:prompt-buffer-mode)))
+         (:li  (:nxref :command 'nyxt/prompt-buffer-mode:toggle-mark-all
+                 :mode 'nyxt/prompt-buffer-mode:prompt-buffer-mode)
                ": Toggle the mark of all currently-displayed suggestions.")
-         (:li  (command-markup 'nyxt/prompt-buffer-mode:toggle-attributes-display
-                               :modes (list (make-instance 'nyxt/prompt-buffer-mode:prompt-buffer-mode)))
+         (:li  (:nxref :command 'nyxt/prompt-buffer-mode:toggle-attributes-display
+                 :mode 'nyxt/prompt-buffer-mode:prompt-buffer-mode)
                ": Change which attributes are displayed in the suggestions list.")))
 
       (:nsection :title "Message area"
         (:p "The message area represents a space (typically at the bottom of a
 window) where Nyxt outputs messages back to you. To view the history of all
-messages, invoke the command " (:code "list-messages") "."))
+messages, invoke the command " (:nxref :command 'nyxt/message-mode:list-messages) "."))
 
       (:nsection :title "Status buffer"
         (:p "The status buffer is where information about the state of that buffer is
@@ -225,10 +225,10 @@ with the webpage's italic command instead of " (:code "autofill") ". Finally, th
 user can return to their configuration just by executing " (:code "passthrough-mode") " again."))
 
       (:nsection :title "Enable, disable, and toggle multiple modes"
-        (:p "The command " (command-markup 'enable-modes) " allows the user to apply multiple
+        (:p "The command " (:nxref :command 'enable-modes) " allows the user to apply multiple
 modes (such as " (:code "nosound-mode") " and " (:code "dark-mode") ") to
 multiple buffers at once. Conversely, it is possible to revert this action by
-executing " (command-markup 'disable-modes) " while choosing exactly the same buffers and
+executing " (:nxref :command 'disable-modes) " while choosing exactly the same buffers and
 modes previously selected. Finally, " (:code "toggle-mode") " also allows
 activation and deactivation of multiple modes, but only for the current
 buffer."))
@@ -273,65 +273,65 @@ English but it is possible to change the slot"
         (:p "Select text without a mouse. Nyxt's "
             (:code "visual-mode") " imitates Vim's visual mode (and comes with the
 CUA and Emacs-like keybindings out of the box, too). Activate it with the "
-            (command-markup 'nyxt/visual-mode:visual-mode) " command.")
+            (:nxref :command 'nyxt/visual-mode:visual-mode) " command.")
         (:p "Visual mode provides the following commands: ")
         (:ul
-         (:li (command-markup 'nyxt/visual-mode:visual-mode
-                              :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
+         (:li (:nxref :command 'nyxt/visual-mode:visual-mode
+                :mode 'nyxt/visual-mode:visual-mode)
               ": Quit visual mode.")
-         (:li (command-markup 'nyxt/visual-mode:select-paragraph
-                              :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
+         (:li (:nxref :command 'nyxt/visual-mode:select-paragraph
+                :mode 'nyxt/visual-mode:visual-mode)
               ": " (command-docstring-first-sentence 'nyxt/visual-mode:select-paragraph))
-         (:li (command-markup 'nyxt/visual-mode:toggle-mark
-                              :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
+         (:li (:nxref :command 'nyxt/visual-mode:toggle-mark
+                :mode 'nyxt/visual-mode:visual-mode)
               ": " (command-docstring-first-sentence 'nyxt/visual-mode:toggle-mark))
-         (:li (command-markup 'nyxt/visual-mode:forward-char
-                              :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
+         (:li (:nxref :command 'nyxt/visual-mode:forward-char
+                :mode 'nyxt/visual-mode:visual-mode)
               ": " (command-docstring-first-sentence 'nyxt/visual-mode:forward-char))
-         (:li (command-markup 'nyxt/visual-mode:backward-char
-                              :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
+         (:li (:nxref :command 'nyxt/visual-mode:backward-char
+                :mode 'nyxt/visual-mode:visual-mode)
               ": " (command-docstring-first-sentence 'nyxt/visual-mode:backward-char))
-         (:li (command-markup 'nyxt/visual-mode:forward-word
-                              :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
+         (:li (:nxref :command 'nyxt/visual-mode:forward-word
+                :mode 'nyxt/visual-mode:visual-mode)
               ": " (command-docstring-first-sentence 'nyxt/visual-mode:forward-word))
-         (:li (command-markup 'nyxt/visual-mode:backward-word
-                              :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
+         (:li (:nxref :command 'nyxt/visual-mode:backward-word
+                :mode 'nyxt/visual-mode:visual-mode)
               ": " (command-docstring-first-sentence 'nyxt/visual-mode:backward-word))
-         (:li (command-markup 'nyxt/visual-mode:forward-line
-                              :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
+         (:li (:nxref :command 'nyxt/visual-mode:forward-line
+                :mode 'nyxt/visual-mode:visual-mode)
               ": " (command-docstring-first-sentence 'nyxt/visual-mode:forward-line))
-         (:li (command-markup 'nyxt/visual-mode:backward-line
-                              :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
+         (:li (:nxref :command 'nyxt/visual-mode:backward-line
+                :mode 'nyxt/visual-mode:visual-mode)
               ": " (command-docstring-first-sentence 'nyxt/visual-mode:backward-line))
-         (:li (command-markup 'nyxt/visual-mode:beginning-line
-                              :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
+         (:li (:nxref :command 'nyxt/visual-mode:beginning-line
+                :mode 'nyxt/visual-mode:visual-mode)
               ": " (command-docstring-first-sentence 'nyxt/visual-mode:beginning-line))
-         (:li (command-markup 'nyxt/visual-mode:end-line
-                              :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
+         (:li (:nxref :command 'nyxt/visual-mode:end-line
+                :mode 'nyxt/visual-mode:visual-mode)
               ": " (command-docstring-first-sentence 'nyxt/visual-mode:end-line))
-         (:li (command-markup 'nyxt/visual-mode:forward-sentence
-                              :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
+         (:li (:nxref :command 'nyxt/visual-mode:forward-sentence
+                :mode 'nyxt/visual-mode:visual-mode)
               ": " (command-docstring-first-sentence 'nyxt/visual-mode:forward-sentence))
-         (:li (command-markup 'nyxt/visual-mode:backward-sentence
-                              :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
+         (:li (:nxref :command 'nyxt/visual-mode:backward-sentence
+                :mode 'nyxt/visual-mode:visual-mode)
               ": " (command-docstring-first-sentence 'nyxt/visual-mode:backward-sentence)))
         (:p "Commands designed to ease the use for CUA users (but available to all users): ")
         (:ul
-         (:li (command-markup 'nyxt/visual-mode:forward-char-with-selection
-                              :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
+         (:li (:nxref :command 'nyxt/visual-mode:forward-char-with-selection
+                :mode 'nyxt/visual-mode:visual-mode)
               ": " (command-docstring-first-sentence 'nyxt/visual-mode:forward-char-with-selection))
-         (:li (command-markup 'nyxt/visual-mode:backward-char-with-selection
-                              :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
+         (:li (:nxref :command 'nyxt/visual-mode:backward-char-with-selection
+                :mode 'nyxt/visual-mode:visual-mode)
               ": " (command-docstring-first-sentence 'nyxt/visual-mode:backward-char-with-selection))
-         (:li (command-markup 'nyxt/visual-mode:forward-line-with-selection
-                              :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
+         (:li (:nxref :command 'nyxt/visual-mode:forward-line-with-selection
+                :mode 'nyxt/visual-mode:visual-mode)
               ": " (command-docstring-first-sentence 'nyxt/visual-mode:forward-line-with-selection))
-         (:li (command-markup 'nyxt/visual-mode:backward-line-with-selection
-                              :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
+         (:li (:nxref :command 'nyxt/visual-mode:backward-line-with-selection
+                :mode 'nyxt/visual-mode:visual-mode)
               ": " (command-docstring-first-sentence 'nyxt/visual-mode:backward-line-with-selection)))
         (:p "A note for " (:code "emacs-mode") " users: unlike in Emacs, in Nyxt the command "
-            (command-markup 'nyxt/visual-mode:toggle-mark
-                            :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
+            (:nxref :command 'nyxt/visual-mode:toggle-mark
+              :mode 'nyxt/visual-mode:visual-mode)
             " is bound to Shift-space, as C-space is bound to 'execute-command,
 overriding any mode keybinding. If you want to toggle mark with C-space,
 you'll need to set your own override-map such that C-space is not bound.
@@ -354,7 +354,7 @@ automate the reading experience:")
         (:p "In addition, it is possible to automate actions over time: "
             (:ul
              (list-command-information '(nyxt/watch-mode:watch-mode))
-             (:li (command-markup 'nyxt/repeat-mode:repeat-every) ": "
+             (:li (:nxref :command 'nyxt/repeat-mode:repeat-every) ": "
                   (command-docstring-first-sentence 'nyxt/repeat-mode:repeat-every
                                                     :sentence-case-p t))))
         (:p "Or even automate actions based on conditions: "
@@ -365,13 +365,13 @@ automate the reading experience:")
 macros: ")
         (:ul
          (list-command-information '(nyxt/macro-edit-mode:edit-macro)))
-        (:p "Lastly, the  " (:code "nyxt/process-mode:process-mode") " must be highlighted: ")
-        (:p (:code "nyxt/process-mode:process-mode") " is actually a building block
-for other modes previously mentioned, such as " (:code 'nyxt/repeat-mode:repeat-mode) ".
+        (:p "Lastly, the  " (:nxref :mode 'nyxt/process-mode:process-mode) " must be highlighted: ")
+        (:p (:nxref :mode 'nyxt/process-mode:process-mode) " is actually a building block
+for other modes previously mentioned, such as " (:nxref :mode 'nyxt/repeat-mode:repeat-mode) ".
 The extension relationship goes further, since
-" (:code 'nyxt/cruise-control-mode:cruise-control-mode) " is in its turn an
-extension and a composition of " (:code 'nyxt/repeat-mode:repeat-mode) " and "
-(:code 'nyxt/document-mode:scroll-down) ". Further extensions and compositions can be
+" (:nxref :mode 'nyxt/cruise-control-mode:cruise-control-mode) " is in its turn an
+extension and a composition of " (:nxref :mode 'nyxt/repeat-mode:repeat-mode) " and "
+(:nxref :command 'nyxt/document-mode:scroll-down) ". Further extensions and compositions can be
 creatively tailor-made by users to automate their own use of Nyxt."))
 
       (:nsection :title "Miscellaneous"

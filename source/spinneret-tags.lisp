@@ -162,61 +162,67 @@ non-overridable."
          (printable (or (when (and (symbolp first) (eq first symbol))
                           (second body))
                         (first body) package variable function command slot class-name)))
-    `(:a.link
-      :href ,(cond
-               (package `(nyxt:nyxt-url (read-from-string "nyxt:describe-package") :package ,package))
-               (variable `(nyxt:nyxt-url (read-from-string "nyxt:describe-variable")
-                                         :variable ,variable))
-               ((or command function) `(nyxt:nyxt-url (read-from-string "nyxt:describe-function")
-                                                      :fn ,(or command function)))
-               (slot `(nyxt:nyxt-url (read-from-string "nyxt:describe-slot")
-                                     :name ,slot :class ,class-name))
-               ((or mode class-name)
-                `(nyxt:nyxt-url (read-from-string "nyxt:describe-class")
-                                :class ,(or mode class-name)))
-               (t `(nyxt:nyxt-url (read-from-string "nyxt:describe-any")
-                                  :input ,symbol)))
-      :title
-      (uiop:strcat
-       ,(cond
-          (package "[PACKAGE] ")
-          (variable "[VARIABLE] ")
-          (command "[COMMAND] ")
-          (function "[FUNCTION] ")
-          ((and slot class-name) `(format nil "[SLOT in ~s]" ,class-name))
-          (mode "[MODE] ")
-          (class-name "[CLASS] "))
-       (first (serapeum:lines
-               (documentation
-                ,(cond
-                   (package `(find-package ,package))
-                   (variable variable)
-                   ((or command function) `(symbol-function ,(or command function)))
-                   (slot slot)
-                   ((or mode class-name) `(find-class ,(or mode class-name)))
-                   (t symbol))
-                (quote ,(cond
-                          (variable 'variable)
-                          ((or command function) 'function)
-                          ((or mode class-name) 'type)
-                          (t t)))))))
-      ;; TODO: Add keybindings for commands, like in `nyxt::command-markup'.
-      ,@(when (and (getf attrs :class)
-                   (or (getf attrs :slot)
-                       (every #'null (list slot class-name function command variable package))))
-          (error ":class attribute used ambiguously in :nxref tag. Use :class-name instead.")
-          nil)
-      (:code ,@(progn
-                 (remf attrs :class-name)
-                 (remf attrs :mode)
-                 (remf attrs :slot)
-                 (remf attrs :function)
-                 (remf attrs :command)
-                 (remf attrs :variable)
-                 (remf attrs :package)
-                 attrs)
-             (let ((*print-escape* nil))
-               (nyxt:prini-to-string ,printable))))))
+    `(:code
+      ,@(progn
+          (remf attrs :class-name)
+          (remf attrs :mode)
+          (remf attrs :slot)
+          (remf attrs :function)
+          (remf attrs :command)
+          (remf attrs :variable)
+          (remf attrs :package)
+          attrs)
+      (:a.link
+       :href ,(cond
+                (package `(nyxt:nyxt-url (read-from-string "nyxt:describe-package") :package ,package))
+                (variable `(nyxt:nyxt-url (read-from-string "nyxt:describe-variable")
+                                          :variable ,variable))
+                ((or command function) `(nyxt:nyxt-url (read-from-string "nyxt:describe-function")
+                                                       :fn ,(or command function)))
+                (slot `(nyxt:nyxt-url (read-from-string "nyxt:describe-slot")
+                                      :name ,slot :class ,class-name))
+                ((or mode class-name)
+                 `(nyxt:nyxt-url (read-from-string "nyxt:describe-class")
+                                 :class ,(or mode class-name)))
+                (t `(nyxt:nyxt-url (read-from-string "nyxt:describe-any")
+                                   :input ,symbol)))
+       :title
+       (uiop:strcat
+        ,(cond
+           (package "[PACKAGE] ")
+           (variable "[VARIABLE] ")
+           (command "[COMMAND] ")
+           (function "[FUNCTION] ")
+           ((and slot class-name) `(format nil "[SLOT in ~s]" ,class-name))
+           (mode "[MODE] ")
+           (class-name "[CLASS] "))
+        (first (serapeum:lines
+                (documentation
+                 ,(cond
+                    (package `(find-package ,package))
+                    (variable variable)
+                    ((or command function) `(symbol-function ,(or command function)))
+                    (slot slot)
+                    ((or mode class-name) `(find-class ,(or mode class-name)))
+                    (t symbol))
+                 (quote ,(cond
+                           (variable 'variable)
+                           ((or command function) 'function)
+                           ((or mode class-name) 'type)
+                           (t t)))))))
+       ,@(when (and (getf attrs :class)
+                    (or (getf attrs :slot)
+                        (every #'null (list slot class-name function command variable package))))
+           (error ":class attribute used ambiguously in :nxref tag. Use :class-name instead.")
+           nil)
+       (let ((*print-escape* nil))
+         (nyxt:prini-to-string ,printable)))
+      ,@(when command
+          `(" ("
+            (funcall (read-from-string "nyxt::binding-keys")
+                     ,command ,@(when mode
+                                  `(:modes (cl:list (make-instance ,mode)))))
+            ")")))))
 
 (deftag :nsection (body attrs &key (title (alexandria:required-argument 'title))
                         level

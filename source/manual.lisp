@@ -28,8 +28,8 @@ it's running!")
             ". It contains numerous pointers to other resources, including
         free books both for beginners and seasoned programmers.")
         (:p "Nyxt provides a mechanism for new users unfamiliar with Lisp to
-customize Nyxt. Start by invoking the commands " (command-markup 'describe-class) "
-or " (command-markup 'describe-slot) ".  You can press the button marked 'Configure' to
+customize Nyxt. Start by invoking the commands " (:nxref :command 'describe-class) "
+or " (:nxref :command 'describe-slot) ".  You can press the button marked 'Configure' to
 change the value of a setting. The settings will be applied immediately and
 saved for future sessions. Please note that these settings will not alter
 existing object instances.")
@@ -62,7 +62,7 @@ every buffer.")
 the slots of classes like the browser, buffers, windows, etc.  Refer to the
 class and slot documentation for the individual details.")
       (:p "To find out about all modes known to Nyxt,
-run " (command-markup 'describe-command) " and type 'mode'.")
+run " (:nxref :command 'describe-command) " and type 'mode'.")
 
       (:nsection :title "Slot configuration"
         (:p "Slots store values that can be either accessed (get) or changed
@@ -73,7 +73,7 @@ For instance, keyboard layouts vary across the world. The slot "
             (:code "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
             ". If the user has an American keyboard, they can do:")
         (:ol
-         (:li "Execute command " (command-markup 'describe-slot) ";")
+         (:li "Execute command " (:nxref :command 'describe-slot) ";")
          (:li "Type " (:code "hints-alphabet")";")
          (:li "Select " (:code "hints-alphabet") " (" (:code "hint-mode") " class option);")
          (:li "Press the button " (:code "Configure") ", and;")
@@ -133,7 +133,7 @@ the configuration) and merely adds/modifies it."
                               (switch-buffer :current-is-last-p t))))))))
         (:p "The " (:nxref :slot 'override-map :class-name 'input-buffer) " is a keymap that has priority over
 all other keymaps.  By default, it has few bindings like the one
-for " (command-markup 'execute-command) ".  You can use it to set keys globally:")
+for " (:nxref :command 'execute-command) ".  You can use it to set keys globally:")
         (:ncode
           (define-configuration input-buffer
             ((override-map (let ((map (make-keymap "override-map")))
@@ -142,7 +142,7 @@ for " (command-markup 'execute-command) ".  You can use it to set keys globally:
                                "C-space" 'nothing))))))
         (:p "The " (:nxref  :command 'nothing) " command is useful to override bindings to do
 nothing. Note that it's possible to bind any command, including those of
-disabled modes that are not listed in " (command-markup 'execute-command)
+disabled modes that are not listed in " (:nxref :command 'execute-command)
 ". Binding to " (:nxref :command 'nothing)
 " and binding to NIL means different things (see the documentation of "
 (:nxref :function 'keymaps:define-key) " for details):")
@@ -244,7 +244,7 @@ follows.")
                                       %slot-value%))))))
 
       (:nsection :title "Downloads"
-        (:p "See the " (command-markup 'nyxt/download-mode:list-downloads) " command and the "
+        (:p "See the " (:nxref :command 'nyxt/download-mode:list-downloads) " command and the "
             (:nxref :slot 'download-path :class-name 'buffer) " buffer slot documentation."))
 
       (:nsection :title "Proxy and Tor"
@@ -582,8 +582,8 @@ any of the password interfaces to configure them. Please make sure to
 use the package prefixed class name/slot designators within
 the " (:code "define-configuration") " macro.")
         (:ul
-         (:li (command-markup 'nyxt/password-mode:save-new-password) ": Query for name and new password to persist in the database.")
-         (:li (command-markup 'nyxt/password-mode:copy-password) ": " (command-docstring-first-sentence 'nyxt/password-mode:copy-password))))
+         (:li (:nxref :command 'nyxt/password-mode:save-new-password) ": Query for name and new password to persist in the database.")
+         (:li (:nxref :command 'nyxt/password-mode:copy-password) ": " (command-docstring-first-sentence 'nyxt/password-mode:copy-password))))
 
       (:nsection :title "Appearance"
         (:p "Much of the visual style can be configured by the user. You can use the
@@ -654,8 +654,8 @@ variables like " (:code "theme:on-primary") ".)")
         (:p "You can evaluate multiple --eval and --load in a row, they are
 executed in the order they appear.")
         (:p "You can also evaluate a Lisp file from the Nyxt interface with
-the " (command-markup 'load-file) " command.  For
-convenience, " (command-markup 'load-config-file) " (re)loads your initialization file.")
+the " (:nxref :command 'load-file) " command.  For
+convenience, " (:nxref :command 'load-config-file) " (re)loads your initialization file.")
         (:p "You can even make scripts.  Here is an example foo.lisp:")
         (:pre (:code "#!/bin/sh
 #|
