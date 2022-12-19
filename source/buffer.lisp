@@ -95,7 +95,7 @@ See also the `profile' slot in the `browser' class.")
             `((:and .button (:or :visited :active))
               :color ,theme:background)
             `(.link
-              :all "unset"
+              :appearance none
               :text-decoration "underline"
               :display "inline"
               :color ,theme:primary)
