@@ -250,9 +250,9 @@ Forms in BODY can be unquoted, benefiting from the editor formatting."
 (deftag :ninput (body attrs &key rows cols &allow-other-keys)
   "Nicely styled <textarea> with a reasonable number of ROWS to accommodate the BODY."
   ;; This is to prevent Spinneret from stripping newlines off the tag contents.
-  (once-only ((input-contents `(progn ,@(mapcar #'remove-smart-quoting body))))
+  (once-only ((input-contents `(or (progn ,@(mapcar #'remove-smart-quoting body)) "")))
     `(:textarea.input
       :rows (or ,rows (1+ (count #\Newline ,input-contents)) 1)
-      :cols (or ,cols (max (mapcar #'length (str:lines ,input-contents))) 80)
+      :cols (or ,cols (ignore-errors (apply #'max (mapcar #'length (str:lines ,input-contents)))) 80)
       ,@attrs
       (:raw (the string ,input-contents)))))
