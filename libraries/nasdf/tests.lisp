@@ -17,7 +17,7 @@ Example:
 It automatically depends on Lisp-Unit2 and calls the appropriate invocation for tests.
 You must list what to test, see the `targets' slot.
 
-If the NASDF_TESTS_ERROR_ON_FAIL environment variable is set, quit Lisp on failure.
+If the NASDF_TESTS_QUIT_ON_FAIL environment variable is set, quit Lisp on failure.
 This is useful for some continuous integration systems.
 
 If the NASDF_TESTS_NO_NETWORK environment variable is set, tests with the `:online' tags are excluded."))
@@ -36,7 +36,7 @@ If the NASDF_TESTS_NO_NETWORK environment variable is set, tests with the `:onli
       (let ((missing-packages (remove-if  #'find-package (uiop:ensure-list package))))
         (when missing-packages
           (logger "Undefined test packages: ~s" missing-packages)))
-      (let ((*debugger-hook* (if (env-true-p "NASDF_TESTS_ERROR_ON_FAIL")
+      (let ((*debugger-hook* (if (env-true-p "NASDF_TESTS_QUIT_ON_FAIL")
                                  nil    ; We are non-interactive.
                                  *debugger-hook*)))
         (let ((test-results
@@ -49,7 +49,7 @@ If the NASDF_TESTS_NO_NETWORK environment variable is set, tests with the `:onli
                  (or
                   (uiop:symbol-call :lisp-unit2 :failed test-results)
                   (uiop:symbol-call :lisp-unit2 :errors test-results))
-                 (getenv "NASDF_TESTS_ERROR_ON_FAIL"))
+                 (getenv "NASDF_TESTS_QUIT_ON_FAIL"))
             ;; Arbitrary but hopefully recognizable exit code.
             (quit 18)))))))
 

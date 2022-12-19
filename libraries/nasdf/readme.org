@@ -34,7 +34,7 @@ NASDF exposes some environment variables which can be convenient in some cases
   See =asdf:nasdf-file=.
 - =NASDF_TESTS_NO_NETWORK= :: Do no run tests that have the =:online= tag.
   See =nasdf:nasdf-test-system=.
-- =NASDF_TESTS_ERROR_ON_FAIL= :: Quit the Lisp on test failure.  This is useful
+- =NASDF_TESTS_QUIT_ON_FAIL= :: Quit the Lisp on test failure.  This is useful
   to tell the continuous integration environment that tests failed, otherwise
   they silently fail.
 
