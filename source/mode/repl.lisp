@@ -121,7 +121,7 @@ Features:
               :height "95vh"
               :width "97vw"
               :margin "1em")
-            `(.input
+            `(.input-area
               :background-color ,theme:secondary
               :width "99%"
               :padding 0
@@ -451,7 +451,7 @@ Follows what the compiler finds aesthetically pleasing."
                                   (:div
                                    :class "evaluation"
                                    :id (format nil "evaluation-~a" (id evaluation))
-                                   (:div :class "input"
+                                   (:div :class "input-area"
                                          (:textarea :class "input-buffer" :data-repl-id order
                                                     :rows (length (str:lines (input evaluation) :omit-nulls nil))
                                                     :autofocus (and (current-evaluation repl-mode)
