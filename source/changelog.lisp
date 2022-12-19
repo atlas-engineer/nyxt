@@ -511,7 +511,7 @@ the selection, and the string to paste instead of the clipboard (respectively)."
    (:li (:nxref :class-name 'nyxt/editor-mode:editor-mode) " now has an additional method to implement for the backends:"
         (:nxref :function 'nyxt/editor-mode:markup)
         ". This method defines how the initial editor markup (not necessarily HTML one) will look like.")
-   (:li (:nxref :function 'encode-json) " and " (:nxref :function 'decode-json)
+   (:li (:code "encode-json")  " and " (:code "decode-json")
         " functions are now capable of encoding from/decoding to files, strings and streams.")
    (:li (:nxref :function 'nyxt/dom:copy) " generic to copy elements and whole DOMs.")
    (:li "New " (:code 'nyxt/bookmarklets-mode:define-bookmarklet-command-global)
