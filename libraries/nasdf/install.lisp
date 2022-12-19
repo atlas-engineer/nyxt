@@ -3,6 +3,7 @@
 
 (in-package :nasdf)
 
+(export-always 'nasdf-file)
 (defclass nasdf-file (asdf:static-file)
   ((if-does-not-exist
     :initform :error
@@ -14,18 +15,22 @@
   (:documentation "Component type for files to install."))
 (import 'nasdf-file :asdf-user)
 
+(export-always 'nasdf-binary-file)
 (defclass nasdf-binary-file (nasdf-file) ()
   (:documentation "Component type for executables to install."))
 (import 'nasdf-binary-file :asdf-user)
 
+(export-always 'nasdf-library-file)
 (defclass nasdf-library-file (nasdf-binary-file) ()
   (:documentation "Component type for libraries (shared objects) to install."))
 (import 'nasdf-library-file :asdf-user)
 
+(export-always 'nasdf-desktop-file)
 (defclass nasdf-desktop-file (nasdf-file) ()
   (:documentation "Component type for XDG .desktop files to install."))
 (import 'nasdf-desktop-file :asdf-user)
 
+(export-always 'nasdf-icon-directory)
 (defclass nasdf-icon-directory (nasdf-file)
   ((asdf/interface::type :initform "png")) ; TODO: Is there a standard way to access the type?
   (:documentation "Component type for directory containing icon files to install.
@@ -34,6 +39,7 @@ The last number found in the file name is used to install the icon in the right 
 (import 'nasdf-icon-directory :asdf-user)
 
 ;; TODO: Is it possible to list all files targetted by an ASDF system?
+(export-always 'nasdf-source-directory)
 (defclass nasdf-source-directory (nasdf-file)
   ((exclude-subpath
     :initform '()
