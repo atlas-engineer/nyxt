@@ -573,6 +573,9 @@ auto-mode-rules.lisp)."))
 
   (:h3 "Programming interface")
   (:ul
+   (:li (:nxref :function 'define-configuration)
+        " automatically resolves class names and slot names even without package prefix.")
+   (:li "Keybindings are also resolved to reasonable commands when necessary.")
    (:li "Generate methods instead of functions in " (:nxref :function 'define-parenscript)
         " and " (:nxref :function 'define-parenscript-async)
         " to ease hooking into those with, for example, " (:code ":around") " methods.")
