@@ -69,7 +69,7 @@ See also the `profile' slot in the `browser' class.")
               :font "inherit"
               :outline "inherit")
             `(.button
-              :all "unset"
+              :appearance "button"
               :background-color ,theme:primary
               :color ,theme:on-primary
               :display "inline-block"
@@ -83,7 +83,8 @@ See also the `profile' slot in the `browser' class.")
               :min-height "1.5em")
             `(.button.accent
               :background-color ,theme:accent
-              :color ,theme:on-accent)
+              :color ,theme:on-accent
+              :border-color ,theme:accent)
             `((:and .button :hover)
               :opacity 0.8)
             `((:and .button (:or :visited :active))
