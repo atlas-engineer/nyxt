@@ -582,7 +582,7 @@ auto-mode-rules.lisp)."))
    (:li (:nxref :slot 'after-init-hook :class-name 'browser) " and "
         (:nxref :slot 'after-startup-hook :class-name 'browser)
         " are browser slots, instead of global variables they used to be.")
-   (:li "Allow the command argument to " (:nxref :function 'ffi-add-context-menu-action)
+   (:li "Allow the command argument to " (:nxref :function 'ffi-add-context-menu-command)
         " to be an arbitrary function.")
    (:li "New package nicknames:"
         (:ul
