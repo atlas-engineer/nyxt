@@ -5,7 +5,11 @@
 
 (export-always '*submodules-directory*)
 (defvar *submodules-directory* (or (getenv "NASDF_SUBMODULES_DIR")
-                                   "_build"))
+                                   "_build")
+  "Where to store the Git submodules.
+The \"_build\" directory is ignored by ASDF by default, which makes it a useful
+destination for developers who have their own dependencies elsewhere and just
+want to test the build as would happen on the end user system.")
 
 (export-always '*submodules-jobs*)
 (defvar *submodules-jobs* (or (getenv "NASDF_SUBMODULES_JOBS")
