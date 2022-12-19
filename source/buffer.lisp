@@ -104,6 +104,7 @@ See also the `profile' slot in the `browser' class.")
             `(.accent
               :color ,theme:accent)
             `(.input
+              :appearance "textfield"
               :display "inline-block"
               :color "black"
               :background-color "white"
