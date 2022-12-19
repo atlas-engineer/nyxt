@@ -69,7 +69,7 @@ See also the `profile' slot in the `browser' class.")
               :font "inherit"
               :outline "inherit")
             `(.button
-              :appearance "button"
+              :appearance "menulist-button"
               :background-color ,theme:primary
               :color ,theme:on-primary
               :display "inline-block"
@@ -80,11 +80,16 @@ See also the `profile' slot in the `browser' class.")
               :border-width "0.2em"
               :padding "0.2em"
               :margin "0.2em"
-              :min-height "1.5em")
+              :min-height "2rem")
             `(.button.accent
               :background-color ,theme:accent
               :color ,theme:on-accent
               :border-color ,theme:accent)
+            `(select.button
+              :appearance auto
+              :background-color ,theme:primary !important
+              :color ,theme:on-primary !important
+              :min-height "2rem")
             `((:and .button :hover)
               :opacity 0.8)
             `((:and .button (:or :visited :active))
