@@ -176,7 +176,30 @@ non-overridable."
                                 :class ,(or mode class-name)))
                (t `(nyxt:nyxt-url (read-from-string "nyxt:describe-any")
                                   :input ,symbol)))
-      ;; TODO: Add :title so that documentation is available on hover.
+      :title
+      (uiop:strcat
+       ,(cond
+          (package "[PACKAGE] ")
+          (variable "[VARIABLE] ")
+          (command "[COMMAND] ")
+          (function "[FUNCTION] ")
+          ((and slot class-name) `(format nil "[SLOT in ~s]" ,class-name))
+          (mode "[MODE] ")
+          ((and class-name (not slot)) "[CLASS] "))
+       (first (serapeum:lines
+               (documentation
+                ,(cond
+                   (package `(find-package ,package))
+                   (variable variable)
+                   ((or command function) `(symbol-function ,(or command function)))
+                   (slot slot)
+                   ((or mode class-name) `(find-class ,(or mode class-name)))
+                   (t symbol))
+                (quote ,(cond
+                          (variable 'variable)
+                          ((or command function) 'function)
+                          ((or mode class-name) 'type)
+                          (t t)))))))
       ;; TODO: Add keybindings for commands, like in `nyxt::command-markup'.
       ,@(when (and (getf attrs :class)
                    (or (getf attrs :slot)
