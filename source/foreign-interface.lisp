@@ -383,7 +383,15 @@ the labels they have as hash values.")
   (:method ((command symbol) (label string))
     (ffi-add-context-menu-command (symbol-function command) label))
   (:documentation "Add COMMAND as accessible in context menus with LABEL displayed for it.
-COMMAND should be funcallable."))
+COMMAND should be funcallable.
+
+Example:
+
+\(ffi-add-context-menu-command
+ (lambda ()
+   (when (url-at-point (current-buffer))
+     (make-nosave-buffer :url (url-at-point (current-buffer)))))
+ \"Open Link in New Nosave Buffer\")"))
 
 (define-ffi-generic ffi-add-context-menu-command (command label)
   (:method ((command command) (label string))
