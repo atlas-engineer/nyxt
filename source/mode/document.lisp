@@ -336,6 +336,8 @@ Warning: URL is a string."
 (define-command scroll-down (&key (scroll-distance (scroll-distance (current-buffer))))
   "Scroll down the current page.
 The amount scrolled is determined by the buffer's `scroll-distance'."
+  ;; FIXME: This naive implementation doesn't scroll when there are several
+  ;; scrollable areas on the screen.
   (ps-eval (ps:chain window (scroll-by 0 (ps:lisp scroll-distance)))))
 
 (define-command scroll-up (&key (scroll-distance (scroll-distance (current-buffer))))
