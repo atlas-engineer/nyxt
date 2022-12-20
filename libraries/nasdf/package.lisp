@@ -70,6 +70,14 @@ A system that fetches the Git submodules:
 (defsystem \"my-project/submodules\"
   :defsystem-depends-on (\"nasdf\")
   :class :nasdf-submodule-system)
+
+Shell command to add a submodule to the default directory:
+
+    git submodule add https://github.com/atlas-engineer/history-tree _build/history-tree
+
+To update it:
+
+    git submodule update --remote _build/history-tree
 "))
 
 #+sb-package-locks
