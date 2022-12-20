@@ -44,8 +44,11 @@ listed and chosen from with the command `return-marks-action' (bound to
        "f1 b" 'run-prompt-buffer-command
        "f1 m" 'describe-prompt-buffer
        "return" 'return-selection
+       "enter" 'return-selection
        "M-return" 'return-marks-action
+       "M-enter" 'return-marks-action
        "C-return" 'run-selection-action
+       "C-enter" 'run-selection-action
        "C-c C-j" 'set-selection-action
        "tab" 'insert-selection
        ; TODO: This is the Emacs Helm binding.  Better?
@@ -131,7 +134,9 @@ listed and chosen from with the command `return-marks-action' (bound to
       keyscheme:vi-insert
       (list
        "return" 'return-selection
+       "enter" 'return-selection
        "M-return" 'return-marks-action
+       "M-enter" 'return-marks-action
        "C-k" 'select-previous
        "C-j" 'select-next
        "C-b" 'select-previous-page
