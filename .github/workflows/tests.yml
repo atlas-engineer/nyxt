@@ -15,10 +15,7 @@ jobs:
     name: ${{ matrix.lisp }} on ${{ matrix.os }}
     strategy:
       matrix:
-        # Use ccl-bin/1.12.1 instead of 'ccl' because of
-        # https://github.com/roswell/roswell/issues/534.
-        # TODO: Revert when Roswell is functional again.
-        lisp: [sbcl-bin, ccl-bin/1.12.1]
+        lisp: [sbcl-bin, ccl]
         renderer: [gi-gtk]
         rosargs: [dynamic-space-size=3072]
         os: [ ubuntu-latest ]
@@ -53,7 +50,7 @@ jobs:
       env:
        LISP: ${{ matrix.lisp }}
       # TODO: Update Roswell to latest version (may need Ubuntu 20.* or above).
-      run: curl -L https://raw.githubusercontent.com/roswell/roswell/v21.10.14.111/scripts/install-for-ci.sh | sh -x
+      run: curl -L https://raw.githubusercontent.com/roswell/roswell/v22.12.14.113/scripts/install-for-ci.sh | sh -x
 
     - name: Check Lisp
       continue-on-error: true
@@ -78,7 +75,7 @@ jobs:
     - name: Build Nyxt executable
       shell: bash
       ## CCL build binary does not work for now, needs more investigation.
-      if: ${{ matrix.lisp != 'ccl-bin/1.12.1' }}
+      if: ${{ matrix.lisp != 'ccl' }}
       run: |
         rm -f nyxt
         make all LISP=ros LISP_FLAGS="${{ matrix.rosargs }} run -- --no-userinit --non-interactive"
