@@ -358,7 +358,7 @@ opened in.")
          (:li "Read the path (the part after the bleep:) of the URL and interpret it as a number.")
          (:ul
           (:li "(Note that you need to wrap the URL into a " (:nxref :function 'url)
-               " call so that it turns into a" (:nxref :class-name 'quri:uri)
+               " call so that it turns into a " (:nxref :class-name 'quri:uri)
                " for the convenience of path (and other elements) fetching.)"))
          (:li "Generate a random list of \"bleep\" and \"bloop\".")
          (:li "Return it as a " (:code "text/html") " content."))
