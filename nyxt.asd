@@ -297,6 +297,7 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
   :targets (:package :nyxt/tests)
   :serial t
   :components ((:file "tests/package")
+               (:file "tests/offline/start")
                (:file "tests/offline/define-configuration")
                (:file "tests/offline/global-history")
                (:file "tests/offline/user-script-parsing")
