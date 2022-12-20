@@ -255,7 +255,7 @@ by default"
                             `(1- (- ,level (spinneret::heading-depth)))
                             0)
                        :initial-element :section))))
-     (:section
+     (:section.section
       :id ,id
       (:details
        :open ,open-p

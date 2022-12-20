@@ -50,7 +50,7 @@ See also the `profile' slot in the `browser' class.")
               :color ,theme:on-background
               :margin-left "20px"
               :margin-top "20px")
-            `(section
+            `(.section
               :margin-top "2em")
             `("h1,h2,h3,h4,h5,h6"
               :color ,theme:primary
