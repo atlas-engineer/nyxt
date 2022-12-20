@@ -7,14 +7,63 @@
   (sb-ext:assert-version->= 2 0 0)
   (require 'sb-bsd-sockets))
 
+(require 'nasdf)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(uiop:define-package nyxt-asdf
+  (:use :cl))
+(in-package :nyxt-asdf)
+
+;; TODO: Do we need to pre-declare nyxt-user-system?
+;; (export-always 'nyxt-user-system)
+;; (defclass nyxt-user-system (asdf:system) ()
+;;   (:documentation "Specialized systems for Nyxt users."))
+;; (import 'nyxt-user-system :asdf-user)
+
+(defclass nyxt-renderer-system (asdf:system) ()
+  (:documentation "Specialized systems for Nyxt with renderer dependency.
+The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
+(import 'nyxt-renderer-system :asdf-user)
+
+(export '*nyxt-renderer*)
+(defvar *nyxt-renderer* (or (uiop:getenv "NYXT_RENDERER")
+                            "gi-gtk"))
+
+(defmethod asdf:component-depends-on ((o asdf:prepare-op) (c nyxt-renderer-system))
+  `((asdf:load-op ,(format nil "nyxt/~a-application" *nyxt-renderer*))
+    ,@(call-next-method)))
+
+(defclass nyxt-source-directory (nasdf:nasdf-source-directory)
+  ())
+(import 'nyxt-source-directory :asdf-user)
+
+(defmethod nasdf:dest-source-dir ((component nyxt-source-directory))
+  (uiop:merge-pathnames* "nyxt/" (call-next-method)))
+
+(defclass nyxt-library-file (nasdf:nasdf-library-file)
+  ())
+(import 'nyxt-library-file :asdf-user)
+
+(export '*nyxt-libdir*)
+(defvar *nyxt-libdir* (uiop:merge-pathnames* "nyxt/" nasdf:*libdir*))
+(defmethod nasdf:libdir ((c nyxt-library-file))
+  ;; This forces all libraries to lib/MY-APP/* because the subdirectory is
+  ;; required in some cases, for instance WebKit extensions.  This could be
+  ;; limiting if other cases require the libs to be at the root of the libdir.
+  *nyxt-libdir*)
+
+(in-package :asdf-user)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; WARNING: We _must_ declare the translation host or else ASDF won't recognize
 ;; the pathnames as logical-pathnames, thus returning the system directory
 ;; instead.
 (setf (logical-pathname-translations "NYXT") nil)
 
+
 (defsystem "nyxt"
-  :defsystem-depends-on ("nyxt-asdf")
-  :class :nyxt-system
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-system
   :version "3"                          ;  3-pre-release-2 / Development version
   :author "Atlas Engineer LLC"
   :homepage "https://nyxt.atlas.engineer"
@@ -222,7 +271,7 @@
                  (:file "vi")
                  (:file "visual")
                  (:file "watch"))))
-  :around-compile "NYXT-ASDF:FAIL-ON-WARNINGS"
+  :around-compile "NASDF:FAIL-ON-WARNINGS"
   :in-order-to ((test-op (test-op "nyxt/tests")
                          ;; We test if manual dumping works, since it may catch
                          ;; some subtle mistakes:
@@ -232,19 +281,19 @@
                          (test-op "nyxt/prompter/tests"))))
 
 (defsystem "nyxt/submodules"
-  :defsystem-depends-on ("nyxt-asdf")
-  :class :nyxt-submodule-system)
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-submodule-system)
 
 (defsystem "nyxt/tests/compilation"
-  :defsystem-depends-on ("nyxt-asdf")
-  :class :nyxt-compilation-test-system
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-compilation-test-system
   :depends-on (nyxt)
   :packages (:nyxt))
 
 ;; TODO: Test that Nyxt starts and that --help, --version work.
 (defsystem "nyxt/tests"
-  :defsystem-depends-on ("nyxt-asdf")
-  :class :nyxt-test-system
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-test-system
   :depends-on (nyxt nyxt/tests/compilation)
   :targets (:package :nyxt/tests)
   :serial t
@@ -257,7 +306,7 @@
                (:file "tests/online/urls")))
 
 (defsystem "nyxt/benchmark"
-  :defsystem-depends-on ("nyxt-asdf")
+  :defsystem-depends-on ("nasdf")
   :depends-on (alexandria
                nyxt
                trivial-benchmark)
@@ -270,7 +319,7 @@
                                      (funcall (read-from-string "benchmark:run-package-benchmarks")
                                               :package :nyxt/benchmark
                                               :verbose t))))
-                      (symbol-call :nyxt-asdf :print-benchmark results))))
+                      (symbol-call :nasdf :print-benchmark results))))
 
 (defsystem "nyxt/clean-fasls"
   :depends-on (swank)
@@ -311,33 +360,33 @@
                        (format *error-output* "Manual dumped to ~s.~&" (output-file o c))))
 
 (defsystem "nyxt/gtk"
-  :defsystem-depends-on ("nyxt-asdf")
-  :class :nyxt-system
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-system
   :depends-on (cl-cffi-gtk
                cl-webkit2
                nyxt)
   :pathname #p"NYXT:source;"
   :serial t
-  :around-compile "NYXT-ASDF:FAIL-ON-WARNINGS"
+  :around-compile "NASDF:FAIL-ON-WARNINGS"
   :components ((:file "web-extensions")
                (:file "web-extensions-callbacks")
                (:file "renderer/gtk-clipboard")
                (:file "renderer/gtk")))
 
 (defsystem "nyxt/gi-gtk"
-  :defsystem-depends-on ("nyxt-asdf")
-  :class :nyxt-system
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-system
   :depends-on (bordeaux-threads
                cl-gobject-introspection
                nyxt/gtk)
   :pathname #p"NYXT:source;"
-  :around-compile "NYXT-ASDF:FAIL-ON-WARNINGS"
+  :around-compile "NASDF:FAIL-ON-WARNINGS"
   :components ((:file "renderer/gi-gtk"))
   :in-order-to ((test-op (test-op "nyxt/gi-gtk/tests"))))
 
 (defsystem "nyxt/gi-gtk/tests"
-  :defsystem-depends-on ("nyxt-asdf")
-  :class :nyxt-test-system
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-test-system
   :depends-on (nyxt/gi-gtk)
   :targets (:package :nyxt/tests/renderer)
   :serial t
@@ -352,7 +401,7 @@
                nyxt
                trivial-main-thread)
   :pathname #p"NYXT:source;"
-  :around-compile "NYXT-ASDF:FAIL-ON-WARNINGS"
+  :around-compile "NASDF:FAIL-ON-WARNINGS"
   :components ((:file "renderer/qt")))
 
 ;; We should not set the build-pathname in systems that have a component.
@@ -365,32 +414,32 @@
 ;; produce the desired binary.
 
 (defsystem "nyxt/gtk-application"
-  :defsystem-depends-on ("nyxt-asdf")
-  :class :nyxt-system
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-system
   :depends-on (nyxt/gtk)
   :build-operation "program-op"
   :build-pathname "nyxt"
   :entry-point "nyxt:entry-point")
 
 (defsystem "nyxt/gi-gtk-application"
-  :defsystem-depends-on ("nyxt-asdf")
-  :class :nyxt-system
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-system
   :depends-on (nyxt/gi-gtk)
   :build-operation "program-op"
   :build-pathname "nyxt"
   :entry-point "nyxt:entry-point")
 
 (defsystem "nyxt/qt-application"
-  :defsystem-depends-on ("nyxt-asdf")
-  :class :nyxt-system
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-system
   :depends-on (nyxt/qt)
   :build-operation "program-op"
   :build-pathname "nyxt-qt"
   :entry-point "nyxt:entry-point")
 
 (defsystem "nyxt/application/tests"
-  :defsystem-depends-on ("nyxt-asdf")
-  :class :nyxt-test-system
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-test-system
   :depends-on (nyxt)
   :targets (:package :nyxt/tests/executable)
   :components ((:file "tests/package")
@@ -402,18 +451,18 @@
                         (warn "`nyxt' executable missing, skipping tests."))))
 
 (defsystem "nyxt/install"
-  :defsystem-depends-on ("nyxt-asdf")
+  :defsystem-depends-on ("nasdf")
   :class :nyxt-renderer-system
   :depends-on (alexandria
                nyxt/version
                str)
-  :components ((:nyxt-desktop-file "assets/nyxt.desktop")
-               (:nyxt-icon-directory "assets/")
-               (:nyxt-binary-file "nyxt")
+  :components ((:nasdf-desktop-file "assets/nyxt.desktop")
+               (:nasdf-icon-directory "assets/")
+               (:nasdf-binary-file "nyxt")
                (:nyxt-library-file "libraries/web-extensions/libnyxt.so"
                                    :if-does-not-exist nil)
                (:nyxt-source-directory "source")
-               (:nyxt-source-directory "nyxt-asdf")
+               (:nyxt-source-directory "nasdf")
                (:nyxt-source-directory "libraries"
                 :exclude-subpath ("web-extensions") ; Do not install this non-Lisp source.
                 :exclude-types ("o" "c" "h" ; C code and artifacts.
@@ -423,8 +472,8 @@
 ;; Library subsystems:
 
 (defsystem "nyxt/download-manager"
-  :defsystem-depends-on ("nyxt-asdf")
-  :class :nyxt-system
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-system
   :depends-on (calispel
                cl-ppcre
                dexador
@@ -437,8 +486,8 @@
                (:file "native")))
 
 (defsystem "nyxt/analysis"
-  :defsystem-depends-on ("nyxt-asdf")
-  :class :nyxt-system
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-system
   :depends-on (alexandria
                cl-ppcre
                serapeum
@@ -457,31 +506,31 @@
   :in-order-to ((test-op (test-op "nyxt/analysis/tests"))))
 
 (defsystem "nyxt/analysis/tests"
-  :defsystem-depends-on ("nyxt-asdf")
-  :class :nyxt-test-system
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-test-system
   :depends-on (nyxt/analysis)
   :targets (:package :analysis/tests)
   :components ((:file "libraries/analysis/tests/tests")))
 
 (defsystem "nyxt/user-interface"
-  :defsystem-depends-on ("nyxt-asdf")
-  :class :nyxt-system
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-system
   :depends-on (spinneret)
   :pathname #p"NYXT:libraries;user-interface;"
   :components ((:file "package")
                (:file "user-interface")))
 
 (defsystem "nyxt/text-buffer"
-  :defsystem-depends-on ("nyxt-asdf")
-  :class :nyxt-system
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-system
   :depends-on (cluffer)
   :pathname #p"NYXT:libraries;text-buffer;"
   :components ((:file "package")
                (:file "text-buffer")))
 
 (defsystem "nyxt/history-tree"
-  :defsystem-depends-on ("nyxt-asdf")
-  :class :nyxt-system
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-system
   :depends-on (alexandria
                cl-custom-hash-table
                local-time
@@ -493,16 +542,16 @@
   :in-order-to ((test-op (test-op "nyxt/history-tree/tests"))))
 
 (defsystem "nyxt/history-tree/tests"
-  :defsystem-depends-on ("nyxt-asdf")
-  :class :nyxt-test-system
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-test-system
   :depends-on (nyxt/history-tree
                str)
   :targets (:package :history-tree/tests)
   :components ((:file "libraries/history-tree/tests/tests")))
 
 (defsystem "nyxt/password-manager"
-  :defsystem-depends-on ("nyxt-asdf")
-  :class :nyxt-system
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-system
   :depends-on (bordeaux-threads
                cl-ppcre
                nyxt/class-star
@@ -519,8 +568,8 @@
                (:file "password-pass")))
 
 (defsystem "nyxt/class-star"
-  :defsystem-depends-on ("nyxt-asdf")
-  :class :nyxt-system
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-system
   :depends-on (alexandria
                hu.dwim.defclass-star
                moptilities)
@@ -531,16 +580,16 @@
   :in-order-to ((test-op (test-op "nyxt/class-star/tests"))))
 
 (defsystem "nyxt/class-star/tests"
-  :defsystem-depends-on ("nyxt-asdf")
-  :class :nyxt-test-system
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-test-system
   :depends-on (nyxt/class-star)
   :targets (:package :class-star/tests)
   :components ((:file "libraries/class-star/tests/tests")
                (:file "libraries/class-star/tests/global-settings")))
 
 (defsystem "nyxt/prompter"
-  :defsystem-depends-on ("nyxt-asdf")
-  :class :nyxt-system
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-system
   :depends-on (alexandria
                calispel
                cl-containers
@@ -560,8 +609,8 @@
   :in-order-to ((test-op (test-op "nyxt/prompter/tests"))))
 
 (defsystem "nyxt/prompter/tests"
-  :defsystem-depends-on ("nyxt-asdf")
-  :class :nyxt-test-system
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-test-system
   :depends-on (nyxt/prompter)
   :targets (:package :prompter/tests)
   :pathname #p"NYXT:libraries;prompter;tests;"
@@ -571,8 +620,8 @@
                (:file "submatches")))
 
 (defsystem "nyxt/theme"
-  :defsystem-depends-on ("nyxt-asdf")
-  :class :nyxt-system
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-system
   :depends-on (alexandria
                lass
                nyxt/class-star
@@ -583,8 +632,8 @@
   :in-order-to ((test-op (test-op "nyxt/theme/tests"))))
 
 (defsystem "nyxt/theme/tests"
-  :defsystem-depends-on ("nyxt-asdf")
-  :class :nyxt-test-system
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-test-system
   :depends-on (nyxt/theme)
   :targets (:package :theme/tests)
   :components ((:file "libraries/theme/tests/tests")))

@@ -15,10 +15,7 @@ jobs:
     name: ${{ matrix.lisp }} on ${{ matrix.os }}
     strategy:
       matrix:
-        # Use ccl-bin/1.12.1 instead of 'ccl' because of
-        # https://github.com/roswell/roswell/issues/534.
-        # TODO: Revert when Roswell is functional again.
-        lisp: [sbcl-bin, ccl-bin/1.12.1]
+        lisp: [sbcl-bin, ccl]
         renderer: [gi-gtk]
         rosargs: [dynamic-space-size=3072]
         os: [ ubuntu-latest ]
@@ -53,19 +50,15 @@ jobs:
       env:
        LISP: ${{ matrix.lisp }}
       # TODO: Update Roswell to latest version (may need Ubuntu 20.* or above).
-      run: curl -L https://raw.githubusercontent.com/roswell/roswell/v21.10.14.111/scripts/install-for-ci.sh | sh -x
+      run: curl -L https://raw.githubusercontent.com/roswell/roswell/v22.12.14.113/scripts/install-for-ci.sh | sh -x
 
     - name: Check Lisp
       continue-on-error: true
       shell: bash
       run: |
         ros ${{ matrix.rosargs }} -e '(format t "~a:~a on ~a~%...~%~%" (lisp-implementation-type) (lisp-implementation-version) (machine-type))'
-        ros ${{ matrix.rosargs }} -e '(format t " fixnum bits:~a~%" (integer-length most-positive-fixnum))'
-        ros ${{ matrix.rosargs }} -e "(ql:quickload 'trivial-features)" -e '(format t "features = ~s~%" *features*)'
-
-    - name: Update Quickdist if we have one cached
-      shell: bash
-      run: ros -e "(ql:update-all-dists :prompt nil)"
+        ros ${{ matrix.rosargs }} -e '(format t "fixnum bits: ~a~%" (integer-length most-positive-fixnum))'
+        ros ${{ matrix.rosargs }} -e '(format t "features: ~s~%" *features*)'
 
     - name: Fetch Common Lisp third-party dependencies
       shell: bash
@@ -82,7 +75,7 @@ jobs:
     - name: Build Nyxt executable
       shell: bash
       ## CCL build binary does not work for now, needs more investigation.
-      if: ${{ matrix.lisp != 'ccl-bin/1.12.1' }}
+      if: ${{ matrix.lisp != 'ccl' }}
       run: |
         rm -f nyxt
         make all LISP=ros LISP_FLAGS="${{ matrix.rosargs }} run -- --no-userinit --non-interactive"
@@ -91,7 +84,7 @@ jobs:
       shell: bash
       # Export CI to tell ASDF to quit on test errors.
       env:
-       NYXT_TESTS_ERROR_ON_FAIL: yes
+       NASDF_TESTS_QUIT_ON_FAIL: yes
       run: |
         ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)' -e '(handler-case (asdf:load-system :nyxt/tests) (error (a) (format t "caught error ~s~%~a~%" a a) (uiop:quit 17)))' -e '(asdf:test-system :nyxt)'
 

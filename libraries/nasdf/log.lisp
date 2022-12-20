@@ -1,7 +1,7 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :nyxt-asdf)
+(in-package :nasdf)
 
 ;; TODO: Use full-fledged logging facility?
 ;; Maybe we want to keep this dependency-free though...

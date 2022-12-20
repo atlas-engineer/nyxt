@@ -1,14 +1,18 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :nyxt-asdf)
+(in-package :nasdf)
 
 (export-always '*submodules-directory*)
-(defvar *submodules-directory* (or (getenv "NYXT_SUBMODULES_DIR")
-                                   "_build"))
+(defvar *submodules-directory* (or (getenv "NASDF_SUBMODULES_DIR")
+                                   "_build")
+  "Where to store the Git submodules.
+The \"_build\" directory is ignored by ASDF by default, which makes it a useful
+destination for developers who have their own dependencies elsewhere and just
+want to test the build as would happen on the end user system.")
 
 (export-always '*submodules-jobs*)
-(defvar *submodules-jobs* (or (getenv "NYXT_SUBMODULES_JOBS")
+(defvar *submodules-jobs* (or (getenv "NASDF_SUBMODULES_JOBS")
                               4)
   "Number of parallel 'git clone' jobs to fetch the Git submodules.
 A naive benchmark on a 16 Mbps bandwidth gives us
@@ -18,12 +22,12 @@ A naive benchmark on a 16 Mbps bandwidth gives us
     4 jobs: 2m51s
     8 jobs: 2m21s")
 
-(export-always 'nyxt-submodule-system)
-(defclass nyxt-submodule-system (asdf:system) ()
+(export-always 'nasdf-submodule-system)
+(defclass nasdf-submodule-system (asdf:system) ()
   (:documentation "This system sole purpose is to fetch the Git submodules found in '.gitmodules' next to the system definition file."))
-(import 'nyxt-submodule-system  :asdf-user)
+(import 'nasdf-submodule-system  :asdf-user)
 
-(defmethod asdf:perform ((o asdf:compile-op) (c nyxt-submodule-system))
+(defmethod asdf:perform ((o asdf:compile-op) (c nasdf-submodule-system))
   (fetch-submodules c))
 
 (defun register-submodules (component)
@@ -46,7 +50,7 @@ A naive benchmark on a 16 Mbps bandwidth gives us
              (ensure-absolute-path *submodules-directory* component)))
            ;; Double-slash tells ASDF to traverse the tree recursively.
            "/"
-           ;; Register this directory so that nyxt.asd is included, just in case.
+           ;; Register this directory so that the system's ASD is included, just in case.
            (inter-directory-separator)
            (native-namestring (system-source-directory component))
            (if (getenv "CL_SOURCE_REGISTRY")

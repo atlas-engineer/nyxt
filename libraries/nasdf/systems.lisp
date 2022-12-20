@@ -1,34 +1,33 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :nyxt-asdf)
+(in-package :nasdf)
 
-(export-always 'nyxt-system)
-(defclass nyxt-system (asdf:system) ()
-  (:documentation "Specialized systems for Nyxt.
-Every Nyxt system should use this class or a subclass.
+(export-always 'nasdf-system)
+(defclass nasdf-system (asdf:system) ()
+  (:documentation "Extended ASDF system.
 It enables features such as:
-- Togglable logical-pathnames depending on NYXT_USE_LOGICAL_PATHS.
-- Togglable executable compression with NYXT_COMPRESS.
+- Togglable logical-pathnames depending on NASDF_USE_LOGICAL_PATHS.
+- Togglable executable compression with NASDF_COMPRESS.
 - Executable dependencies are made immutable for ASDF to prevent accidental reloads."))
 ;; TODO: This is how `prove' does it, not very clean.
-;; Alternatively, we could switch package in nyxt.asd, but this seems cumbersome too.
-(import 'nyxt-system  :asdf-user)
+;; Alternatively, we could switch package in the .asd, but this seems cumbersome too.
+(import 'nasdf-system  :asdf-user)
 
 #+sb-core-compression
-(defmethod asdf:perform ((o asdf:image-op) (c nyxt-system))
+(defmethod asdf:perform ((o asdf:image-op) (c nasdf-system))
   (uiop:dump-image (asdf:output-file o c)
                    :executable t
-                   :compression (when (getenv "NYXT_COMPRESS")
-                                  (or (parse-integer (getenv "NYXT_COMPRESS")
+                   :compression (when (getenv "NASDF_COMPRESS")
+                                  (or (parse-integer (getenv "NASDF_COMPRESS")
                                                      :junk-allowed t)
-                                      (string-equal "T" (getenv "NYXT_COMPRESS"))))))
+                                      (string-equal "T" (getenv "NASDF_COMPRESS"))))))
 
-(defmethod asdf:perform :before ((o asdf:image-op) (c nyxt-system))
+(defmethod asdf:perform :before ((o asdf:image-op) (c nasdf-system))
   "Perform some last minute tweaks to the final image.
 
-- Register immutable systems to prevent compiled images of Nyxt from
-trying to recompile Nyxt and its dependencies.
+- Register immutable systems to prevent compiled images from
+trying to recompile the application and its dependencies.
 See `asdf::*immutable-systems*'.
 
 - If on SBCL, include `sb-sprof', the statistical profiler, since it's one of
@@ -116,8 +115,8 @@ pathname."
 ;; Both `nasdf:component-pathname' and `asdf:component-pathname' work, but it
 ;; seems more semantically correct to specialize `asdf:component-pathname' for
 ;; this.
-(defmethod asdf:component-pathname ((system nyxt-system))
-  "If NYXT_USE_LOGICAL_PATHS environment variable is set, use logical path source
+(defmethod asdf:component-pathname ((system nasdf-system))
+  "If NASDF_USE_LOGICAL_PATHS environment variable is set, use logical path source
 location, otherwise use the translated path.
 
 Tools such as Emacs (SLIME and SLY) may fail to make use of logical paths, say,
@@ -135,19 +134,6 @@ to go to the compilation error location."
                                 ;; this point, so we remake the pathname.
                                 (make-pathname :defaults path))
                               path))))
-        (if (env-true-p "NYXT_USE_LOGICAL_PATHS")
+        (if (env-true-p "NASDF_USE_LOGICAL_PATHS")
             final-path
             (translate-logical-pathname final-path))))))
-
-(defclass nyxt-renderer-system (asdf:system) ()
-  (:documentation "Specialized systems for Nyxt with renderer dependency.
-The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
-(import 'nyxt-renderer-system  :asdf-user)
-
-(export-always '*nyxt-renderer*)
-(defvar *nyxt-renderer* (or (getenv "NYXT_RENDERER")
-                            "gi-gtk"))
-
-(defmethod asdf:component-depends-on ((o asdf:prepare-op) (c nyxt-renderer-system))
-  `((asdf:load-op ,(format nil "nyxt/~a-application" *nyxt-renderer*))
-    ,@(call-next-method)))

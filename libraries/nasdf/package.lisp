@@ -3,10 +3,10 @@
 
 #+sb-package-locks
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (when (find-package :nyxt-asdf)
-    (sb-ext:unlock-package :nyxt-asdf)))
+  (when (find-package :nasdf)
+    (sb-ext:unlock-package :nasdf)))
 
-(uiop:define-package :nyxt-asdf
+(uiop:define-package :nasdf
   (:use :cl)
   (:import-from :uiop
                 #:absolute-pathname-p
@@ -33,34 +33,34 @@
                 #:perform
                 #:system-relative-pathname
                 #:system-source-directory)
-  (:documentation "ASDF helpers for Nyxt and its extensions.
+  (:documentation "ASDF helpers for system setup, testing and installation.
 
 To tell ASDF to fail loading a system on warnings, add this line to the system
 definition:
 
-  :around-compile \"NYXT-ASDF:FAIL-ON-WARNINGS\"
+  :around-compile \"NASDF:FAIL-ON-WARNINGS\"
 
 To report unbound exported symbols:
 
 (defsystem my-system
-  :defsystem-depends-on (\"nyxt-asdf\")
-  :class :nyxt-compilation-test-system
+  :defsystem-depends-on (\"nasdf\")
+  :class :nasdf-compilation-test-system
   :depends-on (foo bar)
   :packages (:foo))
 
 A system that installs files:
 
 (defsystem \"my-project/install\"
-  :defsystem-depends-on (\"nyxt-asdf\")
+  :defsystem-depends-on (\"nasdf\")
   :depends-on (alexandria)
-  :components ((:nyxt-desktop-file \"assets/my-project.desktop\")
-               (:nyxt-icon-directory \"assets/\")
-               (:nyxt-binary-file \"my-project\")
-               (:nyxt-library-file \"libraries/web-extensions/libmy.so\"
+  :components ((:nasdf-desktop-file \"assets/my-project.desktop\")
+               (:nasdf-icon-directory \"assets/\")
+               (:nasdf-binary-file \"my-project\")
+               (:nasdf-library-file \"libraries/web-extensions/libmy.so\"
                                    :if-does-not-exist nil)
-               (:nyxt-source-directory \"source\")
-               (:nyxt-source-directory \"nyxt-asdf\")
-               (:nyxt-source-directory \"libraries\"
+               (:nasdf-source-directory \"source\")
+               (:nasdf-source-directory \"nasdf\")
+               (:nasdf-source-directory \"libraries\"
                 :exclude-subpath (\"web-extensions\") ; Do not install this non-Lisp source.
                 :exclude-types (\"o\" \"c\" \"h\" ; C code and artifacts.
                                     \"fasl\"))))
@@ -68,9 +68,17 @@ A system that installs files:
 A system that fetches the Git submodules:
 
 (defsystem \"my-project/submodules\"
-  :defsystem-depends-on (\"nyxt-asdf\")
-  :class :nyxt-submodule-system)
+  :defsystem-depends-on (\"nasdf\")
+  :class :nasdf-submodule-system)
+
+Shell command to add a submodule to the default directory:
+
+    git submodule add https://github.com/atlas-engineer/history-tree _build/history-tree
+
+To update it:
+
+    git submodule update --remote _build/history-tree
 "))
 
 #+sb-package-locks
-(sb-ext:lock-package :nyxt-asdf)
+(sb-ext:lock-package :nasdf)
