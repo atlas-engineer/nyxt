@@ -54,7 +54,7 @@ similar programming language.")
                           "Create configuration file")))))
         (:p "Example:")
         (:ncode
-          (define-configuration buffer
+          (define-configuration web-buffer
             ((default-modes (pushnew 'nyxt/no-script-mode:no-script-mode %slot-value%))))))
       (:p "The above turns on the 'no-script-mode' (disables JavaScript) by default for
 every buffer.")
@@ -176,7 +176,7 @@ keymap.")
                              nyxt/keyscheme:emacs *my-keymap*
                              nyxt/keyscheme:vi-normal *my-keymap*))))
 
-          (define-configuration (buffer web-buffer)
+          (define-configuration web-buffer
             "Enable this mode by default."
             ((default-modes (pushnew 'my-mode %slot-value%)))))
         (:p "Bindings are subject to various translations as per "
@@ -208,7 +208,7 @@ corresponding section.")
              '("doi" "https://dx.doi.org/~a" "https://dx.doi.org/"))
             "List of search engines.")
 
-          '(define-configuration buffer
+          '(define-configuration context-buffer
             "Go through the search engines above and `make-search-engine' out of them."
             ((search-engines
               (append (mapcar (lambda (engine) (apply 'make-search-engine engine))
@@ -565,7 +565,7 @@ say to develop Nyxt or extensions.")
           (defmethod files:resolve ((profile dev-profile) (file history-file))
             "Persist history to default location."
             (files:resolve (global-profile) file))
-          (define-configuration buffer
+          (define-configuration web-buffer
             "Make new profile the default."
             ((profile (make-instance (or (find-profile-class (getf *options* :profile)) 'dev-profile))))))
         (:p "Then you can start a separate instance of Nyxt using this profile
