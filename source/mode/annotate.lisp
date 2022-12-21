@@ -168,7 +168,7 @@ make-instance."
    (prompter:constructor
     (let ((annotations (files:content (annotations-file (current-buffer)))))
       (sort (remove-duplicates
-             (reduce/append (mapcar #'tags annotations))
+             (mappend #'tags annotations)
              :test #'string-equal)
             #'string-lessp))))
   (:accessor-name-transformer (class*:make-name-transformer name)))

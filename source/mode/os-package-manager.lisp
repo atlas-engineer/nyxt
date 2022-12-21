@@ -165,7 +165,7 @@ PACKAGES is a list of `ospm:package' IDs created by `nyxt::ensure-inspected-id'.
                          (ospm:expanded-output-p (first outputs)))
                 (:li "Total size: " (sera:format-file-size-human-readable
                                      nil
-                                     (reduce #'+ (mapcar #'ospm:size outputs)))))))))
+                                     (reduce #'+ outputs :key #'ospm:size))))))))
     (let ((packages (inspected-value packages)))
       (spinneret:with-html-string
         (:nstyle (style (current-buffer)))

@@ -11,10 +11,9 @@
   "Extract the sections from a string of text. Epsilon refers to the
    distance between two points for them to be considered related."
   (labels ((average-distance (point points)
-             (/ (reduce #'+ (mapcar (lambda (i)
-                                      (distance (vector-data i)
-                                                (vector-data point)))
-                                    points))
+             (/ (reduce #'+ points
+                        :key (lambda (i) (distance (vector-data i)
+                                                   (vector-data point))))
                 (length points))))
     (let ((collection (make-instance 'document-collection)))
       (loop for sentence in (sentence-tokenize text)
