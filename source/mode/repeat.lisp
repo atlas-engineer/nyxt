@@ -42,7 +42,7 @@ It takes a `repeat-mode' instance as argument.")
     #'(lambda (path-url mode)
         (declare (ignore path-url))
         ;; Needed since the mode object might not have been garbage collected.
-        (setf (repeat-action mode) nil
+        (setf (repeat-action mode) (constantly nil)
               (repeat-count mode) nil
               (repeat-interval mode) 1.0))
     :documentation "See `nyxt/process-mode:cleanup'.")))
