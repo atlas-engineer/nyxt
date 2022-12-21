@@ -147,7 +147,9 @@ Return nil to forward to renderer or non-nil otherwise."
 
              ((typep bound-function '(and (not null) (or symbol command)))
               (let ((command (typecase bound-function
-                               (symbol (symbol-function (or (sym:resolve-symbol bound-function :command)
+                               (symbol (symbol-function (if (member (symbol-package bound-function)
+                                                                    (mapcar #'find-package '(:nyxt-user :keyword)))
+                                                            (sym:resolve-symbol bound-function :command)
                                                             bound-function)))
                                (command bound-function))))
                 (check-type command command)
