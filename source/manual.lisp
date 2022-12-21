@@ -582,8 +582,8 @@ any of the password interfaces to configure them. Please make sure to
 use the package prefixed class name/slot designators within
 the " (:code "define-configuration") " macro.")
         (:ul
-         (:li (command-markup 'nyxt/password-mode:save-new-password) ": Query for name and new password to persist in the database.")
-         (:li (command-markup 'nyxt/password-mode:copy-password) ": " (command-docstring-first-sentence 'nyxt/password-mode:copy-password)))
+         (:li (:nxref :command 'nyxt/password-mode:save-new-password) ": Query for name and new password to persist in the database.")
+         (:li (:nxref :command 'nyxt/password-mode:copy-password) ": " (command-docstring-first-sentence 'nyxt/password-mode:copy-password)))
 
         (:nsection :title "KeePassXC support"
           (:p "The interface for KeePassXC should cover most use-cases for KeePassXC, as it
