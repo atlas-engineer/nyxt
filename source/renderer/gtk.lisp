@@ -2026,7 +2026,7 @@ custom (the specified proxy) and none."
                (:head
                 (:nstyle (message-buffer-style window)))
                (:body
-                (:raw text)))))
+                (:raw (spinneret::escape-string text))))))
     (webkit2:webkit-web-view-evaluate-javascript
      (message-view window)
      (ps:ps (setf (ps:@ document body |innerHTML|)
