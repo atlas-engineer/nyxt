@@ -15,6 +15,9 @@
     ""
     :type string
     :documentation "The password to the `password-file'.")
+   (yubikey-slot
+    nil
+    :documentation "Yubikey slot to unlock the `password-file'.")
    (entries-cache
     nil
     :type list
@@ -33,6 +36,8 @@
                               (append (list "ls" "-Rf") ; Recursive flattened.
                                       (when (key-file password-interface)
                                         (list "-k" (uiop:native-namestring (key-file password-interface))))
+                                      (when (yubikey-slot password-interface)
+                                        (list "-y" (yubikey-slot password-interface)))
                                       (list (password-file password-interface)))
                               :input st :output '(:string :stripped t))))
         (setf (entries-cache password-interface)
@@ -46,6 +51,8 @@
               (list "clip")
               (when (key-file password-interface)
                 (list "-k" (uiop:native-namestring (key-file password-interface))))
+              (when (yubikey-slot password-interface)
+                (list "-y" (yubikey-slot password-interface)))
               (list (password-file password-interface) password-name))
              :input st
              :wait-p nil)))
@@ -57,6 +64,8 @@
              (append (list "clip" "--attribute" "username")
                      (when (key-file password-interface)
                        (list "-k" (uiop:native-namestring (key-file password-interface))))
+                     (when (yubikey-slot password-interface)
+                       (list "-y" (yubikey-slot password-interface)))
                      (list (password-file password-interface) password-name))
              :input st
              :wait-p nil)))
@@ -74,14 +83,15 @@
                            "--password-prompt" (password-file password-interface))
                      (when (key-file password-interface)
                        (list "-k" (uiop:native-namestring (key-file password-interface))))
+                     (when (yubikey-slot password-interface)
+                       (list "-y" (yubikey-slot password-interface)))
                      (list (if (str:emptyp password-name)
                                "--generate"
                                password-name)))
              :input st)))
 
 (defmethod password-correct-p ((password-interface keepassxc-interface))
-  (when (master-password password-interface)
-    (handler-case
-        (list-passwords password-interface)
-      (uiop/run-program:subprocess-error ()
-        nil))))
+  (handler-case
+      (list-passwords password-interface)
+    (uiop/run-program:subprocess-error ()
+      nil)))

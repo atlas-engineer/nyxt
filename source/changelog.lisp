@@ -563,6 +563,7 @@ locally and is cleared after every session.")
    (:li (:code "auto-mode")
         " is now incorporated into Nyxt core, with its settings residing in "
         (:nxref :class-name 'modable-buffer) " now.")
+   (:li "Support for key files and Yubikey locking in KeePassXC password interface.")
    (:ul
     (:li "There are default rules for Gopher, Gemini, and
 Nyxt-internal-pages.")
