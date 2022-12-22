@@ -225,7 +225,7 @@ to next source, or previous source if STEPS is negative."
                      (first sources)
                      (index->source (- index limit) (rest sources)))))
              (source-length (sources)
-               (reduce #'+ sources :key (alex:compose #'length #'suggestions)))
+               (reduce #'+ sources :key (lambda (s) (length (suggestions s)))))
              (previous-sources (source)
                (let ((current-source-position (position source (sources prompter))))
                  (subseq (sources prompter) 0 current-source-position))))
