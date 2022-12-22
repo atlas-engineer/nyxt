@@ -451,7 +451,8 @@ response.  The BODY is wrapped with `with-protect'."
                   prompt-buffer-view
                   status-buffer status-container
                   message-container message-view
-                  key-string-buffer) window
+                  key-string-buffer)
+         window
        (unless gtk-object
          (setf gtk-object (make-instance 'gtk:gtk-window
                                          :type :toplevel
@@ -486,6 +487,9 @@ response.  The BODY is wrapped with `with-protect'."
          ;; receive input, for instance to create a new buffer.
          (setf nyxt::active-buffer (make-instance 'input-buffer))
 
+         (when (eq (status-buffer-position window) :top)
+           (gtk:gtk-box-pack-start root-box-layout status-container :expand nil))
+
          ;; Add the views to the box layout and to the window
          (gtk:gtk-box-pack-start main-buffer-container (gtk-object nyxt::active-buffer) :expand t :fill t)
          (gtk:gtk-box-pack-start horizontal-box-layout panel-buffer-container-left :expand nil)
@@ -499,7 +503,9 @@ response.  The BODY is wrapped with `with-protect'."
          (setf (gtk:gtk-widget-size-request message-container)
                (list -1 (message-buffer-height window)))
 
-         (gtk:gtk-box-pack-end root-box-layout status-container :expand nil)
+         (when (eq (status-buffer-position window) :bottom)
+           (gtk:gtk-box-pack-end root-box-layout status-container :expand nil))
+
          (gtk:gtk-box-pack-start status-container (gtk-object status-buffer) :expand t)
          (setf (gtk:gtk-widget-size-request status-container)
                (list -1 (height status-buffer)))
