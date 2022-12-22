@@ -19,10 +19,16 @@ See the `add-domain-to-certificate-exceptions' command."
                            :type (list-of string))))
 
 (defmethod enable ((mode certificate-exception-mode) &key)
-  (setf (certificate-exceptions (buffer mode)) (certificate-exceptions mode)))
+  (let ((buffer (buffer mode)))
+    (if (network-buffer-p buffer)
+        (setf (certificate-exceptions buffer) (certificate-exceptions mode))
+        (echo "~a is not a network buffer. Nothing to be done." buffer))))
 
 (defmethod disable ((mode certificate-exception-mode) &key)
-  (setf (certificate-exceptions (buffer mode)) nil))
+  (let ((buffer (buffer mode)))
+    (if (network-buffer-p buffer)
+        (setf (certificate-exceptions buffer) nil)
+        (echo "~a is not a network buffer. Nothing to be done." buffer))))
 
 (define-command add-domain-to-certificate-exceptions (&optional (buffer (current-buffer)))
   "Add the current hostname to the buffer's certificate exception list.
