@@ -136,7 +136,7 @@ This is useful to run scripts for instance.")
        :short #\p
        :long "profile"
        :arg-parser #'identity
-       :description "Use the given profile. ")
+       :description "Use the given profile.")
       (:name :list-profiles
        :long "list-profiles"
        :description "List the known profiles and exit.
@@ -398,8 +398,8 @@ Otherwise bind socket and return the listening thread."
   #.(format nil "Parse command line or REPL options then start the browser.
 Load URLS if any (a list of strings).
 
-This functions focuses on OPTIONS parsing, see `start-browser' for the actual
-startup procedure.
+This function focuses on OPTIONS parsing.  For the actual startup procedure, see
+`start-browser'.
 
 The OPTIONS are the same as the command line options.
 
