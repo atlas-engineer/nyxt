@@ -307,6 +307,18 @@ Follows what the compiler finds aesthetically pleasing."
     (error (e)
       (echo "The input appears malformed. Stop reformatting. Original message: ~a" e))))
 
+(define-command add-cell-to-auto-config (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
+  "Add cell contents to auto-config for further loading."
+  (let ((evaluation (elt (evaluations repl) id))
+        (auto-config (files:expand nyxt::*auto-config-file*)))
+    (ensure-file-exists auto-config)
+    (alex:write-string-into-file +newline+ auto-config :if-exists :append)
+    (alex:write-string-into-file
+     (format-form (uiop:safe-read-from-string (input evaluation) :package (eval-package evaluation))
+                  :nyxt-user)
+     auto-config :if-exists :append)
+    (echo "Saved form into ~a" auto-config)))
+
 (define-command previous-cell (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
   "Navigate to the previous input cell."
   (unless (or (null id)
@@ -497,6 +509,12 @@ Follows what the compiler finds aesthetically pleasing."
                                                            (reformat-cell :id order)))
                                           :title "Re-indent the cell contents in accordance with compiler aesthetics."
                                           "Reformat")
+                                         (:button.button
+                                          :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                           (:title "add-to-auto-config")
+                                                           (add-cell-to-auto-config :id order)))
+                                          :title "Save this code to auto-config.lisp to be loaded in the next session."
+                                          "Save to auto-config")
                                          (:button.button
                                           :onclick (ps:ps (nyxt/ps:lisp-eval
                                                            (:title "add-cell-below")
