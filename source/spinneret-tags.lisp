@@ -74,7 +74,7 @@ unconditionally converts those to tags unless the whole form is quoted.)"
                    (first body)
                    (let ((*package* (find-package package)))
                      (serapeum:mapconcat
-                      (alexandria:rcurry #'write-to-string :readably t :case :downcase :right-margin 70)
+                      (alexandria:rcurry #'nyxt:prini-to-string :readably t :right-margin 70)
                       ;; Process quoted arguments properly too.
                       (mapcar #'remove-smart-quoting body)
                       (make-string 2 :initial-element #\newline)))))
