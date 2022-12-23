@@ -199,16 +199,12 @@ have, using " (:nxref :command 'execute-command)
 ". Nyxt has lots of features represented by commands, so you can find lots of
 useful actions there, including the familiar " (:code "set-url") ", " (:code "history-backwards")
 ", and " (:code "history-forwards") ".")
-    (:div (:button.button
-           :onclick (ps:ps (nyxt/ps:lisp-eval
-                            (:title "manual" :buffer panel)
-                            (manual)))
-           "I want to know more, show me the manual!")
-          (:button.button.accent
-           :onclick (ps:ps (nyxt/ps:lisp-eval
-                            (:title "delete-this-panel" :buffer panel)
-                            (delete-panel-buffer :panels panel)))
-           "Got it, close this panel"))))
+    (:div (:nbutton :text "I want to know more, show me the manual!"
+            (manual))
+          (:nbutton
+            :class "accent"
+            :text "Got it, close this panel"
+            (delete-panel-buffer :panels panel)))))
 
 (define-internal-page-command-global new ()
     (buffer "*New buffer*")
@@ -290,16 +286,10 @@ useful actions there, including the familiar " (:code "set-url") ", " (:code "hi
      (:main
       (:h1 :class "accent" "Nyxt")
       (:i "The Internet on your terms.")
-      (:div (:button.button
-             :onclick (ps:ps (nyxt/ps:lisp-eval
-                              (:title "search")
-                              (set-url :prefill-current-url-p nil)))
-             "Start searching!"))
-      (:div (:button.button
-             :onclick (ps:ps (nyxt/ps:lisp-eval
-                              (:title "intro-panel")
-                              (intro)))
-             "How do I...")))
+      (:div (:nbutton :text "Start searching!"
+              (set-url :prefill-current-url-p nil)))
+      (:div (:nbutton :text "How do I..."
+              (intro))))
      (:p :class "copyright"
          (format nil "Nyxt/~a ~a" (name *renderer*) +version+)
          (:br)
@@ -376,16 +366,12 @@ System information is also saved to clipboard."
         (:div
          (:h1 :id "title" "Nyxt " (:span :id "subtitle" "browser ☺"))
          (:h3 (time:format-timestring nil (time:now) :format time:+rfc-1123-format+))
-         (:button :class "button" :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                   (:title "restore-session")
-                                                   (nyxt::restore-history-by-name)))
-                  "🗁 Restore Session")
+         (:nbutton :text "🗁 Restore Session"
+           (nyxt::restore-history-by-name))
          (:a :class "button" :href (nyxt-url 'manual) "🕮 Manual")
-         (:button :class "button"
-                  :onclick (ps:ps (nyxt/ps:lisp-eval
-                                   (:title "execute-command")
-                                   (nyxt::execute-command)))
-                  "≡ Execute Command")
+         (:nbutton
+           :text "≡ Execute Command"
+           (nyxt::execute-command))
          (:a :class "button" :href "https://nyxt.atlas.engineer/download" "⇡ Update"))
         (:h3 (:b "Recent URLs"))
         (:ul (:raw (history-html-list :limit 50)))
