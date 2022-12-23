@@ -274,18 +274,19 @@ by default"
                    " " (:a.link :href ,(uiop:strcat "#" id) "#")))
        ,@body))))
 
-(deftag :nbutton (body attrs &key (text (alexandria:required-argument 'text)) buffer &allow-other-keys)
+(deftag :nbutton (body attrs &key (text (alexandria:required-argument 'text)) title buffer &allow-other-keys)
   "A Lisp-invoking button with TEXT text and BODY action.
 Evaluates (via `nyxt/ps:lisp-eval') the BODY in BUFFER when clicked.
 Forms in BODY can be unquoted, benefiting from the editor formatting."
   `(:button.button
     :onclick (ps:ps
                (nyxt/ps:lisp-eval
-                (:title ,title ,@(when buffer
-                                   (list :buffer buffer)))
+                (:title ,(or title text)
+                        ,@(when buffer
+                            (list :buffer buffer)))
                 ,@(mapcar #'remove-smart-quoting body)))
     ,@attrs
-    ,title))
+    ,text))
 
 (deftag :ninput (body attrs &key rows cols &allow-other-keys)
   "Nicely styled <textarea> with a reasonable number of ROWS to accommodate the BODY."
