@@ -156,7 +156,18 @@ The predicate returns non-nil when the argument is of the `name' class.")
   (declare (ignore args))
   (intern (format nil "~a-P" name) *package*))
 
+(defun inherited-slot-type (slot-name superclasses)
+  (let ((parent (find slot-name superclasses
+                      :test (lambda (slot class)
+                              (find slot (mopu:slot-names class))))))
+    (when parent
+      (values
+       (getf (mopu:slot-properties parent slot-name)
+             :type)
+       parent))))
+
 (defun process-slot-initform (definition &key ; See `hu.dwim.defclass-star:process-slot-definition'.
+                                           superclasses
                                            initform-inference
                                            type-inference)
   (unless (consp definition)
@@ -170,9 +181,13 @@ The predicate returns non-nil when the argument is of the `name' class.")
           (not (definition-type definition))
           type-inference)
      (append definition
-             (let ((result-type (funcall type-inference definition)))
-               (when result-type
-                 (list :type result-type)))))
+             (multiple-value-bind (type parent)
+                 (inherited-slot-type (first definition) superclasses)
+               (if parent               ; Found parent slot, type possibly nil.
+                   (list :type type)
+                   (let ((result-type (funcall type-inference definition)))
+                     (when result-type
+                       (list :type result-type)))))))
     ((and (not (initform definition))
           initform-inference)
      (append definition
@@ -242,6 +257,8 @@ argument, right after the slot name.
 
 The same applies to the types with the `:type-inference' option, the
 `*type-inference*' default and the `:type' argument respectively.
+If the slot is found in a superclass, the inferred type is then that of the
+parent slot.
 
 If `:predicate-name-transformer' is non nil (defaults to
 `*predicate-name-transformer*'), a predicate of the resulting name is generated.
@@ -278,6 +295,7 @@ If `:export-predicate-name-p' is non-nil, which defaults to
            ,(mapcar (lambda (definition)
                       (process-slot-initform
                        definition
+                       :superclasses supers
                        :initform-inference initform-inference
                        :type-inference type-inference))
              slots)

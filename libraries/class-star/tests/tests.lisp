@@ -97,3 +97,27 @@
              (getf (mopu:slot-properties 'foo-type-infer 'fun) :type))
   (assert-eq nil
              (getf (mopu:slot-properties 'foo-type-infer 'composite) :type)))
+
+(define-test inherited-type-inference ()
+  (class-star:define-class parent ()
+    ((name "foo")
+     (age nil
+          :type (or null number))))
+  (class-star:define-class child (parent)
+    ((name nil
+           :type (or null string))
+     (age 17)))
+  (let ((p (make-instance 'parent))
+        (c (make-instance 'child)))
+    ;; Perform some  assignments: CCL can catch type errors here.
+    (setf (slot-value p 'age) 18)
+    (setf (slot-value c 'name) "bar")
+    (setf (slot-value c 'age) nil)
+    (assert-eq 'string
+               (getf (mopu:slot-properties 'parent 'name) :type))
+    (assert-equal '(or null number)
+                  (getf (mopu:slot-properties 'parent 'age) :type))
+    (assert-equal '(or null string)
+                  (getf (mopu:slot-properties 'child 'name) :type))
+    (assert-equal '(or null number)
+                  (getf (mopu:slot-properties 'child 'age) :type))))
