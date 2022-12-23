@@ -39,10 +39,14 @@ With LINEAR-VIEW-P, list buffers linearly instead."
              ;; See https://github.com/ruricolist/spinneret/issues/37.
              (let ((*print-pretty* nil))
                (spinneret:with-html
-                 (:p (:nbutton :text "✕ Delete buffer"
+                 (:p (:nbutton
+                       :text "✕"
+                       :title "Delete buffer"
                        (nyxt::delete-buffer :buffers buffer)
                        (reload-buffer listing-buffer))
-                     (:nbutton :text "→ Switch to buffer"
+                     (:nbutton
+                       :text "→"
+                       :title "Switch to buffer"
                        (nyxt::switch-buffer :buffer buffer) )
                      (:a :href (render-url (url buffer))
                          (if (uiop:emptyp (title buffer))
