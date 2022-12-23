@@ -83,6 +83,7 @@ most intuitive values."
         (*print-circle* circle)
         (*print-readably* readably)
         (*package* (find-package package)))
+    (remf keys :package)
     (apply #'write value :stream stream keys)))
 
 (export-always 'prini-to-string)
