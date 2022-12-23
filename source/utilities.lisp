@@ -81,7 +81,7 @@ most intuitive values."
         (*print-pretty* pretty)
         (*print-circle* circle)
         (*print-readably* readably)
-        (*package* package))
+        (*package* (find-package package)))
     (write value :stream stream)))
 
 (export-always 'prini-to-string)
