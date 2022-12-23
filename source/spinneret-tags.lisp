@@ -285,6 +285,8 @@ Forms in BODY can be unquoted, benefiting from the editor formatting."
                         ,@(when buffer
                             (list :buffer buffer)))
                 ,@(mapcar #'remove-smart-quoting body)))
+    ,@(when title
+        (list :title title))
     ,@attrs
     ,text))
 
