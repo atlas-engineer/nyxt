@@ -70,7 +70,11 @@ This leverages `mode-status' which can be specialized for individual modes."
     (:nbutton
       :text "≡"
       :title "Execute"
-      (nyxt:execute-command))))
+      (nyxt:execute-command))
+    (:nbutton
+      :text "★"
+      :title "Bookmark this page"
+      (funcall (read-from-string "nyxt/bookmark-mode:bookmark-current-url")))))
 
 (export-always 'format-status-load-status)
 (defmethod format-status-load-status ((status status-buffer))
