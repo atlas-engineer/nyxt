@@ -63,7 +63,7 @@ This leverages `mode-status' which can be specialized for individual modes."
       :text "↺"
       :title "Reload"
       (nyxt:reload-current-buffer))
-    (:button
+    (:nbutton
      :text "►"
      :title "Forwards"
      (nyxt/history-mode:history-forwards) )
