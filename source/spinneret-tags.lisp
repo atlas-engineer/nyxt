@@ -274,8 +274,8 @@ by default"
                    " " (:a.link :href ,(uiop:strcat "#" id) "#")))
        ,@body))))
 
-(deftag :nbutton (body attrs &key (title (alexandria:required-argument 'title)) buffer &allow-other-keys)
-  "A Lisp-invoking button with TITLE text/title and BODY action.
+(deftag :nbutton (body attrs &key (text (alexandria:required-argument 'text)) buffer &allow-other-keys)
+  "A Lisp-invoking button with TEXT text and BODY action.
 Evaluates (via `nyxt/ps:lisp-eval') the BODY in BUFFER when clicked.
 Forms in BODY can be unquoted, benefiting from the editor formatting."
   `(:button.button
