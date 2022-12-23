@@ -189,9 +189,12 @@ Features:
 
 (defmethod input ((mode repl-mode) &key (id (current-evaluation mode)))
   (ps-eval :buffer (buffer mode)
-    (ps:@ (or (nyxt/ps:qs document (ps:lisp (format nil ".input-buffer[data-repl-id=\"~a\"]" id)))
-              (ps:@ document active-element))
-          value)))
+    (let ((result (ps:@ (or (nyxt/ps:qs document (ps:lisp (format nil ".input-buffer[data-repl-id=\"~a\"]" id)))
+                            (ps:@ document active-element))
+                        value)))
+      (if (or (null result) (ps:undefined result))
+          ""
+          result))))
 
 (defmethod (setf input) (new-text (mode repl-mode) &key (id (current-evaluation mode)))
   (ps-eval :async t :buffer (buffer mode)
