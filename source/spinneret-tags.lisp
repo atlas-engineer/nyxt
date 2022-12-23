@@ -60,7 +60,7 @@ BODY forms can be of two kinds:
                               for symbol = (first (uiop:ensure-list clause))
                               collect (cons (nyxt:prini-to-string symbol)
                                             forms)))))))
-        ,@(loop for (clause . forms) in body
+        ,@(loop for (clause) in body
                 for symbol = (first (uiop:ensure-list clause))
                 for display = (second (uiop:ensure-list clause))
                 for title = (third (uiop:ensure-list clause))
