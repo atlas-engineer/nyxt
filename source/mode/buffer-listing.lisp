@@ -85,6 +85,12 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                  (unless (nyxt::buffer-parent buffer)
                    (buffer-tree->html buffer)))))))))
 
+;; FIXME: It's a terribly confusing panel:
+;; - Update button and buffer names are styled the same and are not visually
+;;   separated.
+;; - Buffer as a button is quite confusing and does not match the idea of a
+;;   switchable-to entity better separate action (switch, delete) from
+;;   presentation.
 (define-panel-command-global buffers-panel ()
     (panel-buffer "*Buffers panel*")
   "Display a list of buffers with easy switching."
