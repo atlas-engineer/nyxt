@@ -44,11 +44,8 @@ See `ndebug:condition-wrapper' for documentation."))
 (defun restarts->html (wrapper)
   (spinneret:with-html-string
     (dolist (restart (ndebug:restarts wrapper))
-      (:button :class "button"
-               :onclick (ps:ps (nyxt/ps:lisp-eval
-                                (:title "condition")
-                                (ndebug:invoke wrapper restart)))
-               (format nil "[~a] ~a" (dissect:name restart) (dissect:report restart))))))
+      (:nbutton :text (format nil "[~a] ~a" (dissect:name restart) (dissect:report restart))
+        (ndebug:invoke wrapper restart)))))
 
 (defun backtrace->html (wrapper)
   (spinneret:with-html-string
