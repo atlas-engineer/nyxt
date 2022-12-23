@@ -21,6 +21,11 @@
   "Alias of document.querySelectorAll"
   `(chain ,context (query-selector-all ,selector)))
 
+(export-always 'qs-id)
+(defpsmacro qs-id (context id)
+  "Alias of document.getElementById"
+  `(chain ,context (get-element-by-id ,id)))
+
 (export-always 'qs-nyxt-id)
 (defpsmacro qs-nyxt-id (context id)
   "document.querySelector tailored for Nyxt IDs."
