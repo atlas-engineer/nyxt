@@ -37,6 +37,39 @@ Otherwise, return the form as is."
        (eval form))
       (t form))))
 
+(deftag :nselect (body attrs &key (id (alexandria:required-argument 'id)) &allow-other-keys)
+  "Generate <select> tag from the BODY resembling cond clauses.
+
+BODY forms can be of two kinds:
+- (SYMBOL . FORMS) -- creates <option value=\"symbol\">symbol</option> and runs
+  FORMS when it's selected.
+- ((SYMBOL DISPLAY) . FORMS) -- creates <option value=\"symbol\">display</option>
+  and runs FORMS when it's selected. DISPLAY can be an HTML string producing form."
+  (with-gensyms (value)
+    (once-only (id)
+      `(:select.button
+        ,@attrs
+        :id ,id
+        :onchange
+        (when (nyxt:current-buffer)
+          (ps:ps (nyxt/ps:lisp-eval
+                  (:title "nselect-choice")
+                  (let ((,value (nyxt:ps-eval (ps:chain (nyxt/ps:qs document (+ "#" (ps:lisp ,id))) value))))
+                    (str:string-case ,value
+                      ,@(loop for (clause . forms) in body
+                              for symbol = (first (uiop:ensure-list clause))
+                              collect (cons (nyxt:prini-to-string symbol)
+                                            forms)))))))
+        ,@(loop for (clause . forms) in body
+                for symbol = (first (uiop:ensure-list clause))
+                for display = (second (uiop:ensure-list clause))
+                for title = (third (uiop:ensure-list clause))
+                collect `(:option
+                          :value ,(nyxt:prini-to-string symbol)
+                          ,@(when title
+                              (list :title title))
+                          ,(string-capitalize (or display symbol))))))))
+
 ;; TODO: Store the location it's defined in as a :title or link for discoverability?
 ;; FIXME: Maybe use :nyxt-user as the default package to not quarrel with REPL & config?
 (deftag :ncode (body attrs &key (package :nyxt) inline-p literal-p (repl-p t) (config-p t) (copy-p t)
@@ -81,66 +114,43 @@ unconditionally converts those to tags unless the whole form is quoted.)"
          (*print-escape* nil)
          (id (nyxt:prini-to-string (gensym)))
          (select-code
-           `(:select.button
-             :id ,id
-             :style ,(unless inline-p
-                       "position: absolute; top: 0; right: 0; margin: 0; padding: 2px")
-             :onchange
-             (when (nyxt:current-buffer)
-               (ps:ps (nyxt/ps:lisp-eval
-                       (:title "change-evaluation-package")
-                       (let ((value (nyxt:ps-eval
-                                      (ps:chain (nyxt/ps:qs document (+ "#" (ps:lisp ,id))) value))))
-                         (str:string-case value
-                           ("repl" (nyxt:buffer-load-internal-page-focus
-                                    (read-from-string "nyxt/repl-mode:repl")
-                                    :form ,code))
-                           ("config"
-                            (alexandria:write-string-into-file
-                             ,code (nfiles:expand nyxt::*auto-config-file*)
-                             :if-exists :append))
-                           ("copy"
-                            (funcall (read-from-string "nyxt:ffi-buffer-copy")
-                                     (nyxt:current-buffer) ,code))
-                           ("editor"
-                            (funcall (read-from-string "nyxt/editor-mode:edit-file")
-                                     ,file))
-                           ("external-editor"
-                            (uiop:launch-program
-                             (append (funcall (read-from-string "nyxt:external-editor-program")
-                                              (symbol-value (read-from-string "nyxt:*browser*")))
-                                     (list (uiop:native-namestring ,file))))))))))
-             ,@(when copy-p
-                 `((when (nyxt:current-buffer)
-                     (:option
-                      :value "copy"
-                      :title "Copy the code to clipboard."
-                      "Copy"))))
-             ,@(when config-p
-                 `((when (nyxt:current-buffer)
-                     (:option
-                      :value "config"
-                      :title (format nil "Append this code to the auto-configuration file (~a)."
-                                     (nfiles:expand nyxt::*auto-config-file*))
-                      "Add to auto-config"))))
-             ,@(when repl-p
-                 `((when (nyxt:current-buffer)
-                     (:option
-                      :value "repl"
-                      :title "Open this code in Nyxt REPL to experiment with it."
-                      "Try in REPL"))))
-             ,@(when (and file editor-p)
-                 `((when (nyxt:current-buffer)
-                     (:option
-                      :value "editor"
-                      :title "Open the file this code comes from in Nyxt built-in editor-mode."
-                      "Open in built-in editor"))))
-             ,@(when (and file external-editor-p)
-                 `((when (nyxt:current-buffer)
-                     (:option
-                      :value "external-editor"
-                      :title "Open the file this code comes from in external editor."
-                      "Open in external editor")))))))
+           `(:nselect
+              :id ,id
+              :style ,(unless inline-p
+                        "position: absolute; top: 0; right: 0; margin: 0; padding: 2px")
+              ,@(when copy-p
+                  `(((copy "Copy" "Copy the code to clipboard.")
+                     (funcall (read-from-string "nyxt:ffi-buffer-copy")
+                              (nyxt:current-buffer) ,code))))
+              ,@(when config-p
+                  `(((config
+                      "Add to auto-config"
+                      (format nil "Append this code to the auto-configuration file (~a)."
+                              (nfiles:expand nyxt::*auto-config-file*)))
+                     (alexandria:write-string-into-file
+                      ,code (nfiles:expand nyxt::*auto-config-file*)
+                      :if-exists :append))))
+              ,@(when repl-p
+                  `(((repl
+                      "Try in REPL"
+                      "Open this code in Nyxt REPL to experiment with it.")
+                     (nyxt:buffer-load-internal-page-focus
+                      (read-from-string "nyxt/repl-mode:repl")
+                      :form ,code))))
+              ,@(when (and file editor-p)
+                  `(((editor
+                      "Open in built-in editor"
+                      "Open the file this code comes from in Nyxt built-in editor-mode.")
+                     (funcall (read-from-string "nyxt/editor-mode:edit-file")
+                              ,file))))
+              ,@(when (and file external-editor-p)
+                  `(((external-editor
+                      "Open in external editor"
+                      "Open the file this code comes from in external editor.")
+                     (uiop:launch-program
+                      (append (funcall (read-from-string "nyxt:external-editor-program")
+                                       (symbol-value (read-from-string "nyxt:*browser*")))
+                              (list (uiop:native-namestring ,file))))))))))
     (if inline-p
         `(:span (:code ,@attrs (the string ,code)) ,select-code)
         ;; https://spdevuk.com/how-to-create-code-copy-button/
