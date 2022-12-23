@@ -67,15 +67,13 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                            collect (buffer-markup (analysis::source document)))))))
     (spinneret:with-html-string
       (:h1 "Buffers")
-      (:button :class "button"
-               :onclick (ps:ps (nyxt/ps:lisp-eval (:title "tree-display") (nyxt/buffer-listing-mode::list-buffers)))
-               "Tree display")
-      (:button :class "button"
-               :onclick (ps:ps (nyxt/ps:lisp-eval
-                                (:title "linear-display")
-                                (nyxt/buffer-listing-mode::list-buffers :linear-view-p t)))
-               "Linear display")
-      (:br "")
+      (:nbutton
+        :text "Tree display"
+        (nyxt/buffer-listing-mode::list-buffers))
+      (:nbutton
+        :text "Linear display"
+        (nyxt/buffer-listing-mode::list-buffers :linear-view-p t))
+      (:br)
       (:div
        (if cluster
            (loop for cluster-key being the hash-key
@@ -92,12 +90,9 @@ With LINEAR-VIEW-P, list buffers linearly instead."
   "Display a list of buffers with easy switching."
   (flet ((buffer-markup (buffer)
            "Create the presentation for a buffer."
-           (spinneret:with-html
-             (:p (:button :class "button"
-                          :onclick (ps:ps (nyxt/ps:lisp-eval
-                                           (:title "switch-buffer")
-                                           (nyxt::switch-buffer :buffer buffer)))
-                          (:span :title (title buffer) :class "title" (title buffer)))))))
+           (spinneret:with-html-string
+             (:p (:nbutton :text (title buffer)
+                   (nyxt::switch-buffer :buffer buffer))))))
     (spinneret:with-html-string
       (:nstyle (lass:compile-and-write
                 '(.button
@@ -107,16 +102,13 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                   :text-overflow ellipsis)))
       (:body
        (:h1 "Buffers")
-       (:button :class "button"
-                :onclick (ps:ps (nyxt/ps:lisp-eval
-                                 (:title "reload-buffer" :buffer panel-buffer)
-                                 (reload-buffer
-                                  (find
-                                   (render-url (url panel-buffer))
-                                   (nyxt::panel-buffers (current-window))
-                                   :test #'string=
-                                   :key (compose
-                                         #'render-url #'url)))))
-                "Update ↺")
+       (:nbutton :text "Update ↺"
+         (reload-buffer
+          (find
+           (render-url (url panel-buffer))
+           (nyxt::panel-buffers (current-window))
+           :test #'string=
+           :key (compose
+                 #'render-url #'url))))
        (loop for buffer in (buffer-list)
-             collect (buffer-markup buffer))))))
+             collect (:raw (buffer-markup buffer)))))))
