@@ -316,10 +316,7 @@ To discover the default value of a slot or all slots of a class, use the
            ;; extension/application-specific class too. If `sym:resolve-symbol'
            ;; fails, then hope that `find-class' will either work or highlight
            ;; the problem.
-           for class = (if (member (symbol-package class-name)
-                                   (mapcar #'find-package '(:nyxt-user :keyword)))
-                           (sym:resolve-symbol class-name :class)
-                           class-name)
+           for class = (resolve-user-symbol class-name :class)
            append (loop for ((slot-name value . rest)) on (first slots-and-values)
                         ;; FIXME: It's alarming that we resolve the slot name at
                         ;; compile-time instead of run-time. Move to the handler

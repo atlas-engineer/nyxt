@@ -147,10 +147,7 @@ Return nil to forward to renderer or non-nil otherwise."
 
              ((typep bound-function '(and (not null) (or symbol command)))
               (let ((command (typecase bound-function
-                               (symbol (symbol-function (if (member (symbol-package bound-function)
-                                                                    (mapcar #'find-package '(:nyxt-user :keyword)))
-                                                            (sym:resolve-symbol bound-function :command)
-                                                            bound-function)))
+                               (symbol (symbol-function (resolve-user-symbol bound-function :command)))
                                (command bound-function))))
                 (check-type command command)
                 (log:debug "Found key binding ~a to ~a" (keyspecs key-stack translated-key) bound-function)

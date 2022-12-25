@@ -225,6 +225,16 @@ When unset, it corresponds to the mode name."
   (when (sym:mode-symbol-p symbol)
     (find-class symbol)))
 
+(defun resolve-user-symbol (designator type &optional (packages sym:*default-packages*) error-p)
+  "`nsymbols:resolve-symbol' wrapper, only resolving strings, keywords, and NYXT-USER symbols.
+Useful for user configuration smarts, returns unaltered DESIGNATOR otherwise."
+  (etypecase designator
+    (string (sym:resolve-symbol designator type packages error-p))
+    (keyword (sym:resolve-symbol designator type packages error-p))
+    (symbol (if (eq (symbol-package designator) (find-package :nyxt-user))
+                (sym:resolve-symbol designator type packages error-p)
+                designator))))
+
 (-> find-submode (sym:mode-symbol &optional buffer) (maybe mode))
 (export-always 'find-submode)
 (defun find-submode (mode-symbol &optional (buffer (current-buffer)))

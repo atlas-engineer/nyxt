@@ -510,7 +510,7 @@ the buffer (which gives us more flexibility)."))
     "Remove the duplicates from the `default-modes' and bring them all to a proper form.
 This allows setting modes as :DARK-MODE or 'EMACS-MODE in whatever package, and
 Nsymbols will find the proper symbol, unless duplicate."
-    (mapcar (alex:rcurry #'sym:resolve-symbol :mode (list-all-packages))
+    (mapcar (alex:rcurry #'resolve-user-symbol :mode (list-all-packages))
             (remove-duplicates (call-next-method)
                                ;; Modes at the beginning of the list have higher priority.
                                :from-end t)))
