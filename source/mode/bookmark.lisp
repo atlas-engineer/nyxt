@@ -57,16 +57,6 @@ Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
        "m u" 'bookmark-url
        "m d" 'delete-bookmark)))
    (style (theme:themed-css (theme *browser*)
-            `("summary"
-              :background-color ,theme:secondary
-              :color ,theme:on-secondary
-              :font-size "14px"
-              :padding "12px"
-              :margin "6px"
-              :border "none"
-              :border-radius "2px"
-              :outline "none"
-              :text-align "left")
             `("dl"
               :margin-left "8px")
             ;; Taken from buffer.lisp to save space for big bookmark lists.
@@ -326,8 +316,7 @@ rest in background buffers."
          (:p (format nil "No bookmarks in ~s." (files:expand (bookmarks-file bookmarks-buffer)))))
         (t (maphash
             (lambda (tag bookmarks)
-              (:details
-               (:summary (or tag "Unsorted"))
+              (:nsection :title (or tag "Unsorted")
                (dolist (bookmark bookmarks)
                  (let ((uri-host (quri:uri-host (url bookmark)))
                        (url-href (render-url (url bookmark))))
