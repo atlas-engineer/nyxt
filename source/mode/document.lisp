@@ -424,20 +424,19 @@ ID is a buffer `id'."
 (defun get-headings (&key (buffer (current-buffer)))
   (ps-labels :buffer buffer
     ((heading-scroll-position
-      (element)
+      :buffer buffer (element)
       (ps:chain (nyxt/ps:qs-nyxt-id document (ps:lisp (nyxt/dom:get-nyxt-id element)))
                 (get-bounding-client-rect) y)))
-    (sort (map 'list
-               (lambda (e)
-                 (make-instance 'heading :inner-text (plump:text e)
-                                         :element e
-                                         :buffer buffer
-                                         :keywords (ignore-errors
-                                                    (analysis:extract-keywords
-                                                     (plump:text (plump:next-element e))))
-                                         :scroll-position (heading-scroll-position e)))
-               (clss:select "h1, h2, h3, h4, h5, h6" (document-model buffer)))
-          #'< :key (compose #'parse-integer #'nyxt/dom:get-nyxt-id #'element))))
+    (map 'list
+         (lambda (e)
+           (make-instance 'heading :inner-text (plump:text e)
+                                   :element e
+                                   :buffer buffer
+                                   :keywords (ignore-errors
+                                              (analysis:extract-keywords
+                                               (plump:text (plump:next-element e))))
+                                   :scroll-position (heading-scroll-position e)))
+         (clss:ordered-select "h1, h2, h3, h4, h5, h6" (document-model buffer)))))
 
 (defun current-heading (&optional (buffer (current-buffer)))
   (alex:when-let* ((scroll-position (document-scroll-position buffer))
