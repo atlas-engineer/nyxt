@@ -305,8 +305,8 @@ Warning: URL is a string."
            (loop for e across (clss:select "[nyxt-identifier]" dom)
                  do (plump:remove-attribute e "nyxt-identifier"))
            (map nil #'plump:remove-child
-                ;; FIXME: This selector implies a certain set of
-                ;; identifiers/classes that we use. Update whever we change it?
+                ;; FIXME: This selector hardcodes the set of identifiers/classes
+                ;; we use. Update whenever we change it?
                 (reverse (clss:select ".nyxt-hint, .nyxt-search-node, .nyxt-select-hint" dom)))
            (plump:serialize dom nil))
       (when (background-buffer-p buffer)
