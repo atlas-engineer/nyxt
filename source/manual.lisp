@@ -271,10 +271,12 @@ mode-based, the consequences are far reaching.")
         (:p "These can be used in the following ways:")
         (:ul
          (:li "Manually, by calling:")
-         (:ul
-          (:li (:nxref :command 'save-non-default-modes-for-future-visits) ", which saves \"unusual\" modes - non-default modes that were
+         (:dl
+          (:dt (:nxref :command 'save-non-default-modes-for-future-visits))
+          (:dd "which saves \"unusual\" modes - non-default modes that were
 toggled exclusively for a given URL.")
-          (:li (:nxref :command 'save-exact-modes-for-future-visits) ", which saves the exact list of enabled modes for a given
+          (:dt (:nxref :command 'save-exact-modes-for-future-visits))
+          (:dd "which saves the exact list of enabled modes for a given
           URL."))
          (:li "Automatically, by setting "
               (:nxref :slot 'prompt-on-mode-toggle-p :class-name 'modable-buffer)
