@@ -41,11 +41,24 @@ Otherwise, return the form as is."
   "Generate <select> tag from the BODY resembling cond clauses.
 
 BODY forms can be of two kinds:
-- (SYMBOL . FORMS) -- creates <option value=\"symbol\">symbol</option> and runs
+
+- (VALUE . FORMS) -- creates <option value=\"value\">value</option> and runs
   FORMS when it's selected.
-- ((SYMBOL DISPLAY) . FORMS) -- creates <option value=\"symbol\">display</option>
-  and runs FORMS when it's selected. DISPLAY can be an HTML string producing form."
-  (with-gensyms (value)
+
+- ((VALUE DISPLAY TITLE) . FORMS) -- creates an
+  <option value=\"value\" title=\"title\">display</option>
+  and runs FORMS when it's selected. DISPLAY and TITLE are optional literal
+  strings.
+
+In both cases, VALUE should be a literal (and printable) atom. For instance,
+symbol, number, string, or keyword.
+
+Example:
+\(:nselect :id \"number-guessing\"
+  (1 (nyxt:echo \"Too low!\"))
+  (2 (nyxt:echo \"Correct!\"))
+  (3 (nyxt:echo \"Too high!\")))"
+  (with-gensyms (var)
     (once-only (id)
       `(:select.button
         ,@attrs
@@ -54,21 +67,21 @@ BODY forms can be of two kinds:
         (when (nyxt:current-buffer)
           (ps:ps (nyxt/ps:lisp-eval
                   (:title "nselect-choice")
-                  (let ((,value (nyxt:ps-eval (ps:chain (nyxt/ps:qs document (+ "#" (ps:lisp ,id))) value))))
-                    (str:string-case ,value
+                  (let ((,var (nyxt:ps-eval (ps:chain (nyxt/ps:qs document (+ "#" (ps:lisp ,id))) value))))
+                    (str:string-case ,var
                       ,@(loop for (clause . forms) in (mapcar #'remove-smart-quoting body)
-                              for symbol = (first (uiop:ensure-list clause))
-                              collect (cons (nyxt:prini-to-string symbol)
+                              for value = (first (uiop:ensure-list clause))
+                              collect (cons (nyxt:prini-to-string value)
                                             forms)))))))
         ,@(loop for (clause) in (mapcar #'remove-smart-quoting body)
-                for symbol = (first (uiop:ensure-list clause))
+                for value = (first (uiop:ensure-list clause))
                 for display = (second (uiop:ensure-list clause))
                 for title = (third (uiop:ensure-list clause))
                 collect `(:option
-                          :value ,(nyxt:prini-to-string symbol)
+                          :value ,(nyxt:prini-to-string value)
                           ,@(when title
                               (list :title title))
-                          ,(string-capitalize (or display symbol))))))))
+                          ,(string-capitalize (or display (nyxt:prini-to-string value)))))))))
 
 ;; TODO: Store the location it's defined in as a :title or link for discoverability?
 ;; FIXME: Maybe use :nyxt-user as the default package to not quarrel with REPL & config?
