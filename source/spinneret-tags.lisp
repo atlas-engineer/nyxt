@@ -251,8 +251,7 @@ non-overridable."
 (deftag :nsection (body attrs &key (title (alexandria:required-argument 'title))
                         level
                         (open-p t)
-                        (id (str:remove-punctuation (str:downcase title)
-                                                    :replacement "-"))
+                        id
                         &allow-other-keys)
   "Collapsible and reference-able <section> with a neader.
 TITLE should be a human-readable title for a section.
@@ -269,24 +268,29 @@ by default"
   (remf attrs :level)
   (remf attrs :open-p)
   (remf attrs :id)
-  `(let ((spinneret::*html-path*
-           ;; Push as many :section tags into the path, as necessary to imply
-           ;; LEVEL for the sections inside this one. A trick on Spinneret to
-           ;; make it think it's deeply nested already.
-           (append
-            spinneret::*html-path*
-            (make-list ,(if level
-                            `(1- (- ,level (spinneret::heading-depth)))
-                            0)
-                       :initial-element :section))))
-     (:section.section
-      :id ,id
-      (:details
-       :open ,open-p
-       (:summary (:h* :style "display: inline"
-                   ,@attrs ,title
-                   " " (:a.link :href ,(uiop:strcat "#" id) "#")))
-       ,@body))))
+  (with-gensyms (id-var title-var)
+    `(let ((spinneret::*html-path*
+             ;; Push as many :section tags into the path, as necessary to imply
+             ;; LEVEL for the sections inside this one. A trick on Spinneret to
+             ;; make it think it's deeply nested already.
+             (append
+              spinneret::*html-path*
+              (make-list ,(if level
+                              `(1- (- ,level (spinneret::heading-depth)))
+                              0)
+                         :initial-element :section))))
+       (let* ((,title-var ,title)
+              (,id-var (or ,id (str:remove-punctuation (str:downcase ,title-var) :replacement "-"))))
+         (check-type ,title-var string "a :nsection-friendly title string")
+         (check-type ,id-var string "a :nsection-friendly ID string")
+         (:section.section
+          :id ,id-var
+          (:details
+           :open ,open-p
+           (:summary (:h* :style "display: inline"
+                       ,@attrs ,title
+                       " " (:a.link :href (uiop:strcat "#" ,id-var) "#")))
+           ,@body))))))
 
 (deftag :nbutton (body attrs &key (text (alexandria:required-argument 'text)) title buffer &allow-other-keys)
   "A Lisp-invoking button with TEXT text and BODY action.
