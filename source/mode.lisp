@@ -229,7 +229,7 @@ When unset, it corresponds to the mode name."
   "`nsymbols:resolve-symbol' wrapper, only resolving strings, keywords, and NYXT-USER symbols.
 Useful for user configuration smarts, returns unaltered DESIGNATOR otherwise."
   (etypecase designator
-    (string (sym:resolve-symbol designator type packagesn))
+    (string (sym:resolve-symbol designator type packages))
     (keyword (sym:resolve-symbol designator type packages))
     (symbol (if (eq (symbol-package designator) (find-package :nyxt-user))
                 (sym:resolve-symbol designator type packages)
