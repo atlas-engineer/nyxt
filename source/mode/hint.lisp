@@ -12,7 +12,8 @@
    (auto-follow-hints-p
     nil
     :type boolean
-    :documentation "Whether the hints are automatically followed when matching user input.")
+    :documentation "Whether the hints are automatically followed when matching
+user input.")
    (fit-to-prompt-p
     nil
     :type boolean
