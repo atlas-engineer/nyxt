@@ -708,6 +708,8 @@ store them somewhere and `ffi-buffer-delete' them once done."))
     nil
     :documentation "Display the modes as a list of glyphs.")
    (style (theme:themed-css (theme *browser*)
+            `(*
+              :box-sizing border-box)
             `(body
               :line-height "20px"
               :font-size "14px"
@@ -737,7 +739,11 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :display "flex"
               ;; Columns: controls, url, tabs, modes
               :justify-content "space-between"
-              :overflow-y "hidden")
+              :overflow-y "hidden"
+              :border-top "0.1em" groove ,theme:on-secondary
+              :border-bottom "0.1em" groove ,theme:on-secondary
+              :min-width "100vw"
+              :min-height "100vh")
             `("#controls"
               :background-color ,theme:secondary
               :color ,theme:on-secondary
