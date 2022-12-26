@@ -56,11 +56,11 @@ BODY forms can be of two kinds:
                   (:title "nselect-choice")
                   (let ((,value (nyxt:ps-eval (ps:chain (nyxt/ps:qs document (+ "#" (ps:lisp ,id))) value))))
                     (str:string-case ,value
-                      ,@(loop for (clause . forms) in body
+                      ,@(loop for (clause . forms) in (mapcar #'remove-smart-quoting body)
                               for symbol = (first (uiop:ensure-list clause))
                               collect (cons (nyxt:prini-to-string symbol)
                                             forms)))))))
-        ,@(loop for (clause) in body
+        ,@(loop for (clause) in (mapcar #'remove-smart-quoting body)
                 for symbol = (first (uiop:ensure-list clause))
                 for display = (second (uiop:ensure-list clause))
                 for title = (third (uiop:ensure-list clause))
