@@ -181,10 +181,11 @@ CLASS-NAME should be the symbol designating a class. It's not called CLASS
 because Spinneret has special behavior for CLASS pre-defined and
 non-overridable."
   (let* ((first (first body))
-         (symbol (or package variable function command slot class-name (when (symbolp first) first)))
+         (symbol (or package variable function command slot class-name mode
+                     (when (symbolp first) first)))
          (printable (or (when (and (symbolp first) (eq first symbol))
                           (second body))
-                        (first body) package variable function command slot class-name)))
+                        first package variable function command slot class-name mode)))
     `(:code
       ,@(progn
           (remf attrs :class-name)
