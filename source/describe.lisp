@@ -424,25 +424,6 @@ turned into links to their respective description page."
           (:h1 (format nil "~s" variable))
           (:p "Unbound")))))
 
-(defun format-arglist (arglist)
-  (if arglist
-      (multiple-value-bind (required optional rest keywords aok? aux key?)
-          (alex:parse-ordinary-lambda-list arglist
-                                           :normalize-optional nil
-                                           :normalize-keyword nil)
-        (declare (ignore aux aok? key?))
-        (with-output-to-string (s)
-          (when required
-            (format s "~{~a~^ ~}~&" required))
-          (when optional
-            (format s "&optional ~{~s~^ ~}~&"
-                    optional))
-          (when rest
-            (format s "&rest ~a~&" rest))
-          (when keywords
-            (format s "&key ~{~s~^ ~}~&" keywords))))
-      "()"))
-
 (defun format-function-type (function-type)
   (match function-type
     ((list 'function argument-types return-types)
@@ -467,8 +448,7 @@ For generic functions, describe all the methods."
                  (spinneret:with-html-string
                    (:raw (resolve-backtick-quote-links (documentation input 'function) (symbol-package input)))
                    (:h2 "Argument list")
-                   (:p (:pre (let ((*package* (symbol-package input)))
-                               (format-arglist (mopu:function-arglist input)))))
+                   (:p (:pre (prini-to-string (arglist input) :package (symbol-package input))))
                    (when (sym:command-symbol-p input)
                      (let* ((key-keymap-pairs (nth-value 1 (keymaps:binding-keys input (all-keymaps))))
                             (key-keymapname-pairs (mapcar (lambda (pair)
