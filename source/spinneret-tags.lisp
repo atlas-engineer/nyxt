@@ -169,6 +169,7 @@ unconditionally converts those to tags unless the whole form is quoted.)"
         ;; https://spdevuk.com/how-to-create-code-copy-button/
         `(:div :style "position:relative"
                (:pre ,@attrs ,select-code
+                     ;; TODO: Resolve backtick-quote links.
                      (:code (the string ,code)))))))
 
 (deftag :nxref (body attrs &key slot mode class-name function command variable package &allow-other-keys)
