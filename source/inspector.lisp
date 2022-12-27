@@ -272,7 +272,7 @@ values in help buffers, REPL and elsewhere."))
                                           (closer-mop:class-slots (class-of value)))))
           (:dl
            (dolist (slot-name slot-names)
-             (:dt (prin1-to-string slot-name)
+             (:dt (prini-to-string slot-name)
                   " "
                   (:button
                    :class "button"
