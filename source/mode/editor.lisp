@@ -109,11 +109,18 @@ contains an `nyxt/editor-mode:editor-mode' instance (or a subclass thereof)."))
       mode)))
 
 (defmethod write-file-with-editor ((buffer editor-buffer) &key (if-exists :error))
-  (alexandria:if-let ((editor (editor buffer)))
-    (alexandria:write-string-into-file (get-content editor)
-                                       (file buffer)
-                                       :if-exists if-exists)
-    (echo "Editor buffer cannot write file without configured editor mode.")))
+  (cond
+    ((editor buffer)
+     (handler-case
+         (alexandria:write-string-into-file (get-content (editor buffer))
+                                            (file buffer)
+                                            :if-exists if-exists)
+       (file-error (e)
+         (echo-warning "Cannot write ~a: ~a" (file buffer) e)
+         nil)))
+    (t
+     (echo-warning "Editor buffer cannot write file without configured editor mode.")
+     nil)))
 
 (defun prompt-for-editor-file ()
   (uiop:native-namestring
@@ -138,12 +145,11 @@ contains an `nyxt/editor-mode:editor-mode' instance (or a subclass thereof)."))
   (if (uiop:file-exists-p (file buffer))
       (if-confirm ((format nil "Overwrite ~s?" (file buffer))
                    :yes "overwrite" :no "cancel")
-                  (progn (write-file-with-editor buffer :if-exists :overwrite)
-                         (echo "File ~s saved." (file buffer)))
+                  (echo "File ~s ~:[not ~;~]saved." (file buffer)
+                        (write-file-with-editor buffer :if-exists :overwrite))
                   (echo "File ~s not saved." (file buffer)))
-      (progn
-        (write-file-with-editor buffer :if-exists if-exists)
-        (echo "File ~s saved." (file buffer)))))
+      (echo "File ~s ~:[not ~;~]saved." (file buffer)
+            (write-file-with-editor buffer :if-exists if-exists))))
 
 (define-command-global edit-file (&optional (file (prompt-for-editor-file)))
   "Open a new editor and query a FILE to edit in it."
