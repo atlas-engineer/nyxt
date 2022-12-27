@@ -304,7 +304,9 @@ Otherwise prompt for matches."
       (:h1 (:raw (escaped-literal-print value)))
       (:dl
        (:dt "Type")
-       (:dd (princ-to-string (type-of value))))
+       (:dd (if (sym:class-symbol-p (type-of value))
+                (:nxref :class-name (type-of value))
+                (prini-to-string (type-of value)))))
       (:p (:raw (value->html value))))))
 
 (export-always 'resolve-backtick-quote-links)
