@@ -117,6 +117,9 @@ major versions."
                               result)))))
 
 (define-migration "3"
+  (%slot-default)
+  (:p "Use " (:nxref :variable '%slot-default%) " or " (:nxref :variable '%slot-value%) " instead.")
+
   (download-directory)
   (:p (:nxref :slot 'download-directory :class-name 'context-buffer)
       " is in " (:nxref :class-name 'context-buffer) ".")
