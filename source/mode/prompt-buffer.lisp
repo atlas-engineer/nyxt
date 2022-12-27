@@ -523,7 +523,7 @@ Only available if `prompter:multi-selection-p' is non-nil."
          (sources (prompter:sources prompt-buffer)))
     (spinneret:with-html-string
       (:h1 (prompter:prompt prompt-buffer))
-      (:p (:raw (resolve-backtick-quote-links (documentation 'prompt-buffer 'type) 'prompt-buffer)))
+      (:p (:raw (resolve-backtick-quote-links (documentation 'prompt-buffer 'type) :nyxt/prompt-buffer-mode)))
       (:h2 "Modes:")
       (:ul
        (loop for mode in modes

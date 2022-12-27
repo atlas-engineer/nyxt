@@ -295,22 +295,25 @@ Otherwise prompt for matches."
       (:p (:raw (value->html value))))))
 
 (export-always 'resolve-backtick-quote-links)
-(defun resolve-backtick-quote-links (string parent-symbol)
+(defun resolve-backtick-quote-links (string parent-package)
   "Return the STRING documentation with symbols surrounded by the (` ') pair
 turned into links to their respective description page."
   (labels ((resolve-as (symbol type)
              (sym:resolve-symbol symbol type
-                                 (list :nyxt :nyxt-user (symbol-package parent-symbol))))
+                                 (list :nyxt :nyxt-user parent-package)))
            (resolve-regex (target-string start end match-start match-end reg-starts reg-ends)
              (declare (ignore start end reg-starts reg-ends))
              ;; Excluding backtick & quote.
              (let* ((name (subseq target-string (1+ match-start) (1- match-end)))
-                    (symbol (ignore-errors (let ((*package* (symbol-package parent-symbol)))
-                                             (read-from-string name nil))))
-                    (function (and (fboundp symbol)
+                    (symbol (ignore-errors (uiop:safe-read-from-string
+                                            name :package parent-package :eof-error-p nil)))
+                    (function (and symbol
+                                   (fboundp symbol)
                                    (resolve-as symbol :function)))
-                    (variable (resolve-as symbol :variable))
-                    (class (resolve-as symbol :class))
+                    (variable (when symbol
+                                (resolve-as symbol :variable)))
+                    (class (when symbol
+                             (resolve-as symbol :class)))
                     ;; TODO: No way to determine the class reliably based on the slot name?
                     ;; (slot (resolve-symbol name :slot (list :nyxt :nyxt-user *package*)))
                     (url (cond
@@ -383,7 +386,7 @@ turned into links to their respective description page."
         (spinneret:with-html-string
           (:nstyle (style buffer))
           (:h1 (format nil "~s" variable)) ; Use FORMAT to keep package prefix.
-          (:raw (resolve-backtick-quote-links (documentation variable 'variable) variable))
+          (:raw (resolve-backtick-quote-links (documentation variable 'variable) (symbol-package variable)))
           (:h2 "Type")
           (:p (princ-to-string (type-of (symbol-value variable))))
           (:h2 "Current Value:")
@@ -449,7 +452,7 @@ For generic functions, describe all the methods."
       (let ((input function))
         (flet ((fun-desc (input)
                  (spinneret:with-html-string
-                   (:raw (resolve-backtick-quote-links (documentation input 'function) input))
+                   (:raw (resolve-backtick-quote-links (documentation input 'function) (symbol-package input)))
                    (:h2 "Argument list")
                    (:p (:pre (let ((*package* (symbol-package input)))
                                (format-arglist (mopu:function-arglist input)))))
@@ -510,7 +513,7 @@ For generic functions, describe all the methods."
                                                         (reload-current-buffer)))
                      "Remove method")
                     (:raw (resolve-backtick-quote-links (documentation method 't)
-                                                        (mopu:method-name method)))
+                                                        (symbol-package (mopu:method-name method))))
                     (:h4 "Argument list")
                     (:p (:pre
                          (let ((*package* (symbol-package input)))
@@ -610,7 +613,7 @@ A command is a special kind of function that can be called with
        (when (getf props :documentation)
          (:dt "Documentation")
          (:dd (:raw (resolve-backtick-quote-links
-                     (getf props :documentation) slot))))))))
+                     (getf props :documentation) (symbol-package slot)))))))))
 
 (define-internal-page-command-global describe-class
     (&key
@@ -628,7 +631,7 @@ A command is a special kind of function that can be called with
         (spinneret:with-html-string
           (:nstyle (style buffer))
           (:h1 (symbol-name class) " (" (sera:class-name-of (find-class class)) ")")
-          (:p (:raw (resolve-backtick-quote-links (documentation class 'type) class)))
+          (:p (:raw (resolve-backtick-quote-links (documentation class 'type) (symbol-package class))))
           (when (mopu:direct-superclasses class)
             (:h2 "Direct superclasses:")
             (:ul (loop for class-name in (mapcar #'class-name (mopu:direct-superclasses class))
