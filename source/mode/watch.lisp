@@ -38,7 +38,7 @@
    (nyxt/repeat-mode:repeat-action
     #'(lambda (mode)
         (reload-buffer (buffer mode)))
-    :type (maybe (function (repeat-mode))))))
+    :type (maybe (function (nyxt/repeat-mode:repeat-mode))))))
 
 (define-command-global watch-buffer (&optional (buffer (current-buffer)))
   "Reload BUFFER at a prompted interval."
