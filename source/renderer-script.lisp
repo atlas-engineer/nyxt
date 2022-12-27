@@ -313,7 +313,7 @@ not exist."
 (defmacro define-internal-page (name (&rest form-args) (&rest initargs) &body body)
   "Define an `internal-page'.
 FORM-ARGS or the `internal-page' `form' keyword arguments.
-`INITARGS' are passed to the `internal-page' initialization arguments
+INITARGS are passed to the `internal-page' initialization arguments
 
 Example:
 
