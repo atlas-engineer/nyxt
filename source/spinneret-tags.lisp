@@ -308,12 +308,21 @@ Forms in BODY can be unquoted, benefiting from the editor formatting."
     ,@attrs
     ,text))
 
-(deftag :ninput (body attrs &key rows cols &allow-other-keys)
-  "Nicely styled <textarea> with a reasonable number of ROWS to accommodate the BODY."
-  ;; This is to prevent Spinneret from stripping newlines off the tag contents.
+(deftag :ninput (body attrs &key rows cols onfocus onchange &allow-other-keys)
+  "Nicely styled <textarea> with a reasonable number of ROWS/COLS to accommodate the BODY.
+Calls Lisp forms in ONFOCUS and ONCHANGE when one focuses and edits the input (respectively)."
   (once-only ((input-contents `(or (progn ,@(mapcar #'remove-smart-quoting body)) "")))
     `(:textarea.input
       :rows (or ,rows (1+ (count #\Newline ,input-contents)) 1)
       :cols (or ,cols (ignore-errors (apply #'max (mapcar #'length (str:lines ,input-contents)))) 80)
+      ,@(when onfocus
+          `(:onfocus (ps:ps (nyxt/ps:lisp-eval
+                             (:title "ninput onfocus")
+                             ,onfocus))))
+      ,@(when onchange
+          ;; More events here.
+          `(:onkeydown (ps:ps (nyxt/ps:lisp-eval
+                               (:title "ninput onchange/onkeydown")
+                               ,onchange))))
       ,@attrs
       (:raw (the string ,input-contents)))))

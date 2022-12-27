@@ -467,20 +467,15 @@ Follows what the compiler finds aesthetically pleasing."
                                    :class "evaluation"
                                    :id (format nil "evaluation-~a" (id evaluation))
                                    (:div :class "input-area"
-                                         (:textarea :class "input-buffer" :data-repl-id order
-                                                    :rows (length (str:lines (input evaluation) :omit-nulls nil))
-                                                    :autofocus (and (current-evaluation repl-mode)
-                                                                    (= order (current-evaluation repl-mode)))
-                                                    :onfocus
-                                                    (ps:ps (nyxt/ps:lisp-eval
-                                                            (:title "set-current-evaluation")
-                                                            (focus-cell :id order)))
-                                                    :onkeydown
-                                                    (ps:ps (nyxt/ps:lisp-eval
-                                                            (:title "update-repl-input")
-                                                            (setf (input (elt (evaluations repl-mode) order))
-                                                                  (input repl-mode))))
-                                                    (input evaluation))
+                                         (:ninput
+                                           :class "input-buffer"
+                                           :data-repl-id order
+                                           :autofocus (and (current-evaluation repl-mode)
+                                                           (= order (current-evaluation repl-mode)))
+                                           :onfocus (focus-cell :id order)
+                                           :onchange (setf (input (elt (evaluations repl-mode) order))
+                                                           (input repl-mode))
+                                           (input evaluation))
                                          (:br)
                                          (:nbutton
                                            :class "accent"
