@@ -287,7 +287,12 @@ Otherwise prompt for matches."
            (:dd (:nxref :function input))))
         (when (find-package input)
           (:dt "Package")
-          (:dd (:nxref :package input))))))))
+          (:dd (:nxref :package input)))
+        (dolist (class (sym:package-classes (union (nyxt-packages) (list (symbol-package input)))
+                                            :external))
+          (when (find input (class-slots class))
+            (:dt "Slot in " (:nxref :class-name class))
+            (:dd (:nxref :class-name class :slot input)))))))))
 
 (define-internal-page describe-value
     (&key id)
