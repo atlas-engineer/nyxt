@@ -172,27 +172,28 @@ unconditionally converts those to tags unless the whole form is quoted.)"
                      ;; TODO: Resolve backtick-quote links.
                      (:code (the string ,code)))))))
 
-(deftag :nxref (body attrs &key slot mode class-name function command variable package &allow-other-keys)
+(deftag :nxref (body attrs &key slot mode class-name function macro command variable package &allow-other-keys)
   "Create a link to a respective describe-* page for BODY symbol.
 
-Relies on the type keywords (SLOT, CLASS-NAME, FUNCTION, COMMAND, VARIABLE,
-PACKAGE) to guess the right page, always provide those.
+Relies on the type keywords (SLOT, MODE, CLASS-NAME, FUNCTION, MACRO, COMMAND,
+VARIABLE, PACKAGE) to guess the right page, always provide those.
 
 CLASS-NAME should be the symbol designating a class. It's not called CLASS
 because Spinneret has special behavior for CLASS pre-defined and
 non-overridable."
   (let* ((first (first body))
-         (symbol (or package variable function command slot class-name mode
+         (symbol (or package variable function macro command slot class-name mode
                      (when (symbolp first) first)))
          (printable (or (when (and (symbolp first) (eq first symbol))
                           (second body))
-                        first package variable function command slot class-name mode)))
+                        first package variable function macro command slot class-name mode)))
     `(:code
       ,@(progn
           (remf attrs :class-name)
           (remf attrs :mode)
           (remf attrs :slot)
           (remf attrs :function)
+          (remf attrs :macro)
           (remf attrs :command)
           (remf attrs :variable)
           (remf attrs :package)
@@ -202,8 +203,9 @@ non-overridable."
                 (package `(nyxt:nyxt-url (read-from-string "nyxt:describe-package") :package ,package))
                 (variable `(nyxt:nyxt-url (read-from-string "nyxt:describe-variable")
                                           :variable ,variable))
-                ((or command function) `(nyxt:nyxt-url (read-from-string "nyxt:describe-function")
-                                                       :fn ,(or command function)))
+                ((or command function macro)
+                 `(nyxt:nyxt-url (read-from-string "nyxt:describe-function")
+                                 :fn ,(or command function macro)))
                 (slot `(nyxt:nyxt-url (read-from-string "nyxt:describe-slot")
                                       :name ,slot :class ,class-name))
                 ((or mode class-name)
@@ -216,6 +218,7 @@ non-overridable."
         ,(cond
            (package "[PACKAGE] ")
            (variable "[VARIABLE] ")
+           (macro "[MACRO] ")
            (command "[COMMAND] ")
            (function "[FUNCTION] ")
            ((and slot class-name) `(format nil "[SLOT in ~s]" ,class-name))
@@ -226,18 +229,19 @@ non-overridable."
                  ,(cond
                     (package `(find-package ,package))
                     (variable variable)
+                    (macro macro)
                     ((or command function) `(symbol-function ,(or command function)))
                     (slot slot)
                     ((or mode class-name) `(find-class ,(or mode class-name)))
                     (t symbol))
                  (quote ,(cond
                            (variable 'variable)
-                           ((or command function) 'function)
+                           ((or command function macro) 'function)
                            ((or mode class-name) 'type)
                            (t t)))))))
        ,@(when (and (getf attrs :class)
                     (or (getf attrs :slot)
-                        (every #'null (list slot class-name function command variable package))))
+                        (every #'null (list slot class-name mode function macro command variable package))))
            (error ":class attribute used ambiguously in :nxref tag. Use :class-name instead.")
            nil)
        (let ((*print-escape* nil))

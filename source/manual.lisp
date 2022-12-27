@@ -58,7 +58,7 @@ similar programming language.")
             ((default-modes (pushnew 'nyxt/no-script-mode:no-script-mode %slot-value%))))))
       (:p "The above turns on the 'no-script-mode' (disables JavaScript) by default for
 every buffer.")
-      (:p "The " (:code "define-configuration") " macro can be used to customize
+      (:p "The " (:nxref :macro 'define-configuration) " macro can be used to customize
 the slots of classes like the browser, buffers, windows, etc.  Refer to the
 class and slot documentation for the individual details.")
       (:p "To find out about all modes known to Nyxt,
@@ -117,7 +117,7 @@ add the following to your configuration:")
             ".  Also see the "
             (:nxref :function 'keymaps:define-keyscheme-map "define-keyscheme-map macro") ".")
         (:p "To extend the bindings of a specific mode, you can configure the mode with "
-            (:nxref :function 'define-configuration) " and extend its "
+            (:nxref :macro 'define-configuration) " and extend its "
             (:nxref :slot 'keyscheme-map :class-name 'mode) " with "
             (:nxref :function 'keymaps:define-keyscheme-map) ". For example:")
         (:ncode
@@ -376,13 +376,13 @@ bytes are recognized), and they are capable of being "
 the content of those. More so: these pages can invoke Lisp commands on demand,
 be it on button click or on some page event. The macros and functions to look at are:")
           (:ul
-           (:li (:nxref :function 'define-internal-page) " to create new pages.")
+           (:li (:nxref :macro 'define-internal-page) " to create new pages.")
            (:li (:nxref :function 'buffer-load-internal-page-focus)
                 " to either get or create the buffer for the page.")
            (:li (:nxref :function 'nyxt-url) " to reference the internal pages by their name.")
-           (:li (:nxref :function 'define-internal-page-command)
+           (:li (:nxref :macro 'define-internal-page-command)
                 " to generate a mode-specific command loading the internal page.")
-           (:li (:nxref :function 'define-internal-page-command-global)
+           (:li (:nxref :macro 'define-internal-page-command-global)
                 " to generate a global command loading the internal page."))
           (:p "Using the facilities Nyxt provides, you can make a random number generator
 page:")
@@ -415,7 +415,7 @@ internal page command should be serializable to URLs. Which restricts the
 arguments to numbers, symbols, and strings, for instance."))
            (:li "Those commands should return the content of the page in their body, like
 internal schemes do.")
-           (:li "If you want to return HTML, then " (:nxref :function 'spinneret:with-html-string)
+           (:li "If you want to return HTML, then " (:nxref :macro 'spinneret:with-html-string)
                 " is your best friend, but no one restricts you from producing HTML in any other
 way, including simply writing it by hand ;)")
            (:li (:code "nyxt/ps:lisp-eval")
@@ -424,7 +424,7 @@ way, including simply writing it by hand ;)")
                 ". You can bind it to a " (:code "<button>") "'s " (:code "onClick")
                 " event, for example."))
           (:p "If you're making an extension, you might find other macros more useful. "
-              (:nxref :function 'define-internal-page-command)
+              (:nxref :macro 'define-internal-page-command)
               ", for example, defines a command to only be visible when in the corresponding mode
 is enabled. Useful to separate the context-specific commands from the
 universally useful (" (:code "-global")
@@ -439,7 +439,7 @@ still define it as:")
             (buffer-load-internal-page-focus 'not-a-command))
           (:p "See the slots and documentation of " (:nxref :class-name 'internal-page)
               " to understand what you can pass to "
-              (:nxref :function 'define-internal-page) ".")))
+              (:nxref :macro 'define-internal-page) ".")))
 
       (:nsection :title "Hooks"
         (:p "Hooks provide a powerful mechanism to tweak the behavior of various
@@ -578,10 +578,10 @@ with " (:code "nyxt --profile dev --socket /tmp/nyxt.socket") "."))
             " and " (:a :href "https://www.passwordstore.org/" "Password Store") ". "
             "The supported installed password manager is automatically detected."
             "See the " (:code "password-interface") " buffer slot for customization.")
-        (:p "You may use the " (:code "define-configuration") " macro with
+        (:p "You may use the " (:nxref :macro 'define-configuration) " macro with
 any of the password interfaces to configure them. Please make sure to
 use the package prefixed class name/slot designators within
-the " (:code "define-configuration") " macro.")
+the " (:nxref :macro 'define-configuration) ".")
         (:ul
          (:li (:nxref :command 'nyxt/password-mode:save-new-password) ": Query for name and new password to persist in the database.")
          (:li (:nxref :command 'nyxt/password-mode:copy-password) ": " (command-docstring-first-sentence 'nyxt/password-mode:copy-password)))
@@ -871,7 +871,7 @@ input area containing familiar code, with some " (:code "v332 = \"Hello, Nyxt!\"
             (:nxref :package :nyxt/repl-mode "REPL mode documentation") "."))
 
       (:nsection :title "Advanced configuration"
-        (:p "While " (:code "define-configuration") " is convenient, it is mostly
+        (:p "While " (:nxref :macro 'define-configuration) " is convenient, it is mostly
 restricted to class slot configuration.  If you want to do anything else on
 class instantiation, you'll have to specialize the
 lower-level " (:nxref :function 'customize-instance)

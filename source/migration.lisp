@@ -171,8 +171,8 @@ major versions."
       (:code "get-keymap") ".")
 
   (peval pflet)
-  (:p "Those are renamed to " (:nxref :function 'ps-eval) " and "
-      (:nxref :function 'ps-labels) " respectively.")
+  (:p "Those are renamed to " (:nxref :macro 'ps-eval) " and "
+      (:nxref :macro 'ps-labels) " respectively.")
 
   (*after-init-hook* *after-startup-hook*)
   (:p "Those are " (:nxref :slot 'after-init-hook :class-name 'browser) " and "
