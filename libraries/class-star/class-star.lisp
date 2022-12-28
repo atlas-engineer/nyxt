@@ -256,7 +256,8 @@ If `:export-predicate-name-p' is non-nil, which defaults to
                                    (eval (second initform-option)))
                                  *initform-inference*))
          (type-option (assoc :type-inference options))
-         (type-inference (or (when type-option
+         (type-inference (if type-option
+                             (progn
                                (setf options (delete :type-inference options :key #'first))
                                (eval (second type-option)))
                              *type-inference*))
