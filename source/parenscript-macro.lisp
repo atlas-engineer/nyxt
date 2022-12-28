@@ -13,22 +13,22 @@
 
 (export-always 'qs)
 (defpsmacro qs (context selector)
-  "Alias of document.querySelector"
+  "Alias of context.querySelector()"
   `(chain ,context (query-selector ,selector)))
 
 (export-always 'qsa)
 (defpsmacro qsa (context selector)
-  "Alias of document.querySelectorAll"
+  "Alias of context.querySelectorAll()"
   `(chain ,context (query-selector-all ,selector)))
 
 (export-always 'qs-id)
 (defpsmacro qs-id (context id)
-  "Alias of document.getElementById"
+  "Alias of context.getElementById()"
   `(chain ,context (get-element-by-id ,id)))
 
 (export-always 'qs-nyxt-id)
 (defpsmacro qs-nyxt-id (context id)
-  "document.querySelector tailored for Nyxt IDs."
+  "context.querySelector() tailored for Nyxt IDs."
   `(chain ,context (query-selector (lisp (format nil "[nyxt-identifier=\"~a\"]" ,id)))))
 
 (defpsmacro get-caret ()
