@@ -17,6 +17,8 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-M-l" 'set-url-new-nosave-buffer
        "C-r" 'reload-current-buffer
        "M-r" 'reload-buffers
+       "C-shift-tab" 'switch-buffer-previous
+       "C-tab" 'switch-buffer-next
        "C-T" 'reopen-buffer
        "C-t" 'make-buffer-focus
        "f1 r" 'manual
@@ -40,9 +42,7 @@ This mode is a good candidate to be passed to `make-buffer'."
        "f5" 'reload-current-buffer
        "C-/" 'reopen-buffer
        "C-[" 'switch-buffer-previous
-       "C-shift-tab" 'switch-buffer-previous
        "C-]" 'switch-buffer-next
-       "C-tab" 'switch-buffer-next
        "C-pagedown" 'switch-buffer-next
        "M-down" 'switch-buffer
        "C-`" 'switch-buffer-last
