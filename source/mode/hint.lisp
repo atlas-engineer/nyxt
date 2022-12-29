@@ -369,12 +369,15 @@ FUNCTION is the action to perform on the selected elements."
 (defmethod %follow-hint ((element plump:element))
   (nyxt/dom:click-element element))
 
+(defmethod %follow-hint ((a nyxt/dom:a-element))
+  (buffer-load (url a)))
+
 (defmethod %follow-hint ((input nyxt/dom:input-element))
   (str:string-case (plump:attribute input "type")
-    ("button" (nyxt/dom:click-element input))
-    ("radio" (nyxt/dom:check-element input))
-    ("checkbox" (nyxt/dom:check-element input))
-    (otherwise (nyxt/dom:focus-select-element input))))
+                   ("button" (nyxt/dom:click-element input))
+                   ("radio" (nyxt/dom:check-element input))
+                   ("checkbox" (nyxt/dom:check-element input))
+                   (otherwise (nyxt/dom:focus-select-element input))))
 
 (defmethod %follow-hint ((textarea nyxt/dom:textarea-element))
   (nyxt/dom:focus-select-element textarea))
