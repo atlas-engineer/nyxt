@@ -540,7 +540,7 @@ of buffers."
                   (let ((heading (first group)))
                     (:li (:a :onclick
                              (ps:ps (nyxt/ps:lisp-eval
-                                     (:title "switch-buffer-scroll")
+                                     (:title "switch-buffer-scroll" :buffer panel-buffer)
                                      (switch-buffer :buffer (buffer heading))
                                      (nyxt/dom:scroll-to-element (element heading))))
                              (title heading)))

@@ -200,8 +200,10 @@ have, using " (:nxref :command 'execute-command)
 useful actions there, including the familiar " (:code "set-url") ", " (:code "history-backwards")
 ", and " (:code "history-forwards") ".")
     (:div (:nbutton :text "I want to know more, show me the manual!"
+            :buffer panel
             (manual))
           (:nbutton
+            :buffer panel
             :class "accent"
             :text "Got it, close this panel"
             (delete-panel-buffer :panels panel)))))

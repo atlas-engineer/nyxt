@@ -98,6 +98,7 @@ With LINEAR-VIEW-P, list buffers linearly instead."
            "Create the presentation for a buffer."
            (spinneret:with-html-string
              (:p (:nbutton :text (title buffer)
+                   :buffer panel-buffer
                    (nyxt::switch-buffer :buffer buffer))))))
     (spinneret:with-html-string
       (:nstyle (lass:compile-and-write
@@ -109,6 +110,7 @@ With LINEAR-VIEW-P, list buffers linearly instead."
       (:body
        (:h1 "Buffers")
        (:nbutton :text "Update ↺"
+         :button panel-buffer
          (reload-buffer
           (find
            (render-url (url panel-buffer))
