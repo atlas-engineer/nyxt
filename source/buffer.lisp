@@ -460,6 +460,19 @@ Suggestions are computed by the default search engine.")
     :type symbol
     :documentation "Select a download engine to use, such as `:lisp' or
 `:renderer'.")
+   (global-history-p
+    nil
+    :type boolean
+    :documentation "Whether the history is linked to the buffer's parent.
+
+The buffer's parent is the buffer of origin while navigating URLs.  For
+instance, when a link is opened in a new buffer, the buffer featuring the link
+is the new buffer's parent.
+
+When non-nil, it behaves in a \"do what I mean\" fashion, giving the ability to
+revisit URLs of the parent buffer while in the child buffer.
+
+When nil, the buffer history is separate from any other buffer.")
    (history-file
     (if *browser*
         (history-file *browser*)
@@ -857,6 +870,7 @@ Return the created buffer."
       (unless (htree:owner history (id buffer))
         (htree:add-owner history (id buffer)
                          :creator-id (when (and parent-buffer
+                                                (global-history-p buffer)
                                                 (not (nosave-buffer-p buffer))
                                                 (not (nosave-buffer-p parent-buffer)))
                                        (id parent-buffer))))))

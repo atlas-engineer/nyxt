@@ -570,7 +570,9 @@ Nyxt-internal-pages.")
     (:li "The rules file is now moved to auto-rules.lisp (instead of the old
 auto-mode-rules.lisp)."))
    (:li "Startup is more robust against corrupted history files.")
-   (:li (:code "diff-mode") " is removed."))
+   (:li (:code "diff-mode") " is removed.")
+   (:li "History globality can be set on a per-buffer basis. "
+        "See the " (:code "global-history-p") " slot in " (:code "context-buffer") "."))
 
   (:h3 "Programming interface")
   (:ul
