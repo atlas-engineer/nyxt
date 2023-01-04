@@ -48,7 +48,12 @@ On error, return the condition as a first value and the backtrace as second valu
                   (log:debug "Lisp file ~s does not exist." file)))
                nil))
         (if *run-from-repl-p*
-            (unsafe-load)
+            (tagbody
+             loop
+               (restart-case (unsafe-load)
+                 (load-lisp-retry ()
+                   :report "Retry loading Lisp file."
+                   (go loop))))
             (catch 'lisp-file-error
               (handler-bind ((error (lambda (c)
                                       (let ((backtrace (with-output-to-string (stream)
