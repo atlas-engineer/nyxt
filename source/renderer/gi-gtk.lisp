@@ -72,8 +72,9 @@ interface. On Darwin, we must run the GTK thread on the main thread."
 
 (defmethod install ((renderer gi-gtk-renderer))
   (call-next-method)
-  (closer-mop:ensure-class 'renderer-browser
-                           :direct-superclasses '(gi-gtk-browser)
-                           :metaclass 'interface-class))
+  (closer-mop:ensure-finalized
+   (closer-mop:ensure-class 'renderer-browser
+                            :direct-superclasses '(gi-gtk-browser)
+                            :metaclass 'interface-class)))
 
 (setf nyxt::*renderer* (make-instance 'gi-gtk-renderer))

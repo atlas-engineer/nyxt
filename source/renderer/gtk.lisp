@@ -2264,9 +2264,10 @@ See `make-buffer' for a description of the other arguments."
 
 (defmethod install ((renderer gtk-renderer))
   (flet ((set-superclasses (renderer-class-sym+superclasses)
-           (closer-mop:ensure-class (first renderer-class-sym+superclasses)
-                                    :direct-superclasses (rest renderer-class-sym+superclasses)
-                                    :metaclass 'interface-class)))
+           (closer-mop:ensure-finalized
+            (closer-mop:ensure-class (first renderer-class-sym+superclasses)
+                                     :direct-superclasses (rest renderer-class-sym+superclasses)
+                                     :metaclass 'interface-class))))
     (mapc #'set-superclasses '((renderer-browser gtk-browser)
                                (renderer-window gtk-window)
                                (renderer-buffer gtk-buffer)
@@ -2278,9 +2279,10 @@ See `make-buffer' for a description of the other arguments."
 
 (defmethod uninstall ((renderer gtk-renderer))
   (flet ((remove-superclasses (renderer-class-sym)
-           (closer-mop:ensure-class renderer-class-sym
-                                    :direct-superclasses '()
-                                    :metaclass 'interface-class)))
+           (closer-mop:ensure-finalized
+            (closer-mop:ensure-class renderer-class-sym
+                                     :direct-superclasses '()
+                                     :metaclass 'interface-class))))
     (mapc #'remove-superclasses '(renderer-browser
                                   renderer-window
                                   renderer-buffer
