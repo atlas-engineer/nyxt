@@ -546,13 +546,15 @@ Finally, run the browser, load URL-STRINGS if any, then run
       (log:info "Profile: ~s" (profile-name profile-class))
       (log:warn "Profile not found: ~s" (getf *options* :profile))))
   (let* ((urls (strings->urls url-strings))
-         (thread (when (files:expand *socket-file*)
-                   (listen-or-query-socket urls)))
          (startup-timestamp (time:now))
-         (startup-error-reporter nil))
-    (when (or thread
-              (getf *options* :no-socket)
-              (null (files:expand *socket-file*)))
+         (startup-error-reporter nil)
+         (socket-path (files:expand *socket-file*)))
+    (when (or (getf *options* :no-socket)
+              (null socket-path)
+              (and ; See `listen-or-query-socket'.
+               (not (listening-socket-p))
+               (not (and (uiop:file-exists-p socket-path)
+                         (not (socket-p socket-path))))))
       (load-lisp (files:expand *auto-config-file*) :package (find-package :nyxt-user))
       (multiple-value-bind (condition backtrace)
           (load-lisp (files:expand *config-file*)
@@ -568,7 +570,8 @@ Finally, run the browser, load URL-STRINGS if any, then run
       (setf *browser* (make-instance 'browser
                                      :startup-error-reporter-function startup-error-reporter
                                      :startup-timestamp startup-timestamp
-                                     :socket-thread thread))
+                                     :socket-thread (when (files:expand *socket-file*)
+                                                      (listen-or-query-socket urls))))
       ;; Defaulting to :nyxt-user is convenient when evaluating code (such as
       ;; remote execution or the integrated REPL).
       ;; This must be done in a separate thread because the calling thread may
