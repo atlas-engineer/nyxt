@@ -11,6 +11,11 @@
   (:documentation "An error internal to Nyxt.
 It should abort the ongoing command, but not the whole process."))
 
+(export-always 'browser-already-started)
+(define-condition browser-already-started (nyxt-error)
+  ()
+  (:documentation "An existing instance of Nyxt is already running."))
+
 (define-condition web-context-error (nyxt-error)
   ((context :initarg :context :reader context)))
 
