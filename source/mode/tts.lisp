@@ -41,11 +41,9 @@ Example:
                  (error ()
                    (log:warn "tts-mode: no document-model available.")
                    nil)))
-             ;; TODO properly handle punctuation like Emacspeak does
-             (text (str:remove-punctuation
-                    (with-output-to-string (s)
-                      (dolist (tag tags)
-                        (format s "~a" (plump:text tag)))))))
+             (text (with-output-to-string (s)
+                     (dolist (tag tags)
+                       (format s "~a" (plump:text tag))))))
         (when tags
           (speak mode text)))
       (echo-warning "tts-mode: no executable configured.")))
@@ -53,19 +51,16 @@ Example:
 (defmethod speak ((mode tts-mode) text)
   "Start an asynchronous process of the `executable` with TEXT passed as the
 argument."
-  (let ((program-string
-          (format nil "~s ~s" (executable mode) text)))
-    (progn
-      (log:info "tts-mode: starting TTS.")
-      ;; make sure that a running process is stopped before starting a new one
-      (disable mode)
-      (setf (executable-process-info mode)
-            (uiop:launch-program program-string
-                                 :output *standard-output*
-                                 :error-output *standard-output*))
-      (when (not (zerop (uiop:wait-process (executable-process-info mode))))
-        (log:info "tts-mode: TTS done."))
-      (disable mode))))
+  (log:info "tts-mode: starting TTS.")
+  ;; make sure that a running process is stopped before starting a new one
+  (disable mode)
+  (setf (executable-process-info mode)
+        (uiop:launch-program (list (executable mode) text)
+                             :output *standard-output*
+                             :error-output *standard-output*))
+  (when (not (zerop (uiop:wait-process (executable-process-info mode))))
+    (log:info "tts-mode: TTS done."))
+  (disable mode))
 
 (defmethod disable ((mode tts-mode) &key)
   "If there is a running process, terminate it."
