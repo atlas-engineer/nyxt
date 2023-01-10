@@ -346,7 +346,8 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                                                   (nyxt/ps:lisp-eval
                                                                    (:title "mark-this-suggestion"
                                                                     :buffer prompt-buffer)
-                                                                   (toggle-mark prompt-buffer)))
+                                                                   (funcall (read-from-string "nyxt/prompt-buffer-mode:toggle-mark")
+                                                                            prompt-buffer)))
                                                                  (t (nyxt/ps:lisp-eval
                                                                      (:title "return-this-suggestion"
                                                                       :buffer prompt-buffer)
