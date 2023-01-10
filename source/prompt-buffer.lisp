@@ -332,12 +332,26 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                                      "marked")
                                             :onmousedown (when (mouse-support-p prompt-buffer)
                                                            (ps:ps
-                                                             (nyxt/ps:lisp-eval
-                                                              (:title "return-selection" :buffer prompt-buffer)
-                                                              (prompter::select (current-prompt-buffer)
-                                                                (- suggestion-index cursor-index))
-                                                              (prompter:return-selection
-                                                               (nyxt::current-prompt-buffer)))))
+                                                             (lambda (event)
+                                                               (nyxt/ps:lisp-eval
+                                                                (:title "choose-this-suggestion"
+                                                                 :buffer prompt-buffer)
+                                                                (prompter::select (current-prompt-buffer)
+                                                                  (- suggestion-index cursor-index)))
+                                                               (cond
+                                                                 ;; Ctrl-click to mark a single suggestion.
+                                                                 ;; TODO: Shift-click to mark a region.
+                                                                 ((or (ps:@ event meta-key)
+                                                                      (ps:@ event ctrl-key))
+                                                                  (nyxt/ps:lisp-eval
+                                                                   (:title "mark-this-suggestion"
+                                                                    :buffer prompt-buffer)
+                                                                   (toggle-mark prompt-buffer)))
+                                                                 (t (nyxt/ps:lisp-eval
+                                                                     (:title "return-this-suggestion"
+                                                                      :buffer prompt-buffer)
+                                                                     (prompter:return-selection
+                                                                      (nyxt::current-prompt-buffer))))))))
                                             (loop for (nil attribute attribute-display)
                                                     in (prompter:active-attributes suggestion :source source)
                                                   collect (:td :title attribute
