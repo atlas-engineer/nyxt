@@ -26,10 +26,12 @@ search.")
       keyscheme:default
       (list
        "M-left" 'history-backwards
+       "M-button4" 'history-backwards
        ;; this should be C-[
        "M-[" 'history-backwards
        "button8" 'history-backwards
        "M-right" 'history-forwards
+       "M-button5" 'history-forwards
        ;; this should be C-]
        "M-]" 'history-forwards
        "button9" 'history-forwards
