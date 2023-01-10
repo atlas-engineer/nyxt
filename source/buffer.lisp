@@ -562,7 +562,7 @@ The handlers take the URL going to be loaded as argument and must return a
 The handlers take the buffer as argument.")
    (request-resource-keyscheme-map
     (define-keyscheme-map "request-resource" ()
-      keyscheme:cua
+      keyscheme:default
       (list
        "C-button1" 'request-resource-open-url-focus
        "button2" 'request-resource-open-url-focus
