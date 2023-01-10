@@ -57,6 +57,8 @@ This leverages `mode-status' which can be specialized for individual modes."
 (defmethod format-status-buttons ((status status-buffer))
   "Render interactive buttons."
   (spinneret:with-html-string
+    ;; TODO: Firefox-like additional click actions? See
+    ;; https://support.mozilla.org/en-US/kb/mouse-shortcuts-perform-common-tasks
     (:nbutton
       :buffer status
       :text "◄"
