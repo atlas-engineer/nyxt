@@ -564,9 +564,10 @@ The handlers take the buffer as argument.")
     (define-keyscheme-map "request-resource" ()
       keyscheme:default
       (list
-       "C-button1" 'request-resource-open-url-focus
-       "button2" 'request-resource-open-url-focus
-       "C-shift-button1" 'request-resource-open-url))
+       "C-button1" 'request-resource-open-url
+       "button2" 'request-resource-open-url
+       "C-shift-button1" 'request-resource-open-url-focus
+       "shift-button2" 'request-resource-open-url-focus))
     :documentation "Looked up when `request-resource-hook' handlers run.  The
 keymap takes functions whose key arguments are `:url' and `:buffer'.")
    (request-resource-hook
