@@ -94,19 +94,20 @@ See `sym:package-functions' for an example."
 (defmethod prompter:object-attributes ((symbol symbol) (source prompter:source))
   (declare (ignore source))
   `(("Name" ,(prini-to-string symbol))
+    ("Visibility" ,(prini-to-string (sym:symbol-visibility symbol)))
     ("Documentation"
      ,(or (cond
-            ((fboundp symbol)
-             (first-line (documentation symbol 'function)))
-            ((and (find-class symbol nil)
-                  (mopu:subclassp (find-class symbol) (find-class 'standard-object)))
-             (first-line (documentation symbol 'type)))
-            ((find-package symbol)
-             (first-line (documentation (find-package symbol) t)))
-            (t
-             (first-line (documentation symbol 'variable))))
-          ""))
-    ("Visibility" ,(prini-to-string (sym:symbol-visibility symbol)))))
+           ((fboundp symbol)
+            (first-line (documentation symbol 'function)))
+           ((and (find-class symbol nil)
+                 (mopu:subclassp (find-class symbol) (find-class 'standard-object)))
+            (first-line (documentation symbol 'type)))
+           ((find-package symbol)
+            (first-line (documentation (find-package symbol) t)))
+           (t
+            (first-line (documentation symbol 'variable))))
+          "")
+     nil 4)))
 
 (defmethod prompter:object-attributes ((package package) (source prompter:source))
   (declare (ignore source))
@@ -115,7 +116,7 @@ See `sym:package-functions' for an example."
                           ;; Old ASDF/UIOP don't know about package-local-nicknames.
                           (ignore-errors (uiop:symbol-call
                                           :uiop :package-local-nicknames package))))
-    ("Documentation" ,(or (first-line (documentation package t)) ""))))
+    ("Documentation" ,(or (first-line (documentation package t)) "") nil 4)))
 
 (define-class class-source (describe-nyxt-source)
   ((prompter:name "Classes")

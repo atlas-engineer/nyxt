@@ -104,8 +104,8 @@ Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
 
 (defmethod prompter:object-attributes ((entry bookmark-entry) (source prompter:source))
   (declare (ignore source))
-  `(("URL" ,(render-url (url entry)))
-    ("Title" ,(title entry))
+  `(("URL" ,(render-url (url entry)) nil 3)
+    ("Title" ,(title entry) nil 2)
     ("Tags" ,(format nil "~{~a ~}" (tags entry)))
     ("Date" ,(local-time:format-timestring nil (date entry) :format local-time:+asctime-format+))))
 

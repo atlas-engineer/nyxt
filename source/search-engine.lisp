@@ -81,7 +81,7 @@ Example (Tor-proxied completion function for Wikipedia):
 (defmethod prompter:object-attributes ((engine search-engine) (source prompter:source))
   (declare (ignore source))
   `(("Shortcut" ,(shortcut engine))
-    ("Search URL" ,(search-url engine))))
+    ("Search URL" ,(search-url engine) nil 3)))
 
 (defun all-search-engines ()
   "Return the `search-engines' from the current buffer."

@@ -55,8 +55,9 @@ The total number of visit for a given URL is (+ explicit-visits implicit-visits)
                  (render-url (url entry))
                (if safe
                    (format nil "~a (~a)" safe aesthetic)
-                   aesthetic))))
-    ("Title" ,(title entry))
+                   aesthetic)))
+           3)
+    ("Title" ,(title entry) nil 2)
     ("Visits" ,(+ (implicit-visits entry) (explicit-visits entry)))))
 
 (export-always 'equals)

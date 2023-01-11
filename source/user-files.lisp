@@ -142,12 +142,12 @@ Example: when passed command line option --with-file foo=bar,
     (s-serialization:deserialize-sexp raw-content)))
 
 (defmethod prompter:object-attributes ((file files:file) (source prompter:source))
-  `(("Path" ,(uiop:native-namestring (files:expand file)))      ; TODO: Trim if too long?
+  `(("Path" ,(uiop:native-namestring (files:expand file)) nil 3)
     ("Exists?" ,(if (uiop:file-exists-p (uiop:ensure-pathname (files:expand file)))
                     "yes"
                     "no"))
     ("Type" ,(string (sera:class-name-of file)))
-    ("Name" ,(files:name file))))
+    ("Name" ,(files:name file) nil 2)))
 
 (define-class user-file-source (prompter:source)
   ((prompter:name "User files")

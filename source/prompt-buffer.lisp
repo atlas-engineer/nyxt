@@ -54,6 +54,14 @@ some point.")
       :type boolean
       :documentation "Whether to allow mouse events to set and return the
 current suggestion in the prompt buffer.")
+     (dynamic-attribute-width-p
+      nil
+      :type boolean
+      :documentation "Whether to adjust the column widths to their content.
+Columns with more content get more space, at the expense of smaller ones.
+The default behavior is to use static widths (either uniform across attributes or provided
+in `prompter:object-attributes').
+See `nyxt::attribute-widths'.")
      (style
       (theme:themed-css (theme *browser*)
         `(*
@@ -284,8 +292,8 @@ See also `show-prompt-buffer'."
         0
         (/ total (length values)))))
 
-(defgeneric attribute-widths (source &key width-function)
-  (:method (source &key (width-function #'average-attribute-width))
+(defgeneric attribute-widths (source &key width-function dynamic-p)
+  (:method (source &key (width-function #'average-attribute-width) dynamic-p)
     (labels ((clip-extremes (widths)
                (let* ((length (length widths))
                       (minimal-size (/ 1 length 2)))
@@ -315,21 +323,25 @@ See also `show-prompt-buffer'."
       ;; computation. Because of this, attribute names could theoretically get
       ;; cropped if the values are short enough. This is bad, but not exactly
       ;; critical.
-      (loop with suggestions = (prompter:suggestions source)
-            with attributes = (mapcar (rcurry #'prompter:active-attributes :source source) suggestions)
-            ;; This is to process column width as fourth object attribute element.
-            initially (sera:and-let* ((fourth-attributes
-                                       (mapcar #'fourth (prompter:active-attributes (first suggestions) :source source)))
-                                      (some-fourth (some #'identity fourth-attributes))
-                                      (coefficients (substitute 1 nil fourth-attributes)))
-                        (return (width-normalization coefficients)))
-            for key in (prompter:active-attributes-keys source)
-            for width
-              = (funcall width-function (mapcar (compose #'first (rcurry #'str:s-assoc-value key))
-                                                attributes))
-            collect width into widths
-            finally (return (clip-extremes (width-normalization widths))))))
+      (if dynamic-p
+          (loop with suggestions = (prompter:suggestions source)
+                with attributes = (mapcar (rcurry #'prompter:active-attributes :source source) suggestions)
+                for key in (prompter:active-attributes-keys source)
+                for width
+                  = (funcall width-function (mapcar (compose #'first (rcurry #'str:s-assoc-value key))
+                                                    attributes))
+                collect width into widths
+                finally (return (clip-extremes (width-normalization widths))))
+          (sera:and-let* ((suggestions (prompter:suggestions source))
+                          (fourth-attributes
+                           (mapcar #'fourth (prompter:active-attributes (first suggestions) :source source)))
+                          (coefficients (substitute 1 nil fourth-attributes)))
+            (width-normalization coefficients)))))
   (:documentation "Compute the widths of SOURCE attribute columns (as percent).
+
+If DYNAMIC-P, compute widths based on content length. Otherwise, rely on the
+fourth value of `prompter:object-attributes' for the given source.
+
 Returns a list of ratios that sum up to one.
 Uses the WIDTH-FUNCTION (by default computing average length of non-blank
 attribute values) to derive the width of the list of attribute
@@ -341,7 +353,8 @@ an integer."))
     (when (prompter:suggestions source)
       (:table :class "source-content"
               (:colgroup
-               (dolist (width (attribute-widths source))
+               (dolist (width (attribute-widths
+                               source :dynamic-p (dynamic-attribute-width-p prompt-buffer)))
                  (:col :style (format nil "width: ~,2f%" (* 100 width)))))
               (:tr :style (if (or (eq (prompter:hide-attribute-header-p source) :always)
                                   (and (eq (prompter:hide-attribute-header-p source) :single)
