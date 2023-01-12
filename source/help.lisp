@@ -182,7 +182,7 @@ The version number is saved to clipboard."
   (echo "Version ~a" +version+))
 
 (define-panel-command intro ()
-    (panel "*Introduction*" :right)
+    (panel "*Introduction*" :left)
   (spinneret:with-html-string
     (:h1 "Getting Started with Nyxt")
     (:p "If you want to start browsing right away, then you probably want to use "
