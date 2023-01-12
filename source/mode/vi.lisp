@@ -94,9 +94,12 @@ See also `vi-normal-mode' and `vi-insert-mode'."
       (enable-modes* 'nyxt/passthrough-mode:passthrough-mode buffer))))
 
 (defun vi-insert-on-input-fields (buffer)
-  (when (nyxt/document-mode:input-tag-p
-         (ps-eval :buffer buffer (ps:@ document active-element tag-name)))
-    (enable-modes* 'vi-insert-mode buffer)))
+  (if (ps-eval :buffer buffer
+        (if (and (ps:@ document active-element)
+                 (nyxt/ps:element-editable-p (ps:@ document active-element)))
+            ps:t ps:false))
+      (enable-modes* 'vi-insert-mode buffer)
+      (enable-modes* 'vi-normal-mode buffer)))
 
 (defmethod on-signal-load-finished ((mode vi-insert-mode) url)
   (declare (ignore url))
@@ -104,6 +107,10 @@ See also `vi-normal-mode' and `vi-insert-mode'."
   (vi-insert-on-input-fields (buffer mode)))
 
 (defmethod on-signal-button-press ((mode vi-normal-mode) button-key)
+  (when (string= "button1" (keymaps:key-value button-key))
+    (vi-insert-on-input-fields (buffer mode))))
+
+(defmethod on-signal-button-press ((mode vi-insert-mode) button-key)
   (when (string= "button1" (keymaps:key-value button-key))
     (vi-insert-on-input-fields (buffer mode))))
 
