@@ -118,8 +118,8 @@ See also `vi-normal-mode' and `vi-insert-mode'."
   (when (equal "tab" (keymaps:key-value key))
     (vi-insert-on-input-fields (buffer mode))))
 
-(defmethod nyxt/document-mode:element-focused ((mode vi-normal-mode))
-  (enable-modes* 'vi-insert-mode (buffer mode)))
+(defmethod nyxt/dom:focus-select-element :after ((element plump:element))
+  (vi-insert-on-input-fields (current-buffer)))
 
 (defmethod nyxt:mode-status ((status status-buffer) (vi-normal vi-normal-mode))
   (spinneret:with-html-string
