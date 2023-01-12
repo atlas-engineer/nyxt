@@ -110,18 +110,18 @@ list.")
     :documentation "The list of `suggestion' values which have been marked by
 the user.
 
-Marking is only allowed when `multi-selection-p' is non-nil.  When suggestions
-are marked, subsequent `return-actions' run over all marked suggestions.
+Marking is only allowed when `enable-marks-p' is non-nil.  When suggestions
+are marked, subsequent `actions-on-return' run over all marked suggestions.
 
 We store the values instead of the `suggestion' because `suggestion' objects are
 reinstantiated between each input processing.")
 
-   (marks-actions
+   (actions-on-marks
     '()
     :type (or null function function-symbol
               (cons (or function function-symbol) *))
-    :documentation "The first function of this list is called automatically on
-the mark when it's changed.
+    :documentation "The first function of this list is called automatically when
+the marks change.
 It does not interrupt or return the prompter.
 For convenience, it may be initialized with a single function, in which case it
 will be automatically turned into a list.")
@@ -207,7 +207,7 @@ recompute the match-data for instance.")
     :documentation "A predicate used to sort the `suggestion's once filtered.
 The predicate works the same as the `sort' predicate.")
 
-   (return-actions
+   (actions-on-return
     #'identity
     :type (or null
               (or function function-symbol)
@@ -215,7 +215,7 @@ The predicate works the same as the `sort' predicate.")
     :accessor nil
     :export nil
     :documentation "List of funcallables that can be run on `suggestion's of
-this source.  This is the low-level implementation, see the `return-actions'
+this source.  This is the low-level implementation, see the `actions-on-return'
 function for the public interface.
 For convenience, it may be initialized with a single function or symbol, in
 which case it will be automatically turned into a list.")
@@ -276,7 +276,7 @@ See `attribute-channel'.")
     :documentation "Channel used to communicate attributes to `attribute-thread'
 to compute asynchronously.")
 
-   (multi-selection-p
+   (enable-marks-p
     nil
     :type boolean
     :documentation "Whether multiple `suggestion's can be marked.")
@@ -288,27 +288,27 @@ to compute asynchronously.")
 the prompter is resumed.
 See `resume-sources'.")
 
-   (selection-actions
+   (actions-on-current-suggestion
     '()
     :type (or null function function-symbol
               (cons (or function function-symbol) *))
     :documentation "The first function of this list is called automatically on
-the selection when it's changed.
+the current-suggestion when it's changed.
 It does not interrupt or return the prompter.
 For convenience, it may be initialized with a single function, in which case it
 will be automatically turned into a list.")
 
-   (selection-actions-enabled-p
+   (actions-on-current-suggestion-enabled-p
     nil
     :type boolean
-    :documentation "Whether the first of `selection-actions' is automatically
-executed.  Also see `selection-actions-delay'.")
+    :documentation "Whether the first of `actions-on-current-suggestion' is
+automatically executed.  Also see `actions-on-current-suggestion-delay'.")
 
-   (selection-actions-delay
+   (actions-on-current-suggestion-delay
     0.0
     :type alex:non-negative-real
-    :documentation "Time in seconds after which `selection-actions' run.
-Also see `selection-actions-enabled-p'."))
+    :documentation "Time in seconds after which `actions-on-current-suggestion'
+run.  Also see `actions-on-current-suggestion-enabled-p'."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
@@ -331,11 +331,11 @@ call."))
 
 (defmethod (setf marks) (value (source prompter:source))
   (setf (slot-value source 'marks) value)
-  (alex:when-let ((action (first (marks-actions source))))
-    (run-thread "Prompter mark action thread" (funcall action (marks source)))))
+  (alex:when-let ((action (first (actions-on-marks source))))
+    (run-thread "Prompter marks action thread" (funcall action (marks source)))))
 
-(defmethod default-selection-action ((source prompter:source))
-  (first (selection-actions source)))
+(defmethod default-action-on-current-suggestion ((source prompter:source))
+  (first (actions-on-current-suggestion source)))
 
 (export-always 'object-attributes)
 (defgeneric object-attributes (object source)
@@ -536,8 +536,8 @@ Attributes are set with `object-attributes'."
                  :value value
                  :attributes (object-attributes value source)))
 
-(defmethod default-return-action ((source source))
-  (first (slot-value source 'return-actions)))
+(defmethod default-action-on-return ((source source))
+  (first (slot-value source 'actions-on-return)))
 
 (define-class yes-no-source (source)
   ((name "Confirm")
@@ -563,7 +563,7 @@ Attributes are set with `object-attributes'."
    (filter nil)
    (hide-attribute-header-p :always)
    (hide-suggestion-count-p t)
-   (multi-selection-p nil))
+   (enable-marks-p nil))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Prompt source for raw user input.
@@ -587,7 +587,7 @@ If you are looking for a source that just returns its plain suggestions, use `so
    (filter-preprocessor 'make-word-suggestions)
    (filter nil)
    (hide-attribute-header-p :always)
-   (multi-selection-p t))
+   (enable-marks-p t))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Prompt source for user input words."))
@@ -628,10 +628,11 @@ If you are looking for a source that just returns its plain suggestions, use `so
         (calispel:! wait-channel t)))
     ;; Wait until above thread has acquired the `initial-suggestions-lock'.
     (calispel:? wait-channel))
-  (setf (selection-actions source) (uiop:ensure-list (selection-actions source)))
-  (setf (marks-actions source) (uiop:ensure-list (marks-actions source)))
-  (setf (slot-value source 'return-actions)
-        (uiop:ensure-list (slot-value source 'return-actions)))
+  (setf (actions-on-current-suggestion source)
+        (uiop:ensure-list (actions-on-current-suggestion source)))
+  (setf (actions-on-marks source) (uiop:ensure-list (actions-on-marks source)))
+  (setf (slot-value source 'actions-on-return)
+        (uiop:ensure-list (slot-value source 'actions-on-return)))
   source)
 
 (export-always 'attributes-keys-non-default)

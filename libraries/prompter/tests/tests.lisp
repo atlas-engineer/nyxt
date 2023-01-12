@@ -103,14 +103,14 @@
                                      (first (prompter:sources prompter)))))
           (assert-equal (list url2)
                         (mapcar #'prompter:value filtered-suggestions))))
-      (setf (prompter:active-attributes-keys (prompter:selected-source prompter))
+      (setf (prompter:active-attributes-keys (prompter:current-source prompter))
             '("URL"))
       (assert-equal '("URL")
-                    (prompter:active-attributes-keys (prompter:selected-source prompter)))
+                    (prompter:active-attributes-keys (prompter:current-source prompter)))
       (assert-equal `(("URL" ,(url url2) ))
                     (prompter:active-attributes
-                     (prompter:selected-suggestion prompter)
-                     :source (prompter:selected-source prompter))))))
+                     (prompter:%current-suggestion prompter)
+                     :source (prompter:current-source prompter))))))
 
 (defvar *prompter-suggestion-update-interval* 1.5)
 
@@ -194,7 +194,7 @@
                                              :constructor '("foo" "bar")))))
       (setf (prompter:input prompter) "bar")
       (when (prompter:all-ready-p prompter)
-        (prompter:return-selection prompter)
+        (prompter:run-action-on-return prompter)
         (assert-equal '("bar")
                       (calispel:? (prompter:result-channel prompter)))))))
 
@@ -304,7 +304,7 @@
                       (history))
         (prompter:all-ready-p prompter)))))
 
-(define-test select ()
+(define-test set-current-suggestion ()
   (with-report-dangling-threads
     (let ((prompter (prompter:make
                      :sources (list (make-instance 'prompter:source
@@ -314,61 +314,61 @@
                                                    :name "Test source 2"
                                                    :constructor '("100 foo" "200")
                                                    :filter-preprocessor #'prompter:filter-exact-matches)))))
-      (flet ((selection-value ()
-               (prompter:value (prompter:selected-suggestion prompter))))
+      (flet ((current-suggestion-value ()
+               (prompter:value (prompter:%current-suggestion prompter))))
         (prompter:all-ready-p prompter)
-        (prompter:select-next prompter)
+        (prompter:next-suggestion prompter)
         (assert-string= "bar"
-                         (selection-value))
-        (prompter:select-next prompter)
+                         (current-suggestion-value))
+        (prompter:next-suggestion prompter)
         (assert-string= "100 foo"
-                         (selection-value))
-        (prompter:select-next prompter)
+                         (current-suggestion-value))
+        (prompter:next-suggestion prompter)
         (assert-string= "200"
-                         (selection-value))
-        (prompter:select-next prompter)
+                         (current-suggestion-value))
+        (prompter:next-suggestion prompter)
         (assert-string= "200"
-                         (selection-value))
-        (prompter:select-previous prompter)
+                         (current-suggestion-value))
+        (prompter:previous-suggestion prompter)
         (assert-string= "100 foo"
-                         (selection-value))
-        (prompter:select-first prompter)
+                         (current-suggestion-value))
+        (prompter:first-suggestion prompter)
         (assert-string= "foo"
-                         (selection-value))
-        (prompter:select-previous prompter)
+                         (current-suggestion-value))
+        (prompter:previous-suggestion prompter)
         (assert-string= "foo"
-                         (selection-value))
-        (prompter:select-last prompter)
+                         (current-suggestion-value))
+        (prompter:last-suggestion prompter)
         (assert-string= "200"
-                         (selection-value))
-        (prompter:select-previous-source prompter)
+                         (current-suggestion-value))
+        (prompter:previous-source prompter)
         (assert-string= "bar"
-                         (selection-value))
-        (prompter:select-previous-source prompter)
+                         (current-suggestion-value))
+        (prompter:previous-source prompter)
         (assert-string= "bar"
-                         (selection-value))
-        (prompter:select-next-source prompter)
+                         (current-suggestion-value))
+        (prompter:next-source prompter)
         (assert-string= "100 foo"
-                         (selection-value))
-        (prompter:select-next-source prompter)
+                         (current-suggestion-value))
+        (prompter:next-source prompter)
         (assert-string= "100 foo"
-                         (selection-value))
+                         (current-suggestion-value))
 
         (setf (prompter:input prompter) "bar")
         (prompter:all-ready-p prompter)
         (assert-string= "bar"
-                         (selection-value))
+                         (current-suggestion-value))
         (assert-equal '("bar")
                       (all-source-suggestions prompter))
-        (prompter:select-next prompter)
+        (prompter:next-suggestion prompter)
         (assert-string= "bar"
-                         (selection-value))
-        (prompter:select-next-source prompter)
+                         (current-suggestion-value))
+        (prompter:next-source prompter)
         (assert-string= "bar"
-                         (selection-value)))
+                         (current-suggestion-value)))
       (prompter:all-ready-p prompter))))
 
-(define-test select-with-steps ()
+(define-test set-current-suggestion-with-steps ()
   (with-report-dangling-threads
     (let ((prompter (prompter:make
                      :sources (list (make-instance 'prompter:source
@@ -378,21 +378,21 @@
                                                    :name "Test source 2"
                                                    :constructor '("100 foo" "200")
                                                    :filter-preprocessor #'prompter:filter-exact-matches)))))
-      (flet ((selection-value ()
-               (prompter:value (prompter:selected-suggestion prompter))))
+      (flet ((current-suggestion-value ()
+               (prompter:value (prompter:%current-suggestion prompter))))
         (prompter:all-ready-p prompter)
-        (prompter:select-next prompter 2)
+        (prompter:next-suggestion prompter 2)
         (assert-string= "100 foo"
-                        (selection-value))
-        (prompter:select-next prompter -2)
+                        (current-suggestion-value))
+        (prompter:next-suggestion prompter -2)
         (assert-string= "foo"
-                        (selection-value))
-        (prompter:select-next prompter 99)
+                        (current-suggestion-value))
+        (prompter:next-suggestion prompter 99)
         (assert-string= "200"
-                        (selection-value)))
+                        (current-suggestion-value)))
       (prompter:all-ready-p prompter))))
 
-(define-test select-with-wrap-over ()
+(define-test set-current-suggestion-with-wrap-over ()
   (with-report-dangling-threads
     (let ((prompter (prompter:make
                      :sources (list (make-instance 'prompter:source
@@ -402,27 +402,27 @@
                                                    :name "Test source 2"
                                                    :constructor '("100 foo" "200")
                                                    :filter-preprocessor #'prompter:filter-exact-matches)))))
-      (flet ((selection-value ()
-               (prompter:value (prompter:selected-suggestion prompter))))
+      (flet ((current-suggestion-value ()
+               (prompter:value (prompter:%current-suggestion prompter))))
         (prompter:all-ready-p prompter)
-        (prompter:select-last prompter)
+        (prompter:last-suggestion prompter)
         (assert-string= "200"
-                        (selection-value))
-        (prompter:select-next prompter)
+                        (current-suggestion-value))
+        (prompter:next-suggestion prompter)
         (assert-string= "200"
-                        (selection-value))
-        (prompter::select prompter 1 :wrap-over-p t)
+                        (current-suggestion-value))
+        (prompter::set-current-suggestion prompter 1 :wrap-over-p t)
         (assert-string= "foo"
-                        (selection-value))
-        (prompter::select prompter -1 :wrap-over-p t)
+                        (current-suggestion-value))
+        (prompter::set-current-suggestion prompter -1 :wrap-over-p t)
         (assert-string= "200"
-                        (selection-value))
-        (prompter::select prompter 2 :wrap-over-p t)
+                        (current-suggestion-value))
+        (prompter::set-current-suggestion prompter 2 :wrap-over-p t)
         (assert-string= "bar"
-                        (selection-value))
-        (prompter::select prompter -3 :wrap-over-p t)
+                        (current-suggestion-value))
+        (prompter::set-current-suggestion prompter -3 :wrap-over-p t)
         (assert-string= "100 foo"
-                        (selection-value)))
+                        (current-suggestion-value)))
       (prompter:all-ready-p prompter))))
 
 (define-class buffer ()
@@ -446,23 +446,23 @@
                                               :active-attributes-keys '("Title")))))
       (assert-equal `(("Title" ,(title buffer1)))
                     (prompter:active-attributes
-                     (prompter:selected-suggestion prompter)
-                     :source (prompter:selected-source prompter)))
-      (setf (prompter:active-attributes-keys (prompter:selected-source prompter))
+                     (prompter:%current-suggestion prompter)
+                     :source (prompter:current-source prompter)))
+      (setf (prompter:active-attributes-keys (prompter:current-source prompter))
             '("Title" "Keywords"))
 
       (assert-string= ""
                       (first (alex:assoc-value (prompter:active-attributes
-                                                (prompter:selected-suggestion prompter)
-                                                :source (prompter:selected-source prompter))
+                                                (prompter:%current-suggestion prompter)
+                                                :source (prompter:current-source prompter))
                                                "Keywords" :test 'equal)))
       (sleep 2)
 
       (assert-equal `(("Title" ,(title buffer1))
                       ("Keywords" ,(write-to-string (keywords buffer1))))
                     (prompter:active-attributes
-                     (prompter:selected-suggestion prompter)
-                     :source (prompter:selected-source prompter))))))
+                     (prompter:%current-suggestion prompter)
+                     :source (prompter:current-source prompter))))))
 
 (define-test error-handling ()
   (with-report-dangling-threads
@@ -474,13 +474,13 @@
                                              (lambda (suggestions source input)
                                                (declare (ignore suggestions source))
                                                (/ 1 input))))))
-      (flet ((selection-value ()
-               (prompter:value (prompter:selected-suggestion prompter))))
+      (flet ((current-suggestion-value ()
+               (prompter:value (prompter:%current-suggestion prompter))))
         (prompter:all-ready-p prompter)
         (assert-string= "foo"
-                        (selection-value))
+                        (current-suggestion-value))
         (setf (prompter:input prompter) "bar")
         (prompter:all-ready-p prompter)
         (assert-string= "bar"
-                        (selection-value))
+                        (current-suggestion-value))
         (prompter:all-ready-p prompter)))))
