@@ -81,7 +81,7 @@
 
 (define-class os-package-source (prompter:source)
   ((prompter:name "Packages")
-   (prompter:multi-selection-p t)
+   (prompter:enable-marks-p t)
    (prompter:constructor (ospm:list-packages))
    (prompter:active-attributes-keys '("Name" "Version" "Synopsis"))))
 
@@ -91,7 +91,7 @@
 
 (define-class os-package-output-source (prompter:source)
   ((prompter:name "Package Outputs")
-   (prompter:multi-selection-p t)
+   (prompter:enable-marks-p t)
    (prompter:constructor (ospm:list-package-outputs))))
 
 (define-class os-installed-package-source (prompter:source)
@@ -378,9 +378,9 @@ OBJECTS can be a list of packages, a generation, etc."
                                                          :include-manager-p t))
                         (prompt :prompt "Delete generations"
                                 :sources (make-instance 'os-generation-source
-                                                        :multi-selection-p t
+                                                        :enable-marks-p t
                                                         :profile profile)))))
 
 ;; TODO: Parse Texinfo for Guix descriptions.
 ;; TODO: Add commands:
-;; - show-deps, show-reverse-deps (when prompt-buffer has return-actions)
+;; - show-deps, show-reverse-deps (when prompt-buffer has actions-on-return)

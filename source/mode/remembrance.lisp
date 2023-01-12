@@ -242,7 +242,7 @@ Return NIL if page content is empty."
                                        suggestions
                                        (lookup input (find-submode 'remembrance-mode)
                                                :suffix-matching-p (suffix-matching-p source)))))
-   (prompter:multi-selection-p t)
+   (prompter:enable-marks-p t)
    (prompter:active-attributes-keys '("URL" "Title" "Keywords"))
    (suffix-matching-p
     t
@@ -262,7 +262,7 @@ This induces a performance cost."))
                                     :test #'string-equal)
                         suggestion)))
    (prompter:filter-preprocessor nil)
-   (prompter:multi-selection-p t)
+   (prompter:enable-marks-p t)
    (prompter:active-attributes-keys '("URL" "Title" "Keywords")))
   (:export-class-name-p t))
 
@@ -311,29 +311,29 @@ This induces a performance cost."))
   :no-access-p t)
 
 (define-command recollect-visited-page
-    (&key (return-actions (list (lambda-command view-remembered-content (suggestions)
-                                  "View content in new buffer."
-                                  (let ((query (prompter:input (current-prompt-buffer))))
-                                    (make-buffer-focus
-                                     :url (quri:make-uri
-                                           :scheme "view-remembered-page"
-                                           :path (quri:url-encode (render-url (page-url-string (first suggestions))))
-                                           :query (list (cons "query" (quri:url-encode query))
-                                                        (cons "origin-buffer-id"
-                                                              (quri:url-encode (write-to-string (id (current-buffer))))))))))
-                                (lambda-command buffer-load* (suggestion-values)
-                                  "Load first selected cache entry in current buffer and the rest in new buffer(s)."
-                                  (mapc (lambda (page-doc) (make-buffer :url (page-url page-doc))) (rest suggestion-values))
-                                  (buffer-load (page-url (first suggestion-values))))
-                                (lambda-command new-buffer-load (suggestion-values)
-                                  "Load cache entries in new buffer(s)."
-                                  (mapc (lambda (page-doc) (make-buffer :url (page-url page-doc))) (rest suggestion-values))
-                                  (make-buffer-focus :url (page-url (first suggestion-values))))
-                                (lambda-command copy-url* (suggestions)
-                                  "Copy bookmark URL."
-                                  (let ((url (page-url-string (first suggestions))))
-                                    (trivial-clipboard:text url)
-                                    (echo "Copied to clipboard: ~s" url))))))
+    (&key (actions-on-return (list (lambda-command view-remembered-content (suggestions)
+                                     "View content in new buffer."
+                                     (let ((query (prompter:input (current-prompt-buffer))))
+                                       (make-buffer-focus
+                                        :url (quri:make-uri
+                                              :scheme "view-remembered-page"
+                                              :path (quri:url-encode (render-url (page-url-string (first suggestions))))
+                                              :query (list (cons "query" (quri:url-encode query))
+                                                           (cons "origin-buffer-id"
+                                                                 (quri:url-encode (write-to-string (id (current-buffer))))))))))
+                                   (lambda-command buffer-load* (suggestion-values)
+                                     "Load first selected cache entry in current buffer and the rest in new buffer(s)."
+                                     (mapc (lambda (page-doc) (make-buffer :url (page-url page-doc))) (rest suggestion-values))
+                                     (buffer-load (page-url (first suggestion-values))))
+                                   (lambda-command new-buffer-load (suggestion-values)
+                                     "Load cache entries in new buffer(s)."
+                                     (mapc (lambda (page-doc) (make-buffer :url (page-url page-doc))) (rest suggestion-values))
+                                     (make-buffer-focus :url (page-url (first suggestion-values))))
+                                   (lambda-command copy-url* (suggestions)
+                                     "Copy bookmark URL."
+                                     (let ((url (page-url-string (first suggestions))))
+                                       (trivial-clipboard:text url)
+                                       (echo "Copied to clipboard: ~s" url))))))
   "Search the local cache for URL, title and content.
 It lists multiple suggestion sources:
 
@@ -344,12 +344,12 @@ It lists multiple suggestion sources:
 
 The `view-remembered-content' action displays the cached content (with highlighted
 query terms), even when offline."
-  ;; TODO: Add selection action to preview the search matches.
+  ;; TODO: Add current suggestion action to preview the search matches.
   (prompt
    :prompt "Search cache"
    :input (ffi-buffer-copy (current-buffer))
-   :sources (list (make-instance 'remembrance-source :return-actions return-actions)
-                  (make-instance 'remembrance-exact-source :return-actions return-actions))))
+   :sources (list (make-instance 'remembrance-source :actions-on-return actions-on-return)
+                  (make-instance 'remembrance-exact-source :actions-on-return actions-on-return))))
 
 (define-command toggle-auto-cache (&key (buffer (current-buffer)))
   "Whether to cache on URL load.
@@ -384,7 +384,7 @@ See also `auto-cache-on-load-p' in `remembrance-mode'."
   (let ((buffer (or buffer
                     (prompt1 :prompt "View changes for buffer"
                              :sources (make-instance 'buffer-source
-                                                     :return-actions #'identity))))
+                                                     :actions-on-return #'identity))))
         (mode (find-submode 'remembrance-mode)))
     (alex:when-let ((doc (find-url (url buffer) mode)))
       ;; TODO: Display in internal page.
@@ -399,7 +399,7 @@ BUFFER can be a list of buffers."
   (let ((buffers (or (alex:ensure-list buffer)
                      (prompt :prompt "Cache content of buffers"
                              :sources (make-instance 'buffer-source
-                                                     :return-actions #'identity)))))
+                                                     :actions-on-return #'identity)))))
     (dolist (buffer buffers)
       (buffer->cache buffer (find-submode 'remembrance-mode)))))
 
@@ -426,7 +426,7 @@ BOOKMARK can be a list of bookmarks."
                        (prompt
                         :prompt "Cache content of bookmarks"
                         :sources (make-instance 'nyxt/bookmark-mode:bookmark-source
-                                                :multi-selection-p t)))))
+                                                :enable-marks-p t)))))
     (mapc (compose #'url->cache #'url) bookmarks)))
 
 (define-command remember-history-entry ()

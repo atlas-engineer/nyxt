@@ -284,7 +284,7 @@ For production code, see `find-submode' instead."
 
 (define-class mode-source (prompter:source)
   ((prompter:name "Modes")
-   (prompter:multi-selection-p t)
+   (prompter:enable-marks-p t)
    (prompter:constructor (sort (all-mode-symbols) #'string< :key #'symbol-name))
    (prompter:suggestion-maker 'make-mode-suggestion))
   (:export-class-name-p t)
@@ -297,7 +297,7 @@ For production code, see `find-submode' instead."
 (define-class active-mode-source (mode-source)
   ((prompter:name "Active modes")
    (buffers '())
-   (prompter:multi-selection-p t)
+   (prompter:enable-marks-p t)
    (prompter:constructor (lambda (source)
                            (delete-duplicates
                             (mapcar
@@ -313,7 +313,7 @@ For production code, see `find-submode' instead."
 (define-class inactive-mode-source (mode-source)
   ((prompter:name "Inactive modes")
    (buffers '())
-   (prompter:multi-selection-p t)
+   (prompter:enable-marks-p t)
    (prompter:constructor (lambda (source)
                            (let ((common-modes
                                    (reduce #'intersection
@@ -367,8 +367,8 @@ If it's a single buffer, return it directly (not as a list)."
                         (prompt
                          :prompt "Enable mode(s) for buffer(s)"
                          :sources (make-instance 'buffer-source
-                                                 :multi-selection-p t
-                                                 :return-actions '())))))
+                                                 :enable-marks-p t
+                                                 :actions-on-return '())))))
          (modes (or modes
                     (unless explicit-modes-p
                       (prompt
@@ -411,8 +411,8 @@ If it's a single buffer, return it directly (not as a list)."
                         (prompt
                          :prompt "Enable mode(s) for buffer(s)"
                          :sources (make-instance 'buffer-source
-                                                 :multi-selection-p t
-                                                 :return-actions '())))))
+                                                 :enable-marks-p t
+                                                 :actions-on-return '())))))
          (modes (or modes
                     (unless explicit-modes-p
                       (prompt
@@ -532,12 +532,12 @@ If there is no corresponding keymap, return nil."
   (declare (ignorable button-key))
   nil)
 
-(defmethod url-sources ((mode mode) return-actions)
-  (declare (ignore return-actions))
+(defmethod url-sources ((mode mode) actions-on-return)
+  (declare (ignore actions-on-return))
   nil)
 
-(defmethod url-sources :around ((mode mode) return-actions)
-  (declare (ignore return-actions))
+(defmethod url-sources :around ((mode mode) actions-on-return)
+  (declare (ignore actions-on-return))
   (alex:ensure-list (call-next-method)))
 
 (defmethod s-serialization:serializable-slots ((object mode))

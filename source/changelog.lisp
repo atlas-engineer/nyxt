@@ -109,7 +109,7 @@ particular revision.")
    (:li "Fix history double-restore which led to many crashes.")
    (:li "Create file and parent directories of configuration files if they
         don't exist.")
-   (:li "Fix " (:code "set-url-from-bookmark") " on multi-selection.")
+   (:li "Fix " (:code "set-url-from-bookmark") " with marks.")
    (:li "Fix " (:code "process-mode") " to not run an action when it is nil.")))
 
 (define-version "2.2.0"
@@ -191,7 +191,7 @@ particular revision.")
    (:li (:code "list-buffers") " can now display the the buffers as a tree."))
   (:h3 "Platform support")
   (:ul
-   (:li "Fix slow buffer and prompt-buffer creation on FreeBSD.  (Thanks to
+   (:li "Fix slow buffer and prompt buffer creation on FreeBSD.  (Thanks to
         @shamazmazum!)"))
   (:h3 "Bug fixes")
   (:ul
@@ -228,7 +228,7 @@ particular revision.")
    (:li "Quicklisp can now be properly loaded when Nyxt was installed via the .deb file."))
   (:h3 "Bug fixes")
   (:ul
-   (:li "Properly handle cancellation in yes/no prompt-buffers.")
+   (:li "Properly handle cancellation in yes/no prompt buffers.")
    (:li "Fix sandboxing.  (Thanks to @tiberious726!)")
    (:li "Fix toggle-mark in visual-mode.  (Thanks to @hendursaga!)")
    (:li "Report load-after-system warnings.  (Thanks to @hendursaga!)")
@@ -238,7 +238,7 @@ particular revision.")
 (define-version "2.2.2"
   (:ul
    (:li "HTTP redirects are no longer stored to history.")
-   (:li "Selecting hints in prompt-buffer no longer scrolls the page automatically, press "
+   (:li "Selecting hints in prompt buffer no longer scrolls the page automatically, press "
         (:code "C-l") " instead."))
   (:h3 "Build and compilation changes")
   (:ul
@@ -338,7 +338,7 @@ SLY install.")
    (:li "UserScript support (such as GreaseMonkey scripts).")
    (:li "Revamp status buffer design.")
    (:li "Status buffer is now fully customizable.")
-   (:li "New prompt-buffer fuzzy matching algorithm, hopefully offering more
+   (:li "New prompt buffer fuzzy matching algorithm, hopefully offering more
   relevant results.  (Thanks to @BlueFlo0d!)")
    (:li "Add support for the Gopher and Gemini protocols.")
    (:li "Headless mode available through " (:code "--headless") " CLI switch."
@@ -392,7 +392,7 @@ SLY install.")
         " Slot " (:code "session-restore-prompt") " has been replaced by "
         (:code "restore-session-on-startup-p") ", a boolean.")
    (:li "Prompt buffer mouse support can be disabled with the " (:code "mouse-support-p")
-        " prompt-buffer slot.  (Thanks to @efimerspan!)"))
+        " prompt buffer slot.  (Thanks to @efimerspan!)"))
 
   (:h3 "Bindings")
   (:ul
@@ -455,11 +455,11 @@ SLY install.")
    (:li "Add " (:nxref :class-name 'prompt-buffer :slot 'height) ".")
    (:li "Add "
         (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'nyxt/hint-mode:fit-to-prompt-p)
-        " minimizing the space taken by the prompt-buffer while navigating hints.")
+        " minimizing the space taken by the prompt buffer while navigating hints.")
    (:li "Add "
         (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'nyxt/hint-mode:show-hint-scope-p)
         "for element highlighting of hinted elements.")
-   (:li "Add " (:nxref :class-name 'prompter:source :slot 'prompter:marks-actions)
+   (:li "Add " (:code "prompter:marks-actions")
         " that run when marked items on prompt-buffer change.")
    (:li "Extend " (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'style)
         " to accommodate for marked hints.")
@@ -496,11 +496,11 @@ to open a file, save it, switch buffer or delete current buffer.")
    (:li (:nxref :command 'nyxt/document-mode:paste-from-clipboard-ring) " is now conveniently bound to "
         (:code "M-y") " in Emacs scheme of "
         (:nxref :class-name 'nyxt/document-mode:document-mode) ".")
-   (:li "Prompt-buffer now has familiar bindings for text cutting.")
-   (:li "Add " (:nxref :command 'nyxt/prompt-buffer-mode:set-selection-action)
+   (:li "Prompt buffer now has familiar bindings for text cutting.")
+   (:li "Add " (:code "nyxt/prompt-buffer-mode:set-selection-action")
         ", bound to " (:code "C-c C-j") "by default.")
    (:li (:code "return-selection-over-action") " renamed to "
-        (:nxref :command 'nyxt/prompt-buffer-mode:return-marks-action)
+        (:code "nyxt/prompt-buffer-mode:return-marks-action")
         ".  The default keybinding is the same."))
 
   (:h3 "Programming interface")
@@ -574,6 +574,11 @@ auto-mode-rules.lisp)."))
    (:li "History globality can be set on a per-buffer basis. "
         "See the " (:code "global-history-p") " slot in " (:code "context-buffer") "."))
 
+  (:h3 "Bindings")
+  (:ul
+   (:li "Add " (:nxref :command 'nyxt/prompt-buffer-mode:set-action-on-current-suggestion)
+        ", bound to " (:code "C-c C-j") "by default."))
+
   (:h3 "Programming interface")
   (:ul
    (:li (:nxref :function 'define-configuration)
@@ -606,7 +611,69 @@ regular commands, such as "
    (:li (:nxref :command 'set-url) " and " (:nxref :command 'set-url-new-buffer) " accept the "
         (:code ":URL") " keyword argument and load it when provided.")
    (:li "New " (:nxref :function 'ffi-height) " and " (:nxref :function 'ffi-width)
-        " methods to unify most of the height & width methods used before."))
+        " methods to unify most of the height & width methods used before.")
+   (:li "Rename " (:code "prompter:return-actions") " to "
+        (:nxref :function 'prompter:actions-on-return) ".")
+   (:li "Rename " (:code "prompter:marks-actions") " to "
+        (:nxref :function 'prompter:actions-on-marks) ".")
+   (:li "Rename " (:code "prompter:selection-actions") " to "
+        (:nxref :function 'prompter:actions-on-current-suggestion) ".")
+   (:li "Rename " (:code "prompter:return-action") " to "
+        (:nxref :slot 'prompter:actions-on-return :class-name 'prompter) ".")
+   (:li "Rename " (:code "prompter:marks-actions") " to "
+        (:nxref :slot 'prompter:actions-on-marks :class-name 'prompter) ".")
+   (:li "Rename " (:code "prompter:selection-actions") " to "
+        (:nxref :slot 'prompter:actions-on-current-suggestion :class-name 'prompter) ".")
+   (:li "Rename " (:code "prompter:multi-selection-p") " to "
+        (:nxref :slot 'prompter:enable-marks-p :class-name 'prompter) ".")
+   (:li (:code "nyxt/prompt-buffer-mode:return-selection") " renamed to "
+        (:nxref :command 'nyxt/prompt-buffer-mode:run-action-on-return)
+        ".  The default keybinding is the same.")
+   (:li (:code "nyxt/prompt-buffer-mode:cancel-input") " renamed to "
+        (:nxref :command 'nyxt/prompt-buffer-mode:quit-prompt-buffer)
+        ".  The default keybinding is the same.")
+   (:li (:code "nyxt/prompt-buffer-mode:toggle-toggle-mark-backwards") " renamed to "
+        (:nxref :command 'nyxt/prompt-buffer-mode:toggle-mark-backwards)
+        ".  The default keybinding is the same.")
+   (:li (:code "nyxt/prompt-buffer-mode:toggle-mark") " renamed to "
+        (:nxref :command 'nyxt/prompt-buffer-mode:toggle-mark-forwards)
+        ".  The default keybinding is the same.")
+   (:li (:code "nyxt/prompt-buffer-mode:select-next-source") " renamed to "
+        (:nxref :command 'nyxt/prompt-buffer-mode:next-source)
+        ".  The default keybinding is the same.")
+   (:li (:code "nyxt/prompt-buffer-mode:select-previous-source") " renamed to "
+        (:nxref :command 'nyxt/prompt-buffer-mode:previous-source)
+        ".  The default keybinding is the same.")
+   (:li (:code "nyxt/prompt-buffer-mode:select-next-page") " renamed to "
+        (:nxref :command 'nyxt/prompt-buffer-mode:next-page)
+        ".  The default keybinding is the same.")
+   (:li (:code "nyxt/prompt-buffer-mode:select-previous-page") " renamed to "
+        (:nxref :command 'nyxt/prompt-buffer-mode:previous-page)
+        ".  The default keybinding is the same.")
+   (:li (:code "nyxt/prompt-buffer-mode:select-last") " renamed to "
+        (:nxref :command 'nyxt/prompt-buffer-mode:last-suggestion)
+        ".  The default keybinding is the same.")
+   (:li (:code "nyxt/prompt-buffer-mode:select-first") " renamed to "
+        (:nxref :command 'nyxt/prompt-buffer-mode:first-suggestion)
+        ".  The default keybinding is the same.")
+   (:li (:code "nyxt/prompt-buffer-mode:select-next") " renamed to "
+        (:nxref :command 'nyxt/prompt-buffer-mode:next-suggestion)
+        ".  The default keybinding is the same.")
+   (:li (:code "nyxt/prompt-buffer-mode:select-previous") " renamed to "
+        (:nxref :command 'nyxt/prompt-buffer-mode:previous-suggestion)
+        ".  The default keybinding is the same.")
+   (:li (:code "nyxt/prompt-buffer-mode:set-selection-action") " renamed to "
+        (:nxref :command 'nyxt/prompt-buffer-mode:set-action-on-return)
+        ".  The default keybinding is the same.")
+   (:li (:code "nyxt/prompt-buffer-mode:run-selection-action") " renamed to "
+        (:nxref :command 'nyxt/prompt-buffer-mode:run-action-on-current-suggestion)
+        ".  The default keybinding is the same.")
+   (:li (:code "nyxt/prompt-buffer-mode:toggle-selection-actions-enabled") " renamed to "
+        (:nxref :command 'nyxt/prompt-buffer-mode:toggle-actions-on-current-suggestion-enabled)
+        ".  The default keybinding is the same.")
+   (:li (:code "nyxt/prompt-buffer-mode:insert-selection") " renamed to "
+        (:nxref :command 'nyxt/prompt-buffer-mode:insert-current-suggestion)
+        ".  The default keybinding is the same."))
 
   (:h3 "Bug fixes")
   (:ul

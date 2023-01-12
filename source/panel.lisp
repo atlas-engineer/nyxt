@@ -8,7 +8,7 @@
 (define-class panel-buffer-source (prompter:source)
   ((prompter:name "Panel buffers")
    (window :accessor window :initarg :window)
-   (prompter:multi-selection-p t)
+   (prompter:enable-marks-p t)
    (prompter:constructor (lambda (source)
                            (panel-buffers (window source))))))
 

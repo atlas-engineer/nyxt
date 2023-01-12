@@ -1258,7 +1258,7 @@ the `active-buffer'."
                                            (uiop:native-namestring (uiop:getcwd)))
                                    :extra-modes 'nyxt/file-manager-mode:file-manager-mode
                                    :sources (make-instance 'nyxt/file-manager-mode:file-source
-                                                           :multi-selection-p multiple))
+                                                           :enable-marks-p multiple))
                          (prompt-buffer-canceled ()
                            nil)))))
           (if files
@@ -1323,8 +1323,8 @@ the `active-buffer'."
                              :value input-color
                              :attributes (prompter:object-attributes input-color source))
               suggestions))))
-   (prompter:selection-actions-enabled-p t)
-   (prompter:selection-actions
+   (prompter:actions-on-current-suggestion-enabled-p t)
+   (prompter:actions-on-current-suggestion
     (lambda (color)
       (ps-eval :buffer (current-prompt-buffer)
         (setf (ps:@ (nyxt/ps:qs document "#input") style background-color) (ps:lisp color)))

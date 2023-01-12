@@ -91,7 +91,7 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
             :prompt "Tag(s)"
             :sources (list (make-instance 'prompter:word-source
                                           :name "New tags"
-                                          :multi-selection-p t)
+                                          :enable-marks-p t)
                            (make-instance 'keyword-source :buffer buffer)
                            (make-instance 'annotation-tag-source)))))
   "Create an annotation of the URL of BUFFER.
@@ -113,7 +113,7 @@ DATA and TAGS are passed as arguments to `url-annotation' make-instance."
             :prompt "Tag(s)"
             :sources (list (make-instance 'prompter:word-source
                                           :name "New tags"
-                                          :multi-selection-p t)
+                                          :enable-marks-p t)
                            (make-instance 'keyword-source :buffer buffer)
                            (make-instance 'annotation-tag-source)))))
   "Create an annotation for the highlighted text of BUFFER.
@@ -151,7 +151,7 @@ make-instance."
 (define-class annotation-source (prompter:source)
   ((prompter:name "Annotations")
    (prompter:constructor (files:content (annotations-file (current-buffer))))
-   (prompter:multi-selection-p t)))
+   (prompter:enable-marks-p t)))
 
 (define-class annotation-tag-source (prompter:source)
   ((prompter:name "Tags")
@@ -164,7 +164,7 @@ make-instance."
    (prompter:filter
     (lambda (suggestion source input)
       (prompter:fuzzy-match suggestion source (last-word input))))
-   (prompter:multi-selection-p t)
+   (prompter:enable-marks-p t)
    (prompter:constructor
     (let ((annotations (files:content (annotations-file (current-buffer)))))
       (sort (remove-duplicates
@@ -180,7 +180,7 @@ make-instance."
           (prompt
            :prompt "Show annotation(s)"
            :sources (make-instance 'annotation-source
-                                   :return-actions #'identity))))
+                                   :actions-on-return #'identity))))
     (render-annotations selected-annotations)))
 
 (define-internal-page-command-global show-annotations ()

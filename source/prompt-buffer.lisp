@@ -52,8 +52,8 @@ some point.")
      (mouse-support-p
       t
       :type boolean
-      :documentation "Whether to allow mouse events to set and return a
-selection over prompt buffer suggestions.")
+      :documentation "Whether to allow mouse events to set and return the
+current suggestion in the prompt buffer.")
      (style
       (theme:themed-css (theme *browser*)
         `(*
@@ -134,7 +134,7 @@ selection over prompt buffer suggestions.")
         `(.selected
           :background-color ,theme:primary
           :color ,theme:on-primary))
-      :documentation "The CSS applied to a prompt-buffer when it is set-up.")
+      :documentation "The CSS applied to prompt buffer.")
      (override-map
       (make-keymap "override-map")
       :type keymaps:keymap
@@ -167,19 +167,19 @@ See `prompt' for how to invoke prompts.")
 
 (export-always 'current-source)
 (defun current-source (&optional (prompt-buffer (current-prompt-buffer)))
-  (prompter:selected-source prompt-buffer))
+  (prompter:current-source prompt-buffer))
 
 (export-always 'current-suggestion-value)
 (defun current-suggestion-value (&optional (prompt-buffer (current-prompt-buffer)))
-  "Return selected prompt-buffer suggestion value.
+  "Return selected PROMPT-BUFFER suggestion value.
 Return source as second value.
-To access the suggestion instead, see `prompter:selected-suggestion'."
+To access the suggestion instead, see `prompter:%current-suggestion'."
   (multiple-value-bind (suggestion source)
-      (prompter:selected-suggestion prompt-buffer)
+      (prompter:%current-suggestion prompt-buffer)
     (values (when suggestion (prompter:value suggestion)) source)))
 
 (defun show-prompt-buffer (prompt-buffer &key (height (height prompt-buffer)))
-  "Show the last active prompt-buffer, if any.
+  "Show the last active PROMPT-BUFFER, if any.
 This is a low-level display function.
 See also `hide-prompt-buffer'."
   ;; TODO: Add method that returns if there is only 1 source with no filter.
@@ -232,7 +232,7 @@ See also `show-prompt-buffer'."
         (setf (ffi-height prompt-buffer) 0))))
 
 (defun suggestion-and-mark-count (prompt-buffer suggestions marks
-                                  &key multi-selection-p pad-p)
+                                  &key enable-marks-p pad-p)
   (alex:maxf (max-suggestions prompt-buffer)
              (length suggestions))
   (labels ((decimals (n)
@@ -253,7 +253,7 @@ See also `show-prompt-buffer'."
                           "0")))
          (format nil (str:concat "[~a~" padding ",,,' @a]")
                  (cond
-                   ((or marks multi-selection-p)
+                   ((or marks enable-marks-p)
                     (format nil
                             (str:concat "~" padding ",,,' @a/")
                             (length marks)))
@@ -272,7 +272,7 @@ See also `show-prompt-buffer'."
              (suggestion-and-mark-count
               prompt-buffer suggestions marks
               :pad-p t
-              :multi-selection-p (some #'prompter:multi-selection-p
+              :enable-marks-p (some #'prompter:enable-marks-p
                                        (prompter:sources prompt-buffer)))))
       (setf (ps:@ (nyxt/ps:qs document "#prompt-modes") |innerHTML|)
             (ps:lisp (str:join " "
@@ -302,7 +302,7 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                (suggestion-and-mark-count prompt-buffer
                                                           (prompter:suggestions source)
                                                           (prompter:marks source)
-                                                          :multi-selection-p (prompter:multi-selection-p source)))
+                                                          :enable-marks-p (prompter:enable-marks-p source)))
                            (if (prompter:ready-p source)
                                ""
                                "(In progress...)"))
@@ -319,14 +319,14 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                      ;; Maybe first make the table, then add the element one by one _if_ there are into view.
                                      with max-suggestion-count = 10
                                      repeat max-suggestion-count
-                                     with cursor-index = (prompter:selected-suggestion-position prompt-buffer)
+                                     with cursor-index = (prompter:current-suggestion-position prompt-buffer)
                                      for suggestion-index from (max 0 (- cursor-index (/ max-suggestion-count 2)))
                                      for suggestion in (nthcdr suggestion-index (prompter:suggestions source))
                                      collect
                                      (let ((suggestion-index suggestion-index)
                                            (cursor-index cursor-index))
                                        (:tr :id (when (equal (list suggestion source)
-                                                             (multiple-value-list (prompter:selected-suggestion prompt-buffer)))
+                                                             (multiple-value-list (prompter:%current-suggestion prompt-buffer)))
                                                   "selection")
                                             :class (when (prompter:marked-p source (prompter:value suggestion))
                                                      "marked")
@@ -336,7 +336,7 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                                                (nyxt/ps:lisp-eval
                                                                 (:title "choose-this-suggestion"
                                                                  :buffer prompt-buffer)
-                                                                (prompter::select (current-prompt-buffer)
+                                                                (prompter::set-current-suggestion (current-prompt-buffer)
                                                                   (- suggestion-index cursor-index)))
                                                                (cond
                                                                  ;; Ctrl-click to mark a single suggestion.
@@ -351,7 +351,7 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                                                  (t (nyxt/ps:lisp-eval
                                                                      (:title "return-this-suggestion"
                                                                       :buffer prompt-buffer)
-                                                                     (prompter:return-selection
+                                                                     (prompter:run-action-on-return
                                                                       (nyxt::current-prompt-buffer))))))))
                                             (loop for (nil attribute attribute-display)
                                                     in (prompter:active-attributes suggestion :source source)

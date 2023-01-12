@@ -542,7 +542,7 @@ Follows what the compiler finds aesthetically pleasing."
              (let ((functions (prompt :prompt "Function to edit"
                                       :sources (make-instance
                                                 'nyxt::function-source
-                                                :return-actions #'identity))))
+                                                :actions-on-return #'identity))))
                (setf (evaluations repl-mode)
                      (append
                       (evaluations repl-mode)

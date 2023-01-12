@@ -54,7 +54,7 @@ If non-empty, return the result of BUFFER's `current-keymaps-hook' instead."
 
 (defun all-keymaps (&optional (window (current-window)))
   "Return all keymaps for WINDOW, including the buffer keymaps and the
-prompt-buffer keymaps."
+prompt buffer keymaps."
   (let ((buffer (active-buffer window)))
     (when buffer
       (apply #'append (list (override-map buffer))
@@ -91,10 +91,10 @@ KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
   ;; slot to the `command' class.
   (let ((ignored-commands '(execute-command
                             execute-predicted-command
-                            select-next
-                            select-previous
-                            select-next-source
-                            select-previous-source))
+                            next-suggestion
+                            previous-suggestion
+                            next-source
+                            previous-source))
         (function-function (typecase function
                              (symbol (symbol-function function))
                              (function function))))

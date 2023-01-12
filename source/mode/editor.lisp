@@ -132,7 +132,7 @@ contains an `nyxt/editor-mode:editor-mode' instance (or a subclass thereof)."))
      :sources
      (list (make-instance 'nyxt/file-manager-mode:file-source
                           :name "Existing file"
-                          :return-actions #'identity)
+                          :actions-on-return #'identity)
            (make-instance 'prompter:raw-source
                           :name "Create new file"))))))
 

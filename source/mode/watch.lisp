@@ -14,7 +14,7 @@
                              :sources (make-instance 'prompter:source
                                                      :name "Units"
                                                      :constructor time-units
-                                                     :multi-selection-p t)))
+                                                     :enable-marks-p t)))
          (times (mapcar (lambda (unit)
                           (parse-integer
                            (prompt1

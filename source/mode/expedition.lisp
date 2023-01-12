@@ -42,7 +42,7 @@
   (let* ((urls (reverse (prompt :prompt "Start expedition with the following links"
                                 :sources (make-instance 'nyxt/document-mode::frame-source
                                                         :buffer buffer
-                                                        :multi-selection-p t)
+                                                        :enable-marks-p t)
                                 :after-destructor
                                 (lambda ()
                                   (with-current-buffer buffer
