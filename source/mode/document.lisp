@@ -223,51 +223,19 @@ It does not assume being online."))
   "Select all the text in the text field."
   (ffi-buffer-select-all buffer))
 
-(export-always 'element-focused)
-(defgeneric element-focused (mode) ; TODO: Make hook instead?  Or use both, have the default method call hook.
-  (:method ((mode t))
-    nil)
-  (:documentation "Method run when `focus-element' is called."))
-
-(defmacro focus-element ((&optional (buffer '(current-buffer))) &body element-script)
-  "Select the element pointed to by ELEMENT-SCRIPT.
-ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
-  (alex:with-gensyms (element)
-    (alex:once-only (buffer)
-      `(progn
-         (ps-eval :buffer ,buffer (let ((,element (progn ,@element-script)))
-                                    (ps:chain ,element (focus))
-                                    (ps:chain ,element (select))))
-         (dolist (mode (modes ,buffer))
-           (element-focused mode))))))
-
-(define-command focus-first-input-field (&key (type-blacklist '("hidden"
-                                                                "checkbox"
-                                                                "button")))
-  "Move the focus to the first input field of `buffer'."
-  ;; The list of input types can be found below.
-  ;; https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input
-  ;; TODO: The following results in 2 DOM traversal.  We should probably do the
-  ;; whole thing in a single Parenscript instead.
-  (ps-labels
-    ((nth-input-type
-      (i)
-      (let* ((input (ps:chain document
-                              (get-elements-by-tag-name "INPUT")))
-             (item (when input (ps:chain input (item (ps:lisp i))))))
-        (when item
-          (ps:chain item type)))))
-    (let ((i (do ((i 0 (1+ i)))
-                 ((notany
-                   (lambda (type) (equalp (nth-input-type i) type))
-                   type-blacklist)
-                  i))))
-      (focus-element ()
-        (let* ((input (ps:chain document
-                                (get-elements-by-tag-name "INPUT")))
-               (item (when input (ps:chain input (item (ps:lisp i))))))
-          (when item
-            item))))))
+(define-command focus-first-input-field (&key (buffer (current-buffer)))
+  "Move the focus to the first input field of BUFFER."
+  ;; There are two basic ways to have an editable widget on a webpage:
+  ;; - Using <input>/<textarea>,
+  ;; - or marking any other element as contenteditable:
+  ;;   https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/contenteditable
+  (loop with inputs = (clss:ordered-select "input, textarea, [contenteditable]" (document-model buffer))
+        for input across inputs
+        when (ps-eval :buffer buffer
+               (nyxt/ps:element-editable-p
+                (nyxt/ps:qs-nyxt-id document (ps:lisp (nyxt/dom:get-nyxt-id input)))))
+          do (nyxt/dom:focus-select-element input)
+          and do (return input)))
 
 (defmethod nyxt:on-signal-load-committed ((mode document-mode) url)
   (declare (ignore mode url))
