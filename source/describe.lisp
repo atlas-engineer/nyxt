@@ -379,14 +379,16 @@ turned into links to their respective description page."
          (:li "External: " (length external-symbols))
          (:li "Internal: " (- (length total-symbols) (length external-symbols)))
          (:li "Total: " (length total-symbols)))
-        (:h2 "Use list:")
-        (:ul
-         (dolist (use (safe-sort (package-use-list package) :key #'package-name))
-           (:li (package-markup use))))
-        (:h2 "Used by list:")
-        (:ul
-         (dolist (use (safe-sort (package-used-by-list package) :key #'package-name))
-           (:li (package-markup use))))))))
+        (when (package-use-list package)
+          (:h2 "Use list:")
+          (:ul
+           (dolist (use (safe-sort (package-use-list package) :key #'package-name))
+             (:li (package-markup use)))))
+        (when (package-used-by-list package)
+          (:h2 "Used by list:")
+          (:ul
+           (dolist (use (safe-sort (package-used-by-list package) :key #'package-name))
+             (:li (package-markup use)))))))))
 
 (define-internal-page-command-global describe-variable
     (&key
