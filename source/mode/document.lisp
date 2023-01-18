@@ -183,8 +183,8 @@ It does not assume being online."))
    (prompter:constructor
     (lambda (source)
       (containers:container->list (ring source))))
-   (prompter:return-actions (lambda-command paste* (ring-items)
-                              (ffi-buffer-paste (current-buffer) (first ring-items)))))
+   (prompter:actions-on-return (lambda-command paste* (ring-items)
+                                 (ffi-buffer-paste (current-buffer) (first ring-items)))))
   (:export-class-name-p t)
   (:metaclass user-class))
 
@@ -473,13 +473,14 @@ ID is a buffer `id'."
 (define-class heading-source (prompter:source)
   ((prompter:name "Headings")
    (buffer :accessor buffer :initarg :buffer)
-   (prompter:selection-actions-enabled-p t)
-   (prompter:selection-actions (lambda-command scroll-page-to-heading* (heading)
-                                 "Scroll to heading."
-                                 (scroll-page-to-heading heading)))
+   (prompter:actions-on-current-suggestion-enabled-p t)
+   (prompter:actions-on-current-suggestion
+    (lambda-command scroll-page-to-heading* (heading)
+      "Scroll to heading."
+      (scroll-page-to-heading heading)))
    (prompter:constructor (lambda (source)
                            (get-headings :buffer (buffer source))))
-   (prompter:return-actions (lambda-unmapped-command scroll-page-to-heading))))
+   (prompter:actions-on-return (lambda-unmapped-command scroll-page-to-heading))))
 
 (defmethod prompter:object-attributes ((heading heading) (source heading-source))
   (declare (ignore source))
@@ -507,8 +508,8 @@ of buffers."
   (let ((buffers (prompt
                   :prompt "Select headings from buffers"
                   :sources (make-instance 'buffer-source
-                                          :multi-selection-p t
-                                          :return-actions #'identity))))
+                                          :enable-marks-p t
+                                          :actions-on-return #'identity))))
     (prompt
      :prompt "Jump to heading"
      :sources (loop for buffer in buffers
@@ -724,12 +725,12 @@ of buffers."
           :sources (make-instance
                     'frame-source
                     :buffer buffer
-                    :multi-selection-p t
-                    :return-actions (lambda-command open-new-buffers (urls)
-                                      (mapcar (lambda (i) (make-buffer :url (quri:uri i)))
-                                              urls)))
+                    :enable-marks-p t
+                    :actions-on-return (lambda-command open-new-buffers (urls)
+                                         (mapcar (lambda (i) (make-buffer :url (quri:uri i)))
+                                                 urls)))
           :after-destructor (lambda () (with-current-buffer buffer
-                                         (frame-element-clear)))))
+                                    (frame-element-clear)))))
 
 (defun frame-source-selection ()
   (remove-duplicates (mapcar #'url (frame-element-get-selection))

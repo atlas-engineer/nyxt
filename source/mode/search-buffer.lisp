@@ -171,7 +171,7 @@
   (ps-eval (ps:dolist (node (nyxt/ps:qsa document (+ "." (ps:lisp node-class-name))))
              (ps:chain node (replace-with (aref *nodes* (ps:@ node id)))))))
 
-(defun prompt-buffer-selection-highlight-hint (&key suggestions scroll follow
+(defun prompt-buffer-suggestion-highlight-hint (&key suggestions scroll follow
                                                  (prompt-buffer (current-prompt-buffer))
                                                  (buffer (current-buffer)))
   (let ((hint (flet ((hintp (hint-suggestion)
@@ -202,7 +202,7 @@
    (buffer (current-buffer))
    (minimum-search-length 1)
    (prompter:name "Search buffer")
-   (prompter:selection-actions-enabled-p t)
+   (prompter:actions-on-current-suggestion-enabled-p t)
    (prompter:filter nil)
    (prompter:filter-preprocessor
     (lambda (preprocessed-suggestions source input)
@@ -219,11 +219,12 @@
           (progn
             (remove-search-hints)
             '()))))
-   (prompter:selection-actions (lambda-command highlight-match (suggestion)
-                                 "Scroll to search match."
-                                 ;; TODO: rewrite prompt-buffer-selection-highlight-hint
-                                 (set-current-buffer (buffer suggestion) :focus nil)
-                                 (prompt-buffer-selection-highlight-hint :scroll t)))
+   (prompter:actions-on-current-suggestion
+    (lambda-command highlight-match (suggestion)
+      "Scroll to search match."
+      ;; TODO: rewrite prompt-buffer-suggestion-highlight-hint
+      (set-current-buffer (buffer suggestion) :focus nil)
+      (prompt-buffer-suggestion-highlight-hint :scroll t)))
    (prompter:destructor (lambda (prompter source)
                           (declare (ignore prompter source))
                           (unless (keep-search-hints-p (current-buffer))
@@ -252,7 +253,7 @@ Example:
   (prompt :prompt "Search text"
           :sources (make-instance 'search-buffer-source
                                   :case-sensitive-p case-sensitive-p
-                                  :return-actions
+                                  :actions-on-return
                                   (lambda (search-match)
                                     (unless (keep-search-hints-p (current-buffer))
                                       (remove-search-hints))
@@ -262,8 +263,8 @@ Example:
   "Search multiple buffers."
   (let ((buffers (prompt :prompt "Search buffer(s)"
                          :sources (make-instance 'buffer-source ; TODO: Define class?
-                                                 :return-actions #'identity
-                                                 :multi-selection-p t))))
+                                                 :actions-on-return #'identity
+                                                 :enable-marks-p t))))
     (prompt
      :prompt "Search text"
      :sources (mapcar (lambda (buffer)

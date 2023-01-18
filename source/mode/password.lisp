@@ -64,7 +64,7 @@ for which the `executable' slot is non-nil."
    (prompter:constructor
     (lambda (source)
       (password:list-passwords (password-instance source))))
-   (prompter:return-actions password-source-actions)))
+   (prompter:actions-on-return password-source-actions)))
 
 (defun password-debug-info ()
   (alex:when-let ((interface (password-interface (current-buffer))))
@@ -187,7 +187,7 @@ See also `copy-password-prompt-details'."
                           'password-source
                           :buffer buffer
                           :password-instance (password-interface buffer)
-                          :return-actions (sera:filter (sera:eqs 'clip-username)
-                                                       password-source-actions
-                                                       :key #'name))))
+                          :actions-on-return (sera:filter (sera:eqs 'clip-username)
+                                                          password-source-actions
+                                                          :key #'name))))
       (echo-warning "No password manager found.")))

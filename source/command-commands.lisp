@@ -140,7 +140,7 @@ together with the arglists and documentations of the functions typed in."
      :prompt "Execute command"
      :sources (list (make-instance
                      'command-source
-                     :return-actions
+                     :actions-on-return
                      (list (lambda-command run-command* (commands)
                              "Run the chosen command."
                              (let ((command (first commands)))
@@ -151,7 +151,7 @@ together with the arglists and documentations of the functions typed in."
                              (describe-command :command (name (first commands))))))
                     (make-instance
                      'extended-command-source
-                     :return-actions
+                     :actions-on-return
                      (lambda-command evaluate-lisp-expression* (exprs)
                        "Evaluate the inputted Lisp expression."
                        (run-thread "evaluator"
@@ -159,7 +159,7 @@ together with the arglists and documentations of the functions typed in."
                            (echo "~s" (eval (first exprs)))))))
                     (make-instance
                      'predicted-command-source
-                     :return-actions
+                     :actions-on-return
                      (lambda-command run-command* (commands)
                        "Run the chosen command."
                        (alex:when-let ((command (first commands)))

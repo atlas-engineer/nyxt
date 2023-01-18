@@ -194,9 +194,9 @@ not try to quit the browser."
 
 (define-class window-source (prompter:source)
   ((prompter:name "Windows")
-   (prompter:multi-selection-p t)
+   (prompter:enable-marks-p t)
    (prompter:constructor (window-list))
-   (prompter:return-actions (lambda-mapped-command window-delete))))
+   (prompter:actions-on-return (lambda-mapped-command window-delete))))
 
 (defmethod prompter:object-attributes ((window window) (source window-source))
   (declare (ignore source))

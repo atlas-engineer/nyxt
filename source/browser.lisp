@@ -163,8 +163,8 @@ buffers, load data files, open prompt buffer, etc).")
    (native-dialogs
     t
     :type boolean
-    :documentation "Whether to use prompt-buffer-reliant script dialogs and file-chooser.
-If nil, renderer-provided dialogs are used.")
+    :documentation "Whether to replace renderer specific dialog boxes with the
+prompt buffer.")
    (theme
     (make-instance 'theme:theme)
     :type theme:theme
@@ -645,8 +645,8 @@ set of useful URLs or preparing a list to send to a someone else."
                   :sources (make-instance 'buffer-source
                                           :constructor (remove-if #'internal-url-p (buffer-list)
                                                                   :key #'url)
-                                          :return-actions #'identity
-                                          :multi-selection-p t))))
+                                          :actions-on-return #'identity
+                                          :enable-marks-p t))))
     (unwind-protect
          (spinneret:with-html-string
            (:h1 "Reduced Buffers:")

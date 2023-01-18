@@ -98,7 +98,7 @@ When the user is unspecified, take the current one."
 (define-class program-source (prompter:source)
   ((prompter:name "Programs")
    (prompter:constructor (executables))
-   (prompter:multi-selection-p t))
+   (prompter:enable-marks-p t))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
@@ -148,7 +148,7 @@ It's suitable for `prompter:filter-preprocessor'."
     '("Name" "Extension" "Directory")
     :accessor nil)
    (prompter:filter-preprocessor (make-file-source-preprocessor))
-   (prompter:multi-selection-p t)
+   (prompter:enable-marks-p t)
    (open-file-in-new-buffer-p
     t
     :documentation "Whether to open files and directories in a new buffer.")
@@ -216,7 +216,7 @@ If FILES are not provided, prompt for them."
       (echo-warning "Please set `external-editor-program' browser slot.")))
 
 (defmethod initialize-instance :after ((source open-file-source) &key)
-  (setf (slot-value source 'prompter:return-actions)
+  (setf (slot-value source 'prompter:actions-on-return)
         (append
          (list (lambda-command open-file* (files)
                  "Open files with `open-file-function' (a sensible default)."
@@ -251,7 +251,7 @@ If FILES are not provided, prompt for them."
                                   :prompt "The program to open the selected files with"
                                   :sources 'program-source)))
                    (uiop:launch-program (cons (uiop:native-namestring program) (mapcar #'uiop:native-namestring files))))))
-         (slot-value source 'prompter:return-actions))))
+         (slot-value source 'prompter:actions-on-return))))
 
 (export-always 'default-open-file-function)
 (defun default-open-file-function (filename &key supported-p new-buffer-p)
@@ -296,7 +296,7 @@ Can be used as a `open-file-function'."
                                             *default-pathname-defaults*)))
   "Open a file from the filesystem.
 
-The user is prompted with the prompt-buffer, files are browsable with
+The user is prompted with the prompt buffer, files are browsable with
 fuzzy suggestion.
 
 DEFAULT-DIRECTORY specifies which directory to start from. Defaults to user home

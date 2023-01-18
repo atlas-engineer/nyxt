@@ -58,13 +58,13 @@ with `make-instance' and the result is used in this slot.
 
 See also `make'.")
 
-     (selection
+     (current-suggestion
       '()
       ;; TODO: Index by (source-index suggestion-index) instead?
       ;; TODO: Use structure?
       :type list
       :export nil
-      :reader selection
+      :reader current-suggestion
       :documentation "A pair of source and suggestion index.")
 
      (constructor
@@ -84,15 +84,13 @@ It's called before the sources are cleaned up.")
       :type (or null function)
       :documentation "Last function called with no parameters when calling the
 `destroy' function over this prompter.
-It's called after the sources are cleaned up.
-
-Note that the function is executed *before* performing a return-action.")
+It's called after the sources are cleaned up.")
 
      (auto-return-p
       nil
       :type boolean
-      :documentation "Whether the default `return-action' automatically runs
-when the suggestions are narrowed down to just one item.")
+      :documentation "Whether the action returned by `default-action-on-return'
+automatically runs when the suggestions are narrowed down to just one item.")
 
      (history
       (make-history)
@@ -103,7 +101,7 @@ If nil, no history is used.")
      (result-channel
       (make-channel 1)
       :type calispel:channel
-      :documentation "Channel to which the selection is sent on exit.
+      :documentation "Channel to which the `current-suggestion' is sent on exit.
 Caller should also listen to `interrupt-channel' to know if the prompter was cancelled.")
 
      (interrupt-channel
@@ -159,32 +157,33 @@ computation is not finished.")))
                        (t (error "Bad source specifier ~s." source-specifier))))
                    (uiop:ensure-list specifiers))))
     (alex:appendf (sources prompter) (ensure-sources sources)))
-  (select-first prompter)
+  (first-suggestion prompter)
   (maybe-funcall (constructor prompter) prompter)
   (update-sources prompter (input prompter))
   prompter)
 
-(defmethod (setf selection) (value (prompter prompter))
-  (setf (slot-value prompter 'selection) value)
-  (call-selection-action prompter))
+(defmethod (setf current-suggestion) (value (prompter prompter))
+  (setf (slot-value prompter 'current-suggestion) value)
+  (run-action-on-current-suggestion prompter))
 
-(export-always 'call-selection-action)
-(defmethod call-selection-action ((prompter prompter))
-  (sera:and-let* ((source (selected-source prompter))
-                  (_ (selection-actions-enabled-p source))
-                  (action (default-selection-action source))
-                  (suggestion (selected-suggestion prompter)))
-    (let ((delay (selection-actions-delay source)))
+(export-always 'run-action-on-current-suggestion)
+(defmethod run-action-on-current-suggestion ((prompter prompter))
+  (sera:and-let* ((source (current-source prompter))
+                  (_ (actions-on-current-suggestion-enabled-p source))
+                  (action (default-action-on-current-suggestion source))
+                  (suggestion (%current-suggestion prompter)))
+    (let ((delay (actions-on-current-suggestion-delay source)))
       (if (plusp delay)
-          (run-thread "Prompter selection action thread"
+          (run-thread "Prompter current suggestion action thread"
             (sleep delay)
             (funcall action (value suggestion)))
           (funcall action (value suggestion))))))
 
-(export-always 'set-selection-action)
-(defmethod set-selection-action (value (prompter prompter))
-  (setf (selection-actions (selected-source prompter))
-        (cons value (delete value (selection-actions (selected-source prompter))))))
+(export-always 'set-action-on-current-suggestion)
+(defmethod set-action-on-current-suggestion (value (prompter prompter))
+  (setf (actions-on-current-suggestion (current-source prompter))
+        (cons value
+              (delete value (actions-on-current-suggestion (current-source prompter))))))
 
 (export-always 'input)
 (defmethod (setf input) (text (prompter prompter))
@@ -193,7 +192,7 @@ computation is not finished.")))
     (unless (string= old-input text)
       (setf (slot-value prompter 'input) text)
       (update-sources prompter text)
-      (select-first prompter)))
+      (first-suggestion prompter)))
   text)
 
 (export-always 'destroy)
@@ -210,12 +209,13 @@ Signal destruction by sending a value to PROMPTER's `interrupt-channel'."
   (calispel:! (sync-interrupt-channel (sync-queue prompter)) t)
   (calispel:! (interrupt-channel prompter) t))
 
-(defun select (prompter steps &key wrap-over-p)
-  "Select `suggestion' by jumping STEPS forward.
+(defun set-current-suggestion (prompter steps &key wrap-over-p)
+  "Set PROMPTER's `current-suggestion' by jumping STEPS forward.
 If STEPS is 0, do nothing.
 If STEPS is negative, go backward.
-If the currently selected suggestion is the last one of the current source, go
-to next source, or previous source if STEPS is negative."
+When the current suggestion is the last (resp. first) one of the current source,
+return the first (resp. last) suggestion of the next (resp. previous) source
+when STEPS is positive (resp. negative)."
   (unless (= 0 steps)
     (labels ((index->source (index &optional (sources (sources prompter)))
                (let ((limit (length (suggestions (first sources)))))
@@ -232,8 +232,8 @@ to next source, or previous source if STEPS is negative."
       (let ((limit (source-length (sources prompter))))
         (declare (type unsigned-byte limit))
         (unless (= 0 limit)
-          (let* ((previous-sources (previous-sources (first (selection prompter))))
-                 (index (+ (second (selection prompter))
+          (let* ((previous-sources (previous-sources (first (current-suggestion prompter))))
+                 (index (+ (second (current-suggestion prompter))
                            (source-length previous-sources)))
                  (new-index (+ index steps)))
             (setf new-index
@@ -244,34 +244,31 @@ to next source, or previous source if STEPS is negative."
                    (relative-index (- new-index
                                       (source-length (previous-sources new-source)))))
               (declare (type unsigned-byte relative-index))
-              (setf (selection prompter)
+              (setf (current-suggestion prompter)
                     (list new-source relative-index)))))))))
 
-(export-always 'select-next)
-(defun select-next (prompter &optional (steps 1))
-  "Select element by jumping STEPS forward.
-If STEPS is 0, do nothing.
-If STEPS is negative, go backward."
-  (select prompter steps))
+(export-always 'next-suggestion)
+(defun next-suggestion (prompter &optional (steps 1))
+  "See `set-current-suggestion'."
+  (set-current-suggestion prompter steps))
 
-(export-always 'select-previous)
-(defun select-previous (prompter &optional (steps 1))
-  "Select element by jumping STEPS forward.
-If STEPS is 0, do nothing.
-If STEPS is negative, go forward."
-  (select prompter (- steps)))
+(export-always 'previous-suggestion)
+(defun previous-suggestion (prompter &optional (steps 1))
+  "See `set-current-suggestion'."
+  (set-current-suggestion prompter (- steps)))
 
 (defun empty-source-p (source)
   (not (suggestions source)))
 
-(export-always 'select-next-source)
-(defun select-next-source (prompter &optional (steps 1))
-  "Jumping STEPS non-empty source forward and select first suggestion.
+(export-always 'next-source)
+(defun next-source (prompter &optional (steps 1))
+  "Set `current-suggestion' after jumping STEPS non-empty sources.
 If STEPS is 0, do nothing.
-If STEPS is negative, go backward and select last suggestion."
+When STEPS is positive (resp. negative), set the current suggestion to be the
+first (resp. last) one of destination source."
   (unless (= 0 steps)
     (sera:and-let* ((nonempty-sources (remove-if #'empty-source-p (sources prompter)))
-                    (source-index (or (position (selected-source prompter)
+                    (source-index (or (position (current-source prompter)
                                                 nonempty-sources)
                                       0))
                     (new-source (nth (alex:clamp (+ steps source-index) 0 (1- (length (sources prompter))))
@@ -279,49 +276,45 @@ If STEPS is negative, go backward and select last suggestion."
                     (suggestion-index (if (< 0 steps)
                                           0
                                           (1- (length (suggestions new-source))))))
-      (setf (selection prompter)
+      (setf (current-suggestion prompter)
             (list new-source suggestion-index)))))
 
-(export-always 'select-previous-source)
-(defun select-previous-source (prompter &optional (steps 1))
-  "Jumping STEPS source backward and select last suggestion.
-If STEPS is 0, do nothing.
-If STEPS is negative, go forward and selection first suggestion."
-  (unless (= 0 steps)
-    (select-next-source prompter (- steps))))
+(export-always 'previous-source)
+(defun previous-source (prompter &optional (steps 1))
+  (next-source prompter (- steps)))
 
 (defun nonempty-source-p (source)
   (suggestions source))
 
-(export-always 'select-first)
-(defun select-first (prompter)
-  "Select first element.
+(export-always 'first-suggestion)
+(defun first-suggestion (prompter)
+  "Set `current-suggestion' to PROMPTER's first suggestion.
 Empty sources are skipped."
   (let ((first-non-empty-source
           (or (find-if #'nonempty-source-p (sources prompter))
               (first (sources prompter)))))
-    (setf (selection prompter)
+    (setf (current-suggestion prompter)
           (list first-non-empty-source 0))
     (when (and (auto-return-p prompter)
                (sera:single (all-suggestions prompter)))
-      (return-selection prompter))))
+      (run-action-on-return prompter))))
 
-(export-always 'select-last)
-(defun select-last (prompter)
-  "Select last element."
+(export-always 'last-suggestion)
+(defun last-suggestion (prompter)
+  "Set `current-suggestion' to PROMPTER's last suggestion."
   (let ((last-non-empty-source
           (or (find #'nonempty-source-p (sources prompter)
                     :from-end t)
               (first (last (sources prompter))))))
-    (setf (selection prompter)
+    (setf (current-suggestion prompter)
           (list last-non-empty-source
                 (1- (length (suggestions last-non-empty-source)))))))
 
 (export-always 'toggle-mark)
 (defun toggle-mark (prompter)
-  (when (multi-selection-p (selected-source prompter))
+  (when (enable-marks-p (current-source prompter))
     (multiple-value-bind (suggestion source)
-        (selected-suggestion prompter)
+        (%current-suggestion prompter)
       (with-accessors ((marks marks)) source
         (let ((value (value suggestion)))
           (if (find value marks)
@@ -330,15 +323,15 @@ Empty sources are skipped."
 
 (export-always 'mark-all)
 (defun mark-all (prompter)
-  (let ((source (selected-source prompter)))
-    (when (multi-selection-p source)
+  (let ((source (current-source prompter)))
+    (when (enable-marks-p source)
       (alex:unionf (marks source)
                    (mapcar #'value (suggestions source))))))
 
 (export-always 'unmark-all)
 (defun unmark-all (prompter)
-  (let ((source (selected-source prompter)))
-    (when (multi-selection-p source)
+  (let ((source (current-source prompter)))
+    (when (enable-marks-p source)
       (with-accessors ((marks marks)
                        (suggestions suggestions))
           source
@@ -348,8 +341,8 @@ Empty sources are skipped."
 
 (export-always 'toggle-mark-all)
 (defun toggle-mark-all (prompter)
-  (let ((source (selected-source prompter)))
-    (when (multi-selection-p source)
+  (let ((source (current-source prompter)))
+    (when (enable-marks-p source)
       (with-accessors ((suggestions suggestions)
                        (marks marks))
           source
@@ -367,25 +360,25 @@ Empty sources are skipped."
 
 (defun resolve-marks (prompter)     ; TODO: Write tests for this!
   "Return the list of marked `suggestion's.
-When `marks' is nil, the current selection value is returned as a list of one
+When `marks' is nil, the current suggestion value is returned as a list of one
 element.
-For instance, if the selected element value is NIL, this returns '(NIL).  If
+For instance, if the current suggestion value is NIL, this returns '(NIL).  If
 there is no element, NIL is returned."
   (or (all-marks prompter)
-      (mapcar #'value (uiop:ensure-list (selected-suggestion prompter)))))
+      (mapcar #'value (uiop:ensure-list (%current-suggestion prompter)))))
 
-(export-always 'return-actions)
-(defun return-actions (prompter)
-  "Return the list of contextual `return-actions'.
+(export-always 'actions-on-return)
+(defun actions-on-return (prompter)
+  "Return the list of contextual `actions-on-return'.
 
-When `marks' is non-nil, return the list of `return-actions' shared by every
-marked element; otherwise return the list of `return-actions' for the current
+When `marks' is non-nil, return the list of `actions-on-return' shared by every
+marked element; otherwise return the list of `actions-on-return' for the current
 `source'."
   (alex:if-let ((marked-sources (remove-if (complement #'marks) (sources prompter))))
     (reduce #'intersection
-            (mapcar (lambda (source) (slot-value source 'return-actions))
+            (mapcar (lambda (source) (slot-value source 'actions-on-return))
                     marked-sources))
-    (slot-value (selected-source prompter) 'return-actions)))
+    (slot-value (current-source prompter) 'actions-on-return)))
 
 (defun history-pushnew (history element &key (test #'equal) )
   (alex:when-let ((previous-element-index (containers:element-position history
@@ -403,24 +396,26 @@ If input is already in history, move to first position."
     (history-pushnew (history prompter)
                      (input prompter))))
 
-(export-always 'return-selection)
-(defun return-selection (prompter
-                         &optional (return-action (default-return-action prompter)))
-  "Call RETURN-ACTION over `marks' and send the results to PROMPTER's `result-channel'.
+(export-always 'run-action-on-return)
+(defun run-action-on-return (prompter &optional (action-on-return
+                                                 (default-action-on-return prompter)))
+  "Call ACTION-ON-RETURN over `marks' and send the results to PROMPTER's
+`result-channel'.
 See `resolve-marks' for a reference on how `marks' are handled."
-  (unless return-action (setf return-action #'identity))
+  (unless action-on-return (setf action-on-return #'identity))
   (setf (returned-p prompter) t)
   (add-input-to-history prompter)
   (alex:when-let ((marks (resolve-marks prompter)))
     (calispel:! (result-channel prompter)
-                (funcall return-action marks)))
+                (funcall action-on-return marks)))
   (destroy prompter))
 
-(export-always 'toggle-selection-actions-enabled)
-(defun toggle-selection-actions-enabled (prompter
-                                         &optional (source (selected-source prompter)))
-  "Toggle `selection-actions-enabled-p' in SOURCE."
-  (setf (selection-actions-enabled-p source) (not (selection-actions-enabled-p source))))
+(export-always 'toggle-actions-on-current-suggestion-enabled)
+(defun toggle-actions-on-current-suggestion-enabled
+    (prompter &optional (source (current-source prompter)))
+  "Toggle `actions-on-current-suggestion-enabled-p' in SOURCE."
+  (setf (actions-on-current-suggestion-enabled-p source)
+        (not (actions-on-current-suggestion-enabled-p source))))
 
 (export-always 'next-ready-p)
 (defun next-ready-p (prompter)
@@ -443,8 +438,8 @@ This is unblocked when the PROMPTER is `destroy'ed."
                 nil)
                (t
                 (push next-source (ready-sources sync-queue))
-                ;; Update selection when update is done:
-                (select-first prompter)
+                ;; Update current suggestion when update is done:
+                (first-suggestion prompter)
                 next-source)))
             ((calispel:? (sync-interrupt-channel sync-queue))
              nil)))
@@ -473,23 +468,23 @@ Example:
 (prompter:make :sources 'prompter:raw-source)"
   (apply #'make-instance 'prompter args))
 
-(export-always 'selected-source)
-(defun selected-source (prompter)
-  (first (selection prompter)))
+(export-always 'current-source)
+(defun current-source (prompter)
+  (first (current-suggestion prompter)))
 
-(export-always 'selected-suggestion)
-(defun selected-suggestion (prompter)
-  "Return selected PROMPTER `suggestion'.
+(export-always '%current-suggestion)
+(defun %current-suggestion (prompter)
+  "Return PROMPTER's `current-suggestion'.
 Return source as second value."
-  (let ((source (first (selection prompter))))
-    (values (nth (second (selection prompter)) (suggestions source))
+  (let ((source (first (current-suggestion prompter))))
+    (values (nth (second (current-suggestion prompter)) (suggestions source))
             source)))
 
-(export-always 'selected-suggestion-position)
-(defun selected-suggestion-position (prompter)
-  "Return selected PROMPTER `suggestion' position among current `source'
+(export-always 'current-suggestion-position)
+(defun current-suggestion-position (prompter)
+  "Return PROMPTER's `current-suggestion' position among current `source'
 suggestions."
-  (second (selection prompter)))
+  (second (current-suggestion prompter)))
 
 (export-always 'all-marks)
 (defun all-marks (prompter)
@@ -503,9 +498,9 @@ sources."
   "Return the list of PROMPTER's `suggestion's."
   (alex:mappend #'suggestions (sources prompter)))
 
-(export-always 'default-return-action)
-(defmethod default-return-action ((prompter prompter))
-  (first (return-actions prompter)))
+(export-always 'default-action-on-return)
+(defmethod default-action-on-return ((prompter prompter))
+  (first (actions-on-return prompter)))
 
 (export-always 'resume)
 (defun resume (prompter)

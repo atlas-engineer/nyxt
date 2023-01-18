@@ -16,70 +16,70 @@ The prompt buffer can have multiple `prompter:source's of suggestions.  Each
 source has its own properties, such as the ability to mark multiple suggestions.
 The same source can be used by different prompt buffers.
 
-Each source offers a set of `return-actions' for marked items.  These can be
-listed and chosen from with the command `return-marks-action' (bound to
+Each source offers a set of `actions-on-return' for marked items.  These can be
+listed and chosen from with the command `set-action-on-return' (bound to
 \"M-return\" by default)."
   ((visible-in-status-p nil)
    (keyscheme-map
     (define-keyscheme-map "prompt-buffer-mode" ()
       keyscheme:default
       (list
-       "up" 'select-previous
-       "down" 'select-next
-       "button4" 'select-previous
-       "button5" 'select-next
-       "home" 'select-first
-       "end" 'select-last
-       "pagehome" 'select-first
-       "pageend" 'select-last
-       "escape" 'cancel-input
+       "up" 'previous-suggestion
+       "down" 'next-suggestion
+       "button4" 'previous-suggestion
+       "button5" 'next-suggestion
+       "home" 'first-suggestion
+       "end" 'last-suggestion
+       "pagehome" 'first-suggestion
+       "pageend" 'last-suggestion
+       "escape" 'quit-prompt-buffer
        "M-a" 'mark-all
        "M-u" 'unmark-all
-       "C-space" 'toggle-mark
-       "M-space" 'toggle-mark
+       "C-space" 'toggle-mark-forwards
+       "M-space" 'toggle-mark-forwards
        "shift-space" 'toggle-mark-backwards
        "M-shift-space" 'toggle-mark-backwards
        "M-m" 'toggle-mark-all
        "M-h" 'history
        "f1 b" 'run-prompt-buffer-command
        "f1 m" 'describe-prompt-buffer
-       "return" 'return-selection
-       "keypadenter" 'return-selection
-       "M-return" 'return-marks-action
-       "M-keypadenter" 'return-marks-action
-       "C-return" 'run-selection-action
-       "C-keypadenter" 'run-selection-action
-       "C-c C-j" 'set-selection-action
-       "tab" 'insert-selection
+       "return" 'run-action-on-return
+       "keypadenter" 'run-action-on-return
+       "M-return" 'set-action-on-return
+       "M-keypadenter" 'set-action-on-return
+       "C-return" 'run-action-on-current-suggestion
+       "C-keypadenter" 'run-action-on-current-suggestion
+       "C-c C-j" 'set-action-on-current-suggestion
+       "tab" 'insert-current-suggestion
        ; TODO: This is the Emacs Helm binding.  Better?
-       "C-c C-f" 'toggle-selection-actions-enabled
+       "C-c C-f" 'toggle-actions-on-current-suggestion-enabled
        ; TODO: This is the Emacs Helm binding.  Better?
        "C-]" 'toggle-attributes-display)
       keyscheme:cua
       (list
-       "C-up" 'select-first
-       "C-down" 'select-last
-       "C-pageup" 'select-previous-source
-       "C-pagedown" 'select-next-source
+       "C-up" 'first-suggestion
+       "C-down" 'last-suggestion
+       "C-pageup" 'previous-source
+       "C-pagedown" 'next-source
        "C-v" 'paste
        "C-x" 'cut)
       keyscheme:emacs
       (list
-       "C-p" 'select-previous
-       "C-n" 'select-next
-       "M-<" 'select-first
-       "M->" 'select-last
-       "M-v" 'select-previous-page
-       "C-v" 'select-next-page
-       "M-p" 'select-previous-source
-       "M-n" 'select-next-source
-       "M-[" 'select-previous-source    ; Emacs Helm binding.
-       "M-]" 'select-next-source        ; Emacs Helm binding.
+       "C-p" 'previous-suggestion
+       "C-n" 'next-suggestion
+       "M-<" 'first-suggestion
+       "M->" 'last-suggestion
+       "M-v" 'previous-page
+       "C-v" 'next-page
+       "M-p" 'previous-source
+       "M-n" 'next-source
+       "M-[" 'previous-source    ; Emacs Helm binding.
+       "M-]" 'next-source        ; Emacs Helm binding.
        "C-M-n" 'scroll-other-buffer-down
        "C-M-p" 'scroll-other-buffer-up
        "C-M-v" 'scroll-page-down-other-buffer
        "shift-C-M-v" 'scroll-page-up-other-buffer
-       "C-g" 'cancel-input
+       "C-g" 'quit-prompt-buffer
        "C-e" 'move-end-of-input
        "C-a" 'move-start-of-input
        "C-b" 'nyxt/input-edit-mode:cursor-backwards
@@ -95,24 +95,24 @@ listed and chosen from with the command `return-marks-action' (bound to
        "C-y" 'paste
        "C-w" 'cut
        "C-h b" 'run-prompt-buffer-command
-       "C-j" 'run-selection-action)
+       "C-j" 'run-action-on-current-suggestion)
       keyscheme:vi-normal
       (list
-       "k" 'select-previous
-       "j" 'select-next
-       "C-k" 'select-previous
+       "k" 'previous-suggestion
+       "j" 'next-suggestion
+       "C-k" 'previous-suggestion
        ;; C-j and C-k are useful in insert mode since "j", "k" are taken.
        ;; We bind C-j and C-k in normal mode for consistency between the two modes.
-       "C-j" 'select-next
-       "g g" 'select-first
-       "G" 'select-last
-       "C-b" 'select-previous-page
-       "C-f" 'select-next-page
-       "K" 'select-previous-source
-       "J" 'select-next-source
-       "C-K" 'select-previous-source
+       "C-j" 'next-suggestion
+       "g g" 'first-suggestion
+       "G" 'last-suggestion
+       "C-b" 'previous-page
+       "C-f" 'next-page
+       "K" 'previous-source
+       "J" 'next-source
+       "C-K" 'previous-source
        ;; Same as with C-j.
-       "C-J" 'select-next-source
+       "C-J" 'next-source
        "M-j" 'scroll-other-buffer-down
        "M-k" 'scroll-other-buffer-up
        "C-M-j" 'scroll-page-down-other-buffer
@@ -126,23 +126,23 @@ listed and chosen from with the command `return-marks-action' (bound to
        "x" 'nyxt/input-edit-mode:delete-forwards
        ;; VI has no short keybinding for delete-backwards-word, hasn't it?
        "d w" 'nyxt/input-edit-mode:delete-forwards-word
-       "z f" 'toggle-selection-actions-enabled
+       "z f" 'toggle-actions-on-current-suggestion-enabled
        "z a" 'toggle-attributes-display
        "y" 'copy-selection
        "p" 'paste
        "d d" 'cut)
       keyscheme:vi-insert
       (list
-       "return" 'return-selection
-       "keypadenter" 'return-selection
-       "M-return" 'return-marks-action
-       "M-keypadenter" 'return-marks-action
-       "C-k" 'select-previous
-       "C-j" 'select-next
-       "C-b" 'select-previous-page
-       "C-f" 'select-next-page
-       "C-K" 'select-previous-source
-       "C-J" 'select-next-source))))
+       "return" 'run-action-on-return
+       "keypadenter" 'run-action-on-return
+       "M-return" 'set-action-on-return
+       "M-keypadenter" 'set-action-on-return
+       "C-k" 'previous-suggestion
+       "C-j" 'next-suggestion
+       "C-b" 'previous-page
+       "C-f" 'next-page
+       "C-K" 'previous-source
+       "C-J" 'next-source))))
   (:toggler-command-p nil))
 
 (export-always 'define-command-prompt)
@@ -169,40 +169,40 @@ listed and chosen from with the command `return-marks-action' (bound to
                (progn ,@forms)
                (log:warn "Can't call ~a on nil prompt buffer" ',name)))))))
 
-(define-command-prompt select-next (prompt-buffer)
+(define-command-prompt next-suggestion (prompt-buffer)
   "Select next entry in prompt buffer."
-  (prompter:select-next prompt-buffer)
+  (prompter:next-suggestion prompt-buffer)
   ;; TODO: Update display?  The library should probably decide when to update
   ;; it.  Drawback is that it maybe result in too many draws.  If the caller
   ;; decides when redraw, it has more control.
   (prompt-render-suggestions prompt-buffer))
 
-(define-command-prompt select-previous (prompt-buffer)
+(define-command-prompt previous-suggestion (prompt-buffer)
   "Select previous entry in PROMPT-BUFFER."
-  (prompter:select-previous prompt-buffer)
+  (prompter:previous-suggestion prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
 
-(define-command-prompt select-first (prompt-buffer)
+(define-command-prompt first-suggestion (prompt-buffer)
   "Select first entry in PROMPT-BUFFER."
-  (prompter:select-first prompt-buffer)
+  (prompter:first-suggestion prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
 
-(define-command-prompt select-last (prompt-buffer)
+(define-command-prompt last-suggestion (prompt-buffer)
   "Select last entry in PROMPT-BUFFER."
-  (prompter:select-last prompt-buffer)
+  (prompter:last-suggestion prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
 
-(define-command-prompt select-next-source (prompt-buffer)
+(define-command-prompt next-source (prompt-buffer)
   "Select next source in PROMPT-BUFFER."
-  (prompter:select-next-source prompt-buffer)
+  (prompter:next-source prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
 
-(define-command-prompt select-previous-source (prompt-buffer)
+(define-command-prompt previous-source (prompt-buffer)
   "Select previous source in PROMPT-BUFFER."
-  (prompter:select-previous-source prompt-buffer)
+  (prompter:previous-source prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
 
-(define-command-prompt select-next-page (prompt-buffer &key (n 1))
+(define-command-prompt next-page (prompt-buffer &key (n 1))
   "Select entry by N next pages in PROMPT-BUFFER.
 If N is negative, go to previous pages instead."
   (unless (= 0 n)
@@ -228,21 +228,21 @@ If N is negative, go to previous pages instead."
                 row-index)
                (ps:chain (nyxt/ps:qs document "#selection") row-index)))))
       (sera:and-let* ((index-diff step-page-index))
-        (prompter:select-next prompt-buffer
+        (prompter:next-suggestion prompt-buffer
                               index-diff)))
     ;; TODO: Update display?  The library should probably decide when to update
     ;; it.  Drawback is that it maybe result in too many draws.  If the caller
     ;; decides when redraw, it has more control.
     (prompt-render-suggestions prompt-buffer)))
 
-(define-command-prompt select-previous-page (prompt-buffer &key (n 1))
+(define-command-prompt previous-page (prompt-buffer &key (n 1))
   "Select entry by N previous pages in PROMPT-BUFFER.
 If N is negative, go to next pages instead."
-  (select-next-page :prompt-buffer prompt-buffer :n (- n)))
+  (next-page :prompt-buffer prompt-buffer :n (- n)))
 
-(define-command-prompt return-selection (prompt-buffer)
-  "Have the PROMPT-BUFFER return the selection, then quit."
-  (prompter:return-selection prompt-buffer))
+(define-command-prompt run-action-on-return (prompt-buffer)
+  "Have the PROMPT-BUFFER return the marks, then quit."
+  (prompter:run-action-on-return prompt-buffer))
 
 (defun make-attribute-suggestion (attribute &optional source input)
   "Return a `suggestion' wrapped around ATTRIBUTE."
@@ -253,17 +253,17 @@ If N is negative, go to next pages instead."
 
 (define-class attribute-source (prompter:source)
   ((prompter:name "List of prompter attributes")
-   (prompter:multi-selection-p t)
+   (prompter:enable-marks-p t)
    (prompter:suggestion-maker 'make-attribute-suggestion)
-   (prompter:return-actions #'return-marks-only)))
+   (prompter:actions-on-return #'return-marks-only)))
 
 (defun return-marks-only (suggestion-values)
   "Return marked suggestions only.
 They are returned untouched.
 This is useful for prompters where we want either marks or nothing, but not the
-current unmarked selection."
+current unmarked suggestion."
   (multiple-value-bind (suggestion source)
-      (prompter:selected-suggestion (current-prompt-buffer))
+      (prompter:%current-suggestion (current-prompt-buffer))
     (if (and (typep source 'attribute-source)
              (not (prompter:marks source)))
         (remove (prompter:value suggestion) suggestion-values
@@ -309,15 +309,15 @@ current unmarked selection."
                                                   :parent-prompt-buffer prompt-buffer))))
     (funcall* command)))
 
-(defun prompt-buffer-return-actions (&optional (window (current-window)))
+(defun prompt-buffer-actions-on-return (&optional (window (current-window)))
   (sera:and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
-    (prompter:return-actions first-prompt-buffer)))
+    (prompter:actions-on-return first-prompt-buffer)))
 
-(defun prompt-buffer-selection-actions (&optional (window (current-window)))
+(defun prompt-buffer-actions-on-current-suggestion (&optional (window (current-window)))
   (sera:and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
-    (prompter:selection-actions (prompter:selected-source first-prompt-buffer))))
+    (prompter:actions-on-current-suggestion (prompter:current-source first-prompt-buffer))))
 
-;; TODO: Should return-actions be commands?  For now, they can be either
+;; TODO: Should actions-on-return be commands?  For now, they can be either
 ;; commands or symbols.
 (defun make-action-suggestion (action &optional source input)
   "Return a `suggestion' wrapped around ACTION."
@@ -335,76 +335,76 @@ current unmarked selection."
                                                  (t (documentation action 'function)))))
                                        "")))))
 
-(define-class return-action-source (prompter:source)
-  ((prompter:name "List of return-actions")
-   (prompter:constructor (prompt-buffer-return-actions))
+(define-class action-on-return-source (prompter:source)
+  ((prompter:name "List of actions-on-return")
+   (prompter:constructor (prompt-buffer-actions-on-return))
    (prompter:suggestion-maker 'make-action-suggestion)))
 
-(define-class selection-action-source (prompter:source)
-  ((prompter:name "List of selection-actions")
-   (prompter:constructor (prompt-buffer-selection-actions))
+(define-class action-on-current-suggestion-source (prompter:source)
+  ((prompter:name "List of actions-on-current-suggestion")
+   (prompter:constructor (prompt-buffer-actions-on-current-suggestion))
    (prompter:suggestion-maker 'make-action-suggestion)))
 
-(define-command-prompt return-marks-action (prompt-buffer)
+(define-command-prompt set-action-on-return (prompt-buffer)
   "Prompt for an action to run over PROMPT-BUFFER `prompter:marks'."
   (if (equal (mapcar #'type-of (prompter:sources (current-prompt-buffer)))
-             '(return-action-source))
-      (echo "Already displaying return-actions of previous prompt buffer.")
-      (alex:when-let ((action (prompt1 :prompt "Action to run on selection"
-                                       :sources 'return-action-source)))
-        (prompter:return-selection prompt-buffer action))))
+             '(action-on-return-source))
+      (echo "Already displaying actions-on-return of previous prompt buffer.")
+      (alex:when-let ((action (prompt1 :prompt "Set return action to run over marks"
+                                       :sources 'action-on-return-source)))
+        (prompter:run-action-on-return prompt-buffer action))))
 
-(define-command-prompt run-selection-action (prompt-buffer)
-  "Run `prompter::default-selection-action' without closing PROMPT-BUFFER."
-  (prompter:call-selection-action prompt-buffer))
+(define-command-prompt run-action-on-current-suggestion (prompt-buffer)
+  "Run `prompter::default-action-on-current-suggestion' without closing PROMPT-BUFFER."
+  (prompter:run-action-on-current-suggestion prompt-buffer))
 
-(define-command-prompt set-selection-action (prompt-buffer)
-  "Set `prompter:selection-actions' without closing PROMPT-BUFFER."
-  (alex:when-let ((action (prompt1 :prompt "Set selection action"
-                                   :sources 'selection-action-source)))
-    (prompter:set-selection-action action prompt-buffer)))
+(define-command-prompt set-action-on-current-suggestion (prompt-buffer)
+  "Set `prompter:actions-on-current-suggestion' without closing PROMPT-BUFFER."
+  (alex:when-let ((action (prompt1 :prompt "Set current suggestion action"
+                                   :sources 'action-on-current-suggestion-source)))
+    (prompter:set-action-on-current-suggestion action prompt-buffer)))
 
-(define-command-prompt cancel-input (prompt-buffer) ; TODO: Rename.
+(define-command-prompt quit-prompt-buffer (prompt-buffer)
   "Close the PROMPT-BUFFER without further action."
   (prompter:destroy prompt-buffer))
 
-(define-command-prompt toggle-selection-actions-enabled (prompt-buffer)
-  "Toggle whether `prompter:selection-actions' are enabled for PROMPT-BUFFER."
-  (prompter:toggle-selection-actions-enabled prompt-buffer)
-  (echo "Selection actions: ~:[dis~;en~]abled."
-        (prompter:selection-actions-enabled-p (current-source prompt-buffer))))
+(define-command-prompt toggle-actions-on-current-suggestion-enabled (prompt-buffer)
+  "Toggle whether `prompter:actions-on-current-suggestion' are enabled for PROMPT-BUFFER."
+  (prompter:toggle-actions-on-current-suggestion-enabled prompt-buffer)
+  (echo "Current suggestion actions: ~:[dis~;en~]abled."
+        (prompter:actions-on-current-suggestion-enabled-p (current-source prompt-buffer))))
 
-(define-command-prompt toggle-mark (prompt-buffer &key (direction :forward))
-  "Mark selection.
-Only available if current PROMPT-BUFFER source `multi-selection-p' is non-nil.
+(define-command-prompt toggle-mark-forwards (prompt-buffer &key (direction :forward))
+  "Mark current suggestion and `next-suggestion'.
+Only available if current PROMPT-BUFFER source `enable-marks-p' is non-nil.
 DIRECTION can be `:forward' or `:backward' and specifies which suggestion to
 select next."
   (prompter:toggle-mark prompt-buffer)
   (match direction
-    (:forward (select-next prompt-buffer))
-    (:backward (select-previous prompt-buffer))))
+    (:forward (next-suggestion prompt-buffer))
+    (:backward (previous-suggestion prompt-buffer))))
 
 (define-command-prompt toggle-mark-backwards (prompt-buffer)
-  "Mark selection backwards.
-Only available if `prompter:multi-selection-p' is non-nil."
-  (toggle-mark :prompt-buffer prompt-buffer
-               :direction :backward))
+  "Mark current suggestion and `previous-suggestion'.
+Only available if `prompter:enable-marks-p' is non-nil."
+  (toggle-mark-forwards :prompt-buffer prompt-buffer
+                        :direction :backward))
 
 (define-command-prompt mark-all (prompt-buffer)
   "Mark all visible suggestions in current source.
-Only available if `prompter:multi-selection-p' is non-nil."
+Only available if `prompter:enable-marks-p' is non-nil."
   (prompter:mark-all prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
 
 (define-command-prompt unmark-all (prompt-buffer)
   "Unmark all visible suggestions in current source.
-Only available if `prompter:multi-selection-p' is non-nil."
+Only available if `prompter:enable-marks-p' is non-nil."
   (prompter:unmark-all prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
 
 (define-command-prompt toggle-mark-all (prompt-buffer)
   "Toggle the mark over all visible suggestions in current source.
-Only available if `prompter:multi-selection-p' is non-nil."
+Only available if `prompter:enable-marks-p' is non-nil."
   (prompter:toggle-mark-all prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
 
@@ -413,7 +413,7 @@ Only available if `prompter:multi-selection-p' is non-nil."
   (let* ((marks (prompter:all-marks prompt-buffer))
          (props (if marks
                     (mapcar #'prompter:attributes-default marks)
-                    (list (prompter:attributes-default (prompter:selected-suggestion
+                    (list (prompter:attributes-default (prompter:%current-suggestion
                                                        prompt-buffer)))))
          ;; Reverse so that text is ordered from oldest mark to newest.
          (text (str:join +newline+ (reverse props))))
@@ -450,10 +450,10 @@ Only available if `prompter:multi-selection-p' is non-nil."
             (nyxt:set-prompt-buffer-input input)))
         (echo "Prompt buffer has no history."))))
 
-(define-command-prompt insert-selection (prompt-buffer)
-  "Insert current selection default property in the PROMPT-BUFFER input."
+(define-command-prompt insert-current-suggestion (prompt-buffer)
+  "Insert current suggestion default property in the PROMPT-BUFFER input."
   (alex:when-let ((selection (prompter:attributes-default
-                              (prompter:selected-suggestion prompt-buffer))))
+                              (prompter:%current-suggestion prompt-buffer))))
     (nyxt:set-prompt-buffer-input selection)))
 
 (define-command-prompt move-start-of-input (prompt-buffer)

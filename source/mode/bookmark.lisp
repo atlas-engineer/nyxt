@@ -144,12 +144,12 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 (define-class bookmark-source (prompter:source)
   ((prompter:name "Bookmarks")
    (prompter:constructor (files:content (bookmarks-file (current-buffer))))
-   (prompter:multi-selection-p t)
+   (prompter:enable-marks-p t)
    (prompter:active-attributes-keys '("URL" "Title" "Tags")))
   (:export-class-name-p t))
 
-(defmethod url-sources ((mode bookmark-mode) return-actions)
-  (make-instance 'bookmark-source :return-actions return-actions))
+(defmethod url-sources ((mode bookmark-mode) actions-on-return)
+  (make-instance 'bookmark-source :actions-on-return actions-on-return))
 
 (defun tag-suggestions ()
   (let ((bookmarks (files:content (bookmarks-file (current-buffer)))))
@@ -173,7 +173,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
    (prompter:filter
     (lambda (suggestion source input)
       (prompter:fuzzy-match suggestion source (last-word input))))
-   (prompter:multi-selection-p t)
+   (prompter:enable-marks-p t)
    (prompter:constructor (tag-suggestions)))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
@@ -224,7 +224,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                                               (declare (ignore source input))
                                               (or suggestions
                                                   (list "")))
-                                            :multi-selection-p t)
+                                            :enable-marks-p t)
                              (make-instance 'keyword-source
                                             :buffer buffer)
                              (make-instance 'tag-source
@@ -239,8 +239,8 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
   (prompt
    :prompt "Bookmark URL from buffer(s)"
    :sources (make-instance 'buffer-source
-                           :multi-selection-p t
-                           :return-actions (lambda-mapped-command bookmark-current-url))))
+                           :enable-marks-p t
+                           :actions-on-return (lambda-mapped-command bookmark-current-url))))
 
 (define-command bookmark-url
     (&key (url (ignore-errors (quri:uri (prompt1
@@ -257,7 +257,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                     :sources (list
                               (make-instance 'prompter:word-source
                                              :name "New tags"
-                                             :multi-selection-p t)
+                                             :enable-marks-p t)
                               (make-instance 'tag-source
                                              :marks (url-bookmark-tags url))))))
         (bookmark-add url :tags tags :title title))))
@@ -279,11 +279,11 @@ URLS is either a list or a single element."
       (let ((entries (prompt
                       :prompt "Delete bookmark(s)"
                       :sources (make-instance 'bookmark-source
-                                              :multi-selection-p t))))
+                                              :enable-marks-p t))))
         (delete-bookmark entries))))
 
 (define-command set-url-from-bookmark
-    (&key (return-actions (list (lambda-command buffer-load* (suggestion-values)
+    (&key (actions-on-return (list (lambda-command buffer-load* (suggestion-values)
                            "Load first selected bookmark in current buffer and the rest in new buffer(s)."
                            (mapc (lambda (url) (make-buffer :url (url url))) (rest suggestion-values))
                            (buffer-load (url (first suggestion-values))))
@@ -296,12 +296,12 @@ URLS is either a list or a single element."
                            (trivial-clipboard:text (render-url (url (first suggestions)))))
                          'delete-bookmark)))
   "Set the URL for the current buffer from a bookmark.
-With multiple selections, open the first bookmark in the current buffer, the
-rest in background buffers."
+With marks, open the first bookmark in the current buffer, the rest in
+background buffers."
   (prompt
    :prompt "Open bookmark(s)"
    :sources (make-instance 'bookmark-source
-                           :return-actions return-actions)))
+                           :actions-on-return actions-on-return)))
 
 (export-always 'list-bookmarks)
 (define-internal-page-command-global list-bookmarks ()
@@ -444,7 +444,7 @@ rest in background buffers."
                     :sources (list
                               (make-instance 'prompter:word-source
                                              :name "New tags"
-                                             :multi-selection-p t)
+                                             :enable-marks-p t)
                               (make-instance 'tag-source
                                              :marks (nyxt/bookmark-mode:url-bookmark-tags url))))))
          (nyxt/bookmark-mode:bookmark-add url :tags tags :title (fetch-url-title url)))))

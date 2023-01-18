@@ -59,21 +59,21 @@ supply the URL you would like to navigate to.  The prompt buffer can provide
 suggestions.  The list of suggestions will automatically narrow down to those
 matching your input as you type.")
         (:ul
-         (:li  (:nxref :command 'nyxt/prompt-buffer-mode:return-selection
+         (:li  (:nxref :command 'nyxt/prompt-buffer-mode:run-action-on-return
                  :mode 'nyxt/prompt-buffer-mode:prompt-buffer-mode)
                ": Validate the selected suggestion(s) or the current input if there is
 no suggestion.")
-         (:li  (:nxref :command 'nyxt/prompt-buffer-mode:return-marks-action
+         (:li  (:nxref :command 'nyxt/prompt-buffer-mode:set-action-on-return
                  :mode 'nyxt/prompt-buffer-mode:prompt-buffer-mode)
                ": Query the user for an action to run over the marked suggestion(s)."))
-        (:p " Some commands support multiple selections, for
+        (:p " Some commands support marks, for
 instance " (:code "delete-buffer") " can delete all selected buffers at once.
-When the input is changed and the suggestions are re-filtered, the selection is
-not altered even if the marked elements don't show.")
+When the input is changed and the suggestions are re-filtered, the marks are
+not altered even if the marked suggestions aren't visible.")
         (:p "When at least one suggestion is marked, only the marked suggestions are processed
 upon return.  The suggestion under the cursor is not processed if not marked.")
         (:ul
-         (:li  (:nxref :command 'nyxt/prompt-buffer-mode:toggle-mark
+         (:li  (:nxref :command 'nyxt/prompt-buffer-mode:toggle-mark-forwards
                  :mode 'nyxt/prompt-buffer-mode:prompt-buffer-mode)
                ": Select or deselect the current suggestion.")
          (:li  (:nxref :command 'nyxt/prompt-buffer-mode:mark-all

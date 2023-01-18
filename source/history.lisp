@@ -29,7 +29,7 @@ compatibility to import the old flat history.")
    (explicit-visits 0
                     :type integer
                     :documentation "
-Number of times the URL was visited by a prompt-buffer request.  This does not
+Number of times the URL was visited by a prompt buffer request.  This does not
 include implicit visits.")
    (implicit-visits 0
                     :type integer
@@ -136,7 +136,7 @@ then become available for deletion with `delete-history-entry'."
   (let ((buffers (or (alex:ensure-list buffer)
                      (prompt :prompt "Reset histories of buffer(s)"
                              :sources (make-instance 'buffer-source
-                                                     :return-actions #'identity)))))
+                                                     :actions-on-return #'identity)))))
     (files:with-file-content (history (history-file (current-buffer)))
       (dolist (buffer buffers)
         (htree:reset-owner history (id buffer))))))
@@ -181,7 +181,7 @@ lot."
 (define-class history-disowned-source (prompter:source)
   ((prompter:name "Disowned History")
    (buffer :accessor buffer :initarg :buffer)
-   (prompter:multi-selection-p t)
+   (prompter:enable-marks-p t)
    (prompter:constructor
     (lambda (source)
       (let* ((history (buffer-history (buffer source)))

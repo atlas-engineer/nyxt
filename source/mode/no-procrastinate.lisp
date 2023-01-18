@@ -147,7 +147,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 (define-class no-procrastinate-source (prompter:source)
   ((prompter:name "Hosts to avoid procrastination")
    (prompter:constructor (files:content (no-procrastinate-hosts-file (current-buffer))))
-   (prompter:multi-selection-p t)
+   (prompter:enable-marks-p t)
    (prompter:active-attributes-keys '("URL" "Title" "Tags"))))
 
 (defmethod prompter:object-attributes ((entry no-procrastinate-entry) (source no-procrastinate-source))
@@ -180,7 +180,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                                                (declare (ignore source input))
                                                (or suggestions
                                                    (list "")))
-                                             :multi-selection-p t)
+                                             :enable-marks-p t)
                               (make-instance 'keyword-source
                                              :buffer buffer)
                               (make-instance 'tag-source
@@ -201,8 +201,8 @@ page(s) in the active buffer."
   (prompt
    :prompt "Avoid procrastination on HOSTS from buffer(s)"
    :sources (make-instance 'buffer-source
-                           :multi-selection-p t
-                           :return-actions (lambda-mapped-command no-procrastinate-current-host))))
+                           :enable-marks-p t
+                           :actions-on-return (lambda-mapped-command no-procrastinate-current-host))))
 
 
 
@@ -225,7 +225,7 @@ page(s) in the active buffer."
                       :sources (list
                                 (make-instance 'prompter:word-source
                                                :name "New tags"
-                                               :multi-selection-p t)
+                                               :enable-marks-p t)
                                 (make-instance 'tag-source
                                                :marks (url-no-procrastinate-host-tags url))))))
           (no-procrastinate-add homepage-url-object
@@ -250,7 +250,7 @@ URLS is either a list or a single element."
       (let ((entries (prompt
                       :prompt "Delete host(s)"
                       :sources (make-instance 'no-procrastinate-source
-                                              :multi-selection-p t))))
+                                              :enable-marks-p t))))
         (delete-no-procrastinate-host entries))))
 
 (defmethod serialize-object ((entry no-procrastinate-entry) stream)

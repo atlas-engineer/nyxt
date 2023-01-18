@@ -30,7 +30,7 @@ matching series of letters.
 
 #+html: <img src="https://nyxt.atlas.engineer/static/image/switch-buffer.png?" align="center"/>
 
-** Multiple selection
+** Multiple marking
 
 Commands can accept multiple inputs, allowing you to quickly perform an
 operation against multiple objects.  In the example below we search for

@@ -222,7 +222,7 @@ For instance, to include images:
 
 (define-class hint-source (prompter:source)
   ((prompter:name "Hints")
-   (prompter:selection-actions-enabled-p t)
+   (prompter:actions-on-current-suggestion-enabled-p t)
    (prompter:filter
     (if (and (auto-follow-hints-p (find-submode 'hint-mode))
              (fit-to-prompt-p (find-submode 'hint-mode)))
@@ -242,13 +242,13 @@ For instance, to include images:
            suggestions
            :key #'prompter:value)
         (append matching-hints other-hints))))
-   (prompter:selection-actions
+   (prompter:actions-on-current-suggestion
     (unless (fit-to-prompt-p (find-submode 'hint-mode))
       (lambda-command highlight-selected-hint* (suggestion)
         "Highlight hint."
         (highlight-selected-hint :element suggestion
                                  :scroll nil))))
-   (prompter:marks-actions
+   (prompter:actions-on-marks
     (lambda (marks)
       (let ((%marks (mapcar (lambda (mark) (str:concat "#nyxt-hint-" (identifier mark)))
                             marks)))
@@ -257,7 +257,7 @@ For instance, to include images:
             (ps:chain marked-overlay class-list (remove "nyxt-mark-hint")))
           (dolist (mark (ps:lisp (list 'quote %marks)))
             (ps:chain (nyxt/ps:qs document mark) class-list (add "nyxt-mark-hint")))))))
-   (prompter:return-actions
+   (prompter:actions-on-return
     (list 'identity
           (lambda-command click* (elements)
             (dolist (element (rest elements))
@@ -277,10 +277,10 @@ For instance, to include images:
 
 (export-always 'query-hints)
 (defun query-hints (prompt function
-                    &key (multi-selection-p t)
+                    &key (enable-marks-p t)
                          (selector (hints-selector (find-submode 'hint-mode))))
   "Prompt for elements matching SELECTOR, hinting them visually.
-MULTI-SELECTION-P defines whether several elements can be chosen.
+ENABLE-MARKS-P defines whether several elements can be chosen.
 PROMPT is a text to show while prompting for hinted elements.
 FUNCTION is the action to perform on the selected elements."
   (alex:when-let*
@@ -297,7 +297,7 @@ FUNCTION is the action to perform on the selected elements."
                             :default)
                 :hide-suggestion-count-p (fit-to-prompt-p (find-submode 'hint-mode))
                 :sources (make-instance 'hint-source
-                                        :multi-selection-p multi-selection-p
+                                        :enable-marks-p enable-marks-p
                                         :constructor
                                         (lambda (source)
                                           (declare (ignore source))
@@ -397,7 +397,7 @@ FUNCTION is the action to perform on the selected elements."
                   (values (prompt :prompt "Value to select"
                                   :sources (make-instance 'options-source
                                                           :constructor options
-                                                          :multi-selection-p
+                                                          :enable-marks-p
                                                           (plump:attribute select "multiple")))))
     (dolist (option (mapcar (rcurry #'find options :test #'equalp) values))
       (nyxt/dom:select-option-element option select))))
@@ -499,5 +499,5 @@ modes."
   "Prompt for element hints and save its corresponding URLs to clipboard."
   (query-hints "Copy element URL"
                (lambda (result) (%copy-hint-url (first result)))
-               :multi-selection-p nil
+               :enable-marks-p nil
                :selector "a"))

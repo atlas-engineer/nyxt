@@ -316,7 +316,7 @@ Lisp function, except the form is " (:code "define-command") " instead of "
                         :sources 'prompter:raw-source)))
               (nyxt/bookmark-mode:bookmark-add url))))
         (:p "See the " (:nxref :class-name 'prompt-buffer) " class documentation for how
-to write custom prompt-buffers.")
+to write custom prompt buffers.")
         (:p "You can also create your own context menu entries binding those to Lisp commands, using "
             (:nxref :function 'ffi-add-context-menu-command) " function. You can bind the "
             (:code "bookmark-url") " like this:")
@@ -945,7 +945,7 @@ your " (:code ".xprofile") " or similar."))
 
         (:nsection :title "Font size on HiDPI displays"
           (:p "On HiDPI displays, the font size used for displaying web and Nyxt's
-prompt-buffer content might be too tiny.")
+prompt buffer content might be too tiny.")
           (:p "To fix this issue when using the WebKitGTK render, export the
 following environment variable before starting Nyxt:")
           (:pre (:code "export GDK_SCALE=2

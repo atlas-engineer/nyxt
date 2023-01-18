@@ -18,10 +18,10 @@
 
 (define-class recent-buffer-source (prompter:source)
   ((prompter:name "Deleted buffers")
-   (prompter:multi-selection-p t)
+   (prompter:enable-marks-p t)
    (prompter:constructor
     (containers:container->list (recent-buffers *browser*)))
-   (prompter:return-actions
+   (prompter:actions-on-return
     (list
      (lambda-command reopen-dead-buffer-focus (buffer-list)
        "Reopen BUFFER and switch to it."

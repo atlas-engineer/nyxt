@@ -312,7 +312,7 @@ For the storage format see the comment in the header of your `auto-rules-file'."
                         (make-instance 'prompter:raw-source
                                        :name "New URL")
                         (make-instance 'global-history-source
-                                       :return-actions #'identity)))))
+                                       :actions-on-return #'identity)))))
     (when (typep url 'nyxt::history-entry)
       (setf url (url url)))
     (add-modes-to-auto-rules
@@ -344,7 +344,7 @@ For the storage format see the comment in the header of your `auto-rules-file'."
                         (make-instance 'prompter:raw-source
                                        :name "New URL")
                         (make-instance 'global-history-source
-                                       :return-actions #'identity)))))
+                                       :actions-on-return #'identity)))))
     (setf url (url url))
     (add-modes-to-auto-rules (url-infer-match url)
                              :include (rememberable-of (modes (current-buffer)))
