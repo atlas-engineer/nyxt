@@ -367,7 +367,7 @@ Thus it is not representative of how the Global History Tree deduplicates nodes
 internally, but this display is clearer and more navigable."
   (let ((mode (find-submode 'nyxt/history-tree-mode:history-tree-mode output-buffer)))
     (spinneret:with-html-string
-     (:nstyle (:raw (style mode)))
+     (:nstyle (style mode))
      (:body
       (:h1 "History")
       (dolist (buffer (buffer-list))
