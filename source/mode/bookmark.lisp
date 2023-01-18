@@ -317,26 +317,28 @@ rest in background buffers."
         (t (maphash
             (lambda (tag bookmarks)
               (:nsection :title (or tag "Unsorted")
-               (dolist (bookmark bookmarks)
-                 (let ((uri-host (quri:uri-host (url bookmark)))
-                       (url-href (render-url (url bookmark))))
-                   (:div :class "bookmark-entry"
-                         (:dl
-                          (:dt
-                           (:button :onclick
-                                    (ps:ps
-                                      (let ((section (ps:chain document active-element
-                                                               (closest ".bookmark-entry"))))
-                                        (ps:chain section parent-node (remove-child section)))
-                                      (nyxt/ps:lisp-eval
-                                       (:title "delbkm")
-                                       (nyxt/bookmark-mode:delete-bookmark url-href)))
-                                    "✕")
-                           (serapeum:ellipsize (title bookmark) 80))
-                          (:dd (:a :href url-href uri-host))
-                          (when (tags bookmark)
-                            (:dd (format nil " (~{~a~^, ~})" (tags bookmark)))))
-                         (:hr))))))
+               (let ((request-id (princ-to-string (nyxt::new-id))))
+                 (dolist (bookmark bookmarks)
+                   (let ((uri-host (quri:uri-host (url bookmark)))
+                         (url-href (render-url (url bookmark))))
+                     (lisp-url-flet bookmarks-buffer
+                         ((delbkm (&key href)
+                            (delete-bookmark href)))
+                         (:div :class "bookmark-entry"
+                               (:dl
+                                (:dt
+                                 (:button :onclick
+                                          (ps:ps
+                                            (let ((section (ps:chain document active-element
+                                                                     (closest ".bookmark-entry"))))
+                                              (ps:chain section parent-node (remove-child section)))
+                                            (nyxt/ps:lisp-call delbkm :buffer bookmarks-buffer :args (:href url-href)))
+                                          "✕")
+                                 (serapeum:ellipsize (title bookmark) 80))
+                                (:dd (:a :href url-href uri-host))
+                                (when (tags bookmark)
+                                  (:dd (format nil " (~{~a~^, ~})" (tags bookmark)))))
+                               (:hr))))))))
             bookmarks))))))
 
 (defmethod serialize-object ((entry bookmark-entry) stream)
