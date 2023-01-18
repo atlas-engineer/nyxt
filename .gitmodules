@@ -593,3 +593,7 @@
 	path = _build/njson
 	url = https://github.com/atlas-engineer/njson
 	shallow = true
+[submodule "_build/history-tree"]
+	path = _build/history-tree
+	url = https://github.com/atlas-engineer/history-tree
+	shallow = true
