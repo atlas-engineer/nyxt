@@ -155,12 +155,43 @@ non-overridable."
                                    `(:modes (cl:list (make-instance ,mode)))))
              ")"))))))
 
+(defun resolve-linkable-symbols (form)
+  "Helper function for :NCODE tag.
+Returns all the linkable symbols from FORM as multiple values:
+- Function symbols.
+- Variable symbols.
+- And all the strings that may potentially be resolvable with
+  `nyxt:resolve-backtick-quote-links'."
+  (let ((functions '())
+        (variables '())
+        (linkable-strings '()))
+    (labels ((resolve-symbols-internal (form)
+               (typecase form
+                 (boolean nil)
+                 (cons
+                  (let ((first (first form)))
+                    (cond
+                      ;; FIXME: Handle special cases (let, let*, with-* macros
+                      ;; etc.)?  SWANK?
+                      ((and (symbolp first)
+                            (nsymbols:function-symbol-p first))
+                       (pushnew first functions))
+                      (t (resolve-symbols-internal first)))
+                    (mapc #'resolve-symbols-internal (rest form))))
+                 (symbol
+                  (when (nsymbols:resolve-symbol form :variable)
+                    (pushnew form variables)))
+                 (string
+                  (pushnew form linkable-strings)))))
+      (resolve-symbols-internal form)
+      (values functions variables linkable-strings))))
+
 ;; TODO: Store the location it's defined in as a :title or link for discoverability?
 ;; FIXME: Maybe use :nyxt-user as the default package to not quarrel with REPL & config?
 (deftag :ncode (body attrs &key (package :nyxt) inline-p literal-p (repl-p t) (config-p t) (copy-p t)
                      file (editor-p file) (external-editor-p file)
                      &allow-other-keys)
-  "Generate the <pre> listing from the provided Lisp BODY.
+  "Generate the <pre>/<code> listing from the provided Lisp BODY.
 
 Most *-P arguments mandate whether to add the buttons for:
 - Editing the BODY in the built-in REPL (REPL-P).
@@ -179,70 +210,91 @@ code is at the very least readable.
 Forms in BODY can be quoted, in which case Spinneret won't even try to look at
 its contents (useful if there are forms that start with a keyword, Spinneret
 unconditionally converts those to tags unless the whole form is quoted.)"
-  (remf attrs :package)
-  (remf attrs :inline-p)
-  (remf attrs :literal-p)
-  (remf attrs :repl-p)
-  (remf attrs :config-p)
-  (remf attrs :copy-p)
-  (remf attrs :file)
-  (remf attrs :editor-p)
-  (remf attrs :external-editor-p)
-  (let* ((code (if literal-p
-                   (first body)
-                   (let ((*package* (find-package package)))
-                     (serapeum:mapconcat
-                      (alexandria:rcurry #'nyxt:prini-to-string :readably t :right-margin 70)
-                      ;; Process quoted arguments properly too.
-                      (mapcar #'remove-smart-quoting body)
-                      (make-string 2 :initial-element #\newline)))))
-         (*print-escape* nil)
-         (id (nyxt:prini-to-string (gensym)))
-         (select-code
-           `(:nselect
-              :id ,id
-              :style ,(unless inline-p
-                        "position: absolute; top: 0; right: 0; margin: 0; padding: 2px")
-              ,@(when copy-p
-                  `(((copy "Copy" "Copy the code to clipboard.")
-                     (funcall (read-from-string "nyxt:ffi-buffer-copy")
-                              (nyxt:current-buffer) ,code))))
-              ,@(when config-p
-                  `(((config
-                      "Add to auto-config"
-                      (format nil "Append this code to the auto-configuration file (~a)."
-                              (nfiles:expand nyxt::*auto-config-file*)))
-                     (alexandria:write-string-into-file
-                      ,code (nfiles:expand nyxt::*auto-config-file*)
-                      :if-exists :append))))
-              ,@(when repl-p
-                  `(((repl
-                      "Try in REPL"
-                      "Open this code in Nyxt REPL to experiment with it.")
-                     (nyxt:buffer-load-internal-page-focus
-                      (read-from-string "nyxt/repl-mode:repl")
-                      :form ,code))))
-              ,@(when (and file editor-p)
-                  `(((editor
-                      "Open in built-in editor"
-                      "Open the file this code comes from in Nyxt built-in editor-mode.")
-                     (funcall (read-from-string "nyxt/editor-mode:edit-file")
-                              ,file))))
-              ,@(when (and file external-editor-p)
-                  `(((external-editor
-                      "Open in external editor"
-                      "Open the file this code comes from in external editor.")
-                     (uiop:launch-program
-                      (append (funcall (read-from-string "nyxt:external-editor-program")
-                                       (symbol-value (read-from-string "nyxt:*browser*")))
-                              (list (uiop:native-namestring ,file))))))))))
-    (if inline-p
-        `(:span (:code ,@attrs (the string ,code)) ,select-code)
-        ;; https://spdevuk.com/how-to-create-code-copy-button/
-        `(:div :style "position:relative"
-               (:pre ,@attrs ,select-code
-                     ;; TODO: Resolve backtick-quote links.
-                     (:code (the string ,code)))))))
+  (labels ((prini-listing (form)
+             (let ((listing (nyxt:prini-to-string form :readably t :right-margin 70))
+                   (*suppress-inserted-spaces* t)
+                   (*html-style* :tree)
+                   (*print-pretty* nil))
+               (when (listp form)
+                 (multiple-value-bind (functions variables linkable-strings)
+                     (resolve-linkable-symbols form)
+                   (dolist (function functions)
+                     (let ((fun-listing (prini-listing function)))
+                       (setf listing (str:replace-all
+                                      (str:concat "(" fun-listing)
+                                      (str:concat
+                                       "(" (with-html-string
+                                             (:nxref :function function fun-listing)))
+                                      listing))))
+                   (dolist (var variables)
+                     (let ((var-listing (prini-listing var)))
+                       (setf listing (str:replace-all var-listing
+                                                      (with-html-string
+                                                        (:nxref :variable var var-listing))
+                                                      listing))))
+                   (dolist (string linkable-strings)
+                     (setf listing (str:replace-all (prini-listing string)
+                                                    (prini-listing
+                                                     (nyxt:resolve-backtick-quote-links string package))
+                                                    listing)))))
+               listing)))
+    (let* ((code (if literal-p
+                     (first body)
+                     (let ((*package* (find-package package)))
+                       (serapeum:mapconcat
+                        #'prini-listing
+                        (mapcar #'remove-smart-quoting body)
+                        (make-string 2 :initial-element #\newline)))))
+           (*print-escape* nil)
+           (id (nyxt:prini-to-string (gensym)))
+           (select-code
+             `(:nselect
+                :id ,id
+                :style ,(unless inline-p
+                          "position: absolute; top: 0; right: 0; margin: 0; padding: 2px")
+                ,@(when copy-p
+                    `(((copy "Copy" "Copy the code to clipboard.")
+                       (funcall (read-from-string "nyxt:ffi-buffer-copy")
+                                (nyxt:current-buffer) ,code))))
+                ,@(when config-p
+                    `(((config
+                        "Add to auto-config"
+                        (format nil "Append this code to the auto-configuration file (~a)."
+                                (nfiles:expand nyxt::*auto-config-file*)))
+                       (alexandria:write-string-into-file
+                        ,code (nfiles:expand nyxt::*auto-config-file*)
+                        :if-exists :append))))
+                ,@(when repl-p
+                    `(((repl
+                        "Try in REPL"
+                        "Open this code in Nyxt REPL to experiment with it.")
+                       (nyxt:buffer-load-internal-page-focus
+                        (read-from-string "nyxt/repl-mode:repl")
+                        :form ,code))))
+                ,@(when (and file editor-p)
+                    `(((editor
+                        "Open in built-in editor"
+                        "Open the file this code comes from in Nyxt built-in editor-mode.")
+                       (funcall (read-from-string "nyxt/editor-mode:edit-file")
+                                ,file))))
+                ,@(when (and file external-editor-p)
+                    `(((external-editor
+                        "Open in external editor"
+                        "Open the file this code comes from in external editor.")
+                       (uiop:launch-program
+                        (append (funcall (read-from-string "nyxt:external-editor-program")
+                                         (symbol-value (read-from-string "nyxt:*browser*")))
+                                (list (uiop:native-namestring ,file)))))))))
+           (injectable-code
+             (if literal-p
+                 `(the string ,code)
+                 `(:raw (the string ,code)))))
+      (if inline-p
+          `(:span (:code ,@attrs ,injectable-code) ,select-code)
+          ;; https://spdevuk.com/how-to-create-code-copy-button/
+          `(:div :style "position: relative"
+                 (:pre ,@attrs ,select-code
+                       (:code ,injectable-code)))))))
 
 (deftag :nsection (body attrs &key (title (alexandria:required-argument 'title))
                         level
