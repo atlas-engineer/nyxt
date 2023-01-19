@@ -235,6 +235,52 @@ Useful for user configuration smarts, returns unaltered DESIGNATOR otherwise."
                 (sym:resolve-symbol designator type packages)
                 designator))))
 
+;; NOTE: We define it here so that it's available in spinneret-tags.lisp.
+(export-always 'resolve-backtick-quote-links)
+(defun resolve-backtick-quote-links (string parent-package)
+  "Return the STRING documentation with symbols surrounded by the (` ') pair
+turned into <a> links to their respective description page."
+  (labels ((resolve-as (symbol type)
+             (sym:resolve-symbol symbol type (list :nyxt :nyxt-user parent-package)))
+           (resolve-regex (target-string start end match-start match-end reg-starts reg-ends)
+             (declare (ignore start end reg-starts reg-ends))
+             ;; Excluding backtick & quote.
+             (let* ((name (subseq target-string (1+ match-start) (1- match-end)))
+                    (symbol (ignore-errors (uiop:safe-read-from-string
+                                            name :package parent-package :eof-error-p nil)))
+                    (function (and symbol
+                                   (fboundp symbol)
+                                   (resolve-as symbol :function)))
+                    (variable (when symbol
+                                (resolve-as symbol :variable)))
+                    (class (when symbol
+                             (resolve-as symbol :class)))
+                    ;; TODO: No way to determine the class reliably based on the slot name?
+                    ;; (slot (resolve-symbol name :slot (list :nyxt :nyxt-user *package*)))
+                    (url (cond
+                           ((and variable (not function) (not class))
+                            (nyxt-url 'describe-variable :variable variable))
+                           ((and class (not function) (not variable))
+                            (nyxt-url 'describe-class :class class))
+                           ((and function (not class) (not variable))
+                            (nyxt-url 'describe-function :fn function))
+                           (symbol
+                            (nyxt-url 'describe-any :input symbol))
+                           (t nil))))
+               (let ((*print-pretty* nil))
+                 ;; Disable pretty-printing to avoid spurious space insertion within links:
+                 ;; https://github.com/ruricolist/spinneret/issues/37#issuecomment-884740046
+                 (spinneret:with-html-string
+                   (if url
+                       (:a :href url (:code name))
+                       (:code name)))))))
+    (if (not (uiop:emptyp string))
+        ;; FIXME: Spaces are disallowed, but |one can use anything in a symbol|.
+        ;; Maybe allow it?  The problem then is that it increases the chances of
+        ;; false-positives when the "`" character is used for other reasons.
+        (ppcre:regex-replace-all "`[^'\\s]+'" string #'resolve-regex)
+        "")))
+
 (-> find-submode (sym:mode-symbol &optional buffer) (maybe mode))
 (export-always 'find-submode)
 (defun find-submode (mode-symbol &optional (buffer (current-buffer)))
