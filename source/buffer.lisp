@@ -88,7 +88,13 @@ See also the `profile' slot in the `browser' class.")
             `(select.button
               :appearance auto
               :background-color ,theme:primary !important
-              :color ,theme:on-primary !important
+              ;; WebKit does not allow to style <select> tags and always leaves
+              ;; us with white buttons in place of those. So we need to use an
+              ;; invariably dark color for the text on it
+              :color ,(if (theme:dark-p theme:theme)
+                          theme:background
+                          theme:on-background)
+              !important
               :min-height "2rem")
             `((:and .button :hover)
               :opacity 0.8)
