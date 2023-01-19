@@ -168,16 +168,49 @@ Returns all the linkable symbols from FORM as multiple values:
     (labels ((resolve-symbols-internal (form)
                (typecase form
                  (boolean nil)
+                 (keyword nil)
                  (cons
-                  (let ((first (first form)))
-                    (cond
-                      ;; FIXME: Handle special cases (let, let*, with-* macros
-                      ;; etc.)?  SWANK?
-                      ((and (symbolp first)
-                            (nsymbols:function-symbol-p first))
-                       (pushnew first functions))
-                      (t (resolve-symbols-internal first)))
-                    (mapc #'resolve-symbols-internal (rest form))))
+                  (alexandria:destructuring-case form
+                    ;; More forms: def*, make-instance, slots, special forms?
+                    (((flet labels symbol-macrolet macrolet)
+                      (&rest bindings) &body body)
+                     (mapcar (lambda (b)
+                               (resolve-symbols-internal (cddr b)))
+                             bindings)
+                     (mapc #'resolve-symbols-internal body))
+                    (((let let* prog prog*) (&rest bindings) &body body)
+                     (mapcar (alexandria:compose
+                              #'resolve-symbols-internal #'second #'uiop:ensure-list)
+                             bindings)
+                     (mapc #'resolve-symbols-internal body))
+                    (((block catch eval-when progv lambda defvar) arg &body body)
+                     (declare (ignore arg))
+                     (mapc #'resolve-symbols-internal body))
+                    (((progn prog1 unwind-protect tagbody setf setq multiple-value-prog1)
+                      &body body)
+                     (mapc #'resolve-symbols-internal body))
+                    (((return-from throw the) arg &optional value)
+                     (declare (ignore arg))
+                     (resolve-symbols-internal value))
+                    (((multiple-value-call funcall apply) function &rest args)
+                     (match function
+                       ((list 'quote name)
+                        (pushnew name functions))
+                       ((list 'function name)
+                        (pushnew name functions)))
+                     (mapc #'resolve-symbols-internal args))
+                    ((function value)
+                     (pushnew value functions))
+                    (((go locally) &rest values)
+                     (declare (ignore values)))
+                    ((t &rest rest)
+                     (let ((first (first form)))
+                       (cond
+                         ((and (symbolp first)
+                               (nsymbols:function-symbol-p first))
+                          (pushnew first functions))
+                         (t (resolve-symbols-internal first)))
+                       (mapc #'resolve-symbols-internal rest)))))
                  (symbol
                   (when (nsymbols:resolve-symbol form :variable)
                     (pushnew form variables)))
