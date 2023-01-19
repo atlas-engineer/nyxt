@@ -83,7 +83,7 @@ Example:
                               (list :title title))
                           ,(string-capitalize (or display (nyxt:prini-to-string value)))))))))
 
-(deftag :nxref (body attrs &key slot mode class-name function macro command variable package &allow-other-keys)
+(deftag :nxref (body attrs &key slot mode class-name function macro command (command-key-p t) variable package &allow-other-keys)
   "Create a link to a respective describe-* page for BODY symbol.
 
 Relies on the type keywords (SLOT, MODE, CLASS-NAME, FUNCTION, MACRO, COMMAND,
@@ -98,71 +98,62 @@ non-overridable."
          (printable (or (when (and (symbolp first) (eq first symbol))
                           (second body))
                         first package variable function macro command slot class-name mode)))
-    `(:code
-      ,@(progn
-          (remf attrs :class-name)
-          (remf attrs :mode)
-          (remf attrs :slot)
-          (remf attrs :function)
-          (remf attrs :macro)
-          (remf attrs :command)
-          (remf attrs :variable)
-          (remf attrs :package)
-          attrs)
-      (:a.link
-       :href ,(cond
-                (package `(nyxt:nyxt-url (read-from-string "nyxt:describe-package") :package ,package))
-                (variable `(nyxt:nyxt-url (read-from-string "nyxt:describe-variable")
-                                          :variable ,variable))
-                ((or command function macro)
-                 `(nyxt:nyxt-url (read-from-string "nyxt:describe-function")
-                                 :fn ,(or command function macro)))
-                (slot `(nyxt:nyxt-url (read-from-string "nyxt:describe-slot")
-                                      :name ,slot :class ,class-name))
-                ((or mode class-name)
-                 `(nyxt:nyxt-url (read-from-string "nyxt:describe-class")
-                                 :class ,(or mode class-name)))
-                (t `(nyxt:nyxt-url (read-from-string "nyxt:describe-any")
-                                   :input ,symbol)))
-       :title
-       (uiop:strcat
-        ,(cond
-           (package "[PACKAGE] ")
-           (variable "[VARIABLE] ")
-           (macro "[MACRO] ")
-           (command "[COMMAND] ")
-           (function "[FUNCTION] ")
-           ((and slot class-name) `(format nil "[SLOT in ~s]" ,class-name))
-           (mode "[MODE] ")
-           (class-name "[CLASS] "))
-        (first (serapeum:lines
-                (documentation
-                 ,(cond
-                    (package `(find-package ,package))
-                    (variable variable)
-                    (macro macro)
-                    ((or command function) `(symbol-function ,(or command function)))
-                    (slot slot)
-                    ((or mode class-name) `(find-class ,(or mode class-name)))
-                    (t symbol))
-                 (quote ,(cond
-                           (variable 'variable)
-                           ((or command function macro) 'function)
-                           ((or mode class-name) 'type)
-                           (t t)))))))
-       ,@(when (and (getf attrs :class)
-                    (or (getf attrs :slot)
-                        (every #'null (list slot class-name mode function macro command variable package))))
-           (error ":class attribute used ambiguously in :nxref tag. Use :class-name instead.")
-           nil)
+    `(:a.link
+      ,@attrs
+      :href ,(cond
+               (package `(nyxt:nyxt-url (read-from-string "nyxt:describe-package") :package ,package))
+               (variable `(nyxt:nyxt-url (read-from-string "nyxt:describe-variable")
+                                         :variable ,variable))
+               ((or command function macro)
+                `(nyxt:nyxt-url (read-from-string "nyxt:describe-function")
+                                :fn ,(or command function macro)))
+               (slot `(nyxt:nyxt-url (read-from-string "nyxt:describe-slot")
+                                     :name ,slot :class ,class-name))
+               ((or mode class-name)
+                `(nyxt:nyxt-url (read-from-string "nyxt:describe-class")
+                                :class ,(or mode class-name)))
+               (t `(nyxt:nyxt-url (read-from-string "nyxt:describe-any")
+                                  :input ,symbol)))
+      :title
+      (uiop:strcat
+       ,(cond
+          (package "[PACKAGE] ")
+          (variable "[VARIABLE] ")
+          (macro "[MACRO] ")
+          (command "[COMMAND] ")
+          (function "[FUNCTION] ")
+          ((and slot class-name) `(format nil "[SLOT in ~s]" ,class-name))
+          (mode "[MODE] ")
+          (class-name "[CLASS] "))
+       (first (serapeum:lines
+               (documentation
+                ,(cond
+                   (package `(find-package ,package))
+                   (variable variable)
+                   (macro macro)
+                   ((or command function) `(symbol-function ,(or command function)))
+                   (slot slot)
+                   ((or mode class-name) `(find-class ,(or mode class-name)))
+                   (t symbol))
+                (quote ,(cond
+                          (variable 'variable)
+                          ((or command function macro) 'function)
+                          ((or mode class-name) 'type)
+                          (t t)))))))
+      ,@(when (and (getf attrs :class)
+                   (or (getf attrs :slot)
+                       (every #'null (list slot class-name mode function macro command variable package))))
+          (error ":class attribute used ambiguously in :nxref tag. Use :class-name instead.")
+          nil)
+      (:code
        (let ((*print-escape* nil))
-         (nyxt:prini-to-string ,printable)))
-      ,@(when command
-          `(" ("
-            (funcall (read-from-string "nyxt::binding-keys")
-                     ,command ,@(when mode
-                                  `(:modes (cl:list (make-instance ,mode)))))
-            ")")))))
+         (nyxt:prini-to-string ,printable))
+       ,@(when (and command command-key-p)
+           `(" ("
+             (funcall (read-from-string "nyxt::binding-keys")
+                      ,command ,@(when mode
+                                   `(:modes (cl:list (make-instance ,mode)))))
+             ")"))))))
 
 ;; TODO: Store the location it's defined in as a :title or link for discoverability?
 ;; FIXME: Maybe use :nyxt-user as the default package to not quarrel with REPL & config?
