@@ -523,7 +523,8 @@ Only available if `prompter:enable-marks-p' is non-nil."
          (sources (prompter:sources prompt-buffer)))
     (spinneret:with-html-string
       (:h1 (prompter:prompt prompt-buffer))
-      (:p (:raw (resolve-backtick-quote-links (documentation 'prompt-buffer 'type) :nyxt/prompt-buffer-mode)))
+      (:pre (:code (:raw (resolve-backtick-quote-links
+                          (documentation 'prompt-buffer 'type) :nyxt/prompt-buffer-mode))))
       (:h2 "Modes:")
       (:ul
        (loop for mode in modes

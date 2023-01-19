@@ -312,7 +312,7 @@ Otherwise prompt for matches."
 (export-always 'resolve-backtick-quote-links)
 (defun resolve-backtick-quote-links (string parent-package)
   "Return the STRING documentation with symbols surrounded by the (` ') pair
-turned into links to their respective description page."
+turned into <a> links to their respective description page."
   (labels ((resolve-as (symbol type)
              (sym:resolve-symbol symbol type
                                  (list :nyxt :nyxt-user parent-package)))
@@ -352,9 +352,7 @@ turned into links to their respective description page."
         ;; FIXME: Spaces are disallowed, but |one can use anything in a symbol|.
         ;; Maybe allow it?  The problem then is that it increases the chances of
         ;; false-positives when the "`" character is used for other reasons.
-        (spinneret:with-html-string
-          (:pre
-           (:code (:raw (ppcre:regex-replace-all "`[^'\\s]+'" string #'resolve-regex)))))
+        (ppcre:regex-replace-all "`[^'\\s]+'" string #'resolve-regex)
         "")))
 
 (define-internal-page-command-global describe-package
@@ -373,7 +371,7 @@ turned into links to their respective description page."
       (spinneret:with-html-string
         (:nstyle (style buffer))
         (:h1 (package-name package))
-        (:raw (resolve-backtick-quote-links (documentation (find-package package) t) package))
+        (:pre (:code (:raw (resolve-backtick-quote-links (documentation (find-package package) t) package))))
         (:h2 "Symbols:")
         (:ul
          (:li "External: " (length external-symbols))
@@ -403,7 +401,8 @@ turned into links to their respective description page."
         (spinneret:with-html-string
           (:nstyle (style buffer))
           (:h1 (format nil "~s" variable)) ; Use FORMAT to keep package prefix.
-          (:raw (resolve-backtick-quote-links (documentation variable 'variable) (symbol-package variable)))
+          (:pre (:code (:raw (resolve-backtick-quote-links (documentation variable 'variable)
+                                                           (symbol-package variable)))))
           (:h2 "Type")
           (:p (princ-to-string (type-of (symbol-value variable))))
           (:h2 "Current Value:")
@@ -450,7 +449,7 @@ For generic functions, describe all the methods."
       (let ((input function))
         (flet ((fun-desc (input)
                  (spinneret:with-html-string
-                   (:raw (resolve-backtick-quote-links (documentation input 'function) (symbol-package input)))
+                   (:pre (:code (:raw (resolve-backtick-quote-links (documentation input 'function) (symbol-package input)))))
                    (:h2 "Argument list")
                    (:p (:pre (prini-to-string (arglist input) :package (symbol-package input))))
                    (when (sym:command-symbol-p input)
@@ -509,8 +508,8 @@ For generic functions, describe all the methods."
                                                                        method)
                                                         (reload-current-buffer)))
                      "Remove method")
-                    (:raw (resolve-backtick-quote-links (documentation method 't)
-                                                        (symbol-package (mopu:method-name method))))
+                    (:pre (:code (:raw (resolve-backtick-quote-links
+                                        (documentation method 't) (symbol-package (mopu:method-name method))))))
                     (:h4 "Argument list")
                     (:p (:pre (prini-to-string (closer-mop:method-lambda-list method)
                                                :package (symbol-package input))))
@@ -608,8 +607,8 @@ A command is a special kind of function that can be called with
                     (:ncode :literal-p t :inline-p t initform-string)))))
        (when (getf props :documentation)
          (:dt "Documentation")
-         (:dd (:raw (resolve-backtick-quote-links
-                     (getf props :documentation) (symbol-package slot)))))))))
+         (:dd (:pre (:code (:raw (resolve-backtick-quote-links
+                                  (getf props :documentation) (symbol-package slot)))))))))))
 
 (define-internal-page-command-global describe-class
     (&key
@@ -627,7 +626,7 @@ A command is a special kind of function that can be called with
         (spinneret:with-html-string
           (:nstyle (style buffer))
           (:h1 (symbol-name class) " (" (sera:class-name-of (find-class class)) ")")
-          (:p (:raw (resolve-backtick-quote-links (documentation class 'type) (symbol-package class))))
+          (:pre (:code (:raw (resolve-backtick-quote-links (documentation class 'type) (symbol-package class)))))
           (when (mopu:direct-superclasses class)
             (:h2 "Direct superclasses:")
             (:ul (loop for class-name in (mapcar #'class-name (mopu:direct-superclasses class))
