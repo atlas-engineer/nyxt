@@ -21,6 +21,10 @@
 When provided, PANELS are deleted instead."
   (mapc (curry #'window-delete-panel-buffer window) (uiop:ensure-list panels)))
 
+(define-command-global delete-all-panel-buffers (&key (window (current-window)))
+  "Delete all the open panel buffers in WINDOW."
+  (delete-panel-buffer :panels (panel-buffers window)))
+
 (define-class panel-page (internal-page)
   ((side
     :left
