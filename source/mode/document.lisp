@@ -28,6 +28,7 @@ It does not assume being online."))
        "C-S-c" 'open-inspector
        "C-." 'jump-to-heading
        "C-M-." 'jump-to-heading-buffers
+       "M-." 'headings-panel
        "M-{" 'previous-heading
        "M-}" 'next-heading
        "C-p" 'print-buffer
