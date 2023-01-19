@@ -243,16 +243,17 @@ code is at the very least readable.
 Forms in BODY can be quoted, in which case Spinneret won't even try to look at
 its contents (useful if there are forms that start with a keyword, Spinneret
 unconditionally converts those to tags unless the whole form is quoted.)"
-  (labels ((prini-listing (form)
-             (let ((listing (nyxt:prini-to-string form :readably t :right-margin 70))
-                   (*suppress-inserted-spaces* t)
+  (labels ((prini* (object)
+             (nyxt:prini-to-string object :readably t :right-margin 70 :package package))
+           (htmlize-body (form listing)
+             (let ((*suppress-inserted-spaces* t)
                    (*html-style* :tree)
                    (*print-pretty* nil))
                (when (listp form)
                  (multiple-value-bind (functions variables linkable-strings)
                      (resolve-linkable-symbols form)
                    (dolist (function functions)
-                     (let ((fun-listing (prini-listing function)))
+                     (let ((fun-listing (prini* function)))
                        (setf listing (str:replace-all
                                       (str:concat "(" fun-listing)
                                       (str:concat
@@ -260,24 +261,27 @@ unconditionally converts those to tags unless the whole form is quoted.)"
                                              (:nxref :function function fun-listing)))
                                       listing))))
                    (dolist (var variables)
-                     (let ((var-listing (prini-listing var)))
+                     (let ((var-listing (prini* var)))
                        (setf listing (str:replace-all var-listing
                                                       (with-html-string
                                                         (:nxref :variable var var-listing))
                                                       listing))))
                    (dolist (string linkable-strings)
-                     (setf listing (str:replace-all (prini-listing string)
-                                                    (prini-listing
+                     (setf listing (str:replace-all (prini* string)
+                                                    (prini*
                                                      (nyxt:resolve-backtick-quote-links string package))
                                                     listing)))))
                listing)))
-    (let* ((code (if literal-p
+    (let* ((printed-body
+             (mapcar #'prini* (mapcar #'remove-smart-quoting body)))
+           (code (if literal-p
                      (first body)
-                     (let ((*package* (find-package package)))
-                       (serapeum:mapconcat
-                        #'prini-listing
-                        (mapcar #'remove-smart-quoting body)
-                        (make-string 2 :initial-element #\newline)))))
+                     (str:join (make-string 2 :initial-element #\newline) printed-body)))
+           (htmlized-code
+             (unless literal-p
+               (str:join
+                (make-string 2 :initial-element #\newline)
+                (mapcar #'htmlize-body body printed-body))))
            (*print-escape* nil)
            (id (nyxt:prini-to-string (gensym)))
            (select-code
@@ -321,7 +325,7 @@ unconditionally converts those to tags unless the whole form is quoted.)"
            (injectable-code
              (if literal-p
                  `(the string ,code)
-                 `(:raw (the string ,code)))))
+                 `(:raw (the string ,htmlized-code)))))
       (if inline-p
           `(:span (:code ,@attrs ,injectable-code) ,select-code)
           ;; https://spdevuk.com/how-to-create-code-copy-button/
