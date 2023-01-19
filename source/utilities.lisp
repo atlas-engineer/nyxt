@@ -117,7 +117,7 @@ THING can be a class or a function, not symbol."
                               (function (swank-backend:function-name thing))))
                       ;; This one is to clean up the (:macro name) form.
                       (name (if (and (listp name)
-                                     (eq :macro (first name)))
+                                     (member (first name) '(:special :macro)))
                                 (second name)
                                 name))
                       (*package* (symbol-package name))
