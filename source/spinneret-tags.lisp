@@ -160,8 +160,9 @@ non-overridable."
 Returns all the linkable symbols from FORM as multiple values:
 - Function symbols.
 - Variable symbols.
-- And all the strings that may potentially be resolvable with
-  `nyxt:resolve-backtick-quote-links'."
+- All the strings that may potentially be resolvable with
+  `nyxt:resolve-backtick-quote-links'.
+- All the special forms (including some macros and functions needing extra care)."
   (let ((functions '())
         (variables '())
         (linkable-strings '()))
@@ -217,7 +218,15 @@ Returns all the linkable symbols from FORM as multiple values:
                  (string
                   (pushnew form linkable-strings)))))
       (resolve-symbols-internal form)
-      (values functions variables linkable-strings))))
+      (let ((specials '(flet labels symbol-macrolet macrolet
+                        let let* prog prog*
+                        block catch eval-when progv lambda defvar
+                        progn prog1 unwind-protect tagbody setf setq multiple-value-prog1
+                        return-from throw the
+                        multiple-value-call funcall apply
+                        function
+                        go locally)))
+        (values (set-difference functions specials) variables linkable-strings specials)))))
 
 ;; TODO: Store the location it's defined in as a :title or link for discoverability?
 ;; FIXME: Maybe use :nyxt-user as the default package to not quarrel with REPL & config?
@@ -250,7 +259,7 @@ unconditionally converts those to tags unless the whole form is quoted.)"
                    (*html-style* :tree)
                    (*print-pretty* nil))
                (when (listp form)
-                 (multiple-value-bind (functions variables linkable-strings)
+                 (multiple-value-bind (functions variables linkable-strings specials)
                      (resolve-linkable-symbols form)
                    (dolist (function functions)
                      (let ((fun-listing (prini* function)))
@@ -259,6 +268,12 @@ unconditionally converts those to tags unless the whole form is quoted.)"
                                       (str:concat
                                        "(" (with-html-string
                                              (:nxref :function function fun-listing)))
+                                      listing))))
+                   (dolist (special specials)
+                     (let ((spec-listing (prini* special)))
+                       (setf listing (str:replace-all
+                                      (str:concat "(" spec-listing)
+                                      (str:concat "(" (with-html-string (:span.accent spec-listing)))
                                       listing))))
                    (dolist (var variables)
                      (let ((var-listing (prini* var)))
