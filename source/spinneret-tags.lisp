@@ -179,16 +179,16 @@ Returns all the linkable symbols from FORM as multiple values:
                                (resolve-symbols-internal (cddr b)))
                              bindings)
                      (mapc #'resolve-symbols-internal body))
-                    (((let let* prog prog*) (&rest bindings) &body body)
-                     (mapcar (alexandria:compose
-                              #'resolve-symbols-internal #'second #'uiop:ensure-list)
-                             bindings)
-                     (mapc #'resolve-symbols-internal body))
                     (((block catch eval-when progv lambda defvar) arg &body body)
                      (declare (ignore arg))
                      (mapc #'resolve-symbols-internal body))
                     (((progn prog1 unwind-protect tagbody setf setq multiple-value-prog1)
                       &body body)
+                     (mapc #'resolve-symbols-internal body))
+                    (((let let* prog prog*) (&rest bindings) &body body)
+                     (mapcar (alexandria:compose
+                              #'resolve-symbols-internal #'second #'uiop:ensure-list)
+                             bindings)
                      (mapc #'resolve-symbols-internal body))
                     (((return-from throw the) arg &optional value)
                      (declare (ignore arg))
@@ -219,9 +219,9 @@ Returns all the linkable symbols from FORM as multiple values:
                   (pushnew form linkable-strings)))))
       (resolve-symbols-internal form)
       (let ((specials '(flet labels symbol-macrolet macrolet
-                        let let* prog prog*
                         block catch eval-when progv lambda defvar
                         progn prog1 unwind-protect tagbody setf setq multiple-value-prog1
+                        let let* prog prog*
                         return-from throw the
                         multiple-value-call funcall apply
                         function
