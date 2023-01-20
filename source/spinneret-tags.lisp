@@ -275,26 +275,30 @@ unconditionally converts those to tags unless the whole form is quoted.)"
                (when (listp form)
                  (multiple-value-bind (functions variables macros specials linkable-strings)
                      (resolve-linkable-symbols form)
-                   (dolist (function functions)
-                     (let ((fun-listing (prini* function)))
-                       (setf listing (str:replace-all
-                                      (str:concat "(" fun-listing)
-                                      (str:concat
-                                       "(" (with-html-string
-                                             (:nxref :function function fun-listing)))
-                                      listing))))
+                   ;; We use \\s, because lots of Lisp symbols include non-word
+                   ;; symbols and would break if \\b was used.
+                   (macrolet ((replace-symbol-occurences (symbols type &optional (prefix "(\\()") (suffix "(\\)|\\s)"))
+                                (alexandria:with-gensyms (sym sym-listing)
+                                  `(dolist (,sym ,symbols)
+                                     (when (search (prini* ,sym) listing)
+                                       (let ((,sym-listing (prini* ,sym)))
+                                         (setf listing
+                                               (ppcre:regex-replace-all
+                                                (uiop:strcat
+                                                 ,prefix (ppcre:quote-meta-chars ,sym-listing) ,suffix)
+                                                listing
+                                                (list
+                                                 0 (with-html-string
+                                                     (:nxref ,type ,sym ,sym-listing)) 1)))))))))
+                     (replace-symbol-occurences macros :macro)
+                     (replace-symbol-occurences functions :function)
+                     (replace-symbol-occurences variables :variable "(\\s)" "(\\)|\\s)"))
                    (dolist (special specials)
                      (let ((spec-listing (prini* special)))
                        (setf listing (str:replace-all
                                       (str:concat "(" spec-listing)
                                       (str:concat "(" (with-html-string (:span.accent spec-listing)))
                                       listing))))
-                   (dolist (var variables)
-                     (let ((var-listing (prini* var)))
-                       (setf listing (str:replace-all var-listing
-                                                      (with-html-string
-                                                        (:nxref :variable var var-listing))
-                                                      listing))))
                    (dolist (string linkable-strings)
                      (setf listing (str:replace-all (prini* string)
                                                     (prini*
