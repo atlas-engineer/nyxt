@@ -302,7 +302,7 @@ unconditionally converts those to tags unless the whole form is quoted.)"
                                                  0 (with-html-string
                                                      (:nxref ,type ,sym ,sym-listing)) 1)))))))))
                      (replace-symbol-occurences macros :macro)
-                     (replace-symbol-occurences functions :function)
+                     (replace-symbol-occurences functions :function "(\\(|#')")
                      (replace-symbol-occurences variables :variable "(\\s)" "(\\)|\\s)"))
                    (dolist (special specials)
                      (let ((spec-listing (prini* special)))
