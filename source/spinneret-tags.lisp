@@ -298,10 +298,10 @@ unconditionally converts those to tags unless the whole form is quoted.)"
                      (replace-symbol-occurences variables :variable "(\\s)" "(\\)|\\s)"))
                    (dolist (special specials)
                      (let ((spec-listing (prini* special)))
-                       (setf listing (str:replace-all
-                                      (str:concat "(" spec-listing)
-                                      (str:concat "(" (with-html-string (:span.accent spec-listing)))
-                                      listing))))
+                       (setf listing (ppcre:regex-replace-all
+                                      (str:concat "(\\()" (ppcre:quote-meta-chars spec-listing) "(\\)|\\s)")
+                                      listing
+                                      (list 0 (with-html-string (:span.accent spec-listing)) 1)))))
                    (dolist (string linkable-strings)
                      (setf listing (str:replace-all (prini* string)
                                                     (prini*
