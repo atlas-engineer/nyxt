@@ -160,12 +160,23 @@ non-overridable."
 Returns all the linkable symbols from FORM as multiple values:
 - Function symbols.
 - Variable symbols.
+- Macro symbols.
+- All the special forms (including some macros and functions needing extra care).
 - All the strings that may potentially be resolvable with
-  `nyxt:resolve-backtick-quote-links'.
-- All the special forms (including some macros and functions needing extra care)."
-  (let ((functions '())
-        (variables '())
-        (linkable-strings '()))
+  `nyxt:resolve-backtick-quote-links'."
+  (let ((functions (list))
+        (variables (list))
+        (macros (list))
+        (specials '(quote
+                    flet labels symbol-macrolet macrolet
+                    block catch eval-when progv lambda defvar
+                    progn prog1 unwind-protect tagbody setf setq multiple-value-prog1
+                    let let* prog prog*
+                    return-from throw the
+                    multiple-value-call funcall apply
+                    function
+                    go locally))
+        (linkable-strings (list)))
     (labels ((resolve-symbols-internal (form)
                (typecase form
                  (boolean nil)
@@ -207,26 +218,29 @@ Returns all the linkable symbols from FORM as multiple values:
                     ((t &rest rest)
                      (let ((first (first form)))
                        (cond
+                         ((listp first)
+                          (resolve-symbols-internal first)
+                          (mapc #'resolve-symbols-internal rest))
+                         ((and (symbolp first)
+                               (nsymbols:macro-symbol-p first))
+                          (pushnew first macros)
+                          (let* ((arglist (uiop:symbol-call :nyxt :arglist first))
+                                 (rest-position (or (position '&rest arglist)
+                                                    (position '&body arglist))))
+                            (if rest-position
+                                (mapc #'resolve-symbols-internal (nthcdr rest-position rest))
+                                (mapc #'resolve-symbols-internal rest))))
                          ((and (symbolp first)
                                (nsymbols:function-symbol-p first))
-                          (pushnew first functions))
-                         (t (resolve-symbols-internal first)))
-                       (mapc #'resolve-symbols-internal rest)))))
+                          (pushnew first functions)
+                          (mapc #'resolve-symbols-internal rest)))))))
                  (symbol
-                  (when (nsymbols:resolve-symbol form :variable)
+                  (when (nsymbols:variable-symbol-p form)
                     (pushnew form variables)))
                  (string
                   (pushnew form linkable-strings)))))
       (resolve-symbols-internal form)
-      (let ((specials '(flet labels symbol-macrolet macrolet
-                        block catch eval-when progv lambda defvar
-                        progn prog1 unwind-protect tagbody setf setq multiple-value-prog1
-                        let let* prog prog*
-                        return-from throw the
-                        multiple-value-call funcall apply
-                        function
-                        go locally)))
-        (values (set-difference functions specials) variables linkable-strings specials)))))
+      (values (set-difference functions specials) variables macros specials linkable-strings))))
 
 ;; TODO: Store the location it's defined in as a :title or link for discoverability?
 ;; FIXME: Maybe use :nyxt-user as the default package to not quarrel with REPL & config?
@@ -259,7 +273,7 @@ unconditionally converts those to tags unless the whole form is quoted.)"
                    (*html-style* :tree)
                    (*print-pretty* nil))
                (when (listp form)
-                 (multiple-value-bind (functions variables linkable-strings specials)
+                 (multiple-value-bind (functions variables macros specials linkable-strings)
                      (resolve-linkable-symbols form)
                    (dolist (function functions)
                      (let ((fun-listing (prini* function)))
