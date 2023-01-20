@@ -167,15 +167,16 @@ Returns all the linkable symbols from FORM as multiple values:
   (let ((functions (list))
         (variables (list))
         (macros (list))
-        (specials '(quote
-                    flet labels symbol-macrolet macrolet
-                    block catch eval-when progv lambda defvar
-                    progn prog1 unwind-protect tagbody setf setq multiple-value-prog1
-                    let let* prog prog*
-                    return-from throw the
-                    multiple-value-call funcall apply
-                    function
-                    go locally))
+        (specials (list))
+        (all-specials '(quote
+                        flet labels symbol-macrolet macrolet
+                        block catch eval-when progv lambda defvar
+                        progn prog1 unwind-protect tagbody setf setq multiple-value-prog1
+                        let let* prog prog*
+                        return-from throw the
+                        multiple-value-call funcall apply
+                        function
+                        go locally))
         (linkable-strings (list)))
     (labels ((resolve-symbols-internal (form)
                (typecase form
@@ -221,6 +222,8 @@ Returns all the linkable symbols from FORM as multiple values:
                          ((listp first)
                           (resolve-symbols-internal first)
                           (mapc #'resolve-symbols-internal rest))
+                         ((member first all-specials)
+                          (pushnew first specials))
                          ((and (symbolp first)
                                (nsymbols:macro-symbol-p first))
                           (pushnew first macros)
@@ -240,7 +243,7 @@ Returns all the linkable symbols from FORM as multiple values:
                  (string
                   (pushnew form linkable-strings)))))
       (resolve-symbols-internal form)
-      (values (set-difference functions specials) variables macros specials linkable-strings))))
+      (values (set-difference functions all-specials) variables macros specials linkable-strings))))
 
 ;; TODO: Store the location it's defined in as a :title or link for discoverability?
 ;; FIXME: Maybe use :nyxt-user as the default package to not quarrel with REPL & config?
