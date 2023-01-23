@@ -92,8 +92,6 @@ current suggestion in the prompt buffer.")
         `(".source"
           :margin-left "10px"
           :margin-top "15px")
-        `(".source-glyph"
-          :margin-right "3px")
         `(".source-name"
           :background-color ,theme:secondary
           :color ,theme:on-secondary
@@ -295,7 +293,6 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                            (sera:single sources))
                                       "display:none;"
                                       "display:revert")
-                           (:span :class "source-glyph" "☼")
                            (prompter:name source)
                            (if (prompter:hide-suggestion-count-p source)
                                ""
