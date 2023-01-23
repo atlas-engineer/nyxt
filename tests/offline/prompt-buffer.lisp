@@ -7,39 +7,41 @@
                                  (lparallel:make-kernel (or (serapeum:count-cpus) 1))))
 
 (define-class test-source (prompter:source)
-  ;; The number of suggestions is only relevant to access the algorithm's
+  ;; The number of suggestions is only relevant to assess the algorithm's
   ;; performance, so it suffices to use a single suggestion for general testing.
   ((prompter:name "Test")
    (prompter:constructor '("suggestion"))))
 
-(defun set-test-source-object-attributes (lst)
-  "Set `prompter:object-attributes' following LST properties:
-Its length LST dictates the number of attributes.
-Each element dictates the number of times a suggestion is concatenated."
+(defun set-test-source-object-attributes (length)
+  "Set `prompter:object-attributes' following LENGTH.
+There are as many attributes as LENGTH, and each one is increasingly long."
   (defmethod prompter:object-attributes ((object string) (source test-source))
-    (do ((index 0 (1+ index))
-         (result '() (cons `(,(str:concat "Attribute" (princ-to-string index))
-                             ,(str:repeat (nth index lst) object))
-                           result)))
-        ((eq index (length lst)) (nreverse result)))))
+    (loop for i from 1 upto length
+          collect (list (str:concat "Attribute" (princ-to-string i)) (str:repeat i object) nil i))))
 
-;; TODO Add to lisp-unit2.
 (defun random-in-range (start end)
   (+ start (random (+ 1 (- end start)))))
 
 (define-test constant-size-attributes ()
   (let ((n-attributes (random-in-range 1 10)))
-    ;; How to shup up the fact that the method is being redefined?
-    (set-test-source-object-attributes (make-list n-attributes :initial-element 1))
-    (assert-equal (make-list n-attributes :initial-element (/ 1 n-attributes))
+    (handler-bind ((warning #'muffle-warning))
+      (set-test-source-object-attributes n-attributes))
+    (assert-equal (loop for i from 1 upto n-attributes
+                        sum i into total
+                        collect i into widths
+                        finally (return (mapcar (rcurry #'/ total) widths)))
                   (nyxt::attribute-widths (make-instance 'test-source)))))
 
-(define-test ratio-between-two-attributes ()
-  (let ((ratio (random-in-range 1 4)))
-    (set-test-source-object-attributes `(1 ,ratio))
-    (assert-equal (list (/ 1 (1+ ratio)) (/ ratio (1+ ratio)))
-                  (nyxt::attribute-widths (make-instance 'test-source)))
-    ;; Test symmetry.
-    (set-test-source-object-attributes `(,ratio 1))
-    (assert-equal (list (/ ratio (1+ ratio)) (/ 1 (1+ ratio)))
-                  (nyxt::attribute-widths (make-instance 'test-source)))))
+(define-test dynamic-widths ()
+  (set-test-source-object-attributes 2)
+  (assert-equal
+   (list 1/3 2/3)
+   (nyxt::attribute-widths (make-instance 'test-source) :dynamic-p t))
+  (set-test-source-object-attributes 3)
+  (assert-equal
+   (list 1/6 2/6 3/6)
+   (nyxt::attribute-widths (make-instance 'test-source) :dynamic-p t))
+  (set-test-source-object-attributes 4)
+  (assert-equal
+   (list 1/8 39/200 117/400 39/100)
+   (nyxt::attribute-widths (make-instance 'test-source) :dynamic-p t)))
