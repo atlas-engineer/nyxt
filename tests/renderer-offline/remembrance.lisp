@@ -17,29 +17,11 @@
   (quri:make-uri-file :path
                       (asdf:system-relative-pathname :nyxt "tests/test-data/lorem.html")))
 
-(defmacro wait-on-handler (hook args &body body) ; TODO: Move to Nhooks?
-  "Like `nhooks:once-on' but block until the handler returns.."
-  (alex:with-gensyms (promise)
-    (let ((handler-name (gensym "once-on-hook-handler"))
-          (args (alexandria:ensure-list args)))
-      (alexandria:once-only (hook)
-        `(let ((,promise (lpara:promise)))
-           (nhooks:add-hook
-            ,hook (make-instance 'nhooks:handler
-                                 :fn (lambda ,args
-                                       (declare (ignorable ,@args))
-                                       (nhooks:remove-hook ,hook (quote ,handler-name))
-                                       (lpara:fulfill ,promise
-                                         (progn ,@body)))
-                                 :name (quote ,handler-name)))
-           (lpara:force ,promise))))))
-
 (define-test remembrance ()
   (nyxt:start :no-config t :no-auto-config t
               :socket "/tmp/nyxt-test.socket"
               :profile "test")
-  (wait-on-handler (nyxt:after-startup-hook nyxt:*browser*) (browser)
-    (nyxt:enable-modes* 'nyxt/remembrance-mode:remembrance-mode (nyxt:current-buffer)))
+  (nyxt:enable-modes* 'nyxt/remembrance-mode:remembrance-mode (nyxt:current-buffer))
   (let ((mode (nyxt:find-submode 'nyxt/remembrance-mode:remembrance-mode)))
     (assert-equality 'uiop:pathname-equal
                      (nfiles:join +test-root+
