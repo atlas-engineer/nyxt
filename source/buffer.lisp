@@ -109,6 +109,9 @@ See also the `profile' slot in the `browser' class.")
               :opacity 0.8)
             `(.accent
               :color ,theme:accent)
+            `(.plain
+              :color ,theme:on-background
+              :background-color ,theme:background)
             `(.input
               :appearance "textfield"
               :display "inline-block"
@@ -823,6 +826,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :color "inherit"
               :text-decoration "transparent"
               :border "transparent"
+              :border-radius "0.2em"
               :padding 0
               :font "inherit"
               :outline "inherit")
@@ -832,7 +836,10 @@ store them somewhere and `ffi-buffer-delete' them once done."))
             `((:and .button :hover)
               :opacity 0.8)
             `((:and .button (:or :visited :active))
-              :color ,theme:background))))
+              :color ,theme:background)
+            `(.plain
+              :color ,theme:on-background
+              :background-color ,theme:background))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)

@@ -123,6 +123,9 @@ This leverages `mode-status' which can be specialized for individual modes."
                          :test #'equal)
           collect (let ((domain domain))
                     (:nbutton
+                      :class (when (equal (quri:uri-domain (url (current-buffer)))
+                                          domain)
+                               "plain")
                       :buffer status
                       :type "tab"
                       :text domain
