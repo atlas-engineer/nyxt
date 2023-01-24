@@ -288,7 +288,7 @@ unconditionally converts those to tags unless the whole form is quoted.)"
                      (resolve-linkable-symbols form)
                    ;; We use \\s, because lots of Lisp symbols include non-word
                    ;; symbols and would break if \\b was used.
-                   (macrolet ((replace-symbol-occurences (symbols type &optional (prefix "(\\()") (suffix "(\\)|\\s)"))
+                   (macrolet ((replace-symbol-occurences (symbols type &key (prefix "(\\()") (suffix "(\\)|\\s)") (style :plain))
                                 (alexandria:with-gensyms (sym sym-listing)
                                   `(dolist (,sym ,symbols)
                                      (when (search (prini* ,sym) listing)
@@ -299,17 +299,19 @@ unconditionally converts those to tags unless the whole form is quoted.)"
                                                  ,prefix (ppcre:quote-meta-chars ,sym-listing) ,suffix)
                                                 listing
                                                 (list
-                                                 0 (with-html-string
-                                                     (:nxref ,type ,sym ,sym-listing)) 1)))))))))
-                     (replace-symbol-occurences macros :macro)
-                     (replace-symbol-occurences functions :function "(\\(|#')")
-                     (replace-symbol-occurences variables :variable "(\\s)" "(\\)|\\s)"))
-                   (dolist (special specials)
-                     (let ((spec-listing (prini* special)))
-                       (setf listing (ppcre:regex-replace-all
-                                      (str:concat "(\\()" (ppcre:quote-meta-chars spec-listing) "(\\)|\\s)")
-                                      listing
-                                      (list 0 (with-html-string (:span.accent spec-listing)) 1)))))
+                                                 0 ,(case style
+                                                      (:link `(with-html-string
+                                                                (:nxref ,type ,sym ,sym-listing)))
+                                                      (:plain `(with-html-string
+                                                                 (:nxref :style "color: inherit; background-color: inherit;" ,type ,sym ,sym-listing)))
+                                                      (:span `(with-html-string
+                                                                (:span.accent ,sym-listing))))
+                                                 1)))))))))
+                     (replace-symbol-occurences macros :macro :style :link)
+                     (replace-symbol-occurences functions :function :prefix "(\\(|#')")
+                     (replace-symbol-occurences
+                      variables :variable :prefix "(\\s)" :suffix "(\\)|\\s)")
+                     (replace-symbol-occurences specials nil :style :span))
                    (dolist (string linkable-strings)
                      (setf listing (str:replace-all (prini* string)
                                                     (prini*
