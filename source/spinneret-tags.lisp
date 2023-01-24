@@ -170,7 +170,7 @@ Returns all the linkable symbols from FORM as multiple values:
         (specials (list))
         (all-specials '(quote
                         flet labels symbol-macrolet macrolet
-                        block catch eval-when progv lambda defvar
+                        block catch eval-when progv lambda
                         progn prog1 unwind-protect tagbody setf setq multiple-value-prog1
                         let let* prog prog*
                         return-from throw the
@@ -193,7 +193,7 @@ Returns all the linkable symbols from FORM as multiple values:
                                  (resolve-symbols-internal (cddr b)))
                                bindings)
                        (mapc #'resolve-symbols-internal body))
-                      (((block catch eval-when progv lambda defvar) arg &body body)
+                      (((block catch eval-when progv lambda) arg &body body)
                        (declare (ignore arg))
                        (push first specials)
                        (mapc #'resolve-symbols-internal body))
