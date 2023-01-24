@@ -308,7 +308,7 @@ unconditionally converts those to tags unless the whole form is quoted.)"
                                                                 (:span.accent ,sym-listing))))
                                                  1)))))))))
                      (replace-symbol-occurences macros :macro :style :link)
-                     (replace-symbol-occurences functions :function :prefix "(\\(|#')")
+                     (replace-symbol-occurences functions :function :prefix "(\\(|#'|')")
                      (replace-symbol-occurences
                       variables :variable :prefix "(\\s)" :suffix "(\\)|\\s)")
                      (replace-symbol-occurences specials nil :style :span))
