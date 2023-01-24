@@ -318,8 +318,8 @@ unconditionally converts those to tags unless the whole form is quoted.)"
                                                      (nyxt:resolve-backtick-quote-links string package))
                                                     listing)))))
                listing)))
-    (let* ((printed-body
-             (mapcar #'prini* (mapcar #'remove-smart-quoting body)))
+    (let* ((body (mapcar #'remove-smart-quoting body))
+           (printed-body (mapcar #'prini* body))
            (code (if literal-p
                      (first body)
                      (str:join (make-string 2 :initial-element #\newline) printed-body)))
