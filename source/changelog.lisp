@@ -572,7 +572,9 @@ auto-mode-rules.lisp)."))
    (:li "Startup is more robust against corrupted history files.")
    (:li (:code "diff-mode") " is removed.")
    (:li "History globality can be set on a per-buffer basis. "
-        "See the " (:code "global-history-p") " slot in " (:code "context-buffer") "."))
+        "See the " (:code "global-history-p") " slot in " (:code "context-buffer") ".")
+   (:li (:nxref :slot 'backtrack-to-hubs-p :class-name 'nyxt/history-mode:history-mode)
+        " allows to revisit the \"hub\" URLs you often visit, instead of adding them to history anew."))
 
   (:h3 "Bindings")
   (:ul
@@ -680,4 +682,5 @@ regular commands, such as "
    (:li "Invoke the right WebKit command when cutting text with " (:nxref :function 'ffi-buffer-cut))
    (:li "Fix the display of history suggestions when going forward in history.")
    (:li "Security: all the non-ASCII domain names are shown as IDN punycodes in addition
-to aesthetic display in status buffer.")))
+to aesthetic display in status buffer.")
+   (:li "The canceled page requests are stored to history, making it more consistent.")))
