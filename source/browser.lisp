@@ -150,6 +150,13 @@ issued by Control+<button1> in a new window.")
     (time:now)
     :export nil
     :documentation "`time:timestamp' of when Nyxt was started.")
+   (startup-promise
+    (lpara:promise)
+    :export nil
+    :accessor nil
+    :documentation "Promise used to make `start-browser' synchronous.
+Without it, `start-browser' would return before the `*browser*' is effectively usable.
+Implementation detail.")
    (init-time
     0.0
     :type alex:non-negative-real
@@ -390,6 +397,7 @@ restored."
         (error (c)
           ;; TODO: Clear buffers or back up history?
           (log:warn c)))
+      (lpara:fulfill (slot-value browser 'startup-promise))
       (hooks:run-hook (after-startup-hook browser) browser)
       (funcall* (startup-error-reporter-function browser)))))
 

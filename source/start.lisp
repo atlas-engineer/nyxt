@@ -584,7 +584,8 @@ Finally, run the browser, load URL-STRINGS if any, then run
             ;; is the case with the SLY mrepl thread.
             (bt:make-thread (lambda ()
                               (in-package :nyxt-user)))
-            (ffi-initialize *browser* urls startup-timestamp))))
+            (ffi-initialize *browser* urls startup-timestamp)
+            (lpara:force (slot-value *browser* 'startup-promise)))))
     (quit ()
       :report "Run `nyxt:quit' and try again."
       (quit)
