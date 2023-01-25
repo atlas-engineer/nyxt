@@ -574,7 +574,9 @@ auto-mode-rules.lisp)."))
    (:li "History globality can be set on a per-buffer basis. "
         "See the " (:code "global-history-p") " slot in " (:code "context-buffer") ".")
    (:li (:nxref :slot 'backtrack-to-hubs-p :class-name 'nyxt/history-mode:history-mode)
-        " allows to revisit the \"hub\" URLs you often visit, instead of adding them to history anew."))
+        " allows to revisit the \"hub\" URLs you often visit, instead of adding them to history anew.")
+   (:li "nyxt:// pages can be linked from the outside Internet due to scheme security
+settings changes."))
 
   (:h3 "Bindings")
   (:ul
