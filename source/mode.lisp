@@ -578,6 +578,10 @@ If there is no corresponding keymap, return nil."
   (declare (ignorable button-key))
   nil)
 
+(defmethod on-signal-key-press ((mode mode) key)
+  (declare (ignorable key))
+  nil)
+
 (defmethod url-sources ((mode mode) actions-on-return)
   (declare (ignore actions-on-return))
   nil)

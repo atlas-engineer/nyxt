@@ -1063,6 +1063,11 @@ BUFFER's modes."
   (dolist (mode (modes buffer))
     (on-signal-button-press mode button-key)))
 
+(export-always 'on-signal-key-press)
+(defmethod on-signal-key-press ((buffer buffer) key)
+  (dolist (mode (modes buffer))
+    (on-signal-key-press mode key)))
+
 (hooks:define-hook-type buffer (function (buffer)))
 
 (define-command make-buffer (&rest args &key (title "") modes

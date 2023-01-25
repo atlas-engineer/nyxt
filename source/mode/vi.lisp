@@ -93,19 +93,33 @@ See also `vi-normal-mode' and `vi-insert-mode'."
     (when (passthrough-mode-p mode)
       (enable-modes* 'nyxt/passthrough-mode:passthrough-mode buffer))))
 
+(defun vi-insert-on-input-fields (buffer)
+  (if (ps-eval :buffer buffer
+        (if (and (ps:@ document active-element)
+                 (nyxt/ps:element-editable-p (ps:@ document active-element)))
+            ps:t ps:false))
+      (enable-modes* 'vi-insert-mode buffer)
+      (enable-modes* 'vi-normal-mode buffer)))
+
 (defmethod on-signal-load-finished ((mode vi-insert-mode) url)
   (declare (ignore url))
-  (enable-modes* 'vi-normal-mode (buffer mode)))
+  (enable-modes* 'vi-normal-mode (buffer mode))
+  (vi-insert-on-input-fields (buffer mode)))
 
 (defmethod on-signal-button-press ((mode vi-normal-mode) button-key)
-  (let ((buffer (buffer mode)))
-    (when (and (string= "button1" (keymaps:key-value button-key))
-               (nyxt/document-mode:input-tag-p
-                (ps-eval :buffer buffer (ps:@ document active-element tag-name))))
-      (enable-modes* 'vi-insert-mode buffer))))
+  (when (string= "button1" (keymaps:key-value button-key))
+    (vi-insert-on-input-fields (buffer mode))))
 
-(defmethod nyxt/document-mode:element-focused ((mode vi-normal-mode))
-  (enable-modes* 'vi-insert-mode (buffer mode)))
+(defmethod on-signal-button-press ((mode vi-insert-mode) button-key)
+  (when (string= "button1" (keymaps:key-value button-key))
+    (vi-insert-on-input-fields (buffer mode))))
+
+(defmethod on-signal-key-press ((mode vi-normal-mode) (key keymaps:key))
+  (when (equal "tab" (keymaps:key-value key))
+    (vi-insert-on-input-fields (buffer mode))))
+
+(defmethod nyxt/dom:focus-select-element :after ((element plump:element))
+  (vi-insert-on-input-fields (current-buffer)))
 
 (defmethod nyxt:mode-status ((status status-buffer) (vi-normal vi-normal-mode))
   (spinneret:with-html-string

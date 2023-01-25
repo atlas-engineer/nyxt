@@ -117,10 +117,14 @@
 (defpsmacro element-editable-p (element)
   "Whether ELEMENT is editable."
   `(let ((tag (chain ,element tag-name)))
-     (if (or (string= tag "INPUT")
+     (if (or (and (string= tag "INPUT")
+                  ;; The list of all input types:
+                  ;; https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input
+                  (not (chain ([] "hidden" "checkbox" "button") (includes (chain ,element type))))
+                  (not (chain ,element disabled)))
              (string= tag "TEXTAREA")
              (chain ,element is-content-editable))
-         t nil)))
+         t f)))
 
 (export-always 'element-drawable-p)
 (defpsmacro element-drawable-p (element)
@@ -128,7 +132,7 @@
   `(if (or (chain ,element offset-width)
            (chain ,element offset-height)
            (chain ,element (get-client-rects) length))
-       t nil))
+       t f))
 
 (export-always 'element-in-view-port-p)
 (defpsmacro element-in-view-port-p (element)

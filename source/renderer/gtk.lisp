@@ -729,12 +729,15 @@ See `gtk-browser's `modifier-translator' slot."
     (when (nyxt::prompt-buffer-p buffer)
       (update-prompt buffer))
     (if key-string
-        (progn
+        (flet ((key ()
+                 (keymaps:make-key :code keycode
+                                   :value key-string
+                                   :modifiers modifiers
+                                   :status :pressed)))
           (alex:appendf (key-stack sender)
-                        (list (keymaps:make-key :code keycode
-                                                :value key-string
-                                                :modifiers modifiers
-                                                :status :pressed)))
+                        (list (key)))
+          (run-thread "on-signal-key-press"
+            (on-signal-key-press buffer (key)))
           (funcall (input-dispatcher sender) event
                    buffer
                    sender printable-value))
