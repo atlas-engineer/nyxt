@@ -189,7 +189,7 @@ For instance, to include images:
 (defun remove-hints (&key (buffer (current-buffer)))
   (remove-hint-elements)
   (remove-hintable-attribute)
-  (setf (document-model buffer) (nyxt/dom::named-json-parse (nyxt/dom::get-document-body-json))))
+  (update-document-model :buffer buffer))
 
 (export-always 'identifier)
 (defmethod identifier ((element plump:element))
