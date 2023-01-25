@@ -204,7 +204,9 @@ See `supported-media-types' of `file-mode'."
         (find extension extensions :test #'string-equal))))
 
 (define-command-global edit-file-with-external-editor
-    (&optional (files (prompt :input "File(s) to edit"
+    (&optional (files (prompt :prompt "File(s) to edit"
+                              :input (uiop:native-namestring (uiop:getcwd))
+                              :extra-modes 'nyxt/file-manager-mode:file-manager-mode
                               :sources 'file-source)))
   "Edit the FILES using `external-editor-program'.
 If FILES are not provided, prompt for them."
