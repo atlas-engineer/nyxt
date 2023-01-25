@@ -37,7 +37,7 @@
                 :headless t
                 :socket "/tmp/nyxt-test.socket"
                 :profile "test")
-    (hooks:once-on (nyxt:prompt-buffer-ready-hook browser)
+    (hooks:once-on (nyxt:prompt-buffer-ready-hook *browser*)
         (prompt-buffer)
       (prompter:all-ready-p prompt-buffer)
       (nyxt:set-prompt-buffer-input url prompt-buffer)
