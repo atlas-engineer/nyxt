@@ -900,7 +900,12 @@ identifiers."
         (ps:chain node (set-attribute "nyxt-identifier"
                                       (ps:stringify nyxt-identifier-counter))))
       (incf nyxt-identifier-counter)
-      (dolist (child (ps:chain node children)) (add-nyxt-identifiers child))
+      (dolist (child (ps:chain node children))
+        (add-nyxt-identifiers child))
+      (when (equal (ps:@ node node-name) "IFRAME")
+        (add-nyxt-identifiers (ps:@ (or (ps:@ element content-document)
+                                        (ps:@ element content-window document))
+                                    body)))
       nyxt-identifier-counter)
     (setf nyxt-identifier-counter (add-nyxt-identifiers (ps:chain document body))))
   (alex:when-let ((body-json (with-current-buffer buffer
