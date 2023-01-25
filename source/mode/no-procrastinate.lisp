@@ -89,7 +89,7 @@
                          (:p (:button :class "button"
                                       :onclick
                                       (ps:ps
-                                        (let ((section (ps:chain document active-element
+                                        (let ((section (ps:chain (nyxt/ps:active-element document)
                                                                  (closest ".host-entry"))))
                                           (ps:chain section parent-node (remove-child section))
                                           (nyxt/ps:lisp-eval

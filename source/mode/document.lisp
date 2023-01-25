@@ -121,7 +121,7 @@ It does not assume being online."))
 (export-always 'active-element-tag)
 (defun active-element-tag (&optional (buffer (current-buffer)))
   "The name of the active element in BUFFER."
-  (ps-eval :buffer buffer (ps:@ document active-element tag-name)))
+  (ps-eval :buffer buffer (ps:@ (nyxt/ps:active-element document) tag-name)))
 
 (export-always 'input-tag-p)
 (-> input-tag-p ((or string null)) boolean)
@@ -201,7 +201,7 @@ It does not assume being online."))
 
 (define-command copy-placeholder ()
   "Copy placeholder text to clipboard."
-  (let ((current-value (ps-eval (ps:@ document active-element placeholder))))
+  (let ((current-value (ps-eval (ps:@ (nyxt/ps:active-element document) placeholder))))
     (if (eq current-value :undefined)
         (echo "No active selected placeholder.")
         (progn (copy-to-clipboard current-value)

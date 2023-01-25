@@ -315,8 +315,8 @@ Should return the copied text or NIL, if something goes wrong."))
     (ps-labels :buffer buffer
       ((paste
         (&optional (input-text (ring-insert-clipboard (clipboard-ring *browser*))))
-        (let ((active-element (ps:chain document active-element))
-              (tag (ps:chain document active-element tag-name))
+        (let ((active-element (nyxt/ps:active-element document))
+              (tag (ps:@ (nyxt/ps:active-element document) tag-name))
               (text-to-paste (or (ps:lisp input-text)
                                  (ps:chain navigator clipboard (read-text)))))
           (when (nyxt/ps:element-editable-p active-element)
@@ -338,7 +338,7 @@ If TEXT is provided, paste it instead."))
     (ps-labels :buffer buffer
       ((cut
         ()
-        (let ((active-element (ps:chain document active-element)))
+        (let ((active-element (nyxt/ps:active-element document)))
           (when (nyxt/ps:element-editable-p active-element)
             (let ((selection-text (ps:chain window (get-selection) (to-string))))
               (nyxt/ps:insert-at active-element "")
@@ -353,7 +353,7 @@ Return the text cut."))
 (define-ffi-generic ffi-buffer-select-all (buffer)
   (:method ((buffer t))
     (ps-eval :async t :buffer buffer
-      (let ((active-element (ps:chain document active-element)))
+      (let ((active-element (nyxt/ps:active-element document)))
         (when (nyxt/ps:element-editable-p active-element)
           (ps:chain active-element (set-selection-range 0 (ps:@ active-element value length)))))))
   (:documentation "Select all text in BUFFER web view."))

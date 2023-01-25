@@ -110,7 +110,7 @@ See `*debug-on-error*'."
                  (equalp (quri:uri-path (url buffer)) "/atlas-engineer/nyxt/issues/new"))
         (nyxt:ps-eval :buffer buffer
           (ps:chain (nyxt/ps:qs document "#issue_body") (focus))
-          (setf (ps:@ document active-element value) ""))
+          (setf (ps:@ (nyxt/ps:active-element document) value) ""))
         (ffi-buffer-paste
          buffer
          (format

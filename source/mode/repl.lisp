@@ -190,7 +190,7 @@ Features:
 (defmethod input ((mode repl-mode) &key (id (current-evaluation mode)))
   (ps-eval :buffer (buffer mode)
     (let ((result (ps:@ (or (nyxt/ps:qs document (ps:lisp (format nil ".input-buffer[data-repl-id=\"~a\"]" id)))
-                            (ps:@ document active-element))
+                            (nyxt/ps:active-element document))
                         value)))
       (if (or (null result) (ps:undefined result))
           ""
@@ -199,7 +199,7 @@ Features:
 (defmethod (setf input) (new-text (mode repl-mode) &key (id (current-evaluation mode)))
   (ps-eval :async t :buffer (buffer mode)
     (setf (ps:@ (or (nyxt/ps:qs document (ps:lisp (format nil ".input-buffer[data-repl-id=\"~a\"]" id)))
-                    (ps:@ document active-element))
+                    (nyxt/ps:active-element document))
                 value)
           (ps:lisp new-text))))
 
@@ -214,8 +214,8 @@ Features:
   (ps-labels :buffer (buffer mode)
     ((selection-start
       (position)
-      (setf (ps:@ document active-element selection-start)
-            (setf (ps:@ document active-element selection-end)
+      (setf (ps:@ (nyxt/ps:active-element document) selection-start)
+            (setf (ps:@ (nyxt/ps:active-element document) selection-end)
                   (ps:lisp position)))))
     (selection-start new-position)))
 
@@ -224,7 +224,7 @@ Features:
 
 (defmethod input-focus-p (&optional (repl (find-submode 'repl-mode)))
   (declare (ignore repl))
-  (string= "input-buffer" (ps-eval (ps:@ document active-element class-name))))
+  (string= "input-buffer" (ps-eval (ps:@ (nyxt/ps:active-element document) class-name))))
 
 (defmethod (setf current-evaluation) (new-index (mode repl-mode))
   (if new-index
@@ -234,7 +234,7 @@ Features:
 
 (defmethod current-cell-id ((mode repl-mode))
   (ps-labels :buffer (buffer mode)
-    ((get-id () (ps:chain document active-element (get-attribute "data-repl-id"))))
+    ((get-id () (ps:chain (nyxt/ps:active-element document) (get-attribute "data-repl-id"))))
     (ignore-errors (parse-integer (get-id)))))
 
 (defun cell-package (id mode)

@@ -22,13 +22,13 @@ so invoke on a separate thread when possible."
     (uiop:read-file-string p)))
 
 (define-parenscript select-input-field ()
-  (let ((active-element (ps:chain document active-element)))
+  (let ((active-element (nyxt/ps:active-element document)))
     (when (nyxt/ps:element-editable-p active-element)
       (ps:chain active-element (select)))))
 
 (define-parenscript move-caret-to-end ()
   ;; Inspired by https://stackoverflow.com/questions/4715762/javascript-move-caret-to-last-character.
-  (let ((el (ps:chain document active-element)))
+  (let ((el (nyxt/ps:active-element document)))
     (if (string= (ps:chain (typeof (ps:@ el selection-start)))
                  "number")
         (progn

@@ -8,19 +8,20 @@
 ;;;; commands for navigating/editing input fields on HTML pages
 
 (define-parenscript active-input-area-content ()
-  (ps:chain document active-element value))
+  (ps:chain (nyxt/ps:active-element document) value))
 
 (define-parenscript set-active-input-area-content (content)
-  (setf (ps:chain document active-element value) (ps:lisp content)))
+  (setf (ps:chain (nyxt/ps:active-element document) value) (ps:lisp content)))
 
 (define-parenscript active-input-area-cursor ()
-  (ps:chain document active-element selection-start))
+  (ps:chain (nyxt/ps:active-element document) selection-start))
 
 (define-parenscript set-active-input-area-cursor (selection-start
                                                   selection-end)
-  (ps:chain document active-element (set-selection-range
-                                     (ps:lisp selection-start)
-                                     (ps:lisp selection-end))))
+  (ps:chain (nyxt/ps:active-element document)
+            (set-selection-range
+             (ps:lisp selection-start)
+             (ps:lisp selection-end))))
 
 (export-always 'with-text-buffer)
 (defmacro with-text-buffer ((buffer-name cursor-name
