@@ -72,9 +72,13 @@ the generic functions on `status-buffer'.  Finally set the `window'
     :documentation "The height of the message buffer in pixels.")
    (message-buffer-style
     (theme:themed-css (theme *browser*)
+      `(html
+        :background-color ,theme:primary
+        :color ,theme:on-primary)
       `(body
         :background-color ,theme:background
         :color ,theme:on-background
+        :opacity 0.9
         :font-size "12px"
         :padding 0
         :padding-left "4px"
