@@ -1650,18 +1650,25 @@ any.")
 
 (export-always 'url-sources)
 (defmethod url-sources ((buffer buffer) actions-on-return)
-  (append
-   (list (make-instance 'new-url-or-search-source :actions-on-return actions-on-return)
-         (make-instance
-          'global-history-source
-          :actions-on-return (append (uiop:ensure-list actions-on-return)
-                                     (list (lambda-command delete-history-entry* (suggestion-values)
-                                             "Delete chosen history entries (not belonging to open buffers)."
-                                             (files:with-file-content (history (history-file buffer))
-                                               (dolist (entry suggestion-values)
-                                                 (htree:delete-data history entry)))))))
-         (make-instance 'search-engine-url-source :actions-on-return actions-on-return))
-   (mappend (rcurry #'url-sources (uiop:ensure-list actions-on-return)) (modes buffer))))
+  (let ((actions-on-return (uiop:ensure-list actions-on-return)))
+    (append
+     (list (make-instance 'new-url-or-search-source :actions-on-return actions-on-return)
+           (make-instance
+            'buffer-source
+            :filter-preprocessor #'prompter:filter-exact-matches
+            :actions-on-return (append
+                                (list (lambda-unmapped-command set-current-buffer))
+                                actions-on-return))
+           (make-instance
+            'global-history-source
+            :actions-on-return (append actions-on-return
+                                       (list (lambda-command delete-history-entry* (suggestion-values)
+                                               "Delete chosen history entries (not belonging to open buffers)."
+                                               (files:with-file-content (history (history-file buffer))
+                                                 (dolist (entry suggestion-values)
+                                                   (htree:delete-data history entry)))))))
+           (make-instance 'search-engine-url-source :actions-on-return actions-on-return))
+     (mappend (rcurry #'url-sources (uiop:ensure-list actions-on-return)) (modes buffer)))))
 
 (define-command set-url (&key (url nil explicit-url-p) (prefill-current-url-p t))
   "Set the URL for the current buffer, completing with history."
