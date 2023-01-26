@@ -170,7 +170,7 @@ For instance, to include images:
 (defun add-hints (&key selector (buffer (current-buffer)))
   (add-stylesheet)
   (set-hintable-attribute selector)
-  (setf (document-model buffer) (nyxt/dom::named-json-parse (nyxt/dom::get-document-body-json)))
+  (update-document-model :buffer buffer)
   (let* ((hintable-elements (clss:select "[nyxt-hintable]" (document-model buffer)))
          (hints (generate-hints (length hintable-elements))))
     (hint-elements hints)
