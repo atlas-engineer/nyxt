@@ -168,7 +168,17 @@ When nil, all extensions are allow-listed.")
 It takes a pathname and returns a boolean.  For simpler cases, use
 `allow-directories'.")
    (supported-media-types
-    '("xhtml" "html" "mp3" "ogg" "mp4" "flv" "wmv" "webm" "mkv")
+    ;; https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types
+    ;; and https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Containers
+    '("xhtml" "html"
+      ;; Images.
+      "gif" "avif" "jpg" "jpeg" "jfif" "pjpeg" "pjp" "png" "apng" "svg" "webp"
+      ;; Generic container formats.
+      "3gp" "aac" "mpg" "mpeg" "ogg" "mp4" "m4p"
+      ;; Audio.
+      "mp3" "oga" "m4a"
+      ;; Video.
+      "flac" "ogv" "m4v" "flv" "mov" "wmv" "webm" "mkv")
     :type (list-of string)
     :documentation "Media types that Nyxt opens.
 Other formats are opened relying on the OS.")
