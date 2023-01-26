@@ -361,7 +361,8 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
               (ps:lisp
                (sera:string-join (loop for i from current-source-index to last-source-index
                                        for source = (nth i sources)
-                                       collect (source->html source))
+                                       unless (null (prompter:suggestions source))
+                                         collect (source->html source))
                                  +newline+)))))
     (prompt-render-prompt prompt-buffer)))
 
