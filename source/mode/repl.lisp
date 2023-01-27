@@ -258,6 +258,7 @@ Features:
     (focus-cell :id id)
     (let* ((input (input repl :id id))
            (evaluation (make-instance 'evaluation
+                                      :mode-instance repl
                                       :input input
                                       :eval-package (cell-package id repl))))
       (unless (uiop:emptyp input)
