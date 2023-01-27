@@ -351,7 +351,8 @@ Example:
                        (mapcar (lambda (pair)
                                  (cons (symbol->param-name (first pair))
                                        (value->param-value (rest pair))))
-                               (alexandria:plist-alist args)))))
+                               (alexandria:plist-alist args))
+                       :space-to-plus t)))
           (the (values string &optional)
                (format nil "nyxt:~a~@[~*?~a~]"
                        (symbol->param-name function-name)
@@ -463,7 +464,8 @@ The ARGS are used as a keyword arglist for the function bound to the defined URL
                     (quri:url-encode-params
                      (list ,@(loop for (name value . rest) on args by #'cddr
                                    collect `(cons (symbol->param-name ,name)
-                                                  (value->param-value ,value)))))))
+                                                  (value->param-value ,value))))
+                     :space-to-plus t)))
           (ps:create :mode "no-cors")))
 (export-always 'nyxt/ps::lisp-call :nyxt/ps)
 
