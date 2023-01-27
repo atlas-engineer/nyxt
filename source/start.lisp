@@ -318,6 +318,8 @@ It takes URL-STRINGS so that the URL argument can be `cl-read' in case
               (set-difference (iolib/os:file-permissions native-socket-path)
                               '(:group-read :group-write :group-exec
                                 :other-read :other-write :other-exec)))
+
+        (log:info "Listening to socket: ~s" socket-path)
         (loop as connection = (iolib:accept-connection s)
               while connection
               do (progn
@@ -330,8 +332,7 @@ It takes URL-STRINGS so that the URL argument can be `cl-read' in case
                            (parse-urls expr))))
                    ;; If we get pinged too early, we do not have a current-window yet.
                    (when (current-window)
-                     (ffi-window-to-foreground (current-window)))))))
-    (log:info "Listening to socket: ~s" socket-path)))
+                     (ffi-window-to-foreground (current-window)))))))))
 
 (defun listening-socket-p ()
   (ignore-errors
