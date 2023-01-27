@@ -896,7 +896,7 @@ handle. Useful to parallelize computations.")
          (:li (:code "--profile nosave")
               " to not pollute your history and cache with the script-accessed pages.")))
 
-      (:nsection :title "Built-in REPL (" (:nxref :package :nyxt/repl-mode) ")"
+      (:nsection :title "Built-in REPL"
         (:p "Nyxt has a built-in REPL, available with "
             (:nxref :command 'nyxt/repl-mode:repl) " command."
             "The REPL can be used to try out some code snippets for automation or quickly
