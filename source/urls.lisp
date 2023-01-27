@@ -450,7 +450,7 @@ guarantee of the same result."
                   (quri:url-encode title))))
 
 
-(ps:defpsmacro nyxt/ps::lisp-call (id &key title (buffer (current-buffer)) args)
+(ps:defpsmacro nyxt/ps::lisp-call (id &key title (buffer '(current-buffer)) args)
   "Call the ID-bound function on the Lisp side.
 
 Return a JS Promise fulfilled after the code runs on the Lisp side.
@@ -494,7 +494,7 @@ Example:
                     ;; everything with list/cons/quote belongs to this
                     ;; macro. Otherwise it's really hard to keep track of.
                     (cons (quote ps:ps)
-                          (list (quote nyxt/ps:lisp-call) ,id :buffer ,buffer :args ,args))))
+                          (list (quote nyxt/ps:lisp-call) ,id :buffer ,buffer :args args))))
          ,@(if other-bindings
                `((lisp-url-flet ,buffer (,@other-bindings)
                    ,@body))
