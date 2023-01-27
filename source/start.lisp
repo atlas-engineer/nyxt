@@ -575,7 +575,7 @@ Finally, run the browser, load URL-STRINGS if any, then run
             (setf *browser* (make-instance 'browser
                                            :startup-error-reporter-function startup-error-reporter
                                            :startup-timestamp startup-timestamp
-                                           :socket-thread (when (files:expand *socket-file*)
+                                           :socket-thread (unless (nfiles:nil-pathname-p (files:expand *socket-file*))
                                                             (listen-or-query-socket urls))))
             ;; Defaulting to :nyxt-user is convenient when evaluating code (such as
             ;; remote execution or the integrated REPL).
