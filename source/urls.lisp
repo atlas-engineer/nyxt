@@ -512,7 +512,7 @@ BUFFER must be a `document-buffer'.
 The ARGS are used as a keyword arglist for the CALLBACK."
   ;; We define it here and not in parenscript-macro because we need
   ;; `nyxt::lisp-url-callbacks' while parenscript-macro is Nyxt-independent.
-  (let ((id (string (gensym ""))))
+  (let ((id (princ-to-string (nyxt:new-id))))
     `(progn
        (ps:lisp
         ;; FIXME: We define a URL, but don't use it anywhere, we only use its
