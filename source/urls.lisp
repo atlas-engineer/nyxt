@@ -514,26 +514,26 @@ BUFFER must be a `document-buffer'.
 The ARGS are used as a keyword arglist for the CALLBACK."
   ;; We define it here and not in parenscript-macro because we need
   ;; `nyxt::lisp-url-callbacks' while parenscript-macro is Nyxt-independent.
-  (let ((id (princ-to-string (nyxt:new-id))))
-    `(progn
-       (ps:lisp
-        ;; FIXME: We define a URL, but don't use it anywhere, we only use its
-        ;; ID. Quirky idiom. Maybe somehow only define an ID without string
-        ;; generation?
-        (lisp-url
-         :id ,id
-         :buffer ,buffer
-         :callback ,(if (and (sera:single body)
-                             (member (first (first body)) '(lambda function)))
-                        (first body)
-                        `(lambda () ,@body))))
-       (let ((promise (nyxt/ps:lisp-call ,id :buffer ,buffer :title ,title ,@args)))
-         ,@(when callback
-             `((ps:chain promise
-                         (then (lambda (response)
-                                 (when (@ response ok)
-                                   (chain response (json)))))
-                         (then ,callback))))))))
+  `(let ((promise (nyxt/ps:lisp-call
+                   (ps:lisp
+                    ;; FIXME: We define a URL, but don't use it anywhere, we only use its
+                    ;; ID. Quirky idiom. Maybe somehow only define an ID without string
+                    ;; generation?
+                    (sera:lret ((id (ps:lisp (princ-to-string (nyxt:new-id)))))
+                      (lisp-url
+                       :id id
+                       :buffer ,buffer
+                       :callback ,(if (and (sera:single body)
+                                           (member (first (first body)) '(lambda function)))
+                                      (first body)
+                                      `(lambda () ,@body)))))
+                   :buffer ,buffer :title ,title ,@args)))
+     ,@(when callback
+         `((ps:chain promise
+                     (then (lambda (response)
+                             (when (@ response ok)
+                               (chain response (json)))))
+                     (then ,callback))))))
 (export-always 'nyxt/ps::lisp-eval :nyxt/ps)
 
 (define-internal-scheme "lisp"
