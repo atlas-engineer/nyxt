@@ -334,10 +334,14 @@ It takes URL-STRINGS so that the URL argument can be `cl-read' in case
                            (progn
                              (log:info "External evaluation request: ~s" expr)
                              (eval-expr expr))
-                           (parse-urls expr))))
-                   ;; If we get pinged too early, we do not have a current-window yet.
-                   (when (current-window)
-                     (ffi-window-to-foreground (current-window)))))))))
+                           (progn
+                             (parse-urls expr)
+                             ;; It's customary to focus the browser window when
+                             ;; opening a URL (but not when evaluating Lisp
+                             ;; code).
+                             ;; If we get pinged too early, we do not have a current-window yet.
+                             (when (current-window)
+                               (ffi-window-to-foreground (current-window)))))))))))))
 
 (defun listening-socket-p ()
   (ignore-errors
