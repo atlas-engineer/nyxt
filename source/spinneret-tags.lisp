@@ -313,7 +313,7 @@ Forms in BODY can be unquoted, benefiting from the editor formatting."
     ,@attrs
     ,text))
 
-(deftag :ninput (body attrs &key rows cols onfocus onchange &allow-other-keys)
+(deftag :ninput (body attrs &key rows cols onfocus onchange buffer &allow-other-keys)
   "Nicely styled <textarea> with a reasonable number of ROWS/COLS to accommodate the BODY.
 Calls Lisp forms in ONFOCUS and ONCHANGE when one focuses and edits the input (respectively)."
   (once-only ((input-contents `(or (progn ,@(mapcar #'remove-smart-quoting body)) "")))
@@ -322,12 +322,16 @@ Calls Lisp forms in ONFOCUS and ONCHANGE when one focuses and edits the input (r
       :cols (or ,cols (ignore-errors (apply #'max (mapcar #'length (str:lines ,input-contents)))) 80)
       ,@(when onfocus
           `(:onfocus (ps:ps (nyxt/ps:lisp-eval
-                             (:title "ninput onfocus")
+                             (:title "ninput onfocus"
+                                     ,@(when buffer
+                                         (list :buffer buffer)))
                              ,onfocus))))
       ,@(when onchange
           ;; More events here.
           `(:onkeydown (ps:ps (nyxt/ps:lisp-eval
-                               (:title "ninput onchange/onkeydown")
+                               (:title "ninput onchange/onkeydown"
+                                       ,@(when buffer
+                                           (list :buffer buffer)))
                                ,onchange))))
       ,@attrs
       (:raw (the string ,input-contents)))))
