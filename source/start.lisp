@@ -151,7 +151,8 @@ Example: --with-file bookmarks=/path/to/bookmarks
       (:name :failsafe
        :long "failsafe"
        :description "Ensure Nyxt starts in a vanilla environment.
-It skips configuration files and other data files like the history."))))
+It skips configuration files and other data files like the history.
+Without --remote, it also disables socket use."))))
 ;; Also define command line options at read-time because we parse
 ;; `opts::*options*' in `start'.
 (sera:eval-always (define-opts))
@@ -454,8 +455,10 @@ Examples:
        (getf *options* :verbose) t
        (getf *options* :no-config) t
        (getf *options* :no-auto-config) t
-       (getf *options* :no-socket) t
-       (getf *options* :profile) (profile-name (find-class 'nofile-profile))))
+       (getf *options* :profile) (profile-name (find-class 'nofile-profile)))
+      (unless remote
+        (setf
+         (getf *options* :no-socket) t)))
 
     (if verbose
         (progn
