@@ -509,6 +509,8 @@ Examples:
     (unless *run-from-repl-p* (uiop:quit))))
 
 (defun load-or-eval (&key remote)
+  (when remote
+    (log:info "Probing remote instance listening to ~a." (files:expand *socket-file*)))
   (loop for (opt value . nil) on *options*
         do (match opt
              (:load (let ((value (uiop:truename* value)))
