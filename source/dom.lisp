@@ -16,8 +16,8 @@ The most useful functions are:
   a representation of type `plump:root', converting elements into its matching
   classes.
 - `copy' to produce a full recursive copy of a DOM.
-- `parents', `url' and `body' to access element-specific features in a unified
-  fashion.
+- `parents', `iframe-parents', `url' and `body' to access element-specific
+  features in a unified fashion.
 - `click-element', `focus-select-element', `select-option-element' and others to
   interact with the page using `nyxt/dom' elements as representations of the
   actual DOM elements."))
@@ -235,6 +235,24 @@ Full copy means recursively descending to the children of the NODE too."))
   (:documentation "Get the recursive parents of the NODE.
 The closest parent goes first, the furthest one goes last."))
 
+(export-always 'iframe-parents)
+(defun iframe-parents (node)
+  "Get the full iframe-conscious path to NODE.
+If there are iframe parents of NODE, they are listed in the outer-first order,
+convenient to get the element recursively going through those, for example in
+`nyxt/ps:nyxt-node'.
+
+Example: for
+<iframe id=1>
+ <iframe id=2>
+  <div id=element>
+ </iframe>
+</iframe>
+`iframe-parents' returns us (<iframe id=1> <iframe id=2> <div id=element>) list."
+  (let* ((parents (parents node))
+         (iframe-parents (sera:filter #'iframe-element-p parents)))
+    (append (reverse iframe-parents) (list node))))
+
 (export-always 'get-unique-selector)
 (-> get-unique-selector (plump:element) t)
 (defmemo get-unique-selector (element)
@@ -379,11 +397,11 @@ Return two values:
 
 (export-always 'click-element)
 (define-parenscript click-element (element)
-  (ps:chain (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element))) (click)))
+  (ps:chain (nyxt/ps:nyxt-node element) (click)))
 
 (export-always 'focus-select-element)
 (define-parenscript focus-select-element (element)
-  (let ((element (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element)))))
+  (let ((element (nyxt/ps:nyxt-node element)))
     (unless (nyxt/ps:element-in-view-port-p element)
       (ps:chain element (scroll-into-view)))
     (ps:chain element (focus))
@@ -392,14 +410,14 @@ Return two values:
 
 (export-always 'check-element)
 (define-parenscript check-element (element &key (value t))
-  (let ((element (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element)))))
+  (let ((element (nyxt/ps:nyxt-node element)))
     (unless (nyxt/ps:element-in-view-port-p element)
       (ps:chain element (scroll-into-view)))
     (ps:chain element (set-attribute "checked" (ps:lisp value)))))
 
 (export-always 'toggle-details-element)
 (define-parenscript toggle-details-element (element)
-  (ps:let ((element (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element)))))
+  (ps:let ((element (nyxt/ps:nyxt-node element)))
     (unless (nyxt/ps:element-in-view-port-p element)
       (ps:chain element (scroll-into-view)))
     (if (ps:chain element (get-attribute "open"))
@@ -408,8 +426,8 @@ Return two values:
 
 (export-always 'select-option-element)
 (define-parenscript select-option-element (element parent)
-  (ps:let* ((element (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element))))
-            (parent-select (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id parent)))))
+  (ps:let* ((element (nyxt/ps:nyxt-node element))
+            (parent-select (nyxt/ps:nyxt-node parent)))
     (unless (nyxt/ps:element-in-view-port-p element)
       (ps:chain element (scroll-into-view)))
     (if (ps:chain element (get-attribute "multiple"))
@@ -418,7 +436,7 @@ Return two values:
 
 (export-always 'hover-element)
 (define-parenscript hover-element (element)
-  (ps:let ((element (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element))))
+  (ps:let ((element (nyxt/ps:nyxt-node element))
            (event (ps:new (*Event "mouseenter"))))
     (unless (nyxt/ps:element-in-view-port-p element)
       (ps:chain element (scroll-into-view)))
@@ -426,12 +444,12 @@ Return two values:
 
 (export-always 'scroll-to-element)
 (define-parenscript scroll-to-element (element)
-  (ps:chain (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element)))
+  (ps:chain (nyxt/ps:nyxt-node element)
             (scroll-into-view)))
 
 (export-always 'set-caret-on-start)
 (define-parenscript set-caret-on-start (element)
-  (let ((el (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element))))
+  (let ((el (nyxt/ps:nyxt-node element))
         (range (ps:chain document (create-range)))
         (sel (ps:chain #:window (get-selection))))
     (ps:chain #:window (focus))

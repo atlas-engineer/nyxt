@@ -232,8 +232,7 @@ It does not assume being online."))
   (loop with inputs = (clss:ordered-select "input, textarea, [contenteditable]" (document-model buffer))
         for input across inputs
         when (ps-eval :buffer buffer
-               (nyxt/ps:element-editable-p
-                (nyxt/ps:qs-nyxt-id document (ps:lisp (nyxt/dom:get-nyxt-id input)))))
+               (nyxt/ps:element-editable-p (nyxt/ps:nyxt-node input)))
           do (nyxt/dom:focus-select-element input)
           and do (return input)))
 
@@ -393,8 +392,7 @@ ID is a buffer `id'."
   (ps-labels :buffer buffer
     ((heading-scroll-position
       :buffer buffer (element)
-      (ps:chain (nyxt/ps:qs-nyxt-id document (ps:lisp (nyxt/dom:get-nyxt-id element)))
-                (get-bounding-client-rect) y)))
+      (ps:chain (nyxt/ps:nyxt-node (ps:lisp element)) (get-bounding-client-rect) y)))
     (map 'list
          (lambda (e)
            (make-instance 'heading :inner-text (plump:text e)
