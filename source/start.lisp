@@ -370,12 +370,10 @@ Otherwise bind socket and return the listening thread."
 (defun remote-eval (expr)
   "If another Nyxt is listening on the socket, tell it to evaluate EXPR."
   (if (listening-socket-p)
-      (progn
-        (iolib:with-open-socket (s :address-family :local
-                                   :remote-filename (uiop:native-namestring
-                                                     (files:expand *socket-file*)))
-          (write-string expr s))
-        (uiop:quit))
+      (iolib:with-open-socket (s :address-family :local
+                                 :remote-filename (uiop:native-namestring
+                                                   (files:expand *socket-file*)))
+        (write-string expr s))
       (progn
         (log:info "No instance running.")
         (uiop:quit))))
@@ -521,7 +519,9 @@ Examples:
                           (load-lisp value))))
              (:eval (if remote
                         (remote-eval value)
-                        (eval-expr value))))))
+                        (eval-expr value)))))
+  (when remote
+    (uiop:quit)))
 
 (defun start-load-or-eval ()
   "Evaluate Lisp.
