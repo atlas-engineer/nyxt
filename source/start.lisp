@@ -526,9 +526,11 @@ Examples:
 (defun start-load-or-eval ()
   "Evaluate Lisp.
 The evaluation may happen on its own instance or on an already running instance."
-  (load-lisp (files:expand *auto-config-file*) :package (find-package :nyxt-user))
-  (load-lisp (files:expand *config-file*):package (find-package :nyxt-user))
-  (load-or-eval :remote (getf *options* :remote)))
+  (let ((remote (getf *options* :remote)))
+    (unless remote
+      (load-lisp (files:expand *auto-config-file*) :package (find-package :nyxt-user))
+      (load-lisp (files:expand *config-file*):package (find-package :nyxt-user)))
+    (load-or-eval :remote remote)))
 
 (defun start-browser (url-strings)
   "Start Nyxt.
