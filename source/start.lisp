@@ -129,7 +129,7 @@ Set to '-' to read standard input instead.")
        :short #\r
        :long "remote"
        :description "Send the --eval and --load arguments to the running instance of Nyxt.
-Implies --quit.
+Unless --quit is specified, also send s-expressions from the standard input.
 The remote instance must be listening on a socket which you can specify with --socket
 and have the `remote-execution-p' browser slot to non-nil.")
       (:name :headless
@@ -529,6 +529,13 @@ Examples:
              (:eval (if remote
                         (remote-eval value)
                         (eval-expr value)))))
+  (when (and remote
+             (not (getf *options* :quit)))
+    (log:info "Reading s-expressions from standard input until end of input (Ctrl-D on *nix).")
+    (handler-case (loop for sexp = (read)
+                        do (remote-eval (write-to-string sexp)))
+      (end-of-file ()
+        (log:info "Quitting interpreter."))))
   (when remote
     (uiop:quit)))
 
