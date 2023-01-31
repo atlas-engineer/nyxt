@@ -576,7 +576,10 @@ auto-mode-rules.lisp)."))
    (:li (:nxref :slot 'backtrack-to-hubs-p :class-name 'nyxt/history-mode:history-mode)
         " allows to revisit the \"hub\" URLs you often visit, instead of adding them to history anew.")
    (:li "nyxt:// pages can be linked from the outside Internet due to scheme security
-settings changes."))
+settings changes.")
+   (:li "When started with " (:code "--remote") " and without " (:code "--quit")
+        ", Nyxt now reads s-expression from standard input and sends it to the remote process. "
+        "This avoids the performance penalty of a new process startup on each iteration."))
 
   (:h3 "Bindings")
   (:ul
