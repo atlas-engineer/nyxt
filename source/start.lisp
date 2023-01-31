@@ -13,7 +13,11 @@
 
 (defmethod files:resolve ((profile nyxt-profile) (socket socket-file))
   "Return finalized path for socket files."
-  (if (getf *options* :no-socket)
+  (if (or (getf *options* :no-socket)
+          (multiple-value-bind (option-found? path)
+              (get-properties *options* '(:socket))
+            (and option-found?
+                 (uiop:emptyp path))))
       #p""
       (uiop:ensure-pathname
        (or (getf *options* :socket)
@@ -125,7 +129,7 @@ Set to '-' to read standard input instead.")
        :short #\r
        :long "remote"
        :description "Send the --eval and --load arguments to the running instance of Nyxt.
-Implies --quit.
+Unless --quit is specified, also send s-expressions from the standard input.
 The remote instance must be listening on a socket which you can specify with --socket
 and have the `remote-execution-p' browser slot to non-nil.")
       (:name :headless
@@ -151,7 +155,8 @@ Example: --with-file bookmarks=/path/to/bookmarks
       (:name :failsafe
        :long "failsafe"
        :description "Ensure Nyxt starts in a vanilla environment.
-It skips configuration files and other data files like the history."))))
+It skips configuration files and other data files like the history.
+Without --remote, it also disables socket use."))))
 ;; Also define command line options at read-time because we parse
 ;; `opts::*options*' in `start'.
 (sera:eval-always (define-opts))
@@ -318,6 +323,8 @@ It takes URL-STRINGS so that the URL argument can be `cl-read' in case
               (set-difference (iolib/os:file-permissions native-socket-path)
                               '(:group-read :group-write :group-exec
                                 :other-read :other-write :other-exec)))
+
+        (log:info "Listening to socket: ~s" socket-path)
         (loop as connection = (iolib:accept-connection s)
               while connection
               do (progn
@@ -327,11 +334,14 @@ It takes URL-STRINGS so that the URL argument can be `cl-read' in case
                            (progn
                              (log:info "External evaluation request: ~s" expr)
                              (eval-expr expr))
-                           (parse-urls expr))))
-                   ;; If we get pinged too early, we do not have a current-window yet.
-                   (when (current-window)
-                     (ffi-window-to-foreground (current-window)))))))
-    (log:info "Listening to socket: ~s" socket-path)))
+                           (progn
+                             (parse-urls expr)
+                             ;; It's customary to focus the browser window when
+                             ;; opening a URL (but not when evaluating Lisp
+                             ;; code).
+                             ;; If we get pinged too early, we do not have a current-window yet.
+                             (when (current-window)
+                               (ffi-window-to-foreground (current-window)))))))))))))
 
 (defun listening-socket-p ()
   (ignore-errors
@@ -356,7 +366,8 @@ Otherwise bind socket and return the listening thread."
                (format s "~s" `(open-external-urls ,@(mapcar #'quri:render-uri urls)))))
            (log:info "Nyxt already started."))
        nil)
-      ((and (uiop:file-exists-p socket-path)
+      ((and (or (uiop:file-exists-p socket-path)
+                (uiop:directory-exists-p socket-path))
             (not (socket-p socket-path)))
        (log:error "Could not bind socket ~a, non-socket file exists." socket-path)
        nil)
@@ -368,12 +379,10 @@ Otherwise bind socket and return the listening thread."
 (defun remote-eval (expr)
   "If another Nyxt is listening on the socket, tell it to evaluate EXPR."
   (if (listening-socket-p)
-      (progn
-        (iolib:with-open-socket (s :address-family :local
-                                   :remote-filename (uiop:native-namestring
-                                                     (files:expand *socket-file*)))
-          (write-string expr s))
-        (uiop:quit))
+      (iolib:with-open-socket (s :address-family :local
+                                 :remote-filename (uiop:native-namestring
+                                                   (files:expand *socket-file*)))
+        (write-string expr s))
       (progn
         (log:info "No instance running.")
         (uiop:quit))))
@@ -453,8 +462,10 @@ Examples:
        (getf *options* :verbose) t
        (getf *options* :no-config) t
        (getf *options* :no-auto-config) t
-       (getf *options* :no-socket) t
-       (getf *options* :profile) (profile-name (find-class 'nofile-profile))))
+       (getf *options* :profile) (profile-name (find-class 'nofile-profile)))
+      (unless remote
+        (setf
+         (getf *options* :no-socket) t)))
 
     (if verbose
         (progn
@@ -505,6 +516,8 @@ Examples:
     (unless *run-from-repl-p* (uiop:quit))))
 
 (defun load-or-eval (&key remote)
+  (when remote
+    (log:info "Probing remote instance listening to ~a." (files:expand *socket-file*)))
   (loop for (opt value . nil) on *options*
         do (match opt
              (:load (let ((value (uiop:truename* value)))
@@ -515,14 +528,25 @@ Examples:
                           (load-lisp value))))
              (:eval (if remote
                         (remote-eval value)
-                        (eval-expr value))))))
+                        (eval-expr value)))))
+  (when (and remote
+             (not (getf *options* :quit)))
+    (log:info "Reading s-expressions from standard input until end of input (Ctrl-D on *nix).")
+    (handler-case (loop for sexp = (read)
+                        do (remote-eval (write-to-string sexp)))
+      (end-of-file ()
+        (log:info "Quitting interpreter."))))
+  (when remote
+    (uiop:quit)))
 
 (defun start-load-or-eval ()
   "Evaluate Lisp.
 The evaluation may happen on its own instance or on an already running instance."
-  (load-lisp (files:expand *auto-config-file*) :package (find-package :nyxt-user))
-  (load-lisp (files:expand *config-file*):package (find-package :nyxt-user))
-  (load-or-eval :remote (getf *options* :remote)))
+  (let ((remote (getf *options* :remote)))
+    (unless remote
+      (load-lisp (files:expand *auto-config-file*) :package (find-package :nyxt-user))
+      (load-lisp (files:expand *config-file*):package (find-package :nyxt-user)))
+    (load-or-eval :remote remote)))
 
 (defun start-browser (url-strings)
   "Start Nyxt.
@@ -575,7 +599,7 @@ Finally, run the browser, load URL-STRINGS if any, then run
             (setf *browser* (make-instance 'browser
                                            :startup-error-reporter-function startup-error-reporter
                                            :startup-timestamp startup-timestamp
-                                           :socket-thread (when (files:expand *socket-file*)
+                                           :socket-thread (unless (nfiles:nil-pathname-p (files:expand *socket-file*))
                                                             (listen-or-query-socket urls))))
             ;; Defaulting to :nyxt-user is convenient when evaluating code (such as
             ;; remote execution or the integrated REPL).
