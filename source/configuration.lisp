@@ -17,7 +17,7 @@
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Like `config-directory-file' but can be controlled from command line options."))
 
-(define-class config-file (config-special-file files:virtual-file nyxt-lisp-file)
+(define-class config-file (config-special-file nyxt-lisp-file)
   ((files:base-path #p"config")
    (command-line-option :config
                         :accessor nil
