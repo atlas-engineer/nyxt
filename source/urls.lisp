@@ -486,17 +486,21 @@ Example:
   (nyxt:ffi-buffer-evaluate-javascript
    (nyxt:current-buffer)
    (ps:ps (nyxt/ps:lisp-call hello :buffer (nyxt:current-buffer) :args '(:name \"Stranger\"))))))"
-  (let ((id (princ-to-string (new-id))))
-    `(let ((,name (progn (lisp-url :id ,id
-                                   :buffer ,buffer
-                                   :callback (lambda (,@args) ,@binding-body))
-                         ,id)))
+  (alex:with-gensyms (id)
+    `(let* ((,id (princ-to-string (new-id)))
+            (,name (progn
+                     (lisp-url :id ,id
+                               :buffer ,buffer
+                               :callback (lambda (,@args) ,@binding-body))
+                     ,id)))
        (macrolet ((,name (&rest args)
                     ;; Everything that uses commas comes from the outside,
                     ;; everything with list/cons/quote belongs to this
                     ;; macro. Otherwise it's really hard to keep track of.
-                    (cons (quote ps:ps)
-                          (list (quote nyxt/ps:lisp-call) ,id :buffer ,buffer :args args))))
+                    (list (quote ps:ps)
+                          (list (quote nyxt/ps:lisp-call) (quote ,name)
+                                :title ,(str:concat "lisp-url-flet " (string name))
+                                :buffer (quote ,buffer) :args args))))
          ,@(if other-bindings
                `((lisp-url-flet ,buffer (,@other-bindings)
                    ,@body))
@@ -519,7 +523,7 @@ The ARGS are used as a keyword arglist for the CALLBACK."
                     ;; FIXME: We define a URL, but don't use it anywhere, we only use its
                     ;; ID. Quirky idiom. Maybe somehow only define an ID without string
                     ;; generation?
-                    (sera:lret ((id (ps:lisp (princ-to-string (nyxt:new-id)))))
+                    (sera:lret ((id (princ-to-string (nyxt:new-id))))
                       (lisp-url
                        :id id
                        :buffer ,buffer
