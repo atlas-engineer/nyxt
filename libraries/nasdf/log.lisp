@@ -9,7 +9,7 @@
 (defvar *log-prefix* "; ")
 
 (defun logger (control-string &rest format-arguments)
-  "Like `format' but assumes `*error-output*' as a stream."
+  "Like `format' but assumes `*error-output*' as a stream and ensures fresh lines."
   (let ((*standard-output* *error-output*))
     (fresh-line )
     (princ *log-prefix*)

@@ -4,7 +4,7 @@
 (in-package :nasdf)
 
 (export-always 'nasdf-compilation-test-system)
-(defclass nasdf-compilation-test-system (asdf:system)
+(defclass nasdf-compilation-test-system (nasdf-test-system)
   ((packages
     :initform '()  ;; (error "Packages required")
     :initarg :packages
@@ -12,11 +12,7 @@
     :documentation "Packages to check for unbound exports.
 Sub-packages are included in the check."))
   (:documentation "Specialized systems for compilation tests."))
-(import 'nasdf-compilation-test-system  :asdf-user)
-
-(defmethod asdf:component-depends-on ((op asdf:prepare-op) (c nasdf-compilation-test-system))
-  `((asdf:load-op "lisp-unit2")
-    ,@(call-next-method)))
+(import 'nasdf-compilation-test-system :asdf-user)
 
 (defun list-unbound-exports (package)
   (let ((result '()))
@@ -27,9 +23,9 @@ Sub-packages are included in the check."))
                  ;; TODO: How can we portably check if symbol refers to a type?
                  #+sbcl
                  (not (sb-ext:defined-type-name-p s))
-                 (and (find-package :parenscript)
-                      (not (gethash s (symbol-value (find-symbol "*MACRO-TOPLEVEL*" :parenscript))))))
-        (push s result )))))
+                 (or (not (find-package :parenscript))
+                     (not (gethash s (symbol-value (find-symbol "*MACRO-TOPLEVEL*" :parenscript))))))
+        (push s result)))))
 
 (defun subpackage-p (subpackage package)
   "Return non-nil if SUBPACKAGE is a sub-package of PACKAGE.
@@ -55,11 +51,10 @@ A sub-package has a name that starts with that of PACKAGE followed by a '/' sepa
                                        (list package exports))))
                                  (cons (find-package package) (list-subpackages package))))))
     (when report
-      (error "~a~&Found unbound exported symbols in ~a packages."
+      (error "~a~&Found unbound exported symbols in ~a package~:p."
              report (length report)))))
 
 (defmethod asdf:perform ((op asdf:test-op) (c nasdf-compilation-test-system))
-  (mapc #'unbound-exports (packages c)))
-
-(defmethod asdf:perform ((op asdf:load-op) (c nasdf-compilation-test-system))
-  (mapc #'unbound-exports (packages c)))
+  (logger "------- STARTING Compilation Testing: ~a" (packages c))
+  (mapc #'unbound-exports (packages c))
+  (logger "------- ENDING Compilation Testing: ~a" (packages c)))
