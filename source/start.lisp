@@ -532,6 +532,9 @@ Examples:
   (when (and remote
              (not (getf *options* :quit)))
     (log:info "Reading s-expressions from standard input until end of input (Ctrl-D on *nix).")
+    ;; We do not use `safe-read' because this is controlled by the user anyways.
+    ;; TODO: `read' may fail, e.g. when a package prefix is not known, but the
+    ;; input would still be valid if the remote instance knows the package.
     (handler-case (loop for sexp = (read)
                         do (remote-eval (write-to-string sexp)))
       (end-of-file ()
