@@ -116,5 +116,5 @@ If the NASDF_TESTS_NO_NETWORK environment variable is set, tests with the `:onli
                             (unless (or (redefinition-p c)
                                         #+ccl
                                         (osicat-warning-p c))
-                              (error c) ))))
+                              (cerror "Continue" "Compilation warning: ~a" c)))))
     (funcall thunk)))
