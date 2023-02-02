@@ -462,7 +462,7 @@ The ARGS are used as a keyword arglist for the function bound to the defined URL
   `(fetch (ps:lisp (str:concat
                     (lisp-url :id ,id :buffer ,buffer :title ,title)
                     (quri:url-encode-params
-                     (list ,@(loop for (name value . rest) on args by #'cddr
+                     (list ,@(loop for (name value) on args by #'cddr
                                    collect `(cons (symbol->param-name ,name)
                                                   (value->param-value ,value))))
                      :space-to-plus t)))
