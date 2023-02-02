@@ -332,7 +332,8 @@ background buffers."
                                             (let ((section (ps:chain (nyxt/ps:active-element document)
                                                                      (closest ".bookmark-entry"))))
                                               (ps:chain section parent-node (remove-child section)))
-                                            (nyxt/ps:lisp-call delbkm :buffer bookmarks-buffer :args (:href url-href)))
+                                            (nyxt/ps:lisp-call delbkm :buffer bookmarks-buffer
+                                                                      :args (:href (ps:lisp url-href))))
                                           "✕")
                                  (serapeum:ellipsize (title bookmark) 80))
                                 (:dd (:a :href url-href uri-host))

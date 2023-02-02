@@ -450,22 +450,39 @@ guarantee of the same result."
           title (when title
                   (quri:url-encode title))))
 
-
 (ps:defpsmacro nyxt/ps::lisp-call (id &key title (buffer '(current-buffer)) args)
   "Call the ID-bound function on the Lisp side.
-
 Return a JS Promise fulfilled after the code runs on the Lisp side.
-
 ID should be an identifier of an already defined `lisp-url'.
 
-The ARGS are used as a keyword arglist for the function bound to the defined URL callback."
-  `(fetch (ps:lisp (str:concat
-                    (lisp-url :id ,id :buffer ,buffer :title ,title)
-                    (quri:url-encode-params
-                     (list ,@(loop for (name value . rest) on args by #'cddr
-                                   collect `(cons (symbol->param-name ,name)
-                                                  (value->param-value ,value))))
-                     :space-to-plus t)))
+The ARGS are used as a keyword arglist for the function bound to the
+defined URL callback. May be quoted, in which case quoting is
+removed. Every arg that's wrapped in `ps:lisp' is fetched from Lisp
+side, every other arg is interpreted on the JavaScript side and passed
+to Lisp as a JSON string."
+  `(fetch (ps:stringify
+           (ps:lisp (str:concat
+                     (lisp-url :id ,id :buffer ,buffer :title ,title)
+                     (quri:url-encode-params
+                      (list ,@(loop for (name value . rest) on args by #'cddr
+                                    when (and (listp value)
+                                              (eq 'ps:lisp (first value)))
+                                      collect `(cons (symbol->param-name ,name)
+                                                     (value->param-value ,(second value)))))
+                      :space-to-plus t)))
+           ,@(loop for (name value . rest) on args by #'cddr
+                   unless (and (listp value)
+                               (eq 'ps:lisp (first value)))
+                     append `("&"
+                              ,(symbol->param-name name)
+                              "=%1B" (ps:encode-u-r-i-component
+                                      (cond
+                                        ((ps:undefined ,value) ":undefined")
+                                        ((equal ,value nil) ":null")
+                                        ((equal ,value ps:f) "nil")
+                                        ((equal ,value ps:t) "t")
+                                        ((ps:stringp ,value) (ps:stringify #\" ,value #\"))
+                                        (t ,value))))))
           (ps:create :mode "no-cors")))
 (export-always 'nyxt/ps::lisp-call :nyxt/ps)
 
