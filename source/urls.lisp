@@ -559,6 +559,7 @@ The ARGS are used as a keyword arglist for the CALLBACK."
 
 (define-internal-scheme "lisp"
     (lambda (url buffer)
+      (log:debug "Processing Lisp URL ~a" url)
       (let ((url (quri:uri url)))
         ;; TODO: Replace this condition with `(not (network-buffer-p buffer))`?
         (if (or (status-buffer-p buffer)
