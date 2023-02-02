@@ -10,7 +10,9 @@
   "Check if clipboard-content is most recent entry in RING.
 If not, insert clipboard-content into RING.
 Return most recent entry in RING."
-  (let ((clipboard-content (trivial-clipboard:text)))
+  (let ((clipboard-content (handler-case (trivial-clipboard:text)
+                             (uiop:subprocess-error ()
+                               nil))))
     (when clipboard-content
       (unless (string= clipboard-content (unless (containers:empty-p ring)
                                            (containers:first-item ring)))
