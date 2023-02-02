@@ -44,3 +44,10 @@ mean; for instance both =on= and =true= are valid values to enable the feature.
 ** History
 
 NASDF was originally developed for [[https://nyxt.atlas.engineer][Nyxt]].
+
+** Change log
+
+*** 0.1.1
+
+- Fix compilation-tests.
+- Fix =env-true-p= to accept =yes= as =T=.

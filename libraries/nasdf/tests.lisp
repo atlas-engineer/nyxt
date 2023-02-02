@@ -27,6 +27,30 @@ If the NASDF_TESTS_NO_NETWORK environment variable is set, tests with the `:onli
   `((asdf:load-op "lisp-unit2")
     ,@(call-next-method)))
 
+(defmethod asdf:perform :around ((op asdf:test-op) (c nasdf-test-system))
+  (let ((*debugger-hook* (if (env-true-p "NASDF_TESTS_QUIT_ON_FAIL")
+                             nil        ; We are non-interactive.
+                             *debugger-hook*)))
+    (handler-bind ((error (lambda (c)
+                            (logger "Errors:~&~a" c)
+                            (when (env-true-p "NASDF_TESTS_QUIT_ON_FAIL")
+                              ;; Arbitrary but hopefully recognizable exit code.
+                              (quit 18)))))
+      (call-next-method))))
+
+;; TODO: Can we avoid duplicating this `test-op' / `load-op' setup?
+(defmethod asdf:perform :around ((op asdf:load-op) (c nasdf-test-system))
+  (logger "NASDF_TESTS_QUIT_ON_FAIL=~a~&" (getenv "NASDF_TESTS_QUIT_ON_FAIL"))
+  (let ((*debugger-hook* (if (env-true-p "NASDF_TESTS_QUIT_ON_FAIL")
+                             nil        ; We are non-interactive.
+                             *debugger-hook*)))
+    (handler-bind ((error (lambda (c)
+                            (logger "Errors:~&~a" c)
+                            (when (env-true-p "NASDF_TESTS_QUIT_ON_FAIL")
+                              ;; Arbitrary but hopefully recognizable exit code.
+                              (quit 18)))))
+      (call-next-method))))
+
 (defmethod asdf:perform ((op asdf:test-op) (c nasdf-test-system))
   (destructuring-bind (&key package tags exclude-tags &allow-other-keys)
       (targets c)
@@ -36,22 +60,19 @@ If the NASDF_TESTS_NO_NETWORK environment variable is set, tests with the `:onli
       (let ((missing-packages (remove-if  #'find-package (uiop:ensure-list package))))
         (when missing-packages
           (logger "Undefined test packages: ~s" missing-packages)))
-      (let ((*debugger-hook* (if (env-true-p "NASDF_TESTS_QUIT_ON_FAIL")
-                                 nil    ; We are non-interactive.
-                                 *debugger-hook*)))
-        (let ((test-results
-                (uiop:symbol-call :lisp-unit2 :run-tests
-                                  :package package
-                                  :tags tags
-                                  :exclude-tags exclude-tags
-                                  :run-contexts (find-symbol "WITH-SUMMARY-CONTEXT" :lisp-unit2))))
-          (when (and
-                 (or
-                  (uiop:symbol-call :lisp-unit2 :failed test-results)
-                  (uiop:symbol-call :lisp-unit2 :errors test-results))
-                 (getenv "NASDF_TESTS_QUIT_ON_FAIL"))
-            ;; Arbitrary but hopefully recognizable exit code.
-            (quit 18)))))))
+      (let ((test-results
+              (uiop:symbol-call :lisp-unit2 :run-tests
+                                :package package
+                                :tags tags
+                                :exclude-tags exclude-tags
+                                :run-contexts (find-symbol "WITH-SUMMARY-CONTEXT" :lisp-unit2))))
+        (when (and
+               (or
+                (uiop:symbol-call :lisp-unit2 :failed test-results)
+                (uiop:symbol-call :lisp-unit2 :errors test-results))
+               ;; TODO: Always raise error or not?
+               (getenv "NASDF_TESTS_QUIT_ON_FAIL"))
+          (error "Tests failed."))))))
 
 (export-always 'print-benchmark)
 (defun print-benchmark (benchmark-results)
@@ -95,5 +116,5 @@ If the NASDF_TESTS_NO_NETWORK environment variable is set, tests with the `:onli
                             (unless (or (redefinition-p c)
                                         #+ccl
                                         (osicat-warning-p c))
-                              (error c) ))))
+                              (cerror "Continue" "Compilation warning: ~a" c)))))
     (funcall thunk)))
