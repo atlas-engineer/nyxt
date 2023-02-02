@@ -159,7 +159,8 @@ The predicate returns non-nil when the argument is of the `name' class.")
 (defun inherited-slot-type (slot-name superclasses)
   (let ((parent (find slot-name superclasses
                       :test (lambda (slot class)
-                              (find slot (mopu:slot-names class))))))
+                              ;; REVIEW: We ignore unfinalized classes, is it wise?
+                              (find slot (ignore-errors (mopu:slot-names class)))))))
     (when parent
       (values
        (getf (mopu:slot-properties parent slot-name)
