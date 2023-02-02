@@ -301,17 +301,21 @@ by default"
   "A Lisp-invoking button with TEXT text and BODY action.
 Evaluates (via `nyxt/ps:lisp-eval') the BODY in BUFFER when clicked.
 Forms in BODY can be unquoted, benefiting from the editor formatting."
-  `(:button.button
-    :onclick (ps:ps
-               (nyxt/ps:lisp-eval
-                (:title ,(or title text)
-                        ,@(when buffer
-                            (list :buffer buffer)))
-                ,@(mapcar #'remove-smart-quoting body)))
-    ,@(when title
-        (list :title title))
-    ,@attrs
-    ,text))
+  (with-gensyms (nbutton-inner)
+    `(nyxt:lisp-url-flet ,(or buffer `(nyxt:current-buffer))
+         ((,nbutton-inner ()
+            ,@(mapcar #'remove-smart-quoting body)))
+       (:button.button
+        :onclick (ps:ps
+                   (nyxt/ps:lisp-call
+                    ,nbutton-inner
+                    :title (format nil ":nbutton ~s" ,(or title text))
+                    ,@(when buffer
+                        (list :buffer buffer))))
+        ,@(when title
+            (list :title title))
+        ,@attrs
+        ,text))))
 
 (deftag :ninput (body attrs &key rows cols onfocus onchange buffer &allow-other-keys)
   "Nicely styled <textarea> with a reasonable number of ROWS/COLS to accommodate the BODY.
