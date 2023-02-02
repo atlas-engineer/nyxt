@@ -3,8 +3,7 @@
 
 (in-package :nyxt)
 
-(-> ring-insert-clipboard (containers:ring-buffer-reverse) string)
-
+(-> ring-insert-clipboard (containers:ring-buffer-reverse) (maybe string))
 (export-always 'ring-insert-clipboard)
 (defun ring-insert-clipboard (ring)
   "Check if clipboard-content is most recent entry in RING.
