@@ -377,13 +377,35 @@ the labels they have as hash values.")
   (:method ((command command) (label string))
     (setf (gethash label *context-menu-commands*)
           command))
+  (:method ((command list) (label string))
+    (flet ((thing->function (thing)
+             (typecase thing
+               (symbol (symbol-function thing))
+               (function thing))))
+      (setf (gethash label *context-menu-commands*)
+            (mapcar (lambda (pair)
+                      ;; Convert to an undotted alist.
+                      (match pair
+                        ((cons command (list label))
+                         (list (thing->function command) label))
+                        ((cons command label)
+                         (list (thing->function command) label))))
+                    command))))
   (:method ((command function) (label string))
     (setf (gethash label *context-menu-commands*)
           command))
   (:method ((command symbol) (label string))
     (ffi-add-context-menu-command (symbol-function command) label))
   (:documentation "Add COMMAND as accessible in context menus with LABEL displayed for it.
-COMMAND should be funcallable.
+COMMAND can be a:
+- `command',
+- `function',
+- symbol naming either a command or function,
+- or an alist (dotted or undotted) of COMMAND (any of above types, but not list)
+  to LABEL pairs.
+
+In case COMMAND is an alist, every command in this alist is bound to its own
+label, and all of those are available under LABEL-named submenu.
 
 Example:
 
@@ -391,7 +413,13 @@ Example:
  (lambda ()
    (when (url-at-point (current-buffer))
      (make-nosave-buffer :url (url-at-point (current-buffer)))))
- \"Open Link in New Nosave Buffer\")"))
+ \"Open Link in New Nosave Buffer\")
+
+\(ffi-add-context-menu-command
+ (list (list 'reload-current-buffer \"Reload it\")
+       (list #'(lambda () (delete-buffer :buffers (current-buffer))) \"Delete it\"))
+ \"Buffer actions\")"))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Web Extension support

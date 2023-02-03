@@ -1634,21 +1634,30 @@ the `active-buffer'."
                         :mode-symbols (mapcar #'sera:class-name-of
                                               (sera:filter #'enabled-p (modes buffer)))))))
         (maphash (lambda (label function)
-                   (when (or (and (command-p function)
-                                  (member function accessible-commands))
-                             (functionp function))
-                     ;; Using stock actions here, because cl-cffi-gtk has a terrible API
-                     ;; for GActions, requiring an exact type to be passed and disallowing
-                     ;; NULL as a type :/
-                     (let ((item (webkit:webkit-context-menu-item-new-from-stock-action-with-label
-                                  :webkit-context-menu-action-action-custom
-                                  label)))
-                       (gobject:g-signal-connect
-                        (webkit:webkit-context-menu-item-get-g-action item) "activate"
-                        (lambda (action parameter)
-                          (declare (ignore action parameter))
-                          (nyxt::run-async function)))
-                       (webkit:webkit-context-menu-append context-menu item))))
+                   (flet ((make-item (label function)
+                            ;; Using stock actions here, because cl-cffi-gtk has a terrible API
+                            ;; for GActions, requiring an exact type to be passed and disallowing
+                            ;; NULL as a type :/
+                            (sera:lret ((item (webkit:webkit-context-menu-item-new-from-stock-action-with-label
+                                               :webkit-context-menu-action-action-custom label)))
+                              (gobject:g-signal-connect
+                               (webkit:webkit-context-menu-item-get-g-action item) "activate"
+                               (lambda (action parameter)
+                                 (declare (ignore action parameter))
+                                 (nyxt::run-async function))))))
+                     (cond
+                       ((or (and (command-p function)
+                                 (member function accessible-commands))
+                            (functionp function))
+                        (webkit:webkit-context-menu-append context-menu (make-item label function)))
+                       ((listp function)
+                        (let ((submenu (webkit:webkit-context-menu-new)))
+                          (loop for (command command-label) in function
+                                do (webkit:webkit-context-menu-append
+                                    submenu (make-item command-label command)))
+                          (webkit:webkit-context-menu-append
+                           context-menu
+                           (webkit:webkit-context-menu-item-new-with-submenu label submenu)))))))
                  nyxt::*context-menu-commands*)))
     nil)
   (connect-signal buffer "enter-fullscreen" nil (web-view)
