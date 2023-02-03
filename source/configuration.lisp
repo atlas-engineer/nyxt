@@ -23,7 +23,14 @@
                         :accessor nil
                         :type keyword))
   (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name))
+  (:documentation "Lisp configuration file which path can be controlled from command line options.
+Unlike `auto-config-file', it can only be loaded with `cl:load', it is not meant to be read with
+`nfiles:read-file' or `nfiles:content'."))
+
+(defmethod files:read-file ((profile nyxt-profile) (file config-file) &key)
+  "Don't load anything for `config-file's since they are Lisp file to be loaded with `cl:load'."
+  nil)
 
 (define-class auto-config-file (config-special-file nyxt-lisp-file)
   ((files:base-path (files:join #p"auto-config." (princ-to-string (version))))
@@ -31,7 +38,10 @@
                         :accessor nil
                         :type keyword))
   (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name))
+  (:documentation "Lisp configuration file which path can be controlled from command line options.
+Unlike `config-file', it can both loaded with `cl:load' and read with
+`nfiles:read-file'.  The latter should return a structured reification of the configuration."))
 
 (defmethod files:resolve ((profile nyxt-profile) (config-file config-special-file))
   (let* ((option (slot-value config-file 'command-line-option))
