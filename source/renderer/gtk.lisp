@@ -1686,6 +1686,9 @@ the `active-buffer'."
   buffer)
 
 (define-ffi-method ffi-buffer-delete ((buffer gtk-buffer))
+  ;; FIXME: Check is-web-process-responsive property, and simply close the
+  ;; buffer if unresponsive. Otherwise the whole browser is unable to delete any
+  ;; buffer after the hanged one.
   (if (slot-value buffer 'gtk-object) ; Not all buffers have their own web view, e.g. prompt buffers.
       (webkit:webkit-web-view-try-close (gtk-object buffer))
       (nyxt::buffer-hide buffer)))
