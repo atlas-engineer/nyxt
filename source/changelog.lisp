@@ -549,7 +549,7 @@ the selection, and the string to paste instead of the clipboard (respectively)."
    (:li "Fix full-screening event handling — status buffer no longer goes
         off-sync with the full-screened page/video.")))
 
-(define-version "3.0.0"
+(define-version "3-pre-release-3"
   (:ul
    (:li (:code "nyxt/repl-mode:lisp-repl") " renamed to " (:nxref :command 'nyxt/repl-mode:repl)
         " and redesigned to be more approachable with buttons and commands controlling cell
