@@ -1,0 +1,283 @@
+* Prompt buffer
+The prompt buffer is a special buffer where Nyxt commands read arguments, such
+as URLs, file names or Common Lisp expressions.  We call it prompt buffer
+because, as the name suggests, it prompts the user for textual input.
+
+It displays contextual suggestions that are narrowed down to those matching what
+you type.  At all times, there is a special suggestion, highlighted in a
+distinctive background color, the current suggestion.
+
+Each suggestion belongs to a source.  Sources define consistent umbrellas for
+specific use cases.  For example, the command describe-any has sources for
+variables, functions and classes.
+
+** Basic usage
+When invoked, the prompt buffer occupies the lower region of the screen, and the
+cursor is set at the top bar, featuring: the prompter message on the left, the
+input area at the center and the active modes on the right.  The suggestions are
+listed vertically below the top bar, and are shown before you start typing.
+
+Suggestions are updated according to the changes made in the input area.  Useful
+commands for text editing (provided by input-edit-mode) are provided.  The
+following commands are available for navigating suggestions:
+
+next-suggestion
+previous-suggestion
+first-suggestion
+last-suggestion
+next-page
+previous-page
+next-source
+previous-source
+
+Oftentimes, you will interact with a collection of suggestions, which we call
+marks.  These are valid when enable-marks-p is non-nil.  In that case, the
+following commands help you set the marks:
+
+mark-all
+unmark-all
+toggle-mark-forwards
+toggle-mark-backwards
+toggle-mark-all
+
+Once the current suggestion (or the marks) is set, hitting the Return key to
+successfully exits the prompt buffer (run-action-on-return).  For instance, the
+delete-buffer command deletes all marked buffers, whereas execute-command
+prompts for a single suggestion (a command) to be chosen.
+
+You can exit the prompt buffer with the command quit-prompt-buffer anytime.
+
+** Actions
+An action is a function triggered at key stages while the user interacts with
+the prompt buffer.  They're called according to the context in which they run:
+actions-on-return, actions-on-current-suggestion and actions-on-marks.
+
+actions-on-return determine how marked suggestions are handled when successfully
+exiting the prompt buffer.  For instance, the execute-command defines two
+actions-on-return: run-command* (that runs by default) and describe-command*.
+The command set-action-on-return lets you choose which of the two actions run
+the next time you issue run-action-on-return.
+
+actions-on-current-suggestion run everytime the current suggestion changes.  For
+instance, when search-buffer is issued, the search match corresponding to the
+current suggestion is distinctively highlighted.  The command
+set-action-on-current-suggestion behaves similarly to set-action-on-return.
+
+actions-on-marks run everytime the marks change.
+
+** Interaction with other buffers
+You can move focus from and to the prompt buffer with the mouse or command
+toggle-prompt-buffer-focus.
+
+While the prompt buffer has the focus, it is possible to scroll the other buffer
+with these commands:
+
+scroll-other-buffer-down
+scroll-other-buffer-up
+scroll-page-down-other-buffer
+scroll-page-up-other-buffer
+
+** History and prompt sessions
+You may want to recover input you had previously typed.  To avoid re-typing it,
+call the command nyxt/prompt-buffer-mode:history.  Notice that input is not saved
+when you run quit-prompt-buffer.
+
+In the event of issuing quit-prompt-buffer, it is still possible to resume that
+prompt buffer session with the command resume-prompt.
+
+** Attributes
+Attributes provide extra information for the suggestions of each source.  These
+are shown as columns.  For example, the suggestions shown when issuing command
+describe-command feature 4 attributes: Name, Bindings, Docstring and Mode.
+
+The command toggle-attributes-display allows setting which attributes are
+displayed.
+
+** Concealing sensitive information
+In the cases when you need to enter a password or other sensitive information,
+the input is replaced by a placeholder character to conceal it.
+
+** Filtering
+Filtering is the mechanism that helps finding suggestions as you type.  Nyxt is
+able to guess what you meant based on what you have typed thus far.
+
+Generally speaking, the filtering mechanism is set to fuzzy matching which
+orders suggestions in such a way that the most relevant ones will appear at the
+top.
+
+The mechanism is flexible enough to guess what you mean.  For instance, if you
+type "buffer make" it is able to understand that you're looking for the command
+make-buffer.
+
+Notice that the contents of the input bar is matched against all suggestion
+attributes shown.
+
+The syntax of regular expressions is not supported.
+
+** Programming Interface
+# Loosely based on:
+# https://nyxt.atlas.engineer/article/prompt-buffer-customization.org
+The system nyxt/prompter (containing the :prompter package) defines the
+primitives that make prompt buffers possible in Nyxt.
+
+Within the :nyxt package, a set of primitives is defined on top of :prompter to
+suit the browser's needs.  Additionally, the package :nyxt/prompt-buffer-mode
+defines the relevant mode.
+
+See prompt-buffer (class) for an overview.
+
+*** Invocation
+A =prompt= is an object that holds one or more =sources=, and each of these are
+populated by =suggestions=.
+
+It is invoked via prompt, as shown in the example below.
+
+#+begin_src lisp
+;; :sources is a required parameter, while :prompt is recommended.
+(prompt :prompt "Prompter"
+        :sources (list
+                  (make-instance 'prompter:source
+                                 :name "Source 1"
+                                 :constructor '("Suggestion A"
+                                                "Suggestion B"))
+                  (make-instance 'prompter:source
+                                 :name "Source 2"
+                                 :constructor '("Suggestion C"
+                                                "Suggestion D"))))
+#+end_src
+
+*** Sources
+Much of the prompt buffer's flexibility owes to the options provided when
+defining sources.  Each source can be tailored to specific cases, since besides
+setting the suggestions accordingly, other parameters such as actions or filters
+are available.
+
+A source is an object of class prompter:source, or inheriting from it.  Let's
+define an example-source:
+
+#+begin_src lisp
+(defun set-suggestions (n)
+  (loop for suggestion in (make-list n :initial-element "Suggestion ") and i from 1
+        with suggestion-name = "Suggestion "
+        collect (str:concat suggestion-name (write-to-string i))))
+
+(define-class example-source (prompter:source)
+  ((prompter:name "Example")
+   (prompter:constructor (set-suggestions 10))
+   (prompter:enable-marks-p t))
+  (:export-class-name-p t)
+  (:metaclass user-class))
+#+end_src
+
+Slots =prompter:name= and =prompter:constructor= are required.
+
+# Link to slots.
+# (:nxref :slot 'prompter:constructor :class-name 'prompter:source)
+
+You can further study it by looking at prompter:source.
+
+With the class defined above, the prompt buffer can be invoked as follows:
+
+#+begin_src lisp
+(prompt :prompt "Prompter"
+        :sources (make-instance 'example-source))
+#+end_src
+
+Sources can be inspected with the describe-class command.  Particularly
+interesting sources to explore are: buffer-source, file-source, hint-source or
+new-url-or-search-source.
+
+*** Actions
+# Follow outcome of https://github.com/atlas-engineer/nyxt/issues/2794
+Actions are set via the following slots:
+
+- =prompter:actions-on-return=
+- =prompter:actions-on-current-suggestion=
+- =prompter:actions-on-marks=
+
+An action is either a symbol or a command, that may be locally-defined by either
+=lambda-mapped-command= or =lambda-command=.
+
+Regardless, actions are functions that takes a list as a sole argument - either
+the marks, which is a list, or a list containing the current suggestion.
+
+In the example below we define a prompt with two actions-on-returns.
+
+#+begin_src lisp
+(prompt :prompt "Prompter"
+        :sources (make-instance 'prompter:source
+                                :name "Source"
+                                :constructor (list "Hello")
+                                :actions-on-return
+                                ;; The action that appears first in the list is
+                                ;; the one that is triggered by default.
+                                (list (lambda-command greet (suggestion-list)
+                                        "Greet world."
+                                        (echo (str:concat (first suggestion-list)
+                                                          " World!")))
+                                      #'identity)))
+#+end_src
+
+*** Attributes
+Suggestion values are arbitrary objects: strings, numbers, URLs, structures or
+class instances.  Particularly for the last two, it's convenient to display some
+of its slots.
+
+The =prompter:object-attributes= method serves precisely that purpose.  It
+enables displaying something more meaningful than the standard printed
+representation of class instance =#<CLASS-NAME {ID}>=.
+
+The aforementioned method can be specialized as shown below, building upon on
+the example-source shown previously.
+
+#+begin_src lisp
+(defmethod prompter:object-attributes ((str string) (source example-source))
+  `(let ((substrings (str:split " " str)))
+     ("Suggestion" ,(first substrings))
+     ("Number" ,(second substrings))))
+#+end_src
+
+Notice that the suggestions are drawn in a table-like interface where the
+columns are automatically aligned.
+
+*** Filters (suggestion processing)
+When the user sets the input in the prompt buffer, the suggestions of
+all sources are processed.
+
+=prompter:filter-preprocessor= is called on the whole list of
+suggestions.  In particular, this means that the preprocessor can remove
+duplicates.
+
+The source won't display anything until the filter-preprocessor is done.
+
+Then, the =prompter:filter= is run over the suggestions returned by the
+preprocessor, one after the other.
+
+This per-suggestion stepping allows the source view to update its display at
+regular intervals until all suggestions are filtered.
+
+This filter function is particularly useful to score suggestions by relevance.
+
+Finally, the =prompter:filter-postprocessor= is run of the result of the filter,
+this time again over the entire list at once.
+
+Once again, the source view is only updated when the postprocessor is done with
+the whole list.
+
+The prompter is said to be /ready/ when all its sources are /ready/, that is,
+when the preprocessor, the filter and the postprocessor have terminated for a
+given user input.
+
+There is no global way to set the way filtering is done.  Instead, this option
+is set for each source.  In other words, the source (i.e. the specific context
+of a given collection of suggestions) determines which kind of filtering suits
+best.
+
+*** Suggestion objects
+Internally, when the prompter filters and sorts suggestions, it wraps the list
+of initial values (arbitrary objects) into =suggestion= objects.
+
+The class is useful to store information through the processing pipeline
+described in the previous section.  For instance, the filter can calculate and
+store the score of each suggestion, in the =score= slot, which in turn is
+readily available to the =filter-postprocessor= for sorting.
