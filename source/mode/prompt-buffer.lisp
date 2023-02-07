@@ -32,6 +32,7 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "end" 'last-suggestion
        "pagehome" 'first-suggestion
        "pageend" 'last-suggestion
+       "M-o" 'toggle-prompt-buffer-focus
        "escape" 'quit-prompt-buffer
        "M-a" 'mark-all
        "M-u" 'unmark-all
@@ -69,6 +70,7 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "C-n" 'next-suggestion
        "M-<" 'first-suggestion
        "M->" 'last-suggestion
+       "C-x o" 'toggle-prompt-buffer-focus
        "M-v" 'previous-page
        "C-v" 'next-page
        "M-p" 'previous-source
