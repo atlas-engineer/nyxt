@@ -289,8 +289,9 @@ the renderer thread, use `defmethod' instead."
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defmethod files:resolve :around ((profile nosave-profile) (file data-manager-file))
-  "We shouldn't store any `data-manager' data for `nosave-profile'."
-  #p"")
+  "We shouldn't store any `data-manager' data for `nosave-profile'.
+WebKit should be given a null value and not an empty string in this case."
+  nil)
 
 (define-class data-manager-data-directory (files:data-file data-manager-file)
   ()
