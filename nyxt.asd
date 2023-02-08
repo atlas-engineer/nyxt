@@ -365,6 +365,7 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                  ;; (:file "tests/offline/mode/visual")
                  (:file "user-script")
                  (:file "watch")))
+               (:file "tests/offline/prompt-buffer")
                (:file "tests/online/urls")))
 
 (defsystem "nyxt/benchmark"

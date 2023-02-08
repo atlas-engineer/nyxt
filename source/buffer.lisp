@@ -1319,16 +1319,16 @@ proceeding."
 
 (defmethod prompter:object-attributes ((buffer buffer) (source prompter:source))
   (declare (ignore source))
-  `(("URL" ,(render-url (url buffer)))
-    ("Title" ,(title buffer))
+  `(("URL" ,(render-url (url buffer)) nil 3)
+    ("Title" ,(title buffer) nil 2)
     ("ID" ,(id buffer))))
 
 (defmethod prompter:object-attributes ((buffer web-buffer) (source buffer-source))
   (declare (ignore source))
-  `(("URL" ,(render-url (url buffer)))
-    ("Title" ,(title buffer))
+  `(("URL" ,(render-url (url buffer)) nil 3)
+    ("Title" ,(title buffer) nil 2)
     ("ID" ,(id buffer))
-    ("Keywords" ,(lambda (buffer) (format nil "~:{~a~^ ~}" (keywords buffer))))))
+    ("Keywords" ,(lambda (buffer) (format nil "~:{~a~^ ~}" (keywords buffer))) nil 2)))
 
 (define-command switch-buffer (&key buffer (current-is-last-p nil))
   "Switch buffer using fuzzy completion.
@@ -1640,7 +1640,7 @@ any.")
 
 (defmethod prompter:object-attributes ((query new-url-query) (source new-url-or-search-source))
   (declare (ignore source))
-  `(("URL or new query" ,(or (label query) (query query)))
+  `(("URL or new query" ,(or (label query) (query query)) nil 5)
     ("Search engine?" ,(if (engine query) (shortcut (engine query)) ""))))
 
 (defun pushnew-url-history (history url)

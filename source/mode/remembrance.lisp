@@ -268,8 +268,8 @@ This induces a performance cost."))
 
 (defmethod prompter:object-attributes ((doc montezuma:document) (source remembrance-source))
   (declare (ignore source))
-  `(("URL" ,(page-url-string doc))
-    ("Title" ,(page-title doc))
+  `(("URL" ,(page-url-string doc) nil 3)
+    ("Title" ,(page-title doc) nil 2)
     ("Keywords" ,(page-keywords doc))))
 
 (defvar *remembrance-node-class-name* "nyxt-remembrance-highlight-node")

@@ -154,10 +154,10 @@
   (identifier match))
 
 (defmethod prompter:object-attributes ((match search-match) (source prompter:source))
-  `(("Default" ,(body match))
+  `(("Text" ,(body match) nil 3)
     ("ID" ,(identifier match))
     ("Buffer ID" ,(id (buffer match)))
-    ("Buffer title" ,(title (buffer match)))))
+    ("Buffer title" ,(title (buffer match)) nil 2)))
 
 (defun matches-from-js (matches-js-array &optional (buffer (current-buffer)))
   (loop for element in matches-js-array
