@@ -692,4 +692,5 @@ regular commands, such as "
    (:li "Fix the display of history suggestions when going forward in history.")
    (:li "Security: all the non-ASCII domain names are shown as IDN punycodes in addition
 to aesthetic display in status buffer.")
-   (:li "The canceled page requests are stored to history, making it more consistent.")))
+   (:li "The canceled page requests are stored to history, making it more consistent.")
+   (:li "Trying to delete a hanged buffer destroys it, instead of leaving it dangling forever.")))
