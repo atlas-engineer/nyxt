@@ -1455,6 +1455,14 @@ URL-DESIGNATOR is then transformed by BUFFER's `buffer-load-hook'."
          (ffi-buffer-load buffer url))))
     buffer))
 
+;; Useful to be used by prompt buffer actions, since they take a list as
+;; argument.
+(export-always 'buffer-load*)
+(defun buffer-load* (url-list)
+  "Load first element of URL-LIST in current buffer and the rest in new buffer(s)."
+  (mapc (lambda (url) (make-buffer :url (url url))) (rest url-list))
+  (buffer-load (url (first url-list))))
+
 (define-class global-history-source (prompter:source)
   ((prompter:name "Global history")
    ;; REVIEW: Collect history suggestions asynchronously or not?  It's fast
