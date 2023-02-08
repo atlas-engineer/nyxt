@@ -156,16 +156,23 @@ The predicate returns non-nil when the argument is of the `name' class.")
   (declare (ignore args))
   (intern (format nil "~a-P" name) *package*))
 
-(defun inherited-slot-type (slot-name superclasses)
-  (let ((parent (find slot-name superclasses
-                      :test (lambda (slot class)
-                              ;; REVIEW: We ignore unfinalized classes, is it wise?
-                              (find slot (ignore-errors (mopu:slot-names class)))))))
-    (when parent
-      (values
-       (getf (mopu:slot-properties parent slot-name)
-             :type)
-       parent))))
+(defun slot-type-maybe-inherited (definition type-inference superclasses)
+  (let ((slot-name (first definition))
+        (all-parents-finalized-p
+          (and
+           (every (lambda (s) (find-class s nil)) superclasses)
+           (every #'closer-mop:class-finalized-p
+                  (mapcar (lambda (s) (find-class s nil)) superclasses)))))
+    (cond
+      ((and all-parents-finalized-p
+            (find slot-name (apply #'append (mapcar #'mopu:slot-names superclasses))))
+       (let ((parent (find (list slot-name) superclasses
+                           :key #'mopu:slot-names :test #'intersection)))
+         (when parent
+           (getf (mopu:slot-properties parent slot-name) :type))))
+      (all-parents-finalized-p
+       (funcall type-inference definition))
+      (t nil))))
 
 (defun process-slot-initform (definition &key ; See `hu.dwim.defclass-star:process-slot-definition'.
                                            superclasses
@@ -182,13 +189,9 @@ The predicate returns non-nil when the argument is of the `name' class.")
           (not (definition-type definition))
           type-inference)
      (append definition
-             (multiple-value-bind (type parent)
-                 (inherited-slot-type (first definition) superclasses)
-               (if parent               ; Found parent slot, type possibly nil.
-                   (list :type type)
-                   (let ((result-type (funcall type-inference definition)))
-                     (when result-type
-                       (list :type result-type)))))))
+             (let ((type (slot-type-maybe-inherited
+                          definition type-inference superclasses)))
+               (when type (list :type type)))))
     ((and (not (initform definition))
           initform-inference)
      (append definition
