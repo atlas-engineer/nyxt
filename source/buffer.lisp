@@ -1684,10 +1684,7 @@ any.")
       (buffer-load (url url))
       (let ((history (set-url-history *browser*))
             (actions-on-return
-              (list (lambda-command buffer-load* (suggestion-values)
-                      "Load first selected URL in current buffer and the rest in new buffer(s)."
-                      (mapc (lambda (suggestion) (make-buffer :url (url suggestion))) (rest suggestion-values))
-                      (buffer-load (url (first suggestion-values))))
+              (list #'buffer-load*
                     (lambda-command new-buffer-load* (suggestion-values)
                       "Load URL(s) in new buffer(s)."
                       (mapc (lambda (suggestion) (make-buffer :url (url suggestion))) (rest suggestion-values))
