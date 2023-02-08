@@ -129,9 +129,23 @@ the URL.)"
 (export-always 'format-status-tabs)
 (defmethod format-status-tabs ((status status-buffer))
   (spinneret:with-html-string
+    (alex:when-let ((internal-buffers (remove-if-not #'internal-url-p (sort-by-time (buffer-list)) :key #'url)))
+      (:nbutton
+        :class (when (internal-url-p (url (current-buffer)))
+                 "plain")
+        :buffer status
+        :type "tab"
+        :text (if (sera:single internal-buffers)
+                  (prini-to-string (parse-nyxt-url (url (first internal-buffers))))
+                  "internal")
+        (prompt
+         :prompt "Switch to buffer with internal page"
+         :sources (make-instance 'buffer-source
+                                 :constructor internal-buffers))))
     (loop for domain in (remove-duplicates
                          (sera:filter-map #'quri:uri-domain
-                                          (mapcar #'url (sort-by-time (buffer-list))))
+                                          (remove-if #'internal-url-p
+                                                     (mapcar #'url (sort-by-time (buffer-list)))))
                          :test #'equal)
           collect (let ((domain domain))
                     (:nbutton
