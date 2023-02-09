@@ -98,26 +98,51 @@
   (assert-eq nil
              (getf (mopu:slot-properties 'foo-type-infer 'composite) :type)))
 
+(class-star:define-class parent ()
+  ((name nil
+         :type (or null string))
+   (age nil
+        :type (or null number))))
+
 (define-test inherited-type-inference ()
-  (class-star:define-class parent ()
-    ((name "foo")
-     (age nil
-          :type (or null number))))
   (class-star:define-class child (parent)
-    ((name nil
-           :type (or null string))
-     (age 17)))
-  (let ((p (make-instance 'parent))
-        (c (make-instance 'child)))
-    ;; Perform some  assignments: CCL can catch type errors here.
-    (setf (slot-value p 'age) 18)
-    (setf (slot-value c 'name) "bar")
-    (setf (slot-value c 'age) nil)
-    (assert-eq 'string
-               (getf (mopu:slot-properties 'parent 'name) :type))
-    (assert-equal '(or null number)
-                  (getf (mopu:slot-properties 'parent 'age) :type))
-    (assert-equal '(or null string)
+    ((name "foo" :type string)          ; inherited.
+     (age 17)                           ; inherited.
+     (address "Dummy address")))
+  (let ((c (make-instance 'child)))
+    ;; Perform some assignments: CCL can catch type errors here.
+    (setf (slot-value c 'age) 15)
+    #+ccl
+    (assert-error 'error
+                  (setf (slot-value c 'name) nil))
+    (assert-equal 'string
                   (getf (mopu:slot-properties 'child 'name) :type))
-    (assert-equal '(or null number)
-                  (getf (mopu:slot-properties 'child 'age) :type))))
+    ;; Given that the parent may or may not be finalized by then, we have to way
+    ;; to test it but checking it falls into a reliable set of options (NIL =
+    ;; parent not finalized, type = parent finalized).
+    (assert-true (member (getf (mopu:slot-properties 'child 'age) :type)
+                         (list nil '(or null number))
+                         :test #'equal))
+    (assert-true (member (getf (mopu:slot-properties 'child 'address) :type)
+                         (list nil 'string)
+                         :test #'equal))))
+
+(class-star:define-class parent2 ()
+  ((name nil
+         :type (or null string))
+   (age nil
+        :type (or null number))))
+(closer-mop:ensure-finalized (find-class 'parent2))
+
+(define-test inherited-type-inference-after-finalized ()
+  (class-star:define-class child2 (parent2)
+          ((name "foo" :type string)
+           (age 17)
+           (address "Dummy address")))
+  (closer-mop:ensure-finalized (find-class 'child2))
+  (assert-equal '(or null number)
+                (getf (mopu:slot-properties 'child2 'age) :type))
+  (assert-equal 'string
+                (getf (mopu:slot-properties 'child2 'name) :type))
+  (assert-equal 'string
+                (getf (mopu:slot-properties 'child2 'address) :type)))
