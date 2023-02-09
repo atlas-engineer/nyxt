@@ -802,8 +802,8 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :color ,theme:background
               :white-space "nowrap"
               :text-decoration "none"
-              :padding-left "5px"
-              :padding-right "5px")
+              :padding-left "8px"
+              :padding-right "8px")
             `(".tab:hover"
               :opacity 0.6)
             `("#modes"
@@ -834,6 +834,8 @@ store them somewhere and `ffi-buffer-delete' them once done."))
             `((:and .button (:or :visited :active))
               :color ,theme:background)
             `(.plain
+              :padding-left "4px"
+              :padding-right "4px"
               :color ,theme:on-background
               :background-color ,theme:background))))
   (:export-class-name-p t)
