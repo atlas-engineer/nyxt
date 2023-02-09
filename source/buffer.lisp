@@ -805,7 +805,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :padding-left "5px"
               :padding-right "5px")
             `(".tab:hover"
-              :opacity 0.8)
+              :opacity 0.6)
             `("#modes"
               :background-color ,theme:primary
               :color ,theme:on-primary
@@ -830,7 +830,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :background-color ,theme:accent
               :color ,theme:on-accent)
             `((:and .button :hover)
-              :opacity 0.8)
+              :opacity 0.6)
             `((:and .button (:or :visited :active))
               :color ,theme:background)
             `(.plain
