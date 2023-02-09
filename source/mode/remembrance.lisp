@@ -321,10 +321,7 @@ This induces a performance cost."))
                                               :query (list (cons "query" (quri:url-encode query))
                                                            (cons "origin-buffer-id"
                                                                  (quri:url-encode (write-to-string (id (current-buffer))))))))))
-                                   (lambda-command buffer-load* (suggestion-values)
-                                     "Load first selected cache entry in current buffer and the rest in new buffer(s)."
-                                     (mapc (lambda (page-doc) (make-buffer :url (page-url page-doc))) (rest suggestion-values))
-                                     (buffer-load (page-url (first suggestion-values))))
+                                   #'buffer-load*
                                    (lambda-command new-buffer-load (suggestion-values)
                                      "Load cache entries in new buffer(s)."
                                      (mapc (lambda (page-doc) (make-buffer :url (page-url page-doc))) (rest suggestion-values))

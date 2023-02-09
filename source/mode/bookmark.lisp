@@ -283,18 +283,16 @@ URLS is either a list or a single element."
         (delete-bookmark entries))))
 
 (define-command set-url-from-bookmark
-    (&key (actions-on-return (list (lambda-command buffer-load* (suggestion-values)
-                           "Load first selected bookmark in current buffer and the rest in new buffer(s)."
-                           (mapc (lambda (url) (make-buffer :url (url url))) (rest suggestion-values))
-                           (buffer-load (url (first suggestion-values))))
-                         (lambda-command new-buffer-load (suggestion-values)
-                           "Load bookmark(s) in new buffer(s)."
-                           (mapc (lambda (url) (make-buffer :url (url url))) (rest suggestion-values))
-                           (make-buffer-focus :url (url (first suggestion-values))))
-                         (lambda-command copy-url* (suggestions)
-                           "Copy bookmark URL."
-                           (trivial-clipboard:text (render-url (url (first suggestions)))))
-                         'delete-bookmark)))
+    (&key (actions-on-return
+           (list #'buffer-load*
+                 (lambda-command new-buffer-load (suggestion-values)
+                   "Load bookmark(s) in new buffer(s)."
+                   (mapc (lambda (url) (make-buffer :url (url url))) (rest suggestion-values))
+                   (make-buffer-focus :url (url (first suggestion-values))))
+                 (lambda-command copy-url* (suggestions)
+                   "Copy bookmark URL."
+                   (trivial-clipboard:text (render-url (url (first suggestions)))))
+                 'delete-bookmark)))
   "Set the URL for the current buffer from a bookmark.
 With marks, open the first bookmark in the current buffer, the rest in
 background buffers."
