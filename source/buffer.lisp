@@ -764,13 +764,12 @@ store them somewhere and `ffi-buffer-delete' them once done."))
             `("#controls"
               :background-color ,theme:secondary
               :color ,theme:on-secondary
-              ;; :font-size "16px"
               :font-weight "700"
               :padding-left "5px"
               :overflow "hidden"
               :white-space "nowrap"
               :z-index "3"
-              :flex-basis "7em")
+              :flex-basis "8em")
             `("#url"
               :background-color ,theme:primary
               :color ,theme:on-primary
@@ -815,10 +814,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :padding-right "5px"
               :overflow-x "scroll"
               :white-space "nowrap"
-              :z-index "2"
-              :flex-grow "2"
-              :flex-shrink "1"
-              :flex-basis "10em")
+              :z-index "2")
             `("#modes::-webkit-scrollbar"
               :display "none")
             `(button
