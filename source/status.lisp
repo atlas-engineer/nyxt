@@ -61,7 +61,7 @@ This leverages `mode-status' which can be specialized for individual modes."
     ;; https://support.mozilla.org/en-US/kb/mouse-shortcuts-perform-common-tasks
     (:nbutton
       :buffer status
-      :text "◄"
+      :text "←"
       :title "Backwards"
       (nyxt/history-mode:history-backwards))
     (:nbutton
@@ -71,7 +71,7 @@ This leverages `mode-status' which can be specialized for individual modes."
       (nyxt:reload-current-buffer))
     (:nbutton
       :buffer status
-      :text "►"
+      :text "→"
       :title "Forwards"
       (nyxt/history-mode:history-forwards) )
     (:nbutton
