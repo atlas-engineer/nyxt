@@ -96,17 +96,13 @@ This leverages `mode-status' which can be specialized for individual modes."
 (export-always 'format-status-url)
 (defmethod format-status-url ((status status-buffer))
   (let* ((buffer (current-buffer (window status)))
-         (content (multiple-value-bind (aesthetic safe)
-                      (render-url (url buffer))
-                    (uiop:strcat
-                     (if safe
-                         (format nil "~a (~a)" safe aesthetic)
-                         aesthetic)
-                     (when (title buffer)
-                       (str:concat " — " (title buffer)))
-                     (when (find (url buffer) (remove buffer (buffer-list))
-                                 :test #'url-equal :key #'url)
-                       (format nil " (buffer ~a)" (id buffer)))))))
+         (content (uiop:strcat
+                   (quri:uri-domain (url buffer))
+                   (when (title buffer)
+                     (str:concat " — " (title buffer)))
+                   (when (find (url buffer) (remove buffer (buffer-list))
+                               :test #'url-equal :key #'url)
+                     (format nil " (buffer ~a)" (id buffer))))))
     (spinneret:with-html-string
       (:nbutton
         :buffer status
