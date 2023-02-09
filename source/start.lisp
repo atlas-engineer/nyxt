@@ -639,12 +639,12 @@ Finally, run the browser, load URL-STRINGS if any, then run
                                (nyxt::error-in-new-window "Initialization error" ,(princ-to-string condition) ,backtrace))))
                  :name 'error-reporter))))))
     (let* ((new-command-line (append (uiop:raw-command-line-arguments)
-                                     `("--no-config"
+                                     `("--failsafe"
                                        "--eval"
                                        ,(set-error-message condition backtrace)))))
       (log:warn "Restarting with ~s."
                 (append (uiop:raw-command-line-arguments)
-                        '("--no-config")))
+                        '("--failsafe")))
       (uiop:launch-program new-command-line)
       (quit 1))))
 
