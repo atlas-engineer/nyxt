@@ -769,7 +769,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :overflow "hidden"
               :white-space "nowrap"
               :z-index "3"
-              :flex-basis "8em")
+              :flex-basis "104px")
             `("#url"
               :background-color ,theme:primary
               :color ,theme:on-primary
@@ -782,7 +782,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :z-index "2"
               :flex-grow "3"
               :flex-shrink "2"
-              :flex-basis "10em")
+              :flex-basis "144px")
             `("#tabs"
               :background-color ,theme:secondary
               :color ,theme:on-secondary
@@ -795,7 +795,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :z-index "1"
               :flex-grow "10"
               :flex-shrink "4"
-              :flex-basis "10em")
+              :flex-basis "144px")
             `("#tabs::-webkit-scrollbar"
               :display "none")
             `(.tab
