@@ -20,7 +20,6 @@ This is useful to reference hosts manually instead of via `nfiles:url'.")
 seconds."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "A hostlist `blocker-mode' can use for its `hostlists' slot.
 See `*default-hostlist*' for an example."))
 

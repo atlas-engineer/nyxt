@@ -9,7 +9,6 @@
   ((files:name "nyxt"))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "With the default profile all data is persisted to the
 standard locations."))
 
@@ -32,7 +31,6 @@ standard locations."))
 It's not always the case, take the socket for instance."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "All Nyxt files.
 By default, a file that fails to be loaded is automatically backed up.
 If the file is modified externally, Nyxt automatically reloads it."))
@@ -40,7 +38,6 @@ If the file is modified externally, Nyxt automatically reloads it."))
 (define-class nyxt-remote-file (nyxt-file files:remote-file)
   ()
   (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "A `files:remote-file' with specialized methods."))
 
 (defmethod files:fetch ((profile nyxt-profile) (file nyxt-remote-file) &key)
@@ -48,13 +45,11 @@ If the file is modified externally, Nyxt automatically reloads it."))
 
 (define-class nyxt-data-directory (files:data-file nyxt-file)
   ((files:base-path #p""))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-class-name-p t))
 
 (define-class nyxt-temporary-directory (files:data-file nyxt-file)
   ((files:base-path #p""))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-class-name-p t))
 
 (defmethod files:resolve ((profile nyxt-profile) (path nyxt-temporary-directory))
   "Expand all data paths inside a temporary directory."
@@ -66,14 +61,12 @@ If the file is modified externally, Nyxt automatically reloads it."))
   ()
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Nyxt Lisp files."))
 
 (define-class nosave-profile (files:read-only-profile nyxt-profile)
   ()
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "With the nosave profile no data should be persisted to disk.
 No data should be shared with other nosave buffers either."))
 
@@ -81,7 +74,6 @@ No data should be shared with other nosave buffers either."))
   ()
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Data is neither read nor persisted persisted to disk."))
 
 (defun find-file-name-path (ref)
@@ -176,8 +168,7 @@ Example: when passed command line option --with-file foo=bar,
 (define-class download-directory (nyxt-file)
   ((files:base-path (xdg-download-dir))
    (files:name "downloads"))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-class-name-p t))
 
 (export-always 'profile-name)
 (defun profile-name (profile-class)

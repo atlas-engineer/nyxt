@@ -5,8 +5,7 @@
 
 (define-class config-directory-file (files:config-file nyxt-file)
   ((files:base-path #p""))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-class-name-p t))
 
 (define-class config-special-file (config-directory-file)
   ((files:base-path #p"")
@@ -14,7 +13,6 @@
                         :accessor nil
                         :type keyword))
   (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Like `config-directory-file' but can be controlled from command line options."))
 
 (define-class config-file (config-special-file nyxt-lisp-file)
@@ -23,7 +21,6 @@
                         :accessor nil
                         :type keyword))
   (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Lisp configuration file which path can be controlled from command line options.
 Unlike `auto-config-file', it can only be loaded with `cl:load', it is not meant to be read with
 `nfiles:read-file' or `nfiles:content'."))
@@ -38,7 +35,6 @@ Unlike `auto-config-file', it can only be loaded with `cl:load', it is not meant
                         :accessor nil
                         :type keyword))
   (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Lisp configuration file which path can be controlled from command line options.
 Unlike `config-file', it can both loaded with `cl:load' and read with
 `nfiles:read-file'.  The latter should return a structured reification of the configuration."))
@@ -84,8 +80,7 @@ Consider porting your configuration to ~a."
 (define-class log-file (files:data-file nyxt-file)
   ((files:base-path #p"nyxt.log")
    (files:name "log-file"))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-class-name-p t))
 
 (export-always '*log-file*)
 (defvar *log-file* (make-instance 'log-file)
@@ -97,8 +92,7 @@ This is global because logging starts before the `*browser*' is even initialized
 
 (define-class nyxt-source-directory (nyxt-file)
   ((files:name "source"))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-class-name-p t))
 
 (defmethod files:resolve ((profile nyxt-profile) (directory nyxt-source-directory))
   (let ((asd-path (ignore-errors (asdf:system-source-directory :nyxt))))
@@ -115,8 +109,7 @@ This is set globally so that it can be looked up if there is no
 (define-class extensions-directory (files:data-file nyxt-file)
   ((files:base-path #p"extensions/")
    (files:name "extensions"))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-class-name-p t))
 
 (export-always '*extensions-directory*)
 (defvar *extensions-directory* (make-instance 'extensions-directory)
@@ -160,16 +153,14 @@ translations are preserved."
          :type symbol)
    (value nil
           :type t))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-class-name-p t))
 
 (define-class class-form ()
   ((class-name nil
                :type symbol)
    (forms '()
           :type (maybe (cons (or cons slot-form) *))))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-class-name-p t))
 
 (defun read-init-form-slot (class-name sexp)
   "Return 2 values:

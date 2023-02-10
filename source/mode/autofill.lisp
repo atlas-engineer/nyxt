@@ -50,8 +50,7 @@ it will be in conflict with common-lisp:fill."))
   (:metaclass closer-mop:funcallable-standard-class)
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:export-predicate-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-predicate-name-p t))
 
 (defmethod initialize-instance :after ((autofill autofill) &key &allow-other-keys)
   (closer-mop:set-funcallable-instance-function

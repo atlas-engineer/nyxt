@@ -389,7 +389,6 @@ FUNCTION is the action to perform on the selected elements."
 (define-class options-source (prompter:source)
   ((prompter:name "Options"))
   (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Prompt source for select tag options."))
 
 (defmethod %follow-hint ((select nyxt/dom:select-element))

@@ -307,7 +307,6 @@ automatically executed.  Also see `actions-on-current-suggestion-delay'.")
 run.  Also see `actions-on-current-suggestion-enabled-p'."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "A prompter source instance is meant to be used by a
 `prompter' object.  See its `sources' slot.  A source is a consistent collection
 of suggestions, filters and actions.
@@ -451,7 +450,6 @@ match-data is ready for its own use.")
 the `sort-predicate'."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Suggestions are processed and listed in `source'.
 It wraps arbitrary object stored in the `value' slot.
 The other slots are optional.
@@ -551,7 +549,6 @@ Attributes are set with `object-attributes'."
    (constructor (list t nil))
    (hide-attribute-header-p :always))
   (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Prompt source for yes-no questions."))
 
 (defmethod object-attributes ((object symbol) (source yes-no-source))
@@ -570,7 +567,6 @@ Attributes are set with `object-attributes'."
    (hide-suggestion-count-p t)
    (enable-marks-p nil))
   (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Prompt source for raw user input.
 Its only `suggestion' is the user input, thus it has no constructor.
 If you are looking for a source that just returns its plain suggestions, use `source'."))
@@ -594,7 +590,6 @@ If you are looking for a source that just returns its plain suggestions, use `so
    (hide-attribute-header-p :always)
    (enable-marks-p t))
   (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Prompt source for user input words."))
 
 (export-always 'ensure-suggestions-list)

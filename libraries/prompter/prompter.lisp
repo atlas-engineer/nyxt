@@ -122,7 +122,6 @@ See also `result-channel'.")
       :documentation "Whether the prompter has been cancelled."))
     (:export-class-name-p t)
     (:export-accessor-names-p t)
-    (:accessor-name-transformer (class*:make-name-transformer name))
     (:documentation "The prompter is an interface for user interactions.
 A prompter object holds multiple `source's which contain a list of
 `suggestion's.

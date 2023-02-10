@@ -81,8 +81,7 @@
 
 (define-class url ()
   ((url "")
-   (title ""))
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+   (title "")))
 
 (defmethod prompter:object-attributes ((url url) (source prompter:source))
   (declare (ignore source))
@@ -496,8 +495,7 @@
 
 (define-class buffer ()
   ((title "")
-   (keywords '("foo" "bar")))
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+   (keywords '("foo" "bar"))))
 
 (defmethod prompter:object-attributes ((buffer buffer) (source prompter:source))
   (declare (ignore source))

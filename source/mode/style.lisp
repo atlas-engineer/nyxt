@@ -8,8 +8,7 @@
 (define-class css-cache-directory (files:data-file nyxt-file)
   ((files:base-path #p"style-mode-css-cache/")
    (files:name "mode-css-cache"))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-class-name-p t))
 
 (define-mode style-mode ()
   "A mode for styling documents.

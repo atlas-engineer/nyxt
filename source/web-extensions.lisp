@@ -29,8 +29,7 @@ A list of objects. Does not necessarily have the same order as `files' of the sc
                    :documentation "The renderer-friendly representation of the JS scripts.
 A list of objects. Does not necessarily have the same order as `files' of the script."))
     (:export-class-name-p t)
-    (:export-accessor-names-p t)
-    (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))))
+    (:export-accessor-names-p t)))
 
 (defmethod remove-content-script ((buffer buffer) extension (script content-script))
   (declare (ignore extension))
@@ -174,14 +173,12 @@ https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.
     :type (or null string)
     :documentation "The extension icon for use in status buffer in the dark theme."))
   (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:export-accessor-names-p t))
 
 (define-class extension-storage-file (files:data-file nyxt-file)
   ((files:name "extension-storage")
    (extension-name ""))
   (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "The `nyxt-file' for the browser.storage API data storage (see
   https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/storage
   for API description)."))

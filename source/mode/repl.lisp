@@ -198,7 +198,6 @@ Generic function to specialize against new REPL cell types."))
   (:metaclass user-class)
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Cell intended for Lisp expressions evaluation.
 
 The `input' should be a valid Lisp code `read'-able in the `eval-package'.

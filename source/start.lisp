@@ -8,7 +8,6 @@
    (editable-p nil))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Socket files are typically stored in a dedicated directory."))
 
 (defmethod files:resolve ((profile nyxt-profile) (socket socket-file))

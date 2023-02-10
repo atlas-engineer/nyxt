@@ -3,7 +3,7 @@
 
 (uiop:define-package :password
   (:use :cl)
-  (:import-from :class-star #:define-class)
+  (:import-from :nclasses #:define-class)
   (:import-from :serapeum #:export-always))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)

@@ -4,4 +4,4 @@
 (uiop:define-package :theme
   (:use :cl)
   (:import-from :serapeum #:export-always)
-  (:import-from :class-star #:define-class))
+  (:import-from :nclasses #:define-class))

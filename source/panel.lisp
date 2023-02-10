@@ -31,7 +31,6 @@ When provided, PANELS are deleted instead."
     :type (member :left :right)
     :documentation "The side of the window where the panel is displayed."))
   (:metaclass closer-mop:funcallable-standard-class)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:documentation "Internal page for `panel-buffers'.

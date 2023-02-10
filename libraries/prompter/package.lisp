@@ -3,7 +3,7 @@
 
 (uiop:define-package :prompter
   (:use :cl)
-  (:import-from :class-star #:define-class)
+  (:import-from :nclasses #:define-class)
   (:import-from :serapeum #:export-always))
 (in-package prompter)
 

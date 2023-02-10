@@ -318,8 +318,7 @@ current unmarked suggestion."
    (parent-prompt-buffer (error "Parent prompt buffer required"))
    (global-p nil)
    (buffer (current-prompt-buffer))
-   (prompter:suggestion-maker 'make-prompt-buffer-command-suggestion))
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+   (prompter:suggestion-maker 'make-prompt-buffer-command-suggestion)))
 
 (defun make-prompt-buffer-command-suggestion (command source)
   "Return a `suggestion' wrapped around COMMAND."

@@ -6,7 +6,7 @@
 ;; depend on Nyxt.
 (uiop:define-package :nyxt/debug
   (:use :cl)
-  (:import-from :class-star #:define-class)
+  (:import-from :nclasses #:define-class)
   (:import-from :serapeum #:export-always #:->)
   (:documentation "Development helpers"))
 (in-package :nyxt/debug)

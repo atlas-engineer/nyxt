@@ -38,8 +38,7 @@ See `sym:package-functions' for an example."
    (prompter:name (alex:required-argument 'prompter:name))
    (prompter:constructor (alex:required-argument 'prompter:constructor)))
   (:export-class-name-p nil)              ; Internal class.
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-accessor-names-p t))
 
 (define-class describe-non-nyxt-source (describe-nyxt-source)
   ((packages
@@ -51,8 +50,7 @@ See `sym:package-functions' for an example."
     :type (maybe (list-of package))
     :documentation "Include internal symbols from the given packages."))
   (:export-class-name-p nil)              ; Internal class.
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-accessor-names-p t))
 
 (define-class describe-internal-source (describe-nyxt-source)
   ((packages
@@ -68,14 +66,12 @@ See `sym:package-functions' for an example."
     :type (maybe (list-of package))
     :documentation "Include internal symbols from the given packages."))
   (:export-class-name-p nil)              ; Internal class.
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-accessor-names-p t))
 
 (define-class function-source (describe-nyxt-source)
   ((prompter:name "Functions")
    (prompter:constructor (description-constructor #'sym:package-functions)))
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-accessor-names-p t))
 
 (define-class function-non-nyxt-source (function-source describe-non-nyxt-source)
   ((prompter:name "Non-Nyxt Functions")))
@@ -121,8 +117,7 @@ See `sym:package-functions' for an example."
 (define-class class-source (describe-nyxt-source)
   ((prompter:name "Classes")
    (prompter:constructor (description-constructor #'sym:package-classes)))
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-accessor-names-p t))
 
 (define-class class-non-nyxt-source (class-source describe-non-nyxt-source)
   ((prompter:name "Non-Nyxt Classes")))
@@ -133,8 +128,7 @@ See `sym:package-functions' for an example."
 (define-class slot-source (describe-nyxt-source)
   ((prompter:name "Slots")
    (prompter:constructor (description-constructor #'package-slots)))
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-accessor-names-p t))
 
 (define-class slot-non-nyxt-source (slot-source describe-non-nyxt-source)
   ((prompter:name "Non-Nyxt Slots")))
@@ -145,8 +139,7 @@ See `sym:package-functions' for an example."
 (define-class variable-source (describe-nyxt-source)
   ((prompter:name "Variables")
    (prompter:constructor (description-constructor #'sym:package-variables)))
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-accessor-names-p t))
 
 (define-class variable-non-nyxt-source (variable-source describe-non-nyxt-source)
   ((prompter:name "Non-Nyxt Variables")))

@@ -16,8 +16,7 @@
 (define-class no-procrastinate-hosts-file (files:data-file nyxt-lisp-file)
   ((files:base-path #p"no-procrastinate-hosts")
    (files:name "no-procrastinate-hosts"))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-class-name-p t))
 
 (define-mode no-procrastinate-mode (nyxt/blocker-mode:blocker-mode)
   "Mode to block access to hosts associated with procrastination."
@@ -108,8 +107,7 @@
     '()
     :type (list-of string)))
   (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-accessor-names-p t))
 
 (defmethod equals ((e1 no-procrastinate-entry) (e2 no-procrastinate-entry))
   "Entries are equal if the hosts and the paths are equal.

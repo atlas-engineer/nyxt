@@ -34,7 +34,6 @@ signaled.")
     :documentation "Last time this command was called from prompt buffer.
 Useful to sort the commands by most recent use."))
   (:metaclass closer-mop:funcallable-standard-class)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
@@ -281,8 +280,7 @@ It's the complement of `nyxt-packages' and `nyxt-user-packages'."
   ((name nil
          :type (or symbol null))
    (class-sym nil
-              :type (or symbol null)))
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+              :type (or symbol null))))
 
 (defun class-slots (class-sym &key (visibility :any))
   "Return the list of slots with VISIBILITY."

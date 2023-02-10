@@ -19,7 +19,6 @@
     nil
     :type (maybe buffer)
     :documentation "The buffer debugger is open in for this condition."))
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "The wrapper for condition.
 
 See `ndebug:condition-wrapper' for documentation."))

@@ -87,8 +87,7 @@ Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
 (define-class bookmarks-file (files:data-file nyxt-lisp-file)
   ((files:base-path #p"bookmarks")
    (files:name "bookmarks"))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-class-name-p t))
 
 (define-class bookmark-entry ()
   ((url (quri:uri ""))
@@ -99,8 +98,7 @@ Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
     '()
     :type (list-of string)))
   (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-accessor-names-p t))
 
 (defmethod prompter:object-attributes ((entry bookmark-entry) (source prompter:source))
   (declare (ignore source))
@@ -174,8 +172,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
     (lambda (suggestion source input)
       (prompter:fuzzy-match suggestion source (last-word input))))
    (prompter:enable-marks-p t)
-   (prompter:constructor (tag-suggestions)))
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+   (prompter:constructor (tag-suggestions))))
 
 (define-panel-command-global bookmarks-panel ()
     (panel-buffer "*Bookmarks panel*")

@@ -67,8 +67,7 @@ out from all of the other theme colors.")
     :documentation "The font family to use by default."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:export-predicate-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-predicate-name-p t))
 
 (export-always '+light-theme+)
 (defvar +light-theme+

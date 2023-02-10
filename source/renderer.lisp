@@ -7,7 +7,6 @@
   ((name "Default"))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Specialize this class and bind an instance to `*renderer*' to set the default renderer."))
 
 (export-always 'install)
