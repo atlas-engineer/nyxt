@@ -834,8 +834,8 @@ store them somewhere and `ffi-buffer-delete' them once done."))
             `((:and .button (:or :visited :active))
               :color ,theme:background)
             `(.plain
-              :padding-left "4px"
-              :padding-right "4px"
+              :padding-left "6px"
+              :padding-right "6px"
               :color ,theme:on-background
               :background-color ,theme:background))))
   (:export-class-name-p t)
