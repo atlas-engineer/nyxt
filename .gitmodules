@@ -597,3 +597,7 @@
 	path = _build/history-tree
 	url = https://github.com/atlas-engineer/history-tree
 	shallow = true
+[submodule "_build/nclasses"]
+	path = _build/nclasses
+	url = https://github.com/atlas-engineer/nclasses/
+	shallow = true
