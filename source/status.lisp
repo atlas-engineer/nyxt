@@ -97,11 +97,9 @@ This leverages `mode-status' which can be specialized for individual modes."
 (defmethod format-status-url ((status status-buffer))
   (let* ((buffer (current-buffer (window status)))
          (content (uiop:strcat
-                   (quri:uri-scheme (url buffer))
-                   " ‐ "
                    (quri:uri-domain (url buffer))
                    (when (title buffer)
-                     (str:concat " ‐ " (title buffer)))
+                     (str:concat " — " (title buffer)))
                    (when (find (url buffer) (remove buffer (buffer-list))
                                :test #'url-equal :key #'url)
                      (format nil " (buffer ~a)" (id buffer))))))
