@@ -204,15 +204,37 @@ deprecated and by what in the docstring."
      (setf (slot-value #',name 'visibility) :mode
            (slot-value #'name 'deprecated-p) t)))
 
+(-> list-all-maybe-subpackages () (list-of types:package-designator))
+(defun list-all-maybe-subpackages ()
+  (remove-if-not (lambda (pkg) (find #\/ (package-name pkg)))
+                 (list-all-packages)))
+
+(export-always 'subpackage-p)
+(-> subpackage-p (types:package-designator types:package-designator) (values boolean &optional))
+(defun subpackage-p (subpackage package)
+  "Return non-nil if SUBPACKAGE is a subpackage of PACKAGE or is PACKAGE itself.
+A subpackage has a name that starts with that of PACKAGE followed by a '/' separator."
+  (or (eq (find-package subpackage) (find-package package))
+      (uiop:string-prefix-p (uiop:strcat (package-name package) "/")
+                            (package-name subpackage))))
+
+(export-always 'subpackages)
+(-> subpackages (types:package-designator) (list-of types:package-designator))
+(defun subpackages (package)
+  "Return all subpackages of PACKAGE, including itself."
+  (append (list package)
+          (remove-if-not (lambda (p) (subpackage-p p package))
+                         (list-all-maybe-subpackages))))
+
 (-> nyxt-subpackage-p (types:package-designator) boolean)
 (defun nyxt-subpackage-p (package)
   "Return non-nil if PACKAGE is a sub-package of `nyxt'."
-  (sym:subpackage-p package :nyxt))
+  (subpackage-p package :nyxt))
 
 (-> nyxt-user-subpackage-p (types:package-designator) boolean)
 (defun nyxt-user-subpackage-p (package)
   "Return non-nil if PACKAGE is a sub-package of `nyxt' or `nyxt-user'."
-  (sym:subpackage-p package :nyxt-user))
+  (subpackage-p package :nyxt-user))
 
 (defvar *nyxt-extra-packages* (mapcar #'find-package
                                       '(analysis
