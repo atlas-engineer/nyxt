@@ -95,6 +95,18 @@ This leverages `mode-status' which can be specialized for individual modes."
 
 (export-always 'format-status-url)
 (defmethod format-status-url ((status status-buffer))
+  "Formats the currently open URL for the STATUS buffer.
+
+MODIFY AT YOUR OWN RISK! The current implementation goes a great way to make the
+display safe, in particular to prevent IDN-spoofing by showing the Unicode
+domains as punicode (the Unicode aesthetic domain is shown in parentheses after
+the URL.)"
+  ;; However this function changes, it should always:
+  ;; - Prevent IDN/Unicode-spoofing.
+  ;; - Clearly show subdomains (except maybe "trivial" ones) to prevent
+  ;;   subdomain takeover attacks.
+  ;; - Retain a clear display of which protocol/scheme is used to discourage
+  ;;   e.g. trusting HTTP websites.
   (let* ((buffer (current-buffer (window status)))
          (content (multiple-value-bind (aesthetic safe)
                       (render-url (url buffer))
