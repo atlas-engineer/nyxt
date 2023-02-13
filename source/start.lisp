@@ -514,7 +514,8 @@ Examples:
       (t
        (with-protect ("Error: ~a" :condition)
          (start-browser urls))))
-    (unless *run-from-repl-p* (uiop:quit))))
+    (unless *run-from-repl-p* (uiop:quit)))
+  *browser*)
 
 (defun load-or-eval (&key remote)
   (when remote
