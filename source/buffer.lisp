@@ -1350,6 +1350,17 @@ second latest buffer first."
                              :constructor (sera:filter (match-domain domain)
                                                        (sort-by-time (buffer-list)))))))
 
+(define-command toggle-prompt-buffer-focus ()
+  "Toggle the focus between the current buffer and the current prompt buffer."
+  (let ((prompt-buffer (current-prompt-buffer)))
+    (if (prompt-buffer-p (focused-buffer))
+        (progn (set-current-buffer (current-buffer))
+               (ps-eval :buffer prompt-buffer
+                 (setf (ps:@ (nyxt/ps:qs document "*") style opacity) "0.5")))
+        (progn (ffi-focus-prompt-buffer (current-window) prompt-buffer)
+               (ps-eval :buffer prompt-buffer
+                 (setf (ps:@ (nyxt/ps:qs document "*") style opacity) "1"))))))
+
 (defun switch-buffer-or-query-domain (domain)
   "Switch to a buffer if it exists for a given DOMAIN, otherwise query
   the user."

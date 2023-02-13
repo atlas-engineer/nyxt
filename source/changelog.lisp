@@ -694,3 +694,8 @@ regular commands, such as "
 to aesthetic display in status buffer.")
    (:li "The canceled page requests are stored to history, making it more consistent.")
    (:li "Trying to delete a hanged buffer destroys it, instead of leaving it dangling forever.")))
+
+(define-version "3-pre-release-4"
+  (:h3 "Bindings")
+  (:ul
+   (:li "Add " (:nxref :command 'nyxt:toggle-prompt-buffer-focus) ".")))

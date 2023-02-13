@@ -21,6 +21,7 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-tab" 'switch-buffer-next
        "C-T" 'reopen-buffer
        "C-t" 'make-buffer-focus
+       "M-o" 'toggle-prompt-buffer-focus
        "f1 r" 'manual
        "f1 t" 'tutorial
        "f1 b" 'describe-bindings
@@ -63,6 +64,7 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-x C-left" 'switch-buffer-previous
        "C-x right" 'switch-buffer-next
        "C-x C-right" 'switch-buffer-next
+       "C-x o" 'toggle-prompt-buffer-focus
        "C-x b" 'switch-buffer
        "C-x k" 'delete-buffer
        "C-x C-k" 'delete-current-buffer

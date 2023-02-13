@@ -80,6 +80,9 @@ The specialized method may call `call-next-method' to return a sensible fallback
   (:documentation "Set the BUFFER's widget to display in WINDOW.
 If FOCUS is non-nil, "))
 
+(define-ffi-generic ffi-focus-prompt-buffer (window prompt-buffer)
+  (:documentation "Focus PROMPT-BUFFER in WINDOW."))
+
 (define-ffi-generic ffi-window-add-panel-buffer (window buffer side)
   (:documentation "Make widget for panel BUFFER and add it to the WINDOW widget.
 SIDE is one of `:left' or `:right'."))

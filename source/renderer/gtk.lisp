@@ -1213,6 +1213,12 @@ the `active-buffer'."
       (gtk:gtk-widget-grab-focus (gtk-object (nyxt::active-buffer (window buffer))))
       (gtk:gtk-widget-grab-focus (prompt-buffer-view (window buffer)))))
 
+(define-ffi-method ffi-focus-prompt-buffer ((window gtk-window)
+                                            (prompt-buffer prompt-buffer))
+  "Focus PROMPT-BUFFER in WINDOW."
+  (gtk:gtk-widget-grab-focus (prompt-buffer-view (window prompt-buffer)))
+  prompt-buffer)
+
 (define-ffi-method ffi-height ((buffer status-buffer))
   (nth-value 1 (gtk:gtk-widget-size-request (status-container (window buffer)))))
 (define-ffi-method (setf ffi-height) (height (buffer status-buffer))
