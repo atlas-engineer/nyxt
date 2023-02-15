@@ -20,6 +20,18 @@ finish-args:
   - --talk-name=org.a11y.Bus
 
 modules:
+  - name: sbcl
+    buildsystem: simple
+    sources:
+      - type: archive
+        url: http://prdownloads.sourceforge.net/sbcl/sbcl-2.0.11-x86-64-linux-binary.tar.bz2
+        sha256: b7e61bc6b8d238f8878e660bc0635e99c2ea1255bfd6153d702fe9a00f8138fd
+    build-options:
+      env:
+        BUILD_ROOT: "/app/sbcl"
+    build-commands:
+      - sh install.sh
+
   - name: libfixposix
     buildsystem: autotools
     sources:
@@ -35,18 +47,19 @@ modules:
     buildsystem: simple
     sources:
       - type: file
-        url: https://github.com/atlas-engineer/nyxt/releases/download/2.2.4/nyxt_2.2.4_amd64.deb
-        sha256: ebbeb6734c97e6ab28e688c39d33ec2cd408a819163c23f73868d928a16f7e30
-        dest-filename: nyxt.deb
+        url: https://github.com/atlas-engineer/nyxt/releases/download/3-pre-release-3/nyxt-3-pre-release-3-source-with-submodules.tar.xz
+        sha256: f5f13c78ed89aa41813c702b8ee04597e976b8d1c3a78ac7c8f6b706e11b8cda
+        dest-filename: nyxt.tar.xz
         only-arches: [x86_64]
       - type: file
         path: engineer.atlas.Nyxt.appdata.xml
-    build-commands:
-      - ar x nyxt.deb data.tar.gz
-      - tar -C $FLATPAK_DEST -xf data.tar.gz --strip-components=2
-      - desktop-file-edit $FLATPAK_DEST/share/applications/nyxt.desktop --set-icon=engineer.atlas.Nyxt
-      - find $FLATPAK_DEST/share -type f -exec rename nyxt engineer.atlas.Nyxt '{}' \;
-      - cp /usr/lib/$(gcc --print-multiarch)/libbfd-*.so /app/lib
-      - install -D engineer.atlas.Nyxt.appdata.xml /app/share/appdata/engineer.atlas.Nyxt.appdata.xml
     build-options:
-      no-debuginfo: true
+      no-debuginfo: false
+      env:
+        LISP: "/app/sbcl/usr/local/bin/sbcl"
+        LISP_FLAGS: "--dynamic-space-size 4096 --no-userinit --non-interactive"
+    build-commands:
+      - tar xvf nyxt.tar.xz
+      - make all
+      - mkdir $FLATPAK_DEST/bin
+      - mv nyxt $FLATPAK_DEST/bin/
