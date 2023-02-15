@@ -43,3 +43,8 @@ TAGS
 # Ignore C object files and libraries
 *.o
 *.so
+
+# Ignore flatpak build files
+.flatpak-builder/
+/build-dir/
+/repo/
