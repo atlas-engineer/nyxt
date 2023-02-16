@@ -1,0 +1,12 @@
+* Building the Flatpak:
+
+=flatpak-builder --user --install --force-clean build-dir
+engineer.atlas.Nyxt.yaml=
+
+* Running the built Flatpak:
+
+=flatpak run engineer.atlas.Nyxt=
+
+* Inspecting the Flatpak
+
+Navigate to the =build-dir= directory to see what the =flatpak-builder= has produced.
