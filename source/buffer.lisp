@@ -1658,7 +1658,7 @@ any.")
 (defmethod prompter:object-attributes ((query new-url-query) (source new-url-or-search-source))
   (declare (ignore source))
   `(("URL or new query" ,(or (label query) (query query)) nil 5)
-    ("Search engine?" ,(if (engine query) (shortcut (engine query)) ""))))
+    ("Search engine" ,(if (engine query) (shortcut (engine query)) ""))))
 
 (defun pushnew-url-history (history url)
   "URL is not pushed if empty."
