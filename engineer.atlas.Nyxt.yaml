@@ -51,7 +51,6 @@ modules:
       - type: file
         path: engineer.atlas.Nyxt.appdata.xml
     build-options:
-      no-debuginfo: false
       env:
         LISP: "/app/sbcl/usr/local/bin/sbcl"
         LISP_FLAGS: "--dynamic-space-size 4096 --no-userinit --non-interactive"
