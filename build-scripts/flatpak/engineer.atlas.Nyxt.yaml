@@ -63,3 +63,4 @@ modules:
       - make all
       - mkdir $FLATPAK_DEST/bin
       - mv nyxt $FLATPAK_DEST/bin/
+      - install -D engineer.atlas.Nyxt.appdata.xml /app/share/appdata/engineer.atlas.Nyxt.appdata.xml
