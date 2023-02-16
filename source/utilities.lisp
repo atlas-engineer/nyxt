@@ -95,7 +95,7 @@ most intuitive values."
     (apply #'prini value s keys)))
 
 (export-always 'source-for-thing)
-(-> source-for-thing ((or function method class)) (values (or null string) list (or null pathname) &optional))
+(-> source-for-thing ((or function method class)) *)
 (defun source-for-thing (thing)
   "Return
 - the string source for THING, if any,
