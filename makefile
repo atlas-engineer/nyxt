@@ -13,6 +13,11 @@ endif
 ## We use --non-interactive with SBCL so that errors don't interrupt the CI.
 LISP_FLAGS ?= $(SBCL_FLAGS) --no-userinit --non-interactive
 
+FLATPAK_COMMAND = flatpak
+FLATPAK_BUILDER = flatpak-builder
+FLATPAK_APP_ID = engineer.atlas.Nyxt
+FLATPAK_MANIFEST := $(FLATPAK_APP_ID).yaml
+
 export NYXT_SUBMODULES=true
 export NYXT_RENDERER=gi-gtk
 export NASDF_USE_LOGICAL_PATHS=true
@@ -89,3 +94,11 @@ clean-submodules:
 
 .PHONY: clean
 clean: clean-submodules
+
+.PHONY: flatpak-build
+flatpak-build:
+	@$(FLATPAK_BUILDER) --user --install --force-clean build-dir $(FLATPAK_MANIFEST)
+
+.PHONY: flatpak-run
+flatpak-run:
+	@$(FLATPAK_COMMAND) run $(FLATPAK_APP_ID)
