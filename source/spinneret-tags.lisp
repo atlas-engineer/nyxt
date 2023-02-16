@@ -166,6 +166,7 @@ Returns all the linkable symbols from FORM as multiple values:
 - All the strings that may potentially be resolvable with
   `nyxt:resolve-backtick-quote-links'."
     (let ((functions (list))
+          (classes (list))
           (variables (list))
           (macros (list))
           (specials (list))
@@ -187,6 +188,13 @@ Returns all the linkable symbols from FORM as multiple values:
                     (let ((first (first form)))
                       (alexandria:destructuring-case form
                         ;; More forms: def*, make-instance, slots, special forms?
+                        ((make-instance class &rest args)
+                         (push first functions)
+                         (if (and (listp class)
+                                  (eq 'quote (first class)))
+                             (push (second class) classes)
+                             (resolve-symbols-internal class))
+                         (resolve-symbols-internal args))
                         (((flet labels symbol-macrolet macrolet)
                           (&rest bindings) &body body)
                          (push first specials)
@@ -252,7 +260,7 @@ Returns all the linkable symbols from FORM as multiple values:
                    (string
                     (pushnew form linkable-strings)))))
         (resolve-symbols-internal form)
-        (values (set-difference functions all-specials) variables macros specials linkable-strings))))
+        (values (set-difference functions all-specials) classes variables macros specials linkable-strings))))
   (defun prini* (object package)
     (nyxt:prini-to-string object :readably t :right-margin 70 :package package))
   (defun htmlize-body (form listing package)
@@ -260,7 +268,7 @@ Returns all the linkable symbols from FORM as multiple values:
           (*html-style* :tree)
           (*print-pretty* nil))
       (when (listp form)
-        (multiple-value-bind (functions variables macros specials linkable-strings)
+        (multiple-value-bind (functions classes variables macros specials linkable-strings)
             (resolve-linkable-symbols form)
           ;; We use \\s, because lots of Lisp symbols include non-word
           ;; symbols and would break if \\b was used.
@@ -285,6 +293,7 @@ Returns all the linkable symbols from FORM as multiple values:
                                         1)))))))))
             (replace-symbol-occurences macros :macro :style :link)
             (replace-symbol-occurences functions :function :prefix "(\\(|#'|')")
+            (replace-symbol-occurences classes :class-name :prefix "(')")
             (replace-symbol-occurences
              variables :variable :prefix "(\\s)" :suffix "(\\)|\\s)")
             (replace-symbol-occurences specials nil :style :span))
