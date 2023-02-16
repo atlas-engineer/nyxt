@@ -51,32 +51,13 @@ nyxt: $(lisp_files)
 web-extensions:
 	$(MAKE) -C libraries/web-extensions/ all
 
-.PHONY: app-bundle
-app-bundle:
-	mkdir -p ./Nyxt.app/Contents/MacOS
-	mkdir -p ./Nyxt.app/Contents/Resources
-	mv ./nyxt ./Nyxt.app/Contents/MacOS
-	cp ./assets/Info.plist ./Nyxt.app/Contents
-	cp ./assets/nyxt.icns ./Nyxt.app/Contents/Resources
-
-.PHONY: install-app-bundle
-install-app-bundle:
-	cp -r Nyxt.app $(DESTDIR)/Applications
-
 .PHONY: all
 all: nyxt
-ifeq ($(UNAME), Darwin)
-all: nyxt app-bundle
-endif
 
 .PHONY: install
-ifeq ($(UNAME), Darwin)
-install: install-app-bundle
-else
 install: all
 	$(lisp_eval) '(asdf:load-system :nyxt/$(NYXT_RENDERER)-application)' \
 		--eval '(asdf:make :nyxt/install)' $(lisp_quit)
-endif
 
 .PHONY: doc
 doc:
