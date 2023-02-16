@@ -46,11 +46,8 @@ modules:
   - name: nyxt
     buildsystem: simple
     sources:
-      - type: file
-        url: https://github.com/atlas-engineer/nyxt/releases/download/3-pre-release-3/nyxt-3-pre-release-3-source-with-submodules.tar.xz
-        sha256: f5f13c78ed89aa41813c702b8ee04597e976b8d1c3a78ac7c8f6b706e11b8cda
-        dest-filename: nyxt.tar.xz
-        only-arches: [x86_64]
+      - type: dir
+        path: .
       - type: file
         path: engineer.atlas.Nyxt.appdata.xml
     build-options:
@@ -59,7 +56,6 @@ modules:
         LISP: "/app/sbcl/usr/local/bin/sbcl"
         LISP_FLAGS: "--dynamic-space-size 4096 --no-userinit --non-interactive"
     build-commands:
-      - tar xvf nyxt.tar.xz
       - make all
       - mkdir $FLATPAK_DEST/bin
       - mv nyxt $FLATPAK_DEST/bin/
