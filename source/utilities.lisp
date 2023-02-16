@@ -95,7 +95,7 @@ most intuitive values."
     (apply #'prini value s keys)))
 
 (export-always 'source-for-thing)
-(-> source-for-thing ((or function method class)) string)
+(-> source-for-thing ((or function method class)) (values (or null string) list (or null pathname) &optional))
 (defun source-for-thing (thing)
   "Return
 - the string source for THING, if any,
@@ -104,60 +104,60 @@ most intuitive values."
 
 If there's no source, return empty string.
 THING can be a class or a function, not symbol."
-  (or (sera:and-let* ((full-definition (swank:find-definition-for-thing thing))
-                      (definition (and (not (eq :error (first full-definition)))
-                                       (rest full-definition)))
-                      ;; REVIEW: Returns (:macro name) for macros on
-                      ;; SBCL. What does it do on CCL, ECL etc?
-                      (name (typecase thing
-                              ;; REVIEW: How do we handle macros here?
-                              (class (class-name thing))
-                              (method (swank-backend:function-name
-                                       (closer-mop:method-generic-function thing)))
-                              (function (swank-backend:function-name thing))))
-                      ;; This one is to clean up the (:macro name) form.
-                      (name (if (and (listp name)
-                                     (member (first name) '(:special :macro)))
-                                (second name)
-                                name))
-                      (*package* (symbol-package name))
-                      ;; `swank:find-definition-for-thing' returns nonsense for
-                      ;; macros, need to use `swank-backend:find-definitions'
-                      ;; for those instead.
-                      (definition (if (macro-function name)
-                                      (or (cdadar (swank-backend:find-definitions name))
-                                          definition)
-                                      definition))
-                      (file (uiop:file-exists-p (first (alexandria:assoc-value definition :file))))
-                      (file-content (alexandria:read-file-into-string
-                                     file
-                                     :external-format (guess-external-format file)))
-                      (start-position (first (alexandria:assoc-value definition :position))))
-        (handler-case
-            (let ((*read-eval* nil))
-              (let ((expression (read-from-string file-content t nil
-                                                  :start (1- start-position))))
-                (values (prini-to-string expression)
-                        expression
-                        file)))
-          (reader-error ()
-            (str:trim-right
-             (values (subseq file-content
-                             (max 0 (1- start-position))
-                             (search (uiop:strcat +newline+ "(") file-content :start2 start-position))
-                     nil
-                     file)))))
-      (values "" nil nil)))
+  (sera:and-let* ((full-definition (swank:find-definition-for-thing thing))
+                  (definition (and (not (eq :error (first full-definition)))
+                                   (rest full-definition)))
+                  ;; REVIEW: Returns (:macro name) for macros on
+                  ;; SBCL. What does it do on CCL, ECL etc?
+                  (name (typecase thing
+                          ;; REVIEW: How do we handle macros here?
+                          (class (class-name thing))
+                          (method (swank-backend:function-name
+                                   (closer-mop:method-generic-function thing)))
+                          (function (swank-backend:function-name thing))))
+                  ;; This one is to clean up the (:macro name) form.
+                  (name (if (and (listp name)
+                                 (member (first name) '(:special :macro)))
+                            (second name)
+                            name))
+                  (*package* (symbol-package name))
+                  ;; `swank:find-definition-for-thing' returns nonsense for
+                  ;; macros, need to use `swank-backend:find-definitions'
+                  ;; for those instead.
+                  (definition (if (macro-function name)
+                                  (or (cdadar (swank-backend:find-definitions name))
+                                      definition)
+                                  definition))
+                  (file (uiop:file-exists-p (first (alexandria:assoc-value definition :file))))
+                  (file-content (alexandria:read-file-into-string
+                                 file
+                                 :external-format (guess-external-format file)))
+                  (start-position (first (alexandria:assoc-value definition :position))))
+    (handler-case
+        (let ((*read-eval* nil))
+          (let ((expression (read-from-string file-content t nil
+                                              :start (1- start-position))))
+            (values (prini-to-string expression)
+                    expression
+                    file)))
+      (reader-error ()
+        (str:trim-right
+         (values (subseq file-content
+                         (max 0 (1- start-position))
+                         (search (uiop:strcat +newline+ "(") file-content :start2 start-position))
+                 nil
+                 file))))))
 
 (export-always 'function-lambda-string)
 (defun function-lambda-string (fun)
   "Like `function-lambda-expression' for the first value, but return a string.
 On failure, fall back to other means of finding the source.
 Return the lambda s-expression as a second value, if possible."
-  (alex:if-let ((expression (when (functionp fun) (function-lambda-expression fun))))
-    (values (prini-to-string expression)
-            expression)
-    (source-for-thing fun)))
+  (let ((expression (when (functionp fun) (function-lambda-expression fun))))
+    (if expression
+        (values (prini-to-string expression)
+                expression)
+        (source-for-thing fun))))
 
 (-> last-word (string) string)
 (export-always 'last-word)
