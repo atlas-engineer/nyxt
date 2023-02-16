@@ -45,15 +45,17 @@ counterpart, unless there are unprintable characters.
 If URL contains non-ascii chars in domain part (IDN), return two values:
 - The aesthetic decoded URL, and
 - The safe punicode-encoded one."
-  (let* ((url (quri:render-uri (url url)))
+  (let* ((initial-url (url url))
+         (url (quri:render-uri
+               (quri:copy-uri url :query (ignore-errors (quri:url-decode (quri:uri-query url))))))
          (displayed (or (ignore-errors (ffi-display-url *browser* url))
                         url)))
     (cond
       ((every (alex:conjoin #'graphic-char-p #'sera:ascii-char-p) displayed)
        displayed)
       ((and (every #'sera:ascii-char-p displayed)
-            (some (complement #'graphic-char-p) displayed))
-       (quri:url-encode displayed))
+            (notevery #'graphic-char-p displayed))
+       (quri:render-uri initial-url))
       (t
        (values displayed (let ((uri (quri:uri displayed)))
                            (quri:render-uri (quri:make-uri :host (idna:to-ascii (quri:uri-host uri))
