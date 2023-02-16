@@ -17,6 +17,7 @@ FLATPAK_COMMAND = flatpak
 FLATPAK_BUILDER = flatpak-builder
 FLATPAK_APP_ID = engineer.atlas.Nyxt
 FLATPAK_MANIFEST := $(FLATPAK_APP_ID).yaml
+FLATPAK_EXPORT_REPOSITORY = _build/nyxt-flatpak-repository
 
 export NYXT_SUBMODULES=true
 export NYXT_RENDERER=gi-gtk
@@ -75,11 +76,21 @@ clean-submodules:
 
 .PHONY: clean
 clean: clean-submodules
+	rm -rf build
 
 .PHONY: flatpak-build
 flatpak-build:
-	@$(FLATPAK_BUILDER) --user --install --force-clean build-dir $(FLATPAK_MANIFEST)
+	@$(FLATPAK_BUILDER) --user --install --force-clean build $(FLATPAK_MANIFEST)
 
 .PHONY: flatpak-run
 flatpak-run:
 	@$(FLATPAK_COMMAND) run $(FLATPAK_APP_ID)
+
+.PHONY: flatpak-repository
+flatpak-repository:
+	mkdir -p $(FLATPAK_EXPORT_REPOSITORY)
+	@$(FLATPAK_BUILDER) --force-clean --repo=$(FLATPAK_EXPORT_REPOSITORY) build $(FLATPAK_MANIFEST)
+
+.PHONY: flatpak-bundle
+flatpak-bundle:
+	@$(FLATPAK_COMMAND) build-bundle $(FLATPAK_EXPORT_REPOSITORY) nyxt.flatpak $(FLATPAK_APP_ID)
