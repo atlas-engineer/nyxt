@@ -71,6 +71,7 @@ modes, commands, etc."))
   `(nclasses:define-class ,name ,supers ,slots
      ,@(append
         '((:automatic-types-p t)
+          (:accessor-name-package :slot-name)
           (:predicate-name-transformer 'nclasses:always-dashed-predicate-name-transformer))
        options)))
 
