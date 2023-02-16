@@ -434,7 +434,9 @@ For generic functions, describe all the methods."
                      (:ncode
                        :file file
                        :literal-p t
-                       (function-lambda-string (symbol-function input))))
+                       (multiple-value-bind (listing form)
+                           (function-lambda-string (symbol-function input))
+                         (or form listing))))
                    (:h2 "Describe")
                    (:pre (:code (with-output-to-string (s) (describe (symbol-function input) s))))))
                (method-desc (method)
@@ -468,14 +470,10 @@ For generic functions, describe all the methods."
                     (:h4 "Argument list")
                     (:p (:pre (prini-to-string (closer-mop:method-lambda-list method)
                                                :package (symbol-package input))))
-                    (alex:when-let* ((definition (swank:find-definition-for-thing method))
-                                     (not-error-p (null (getf definition :error)))
-                                     (file (first (rest (getf definition :location)))))
+                    (multiple-value-bind (source form file)
+                        (source-for-thing method)
                       (:h2 (format nil "Source (~a)" file))
-                      (:ncode
-                        :file file
-                        :literal-p t
-                        (function-lambda-string method)))))))
+                      (:ncode :file file :literal-p t (or form source)))))))
           (spinneret:with-html-string
             (:nstyle (style buffer))
             (:h1 (format nil "~s" input) ; Use FORMAT to keep package prefix.
@@ -601,11 +599,9 @@ A command is a special kind of function that can be called with
           (:h2 "Source:")
           (multiple-value-bind (source s-expr file)
               (source-for-thing (find-class class))
-            (declare (ignore s-expr))
-            (:ncode
-              :file file
-              :literal-p t
-              source))
+            (declare (ignore source))
+            (:ncode :file file :literal-p t
+              s-expr))
           (:h2 "Describe")
           (:pre (:code (with-output-to-string (s) (describe class s))))))
       (spinneret:with-html-string
