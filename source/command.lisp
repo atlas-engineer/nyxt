@@ -269,7 +269,7 @@ See also `nyxt-packages'."
   "Return all the Nyxt extension packages.
 A package is considered an extension one if its name is \"nx-\"-prefixed."
   (remove-if-not (curry #'str:starts-with-p "NX-") (list-all-packages)
-                 :key (compose #'symbol-name #'package-name)))
+                 :key #'package-name))
 
 (defun non-nyxt-packages ()
   "Return the packages that are not related to Nyxt.
