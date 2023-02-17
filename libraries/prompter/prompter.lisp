@@ -164,7 +164,8 @@ computation is not finished.")))
 
 (defmethod (setf current-suggestion) (value (prompter prompter))
   (setf (slot-value prompter 'current-suggestion) value)
-  (run-action-on-current-suggestion prompter))
+  (run-action-on-current-suggestion prompter)
+  value)
 
 (export-always 'run-action-on-current-suggestion)
 (defmethod run-action-on-current-suggestion ((prompter prompter))
