@@ -81,7 +81,7 @@ Example (Tor-proxied completion function for Wikipedia):
                       (cons (format nil base-url (quri:url-encode input))
                             request-args)))))
 
-(defmethod prompter:object-attributes ((engine search-engine) (source prompter:source))
+(defmethod prompter:object-attributes ((engine search-engine) (source prompt-source))
   (declare (ignore source))
   `(("Name" ,(or (name engine) (shortcut engine)))
     ("Search URL" ,(search-url engine) nil 3)))
@@ -100,11 +100,11 @@ Example (Tor-proxied completion function for Wikipedia):
   "Return the last search engine of the SEARCH-ENGINES."
   (first (last search-engines)))
 
-(define-class search-engine-source (prompter:source)
+(define-class search-engine-source (prompt-source)
   ((prompter:name "Search Engines")
    (prompter:constructor (all-search-engines))))
 
-(define-class search-engine-url-source (prompter:source)
+(define-class search-engine-url-source (prompt-source)
   ((prompter:name "Search Engines")
    (prompter:constructor (delete nil (mapcar #'fallback-url (all-search-engines))))
    (prompter:enable-marks-p t)))

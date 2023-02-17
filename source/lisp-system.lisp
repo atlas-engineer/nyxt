@@ -23,7 +23,7 @@
                            :onclick (ps:ps (nyxt/ps:lisp-eval (:title "quickload") (ql:quickload name))) "Load"))
               (:hr)))))))
 
-(define-class quicklisp-source (prompter:source)
+(define-class quicklisp-source (prompt-source)
   ((prompter:name "Quicklisp systems")
    (prompter:constructor (mapcar #'ql-dist:short-description (ql:system-list)))
    (prompter:actions-on-return (lambda-command quickload* (systems)

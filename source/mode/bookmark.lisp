@@ -102,7 +102,7 @@ Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod prompter:object-attributes ((entry bookmark-entry) (source prompter:source))
+(defmethod prompter:object-attributes ((entry bookmark-entry) (source prompt-source))
   (declare (ignore source))
   `(("URL" ,(render-url (url entry)) nil 3)
     ("Title" ,(title entry) nil 2)
@@ -141,7 +141,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
           (push entry bookmarks-without-url)
           (setf bookmarks bookmarks-without-url))))))
 
-(define-class bookmark-source (prompter:source)
+(define-class bookmark-source (prompt-source)
   ((prompter:name "Bookmarks")
    (prompter:constructor (files:content (bookmarks-file (current-buffer))))
    (prompter:enable-marks-p t)
@@ -162,7 +162,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                       #'string-lessp)))
       tags)))
 
-(define-class tag-source (prompter:source)
+(define-class tag-source (prompt-source)
   ((prompter:name "Tags")
    (prompter:filter-preprocessor
     (lambda (initial-suggestions-copy source input)

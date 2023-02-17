@@ -148,12 +148,12 @@ make-instance."
   "Create a new buffer with the annotations of the current URL of BUFFER."
   (buffer-load-internal-page-focus 'show-annotations-for-current-url :id (id buffer)))
 
-(define-class annotation-source (prompter:source)
+(define-class annotation-source (prompt-source)
   ((prompter:name "Annotations")
    (prompter:constructor (files:content (annotations-file (current-buffer))))
    (prompter:enable-marks-p t)))
 
-(define-class annotation-tag-source (prompter:source)
+(define-class annotation-tag-source (prompt-source)
   ((prompter:name "Tags")
    (prompter:filter-preprocessor
     (lambda (initial-suggestions-copy source input)

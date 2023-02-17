@@ -16,7 +16,7 @@
   (reload-buffer (resurrect-buffer buffer))
   buffer)
 
-(define-class recent-buffer-source (prompter:source)
+(define-class recent-buffer-source (prompt-source)
   ((prompter:name "Deleted buffers")
    (prompter:enable-marks-p t)
    (prompter:constructor

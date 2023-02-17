@@ -139,7 +139,7 @@ This saves the history to disk when BODY exits."
     (load-history-url new-node
                       :message "No forward history.")))
 
-(define-class history-backwards-source (prompter:source)
+(define-class history-backwards-source (prompt-source)
   ((prompter:name "Parent URLs")
    (buffer :initarg :buffer :accessor buffer :initform nil)
    (prompter:constructor
@@ -153,7 +153,7 @@ This saves the history to disk when BODY exits."
   (:metaclass user-class)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod prompter:object-attributes ((node history-tree:node) (source prompter:source))
+(defmethod prompter:object-attributes ((node history-tree:node) (source prompt-source))
   (declare (ignore source))
   (let ((entry (htree:data (history-tree:entry node))))
     `(("URL" ,(render-url (url entry)))
@@ -171,7 +171,7 @@ This saves the history to disk when BODY exits."
               do (htree:backward history (id buffer))))
       (load-history-url input))))
 
-(define-class direct-history-forwards-source (prompter:source)
+(define-class direct-history-forwards-source (prompt-source)
   ((prompter:name "First child of all forward-branches")
    (buffer nil :type (maybe buffer))
    (prompter:constructor
@@ -207,7 +207,7 @@ Otherwise go forward to the only child."
         (history-forwards-direct-children)
         (history-forwards))))
 
-(define-class history-forwards-source (prompter:source)
+(define-class history-forwards-source (prompt-source)
   ((prompter:name "All children URLs of the current forward-branch")
    (buffer :initarg :buffer :accessor buffer :initform nil)
    (prompter:constructor
@@ -232,7 +232,7 @@ Otherwise go forward to the only child."
               do (htree:forward history (id buffer))))
       (load-history-url input))))
 
-(define-class all-history-forwards-source (prompter:source)
+(define-class all-history-forwards-source (prompt-source)
   ((prompter:name "Child URLs")
    (buffer :initarg :buffer :accessor buffer :initform nil)
    (prompter:constructor
@@ -256,7 +256,7 @@ Otherwise go forward to the only child."
         (htree:visit-all history (id buffer) input))
       (load-history-url input))))
 
-(define-class history-all-owner-nodes-source (prompter:source)
+(define-class history-all-owner-nodes-source (prompt-source)
   ((prompter:name "All history URLs")
    (buffer :initarg :buffer :accessor buffer :initform nil)
    (prompter:constructor
@@ -281,7 +281,7 @@ Otherwise go forward to the only child."
         (htree:visit-all history (id buffer) input))
       (load-history-url input))))
 
-(define-class history-all-source (prompter:source)
+(define-class history-all-source (prompt-source)
   ((prompter:name "All history URLs")
    (buffer :initarg :buffer :accessor buffer :initform nil)
    (prompter:constructor

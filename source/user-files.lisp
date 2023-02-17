@@ -141,7 +141,7 @@ Example: when passed command line option --with-file foo=bar,
   (let ((*package* (find-package :nyxt)))
     (s-serialization:deserialize-sexp raw-content)))
 
-(defmethod prompter:object-attributes ((file files:file) (source prompter:source))
+(defmethod prompter:object-attributes ((file files:file) (source prompt-source))
   `(("Path" ,(uiop:native-namestring (files:expand file)) nil 3)
     ("Exists?" ,(if (uiop:file-exists-p (uiop:ensure-pathname (files:expand file)))
                     "yes"
@@ -149,7 +149,7 @@ Example: when passed command line option --with-file foo=bar,
     ("Type" ,(string (sera:class-name-of file)))
     ("Name" ,(files:name file) nil 2)))
 
-(define-class user-file-source (prompter:source)
+(define-class user-file-source (prompt-source)
   ((prompter:name "User files")
    (prompter:active-attributes-keys '("Path" "Exists?" "Type" "Name"))
    (prompter:constructor (let ((path-map (make-hash-table :test 'equal)))

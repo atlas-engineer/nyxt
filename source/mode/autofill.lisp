@@ -59,7 +59,7 @@ it will be in conflict with common-lisp:fill."))
               (string (lambda () (autofill-fill autofill)))
               (function (autofill-fill autofill)))))
 
-(define-class autofill-source (prompter:source)
+(define-class autofill-source (prompt-source)
   ((prompter:name "Autofills")
    (prompter:constructor (autofills (find-submode 'autofill-mode)))
    (prompter:actions-on-return
@@ -69,7 +69,7 @@ it will be in conflict with common-lisp:fill."))
   (:export-class-name-p t)
   (:metaclass user-class))
 
-(defmethod prompter:object-attributes ((autofill autofill) (source prompter:source))
+(defmethod prompter:object-attributes ((autofill autofill) (source prompt-source))
   (declare (ignore source))
   `(("Name" ,(autofill-name autofill))
     ("Fill"

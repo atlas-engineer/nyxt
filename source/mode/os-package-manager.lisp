@@ -31,7 +31,7 @@
       (ps:chain document (write (ps:lisp (spinneret:with-html-string
                                            (:p "Operation cancelled."))))))))
 
-(defmethod prompter:object-attributes ((pkg ospm:os-package) (source prompter:source))
+(defmethod prompter:object-attributes ((pkg ospm:os-package) (source prompt-source))
   (declare (ignore source))
   `(("Name" ,(ospm:name pkg))
     ("Version" ,(ospm:version pkg))
@@ -47,14 +47,14 @@
 (defmethod name ((package ospm:os-package))
   (ospm:name package))
 
-(defmethod prompter:object-attributes ((output ospm:os-package-output) (source prompter:source))
+(defmethod prompter:object-attributes ((output ospm:os-package-output) (source prompt-source))
   (declare (ignore source))
   (let ((pkg (ospm:parent-package output)))
     `(("Name" ,(name output))
       ("Version" ,(ospm:version pkg))
       ("Synopsis" ,(ospm:synopsis pkg)))))
 
-(defmethod prompter:object-attributes ((gen ospm:os-generation) (source prompter:source))
+(defmethod prompter:object-attributes ((gen ospm:os-generation) (source prompt-source))
   (declare (ignore source))
   `(("ID" ,(ospm:id gen))
     ("Date" ,(time:format-timestring nil (ospm:date gen)
@@ -62,7 +62,7 @@
     ("Package count" ,(ospm:package-count gen))
     ("Current?" ,(if (ospm:current? gen) "yes" ""))))
 
-(defmethod prompter:object-attributes ((pkg ospm:guix-package) (source prompter:source))
+(defmethod prompter:object-attributes ((pkg ospm:guix-package) (source prompt-source))
   (declare (ignore source))
   ;; We could have called `call-next-method', then modify the result, but it's
   ;; too costly for thousands of packages.
@@ -79,22 +79,22 @@
     ("Propagated inputs" ,(sera:string-join (ospm:propagated-inputs pkg) " "))
     ("Licenses" ,(format nil "~{~a~^, ~}" (ospm:licenses pkg)))))
 
-(define-class os-package-source (prompter:source)
+(define-class os-package-source (prompt-source)
   ((prompter:name "Packages")
    (prompter:enable-marks-p t)
    (prompter:constructor (ospm:list-packages))
    (prompter:active-attributes-keys '("Name" "Version" "Synopsis"))))
 
-(define-class os-manifest-source (prompter:source)
+(define-class os-manifest-source (prompt-source)
   ((prompter:name "Manifests")
    (prompter:constructor (mapcar #'uiop:native-namestring (ospm:list-manifests)))))
 
-(define-class os-package-output-source (prompter:source)
+(define-class os-package-output-source (prompt-source)
   ((prompter:name "Package Outputs")
    (prompter:enable-marks-p t)
    (prompter:constructor (ospm:list-package-outputs))))
 
-(define-class os-installed-package-source (prompter:source)
+(define-class os-installed-package-source (prompt-source)
   ((prompter:name "Installed Packages")
    (profile)
    (prompter:constructor
@@ -102,7 +102,7 @@
       (ospm:list-packages (profile source)))))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-class os-profile-source (prompter:source)
+(define-class os-profile-source (prompt-source)
   ((prompter:name "Profiles")
    (include-manager-p)
    (prompter:constructor
@@ -110,7 +110,7 @@
                       :include-manager-p (include-manager-p source)))))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-class os-generation-source (prompter:source)
+(define-class os-generation-source (prompt-source)
   ((prompter:name "Packages")
    (profile (error "Profile required."))
    (prompter:constructor

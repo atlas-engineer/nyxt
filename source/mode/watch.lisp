@@ -11,7 +11,7 @@
          (to-seconds-alist (pairlis time-units '(86400 3600 60 1)))
          (active-time-units (prompt
                              :prompt "Time unit(s)"
-                             :sources (make-instance 'prompter:source
+                             :sources (make-instance 'prompt-source
                                                      :name "Units"
                                                      :constructor time-units
                                                      :enable-marks-p t)))

@@ -144,7 +144,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
           (push entry no-procrastinate-hosts-without-url)
           (setf no-procrastinate-hosts-list no-procrastinate-hosts-without-url))))))
 
-(define-class no-procrastinate-source (prompter:source)
+(define-class no-procrastinate-source (prompt-source)
   ((prompter:name "Hosts to avoid procrastination")
    (prompter:constructor (files:content (no-procrastinate-hosts-file (current-buffer))))
    (prompter:enable-marks-p t)

@@ -178,7 +178,7 @@ It does not assume being online."))
   "Paste from clipboard into active element."
   (ffi-buffer-paste buffer))
 
-(define-class ring-source (prompter:source)
+(define-class ring-source (prompt-source)
   ((prompter:name "Clipboard ring")
    (ring :initarg :ring :accessor ring :initform nil)
    (prompter:constructor
@@ -439,7 +439,7 @@ ID is a buffer `id'."
   "Scroll to the previous heading of the BUFFER."
   (scroll-page-to-n-headings -1 buffer))
 
-(define-class heading-source (prompter:source)
+(define-class heading-source (prompt-source)
   ((prompter:name "Headings")
    (buffer :accessor buffer :initarg :buffer)
    (prompter:actions-on-current-suggestion-enabled-p t)
@@ -677,7 +677,7 @@ of buffers."
     (ps:chain (nyxt/ps:qs document "#nyxt-rectangle-selection") (remove))
     (ps:chain (nyxt/ps:qs document "#nyxt-overlay") (remove))))
 
-(define-class frame-source (prompter:source)
+(define-class frame-source (prompt-source)
   ((prompter:name "Selection Frame")
    (buffer :accessor buffer :initarg :buffer)
    (prompter:filter-preprocessor (lambda (initial-suggestions-copy source input)

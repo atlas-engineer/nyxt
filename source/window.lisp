@@ -196,7 +196,7 @@ not try to quit the browser."
                (zerop (hash-table-count (windows *browser*))))
       (quit))))
 
-(define-class window-source (prompter:source)
+(define-class window-source (prompt-source)
   ((prompter:name "Windows")
    (prompter:enable-marks-p t)
    (prompter:constructor (window-list))

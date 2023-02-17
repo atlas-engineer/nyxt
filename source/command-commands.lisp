@@ -24,7 +24,7 @@
                      ""
                      (str:replace-first "nyxt/" "" package-name)))))))
 
-(define-class command-source (prompter:source)
+(define-class command-source (prompt-source)
   ((prompter:name "Commands")
    (global-p t
              :type boolean
@@ -52,7 +52,7 @@ from a key binding.")
                                                 (list (last-command browser)))))
     (analysis:element prediction)))
 
-(define-class predicted-command-source (prompter:source)
+(define-class predicted-command-source (prompt-source)
   ((prompter:name "Predicted Command")
    (prompter:constructor
     (lambda (source)
@@ -67,11 +67,11 @@ from a key binding.")
   "Execute the predicted next command."
   (run-async (predict-next-command *browser*)))
 
-(defmethod prompter:object-attributes ((command command) (source prompter:source))
+(defmethod prompter:object-attributes ((command command) (source prompt-source))
   (declare (ignore source))
   (command-attributes command))
 
-(define-class extended-command-source (prompter:source)
+(define-class extended-command-source (prompt-source)
   ((prompter:name "Lisp expression")
    (prompter:filter-preprocessor
     (lambda (suggestions source input)
@@ -275,7 +275,7 @@ User input is evaluated Lisp."
               buffer-hooks
               browser-hooks))))
 
-(define-class hook-source (prompter:source)
+(define-class hook-source (prompt-source)
   ((prompter:name "Hooks")
    (prompter:constructor (get-hooks))))
 
@@ -284,7 +284,7 @@ User input is evaluated Lisp."
   `(("Name" ,(name hook-description))
     ("Value" ,(value hook-description))))
 
-(define-class handler-source (prompter:source)
+(define-class handler-source (prompt-source)
   ((prompter:name "Handlers")
    (hook :accessor hook
          :initarg :hook

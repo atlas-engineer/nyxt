@@ -5,7 +5,7 @@
 
 ;; TODO: Quite some code could be factored with `internal-page'.
 
-(define-class panel-buffer-source (prompter:source)
+(define-class panel-buffer-source (prompt-source)
   ((prompter:name "Panel buffers")
    (window :accessor window :initarg :window)
    (prompter:enable-marks-p t)

@@ -47,7 +47,7 @@ It's a list of a form (Y &OPTIONAL X)."))
 Entry for the global history.
 The total number of visit for a given URL is (+ explicit-visits implicit-visits)."))
 
-(defmethod prompter:object-attributes ((entry history-entry) (source prompter:source))
+(defmethod prompter:object-attributes ((entry history-entry) (source prompt-source))
   (declare (ignore source))
   `(("URL" ,(render-url (url entry))
            ,(spinneret::escape-string
@@ -160,7 +160,7 @@ lot."
                                         all-history-entries)))
     all-history-entries))
 
-(define-class history-disowned-source (prompter:source)
+(define-class history-disowned-source (prompt-source)
   ((prompter:name "Disowned History")
    (buffer :accessor buffer :initarg :buffer)
    (prompter:enable-marks-p t)
@@ -381,7 +381,7 @@ Return non-NIL of history was restored, NIL otherwise."
                :test 'string-equal
                :key #'files:pathname-type*)))
 
-(define-class history-name-source (prompter:source)
+(define-class history-name-source (prompt-source)
   ((prompter:name "Histories")
    (prompter:constructor (mapcar #'pathname-name (histories-list)))
    (prompter:hide-attribute-header-p :single)))

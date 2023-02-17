@@ -330,7 +330,7 @@ For production code, see `find-submode' instead."
                                                      ""))
                                ("Package" ,(string-downcase (package-name (symbol-package mode)))))))
 
-(define-class mode-source (prompter:source)
+(define-class mode-source (prompt-source)
   ((prompter:name "Modes")
    (prompter:enable-marks-p t)
    (prompter:constructor (sort (all-mode-symbols) #'string< :key #'symbol-name))
@@ -338,7 +338,7 @@ For production code, see `find-submode' instead."
   (:export-class-name-p t)
   (:metaclass user-class))
 
-(defmethod prompter:object-attributes ((mode mode) (source prompter:source))
+(defmethod prompter:object-attributes ((mode mode) (source prompt-source))
   (declare (ignore source))
   `(("Name" ,mode)))
 

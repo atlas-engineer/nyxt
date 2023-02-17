@@ -76,7 +76,7 @@ suggestions."
     (trivial-clipboard:text selected-word)
     (echo "Word saved to clipboard.")))
 
-(define-class enchant-source (prompter:source)
+(define-class enchant-source (prompt-source)
   ((case-sensitive-p nil)
    (prompter:name "Enchant")
    (prompter:filter nil)
@@ -108,7 +108,7 @@ suggestions."
     (trivial-clipboard:text selected-text)
     (echo "Text saved to clipboard.")))
 
-(define-class enchant-text-input (prompter:source)
+(define-class enchant-text-input (prompt-source)
   ((case-sensitive-p nil)
    (minimum-search-length 3)
    (prompter:name "Enchant for text")

@@ -233,7 +233,7 @@ Return NIL if page content is empty."
                 page)
           (delete-out-of-date-pages remembrance-mode))))))
 
-(define-class remembrance-source (prompter:source)
+(define-class remembrance-source (prompt-source)
   ((prompter:name "Pages")
    (prompter:constructor (all-cache-entries (find-submode 'remembrance-mode)))
    (prompter:filter nil)

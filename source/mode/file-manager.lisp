@@ -95,7 +95,7 @@ When the user is unspecified, take the current one."
       (mapcar #'uiop:resolve-symlinks
               (mappend #'uiop:directory-files paths))))))
 
-(define-class program-source (prompter:source)
+(define-class program-source (prompt-source)
   ((prompter:name "Programs")
    (prompter:constructor (executables))
    (prompter:enable-marks-p t))
@@ -105,7 +105,7 @@ When the user is unspecified, take the current one."
   (:documentation "Prompt source for user-accessible programs.")
   (:metaclass user-class))
 
-(defmethod prompter:object-attributes ((path pathname) (source prompter:source))
+(defmethod prompter:object-attributes ((path pathname) (source prompt-source))
   (declare (ignore source))
   `(("Path" ,(uiop:native-namestring path) nil 2)
     ("Name" ,(if (uiop:directory-pathname-p path)
@@ -142,7 +142,7 @@ It's suitable for `prompter:filter-preprocessor'."
        source
        input))))
 
-(define-class file-source (prompter:source)
+(define-class file-source (prompt-source)
   ((prompter:name "Files")
    (prompter:active-attributes-keys
     '("Name" "Extension" "Directory")

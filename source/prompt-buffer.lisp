@@ -550,8 +550,9 @@ prompt-buffer constructor.
 Example use:
 
 \(prompt :prompt \"Test prompt\"
-         :sources (make-instance 'prompter:source :name \"Test\"
-                                                  :constructor '(\"foo\" \"bar\")))
+         :sources (make-instance 'prompt-source
+                                 :name \"Test\"
+                                 :constructor '(\"foo\" \"bar\")))
 
 See the documentation of `prompt-buffer' to know more about the options."
     (declare #.(cons 'ignorable %prompt-args))
@@ -585,14 +586,14 @@ See the documentation of `prompt-buffer' to know more about the options."
     (declare #.(cons 'ignorable %prompt-args))
     (first (apply #'prompt args))))
 
-(define-class resume-prompt-source (prompter:source)
+(define-class resume-prompt-source (prompt-source)
   ((prompter:name "Resume prompters")
    (prompter:constructor (old-prompt-buffers *browser*))
    ;; TODO: Remove duplicates.
    ;; TODO: History?
    ))
 
-(defmethod prompter:object-attributes ((prompt-buffer prompt-buffer) (source prompter:source))
+(defmethod prompter:object-attributes ((prompt-buffer prompt-buffer) (source prompt-source))
   (declare (ignore source))
   `(("Prompt" ,(prompter:prompt prompt-buffer))
     ("Input" ,(prompter:input prompt-buffer))))

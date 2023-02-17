@@ -395,7 +395,7 @@ Follows what the compiler finds aesthetically pleasing."
                             :input symbol-to-complete
                             ;; TODO: Make it re-compute on input.
                             :sources (make-instance
-                                      'prompter:source
+                                      'prompt-source
                                       :name "Completions"
                                       :constructor (first (swank:simple-completions
                                                            symbol-to-complete *package*))))

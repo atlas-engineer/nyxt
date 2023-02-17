@@ -112,11 +112,11 @@ See `save-input-data' and `set-input-data-from-saved'."
       (setf (ps:chain (aref text-areas i) value)
             (ps:chain (aref saved-text-areas-values i))))))
 
-(define-class input-data-source (prompter:source)
+(define-class input-data-source (prompt-source)
   ((prompter:name "Inputs")
    (prompter:constructor (files:content (inputs-file (current-buffer))))))
 
-(define-class filtered-domain-input-data-source (prompter:source)
+(define-class filtered-domain-input-data-source (prompt-source)
   ((prompter:name "Inputs")
    (prompter:constructor (remove-if-not #'(lambda (input-entry)
                                             (equal (quri:uri-domain (quri:uri (url input-entry)))

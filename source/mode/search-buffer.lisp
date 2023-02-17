@@ -153,7 +153,7 @@
 (defmethod nyxt/hint-mode:identifier ((match search-match))
   (identifier match))
 
-(defmethod prompter:object-attributes ((match search-match) (source prompter:source))
+(defmethod prompter:object-attributes ((match search-match) (source prompt-source))
   `(("Text" ,(body match) nil 3)
     ("ID" ,(identifier match))
     ("Buffer ID" ,(id (buffer match)))
@@ -197,7 +197,7 @@
                                                     :scroll scroll))
           (nyxt/hint-mode:unhighlight-selected-hint)))))
 
-(define-class search-buffer-source (prompter:source)
+(define-class search-buffer-source (prompt-source)
   ((case-sensitive-p nil)
    (buffer (current-buffer))
    (minimum-search-length 1)

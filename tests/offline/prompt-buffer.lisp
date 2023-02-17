@@ -6,7 +6,7 @@
 (unless lparallel:*kernel* (setf lparallel:*kernel*
                                  (lparallel:make-kernel (or (serapeum:count-cpus) 1))))
 
-(define-class test-source (prompter:source)
+(define-class test-source (prompt-source)
   ;; The number of suggestions is only relevant to assess the algorithm's
   ;; performance, so it suffices to use a single suggestion for general testing.
   ((prompter:name "Test")

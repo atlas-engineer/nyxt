@@ -56,7 +56,7 @@ for which the `executable' slot is non-nil."
                 (echo "Username saved to clipboard.")
                 (echo "No username found."))))))
 
-(define-class password-source (prompter:source)
+(define-class password-source (prompt-source)
   ((prompter:name "Passwords")
    (buffer :accessor buffer :initarg :buffer)
    (password-instance :accessor password-instance :initarg :password-instance)

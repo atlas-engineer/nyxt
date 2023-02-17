@@ -288,7 +288,7 @@ It's the complement of `nyxt-packages' and `nyxt-user-packages'."
   "Return the list of slots with VISIBILITY."
   (sym:filter-symbols visibility (mopu:slot-names class-sym)))
 
-(defmethod prompter:object-attributes ((slot slot) (source prompter:source))
+(defmethod prompter:object-attributes ((slot slot) (source prompt-source))
   (declare (ignore source))
   `(("Name" ,(string (name slot)))
     ("Class" ,(string (class-sym slot)))))

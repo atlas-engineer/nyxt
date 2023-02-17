@@ -1323,7 +1323,7 @@ the `active-buffer'."
           "white"
           "black"))))
 
-(define-class color-source (prompter:source)
+(define-class color-source (prompt-source)
   ((prompter:name "Color")
    (prompter:constructor *css-colors*)
    (prompter:filter-preprocessor
@@ -2265,7 +2265,7 @@ As a second value, return the current buffer index starting from 0."
         (gtk-object gtk-buffer) webkit2:+webkit-editing-command-redo+)))
    (lambda (e) (echo-warning "Cannot redo: ~a" e))))
 
-(define-class context-source (prompter:source)
+(define-class context-source (prompt-source)
   ((prompter:name "Context list")
    (prompter:constructor (sort (delete-duplicates (append (mapcar #'context-name (buffer-list))
                                                           (list +internal+ +default+))

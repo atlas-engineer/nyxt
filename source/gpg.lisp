@@ -5,7 +5,7 @@
 
 ;; TODO: Handle condition when GPG recipient is not found and prompt the user.
 
-(define-class gpg-key-source (prompter:source)
+(define-class gpg-key-source (prompt-source)
   ((prompter:name "GPG Private Keys")
    (prompter:constructor (nfiles/gpg:gpg-private-keys))))
 

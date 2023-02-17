@@ -14,7 +14,7 @@ See `sym:package-functions' for an example."
       (funcall lister (external-visibility-packages source) :external)
       (funcall lister (inherited-visibility-packages source) :inherited)))))
 
-(define-class describe-nyxt-source (prompter:source)
+(define-class describe-nyxt-source (prompt-source)
   ((visibility
     :any
     :type (member :internal :external :inherited :any)
@@ -91,7 +91,7 @@ See `sym:package-functions' for an example."
   "Return non-nil if OBJECT has `prompter:object-attributes' specialization."
   (has-method-p object #'prompter:object-attributes))
 
-(defmethod prompter:object-attributes ((symbol symbol) (source prompter:source))
+(defmethod prompter:object-attributes ((symbol symbol) (source prompt-source))
   (declare (ignore source))
   `(("Name" ,(prini-to-string symbol))
     ("Visibility" ,(prini-to-string (sym:symbol-visibility symbol)))
@@ -109,7 +109,7 @@ See `sym:package-functions' for an example."
           "")
      nil 4)))
 
-(defmethod prompter:object-attributes ((package package) (source prompter:source))
+(defmethod prompter:object-attributes ((package package) (source prompt-source))
   (declare (ignore source))
   `(("Name" ,(package-name package))
     ("Nicknames" ,(append (package-nicknames package)
@@ -154,7 +154,7 @@ See `sym:package-functions' for an example."
 (define-class variable-internal-source (variable-source describe-internal-source)
   ((prompter:name "Internal Variables")))
 
-(define-class package-source (prompter:source)
+(define-class package-source (prompt-source)
   ((prompter:name "Packages")
    (prompter:constructor (mapcar (compose #'intern #'package-name) (list-all-packages)))))
 
