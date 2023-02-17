@@ -179,8 +179,7 @@ make-instance."
   (let ((selected-annotations
           (prompt
            :prompt "Show annotation(s)"
-           :sources (make-instance 'annotation-source
-                                   :actions-on-return #'identity))))
+           :sources (make-instance 'annotation-source))))
     (render-annotations selected-annotations)))
 
 (define-internal-page-command-global show-annotations ()

@@ -131,8 +131,7 @@ contains an `nyxt/editor-mode:editor-mode' instance (or a subclass thereof)."))
      :input (uiop:native-namestring (uiop:getcwd))
      :sources
      (list (make-instance 'nyxt/file-manager-mode:file-source
-                          :name "Existing file"
-                          :actions-on-return #'identity)
+                          :name "Existing file")
            (make-instance 'prompter:raw-source
                           :name "Create new file"))))))
 

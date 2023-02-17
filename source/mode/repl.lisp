@@ -543,8 +543,7 @@ Follows what the compiler finds aesthetically pleasing."
              :title "Edit the source of one of Nyxt commands in REPL."
              (let ((functions (prompt :prompt "Function to edit"
                                       :sources (make-instance
-                                                'nyxt::function-source
-                                                :actions-on-return #'identity))))
+                                                'nyxt::function-source))))
                (setf (evaluations repl-mode)
                      (append
                       (evaluations repl-mode)
