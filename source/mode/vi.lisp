@@ -94,11 +94,17 @@ See also `vi-normal-mode' and `vi-insert-mode'."
       (enable-modes* 'nyxt/passthrough-mode:passthrough-mode buffer))))
 
 (defun vi-insert-on-input-fields (buffer)
-  (j:if (ps-eval :buffer buffer
-          (and (nyxt/ps:active-element document)
-               (nyxt/ps:element-editable-p (nyxt/ps:active-element document))))
-        (enable-modes* 'vi-insert-mode buffer)
-        (enable-modes* 'vi-normal-mode buffer)))
+  (cond
+    ((j:and (find-submode 'vi-normal-mode buffer)
+            (ps-eval :buffer buffer
+              (and (nyxt/ps:active-element document)
+                   (nyxt/ps:element-editable-p (nyxt/ps:active-element document)))))
+     (enable-modes* 'vi-insert-mode buffer))
+    ((j:and (find-submode 'vi-insert-mode buffer)
+            (j:not (ps-eval :buffer buffer
+                     (and (nyxt/ps:active-element document)
+                          (nyxt/ps:element-editable-p (nyxt/ps:active-element document))))))
+     (enable-modes* 'vi-normal-mode buffer))))
 
 (defmethod on-signal-load-finished ((mode vi-insert-mode) url)
   (declare (ignore url))
