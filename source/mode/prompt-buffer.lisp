@@ -194,6 +194,24 @@ listed and chosen from with the command `set-action-on-return' (bound to
   (prompter:last-suggestion prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
 
+(define-command-prompt first-suggestion-within-source (prompt-buffer)
+  "Select first entry in the current PROMPT-BUFFER's source."
+  (let ((first-source-p (eq (prompter:current-source prompt-buffer)
+                            (first (prompter:previous-source prompt-buffer)))))
+    (if first-source-p
+        (prompter:first-suggestion prompt-buffer)
+        (prompter:next-suggestion prompt-buffer)))
+  (prompt-render-suggestions prompt-buffer))
+
+(define-command-prompt last-suggestion-within-source (prompt-buffer)
+  "Select last entry in the current PROMPT-BUFFER's source."
+  (let ((last-source-p (eq (prompter:current-source prompt-buffer)
+                           (first (prompter:next-source prompt-buffer)))))
+    (if last-source-p
+        (prompter:last-suggestion prompt-buffer)
+        (prompter:previous-suggestion prompt-buffer)))
+  (prompt-render-suggestions prompt-buffer))
+
 (define-command-prompt next-source (prompt-buffer)
   "Select next source in PROMPT-BUFFER."
   (prompter:next-source prompt-buffer)
