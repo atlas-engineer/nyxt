@@ -271,7 +271,9 @@ first (resp. last) one of destination source."
                     (source-index (or (position (current-source prompter)
                                                 nonempty-sources)
                                       0))
-                    (new-source (nth (alex:clamp (+ steps source-index) 0 (1- (length nonempty-sources)))
+                    (new-source (nth (alex:clamp (+ steps source-index)
+                                                 0
+                                                 (1- (length nonempty-sources)))
                                      nonempty-sources))
                     (suggestion-index (if (< 0 steps)
                                           0
