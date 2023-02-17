@@ -254,7 +254,8 @@ Example:
           :sources (make-instance 'search-buffer-source
                                   :case-sensitive-p case-sensitive-p
                                   :actions-on-return
-                                  (lambda (search-match)
+                                  (lambda-command identity (search-match)
+                                    "Select search match."
                                     (unless (keep-search-hints-p (current-buffer))
                                       (remove-search-hints))
                                     search-match))))

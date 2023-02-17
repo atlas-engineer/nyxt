@@ -1335,7 +1335,7 @@ the `active-buffer'."
               suggestions))))
    (prompter:actions-on-current-suggestion-enabled-p t)
    (prompter:actions-on-current-suggestion
-    (lambda (color)
+    (lambda-command show-color (color)
       (ps-eval :buffer (current-prompt-buffer)
         (setf (ps:@ (nyxt/ps:qs document "#input") style background-color) (ps:lisp color)))
       (ps-eval :buffer (current-prompt-buffer)

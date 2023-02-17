@@ -416,7 +416,7 @@ If it's a single buffer, return it directly (not as a list)."
                          :prompt "Enable mode(s) for buffer(s)"
                          :sources (make-instance 'buffer-source
                                                  :enable-marks-p t
-                                                 :actions-on-return '())))))
+                                                 :actions-on-return #'identity)))))
          (modes (or modes
                     (unless explicit-modes-p
                       (prompt
@@ -460,7 +460,7 @@ If it's a single buffer, return it directly (not as a list)."
                          :prompt "Enable mode(s) for buffer(s)"
                          :sources (make-instance 'buffer-source
                                                  :enable-marks-p t
-                                                 :actions-on-return '())))))
+                                                 :actions-on-return #'identity)))))
          (modes (or modes
                     (unless explicit-modes-p
                       (prompt
