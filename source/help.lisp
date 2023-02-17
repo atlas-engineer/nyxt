@@ -3,6 +3,9 @@
 
 (in-package :nyxt)
 
+;; Moved here so all the `nyxt-packages' are defined by the moment it's set.
+(setf sym:*default-packages* (append '(:nyxt-user) (nyxt-packages)))
+
 (defmacro command-docstring-first-sentence (fn &key (sentence-case-p nil))
   "Print FN first docstring sentence in HTML."
   `(if (fboundp ,fn)

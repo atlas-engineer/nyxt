@@ -297,9 +297,6 @@ See `sym:package-symbols'."
                      (class-slots class-sym :visibility visibility)))
            (sym:package-classes packages)))
 
-;; FIXME: Set elsewhere?
-(setf sym:*default-packages* (list :nyxt :nyxt-user))
-
 (sym:define-symbol-type command (function)
   (command-p (ignore-errors (symbol-function sym:%symbol%))))
 
