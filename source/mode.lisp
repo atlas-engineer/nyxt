@@ -225,7 +225,9 @@ When unset, it corresponds to the mode name."
   (when (sym:mode-symbol-p symbol)
     (find-class symbol)))
 
-(defun resolve-user-symbol (designator type &optional (packages sym:*default-packages*))
+(defun resolve-user-symbol (designator type &optional (packages (append (nyxt-packages)
+                                                                        (nyxt-user-packages)
+                                                                        (nyxt-extension-packages))))
   "`nsymbols:resolve-symbol' wrapper, only resolving strings, keywords, and NYXT-USER symbols.
 Useful for user configuration smarts, returns unaltered DESIGNATOR otherwise."
   (etypecase designator
@@ -311,7 +313,7 @@ The \"-mode\" suffix is automatically appended to MODE-KEYWORD if missing.
 This is convenience function for interactive use.
 For production code, see `find-submode' instead."
   (let ((mode-designator (sera:ensure-suffix (string mode-designator) "-MODE")))
-    (find-submode (sym:resolve-symbol mode-designator :mode)
+    (find-submode (resolve-user-symbol mode-designator :mode)
                   buffer)))
 
 (defun all-mode-symbols ()
