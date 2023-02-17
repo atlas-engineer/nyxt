@@ -238,6 +238,7 @@ follows.")
           (define-configuration context-buffer
             "Add a single search engine manually."
             ((search-engines (pushnew (make-instance 'search-engine
+                                                     :name "Reddit"
                                                      :shortcut "r"
                                                      :search-url "https://reddit.com/search/?q=~a"
                                                      :fallback-url "https://reddit.com")
