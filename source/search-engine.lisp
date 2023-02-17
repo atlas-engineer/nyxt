@@ -4,7 +4,10 @@
 (in-package :nyxt)
 
 (define-class search-engine ()
-  ((shortcut (error "Slot `shortcut' must be set")
+  ((name nil
+         :type (maybe string)
+         :documentation "Human-readable name of the search engine, like \"Wikipedia\" or \"Searx\".")
+   (shortcut (error "Slot `shortcut' must be set")
              :type string
              :documentation "The word used to refer to the search engine, for
 instance from the `set-url' commands.")
@@ -80,7 +83,7 @@ Example (Tor-proxied completion function for Wikipedia):
 
 (defmethod prompter:object-attributes ((engine search-engine) (source prompter:source))
   (declare (ignore source))
-  `(("Shortcut" ,(shortcut engine))
+  `(("Name" ,(or (name engine) (shortcut engine)))
     ("Search URL" ,(search-url engine) nil 3)))
 
 (defun all-search-engines ()

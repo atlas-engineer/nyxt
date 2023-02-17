@@ -419,6 +419,7 @@ down."))
     :documentation "Timestamp when the buffer was last switched to.")
    (search-engines
     (list (make-instance 'search-engine
+                         :name "Wikipedia"
                          :shortcut "wiki"
                          :search-url "https://en.wikipedia.org/w/index.php?search=~a"
                          :fallback-url (quri:uri "https://en.wikipedia.org/")
@@ -431,6 +432,7 @@ down."))
                                                (results (j:decode results)))
                                 (mapcar #'list (j:get 1 results) (j:get 3 results))))))
           (make-instance 'search-engine
+                         :name "DuckDuckGo"
                          :shortcut "ddg"
                          :search-url "https://duckduckgo.com/?q=~a"
                          :fallback-url (quri:uri "https://duckduckgo.com/")
