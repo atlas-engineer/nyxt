@@ -12,6 +12,8 @@ finish-args:
   - --socket=fallback-x11
   - --socket=pulseaudio
   - --socket=cups
+  - --filesystem=xdg-cache
+  - --filesystem=xdg-config
   - --filesystem=xdg-documents
   - --filesystem=xdg-download
   - --filesystem=xdg-music
