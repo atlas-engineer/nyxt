@@ -1,7 +1,6 @@
 app-id: engineer.atlas.Nyxt
-# Not a mistake! We need the sonames of shared libraries for SBCL during runtime.
 runtime: org.gnome.Sdk
-runtime-version: "41"
+runtime-version: "42"
 sdk: org.gnome.Sdk
 command: nyxt
 
@@ -39,7 +38,7 @@ modules:
     sources:
       - type: git
         url: https://github.com/sionescu/libfixposix.git
-        tag: v0.4.3
+        tag: v0.5.1
       - type: script
         dest-filename: autogen.sh
         commands:
