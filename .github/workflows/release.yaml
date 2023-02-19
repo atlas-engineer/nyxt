@@ -32,7 +32,7 @@ jobs:
       with:
         submodules: 'true'
 
-    - name: Install SBCL and dependencies
+    - name: Install dependencies
       shell: bash
       run: |
         sudo apt-get update -qq
@@ -45,7 +45,6 @@ jobs:
       run: |
         flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
         flatpak install --noninteractive org.gnome.Sdk/x86_64/41
-        make flatpak-build
         make flatpak-repository
         make flatpak-bundle
 
