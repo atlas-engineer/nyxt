@@ -29,18 +29,22 @@ jobs:
     # Check out your repository under $GITHUB_WORKSPACE, so your job can access it
     - name: Checkout
       uses: actions/checkout@v2
+      with:
+        submodules: 'true'
 
     - name: Install SBCL and dependencies
       shell: bash
       run: |
         sudo apt-get update -qq
-        sudo apt-get install -y git-core flatpak
+        sudo apt-get install -y git-core flatpak-builder
 
     - name: Build flatpak
       shell: bash
       # Don't run scripts with `sudo` since it would use /root as home instead
       # of the runner's /home/runner.
       run: |
+        flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+        flatpak install --noninteractive org.gnome.Sdk/x86_64/41
         make flatpak-build
         make flatpak-repository
         make flatpak-bundle
@@ -75,10 +79,6 @@ jobs:
       shell: bash
       run: |
         echo "Release notes: https://nyxt.atlas.engineer/article/release-$(cat version).org" >> release.txt
-        echo "" >> release.txt
-        echo "For Ubuntu 22.04: the .deb file depends on libssl1.1.  To install it:" >> release.txt
-        echo "    $ wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4_amd64.deb" >> release.txt
-        echo "    $ sudo dpkg -i ./libssl1.1_1.1.0g-2ubuntu4_amd64.deb" >> release.txt
         echo "" >> release.txt
         echo "To compile from source, prefer the tarball including the submodules if you don't manage the Lisp dependencies yourself." >> release.txt
     - name: Generate Guix pack reproduction recipe
