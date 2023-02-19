@@ -9,7 +9,7 @@ on:
   push:
     tags: '*'
     ## To test, uncomment the line below with branch name used for review.
-    branches: [ flatpak ]
+    # branches: [ my-work-branch ]
 
 jobs:
   build-binaries:
@@ -44,7 +44,7 @@ jobs:
       # of the runner's /home/runner.
       run: |
         sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-        sudo flatpak install --noninteractive org.gnome.Sdk/x86_64/41
+        sudo flatpak install --noninteractive org.gnome.Sdk/x86_64/42
         make flatpak-repository
         make flatpak-bundle
 
