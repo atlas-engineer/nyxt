@@ -9,7 +9,7 @@ on:
   push:
     tags: '*'
     ## To test, uncomment the line below with branch name used for review.
-    # branches: [ MY-WORK-BRANCH ]
+    branches: [ flatpak ]
 
 jobs:
   build-binaries:
@@ -34,15 +34,16 @@ jobs:
       shell: bash
       run: |
         sudo apt-get update -qq
-        sudo apt-get install -y ruby ruby-dev rubygems dpkg-dev sbcl curl git-core libzstd-dev
-        sudo apt-get install -y libfixposix3 libfixposix-dev libwebkit2gtk-4.0-dev glib-networking gsettings-desktop-schemas xclip enchant-2
-        sudo apt-get install -y gobject-introspection
+        sudo apt-get install -y git-core flatpak
 
-    - name: Build special SBCL and make Ubuntu package
+    - name: Build flatpak
       shell: bash
       # Don't run scripts with `sudo` since it would use /root as home instead
       # of the runner's /home/runner.
-      run: ./build-scripts/build-ubuntu-package.sh
+      run: |
+        make flatpak-build
+        make flatpak-repository
+        make flatpak-bundle
 
     - name: Guix cache
       uses: actions/cache@v2
@@ -94,4 +95,4 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         bodyFile: release.txt
-        artifacts: "nyxt-*.tar.xz*,guix-recipe.txt,*.deb"
+        artifacts: "nyxt-*.tar.xz*,guix-recipe.txt,*.flatpak"
