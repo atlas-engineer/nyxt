@@ -38,13 +38,13 @@ jobs:
         sudo apt-get update -qq
         sudo apt-get install -y git-core flatpak-builder
 
-    - name: Build flatpak
+    - name: Build Flatpak
       shell: bash
       # Don't run scripts with `sudo` since it would use /root as home instead
       # of the runner's /home/runner.
       run: |
-        flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-        flatpak install --noninteractive org.gnome.Sdk/x86_64/41
+        sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+        sudo flatpak install --noninteractive org.gnome.Sdk/x86_64/41
         make flatpak-repository
         make flatpak-bundle
 
