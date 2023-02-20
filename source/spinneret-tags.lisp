@@ -18,6 +18,77 @@
   "Regular <script>, but with contents staying unescaped."
   `(:script ,@attrs (:raw ,@body)))
 
+(deftag :p* (body attrs &key &allow-other-keys)
+  "Paragraph tag taking raw symbols and s-exprs in and converting them to string.
+
+Converts asterisk-prefixed symbols into capitalized ones, like in
+Parenscript. Recursively processes parenthesized expressions, unless those are
+Spinneret tags.
+
+Note: always use it in a special package, to not pollute production package with
+random interned symbols.
+
+Example:
+\(:p* *Hello |there,| (:i \"how\") are you (thee? (:span \"something?\") thou?) doing?)
+=> <p>Hello there, <i>how</i> are you (thee? <span>something?</span> thou?) doing?"
+  (labels ((process-p-star-forms (form)
+             "Turns
+- everything into strings,
+- lists into parenthesized lists (recursively),
+- tag expressions into themselves."
+             (match form
+               ((trivia:guard sym
+                              (and (symbolp sym)
+                                   (str:starts-with-p "*" (symbol-name sym))))
+                (list (string-capitalize (subseq (symbol-name sym) 1))))
+               ;; Likely, Spinneret tags.
+               ((trivia:guard (list* first rest)
+                              (or (eq 'with-tag first)
+                                  (keywordp first)))
+                (list (cons first rest)))
+               ;; Parenthesized text, as a list.
+               ((list* first rest)
+                `("(" ,@(process-p-star-forms first)
+                      ,@(alexandria:mappend #'process-p-star-forms rest)
+                      ")"))
+               (anything-else
+                (list (let ((*print-case* :downcase))
+                        (princ-to-string anything-else))))))
+           (postprocess-sticky-parens (forms)
+             "If there's a paren all by itself near to another string, concatenate those."
+             (reduce
+              (lambda (accumulator next)
+                (let ((last (alexandria:lastcar accumulator)))
+                  (if (or (and (equal "(" last) (stringp next))
+                          (and (equal ")" next) (stringp last)))
+                      (append (butlast accumulator)
+                              (list (str:concat last next)))
+                      (append accumulator (list next)))))
+              forms
+              :initial-value '()))
+           (postprocess-concat-strings (forms)
+             "Join all the neighboring string with a space."
+             (reduce
+              (lambda (accumulator next)
+                (let ((last (alexandria:lastcar accumulator)))
+                  (cond
+                    ((and (stringp next)
+                          (stringp last))
+                     (append (butlast accumulator)
+                             (list (str:concat last " " next))))
+                    ((stringp last)
+                     (append (butlast accumulator)
+                             (list (str:concat last " ") next)))
+                    ((stringp next)
+                     (append accumulator
+                             (list (str:concat " " next)))))))
+              (rest forms)
+              :initial-value (list (first forms)))))
+    `(:p ,@attrs
+         ,@(postprocess-concat-strings
+            (postprocess-sticky-parens
+             (alexandria:mappend #'process-p-star-forms body))))))
+
 (serapeum:eval-always
   (defun remove-smart-quoting (form)
     "If the form is quoted or quazi-quoted, return the unquoted/evaluated variant.
