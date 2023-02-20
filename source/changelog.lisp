@@ -704,7 +704,7 @@ size. Glyphs for navigation control buttons updated. Tabs area restyled to look
 like buttons.")
    (:li "Search engines are now listed with their full name (when available).")
    (:li "Code blocks now include syntax highlighting and clickable elements.")
-   (:li "Internal buffers are now rendered in the status area as: " (:code "internal")))
+   (:li "Internal buffers are now rendered in the status area as: " (:code "internal") "."))
   (:h3 "Bindings")
   (:ul
    (:li "Add " (:nxref :command 'nyxt:toggle-prompt-buffer-focus) "."))
