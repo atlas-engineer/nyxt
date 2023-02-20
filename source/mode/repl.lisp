@@ -455,7 +455,8 @@ Follows what the compiler finds aesthetically pleasing."
                                                  :mode-instance repl-mode
                                                  :ready-p t)
                       (evaluations repl-mode)))
-          (buffer-load (nyxt-url 'repl) :buffer repl-buffer))
+          (buffer-load (nyxt-url 'repl) :buffer repl-buffer)
+          "")
         (spinneret:with-html-string
           (:nstyle (style repl-mode))
           (:div :id "container"
