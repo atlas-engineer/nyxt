@@ -328,7 +328,7 @@ Forms in BODY can be quoted, in which case Spinneret won't even try to look at
 its contents (useful if there are forms that start with a keyword, Spinneret
 unconditionally converts those to tags unless the whole form is quoted.)"
   (let* ((body (mapcar #'remove-smart-quoting body))
-         (printed-body (mapcar (rcurry #'prini* package) body))
+         (printed-body (mapcar (alexandria:rcurry #'prini* package) body))
          (code (if literal-p
                    (first body)
                    (str:join (make-string 2 :initial-element #\newline) printed-body)))
@@ -336,7 +336,7 @@ unconditionally converts those to tags unless the whole form is quoted.)"
            (unless literal-p
              (str:join
               (make-string 2 :initial-element #\newline)
-              (mapcar (rcurry #'htmlize-body package) body printed-body))))
+              (mapcar (alexandria:rcurry #'htmlize-body package) body printed-body))))
          (*print-escape* nil)
          (id (nyxt:prini-to-string (gensym)))
          (select-code
