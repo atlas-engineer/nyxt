@@ -11,9 +11,9 @@
 (trivial-package-local-nicknames:add-package-local-nickname :keyscheme :nyxt/keyscheme :nyxt)
 (in-package :nyxt/keyscheme)
 
-;; Setting `nkeymaps:keymap' bound-value type to something like `function-symbol'
-;; is not practical because functions defined in the same file as the keymap are
-;; not `fboundp' at compile-time.
+;; Setting `nkeymaps:keymap' bound-value type to something like
+;; `nsymbols:function-symbol' is not practical because functions defined in the
+;; same file as the keymap are not `fboundp' at compile-time.
 ;;
 ;; To overcome this limitation, we can first load the system, then set the type
 ;; to something more specific and reload the system to catch the type errors.
@@ -21,7 +21,7 @@
 (export-always 'nyxt-keymap-value)
 #+nyxt-debug-keymap
 (deftype nyxt-keymap-value ()
-  '(or nkeymaps:keymap nyxt:function-symbol nyxt::command))
+  '(or nkeymaps:keymap nsymbols:function-symbol nyxt::command))
 
 #-nyxt-debug-keymap
 (deftype nyxt-keymap-value ()
