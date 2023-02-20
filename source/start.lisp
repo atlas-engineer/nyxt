@@ -507,8 +507,7 @@ Examples:
            (file (with-open-file (f file :element-type :default)
                    (run-script f))))))
 
-      ((and (or load eval)
-            (or quit remote))
+      ((or load eval quit remote)
        (start-load-or-eval))
       (t
        (with-protect ("Error: ~a" :condition)
