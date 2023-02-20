@@ -548,7 +548,7 @@ The evaluation may happen on its own instance or on an already running instance.
   (let ((remote (getf *options* :remote)))
     (unless remote
       (load-lisp (files:expand *auto-config-file*) :package (find-package :nyxt-user))
-      (load-lisp (files:expand *config-file*):package (find-package :nyxt-user)))
+      (load-lisp (files:expand *config-file*) :package (find-package :nyxt-user)))
     (load-or-eval :remote remote)))
 
 (defun start-browser (url-strings)
