@@ -5,7 +5,7 @@
 ;; TODO: which-key: List all bindings with some prefix.
 ;; TODO: Make sure it's easy enough to set global bindings.
 
-(-> binding-keys (function-symbol &key (:modes list)) *)
+(-> binding-keys (sym:function-symbol &key (:modes list)) *)
 (defun binding-keys (fn &key (modes (if (current-buffer)
                                         (modes (current-buffer))
                                         (mapcar #'make-instance (default-modes nil)))))
@@ -83,7 +83,7 @@ KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
         (format nil "~s [~a]" no-code-specs (keymaps:keys->keyspecs keys))
         (format nil "~s" no-code-specs))))
 
-(-> dispatch-command ((or function-symbol function)) *)
+(-> dispatch-command ((or sym:function-symbol function)) *)
 (export-always 'dispatch-command)
 (defun dispatch-command (function)
   (echo-dismiss)                        ; Clean up message-view on command.

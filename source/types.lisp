@@ -12,11 +12,6 @@ functions for the `satisfies' type condition."))
 (in-package :nyxt/types)
 
 ;; types:proper-list doesn't check its element type.
-
-(export-always 'function-symbol)
-(deftype function-symbol ()
-  `(and symbol (satisfies fboundp)))
-
 (defun list-of-p (list type)
   "Return non-nil if LIST contains only elements of the given TYPE."
   (and (listp list)

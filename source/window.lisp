@@ -17,7 +17,7 @@
     :documentation "Unique identifier for a window.")
    (titler
     'window-default-title
-    :type (or function function-symbol)
+    :type (or function sym:function-symbol)
     :documentation "Return the title of the window.
 It's a function of the window argument that returns the title as a string.")
    (active-buffer :accessor nil :reader active-buffer :export nil)
@@ -93,13 +93,13 @@ the generic functions on `status-buffer'.  Finally set the `window'
     :documentation "The height of the prompt buffer when open.")
    (input-dispatcher
     'dispatch-input-event
-    :type (or function-symbol function)
+    :type (or sym:function-symbol function)
     :documentation "Function to process input events.
 It takes EVENT, BUFFER, WINDOW and PRINTABLE-P parameters.
 Cannot be null.")
    (command-dispatcher
     #'dispatch-command
-    :type function
+    :type (or sym:function-symbol function)
     :documentation "Function to process the command processed in `input-dispatcher'.
 Takes the function/command as the only argument.")
    (input-skip-dispatcher
