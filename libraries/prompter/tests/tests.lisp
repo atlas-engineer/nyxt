@@ -308,12 +308,18 @@
   (with-report-dangling-threads
     (let ((prompter (prompter:make
                      :sources (list (make-instance 'prompter:source
+                                                   :name "Test empty source")
+                                    (make-instance 'prompter:source
                                                    :name "Test source"
                                                    :constructor '("foo" "bar"))
                                     (make-instance 'prompter:source
+                                                   :name "Test empty source")
+                                    (make-instance 'prompter:source
                                                    :name "Test source 2"
                                                    :constructor '("100 foo" "200")
-                                                   :filter-preprocessor #'prompter:filter-exact-matches)))))
+                                                   :filter-preprocessor #'prompter:filter-exact-matches)
+                                    (make-instance 'prompter:source
+                                                   :name "Test empty source")))))
       (flet ((current-suggestion-value ()
                (prompter:value (prompter:%current-suggestion prompter))))
         (prompter:all-ready-p prompter)
@@ -372,12 +378,18 @@
   (with-report-dangling-threads
     (let ((prompter (prompter:make
                      :sources (list (make-instance 'prompter:source
+                                                   :name "Test empty source")
+                                    (make-instance 'prompter:source
                                                    :name "Test source"
                                                    :constructor '("foo" "bar"))
                                     (make-instance 'prompter:source
+                                                   :name "Test empty source")
+                                    (make-instance 'prompter:source
                                                    :name "Test source 2"
                                                    :constructor '("100 foo" "200")
-                                                   :filter-preprocessor #'prompter:filter-exact-matches)))))
+                                                   :filter-preprocessor #'prompter:filter-exact-matches)
+                                    (make-instance 'prompter:source
+                                                   :name "Test empty source")))))
       (flet ((current-suggestion-value ()
                (prompter:value (prompter:%current-suggestion prompter))))
         (prompter:all-ready-p prompter)
@@ -396,12 +408,18 @@
   (with-report-dangling-threads
     (let ((prompter (prompter:make
                      :sources (list (make-instance 'prompter:source
+                                                   :name "Test empty source")
+                                    (make-instance 'prompter:source
                                                    :name "Test source"
                                                    :constructor '("foo" "bar"))
                                     (make-instance 'prompter:source
+                                                   :name "Test empty source")
+                                    (make-instance 'prompter:source
                                                    :name "Test source 2"
                                                    :constructor '("100 foo" "200")
-                                                   :filter-preprocessor #'prompter:filter-exact-matches)))))
+                                                   :filter-preprocessor #'prompter:filter-exact-matches)
+                                    (make-instance 'prompter:source
+                                                   :name "Test empty source")))))
       (flet ((current-suggestion-value ()
                (prompter:value (prompter:%current-suggestion prompter))))
         (prompter:all-ready-p prompter)
