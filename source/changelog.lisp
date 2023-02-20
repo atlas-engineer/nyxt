@@ -696,6 +696,18 @@ to aesthetic display in status buffer.")
    (:li "Trying to delete a hanged buffer destroys it, instead of leaving it dangling forever.")))
 
 (define-version "3-pre-release-4"
+  (:ul
+   (:li "Added automatically adjustable prompt buffer columns. Columns are automatically
+adjusted for the best balance of widths.")
+   (:li "Status buffer improved for increased readability. Mode area reduced in
+size. Glyphs for navigation control buttons updated. Tabs area restyled to look
+like buttons.")
+   (:li "Search engines are now listed with their full name (when available).")
+   (:li "Code blocks now include syntax highlighting and clickable elements.")
+   (:li "Internal buffers are now rendered in the status area as: " (:code "internal")))
   (:h3 "Bindings")
   (:ul
-   (:li "Add " (:nxref :command 'nyxt:toggle-prompt-buffer-focus) ".")))
+   (:li "Add " (:nxref :command 'nyxt:toggle-prompt-buffer-focus) "."))
+  (:h3 "Bug fixes")
+  (:ul
+   (:li "Frozen buffers are aggressively removed to free memory.")))
