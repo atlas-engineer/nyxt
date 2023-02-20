@@ -735,11 +735,20 @@ exec nyxt --script \"$0\"
 \(format t \"~a~&\" +version+)"))
         (:p "--eval and --load can be commanded to operate over an
 existing instance instead of a separate instance that exits immediately.")
-        (:p "The `remote-execution-p' slot of the `browser' class of the remote
-instance must be non-nil.")
-        (:p "To let know a private instance of Nyxt to load a foo.lisp script and run its
-`foo' function:")
-        (:pre (:code "nyxt --profile nosave --remote --load foo.lisp --eval '(foo)'")))
+        (:p "The" (:nxref :slot 'remote-execution-p :class-name 'browser)
+            " of the remote instance must be non-nil:")
+        (:ncode
+          (define-configuration browser
+            ((remote-execution-p t))))
+        (:p "To let know a private instance of Nyxt to load a foo.lisp script and run its"
+            (:code "foo") "function:")
+        (:pre (:code "nyxt --profile nosave --remote --load foo.lisp --eval '(foo)' --quit"))
+        (:p "Note that " (:code "--quit")
+            "at the end of each Nyxt CLI call here. If you don't provide " (:code "--quit")
+            " when dealing with a remote instance, it will go into a REPL mode, allowing an
+immediate communication with an instance:")
+        (:pre (:code "nyxt --remote
+(echo \"~s\" (+ 1 2)) ;; Shows '3' in the message area of remote Nyxt")))
 
       (:nsection :title "User scripts"
         (:p "User scripts are a conventional and lightweight way to run arbitrary JavaScript
