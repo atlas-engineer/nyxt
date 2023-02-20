@@ -16,7 +16,7 @@ so invoke on a separate thread when possible."
     (log:debug "External editor ~s opens ~s"
                (external-editor-program *browser*) p)
     (with-protect ("Failed editing: ~a" :condition)
-      (uiop:run-program (append (external-editor-program *browser*)
+      (uiop:run-program (append (uiop:ensure-list (external-editor-program *browser*))
                                 (list (uiop:native-namestring p)))
                         :ignore-error-status t))
     (uiop:read-file-string p)))
@@ -77,7 +77,7 @@ If the user file is GPG-encrypted, the editor must be capable of decrypting it."
              (path (files:expand file)))
 
         (echo "Using \"~{~a~^ ~}\" to edit ~s." (external-editor-program *browser*) path)
-        (uiop:launch-program `(,@(external-editor-program *browser*)
+        (uiop:launch-program `(,@(uiop:ensure-list (external-editor-program *browser*))
                                ,(uiop:native-namestring path))))
       (echo-warning "Please set `external-editor-program' browser slot.")))
 
@@ -96,7 +96,7 @@ separate thread when possible."
             (log:debug "External editor ~s opens ~s"
                        (external-editor-program *browser*) p)
             (with-protect ("Failed editing: ~a" :condition)
-              (uiop:run-program (append (external-editor-program *browser*)
+              (uiop:run-program (append (uiop:ensure-list (external-editor-program *browser*))
                                         (list (uiop:native-namestring p)))
                                 :ignore-error-status t)))
           (echo-warning "Nothing to edit.")))))
