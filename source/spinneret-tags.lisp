@@ -339,6 +339,15 @@ unconditionally converts those to tags unless the whole form is quoted.)"
               (mapcar (alexandria:rcurry #'htmlize-body package) body printed-body))))
          (*print-escape* nil)
          (id (nyxt:prini-to-string (gensym)))
+         (printable-code `(if (stringp ,code)
+                              ,code
+                              (prini* ,code ,package)))
+         (injectable-code
+           (if literal-p
+               `(if (stringp ,code)
+                    ,code
+                    (:raw (htmlize-body ,code (prini* ,code ,package) ,package)))
+               `(:raw (the string ,htmlized-code))))
          (select-code
            `(:nselect
               :id ,id
@@ -347,14 +356,14 @@ unconditionally converts those to tags unless the whole form is quoted.)"
               ,@(when copy-p
                   `(((copy "Copy" "Copy the code to clipboard.")
                      (funcall (read-from-string "nyxt:ffi-buffer-copy")
-                              (nyxt:current-buffer) ,code))))
+                              (nyxt:current-buffer) ,printable-code))))
               ,@(when config-p
                   `(((config
                       "Add to auto-config"
                       (format nil "Append this code to the auto-configuration file (~a)."
                               (nfiles:expand nyxt::*auto-config-file*)))
                      (alexandria:write-string-into-file
-                      ,code (nfiles:expand nyxt::*auto-config-file*)
+                      ,printable-code (nfiles:expand nyxt::*auto-config-file*)
                       :if-exists :append))))
               ,@(when repl-p
                   `(((repl
@@ -362,7 +371,7 @@ unconditionally converts those to tags unless the whole form is quoted.)"
                       "Open this code in Nyxt REPL to experiment with it.")
                      (nyxt:buffer-load-internal-page-focus
                       (read-from-string "nyxt/repl-mode:repl")
-                      :form ,code))))
+                      :form ,printable-code))))
               ,@(when (and file editor-p)
                   `(((editor
                       "Open in built-in editor"
@@ -376,13 +385,7 @@ unconditionally converts those to tags unless the whole form is quoted.)"
                      (uiop:launch-program
                       (append (funcall (read-from-string "nyxt:external-editor-program")
                                        (symbol-value (read-from-string "nyxt:*browser*")))
-                              (list (uiop:native-namestring ,file)))))))))
-         (injectable-code
-           (if literal-p
-               `(if (stringp ,code)
-                    ,code
-                    (:raw (htmlize-body ,code (prini* ,code ,package) ,package)))
-               `(:raw (the string ,htmlized-code)))))
+                              (list (uiop:native-namestring ,file))))))))))
     (if inline-p
         `(:span (:code ,@attrs ,injectable-code) ,select-code)
         ;; https://spdevuk.com/how-to-create-code-copy-button/
