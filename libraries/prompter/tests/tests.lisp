@@ -374,6 +374,57 @@
                          (current-suggestion-value)))
       (prompter:all-ready-p prompter))))
 
+(define-test set-current-suggestion-all-empty-sources ()
+  (with-report-dangling-threads
+    (let* ((first-empty-source (make-instance 'prompter:source
+                                              :name "Test empty source"))
+           (second-empty-source (make-instance 'prompter:source
+                                               :name "Test empty source"))
+           (prompter (prompter:make :sources (list first-empty-source
+                                                   second-empty-source))))
+      (prompter:all-ready-p prompter)
+      (assert-eql (values nil first-empty-source)
+                  (prompter:%current-suggestion prompter))
+      (assert-equal (list first-empty-source 0)
+                    (prompter::current-suggestion prompter))
+      ;; Calling last-suggestion is not a no-op.
+      (prompter:last-suggestion prompter)
+      (assert-eql (values nil second-empty-source)
+                  (prompter:%current-suggestion prompter))
+      (assert-equal (list second-empty-source 0)
+                    (prompter::current-suggestion prompter))
+      ;; Calling first-suggestion is not a no-op.
+      (prompter:first-suggestion prompter)
+      (assert-eql (values nil first-empty-source)
+                  (prompter:%current-suggestion prompter))
+      (assert-equal (list first-empty-source 0)
+                    (prompter::current-suggestion prompter))
+      ;; Calling next-suggestion is a no-op.
+      (prompter:next-suggestion prompter)
+      (assert-eql (values nil first-empty-source)
+                  (prompter:%current-suggestion prompter))
+      (assert-equal (list first-empty-source 0)
+                    (prompter::current-suggestion prompter))
+      ;; Calling previous-suggestion is a no-op.
+      (prompter:previous-suggestion prompter)
+      (assert-eql (values nil first-empty-source)
+                  (prompter:%current-suggestion prompter))
+      (assert-equal (list first-empty-source 0)
+                    (prompter::current-suggestion prompter))
+      ;; Calling next-source is a no-op.
+      (prompter:next-source prompter)
+      (assert-eql (values nil first-empty-source)
+                  (prompter:%current-suggestion prompter))
+      (assert-equal (list first-empty-source 0)
+                    (prompter::current-suggestion prompter))
+      ;; Calling previous-source is a no-op.
+      (prompter:previous-source prompter)
+      (assert-eql (values nil first-empty-source)
+                  (prompter:%current-suggestion prompter))
+      (assert-equal (list first-empty-source 0)
+                    (prompter::current-suggestion prompter))
+      (prompter:all-ready-p prompter))))
+
 (define-test set-current-suggestion-with-steps ()
   (with-report-dangling-threads
     (let ((prompter (prompter:make
