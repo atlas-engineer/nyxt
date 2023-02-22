@@ -330,6 +330,7 @@ current unmarked suggestion."
    ;; TODO: Include bindings in attributes.
    :attributes `(("Name" ,(symbol-name (typecase action
                                          (command (name action))
+                                         (function (slynk-backend:function-name action))
                                          (t action))))
                  ("Documentation" ,(or (first (sera:lines
                                                (typecase action
