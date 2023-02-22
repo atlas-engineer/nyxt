@@ -408,7 +408,7 @@ an integer."))
                              collect (:td :title attribute
                                           (if attribute-display
                                               (:raw attribute-display)
-                                              (spinneret::escape-string attribute)))))))))))
+                                              attribute))))))))))
 
 (export 'prompt-render-suggestions)
 (defmethod prompt-render-suggestions ((prompt-buffer prompt-buffer))
