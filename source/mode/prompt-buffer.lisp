@@ -328,10 +328,14 @@ current unmarked suggestion."
    'prompter:suggestion
    :value action
    ;; TODO: Include bindings in attributes.
-   :attributes `(("Name" ,(symbol-name (typecase action
-                                         (command (name action))
-                                         (function (slynk-backend:function-name action))
-                                         (t action))))
+   :attributes `(("Name" ,(cond ((symbolp action)
+                                 (symbol-name action))
+                                ((command-p action)
+                                 (symbol-name (name action)))
+                                ((and (functionp action)
+                                      (symbolp (slynk-backend:function-name action)))
+                                 (symbol-name (slynk-backend:function-name action)))
+                                (t "Anonymous function")))
                  ("Documentation" ,(or (first (sera:lines
                                                (typecase action
                                                  (command (documentation action t))
