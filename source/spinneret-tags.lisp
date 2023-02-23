@@ -99,6 +99,7 @@ non-overridable."
                           (second body))
                         first package variable function macro command slot class-name mode)))
     `(:a.link
+      :target "_blank"
       ,@attrs
       :href ,(cond
                (package `(nyxt:nyxt-url (read-from-string "nyxt:describe-package") :package ,package))
