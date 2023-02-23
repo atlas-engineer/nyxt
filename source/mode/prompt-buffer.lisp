@@ -30,8 +30,11 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "button5" 'next-suggestion
        "home" 'first-suggestion
        "end" 'last-suggestion
+       "shift-end" 'last-suggestion-within-source
        "pagehome" 'first-suggestion
+       "shift-pagehome" 'first-suggestion-within-source
        "pageend" 'last-suggestion
+       "shift-pageend" 'last-suggestion-within-source
        "M-o" 'toggle-prompt-buffer-focus
        "escape" 'quit-prompt-buffer
        "M-a" 'mark-all
@@ -59,7 +62,9 @@ listed and chosen from with the command `set-action-on-return' (bound to
       keyscheme:cua
       (list
        "C-up" 'first-suggestion
+       "C-shift-up" 'first-suggestion-within-source
        "C-down" 'last-suggestion
+       "C-shift-down" 'last-suggestion-within-source
        "C-pageup" 'previous-source
        "C-pagedown" 'next-source
        "C-v" 'paste
@@ -69,7 +74,9 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "C-p" 'previous-suggestion
        "C-n" 'next-suggestion
        "M-<" 'first-suggestion
+       "M-," 'first-suggestion-within-source
        "M->" 'last-suggestion
+       "M-." 'last-suggestion-within-source
        "C-x o" 'toggle-prompt-buffer-focus
        "M-v" 'previous-page
        "C-v" 'next-page
