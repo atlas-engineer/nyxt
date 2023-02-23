@@ -8,7 +8,7 @@
 (define-mode macro-edit-mode ()
   "Mode for creating and editing macros."
   ((visible-in-status-p nil)
-   (name
+   (macro-name
     ""
     :accessor nil
     :documentation "The name used for the macro.")
@@ -16,6 +16,29 @@
     '()
     :documentation "Functions the user has added to their macro."))
   (:toggler-command-p nil))
+
+(defmethod render-functions ((macro-editor macro-edit-mode))
+  (spinneret:with-html-string
+    (:table
+     (loop for function in (functions macro-editor)
+           for index from 0
+           collect (:tr (:td (:nbutton :class "button"
+                               :text "✕"
+                               :title "Remove from the macro"
+                               (nyxt/macro-edit-mode::remove-function
+                                (find-submode 'macro-edit-mode)
+                                index)))
+                        (:td
+                         (:a.button
+                          :title "Help"
+                          :target "_blank"
+                          :href (nyxt-url 'describe-function
+                                          :fn (name (nth index (functions macro-editor))))
+                          "ℹ"))
+                        (:td (let ((name (symbol-name (name function))))
+                               (if (str:upcase? name)
+                                   (string-downcase name)
+                                   name))))))))
 
 (define-internal-page-command-global edit-macro ()
     (buffer "*Macro edit*" 'nyxt/macro-edit-mode:macro-edit-mode)
@@ -26,71 +49,46 @@
     (:p "Name")
     (:input :type "text" :id "macro-name")
     (:p "Commands")
-    (:p (:button :class "button"
-                 :onclick (ps:ps (nyxt/ps:lisp-eval (:title "add-command") (nyxt/macro-edit-mode::add-command)))
-                 "+ Add command"))
-    (:div :id "commands" "")
+    (:p (:nbutton
+          :text "+ Add command"
+          (nyxt/macro-edit-mode::add-command)))
+    (:div
+     :id "commands"
+     (:raw
+      (render-functions
+       (find-submode 'nyxt/macro-edit-mode:macro-edit-mode))))
     (:br)
     (:hr)
-    (:button :class "button"
-             :onclick (ps:ps (nyxt/ps:lisp-eval (:title "save-macro") (nyxt/macro-edit-mode::save-macro)))
-             "Save macro")
-    (:button :class "button"
-             :onclick (ps:ps (nyxt/ps:lisp-eval (:title "evaluate-macro") (nyxt/macro-edit-mode::evaluate-macro)))
-             "Compile macro")))
-
-(defmethod render-functions ((macro-editor macro-edit-mode))
-  (flet ((render-functions ()
-           (spinneret:with-html-string
-             (:table
-              (loop for function in (functions macro-editor)
-                    for index from 0
-                    collect (:tr (:td (:button :class "button"
-                                               :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                                (:title "remove-function")
-                                                                (nyxt/macro-edit-mode::remove-function
-                                                                 (find-submode 'macro-edit-mode)
-                                                                 index)))
-                                               "✕"))
-                                 (:td (:button :class "button"
-                                               :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                                (:title "command-help")
-                                                                (nyxt/macro-edit-mode::command-help
-                                                                 (find-submode 'macro-edit-mode)
-                                                                 index)))
-                                               "ℹ"))
-                                 (:td (let ((name (symbol-name (name function))))
-                                        (if (str:upcase? name)
-                                            (string-downcase name)
-                                            name)))))))))
-    (ps-eval :async t :buffer (buffer macro-editor)
-      (setf (ps:@ (nyxt/ps:qs document "#commands") |innerHTML|)
-            (ps:lisp (render-functions))))))
-
-(defmethod command-help ((macro-editor macro-edit-mode) command-index)
-  (nyxt::describe-command :command (name (nth command-index (functions macro-editor)))))
+    (:nbutton
+      :text "Save macro"
+      (nyxt/macro-edit-mode::save-macro))
+    (:nbutton
+      :text "Compile macro"
+      (nyxt/macro-edit-mode::evaluate-macro))))
 
 (defmethod add-function ((macro-editor macro-edit-mode) command)
   (alex:appendf (functions macro-editor)
                 (list command))
-  (render-functions macro-editor))
+  (reload-buffer (buffer macro-editor)))
 
 (defun delete-nth (n list)
   (nconc (subseq list 0 n) (nthcdr (1+ n) list)))
 
 (defmethod remove-function ((macro-editor macro-edit-mode) command-index)
   (setf (functions macro-editor) (delete-nth command-index (functions macro-editor)))
-  (render-functions macro-editor))
+  (reload-buffer (buffer macro-editor)))
 
-(defmethod name ((macro-editor macro-edit-mode))
+(defmethod macro-name ((macro-editor macro-edit-mode))
   (let ((name (ps-eval :buffer (buffer macro-editor)
                 (ps:chain (nyxt/ps:qs document "#macro-name") value))))
-    (cond ((not (str:emptyp name)) (setf (slot-value macro-editor 'name) (string-upcase name)))
-          ((slot-value macro-editor 'name) (slot-value macro-editor 'name))
+    (cond ((not (str:emptyp name))
+           (setf (slot-value macro-editor 'macro-name) (string-upcase name)))
+          ((slot-value macro-editor 'macro-name)
+           (slot-value macro-editor 'macro-name))
           (t nil))))
 
 (defmethod generate-macro-form ((macro-editor macro-edit-mode))
-  (let ((name (intern (name macro-editor)))
+  (let ((name (intern (macro-name macro-editor)))
         (commands (mapcar
                    (lambda (command) `(,(name command)))
                    (functions macro-editor))))
@@ -117,7 +115,8 @@
 (define-command evaluate-macro (&optional (macro-editor (find-submode 'macro-edit-mode)))
   "Evaluate the macro for testing."
   (if (macro-form-valid-p macro-editor)
-      (progn (eval (generate-macro-form macro-editor))
-             (echo "Macro compiled, you may now use the ~s command."
-                   (name macro-editor)))
+      (progn
+        (eval (generate-macro-form macro-editor))
+        (echo "Macro compiled, you may now use the ~s command."
+              (name macro-editor)))
       (echo "Macro form is invalid; check it has a title and functions.")))
