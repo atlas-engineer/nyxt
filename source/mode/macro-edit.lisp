@@ -101,7 +101,7 @@
                               :sources 'command-source)))
 
 (defmethod macro-form-valid-p ((macro-editor macro-edit-mode))
-  (and (name macro-editor)
+  (and (macro-name macro-editor)
        (functions macro-editor)))
 
 (define-command save-macro (&optional (macro-editor (find-submode 'macro-edit-mode)))
