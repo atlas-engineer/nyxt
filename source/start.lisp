@@ -350,6 +350,11 @@ It takes URL-STRINGS so that the URL argument can be `cl-read' in case
                                                 (files:expand *socket-file*)))
      (iolib:socket-connected-p s))))
 
+(defun existing-non-socket-p (path)
+  (and (or (uiop:file-exists-p path)
+           (uiop:directory-exists-p path))
+       (not (socket-p path))))
+
 (-> listen-or-query-socket ((or null (cons quri:uri *))) *)
 (defun listen-or-query-socket (urls)
   "If another Nyxt is listening on the socket, tell it to open URLS.
@@ -366,9 +371,7 @@ Otherwise bind socket and return the listening thread."
                (format s "~s" `(open-external-urls ,@(mapcar #'quri:render-uri urls)))))
            (log:info "Nyxt already started."))
        nil)
-      ((and (or (uiop:file-exists-p socket-path)
-                (uiop:directory-exists-p socket-path))
-            (not (socket-p socket-path)))
+      ((existing-non-socket-p socket-path)
        (log:error "Could not bind socket ~a, non-socket file exists." socket-path)
        nil)
       (t
@@ -580,38 +583,39 @@ Finally, run the browser, load URL-STRINGS if any, then run
                (startup-timestamp (time:now))
                (startup-error-reporter nil)
                (socket-path (files:expand *socket-file*)))
-          (when (or (getf *options* :no-socket)
-                    (null socket-path)
-                    (and                ; See `listen-or-query-socket'.
-                     (not (listening-socket-p))
-                     (not (and (uiop:file-exists-p socket-path)
-                               (not (socket-p socket-path))))))
-            (load-lisp (files:expand *auto-config-file*) :package (find-package :nyxt-user))
-            (multiple-value-bind (condition backtrace)
-                (load-lisp (files:expand *config-file*)
-                           :package (find-package :nyxt-user))
-              (when backtrace
-                (setf startup-error-reporter
-                      (lambda ()
-                        (echo-warning "~a" condition)
-                        (error-in-new-window "Configuration file errors"
-                                             (princ-to-string condition)
-                                             backtrace)))))
-            (load-or-eval :remote nil)
-            (setf *browser* (make-instance 'browser
-                                           :startup-error-reporter-function startup-error-reporter
-                                           :startup-timestamp startup-timestamp
-                                           :socket-thread (unless (nfiles:nil-pathname-p (files:expand *socket-file*))
-                                                            (listen-or-query-socket urls))))
-            ;; Defaulting to :nyxt-user is convenient when evaluating code (such as
-            ;; remote execution or the integrated REPL).
-            ;; This must be done in a separate thread because the calling thread may
-            ;; have set `*package*' as an initial-binding (see `bt:make-thread'), as
-            ;; is the case with the SLY mrepl thread.
-            (bt:make-thread (lambda ()
-                              (in-package :nyxt-user)))
-            (ffi-initialize *browser* urls startup-timestamp)
-            (lpara:force (slot-value *browser* 'startup-promise)))))
+          (if (or (getf *options* :no-socket)
+                  (null socket-path)
+                  (and                  ; See `listen-or-query-socket'.
+                   (not (listening-socket-p))
+                   (not (existing-non-socket-p socket-path))))
+              (progn
+                (load-lisp (files:expand *auto-config-file*) :package (find-package :nyxt-user))
+                (multiple-value-bind (condition backtrace)
+                    (load-lisp (files:expand *config-file*)
+                               :package (find-package :nyxt-user))
+                  (when backtrace
+                    (setf startup-error-reporter
+                          (lambda ()
+                            (echo-warning "~a" condition)
+                            (error-in-new-window "Configuration file errors"
+                                                 (princ-to-string condition)
+                                                 backtrace)))))
+                (load-or-eval :remote nil)
+                (setf *browser* (make-instance 'browser
+                                               :startup-error-reporter-function startup-error-reporter
+                                               :startup-timestamp startup-timestamp
+                                               :socket-thread (unless (nfiles:nil-pathname-p (files:expand *socket-file*))
+                                                                (listen-or-query-socket urls))))
+                ;; Defaulting to :nyxt-user is convenient when evaluating code (such as
+                ;; remote execution or the integrated REPL).
+                ;; This must be done in a separate thread because the calling thread may
+                ;; have set `*package*' as an initial-binding (see `bt:make-thread'), as
+                ;; is the case with the SLY mrepl thread.
+                (bt:make-thread (lambda ()
+                                  (in-package :nyxt-user)))
+                (ffi-initialize *browser* urls startup-timestamp)
+                (lpara:force (slot-value *browser* 'startup-promise)))
+              (listen-or-query-socket urls))))
     (quit ()
       :report "Run `nyxt:quit' and try again."
       (quit)
