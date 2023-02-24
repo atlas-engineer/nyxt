@@ -54,18 +54,18 @@
   "Default directory where to dump auto-generated Guix profiles for Nyxt development.")
 
 (cl-defun nyxt-guix-lazy-shell-command (root &key
-                                                   ;; expression
-                                                   load
-                                                   ;; manifest
-                                                   ad-hoc
-                                                   preserve
-                                                   container
-                                                   network
-                                                   share
-                                                   expose
-                                                   no-grafts
-                                                   extra-args
-                                                   command-args)
+                                             ;; expression
+                                             load
+                                             ;; manifest
+                                             ad-hoc
+                                             preserve
+                                             container
+                                             network
+                                             share
+                                             expose
+                                             no-grafts
+                                             extra-args
+                                             command-args)
   "Return the command to load a Guix shell, persisted at ROOT.
 If the ROOT shell already exists, don't regenerate it.
 
