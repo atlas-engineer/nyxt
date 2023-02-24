@@ -707,7 +707,9 @@ like buttons.")
    (:li "Internal buffers are now rendered in the status area as: " (:code "internal") "."))
   (:h3 "Bindings")
   (:ul
-   (:li "Add " (:nxref :command 'nyxt:toggle-prompt-buffer-focus) "."))
+   (:li "Add " (:nxref :command 'nyxt:toggle-prompt-buffer-focus) ".")
+   (:li "Add " (:nxref :command 'nyxt/prompt-buffer-mode:first-suggestion-within-source) ".")
+   (:li "Add " (:nxref :command 'nyxt/prompt-buffer-mode:last-suggestion-within-source) "."))
   (:h3 "Bug fixes")
   (:ul
    (:li "Frozen buffers are aggressively removed to free memory.")))

@@ -164,7 +164,8 @@ computation is not finished.")))
 
 (defmethod (setf current-suggestion) (value (prompter prompter))
   (setf (slot-value prompter 'current-suggestion) value)
-  (run-action-on-current-suggestion prompter))
+  (run-action-on-current-suggestion prompter)
+  value)
 
 (export-always 'run-action-on-current-suggestion)
 (defmethod run-action-on-current-suggestion ((prompter prompter))
@@ -271,7 +272,9 @@ first (resp. last) one of destination source."
                     (source-index (or (position (current-source prompter)
                                                 nonempty-sources)
                                       0))
-                    (new-source (nth (alex:clamp (+ steps source-index) 0 (1- (length (sources prompter))))
+                    (new-source (nth (alex:clamp (+ steps source-index)
+                                                 0
+                                                 (1- (length nonempty-sources)))
                                      nonempty-sources))
                     (suggestion-index (if (< 0 steps)
                                           0
@@ -289,26 +292,24 @@ first (resp. last) one of destination source."
 (export-always 'first-suggestion)
 (defun first-suggestion (prompter)
   "Set `current-suggestion' to PROMPTER's first suggestion.
-Empty sources are skipped."
-  (let ((first-non-empty-source
-          (or (find-if #'nonempty-source-p (sources prompter))
-              (first (sources prompter)))))
+Empty sources are skipped, unless all sources are empty."
+  (let ((new-source (or (find-if #'nonempty-source-p (sources prompter))
+                        (first (sources prompter)))))
     (setf (current-suggestion prompter)
-          (list first-non-empty-source 0))
+          (list new-source 0))
     (when (and (auto-return-p prompter)
                (sera:single (all-suggestions prompter)))
       (run-action-on-return prompter))))
 
 (export-always 'last-suggestion)
 (defun last-suggestion (prompter)
-  "Set `current-suggestion' to PROMPTER's last suggestion."
-  (let ((last-non-empty-source
-          (or (find #'nonempty-source-p (sources prompter)
-                    :from-end t)
-              (first (last (sources prompter))))))
+  "Set `current-suggestion' to PROMPTER's last suggestion.
+Empty sources are skipped, unless all sources are empty."
+  (let ((new-source (or (find-if #'nonempty-source-p (sources prompter) :from-end t)
+                        (alex:lastcar (sources prompter)))))
     (setf (current-suggestion prompter)
-          (list last-non-empty-source
-                (1- (length (suggestions last-non-empty-source)))))))
+          (list new-source
+                (max (1- (length (suggestions new-source))) 0)))))
 
 (export-always 'toggle-mark)
 (defun toggle-mark (prompter)

@@ -30,8 +30,11 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "button5" 'next-suggestion
        "home" 'first-suggestion
        "end" 'last-suggestion
+       "shift-end" 'last-suggestion-within-source
        "pagehome" 'first-suggestion
+       "shift-pagehome" 'first-suggestion-within-source
        "pageend" 'last-suggestion
+       "shift-pageend" 'last-suggestion-within-source
        "M-o" 'toggle-prompt-buffer-focus
        "escape" 'quit-prompt-buffer
        "M-a" 'mark-all
@@ -59,7 +62,9 @@ listed and chosen from with the command `set-action-on-return' (bound to
       keyscheme:cua
       (list
        "C-up" 'first-suggestion
+       "C-shift-up" 'first-suggestion-within-source
        "C-down" 'last-suggestion
+       "C-shift-down" 'last-suggestion-within-source
        "C-pageup" 'previous-source
        "C-pagedown" 'next-source
        "C-v" 'paste
@@ -69,7 +74,9 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "C-p" 'previous-suggestion
        "C-n" 'next-suggestion
        "M-<" 'first-suggestion
+       "M-," 'first-suggestion-within-source
        "M->" 'last-suggestion
+       "M-." 'last-suggestion-within-source
        "C-x o" 'toggle-prompt-buffer-focus
        "M-v" 'previous-page
        "C-v" 'next-page
@@ -192,6 +199,24 @@ listed and chosen from with the command `set-action-on-return' (bound to
 (define-command-prompt last-suggestion (prompt-buffer)
   "Select last entry in PROMPT-BUFFER."
   (prompter:last-suggestion prompt-buffer)
+  (prompt-render-suggestions prompt-buffer))
+
+(define-command-prompt first-suggestion-within-source (prompt-buffer)
+  "Select first entry in the current PROMPT-BUFFER's source."
+  (let ((first-source-p (eq (prompter:current-source prompt-buffer)
+                            (first (prompter:previous-source prompt-buffer)))))
+    (if first-source-p
+        (prompter:first-suggestion prompt-buffer)
+        (prompter:next-suggestion prompt-buffer)))
+  (prompt-render-suggestions prompt-buffer))
+
+(define-command-prompt last-suggestion-within-source (prompt-buffer)
+  "Select last entry in the current PROMPT-BUFFER's source."
+  (let ((last-source-p (eq (prompter:current-source prompt-buffer)
+                           (first (prompter:next-source prompt-buffer)))))
+    (if last-source-p
+        (prompter:last-suggestion prompt-buffer)
+        (prompter:previous-suggestion prompt-buffer)))
   (prompt-render-suggestions prompt-buffer))
 
 (define-command-prompt next-source (prompt-buffer)
