@@ -10,7 +10,7 @@
 ;;
 ;; (load "/PATH/TO/NYXT/CHECKOUT/build-scripts/nyxt-guix.el" :noerror)
 ;;
-;; See `nyxt-make-guix-sbcl-for-nyxt' for an example.
+;; See `nyxt-make-guix-cl-for-nyxt' for an example.
 
 ;;; Code:
 
@@ -109,18 +109,21 @@ already exists and CONTAINER is nil, after sourcing \"etc/profile\"."
          "--"
          ,@command-args)))))
 
-(cl-defun nyxt-make-guix-sbcl-for-nyxt (nyxt-checkout
-                                        &key
-                                        force
-                                        ;; Core dumper options:
-                                        image-path
-                                        ;; Guix shell options:
-                                        root
-                                        container
-                                        preserve
-                                        no-grafts
-                                        (ad-hoc '("guix" "gnupg")))
-  "Run an SBCL executable image with all Nyxt dependencies pre-loaded.
+(cl-defun nyxt-make-guix-cl-for-nyxt (nyxt-checkout
+                                      &key
+                                      force
+                                      ;; Core dumper options:
+                                      (cl-implementation "sbcl")
+                                      (cl-system "nyxt/gi-gtk")
+                                      image-path
+                                      ;; Guix shell options:
+                                      root
+                                      container
+                                      preserve
+                                      no-grafts
+                                      (ad-hoc '("guix" "gnupg")))
+  "Run a CL-IMPLEMENTATION executable image with all dependencies of CL-SYSTEM
+pre-loaded.
 
 The image is generated as needed and cached as IMAGE-PATH.
 It's generated if it does not exist, if FORCE is non-nil, or if the \"nyxt.scm\"
@@ -135,13 +138,18 @@ This function is a suitable candidate as a SLIME or SLY Lisp
 implementation.  Example:
 
  (setq sly-lisp-implementations
-  `((sbcl-nyxt (lambda () (nyxt-make-guix-sbcl-for-nyxt
-                           \"~/projects/nyxt\"
-                           :preserve '(\"PERSONAL\"))))))"
+  `((nyxt-ccl-tests (lambda () (nyxt-make-guix-cl-for-nyxt
+                                \"~/projects/nyxt\"
+                                :cl-implementation \"ccl\"
+                                :cl-system-dependencies \"nyxt/tests\"
+                                :preserve '(\"PERSONAL\"))))))"
   (setq nyxt-checkout (expand-file-name nyxt-checkout))
   (setq image-path (expand-file-name
                     (or image-path
-                        (concat (nyxt-cache-dir) "/sbcl-nyxt.image"))))
+                        (concat (nyxt-cache-dir) "/"
+                                cl-implementation "/"
+                                (string-replace "/" "-" cl-system)
+                                ".image"))))
   (setq root (expand-file-name (or root
                                    (concat nyxt-guix-profile-directory "/nyxt"))))
   (let ((cl-source-registry (format "%s:%s"
@@ -163,6 +171,7 @@ implementation.  Example:
                            :command-args command-args)))
       (when (or force
                 (not (file-exists-p root))
+                (not (file-exists-p image-path))
                 (and (file-exists-p image-path)
                      (time-less-p (nyxt-mtime image-path) (nyxt-mtime guix-def))))
         (message "Rebuilding environment %S\nand Lisp image %S..." root image-path)
@@ -172,8 +181,9 @@ implementation.  Example:
         (let ((output (get-buffer-create "*Nyxt Guix shell compilation*"))
               (command (guix-shell "lisp-repl-core-dumper"
                                    "-o" image-path
-                                   "-d" "nyxt/gtk"
-                                   "sbcl" "--quit")))
+                                   "-d" cl-system
+                                   cl-implementation
+                                   "--eval" "'(uiop:quit)'")))
           (let ((status (apply #'call-process
                                (car command)
                                nil (list output t) nil
@@ -184,7 +194,7 @@ implementation.  Example:
               (switch-to-buffer-other-window output)))))
       (list (guix-shell "lisp-repl-core-dumper"
                         "-o" image-path
-                        "-d" "nyxt/gtk"
-                        "sbcl")))))
+                        "-d" cl-system
+                        cl-implementation)))))
 
 (provide 'nyxt-guix)
