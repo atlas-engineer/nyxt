@@ -16,6 +16,9 @@
 
 (require 'cl-lib)
 
+(defvar nyxt-guix-profile-directory "~/.guix-temp-profiles/nyxt"
+  "Default directory where to dump auto-generated Guix profiles for Nyxt development.")
+
 (defun nyxt--pure-env (&rest preserve-vars)
   "Return a pure `env' command as a list of string."
   (append '("env" "-i")
@@ -49,9 +52,6 @@
       (concat
        (or (getenv "XDG_CACHE_HOME") "~/.cache")
        "/lisp-repl-core-directory")))
-
-(defvar nyxt-guix-profile-directory "~/.guix-temp-profiles/nyxt"
-  "Default directory where to dump auto-generated Guix profiles for Nyxt development.")
 
 (cl-defun nyxt-guix-lazy-shell-command (root &key
                                              ;; expression
