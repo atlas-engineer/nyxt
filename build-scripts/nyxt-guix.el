@@ -17,10 +17,10 @@
 (require 'cl-lib)
 
 (defvar nyxt-guix-profile-directory "~/.guix-temp-profiles/nyxt"
-  "Default directory where to dump auto-generated Guix profiles for Nyxt development.")
+  "Directory where auto-generated Guix profiles are stored.")
 
 (defun nyxt--pure-env (&rest preserve-vars)
-  "Return a pure `env' command as a list of string."
+  "Return a pure `env' command as a list of strings."
   (append '("env" "-i")
           (mapcar (lambda (var) (concat var "=" (getenv var)))
                   (append
@@ -122,20 +122,24 @@ already exists and CONTAINER is nil, after sourcing \"etc/profile\"."
                                       preserve
                                       no-grafts
                                       (ad-hoc '("guix" "gnupg")))
-  "Run a CL-IMPLEMENTATION executable image with all dependencies of CL-SYSTEM
+  "Run a CL-IMPLEMENTATION executable image with dependencies of CL-SYSTEM
 pre-loaded.
 
-The image is generated as needed and cached as IMAGE-PATH.
-It's generated if it does not exist, if FORCE is non-nil, or if the \"nyxt.scm\"
-file in NYXT-CHECKOUT is more recent.
+Note that all dependencies of CL-SYSTEM are pre-loaded, whereas
+CL-SYSTEM itself isn't.  This is useful to work on CL-SYSTEM.
+
+The image is generated as needed and cached as IMAGE-PATH.  It's
+generated when one of the following holds: FORCE is non-nil, the
+image does not exist, the Guix profile does not exit, or the
+\"nyxt.scm\" file in NYXT-CHECKOUT is more recent.
 
 When CONTAINER is non-nil, generate the image in a Guix container.
-When no-grafts is non-nil, disable Guix grafting when generating the image.
+When NO-GRAFTS is non-nil, disable Guix grafting when generating the image.
 
 PRESERVE is a list of environmental variable to preserve when running the image.
 
-This function is a suitable candidate as a SLIME or SLY Lisp
-implementation.  Example:
+This function is a suitable candidate as a SLIME or SLY Lisp implementation.
+Example:
 
  (setq sly-lisp-implementations
   `((nyxt-ccl-tests (lambda () (nyxt-make-guix-cl-for-nyxt
