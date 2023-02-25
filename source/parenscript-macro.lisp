@@ -151,3 +151,21 @@
               (not (= (chain computed-style "visibility") "hidden"))
               (not (= (chain computed-style "display") "none")))
          t nil)))
+
+(export-always 'element-overlapped-p)
+(defpsmacro element-overlapped-p (element)
+  "Whether ELEMENT is overlapped by another element."
+  `(let* ((rect (chain ,element (get-bounding-client-rect)))
+          (computed-style (chain window (get-computed-style ,element)))
+          (coord-truncation-offset 2)
+          (radius (serapeum:parse-float (chain computed-style border-top-left-radius)))
+          (rounded-border-offset (ceiling (* radius (- 1 (sin (/ pi 4))))))
+          (offset (max coord-truncation-offset rounded-border-offset))
+          (el (chain document (element-from-point (+ (chain rect left) offset)
+                                                  (+ (chain rect top) offset)))))
+     (if (or (>= offset (chain rect width))
+             (>= offset (chain rect height)))
+         t
+         (progn (loop while (and el (/= el element))
+                      do (setf el (chain el parent-node)))
+                (null el)))))

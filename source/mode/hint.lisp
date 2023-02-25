@@ -159,7 +159,8 @@ For instance, to include images:
         (in-view-port-p (ps:lisp (compute-hints-in-view-port-p (find-submode 'hint-mode)))))
     (ps:dolist (element elements)
       (if in-view-port-p
-          (when (nyxt/ps:element-in-view-port-p element)
+          (when (and (nyxt/ps:element-in-view-port-p element)
+                     (not (nyxt/ps:element-overlapped-p element)))
             (ps:chain element (set-attribute "nyxt-hintable" "")))
           (ps:chain element (set-attribute "nyxt-hintable" ""))))))
 
