@@ -55,14 +55,14 @@ similar programming language.")
         (:p "Example:")
         (:ncode
           (define-configuration web-buffer
-            ((default-modes (pushnew 'nyxt/no-script-mode:no-script-mode %slot-value%))))))
-      (:p "The above turns on the 'no-script-mode' (disables JavaScript) by default for
+            ((default-modes (pushnew 'nyxt/no-script-mode:no-script-mode %slot-value%)))))
+        (:p "The above turns on the 'no-script-mode' (disables JavaScript) by default for
 every buffer.")
-      (:p "The " (:nxref :macro 'define-configuration) " macro can be used to customize
+        (:p "The " (:nxref :macro 'define-configuration) " macro can be used to customize
 the slots of classes like the browser, buffers, windows, etc.  Refer to the
 class and slot documentation for the individual details.")
-      (:p "To find out about all modes known to Nyxt,
-run " (:nxref :command 'describe-command) " and type 'mode'.")
+        (:p "To find out about all modes known to Nyxt,
+run " (:nxref :command 'describe-command) " and type 'mode'."))
 
       (:nsection :title "Slot configuration"
         (:p "Slots store values that can be either accessed (get) or changed
