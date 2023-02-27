@@ -114,7 +114,7 @@ already exists and CONTAINER is nil, after sourcing \"etc/profile\"."
                                         force
                                         ;; Core dumper options:
                                         image-path
-                                        ;; Guix environment options:
+                                        ;; Guix shell options:
                                         root
                                         container
                                         preserve
@@ -149,18 +149,18 @@ implementation.  Example:
                                     (or (getenv "CL_SOURCE_REGISTRY") "")))
         (guix-def (concat nyxt-checkout "/build-scripts/nyxt.scm")))
     (setenv "CL_SOURCE_REGISTRY" cl-source-registry)
-    (cl-flet ((guix-environment (&rest command-args)
-                                (nyxt-guix-lazy-shell-command
-                                 root
-                                 :load guix-def
-                                 :ad-hoc (cons "lisp-repl-core-dumper" ad-hoc)
-                                 :preserve (cons "CL_SOURCE_REGISTRY" preserve)
-                                 :container container
-                                 :network t
-                                 :share (list (file-name-directory image-path)
-                                              (concat nyxt-checkout "=/nyxt"))
-                                 :no-grafts no-grafts
-                                 :command-args command-args)))
+    (cl-flet ((guix-shell (&rest command-args)
+                          (nyxt-guix-lazy-shell-command
+                           root
+                           :load guix-def
+                           :ad-hoc (cons "lisp-repl-core-dumper" ad-hoc)
+                           :preserve (cons "CL_SOURCE_REGISTRY" preserve)
+                           :container container
+                           :network t
+                           :share (list (file-name-directory image-path)
+                                        (concat nyxt-checkout "=/nyxt"))
+                           :no-grafts no-grafts
+                           :command-args command-args)))
       (when (or force
                 (not (file-exists-p root))
                 (and (file-exists-p image-path)
@@ -169,22 +169,22 @@ implementation.  Example:
         (ignore-errors (delete-file image-path))
         (ignore-errors (delete-file root))
         (make-directory (file-name-directory root) :parents)
-        (let ((output (get-buffer-create "*Nyxt Guix environment compilation*"))
-              (command (guix-environment "lisp-repl-core-dumper"
-                                         "-o" image-path
-                                         "-d" "nyxt/gtk"
-                                         "sbcl" "--quit")))
+        (let ((output (get-buffer-create "*Nyxt Guix shell compilation*"))
+              (command (guix-shell "lisp-repl-core-dumper"
+                                   "-o" image-path
+                                   "-d" "nyxt/gtk"
+                                   "sbcl" "--quit")))
           (let ((status (apply #'call-process
                                (car command)
                                nil (list output t) nil
                                (cdr command))))
             (if (= status 0)
                 (kill-buffer output)
-              (error "Nyxt Guix environment creation failed, see %S." output)
+              (error "Nyxt Guix shell creation failed, see %S." output)
               (switch-to-buffer-other-window output)))))
-      (list (guix-environment "lisp-repl-core-dumper"
-                              "-o" image-path
-                              "-d" "nyxt/gtk"
-                              "sbcl")))))
+      (list (guix-shell "lisp-repl-core-dumper"
+                        "-o" image-path
+                        "-d" "nyxt/gtk"
+                        "sbcl")))))
 
 (provide 'nyxt-guix)
