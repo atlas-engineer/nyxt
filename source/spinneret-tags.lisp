@@ -46,6 +46,12 @@ Example:
                               (or (eq 'with-tag first)
                                   (keywordp first)))
                 (list (cons first rest)))
+               ;; Likely, eval-able code.
+               ((trivia:guard (list* first rest)
+                              (or (special-operator-p first)
+                                  (nsymbols:function-symbol-p first)
+                                  (nsymbols:macro-symbol-p first)))
+                (list (cons first rest)))
                ;; Parenthesized text, as a list.
                ((list* first rest)
                 `("(" ,@(process-p-star-forms first)
