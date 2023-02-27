@@ -336,8 +336,11 @@ current unmarked suggestion."
     (funcall* command)))
 
 (defun prompt-buffer-actions-on-return (&optional (window (current-window)))
-  (sera:and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
-    (prompter:actions-on-return first-prompt-buffer)))
+  (or (sera:and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
+        (prompter:actions-on-return first-prompt-buffer))
+      (progn
+        (echo-warning "No actions to choose from.")
+        (error 'prompt-buffer-canceled))))
 
 (defun prompt-buffer-actions-on-current-suggestion (&optional (window (current-window)))
   (sera:and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
