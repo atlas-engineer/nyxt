@@ -1161,13 +1161,15 @@ See `finalize-buffer'."
   "Set BROWSER's WINDOW buffer to BUFFER."
   (let ((old-buffer (nyxt::active-buffer window)))
     ;; Just a precaution for the buffer to not be destroyed until we say so.
-    (g:g-object-ref (g:pointer (gtk-object old-buffer)))
-    (gtk:gtk-container-remove (main-buffer-container window) (gtk-object old-buffer))
-    (gtk:gtk-box-pack-start (main-buffer-container window) (gtk-object buffer) :expand t :fill t)
-    (unless nyxt::*headless-p*
-      (gtk:gtk-widget-show (gtk-object buffer)))
-    (when focus
-      (gtk:gtk-widget-grab-focus (gtk-object buffer)))
+    ;; FIXME: Prompt buffer or something else seems to have no gtk-object.
+    (when (gtk-object old-buffer)
+      (g:g-object-ref (g:pointer (gtk-object old-buffer)))
+      (gtk:gtk-container-remove (main-buffer-container window) (gtk-object old-buffer))
+      (gtk:gtk-box-pack-start (main-buffer-container window) (gtk-object buffer) :expand t :fill t)
+      (unless nyxt::*headless-p*
+        (gtk:gtk-widget-show (gtk-object buffer)))
+      (when focus
+        (gtk:gtk-widget-grab-focus (gtk-object buffer))))
     (nyxt/web-extensions::tabs-on-activated old-buffer buffer)
     (nyxt/web-extensions::tabs-on-updated buffer `(("attention" . t)))
     (nyxt/web-extensions::tabs-on-updated
