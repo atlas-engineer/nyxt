@@ -627,6 +627,7 @@ Return BUFFER."
     (if (current-window)
         (window-set-buffer (current-window) buffer :focus focus)
         (make-window buffer))
+    (set-window-title)
     buffer))
 
 (export-always 'current-prompt-buffer)
