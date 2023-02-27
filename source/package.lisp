@@ -67,7 +67,7 @@ modes, commands, etc."))
   `(progn ,@body))
 
 (serapeum:export-always 'define-package :nyxt)
-(defmacro define-package (name &rest options)
+(defmacro define-package (name &body options)
   "A helper around `uiop:define-package'.
 `:cl' and `:nyxt' are automatically used.
 `nyxt::*imports*' are automatically imported."
