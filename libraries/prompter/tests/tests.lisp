@@ -348,10 +348,10 @@
         (assert-string= "200"
                          (current-suggestion-value))
         (prompter:previous-source prompter)
-        (assert-string= "bar"
+        (assert-string= "foo"
                          (current-suggestion-value))
         (prompter:previous-source prompter)
-        (assert-string= "bar"
+        (assert-string= "foo"
                          (current-suggestion-value))
         (prompter:next-source prompter)
         (assert-string= "100 foo"
