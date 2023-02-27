@@ -19,50 +19,51 @@ of Nyxt."))
           (config-file (namestring (files:expand *config-file*)))
           (rules-file (namestring (files:expand (make-instance 'auto-rules-file)))))
       (:nsection :title "Configuration"
-        (:p "Nyxt is written in the Common Lisp programming language which offers a
-great perk: everything in the browser can be customized by the user, even while
-it's running!")
-        (:p "To get started with Common Lisp, we recommend checking out
-    our web page: "
-            (:a :href "https://nyxt.atlas.engineer/learn-lisp" "Learn Lisp")
-            ". It contains numerous pointers to other resources, including
-        free books both for beginners and seasoned programmers.")
-        (:p "Nyxt provides a mechanism for new users unfamiliar with Lisp to
-customize Nyxt. Start by invoking the commands " (:nxref :command 'describe-class) "
-or " (:nxref :command 'describe-slot) ".  You can press the button marked 'Configure' to
-change the value of a setting. The settings will be applied immediately and
-saved for future sessions. Please note that these settings will not alter
-existing object instances.")
+        (:p* *Nyxt is written in the *Common *Lisp programming language which offers a
+          great perk\: everything in the browser can be customized by the user\, even while
+          it\'s running!)
+        (:p* *To get started with *Common *Lisp\, we recommend checking out
+          our web page\:
+          (:a :href "https://nyxt.atlas.engineer/learn-lisp" "Learn Lisp") \.
+          *It contains numerous pointers to other resources\, including
+          free books both for beginners and seasoned programmers.)
+        (:p* *Nyxt provides a mechanism for new users unfamiliar with Lisp to
+            customize *Nyxt. *Start by invoking the commands (:nxref :command 'describe-class)
+            or (:nxref :command 'describe-slot) \. *You can press the button marked
+            (:code "Configure") to change the value of a setting. *The settings will be
+            applied immediately and saved for future sessions. *Please note that these
+            settings will not alter existing object instances.)
         (unless (str:empty? auto-config-file)
-          (:p "Settings created by Nyxt are stored in " (:code auto-config-file) "."))
+          (:p* *Settings created by *Nyxt are stored in (:code auto-config-file) \.))
         (unless (str:empty? config-file)
-          (:p "Any settings can be overridden manually by " (:code config-file) "."))
-        (:p "The following section assumes knowledge of basic Common Lisp or a
-similar programming language.")
-        (:p "The user needs to manually create the Nyxt configuration file, and the parent folders if necessary."
-            (when (and (current-buffer) ; In case manual is dumped.
-                       (not (files:nil-pathname-p config-file))
-                       (not (uiop:file-exists-p config-file)))
-              (:p "You can also press the button below to create it."
-                  (:p (:a :class "button"
-                          :onclick (ps:ps
-                                     (nyxt/ps:lisp-eval
-                                      (:title "create-config-file")
-                                      (ensure-directories-exist config-file)
-                                      (ensure-file-exists config-file)
-                                      (echo "Configuration file created at ~s." config-file)))
-                          "Create configuration file")))))
-        (:p "Example:")
+          (:p* *Any settings can be overridden manually by (:code config-file) \.))
+        (:p* *The user needs to manually create the *Nyxt configuration file\,
+          and the parent folders if necessary.
+          (when (and (current-buffer) ; In case manual is dumped.
+                     (not (files:nil-pathname-p config-file))
+                     (not (uiop:file-exists-p config-file)))
+            (:p* *You can also press the button below to create it\:)
+            (:a :class "button"
+                :onclick (ps:ps
+                           (nyxt/ps:lisp-eval
+                            (:title "create-config-file")
+                            (ensure-directories-exist config-file)
+                            (ensure-file-exists config-file)
+                            (echo "Configuration file created at ~s." config-file)))
+                "Create configuration file")))
+        (:p* *The following section assumes knowledge of basic *Common *Lisp or a
+          similar programming language.)
+        (:p* *Example\:)
         (:ncode
           (define-configuration web-buffer
             ((default-modes (pushnew 'nyxt/no-script-mode:no-script-mode %slot-value%)))))
-        (:p "The above turns on the 'no-script-mode' (disables JavaScript) by default for
-every buffer.")
-        (:p "The " (:nxref :macro 'define-configuration) " macro can be used to customize
-the slots of classes like the browser, buffers, windows, etc.  Refer to the
-class and slot documentation for the individual details.")
-        (:p "To find out about all modes known to Nyxt,
-run " (:nxref :command 'describe-command) " and type 'mode'."))
+        (:p* *The above turns on the (:code "no-script-mode")
+          (disables "JavaScript") by default for every buffer.)
+        (:p* *The (:nxref :macro 'define-configuration) macro can be used to customize
+          the slots of classes like the browser\, buffers\, windows\, etc. *Refer to the
+          class and slot documentation for the individual details.)
+        (:p* *To find out about all modes known to *Nyxt\,
+          run (:nxref :command 'describe-command) and type (:code "mode") \.))
 
       (:nsection :title "Slot configuration"
         (:p "Slots store values that can be either accessed (get) or changed
