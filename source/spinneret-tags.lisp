@@ -18,6 +18,7 @@
   "Regular <script>, but with contents staying unescaped."
   `(:script ,@attrs (:raw ,@body)))
 
+;; FIXME: How do we make camelcase words, like JavaScript? Do we need to?
 (deftag :p* (body attrs &key &allow-other-keys)
   "Paragraph tag taking raw symbols and s-exprs in and converting them to string.
 
