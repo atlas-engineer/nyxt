@@ -263,10 +263,9 @@ when STEPS is positive (resp. negative)."
 
 (export-always 'next-source)
 (defun next-source (prompter &optional (steps 1))
-  "Set `current-suggestion' after jumping STEPS non-empty sources.
-If STEPS is 0, do nothing.
-When STEPS is positive (resp. negative), set the current suggestion to be the
-first (resp. last) one of destination source."
+  "Set `current-suggestion' after traversing STEPS non-empty sources.
+When STEPS is 0, do nothing.
+The `current-suggestion' is set to be the topmost of the destination source."
   (unless (= 0 steps)
     (sera:and-let* ((nonempty-sources (remove-if #'empty-source-p (sources prompter)))
                     (source-index (or (position (current-source prompter)
@@ -275,12 +274,8 @@ first (resp. last) one of destination source."
                     (new-source (nth (alex:clamp (+ steps source-index)
                                                  0
                                                  (1- (length nonempty-sources)))
-                                     nonempty-sources))
-                    (suggestion-index (if (< 0 steps)
-                                          0
-                                          (1- (length (suggestions new-source))))))
-      (setf (current-suggestion prompter)
-            (list new-source suggestion-index)))))
+                                     nonempty-sources)))
+      (setf (current-suggestion prompter) (list new-source 0)))))
 
 (export-always 'previous-source)
 (defun previous-source (prompter &optional (steps 1))
