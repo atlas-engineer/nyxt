@@ -129,7 +129,8 @@ The most useful functions are:
         (setf (ps:chain object :children)
               (loop for child in (ps:chain element child-nodes)
                     collect (process-element child))))
-      (when (equal (ps:@ element node-name) "IFRAME")
+      (when (and (equal (ps:@ element node-name) "IFRAME")
+                 (not (ps:chain element (get-attribute "sandbox"))))
         (setf (ps:chain object :children)
               (ps:array
                (process-element (ps:@ (or (ps:@ element content-document)
