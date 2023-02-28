@@ -117,9 +117,8 @@ We store the values instead of the `suggestion' because `suggestion' objects are
 reinstantiated between each input processing.")
 
    (actions-on-marks
-    '()
-    :type (or null function function-symbol
-              (cons (or function function-symbol) *))
+    #'identity
+    :type (or function function-symbol (cons (or function function-symbol) *))
     :documentation "The first function of this list is called automatically when
 the marks change.
 It does not interrupt or return the prompter.
@@ -209,9 +208,7 @@ The predicate works the same as the `sort' predicate.")
 
    (actions-on-return
     #'identity
-    :type (or null
-              (or function function-symbol)
-              (cons (or function function-symbol) *))
+    :type (or function function-symbol (cons (or function function-symbol) *))
     :accessor nil
     :export nil
     :documentation "List of funcallables that can be run on `suggestion's of
@@ -289,9 +286,8 @@ the prompter is resumed.
 See `resume-sources'.")
 
    (actions-on-current-suggestion
-    '()
-    :type (or null function function-symbol
-              (cons (or function function-symbol) *))
+    #'identity
+    :type (or function function-symbol (cons (or function function-symbol) *))
     :documentation "The first function of this list is called automatically on
 the current-suggestion when it's changed.
 It does not interrupt or return the prompter.
@@ -331,8 +327,10 @@ call."))
 
 (defmethod (setf marks) (value (source prompter:source))
   (setf (slot-value source 'marks) value)
-  (alex:when-let ((action (first (actions-on-marks source))))
-    (run-thread "Prompter marks action thread" (funcall action (marks source)))))
+  (sera:and-let* ((action (alex:ensure-function (first (actions-on-marks source))))
+                  (not (eq #'identity action)))
+    (run-thread "Prompter marks action thread"
+      (funcall action (marks source)))))
 
 (defmethod default-action-on-current-suggestion ((source prompter:source))
   (first (actions-on-current-suggestion source)))
@@ -636,10 +634,14 @@ If you are looking for a source that just returns its plain suggestions, use `so
     ;; Wait until above thread has acquired the `initial-suggestions-lock'.
     (calispel:? wait-channel))
   (setf (actions-on-current-suggestion source)
-        (uiop:ensure-list (actions-on-current-suggestion source)))
-  (setf (actions-on-marks source) (uiop:ensure-list (actions-on-marks source)))
+        (uiop:ensure-list (or (actions-on-current-suggestion source)
+                              #'identity)))
+  (setf (actions-on-marks source)
+        (uiop:ensure-list (or (actions-on-marks source)
+                              #'identity)))
   (setf (slot-value source 'actions-on-return)
-        (uiop:ensure-list (slot-value source 'actions-on-return)))
+        (uiop:ensure-list (or (slot-value source 'actions-on-return)
+                              #'identity)))
   source)
 
 (export-always 'attributes-keys-non-default)
