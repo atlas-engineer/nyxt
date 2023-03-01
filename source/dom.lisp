@@ -254,6 +254,12 @@ Example: for
          (iframe-parents (sera:filter #'iframe-element-p parents)))
     (append (reverse iframe-parents) (list node))))
 
+(export-always 'all-documents)
+(defun all-documents (node)
+  "Get all the documents and subdocuments (iframes) of NODE, including itself."
+  (append (list node)
+          (coerce (remove-if #'uiop:emptyp (clss:select "iframe" node) :key #'plump:children) 'list)))
+
 (export-always 'get-unique-selector)
 (-> get-unique-selector (plump:element) t)
 (defmemo get-unique-selector (element)
