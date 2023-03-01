@@ -93,15 +93,16 @@ For instance, to include images:
        "g f" 'follow-hint-nosave-buffer
        "g F" 'follow-hint-nosave-buffer-focus)))))
 
-(define-parenscript-async add-stylesheet ()
-  (unless (nyxt/ps:qs document "#nyxt-stylesheet")
-    (ps:try
-     (ps:let ((style-element (ps:chain document (create-element "style"))))
-       (setf (ps:@ style-element id) "nyxt-stylesheet")
-       (ps:chain document head (append-child style-element))
-       (setf (ps:chain style-element inner-text)
-             (ps:lisp (style (find-submode 'hint-mode)))))
-     (:catch (error)))))
+(define-parenscript-async add-stylesheet (doc)
+  (let ((doc (nyxt/ps:iframe-document (nyxt/ps:nyxt-node doc))))
+    (unless (nyxt/ps:qs doc "#nyxt-stylesheet")
+      (ps:try
+       (ps:let ((style-element (ps:chain doc (create-element "style"))))
+         (setf (ps:@ style-element id) "nyxt-stylesheet")
+         (ps:chain doc head (append-child style-element))
+         (setf (ps:chain style-element inner-text)
+               (ps:lisp (style (find-submode 'hint-mode)))))
+       (:catch (error))))))
 
 (define-parenscript-async hint-elements (hints)
   (defun create-hint-overlay (original-element hint)
@@ -154,8 +155,9 @@ For instance, to include images:
                                                 1)
                                            alphabet))))))
 
-(define-parenscript set-hintable-attribute (selector)
-  (let ((elements (nyxt/ps:qsa document (ps:lisp selector)))
+(define-parenscript set-hintable-attribute (document selector)
+  (let ((doc (nyxt/ps:iframe-document (nyxt/ps:nyxt-node doc)))
+        (elements (nyxt/ps:qsa doc (ps:lisp selector)))
         (in-view-port-p (ps:lisp (compute-hints-in-view-port-p (find-submode 'hint-mode)))))
     (ps:dolist (element elements)
       (if in-view-port-p
@@ -168,8 +170,9 @@ For instance, to include images:
     (ps:chain element (remove-attribute "nyxt-hintable"))))
 
 (defun add-hints (&key selector (buffer (current-buffer)))
-  (add-stylesheet)
-  (set-hintable-attribute selector)
+  (dolist (doc (nyxt/dom:all-documents (document-model buffer)))
+    (add-stylesheet doc)
+    (set-hintable-attribute doc selector))
   (update-document-model :buffer buffer)
   (let* ((hintable-elements (clss:select "[nyxt-hintable]" (document-model buffer)))
          (hints (generate-hints (length hintable-elements))))
