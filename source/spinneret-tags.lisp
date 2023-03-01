@@ -20,7 +20,7 @@
 
 (serapeum:eval-always
   (defun remove-smart-quoting (form)
-    "If the form is quoted or quazi-quoted, return the unquoted/evaluated variant.
+    "If the form is quoted or quasi-quoted, return the unquoted/evaluated variant.
 Otherwise, return the form as is."
     (cond
       ((and (listp form)
