@@ -7,6 +7,9 @@
   (:import-from :serapeum #:export-always))
 (in-package prompter)
 
+(unless lparallel:*kernel* (setf lparallel:*kernel*
+                                 (lparallel:make-kernel (or (serapeum:count-cpus) 1))))
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
