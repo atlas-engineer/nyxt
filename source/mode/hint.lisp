@@ -96,20 +96,18 @@ For instance, to include images:
 (define-parenscript-async add-stylesheet (doc)
   (let ((doc (nyxt/ps:iframe-document (nyxt/ps:nyxt-node doc))))
     (unless (nyxt/ps:qs doc "#nyxt-stylesheet")
-      (ps:try
-       (ps:let ((style-element (ps:chain doc (create-element "style"))))
-         (setf (ps:@ style-element id) "nyxt-stylesheet")
-         (ps:chain doc head (append-child style-element))
-         (setf (ps:chain style-element inner-text)
-               (ps:lisp (style (find-submode 'hint-mode)))))
-       (:catch (error))))))
+      (ps:let ((style-element (ps:chain doc (create-element "style"))))
+        (setf (ps:@ style-element id) "nyxt-stylesheet")
+        (ps:chain doc head (append-child style-element))
+        (setf (ps:chain style-element inner-text)
+              (ps:lisp (style (find-submode 'hint-mode))))))))
 
-(define-parenscript-async hint-elements (hints)
-  (defun create-hint-overlay (original-element hint)
+(define-parenscript-async hint-element (doc elem hint)
+  (defun create-hint-overlay (doc original-element hint)
     "Create a DOM element to be used as a hint."
     (ps:let* ((rect (ps:chain original-element (get-bounding-client-rect)))
-              (element (ps:chain document (create-element "span"))))
-      (setf (ps:@ element class-name) "nyxt-hint")
+              (element (ps:chain doc (create-element "span"))))
+
       (setf (ps:@ element style position) "absolute")
       (setf (ps:@ element style left) (+ (ps:@ window page-x-offset) (ps:@ rect left) "px"))
       (setf (ps:@ element style top) (+ (ps:@ window page-y-offset) (ps:@ rect top) "px"))
@@ -117,19 +115,13 @@ For instance, to include images:
       (setf (ps:@ element text-content) hint)
       element))
 
-  (let ((fragment (ps:chain document (create-document-fragment)))
-        (hints (ps:lisp (list 'quote hints)))
-        (i 0))
-    (dolist (element (nyxt/ps:qsa document "[nyxt-hintable]"))
-      (let ((hint (aref hints i)))
-        (ps:chain element (set-attribute "nyxt-hint" hint))
-        (ps:chain fragment (append-child (create-hint-overlay element hint)))
-        (when (ps:lisp (show-hint-scope-p (find-submode 'hint-mode)))
-          (ps:chain element class-list (add "nyxt-element-hint")))
-        (setf i (1+ i))))
-    (ps:chain document body (append-child fragment))
-    ;; Returning fragment makes WebKit choke.
-    nil))
+  (let ((doc (nyxt/ps:iframe-document (nyxt/ps:nyxt-node doc)))
+        (hint (ps:lisp hint))
+        (element (nyxt/ps:nyxt-node elem)))
+    (ps:chain element (set-attribute "nyxt-hint" hint))
+    (ps:chain doc (append-child (create-hint-overlay doc element hint)))
+    (when (ps:lisp (show-hint-scope-p (find-submode 'hint-mode)))
+      (ps:chain element class-list (add "nyxt-element-hint")))))
 
 (-> select-from-alphabet (t alex:positive-integer string) (values string &optional))
 (defun select-from-alphabet (code subsequence-length alphabet)
@@ -156,9 +148,9 @@ For instance, to include images:
                                            alphabet))))))
 
 (define-parenscript set-hintable-attribute (document selector)
-  (let ((doc (nyxt/ps:iframe-document (nyxt/ps:nyxt-node doc)))
-        (elements (nyxt/ps:qsa doc (ps:lisp selector)))
-        (in-view-port-p (ps:lisp (compute-hints-in-view-port-p (find-submode 'hint-mode)))))
+  (let* ((doc (nyxt/ps:iframe-document (nyxt/ps:nyxt-node document)))
+         (elements (nyxt/ps:qsa doc (ps:lisp selector)))
+         (in-view-port-p (ps:lisp (compute-hints-in-view-port-p (find-submode 'hint-mode)))))
     (ps:dolist (element elements)
       (if in-view-port-p
           (unless (nyxt/ps:element-overlapped-p element)
@@ -175,11 +167,16 @@ For instance, to include images:
     (set-hintable-attribute doc selector))
   (update-document-model :buffer buffer)
   (let* ((hintable-elements (clss:select "[nyxt-hintable]" (document-model buffer)))
+         (documents (map 'list (lambda (e)
+                                 (or (find-if #'nyxt/dom:iframe-element-p (nyxt/dom:parents e))
+                                     (alex:lastcar (nyxt/dom:parents e))))
+                         hintable-elements))
          (hints (generate-hints (length hintable-elements))))
-    (hint-elements hints)
     (loop for elem across hintable-elements
           for hint in hints
+          for document in documents
           do (plump:set-attribute elem "nyxt-hint" hint)
+          do (hint-element document elem hint)
           collect elem)))
 
 (define-parenscript-async remove-hint-elements ()
