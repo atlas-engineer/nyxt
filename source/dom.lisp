@@ -141,7 +141,7 @@ The most useful functions are:
                 (equal (ps:@ element node-name) "#cdata-section"))
         (setf (ps:@ object :text) (ps:@ element text-content)))
       object))
-  (ps:chain -j-s-o-n (stringify (process-element (nyxt/ps:qs document "html")))))
+  (ps:chain -j-s-o-n (stringify (process-element (ps:chain document document-element)))))
 
 (export-always 'named-json-parse)
 (-> named-json-parse (string) (values (or plump-dom:root null) &optional))
@@ -257,7 +257,10 @@ Example: for
 (export-always 'all-documents)
 (defun all-documents (node)
   "Get all the documents and subdocuments (iframes) of NODE, including itself."
-  (append (list node)
+  (append (list (if (plump:root-p node)
+                    (or (elt (clss:select "html" node) 0)
+                        (plump-dom:first-element node))
+                    node))
           (coerce (remove-if #'uiop:emptyp (clss:select "iframe" node) :key #'plump:children) 'list)))
 
 (export-always 'get-unique-selector)

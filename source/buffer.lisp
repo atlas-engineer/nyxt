@@ -911,7 +911,7 @@ identifiers."
                                         (ps:@ node content-window document))
                                     body)))
       nyxt-identifier-counter)
-    (setf nyxt-identifier-counter (add-nyxt-identifiers (ps:chain document body))))
+    (setf nyxt-identifier-counter (add-nyxt-identifiers (ps:chain document document-element))))
   (alex:when-let ((body-json (with-current-buffer buffer
                                (nyxt/dom::get-document-body-json))))
     (let ((dom (nyxt/dom::named-json-parse body-json)))
