@@ -431,9 +431,7 @@ For generic functions, describe all the methods."
                                     (not-error-p (null (getf definition :error)))
                                     (file (first (rest (getf definition :location)))))
                      (:h2 (format nil "Source (~a)" file))
-                     (:ncode
-                       :file file
-                       :literal-p t
+                     (:ncode :file file
                        (multiple-value-bind (listing form)
                            (function-lambda-string (symbol-function input))
                          (or form listing))))
@@ -473,7 +471,8 @@ For generic functions, describe all the methods."
                     (multiple-value-bind (source form file)
                         (source-for-thing method)
                       (:h2 (format nil "Source (~a)" file))
-                      (:ncode :file file :literal-p t (or form source)))))))
+                      (:ncode :file file
+                        (or form source)))))))
           (spinneret:with-html-string
             (:nstyle (style buffer))
             (:h1 (format nil "~s" input) ; Use FORMAT to keep package prefix.
@@ -552,12 +551,8 @@ A command is a special kind of function that can be called with
                       (prini-to-string (getf props :type)))
                   (prini-to-string (getf props :type)))))
        (when (getf props :initform)
-         (let* ((initform-string (prini-to-string (getf props :initform)))
-                (multiline-form? (search +newline+ initform-string)))
-           (:dt "Default value")
-           (:dd (if multiline-form?
-                    (:ncode :literal-p t initform-string)
-                    (:ncode :literal-p t :inline-p t initform-string)))))
+         (:dt "Default value")
+         (:dd (:ncode (prini-to-string (getf props :initform)))))
        (when (getf props :documentation)
          (:dt "Documentation")
          (:dd (:pre (:code (:raw (resolve-backtick-quote-links
@@ -600,8 +595,7 @@ A command is a special kind of function that can be called with
           (multiple-value-bind (source s-expr file)
               (source-for-thing (find-class class))
             (declare (ignore source))
-            (:ncode :file file :literal-p t
-              s-expr))
+            (:ncode :file file s-expr))
           (:h2 "Describe")
           (:pre (:code (with-output-to-string (s) (describe class s))))))
       (spinneret:with-html-string

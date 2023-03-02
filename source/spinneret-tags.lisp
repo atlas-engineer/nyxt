@@ -156,9 +156,8 @@ non-overridable."
                                    `(:modes (cl:list (make-instance ,mode)))))
              ")"))))))
 
-(serapeum:eval-always
-  (defun resolve-linkable-symbols (form)
-    "Helper function for :NCODE tag.
+(defun %ncode-resolve-linkable-symbols (form)
+  "Helper function for :NCODE tag.
 Returns all the linkable symbols from FORM as multiple values:
 - Function symbols.
 - Variable symbols.
@@ -166,233 +165,260 @@ Returns all the linkable symbols from FORM as multiple values:
 - All the special forms (including some macros and functions needing extra care).
 - All the strings that may potentially be resolvable with
   `nyxt:resolve-backtick-quote-links'."
-    (let ((functions (list))
-          (classes (list))
-          (variables (list))
-          (macros (list))
-          (specials (list))
-          (all-specials '(quote
-                          flet labels symbol-macrolet macrolet
-                          block catch eval-when progv lambda
-                          progn prog1 unwind-protect tagbody setf setq multiple-value-prog1
-                          let let* prog prog*
-                          return-from throw the
-                          multiple-value-call funcall apply
-                          function
-                          go locally))
-          (linkable-strings (list)))
-      (labels ((resolve-symbols-internal (form)
-                 (typecase form
-                   (boolean nil)
-                   (keyword nil)
-                   (cons
-                    (let ((first (first form)))
-                      (alexandria:destructuring-case form
-                        ;; More forms: def*, make-instance, slots, special forms?
-                        ((make-instance class &rest args)
-                         (push first functions)
-                         (if (and (listp class)
-                                  (eq 'quote (first class)))
-                             (push (second class) classes)
-                             (resolve-symbols-internal class))
-                         (resolve-symbols-internal args))
-                        (((flet labels symbol-macrolet macrolet)
-                          (&rest bindings) &body body)
-                         (push first specials)
-                         (mapcar (lambda (b)
-                                   (resolve-symbols-internal (cddr b)))
-                                 bindings)
-                         (mapc #'resolve-symbols-internal body))
-                        (((block catch eval-when progv lambda) arg &body body)
-                         (declare (ignore arg))
-                         (push first specials)
-                         (mapc #'resolve-symbols-internal body))
-                        (((progn prog1 unwind-protect tagbody setf setq multiple-value-prog1)
-                          &body body)
-                         (push first specials)
-                         (mapc #'resolve-symbols-internal body))
-                        (((let let* prog prog*) (&rest bindings) &body body)
-                         (push first specials)
-                         (mapcar (alexandria:compose
-                                  #'resolve-symbols-internal #'second #'uiop:ensure-list)
-                                 bindings)
-                         (mapc #'resolve-symbols-internal body))
-                        (((return-from throw the) arg &optional value)
-                         (declare (ignore arg))
-                         (push first specials)
-                         (resolve-symbols-internal value))
-                        (((multiple-value-call funcall apply) function &rest args)
-                         (push first specials)
-                         (match function
-                           ((list 'quote name)
-                            (pushnew name functions))
-                           ((list 'function name)
-                            (pushnew name functions)))
-                         (mapc #'resolve-symbols-internal args))
-                        ((function value)
-                         (push first specials)
-                         (pushnew value functions))
-                        (((go locally) &rest values)
-                         (declare (ignore values))
-                         (push first specials))
-                        ((t &rest rest)
-                         (cond
-                           ((listp first)
-                            (resolve-symbols-internal first)
-                            (mapc #'resolve-symbols-internal rest))
-                           ((member first all-specials)
-                            (pushnew first specials))
-                           ((and (symbolp first)
-                                 (nsymbols:macro-symbol-p first))
-                            (pushnew first macros)
-                            (let* ((arglist (uiop:symbol-call :nyxt :arglist first))
-                                   (rest-position (or (position '&rest arglist)
-                                                      (position '&body arglist))))
-                              (if rest-position
-                                  (mapc #'resolve-symbols-internal (nthcdr rest-position rest))
-                                  (mapc #'resolve-symbols-internal rest))))
-                           ((and (symbolp first)
-                                 (nsymbols:function-symbol-p first))
-                            (pushnew first functions)
-                            (mapc #'resolve-symbols-internal rest)))))))
-                   (symbol
-                    (when (nsymbols:variable-symbol-p form)
-                      (pushnew form variables)))
-                   (string
-                    (pushnew form linkable-strings)))))
-        (resolve-symbols-internal form)
-        (values (set-difference functions all-specials) classes variables macros specials linkable-strings))))
-  (defun prini* (object package)
-    (nyxt:prini-to-string object :readably t :right-margin 70 :package package))
-  (defun htmlize-body (form listing package)
-    (let ((*suppress-inserted-spaces* t)
-          (*html-style* :tree)
-          (*print-pretty* nil))
-      (when (listp form)
-        (multiple-value-bind (functions classes variables macros specials linkable-strings)
-            (resolve-linkable-symbols form)
-          ;; We use \\s, because lots of Lisp symbols include non-word
-          ;; symbols and would break if \\b was used.
-          (macrolet ((replace-symbol-occurences (symbols type &key (prefix "(\\()") (suffix "(\\)|\\s)") (style :plain))
-                       (alexandria:with-gensyms (sym sym-listing)
-                         `(dolist (,sym ,symbols)
-                            (when (search (prini* ,sym package) listing)
-                              (let ((,sym-listing (prini* ,sym package)))
-                                (setf listing
-                                      (ppcre:regex-replace-all
-                                       (uiop:strcat
-                                        ,prefix (ppcre:quote-meta-chars ,sym-listing) ,suffix)
-                                       listing
-                                       (list
-                                        0 ,(case style
-                                             (:link `(with-html-string
-                                                       (:nxref ,type ,sym ,sym-listing)))
-                                             (:plain `(with-html-string
-                                                        (:nxref :style "color: inherit; background-color: inherit;" ,type ,sym ,sym-listing)))
-                                             (:span `(with-html-string
-                                                       (:span.accent ,sym-listing))))
-                                        1)))))))))
-            (replace-symbol-occurences macros :macro :style :link)
-            (replace-symbol-occurences functions :function :prefix "(\\(|#'|')")
-            (replace-symbol-occurences classes :class-name :prefix "(')")
-            (replace-symbol-occurences
-             variables :variable :prefix "(\\s)" :suffix "(\\)|\\s)")
-            (replace-symbol-occurences specials nil :style :span))
-          (dolist (string linkable-strings)
-            (setf listing (str:replace-all (prini* string package)
-                                           (prini* (nyxt:resolve-backtick-quote-links string package) package)
-                                           listing)))))
-      listing)))
+  (let ((functions (list))
+        (classes (list))
+        (variables (list))
+        (macros (list))
+        (specials (list))
+        (all-specials '(quote
+                        flet labels symbol-macrolet macrolet
+                        block catch eval-when progv lambda
+                        progn prog1 unwind-protect tagbody setf setq multiple-value-prog1
+                        let let* prog prog*
+                        return-from throw the
+                        multiple-value-call funcall apply
+                        function
+                        go locally))
+        (linkable-strings (list)))
+    (labels ((resolve-symbols-internal (form)
+               (typecase form
+                 (boolean nil)
+                 (keyword nil)
+                 (cons
+                  (let ((first (first form)))
+                    (alexandria:destructuring-case form
+                      ;; More forms: def*, make-instance, slots, special forms?
+                      ((make-instance class &rest args)
+                       (push first functions)
+                       (if (and (listp class)
+                                (eq 'quote (first class)))
+                           (push (second class) classes)
+                           (resolve-symbols-internal class))
+                       (resolve-symbols-internal args))
+                      (((flet labels symbol-macrolet macrolet)
+                        (&rest bindings) &body body)
+                       (push first specials)
+                       (mapcar (lambda (b)
+                                 (resolve-symbols-internal (cddr b)))
+                               bindings)
+                       (mapc #'resolve-symbols-internal body))
+                      (((block catch eval-when progv lambda) arg &body body)
+                       (declare (ignore arg))
+                       (push first specials)
+                       (mapc #'resolve-symbols-internal body))
+                      (((progn prog1 unwind-protect tagbody setf setq multiple-value-prog1)
+                        &body body)
+                       (push first specials)
+                       (mapc #'resolve-symbols-internal body))
+                      (((let let* prog prog*) (&rest bindings) &body body)
+                       (push first specials)
+                       (mapcar (alexandria:compose
+                                #'resolve-symbols-internal #'second #'uiop:ensure-list)
+                               bindings)
+                       (mapc #'resolve-symbols-internal body))
+                      (((return-from throw the) arg &optional value)
+                       (declare (ignore arg))
+                       (push first specials)
+                       (resolve-symbols-internal value))
+                      (((multiple-value-call funcall apply) function &rest args)
+                       (push first specials)
+                       (match function
+                         ((list 'quote name)
+                          (pushnew name functions))
+                         ((list 'function name)
+                          (pushnew name functions)))
+                       (mapc #'resolve-symbols-internal args))
+                      ((function value)
+                       (push first specials)
+                       (pushnew value functions))
+                      (((go locally) &rest values)
+                       (declare (ignore values))
+                       (push first specials))
+                      ((t &rest rest)
+                       (cond
+                         ((listp first)
+                          (resolve-symbols-internal first)
+                          (mapc #'resolve-symbols-internal rest))
+                         ((member first all-specials)
+                          (pushnew first specials))
+                         ((and (symbolp first)
+                               (nsymbols:macro-symbol-p first))
+                          (pushnew first macros)
+                          (let* ((arglist (uiop:symbol-call :nyxt :arglist first))
+                                 (rest-position (or (position '&rest arglist)
+                                                    (position '&body arglist))))
+                            (if rest-position
+                                (mapc #'resolve-symbols-internal (nthcdr rest-position rest))
+                                (mapc #'resolve-symbols-internal rest))))
+                         ((and (symbolp first)
+                               (nsymbols:function-symbol-p first))
+                          (pushnew first functions)
+                          (mapc #'resolve-symbols-internal rest)))))))
+                 (symbol
+                  (when (nsymbols:variable-symbol-p form)
+                    (pushnew form variables)))
+                 (string
+                  (pushnew form linkable-strings)))))
+      (resolve-symbols-internal form)
+      (values (set-difference functions all-specials) classes variables macros specials linkable-strings))))
+
+(defun %ncode-prini (object package)
+  "Custom `:ncode'-specific `nyxt:prini-string-string' with narrower margins."
+  (nyxt:prini-to-string object :readably t :circle nil :right-margin 70 :package package))
+
+(defun %ncode-htmlize-body (form package &optional (listing (%ncode-prini form package)))
+  "Turn the FORM into an HTMLized rich text, augmented with `:nxref's to the used entities.
+LISTING is the string to enrich, autogenerated from FORM on demand."
+  (let ((*suppress-inserted-spaces* t)
+        (*html-style* :tree)
+        (*print-pretty* nil))
+    (when (listp form)
+      (multiple-value-bind (functions classes variables macros specials linkable-strings)
+          (%ncode-resolve-linkable-symbols form)
+        ;; We use \\s, because lots of Lisp symbols include non-word
+        ;; symbols and would break if \\b was used.
+        (macrolet ((replace-symbol-occurences (symbols type &key (prefix "(\\()") (suffix "(\\)|\\s)") (style :plain))
+                     (alexandria:with-gensyms (sym sym-listing)
+                       `(dolist (,sym ,symbols)
+                          (when (search (%ncode-prini ,sym package) listing)
+                            (let ((,sym-listing (%ncode-prini ,sym package)))
+                              (setf listing
+                                    (ppcre:regex-replace-all
+                                     (uiop:strcat
+                                      ,prefix (ppcre:quote-meta-chars ,sym-listing) ,suffix)
+                                     listing
+                                     (list
+                                      0 ,(case style
+                                           (:link `(with-html-string
+                                                     (:nxref ,type ,sym ,sym-listing)))
+                                           (:plain `(with-html-string
+                                                      (:nxref :style "color: inherit; background-color: inherit;" ,type ,sym ,sym-listing)))
+                                           (:span `(with-html-string
+                                                     (:span.accent ,sym-listing))))
+                                      1)))))))))
+          (replace-symbol-occurences macros :macro :style :link)
+          (replace-symbol-occurences functions :function :prefix "(\\(|#'|')")
+          (replace-symbol-occurences classes :class-name :prefix "(')")
+          (replace-symbol-occurences
+           variables :variable :prefix "(\\s)" :suffix "(\\)|\\s)")
+          (replace-symbol-occurences specials nil :style :span))
+        (dolist (string linkable-strings)
+          (setf listing (str:replace-all (%ncode-prini string package)
+                                         (%ncode-prini (nyxt:resolve-backtick-quote-links string package) package)
+                                         listing)))))
+    listing))
+
+(defun %ncode-htmlize-unless-string (form package)
+  (typecase form
+    (string form)
+    (list (%ncode-htmlize-body form package))))
+
+(defun %ncode-inline-p (body package)
+  "BODY is only inline if it actually is a one-liner, literal or printed out."
+  (and (serapeum:single body)
+       (zerop (count #\newline
+                     (if (stringp (first body))
+                         (first body)
+                         (%ncode-prini (first body) package))))))
 
 ;; TODO: Store the location it's defined in as a :title or link for discoverability?
 ;; FIXME: Maybe use :nyxt-user as the default package to not quarrel with REPL & config?
-(deftag :ncode (body attrs &key (package :nyxt) inline-p literal-p (repl-p t) (config-p t) (copy-p t)
+(deftag :ncode (body attrs &key
+                     (package :nyxt)
+                     (inline-p nil inline-provided-p)
+                     (repl-p t) (config-p t) (copy-p t)
                      file (editor-p file) (external-editor-p file)
                      &allow-other-keys)
   "Generate the <pre>/<code> listing from the provided Lisp BODY.
+
+Forms in BODY should be quoted.
+
+INLINE-P is about omitting newlines and <pre> tags---basically a <code> tag with
+syntax highlighting and actions. If not provided, is determined automatically
+based on BODY length.
 
 Most *-P arguments mandate whether to add the buttons for:
 - Editing the BODY in the built-in REPL (REPL-P).
 - Appending the BODY to the auto-config.lisp (CONFIG-P).
 - Copying the source to clipboard (COPY-P).
 - Editing the FILE it comes from (if present), in
-  - Nyxt built-in `editor-mode' (EDITOR-P).
-  - External-editor (EXTERNAL-EDITOR-P).
-
-Forms in BODY can be unquoted, benefiting from the editor formatting.
-
-If LITERAL-P, BODY can be a single string that will be inserted verbatim with no
-correctness checks. Try to avoid this option, as it does not guarantee that the
-code is at the very least readable.
-
-Forms in BODY can be quoted, in which case Spinneret won't even try to look at
-its contents (useful if there are forms that start with a keyword, Spinneret
-unconditionally converts those to tags unless the whole form is quoted.)"
-  (let* ((body (mapcar #'remove-smart-quoting body))
-         (printed-body (mapcar (alexandria:rcurry #'prini* package) body))
-         (code (if literal-p
-                   (first body)
-                   (str:join (make-string 2 :initial-element #\newline) printed-body)))
-         (htmlized-code
-           (unless literal-p
-             (str:join
-              (make-string 2 :initial-element #\newline)
-              (mapcar (alexandria:rcurry #'htmlize-body package) body printed-body))))
-         (*print-escape* nil)
-         (id (nyxt:prini-to-string (gensym)))
-         (printable-code `(if (stringp ,code)
-                              ,code
-                              (prini* ,code ,package)))
-         (injectable-code
-           (if literal-p
-               `(if (stringp ,code)
-                    ,code
-                    (:raw (htmlize-body ,code (prini* ,code ,package) ,package)))
-               `(:raw (the string ,htmlized-code))))
-         (select-code
-           `(:nselect
-              :id ,id
-              :style ,(unless inline-p
-                        "position: absolute; top: 0; right: 0; margin: 0; padding: 2px")
-              ,@(when copy-p
+  - Nyxt built-in `nyxt/editor-mode:editor-mode' (EDITOR-P).
+  - `nyxt:external-editor-program' (EXTERNAL-EDITOR-P)."
+  (once-only (package)
+    (with-gensyms (body-var inline-var file-var first plaintext htmlized)
+      (let* ((*print-escape* nil)
+             (id (nyxt:prini-to-string (gensym)))
+             (select-options
+               (append
+                (when copy-p
                   `(((copy "Copy" "Copy the code to clipboard.")
                      (funcall (read-from-string "nyxt:ffi-buffer-copy")
-                              (nyxt:current-buffer) ,printable-code))))
-              ,@(when config-p
+                              (nyxt:current-buffer) ,plaintext))))
+                (when config-p
                   `(((config
                       "Add to auto-config"
                       (format nil "Append this code to the auto-configuration file (~a)."
                               (nfiles:expand nyxt::*auto-config-file*)))
                      (alexandria:write-string-into-file
-                      ,printable-code (nfiles:expand nyxt::*auto-config-file*)
+                      ,plaintext (nfiles:expand nyxt::*auto-config-file*)
                       :if-exists :append))))
-              ,@(when repl-p
+                (when repl-p
                   `(((repl
                       "Try in REPL"
                       "Open this code in Nyxt REPL to experiment with it.")
                      (nyxt:buffer-load-internal-page-focus
                       (read-from-string "nyxt/repl-mode:repl")
-                      :form ,printable-code))))
-              ,@(when (and file editor-p)
+                      :form ,plaintext))))
+                (when (and file editor-p)
                   `(((editor
                       "Open in built-in editor"
                       "Open the file this code comes from in Nyxt built-in editor-mode.")
                      (funcall (read-from-string "nyxt/editor-mode:edit-file")
-                              ,file))))
-              ,@(when (and file external-editor-p)
+                              ,file-var))))
+                (when (and file external-editor-p)
                   `(((external-editor
                       "Open in external editor"
                       "Open the file this code comes from in external editor.")
                      (uiop:launch-program
                       (append (funcall (read-from-string "nyxt:external-editor-program")
                                        (symbol-value (read-from-string "nyxt:*browser*")))
-                              (list (uiop:native-namestring ,file))))))))))
-    (if inline-p
-        `(:span (:code ,@attrs ,injectable-code) ,select-code)
-        ;; https://spdevuk.com/how-to-create-code-copy-button/
-        `(:div :style "position: relative"
-               (:pre ,@attrs ,select-code
-                     (:code ,injectable-code))))))
+                              (list (uiop:native-namestring ,file-var)))))))))
+             (select-code
+               `(:nselect
+                  :id ,id
+                  :style (unless ,inline-var
+                           "position: absolute; top: 0; right: 0; margin: 0; padding: 2PX")
+                  ,@select-options)))
+        `(let* ((,body-var (list ,@body))
+                (,first (first ,body-var))
+                (,inline-var ,(if inline-provided-p
+                                  inline-p
+                                  `(%ncode-inline-p ,body-var ,package)))
+                (,file-var ,file)
+                (,plaintext (cond
+                              ((and (serapeum:single ,body-var)
+                                    (stringp ,first))
+                               ,first)
+                              ((serapeum:single ,body-var)
+                               (%ncode-prini ,first ,package))
+                              (t (str:join
+                                  (make-string 2 :initial-element #\newline)
+                                  (mapcar (lambda (f) (if (stringp f)
+                                                          f
+                                                          (%ncode-prini f ,package)))
+                                          ,body-var)))))
+                (,htmlized (if (serapeum:single ,body-var)
+                               (%ncode-htmlize-unless-string ,first ,package)
+                               (str:join
+                                (make-string 2 :initial-element #\newline)
+                                (mapcar (lambda (f) (%ncode-htmlize-unless-string f ,package)) ,body-var)))))
+           (declare (ignorable ,plaintext ,file-var))
+           ,(if inline-p
+                `(:span (:code ,@attrs (:raw ,htmlized)) ,select-code)
+                ;; https://spdevuk.com/how-to-create-code-copy-button/
+                `(:div :style "position: relative"
+                       (:pre ,@attrs ,select-code
+                             (:code (:raw ,htmlized))))))))))
 
 (deftag :nsection (body attrs &key (title (alexandria:required-argument 'title))
                         level
