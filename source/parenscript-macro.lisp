@@ -29,7 +29,7 @@
 (export-always 'qs-nyxt-id)
 (defpsmacro qs-nyxt-id (context id)
   "context.querySelector() tailored for Nyxt IDs."
-  `(chain ,context (query-selector (lisp (format nil "[nyxt-identifier=\"~a\"]" ,id)))))
+  `(chain ,context (query-selector (stringify "[nyxt-identifier=\"" ,id "\"]"))))
 
 (export-always 'iframe-document)
 (defpsmacro iframe-document (iframe)
