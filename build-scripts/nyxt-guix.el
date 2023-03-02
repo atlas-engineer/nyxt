@@ -10,14 +10,17 @@
 ;;
 ;; (load "/PATH/TO/NYXT/CHECKOUT/build-scripts/nyxt-guix.el" :noerror)
 ;;
-;; See `nyxt-make-guix-sbcl-for-nyxt' for an example.
+;; See `nyxt-make-guix-cl-for-nyxt' for an example.
 
 ;;; Code:
 
 (require 'cl-lib)
 
+(defvar nyxt-guix-profile-directory "~/.guix-temp-profiles/nyxt"
+  "Directory where auto-generated Guix profiles are stored.")
+
 (defun nyxt--pure-env (&rest preserve-vars)
-  "Return a pure `env' command as a list of string."
+  "Return a pure `env' command as a list of strings."
   (append '("env" "-i")
           (mapcar (lambda (var) (concat var "=" (getenv var)))
                   (append
@@ -50,22 +53,19 @@
        (or (getenv "XDG_CACHE_HOME") "~/.cache")
        "/lisp-repl-core-directory")))
 
-(defvar nyxt-guix-profile-directory "~/.guix-temp-profiles/nyxt"
-  "Default directory where to dump auto-generated Guix profiles for Nyxt development.")
-
 (cl-defun nyxt-guix-lazy-shell-command (root &key
-                                                   ;; expression
-                                                   load
-                                                   ;; manifest
-                                                   ad-hoc
-                                                   preserve
-                                                   container
-                                                   network
-                                                   share
-                                                   expose
-                                                   no-grafts
-                                                   extra-args
-                                                   command-args)
+                                             ;; expression
+                                             load
+                                             ;; manifest
+                                             ad-hoc
+                                             preserve
+                                             container
+                                             network
+                                             share
+                                             expose
+                                             no-grafts
+                                             extra-args
+                                             command-args)
   "Return the command to load a Guix shell, persisted at ROOT.
 If the ROOT shell already exists, don't regenerate it.
 
@@ -109,39 +109,51 @@ already exists and CONTAINER is nil, after sourcing \"etc/profile\"."
          "--"
          ,@command-args)))))
 
-(cl-defun nyxt-make-guix-sbcl-for-nyxt (nyxt-checkout
-                                        &key
-                                        force
-                                        ;; Core dumper options:
-                                        image-path
-                                        ;; Guix environment options:
-                                        root
-                                        container
-                                        preserve
-                                        no-grafts
-                                        (ad-hoc '("guix" "gnupg")))
-  "Run an SBCL executable image with all Nyxt dependencies pre-loaded.
+(cl-defun nyxt-make-guix-cl-for-nyxt (nyxt-checkout
+                                      &key
+                                      force
+                                      ;; Core dumper options:
+                                      (cl-implementation "sbcl")
+                                      (cl-system "nyxt/gi-gtk")
+                                      image-path
+                                      ;; Guix shell options:
+                                      root
+                                      container
+                                      preserve
+                                      no-grafts
+                                      (ad-hoc '("guix" "gnupg")))
+  "Run a CL-IMPLEMENTATION executable image with dependencies of CL-SYSTEM
+pre-loaded.
 
-The image is generated as needed and cached as IMAGE-PATH.
-It's generated if it does not exist, if FORCE is non-nil, or if the \"nyxt.scm\"
-file in NYXT-CHECKOUT is more recent.
+Note that all dependencies of CL-SYSTEM are pre-loaded, whereas
+CL-SYSTEM itself isn't.  This is useful to work on CL-SYSTEM.
+
+The image is generated as needed and cached as IMAGE-PATH.  It's
+generated when one of the following holds: FORCE is non-nil, the
+image does not exist, the Guix profile does not exit, or the
+\"nyxt.scm\" file in NYXT-CHECKOUT is more recent.
 
 When CONTAINER is non-nil, generate the image in a Guix container.
-When no-grafts is non-nil, disable Guix grafting when generating the image.
+When NO-GRAFTS is non-nil, disable Guix grafting when generating the image.
 
 PRESERVE is a list of environmental variable to preserve when running the image.
 
-This function is a suitable candidate as a SLIME or SLY Lisp
-implementation.  Example:
+This function is a suitable candidate as a SLIME or SLY Lisp implementation.
+Example:
 
  (setq sly-lisp-implementations
-  `((sbcl-nyxt (lambda () (nyxt-make-guix-sbcl-for-nyxt
-                           \"~/projects/nyxt\"
-                           :preserve '(\"PERSONAL\"))))))"
+  `((nyxt-ccl-tests (lambda () (nyxt-make-guix-cl-for-nyxt
+                                \"~/projects/nyxt\"
+                                :cl-implementation \"ccl\"
+                                :cl-system-dependencies \"nyxt/tests\"
+                                :preserve '(\"PERSONAL\"))))))"
   (setq nyxt-checkout (expand-file-name nyxt-checkout))
   (setq image-path (expand-file-name
                     (or image-path
-                        (concat (nyxt-cache-dir) "/sbcl-nyxt.image"))))
+                        (concat (nyxt-cache-dir) "/"
+                                cl-implementation "/"
+                                (string-replace "/" "-" cl-system)
+                                ".image"))))
   (setq root (expand-file-name (or root
                                    (concat nyxt-guix-profile-directory "/nyxt"))))
   (let ((cl-source-registry (format "%s:%s"
@@ -149,42 +161,44 @@ implementation.  Example:
                                     (or (getenv "CL_SOURCE_REGISTRY") "")))
         (guix-def (concat nyxt-checkout "/build-scripts/nyxt.scm")))
     (setenv "CL_SOURCE_REGISTRY" cl-source-registry)
-    (cl-flet ((guix-environment (&rest command-args)
-                                (nyxt-guix-lazy-shell-command
-                                 root
-                                 :load guix-def
-                                 :ad-hoc (cons "lisp-repl-core-dumper" ad-hoc)
-                                 :preserve (cons "CL_SOURCE_REGISTRY" preserve)
-                                 :container container
-                                 :network t
-                                 :share (list (file-name-directory image-path)
-                                              (concat nyxt-checkout "=/nyxt"))
-                                 :no-grafts no-grafts
-                                 :command-args command-args)))
+    (cl-flet ((guix-shell (&rest command-args)
+                          (nyxt-guix-lazy-shell-command
+                           root
+                           :load guix-def
+                           :ad-hoc (cons "lisp-repl-core-dumper" ad-hoc)
+                           :preserve (cons "CL_SOURCE_REGISTRY" preserve)
+                           :container container
+                           :network t
+                           :share (list (file-name-directory image-path)
+                                        (concat nyxt-checkout "=/nyxt"))
+                           :no-grafts no-grafts
+                           :command-args command-args)))
       (when (or force
                 (not (file-exists-p root))
+                (not (file-exists-p image-path))
                 (and (file-exists-p image-path)
                      (time-less-p (nyxt-mtime image-path) (nyxt-mtime guix-def))))
         (message "Rebuilding environment %S\nand Lisp image %S..." root image-path)
         (ignore-errors (delete-file image-path))
         (ignore-errors (delete-file root))
         (make-directory (file-name-directory root) :parents)
-        (let ((output (get-buffer-create "*Nyxt Guix environment compilation*"))
-              (command (guix-environment "lisp-repl-core-dumper"
-                                         "-o" image-path
-                                         "-d" "nyxt/gtk"
-                                         "sbcl" "--quit")))
+        (let ((output (get-buffer-create "*Nyxt Guix shell compilation*"))
+              (command (guix-shell "lisp-repl-core-dumper"
+                                   "-o" image-path
+                                   "-d" cl-system
+                                   cl-implementation
+                                   "--eval" "'(uiop:quit)'")))
           (let ((status (apply #'call-process
                                (car command)
                                nil (list output t) nil
                                (cdr command))))
             (if (= status 0)
                 (kill-buffer output)
-              (error "Nyxt Guix environment creation failed, see %S." output)
+              (error "Nyxt Guix shell creation failed, see %S." output)
               (switch-to-buffer-other-window output)))))
-      (list (guix-environment "lisp-repl-core-dumper"
-                              "-o" image-path
-                              "-d" "nyxt/gtk"
-                              "sbcl")))))
+      (list (guix-shell "lisp-repl-core-dumper"
+                        "-o" image-path
+                        "-d" cl-system
+                        cl-implementation)))))
 
 (provide 'nyxt-guix)

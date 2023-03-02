@@ -129,6 +129,8 @@
    (native-inputs
     (list cl-lisp-unit2
           sbcl
+          ;; Useful for testing, unneeded for the upstream Guix package
+          ccl
           ;; Only for development, unneeded for the upstream Guix package:
           cl-trivial-benchmark))
    (inputs
