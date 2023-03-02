@@ -377,7 +377,7 @@ To discover the default value of a slot or all slots of a class, use the
 (defmethod initialize-instance :after ((file nyxt-file) &key (profile t profile-p) &allow-other-keys)
   (declare (ignorable profile))
   (when (and (not profile-p) (current-buffer))
-    (setf (files:profile file) (profile (current-buffer)))))
+    (setf (slot-value file 'files:profile) (profile (current-buffer)))))
 
 (export-always 'with-current-buffer)
 (defmacro with-current-buffer (buffer &body body)

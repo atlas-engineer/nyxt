@@ -862,7 +862,7 @@ Return the created buffer."
                                                   'nyxt-file)))
                                     (mopu:slot-names 'buffer))))
     (dolist (file-slot-name file-slot-names)
-      (setf (files:profile (slot-value buffer file-slot-name))
+      (setf (slot-value (slot-value buffer file-slot-name) 'files:profile)
             (profile buffer))))
   (unless (or no-hook-p
               (not browser))
