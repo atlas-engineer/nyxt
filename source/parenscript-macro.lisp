@@ -152,13 +152,16 @@
               (not (= (chain computed-style "display") "none")))
          t nil)))
 
+;; The following function is inspired by the algorithm from `saka-key` project
+;;
+;; https://github.com/lusakasa/saka-key/blob/8b2743c33e58056fe945df1797a3b6be83353e7e/src/modes/hints/client/findHints.js#L114
 (export-always 'element-overlapped-p)
 (defpsmacro element-overlapped-p (element)
   "Whether ELEMENT is overlapped by another element."
   `(let* ((rect (chain ,element (get-bounding-client-rect)))
           (computed-style (chain window (get-computed-style ,element)))
           (coord-truncation-offset 2)
-          (radius (serapeum:parse-float (chain computed-style border-top-left-radius)))
+          (radius (parse-float (chain computed-style border-top-left-radius)))
           (rounded-border-offset (ceiling (* radius (- 1 (sin (/ pi 4))))))
           (offset (max coord-truncation-offset rounded-border-offset))
           (el (chain document (element-from-point (+ (chain rect left) offset)
@@ -166,6 +169,6 @@
      (if (or (>= offset (chain rect width))
              (>= offset (chain rect height)))
          t
-         (progn (loop while (and el (/= el element))
+         (progn (loop while (and el (not (eq el element)))
                       do (setf el (chain el parent-node)))
                 (null el)))))
