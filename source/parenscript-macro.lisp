@@ -193,3 +193,7 @@ NODE should be a nyxt/dom element."
          (progn (loop while (and el (not (eq el element)))
                       do (setf el (chain el parent-node)))
                 (null el)))))
+
+(export-always 'console-log)
+(defpsmacro console-log (&rest objects)
+  `(chain console (log ,@objects)))
