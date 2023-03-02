@@ -397,24 +397,22 @@ unconditionally converts those to tags unless the whole form is quoted.)"
 (deftag :nsection (body attrs &key (title (alexandria:required-argument 'title))
                         level
                         (open-p t)
-                        id
+                        (id (if (stringp title)
+                                (str:remove-punctuation (str:downcase title) :replacement "-")
+                                (alexandria:required-argument 'id)))
                         &allow-other-keys)
   "Collapsible and reference-able <section> with a neader.
-TITLE should be a human-readable title for a section.
+TITLE should be a human-readable title for a section, or the form producing one.
 LEVEL (if provided), is the level of heading for the section. If it's 2, the
 heading is <h2>, if it's 3, then <h3> etc. If not provided, uses <h*> Spinneret
 tag to intelligently guess the current heading level.
-ID is the identifier with which to reference the section elsewhere. Is
+ID is the string identifier with which to reference the section elsewhere. Is
 auto-generated from title by replacing all the punctuation and spaces with
-hyphens, if not provided.
+hyphens, if not provided AND if the TITLE is a string.
 OPEN-P mandates whether the section is collapsed or not. True (= not collapsed)
-by default"
+by default."
   (check-type level (or null (integer 2 6)))
-  (remf attrs :title)
-  (remf attrs :level)
-  (remf attrs :open-p)
-  (remf attrs :id)
-  (with-gensyms (id-var title-var)
+  (with-gensyms (id-var)
     `(let ((spinneret::*html-path*
              ;; Push as many :section tags into the path, as necessary to imply
              ;; LEVEL for the sections inside this one. A trick on Spinneret to
@@ -424,19 +422,16 @@ by default"
               (make-list ,(if level
                               `(1- (- ,level (spinneret::heading-depth)))
                               0)
-                         :initial-element :section))))
-       (let* ((,title-var ,title)
-              (,id-var (or ,id (str:remove-punctuation (str:downcase ,title-var) :replacement "-"))))
-         (check-type ,title-var string "a :nsection-friendly title string")
-         (check-type ,id-var string "a :nsection-friendly ID string")
-         (:section.section
-          :id ,id-var
-          (:details
-           :open ,open-p
-           (:summary (:h* :style "display: inline"
-                       ,@attrs ,title
-                       " " (:a.link :href (uiop:strcat "#" ,id-var) "#")))
-           ,@body))))))
+                         :initial-element :section)))
+           (,id-var ,id))
+       (:section.section
+        :id ,id-var
+        (:details
+         :open ,open-p
+         (:summary (:h* :style "display: inline"
+                     ,@attrs ,title
+                     " " (:a.link :href (uiop:strcat "#" ,id-var) "#")))
+         ,@body)))))
 
 (deftag :nbutton (body attrs &key (text (alexandria:required-argument 'text)) title buffer &allow-other-keys)
   "A Lisp-invoking button with TEXT text and BODY action.
