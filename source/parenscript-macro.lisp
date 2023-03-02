@@ -34,10 +34,14 @@
 (export-always 'iframe-document)
 (defpsmacro iframe-document (iframe)
   `(let ((iframe ,iframe))
-     (if (equal (@ iframe tag-name) "IFRAME")
-         (or (ps:@ iframe content-document)
-             (ps:@ iframe content-window document))
-         iframe)))
+     (cond
+       ((equal (@ iframe tag-name) "IFRAME")
+        (or (ps:@ iframe content-document)
+            (ps:@ iframe content-window document)))
+       ((instanceof iframe *Document)
+        iframe)
+       (t
+        (chain iframe owner-document)))))
 
 (export-always 'nyxt-node)
 (defpsmacro nyxt-node (node)
