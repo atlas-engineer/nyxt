@@ -3,20 +3,27 @@
 
 (in-package :spinneret)
 
-(deftag :mayberaw (body attrs &key &allow-other-keys)
+(deftag :mayberaw (body attrs &rest keys &key &allow-other-keys)
   "Spinneret's :raw, but with HTML escaping if BODY _does not_ look like HTML."
-  attrs
-  `(:raw (if (nyxt:html-string-p (progn ,@body))
-             (progn ,@body)
-             (escape-string (progn ,@body)))))
+  ;; Because (declare (ignorable ...)) doesn't work.
+  (let ((attrs attrs)
+        (keys keys))
+    (declare (ignorable attrs keys))
+    `(:raw (if (nyxt:html-string-p (progn ,@body))
+               (progn ,@body)
+               (escape-string (progn ,@body))))))
 
-(deftag :nstyle (body attrs &key &allow-other-keys)
+(deftag :nstyle (body attrs &rest keys &key &allow-other-keys)
   "Regular <style>, but with contents staying unescaped."
-  `(:style ,@attrs (:raw ,@body)))
+  (let ((keys keys))
+    (declare (ignorable keys))
+    `(:style ,@attrs (:raw ,@body))))
 
-(deftag :nscript (body attrs &key &allow-other-keys)
+(deftag :nscript (body attrs &rest keys &key &allow-other-keys)
   "Regular <script>, but with contents staying unescaped."
-  `(:script ,@attrs (:raw ,@body)))
+  (let ((keys keys))
+    (declare (ignorable keys))
+    `(:script ,@attrs (:raw ,@body))))
 
 (serapeum:eval-always
   (defun remove-smart-quoting (form)
@@ -37,7 +44,7 @@ Otherwise, return the form as is."
        (eval form))
       (t form))))
 
-(deftag :nselect (body attrs &key (id (alexandria:required-argument 'id)) &allow-other-keys)
+(deftag :nselect (body attrs &rest keys &key (id (alexandria:required-argument 'id)) &allow-other-keys)
   "Generate <select> tag from the BODY resembling cond clauses.
 
 BODY forms can be of two kinds:
@@ -60,28 +67,30 @@ Example:
   (3 (nyxt:echo \"Too high!\")))"
   (with-gensyms (var)
     (once-only (id)
-      `(:select.button
-        ,@attrs
-        :id ,id
-        :onchange
-        (when (nyxt:current-buffer)
-          (ps:ps (nyxt/ps:lisp-eval
-                  (:title "nselect-choice")
-                  (let ((,var (nyxt:ps-eval (ps:chain (nyxt/ps:qs document (+ "#" (ps:lisp ,id))) value))))
-                    (str:string-case ,var
-                      ,@(loop for (clause . forms) in (mapcar #'remove-smart-quoting body)
-                              for value = (first (uiop:ensure-list clause))
-                              collect (cons (nyxt:prini-to-string value)
-                                            forms)))))))
-        ,@(loop for (clause) in (mapcar #'remove-smart-quoting body)
-                for value = (first (uiop:ensure-list clause))
-                for display = (second (uiop:ensure-list clause))
-                for title = (third (uiop:ensure-list clause))
-                collect `(:option
-                          :value ,(nyxt:prini-to-string value)
-                          ,@(when title
-                              (list :title title))
-                          ,(string-capitalize (or display (nyxt:prini-to-string value)))))))))
+      (let ((keys keys))
+        (declare (ignorable keys))
+        `(:select.button
+          ,@attrs
+          :id ,id
+          :onchange
+          (when (nyxt:current-buffer)
+            (ps:ps (nyxt/ps:lisp-eval
+                    (:title "nselect-choice")
+                    (let ((,var (nyxt:ps-eval (ps:chain (nyxt/ps:qs document (+ "#" (ps:lisp ,id))) value))))
+                      (str:string-case ,var
+                                       ,@(loop for (clause . forms) in (mapcar #'remove-smart-quoting body)
+                                               for value = (first (uiop:ensure-list clause))
+                                               collect (cons (nyxt:prini-to-string value)
+                                                             forms)))))))
+          ,@(loop for (clause) in (mapcar #'remove-smart-quoting body)
+                  for value = (first (uiop:ensure-list clause))
+                  for display = (second (uiop:ensure-list clause))
+                  for title = (third (uiop:ensure-list clause))
+                  collect `(:option
+                            :value ,(nyxt:prini-to-string value)
+                            ,@(when title
+                                (list :title title))
+                            ,(string-capitalize (or display (nyxt:prini-to-string value))))))))))
 
 (defun %nxref-doc (type symbol &optional (class-name (when (eq type :slot)
                                                        (alexandria:required-argument 'class-name))))
@@ -120,7 +129,7 @@ CLASS-NAME is specific to :slot type."
     (t (nyxt:nyxt-url (read-from-string "nyxt:describe-any")
                       :input symbol))))
 
-(deftag :nxref (body attrs &key slot mode class-name function macro command (command-key-p t) variable package &allow-other-keys)
+(deftag :nxref (body attrs &rest keys &key slot mode class-name function macro command (command-key-p t) variable package &allow-other-keys)
   "Create a link to a respective describe-* page for BODY symbol.
 
 Relies on the type keywords (SLOT, MODE, CLASS-NAME, FUNCTION, MACRO, COMMAND,
@@ -129,7 +138,8 @@ VARIABLE, PACKAGE) to guess the right page, always provide those.
 CLASS-NAME, if present, should be the symbol designating a class. It's not
 called CLASS because Spinneret has special behavior for CLASS pre-defined and
 non-overridable."
-  (let* ((first (first body))
+  (let* ((keys keys)
+         (first (first body))
          (symbol (or package variable function macro command slot class-name mode
                      (when (symbolp first) first)))
          (printable (or (when (and (symbolp first) (eq first symbol))
@@ -144,6 +154,7 @@ non-overridable."
                  ((and slot class-name) :slot)
                  (mode :mode)
                  (class-name :class))))
+    (declare (ignorable keys))
     `(:a.link
       :target "_blank"
       ,@attrs
@@ -335,7 +346,7 @@ LISTING is the string to enrich, autogenerated from FORM on demand."
 
 ;; TODO: Store the location it's defined in as a :title or link for discoverability?
 ;; FIXME: Maybe use :nyxt-user as the default package to not quarrel with REPL & config?
-(deftag :ncode (body attrs &key
+(deftag :ncode (body attrs &rest keys &key
                      (package :nyxt)
                      (inline-p nil inline-provided-p)
                      (repl-p t) (config-p t) (copy-p t)
@@ -358,7 +369,8 @@ Most *-P arguments mandate whether to add the buttons for:
   - `nyxt:external-editor-program' (EXTERNAL-EDITOR-P)."
   (once-only (package)
     (with-gensyms (body-var inline-var file-var first plaintext htmlized)
-      (let* ((*print-escape* nil)
+      (let* ((keys keys)
+             (*print-escape* nil)
              (id (nyxt:prini-to-string (gensym)))
              (select-options
                (append
@@ -401,6 +413,8 @@ Most *-P arguments mandate whether to add the buttons for:
                   :style (unless ,inline-var
                            "position: absolute; top: 0; right: 0; margin: 0; padding: 2PX")
                   ,@select-options)))
+        (declare (ignorable keys))
+
         `(let* ((,body-var (list ,@body))
                 (,first (first ,body-var))
                 (,inline-var ,(if inline-provided-p
@@ -432,7 +446,8 @@ Most *-P arguments mandate whether to add the buttons for:
                        (:pre ,@attrs ,select-code
                              (:code (:raw ,htmlized))))))))))
 
-(deftag :nsection (body attrs &key (title (alexandria:required-argument 'title))
+(deftag :nsection (body attrs &rest keys
+                        &key (title (alexandria:required-argument 'title))
                         level
                         (open-p t)
                         (id (if (stringp title)
@@ -450,62 +465,68 @@ hyphens, if not provided AND if the TITLE is a string.
 OPEN-P mandates whether the section is collapsed or not. True (= not collapsed)
 by default."
   (check-type level (or null (integer 2 6)))
-  (with-gensyms (id-var)
-    `(let ((spinneret::*html-path*
-             ;; Push as many :section tags into the path, as necessary to imply
-             ;; LEVEL for the sections inside this one. A trick on Spinneret to
-             ;; make it think it's deeply nested already.
-             (append
-              spinneret::*html-path*
-              (make-list ,(if level
-                              `(1- (- ,level (spinneret::heading-depth)))
-                              0)
-                         :initial-element :section)))
-           (,id-var ,id))
-       (:section.section
-        :id ,id-var
-        (:details
-         :open ,open-p
-         (:summary (:h* :style "display: inline"
-                     ,@attrs ,title
-                     " " (:a.link :href (uiop:strcat "#" ,id-var) "#")))
-         ,@body)))))
+  (let ((keys keys))
+    (declare (ignorable keys))
+    (with-gensyms (id-var)
+      `(let ((spinneret::*html-path*
+               ;; Push as many :section tags into the path, as necessary to imply
+               ;; LEVEL for the sections inside this one. A trick on Spinneret to
+               ;; make it think it's deeply nested already.
+               (append
+                spinneret::*html-path*
+                (make-list ,(if level
+                                `(1- (- ,level (spinneret::heading-depth)))
+                                0)
+                           :initial-element :section)))
+             (,id-var ,id))
+         (:section.section
+          :id ,id-var
+          (:details
+           :open ,open-p
+           (:summary (:h* :style "display: inline"
+                       ,@attrs ,title
+                       " " (:a.link :href (uiop:strcat "#" ,id-var) "#")))
+           ,@body))))))
 
-(deftag :nbutton (body attrs &key (text (alexandria:required-argument 'text)) title buffer &allow-other-keys)
+(deftag :nbutton (body attrs &rest keys &key (text (alexandria:required-argument 'text)) title buffer &allow-other-keys)
   "A Lisp-invoking button with TEXT text and BODY action.
 Evaluates (via `nyxt/ps:lisp-eval') the BODY in BUFFER when clicked.
 Forms in BODY can be unquoted, benefiting from the editor formatting."
-  `(:button.button
-    :onclick (ps:ps
-               (nyxt/ps:lisp-eval
-                (:title ,(or title text)
-                        ,@(when buffer
-                            (list :buffer buffer)))
-                ,@(mapcar #'remove-smart-quoting body)))
-    ,@(when title
-        (list :title title))
-    ,@attrs
-    ,text))
+  (let ((keys keys))
+    (declare (ignorable keys))
+    `(:button.button
+      :onclick (ps:ps
+                 (nyxt/ps:lisp-eval
+                  (:title ,(or title text)
+                          ,@(when buffer
+                              (list :buffer buffer)))
+                  ,@(mapcar #'remove-smart-quoting body)))
+      ,@(when title
+          (list :title title))
+      ,@attrs
+      ,text)))
 
-(deftag :ninput (body attrs &key rows cols onfocus onchange buffer &allow-other-keys)
+(deftag :ninput (body attrs &rest keys &key rows cols onfocus onchange buffer &allow-other-keys)
   "Nicely styled <textarea> with a reasonable number of ROWS/COLS to accommodate the BODY.
 Calls Lisp forms in ONFOCUS and ONCHANGE when one focuses and edits the input (respectively)."
-  (once-only ((input-contents `(or (progn ,@(mapcar #'remove-smart-quoting body)) "")))
-    `(:textarea.input
-      :rows (or ,rows (1+ (count #\Newline ,input-contents)) 1)
-      :cols (or ,cols (ignore-errors (apply #'max (mapcar #'length (str:lines ,input-contents)))) 80)
-      ,@(when onfocus
-          `(:onfocus (ps:ps (nyxt/ps:lisp-eval
-                             (:title "ninput onfocus"
-                                     ,@(when buffer
-                                         (list :buffer buffer)))
-                             ,onfocus))))
-      ,@(when onchange
-          ;; More events here.
-          `(:onkeydown (ps:ps (nyxt/ps:lisp-eval
-                               (:title "ninput onchange/onkeydown"
+  (let ((keys keys))
+    (declare (ignorable keys))
+    (once-only ((input-contents `(or (progn ,@(mapcar #'remove-smart-quoting body)) "")))
+      `(:textarea.input
+        :rows (or ,rows (1+ (count #\Newline ,input-contents)) 1)
+        :cols (or ,cols (ignore-errors (apply #'max (mapcar #'length (str:lines ,input-contents)))) 80)
+        ,@(when onfocus
+            `(:onfocus (ps:ps (nyxt/ps:lisp-eval
+                               (:title "ninput onfocus"
                                        ,@(when buffer
                                            (list :buffer buffer)))
-                               ,onchange))))
-      ,@attrs
-      (:raw (the string ,input-contents)))))
+                               ,onfocus))))
+        ,@(when onchange
+            ;; More events here.
+            `(:onkeydown (ps:ps (nyxt/ps:lisp-eval
+                                 (:title "ninput onchange/onkeydown"
+                                         ,@(when buffer
+                                             (list :buffer buffer)))
+                                 ,onchange))))
+        ,@attrs
+        (:raw (the string ,input-contents))))))
