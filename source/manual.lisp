@@ -834,18 +834,16 @@ mode's configuration file:")
           "#!/bin/sh
 #|
 exec nyxt --headless --no-auto-config --profile nosave --config \"$0\"
-|#
-
-;; Disable session restoration to speed up startup and get more reproducible behavior.
-\(define-configuration browser
-  ((restore-session-on-startup-p nil)))
-
-;; Load the URL of Nyxt repository by default in all new buffers.
-;; Alternatively, call `buffer-load' in `after-startup-hook'.
-\(define-configuration browser
-  ((default-new-buffer-url (quri:uri \"https://github.com/atlas-engineer/nyxt\"))))
-
-\(hooks:on (after-startup-hook *browser*) (browser)
+|#"
+          '(define-configuration browser
+            "Disable session restoration to speed up startup and get more reproducible
+behavior."
+            ((restore-session-on-startup-p nil)))
+          '(define-configuration browser
+            "Load the URL of Nyxt repository by default in all new buffers.
+Alternatively, call `buffer-load' in `after-startup-hook'."
+            ((default-new-buffer-url (quri:uri "https://github.com/atlas-engineer/nyxt"))))
+          "\(hooks:on (after-startup-hook *browser*) (browser)
   ;; Once the page's done loading, do your thing.
   (hooks:once-on (buffer-loaded-hook (current-buffer)) (buffer)
     ;; It's sometimes necessary to sleep, as `buffer-loaded-hook' fires when the
