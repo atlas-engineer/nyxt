@@ -325,53 +325,53 @@
         (prompter:all-ready-p prompter)
         (prompter:next-suggestion prompter)
         (assert-string= "bar"
-                         (current-suggestion-value))
+                        (current-suggestion-value))
         (prompter:next-suggestion prompter)
         (assert-string= "100 foo"
-                         (current-suggestion-value))
+                        (current-suggestion-value))
         (prompter:next-suggestion prompter)
         (assert-string= "200"
-                         (current-suggestion-value))
+                        (current-suggestion-value))
         (prompter:next-suggestion prompter)
         (assert-string= "200"
-                         (current-suggestion-value))
+                        (current-suggestion-value))
         (prompter:previous-suggestion prompter)
         (assert-string= "100 foo"
-                         (current-suggestion-value))
+                        (current-suggestion-value))
         (prompter:first-suggestion prompter)
         (assert-string= "foo"
-                         (current-suggestion-value))
+                        (current-suggestion-value))
         (prompter:previous-suggestion prompter)
         (assert-string= "foo"
-                         (current-suggestion-value))
+                        (current-suggestion-value))
         (prompter:last-suggestion prompter)
         (assert-string= "200"
-                         (current-suggestion-value))
+                        (current-suggestion-value))
         (prompter:previous-source prompter)
         (assert-string= "foo"
-                         (current-suggestion-value))
+                        (current-suggestion-value))
         (prompter:previous-source prompter)
         (assert-string= "foo"
-                         (current-suggestion-value))
+                        (current-suggestion-value))
         (prompter:next-source prompter)
         (assert-string= "100 foo"
-                         (current-suggestion-value))
+                        (current-suggestion-value))
         (prompter:next-source prompter)
         (assert-string= "100 foo"
-                         (current-suggestion-value))
+                        (current-suggestion-value))
 
         (setf (prompter:input prompter) "bar")
         (prompter:all-ready-p prompter)
         (assert-string= "bar"
-                         (current-suggestion-value))
+                        (current-suggestion-value))
         (assert-equal '("bar")
                       (all-source-suggestions prompter))
         (prompter:next-suggestion prompter)
         (assert-string= "bar"
-                         (current-suggestion-value))
+                        (current-suggestion-value))
         (prompter:next-source prompter)
         (assert-string= "bar"
-                         (current-suggestion-value)))
+                        (current-suggestion-value)))
       (prompter:all-ready-p prompter))))
 
 (define-test set-current-suggestion-all-empty-sources ()
