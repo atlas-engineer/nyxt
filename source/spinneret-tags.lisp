@@ -83,6 +83,43 @@ Example:
                               (list :title title))
                           ,(string-capitalize (or display (nyxt:prini-to-string value)))))))))
 
+(defun %nxref-doc (type symbol &optional (class-name (when (eq type :slot)
+                                                       (alexandria:required-argument 'class-name))))
+  "NOTE: TYPE for classes is :CLASS, not :CLASS-NAME (as in `:nxref')."
+  (format nil "[~a]~@[ ~a~]"
+          (if class-name
+              (format nil "SLOT of ~a" class-name)
+              type)
+          (when-let ((doc (case type
+                            (:package (documentation (find-package symbol) t))
+                            (:variable (documentation symbol 'variable))
+                            ((:slot   ; KLUDGE: Any simple way to get slot docs?
+                              :macro :function :command)
+                             (documentation symbol 'function))
+                            ((:mode :class)
+                             (documentation symbol 'type)))))
+            ;; Copied from describe.lisp to avoid `nyxt::first-line' use.
+            (find-if (complement #'uiop:emptyp) (serapeum:lines doc)))))
+
+(defun %nxref-link (type symbol &optional (class-name (when (eq type :slot)
+                                                        (alexandria:required-argument 'class-name))))
+  "Generate a nyxt: link to the describe-* page based on SYMBOL's TYPE.
+CLASS-NAME is specific to :slot type."
+  (case type
+    (:package (nyxt:nyxt-url (read-from-string "nyxt:describe-package") :package symbol))
+    (:variable (nyxt:nyxt-url (read-from-string "nyxt:describe-variable")
+                              :variable symbol))
+    ((:command :function :macro)
+     (nyxt:nyxt-url (read-from-string "nyxt:describe-function")
+                    :fn symbol))
+    (:slot (nyxt:nyxt-url (read-from-string "nyxt:describe-slot")
+                          :name symbol :class class-name))
+    ((:mode :class)
+     (nyxt:nyxt-url (read-from-string "nyxt:describe-class")
+                    :class symbol))
+    (t (nyxt:nyxt-url (read-from-string "nyxt:describe-any")
+                      :input symbol))))
+
 (deftag :nxref (body attrs &key slot mode class-name function macro command (command-key-p t) variable package &allow-other-keys)
   "Create a link to a respective describe-* page for BODY symbol.
 
@@ -97,50 +134,25 @@ non-overridable."
                      (when (symbolp first) first)))
          (printable (or (when (and (symbolp first) (eq first symbol))
                           (second body))
-                        first package variable function macro command slot class-name mode)))
+                        first package variable function macro command slot class-name mode))
+         (type (cond
+                 (package :package)
+                 (variable :variable)
+                 (macro :macro)
+                 (command :command)
+                 (function :function)
+                 ((and slot class-name) :slot)
+                 (mode :mode)
+                 (class-name :class))))
     `(:a.link
       :target "_blank"
       ,@attrs
-      :href ,(cond
-               (package `(nyxt:nyxt-url (read-from-string "nyxt:describe-package") :package ,package))
-               (variable `(nyxt:nyxt-url (read-from-string "nyxt:describe-variable")
-                                         :variable ,variable))
-               ((or command function macro)
-                `(nyxt:nyxt-url (read-from-string "nyxt:describe-function")
-                                :fn ,(or command function macro)))
-               (slot `(nyxt:nyxt-url (read-from-string "nyxt:describe-slot")
-                                     :name ,slot :class ,class-name))
-               ((or mode class-name)
-                `(nyxt:nyxt-url (read-from-string "nyxt:describe-class")
-                                :class ,(or mode class-name)))
-               (t `(nyxt:nyxt-url (read-from-string "nyxt:describe-any")
-                                  :input ,symbol)))
-      :title
-      (uiop:strcat
-       ,(cond
-          (package "[PACKAGE] ")
-          (variable "[VARIABLE] ")
-          (macro "[MACRO] ")
-          (command "[COMMAND] ")
-          (function "[FUNCTION] ")
-          ((and slot class-name) `(format nil "[SLOT in ~s]" ,class-name))
-          (mode "[MODE] ")
-          (class-name "[CLASS] "))
-       (first (serapeum:lines
-               (documentation
-                ,(cond
-                   (package `(find-package ,package))
-                   (variable variable)
-                   (macro macro)
-                   ((or command function) `(symbol-function ,(or command function)))
-                   (slot slot)
-                   ((or mode class-name) `(find-class ,(or mode class-name)))
-                   (t symbol))
-                (quote ,(cond
-                          (variable 'variable)
-                          ((or command function macro) 'function)
-                          ((or mode class-name) 'type)
-                          (t t)))))))
+      :href (%nxref-link ,type ,symbol
+                         ,@(when (and slot class-name)
+                             (list class-name)))
+      :title (%nxref-doc ,type ,symbol
+                         ,@(when (and slot class-name)
+                             (list class-name)))
       ,@(when (and (getf attrs :class)
                    (or (getf attrs :slot)
                        (every #'null (list slot class-name mode function macro command variable package))))

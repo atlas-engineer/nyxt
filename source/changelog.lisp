@@ -713,4 +713,9 @@ like buttons.")
 
 (define-version "3-pre-release-5"
   (:ul
-   (:li "Code listings on manual and help system are more readable.")))
+   (:li "Code listings on manual and help system are more readable."))
+
+  (:h3 "Programming interface")
+  (:ul
+   (:li "Spinneret tags like " (:code ":nxref") " and " (:code ":ncode")
+        " are refactored for debuggability and obviousness.")))
