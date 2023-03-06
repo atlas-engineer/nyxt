@@ -69,26 +69,74 @@ See `nyxt::attribute-widths'.")
           :font-size "14px"
           :line-height "18px")
         `(body
+          :border-right "2px solid"
+          :border-color ,theme:primary
           :overflow "hidden"
           :margin "0"
           :padding "0")
         `("#prompt-area"
+          :border-top "2px solid"
+          :border-bottom "2px solid"
+          :border-color ,theme:primary
           :background-color ,theme:primary
           :color ,theme:on-primary
           :display "grid"
-          :grid-template-columns "auto auto 1fr auto"
+          :grid-template-columns "auto auto 1fr auto auto"
           :width "100%")
         `("#prompt"
+          :background-color ,theme:primary
           :padding-left "10px"
-          :line-height "26px")
+          :line-height "28px")
+        `("#prompt-input"
+          :margin-right "-10px"
+          :line-height "28px")
         `("#prompt-extra"
-          :line-height "26px"
+          :z-index "1"
+          :min-width "12px"
+          :padding-right "14px !important"
+          :background-color ,theme:primary
+          :line-height "28px"
           :padding-right "7px")
         `("#prompt-modes"
-          :line-height "26px"
+          :background-color ,theme:secondary
+          :padding-left "10px !important"
+          :padding-right "14px !important"
+          :line-height "28px"
           :padding-left "3px"
           :padding-right "3px")
+        `("#close-button"
+          :text-align "right"
+          :background-color ,theme:primary
+          :min-width "24px"
+          :line-height "24px"
+          :font-weight "bold"
+          :font-size "20px")
+        `(".arrow-right"
+          :clip-path "polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)"
+          :margin-right "-10px")
+        `(".arrow-left"
+          :clip-path "polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0% 50%)"
+          :margin-left "-10px")
+        `(button
+          :background "transparent"
+          :color "inherit"
+          :text-decoration "none"
+          :border "none"
+          :padding 0
+          :font "inherit"
+          :outline "inherit")
+        `(.button.accent
+          :background-color ,theme:accent
+          :color ,theme:on-accent)
+        `((:and .button :hover)
+          :opacity 0.6)
+        `((:and .button (:or :visited :active))
+          :color ,theme:background)
         `("#input"
+          :height "28px"
+          :margin-top "0"
+          :margin-bottom "0"
+          :padding-left "16px !important"
           :background-color ,theme:background
           :color ,theme:on-background
           :opacity 0.9
@@ -111,7 +159,7 @@ See `nyxt::attribute-widths'.")
           :overflow-y "hidden"
           :overflow-x "hidden"
           :height "100%"
-          :width "100%")
+          :margin-right "3px")
         `(".source-content"
           :background-color ,theme:background
           :color ,theme:on-background
@@ -459,13 +507,20 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
               (:body
                (:div :id "prompt-area"
                      (:div :id "prompt" (:mayberaw (prompter:prompt prompt-buffer)))
-                     (:div :id "prompt-extra" "[?/?]")
-                     (:div (:input :type (if (invisible-input-p prompt-buffer)
+                     (:div :id "prompt-extra" :class "arrow-right" "[?/?]")
+                     (:div :id "prompt-input"
+                           (:input :type (if (invisible-input-p prompt-buffer)
                                              "password"
                                              "text")
                                    :id "input"
                                    :value (prompter:input prompt-buffer)))
-                     (:div :id "prompt-modes" ""))
+                     (:div :id "prompt-modes" :class "arrow-left" "")
+                     (:div :id "close-button" :class "arrow-left"
+                           (:nbutton
+                             :text "×"
+                             :title "Close prompt"
+                             :buffer prompt-buffer
+                             (funcall (sym:resolve-symbol :quit-prompt-buffer :command)))))
                (:div :id "suggestions"
                      :style (if (invisible-input-p prompt-buffer)
                                 "visibility:hidden;"
