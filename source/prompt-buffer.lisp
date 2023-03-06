@@ -75,6 +75,9 @@ See `nyxt::attribute-widths'.")
           :margin "0"
           :padding "0")
         `("#prompt-area"
+          :border-top "2px solid"
+          :border-bottom "2px solid"
+          :border-color ,theme:primary
           :background-color ,theme:primary
           :color ,theme:on-primary
           :display "grid"
@@ -130,6 +133,9 @@ See `nyxt::attribute-widths'.")
         `((:and .button (:or :visited :active))
           :color ,theme:background)
         `("#input"
+          :height "28px"
+          :margin-top "0"
+          :margin-bottom "0"
           :padding-left "16px !important"
           :background-color ,theme:background
           :color ,theme:on-background
