@@ -83,17 +83,25 @@ See `nyxt::attribute-widths'.")
         `("#prompt"
           :padding-left "10px"
           :line-height "26px")
+        `("#prompt-input"
+          :margin-right "-10px"
+          :line-height "26px")
         `("#prompt-extra"
           :line-height "26px"
           :padding-right "7px")
         `("#prompt-modes"
+          :background-color ,theme:primary
+          :width "5px"
           :line-height "26px"
           :padding-left "3px"
           :padding-right "3px")
         `("#close-button"
           :line-height "24px"
           :padding-right "5px"
-          :font-size "24px")
+          :font-weight "bold"
+          :font-size "20px")
+        `(".arrow-left"
+          :clip-path "polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0% 50%)")
         `(button
           :background "transparent"
           :color "inherit"
@@ -482,12 +490,13 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                (:div :id "prompt-area"
                      (:div :id "prompt" (:mayberaw (prompter:prompt prompt-buffer)))
                      (:div :id "prompt-extra" "[?/?]")
-                     (:div (:input :type (if (invisible-input-p prompt-buffer)
+                     (:div :id "prompt-input"
+                           (:input :type (if (invisible-input-p prompt-buffer)
                                              "password"
                                              "text")
                                    :id "input"
                                    :value (prompter:input prompt-buffer)))
-                     (:div :id "prompt-modes" "")
+                     (:div :id "prompt-modes" :class "arrow-left" "")
                      (:div :id "close-button"
                            (:nbutton
                              :text "×"
