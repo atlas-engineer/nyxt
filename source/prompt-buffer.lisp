@@ -501,7 +501,7 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                              :text "×"
                              :title "Close prompt"
                              :buffer prompt-buffer
-                             (nyxt/prompt-buffer-mode:: quit-prompt-buffer))))
+                             (funcall (sym:resolve-symbol :quit-prompt-buffer :command)))))
                (:div :id "suggestions"
                      :style (if (invisible-input-p prompt-buffer)
                                 "visibility:hidden;"
