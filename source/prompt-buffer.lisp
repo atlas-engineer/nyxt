@@ -78,7 +78,7 @@ See `nyxt::attribute-widths'.")
           :background-color ,theme:primary
           :color ,theme:on-primary
           :display "grid"
-          :grid-template-columns "auto auto 1fr auto"
+          :grid-template-columns "auto auto 1fr auto auto"
           :width "100%")
         `("#prompt"
           :padding-left "10px"
@@ -90,6 +90,26 @@ See `nyxt::attribute-widths'.")
           :line-height "26px"
           :padding-left "3px"
           :padding-right "3px")
+        `("#close-button"
+          :line-height "24px"
+          :padding-right "5px"
+          :font-size "24px")
+        `(button
+          :background "transparent"
+          :color "inherit"
+          :text-decoration "none"
+          :border "none"
+          :padding 0
+          :font "inherit"
+          :outline "inherit")
+        `(.button.accent
+          :background-color ,theme:accent
+          :color ,theme:on-accent)
+        `((:and .button :hover)
+          :opacity 0.6)
+        `((:and .button (:or :visited :active))
+          :color ,theme:background)
+
         `("#input"
           :background-color ,theme:background
           :color ,theme:on-background
@@ -467,7 +487,13 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                              "text")
                                    :id "input"
                                    :value (prompter:input prompt-buffer)))
-                     (:div :id "prompt-modes" ""))
+                     (:div :id "prompt-modes" "")
+                     (:div :id "close-button"
+                           (:nbutton
+                             :text "×"
+                             :title "Close prompt"
+                             :buffer prompt-buffer
+                             (nyxt/prompt-buffer-mode:: quit-prompt-buffer))))
                (:div :id "suggestions"
                      :style (if (invisible-input-p prompt-buffer)
                                 "visibility:hidden;"
