@@ -69,7 +69,7 @@ See `nyxt::attribute-widths'.")
           :font-size "14px"
           :line-height "18px")
         `(body
-          :border-right "3px solid"
+          :border-right "2px solid"
           :border-color ,theme:primary
           :overflow "hidden"
           :margin "0"
@@ -81,12 +81,17 @@ See `nyxt::attribute-widths'.")
           :grid-template-columns "auto auto 1fr auto auto"
           :width "100%")
         `("#prompt"
+          :background-color ,theme:primary
           :padding-left "10px"
           :line-height "28px")
         `("#prompt-input"
           :margin-right "-10px"
           :line-height "28px")
         `("#prompt-extra"
+          :z-index "1"
+          :min-width "12px"
+          :padding-right "14px !important"
+          :background-color ,theme:primary
           :line-height "28px"
           :padding-right "7px")
         `("#prompt-modes"
@@ -125,6 +130,7 @@ See `nyxt::attribute-widths'.")
         `((:and .button (:or :visited :active))
           :color ,theme:background)
         `("#input"
+          :padding-left "16px !important"
           :background-color ,theme:background
           :color ,theme:on-background
           :opacity 0.9
@@ -495,7 +501,7 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
               (:body
                (:div :id "prompt-area"
                      (:div :id "prompt" (:mayberaw (prompter:prompt prompt-buffer)))
-                     (:div :id "prompt-extra" "[?/?]")
+                     (:div :id "prompt-extra" :class "arrow-right" "[?/?]")
                      (:div :id "prompt-input"
                            (:input :type (if (invisible-input-p prompt-buffer)
                                              "password"
