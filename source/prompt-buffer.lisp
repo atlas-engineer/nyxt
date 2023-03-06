@@ -91,13 +91,13 @@ See `nyxt::attribute-widths'.")
           :padding-right "7px")
         `("#prompt-modes"
           :background-color ,theme:primary
-          :width "5px"
+          :min-width "5px"
           :line-height "26px"
           :padding-left "3px"
           :padding-right "3px")
         `("#close-button"
+          :padding-right "3px"
           :line-height "24px"
-          :padding-right "5px"
           :font-weight "bold"
           :font-size "20px")
         `(".arrow-left"
@@ -117,7 +117,6 @@ See `nyxt::attribute-widths'.")
           :opacity 0.6)
         `((:and .button (:or :visited :active))
           :color ,theme:background)
-
         `("#input"
           :background-color ,theme:background
           :color ,theme:on-background
@@ -141,7 +140,7 @@ See `nyxt::attribute-widths'.")
           :overflow-y "hidden"
           :overflow-x "hidden"
           :height "100%"
-          :width "100%")
+          :margin-right "3px")
         `(".source-content"
           :background-color ,theme:background
           :color ,theme:on-background
