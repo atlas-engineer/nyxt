@@ -69,6 +69,8 @@ See `nyxt::attribute-widths'.")
           :font-size "14px"
           :line-height "18px")
         `(body
+          :border-right "3px solid"
+          :border-color ,theme:primary
           :overflow "hidden"
           :margin "0"
           :padding "0")
