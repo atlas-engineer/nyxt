@@ -710,3 +710,5 @@ like buttons.")
   (:h3 "Bug fixes")
   (:ul
    (:li "Trying to delete a hanged buffer destroys it, instead of leaving it dangling forever.")))
+
+(define-version "3-pre-release-5")
