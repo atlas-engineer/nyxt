@@ -579,10 +579,7 @@ auto-mode-rules.lisp)."))
 settings changes.")
    (:li "When started with " (:code "--remote") " and without " (:code "--quit")
         ", Nyxt now reads s-expression from standard input and sends it to the remote process. "
-        "This avoids the performance penalty of a new process startup on each iteration.")
-   (:li "With " (:nxref :slot 'dynamic-attribute-width-p :class-name 'prompt-buffer)
-        " on, prompt buffer attribute columns adjust to their content, allowing
-for a better overview of lengthy attributes."))
+        "This avoids the performance penalty of a new process startup on each iteration."))
 
   (:h3 "Bindings")
   (:ul
@@ -692,19 +689,24 @@ regular commands, such as "
    (:li "Fix the display of history suggestions when going forward in history.")
    (:li "Security: all the non-ASCII domain names are shown as IDN punycodes in addition
 to aesthetic display in status buffer.")
-   (:li "The canceled page requests are stored to history, making it more consistent.")
-   (:li "Trying to delete a hanged buffer destroys it, instead of leaving it dangling forever.")))
+   (:li "The canceled page requests are stored to history, making it more consistent.")))
 
 (define-version "3-pre-release-4"
   (:ul
+   (:li "With " (:nxref :slot 'dynamic-attribute-width-p :class-name 'prompt-buffer)
+        " on, prompt buffer attribute columns adjust to their content, allowing
+for a better overview of lengthy attributes.")
    (:li "Status buffer improved for increased readability. Mode area reduced in
 size. Glyphs for navigation control buttons updated. Tabs area restyled to look
 like buttons.")
    (:li "Search engines are now listed with their full name (when available).")
-   (:li "Code blocks now include syntax highlighting and clickable elements.")
+   (:li (:code ":ncode") " blocks now include syntax highlighting and clickable elements.")
    (:li "Internal buffers are now rendered in the status area as: " (:code "internal") "."))
   (:h3 "Bindings")
   (:ul
    (:li "Add " (:nxref :command 'nyxt:toggle-prompt-buffer-focus) ".")
    (:li "Add " (:nxref :command 'nyxt/prompt-buffer-mode:first-suggestion-within-source) ".")
-   (:li "Add " (:nxref :command 'nyxt/prompt-buffer-mode:last-suggestion-within-source) ".")))
+   (:li "Add " (:nxref :command 'nyxt/prompt-buffer-mode:last-suggestion-within-source) "."))
+  (:h3 "Bug fixes")
+  (:ul
+   (:li "Trying to delete a hanged buffer destroys it, instead of leaving it dangling forever.")))
