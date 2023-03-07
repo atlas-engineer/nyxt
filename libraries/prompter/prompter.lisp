@@ -171,6 +171,8 @@ computation is not finished.")))
 (defmethod run-action-on-current-suggestion ((prompter prompter))
   (sera:and-let* ((source (current-source prompter))
                   (_ (actions-on-current-suggestion-enabled-p source))
+                  (not (eq #'identity (alex:ensure-function
+                                       (default-action-on-current-suggestion source))))
                   (action (default-action-on-current-suggestion source))
                   (suggestion (%current-suggestion prompter)))
     (let ((delay (actions-on-current-suggestion-delay source)))

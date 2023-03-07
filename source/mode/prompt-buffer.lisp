@@ -336,8 +336,11 @@ current unmarked suggestion."
     (funcall* command)))
 
 (defun prompt-buffer-actions-on-return (&optional (window (current-window)))
-  (sera:and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
-    (prompter:actions-on-return first-prompt-buffer)))
+  (or (sera:and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
+        (prompter:actions-on-return first-prompt-buffer))
+      (progn
+        (echo-warning "No actions to choose from.")
+        (error 'prompt-buffer-canceled))))
 
 (defun prompt-buffer-actions-on-current-suggestion (&optional (window (current-window)))
   (sera:and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
@@ -352,10 +355,12 @@ current unmarked suggestion."
    'prompter:suggestion
    :value action
    ;; TODO: Include bindings in attributes.
-   :attributes `(("Name" ,(symbol-name (typecase action
-                                         (command (name action))
-                                         (function (slynk-backend:function-name action))
-                                         (t action))))
+   :attributes `(("Name" ,(or (ignore-errors
+                               (symbol-name (typecase action
+                                              (command (name action))
+                                              (function (slynk-backend:function-name action))
+                                              (t action))))
+                              "Lambda"))
                  ("Documentation" ,(or (first (sera:lines
                                                (typecase action
                                                  (command (documentation action t))
