@@ -697,8 +697,6 @@ to aesthetic display in status buffer.")
 
 (define-version "3-pre-release-4"
   (:ul
-   (:li "Added automatically adjustable prompt buffer columns. Columns are automatically
-adjusted for the best balance of widths.")
    (:li "Status buffer improved for increased readability. Mode area reduced in
 size. Glyphs for navigation control buttons updated. Tabs area restyled to look
 like buttons.")
@@ -709,7 +707,4 @@ like buttons.")
   (:ul
    (:li "Add " (:nxref :command 'nyxt:toggle-prompt-buffer-focus) ".")
    (:li "Add " (:nxref :command 'nyxt/prompt-buffer-mode:first-suggestion-within-source) ".")
-   (:li "Add " (:nxref :command 'nyxt/prompt-buffer-mode:last-suggestion-within-source) "."))
-  (:h3 "Bug fixes")
-  (:ul
-   (:li "Frozen buffers are aggressively removed to free memory.")))
+   (:li "Add " (:nxref :command 'nyxt/prompt-buffer-mode:last-suggestion-within-source) ".")))
