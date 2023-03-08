@@ -473,6 +473,11 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                            (sera:single sources))
                                       "display:none;"
                                       "display:revert")
+                           (:nbutton
+                             :text "⚙"
+                             :title "Toggle columns"
+                             :buffer prompt-buffer
+                             (funcall (sym:resolve-symbol :toggle-attributes-display :command)))
                            (prompter:name source)
                            (if (prompter:hide-suggestion-count-p source)
                                ""
