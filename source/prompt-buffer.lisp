@@ -474,6 +474,16 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                       "display:none;"
                                       "display:revert")
                            (:nbutton
+                             :text "↓"
+                             :title "Next source"
+                             :buffer prompt-buffer
+                             (funcall (sym:resolve-symbol :next-source :command)))
+                           (:nbutton
+                             :text "↑"
+                             :title "Previous source"
+                             :buffer prompt-buffer
+                             (funcall (sym:resolve-symbol :previous-source :command)))
+                           (:nbutton
                              :text "⚙"
                              :title "Toggle columns"
                              :buffer prompt-buffer
