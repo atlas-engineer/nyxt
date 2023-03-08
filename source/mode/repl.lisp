@@ -143,6 +143,7 @@ Features:
               :overflow-y "auto"
               :overflow-x "auto")
             `(.controls
+              :font-size "14px"
               :position "absolute"
               :bottom "1em"
               :right "1em"))
