@@ -129,8 +129,8 @@ See also the `profile' slot in the `browser' class.")
             `(pre
               :overflow "auto"
               :color ,theme:on-background
-              :background-color ,theme:secondary
-              :border-radius "2px"
+              :background-color ,theme:background
+              :border "2px" solid ,theme:primary
               :padding "5px")
             `("table, th, td"
               :border-color ,theme:secondary
