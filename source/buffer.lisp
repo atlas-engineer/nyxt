@@ -127,6 +127,7 @@ See also the `profile' slot in the `browser' class.")
             `("a:hover"
               :opacity 0.8)
             `(pre
+              :border-radius "3px"
               :overflow "auto"
               :color ,theme:on-background
               :background-color ,theme:background
