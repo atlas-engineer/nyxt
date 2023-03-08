@@ -711,4 +711,6 @@ like buttons.")
   (:ul
    (:li "Trying to delete a hanged buffer destroys it, instead of leaving it dangling forever.")))
 
-(define-version "3-pre-release-5")
+(define-version "3-pre-release-5"
+  (:ul
+   (:li "Code listings on manual and help system are more readable.")))
