@@ -165,6 +165,9 @@ See `nyxt::attribute-widths'.")
            :white-space "nowrap"
            :height "20px"
            :overflow "auto")
+          ("tr:hover"
+           :cursor "pointer"
+           :font-weight "bold")
           (th
            :background-color ,theme:primary
            :color ,theme:on-primary
@@ -430,7 +433,6 @@ an integer."))
                                             (- suggestion-index cursor-index))
                                            (prompter:run-action-on-return
                                             (current-prompt-buffer))))
-
                           (loop for (nil attribute attribute-display)
                                 in (prompter:active-attributes suggestion :source source)
                                 collect (:td :title attribute
