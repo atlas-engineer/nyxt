@@ -49,11 +49,6 @@ some point.")
      (hide-single-source-header-p
       nil
       :documentation "Hide source header when there is only one.")
-     (mouse-support-p
-      t
-      :type boolean
-      :documentation "Whether to allow mouse events to set and return the
-current suggestion in the prompt buffer.")
      (dynamic-attribute-width-p
       nil
       :type boolean
