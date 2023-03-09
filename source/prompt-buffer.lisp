@@ -166,8 +166,7 @@ See `nyxt::attribute-widths'.")
            :height "20px"
            :overflow "auto")
           ("tr:hover"
-           :cursor "pointer"
-           :font-weight "bold")
+           :cursor "pointer")
           (th
            :background-color ,theme:primary
            :color ,theme:on-primary
@@ -425,6 +424,13 @@ an integer."))
                                 "selection")
                           :class (when (prompter:marked-p source (prompter:value suggestion))
                                    "marked")
+                          :onmousemove (ps:ps (nyxt/ps:lisp-eval
+                                               (:title "select-this-suggestion"
+                                                :buffer prompt-buffer)
+                                               (prompter::set-current-suggestion
+                                                (current-prompt-buffer)
+                                                (- suggestion-index cursor-index))
+                                               (prompt-render-suggestions prompt-buffer)))
                           :onclick (ps:ps (nyxt/ps:lisp-eval
                                            (:title "choose-this-suggestion"
                                             :buffer prompt-buffer)
