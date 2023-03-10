@@ -171,6 +171,8 @@ See `nyxt::attribute-widths'.")
            :height "20px"
            :overflow "auto")
           ("tr:hover"
+           :background-color ,theme:secondary
+           :color ,theme:on-secondary
            :cursor "pointer")
           (th
            :background-color ,theme:primary
@@ -414,12 +416,11 @@ an integer."))
                    (loop for attribute-key in (prompter:active-attributes-keys source)
                          collect (:th (spinneret::escape-string attribute-key))))
               (loop
-                ;; TODO: Only print as many lines as fit the height.
-                ;; But how can we know in advance?
-                with max-suggestion-count = 10
+                ;; TODO: calculate how many lines fit in the prompt buffer
+                with max-suggestion-count = 8
                 repeat max-suggestion-count
                 with cursor-index = (prompter:current-suggestion-position prompt-buffer)
-                for suggestion-index from (max 0 (- cursor-index (/ max-suggestion-count 2)))
+                for suggestion-index from (max 0 (- cursor-index (- (/ max-suggestion-count 2) 1)))
                 for suggestion in (nthcdr suggestion-index (prompter:suggestions source))
                 collect
                    (let ((suggestion-index suggestion-index)
@@ -429,14 +430,6 @@ an integer."))
                                 "selection")
                           :class (when (prompter:marked-p source (prompter:value suggestion))
                                    "marked")
-                          :onmousemove (when (mouse-support-p prompt-buffer)
-                                         (ps:ps (nyxt/ps:lisp-eval
-                                                 (:title "select-this-suggestion"
-                                                  :buffer prompt-buffer)
-                                                 (prompter::set-current-suggestion
-                                                  (current-prompt-buffer)
-                                                  (- suggestion-index cursor-index))
-                                                 (prompt-render-suggestions prompt-buffer))))
                           :onclick (when (mouse-support-p prompt-buffer)
                                      (ps:ps (nyxt/ps:lisp-eval
                                              (:title "choose-this-suggestion"
