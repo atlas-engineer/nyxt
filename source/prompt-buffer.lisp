@@ -480,7 +480,7 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                              (funcall (sym:resolve-symbol :previous-source :command)))
                            (:nbutton
                              :text "⚙"
-                             :title "Toggle columns"
+                             :title "Toggle attributes display"
                              :buffer prompt-buffer
                              (funcall (sym:resolve-symbol :toggle-attributes-display :command)))
                            (prompter:name source)
