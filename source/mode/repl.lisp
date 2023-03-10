@@ -130,7 +130,7 @@ The default implementation produces an `:ninput' field that updates `cell''s
     (spinneret:with-html-string
       (dolist (action (actions cell))
         (:nbutton :text (first action)
-          (funcall (second action) cell)))))
+          `(funcall (quote ,(second action)) ,cell)))))
   (:documentation "Generate HTML for the `actions' of the CELL.
 Generic function to specialize against new REPL cell types.
 The default method simply draws buttons."))
@@ -608,25 +608,28 @@ Follows what the compiler finds aesthetically pleasing."
          (:nbutton
            :text "+ Add a cell"
            :title "Add a new cell for you to evaluate code in."
-           (add-cell))
+           '(add-cell))
          (:nbutton
            :text "Edit Nyxt function"
            :title "Edit the source of one of Nyxt commands in REPL."
-           (let ((functions (prompt :prompt "Function to edit"
-                                    :sources (make-instance
-                                              'nyxt::function-source
-                                              :actions-on-return #'identity))))
-             (setf (cells repl-mode)
-                   (append
-                    (cells repl-mode)
-                    (mapcar (lambda (sym)
-                              (make-instance 'lisp-cell
-                                             :input (function-lambda-string
-                                                     (symbol-function sym))))
-                            functions)))
-             (reload-buffer (buffer repl-mode))))
+           ;; NOTE: Using a closure injection here because repl-mode is used in
+           ;; too much places. Maybe rewrite to a let-binding later.
+           `(funcall ,#'(lambda ()
+                          (let ((functions (prompt :prompt "Function to edit"
+                                                   :sources (make-instance
+                                                             'nyxt::function-source
+                                                             :actions-on-return #'identity))))
+                            (setf (cells repl-mode)
+                                  (append
+                                   (cells repl-mode)
+                                   (mapcar (lambda (sym)
+                                             (make-instance 'lisp-cell
+                                                            :input (function-lambda-string
+                                                                    (symbol-function sym))))
+                                           functions)))
+                            (reload-buffer (buffer repl-mode))))))
          (:nbutton
            :text "✕ Delete all"
            :title "Delete all cells in the REPL buffer."
-           (setf (cells repl-mode) nil)
-           (reload-buffer (buffer repl-mode))))))))
+           `(setf (cells ,repl-mode) nil)
+           `(reload-buffer (buffer ,repl-mode))))))))

@@ -35,7 +35,7 @@ This leverages `mode-status' which can be specialized for individual modes."
               :buffer status
               :text "✚"
               :title (str:concat "Enabled modes: " (modes-string buffer))
-              (nyxt:toggle-modes))
+              '(nyxt:toggle-modes))
             (loop for mode in sorted-modes
                   collect
                   (let ((mode mode))
@@ -46,7 +46,7 @@ This leverages `mode-status' which can be specialized for individual modes."
                             :buffer status
                             :text formatted-mode
                             :title (format nil "Describe ~a" mode)
-                            (describe-class :class (name mode)))))))))
+                            `(describe-class :class (quote ,(name mode))))))))))
         "")))
 
 (defun modes-string (buffer)
@@ -63,27 +63,27 @@ This leverages `mode-status' which can be specialized for individual modes."
       :buffer status
       :text "←"
       :title "Backwards"
-      (nyxt/history-mode:history-backwards))
+      '(nyxt/history-mode:history-backwards))
     (:nbutton
       :buffer status
       :text "↺"
       :title "Reload"
-      (nyxt:reload-current-buffer))
+      '(nyxt:reload-current-buffer))
     (:nbutton
       :buffer status
       :text "→"
       :title "Forwards"
-      (nyxt/history-mode:history-forwards) )
+      '(nyxt/history-mode:history-forwards))
     (:nbutton
       :buffer status
       :text "≡"
       :title "Execute"
-      (nyxt:execute-command))
+      '(nyxt:execute-command))
     (:nbutton
       :buffer status
       :text "★"
       :title "Bookmark this page"
-      (funcall (read-from-string "nyxt/bookmark-mode:bookmark-current-url")))))
+      '(funcall (read-from-string "nyxt/bookmark-mode:bookmark-current-url")))))
 
 (export-always 'format-status-load-status)
 (defmethod format-status-load-status ((status status-buffer))
@@ -124,7 +124,7 @@ the URL.)"
         :buffer status
         :text content
         :title content
-        (nyxt:set-url)))))
+        '(nyxt:set-url)))))
 
 (export-always 'format-status-tabs)
 (defmethod format-status-tabs ((status status-buffer))

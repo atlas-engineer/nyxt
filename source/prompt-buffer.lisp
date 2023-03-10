@@ -477,17 +477,17 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                              :text "↓"
                              :title "Next source"
                              :buffer prompt-buffer
-                             (funcall (sym:resolve-symbol :next-source :command)))
+                             '(funcall (sym:resolve-symbol :next-source :command)))
                            (:nbutton
                              :text "↑"
                              :title "Previous source"
                              :buffer prompt-buffer
-                             (funcall (sym:resolve-symbol :previous-source :command)))
+                             '(funcall (sym:resolve-symbol :previous-source :command)))
                            (:nbutton
                              :text "⚙"
                              :title "Toggle attributes display"
                              :buffer prompt-buffer
-                             (funcall (sym:resolve-symbol :toggle-attributes-display :command)))
+                             '(funcall (sym:resolve-symbol :toggle-attributes-display :command)))
                            (prompter:name source)
                            (if (prompter:hide-suggestion-count-p source)
                                ""
@@ -535,7 +535,7 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                              :text "×"
                              :title "Close prompt"
                              :buffer prompt-buffer
-                             (funcall (sym:resolve-symbol :quit-prompt-buffer :command)))))
+                             '(funcall (sym:resolve-symbol :quit-prompt-buffer :command)))))
                (:div :id "suggestions"
                      :style (if (invisible-input-p prompt-buffer)
                                 "visibility:hidden;"

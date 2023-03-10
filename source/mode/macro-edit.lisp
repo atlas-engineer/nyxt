@@ -25,9 +25,9 @@
            collect (:tr (:td (:nbutton :class "button"
                                :text "✕"
                                :title "Remove from the macro"
-                               (nyxt/macro-edit-mode::remove-function
-                                (find-submode 'macro-edit-mode)
-                                index)))
+                               `(nyxt/macro-edit-mode::remove-function
+                                 (find-submode 'macro-edit-mode)
+                                 ,index)))
                         (:td
                          (:a.button
                           :title "Help"
@@ -51,7 +51,7 @@
     (:p "Commands")
     (:p (:nbutton
           :text "+ Add command"
-          (nyxt/macro-edit-mode::add-command)))
+          '(nyxt/macro-edit-mode::add-command)))
     (:div
      :id "commands"
      (:raw
@@ -61,10 +61,10 @@
     (:hr)
     (:nbutton
       :text "Save macro"
-      (nyxt/macro-edit-mode::save-macro))
+      '(nyxt/macro-edit-mode::save-macro))
     (:nbutton
       :text "Compile macro"
-      (nyxt/macro-edit-mode::evaluate-macro))))
+      '(nyxt/macro-edit-mode::evaluate-macro))))
 
 (defmethod add-function ((macro-editor macro-edit-mode) command)
   (alex:appendf (functions macro-editor)

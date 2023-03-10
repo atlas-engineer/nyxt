@@ -44,7 +44,7 @@ See `ndebug:condition-wrapper' for documentation."))
   (spinneret:with-html-string
     (dolist (restart (ndebug:restarts wrapper))
       (:nbutton :text (format nil "[~a] ~a" (dissect:name restart) (dissect:report restart))
-        (ndebug:invoke wrapper restart)))))
+        `(ndebug:invoke ,wrapper ,restart)))))
 
 (defun backtrace->html (wrapper)
   (spinneret:with-html-string
