@@ -49,6 +49,11 @@ some point.")
      (hide-single-source-header-p
       nil
       :documentation "Hide source header when there is only one.")
+     (mouse-support-p
+      t
+      :type boolean
+      :documentation "Whether to allow mouse events to set and return the
+current suggestion in the prompt buffer.")
      (dynamic-attribute-width-p
       nil
       :type boolean
@@ -424,21 +429,23 @@ an integer."))
                                 "selection")
                           :class (when (prompter:marked-p source (prompter:value suggestion))
                                    "marked")
-                          :onmousemove (ps:ps (nyxt/ps:lisp-eval
-                                               (:title "select-this-suggestion"
-                                                :buffer prompt-buffer)
-                                               (prompter::set-current-suggestion
-                                                (current-prompt-buffer)
-                                                (- suggestion-index cursor-index))
-                                               (prompt-render-suggestions prompt-buffer)))
-                          :onclick (ps:ps (nyxt/ps:lisp-eval
-                                           (:title "choose-this-suggestion"
-                                            :buffer prompt-buffer)
-                                           (prompter::set-current-suggestion
-                                            (current-prompt-buffer)
-                                            (- suggestion-index cursor-index))
-                                           (prompter:run-action-on-return
-                                            (current-prompt-buffer))))
+                          :onmousemove (when (mouse-support-p prompt-buffer)
+                                         (ps:ps (nyxt/ps:lisp-eval
+                                                 (:title "select-this-suggestion"
+                                                  :buffer prompt-buffer)
+                                                 (prompter::set-current-suggestion
+                                                  (current-prompt-buffer)
+                                                  (- suggestion-index cursor-index))
+                                                 (prompt-render-suggestions prompt-buffer))))
+                          :onclick (when (mouse-support-p prompt-buffer)
+                                     (ps:ps (nyxt/ps:lisp-eval
+                                             (:title "choose-this-suggestion"
+                                              :buffer prompt-buffer)
+                                             (prompter::set-current-suggestion
+                                              (current-prompt-buffer)
+                                              (- suggestion-index cursor-index))
+                                             (prompter:run-action-on-return
+                                              (current-prompt-buffer)))))
                           (loop for (nil attribute attribute-display)
                                 in (prompter:active-attributes suggestion :source source)
                                 collect (:td :title attribute
