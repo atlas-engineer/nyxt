@@ -171,6 +171,8 @@ See `nyxt::attribute-widths'.")
            :height "20px"
            :overflow "auto")
           ("tr:hover"
+           :background-color ,theme:secondary
+           :color ,theme:on-secondary
            :cursor "pointer")
           (th
            :background-color ,theme:primary
