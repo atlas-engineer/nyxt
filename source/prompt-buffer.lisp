@@ -170,6 +170,8 @@ See `nyxt::attribute-widths'.")
            :white-space "nowrap"
            :height "20px"
            :overflow "auto")
+          ("tr:hover"
+           :cursor "pointer")
           (th
            :background-color ,theme:primary
            :color ,theme:on-primary
@@ -420,43 +422,36 @@ an integer."))
                 for suggestion-index from (max 0 (- cursor-index (/ max-suggestion-count 2)))
                 for suggestion in (nthcdr suggestion-index (prompter:suggestions source))
                 collect
-                (let ((suggestion-index suggestion-index)
-                      (cursor-index cursor-index))
-                  (:tr :id (when (equal (list suggestion source)
-                                        (multiple-value-list (prompter:%current-suggestion prompt-buffer)))
-                             "selection")
-                       :class (when (prompter:marked-p source (prompter:value suggestion))
-                                "marked")
-                       :onmousedown (when (mouse-support-p prompt-buffer)
-                                      (ps:ps
-                                       (lambda (event)
-                                         (nyxt/ps:lisp-eval
-                                          (:title "choose-this-suggestion"
+                   (let ((suggestion-index suggestion-index)
+                         (cursor-index cursor-index))
+                     (:tr :id (when (equal (list suggestion source)
+                                           (multiple-value-list (prompter:%current-suggestion prompt-buffer)))
+                                "selection")
+                          :class (when (prompter:marked-p source (prompter:value suggestion))
+                                   "marked")
+                          :onmousemove (when (mouse-support-p prompt-buffer)
+                                         (ps:ps (nyxt/ps:lisp-eval
+                                                 (:title "select-this-suggestion"
                                                   :buffer prompt-buffer)
-                                          (prompter::set-current-suggestion
-                                           (current-prompt-buffer)
-                                           (- suggestion-index cursor-index)))
-                                         (cond
-                                           ;; Ctrl-click to mark a single suggestion.
-                                           ;; TODO: Shift-click to mark a region.
-                                           ((or (ps:@ event meta-key)
-                                                (ps:@ event ctrl-key))
-                                            (nyxt/ps:lisp-eval
-                                             (:title "mark-this-suggestion"
-                                                     :buffer prompt-buffer)
-                                             (funcall (read-from-string "nyxt/prompt-buffer-mode:toggle-mark")
-                                                      prompt-buffer)))
-                                           (t (nyxt/ps:lisp-eval
-                                               (:title "return-this-suggestion"
-                                                       :buffer prompt-buffer)
-                                               (prompter:run-action-on-return
-                                                (nyxt::current-prompt-buffer))))))))
-                       (loop for (nil attribute attribute-display)
-                               in (prompter:active-attributes suggestion :source source)
-                             collect (:td :title attribute
-                                          (if attribute-display
-                                              (:raw attribute-display)
-                                              attribute))))))))))
+                                                 (prompter::set-current-suggestion
+                                                  (current-prompt-buffer)
+                                                  (- suggestion-index cursor-index))
+                                                 (prompt-render-suggestions prompt-buffer))))
+                          :onclick (when (mouse-support-p prompt-buffer)
+                                     (ps:ps (nyxt/ps:lisp-eval
+                                             (:title "choose-this-suggestion"
+                                              :buffer prompt-buffer)
+                                             (prompter::set-current-suggestion
+                                              (current-prompt-buffer)
+                                              (- suggestion-index cursor-index))
+                                             (prompter:run-action-on-return
+                                              (current-prompt-buffer)))))
+                          (loop for (nil attribute attribute-display)
+                                in (prompter:active-attributes suggestion :source source)
+                                collect (:td :title attribute
+                                             (if attribute-display
+                                                 (:raw attribute-display)
+                                                 attribute))))))))))
 
 (export 'prompt-render-suggestions)
 (defmethod prompt-render-suggestions ((prompt-buffer prompt-buffer))
@@ -473,6 +468,21 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                            (sera:single sources))
                                       "display:none;"
                                       "display:revert")
+                           (:nbutton
+                             :text "↓"
+                             :title "Next source"
+                             :buffer prompt-buffer
+                             (funcall (sym:resolve-symbol :next-source :command)))
+                           (:nbutton
+                             :text "↑"
+                             :title "Previous source"
+                             :buffer prompt-buffer
+                             (funcall (sym:resolve-symbol :previous-source :command)))
+                           (:nbutton
+                             :text "⚙"
+                             :title "Toggle attributes display"
+                             :buffer prompt-buffer
+                             (funcall (sym:resolve-symbol :toggle-attributes-display :command)))
                            (prompter:name source)
                            (if (prompter:hide-suggestion-count-p source)
                                ""
