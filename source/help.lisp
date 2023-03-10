@@ -313,8 +313,7 @@ useful actions there, including the familiar " (:code "set-url") ", " (:code "hi
     (:h1 "Nyxt tutorial")
     (:p "The following tutorial introduces core concepts and
 basic usage.  For more details, especially regarding configuration, see
-the "
-        (:code (:nxref :command 'manual)) ".")
+the " (:code (:a.link :href (nyxt-url 'manual) "manual")) ".")
     (:raw (tutorial-content))))
 
 (define-internal-page-command-global show-system-information ()
