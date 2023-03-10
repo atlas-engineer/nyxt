@@ -520,19 +520,38 @@ by default."
              " " (:a.link :href (uiop:strcat "#" ,id-var) "#")))
            ,@body))))))
 
-(deftag :nbutton (body attrs &rest keys &key (text (alexandria:required-argument 'text)) title buffer &allow-other-keys)
+(serapeum:-> %nbutton-onclick (string (nyxt:maybe nyxt:buffer) (nyxt:list-of list)) t)
+(defun %nbutton-onclick (title buffer clauses)
+  "Produce Parenscript to run Lisp CLAUSES in BUFFER.
+TITLE is the debuggable name for the callback."
+  (ps:ps*
+   `(nyxt/ps:lisp-eval
+     (:title ,(format nil "nbutton ~a" title)
+             ,@(when buffer
+                 (list :buffer buffer)))
+     ,@clauses)))
+
+(deftag :nbutton (body attrs &rest keys
+                       &key (text (alexandria:required-argument 'text)) title buffer
+                       &allow-other-keys)
   "A Lisp-invoking button with TEXT text and BODY action.
 Evaluates (via `nyxt/ps:lisp-eval') the BODY in BUFFER when clicked.
-Forms in BODY can be unquoted, benefiting from the editor formatting."
+
+BODY can consist of quoted lists or forms producing those. These will be
+compiled, so, if you want to close over some value, inject a closure right
+inside the forms.
+
+Example:
+\(:nbutton
+  :buffer buffer
+  :text \"Do something\"
+  '(nyxt:echo \"Hello!\")
+  (list 'foo)
+  `(funcall ,#'(lambda () (do-something-with closed-over-value))))"
   (let ((keys keys))
     (declare (ignorable keys))
     `(:button.button
-      :onclick (ps:ps
-                 (nyxt/ps:lisp-eval
-                  (:title ,(or title text)
-                          ,@(when buffer
-                              (list :buffer buffer)))
-                  ,@(mapcar #'remove-smart-quoting body)))
+      :onclick (%nbutton-onclick ,(or title text) ,buffer (list ,@body))
       ,@(when title
           (list :title title))
       ,@attrs
