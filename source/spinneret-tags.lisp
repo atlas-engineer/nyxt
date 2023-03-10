@@ -385,7 +385,8 @@ Most *-P arguments mandate whether to add the buttons for:
                               (nfiles:expand nyxt::*auto-config-file*)))
                      (alexandria:write-string-into-file
                       ,plaintext (nfiles:expand nyxt::*auto-config-file*)
-                      :if-exists :append))))
+                      :if-exists :append
+                      :if-does-not-exist :create))))
                 (when repl-p
                   `(((repl
                       "Try in REPL"
