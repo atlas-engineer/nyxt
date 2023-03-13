@@ -61,6 +61,30 @@ The main difference is that their command toggles the panel."))
                           :buffer (make-instance 'panel-buffer))
              (side ,page))))))))
 
+;; FIXME: Better way to compose HTML wrappers?
+(defmethod (setf form) :after (lambda-expression (page panel-page))
+  (let ((original-form (slot-value page 'form)))
+    (setf (slot-value page 'form)
+          (lambda (&rest args)
+            (destructuring-bind (contents &optional (type "text/html;charset=utf8") (status 200)
+                                            headers reason)
+                (multiple-value-list (funcall original-form) args)
+              (when (str:starts-with-p "text/html" type)
+                (setf contents
+                      (spinneret:with-html-string
+                        (:raw contents)
+                        (let ((buffer (find-panel-buffer (name page))))
+                          (:button.button
+                           :style "position: absolute; top: 1em; right: 1em;"
+                           :title "Close this panel buffer"
+                           :onclick (ps:ps (nyxt/ps:lisp-eval
+                                            (:title "panel close button"
+                                             :buffer buffer)
+                                            (window-delete-panel-buffer
+                                             (current-window) buffer)))
+                           "×")))))
+              (values contents type status headers reason))))))
+
 ;; TODO: Add define-panel?
 
 (export-always 'define-panel-command)
