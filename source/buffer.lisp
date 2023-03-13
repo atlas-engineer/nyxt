@@ -787,6 +787,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :flex-shrink "2"
               :flex-basis "144px")
             `("#tabs"
+              :line-height "24px"
               :background-color ,theme:secondary
               :color ,theme:on-secondary
               :min-width "100px"
@@ -801,14 +802,18 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :flex-basis "144px")
             `("#tabs::-webkit-scrollbar"
               :display "none")
-            `(.tab
-              :color ,theme:background
-              :white-space "nowrap"
-              :text-decoration "none"
-              :padding-left "8px"
-              :padding-right "8px")
+            `(".tab"
+              :margin-right "8px"
+              :background "transparent"
+              :color "inherit"
+              :text-decoration "transparent"
+              :border "transparent"
+              :border-radius "0.2em"
+              :padding 0
+              :font "inherit"
+              :outline "inherit")
             `(".tab:hover"
-              :opacity 0.6)
+              :cursor "pointer")
             `("#modes"
               :background-color ,theme:primary
               :color ,theme:on-primary

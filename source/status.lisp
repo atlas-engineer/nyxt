@@ -128,34 +128,54 @@ the URL.)"
 
 (export-always 'format-status-tabs)
 (defmethod format-status-tabs ((status status-buffer))
-  (spinneret:with-html-string
-    (alex:when-let ((internal-buffers (remove-if-not #'internal-url-p (sort-by-time (buffer-list)) :key #'url)))
-      (:nbutton
-        :class (when (internal-url-p (url (current-buffer)))
-                 "plain")
-        :buffer status
-        :type "tab"
-        :text (if (sera:single internal-buffers)
-                  (prini-to-string (parse-nyxt-url (url (first internal-buffers))))
-                  "internal")
-        (prompt
-         :prompt "Switch to buffer with internal page"
-         :sources (make-instance 'buffer-source
-                                 :constructor internal-buffers))))
-    (loop for domain in (remove-duplicates
-                         (sera:filter-map #'quri:uri-domain
-                                          (remove-if #'internal-url-p
-                                                     (mapcar #'url (sort-by-time (buffer-list)))))
-                         :test #'equal)
-          collect (let ((domain domain))
-                    (:nbutton
-                      :class (when (equal (quri:uri-domain (url (current-buffer)))
-                                          domain)
-                               "plain")
-                      :buffer status
-                      :type "tab"
-                      :text domain
-                      (nyxt::switch-buffer-or-query-domain domain))))))
+  (flet ((domains (buffers)
+           (remove-duplicates
+            (sera:filter-map #'quri:uri-domain
+                             (remove-if #'internal-url-p
+                                        (mapcar #'url (sort-by-time buffers))))
+            :test #'equal)))
+    (spinneret:with-html-string
+      (alex:when-let ((internal-buffers (remove-if-not #'internal-url-p (sort-by-time (buffer-list)) :key #'url)))
+        (:span
+         :class (if (internal-url-p (url (current-buffer)))
+                    "plain tab"
+                    "tab")
+         :onclick (ps:ps
+                    (if (or (= (ps:chain window event which) 2)
+                            (= (ps:chain window event which) 4))
+                        (nyxt/ps:lisp-eval
+                         (:title "delete-tab-group"
+                          :buffer status)
+                         (if-confirm ((format nil "Delete all internal buffers?"))
+                                     (nyxt:delete-buffer :buffers internal-buffers)))
+                        (nyxt/ps:lisp-eval
+                         (:title "select-tab-group"
+                          :buffer status)
+                         (prompt
+                          :prompt "Switch to buffer with internal page"
+                          :sources (make-instance 'buffer-source
+                                                  :constructor internal-buffers)))))
+         (if (sera:single internal-buffers)
+             (prini-to-string (parse-nyxt-url (url (first internal-buffers))))
+             "internal")))
+      (loop for domain in (domains (buffer-list))
+            collect (:span
+                     :class (if (equal (quri:uri-domain (url (current-buffer))) domain)
+                                "plain tab"
+                                "tab")
+                     :onclick (ps:ps
+                                (if (or (= (ps:chain window event which) 2)
+                                        (= (ps:chain window event which) 4))
+                                    (nyxt/ps:lisp-eval
+                                     (:title "delete-tab-group"
+                                      :buffer status)
+                                     (if-confirm ((format nil "Delete all buffers with domain: ~a?" domain))
+                                                 (nyxt:delete-buffer :buffers (sera:filter (match-domain domain) (buffer-list)))))
+                                    (nyxt/ps:lisp-eval
+                                     (:title "select-tab-group"
+                                      :buffer status)
+                                     (nyxt::switch-buffer-or-query-domain domain))))
+                     domain)))))
 
 (export-always 'format-status)
 (defmethod format-status ((status status-buffer))
