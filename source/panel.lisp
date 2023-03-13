@@ -63,6 +63,7 @@ The main difference is that their command toggles the panel."))
 
 ;; FIXME: Better way to compose HTML wrappers?
 (defmethod (setf form) :after (lambda-expression (page panel-page))
+  (declare (ignore lambda-expression))
   (let ((original-form (slot-value page 'form)))
     (setf (slot-value page 'form)
           (lambda (&rest args)
