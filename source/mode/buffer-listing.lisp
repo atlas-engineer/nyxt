@@ -110,7 +110,7 @@ With LINEAR-VIEW-P, list buffers linearly instead."
       (:body
        (:h1 "Buffers")
        (:nbutton :text "Update ↺"
-         :button panel-buffer
+         :buffer panel-buffer
          (reload-buffer
           (find
            (render-url (url panel-buffer))
