@@ -557,30 +557,52 @@ Example:
       ,@attrs
       ,text)))
 
+(serapeum:-> %ninput-onfocus (list (nyxt:maybe nyxt:buffer)) t)
+(defun %ninput-onfocus (onfocus buffer)
+  "Produce Parenscript to run ONFOCUS expression in BUFFER when :ninput is focused."
+  (ps:ps*
+   `(nyxt/ps:lisp-eval
+     (:title "ninput onfocus"
+             ,@(when buffer
+                 (list :buffer buffer)))
+     ,onfocus)))
+
+(serapeum:-> %ninput-onchange (list (nyxt:maybe nyxt:buffer)) t)
+(defun %ninput-onchange (onchange buffer)
+  "Produce Parenscript to run ONCHANGE expression in BUFFER when :ninput is modified."
+  (ps:ps*
+   `(nyxt/ps:lisp-eval
+     (:title "ninput onchange"
+             ,@(when buffer
+                 (list :buffer buffer)))
+     ,onchange)))
+
 (deftag :ninput (body attrs &rest keys &key rows cols onfocus onchange buffer &allow-other-keys)
   "Nicely styled <textarea> with a reasonable number of ROWS/COLS to accommodate the BODY.
-Calls Lisp forms in ONFOCUS and ONCHANGE when one focuses and edits the input (respectively)."
+Calls Lisp forms in ONFOCUS and ONCHANGE when one focuses and edits the input (respectively).
+
+BODY should be a string or an implicit progn producing a string.
+
+ONFOCUS, and ONCHANGE can consist of quoted lists or forms producing
+those. These lists will be compiled, so, if you want to close over some value,
+inject a closure right inside the forms."
   (let ((keys keys))
     (declare (ignorable keys))
-    (once-only ((input-contents `(or (progn ,@(mapcar #'remove-smart-quoting body)) "")))
-      `(:textarea.input
-        :rows (or ,rows (1+ (count #\Newline ,input-contents)) 1)
-        :cols (or ,cols (ignore-errors (apply #'max (mapcar #'length (str:lines ,input-contents)))) 80)
-        ,@(when onfocus
-            `(:onfocus (ps:ps (nyxt/ps:lisp-eval
-                               (:title "ninput onfocus"
-                                       ,@(when buffer
-                                           (list :buffer buffer)))
-                               ,onfocus))))
-        ,@(when onchange
-            ;; More events here.
-            `(:onkeydown (ps:ps (nyxt/ps:lisp-eval
-                                 (:title "ninput onchange/onkeydown"
-                                         ,@(when buffer
-                                             (list :buffer buffer)))
-                                 ,onchange))))
-        ,@attrs
-        (:raw (the string ,input-contents))))))
+    (once-only (buffer)
+      (with-gensyms (input)
+        ;; NOTE: It's unlikely that BODY will have multiple forms, but better
+        ;; prepare for it, just in case someone goes stateful.
+        `(let ((,input (progn ,@body)))
+           (:textarea.input
+            :rows (or ,rows (1+ (count #\Newline ,input)) 1)
+            :cols (or ,cols (ignore-errors (reduce #'max (mapcar #'length (str:lines ,input)))) 80)
+            ,@(when onfocus
+                `(:onfocus (%ninput-onfocus ,onfocus ,buffer)))
+            ,@(when onchange
+                ;; More events here.
+                `(:onkeydown (%ninput-onchange ,onchange ,buffer)))
+            ,@attrs
+            (:raw (the string ,input))))))))
 
 (serapeum:-> %ntoc-create-toc ((integer 2 6) string) *)
 (defun %ntoc-create-toc (depth body)

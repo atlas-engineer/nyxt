@@ -114,10 +114,10 @@ meaningful values."))
     (spinneret:with-html-string
       (:ninput
         :autofocus (eq (current-cell (current-mode :repl)) cell)
-        :onfocus (focus-cell cell)
-        :onchange (setf (input cell)
-                        (ps-eval
-                          (ps:@ (nyxt/ps:active-element document) value)))
+        :onfocus `(focus-cell ,cell)
+        :onchange `(setf (input ,cell)
+                         (ps-eval
+                           (ps:@ (nyxt/ps:active-element document) value)))
         (input cell))))
   (:documentation "Generate HTML for the input area of the CELL.
 Generic function to specialize against new REPL cell types.
