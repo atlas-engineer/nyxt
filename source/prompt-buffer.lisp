@@ -435,10 +435,19 @@ an integer."))
                                              (:title "choose-this-suggestion"
                                               :buffer prompt-buffer)
                                              (prompter::set-current-suggestion
-                                              (current-prompt-buffer)
-                                              (- suggestion-index cursor-index))
-                                             (prompter:run-action-on-return
-                                              (current-prompt-buffer)))))
+                                              prompt-buffer
+                                              (- suggestion-index cursor-index)))
+                                            (if (ps:chain window event ctrl-key)
+                                                (nyxt/ps:lisp-eval
+                                                 (:title "mark-this-suggestion"
+                                                  :buffer prompt-buffer)
+                                                 (prompter:toggle-mark prompt-buffer)
+                                                 (prompt-render-suggestions prompt-buffer))
+                                                (nyxt/ps:lisp-eval
+                                                 (:title "return-this-suggestion"
+                                                  :buffer prompt-buffer)
+                                                 (prompter:run-action-on-return
+                                                  (nyxt::current-prompt-buffer))))))
                           (loop for (nil attribute attribute-display)
                                 in (prompter:active-attributes suggestion :source source)
                                 collect (:td :title attribute
