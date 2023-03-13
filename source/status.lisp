@@ -128,54 +128,42 @@ the URL.)"
 
 (export-always 'format-status-tabs)
 (defmethod format-status-tabs ((status status-buffer))
-  (flet ((domains (buffers)
-           (remove-duplicates
-            (sera:filter-map #'quri:uri-domain
-                             (remove-if #'internal-url-p
-                                        (mapcar #'url (sort-by-time buffers))))
-            :test #'equal)))
+  (let ((domain-deduplicated-urls (remove-duplicates
+                                   (mapcar #'url (buffer-list)) :test #'equal :key #'quri:uri-domain)))
     (spinneret:with-html-string
-      (alex:when-let ((internal-buffers (remove-if-not #'internal-url-p (sort-by-time (buffer-list)) :key #'url)))
-        (:span
-         :class (if (internal-url-p (url (current-buffer)))
-                    "plain tab"
-                    "tab")
-         :onclick (ps:ps
-                    (if (or (= (ps:chain window event which) 2)
-                            (= (ps:chain window event which) 4))
-                        (nyxt/ps:lisp-eval
-                         (:title "delete-tab-group"
-                          :buffer status)
-                         (if-confirm ((format nil "Delete all internal buffers?"))
-                                     (nyxt:delete-buffer :buffers internal-buffers)))
-                        (nyxt/ps:lisp-eval
-                         (:title "select-tab-group"
-                          :buffer status)
-                         (prompt
-                          :prompt "Switch to buffer with internal page"
-                          :sources (make-instance 'buffer-source
-                                                  :constructor internal-buffers)))))
-         (if (sera:single internal-buffers)
-             (prini-to-string (parse-nyxt-url (url (first internal-buffers))))
-             "internal")))
-      (loop for domain in (domains (buffer-list))
-            collect (:span
-                     :class (if (equal (quri:uri-domain (url (current-buffer))) domain)
-                                "plain tab"
-                                "tab")
-                     :onclick (ps:ps
-                                (if (or (= (ps:chain window event which) 2)
-                                        (= (ps:chain window event which) 4))
-                                    (nyxt/ps:lisp-eval
-                                     (:title "delete-tab-group"
-                                      :buffer status)
-                                     (if-confirm ((format nil "Delete all buffers with domain: ~a?" domain))
-                                                 (nyxt:delete-buffer :buffers (sera:filter (match-domain domain) (buffer-list)))))
-                                    (nyxt/ps:lisp-eval
-                                     (:title "select-tab-group"
-                                      :buffer status)
-                                     (nyxt::switch-buffer-or-query-domain domain))))
-                     domain)))))
+      (loop for url in domain-deduplicated-urls
+            collect
+               (let* ((internal-buffers (remove-if-not #'internal-url-p (buffer-list) :key #'url))
+                      (presentation (if (internal-url-p url)
+                                        "internal"
+                                        (quri:uri-domain url)))
+                      (url url)
+                      (domain (quri:uri-domain url)))
+                 (:span
+                  :class (if (equal (quri:uri-domain (url (current-buffer))) (quri:uri-domain url)) 
+                             "plain tab"
+                             "tab")
+                  :onclick (ps:ps
+                             (if (or (= (ps:chain window event which) 2)
+                                     (= (ps:chain window event which) 4))
+                                 (nyxt/ps:lisp-eval
+                                  (:title "delete-tab-group"
+                                   :buffer status)
+                                  (if-confirm ((format nil "Delete all buffers with domain: ~a?" presentation))
+                                              (mapcar #'nyxt:buffer-delete
+                                                      (if (internal-url-p url)
+                                                          internal-buffers
+                                                          (sera:filter (match-domain domain) (buffer-list))))))
+                                 (nyxt/ps:lisp-eval
+                                  (:title "select-tab-group"
+                                   :buffer status)
+                                  (if (internal-url-p url)
+                                      (prompt
+                                       :prompt "Switch to buffer with internal page"
+                                       :sources (make-instance 'buffer-source
+                                                               :constructor internal-buffers))
+                                      (nyxt::switch-buffer-or-query-domain domain)))))
+                  presentation))))))
 
 (export-always 'format-status)
 (defmethod format-status ((status status-buffer))
