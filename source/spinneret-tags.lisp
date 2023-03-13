@@ -25,25 +25,6 @@
     (declare (ignorable keys))
     `(:script ,@attrs (:raw ,@body))))
 
-(serapeum:eval-always
-  (defun remove-smart-quoting (form)
-    "If the form is quoted or quasi-quoted, return the unquoted/evaluated variant.
-Otherwise, return the form as is."
-    (cond
-      ((and (listp form)
-            (eq 'quote (first form)))
-       (second form))
-      #+(or sbcl ecl)
-      ((and (listp form)
-            (eq #+sbcl 'sb-int:quasiquote
-                #+ecl 'si:quasiquote
-                ;; FIXME: CCL expands quasiquote to
-                ;; `list*' call.
-                ;; TODO: Other implementations?
-                (first form)))
-       (eval form))
-      (t form))))
-
 (serapeum:-> %nselect-onchange (string (nyxt:maybe nyxt:buffer) (nyxt:list-of list)) t)
 (defun %nselect-onchange (id buffer clauses)
   "Compiles the CLAUSES body into Parenscript code.
