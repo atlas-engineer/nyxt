@@ -69,7 +69,7 @@ The main difference is that their command toggles the panel."))
           (lambda (&rest args)
             (destructuring-bind (contents &optional (type "text/html;charset=utf8") (status 200)
                                             headers reason)
-                (multiple-value-list (funcall original-form args))
+                (multiple-value-list (apply original-form args))
               (when (str:starts-with-p "text/html" type)
                 (setf contents
                       (spinneret:with-html-string
