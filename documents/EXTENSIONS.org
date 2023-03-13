@@ -31,3 +31,6 @@
 - [[https://git.sr.ht/~conses/nx-tailor][nx-tailor]] ::
   nx-tailor is a tailor for all-things Nyxt themes which helps you manage them,
   change them on-the-fly, and discover new ones in a unified interface.
+
+- [[https://github.com/rolling-robot/nyxt-zotero][nyxt-zotero]] ::
+  nyxt-zotero is a simple Zotero connector for Nyxt.
