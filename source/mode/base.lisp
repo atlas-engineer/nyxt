@@ -17,7 +17,7 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-M-l" 'set-url-new-nosave-buffer
        "C-r" 'reload-current-buffer
        "M-r" 'reload-buffers
-       "C-shift-tab" 'switch-buffer-previous
+       "C-s-tab" 'switch-buffer-previous
        "C-tab" 'switch-buffer-next
        "C-T" 'reopen-buffer
        "C-t" 'make-buffer-focus
@@ -36,7 +36,7 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-j" 'nyxt/download-mode:list-downloads
        "C-space" 'execute-command
        "C-M-space" 'execute-extended-command
-       "C-shift-space" 'execute-predicted-command
+       "C-s-space" 'execute-predicted-command
        "M-space" 'resume-prompt)
       keyscheme:cua
       (list
@@ -50,7 +50,6 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-pageup" 'switch-buffer-previous
        "C-w" 'delete-current-buffer
        "C-n" 'make-window
-       "C-shift-W" 'delete-current-window
        "C-W" 'delete-current-window
        "M-w" 'delete-window
        "M-c l" 'copy-url

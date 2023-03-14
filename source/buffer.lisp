@@ -591,8 +591,8 @@ The handlers take the buffer as argument.")
       (list
        "C-button1" 'request-resource-open-url
        "button2" 'request-resource-open-url
-       "C-shift-button1" 'request-resource-open-url-focus
-       "shift-button2" 'request-resource-open-url-focus))
+       "C-s-button1" 'request-resource-open-url-focus
+       "s-button2" 'request-resource-open-url-focus))
     :documentation "Looked up when `request-resource-hook' handlers run.  The
 keymap takes functions whose key arguments are `:url' and `:buffer'.")
    (request-resource-hook

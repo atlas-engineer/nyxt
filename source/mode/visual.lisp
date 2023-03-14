@@ -23,16 +23,16 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
        "right" 'forward-char
        "backspace" 'backward-char
        "space" 'forward-char
-       "shift-left" 'backward-char-with-selection
-       "shift-right" 'forward-char-with-selection
-       "C-shift-left" 'backward-word-with-selection
-       "C-shift-right" 'forward-word-with-selection
+       "s-left" 'backward-char-with-selection
+       "s-right" 'forward-char-with-selection
+       "C-s-left" 'backward-word-with-selection
+       "C-s-right" 'forward-word-with-selection
        "keypadhome" 'beginning-line
        "keypadend" 'end-line
-       "shift-up" 'backward-line-with-selection
-       "shift-down" 'forward-line-with-selection
-       "C-shift-up" 'beginning-line-with-selection
-       "C-shift-down" 'end-line-with-selection
+       "s-up" 'backward-line-with-selection
+       "s-down" 'forward-line-with-selection
+       "C-s-up" 'beginning-line-with-selection
+       "C-s-down" 'end-line-with-selection
        "escape" 'visual-mode
        "delete" 'clear-selection
        "C-c" 'visual-mode)
@@ -54,7 +54,7 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
        "C-a" 'beginning-line
        "C-e" 'end-line
        "C-g" 'visual-mode
-       "shift-space" 'toggle-mark
+       "s-space" 'toggle-mark
        "C-space" 'toggle-mark)
       ;; vi keybindings only enable use of vim's plain "visual" mode for now
       keyscheme:vi-normal

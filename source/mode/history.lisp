@@ -49,12 +49,11 @@ Experimental, may not always produce intuitive enough history trees.")
        ;; this should be C-]
        "M-]" 'history-forwards
        "button9" 'history-forwards
-       "M-shift-left" 'history-backwards-query
-       "M-shift-right" 'history-forwards-query
+       "M-s-left" 'history-backwards-query
+       "M-s-right" 'history-forwards-query
        "C-M-right" 'history-forwards-all-query
        "C-M-left" 'history-all-query
-       "C-shift-h" 'history-all-query
-       "C-shift-H" 'history-all-query)
+       "C-H" 'phistory-all-query)
       keyscheme:emacs
       (list
        "C-b" 'history-backwards

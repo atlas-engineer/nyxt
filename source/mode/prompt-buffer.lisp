@@ -32,18 +32,18 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "pagehome" 'first-suggestion
        "end" 'last-suggestion
        "pageend" 'last-suggestion
-       "shift-up" 'previous-source
-       "shift-down" 'next-source
-       "shift-left" 'first-suggestion-within-source
-       "shift-right" 'last-suggestion-within-source
+       "s-up" 'previous-source
+       "s-down" 'next-source
+       "s-left" 'first-suggestion-within-source
+       "s-right" 'last-suggestion-within-source
        "M-o" 'toggle-prompt-buffer-focus
        "escape" 'quit-prompt-buffer
        "M-a" 'mark-all
        "M-u" 'unmark-all
        "C-space" 'toggle-mark-forwards
        "M-space" 'toggle-mark-forwards
-       "shift-space" 'toggle-mark-backwards
-       "M-shift-space" 'toggle-mark-backwards
+       "s-space" 'toggle-mark-backwards
+       "M-s-space" 'toggle-mark-backwards
        "M-m" 'toggle-mark-all
        "M-h" 'history
        "f1 b" 'run-prompt-buffer-command
@@ -63,9 +63,9 @@ listed and chosen from with the command `set-action-on-return' (bound to
       keyscheme:cua
       (list
        "C-up" 'first-suggestion
-       "C-shift-up" 'first-suggestion-within-source
+       "C-s-up" 'first-suggestion-within-source
        "C-down" 'last-suggestion
-       "C-shift-down" 'last-suggestion-within-source
+       "C-s-down" 'last-suggestion-within-source
        "C-v" 'paste
        "C-x" 'cut)
       keyscheme:emacs
@@ -86,7 +86,7 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "C-M-n" 'scroll-other-buffer-down
        "C-M-p" 'scroll-other-buffer-up
        "C-M-v" 'scroll-page-down-other-buffer
-       "shift-C-M-v" 'scroll-page-up-other-buffer
+       "s-C-M-v" 'scroll-page-up-other-buffer
        "C-g" 'quit-prompt-buffer
        "C-e" 'move-end-of-input
        "C-a" 'move-start-of-input
