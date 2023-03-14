@@ -636,15 +636,15 @@ Return nil when key must be discarded, e.g. for modifiers."
 
 (-> translate-modifiers (list &optional gdk:gdk-event) list)
 (defun translate-modifiers (modifier-state &optional event)
-  "Return list of modifiers fit for `keymaps:make-key'.
+  "Return list of modifiers fit for `nkeymaps:make-key'.
 See `gtk-browser's `modifier-translator' slot."
   (declare (ignore event))
-  (let ((plist '(:control-mask "control"
-                 :mod1-mask "meta"
+  (let ((plist '(:control-mask "C"
+                 :mod1-mask "M"
                  :mod5-mask nil
-                 :shift-mask "shift"
-                 :super-mask "super"
-                 :hyper-mask "hyper"
+                 :shift-mask "s"
+                 :super-mask "S"
+                 :hyper-mask "H"
                  :meta-mask nil
                  :lock-mask nil)))
     (delete nil (mapcar (lambda (mod) (getf plist mod)) modifier-state))))
