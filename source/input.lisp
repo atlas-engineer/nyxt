@@ -16,12 +16,22 @@
          (buffer (or (current-buffer)
                      (make-instance 'input-buffer)))
          (keymaps (cons (override-map buffer)
-                        (delete nil (mapcar #'keymap modes)))))
-    (unwind-protect
-         (or (first (keymaps:binding-keys fn keymaps))
-             "UNBOUND")
-      (unless current-buffer
-        (buffer-delete buffer)))))
+                        (delete nil (mapcar #'keymap modes))))
+         (nkeymaps:*print-shortcut* (not (equal keyscheme:cua (keyscheme buffer)))))
+    (flet ((maybe-cua-names (string)
+             (when string
+               (if (not (equal keyscheme:cua (keyscheme buffer)))
+                   string
+                   (str:replace-using '("control-" "Ctrl+"
+                                        "shift-" "Shift+"
+                                        "meta-" #+darwin "Option+" #-darwin "Alt+"
+                                        "super-" #+darwin "Command+" #-darwin "Win+")
+                                      string)))))
+      (unwind-protect
+           (or (maybe-cua-names (first (keymaps:binding-keys fn keymaps)))
+               "UNBOUND")
+        (unless current-buffer
+          (buffer-delete buffer))))))
 
 (-> make-keymap (string &rest keymaps:keymap) keymaps:keymap)
 (export-always 'make-keymap)
