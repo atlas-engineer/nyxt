@@ -140,7 +140,7 @@ the URL.)"
                       (url url)
                       (domain (quri:uri-domain url)))
                  (:span
-                  :class (if (equal (quri:uri-domain (url (current-buffer))) (quri:uri-domain url)) 
+                  :class (if (equal (quri:uri-domain (url (current-buffer (window status)))) (quri:uri-domain url))
                              "plain tab"
                              "tab")
                   :onclick (ps:ps
@@ -150,7 +150,7 @@ the URL.)"
                                   (:title "delete-tab-group"
                                    :buffer status)
                                   (if-confirm ((format nil "Delete all buffers with domain: ~a?" presentation))
-                                              (mapcar #'nyxt:buffer-delete
+                                              (mapcar #'nyxt::buffer-delete
                                                       (if (internal-url-p url)
                                                           internal-buffers
                                                           (sera:filter (match-domain domain) (buffer-list))))))
