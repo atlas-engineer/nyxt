@@ -32,8 +32,8 @@
   nx-tailor is a tailor for all-things Nyxt themes which helps you manage them,
   change them on-the-fly, and discover new ones in a unified interface.
 
-- [[https://github.com/rolling-robot/nyxt-zotero][nyxt-zotero]] ::
-  nyxt-zotero is a simple Zotero connector for Nyxt.
+- [[https://github.com/rolling-robot/nx-zotero][nx-zotero]] ::
+  nx-zotero is a simple Zotero connector for Nyxt.
 
 - [[https://github.com/aartaka/nx-dark-reader][nx-dark-reader]] ::
   nx-dark-reader is Nyxt (3.0+ only) integration with Dark Reader.
