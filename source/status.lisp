@@ -128,8 +128,11 @@ the URL.)"
 
 (export-always 'format-status-tabs)
 (defmethod format-status-tabs ((status status-buffer))
-  (let ((domain-deduplicated-urls (remove-duplicates
-                                   (mapcar #'url (buffer-list)) :test #'equal :key #'quri:uri-domain)))
+  (let* ((buffers (if (display-tabs-by-last-access-p status)
+                      (sort-by-time (buffer-list))
+                      (buffer-list)))
+         (domain-deduplicated-urls (remove-duplicates
+                                    (mapcar #'url buffers) :test #'equal :key #'quri:uri-domain)))
     (spinneret:with-html-string
       (loop for url in domain-deduplicated-urls
             collect

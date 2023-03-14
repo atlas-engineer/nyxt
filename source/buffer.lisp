@@ -733,6 +733,9 @@ store them somewhere and `ffi-buffer-delete' them once done."))
    (glyph-mode-presentation-p
     nil
     :documentation "Display the modes as a list of glyphs.")
+   (display-tabs-by-last-access-p
+    nil
+    :documentation "Show the tabs in a dynamic order by their last access time.")
    (style (theme:themed-css (theme *browser*)
             `(body
               :line-height "20px"
