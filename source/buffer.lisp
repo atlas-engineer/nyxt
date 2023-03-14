@@ -790,7 +790,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :flex-shrink "2"
               :flex-basis "144px")
             `("#tabs"
-              :line-height "24px"
+              :line-height "22px"
               :background-color ,theme:secondary
               :color ,theme:on-secondary
               :min-width "100px"
@@ -806,13 +806,13 @@ store them somewhere and `ffi-buffer-delete' them once done."))
             `("#tabs::-webkit-scrollbar"
               :display "none")
             `(".tab"
+              :margin-top "1px"
               :margin-right "8px"
               :background "transparent"
               :color "inherit"
               :text-decoration "transparent"
               :border "transparent"
-              :border-radius "0.2em"
-              :padding 0
+              :border-radius "1px"
               :font "inherit"
               :outline "inherit")
             `(".tab:hover"
@@ -844,9 +844,13 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :opacity 0.6)
             `((:and .button (:or :visited :active))
               :color ,theme:background)
-            `(.plain
-              :padding-left "6px"
-              :padding-right "6px"
+            `(.selected-tab
+              :display "inline-block"
+              :clip-path "polygon(20px 0%, 100% 0%, calc(100% - 20px) 100%, 0% 100%)"
+              :padding-left "18px"
+              :padding-right "18px"
+              :margin-right "0"
+              :margin-left "0"
               :color ,theme:on-background
               :background-color ,theme:background))))
   (:export-class-name-p t)

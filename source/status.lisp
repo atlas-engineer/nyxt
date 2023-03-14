@@ -144,7 +144,7 @@ the URL.)"
                       (domain (quri:uri-domain url)))
                  (:span
                   :class (if (equal (quri:uri-domain (url (current-buffer (window status)))) (quri:uri-domain url))
-                             "plain tab"
+                             "selected-tab tab"
                              "tab")
                   :onclick (ps:ps
                              (if (or (= (ps:chain window event which) 2)
