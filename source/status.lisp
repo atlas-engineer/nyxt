@@ -261,5 +261,4 @@ See also `define-setf-handler'."
   (define-setf-handler browser buffers status-buffer
     (lambda (browser)
       (declare (ignore browser))
-      (loop for window in (window-list)
-            do (print-status window)))))
+      (mapc #'print-status (window-list)))))
