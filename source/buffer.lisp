@@ -797,8 +797,8 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :white-space "nowrap"
               :overflow-x "scroll"
               :text-align "left"
-              :padding-left "15px"
-              :padding-right "10px"
+              :padding-left "20px"
+              :padding-right "20px"
               :z-index "1"
               :flex-grow "10"
               :flex-shrink "4"
@@ -806,15 +806,21 @@ store them somewhere and `ffi-buffer-delete' them once done."))
             `("#tabs::-webkit-scrollbar"
               :display "none")
             `(".tab"
-              :background "transparent"
-              :color "inherit"
+              :color ,theme:on-background
+              :background-color ,theme:background
+              :opacity "75%"
+              :display "inline-block"
               :margin-top "1px"
-              :margin-right "8px"
+              :padding-left "18px"
+              :padding-right "18px"
+              :margin-right "-9px"
+              :margin-left "-9px"
               :text-decoration "transparent"
               :border "transparent"
               :border-radius "1px"
               :font "inherit"
-              :outline "inherit")
+              :outline "inherit"
+              :clip-path "polygon(20px 0%, 100% 0%, calc(100% - 20px) 100%, 0% 100%)")
             `(".tab:hover"
               :cursor "pointer")
             `("#modes"
@@ -845,14 +851,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
             `((:and .button (:or :visited :active))
               :color ,theme:background)
             `(.selected-tab
-              :color ,theme:on-background
-              :background-color ,theme:background
-              :display "inline-block"
-              :padding-left "18px"
-              :padding-right "18px"
-              :margin-right "0"
-              :margin-left "0"
-              :clip-path "polygon(20px 0%, 100% 0%, calc(100% - 20px) 100%, 0% 100%)"))))
+              :opacity "100%"))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
