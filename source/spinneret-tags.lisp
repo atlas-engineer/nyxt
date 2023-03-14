@@ -484,9 +484,12 @@ by default."
           :id ,id-var
           (:details
            :open ,open-p
-           (:summary (:h* :style "display: inline"
-                       ,@attrs ,title
-                       " " (:a.link :href (uiop:strcat "#" ,id-var) "#")))
+           (:summary
+            (:header
+             :style "display: inline"
+             (:h* :style "display: inline"
+               ,@attrs ,title)
+             " " (:a.link :href (uiop:strcat "#" ,id-var) "#")))
            ,@body))))))
 
 (deftag :nbutton (body attrs &rest keys &key (text (alexandria:required-argument 'text)) title buffer &allow-other-keys)
