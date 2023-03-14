@@ -22,11 +22,18 @@
              (when string
                (if (not (equal keyscheme:cua (keyscheme buffer)))
                    string
-                   (str:replace-using '("control-" "Ctrl+"
-                                        "shift-" "Shift+"
-                                        "meta-" #+darwin "Option+" #-darwin "Alt+"
-                                        "super-" #+darwin "Command+" #-darwin "Win+")
-                                      string)))))
+                   (str:replace-using
+                    #+darwin
+                    '("control-" "Ctrl+"
+                      "shift-" "Shift+"
+                      "meta-" "Option+"
+                      "super-" "Command+")
+                    #-darwin
+                    '("control-" "Ctrl+"
+                      "shift-" "Shift+"
+                      "meta-" "Alt+"
+                      "super-" "Win+")
+                    string)))))
       (unwind-protect
            (or (maybe-cua-names (first (keymaps:binding-keys fn keymaps)))
                "UNBOUND")
