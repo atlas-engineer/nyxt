@@ -132,18 +132,21 @@ the URL.)"
                       (sort-by-time (buffer-list))
                       (buffer-list)))
          (domain-deduplicated-urls (remove-duplicates
-                                    (mapcar #'url buffers) :test #'equal :key #'quri:uri-domain)))
+                                    (mapcar #'url buffers)
+                                    :test #'string=
+                                    :key #'quri:uri-domain)))
     (spinneret:with-html-string
       (loop for url in domain-deduplicated-urls
             collect
                (let* ((internal-buffers (remove-if-not #'internal-url-p (buffer-list) :key #'url))
-                      (presentation (if (internal-url-p url)
-                                        "internal"
-                                        (quri:uri-domain url)))
-                      (url url)
-                      (domain (quri:uri-domain url)))
+                      (domain (quri:uri-domain url))
+                      (tab-display-text (if (internal-url-p url)
+                                            "internal"
+                                            domain))
+                      (url url))
                  (:span
-                  :class (if (equal (quri:uri-domain (url (current-buffer (window status)))) (quri:uri-domain url))
+                  :class (if (string= (quri:uri-domain (url (current-buffer (window status))))
+                                      (quri:uri-domain url))
                              "selected-tab tab"
                              "tab")
                   :onclick (ps:ps
@@ -152,7 +155,7 @@ the URL.)"
                                  (nyxt/ps:lisp-eval
                                   (:title "delete-tab-group"
                                    :buffer status)
-                                  (if-confirm ((format nil "Delete all buffers with domain: ~a?" presentation))
+                                  (if-confirm ((format nil "Delete all buffers with domain: ~a?" tab-display-text))
                                               (mapcar #'nyxt::buffer-delete
                                                       (if (internal-url-p url)
                                                           internal-buffers
@@ -166,7 +169,7 @@ the URL.)"
                                        :sources (make-instance 'buffer-source
                                                                :constructor internal-buffers))
                                       (nyxt::switch-buffer-or-query-domain domain)))))
-                  presentation))))))
+                  tab-display-text))))))
 
 (export-always 'format-status)
 (defmethod format-status ((status status-buffer))

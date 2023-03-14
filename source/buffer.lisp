@@ -735,7 +735,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
     :documentation "Display the modes as a list of glyphs.")
    (display-tabs-by-last-access-p
     nil
-    :documentation "Show the tabs in a dynamic order by their last access time.")
+    :documentation "Whether tabs are dynamically ordered by last access time.")
    (style (theme:themed-css (theme *browser*)
             `(body
               :line-height "20px"
@@ -790,9 +790,9 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :flex-shrink "2"
               :flex-basis "144px")
             `("#tabs"
-              :line-height "22px"
               :background-color ,theme:secondary
               :color ,theme:on-secondary
+              :line-height "22px"
               :min-width "100px"
               :white-space "nowrap"
               :overflow-x "scroll"
@@ -806,10 +806,10 @@ store them somewhere and `ffi-buffer-delete' them once done."))
             `("#tabs::-webkit-scrollbar"
               :display "none")
             `(".tab"
-              :margin-top "1px"
-              :margin-right "8px"
               :background "transparent"
               :color "inherit"
+              :margin-top "1px"
+              :margin-right "8px"
               :text-decoration "transparent"
               :border "transparent"
               :border-radius "1px"
@@ -845,14 +845,14 @@ store them somewhere and `ffi-buffer-delete' them once done."))
             `((:and .button (:or :visited :active))
               :color ,theme:background)
             `(.selected-tab
+              :color ,theme:on-background
+              :background-color ,theme:background
               :display "inline-block"
-              :clip-path "polygon(20px 0%, 100% 0%, calc(100% - 20px) 100%, 0% 100%)"
               :padding-left "18px"
               :padding-right "18px"
               :margin-right "0"
               :margin-left "0"
-              :color ,theme:on-background
-              :background-color ,theme:background))))
+              :clip-path "polygon(20px 0%, 100% 0%, calc(100% - 20px) 100%, 0% 100%)"))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
