@@ -1202,12 +1202,12 @@ This is a low-level function.  See `buffer-delete' for the high-level version."
   (when *browser*
     (setf (gethash id (slot-value *browser* 'buffers)) buffer)
     ;; Force setf call so that slot is seen as changed, e.g. by status buffer watcher.
-    (setf (slot-value *browser* 'buffers) (slot-value *browser* 'buffers))))
+    (setf (buffers *browser*) (buffers *browser*))))
 
 (defun buffers-delete (id)
   (remhash id (slot-value *browser* 'buffers))
   ;; Force setf call so that slot is seen as changed, e.g. by status buffer watcher.
-  (setf (slot-value *browser* 'buffers) (slot-value *browser* 'buffers)))
+  (setf (buffers *browser*) (buffers *browser*)))
 
 (export-always 'window-list)
 (defun window-list ()
