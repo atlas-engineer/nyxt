@@ -713,6 +713,8 @@ like buttons.")
 
 (define-version "3-pre-release-5"
   (:ul
+   (:li "When in CUA, bindings have a friendlier " (:code "Ctrl-Alt-Shift-x")
+        "display.")
    (:li "Code listings on manual and help system are more readable."))
 
   (:h3 "Programming interface")
