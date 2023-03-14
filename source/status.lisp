@@ -266,4 +266,8 @@ See also `define-setf-handler'."
     (lambda (buffer)
       (when (window status-buffer)
         (when (eq buffer (active-buffer (window status-buffer)))
-          (print-status (window status-buffer)))))))
+          (print-status (window status-buffer))))))
+  (define-setf-handler browser buffers status-buffer
+    (lambda (browser)
+      (declare (ignore browser))
+      (mapc #'print-status (window-list)))))
