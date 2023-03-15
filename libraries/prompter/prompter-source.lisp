@@ -670,7 +670,7 @@ If you are looking for a source that just returns its plain suggestions, use `so
      (attributes sugg)
      (default-object-attributes ""))))
 
-(defmethod active-attributes-keys ((source source) &key &allow-other-keys)
+(defmethod active-attributes-keys ((source source))
   "Return active attributes keys.
 If the `active-attributes' slot is NIL, return all attributes keys."
   (or (slot-value source 'active-attributes-keys)
