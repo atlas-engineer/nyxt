@@ -76,9 +76,8 @@ the generic functions on `status-buffer'.  Finally set the `window'
         :background-color ,theme:primary
         :color ,theme:on-primary)
       `(body
-        :background-color ,theme:background
-        :color ,theme:on-background
-        :opacity 0.9
+        :background-color ,theme:background-alternate
+        :color ,theme:on-background-alternate
         :font-size "12px"
         :padding 0
         :padding-left "4px"
