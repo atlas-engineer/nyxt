@@ -5,13 +5,13 @@
 
 (export-always 'manual-content)
 (defun manual-content ()
-  (str:concat
-   (spinneret:with-html-string
-     (:h1 "Nyxt manual")
-     (:p "This manual first includes the tutorial, then covers the configuration
-of Nyxt."))
-   (tutorial-content)
-   (manual-sections)))
+  (spinneret:with-html-string
+    (:h1 "Nyxt manual")
+    (:p "This manual first includes the tutorial, then covers the configuration
+of Nyxt.")
+    (:ntoc
+      (:raw (tutorial-content))
+      (:raw (manual-sections)))))
 
 (defun manual-sections ()
   (spinneret:with-html-string
@@ -251,8 +251,8 @@ the buffers. If you create a new buffer (via " (:nxref :command 'nyxt/hint-mode:
 from the branch of the previous buffer.")
         (:p "History can be navigated with the arrow keys in the status buffer, or with
 commands like " (:nxref :command 'nyxt/history-mode:history-backwards) " and "
-            (:nxref :command 'nyxt/history-mode:history-forwards)
-            " (which the arrows are bound to).")
+(:nxref :command 'nyxt/history-mode:history-forwards)
+" (which the arrows are bound to).")
         (:p "If the beyond-buffer-boundaries behavior sounds like too much to you, or you
 prefer the behavior of Nyxt 2, where the history was still a tree, but was not
 spilling across the buffers, then configure "

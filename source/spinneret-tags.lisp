@@ -534,3 +534,40 @@ Calls Lisp forms in ONFOCUS and ONCHANGE when one focuses and edits the input (r
                                  ,onchange))))
         ,@attrs
         (:raw (the string ,input-contents))))))
+
+(serapeum:-> %ntoc-create-toc ((integer 2 6) string) *)
+(defun %ntoc-create-toc (depth body)
+  "Generate the code for the table of contents based on string BODY."
+  (labels ((parent-section (elem)
+             (find-if #'nyxt/dom:section-element-p (nyxt/dom:parents elem)))
+           (format-section (heading level)
+             (with-html-string
+               (let ((parent-section (parent-section heading)))
+                 (:li (:a :href (format nil "#~a" (plump:attribute parent-section "id"))
+                          (plump:text heading)))
+                 (serapeum:and-let* ((_ (< level depth))
+                                     (inner-level (1+ level))
+                                     (inner-headers
+                                      (clss:ordered-select (format nil "h~a" inner-level) parent-section)))
+                   (:ul (loop for inner-header across inner-headers
+                              collect (:raw (format-section inner-header inner-level)))))))))
+    (let* ((dom (nyxt/dom:named-html-parse body))
+           (h2s (clss:ordered-select "h2" dom)))
+      (with-html-string
+        (loop for h2 across h2s
+              collect (:ul (:raw (format-section h2 2))))))))
+
+(deftag :ntoc (body attrs &rest keys &key (title "Table of contents") (depth 3) &allow-other-keys)
+  "Generate table of contents for BODY up to DEPTH.
+Looks for section tags with ID-s to link to.
+:nsection sections are perfectly suitable for that."
+  (let ((keys keys))
+    (declare (ignorable keys))
+    (with-gensyms (body-var)
+      `(let ((,body-var (with-html-string ,@body)))
+         (:nav#toc
+          ,@attrs
+          (:nsection
+            :title ,title
+            (:raw (%ntoc-create-toc ,depth ,body-var))))
+         (:raw ,body-var)))))
