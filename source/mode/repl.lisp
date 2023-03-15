@@ -73,7 +73,9 @@ To make custom cell type, subclass `cell' and specify a set of methods:
 - `evaluate',
 - `render-results',
 - `render-actons' (optional, defaults to drawing buttons),
-- `render-input' (optional, defaults to textarea).
+- `render-input' (optional, defaults to textarea),
+- or, in case of special need, `render-cell' to override all the default
+  rendering.
 
 With those in place, REPL should pick up on the new class and allows creating
 new cells via UI."))
@@ -95,6 +97,7 @@ new cells via UI."))
              (format stream "REPL method ~a not implemented for cell class ~a"
                      (unimplemented-method c) (sera:class-name-of (cell c)))))
   (:documentation "The condition that's thrown when the REPL mode method is not implemented."))
+
 (export-always 'evaluate)
 (defgeneric evaluate (cell)
   (:method ((cell cell))
@@ -138,6 +141,25 @@ The default method simply draws buttons."))
     (cerror "Ignore the unimplemented method"
             'method-unimplemented :method 'render-results :cell cell))
   (:documentation "Generate HTML for the `results' and `output' of the CELL.
+Generic function to specialize against new REPL cell types."))
+
+(export-always 'render-cell)
+(defgeneric render-cell (cell)
+  (:method ((cell cell))
+    (spinneret:with-html-string
+      (:div.cell
+       (:div
+        :class "input-area"
+        (:code (name cell))
+        (:br)
+        (:raw (render-input cell))
+        (:br)
+        (:raw (render-actions cell)))
+       (:div :class "evaluation-result"
+             (:raw (render-results cell))))))
+  (:documentation "Generate HTML for the CELL.
+Overrides all the methods defined for the CELL type.
+By default utilizes `render-input', `render-actions', and `render-results'.
 Generic function to specialize against new REPL cell types."))
 
 (export-always 'cancel-cell)
@@ -581,16 +603,7 @@ Follows what the compiler finds aesthetically pleasing."
         (:div :id "container"
               (:div :id "cells"
                     (dolist (cell (cells repl-mode))
-                      (:div.cell
-                       (:div
-                        :class "input-area"
-                        (:code (name cell))
-                        (:br)
-                        (:raw (render-input cell))
-                        (:br)
-                        (:raw (render-actions cell)))
-                       (:div :class "evaluation-result"
-                             (:raw (render-results cell)))))))
+                      (:raw (render-cell cell)))))
         (:div.controls
          (:nbutton
            :text "+ Add a cell"

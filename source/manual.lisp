@@ -957,7 +957,10 @@ other cells.")
                 (:nxref :function 'nyxt/repl-mode:evaluate "evaluation")
                 " returns) and output (the text printed out while "
                 (:nxref :function 'nyxt/repl-mode:evaluate "evaluating")
-                " the cell)."))
+                " the cell).")
+           (:li "And, in case none of those fits well, "
+                (:nxref :function 'nyxt/repl-mode:render-cell)
+                " to override all the rendering code."))
           (:p "The easiest thing is " (:nxref :function 'nyxt/repl-mode:render-input)
               ": it's already defined as an input field updating the cell "
               (:nxref :function 'nyxt/repl-mode:input)
