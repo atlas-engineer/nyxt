@@ -806,9 +806,8 @@ store them somewhere and `ffi-buffer-delete' them once done."))
             `("#tabs::-webkit-scrollbar"
               :display "none")
             `(".tab"
-              :color ,theme:on-background
-              :background-color ,theme:background
-              :opacity "75%"
+              :color ,theme:on-background-alternate
+              :background-color ,theme:background-alternate
               :display "inline-block"
               :margin-top "1px"
               :padding-left "18px"
@@ -851,7 +850,8 @@ store them somewhere and `ffi-buffer-delete' them once done."))
             `((:and .button (:or :visited :active))
               :color ,theme:background)
             `(.selected-tab
-              :opacity "100%"))))
+              :color ,theme:on-background
+              :background-color ,theme:background))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
