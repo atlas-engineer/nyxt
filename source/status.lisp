@@ -130,7 +130,7 @@ the URL.)"
 (defmethod format-status-tabs ((status status-buffer))
   (let* ((buffers (if (display-tabs-by-last-access-p status)
                       (sort-by-time (buffer-list))
-                      (buffer-list)))
+                      (reverse (buffer-list))))
          (domain-deduplicated-urls (remove-duplicates
                                     (mapcar #'url buffers)
                                     :test #'string=
