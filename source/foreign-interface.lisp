@@ -246,7 +246,7 @@ When done, call `call-next-method' to finalize the startup."))
   (:documentation "Show the renderer built-in inspector."))
 
 (define-ffi-generic ffi-print-status (window text)
-  (:documentation "Display TEST in the WINDOW status buffer."))
+  (:documentation "Display TEXT in the WINDOW status buffer."))
 
 (define-ffi-generic ffi-print-message (window message)
   (:documentation "Print MESSAGE (an HTML string) in the WINDOW message buffer."))
