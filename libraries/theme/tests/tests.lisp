@@ -82,21 +82,36 @@
                   (+ (relative-luminance hex2) 0.05))))
     (max ratio (/ ratio))))
 
-(defvar *minimum-contrast-ratio* 7.0
+(defun assert-contrast-ratio (hex contrast-threshold)
+  ;; To avoid handling the fact that colors may be set as color strings
+  ;; (i.e. "black" and "white")
+  (assert-true (or (> (contrast-ratio hex "ffffff") contrast-threshold)
+                   (> (contrast-ratio hex "000000") contrast-threshold))))
+
+(defvar *minimum-color-contrast-ratio* 7.0
   "The minimum contrast ratio required between color and on-color.")
 
+(defvar *minimum-color-alternate-contrast-ratio* 12.0
+  "The minimum contrast ratio required between color-alternate and on-color-alternate.")
+
 (define-test contrast-ratio-between-color-and-on-color ()
-  (flet ((assert-contrast-ratio (hex)
-           (assert-true
-            ;; This avoids handling the fact that on-colors are set as color
-            ;; strings (i.e. "black" and "white")
-            (or (> (contrast-ratio hex "ffffff") *minimum-contrast-ratio*)
-                (> (contrast-ratio hex "000000") *minimum-contrast-ratio*)))))
-    ;; No need to test the ratio between background and on-background since it's
-    ;; trivially close to the largest possible value of 21:1.
-    (assert-contrast-ratio (theme:primary-color theme:+light-theme+))
-    (assert-contrast-ratio (theme:secondary-color theme:+light-theme+))
-    (assert-contrast-ratio (theme:accent-color theme:+light-theme+))
-    (assert-contrast-ratio (theme:primary-color theme:+dark-theme+))
-    (assert-contrast-ratio (theme:secondary-color theme:+dark-theme+))
-    (assert-contrast-ratio (theme:accent-color theme:+dark-theme+))))
+  ;; No need to test the ratio between background and on-background since it's
+  ;; trivially close to the largest possible value of 21:1.
+  (assert-contrast-ratio (theme:primary-color theme:+light-theme+)
+                         *minimum-color-contrast-ratio*)
+  (assert-contrast-ratio (theme:secondary-color theme:+light-theme+)
+                         *minimum-color-contrast-ratio*)
+  (assert-contrast-ratio (theme:accent-color theme:+light-theme+)
+                         *minimum-color-contrast-ratio*)
+  (assert-contrast-ratio (theme:primary-color theme:+dark-theme+)
+                         *minimum-color-contrast-ratio*)
+  (assert-contrast-ratio (theme:secondary-color theme:+dark-theme+)
+                         *minimum-color-contrast-ratio*)
+  (assert-contrast-ratio (theme:accent-color theme:+dark-theme+)
+                         *minimum-color-contrast-ratio*))
+
+(define-test contrast-ratio-between-alternate-color-and-on-color ()
+  (assert-contrast-ratio (theme:background-color-alternate theme:+light-theme+)
+                         *minimum-color-alternate-contrast-ratio*)
+  (assert-contrast-ratio (theme:background-color-alternate theme:+dark-theme+)
+                         *minimum-color-alternate-contrast-ratio*))
