@@ -20,6 +20,17 @@
     :type string
     :documentation "The color applied to elements appearing in front of
 `background-color'.  Must strongly contrast with `background-color'.")
+   (background-color-alternate
+    "#eeeeee"
+    :type string
+    :documentation "The alternate background color of the theme.  Must
+strongly contrast with `on-background-color'.")
+   (on-background-color-alternate
+    "black"
+    :type string
+    :documentation "The color applied to elements appearing in front of
+`background-color-alternate'.  Must strongly contrast with
+`background-color-alternate'.")
    (primary-color
     "#555555"
     :type string
@@ -69,6 +80,8 @@ out from all of the other theme colors.")
                  :dark-p t
                  :background-color "black"
                  :on-background-color "white"
+                 :background-color-alternate "#333333"
+                 :on-background-color-alternate "white"
                  :primary-color "#D88A52"
                  :on-primary-color "black"
                  :secondary-color "#753C17"
@@ -79,6 +92,8 @@ out from all of the other theme colors.")
 (export-always '(theme
                  background
                  on-background
+                 background-alternate
+                 on-background-alternate
                  primary
                  on-primary
                  secondary
@@ -92,6 +107,10 @@ out from all of the other theme colors.")
   "Dynamic variable that binds `background-color' of `theme' in `themed-css'.")
 (defvar on-background nil
   "Dynamic variable that binds `on-background-color' of `theme' in `themed-css'.")
+(defvar background-alternate nil
+  "Dynamic variable that binds `background-color-alternate' of `theme' in `themed-css'.")
+(defvar on-background-alternate nil
+  "Dynamic variable that binds `on-background-color-alternate' of `theme' in `themed-css'.")
 (defvar primary nil
   "Dynamic variable that binds `primary-color' of `theme' in `themed-css'.")
 (defvar on-primary nil
@@ -113,6 +132,8 @@ out from all of the other theme colors.")
   `(let* ((theme:theme ,theme)
           (theme:background (background-color theme:theme))
           (theme:on-background (on-background-color theme:theme))
+          (theme:background-alternate (background-color-alternate theme:theme))
+          (theme:on-background-alternate (on-background-color-alternate theme:theme))
           (theme:primary (primary-color theme:theme))
           (theme:on-primary (on-primary-color theme:theme))
           (theme:secondary (secondary-color theme:theme))
