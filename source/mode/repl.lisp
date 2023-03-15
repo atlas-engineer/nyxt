@@ -457,7 +457,8 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
 
 (defmethod (setf cells) :after ((new-value null) (mode repl-mode))
   "A watcher to set `current-cell' to NIL when `cells' are empty."
-  (setf (current-cell mode) nil))
+  (setf (current-cell mode) nil)
+  (reload-buffer (buffer mode)))
 
 (defmethod focus-cell ((cell cell))
   (setf (current-cell (mode-instance cell)) cell))
