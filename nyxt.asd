@@ -353,7 +353,7 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                  ;; (:file "tests/offline/mode/repeat")
                  ;; TODO Fix repl-mode architecture.  Visit the file below for
                  ;; more information.
-                 ;; (:file "tests/offline/mode/repl")
+                 (:file "repl")
                  (:file "search-buffer")
                  (:file "small-web")
                  (:file "spell-check")

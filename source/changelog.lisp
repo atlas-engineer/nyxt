@@ -713,9 +713,13 @@ like buttons.")
 
 (define-version "3-pre-release-5"
   (:ul
-   (:li "Code listings on manual and help system are more readable."))
+   (:li "Code listings on manual and help system are more readable.")
+   (:li "The REPL features " (:nxref :class-name 'nyxt/repl-mode:shell-cell "shell cells")
+        ", which pass commands to the underlying system shell."))
 
   (:h3 "Programming interface")
   (:ul
    (:li "Spinneret tags like " (:code ":nxref") " and " (:code ":ncode")
-        " are refactored for debuggability and obviousness.")))
+        " are refactored for debuggability and obviousness.")
+   (:li "The REPL is extensible via " (:nxref :class-name 'nyxt/repl-mode:cell "cell class")
+        " and its methods.")))

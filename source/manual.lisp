@@ -925,7 +925,78 @@ input area containing familiar code, with some " (:code "v332 = \"Hello, Nyxt!\"
 " variable assignment, and with a verbatim text outputted by your code:")
         (:pre (:code "Hello, Nyxt!"))
         (:p "This cell-based code evaluation is the basis of the Nyxt REPL. For more features, see "
-            (:nxref :package :nyxt/repl-mode "REPL mode documentation") "."))
+            (:nxref :package :nyxt/repl-mode "REPL mode documentation") ".")
+        (:nsection :title "Extending the REPL"
+          (:p "Nyxt REPL is made to be extensible and allow to make custom cell types with
+their own display and functionality. The two cell types provided by default are:")
+          (:ul
+           (:li (:nxref :class-name 'nyxt/repl-mode:lisp-cell))
+           (:li "and " (:nxref :class-name 'nyxt/repl-mode:shell-cell)))
+          (:p "Both of these serve as examples of cell extension, but it may be more
+illuminating to create one of a different type from the default ones. A
+commentary cell, for example—the type of cell one can use as an annotation to
+other cells.")
+          (:p "First, define a new " (:nxref :class-name 'nyxt/repl-mode:cell) " type:")
+          (:ncode
+            '(define-class comment-cell (nyxt/repl-mode:cell)
+              ((name "Commentary"))
+              (:export-class-name-p t)
+              (:export-accessor-names-p t)
+              (:accessor-name-transformer (class*:make-name-transformer name))))
+          (:p "There are methods of " (:nxref :class-name 'nyxt/repl-mode:cell)
+              " that can be redefined for a better display:")
+          (:ul
+           (:li (:nxref :function 'nyxt/repl-mode:evaluate)
+                " as a function to get results from the cell.")
+           (:li (:nxref :function 'nyxt/repl-mode:render-input)
+                " as the one rendering the input area for the cell.")
+           (:li (:nxref :function 'nyxt/repl-mode:render-actions)
+                ", allowing to render a custom set of actions.")
+           (:li "And " (:nxref :function 'nyxt/repl-mode:render-results)
+                " to show cell results (the immediate values "
+                (:nxref :function 'nyxt/repl-mode:evaluate "evaluation")
+                " returns) and output (the text printed out while "
+                (:nxref :function 'nyxt/repl-mode:evaluate "evaluating")
+                " the cell)."))
+          (:p "The easiest thing is " (:nxref :function 'nyxt/repl-mode:render-input)
+              ": it's already defined as an input field updating the cell "
+              (:nxref :function 'nyxt/repl-mode:input)
+              " at every keypress. The only change to it that is needed for the commentary
+cell is to render as a <pre> tag when marked " (:nxref :function 'nyxt/repl-mode:ready-p) ":")
+          (:ncode
+            '(defmethod nyxt/repl-mode:render-input ((cell comment-cell))
+              "Render as a pre tag when ready, render as default input otherwise."
+              (if (nyxt/repl-mode:ready-p cell)
+                  (spinneret:with-html-string
+                    (:pre (input cell)))
+                  (call-next-method))))
+          (:p (:nxref :function 'nyxt/repl-mode:render-results)
+              " is another method useless for comment cell. It can safely return the empty
+string:")
+          (:ncode
+            '(defmethod nyxt/repl-mode:render-results ((cell comment-cell))
+              (declare (ignore cell))
+              ""))
+          (:p (:nxref :function 'nyxt/repl-mode:render-actions)
+              " should stay as it is, because it produces an aesthetic set of buttons near the
+input. No need to tweak it in this case.")
+          (:p "Last but not least, " (:nxref :function 'nyxt/repl-mode:evaluate)
+              ". This method should produce the " (:nxref :function 'nyxt/repl-mode:results)
+              " and " (:nxref :function 'nyxt/repl-mode:output)
+              " of the cell. The REPL infrastructure sets "
+              (:nxref :function 'nyxt/repl-mode:ready-p)
+              "to T when the evaluation ends, which enables the <pre> rendering. Given that
+comment cells produce no result "
+              (:nxref :function 'nyxt/repl-mode:evaluate) " can stay empty:")
+          (:ncode
+            '(defmethod nyxt/repl-mode:evaluate ((cell comment-cell))
+              (declare (ignore cell))))
+          (:p "After all of these methods are defined in the configuration file and Nyxt restarted,
+invoking "
+              (:nxref :command 'nyxt/repl-mode:repl) " and pressing the " (:code "Add a cell")
+              " button will allow to create a new comment cell.")
+          (:p "Note that the display of the comment cell is not exactly concise. But making it
+better is left as an exercise to the reader.")))
 
       (:nsection :title "Advanced configuration"
         (:p "While " (:nxref :macro 'define-configuration) " is convenient, it is mostly
