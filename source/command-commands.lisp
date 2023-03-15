@@ -7,7 +7,6 @@
   ((name ""
          :documentation "The hook name.")
    (value nil
-          :type t
           :documentation "The hook value.")))
 
 (defun command-attributes (command &optional (buffer (active-buffer (current-window :no-rescan))))
