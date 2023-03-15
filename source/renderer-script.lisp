@@ -312,8 +312,8 @@ not exist."
 (export-always 'define-internal-page)
 (defmacro define-internal-page (name (&rest form-args) (&rest initargs) &body body)
   "Define an `internal-page'.
-FORM-ARGS or the `internal-page' `form' keyword arguments.
-INITARGS are passed to the `internal-page' initialization arguments
+FORM-ARGS are the `internal-page' `form' keyword arguments.
+INITARGS are passed to the `internal-page' initialization arguments.
 
 Example:
 
