@@ -808,11 +808,12 @@ store them somewhere and `ffi-buffer-delete' them once done."))
             `(".tab"
               :color ,theme:on-background-alternate
               :background-color ,theme:background-alternate
+              :opacity 0.6
               :display "inline-block"
               :margin-top "1px"
               :padding-left "18px"
               :padding-right "18px"
-              :margin-right "-9px"
+              :margin-right "-8px"
               :margin-left "-9px"
               :text-decoration "transparent"
               :border "transparent"
@@ -821,6 +822,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :outline "inherit"
               :clip-path "polygon(20px 0%, 100% 0%, calc(100% - 20px) 100%, 0% 100%)")
             `(".tab:hover"
+              :opacity 0.8
               :cursor "pointer")
             `("#modes"
               :background-color ,theme:primary
@@ -851,6 +853,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :color ,theme:background)
             `(.selected-tab
               :color ,theme:on-background
+              :opacity "1.0 !important"
               :background-color ,theme:background))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
