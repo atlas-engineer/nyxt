@@ -350,9 +350,7 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                  (:file "remembrance")
                  ;; TODO Fix repeat-mode architecture.  Visit the file below for
                  ;; more information.
-                 ;; (:file "tests/offline/mode/repeat")
-                 ;; TODO Fix repl-mode architecture.  Visit the file below for
-                 ;; more information.
+                 ;; (:file "repeat")
                  (:file "repl")
                  (:file "search-buffer")
                  (:file "small-web")
