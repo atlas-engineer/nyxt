@@ -3,12 +3,17 @@
 
 (in-package :nyxt/tests)
 
-;; TODO repl-mode doesn't like the fact (mode-instance evaluation) returns NIL.
+(define-test toggle-repl-mode ()
+  (let ((buffer (make-instance 'modable-buffer)))
+    (with-current-buffer buffer
+      (assert-true (enable-modes* 'nyxt/repl-mode:repl-mode buffer))
+      (assert-true (disable-modes* 'nyxt/repl-mode:repl-mode buffer)))))
+
 (define-test evaluate-repl-mode ()
   ;; Needed because most REPL commands reload the buffer.
   (let ((buffer (make-instance 'web-buffer)))
     (with-current-buffer buffer
-      (assert-true (enable-modes* 'nyxt/repl-mode:repl-mode buffer))
+      (enable-modes* 'nyxt/repl-mode:repl-mode buffer)
       (let ((mode (nyxt:find-submode 'nyxt/repl-mode:repl-mode)))
         (flet ((add-and-eval-cell (cell-class input)
                  (nyxt/repl-mode:add-cell nil cell-class)
@@ -32,4 +37,4 @@
           ;; (add-and-eval-cell 'nyxt/repl-mode:shell-cell "exit 1")
           ;; (assert-equal 1 (first (nyxt/repl-mode:results (nyxt/repl-mode:current-cell mode))))
           ))
-      (assert-true (disable-modes* 'nyxt/repl-mode:repl-mode buffer)))))
+      (disable-modes* 'nyxt/repl-mode:repl-mode buffer))))
