@@ -433,6 +433,10 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
     :documentation "The `cell' that currently has the focus."))
   (:toggler-command-p nil))
 
+(defmethod (setf cells) :after ((new-value null) (mode repl-mode))
+  "A watcher to set `current-cell' to NIL when `cells' are empty."
+  (setf (current-cell mode) nil))
+
 (defmethod focus-cell ((cell cell))
   (setf (current-cell (mode-instance cell)) cell))
 
@@ -611,6 +615,5 @@ Follows what the compiler finds aesthetically pleasing."
          (:nbutton
            :text "✕ Delete all"
            :title "Delete all cells in the REPL buffer."
-           (setf (cells repl-mode) nil
-                 (current-cell repl-mode) nil)
+           (setf (cells repl-mode) nil)
            (reload-buffer (buffer repl-mode))))))))
