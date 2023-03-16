@@ -155,11 +155,16 @@ the URL.)"
                               (nyxt/ps:lisp-eval
                                (:title "delete-tab-group"
                                 :buffer status)
-                               (if-confirm ((format nil "Delete all buffers with domain: ~a?" tab-display-text))
-                                   (mapcar #'nyxt::buffer-delete
-                                           (if (internal-url-p url)
-                                               internal-buffers
-                                               (sera:filter (match-domain domain) (buffer-list))))))
+                               (let ((buffers-to-delete
+                                       (if (internal-url-p url)
+                                           internal-buffers
+                                           (sera:filter (match-domain domain) (buffer-list)))))
+                                 (prompt
+                                  :prompt "Delete buffer(s)"
+                                  :sources (make-instance 'buffer-source
+                                                          :constructor buffers-to-delete
+                                                          :marks buffers-to-delete
+                                                          :actions-on-return (list (lambda-mapped-command buffer-delete))))))
                               (nyxt/ps:lisp-eval
                                (:title "select-tab-group"
                                 :buffer status)
