@@ -507,15 +507,14 @@ obvious).
 
 Nyxt uses the following branches:
 
-- =master=  :: for development;
-- feature branches (named after the features they add) :: for most pull requests;
+- =master= for development;
+- =<feature-branches>= for very particular situations;
 - =<2,3,...>-series= to backport commits corresponding to specific major
   versions.
 
 It's recommended to branch off from the target branch and to rebase onto it
 right before merging.  This keeps the history as clear as possible and reduces
-the complexity of the diff.  Most feature branches should use =master= as the
-target branch to avoid branch dependence.
+the complexity of the diff.
 
 Unless the changes are trivial and each commit is atomic (that is, leaving Nyxt
 fully functional), they should be followed by a merge commit.  That is
@@ -526,8 +525,7 @@ The names of the branches really matter since the merge commit references them,
 so please take that into account!
 
 After the changed are merged, please do not forget to delete obsolete or
-dangling branches. If you merge the remote branch instead of the local one, then
-GitHub deletes the remote branch automatically.
+dangling branches.
 
 Note to core contributors: since you have commit access, you can push trivial
 changes directly to the target branch (skipping the review process).  The merge
@@ -562,9 +560,6 @@ We've also developed some of our own:
   systematic uses of Serapeum:
   - =sera:eval-always=;
   - =export-always=;
-  - =sera:and-let*=;
-  - =sera:lret=;
-  - =sera:single=
   - =->= (declaimed types).
 - Use =funcall*= to not error when function does not exist.
 - Prefer classes over structs.  Rationale:
@@ -605,25 +600,23 @@ When =slot-value= is the only parameter specified then:
   explicit call to =defgeneric=, not with just calls to =defmethod=.  This
   enables proper source location of the generic function (otherwise it cannot be
   found), plus it lets you write different documentation for the generic and the
-  specialized methods.
-- We use the =%foo%= naming convention for special local variables. But special
-  variables are rare and ideally they should be avoided.
+  the specialized methods.
+- We use the =%foo%= naming convention for special local variables, but this is
+  rare and ideally they should be avoided.
 - We suffix predicates with =-p=.  Unlike the usual convention, we always use a
-  hyphen even for single word predicates.
+  =-= even for single words.
 - Prefer the term =url= over =uri=.
-- URLs should be of type =quri:uri=.  If you need to manipulate a URL string, call
-  it =url-string=. In case the value contains a URL, but is not =quri:url=, use
-  =url-designator= and its =url= method to normalize into =quri:uri=.
+- URLs should be of type =quri:uri=.  If you need to manipulate a URL string,
+  call it =url-string=.
 - Paths should be of type =cl:pathname=.
   Use =uiop:native-namestring= to "send" to OS-facing functions,
   =uiop:ensure-pathname= to "receive" from OS-facing functions or to "trunamize".
 - Prefer =handler-bind= over =handler-case=: when running from the REPL, this
   triggers the debugger with a full stacktrace; when running the Nyxt binary,
   all conditions are caught anyway.
-- Do not handle the =T= condition, this may break everything.  Handle =error=,
-  =serious-condition=, or exceptionally =condition= (for instance if you do not
-  control the called code, and some libraries subclass =condition= instead of
-  =error=).
+- Do not handle the =T= condition, this may break everything.  Handle =error= or
+  exceptionally =condition= (for instance if you do not control the called code, and
+  some libraries subclass =condition= instead of =error=).
 - Dummy variables are called =_=.
 - Prefer American spelling.
 
