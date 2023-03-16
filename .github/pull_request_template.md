@@ -36,4 +36,4 @@ Everything in this checklist is required for each PR.  Please do not approve a P
 - [ ] Compilation and tests:
   - [ ] My changes generate no new warnings.
   - [ ] I have added tests that prove my fix is effective or that my feature works.  (If possible.)
-  - [ ] New and existing unit tests pass locally with my changes.
+  - [ ] I ran the tests locally (`(asdf:test-system :nyxt)` and `(asdf:test-system :nyxt/gi-gtk)`) and they pass.
