@@ -733,6 +733,9 @@ store them somewhere and `ffi-buffer-delete' them once done."))
    (glyph-mode-presentation-p
     nil
     :documentation "Display the modes as a list of glyphs.")
+   (display-tabs-by-last-access-p
+    nil
+    :documentation "Whether tabs are dynamically ordered by last access time.")
    (style (theme:themed-css (theme *browser*)
             `(body
               :line-height "20px"
@@ -789,26 +792,38 @@ store them somewhere and `ffi-buffer-delete' them once done."))
             `("#tabs"
               :background-color ,theme:secondary
               :color ,theme:on-secondary
+              :line-height "22px"
               :min-width "100px"
               :white-space "nowrap"
               :overflow-x "scroll"
               :text-align "left"
-              :padding-left "15px"
-              :padding-right "10px"
+              :padding-left "20px"
+              :padding-right "20px"
               :z-index "1"
               :flex-grow "10"
               :flex-shrink "4"
               :flex-basis "144px")
             `("#tabs::-webkit-scrollbar"
               :display "none")
-            `(.tab
-              :color ,theme:background
-              :white-space "nowrap"
-              :text-decoration "none"
-              :padding-left "8px"
-              :padding-right "8px")
+            `(".tab"
+              :background-color ,theme:background
+              :color ,theme:on-background
+              :opacity 0.6
+              :display "inline-block"
+              :margin-top "1px"
+              :padding-left "18px"
+              :padding-right "18px"
+              :margin-right "-8px"
+              :margin-left "-9px"
+              :text-decoration "transparent"
+              :border "transparent"
+              :border-radius "1px"
+              :font "inherit"
+              :outline "inherit"
+              :clip-path "polygon(20px 0%, 100% 0%, calc(100% - 20px) 100%, 0% 100%)")
             `(".tab:hover"
-              :opacity 0.6)
+              :opacity 0.8
+              :cursor "pointer")
             `("#modes"
               :background-color ,theme:primary
               :color ,theme:on-primary
@@ -836,10 +851,9 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :opacity 0.6)
             `((:and .button (:or :visited :active))
               :color ,theme:background)
-            `(.plain
-              :padding-left "6px"
-              :padding-right "6px"
+            `(.selected-tab
               :color ,theme:on-background
+              :opacity "1.0 !important"
               :background-color ,theme:background))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
@@ -1202,12 +1216,12 @@ This is a low-level function.  See `buffer-delete' for the high-level version."
   (when *browser*
     (setf (gethash id (slot-value *browser* 'buffers)) buffer)
     ;; Force setf call so that slot is seen as changed, e.g. by status buffer watcher.
-    (setf (slot-value *browser* 'buffers) (slot-value *browser* 'buffers))))
+    (setf (buffers *browser*) (buffers *browser*))))
 
 (defun buffers-delete (id)
   (remhash id (slot-value *browser* 'buffers))
   ;; Force setf call so that slot is seen as changed, e.g. by status buffer watcher.
-  (setf (slot-value *browser* 'buffers) (slot-value *browser* 'buffers)))
+  (setf (buffers *browser*) (buffers *browser*)))
 
 (export-always 'window-list)
 (defun window-list ()
