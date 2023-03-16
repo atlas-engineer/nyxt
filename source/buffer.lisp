@@ -806,8 +806,8 @@ store them somewhere and `ffi-buffer-delete' them once done."))
             `("#tabs::-webkit-scrollbar"
               :display "none")
             `(".tab"
-              :background-color ,theme:background-alternate
-              :color ,theme:on-background-alternate
+              :background-color ,theme:background
+              :color ,theme:on-background
               :opacity 0.6
               :display "inline-block"
               :margin-top "1px"
