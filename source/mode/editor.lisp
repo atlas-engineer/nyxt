@@ -80,7 +80,6 @@ See `describe-class editor-mode' for details."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class)
   (:documentation "Each editor buffer matches a file. Each editor buffer
 contains an `nyxt/editor-mode:editor-mode' instance (or a subclass thereof)."))

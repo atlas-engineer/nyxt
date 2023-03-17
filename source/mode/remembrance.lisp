@@ -22,8 +22,7 @@ The textual content can be searched and displayed."))
 (define-class cache-path (files:cache-file nyxt-file files:read-only-file)
   ((files:base-path #p"remembrance.cache")
    (files:name "remembrance"))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-class-name-p t))
 
 (defmethod deserialize :around ((profile nyxt-profile) (file cache-path) stream &key)
   ;; Must be an `:around' method to overrule other possible `:around' specialization.

@@ -157,7 +157,6 @@ The handlers take the buffer as argument."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class)
   (:documentation "A buffer is the fundamental unit of displayed content.
 Buffers result from the computations of a web renderer, which generates a visual
@@ -254,7 +253,6 @@ enabled before nyxt.atlas.engineer are restored.")
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class)
   (:documentation "A buffer whose behavior can be modified with `mode's."))
 
@@ -345,7 +343,6 @@ on may want to have dynamic interactions."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class)
   (:documentation "A buffer in which the user can input."))
 
@@ -409,7 +406,6 @@ down."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class)
   (:documentation "Buffers holding structured documents."))
 
@@ -497,7 +493,6 @@ which is not necessarily the same."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class)
   (:documentation "A buffer which focus sets the current context, that is, the
 buffer-specific values of various settings like the various file paths, prompt
@@ -632,7 +627,6 @@ Example:
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class)
   (:documentation "Buffers that must interact with resources over the network."))
 
@@ -648,7 +642,6 @@ Example:
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class)
   (:documentation "Buffer for browsing the web."))
 
@@ -657,7 +650,6 @@ Example:
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class)
   (:documentation "A non-user-facing buffer to run background processes in.
 Examples of the processes to run in background buffers are:
@@ -673,7 +665,6 @@ store them somewhere and `ffi-buffer-delete' them once done."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class)
   (:documentation "Like `web-buffer', but don't persist data to disk."))
 
@@ -718,7 +709,6 @@ store them somewhere and `ffi-buffer-delete' them once done."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class))
 
 (define-class status-buffer (input-buffer)
@@ -858,7 +848,6 @@ store them somewhere and `ffi-buffer-delete' them once done."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class))
 
 (defmethod customize-instance :after ((buffer buffer)
@@ -873,7 +862,7 @@ Return the created buffer."
                                                   'nyxt-file)))
                                     (mopu:slot-names 'buffer))))
     (dolist (file-slot-name file-slot-names)
-      (setf (files:profile (slot-value buffer file-slot-name))
+      (setf (slot-value (slot-value buffer file-slot-name) 'files:profile)
             (profile buffer))))
   (unless (or no-hook-p
               (not browser))
@@ -996,7 +985,6 @@ identifiers."
    (prompter:enable-marks-p t)
    (prompter:constructor (lambda (source)
                            (mapcar #'first (nyxt::keywords (buffer source))))))
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:export-class-name-p t))
 
 (-> proxy-url (buffer &key (:downloads-only boolean)) *)
@@ -1513,7 +1501,6 @@ URL-DESIGNATOR is then transformed by BUFFER's `buffer-load-hook'."
            :type (or null search-engine)))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Structure holding the new URL query generated from a user
  string input.
 If `engine' is set, `query' is passed to it.  See the `url' method.

@@ -31,8 +31,7 @@ The list should contain either
 
 Simple completion functions can be built via `make-search-completion-function'"))
   (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-accessor-names-p t))
 
 (defmethod fallback-url ((engine search-engine))
   (or (slot-value engine 'fallback-url)

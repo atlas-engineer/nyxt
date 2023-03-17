@@ -21,8 +21,7 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
 (define-class annotations-file (files:data-file nyxt-lisp-file)
   ((files:base-path #p"annotations")
    (files:name "annotations"))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-class-name-p t))
 
 (define-class annotation ()
   ((data
@@ -34,21 +33,18 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
     :type (list-of string))
    (date (time:now)))
   (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-accessor-names-p t))
 
 (define-class url-annotation (annotation)
   ((url nil)
    (page-title ""))
   (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-accessor-names-p t))
 
 (define-class snippet-annotation (url-annotation)
   ((snippet nil :documentation "The snippet of text being annotated."))
   (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-accessor-names-p t))
 
 ;; TODO: Wrap in <div>s with special CSS classes.
 (defmethod render ((annotation url-annotation))
@@ -170,8 +166,7 @@ make-instance."
       (sort (remove-duplicates
              (mappend #'tags annotations)
              :test #'string-equal)
-            #'string-lessp))))
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+            #'string-lessp)))))
 
 (define-internal-page-command-global show-annotation ()
     (buffer "*Annotations*")

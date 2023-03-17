@@ -33,8 +33,7 @@ passed to `spinneret' on render.
 This is useful to delay the evaluation of the tip until it's rendered."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:export-predicate-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-predicate-name-p t))
 
 (defmethod print-object ((object suggestion) stream)
   (print-unreadable-object (object stream :type t :identity t)

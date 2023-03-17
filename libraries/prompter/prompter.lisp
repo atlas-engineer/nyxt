@@ -19,7 +19,7 @@
     :type calispel:channel
     :export nil
     :documentation "This channel can be used to stop the queue listening."))
-  (:accessor-name-transformer (class*:make-name-transformer name))
+  (:predicate-name-transformer 'nclasses:always-dashed-predicate-name-transformer)
   (:documentation "This object is used to memorize which sources are ready for a
 given input.
 A new object is created on every new input."))
@@ -122,7 +122,7 @@ See also `result-channel'.")
       :documentation "Whether the prompter has been cancelled."))
     (:export-class-name-p t)
     (:export-accessor-names-p t)
-    (:accessor-name-transformer (class*:make-name-transformer name))
+    (:predicate-name-transformer 'nclasses:always-dashed-predicate-name-transformer)
     (:documentation "The prompter is an interface for user interactions.
 A prompter object holds multiple `source's which contain a list of
 `suggestion's.

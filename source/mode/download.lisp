@@ -101,7 +101,6 @@ within the button's URL when the destination path is set.")
    (progress (make-instance 'user-interface:progress-bar)
              :export nil))
   (:metaclass user-class)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:export-accessor-names-p t)
   (:export-class-name-p t)
   (:documentation "This class is used to represent a download within

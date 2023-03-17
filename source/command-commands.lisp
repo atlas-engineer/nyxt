@@ -7,9 +7,7 @@
   ((name ""
          :documentation "The hook name.")
    (value nil
-          :type t
-          :documentation "The hook value."))
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+          :documentation "The hook value.")))
 
 (defun command-attributes (command &optional (buffer (active-buffer (current-window :no-rescan))))
   (let* ((bindings (keymaps:binding-keys
@@ -39,7 +37,6 @@
    (prompter:active-attributes-keys '("Name" "Bindings" "Docstring")
                                     :accessor nil))
   (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Prompter source to execute commands.
 Global commands are listed if `global-p' is non-nil.
 Mode commands of enabled modes are also listed.
@@ -59,7 +56,6 @@ from a key binding.")
       (declare (ignore source))
       (list (predict-next-command *browser*)))))
   (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Prompter source to predict commands.")
   (:metaclass user-class))
 
@@ -105,7 +101,6 @@ from a key binding.")
    (buffer (current-buffer)
            :type buffer))
   (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Prompter source to execute commands with arguments.
 Includes all commands and modes, and adds arbitrary Lisp functions on top of that.")
   (:metaclass user-class))

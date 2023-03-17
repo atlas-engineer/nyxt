@@ -21,14 +21,12 @@ For now it is also partly based on `nyxt/renderer/gtk'."))
 (define-class gi-gtk-renderer (nyxt/renderer/gtk:gtk-renderer)
   ((name "GI-GTK"))
   (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-accessor-names-p t))
 
 (define-class gi-gtk-browser (nyxt/renderer/gtk:gtk-browser)
   ()
   (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-accessor-names-p t))
 
 (defvar renderer-thread-name "Nyxt renderer thread")
 

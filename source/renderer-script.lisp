@@ -177,7 +177,6 @@ is loaded.")
 invoked.
 The nyxt:// URL query arguments are passed to this function as keyword arguments."))
   (:metaclass closer-mop:funcallable-standard-class)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:documentation "Each instance is a unique internal page generator for the

@@ -98,6 +98,7 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                log4cl
                montezuma
                ndebug
+               nclasses
                nfiles
                njson/cl-json
                njson/aliases
@@ -131,7 +132,6 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                nyxt/analysis
                nyxt/download-manager
                nyxt/password-manager
-               nyxt/class-star
                nyxt/prompter
                nyxt/theme)
   :pathname #p"NYXT:source;"
@@ -276,7 +276,6 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                          ;; We test if manual dumping works, since it may catch
                          ;; some subtle mistakes:
                          (compile-op "nyxt/documentation")
-                         (test-op "nyxt/class-star/tests")
                          (test-op "nyxt/prompter/tests"))))
 
 (defsystem "nyxt/submodules"
@@ -595,7 +594,7 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
   :class :nasdf-system
   :depends-on (bordeaux-threads
                cl-ppcre
-               nyxt/class-star
+               nclasses
                serapeum
                str
                trivial-clipboard
@@ -608,26 +607,6 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                ;; Keep password-store last so that it has higher priority.
                (:file "password-pass")))
 
-(defsystem "nyxt/class-star"
-  :defsystem-depends-on ("nasdf")
-  :class :nasdf-system
-  :depends-on (alexandria
-               hu.dwim.defclass-star
-               moptilities)
-  :pathname #p"NYXT:libraries;class-star;"
-  :components ((:file "package")
-               (:file "patch")
-               (:file "class-star"))
-  :in-order-to ((test-op (test-op "nyxt/class-star/tests"))))
-
-(defsystem "nyxt/class-star/tests"
-  :defsystem-depends-on ("nasdf")
-  :class :nasdf-test-system
-  :depends-on (nyxt/class-star)
-  :targets (:package :class-star/tests)
-  :components ((:file "libraries/class-star/tests/tests")
-               (:file "libraries/class-star/tests/global-settings")))
-
 (defsystem "nyxt/prompter"
   :defsystem-depends-on ("nasdf")
   :class :nasdf-system
@@ -637,7 +616,7 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                closer-mop
                lparallel
                moptilities
-               nyxt/class-star
+               nclasses
                serapeum
                str
                trivial-package-local-nicknames)
@@ -665,7 +644,7 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
   :class :nasdf-system
   :depends-on (alexandria
                lass
-               nyxt/class-star
+               nclasses
                serapeum)
   :pathname #p"NYXT:libraries;theme;"
   :components ((:file "package")

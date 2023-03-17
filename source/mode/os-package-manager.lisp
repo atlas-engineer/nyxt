@@ -99,24 +99,21 @@
    (profile)
    (prompter:constructor
     (lambda (source)
-      (ospm:list-packages (profile source)))))
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+      (ospm:list-packages (profile source))))))
 
 (define-class os-profile-source (prompter:source)
   ((prompter:name "Profiles")
    (include-manager-p)
    (prompter:constructor
     (lambda (source) (ospm:list-profiles
-                      :include-manager-p (include-manager-p source)))))
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+                      :include-manager-p (include-manager-p source))))))
 
 (define-class os-generation-source (prompter:source)
   ((prompter:name "Packages")
    (profile (error "Profile required."))
    (prompter:constructor
     (lambda (source)
-      (ospm:list-generations (profile source)))))
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+      (ospm:list-generations (profile source))))))
 
 (defun ensure-os-package-buffer ()
   (or (find-buffer 'os-package-manager-mode)

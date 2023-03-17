@@ -28,7 +28,6 @@ modes, commands, etc."))
 (defvar *imports* '((:alexandria #:compose #:curry #:mappend #:rcurry)
                     (:trivia #:match #:multiple-value-match #:lambda-match #:guard)
                     (:nkeymaps #:define-key #:define-keyscheme-map)
-                    (:class-star #:define-class)
                     (:serapeum #:export-always #:->))
   "Default list of symbol imports used by `nyxt:define-package'.")
 
@@ -65,6 +64,16 @@ modes, commands, etc."))
      ,@body)
   #-sb-package-locks
   `(progn ,@body))
+
+(serapeum:export-always 'define-class :nyxt)
+(defmacro define-class (name supers slots &rest options)
+  "`nclasses:define-star' with automatic types and always-dashed predicates."
+  `(nclasses:define-class ,name ,supers ,slots
+     ,@(append
+        '((:automatic-types-p t)
+          (:accessor-name-package :slot-name)
+          (:predicate-name-transformer 'nclasses:always-dashed-predicate-name-transformer))
+       options)))
 
 (serapeum:export-always 'define-package :nyxt)
 (defmacro define-package (name &body options)
@@ -106,7 +115,6 @@ initforms may not be caught."
 (uiop:define-package :nyxt-user
   (:use :cl :nyxt :nyxt/utilities)
   (:import-from :nkeymaps #:define-key #:define-keyscheme-map)
-  (:import-from :class-star #:define-class)
   (:documentation "Package left for the user to fiddle with.  If the
 configuration file package is left unspecified, it defaults to this.  It's not
 recommended to use `nyxt' itself to avoid clobbering internal symbols.

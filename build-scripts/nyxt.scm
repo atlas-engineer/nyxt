@@ -163,6 +163,7 @@
           cl-montezuma
           cl-moptilities
           cl-named-readtables
+          cl-nclasses
           cl-ndebug
           cl-nfiles
           cl-njson

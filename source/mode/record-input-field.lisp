@@ -21,8 +21,7 @@ See `save-input-data' and `set-input-data-from-saved'."
 (define-class inputs-file (files:data-file nyxt-lisp-file)
   ((files:base-path #p"inputs")
    (files:name "inputs"))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-class-name-p t))
 
 (define-parenscript %get-input-data ()
   (let* ((inputs (ps:chain document (query-selector-all "input")))
@@ -58,8 +57,7 @@ See `save-input-data' and `set-input-data-from-saved'."
    (date (time:now))
    (input-data '()))
   (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-accessor-names-p t))
 
 (define-command save-input-data ()
   "Save HTML input data in a local file."

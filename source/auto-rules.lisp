@@ -6,8 +6,7 @@
 (define-class auto-rules-file (files:data-file nyxt-lisp-file)
   ((files:base-path #p"auto-rules")
    (files:name "auto-rules"))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-class-name-p t))
 
 (defmethod rememberable-p ((mode symbol))
   (check-type mode sym:mode-symbol)
@@ -73,8 +72,7 @@
     :type boolean
     :documentation "Whether to exclusively enable the `included' modes."))
   (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-accessor-names-p t))
 
 (defmethod print-object ((rule auto-rule) stream)
   (print-unreadable-object (rule stream :type t :identity t)

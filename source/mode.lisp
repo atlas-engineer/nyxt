@@ -74,7 +74,6 @@ The handlers take the mode as argument.")
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:toggler-command-p nil)
   (:metaclass mode-class))
 
@@ -193,7 +192,6 @@ The `mode' superclass is automatically added if not present."
                    `((:export-class-name-p t)
                      (:export-accessor-names-p t)
                      (:export-predicate-name-p t)
-                     (:accessor-name-transformer (class*:make-name-transformer name))
                      (:metaclass mode-class)))))))
 
 (hooks:define-hook-type mode (function (mode)))
@@ -355,7 +353,6 @@ For production code, see `find-submode' instead."
                               (uiop:ensure-list (buffers source))))))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class))
 
 (define-class inactive-mode-source (mode-source)
@@ -370,7 +367,6 @@ For production code, see `find-submode' instead."
                              (set-difference (all-mode-symbols) common-modes)))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class))
 
 (export-always 'enable-modes*)

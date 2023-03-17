@@ -6,8 +6,7 @@
 (define-class history-file (files:data-file nyxt-lisp-file)
   ((files:base-path #p"history/default")
    (files:name "history"))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-class-name-p t))
 
 (export-always 'buffer-history)
 (defun buffer-history (&optional (buffer (current-buffer)))
@@ -42,7 +41,6 @@ not include explicit visits.")
 It's a list of a form (Y &OPTIONAL X)."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "
 Entry for the global history.
 The total number of visit for a given URL is (+ explicit-visits implicit-visits)."))

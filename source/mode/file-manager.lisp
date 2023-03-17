@@ -101,7 +101,6 @@ When the user is unspecified, take the current one."
    (prompter:enable-marks-p t))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Prompt source for user-accessible programs.")
   (:metaclass user-class))
 
@@ -196,7 +195,6 @@ Takes the name of the file as the first argument and accepts two keyword argumen
 - :new-buffer-p as to whether the file should be opened in a new buffer."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Prompt source for file(s) on the disk.")
   (:metaclass user-class))
 

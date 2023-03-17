@@ -10,8 +10,7 @@
 (define-class gtk-renderer (renderer)
   ((name "GTK"))
   (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-accessor-names-p t))
 
 (define-class gtk-browser ()
   (#+darwin
@@ -52,7 +51,6 @@ See also the `ephemeral-web-contexts' slot.")
 See also the `web-contexts' slot."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class))
 
 (alex:define-constant +internal+ "internal" :test 'equal)
@@ -84,8 +82,8 @@ See also the `web-contexts' slot."))
    (message-view)
    (key-string-buffer))
   (:export-class-name-p t)
-  (:export-accessor-names-p t)          ; TODO: Unexport?
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  ;; TODO: Unexport?
+  (:export-accessor-names-p t))
 
 (define-class gtk-buffer ()
   ((gtk-object)
@@ -109,8 +107,7 @@ WebKitGTK may trigger 'load-failed' when loading a page from the WebKit-history
 cache.  Upstream bug?  We use this slot to know when to ignore these load
 failures."))
   (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-accessor-names-p t))
 
 (defmethod prompter:object-attributes :around ((buffer gtk-buffer) (source nyxt:buffer-source))
   (declare (ignore source))
@@ -285,8 +282,7 @@ the renderer thread, use `defmethod' instead."
 (define-class data-manager-file (nyxt-file)
   ((context-name (error "Context name required."))
    (files:name "web-context"))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-class-name-p t))
 
 (defmethod files:resolve :around ((profile nosave-profile) (file data-manager-file))
   "We shouldn't store any `data-manager' data for `nosave-profile'.
@@ -295,8 +291,7 @@ WebKit should be given a null value and not an empty string in this case."
 
 (define-class data-manager-data-directory (files:data-file data-manager-file)
   ()
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-class-name-p t))
 
 (defmethod files:resolve ((profile nyxt-profile) (file data-manager-data-directory))
   (sera:path-join
@@ -305,8 +300,7 @@ WebKit should be given a null value and not an empty string in this case."
 
 (define-class data-manager-cache-directory (files:cache-file data-manager-file)
   ()
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-class-name-p t))
 
 (defmethod files:resolve ((profile nyxt-profile) (file data-manager-cache-directory))
   (sera:path-join
@@ -317,7 +311,6 @@ WebKit should be given a null value and not an empty string in this case."
   ((files:name "gtk-extensions")
    (files:base-path nyxt-asdf:*nyxt-libdir*))
   (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Directory where to load the 'libnyxt' library.
 By default it is found in the source directory."))
 
@@ -329,8 +322,7 @@ By default it is found in the source directory."))
 
 (define-class cookies-file (files:data-file data-manager-file)
   ((files:name "cookies"))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-class-name-p t))
 
 (defmethod files:resolve ((profile nyxt-profile) (file cookies-file))
   (sera:path-join
@@ -340,8 +332,7 @@ By default it is found in the source directory."))
 (define-class gtk-download ()
   ((gtk-object)
    (handler-ids
-    :documentation "See `gtk-buffer' slot of the same name."))
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+    :documentation "See `gtk-buffer' slot of the same name.")))
 
 (defclass webkit-web-view-ephemeral (webkit:webkit-web-view) ()
   (:metaclass gobject:gobject-class))
@@ -391,7 +382,6 @@ By default it is found in the source directory."))
     :type (maybe webkit:webkit-web-resource)))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class))
 
 (defun make-decide-policy-handler (buffer)
@@ -817,8 +807,7 @@ See `gtk-browser's `modifier-translator' slot."
 (define-class gtk-scheme ()
   ()
   (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-accessor-names-p t))
 
 (defun make-context (name &key ephemeral-p)
   (let* ((context
@@ -1341,8 +1330,7 @@ the `active-buffer'."
       (ps-eval :buffer (current-prompt-buffer)
         (setf (ps:@ (nyxt/ps:qs document "#input") style background-color) (ps:lisp color)))
       (ps-eval :buffer (current-prompt-buffer)
-        (setf (ps:@ (nyxt/ps:qs document "#input") style color) (ps:lisp (contrasting-color color)))))))
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+               (setf (ps:@ (nyxt/ps:qs document "#input") style color) (ps:lisp (contrasting-color color))))))))
 
 (defmethod prompter:object-attributes ((color string) (source color-source))
   `(("Color"
@@ -1794,8 +1782,7 @@ local anyways, and it's better to refresh it if a load was queried."
 (define-class gtk-user-style ()
   ((gtk-object))
   (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-accessor-names-p t))
 
 (define-ffi-method ffi-buffer-add-user-style ((buffer gtk-buffer) (style gtk-user-style))
   (let* ((content-manager
@@ -1835,8 +1822,7 @@ local anyways, and it's better to refresh it if a load was queried."
 (define-class gtk-user-script ()
   ((gtk-object))
   (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-accessor-names-p t))
 
 
 

@@ -23,7 +23,6 @@ Example: \"http://192.168.1.254:8080\".")
     :documentation "Non-nil if downloads should also use the proxy."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Enable forwarding of all network requests to a specific host.
 This can apply to specific buffer."))
 
@@ -269,7 +268,6 @@ editing files.  You can specify the full command line arguments with a list of
 strings."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "The browser class defines the overall behavior of Nyxt, in
 the sense that it manages the display of buffers.  For instance, it abstracts
 the renderer, and lays the foundations to track and manipulate buffers and
@@ -514,8 +512,7 @@ view.")
     :type list
     :documentation "The key sequence that generated the request."))
   (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-accessor-names-p t))
 
 (export-always 'url-dispatching-handler)
 (-> url-dispatching-handler

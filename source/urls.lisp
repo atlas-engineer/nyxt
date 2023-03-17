@@ -138,7 +138,6 @@ Requires encryption or other means of security.")
     :documentation "Empty document schemes can be loaded synchronously by websites referring to them."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Representation of Nyxt-specific internal schemes.")
   (:metaclass user-class))
 

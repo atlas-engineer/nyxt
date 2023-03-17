@@ -3,7 +3,7 @@
 
 (uiop:define-package :prompter/tests
   (:use :cl :lisp-unit2)
-  (:import-from :class-star #:define-class)
+  (:import-from :nclasses #:define-class)
   (:import-from :prompter))
 
 (unless lparallel:*kernel* (setf lparallel:*kernel*

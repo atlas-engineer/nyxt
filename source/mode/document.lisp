@@ -383,7 +383,6 @@ ID is a buffer `id'."
    (buffer :documentation "The buffer to which this heading belongs.")
    (keywords :documentation "Keywords associated with this heading.")
    (scroll-position :documentation "The scroll position of the heading."))
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "A heading. The inner-text must not be modified, so that we
   can jump to the anchor of the same name."))
 
@@ -531,17 +530,14 @@ of buffers."
 ;; Frame selection engine:
 
 (define-class html-element ()
-  ((body ""))
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  ((body "")))
 
 (define-class link (html-element)
-  ((url ""))
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  ((url "")))
 
 (define-class image (html-element)
   ((alt "" :documentation "Alternative text for the image.")
-   (url ""))
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+   (url "")))
 
 (defun frame-element-select ()
   "Allow the user to draw a frame around elements to select them."

@@ -147,8 +147,7 @@
 (define-class search-match ()
   ((identifier)
    (body)
-   (buffer))
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+   (buffer)))
 
 (defmethod nyxt/hint-mode:identifier ((match search-match))
   (identifier match))
@@ -232,7 +231,6 @@
                           (nyxt/hint-mode:unhighlight-selected-hint))))
   (:export-accessor-names-p t)
   (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class))
 
 (defmethod initialize-instance :after ((source search-buffer-source) &key)

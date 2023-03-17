@@ -51,7 +51,6 @@ Possible values:
 - :document-idle (page and resources are loaded)."))
     (:export-class-name-p t)
     (:export-accessor-names-p t)
-    (:accessor-name-transformer (class*:make-name-transformer name))
     (:documentation "The Nyxt-internal representation of user scripts to bridge with the renderer.")
     (:metaclass user-class)))
 
@@ -203,7 +202,6 @@ If false, runs on the toplevel frame only.")
 :USER styles override everything else."))
     (:export-class-name-p t)
     (:export-accessor-names-p t)
-    (:accessor-name-transformer (class*:make-name-transformer name))
     (:documentation "The Nyxt-internal representation of user styles to bridge with the renderer.")
     (:metaclass user-class)))
 
