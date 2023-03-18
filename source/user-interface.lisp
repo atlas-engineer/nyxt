@@ -10,7 +10,7 @@
    (user-interface:buffer paragraph)
    (ps:ps
      (setf (ps:chain document
-                     (query-selector (ps:lisp (user-interface:id paragraph)))
+                     (get-element-by-id (ps:lisp (user-interface:id paragraph)))
                      text-content)
            (ps:lisp (user-interface:text paragraph))))))
 
@@ -19,7 +19,7 @@
    (user-interface:buffer progress-bar)
    (ps:ps
      (setf (ps:chain document
-                     (query-selector (ps:lisp (user-interface:id progress-bar)))
+                     (get-element-by-id (ps:lisp (user-interface:id progress-bar)))
                      style
                      width)
            (ps:lisp (format nil "~,1f%" (user-interface:percentage progress-bar)))))))
@@ -29,10 +29,10 @@
    (user-interface:buffer button)
    (ps:ps
      (setf (ps:chain document
-                     (query-selector (ps:lisp (user-interface:id button)))
+                     (get-element-by-id (ps:lisp (user-interface:id button)))
                      text-content)
            (ps:lisp (user-interface:text button)))
      (setf (ps:chain document
-                     (query-selector (ps:lisp (user-interface:id button)))
+                     (get-element-by-id (ps:lisp (user-interface:id button)))
                      onclick)
            (ps:lisp (user-interface:action button))))))
