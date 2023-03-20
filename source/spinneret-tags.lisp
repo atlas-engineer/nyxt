@@ -167,6 +167,10 @@ non-overridable."
                  (mode :mode)
                  (class-name :class))))
     (declare (ignorable keys))
+    (when (and (getf attrs :class)
+               (or (getf attrs :slot)
+                   (every #'null (list slot class-name mode function macro command variable package))))
+      (error ":class attribute used ambiguously in :nxref tag. Use :class-name instead."))
     `(:a.link
       :target "_blank"
       ,@attrs
@@ -176,11 +180,6 @@ non-overridable."
       :title (%nxref-doc ,type ,symbol
                          ,@(when (and slot class-name)
                              (list class-name)))
-      ,@(when (and (getf attrs :class)
-                   (or (getf attrs :slot)
-                       (every #'null (list slot class-name mode function macro command variable package))))
-          (error ":class attribute used ambiguously in :nxref tag. Use :class-name instead.")
-          nil)
       (:code
        (let ((*print-escape* nil))
          (nyxt:prini-to-string ,printable))
