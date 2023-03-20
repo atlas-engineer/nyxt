@@ -721,8 +721,8 @@ not shuffle around. It is now possible to middle click to delete tabs."))
 
   (:h3 "Programming interface")
   (:ul
-   (:li "Spinneret tags like " (:code ":nxref") " and " (:code ":ncode")
-        " are refactored for debuggability and obviousness.")
+   (:li "Spinneret tags like " (:code ":nxref") ", " (:code ":ncode") ", and "
+        (:code ":nbutton") " are refactored for debuggability and obviousness.")
    (:li "New " (:code "ntoc") " tag for Table of Contents generation.")
    (:li "The REPL is extensible via " (:nxref :class-name 'nyxt/repl-mode:cell "cell class")
         " and its methods.")))

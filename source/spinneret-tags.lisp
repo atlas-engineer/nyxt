@@ -25,72 +25,84 @@
     (declare (ignorable keys))
     `(:script ,@attrs (:raw ,@body))))
 
-(serapeum:eval-always
-  (defun remove-smart-quoting (form)
-    "If the form is quoted or quasi-quoted, return the unquoted/evaluated variant.
-Otherwise, return the form as is."
-    (cond
-      ((and (listp form)
-            (eq 'quote (first form)))
-       (second form))
-      #+(or sbcl ecl)
-      ((and (listp form)
-            (eq #+sbcl 'sb-int:quasiquote
-                #+ecl 'si:quasiquote
-                ;; FIXME: CCL expands quasiquote to
-                ;; `list*' call.
-                ;; TODO: Other implementations?
-                (first form)))
-       (eval form))
-      (t form))))
+(serapeum:-> %nselect-onchange (string (nyxt:maybe nyxt:buffer) (nyxt:list-of list)) t)
+(defun %nselect-onchange (id buffer clauses)
+  "Compiles the CLAUSES body into Parenscript code.
+Parenscript fetches values from <select> with ID and evaluates the respective
+forms in BUFFER."
+  (let ((buffer (or buffer (nyxt:current-buffer))))
+    (ps:ps*
+     (with-ps-gensyms (var inner-var)
+       `(nyxt/ps:lisp-eval
+         (:title ,(format nil "nselect ~a choice" id)
+                 ,@(when buffer
+                     `(:buffer ,buffer)))
+         (let ((,var (alexandria:ensure-list
+                      (nyxt:ps-eval
+                        (ps:chain *Array (from (ps:chain (nyxt/ps:qs document (+ "#" (ps:lisp ,id)))
+                                                         selected-options))
+                                  (map (lambda (e) (ps:@ e value))))))))
+           (dolist (,inner-var ,var)
+             (str:string-case ,inner-var
+               ,@(loop for (clause . forms) in clauses
+                       for value = (first (uiop:ensure-list clause))
+                       collect (cons (nyxt:prini-to-string value)
+                                     forms))))))))))
 
-(deftag :nselect (body attrs &rest keys &key (id (alexandria:required-argument 'id)) &allow-other-keys)
+(serapeum:-> %nselect-options ((nyxt:list-of list)) t)
+(defun %nselect-options (clauses)
+  "Produces a set of options for :nselect based on CLAUSES list."
+  (spinneret:with-html-string
+    (loop for (value display title) in (mapcar (alexandria:compose #'uiop:ensure-list #'first) clauses)
+          collect (:option
+                   :value (nyxt:prini-to-string value)
+                   (when title
+                     (list :title title))
+                   (string-capitalize (or display (nyxt:prini-to-string value)))))))
+
+(deftag :nselect (body attrs &rest keys &key default (id (alexandria:required-argument 'id)) buffer &allow-other-keys)
   "Generate <select> tag from the BODY resembling cond clauses.
 
-BODY forms can be of two kinds:
+BODY can be:
+- Multiple forms, each following/producing one of the formats:
+  - (VALUE . FORMS) -- creates <option value=\"value\">value</option> and runs
+    FORMS when it's selected.
+  - ((VALUE DISPLAY TITLE) . FORMS) -- creates an <option value=\"value\"
+    title=\"title\">display</option> and runs FORMS when it's selected. DISPLAY
+    and TITLE are optional literal strings.
+- A single form, expected to produce a list of forms like above.
 
-- (VALUE . FORMS) -- creates <option value=\"value\">value</option> and runs
-  FORMS when it's selected.
-
-- ((VALUE DISPLAY TITLE) . FORMS) -- creates an
-  <option value=\"value\" title=\"title\">display</option>
-  and runs FORMS when it's selected. DISPLAY and TITLE are optional literal
-  strings.
-
-In both cases, VALUE should be a literal (and printable) atom. For instance,
+In both cases, VALUEs should be literal (and printable) atoms. For instance,
 symbol, number, string, or keyword.
+
+BUFFER is a buffer to bind the actions of this tag to.
+
+DEFAULT is a string or a string-producing form that is used as the default
+option.
+
+In case some variable from the outer scope should be captured, injecting a
+closure into the clause would work best.
 
 Example:
 \(:nselect :id \"number-guessing\"
-  (1 (nyxt:echo \"Too low!\"))
-  (2 (nyxt:echo \"Correct!\"))
-  (3 (nyxt:echo \"Too high!\")))"
-  (with-gensyms (var)
-    (once-only (id)
+  :default \"Guess the number\"
+  '(1 (nyxt:echo \"Too low!\"))
+  (list 2 (nyxt:echo \"Correct!\"))
+  `(3 (funcall ,#'(lambda () (nyxt:echo \"Too high!\")))))"
+  (once-only (id)
+    (with-gensyms (body-var)
       (let ((keys keys))
         (declare (ignorable keys))
-        `(:select.button
-          ,@attrs
-          :id ,id
-          :onchange
-          (when (nyxt:current-buffer)
-            (ps:ps (nyxt/ps:lisp-eval
-                    (:title "nselect-choice")
-                    (let ((,var (nyxt:ps-eval (ps:chain (nyxt/ps:qs document (+ "#" (ps:lisp ,id))) value))))
-                      (str:string-case ,var
-                                       ,@(loop for (clause . forms) in (mapcar #'remove-smart-quoting body)
-                                               for value = (first (uiop:ensure-list clause))
-                                               collect (cons (nyxt:prini-to-string value)
-                                                             forms)))))))
-          ,@(loop for (clause) in (mapcar #'remove-smart-quoting body)
-                  for value = (first (uiop:ensure-list clause))
-                  for display = (second (uiop:ensure-list clause))
-                  for title = (third (uiop:ensure-list clause))
-                  collect `(:option
-                            :value ,(nyxt:prini-to-string value)
-                            ,@(when title
-                                (list :title title))
-                            ,(string-capitalize (or display (nyxt:prini-to-string value))))))))))
+        `(let ((,body-var ,(if (serapeum:single body)
+                               (first body)
+                               `(list ,@body))))
+           (:select.button
+            ,@attrs
+            :id ,id
+            :onchange (%nselect-onchange ,id ,buffer ,body-var)
+            ,@(when default
+                `((:option :selected t :disabled t ,default)))
+            (:raw (%nselect-options ,body-var))))))))
 
 (defun %nxref-doc (type symbol &optional (class-name (when (eq type :slot)
                                                        (alexandria:required-argument 'class-name))))
@@ -372,50 +384,47 @@ Most *-P arguments mandate whether to add the buttons for:
       (let* ((keys keys)
              (*print-escape* nil)
              (id (nyxt:prini-to-string (gensym)))
-             (select-options
-               (append
-                (when copy-p
-                  `(((copy "Copy" "Copy the code to clipboard.")
-                     (funcall (read-from-string "nyxt:ffi-buffer-copy")
-                              (nyxt:current-buffer) ,plaintext))))
-                (when config-p
-                  `(((config
-                      "Add to auto-config"
-                      (format nil "Append this code to the auto-configuration file (~a)."
-                              (nfiles:expand nyxt::*auto-config-file*)))
-                     (alexandria:write-string-into-file
-                      ,plaintext (nfiles:expand nyxt::*auto-config-file*)
-                      :if-exists :append
-                      :if-does-not-exist :create))))
-                (when repl-p
-                  `(((repl
-                      "Try in REPL"
-                      "Open this code in Nyxt REPL to experiment with it.")
-                     (nyxt:buffer-load-internal-page-focus
-                      (read-from-string "nyxt/repl-mode:repl")
-                      :form ,plaintext))))
-                (when (and file editor-p)
-                  `(((editor
-                      "Open in built-in editor"
-                      "Open the file this code comes from in Nyxt built-in editor-mode.")
-                     (funcall (read-from-string "nyxt/editor-mode:edit-file")
-                              ,file-var))))
-                (when (and file external-editor-p)
-                  `(((external-editor
-                      "Open in external editor"
-                      "Open the file this code comes from in external editor.")
-                     (uiop:launch-program
-                      (append (funcall (read-from-string "nyxt:external-editor-program")
-                                       (symbol-value (read-from-string "nyxt:*browser*")))
-                              (list (uiop:native-namestring ,file-var)))))))))
              (select-code
                `(:nselect
                   :id ,id
+                  :default "Act on code"
                   :style (unless ,inline-var
                            "position: absolute; top: 0; right: 0; margin: 0; padding: 2PX")
-                  ,@select-options)))
+                  ,@(when copy-p
+                      `(`((copy "Copy" "Copy the code to clipboard.")
+                          (funcall (read-from-string "nyxt:ffi-buffer-copy")
+                                   (nyxt:current-buffer) ,,plaintext))))
+                  ,@(when config-p
+                      `(`((config
+                           "Add to auto-config"
+                           (format nil "Append this code to the auto-configuration file (~a)."
+                                   (nfiles:expand nyxt::*auto-config-file*)))
+                          (alexandria:write-string-into-file
+                           ,,plaintext (nfiles:expand nyxt::*auto-config-file*)
+                           :if-exists :append
+                           :if-does-not-exist :create))))
+                  ,@(when repl-p
+                      `(`((repl
+                           "Try in REPL"
+                           "Open this code in Nyxt REPL to experiment with it.")
+                          (nyxt:buffer-load-internal-page-focus
+                           (read-from-string "nyxt/repl-mode:repl")
+                           :form ,,plaintext))))
+                  ,@(when (and file editor-p)
+                      `(`((editor
+                           "Open in built-in editor"
+                           "Open the file this code comes from in Nyxt built-in editor-mode.")
+                          (funcall (read-from-string "nyxt/editor-mode:edit-file")
+                                   ,,file-var))))
+                  ,@(when (and file external-editor-p)
+                      `(`((external-editor
+                           "Open in external editor"
+                           "Open the file this code comes from in external editor.")
+                          (uiop:launch-program
+                           (append (funcall (read-from-string "nyxt:external-editor-program")
+                                            (symbol-value (read-from-string "nyxt:*browser*")))
+                                   (list (uiop:native-namestring ,,file-var))))))))))
         (declare (ignorable keys))
-
         `(let* ((,body-var (list ,@body))
                 (,first (first ,body-var))
                 (,inline-var ,(if inline-provided-p
@@ -492,48 +501,89 @@ by default."
              " " (:a.link :href (uiop:strcat "#" ,id-var) "#")))
            ,@body))))))
 
-(deftag :nbutton (body attrs &rest keys &key (text (alexandria:required-argument 'text)) title buffer &allow-other-keys)
+(serapeum:-> %nbutton-onclick (string (nyxt:maybe nyxt:buffer) (nyxt:list-of list)) t)
+(defun %nbutton-onclick (title buffer clauses)
+  "Produce Parenscript to run Lisp CLAUSES in BUFFER.
+TITLE is the debuggable name for the callback."
+  (ps:ps*
+   `(nyxt/ps:lisp-eval
+     (:title ,(format nil "nbutton ~a" title)
+             ,@(when buffer
+                 (list :buffer buffer)))
+     ,@clauses)))
+
+(deftag :nbutton (body attrs &rest keys
+                       &key (text (alexandria:required-argument 'text)) title buffer
+                       &allow-other-keys)
   "A Lisp-invoking button with TEXT text and BODY action.
 Evaluates (via `nyxt/ps:lisp-eval') the BODY in BUFFER when clicked.
-Forms in BODY can be unquoted, benefiting from the editor formatting."
+
+BODY can consist of quoted lists or forms producing those. These will be
+compiled, so, if you want to close over some value, inject a closure right
+inside the forms.
+
+Example:
+\(:nbutton
+  :buffer buffer
+  :text \"Do something\"
+  '(nyxt:echo \"Hello!\")
+  (list 'foo)
+  `(funcall ,#'(lambda () (do-something-with closed-over-value))))"
   (let ((keys keys))
     (declare (ignorable keys))
     `(:button.button
-      :onclick (ps:ps
-                 (nyxt/ps:lisp-eval
-                  (:title ,(or title text)
-                          ,@(when buffer
-                              (list :buffer buffer)))
-                  ,@(mapcar #'remove-smart-quoting body)))
+      :onclick (%nbutton-onclick ,(or title text) ,buffer (list ,@body))
       ,@(when title
           (list :title title))
       ,@attrs
       ,text)))
 
+(serapeum:-> %ninput-onfocus (list (nyxt:maybe nyxt:buffer)) t)
+(defun %ninput-onfocus (onfocus buffer)
+  "Produce Parenscript to run ONFOCUS expression in BUFFER when :ninput is focused."
+  (ps:ps*
+   `(nyxt/ps:lisp-eval
+     (:title "ninput onfocus"
+             ,@(when buffer
+                 (list :buffer buffer)))
+     ,onfocus)))
+
+(serapeum:-> %ninput-onchange (list (nyxt:maybe nyxt:buffer)) t)
+(defun %ninput-onchange (onchange buffer)
+  "Produce Parenscript to run ONCHANGE expression in BUFFER when :ninput is modified."
+  (ps:ps*
+   `(nyxt/ps:lisp-eval
+     (:title "ninput onchange"
+             ,@(when buffer
+                 (list :buffer buffer)))
+     ,onchange)))
+
 (deftag :ninput (body attrs &rest keys &key rows cols onfocus onchange buffer &allow-other-keys)
   "Nicely styled <textarea> with a reasonable number of ROWS/COLS to accommodate the BODY.
-Calls Lisp forms in ONFOCUS and ONCHANGE when one focuses and edits the input (respectively)."
+Calls Lisp forms in ONFOCUS and ONCHANGE when one focuses and edits the input (respectively).
+
+BODY should be a string or an implicit progn producing a string.
+
+ONFOCUS, and ONCHANGE can consist of quoted lists or forms producing
+those. These lists will be compiled, so, if you want to close over some value,
+inject a closure right inside the forms."
   (let ((keys keys))
     (declare (ignorable keys))
-    (once-only ((input-contents `(or (progn ,@(mapcar #'remove-smart-quoting body)) "")))
-      `(:textarea.input
-        :rows (or ,rows (1+ (count #\Newline ,input-contents)) 1)
-        :cols (or ,cols (ignore-errors (apply #'max (mapcar #'length (str:lines ,input-contents)))) 80)
-        ,@(when onfocus
-            `(:onfocus (ps:ps (nyxt/ps:lisp-eval
-                               (:title "ninput onfocus"
-                                       ,@(when buffer
-                                           (list :buffer buffer)))
-                               ,onfocus))))
-        ,@(when onchange
-            ;; More events here.
-            `(:onkeydown (ps:ps (nyxt/ps:lisp-eval
-                                 (:title "ninput onchange/onkeydown"
-                                         ,@(when buffer
-                                             (list :buffer buffer)))
-                                 ,onchange))))
-        ,@attrs
-        (:raw (the string ,input-contents))))))
+    (once-only (buffer)
+      (with-gensyms (input)
+        ;; NOTE: It's unlikely that BODY will have multiple forms, but better
+        ;; prepare for it, just in case someone goes stateful.
+        `(let ((,input (progn ,@body)))
+           (:textarea.input
+            :rows (or ,rows (1+ (count #\Newline ,input)) 1)
+            :cols (or ,cols (ignore-errors (reduce #'max (mapcar #'length (str:lines ,input)))) 80)
+            ,@(when onfocus
+                `(:onfocus (%ninput-onfocus ,onfocus ,buffer)))
+            ,@(when onchange
+                ;; More events here.
+                `(:onkeydown (%ninput-onchange ,onchange ,buffer)))
+            ,@attrs
+            (:raw (the string ,input))))))))
 
 (serapeum:-> %ntoc-create-toc ((integer 2 6) string) *)
 (defun %ntoc-create-toc (depth body)

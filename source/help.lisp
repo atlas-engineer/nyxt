@@ -204,12 +204,12 @@ useful actions there, including the familiar " (:code "set-url") ", " (:code "hi
 ", and " (:code "history-forwards") ".")
     (:div (:nbutton :text "I want to know more, show me the manual!"
             :buffer panel
-            (manual))
+            '(manual))
           (:nbutton
             :buffer panel
             :class "accent"
             :text "Got it, close this panel"
-            (delete-panel-buffer :panels panel)))))
+            `(delete-panel-buffer :panels ,panel)))))
 
 (define-internal-page-command-global new ()
     (buffer "*New buffer*")
@@ -289,9 +289,9 @@ useful actions there, including the familiar " (:code "set-url") ", " (:code "hi
       (:h1 :class "accent" "Nyxt")
       (:i "The Internet on your terms.")
       (:div (:nbutton :text "Start searching!"
-              (set-url :prefill-current-url-p nil)))
+              '(set-url :prefill-current-url-p nil)))
       (:div (:nbutton :text "How do I..."
-              (intro))))
+              '(intro))))
      (:p :class "copyright"
          (format nil "Nyxt/~a ~a" (name *renderer*) +version+)
          (:br)
@@ -368,11 +368,11 @@ System information is also saved to clipboard."
          (:h1 :id "title" "Nyxt " (:span :id "subtitle" "browser ☺"))
          (:h3 (time:format-timestring nil (time:now) :format time:+rfc-1123-format+))
          (:nbutton :text "🗁 Restore Session"
-           (nyxt::restore-history-by-name))
+           '(nyxt::restore-history-by-name))
          (:a :class "button" :href (nyxt-url 'manual) "🕮 Manual")
          (:nbutton
            :text "≡ Execute Command"
-           (nyxt::execute-command))
+           '(nyxt::execute-command))
          (:a :class "button" :href "https://nyxt.atlas.engineer/download" "⇡ Update"))
         (:h3 (:b "Recent URLs"))
         (:ul (:raw (history-html-list :limit 50)))

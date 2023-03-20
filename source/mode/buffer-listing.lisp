@@ -42,12 +42,12 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                  (:p (:nbutton
                        :text "✕"
                        :title "Delete buffer"
-                       (nyxt::delete-buffer :buffers buffer)
-                       (reload-buffer listing-buffer))
+                       `(nyxt::delete-buffer :buffers ,buffer)
+                       `(reload-buffer ,listing-buffer))
                      (:nbutton
                        :text "→"
                        :title "Switch to buffer"
-                       (nyxt::switch-buffer :buffer buffer) )
+                       `(nyxt::switch-buffer :buffer ,buffer))
                      (:a :href (render-url (url buffer))
                          (if (uiop:emptyp (title buffer))
                              (render-url (url buffer))
@@ -69,10 +69,10 @@ With LINEAR-VIEW-P, list buffers linearly instead."
       (:h1 "Buffers")
       (:nbutton
         :text "Tree display"
-        (nyxt/buffer-listing-mode::list-buffers))
+        '(nyxt/buffer-listing-mode::list-buffers))
       (:nbutton
         :text "Linear display"
-        (nyxt/buffer-listing-mode::list-buffers :linear-view-p t))
+        '(nyxt/buffer-listing-mode::list-buffers :linear-view-p t))
       (:br)
       (:div
        (if cluster
@@ -99,7 +99,7 @@ With LINEAR-VIEW-P, list buffers linearly instead."
            (spinneret:with-html-string
              (:p (:nbutton :text (title buffer)
                    :buffer panel-buffer
-                   (nyxt::switch-buffer :buffer buffer))))))
+                   `(nyxt::switch-buffer :buffer ,buffer))))))
     (spinneret:with-html-string
       (:nstyle (lass:compile-and-write
                 '(.button
@@ -111,12 +111,12 @@ With LINEAR-VIEW-P, list buffers linearly instead."
        (:h1 "Buffers")
        (:nbutton :text "Update ↺"
          :buffer panel-buffer
-         (reload-buffer
-          (find
-           (render-url (url panel-buffer))
-           (nyxt::panel-buffers (current-window))
-           :test #'string=
-           :key (compose
-                 #'render-url #'url))))
+         `(reload-buffer
+           (find
+            (render-url (url ,panel-buffer))
+            (nyxt::panel-buffers (current-window))
+            :test #'string=
+            :key (compose
+                  #'render-url #'url))))
        (loop for buffer in (buffer-list)
              collect (:raw (buffer-markup buffer)))))))
