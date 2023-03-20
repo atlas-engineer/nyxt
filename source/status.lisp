@@ -107,24 +107,26 @@ the URL.)"
   ;;   subdomain takeover attacks.
   ;; - Retain a clear display of which protocol/scheme is used to discourage
   ;;   e.g. trusting HTTP websites.
-  (let* ((buffer (current-buffer (window status)))
-         (content (multiple-value-bind (aesthetic safe)
-                      (render-url (url buffer))
-                    (uiop:strcat
-                     (if safe
-                         (format nil "~a (~a)" safe aesthetic)
-                         aesthetic)
-                     (when (title buffer)
-                       (str:concat " — " (title buffer)))
-                     (when (find (url buffer) (remove buffer (buffer-list))
-                                 :test #'url-equal :key #'url)
-                       (format nil " (buffer ~a)" (id buffer)))))))
-    (spinneret:with-html-string
-      (:nbutton
-        :buffer status
-        :text content
-        :title content
-        '(nyxt:set-url)))))
+  (or
+   (sera:and-let* ((buffer (current-buffer (window status)))
+                   (content (multiple-value-bind (aesthetic safe)
+                                (render-url (url buffer))
+                              (uiop:strcat
+                               (if safe
+                                   (format nil "~a (~a)" safe aesthetic)
+                                   aesthetic)
+                               (when (title buffer)
+                                 (str:concat " — " (title buffer)))
+                               (when (find (url buffer) (remove buffer (buffer-list))
+                                           :test #'url-equal :key #'url)
+                                 (format nil " (buffer ~a)" (id buffer)))))))
+     (spinneret:with-html-string
+       (:nbutton
+         :buffer status
+         :text content
+         :title content
+         '(nyxt:set-url))))
+   ""))
 
 (export-always 'format-status-tabs)
 (defmethod format-status-tabs ((status status-buffer))
