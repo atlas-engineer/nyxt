@@ -85,13 +85,19 @@ jobs:
         rm -f nyxt
         make all LISP=ros LISP_FLAGS="${{ matrix.rosargs }} run -- --no-userinit --non-interactive"
 
+    # Load tests separately to not clutter the test output.
+    - name: Load tests
+      shell: bash
+      run: |
+        ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)' -e  '(handler-bind ((error (lambda (a) (uiop:print-backtrace) (format *error-output* "~a~&" a) (uiop:quit 17)))) (asdf:load-system :nyxt/tests))'
+
     - name: Run tests
       shell: bash
       # Export CI to tell ASDF to quit on test errors.
       env:
        NASDF_TESTS_QUIT_ON_FAIL: yes
       run: |
-        ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)' -e '(handler-bind ((error (lambda (a) (uiop:print-backtrace) (format *error-output* "~a~&" a) (uiop:quit 17)))) (asdf:load-system :nyxt/tests))' -e '(asdf:test-system :nyxt)'
+        ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)' -e '(asdf:test-system :nyxt)'
 
     - name: Validate make-instance symbols
       shell: bash
