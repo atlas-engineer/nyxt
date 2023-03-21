@@ -30,7 +30,7 @@
   "Compiles the CLAUSES body into Parenscript code.
 Parenscript fetches values from <select> with ID and evaluates the respective
 forms in BUFFER."
-  (let ((buffer (or buffer (nyxt:current-buffer))))
+  (alexandria:when-let ((buffer (or buffer (nyxt:current-buffer))))
     (ps:ps*
      (with-ps-gensyms (var inner-var)
        `(nyxt/ps:lisp-eval
@@ -504,12 +504,13 @@ by default."
 (defun %nbutton-onclick (title buffer clauses)
   "Produce Parenscript to run Lisp CLAUSES in BUFFER.
 TITLE is the debuggable name for the callback."
-  (ps:ps*
-   `(nyxt/ps:lisp-eval
-     (:title ,(format nil "nbutton ~a" title)
-             ,@(when buffer
-                 (list :buffer buffer)))
-     ,@clauses)))
+  (when (or buffer (nyxt:current-buffer))
+    (ps:ps*
+     `(nyxt/ps:lisp-eval
+       (:title ,(format nil "nbutton ~a" title)
+               ,@(when buffer
+                   (list :buffer buffer)))
+       ,@clauses))))
 
 (deftag :nbutton (body attrs &rest keys
                        &key (text (alexandria:required-argument 'text)) title buffer
@@ -540,22 +541,24 @@ Example:
 (serapeum:-> %ninput-onfocus (list (nyxt:maybe nyxt:buffer)) t)
 (defun %ninput-onfocus (onfocus buffer)
   "Produce Parenscript to run ONFOCUS expression in BUFFER when :ninput is focused."
-  (ps:ps*
-   `(nyxt/ps:lisp-eval
-     (:title "ninput onfocus"
-             ,@(when buffer
-                 (list :buffer buffer)))
-     ,onfocus)))
+  (when (or buffer (nyxt:current-buffer))
+    (ps:ps*
+     `(nyxt/ps:lisp-eval
+       (:title "ninput onfocus"
+               ,@(when buffer
+                   (list :buffer buffer)))
+       ,onfocus))))
 
 (serapeum:-> %ninput-onchange (list (nyxt:maybe nyxt:buffer)) t)
 (defun %ninput-onchange (onchange buffer)
   "Produce Parenscript to run ONCHANGE expression in BUFFER when :ninput is modified."
-  (ps:ps*
-   `(nyxt/ps:lisp-eval
-     (:title "ninput onchange"
-             ,@(when buffer
-                 (list :buffer buffer)))
-     ,onchange)))
+  (when (or buffer (nyxt:current-buffer))
+    (ps:ps*
+     `(nyxt/ps:lisp-eval
+       (:title "ninput onchange"
+               ,@(when buffer
+                   (list :buffer buffer)))
+       ,onchange))))
 
 (deftag :ninput (body attrs &rest keys &key rows cols onfocus onchange buffer &allow-other-keys)
   "Nicely styled <textarea> with a reasonable number of ROWS/COLS to accommodate the BODY.
