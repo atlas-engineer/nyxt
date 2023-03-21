@@ -1319,7 +1319,8 @@ the `active-buffer'."
 (define-class color-source (prompter:source)
   ((prompter:name "Color")
    (prompter:constructor *css-colors*)
-   (prompter:filter-preprocessor
+   (prompter:filter-preprocessor #'prompter:filter-exact-matches)
+   (prompter:filter-postprocessor
     (lambda (suggestions source input)
       (let ((input-color input))
         (cons (make-instance 'prompter:suggestion

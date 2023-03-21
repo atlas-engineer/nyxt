@@ -332,6 +332,7 @@ For production code, see `find-submode' instead."
   ((prompter:name "Modes")
    (prompter:enable-marks-p t)
    (prompter:constructor (sort (all-mode-symbols) #'string< :key #'symbol-name))
+   (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:suggestion-maker 'make-mode-suggestion))
   (:export-class-name-p t)
   (:metaclass user-class))

@@ -35,7 +35,8 @@
                              :global-p (global-p source)
                              :mode-symbols (mapcar #'sera:class-name-of (sera:filter #'enabled-p (modes (buffer source))))))))
    (prompter:active-attributes-keys '("Name" "Bindings" "Docstring")
-                                    :accessor nil))
+                                    :accessor nil)
+   (prompter:filter-preprocessor #'prompter:filter-exact-matches))
   (:export-class-name-p t)
   (:documentation "Prompter source to execute commands.
 Global commands are listed if `global-p' is non-nil.
@@ -54,7 +55,8 @@ from a key binding.")
    (prompter:constructor
     (lambda (source)
       (declare (ignore source))
-      (list (predict-next-command *browser*)))))
+      (list (predict-next-command *browser*))))
+   (prompter:filter-preprocessor #'prompter:filter-exact-matches))
   (:export-class-name-p t)
   (:documentation "Prompter source to predict commands.")
   (:metaclass user-class))

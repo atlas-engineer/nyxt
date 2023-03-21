@@ -147,6 +147,7 @@ make-instance."
 (define-class annotation-source (prompter:source)
   ((prompter:name "Annotations")
    (prompter:constructor (files:content (annotations-file (current-buffer))))
+   (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:enable-marks-p t)))
 
 (define-class annotation-tag-source (prompter:source)
