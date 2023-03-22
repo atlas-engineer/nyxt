@@ -130,7 +130,7 @@ The most useful functions are:
               (loop for child in (ps:chain element child-nodes)
                     collect (process-element child))))
       (when (and (equal (ps:@ element node-name) "IFRAME")
-                 (not (ps:chain element (get-attribute "sandbox"))))
+                 (nyxt/ps:iframe-safe-origin element))
         (setf (ps:chain object :children)
               (ps:array
                (process-element (ps:@ (or (ps:@ element content-document)
@@ -252,7 +252,7 @@ Example: for
 `iframe-parents' returns us (<iframe id=1> <iframe id=2> <div id=element>) list."
   (let* ((parents (parents node))
          (iframe-parents (sera:filter #'iframe-element-p parents)))
-    (append (reverse iframe-parents) (list node))))
+    (reverse iframe-parents)))
 
 (export-always 'all-documents)
 (defun all-documents (node)

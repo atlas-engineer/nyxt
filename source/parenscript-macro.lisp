@@ -31,33 +31,46 @@
   "context.querySelector() tailored for Nyxt IDs."
   `(chain ,context (query-selector (stringify "[nyxt-identifier=\"" ,id "\"]"))))
 
+(export-always 'iframe-safe-origin)
+(defpsmacro iframe-safe-origin (iframe)
+  "Test whether iframe origin is the same as the current document one.
+Otherwise our iframe handling code fails with security errors."
+  `(when (@ ,iframe src)
+     (equal (@ (ps:new (*U-R-L (@ ,iframe src))) origin)
+            (@ #:window location origin))))
+
 (export-always 'iframe-document)
 (defpsmacro iframe-document (iframe)
   `(let ((iframe ,iframe))
      (cond
-       ((equal (@ iframe tag-name) "IFRAME")
-        (or (ps:@ iframe content-document)
-            (ps:@ iframe content-window document)))
-       ((instanceof iframe *Document)
+       ((and iframe
+             (equal (@ iframe tag-name) "IFRAME")
+             (iframe-safe-origin iframe))
+        (or (@ iframe content-document)
+            (@ iframe content-window document)))
+       ((and iframe
+             (instanceof iframe *Document))
         iframe)
-       (t
+       (iframe
         (chain iframe owner-document)))))
 
 (export-always 'nyxt-node)
 (defpsmacro nyxt-node (node)
   "Get the DOM element via JavaScript, based on the data from the Lisp side DOM.
 NODE should be a nyxt/dom element."
-  `(labels ((get-by-ids (node ids)
-              (if (> (@ ids length) 1)
-                  (get-by-ids
-                   (iframe-document
-                    (nyxt/ps:qs-nyxt-id node (elt ids 0)))
-                   (chain ids (slice 1)))
-                  (nyxt/ps:qs-nyxt-id node (elt ids 0)))))
-     (get-by-ids
-      document (lisp (coerce (mapcar (quote ,(uiop:find-symbol* :get-nyxt-id :nyxt/dom))
-                                     (uiop:symbol-call :nyxt/dom :iframe-parents ,node))
-                             'vector)))))
+  `(if (ps:lisp (plump:root-p ,node))
+       document
+       (labels ((get-by-ids (node ids)
+                  (if (> (@ ids length) 1)
+                      (get-by-ids
+                       (iframe-document
+                        (nyxt/ps:qs-nyxt-id node (elt ids 0)))
+                       (chain ids (slice 1)))
+                      (nyxt/ps:qs-nyxt-id node (elt ids 0)))))
+         (get-by-ids
+          document (lisp (coerce (mapcar (quote ,(uiop:find-symbol* :get-nyxt-id :nyxt/dom))
+                                         (uiop:symbol-call :nyxt/dom :iframe-parents ,node))
+                                 'vector))))))
 
 (export-always 'active-element)
 (defpsmacro active-element (context)
