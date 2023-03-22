@@ -574,6 +574,8 @@ Return nil when key must be discarded, e.g. for modifiers."
             ;; With a modifier, "-" does not print, so we me must translate it
             ;; to "hyphen" just like in `printable-p'.
             ("minus" "hyphen")
+            ;; shift-tab:
+            ("ISO_Left_Tab" "tab")
             ;; In most cases, return character and not keyval for punctuation.
             ;; For instance, C-[ is not printable but the keyval is "bracketleft".
             ;; ASCII control characters like Escape, Delete or BackSpace have a
