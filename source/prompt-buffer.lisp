@@ -521,7 +521,7 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                (:nstyle (style prompt-buffer)))
               (:body
                (:div :id "prompt-area"
-                     (:div :id "prompt" (:mayberaw (prompter:prompt prompt-buffer)))
+                     (:div :id "prompt" (prompter:prompt prompt-buffer))
                      (:div :id "prompt-extra" :class "arrow-right" "[?/?]")
                      (:div :id "prompt-input"
                            (:input :type (if (invisible-input-p prompt-buffer)
