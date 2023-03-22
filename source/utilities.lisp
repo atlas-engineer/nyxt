@@ -51,6 +51,87 @@ any expensive computation only takes place once."
                        (block ,name ,@body))
                      ,args))))))))
 
+(export-always 'generalize-lambda-list)
+(defun generalize-lambda-list (lambda-list)
+  "Return a lambda-list compatible with generic-function definitions.
+Generic function lambda lists differ from ordinary lambda list in some ways;
+see HyperSpec '3.4.2 Generic Function Lambda Lists'.
+If &allow-other-keys is present, removes all the keyword arguments.
+If there are specializers among required arguments, removes them."
+  (multiple-value-bind (required optional rest keywords aok? aux key?)
+      (alex:parse-ordinary-lambda-list lambda-list :allow-specializers t)
+    (declare (ignore aux))
+    (sera:unparse-ordinary-lambda-list
+     ;; This ensure-list+first is to parse method specializers.
+     (mapcar (alex:compose #'first #'uiop:ensure-list) required)
+     (mapcar #'first optional) rest
+     (unless aok?
+       (mapcar #'cadar keywords))
+     aok? nil key?)))
+
+(export-always 'define-generic)
+(defmacro define-generic (name (&rest arglist) &body body)
+  "Convenience macro to define generics as if they were methods.
+ARGLIST can be a method arglist, in which case it's parsed into generic function
+arglist automatically. If it's not a a
+
+BODY can be a list of `defgeneric' options intermixed with other Lisp
+forms. Options are processed as-is, forms are put into a (:method ...) together
+with ARGLIST.
+
+Contrived example:
+
+\(define-generic add ((a integer) (b integer) &key coerce-to-fixnum &allow-other-keys)
+  \"Adds A and B, coercing them to fixnum if the sum is too big.\"
+  (declare (optimize (speed 3)))
+  (coerce (+ a b) 'fixnum)
+  (:method ((a string) (b integer))
+   (error \"Cannot use `add' on strings!\"))
+  (:method-combination progn))
+=>
+;; Notice the arglist losing keyword args (when &allow-other-keys) and specializers.
+\(defgeneric add (a b &key &allow-other-keys)
+  ;; Notice the `declare' option of `defgeneric' processed properly.
+  ;; This may obstruct writing the method-specific optimizations, but there is
+  ;; `defmethod' for such complex cases.
+  (declare (optimize (speed 3)))
+  ;; Auto-generated method with the actual arglist.
+  (:method ((a integer) (b integer) &key coerce-to-fixnum &allow-other-keys)
+   (if coerce-to-fixnum
+       (coerce (+ a b) 'fixnum)
+       (+ a b)))
+  ;; Explitly provided method is preserved.
+  (:method ((a string) (b integer))
+   (error \"Cannot use `add' on strings!\"))
+  (:method-combination progn)
+  ;; Docstring automatically wrapped into :documentation option.
+  (:documentation \"Adds A and B, coercing them to fixnum if the sum is too big.\"))"
+  (multiple-value-bind (forms declarations documentation)
+      (alex:parse-body body :documentation t)
+    ;; These rebindings are due to the fact that `alex:parse-body' parses the
+    ;; body with a single string as (values (string) nil nil), instead of
+    ;; required (values nil nil (string)).
+    (let* ((forms (unless (and (sera:single forms)
+                               (stringp (first forms)))
+                    forms))
+           (documentation (if (and (sera:single forms)
+                                   (stringp (first forms)))
+                              (first forms)
+                              documentation))
+           (options (remove-if-not #'keywordp forms
+                                   :key (alex:compose #'first #'uiop:ensure-list)))
+           (method-body (set-difference forms options :test #'equal)))
+      `(defgeneric ,name ,(generalize-lambda-list arglist)
+         ,@declarations
+         ;; I.e., when there are specialized arguments.
+         ,@(when (or (some #'listp (alex:parse-ordinary-lambda-list arglist :allow-specializers t))
+                     method-body)
+             `((:method ,arglist
+                 ,@method-body)))
+         ,@options
+         ,@(when documentation
+             `((:documentation ,documentation)))))))
+
 (export-always 'destroy-thread*)
 (defun destroy-thread* (thread)
   "Like `bt:destroy-thread' but does not raise an error.

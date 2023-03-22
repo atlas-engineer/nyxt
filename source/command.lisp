@@ -146,16 +146,6 @@ of arguments."
        ,(documentation function-symbol 'function)
        (,function-symbol (first arg-list)))))
 
-(sera:eval-always
-  (defun generalize-lambda-list (lambda-list)
-    "Return a lambda-list compatible with generic-function definitions.
-Generic function lambda lists differ from ordinary lambda list in some ways;
-see HyperSpec '3.4.2 Generic Function Lambda Lists'."
-    (multiple-value-bind (required optional rest keywords aok? aux key?)
-        (alex:parse-ordinary-lambda-list lambda-list)
-      (declare (ignore aux))
-      (sera:unparse-ordinary-lambda-list required (mapcar #'first optional) rest (mapcar #'cadar keywords) aok? nil key?))))
-
 (export-always 'define-command)
 (defmacro define-command (name (&rest arglist) &body body)
   "Define new command NAME.
