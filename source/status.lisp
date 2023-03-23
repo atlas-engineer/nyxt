@@ -76,14 +76,10 @@ This leverages `mode-status' which can be specialized for individual modes."
       '(nyxt/history-mode:history-forwards))
     (:nbutton
       :buffer status
-      :text "≡"
+      :id "execute"
+      :text "λ"
       :title "Execute"
-      '(nyxt:execute-command))
-    (:nbutton
-      :buffer status
-      :text "★"
-      :title "Bookmark this page"
-      '(funcall (read-from-string "nyxt/bookmark-mode:bookmark-current-url")))))
+      '(nyxt:execute-command))))
 
 (export-always 'format-status-load-status)
 (defmethod format-status-load-status ((status status-buffer))

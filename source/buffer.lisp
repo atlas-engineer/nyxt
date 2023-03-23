@@ -765,7 +765,9 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :overflow "hidden"
               :white-space "nowrap"
               :z-index "3"
-              :flex-basis "104px")
+              :flex-basis "94px")
+            '("#execute"
+              :margin-left "10px")
             `("#url"
               :background-color ,theme:primary
               :color ,theme:on-primary
