@@ -823,11 +823,16 @@ See `gtk-browser's `modifier-translator' slot."
                      (data-manager-cache-directory (make-instance 'data-manager-cache-directory :context-name name)))
                  (make-instance 'webkit-web-context
                                 :website-data-manager
-                                (make-instance 'webkit-website-data-manager
-                                               :base-data-directory (uiop:native-namestring
-                                                                     (files:expand data-manager-data-directory))
-                                               :base-cache-directory (uiop:native-namestring
-                                                                      (files:expand data-manager-cache-directory)))))))
+                                (make-instance
+                                 'webkit-website-data-manager
+                                 :base-data-directory (or (sera:and-let* ((path (files:expand data-manager-data-directory))
+                                                                          (_ (not (nfiles:nil-pathname-p path))))
+                                                            (uiop:native-namestring path))
+                                                          (cffi:null-pointer))
+                                 :base-cache-directory (or (sera:and-let* ((path (files:expand data-manager-cache-directory))
+                                                                           (_ (not (nfiles:nil-pathname-p path))))
+                                                             (uiop:native-namestring path))
+                                                           (cffi:null-pointer)))))))
          (gtk-extensions-path (files:expand (make-instance 'gtk-extensions-directory)))
          (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
     (unless (uiop:emptyp gtk-extensions-path)
