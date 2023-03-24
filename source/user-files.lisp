@@ -74,7 +74,7 @@ No data should be shared with other nosave buffers either."))
   ()
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:documentation "Data is neither read nor persisted persisted to disk."))
+  (:documentation "Data is neither read nor persisted to disk."))
 
 (defun find-file-name-path (ref)
   "Return the value of the REF found in `*options*'s `:with-file'.
