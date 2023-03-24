@@ -805,14 +805,14 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :margin-top "1px"
               :padding-left "18px"
               :padding-right "18px"
-              :margin-right "-8px"
-              :margin-left "-9px"
+              :margin-right "-5px"
+              :margin-left "-4px"
               :text-decoration "transparent"
               :border "transparent"
               :border-radius "1px"
               :font "inherit"
               :outline "inherit"
-              :clip-path "polygon(20px 0%, 100% 0%, calc(100% - 20px) 100%, 0% 100%)")
+              :clip-path "polygon(calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0% 100%, 10px 50%, 0% 0%)")
             `(".tab:hover"
               :opacity 0.8
               :cursor "pointer")
