@@ -162,6 +162,7 @@ lot."
   ((prompter:name "Disowned History")
    (buffer :accessor buffer :initarg :buffer)
    (prompter:enable-marks-p t)
+   (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:constructor
     (lambda (source)
       (let* ((history (buffer-history (buffer source)))

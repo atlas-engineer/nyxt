@@ -1299,6 +1299,7 @@ proceeding."
 (define-class buffer-source (prompter:source)
   ((prompter:name "Buffer list")
    (prompter:constructor (buffer-initial-suggestions :current-is-last-p nil))
+   (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:enable-marks-p t)
    (prompter:actions-on-return (list (lambda-unmapped-command set-current-buffer)
                                      (lambda-mapped-command buffer-delete)
@@ -1483,7 +1484,7 @@ URL-DESIGNATOR is then transformed by BUFFER's `buffer-load-hook'."
                            (declare (ignorable source))
                            (history-initial-suggestions)))
    (prompter:enable-marks-p t)
-   (prompter:filter-preprocessor nil)   ; Don't remove non-exact results.
+   (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:actions-on-return #'buffer-load*))
   (:export-class-name-p t)
   (:metaclass user-class))

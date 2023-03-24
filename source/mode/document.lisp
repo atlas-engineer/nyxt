@@ -181,6 +181,7 @@ It does not assume being online."))
 (define-class ring-source (prompter:source)
   ((prompter:name "Clipboard ring")
    (ring :initarg :ring :accessor ring :initform nil)
+   (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:constructor
     (lambda (source)
       (containers:container->list (ring source))))
@@ -441,6 +442,7 @@ ID is a buffer `id'."
 (define-class heading-source (prompter:source)
   ((prompter:name "Headings")
    (buffer :accessor buffer :initarg :buffer)
+   (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:actions-on-current-suggestion-enabled-p t)
    (prompter:actions-on-current-suggestion
     (lambda-command scroll-page-to-heading* (heading)

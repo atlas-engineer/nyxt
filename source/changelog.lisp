@@ -717,7 +717,8 @@ like buttons.")
    (:li "The REPL features " (:nxref :class-name 'nyxt/repl-mode:shell-cell "shell cells")
         ", which pass commands to the underlying system shell.")
    (:li "The prompt buffer tab interface has been updated. Tabs are stably sorted and do
-not shuffle around. It is now possible to middle click to delete tabs."))
+not shuffle around. It is now possible to middle click to delete tabs.")
+   (:li "Many prompts are filtered more aggressively, resulting in more exact suggestions."))
 
   (:h3 "Programming interface")
   (:ul

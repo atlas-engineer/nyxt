@@ -142,6 +142,7 @@ This saves the history to disk when BODY exits."
 (define-class history-backwards-source (prompter:source)
   ((prompter:name "Parent URLs")
    (buffer :initarg :buffer :accessor buffer :initform nil)
+   (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:constructor
     (lambda (source)
       (with-history (history (buffer source))
@@ -173,6 +174,7 @@ This saves the history to disk when BODY exits."
 (define-class direct-history-forwards-source (prompter:source)
   ((prompter:name "First child of all forward-branches")
    (buffer nil :type (maybe buffer))
+   (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:constructor
     (lambda (source)
       (with-history (history (buffer source))
@@ -208,6 +210,7 @@ Otherwise go forward to the only child."
 (define-class history-forwards-source (prompter:source)
   ((prompter:name "All children URLs of the current forward-branch")
    (buffer :initarg :buffer :accessor buffer :initform nil)
+   (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:constructor
     (lambda (source)
       (with-history (history (buffer source))
@@ -232,6 +235,7 @@ Otherwise go forward to the only child."
 (define-class all-history-forwards-source (prompter:source)
   ((prompter:name "Child URLs")
    (buffer :initarg :buffer :accessor buffer :initform nil)
+   (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:constructor
     (lambda (source)
       (with-history (history (buffer source))
@@ -255,6 +259,7 @@ Otherwise go forward to the only child."
 (define-class history-all-owner-nodes-source (prompter:source)
   ((prompter:name "All history URLs")
    (buffer :initarg :buffer :accessor buffer :initform nil)
+   (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:constructor
     (lambda (source)
       (with-history (history (buffer source))
@@ -279,6 +284,7 @@ Otherwise go forward to the only child."
 (define-class history-all-source (prompter:source)
   ((prompter:name "All history URLs")
    (buffer :initarg :buffer :accessor buffer :initform nil)
+   (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:constructor
     (lambda (source)
       (with-history (history (buffer source))

@@ -36,7 +36,8 @@ See `sym:package-functions' for an example."
     :type (maybe (list-of package))
     :documentation "Include internal symbols from the given packages.")
    (prompter:name (alex:required-argument 'prompter:name))
-   (prompter:constructor (alex:required-argument 'prompter:constructor)))
+   (prompter:constructor (alex:required-argument 'prompter:constructor))
+   (prompter:filter-preprocessor #'prompter:filter-exact-matches))
   (:export-class-name-p nil)              ; Internal class.
   (:export-accessor-names-p t))
 
@@ -149,7 +150,8 @@ See `sym:package-functions' for an example."
 
 (define-class package-source (prompter:source)
   ((prompter:name "Packages")
-   (prompter:constructor (mapcar (compose #'intern #'package-name) (list-all-packages)))))
+   (prompter:constructor (mapcar (compose #'intern #'package-name) (list-all-packages)))
+   (prompter:filter-preprocessor #'prompter:filter-exact-matches)))
 
 (define-internal-page-command-global describe-any (&key input)
     (buffer (format nil "*Describe-~a*" input) 'nyxt/help-mode:help-mode)

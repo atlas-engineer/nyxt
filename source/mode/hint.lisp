@@ -387,7 +387,8 @@ FUNCTION is the action to perform on the selected elements."
   (nyxt/dom:toggle-details-element details))
 
 (define-class options-source (prompter:source)
-  ((prompter:name "Options"))
+  ((prompter:name "Options")
+   (prompter:filter-preprocessor #'prompter:filter-exact-matches))
   (:export-class-name-p t)
   (:documentation "Prompt source for select tag options."))
 
