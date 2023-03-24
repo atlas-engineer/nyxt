@@ -31,32 +31,20 @@
   "context.querySelector() tailored for Nyxt IDs."
   `(chain ,context (query-selector (lisp (format nil "[nyxt-identifier=\"~a\"]" ,id)))))
 
-(export-always 'iframe-document)
-(defpsmacro iframe-document (iframe)
-  `(let ((iframe ,iframe))
-     (or (ps:@ iframe content-document)
-         (ps:@ iframe content-window document))))
-
 (export-always 'active-element)
 (defpsmacro active-element (context)
-  "A smarter active element search in CONTEXT, aware of arbitrarily nested iframes."
-  `(labels ((find-actual-active-element (element)
-              (let ((active (@ element active-element)))
-                (when active
-                  (if (not (equal (@ active tag-name) "IFRAME"))
-                      active
-                      (find-actual-active-element (iframe-document active)))))))
-     (find-actual-active-element ,context)))
+  "Shorthand for active element in CONTEXT."
+  `(@ ,context active-element))
 
 (defpsmacro get-caret ()
   `(let* ((element (active-element document))
           (tag-name (chain element tag-name)))
      (cond
-       ((or (string= tag-name "INPUT") (string= tag-name "TEXTAREA"))
-        (list (chain element selection-start) (chain element selection-end)))
-       ((chain element is-content-editable)
-        (let ((range (chain window (get-selection) (get-range-at 0))))
-          (list (@ range start-offset) (@ range end-offset)))))))
+      ((or (string= tag-name "INPUT") (string= tag-name "TEXTAREA"))
+       (list (chain element selection-start) (chain element selection-end)))
+      ((chain element is-content-editable)
+       (let ((range (chain window (get-selection) (get-range-at 0))))
+         (list (@ range start-offset) (@ range end-offset)))))))
 
 (defpsmacro set-caret (element &optional start end)
   `(let* ((element ,element)
