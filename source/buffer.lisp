@@ -814,8 +814,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :outline "inherit"
               :clip-path "polygon(20px 0%, 100% 0%, calc(100% - 20px) 100%, 0% 100%)")
             `(".tab:hover"
-              :opacity 0.8
-              :cursor "pointer")
+              :opacity 0.8)
             `("#modes"
               :background-color ,theme:primary
               :color ,theme:on-primary
