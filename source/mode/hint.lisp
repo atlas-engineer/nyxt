@@ -231,6 +231,17 @@ Consult https://developer.mozilla.org/en-US/docs/Web/CSS/visibility."
 (define-class hint-source (prompter:source)
   ((prompter:name "Hints")
    (prompter:actions-on-current-suggestion-enabled-p t)
+   (prompter:filter-preprocessor
+    (lambda (suggestions source input)
+      (declare (ignore source))
+      (when (and (auto-follow-hints-p (find-submode 'hint-mode))
+                 (fit-to-prompt-p (find-submode 'hint-mode)))
+        (loop for suggestion in suggestions
+              do (if (str:starts-with-p input
+                                        (prompter:attributes-default suggestion)
+                                        :ignore-case t)
+                     (set-hint-visibility (prompter:value suggestion) "visible")
+                     (set-hint-visibility (prompter:value suggestion) "hidden"))))))
    (prompter:filter
     (if (and (auto-follow-hints-p (find-submode 'hint-mode))
              (fit-to-prompt-p (find-submode 'hint-mode)))
