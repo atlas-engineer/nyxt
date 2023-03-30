@@ -61,8 +61,15 @@ is 4005, default set to 4006 in Nyxt to avoid collisions).")
 
 (declaim (type (maybe renderer) *renderer*))
 (defparameter *renderer* nil
+  ;; TODO: Switching renderer does not seem to work anymore.
+  ;; Maybe issue at the library level?
   "The renderer used by Nyxt.
-It can be changed between two runs of Nyxt when run from a Lisp REPL.")
+It can be changed between two runs of Nyxt when run from a Lisp REPL.
+Example:
+
+  (nyxt:quit)
+  (setf nyxt::*renderer* (make-instance 'nyxt/renderer/gtk:gtk-renderer))
+  (nyxt:start)")
 
 (alex:define-constant +nyxt-critical-dependencies+
     '(:cl-cffi-gtk
