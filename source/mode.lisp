@@ -376,6 +376,7 @@ For production code, see `find-submode' instead."
   ;; (-> enable-modes* ((or sym:mode-symbol (list-of sym:mode-symbol))
   ;;                    (or buffer (list-of buffer))
   ;;                    &key &allow-other-keys) *)
+  ;; TODO: accept a list of mode objects as well as symbols?
   (:method (modes buffers &rest args &key &allow-other-keys)
     (let ((modes (uiop:ensure-list modes))
           (buffers (uiop:ensure-list buffers)))
