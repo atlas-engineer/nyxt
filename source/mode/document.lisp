@@ -687,10 +687,12 @@ of buffers."
    (prompter:constructor (lambda (source)
                            (with-current-buffer (buffer source)
                              (frame-element-select)
-                             (loop
-                               do (sleep 0.25)
-                               when (frame-element-selection-ready)
-                               return (frame-source-selection)))))))
+                             (prog1
+                                 (loop
+                                   do (sleep 0.25)
+                                   when (frame-element-selection-ready)
+                                   return (frame-source-selection))
+                               (toggle-prompt-buffer-focus)))))))
 
 (define-command select-frame-new-buffer (&key (buffer (current-buffer)))
   "Select a frame and open the links in new buffers."
