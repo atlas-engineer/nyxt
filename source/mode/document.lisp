@@ -550,6 +550,7 @@ of buffers."
                            :left "0"
                            :right "0"
                            :bottom "0"
+                           :opacity 0.00
                            :background ,theme:on-background
                            :z-index #.(1- (expt 2 31)))))
         (selection-rectangle-style (theme:themed-css (theme *browser*)
@@ -558,10 +559,10 @@ of buffers."
                                        :top "0"
                                        :left "0"
                                        :border-style "dotted"
-                                       :border-width "1px"
-                                       :border-color ,theme:on-background
+                                       :border-width "4px"
+                                       :border-color ,theme:background
                                        :background-color ,theme:on-background
-                                       :opacity 0.05
+                                       :opacity 0.10
                                        :z-index ,(1- (expt 2 30))))))
     (ps-labels :async t
       ((add-overlay
@@ -669,6 +670,11 @@ of buffers."
                                     :url (gethash "src" element )
                                     :alt (gethash "alt" element )))))))
 
+(define-parenscript frame-element-selection-ready ()
+  "Check to see if the selection is complete."
+  (and (ps:chain selection set1)
+       (ps:chain selection set2)))
+
 (defun frame-element-clear ()
   "Clear the selection frame created by the user."
   (ps-eval
@@ -678,13 +684,13 @@ of buffers."
 (define-class frame-source (prompter:source)
   ((prompter:name "Selection Frame")
    (buffer :accessor buffer :initarg :buffer)
-   (prompter:filter-preprocessor (lambda (initial-suggestions-copy source input)
-                                   (declare (ignore initial-suggestions-copy source input))
-                                   (frame-source-selection)))
    (prompter:constructor (lambda (source)
-                           (declare (ignore source))
-                           (frame-element-select)
-                           (list)))))
+                           (with-current-buffer (buffer source)
+                             (frame-element-select)
+                             (loop
+                               do (sleep 0.25)
+                               when (frame-element-selection-ready)
+                               return (frame-source-selection)))))))
 
 (define-command select-frame-new-buffer (&key (buffer (current-buffer)))
   "Select a frame and open the links in new buffers."
