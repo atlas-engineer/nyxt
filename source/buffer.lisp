@@ -1039,7 +1039,7 @@ BUFFER's modes."
 (export-always 'on-signal-load-canceled)
 (defmethod on-signal-load-canceled ((buffer buffer) url)
   (dolist (mode (modes buffer))
-    (on-signal-load-redirected mode url)))
+    (on-signal-load-canceled mode url)))
 
 (export-always 'on-signal-load-committed)
 (defmethod on-signal-load-committed ((buffer buffer) url)
