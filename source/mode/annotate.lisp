@@ -51,7 +51,7 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
   (spinneret:with-html-string
     (:dl
      (:dt "URL")
-     (:dd (url annotation))
+     (:dd (:a :href (url annotation) (url annotation)))
      (:dt "Title")
      (:dd (page-title annotation))
      (:dt "Tags")
@@ -62,7 +62,7 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
   (spinneret:with-html-string
     (:dl
      (:dt "URL")
-     (:dd (url annotation))
+     (:dd (:a :href (url annotation) (url annotation)))
      (:dt "Title")
      (:dd (page-title annotation))
      (:dt "Snippet")
