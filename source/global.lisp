@@ -107,14 +107,15 @@ Don't set this, it would lose its meaning.")
 Don't set this, it would lose its meaning.")
 
 (export-always '+version+)
-(alex:define-constant +version+
-    (or (uiop:getenv "NYXT_VERSION")      ; This is useful for build systems without Git.
-        (ignore-errors
-         (uiop:with-current-directory ((asdf:system-source-directory :nyxt))
-           (uiop:run-program (list "git" "describe" "--always" "--tags")
-                             :output '(:string :stripped t))))
-        (asdf/component:component-version (asdf:find-system :nyxt)))
-  :test #'equal)
+(sera:eval-always
+  (alex:define-constant +version+
+      (or (uiop:getenv "NYXT_VERSION") ; This is useful for build systems without Git.
+          (ignore-errors
+           (uiop:with-current-directory ((asdf:system-source-directory :nyxt))
+             (uiop:run-program (list "git" "describe" "--always" "--tags")
+                               :output '(:string :stripped t))))
+          (asdf/component:component-version (asdf:find-system :nyxt)))
+    :test #'equal))
 
 (defun version ()
   "Return 5 values:
@@ -125,21 +126,25 @@ Don't set this, it would lose its meaning.")
 - and current COMMIT as string.
 Return nil on error."
   (ignore-errors
+   ;; SBCL is smart enough to resolve the `if' condition at compile time and
+   ;; will complaining that a branch is elided; thus we evaluate everything at
+   ;; read-time.
+   ;;
    ;; Pre-releases are falling outside the conventional version values.
-   (if (search "pre-release" +version+)
-       (parse-integer (first (str:split "-" +version+)))
-       (destructuring-bind (version &optional commits commit)
-           (str:split "-" +version+)
-         (let* ((integer-commits-p (and commits (every #'digit-char-p commits)))
-                (commits-number (if integer-commits-p
-                                    (parse-integer commits)
-                                    0))
-                (commit (if integer-commits-p
-                            commit
-                            commits)))
-           (destructuring-bind (&optional major minor patch)
-               (uiop:parse-version version)
-             (values major minor patch commit commits-number)))))))
+   #.(if (search "pre-release" +version+)
+         (parse-integer (first (str:split "-" +version+)))
+         (destructuring-bind (version &optional commits commit)
+             (str:split "-" +version+)
+           (let* ((integer-commits-p (and commits (every #'digit-char-p commits)))
+                  (commits-number (if integer-commits-p
+                                      (parse-integer commits)
+                                      0))
+                  (commit (if integer-commits-p
+                              commit
+                              commits)))
+             (destructuring-bind (&optional major minor patch)
+                 (uiop:parse-version version)
+               (values major minor patch commit commits-number)))))))
 
 (multiple-value-bind (major minor patch commit commits)
     (version)
