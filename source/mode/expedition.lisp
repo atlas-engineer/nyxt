@@ -50,4 +50,5 @@
          (urls (mapcar #'quri:uri urls))
          (buffer (make-buffer :title "" :url (first urls))))
     (enable (make-instance 'expedition-mode :urls urls :buffer buffer))
+    (nyxt::remember-on-mode-toggle (list 'expedition-mode) buffer :enabled-p t)
     (set-current-buffer buffer)))

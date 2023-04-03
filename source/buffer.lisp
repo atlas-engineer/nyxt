@@ -1039,7 +1039,7 @@ BUFFER's modes."
 (export-always 'on-signal-load-canceled)
 (defmethod on-signal-load-canceled ((buffer buffer) url)
   (dolist (mode (modes buffer))
-    (on-signal-load-redirected mode url)))
+    (on-signal-load-canceled mode url)))
 
 (export-always 'on-signal-load-committed)
 (defmethod on-signal-load-committed ((buffer buffer) url)
@@ -1083,7 +1083,8 @@ If URL is empty, the `default-new-buffer-url' browser slot is used instead.
 To load nothing, set it to 'about:blank'.
 PARENT-BUFFER is useful when we want to record buffer- and history relationships.
 LOAD-URL-P controls whether to load URL right at buffer creation."
-  (let* ((buffer (apply #'make-instance buffer-class
+  (let* ((url (url url))
+         (buffer (apply #'make-instance buffer-class
                         :title title
                         :extra-modes modes
                         :parent-buffer parent-buffer

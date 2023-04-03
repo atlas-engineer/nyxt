@@ -214,8 +214,6 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                  (:file "file-manager" :depends-on ("prompt-buffer"))
                  (:file "download" :depends-on ("file-manager"))))
                (:file "mode/base" :depends-on ("Core modes"))
-               #+quicklisp
-               (:file "lisp-system" :depends-on ("Core modes"))
                (:file "status" :depends-on ("Core"))
                (:module "Editor modes"
                 :pathname "mode"
