@@ -67,7 +67,7 @@ jobs:
     - name: Fetch Common Lisp third-party dependencies
       shell: bash
       run: |
-        ros ${{ matrix.rosargs }}  -e '(handler-bind ((error (lambda (a) (uiop:print-backtrace) (format *error-output* "Error: ~a~&" a) (uiop:quit 17)))) (asdf:load-system :nyxt/submodules))'
+        ros ${{ matrix.rosargs }}  -e '(handler-bind ((error (lambda (a) (princ a) (uiop:print-backtrace a) (uiop:quit 17)))) (asdf:load-system :nyxt/submodules))'
         mkdir -p ~/.config/common-lisp/source-registry.conf.d/
         echo "(:tree \"$PWD/_build/submodules\")" > ~/.config/common-lisp/source-registry.conf.d/asdf.conf
 
@@ -75,7 +75,7 @@ jobs:
       shell: bash
       run: |
         # TODO: Can we make CCL backtraces more readable?  With trivial-backtrace maybe?
-        ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)' -e '(handler-case (asdf:load-system :nyxt/${{matrix.renderer}}-application) (error (a) (format t "caught error ~s~%~a~%" a a) (uiop:quit 17)))'
+        ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)' -e '(handler-case (asdf:load-system :nyxt/${{matrix.renderer}}-application) (error (a) (princ a) (uiop:print-backtrace a) (uiop:quit 17)))'
 
     - name: Build Nyxt executable
       shell: bash
@@ -89,7 +89,7 @@ jobs:
     - name: Load tests
       shell: bash
       run: |
-        ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)' -e  '(handler-bind ((error (lambda (a) (uiop:print-backtrace) (format *error-output* "~a~&" a) (uiop:quit 17)))) (asdf:load-system :nyxt/tests))'
+        ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)' -e  '(handler-bind ((error (lambda (a)(princ a) (uiop:print-backtrace a) (uiop:quit 17)))) (asdf:load-system :nyxt/tests))'
 
     - name: Run tests
       shell: bash
@@ -102,9 +102,9 @@ jobs:
     - name: Validate make-instance symbols
       shell: bash
       run: |
-        ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)'  -e '(asdf:load-system :nyxt)' -e '(push :nyxt-debug-make-instance *features*)' -e '(handler-bind ((error (lambda (a) (uiop:print-backtrace) (format *error-output* "~a~&" a) (uiop:quit 17)))) (asdf:load-system :nyxt :force t))'
+        ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)'  -e '(asdf:load-system :nyxt)' -e '(push :nyxt-debug-make-instance *features*)' -e '(handler-bind ((error (lambda (a) (princ a) (uiop:print-backtrace a) (uiop:quit 17)))) (asdf:load-system :nyxt :force t))'
 
     - name: Keymap type checking
       shell: bash
       run: |
-        ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)'  -e '(asdf:load-system :nyxt)' -e '(push :nyxt-debug-keymap *features*)' -e '(handler-bind ((error (lambda (a) (uiop:print-backtrace) (format *error-output* "~a~&" a) (uiop:quit 17)))) (asdf:load-system :nyxt :force t))'
+        ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)'  -e '(asdf:load-system :nyxt)' -e '(push :nyxt-debug-keymap *features*)' -e '(handler-bind ((error (lambda (a) (princ a) (uiop:print-backtrace a) (uiop:quit 17)))) (asdf:load-system :nyxt :force t))'
