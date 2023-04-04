@@ -20,17 +20,15 @@
     :type string
     :documentation "The color applied to elements appearing in front of
 `background-color'.  Must strongly contrast with `background-color'.")
-   (background-color-alternate
+   (background-alt-color
     "#eeeeee"
     :type string
-    :documentation "The alternate background color of the theme.  Must
-strongly contrast with `on-background-color'.")
-   (on-background-color-alternate
+    :documentation "A nuanced version of `background-color'.")
+   (on-background-alt-color
     "black"
     :type string
     :documentation "The color applied to elements appearing in front of
-`background-color-alternate'.  Must strongly contrast with
-`background-color-alternate'.")
+`background-alt-color'.  Must strongly contrast with `background-alt-color'.")
    (primary-color
     "#555555"
     :type string
@@ -41,6 +39,15 @@ strongly contrast with `on-background-color'.")
     :type string
     :documentation "The color applied to elements appearing in front of
 `primary-color'.  Must strongly contrast with `primary-color'.")
+   (primary-alt-color
+    "#686868"
+    :type string
+    :documentation "A nuanced version of `primary-color'.")
+   (on-primary-alt-color
+    nil
+    :type string
+    :documentation "The color applied to elements appearing in front of
+`primary-alt-color'.  Must strongly contrast with `primary-alt-color'.")
    (secondary-color
     "#A6A6A6"
     :type string
@@ -51,6 +58,15 @@ strongly contrast with `on-background-color'.")
     :type string
     :documentation "The color applied to elements appearing in front of
 `secondary-color'.  Must strongly contrast with `secondary-color'.")
+   (secondary-alt-color
+    "#909090"
+    :type string
+    :documentation "A nuanced version of `secondary-color'.")
+   (on-secondary-alt-color
+    nil
+    :type string
+    :documentation "The color applied to elements appearing in front of
+`secondary-alt-color'.  Must strongly contrast with `secondary-alt-color'.")
    (accent-color
     "#37A8E4"
     :type string
@@ -61,6 +77,33 @@ out from all of the other theme colors.")
     :type string
     :documentation "The color applied to elements appearing in front of
 `accent-color'.  Must strongly contrast with `accent-color'.")
+   (accent-alt-color
+    "#178DCC"
+    :type string
+    :documentation "A nuanced version of `accent-color'.")
+   (on-accent-alt-color
+    nil
+    :type string
+    :documentation "The color applied to elements appearing in front of
+`accent-alt-color'.  Must strongly contrast with `accent-alt-color'.")
+   (warning-color
+    "#AF1923"
+    :type string
+    :documentation "The color that communicates errors.")
+   (on-warning-color
+    nil
+    :type string
+    :documentation "The color applied to elements appearing in front of
+`warning-color'.  Must strongly contrast with `warning-color'.")
+   (warning-alt-color
+    "#D2232E"
+    :type string
+    :documentation "A nuanced version of `warning-color'.")
+   (on-warning-alt-color
+    nil
+    :type string
+    :documentation "The color applied to elements appearing in front of
+`warning-alt-color'.  Must strongly contrast with `warning-alt-color'.")
    (font-family
     "Helvetica Neue, Helvetica"
     :type string
@@ -79,26 +122,31 @@ out from all of the other theme colors.")
                  :dark-p t
                  :background-color "black"
                  :on-background-color "white"
-                 :background-color-alternate "#333333"
-                 :on-background-color-alternate "white"
-                 :primary-color "#D88A52"
+                 :background-alt-color "#333333"
+                 :on-background-alt-color "white"
+                 :primary-color "#E48D4E"
                  :on-primary-color "black"
-                 :secondary-color "#753C17"
+                 :primary-alt-color "#D7752F"
+                 :on-primary-alt-color "black"
+                 :secondary-color "#874215"
                  :on-secondary-color "white"
-                 :accent-color "#FCBA04"
-                 :on-accent-color "black"))
+                 :secondary-alt-color "#A55D2F"
+                 :on-secondary-alt-color "white"
+                 :accent-color "#571FD2"
+                 :on-accent-color "white"
+                 :accent-alt-color "#763DF2"
+                 :on-accent-alt-color "white"
+                 :warning-color "#FCBA04"
+                 :on-warning-color "black"
+                 :warning-alt-color "#FCA904"
+                 :on-warning-alt-color "black"))
 
 (export-always '(theme
-                 background
-                 on-background
-                 background-alternate
-                 on-background-alternate
-                 primary
-                 on-primary
-                 secondary
-                 on-secondary
-                 accent
-                 on-accent
+                 background on-background background-alt on-background-alt
+                 primary on-primary primary-alt on-primary-alt
+                 secondary on-secondary secondary-alt on-secondary-alt
+                 accent on-accent accent-alt on-accent-alt
+                 warning on-warning warning-alt on-warning-alt
                  font-family))
 (defvar theme nil
   "Dynamic variable that binds `theme' in `themed-css'.")
@@ -106,22 +154,42 @@ out from all of the other theme colors.")
   "Dynamic variable that binds `background-color' of `theme' in `themed-css'.")
 (defvar on-background nil
   "Dynamic variable that binds `on-background-color' of `theme' in `themed-css'.")
-(defvar background-alternate nil
-  "Dynamic variable that binds `background-color-alternate' of `theme' in `themed-css'.")
-(defvar on-background-alternate nil
-  "Dynamic variable that binds `on-background-color-alternate' of `theme' in `themed-css'.")
+(defvar background-alt nil
+  "Dynamic variable that binds `background-alt-color' of `theme' in `themed-css'.")
+(defvar on-background-alt nil
+  "Dynamic variable that binds `on-background-alt-color' of `theme' in `themed-css'.")
 (defvar primary nil
   "Dynamic variable that binds `primary-color' of `theme' in `themed-css'.")
 (defvar on-primary nil
   "Dynamic variable that binds `on-primary-color' of `theme' in `themed-css'.")
+(defvar primary-alt nil
+  "Dynamic variable that binds `primary-alt-color' of `theme' in `themed-css'.")
+(defvar on-primary-alt nil
+  "Dynamic variable that binds `on-primary-alt-color' of `theme' in `themed-css'.")
 (defvar secondary nil
   "Dynamic variable that binds `secondary-color' of `theme' in `themed-css'.")
 (defvar on-secondary nil
   "Dynamic variable that binds `on-secondary-color' of `theme' in `themed-css'.")
+(defvar secondary-alt nil
+  "Dynamic variable that binds `secondary-alt-color' of `theme' in `themed-css'.")
+(defvar on-secondary-alt nil
+  "Dynamic variable that binds `on-secondary-alt-color' of `theme' in `themed-css'.")
 (defvar accent nil
   "Dynamic variable that binds `accent-color' of `theme' in `themed-css'.")
 (defvar on-accent nil
   "Dynamic variable that binds `on-accent-color' of `theme' in `themed-css'.")
+(defvar accent-alt nil
+  "Dynamic variable that binds `accent-alt-color' of `theme' in `themed-css'.")
+(defvar on-accent-alt nil
+  "Dynamic variable that binds `on-accent-alt-color' of `theme' in `themed-css'.")
+(defvar warning nil
+  "Dynamic variable that binds `warning-color' of `theme' in `themed-css'.")
+(defvar on-warning nil
+  "Dynamic variable that binds `on-warning-color' of `theme' in `themed-css'.")
+(defvar warning-alt nil
+  "Dynamic variable that binds `warning-alt-color' of `theme' in `themed-css'.")
+(defvar on-warning-alt nil
+  "Dynamic variable that binds `on-warning-alt-color' of `theme' in `themed-css'.")
 (defvar font-family nil
   "Dynamic variable that binds `font-family' of `theme' in `themed-css'.")
 
@@ -131,14 +199,24 @@ out from all of the other theme colors.")
   `(let* ((theme:theme ,theme)
           (theme:background (background-color theme:theme))
           (theme:on-background (on-background-color theme:theme))
-          (theme:background-alternate (background-color-alternate theme:theme))
-          (theme:on-background-alternate (on-background-color-alternate theme:theme))
+          (theme:background-alt (background-alt-color theme:theme))
+          (theme:on-background-alt (on-background-alt-color theme:theme))
           (theme:primary (primary-color theme:theme))
           (theme:on-primary (on-primary-color theme:theme))
+          (theme:primary-alt (primary-alt-color theme:theme))
+          (theme:on-primary-alt (on-primary-alt-color theme:theme))
           (theme:secondary (secondary-color theme:theme))
           (theme:on-secondary (on-secondary-color theme:theme))
+          (theme:secondary-alt (secondary-alt-color theme:theme))
+          (theme:on-secondary-alt (on-secondary-alt-color theme:theme))
           (theme:accent (accent-color theme:theme))
           (theme:on-accent (on-accent-color theme:theme))
+          (theme:accent-alt (accent-alt-color theme:theme))
+          (theme:on-accent-alt (on-accent-alt-color theme:theme))
+          (theme:warning (warning-color theme:theme))
+          (theme:on-warning (on-warning-color theme:theme))
+          (theme:warning-alt (warning-alt-color theme:theme))
+          (theme:on-warning-alt (on-warning-alt-color theme:theme))
           (theme:font-family (font-family theme:theme)))
      ,@body))
 
