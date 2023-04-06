@@ -257,6 +257,16 @@ enabled before nyxt.atlas.engineer are restored.")
   (:metaclass user-class)
   (:documentation "A buffer whose behavior can be modified with `mode's."))
 
+(defmethod (setf c2mop:slot-value-using-class) :around (new-value
+                                                        (class user-class)
+                                                        (instance modable-buffer)
+                                                        slot)
+  (call-next-method
+   (if (eq 'previous-url (c2mop:slot-definition-name slot))
+       (ensure-url new-value)
+       new-value)
+   class instance slot))
+
 (defmethod finalize-buffer ((buffer modable-buffer) &key (browser *browser*) no-hook-p extra-modes)
   "Finalize instantiation of modable BUFFER.
 In particular,
@@ -1099,33 +1109,6 @@ BUFFER's modes."
        (if (listp name)
            nil
            name)))))
-
-(defun url-slot-p (class slot-name)
-  (let ((props (mopu:slot-properties class slot-name)))
-    (or (alex:when-let ((type (getf props :type)))
-          (eq 'quri:uri type))
-        (alex:when-let ((initform (getf props :initform)))
-          (and
-           (listp initform)
-           (eq 'quri:uri (first initform)))))))
-
-(defun timestamp-slot-p (class slot-name)
-  (let ((props (mopu:slot-properties class slot-name)))
-    (or (alex:when-let ((type (getf props :type)))
-          (eq 'time:timestamp type))
-        (alex:when-let ((initform (getf props :initform)))
-          (and
-           (listp initform)
-           (eq 'time:now (first initform)))))))
-
-(defmethod s-serialization::deserialize-sexp-slot ((self buffer) slot-name slot-value deserialized-objects)
-  (declare (ignore deserialized-objects))
-  (cond
-    ((url-slot-p (class-of self) slot-name)
-     (url slot-value))
-    ((timestamp-slot-p (class-of self) slot-name)
-     (time:parse-timestring slot-value))
-    (t (call-next-method))))
 
 (defmethod s-serialization::deserialize-sexp-slot ((self buffer) (slot-name (eql 'previous-url)) slot-value deserialized-objects)
   ;; Need special case because previous-url can be NIL.

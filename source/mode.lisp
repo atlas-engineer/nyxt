@@ -595,13 +595,3 @@ If there is no corresponding keymap, return nil."
   (set-difference (call-next-method)
                   '(keyscheme-map
                     style)))
-
-(defmethod s-serialization::deserialize-sexp-slot ((self mode) slot-name slot-value deserialized-objects)
-  (if (url-slot-p (class-of self) slot-name)
-      (url slot-value)
-      (s-serialization::deserialize-sexp-internal slot-value deserialized-objects)))
-
-(defmethod s-serialization::deserialize-sexp-slot ((self mode) slot-name slot-value deserialized-objects)
-  (if (timestamp-slot-p (class-of self) slot-name)
-      (time:parse-timestring slot-value)
-      (s-serialization::deserialize-sexp-internal slot-value deserialized-objects)))

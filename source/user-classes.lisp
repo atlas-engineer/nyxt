@@ -82,6 +82,34 @@ Do not specialize the standard method in public code, prefer
     (or (typep metaclass 'user-class)
         (typep metaclass 'user-funcallable-class))))
 
+(export-always 'coerce-slot)
+(defgeneric coerce-slot (new-value instance slot-type)
+  (:method ((new-value t) (instance t) (slot-type t))
+    (declare (ignore instance slot-type))
+    new-value)
+  (:documentation "Coerce NEW-VALUE to a return value that should satisfy SLOT-TYPE.
+This applies to all slots of INSTANCE.
+To coerce the value for a specific slot, see `c2mop:slot-value-using-class'."))
+
+(defmethod coerce-slot (new-value instance (slot-type (eql 'local-time:timestamp)))
+  (declare (ignorable instance slot-type))
+  (if (typep new-value 'local-time:timestamp)
+      new-value
+      (local-time:parse-timestring new-value)))
+
+(defmethod coerce-slot (new-value instance (slot-type (eql 'package)))
+  (declare (ignorable instance slot-type))
+  (if (typep new-value 'package)
+      new-value
+      (find-package new-value)))
+
+(defmethod (setf c2mop:slot-value-using-class) :around (new-value
+                                                        (class user-class)
+                                                        instance
+                                                        slot)
+  (call-next-method (coerce-slot new-value instance (c2mop:slot-definition-type slot))
+                    class instance slot))
+
 (defclass interface-class (standard-class) ()
   (:documentation "An interface class exists solely for the purpose of
 dereferencing other classes through its superclasses.

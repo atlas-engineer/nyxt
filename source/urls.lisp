@@ -248,6 +248,10 @@ If it cannot be derived, return an empty `quri:uri'."
            (or (ignore-errors (quri:uri thing))
                (quri:uri "")))))
 
+(defmethod coerce-slot (new-value instance (slot-type (eql 'quri:uri)))
+  (declare (ignorable instance slot-type))
+  (ensure-url new-value))
+
 (-> url-empty-p ((or quri:uri string null)) boolean)
 (export-always 'url-empty-p)
 (defun url-empty-p (url)
