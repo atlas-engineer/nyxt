@@ -208,6 +208,11 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
 - and sets `raised-condition' (if any) to a wrapper class managing raised
   condition debugging."))
 
+(defmethod s-serialization:serialize-sexp-slot ((self lisp-cell) (slot (eql 'eval-package))
+                                                stream serialization-state)
+  (declare (ignore serialization-state))
+  (prin1 (package-name (slot-value self slot)) stream))
+
 (define-class cell-source (prompter:source)
   ((prompter:name "Cell types")
    (prompter:constructor (mopu:subclasses (find-class 'cell nil)))))
