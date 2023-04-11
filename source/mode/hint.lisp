@@ -93,16 +93,6 @@ For instance, to include images:
        "g f" 'follow-hint-nosave-buffer
        "g F" 'follow-hint-nosave-buffer-focus)))))
 
-(define-parenscript-async add-stylesheet ()
-  (unless (nyxt/ps:qs document "#nyxt-stylesheet")
-    (ps:try
-     (ps:let ((style-element (ps:chain document (create-element "style"))))
-       (setf (ps:@ style-element id) "nyxt-stylesheet")
-       (ps:chain document head (append-child style-element))
-       (setf (ps:chain style-element inner-text)
-             (ps:lisp (style (find-submode 'hint-mode)))))
-     (:catch (error)))))
-
 (define-parenscript-async hint-elements (hints)
   (defun create-hint-overlay (original-element hint)
     "Create a DOM element to be used as a hint."
@@ -168,7 +158,8 @@ For instance, to include images:
     (ps:chain element (remove-attribute "nyxt-hintable"))))
 
 (defun add-hints (&key selector (buffer (current-buffer)))
-  (add-stylesheet)
+  (add-stylesheet (style (find-submode 'hint-mode))
+                  buffer)
   (set-hintable-attribute selector)
   (update-document-model :buffer buffer)
   (let* ((hintable-elements (clss:select "[nyxt-hintable]" (document-model buffer)))
