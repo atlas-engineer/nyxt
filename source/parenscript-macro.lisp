@@ -159,3 +159,11 @@
          (progn (loop while (and el (not (eq el element)))
                       do (setf el (chain el parent-node)))
                 (null el)))))
+
+(export-always 'element-invisible-p)
+(defpsmacro element-invisible-p (element)
+  "Whether ELEMENT is invisible."
+  `(or (= (@ ,element offset-height)
+          0)
+       (= (chain window (get-computed-style ,element) "visibility")
+          "hidden")))
