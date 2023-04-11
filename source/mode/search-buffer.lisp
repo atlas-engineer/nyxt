@@ -11,6 +11,8 @@
    (rememberable-p nil)
    (style
     (theme:themed-css (theme *browser*)
+      ;; Name them as nyxt-shint?  Note that we already have nyxt-hint from
+      ;; hint-mode.
       `("span[nyxt-search-hint]"
         :background-color ,(str:concat theme:secondary " !important")
         :color ,(str:concat theme:on-secondary " !important")
@@ -28,6 +30,7 @@
       `(:keyframes "highlight"
                    (0% :background-position 100%)
                    (100% :background-position 0%)))
+    ;; Overlays or hints?
     :documentation "The style of the search overlays.")
    (keyscheme-map
     (define-keyscheme-map "search-buffer-mode" ()
@@ -47,55 +50,114 @@
   (:toggler-command-p nil))
 
 (define-class search-match ()
-  ((pattern)
-   ;; is element needed?  Most likely yes.  But it doesn't quite identify the
-   ;; match in plump does it?
-   (element)
-   (body)
-   (match-index)
-   (identifier-beg)
-   (node-index-beg)
-   (text-index-beg)
-   (identifier-end)
-   (node-index-end)
-   (text-index-end)
-   (buffer)
-   (highlighted-p)))
+  ((pattern
+    ""
+    :type string
+    :documentation "The requested search pattern.")
+   (body
+    ""
+    :type string
+    :documentation "The full context of the match.
+It is the concatenation of text nodes that constitute the match.")
+   (buffer
+    nil
+    :type (maybe buffer)
+    :documentation "The buffer where the match is found.")
+   ;; Is highlighting the right concept?
+   (hinted-p
+    nil
+    :type boolean
+    :documentation "Whether the match is shown in its corresponding `buffer'.
+Requires running JavaScript code.")
+   (nodes
+    '()
+    :type (list-of plump:node)
+    :documentation "The list of text nodes where the match is found.")
+   (id
+    0
+    :type alex:non-negative-fixnum
+    :documentation "The unique identifier.
+Useful to reference the match via CSS selectors.")
+   (identifier-beg
+    ""
+    :type string
+    :documentation "DOM coordinate that marks the beginning of the match.")
+   (node-index-beg
+    0
+    :type alex:non-negative-fixnum
+    :documentation "DOM coordinate that marks the beginning of the match.")
+   (text-index-beg
+    0
+    :type alex:non-negative-fixnum
+    :documentation "DOM coordinate that marks the beginning of the match.")
+   (identifier-end
+    ""
+    :type string
+    :documentation "DOM coordinate that marks the end of the match.")
+   (node-index-end
+    0
+    :type alex:non-negative-fixnum
+    :documentation "DOM coordinate that marks the end of the match.")
+   (text-index-end
+    0
+    :type alex:non-negative-fixnum
+    :documentation "DOM coordinate that marks the end of the match."))
+  (:documentation "A `search-match' captures the means to manipulate matches via
+two complementary ways: (1) the Lisp-side DOM (powered by `plump' and
+`nyxt/dom'), and (2) Javascript."))
 
-(defmethod (setf highlighted-p) (value (match search-match))
-  (setf (slot-value match 'highlighted-p) value)
-  (when value (highlight-match match)))
+(defmethod (setf hinted-p) (value (match search-match))
+  (setf (slot-value match 'hinted-p) value)
+  (when value (hint match)))
 
-;; Rename to hint-match?
-(defmethod highlight-match ((match search-match))
-  (ps-eval :async t :buffer (or (buffer match) (current-buffer))
+(defmethod css-selector ((match search-match))
+  "Return a CSS selector that uniquely identifies MATCH."
+  (format nil "span[nyxt-search-hint=\"~a\"]" (id match)))
+
+;; TODO Add a fn that sets highlighted to a bunch of items, thus capturing the
+;; fact that hints are made from the end?
+
+;; Adequate name?
+(defmethod hint ((match search-match))
+  "Hint MATCH in its corresponding buffer.
+
+The DOM is mutated via Javascript by wrapping MATCH around a span element.  In
+some cases, when MATCH spans multiple text nodes, multiple span elements wrap
+MATCH.
+
+Style it via CSS selector \"[nyxt-search-hint]\"."
+  ;; Why did I have :buffer (or (buffer match) (current-buffer))?
+  (ps-eval :async t :buffer (buffer match)
     ;; StaticRange may improve performance at the cost of correctness.
     (defun create-range () (ps:chain document (create-range)))
 
-    (defun create-match-element (index)
+    (defun create-match-element (value)
       (let ((elem (ps:chain document (create-element "span"))))
-        (ps:chain elem (set-attribute "nyxt-search-hint" index))
+        (ps:chain elem (set-attribute "nyxt-search-hint" value))
         elem))
 
     (defun wrap (range new-parent) (ps:chain range (surround-contents new-parent)))
 
     (defun test-node (node) (ps:chain (eq node this)))
 
-    (defun text-nodes-within-bounds (root-element node-beg node-end)
-      "TODO"
+    (defun text-nodes-within-bounds (root node-beg node-end)
+      "Return text nodes under ROOT, bounded by NODE-BEG and NODE-END."
+      ;; No need to raise an error when node-beg/end don't descend from root
+      ;; since, in the particular context of `hint', it always holds true.
       (let ((nodes '())
-            ;; 4 means NodeFilter.SHOW_TEXT
-            (walk (ps:chain document (create-tree-walker root-element 4 null false))))
-        (loop for text-node = (ps:chain walk (next-node))
+            ;; Tersely written due to PS limitations.
+            ;; 4 means that only text nodes are collected by the generator.
+            ;; https://developer.mozilla.org/en-US/docs/Web/API/TreeWalker/whatToShow
+            (walker (ps:chain document (create-tree-walker root 4 null false))))
+        (loop for text-node = (ps:chain walker (next-node))
               while text-node
               do (ps:chain nodes (push text-node)))
-        (setf nodes
-              (ps:chain nodes
-                        (slice (ps:chain nodes (find-index test-node node-beg))
-                               ;; Safe to replace with find-last-index?
-                               (1+ (ps:chain nodes (find-index test-node node-end))))))))
+        (let ((beg (ps:chain nodes (find-index test-node node-beg)))
+              ;; If it misbehaves, replace with find-index.
+              (end (1+ (ps:chain nodes (find-last-index test-node node-end)))))
+          (setf nodes (ps:chain nodes (slice beg end))))))
 
-    (let* ((match-index (ps:lisp (match-index match)))
+    (let* ((id (ps:lisp (id match)))
            (elem-beg (nyxt/ps:qs-nyxt-id (ps:@ document body)
                                          (ps:lisp (identifier-beg match))))
            (elem-end (nyxt/ps:qs-nyxt-id (ps:@ document body)
@@ -110,10 +172,9 @@
       (ps:try
        ;; Possible unless a node is partially selected by the Range.
        ;; https://www.w3.org/TR/DOM-Level-2-Traversal-Range/ranges.html#td-partially-selected.
-       (wrap range (create-match-element match-index))
+       (wrap range (create-match-element id))
        (:catch (error)
-         ;; When there are partially selected nodes, wrap each of the text nodes
-         ;; that account for the match.
+         ;; If there are partially selected nodes, wrap each of the text nodes.
          (let* ((root-elem (if (ps:chain elem-beg (contains node-end))
                                elem-beg
                                (ps:@ elem-end parent-element)))
@@ -124,39 +185,43 @@
                            (let ((range (create-range)))
                              (ps:chain range (select-node-contents node-beg))
                              (ps:chain range (set-start node-beg text-beg))
-                             (wrap range (create-match-element match-index))))
+                             (wrap range (create-match-element id))))
                           ((= i last-index)
                            (let ((range (create-range)))
                              (ps:chain range (select-node-contents node-end))
                              (ps:chain range (set-end node-end text-end))
-                             (wrap range (create-match-element match-index))))
+                             (wrap range (create-match-element id))))
                           (t
                            (let ((range (create-range)))
                              (ps:chain range (select-node-contents (ps:getprop nodes i)))
-                             (wrap range (create-match-element match-index))))))))))))
+                             (wrap range (create-match-element id))))))))))))
 
-(defmethod css-selector ((match search-match))
-  "TODO"
-  (format nil "span[nyxt-search-hint=\"~a\"]" (match-index match)))
+;; Adequate name?
+(defmethod hint-distinctively ((match search-match) &key (scroll t))
+  "Hint MATCH and optionally SCROLL it into view.
 
-;; Rename to hint-current-match?
-(defmethod highlight-current-match ((match search-match) &key (scroll t))
-  "TODO"
+Differs from `nyxt/search-buffer-mode::hint' in the sense that is allows for a
+more refined styling.  This is particularly useful when MATCH needs to stand out
+from others matches.
+
+Style it via CSS selector \".nyxt-current-search-hint\"."
   (ps-eval :buffer (buffer match)
-    (let ((selector (ps:lisp (css-selector match))))
-      (ps:dolist (elem (nyxt/ps:qsa (ps:@ document body) "span.nyxt-current-search-hint"))
-        (ps:chain elem class-list (remove "nyxt-current-search-hint")))
-      (ps:dolist (elem (nyxt/ps:qsa (ps:@ document body) selector))
+    ;; Note that multiple span elements may feature class
+    ;; .nyxt-current-search-hint.  I.e., to a single match may correspond
+    ;; several span elements.
+    (ps:dolist (elem (nyxt/ps:qsa (ps:@ document body)
+                                  "span[nyxt-search-hint].nyxt-current-search-hint"))
+      (ps:chain elem class-list (remove "nyxt-current-search-hint")))
+    (let ((match-selector (ps:lisp (css-selector match))))
+      (ps:dolist (elem (nyxt/ps:qsa (ps:@ document body) match-selector))
         (ps:chain elem class-list (add "nyxt-current-search-hint")))
-      ;; take the first element that has the match span and scroll that one.
       (when (ps:lisp scroll)
-        ;; why can this element be null?
-        (let ((match (nyxt/ps:qs (ps:@ document body) selector)))
+        (let ((match (nyxt/ps:qs (ps:@ document body) match-selector)))
           (when match
             (ps:chain match (scroll-into-view (ps:create block "center")))))))))
 
 (defmethod invisible-p ((match search-match))
-  "TODO"
+  "Whether MATCH is invisible in its corresponding buffer."
   (ps-eval :buffer (buffer match)
     (let ((elem (nyxt/ps:qs (ps:@ document body) (ps:lisp (css-selector match)))))
           (and elem (nyxt/ps:element-invisible-p elem)))))
@@ -212,7 +277,18 @@
 (defun search-contiguous (pattern str &key (found-pattern nil)
                                         (full-match-p nil)
                                         (test #'string=))
-  "TODO"
+  "Search for PATTERN in STR given that FOUND-PATTERN has been observed.
+
+When a match is found, return the substring of PATTERN and a list of position
+indices relative to STR.
+
+Only contiguous matches are considered.  For example:
+(search-contiguous \"match\" \"a m\" :found-pattern \"m\") -> nil
+(search-contiguous \"match\" \"m\"   :found-pattern \"m\") -> (values \"ma\" (0 1))
+
+TEST is a function of 2 arguments that returns a boolean.  It determines what
+qualifies as a match."
+  (declare (type string pattern) (type string str))
   (cond
     ((or (str:empty? pattern) (str:empty? str)) nil)
     ((string= "" (str:prefix (list found-pattern pattern)))
@@ -225,8 +301,7 @@
            for i downfrom (min (length delta) (length str)) to 1
            for beg = (search delta str :end1 i :start2 (- len-str i) :test test)
            when beg
-             do (return (values (str:concat found-pattern (subseq delta 0 i))
-                                (list beg (+ beg i))))
+             do (return (values (subseq delta 0 i) (list beg (+ beg i))))
              and do (loop-finish)))
     (t
      (alex:when-let* ((delta (sera:string-replace found-pattern pattern ""))
@@ -236,44 +311,55 @@
                (list beg (+ beg len-delta)))))))
 
 (defun search-all (pattern str &key (test #'string=))
-  "TODO"
-  (loop with match-indices with len = (length pattern) with beg = 0
-        while beg
-        when (setf beg (search pattern str :start2 beg :test test))
-          do (push (list beg (incf beg len)) match-indices)
-        finally (return (nreverse match-indices))))
+  "Return all pairs of indices where PATTERN is found in STR.
+
+TEST is a function of 2 arguments that returns a boolean.  It determines what
+qualifies as a match."
+  (declare (type string pattern) (type string str))
+  (unless (string-equal "" pattern)
+    (loop with match-indices with len = (length pattern) with beg = 0
+          while beg
+          when (setf beg (search pattern str :start2 beg :test test))
+            do (push (list beg (incf beg len)) match-indices)
+          finally (return (nreverse match-indices)))))
 
 ;; This used to be called query-buffer.
-;; TODO add renderer test that tests highlight-matches-p.
+;; The equivalent of the pattern argument used to be called query.
+;; I'm not sure whether we should call it the same in the new implementation,
+;; since it's radically different in spirit.
+;; TODO add renderer test that tests hint-p.
+;; lots of text-nodes are simply whitespaces.  is there a way to avoid it?
 (export-always 'search-document)
-(defun search-document (pattern &key buffer node (highlight-matches-p nil)
-                                  (test #'string-equal))
-  (let ((matches) (partial-match) (seen) (match-index 0))
+(defun search-document (pattern &key buffer node (hint-p nil) (test #'string-equal))
+  "TODO"
+  ;; TODO Is partial-match a good name?
+  (let ((matches) (partial-match) (seen) (idx 0))
     (labels
         ((traverse-dfs (node)
            "TODO"
            (loop for child across (plump:children node) and index from 0
                  do (typecase child
+                      ;; Filter style, script and noscript elements.
                       (plump:fulltext-element)
-                      (nyxt/dom:noscript-element)
                       (plump:nesting-node (traverse-dfs child))
                       (plump:text-node
                        (let ((text (plump:text child)))
                          ;; Matches circumscribed to a single node
                          (loop with id = (nyxt/dom:get-nyxt-id node)
                                for match in (search-all pattern text :test test)
-                               do (push (make-instance 'search-match
-                                                       :pattern pattern
-                                                       :element node
-                                                       :match-index (incf match-index)
-                                                       :identifier-beg id
-                                                       :identifier-end id
-                                                       :node-index-beg index
-                                                       :node-index-end index
-                                                       :text-index-beg (first match)
-                                                       :text-index-end (second match)
-                                                       :body text
-                                                       :buffer buffer)
+                               do (push (make-instance
+                                         'search-match
+                                         :pattern pattern
+                                         :body text
+                                         :buffer buffer
+                                         :nodes (list child)
+                                         :id (incf idx)
+                                         :identifier-beg id
+                                         :node-index-beg index
+                                         :text-index-beg (first match)
+                                         :identifier-end id
+                                         :node-index-end index
+                                         :text-index-end (second match))
                                         matches))
                          ;; Matches spanning multiple nodes
                          (multiple-value-bind (patt bounds)
@@ -294,44 +380,47 @@
                                        ;; seems useless, test!
                                        (not (funcall test seen pattern)))
                                   (setf partial-match
-                                        (make-instance 'search-match
+                                        (make-instance
+                                         'search-match
                                          :pattern pattern
-                                         ;; TODO Is :element set correctly?
-                                         :element (plump:parent node)
+                                         :buffer buffer
+                                         :nodes (list child)
                                          :identifier-beg (nyxt/dom:get-nyxt-id node)
                                          :node-index-beg index
-                                         :text-index-beg (first bounds)
-                                         :body text
-                                         :buffer buffer)))
+                                         :text-index-beg (first bounds))))
                                  ((not (funcall test seen pattern))
-                                  (setf (body partial-match)
-                                        (str:concat (body partial-match) text)))
+                                  (setf (nodes partial-match)
+                                        (append (nodes partial-match) (list child))))
                                  (t
-                                  (setf (identifier-end partial-match)
+                                  (setf (nodes partial-match)
+                                        (append (nodes partial-match) (list child))
+                                        (body partial-match)
+                                        (apply #'concatenate
+                                               'string
+                                               (mapcar #'plump:text (nodes partial-match)))
+                                        (id partial-match)
+                                        (incf idx)
+                                        (identifier-end partial-match)
                                         (nyxt/dom:get-nyxt-id node)
                                         (node-index-end partial-match)
                                         index
                                         (text-index-end partial-match)
-                                        (second bounds)
-                                        (body partial-match)
-                                        (str:concat (body partial-match) text)
-                                        (match-index partial-match)
-                                        (incf match-index))
+                                        (second bounds))
                                   (push partial-match matches)
                                   (setf partial-match nil
                                         seen nil))))))))))
       (traverse-dfs node))
     ;; Highlighting logic.
-    (cond ((null highlight-matches-p)
+    (cond ((null hint-p)
            (setf matches (nreverse matches)))
-          ((integerp highlight-matches-p)
+          ((integerp hint-p)
            (setf matches (nreverse matches))
-           (loop for match in (nreverse (sera:firstn highlight-matches-p matches))
-                 do (setf (highlighted-p match) t))
+           (loop for match in (nreverse (sera:firstn hint-p matches))
+                 do (setf (hinted-p match) t))
            matches)
           (t
            (loop for match in matches
-                 do (setf (highlighted-p match) t))
+                 do (setf (hinted-p match) t))
            (setf matches (nreverse matches))))))
 
 (define-command remove-search-hints (&optional (buffer (current-buffer)))
@@ -375,7 +464,7 @@ Takes effect when the search pattern's length is less than `no-delay-length'.")
     3
     :documentation "Search starts immediately for patterns at least this long.
 For shorter search patterns, `initial-delay' applies.")
-   ;; This is obsolete if I implement lazy highlighting.
+   ;; This is obsolete if I implement lazy high
    (prompter:actions-on-current-suggestion-enabled-p t)
    (prompter:filter nil)
    ;; filter-preprocessor is being used as the constructor, i.e. the mechanism
@@ -397,7 +486,7 @@ For shorter search patterns, `initial-delay' applies.")
                            :node (alex:first-elt (clss:select "body"
                                                    (document-model buffer)))
                            :test (or (test-function source) (smart-case-test input))
-                           :highlight-matches-p (maximum-hinted-matches source))))))
+                           :hint-p (maximum-hinted-matches source))))))
    (prompter:actions-on-current-suggestion
     (lambda-command highlight-match (suggestion)
       ;; TODO
@@ -411,7 +500,7 @@ For shorter search patterns, `initial-delay' applies.")
                       :key #'prompter:value))
         ;; FIXME Hack that enables the above deletion to cascade.
         (prompter:run-action-on-current-suggestion (current-prompt-buffer)))
-      (highlight-current-match suggestion)))
+      (hint-distinctively suggestion)))
    (prompter:constructor (lambda (source)
                            (add-stylesheet (style (find-submode 'search-buffer-mode))
                                            (buffer source))))
@@ -425,16 +514,17 @@ For shorter search patterns, `initial-delay' applies.")
 
 ;; TODO Add tests?
 (defmethod maybe-update-highlighting (current-match (source search-buffer-source))
-  (unless (highlighted-p current-match)
+  "TODO"
+  (unless (hinted-p current-match)
     (let* ((matches (mapcar #'prompter:value (prompter:suggestions source)))
            (match-batch (find current-match
                               (sera:batches matches (maximum-hinted-matches source))
                               :test #'member)))
-      ;; Add method that would set highlighted-p to nil?  Not sure, since it's
+      ;; Add method that would set hinted-p to nil?  Not sure, since it's
       ;; probably faster to remove all hints in one go.
       (remove-search-hints (buffer source))
-      (mapcar (lambda (match) (setf (highlighted-p match) nil)) matches)
-      (mapcar (lambda (match) (setf (highlighted-p match) t)) (nreverse match-batch)))))
+      (mapcar (lambda (match) (setf (hinted-p match) nil)) matches)
+      (mapcar (lambda (match) (setf (hinted-p match) t)) (nreverse match-batch)))))
 
 ;; TODO Add option to pass input?
 (define-command search-buffer ()
