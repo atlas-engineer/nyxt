@@ -271,17 +271,16 @@ This induces a performance cost."))
     ("Title" ,(page-title doc) nil 2)
     ("Keywords" ,(page-keywords doc))))
 
-(defvar *remembrance-node-class-name* "nyxt-remembrance-highlight-node")
-
-(defun add-search-hint (buffer term)
+(defun add-search-mark (buffer term)
   ;; TODO: Add this to the  `nyxt/mode/search-buffer' API?
   (unless (uiop:emptyp term)
     (with-current-buffer buffer
-      (nyxt/mode/search-buffer::query-buffer
-       :query term
-       :keep-previous-hints t
-       :node-class-name *remembrance-node-class-name*
-       :case-sensitive-p nil))))
+      (nyxt/mode/search-buffer:search-document
+       term
+       :buffer buffer
+       :node (elt (clss:select "body" (document-model buffer)) 0)
+       :test (smart-case-test term)
+       :mark-p t))))
 
 (define-internal-scheme "view-remembered-page"
     (lambda (url buffer)
@@ -298,7 +297,7 @@ This induces a performance cost."))
                    (doc (find-url url-string mode)))
               (hooks:once-on (buffer-loaded-hook buffer) (_)
                 (dolist (term (cons query (uiop:split-string query)))
-                  (add-search-hint buffer term)))
+                  (add-search-mark buffer term)))
               (spinneret:with-html-string
                 (:nstyle (style mode))
                 (:h1 "[Cache] " (:a :href url-string (if (uiop:emptyp (page-title doc))
