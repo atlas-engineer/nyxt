@@ -11,15 +11,23 @@
    (rememberable-p nil)
    (style
     (theme:themed-css (theme *browser*)
-      `(".nyxt-search-node .nyxt-hint"
-        :background-color ,theme:secondary
-        :color ,theme:on-secondary
-        :padding "0px"
-        :border-radius "0px"
+      `("span[nyxt-search-hint]"
+        :background-color ,(str:concat theme:secondary " !important")
+        :color ,(str:concat theme:on-secondary " !important")
         :z-index #.(1- (expt 2 31)))
-      `(".nyxt-search-node > .nyxt-hint.nyxt-select-hint"
-        :background-color ,theme:accent
-        :color ,theme:on-accent))
+      `("span[nyxt-search-hint].nyxt-current-search-hint"
+        :animation-name "highlight"
+        :animation-duration "1s"
+        :animation-delay "0.2s"
+        :animation-timing-function "ease-in-out"
+        :animation-iteration-count "infinite"
+        :animation-direction "alternate"
+        :background ,(format nil "linear-gradient(90deg, ~a, ~a, ~a)"
+                             theme:accent theme:background theme:accent)
+        :background-size 300% 100%)
+      `(:keyframes "highlight"
+                   (0% :background-position 100%)
+                   (100% :background-position 0%)))
     :documentation "The style of the search overlays.")
    (keyscheme-map
     (define-keyscheme-map "search-buffer-mode" ()
