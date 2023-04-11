@@ -273,15 +273,16 @@ This induces a performance cost."))
 
 (defvar *remembrance-node-class-name* "nyxt-remembrance-highlight-node")
 
-(defun add-search-hint (buffer term)
-  ;; TODO: Add this to the  `nyxt/search-buffer-mode' API?
-  (unless (uiop:emptyp term)
-    (with-current-buffer buffer
-      (nyxt/search-buffer-mode::query-buffer
-       :query term
-       :keep-previous-hints t
-       :node-class-name *remembrance-node-class-name*
-       :case-sensitive-p nil))))
+;; FIXME query-buffer doesn't exist anymore
+;; (defun add-search-hint (buffer term)
+;;   ;; TODO: Add this to the  `nyxt/search-buffer-mode' API?
+;;   (unless (uiop:emptyp term)
+;;     (with-current-buffer buffer
+;;       (nyxt/search-buffer-mode::query-buffer
+;;        :query term
+;;        :keep-previous-hints t
+;;        :node-class-name *remembrance-node-class-name*
+;;        :case-sensitive-p nil))))
 
 (define-internal-scheme "view-remembered-page"
     (lambda (url buffer)
@@ -298,7 +299,9 @@ This induces a performance cost."))
                    (doc (find-url url-string mode)))
               (hooks:once-on (buffer-loaded-hook buffer) (_)
                 (dolist (term (cons query (uiop:split-string query)))
-                  (add-search-hint buffer term)))
+                  ;; FIXME
+                  ;; (add-search-hint buffer term)
+                  t))
               (spinneret:with-html-string
                 (:nstyle (style mode))
                 (:h1 "[Cache] " (:a :href url-string (if (uiop:emptyp (page-title doc))
