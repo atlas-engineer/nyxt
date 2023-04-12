@@ -220,9 +220,29 @@ For instance, to include images:
   (ps:dolist (selected-hint (nyxt/ps:qsa document ".nyxt-select-hint"))
     (ps:chain selected-hint class-list (remove "nyxt-select-hint"))))
 
+(define-parenscript-async set-hint-visibility (hint state)
+  "Set visibility STATE of HINT element.
+
+Consult https://developer.mozilla.org/en-US/docs/Web/CSS/visibility."
+  (let ((element (nyxt/ps:qs document (ps:lisp (format nil "#nyxt-hint-~a"
+                                                       (identifier hint))))))
+    (when element (setf (ps:@ element style "visibility") (ps:lisp state)))))
+
 (define-class hint-source (prompter:source)
   ((prompter:name "Hints")
    (prompter:actions-on-current-suggestion-enabled-p t)
+   (prompter:filter-preprocessor
+    (lambda (suggestions source input)
+      (declare (ignore source))
+      (when (and (auto-follow-hints-p (find-submode 'hint-mode))
+                 (fit-to-prompt-p (find-submode 'hint-mode)))
+        (loop for suggestion in suggestions
+              do (if (str:starts-with-p input
+                                        (prompter:attributes-default suggestion)
+                                        :ignore-case t)
+                     (set-hint-visibility (prompter:value suggestion) "visible")
+                     (set-hint-visibility (prompter:value suggestion) "hidden")))
+        suggestions)))
    (prompter:filter
     (if (and (auto-follow-hints-p (find-submode 'hint-mode))
              (fit-to-prompt-p (find-submode 'hint-mode)))
