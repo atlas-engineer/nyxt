@@ -370,8 +370,10 @@ Otherwise prompt for matches."
                               (prompt-buffer-canceled nil))))
            "Change value")
           (:p (:raw (value->html (symbol-value variable))))
-          (:h2 "Describe")
-          (:pre (:code (with-output-to-string (s) (describe variable s)))))
+          (:nsection
+            :open-p nil
+            :title "Describe"
+           (:pre (:code (with-output-to-string (s) (describe variable s))))))
         (spinneret:with-html-string
           (:nstyle (style buffer))
           (:h1 (format nil "~s" variable))
@@ -400,8 +402,6 @@ For generic functions, describe all the methods."
         (flet ((fun-desc (input)
                  (spinneret:with-html-string
                    (:pre (:code (:raw (resolve-backtick-quote-links (documentation input 'function) (symbol-package input)))))
-                   (:h2 "Argument list")
-                   (:p (:pre (prini-to-string (arglist input) :package (symbol-package input))))
                    (when (sym:command-symbol-p input)
                      (let* ((key-keymap-pairs (nth-value 1 (keymaps:binding-keys input (all-keymaps))))
                             (key-keymapname-pairs (mapcar (lambda (pair)
@@ -409,29 +409,38 @@ For generic functions, describe all the methods."
                                                                   (keymaps:name (second pair))))
                                                           key-keymap-pairs)))
                        (when key-keymapname-pairs
-                         (:h2 "Bindings")
-                         (:table
-                          (:tr
-                           (:th "Binding")
-                           (:th "Keymap name"))
-                          (loop for (binding keymapname) in key-keymapname-pairs
-                                collect (:tr (:td binding)
-                                             (:td keymapname)))))))
+                         (:nsection
+                           :title "Bindings"
+                           (:table
+                            (:tr
+                             (:th "Binding")
+                             (:th "Keymap name"))
+                            (loop for (binding keymapname) in key-keymapname-pairs
+                                  collect (:tr (:td binding)
+                                               (:td keymapname))))))))
+                   (:nsection
+                     :title "Argument list"
+                     (:pre (:code (prini-to-string (arglist input) :package (symbol-package input)))))
                    #+sbcl
                    (unless (or (macro-function input)
                                (eq 'function (sb-introspect:function-type input)))
-                     (:h2 "Type")
-                     (:p (:pre (format-function-type (sb-introspect:function-type input)))))
+                     (:nsection
+                       :title "Type"
+                       (:p (:pre (format-function-type (sb-introspect:function-type input))))))
                    (alex:when-let* ((definition (swank:find-definition-for-thing (symbol-function input)))
                                     (not-error-p (null (getf definition :error)))
                                     (file (first (rest (getf definition :location)))))
-                     (:h2 (format nil "Source (~a)" file))
-                     (:ncode :file file
-                       (multiple-value-bind (listing form)
-                           (function-lambda-string (symbol-function input))
-                         (or form listing))))
-                   (:h2 "Describe")
-                   (:pre (:code (with-output-to-string (s) (describe (symbol-function input) s))))))
+                     (:nsection
+                       :title (format nil "Source (~a)" file)
+                       :id "source"
+                       (:ncode :file file
+                         (multiple-value-bind (listing form)
+                             (function-lambda-string (symbol-function input))
+                           (or form listing)))))
+                   (:nsection
+                     :open-p nil
+                     :title "Describe"
+                    (:pre (:code (with-output-to-string (s) (describe (symbol-function input) s)))))))
                (method-desc (method)
                  (spinneret:with-html-string
                    (:details
@@ -460,14 +469,19 @@ For generic functions, describe all the methods."
                      "Remove method")
                     (:pre (:code (:raw (resolve-backtick-quote-links
                                         (documentation method 't) (symbol-package (mopu:method-name method))))))
-                    (:h4 "Argument list")
-                    (:p (:pre (prini-to-string (closer-mop:method-lambda-list method)
-                                               :package (symbol-package input))))
+                    (:nsection
+                      :level 4
+                      :title "Argument list"
+                      (:pre (:code (prini-to-string (closer-mop:method-lambda-list method)
+                                                    :package (symbol-package input)))))
                     (multiple-value-bind (source form file)
                         (source-for-thing method)
-                      (:h2 (format nil "Source (~a)" file))
-                      (:ncode :file file
-                        (or form source)))))))
+                      (:nsection
+                        :title (format nil "Source (~a)" file)
+                        :id (string-downcase (symbol-name (gensym "SOURCE")))
+                        :level 4
+                        (:ncode :file file
+                          (or form source))))))))
           (spinneret:with-html-string
             (:nstyle (style buffer))
             (:h1 (format nil "~s" input) ; Use FORMAT to keep package prefix.
@@ -482,12 +496,14 @@ For generic functions, describe all the methods."
                (:p "Unbound."))
               ((typep (symbol-function input) 'generic-function)
                (:raw (fun-desc input))
-               (:h2 "Methods")
-               (:raw (sera:string-join
-                      (mapcar #'method-desc
-                              (mopu:generic-function-methods
-                               (symbol-function input)))
-                      "")))
+               (unless (sym:command-symbol-p input)
+                 (:nsection
+                   :title "Methods"
+                   (:raw (sera:string-join
+                          (mapcar #'method-desc
+                                  (mopu:generic-function-methods
+                                   (symbol-function input)))
+                          "")))))
               (t
                (:raw (fun-desc input)))))))
       (prompt :prompt "Describe function"
@@ -570,29 +586,37 @@ A command is a special kind of function that can be called with
           (:nstyle (style buffer))
           (:h1 (symbol-name class) " (" (sera:class-name-of (find-class class)) ")")
           (:pre (:code (:raw (resolve-backtick-quote-links (documentation class 'type) (symbol-package class)))))
-          (when (mopu:direct-superclasses class)
-            (:h2 "Direct superclasses:")
-            (:ul (loop for class-name in (mapcar #'class-name (mopu:direct-superclasses class))
-                       collect (:li (:a :href (nyxt-url 'describe-class :class class-name) class-name)))))
-          (when (mopu:direct-subclasses class)
-            (:h2 "Direct subclasses:")
-            (:ul (loop for class-name in (safe-sort (mapcar #'class-name (mopu:direct-subclasses class)))
-                       collect (:li (:a :href (nyxt-url 'describe-class :class class-name) class-name)))))
-          (:h2 "Slots:")
-          (:raw slot-descs)
-          (:h2 "Methods:")
-          (:ul (loop for method in (safe-sort
+          (:nsection
+            :title "Slots"
+            (:raw slot-descs))
+          (:nsection
+            :title "Source"
+            (multiple-value-bind (source s-expr file)
+                (source-for-thing (find-class class))
+              (declare (ignore source))
+              (:ncode :file file s-expr)))
+          (alex:when-let ((methods (safe-sort
                                     (remove-if
                                      #'listp (mapcar #'mopu:generic-function-name
-                                                     (mopu:generic-functions class))))
-                     collect (:li (:a :href (nyxt-url 'describe-function :fn method) method))))
-          (:h2 "Source:")
-          (multiple-value-bind (source s-expr file)
-              (source-for-thing (find-class class))
-            (declare (ignore source))
-            (:ncode :file file s-expr))
-          (:h2 "Describe")
-          (:pre (:code (with-output-to-string (s) (describe class s))))))
+                                                     (mopu:generic-functions class))))))
+            (:nsection
+              :title "Methods"
+              (:ul (loop for method in methods
+                         collect (:li (:a :href (nyxt-url 'describe-function :fn method) method))))))
+          (when (mopu:direct-superclasses class)
+            (:nsection
+              :title "Direct superclasses"
+              (:ul (loop for class-name in (mapcar #'class-name (mopu:direct-superclasses class))
+                         collect (:li (:a :href (nyxt-url 'describe-class :class class-name) class-name))))))
+          (when (mopu:direct-subclasses class)
+            (:nsection
+              :title "Direct subclasses"
+              (:ul (loop for class-name in (safe-sort (mapcar #'class-name (mopu:direct-subclasses class)))
+                         collect (:li (:a :href (nyxt-url 'describe-class :class class-name) class-name))))))
+          (:nsection
+            :open-p nil
+            :title "Describe"
+            (:pre (:code (with-output-to-string (s) (describe class s)))))))
       (spinneret:with-html-string
         (:nstyle (style buffer))
         (:h2 (format nil "~s" class))

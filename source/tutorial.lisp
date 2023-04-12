@@ -258,7 +258,7 @@ buffer."))
 
       (:nsection :title "Spelling check"
         (:p "Several commands are provided to spell check words. The default is
-English but it is possible to change the slot"
+English but it is possible to change the slot "
             (:nxref :slot 'nyxt/spell-check-mode:spell-check-language :class-name 'nyxt/spell-check-mode:spell-check-mode)
             " for other languages:")
         (:ul

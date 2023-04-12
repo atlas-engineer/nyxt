@@ -326,7 +326,7 @@ To discover the default value of a slot or all slots of a class, use the
                                          :key #'symbol-name :test #'equal)
                         ;; TODO: Shall we really make the name unique?  Since we
                         ;; are configuring slots, maybe not.
-                        for handler-name = (gensym (format nil "CONFIGURE-~a" slot))
+                        for handler-name = (gensym (format nil "CONFIGURE-~a-~a" class slot))
                         when slot
                           collect
                         `(let ((,hook (slot-value (find-class (quote ,class)) 'nyxt::customize-hook))

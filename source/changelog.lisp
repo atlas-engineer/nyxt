@@ -727,3 +727,11 @@ not shuffle around. It is now possible to middle click to delete tabs.")
    (:li "New " (:code "ntoc") " tag for Table of Contents generation.")
    (:li "The REPL is extensible via " (:nxref :class-name 'nyxt/repl-mode:cell "cell class")
         " and its methods.")))
+
+(define-version "3-pre-release-6"
+  (:ul
+   (:li "Move " (:code "lisp-system") " to separate repository as extension. The functions "
+        (:code "list-system") " and " (:code "load-system") " are no longer available."))
+  (:h3 "Bug fixes")
+  (:ul
+   (:li "Switching focus away from Nyxt doesn't make it unfullscreen anymore.")))
