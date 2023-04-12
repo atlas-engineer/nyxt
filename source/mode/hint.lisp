@@ -241,8 +241,8 @@ Consult https://developer.mozilla.org/en-US/docs/Web/CSS/visibility."
                                         (prompter:attributes-default suggestion)
                                         :ignore-case t)
                      (set-hint-visibility (prompter:value suggestion) "visible")
-                     (set-hint-visibility (prompter:value suggestion) "hidden")))
-        suggestions)))
+                     (set-hint-visibility (prompter:value suggestion) "hidden"))))
+      suggestions))
    (prompter:filter
     (if (and (auto-follow-hints-p (find-submode 'hint-mode))
              (fit-to-prompt-p (find-submode 'hint-mode)))
