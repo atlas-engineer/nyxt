@@ -601,3 +601,7 @@
 	path = _build/nclasses
 	url = https://github.com/atlas-engineer/nclasses/
 	shallow = true
+[submodule "_build/cl-colors2"]
+	path = _build/cl-colors2
+	url = https://notabug.org/cage/cl-colors2
+	shallow = true

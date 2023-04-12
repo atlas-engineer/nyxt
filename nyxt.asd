@@ -73,6 +73,7 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                bordeaux-threads
                calispel
                cl-base64
+               cl-colors2
                cl-gopher
                cl-html-diff
                cl-json
@@ -641,6 +642,7 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
   :defsystem-depends-on ("nasdf")
   :class :nasdf-system
   :depends-on (alexandria
+               cl-colors2
                lass
                nclasses
                serapeum)
