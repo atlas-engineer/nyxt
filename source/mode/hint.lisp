@@ -232,6 +232,19 @@ Consult https://developer.mozilla.org/en-US/docs/Web/CSS/visibility."
                                                        (identifier hint))))))
     (when element (setf (ps:@ element style "visibility") (ps:lisp state)))))
 
+(define-parenscript-async dim-hint-prefix (hint prefix-length)
+  "Dim the first PREFIX-LENGTH characters of HINT element."
+  (let ((element (nyxt/ps:qs document (ps:lisp (format nil "#nyxt-hint-~a"
+                                                       (identifier hint))))))
+    (when element
+      (let ((span-element (ps:chain document (create-element "span"))))
+        (setf (ps:@ span-element class-name) "nyxt-hint nyxt-match-hint")
+        (setf (ps:@ span-element text-content)
+              (ps:lisp (subseq (identifier hint) 0 prefix-length)))
+        (setf (ps:chain element inner-h-t-m-l)
+              (+ (ps:@ span-element outer-h-t-m-l)
+                 (ps:lisp (subseq (identifier hint) prefix-length))))))))
+
 (define-class hint-source (prompter:source)
   ((prompter:name "Hints")
    (prompter:actions-on-current-suggestion-enabled-p t)
