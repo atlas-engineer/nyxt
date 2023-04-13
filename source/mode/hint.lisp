@@ -37,6 +37,10 @@ user input.")
       `(".nyxt-hint.nyxt-select-hint"
         :background-color ,theme:accent
         :color ,theme:on-accent)
+      `(".nyxt-hint.nyxt-match-hint"
+        :padding "0px"
+        :border-style "none"
+        :opacity "0.5")
       `(".nyxt-element-hint"
         :background-color ,theme:accent))
     :documentation "The style of the hint overlays.")
