@@ -257,7 +257,8 @@ Consult https://developer.mozilla.org/en-US/docs/Web/CSS/visibility."
               do (if (str:starts-with-p input
                                         (prompter:attributes-default suggestion)
                                         :ignore-case t)
-                     (set-hint-visibility (prompter:value suggestion) "visible")
+                     (progn (dim-hint-prefix (prompter:value suggestion) (length input))
+                            (set-hint-visibility (prompter:value suggestion) "visible"))
                      (set-hint-visibility (prompter:value suggestion) "hidden"))))
       suggestions))
    (prompter:filter
