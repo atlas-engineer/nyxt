@@ -37,6 +37,10 @@ user input.")
       `(".nyxt-hint.nyxt-select-hint"
         :background-color ,theme:accent
         :color ,theme:on-accent)
+      `(".nyxt-hint.nyxt-match-hint"
+        :padding "0px"
+        :border-style "none"
+        :opacity "0.5")
       `(".nyxt-element-hint"
         :background-color ,theme:accent))
     :documentation "The style of the hint overlays.")
@@ -228,6 +232,19 @@ Consult https://developer.mozilla.org/en-US/docs/Web/CSS/visibility."
                                                        (identifier hint))))))
     (when element (setf (ps:@ element style "visibility") (ps:lisp state)))))
 
+(define-parenscript-async dim-hint-prefix (hint prefix-length)
+  "Dim the first PREFIX-LENGTH characters of HINT element."
+  (let ((element (nyxt/ps:qs document (ps:lisp (format nil "#nyxt-hint-~a"
+                                                       (identifier hint))))))
+    (when element
+      (let ((span-element (ps:chain document (create-element "span"))))
+        (setf (ps:@ span-element class-name) "nyxt-hint nyxt-match-hint")
+        (setf (ps:@ span-element text-content)
+              (ps:lisp (subseq (identifier hint) 0 prefix-length)))
+        (setf (ps:chain element inner-h-t-m-l)
+              (+ (ps:@ span-element outer-h-t-m-l)
+                 (ps:lisp (subseq (identifier hint) prefix-length))))))))
+
 (define-class hint-source (prompter:source)
   ((prompter:name "Hints")
    (prompter:actions-on-current-suggestion-enabled-p t)
@@ -241,6 +258,7 @@ Consult https://developer.mozilla.org/en-US/docs/Web/CSS/visibility."
                                       (prompter:attributes-default suggestion)
                                       :ignore-case t)
                   do (set-hint-visibility (prompter:value suggestion) "visible")
+                  and do (dim-hint-prefix (prompter:value suggestion) (length input))
                   and collect suggestion
                 else do (set-hint-visibility (prompter:value suggestion) "hidden")))
         #'prompter:delete-inexact-matches))
