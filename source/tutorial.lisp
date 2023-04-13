@@ -163,10 +163,12 @@ been.")
         (:p "You can also view a full tree of the history for a given buffer by
 invoking the command 'buffer-history-tree'."))
 
-      (:nsection :title "Searching"
-        (:p "Nyxt can search a single buffer or multiple buffers at the same time.")
-        (:p "You can view suggestions for search results in the prompt buffer in one
-place rather than having to jump around in a buffer (or multiple buffers).")
+      (:nsection :title "Incremental Search"
+        (:p "Nyxt's search is incremental, i.e. it begins as soon as you type
+the first character of the search string.  A single or multiple buffers can be
+queried, and all results are displayed in the prompt buffer.")
+        (:p "This makes it easy to interact with results found in different URLs
+from a unified interface.")
         (:ul
          (list-command-information '(nyxt/search-buffer-mode:search-buffer
                                      nyxt/search-buffer-mode:search-buffers
