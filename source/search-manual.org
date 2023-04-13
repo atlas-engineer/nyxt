@@ -1,0 +1,25 @@
+# Read (info "(emacs) Incremental Search")
+* Incremental Search
+Lorem.
+
+** Basic usage
+Lorem.
+
+** Actions
+
+** Multi buffer search
+
+** User options
+
+** History
+
+** Programming Interface
+Mention Lisp side vs JS.
+Mention search-document.
+
+*** Invocation
+
+*** Filters (suggestion processing)
+Mention search-buffer-source.
+
+*** Highlighting
