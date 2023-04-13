@@ -738,7 +738,8 @@ not shuffle around. It is now possible to middle click to delete tabs.")
         " and "
         (:nxref :slot 'nyxt/hint-mode:auto-follow-hints-p
           :class-name 'nyxt/hint-mode:hint-mode)
-        "are enabled."))
+        "are enabled.")
+   (:li "Tree style hinting now highlights hints by dimming the matched characters."))
   (:h3 "Bug fixes")
   (:ul
    (:li "Switching focus away from Nyxt doesn't make it unfullscreen anymore.")))
