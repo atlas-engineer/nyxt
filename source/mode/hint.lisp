@@ -258,6 +258,7 @@ Consult https://developer.mozilla.org/en-US/docs/Web/CSS/visibility."
                                       (prompter:attributes-default suggestion)
                                       :ignore-case t)
                   do (set-hint-visibility (prompter:value suggestion) "visible")
+                  and do (dim-hint-prefix (prompter:value suggestion) (length input))
                   and collect suggestion
                 else do (set-hint-visibility (prompter:value suggestion) "hidden")))
         #'prompter:delete-inexact-matches))
