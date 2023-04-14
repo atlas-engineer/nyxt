@@ -258,7 +258,7 @@ If it cannot be derived, return an empty `quri:uri'."
 (-> empty-path-url-p (quri:uri) boolean)
 (export-always 'empty-path-url-p)
 (defun empty-path-url-p (url)
-  (or (string= (quri:uri-path url) "/")
+  (or (uiop:pathname-equal (quri:uri-path url) "/")
       (null (quri:uri-path url))))
 
 (-> host-only-url-p (quri:uri) boolean)
