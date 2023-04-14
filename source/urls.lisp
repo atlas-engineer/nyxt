@@ -299,8 +299,9 @@ Authority is compared case-insensitively (RFC 3986)."
        (url-eqs url1
                 url2
                 (list #'scheme=
-                      (lambda (url1 url2) (equal (or (quri:uri-path url1) "/")
-                                                 (or (quri:uri-path url2) "/")))
+                      (lambda (url1 url2) (uiop:pathname-equal
+                                           (or (quri:uri-path url1) "/")
+                                           (or (quri:uri-path url2) "/")))
                       (lambda (url1 url2) (equal (quri:uri-query url1)
                                                  (quri:uri-query url2)))
                       (lambda (url1 url2) (equal (quri:uri-fragment url1)
