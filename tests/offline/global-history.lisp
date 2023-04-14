@@ -3,7 +3,7 @@
 
 (in-package :nyxt/tests)
 
-(define-class test-profile (nosave-profile)
+(define-class test-profile (nofile-profile)
   ((files:name :initform "test"))
   (:documentation "Test profile that does not read nor write to disk."))
 
