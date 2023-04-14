@@ -254,13 +254,14 @@ Consult https://developer.mozilla.org/en-US/docs/Web/CSS/visibility."
         (lambda (suggestions source input)
           (declare (ignore source))
           (loop for suggestion in suggestions
+                for hint = (prompter:value suggestion)
                 if (str:starts-with-p input
                                       (prompter:attributes-default suggestion)
                                       :ignore-case t)
-                  do (set-hint-visibility (prompter:value suggestion) "visible")
-                  and do (dim-hint-prefix (prompter:value suggestion) (length input))
+                  do (set-hint-visibility hint "visible")
+                  and do (dim-hint-prefix hint (length input))
                   and collect suggestion
-                else do (set-hint-visibility (prompter:value suggestion) "hidden")))
+                else do (set-hint-visibility hint "hidden")))
         #'prompter:delete-inexact-matches))
    (prompter:filter
     (if (and (auto-follow-hints-p (find-submode 'hint-mode))
