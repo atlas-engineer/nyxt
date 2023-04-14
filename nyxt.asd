@@ -446,6 +446,7 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
   :serial t
   :components ((:file "tests/renderer-package")
                (:file "tests/renderer-offline/set-url")
+               (:file "tests/renderer-offline/auto-rules")
                (:file "tests/renderer-offline/execute-command-eval")
                (:file "tests/renderer-offline/remembrance")
                (:file "tests/renderer-offline/nyxt-url-security")

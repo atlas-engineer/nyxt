@@ -51,3 +51,12 @@
         (nyxt:set-url)))
     (assert-string= url (calispel:? url-channel 5))
     (nyxt:quit)))
+
+(defmacro with-browser-test ((&optional (profile "test")) &body body)
+  `(progn
+     (nyxt:start :no-config t :no-auto-config t
+                :headless t
+                :socket "/tmp/nyxt-test.socket"
+                :profile ,profile)
+     ,@body
+     (nyxt:quit)))
