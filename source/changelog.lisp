@@ -450,11 +450,11 @@ SLY install.")
    (:li "Remove " (:nxref :class-name 'nyxt/hint-mode:hint-mode) " image support
         by default.")
    (:li "Add "
-        (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'nyxt/hint-mode:compute-hints-in-view-port-p)
+        (:code "nyxt/hint-mode:compute-hints-in-view-port-p")
         " allowing hints to be optionally computed in viewport.")
    (:li "Add " (:nxref :class-name 'prompt-buffer :slot 'height) ".")
    (:li "Add "
-        (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'nyxt/hint-mode:fit-to-prompt-p)
+        (:code "nyxt/hint-mode:fit-to-prompt-p")
         " minimizing the space taken by the prompt buffer while navigating hints.")
    (:li "Add "
         (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'nyxt/hint-mode:show-hint-scope-p)
@@ -733,11 +733,9 @@ not shuffle around. It is now possible to middle click to delete tabs.")
    (:li "Move " (:code "lisp-system") " to separate repository as extension. The functions "
         (:code "list-system") " and " (:code "load-system") " are no longer available.")
    (:li "Add tree style hinting when both "
-        (:nxref :slot 'nyxt/hint-mode:fit-to-prompt-p
-          :class-name 'nyxt/hint-mode:hint-mode)
+        (:code "nyxt/hint-mode:fit-to-prompt-p")
         " and "
-        (:nxref :slot 'nyxt/hint-mode:auto-follow-hints-p
-          :class-name 'nyxt/hint-mode:hint-mode)
+        (:code "nyxt/hint-mode:auto-follow-hints-p")
         "are enabled.")
    (:li "Tree style hinting now highlights hints by dimming the matched characters."))
   (:h3 "Bug fixes")
