@@ -18,6 +18,15 @@ user input.")
     nil
     :type boolean
     :documentation "Whether the hinting prompt buffer is collapsed to the input line.")
+   (hinting-type
+    :emacs
+    :type (member :emacs :vi)
+    :documentation "Which hinting mechanism to use:
+Possible values:
+- :emacs (hints are computed in all the page and are also displayed as suggestions
+containing element attributes which are matched against user input)
+- :vi (hints are only computed in viewport only and they followed automatically when
+matching user input).")
    (style
     (theme:themed-css (theme *browser*)
       `(".nyxt-hint"
