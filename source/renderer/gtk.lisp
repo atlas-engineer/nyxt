@@ -242,7 +242,6 @@ the renderer thread, use `defmethod' instead."
    on."
   (declare (ignore urls startup-timestamp))
   (log:debug "Initializing GTK Interface")
-  (setf (uiop:getenv "WEBKIT_FORCE_SANDBOX") "0")
   (if gtk-running-p
       (within-gtk-thread
         (call-next-method))
