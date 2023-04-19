@@ -27,7 +27,8 @@ See also `vi-insert-mode'."
     (define-keyscheme-map "vi-normal-mode" ()
       keyscheme:vi-normal
       (list
-       "i" 'vi-insert-mode)))))
+       "i" 'vi-insert-mode
+       "v" 'nyxt/mode/visual:visual-mode)))))
 
 
 ;; TODO: Move ESCAPE binding to the override map?

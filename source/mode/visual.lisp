@@ -59,8 +59,12 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
       ;; vi keybindings only enable use of vim's plain "visual" mode for now
       keyscheme:vi-normal
       (list
+       ;; "caret mode" it does not select text. might break in the future?
+       ;; also thought about just making a keyscheme for vi-insert and using that as caret mode, seems more robust
+       "c" 'clear-selection
        "h" 'backward-char
        "l" 'forward-char
+       "p" 'query-selection-in-search-engine
        "k" 'backward-line
        "j" 'forward-line
        "b" 'backward-word
@@ -69,11 +73,13 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
        ")" 'forward-sentence
        "{" 'backward-paragraph
        "}" 'forward-paragraph
+       "escape" 'visual-mode
        "g g" 'backward-document
        "G" 'forward-document
        "0" 'beginning-line
        "$" 'end-line
        "v" 'toggle-mark
+       "y" 'nyxt/mode/document:copy
        "C-c" 'visual-mode)))
    (mark-set nil)))
 
