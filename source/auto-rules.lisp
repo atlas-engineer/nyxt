@@ -157,8 +157,10 @@ ARGS as in make-instance of `auto-rule'."
         (disable-modes* modes buffer)))))
 
 (defun can-save-last-active-modes-p (buffer url)
-  (or (null (last-active-modes-url buffer))
-      (not (quri:uri= url (last-active-modes-url buffer)))))
+  (and url
+       (or (null (last-active-modes-url buffer))
+           (not (quri:uri= url (last-active-modes-url buffer)))
+           (not (matching-auto-rules (previous-url buffer) buffer)))))
 
 (defun save-last-active-modes (buffer url)
   (when (can-save-last-active-modes-p buffer url)
@@ -222,8 +224,7 @@ The rules are:
                                :test #'mode=)
                         (set-difference (last-active-modes buffer) invocations
                                         :test #'mode=)))))
-        (when (not (matching-auto-rules (url buffer) buffer))
-          (save-last-active-modes buffer (url buffer))))))
+        (save-last-active-modes buffer (url buffer)))))
 
 (defmethod enable-modes* :after (modes buffers &rest keys &key remember-p &allow-other-keys)
   (declare (ignorable modes keys))
@@ -283,8 +284,7 @@ Implies that the request is a top-level one."
   (let* ((rules (matching-auto-rules url buffer))
          (previous-url (previous-url buffer))
          (previous-rules (when previous-url (matching-auto-rules previous-url buffer))))
-    (when (and rules previous-url (not previous-rules))
-      (save-last-active-modes buffer previous-url))
+    (save-last-active-modes buffer previous-url)
     (cond
       ((not rules)
        (reapply-last-active-modes buffer))
