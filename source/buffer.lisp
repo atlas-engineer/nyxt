@@ -360,11 +360,11 @@ exceed this amount."
     :type (or null plump:node)
     :documentation "A parsed representation of the rendered buffer.
 Computed by `plump:parse', see `update-document-model' for details.")
-   (keep-search-hints-p
+   (keep-search-marks-p
     t
     :type boolean
-    :documentation "Whether to keep search hints when the search prompt for the
-`search-buffer' command is closed.")
+    :documentation "Whether to keep search marks after exiting the prompt
+buffer.")
    (scroll-distance
     50
     :type integer
