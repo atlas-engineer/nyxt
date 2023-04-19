@@ -114,6 +114,24 @@ out from all of the other theme colors.")
   "Whether the theme is dark."
   (when (string= "white" (contrasting-color (background-color theme))) t))
 
+(export-always 'palette)
+(defmethod palette ((theme theme))
+  "Return all color slots of THEME.
+
+Example that returns values of color palette:
+(mapcar (alexandria:rcurry #'funcall +light-theme+)
+        (color-palette +light-theme+))"
+  (serapeum:filter (alexandria:curry #'str:contains? "COLOR")
+                   (mopu:direct-slot-names theme)
+                   :key #'string))
+
+(export-always 'filter-palette)
+(defun filter-palette (pred palette)
+  "Partition PALETTE according to PRED.
+
+Return two values, where the first corresponds to the sequence that meets PRED."
+  (serapeum:partition pred palette :key #'string))
+
 (export-always '+light-theme+)
 (defvar +light-theme+
   (make-instance 'theme))
