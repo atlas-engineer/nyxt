@@ -8,7 +8,6 @@
 (in-package :theme/tests)
 
 (defvar *theme* (make-instance 'theme:theme
-                               :dark-p t
                                :background-color "black"
                                :on-background-color "white"
                                :primary-color "yellow"

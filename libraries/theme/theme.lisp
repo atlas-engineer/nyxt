@@ -8,10 +8,7 @@
 ;; See https://www.w3.org/TR/WCAG20-TECHS/G18.html.
 
 (define-class theme ()
-  ((dark-p
-    nil
-    :documentation "Whether the theme is dark.")
-   (background-color
+  ((background-color
     "white"
     :type string
     :documentation "The background color of the theme.")
@@ -112,6 +109,11 @@ out from all of the other theme colors.")
   (:export-accessor-names-p t)
   (:export-predicate-name-p t))
 
+(export-always 'dark-p)
+(defmethod dark-p ((theme theme))
+  "Whether the theme is dark."
+  (when (string= "white" (contrasting-color (background-color theme))) t))
+
 (export-always '+light-theme+)
 (defvar +light-theme+
   (make-instance 'theme))
@@ -119,7 +121,6 @@ out from all of the other theme colors.")
 (export-always '+dark-theme+)
 (defvar +dark-theme+
   (make-instance 'theme
-                 :dark-p t
                  :background-color "black"
                  :on-background-color "white"
                  :background-alt-color "#333333"
@@ -236,7 +237,6 @@ in secondary color otherwise. Use the text color as background color. Make
 headings have border of secondary color.
 
 \(themed-css (make-instance 'theme
-                            :dark-p t
                             :on-background-color \"red\"
                             :accent-color \"blue\")
            `(|h1,h2,h3,h4,h5,h6|

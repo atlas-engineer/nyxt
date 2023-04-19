@@ -31,7 +31,6 @@ are defined to ease attaining a constant contrast ratio for each pair:
 
 #+begin_src lisp
 (defvar my-theme (make-instance 'theme:theme
-                                :dark-p t
                                 :background-color "black"
                                 :on-background-color "white"
                                 :primary-color "#e5cfef"
