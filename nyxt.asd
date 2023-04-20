@@ -519,8 +519,6 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
   :components ((:nasdf-desktop-file "assets/nyxt.desktop")
                (:nasdf-icon-directory "assets/")
                (:nasdf-binary-file "nyxt")
-               (:nyxt-library-file "libraries/web-extensions/libnyxt.so"
-                                   :if-does-not-exist nil)
                (:nyxt-source-directory "source")
                (:nyxt-source-directory "nasdf")
                (:nyxt-source-directory "libraries"

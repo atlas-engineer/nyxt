@@ -7,6 +7,7 @@ Usage:
 
 WARNING: WebExtension support is not included by default because it's unfinished
 and possibly prone to security issues.  Use at your own risk!
+See libraries/web-extensions/README.org for more details.
 
 Set DESTDIR to change the target destination.  It should be
 an absolute path.
