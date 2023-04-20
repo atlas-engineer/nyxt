@@ -3,18 +3,14 @@
 
 (in-package :theme)
 
-;; TODO It would be possible to set all of the "on-" colors based on their
-;; counterparts by computing the contrast ratio.
-;; See https://www.w3.org/TR/WCAG20-TECHS/G18.html.
-
 (define-class theme ()
   ((background-color
     "white"
     :type string
     :documentation "The background color of the theme.")
    (on-background-color
-    "black"
-    :type string
+    nil
+    :type (maybe string)
     :documentation "The color applied to elements appearing in front of
 `background-color'.  Must strongly contrast with `background-color'.")
    (background-alt-color
@@ -22,8 +18,8 @@
     :type string
     :documentation "A nuanced version of `background-color'.")
    (on-background-alt-color
-    "black"
-    :type string
+    nil
+    :type (maybe string)
     :documentation "The color applied to elements appearing in front of
 `background-alt-color'.  Must strongly contrast with `background-alt-color'.")
    (primary-color
@@ -32,8 +28,8 @@
     :documentation "One of the colors applied to surfaces.  Should contrast with
 `background-color' and, preferably, be neutral.")
    (on-primary-color
-    "white"
-    :type string
+    nil
+    :type (maybe string)
     :documentation "The color applied to elements appearing in front of
 `primary-color'.  Must strongly contrast with `primary-color'.")
    (primary-alt-color
@@ -42,7 +38,7 @@
     :documentation "A nuanced version of `primary-color'.")
    (on-primary-alt-color
     nil
-    :type string
+    :type (maybe string)
     :documentation "The color applied to elements appearing in front of
 `primary-alt-color'.  Must strongly contrast with `primary-alt-color'.")
    (secondary-color
@@ -51,8 +47,8 @@
     :documentation "One of the colors applied to surfaces.  Should contrast with
 `on-background-color' and, preferably, be neutral.")
    (on-secondary-color
-    "black"
-    :type string
+    nil
+    :type (maybe string)
     :documentation "The color applied to elements appearing in front of
 `secondary-color'.  Must strongly contrast with `secondary-color'.")
    (secondary-alt-color
@@ -61,7 +57,7 @@
     :documentation "A nuanced version of `secondary-color'.")
    (on-secondary-alt-color
     nil
-    :type string
+    :type (maybe string)
     :documentation "The color applied to elements appearing in front of
 `secondary-alt-color'.  Must strongly contrast with `secondary-alt-color'.")
    (accent-color
@@ -70,8 +66,8 @@
     :documentation "The color applied to distinguished elements.  Should stand
 out from all of the other theme colors.")
    (on-accent-color
-    "black"
-    :type string
+    nil
+    :type (maybe string)
     :documentation "The color applied to elements appearing in front of
 `accent-color'.  Must strongly contrast with `accent-color'.")
    (accent-alt-color
@@ -80,7 +76,7 @@ out from all of the other theme colors.")
     :documentation "A nuanced version of `accent-color'.")
    (on-accent-alt-color
     nil
-    :type string
+    :type (maybe string)
     :documentation "The color applied to elements appearing in front of
 `accent-alt-color'.  Must strongly contrast with `accent-alt-color'.")
    (warning-color
@@ -89,7 +85,7 @@ out from all of the other theme colors.")
     :documentation "The color that communicates errors.")
    (on-warning-color
     nil
-    :type string
+    :type (maybe string)
     :documentation "The color applied to elements appearing in front of
 `warning-color'.  Must strongly contrast with `warning-color'.")
    (warning-alt-color
@@ -98,7 +94,7 @@ out from all of the other theme colors.")
     :documentation "A nuanced version of `warning-color'.")
    (on-warning-alt-color
     nil
-    :type string
+    :type (maybe string)
     :documentation "The color applied to elements appearing in front of
 `warning-alt-color'.  Must strongly contrast with `warning-alt-color'.")
    (font-family
@@ -108,6 +104,17 @@ out from all of the other theme colors.")
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t))
+
+(defmethod initialize-instance :after ((theme theme) &key)
+  (multiple-value-bind (on-colors colors)
+      (filter-palette (lambda (color) (str:starts-with? "ON-" color))
+                      (palette theme))
+    (loop for color in colors
+          for on-color in on-colors
+          ;; Honor init value, if available.
+          do (unless (slot-value theme on-color)
+               (setf (slot-value theme on-color)
+                     (contrasting-color (slot-value theme color)))))))
 
 (export-always 'dark-p)
 (defmethod dark-p ((theme theme))
@@ -140,25 +147,15 @@ Return two values, where the first corresponds to the sequence that meets PRED."
 (defvar +dark-theme+
   (make-instance 'theme
                  :background-color "black"
-                 :on-background-color "white"
                  :background-alt-color "#333333"
-                 :on-background-alt-color "white"
                  :primary-color "#E48D4E"
-                 :on-primary-color "black"
                  :primary-alt-color "#D7752F"
-                 :on-primary-alt-color "black"
                  :secondary-color "#874215"
-                 :on-secondary-color "white"
                  :secondary-alt-color "#A55D2F"
-                 :on-secondary-alt-color "white"
                  :accent-color "#571FD2"
-                 :on-accent-color "white"
                  :accent-alt-color "#763DF2"
-                 :on-accent-alt-color "white"
                  :warning-color "#FCBA04"
-                 :on-warning-color "black"
-                 :warning-alt-color "#FCA904"
-                 :on-warning-alt-color "black"))
+                 :warning-alt-color "#FCA904"))
 
 (export-always '(theme
                  background on-background background-alt on-background-alt
