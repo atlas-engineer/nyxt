@@ -153,7 +153,6 @@
           cl-gopher
           cl-history-tree
           cl-html-diff
-          cl-hu.dwim.defclass-star
           cl-iolib
           cl-json
           cl-lass

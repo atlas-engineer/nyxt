@@ -67,7 +67,6 @@ has a single argument---the `cell'.")
     :documentation "The results (as a list) of cell `evaluate'-ion."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "The universal REPL cell, allowing to customize the REPL.
 To make custom cell type, subclass `cell' and specify a set of methods:
 - `evaluate',
@@ -314,7 +313,6 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
   (:metaclass user-class)
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "A cell type for shell commands.
 `evaluate' runs a `shell' with `input' in the `working-directory'.
 `results' are a list of the error/success code.

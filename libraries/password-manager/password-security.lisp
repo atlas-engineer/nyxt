@@ -9,8 +9,7 @@
 (define-class security-interface (password-interface)
   ((executable (pathname->string (sera:resolve-executable "security"))))
   (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-accessor-names-p t))
 
 (push 'security-interface *interfaces*)
 
