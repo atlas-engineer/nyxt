@@ -64,7 +64,7 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
 (defsystem "nyxt"
   :defsystem-depends-on ("nasdf")
   :class :nasdf-system
-  :version "3"                          ;  3-pre-release-5 / Development version
+  :version "3"                          ;  3-pre-release-6 / Development version
   :author "Atlas Engineer LLC"
   :homepage "https://nyxt.atlas.engineer"
   :description "Extensible web browser in Common Lisp"
@@ -108,7 +108,6 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                nsymbols/star
                #-sbcl
                osicat
-               ospm
                parenscript
                py-configparser
                quri
@@ -254,7 +253,6 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                  (:file "no-script")
                  (:file "no-sound")
                  (:file "no-webgl")
-                 (:file "os-package-manager")
                  (:file "password")
                  (:file "preview")
                  (:file "reading-line")
@@ -334,7 +332,6 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                  (:file "no-script")
                  (:file "no-sound")
                  (:file "no-webgl")
-                 (:file "os-package-manager")
                  (:file "passthrough")
                  (:file "password")
                  (:file "preview")
@@ -519,8 +516,6 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
   :components ((:nasdf-desktop-file "assets/nyxt.desktop")
                (:nasdf-icon-directory "assets/")
                (:nasdf-binary-file "nyxt")
-               (:nyxt-library-file "libraries/web-extensions/libnyxt.so"
-                                   :if-does-not-exist nil)
                (:nyxt-source-directory "source")
                (:nyxt-source-directory "nasdf")
                (:nyxt-source-directory "libraries"

@@ -363,8 +363,9 @@ For production code, see `find-submode' instead."
    (prompter:constructor (lambda (source)
                            (let ((common-modes
                                    (reduce #'intersection
-                                           (mappend (compose #'name #'modes)
-                                                    (uiop:ensure-list (buffers source))))))
+                                           (mapcar (lambda (b)
+                                                     (mapcar #'name (modes b)))
+                                                   (uiop:ensure-list (buffers source))))))
                              (set-difference (all-mode-symbols) common-modes)))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)

@@ -24,8 +24,7 @@
     :export nil
     :documentation "The cache to speed the entry listing up."))
   (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-accessor-names-p t))
 
 (push 'keepassxc-interface *interfaces*)
 

@@ -153,7 +153,6 @@
           cl-gopher
           cl-history-tree
           cl-html-diff
-          cl-hu.dwim.defclass-star
           cl-iolib
           cl-json
           cl-lass
@@ -172,7 +171,6 @@
           cl-nkeymaps
           cl-nsymbols
           cl-osicat ; Not needed for SBCL, remove it in Guix upstream package.
-          cl-ospm
           cl-parenscript
           cl-phos
           cl-plump

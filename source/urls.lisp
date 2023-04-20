@@ -45,9 +45,9 @@ counterpart, unless there are unprintable characters.
 If URL contains non-ascii chars in domain part (IDN), return two values:
 - The aesthetic decoded URL, and
 - The safe punicode-encoded one."
-  (let* ((initial-url (url url))
+  (let* ((initial-url (url url))        ; Ensure `quri:uri'.
          (url (quri:render-uri
-               (quri:copy-uri url :query (ignore-errors (quri:url-decode (quri:uri-query url))))))
+               (quri:copy-uri initial-url :query (ignore-errors (quri:url-decode (quri:uri-query initial-url))))))
          (displayed (or (ignore-errors (ffi-display-url *browser* url))
                         url)))
     (cond

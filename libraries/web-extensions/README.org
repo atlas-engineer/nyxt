@@ -1,11 +1,26 @@
 #+TITLE:Nyxt WebExtensions API support library
 
+*This library is under-maintained and is likely to be removed. Use at your own
+risk! Contributions and maintenance are welcome.*
+
 This is a WebKitWebExtension library to support the necessary
 [[https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Browser_support_for_JavaScript_APIs][JavaScript APIs]]. Most of the communication with the browser happens
 via WebKitUserMessages. To hook into the library in a WebKit-based
 browser, connect to the [[https://webkitgtk.org/reference/webkit2gtk/stable/WebKitWebView.html#WebKitWebView-user-message-received]["user-message-received"]] signal and dispatch it
 based on message name -- it will be the same as the JS function name
 (e.g. "runtime.sendMessage").
+* Usage note
+For now WebKit sandboxing must be disabled in order to use the Nyxt
+web-extensions library.  Before starting Nyxt, set the following environment
+variables:
+
+#+begin_src sh
+export WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS=1
+export WEBKIT_FORCE_SANDBOX=1
+#+end_src
+
+This is obviously disabling a critical security measure, so only do this in a
+safe networking environment.
 * Extension initialization and extension descriptions
 The extension should be initialized with user data. User data should
 be a string GVariant containing JSON descriptions for extensions the
