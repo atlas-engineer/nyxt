@@ -741,3 +741,14 @@ not shuffle around. It is now possible to middle click to delete tabs.")
   (:h3 "Bug fixes")
   (:ul
    (:li "Switching focus away from Nyxt doesn't make it unfullscreen anymore.")))
+
+(define-version "3-pre-release-7"
+  (:ul
+   (:li "The following configuration slots "
+        (:code "nyxt/hint-mode:fit-to-prompt-p")
+        (:code "nyxt/hint-mode:auto-follow-hints-p")
+        (:code "nyxt/hint-mode:compute-hints-in-view-port-p")
+        " are now deprecated in favor of a new configuration slot "
+        (:nxref :slot 'nyxt/hint-mode:hinting-type
+          :class-name 'nyxt/hint-mode)
+        ".")))
