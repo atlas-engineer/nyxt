@@ -318,10 +318,6 @@
 	path = _build/devel
 	url = https://gitlab.common-lisp.net/misc-extensions/devel.git
 	shallow = true
-[submodule "_build/hu.dwim.defclass-star"]
-	path = _build/hu.dwim.defclass-star
-	url = https://github.com/hu-dwim/hu.dwim.defclass-star
-	shallow = true
 [submodule "_build/iolib"]
 	path = _build/iolib
 	url = https://github.com/sionescu/iolib
