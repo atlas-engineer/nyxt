@@ -175,4 +175,14 @@ major versions."
 
   (*after-init-hook* *after-startup-hook*)
   (:p "Those are " (:nxref :slot 'after-init-hook :class-name 'browser) " and "
-      (:nxref :slot 'after-startup-hook :class-name 'browser) " now."))
+      (:nxref :slot 'after-startup-hook :class-name 'browser) " now.")
+
+  (auto-follow-hints-p compute-hints-in-view-port-p fit-to-prompt-p)
+  (:p "The slots "
+      (:code "auto-follow-hints-p")
+      (:code "compute-hints-in-view-port-p")
+      (:code "fit-to-prompt-p")
+      " are replaced by "
+      (:nxref :slot 'nyxt/hint-mode:hinting-type
+        :class-name 'nyxt/hint-mode)
+      "."))
