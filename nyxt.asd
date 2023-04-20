@@ -108,7 +108,6 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                nsymbols/star
                #-sbcl
                osicat
-               ospm
                parenscript
                py-configparser
                quri
@@ -254,7 +253,6 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                  (:file "no-script")
                  (:file "no-sound")
                  (:file "no-webgl")
-                 (:file "os-package-manager")
                  (:file "password")
                  (:file "preview")
                  (:file "reading-line")
@@ -334,7 +332,6 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                  (:file "no-script")
                  (:file "no-sound")
                  (:file "no-webgl")
-                 (:file "os-package-manager")
                  (:file "passthrough")
                  (:file "password")
                  (:file "preview")

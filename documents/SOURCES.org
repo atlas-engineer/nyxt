@@ -25,7 +25,6 @@ which external dependencies we are directly relying on.
 - dexador
 - enchant
 - fset
-- hu.dwim.defclass-star
 - iolib
 - lass
 - local-time

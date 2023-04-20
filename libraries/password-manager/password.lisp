@@ -13,8 +13,7 @@
     :type alexandria:non-negative-real
     :documentation "The amount of time to sleep, in seconds."))
   (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-accessor-names-p t))
 
 (export-always 'list-passwords)
 (defgeneric list-passwords (password-interface)
