@@ -17,11 +17,6 @@
   - [[#gtk-dependencies][GTK dependencies]]
     - [[#lisp-dependencies][Lisp dependencies]]
     - [[#gnulinux-freebsd-gtk-dependencies][GNU/Linux, FreeBSD GTK dependencies]]
-    - [[#macos-specific-dependencies][macOS specific dependencies]]
-  - [[#qt-dependencies][Qt dependencies]]
-    - [[#lisp-dependencies][Lisp dependencies]]
-    - [[#gnulinux-freebsd-dependencies][GNU/Linux, FreeBSD dependencies]]
-    - [[#macos-dependencies][macOS dependencies]]
   - [[#fetch-the-source-code][Fetch the source code]]
     - [[#observation][Observation]]
   - [[#compile][Compile]]
@@ -181,65 +176,6 @@ the the distribution provider to update their packages to take advantage of
 these fixes.
 #+end_quote
 
-*** macOS specific dependencies
-
-- GTK 3.24.12+
-- WebKitGTK+
-- XQuartz
-- libfixposix
-- pkg-config
-
-Notes:
-
-1. If you install dependencies via MacPorts and your Lisp is SBCL, please try
-   putting the following into your =~/.sbclrc=:
-
-   #+begin_src lisp
-   (ql:quickload :cffi)
-   (pushnew "/opt/local/lib" cffi:*foreign-library-directories* :test #'equal)
-   #+end_src
-
-2. To install the WebKitGTK+ dependency, you may want to install
-   `webkit2-gtk(-devel)` instead of `webkit-gtk3` via your favorite package
-   manager. If you are on a legacy version of macOS which is not supported by
-   HomeBrew, you may want to try install these via MacPorts.
-
-** Qt dependencies
-
-Qt is only required if you want to build Nyxt over the WebEngine renderer.
-
-*Warning:* It's highly experimental and may not build on =master=.
-
-*** Lisp dependencies
-
-Nyxt on Qt requires the latest version of the cl-webengine library.  Clone the
-cl-webengine repository into =~/common-lisp= (or [[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][another directory where ASDF
-will find it]]):
-
-#+begin_src sh
-mkdir -p ~/common-lisp
-git clone https://github.com/atlas-engineer/cl-webengine.git ~/common-lisp/cl-webengine
-#+end_src
-
-Please follow the instructions in the cl-webengine repository for details about
-how to install it on your system.
-
-*** GNU/Linux, FreeBSD dependencies
-
-- Qt 5 (qtbase, qtwebchannel, qtdeclarative)
-- Qt 5 WebEngine
-- libfixposix
-- xclip (for clipboard support)
-- enchant (for spellchecking)
-- pkg-config (for web-extensions)
-
-*** macOS dependencies
-
-- Qt 5.14.0+
-- Qt WebEngine
-- libfixposix
-- pkg-config
-
 ** Fetch the source code
 
 Clone the Nyxt repository into =~/common-lisp= (or [[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][another directory where ASDF
@@ -261,8 +197,7 @@ repository at =~/quicklisp/local-projects=.
 ** Compile
 *** Using the Makefile
 
-The following command will build the Lisp core.  On macOS this will produce an
-application bundle which you can copy into your =/Applications= folder.
+The following command will build the Lisp core.
 
 - GNU/Linux:
   #+begin_src sh
@@ -272,12 +207,6 @@ application bundle which you can copy into your =/Applications= folder.
 - FreeBSD
   #+begin_src sh
   gmake all
-  #+end_src
-
-- macOS:
-  #+begin_src sh
-  make all
-  make app-bundle
   #+end_src
 
 Inside the Makefile you'll find many options you can specify.  You can specify
@@ -291,13 +220,6 @@ Start your Lisp and run the following commands:
 #+NAME: compile
 #+begin_src lisp
 (asdf:make :nyxt/gtk-application)
-#+end_src
-
-or, alternatively for the QtWebEngine renderer:
-
-#+NAME: compile
-#+begin_src lisp
-(asdf:make :nyxt/qt-application)
 #+end_src
 
 Your Lisp implementation must have produced an executable in the directory where
