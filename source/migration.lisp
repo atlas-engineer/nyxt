@@ -80,8 +80,8 @@ Order is stable."
      (:h2 "For major version " major-version)
      (:table
       (:tr
-       (:td "Concerned symbols")
-       (:td "Suggestion"))
+       (:td (:b "Concerned symbols"))
+       (:td (:b "Suggestion")))
       (dolist (suggestion (version-suggestions major-version))
         (:tr
          (:td (format nil "~{~a~^, ~}" (symbols suggestion)))
