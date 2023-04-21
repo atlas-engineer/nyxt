@@ -284,10 +284,14 @@ Implies that the request is a top-level one."
   (let* ((rules (matching-auto-rules url buffer))
          (previous-url (previous-url buffer))
          (previous-rules (when previous-url (matching-auto-rules previous-url buffer))))
-    (save-last-active-modes buffer previous-url)
+    (unless previous-rules
+      (save-last-active-modes buffer previous-url))
     (cond
       ((not rules)
        (reapply-last-active-modes buffer))
+      ((and rules previous-rules)
+       (reapply-last-active-modes buffer)
+       (enable-matching-modes url buffer))
       ((and rules (not (eq rules previous-rules)))
        (enable-matching-modes url buffer)))
     (setf (previous-url buffer) url)))
