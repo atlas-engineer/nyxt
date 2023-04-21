@@ -9,15 +9,14 @@
   "Interact with elements by typing a short character sequence."
   ((visible-in-status-p nil)
    (rememberable-p nil)
-   (auto-follow-hints-p
-    nil
-    :type boolean
-    :documentation "Whether the hints are automatically followed when matching
-user input.")
-   (fit-to-prompt-p
-    nil
-    :type boolean
-    :documentation "Whether the hinting prompt buffer is collapsed to the input line.")
+   (hinting-type
+    :emacs
+    :type (member :emacs :vi)
+    :documentation "Set the hinting mechanism.
+In :emacs, hints are computed for the whole page, and the usual `prompt-buffer'
+facilities are available.
+In :vi, the `prompt-buffer' is collapsed to the input area, hints are computed
+in viewport only and they're followed when user input matches the hint string.")
    (style
     (theme:themed-css (theme *browser*)
       `(".nyxt-hint"
@@ -66,9 +65,6 @@ define which elements are picked up by element hinting.
 For instance, to include images:
 
     a, button, input, textarea, details, select, img:not([alt=\"\"])")
-   (compute-hints-in-view-port-p
-    nil
-    :documentation "Whether hints are computed in view port.")
    (keyscheme-map
     (define-keyscheme-map "hint-mode" ()
       keyscheme:cua
@@ -160,7 +156,7 @@ For instance, to include images:
 
 (define-parenscript set-hintable-attribute (selector)
   (let ((elements (nyxt/ps:qsa document (ps:lisp selector)))
-        (in-view-port-p (ps:lisp (compute-hints-in-view-port-p (find-submode 'hint-mode)))))
+        (in-view-port-p (ps:lisp (eq :vi (hinting-type (find-submode 'hint-mode))))))
     (ps:dolist (element elements)
       (if in-view-port-p
           (unless (nyxt/ps:element-overlapped-p element)
@@ -249,8 +245,7 @@ Consult https://developer.mozilla.org/en-US/docs/Web/CSS/visibility."
   ((prompter:name "Hints")
    (prompter:actions-on-current-suggestion-enabled-p t)
    (prompter:filter-preprocessor
-    (if (and (auto-follow-hints-p (find-submode 'hint-mode))
-             (fit-to-prompt-p (find-submode 'hint-mode)))
+    (if (eq :vi (hinting-type (find-submode 'hint-mode)))
         (lambda (suggestions source input)
           (declare (ignore source))
           (loop for suggestion in suggestions
@@ -264,8 +259,7 @@ Consult https://developer.mozilla.org/en-US/docs/Web/CSS/visibility."
                 else do (set-hint-visibility hint "hidden")))
         #'prompter:delete-inexact-matches))
    (prompter:filter
-    (if (and (auto-follow-hints-p (find-submode 'hint-mode))
-             (fit-to-prompt-p (find-submode 'hint-mode)))
+    (if (eq :vi (hinting-type (find-submode 'hint-mode)))
         (lambda (suggestion source input)
           (declare (ignore source))
           (str:starts-with-p input
@@ -283,7 +277,7 @@ Consult https://developer.mozilla.org/en-US/docs/Web/CSS/visibility."
            :key #'prompter:value)
         (append matching-hints other-hints))))
    (prompter:actions-on-current-suggestion
-    (unless (fit-to-prompt-p (find-submode 'hint-mode))
+    (when (eq :emacs (hinting-type (find-submode 'hint-mode)))
       (lambda-command highlight-selected-hint* (suggestion)
         "Highlight hint."
         (highlight-selected-hint :element suggestion
@@ -330,12 +324,12 @@ FUNCTION is the action to perform on the selected elements."
                 ;; TODO: No need to find the symbol if we move this code (and
                 ;; the rest) to the hint-mode package.
                 :extra-modes (list (sym:resolve-symbol :hint-prompt-buffer-mode :mode))
-                :auto-return-p (auto-follow-hints-p (find-submode 'hint-mode))
+                :auto-return-p (eq :vi (hinting-type (find-submode 'hint-mode)))
                 :history nil
-                :height (if (fit-to-prompt-p (find-submode 'hint-mode))
+                :height (if (eq :vi (hinting-type (find-submode 'hint-mode)))
                             :fit-to-prompt
                             :default)
-                :hide-suggestion-count-p (fit-to-prompt-p (find-submode 'hint-mode))
+                :hide-suggestion-count-p (eq :vi (hinting-type (find-submode 'hint-mode)))
                 :sources (make-instance 'hint-source
                                         :enable-marks-p enable-marks-p
                                         :constructor
