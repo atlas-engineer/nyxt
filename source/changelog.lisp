@@ -758,4 +758,9 @@ extension."))
         (:code "nyxt/hint-mode:compute-hints-in-view-port-p")
         " are now deprecated in favor of "
         (:nxref :slot 'nyxt/hint-mode:hinting-type :class-name 'nyxt/hint-mode:hint-mode)
-        ".")))
+        "."))
+  (:h3 "Bindings")
+  (:ul
+   (:li "Rebind " (:nxref :command 'nyxt/download-mode:list-downloads)"."
+        "When using the CUA keyscheme, the keybindingo was shadowed by "
+        (:nxref :command 'nyxt/hint-mode:follow-hint) ".")))
