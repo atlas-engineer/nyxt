@@ -33,7 +33,8 @@ This mode is a good candidate to be passed to `make-buffer'."
        "f1 s" 'describe-slot
        "f1 v" 'describe-variable
        "f11" 'toggle-fullscreen
-       "C-j" 'nyxt/download-mode:list-downloads
+       "C-shift-y" 'nyxt/download-mode:list-downloads
+       "C-shift-Y" 'nyxt/download-mode:list-downloads
        "C-space" 'execute-command
        "C-M-space" 'execute-extended-command
        "C-shift-space" 'execute-predicted-command
