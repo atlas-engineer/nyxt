@@ -46,7 +46,7 @@ The logic is:
         (sb-kernel::arg-count-error ()
           t)
         #+ccl
-        (ccl::simple-program-error ()
+        (ccl::simple-program-error (e)
           (search "can't be destructured against the lambda list" (format nil "~a" e)))
         #+ecl
         (simple-error (e)
