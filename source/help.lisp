@@ -140,8 +140,8 @@ disabling compositing, you will need to restart Nyxt."))
                    "Edit user files")
           (:p "Edit user configuration and other files in external text editor.")))))
 
-(define-command print-bindings-cheatsheet ()
-  "Print a buffer listing all known bindings for the current buffer."
+(define-command print-bindings ()
+  "Print all known bindings for the current buffer."
   (nyxt::html-set-style (theme:themed-css (theme *browser*)
                           `(h3
                             :font-size "10px"
@@ -258,7 +258,7 @@ useful actions there, including the familiar " (:code "set-url") ", " (:code "hi
           "Change Log")
       (:a :class "button" :href (nyxt-url 'describe-bindings)
           :title "List all bindings for the current buffer."
-          "List bindings")
+          "Describe bindings")
       (:a :class "button" :href (nyxt-url 'common-settings)
           :title "Switch between Emacs/vi/CUA key bindings, set home page URL, and zoom level."
           "⚙ Settings")
