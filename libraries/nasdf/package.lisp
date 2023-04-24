@@ -33,6 +33,23 @@
                 #:perform
                 #:system-relative-pathname
                 #:system-source-directory)
+  (:import-from
+   #+abcl      #:mop
+   #+allegro   #:mop
+   #+clisp     #:clos
+   #+clozure   #:ccl
+   #+cmu       #:clos-mop
+   #+ecl       #:clos
+   #+clasp     #:clos
+   #+lispworks #:clos
+   #+mcl       #:ccl
+   #+sbcl      #:sb-mop
+   #+scl       #:clos
+   #+mezzano   #:mezzano.clos
+   #+sicl      #:sicl-clos
+   #:standard-accessor-method
+   #:standard-reader-method
+   #:standard-writer-method)
   (:documentation "ASDF helpers for system setup, testing and installation.
 
 To tell ASDF to fail loading a system on warnings, add this line to the system
