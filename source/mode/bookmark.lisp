@@ -195,7 +195,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                  (let ((url-href (render-url (url bookmark))))
                    (:div
                     (:p (title bookmark))
-                    (:p (:a :href url-href url-href))))))
+                    (:p (:a :href url-href :target "_blank" url-href))))))
          (format nil "No bookmarks in ~s." (files:expand (files:content (bookmarks-file (current-buffer)))))))))
 
 (export-always 'url-bookmark-tags)
