@@ -495,7 +495,8 @@ If it's a single buffer, return it directly (not as a list)."
                     &key (buffer (or (current-prompt-buffer) (current-buffer)))
                       (activate t explicit?)
                     &allow-other-keys)
-  "Enable MODE-SYM if not already enabled, disable it otherwise."
+  "Enable MODE-SYM if not already enabled, disable it otherwise.
+Return toggled mode, or NIL if BUFFER does not support modes."
   (when (modable-buffer-p buffer)
     (let ((existing-instance (find mode-sym (slot-value buffer 'modes) :key #'sera:class-name-of)))
       (unless explicit?
@@ -509,10 +510,12 @@ If it's a single buffer, return it directly (not as a list)."
                                  :buffer buffer
                                  args))))
             (enable mode)
-            (echo "~@(~a~) mode enabled." mode))
+            (echo "~@(~a~) mode enabled." mode)
+            mode)
           (when existing-instance
             (disable existing-instance)
-            (echo "~@(~a~) mode disabled." existing-instance))))))
+            (echo "~@(~a~) mode disabled." existing-instance)
+            existing-instance)))))
 
 (define-command-global reload-with-modes (&optional (buffer (current-buffer)))
   "Reload the BUFFER with the queried modes.
