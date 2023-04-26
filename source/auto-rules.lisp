@@ -43,6 +43,7 @@
   "Apply `normalize-mode' to all the MODES."
   (mapcar #'normalize-mode modes))
 
+(export-always 'rememberable-of)
 (-> rememberable-of
     ((or (cons t *) null))
     (values (maybe (cons mode-invocation *)) &optional))
@@ -179,6 +180,7 @@ ARGS as in make-instance of `auto-rule'."
                                                  :test #'mode=))))
     (enable-modes* modes buffer)))
 
+(export-always 'url-infer-match)
 (-> url-infer-match (url-designator) list)
 (defun url-infer-match (url)
   "Infer the best `test' for `auto-rule', based on the form of URL.
