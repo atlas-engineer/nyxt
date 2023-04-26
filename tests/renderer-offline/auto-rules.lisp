@@ -27,6 +27,8 @@
   (quri:make-uri-file :path
                       (asdf:system-relative-pathname :nyxt "tests/test-data/ipsum.html")))
 
+;;; General purpose tests.  See below for matrix-based tests.
+
 (define-test auto-rules-basic ()
   (with-browser-test ("virtual-test")
     (let ((file (auto-rules-file (current-buffer))))
@@ -132,3 +134,35 @@
         (nyxt/no-script-mode:no-script-mode :activate nil)
         (set-url-blocking +non-matching-url2+)
         (assert-false (enabled-p mode))))))
+
+;;; The matrix of all cases we need to cover:
+;;
+;; | transition\rule    | exclude | include              | exclude+include |
+;; |--------------------+---------+----------------------+-----------------|
+;; | rule -> rule       |         |                      |                 |
+;; | no rule -> no rule |         | remembered-modes + 1 |                 |
+;; | rule -> no rule    |         | navigation... + 1    |                 |
+;; | no rule -> rule    |         | basic                |                 |
+
+(define-test rule->rule ()
+  (with-browser-test ("virtual-test")
+    (let ((file (auto-rules-file (current-buffer))))
+      (nyxt/no-script-mode:no-script-mode)
+      (nyxt/blocker-mode:blocker-mode)
+      (let ((no-script-mode (find-submode 'nyxt/no-script-mode:no-script-mode))
+            (blocker-mode (find-submode 'nyxt/blocker-mode:blocker-mode)))
+        (add-modes-to-auto-rules (url-infer-match +matching-url1+)
+                                 :include '((nyxt/no-script-mode:no-script-mode))
+                                 :exclude '((nyxt/blocker-mode:blocker-mode)))
+        (add-modes-to-auto-rules (url-infer-match +matching-url2+)
+                                 :include '((nyxt/blocker-mode:blocker-mode))
+                                 :exclude '((nyxt/no-script-mode:no-script-mode)))
+        (set-url-blocking +non-matching-url1+)
+        (assert-false (enabled-p blocker-mode))
+        (assert-true (enabled-p no-script-mode))
+        (set-url-blocking +non-matching-url2+)
+        (assert-true (enabled-p blocker-mode))
+        (assert-false (enabled-p no-script-mode))
+        (set-url-blocking +non-matching-url1+)
+        (assert-false (enabled-p blocker-mode))
+        (assert-true (enabled-p no-script-mode))))))
