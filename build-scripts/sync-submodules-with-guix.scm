@@ -1,5 +1,6 @@
 ;; Run with:
-;;   guix repl -- ./build-scripts/sync-submodules-with-guix.scm
+;;   guix repl -i -- ./build-scripts/sync-submodules-with-guix.scm
+;;   ,m (sync-submodules-with-guix)
 ;;   (pk (all-refs nyxt))
 ;;   (map add-submodule (all-refs nyxt))
 
