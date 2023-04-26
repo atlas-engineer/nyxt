@@ -427,7 +427,7 @@ down."))
                           #'(lambda (results)
                               (alex:when-let* ((results results)
                                                (results (j:decode results)))
-                                (mapcar #'list (j:get 1 results) (j:get 3 results))))))
+                                (map 'list #'list (j:get 1 results) (j:get 3 results))))))
           (make-instance 'search-engine
                          :name "DuckDuckGo"
                          :shortcut "ddg"
@@ -439,9 +439,9 @@ down."))
                           :processing-function
                           #'(lambda (results)
                               (when results
-                                (mapcar (lambda (hash-table)
-                                          (first (alex:hash-table-values hash-table)))
-                                        (j:decode results)))))))
+                                (map 'list (lambda (hash-table)
+                                             (first (alex:hash-table-values hash-table)))
+                                     (j:decode results)))))))
     :type (cons search-engine *)
     :documentation "A list of the `search-engine' objects.
 You can invoke them from the prompt buffer by prefixing your query with

@@ -102,7 +102,6 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                nclasses
                nfiles
                njson/cl-json
-               njson/aliases
                nhooks
                nkeymaps
                nsymbols/star
