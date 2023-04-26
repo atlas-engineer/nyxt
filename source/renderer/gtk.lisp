@@ -833,7 +833,11 @@ See `gtk-browser's `modifier-translator' slot."
                                                            (cffi:null-pointer)))))))
          (gtk-extensions-path (files:expand (make-instance 'gtk-extensions-directory)))
          (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
-    (unless (uiop:emptyp gtk-extensions-path)
+    (when (and (not (nfiles:nil-pathname-p gtk-extensions-path))
+               ;; Either the directory exists.
+               (or (uiop:directory-exists-p gtk-extensions-path)
+                   ;; Or successfully create it.
+                   (nth-value 1 (ensure-directories-exist gtk-extensions-path))))
       (log:info "GTK extensions directory: ~s" gtk-extensions-path)
       ;; TODO: Should we also use `connect-signal' here?  Does this yield a memory leak?
       (gobject:g-signal-connect
