@@ -597,3 +597,7 @@
 	path = _build/cl-colors2
 	url = https://notabug.org/cage/cl-colors2
 	shallow = true
+[submodule "_build/prompter"]
+	path = _build/prompter
+	url = https://github.com/atlas-engineer/prompter
+	shallow = true
