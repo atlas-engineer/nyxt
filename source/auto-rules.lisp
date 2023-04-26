@@ -296,7 +296,7 @@ Implies that the request is a top-level one."
        (enable-matching-modes url buffer)))
     (setf (previous-url buffer) url)))
 
-(define-command-global save-non-default-modes-for-future-visits ()
+(define-command-global save-non-default-modes-for-future-visits (&key url)
   "Save the modes present in `default-modes' and not present in current modes as
 :excluded, and modes that are present in mode list but not in `default-modes' as
 :included, to one of the auto-rules. Apply the resulting rule for all the future
@@ -307,14 +307,15 @@ remember a particular mode, configure it to be `rememberable-p' in your
 configuration file.
 
 For the storage format see the comment in the header of your `auto-rules-file'."
-  (let ((url (prompt1
-              :prompt "URL"
-              :input (render-url (url (current-buffer)))
-              :sources (list
-                        (make-instance 'prompter:raw-source
-                                       :name "New URL")
-                        (make-instance 'global-history-source
-                                       :actions-on-return #'identity)))))
+  (let ((url (or url
+                 (prompt1
+                  :prompt "URL"
+                  :input (render-url (url (current-buffer)))
+                  :sources (list
+                            (make-instance 'prompter:raw-source
+                                           :name "New URL")
+                            (make-instance 'global-history-source
+                                           :actions-on-return #'identity))))))
     (when (typep url 'nyxt::history-entry)
       (setf url (url url)))
     (add-modes-to-auto-rules
@@ -326,7 +327,7 @@ For the storage format see the comment in the header of your `auto-rules-file'."
                               (normalize-modes (modes (current-buffer)))
                               :test #'mode=))))
 
-(define-command-global save-exact-modes-for-future-visits ()
+(define-command-global save-exact-modes-for-future-visits (&key url)
   "Store the exact list of enabled modes to auto-rules for all the future visits
 of this domain/host/URL/group of websites inferring the suitable matching
 condition by user input.
@@ -339,14 +340,15 @@ configuration file.
 For the storage format see the comment in the header of your `auto-rules-file'."
   ;; TODO: Should it prompt for modes to save?
   ;; One may want to adjust the modes before persisting them as :exact-p rule.
-  (let ((url (prompt1
-              :prompt "URL"
-              :input (render-url (url (current-buffer)))
-              :sources (list
-                        (make-instance 'prompter:raw-source
-                                       :name "New URL")
-                        (make-instance 'global-history-source
-                                       :actions-on-return #'identity)))))
+  (let ((url (or url
+                 (prompt1
+                  :prompt "URL"
+                  :input (render-url (url (current-buffer)))
+                  :sources (list
+                            (make-instance 'prompter:raw-source
+                                           :name "New URL")
+                            (make-instance 'global-history-source
+                                           :actions-on-return #'identity))))))
     (setf url (url url))
     (add-modes-to-auto-rules (url-infer-match url)
                              :include (rememberable-of (modes (current-buffer)))
