@@ -62,11 +62,11 @@
    (included
     '()
     :type (or (cons rememberable-mode-invocation *) null)
-    :documentation "The list of `mode-invocations' to enable on rule activation.")
+    :documentation "The list of `mode-invocation's to enable on rule activation.")
    (excluded
     '()
     :type (or (cons rememberable-mode-invocation *) null)
-    :documentation "The list of `mode-invocations' to disable on rule activation.")
+    :documentation "The list of `mode-invocation's to disable on rule activation.")
    (exact-p
     nil
     :type boolean
