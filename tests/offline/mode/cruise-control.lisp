@@ -6,5 +6,5 @@
 (define-test toggle-cruise-control-mode ()
   (let ((buffer (make-instance 'modable-buffer)))
     (with-current-buffer buffer
-      (assert-true (enable-modes* 'nyxt/cruise-control-mode:cruise-control-mode buffer))
-      (assert-true (disable-modes* 'nyxt/cruise-control-mode:cruise-control-mode buffer)))))
+      (assert-true (enable-modes* 'nyxt/mode/cruise-control:cruise-control-mode buffer))
+      (assert-true (disable-modes* 'nyxt/mode/cruise-control:cruise-control-mode buffer)))))

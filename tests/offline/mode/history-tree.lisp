@@ -6,5 +6,5 @@
 (define-test toggle-history-tree-mode ()
   (let ((buffer (make-instance 'modable-buffer)))
     (with-current-buffer buffer
-      (assert-true (enable-modes* 'nyxt/history-tree-mode:history-tree-mode buffer))
-      (assert-true (disable-modes* 'nyxt/history-tree-mode:history-tree-mode buffer)))))
+      (assert-true (enable-modes* 'nyxt/mode/history-tree:history-tree-mode buffer))
+      (assert-true (disable-modes* 'nyxt/mode/history-tree:history-tree-mode buffer)))))

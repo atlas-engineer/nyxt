@@ -6,5 +6,5 @@
 (define-test toggle-macro-edit-mode ()
   (let ((buffer (make-instance 'modable-buffer)))
     (with-current-buffer buffer
-      (assert-true (enable-modes* 'nyxt/macro-edit-mode:macro-edit-mode buffer))
-      (assert-true (disable-modes* 'nyxt/macro-edit-mode:macro-edit-mode buffer)))))
+      (assert-true (enable-modes* 'nyxt/mode/macro-edit:macro-edit-mode buffer))
+      (assert-true (disable-modes* 'nyxt/mode/macro-edit:macro-edit-mode buffer)))))

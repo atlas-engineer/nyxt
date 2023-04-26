@@ -376,7 +376,7 @@ Most *-P arguments mandate whether to add the buttons for:
 - Appending the BODY to the auto-config.lisp (CONFIG-P).
 - Copying the source to clipboard (COPY-P).
 - Editing the FILE it comes from (if present), in
-  - Nyxt built-in `nyxt/editor-mode:editor-mode' (EDITOR-P).
+  - Nyxt built-in `nyxt/mode/editor:editor-mode' (EDITOR-P).
   - `nyxt:external-editor-program' (EXTERNAL-EDITOR-P)."
   (once-only (package)
     (with-gensyms (body-var inline-var file-var first plaintext htmlized)
@@ -407,13 +407,13 @@ Most *-P arguments mandate whether to add the buttons for:
                            "Try in REPL"
                            "Open this code in Nyxt REPL to experiment with it.")
                           (nyxt:buffer-load-internal-page-focus
-                           (read-from-string "nyxt/repl-mode:repl")
+                           (read-from-string "nyxt/mode/repl:repl")
                            :form ,,plaintext))))
                   ,@(when (and file editor-p)
                       `(`((editor
                            "Open in built-in editor"
                            "Open the file this code comes from in Nyxt built-in editor-mode.")
-                          (funcall (read-from-string "nyxt/editor-mode:edit-file")
+                          (funcall (read-from-string "nyxt/mode/editor:edit-file")
                                    ,,file-var))))
                   ,@(when (and file external-editor-p)
                       `(`((external-editor

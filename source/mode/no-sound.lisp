@@ -1,9 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/no-sound-mode
+(nyxt:define-package :nyxt/mode/no-sound
     (:documentation "Disable sound."))
-(in-package :nyxt/no-sound-mode)
+(in-package :nyxt/mode/no-sound)
 
 (define-mode no-sound-mode ()
   "Disable sound in current buffer.")

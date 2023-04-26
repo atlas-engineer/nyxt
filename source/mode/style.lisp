@@ -1,9 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/style-mode
+(nyxt:define-package :nyxt/mode/style
     (:documentation "Mode for styling documents."))
-(in-package :nyxt/style-mode)
+(in-package :nyxt/mode/style)
 
 (define-class css-cache-directory (files:data-file nyxt-file)
   ((files:base-path #p"style-mode-css-cache/")
@@ -81,4 +81,4 @@ effectively disable `dark-mode' you must also reload the buffer."
 (defmethod apply-style ((mode dark-mode))
   (if (style mode)
       (nyxt::html-set-style (style mode) (buffer mode))
-      (nyxt/bookmarklets-mode:darken (buffer mode))))
+      (nyxt/mode/bookmarklets:darken (buffer mode))))

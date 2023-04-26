@@ -1,9 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/tts-mode
+(nyxt:define-package :nyxt/mode/tts
     (:documentation "Mode for interacting with Text-to-Speech (TTS) software."))
-(in-package :nyxt/tts-mode)
+(in-package :nyxt/mode/tts)
 
 (define-mode tts-mode ()
   "A mode for interacting with Text-to-Speech (TTS) software.
@@ -16,9 +16,9 @@ can be configured by changing the `selector` slot.
 
 Example:
 
-\(define-configuration nyxt/tts-mode:tts-mode
-   ((nyxt/tts-mode:executable \"espeak\")
-    (nyxt/tts-mode:selector \"p, h1, h2, h3, h4, h5, h6\")))"
+\(define-configuration nyxt/mode/tts:tts-mode
+   ((nyxt/mode/tts:executable \"espeak\")
+    (nyxt/mode/tts:selector \"p, h1, h2, h3, h4, h5, h6\")))"
   ((visible-in-status-p nil)
    (executable nil
                :type (or string null)

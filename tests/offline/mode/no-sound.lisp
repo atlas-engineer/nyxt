@@ -6,5 +6,5 @@
 (define-test toggle-no-sound-mode ()
   (let ((buffer (make-instance 'modable-buffer)))
     (with-current-buffer buffer
-      (assert-true (enable-modes* 'nyxt/no-sound-mode:no-sound-mode buffer))
-      (assert-true (disable-modes* 'nyxt/no-sound-mode:no-sound-mode buffer)))))
+      (assert-true (enable-modes* 'nyxt/mode/no-sound:no-sound-mode buffer))
+      (assert-true (disable-modes* 'nyxt/mode/no-sound:no-sound-mode buffer)))))

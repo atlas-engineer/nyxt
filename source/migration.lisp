@@ -131,8 +131,8 @@ major versions."
   (:p (:nxref :variable 'nyxt:*log-file*))
 
   (annotations-file)
-  (:p (:nxref :slot 'nyxt/annotate-mode:annotations-file :class-name 'nyxt/annotate-mode:annotate-mode)
-      " is in " (:nxref :class-name 'nyxt/annotate-mode:annotate-mode) ".")
+  (:p (:nxref :slot 'nyxt/mode/annotate:annotations-file :class-name 'nyxt/mode/annotate:annotate-mode)
+      " is in " (:nxref :class-name 'nyxt/mode/annotate:annotate-mode) ".")
 
   (auto-mode-rules-file)
   (:p (:code "auto-rules-file") "(previously " (:code "auto-mode-rules-file")
@@ -140,8 +140,8 @@ major versions."
       ", like all the other mode-related settings from the deprecated auto-mode.")
 
   (bookmarks-file)
-  (:p (:nxref :slot 'nyxt/bookmark-mode:bookmarks-file :class-name 'nyxt/bookmark-mode:bookmark-mode)
-      " is in " (:nxref :class-name 'nyxt/bookmark-mode:bookmark-mode) ".")
+  (:p (:nxref :slot 'nyxt/mode/bookmark:bookmarks-file :class-name 'nyxt/mode/bookmark:bookmark-mode)
+      " is in " (:nxref :class-name 'nyxt/mode/bookmark:bookmark-mode) ".")
 
   (expand-path)
   (:p (:code "expand-path") " is replaced by " (:nxref :function 'files:expand) ".")
@@ -159,7 +159,7 @@ major versions."
       (:code "copy-password-prompt-details") ", "
       (:code "save-new-password") "  and "
       (:code "copy-username")
-      " have been moved to the " (:code "nyxt/password-mode") " mode package.")
+      " have been moved to the " (:code "nyxt/mode/password") " mode package.")
 
   (session-restore-prompt)
   (:p (:code "session-restore-prompt") " is now "
@@ -179,5 +179,5 @@ major versions."
 
   (auto-follow-hints-p compute-hints-in-view-port-p fit-to-prompt-p)
   (:p "Deprecated in favor of "
-      (:nxref :slot 'nyxt/hint-mode:hinting-type :class-name 'nyxt/hint-mode:hint-mode)
+      (:nxref :slot 'nyxt/mode/hint:hinting-type :class-name 'nyxt/mode/hint:hint-mode)
       "."))

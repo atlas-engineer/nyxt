@@ -1,11 +1,11 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/search-buffer-mode
+(nyxt:define-package :nyxt/mode/search-buffer
     (:documentation "Mode for element hints."))
-(in-package :nyxt/search-buffer-mode)
+(in-package :nyxt/mode/search-buffer)
 
-(define-mode search-buffer-mode (nyxt/hint-mode:hint-mode)
+(define-mode search-buffer-mode (nyxt/mode/hint:hint-mode)
   "Mode for searching text withing."
   ((visible-in-status-p nil)
    (rememberable-p nil)
@@ -54,7 +54,7 @@
          (setf (ps:@ style-element id) "nyxt-stylesheet")
          (ps:chain document head (append-child style-element))
          (setf (ps:chain style-element inner-text)
-               (ps:lisp (style (find-submode 'nyxt/search-buffer-mode:search-buffer-mode)))))
+               (ps:lisp (style (find-submode 'nyxt/mode/search-buffer:search-buffer-mode)))))
        (:catch (error)))))
 
   (defun create-match-object (body identifier)
@@ -149,7 +149,7 @@
    (body)
    (buffer)))
 
-(defmethod nyxt/hint-mode:identifier ((match search-match))
+(defmethod nyxt/mode/hint:identifier ((match search-match))
   (identifier match))
 
 (defmethod prompter:object-attributes ((match search-match) (source prompter:source))
@@ -192,9 +192,9 @@
            (and (slot-exists-p hint 'buffer)
                 (equal (buffer hint) buffer)))
           (with-current-buffer buffer
-            (nyxt/hint-mode:highlight-selected-hint :element hint
+            (nyxt/mode/hint:highlight-selected-hint :element hint
                                                     :scroll scroll))
-          (nyxt/hint-mode:unhighlight-selected-hint)))))
+          (nyxt/mode/hint:unhighlight-selected-hint)))))
 
 (define-class search-buffer-source (prompter:source)
   ((case-sensitive-p nil)
@@ -228,7 +228,7 @@
                           (declare (ignore prompter source))
                           (unless (keep-search-hints-p (current-buffer))
                             (remove-search-hints))
-                          (nyxt/hint-mode:unhighlight-selected-hint))))
+                          (nyxt/mode/hint:unhighlight-selected-hint))))
   (:export-accessor-names-p t)
   (:export-class-name-p t)
   (:metaclass user-class))

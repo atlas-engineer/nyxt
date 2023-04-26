@@ -1,9 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/force-https-mode
+(nyxt:define-package :nyxt/mode/force-https
     (:documentation "Mode for enforcing HTTPS on any URL clicked/hinted/set by user."))
-(in-package :nyxt/force-https-mode)
+(in-package :nyxt/mode/force-https)
 
 ;; TODO: Add style to loop help page?
 (defun https->http-loop-help (buffer url) ; TODO: Factor with tls-help?
@@ -32,7 +32,7 @@ Use at your own risk -- it can break websites whose certificates are not known
 and websites that still don't have HTTPS version (shame on them!).
 
 To permanently bypass the \"Unacceptable TLS Certificate\" error:
-\(setf nyxt/certificate-exception-mode:*default-certificate-exceptions*
+\(setf nyxt/mode/certificate-exception:*default-certificate-exceptions*
        '(\"your.unacceptable.cert.website\"))
 
 Example:

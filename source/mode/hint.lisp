@@ -1,9 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/hint-mode
+(nyxt:define-package :nyxt/mode/hint
     (:documentation "Mode for element hints."))
-(in-package :nyxt/hint-mode)
+(in-package :nyxt/mode/hint)
 
 (define-mode hint-mode ()
   "Interact with elements by typing a short character sequence."

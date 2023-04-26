@@ -7,15 +7,15 @@
 (define-test toggle-process-mode ()
   (let ((buffer (make-instance 'modable-buffer)))
     (with-current-buffer buffer
-      (assert-true (enable-modes* 'nyxt/process-mode:process-mode buffer))
-      (assert-true (disable-modes* 'nyxt/process-mode:process-mode buffer)))))
+      (assert-true (enable-modes* 'nyxt/mode/process:process-mode buffer))
+      (assert-true (disable-modes* 'nyxt/mode/process:process-mode buffer)))))
 
 (define-test run-action-ad-eternum ()
   ;; Runs twice to ensure that mode instances which have not been garbage
   ;; collected still behave as intended.
   (dotimes (_ 2)
     (let* ((action-run-p (lpara:promise))
-           (mode (make-instance 'nyxt/process-mode:process-mode
+           (mode (make-instance 'nyxt/mode/process:process-mode
                                 :buffer (make-instance 'modable-buffer)
                                 :path-url (quri:uri "test")
                                 :firing-condition t
@@ -32,27 +32,27 @@
       (assert-true (lpara:force action-run-p)))))
 
 (define-test null-action ()
-  (let ((mode (make-instance 'nyxt/process-mode:process-mode
+  (let ((mode (make-instance 'nyxt/mode/process:process-mode
                              :buffer (make-instance 'modable-buffer)
                              :path-url (quri:uri "test")
                              :action nil)))
     (enable mode)
-    (assert-true (null (nyxt/process-mode::thread mode)))
+    (assert-true (null (nyxt/mode/process::thread mode)))
     (disable mode)))
 
 (define-test null-firing-condition ()
-  (let ((mode (make-instance 'nyxt/process-mode:process-mode
+  (let ((mode (make-instance 'nyxt/mode/process:process-mode
                              :buffer (make-instance 'modable-buffer)
                              :path-url (quri:uri "test")
                              :firing-condition nil)))
     (enable mode)
-    (assert-true (null (nyxt/process-mode::thread mode)))
+    (assert-true (null (nyxt/mode/process::thread mode)))
     (disable mode)))
 
 (define-test firing-condition ()
   (let* ((run-action-count 0)
          (repeat-action-count (random 10))
-         (mode (make-instance 'nyxt/process-mode:process-mode
+         (mode (make-instance 'nyxt/mode/process:process-mode
                               :buffer (make-instance 'modable-buffer)
                               :path-url (quri:uri "test")
                               :action
@@ -64,31 +64,31 @@
                                 (declare (ignore path-url mode))
                                 (if (= run-action-count repeat-action-count) :return t)))))
     (enable mode)
-    (bt:join-thread (nyxt/process-mode::thread mode))
+    (bt:join-thread (nyxt/mode/process::thread mode))
     (disable mode)
     (assert-eq repeat-action-count
                run-action-count)))
 
 (define-test cleanup ()
   (let* ((clean-p)
-         (mode (make-instance 'nyxt/process-mode:process-mode
+         (mode (make-instance 'nyxt/mode/process:process-mode
                               :buffer (make-instance 'modable-buffer)
                               :path-url (quri:uri "test")
                               :cleanup
                               (lambda (path-url mode)
                                 (declare (ignore path-url mode))
                                 (setf clean-p t)))))
-    (nyxt/process-mode::call-cleanup mode)
+    (nyxt/mode/process::call-cleanup mode)
     (assert-true clean-p)))
 
 (define-test thread-handling ()
-  (let ((mode (make-instance 'nyxt/process-mode:process-mode
+  (let ((mode (make-instance 'nyxt/mode/process:process-mode
                              :buffer (make-instance 'modable-buffer)
                              :path-url (quri:uri "test")
                              :action
                              (lambda (path-url mode)
                                (declare (ignore path-url mode))))))
     ;; Ensure that re-enabling the mode doesn't overwrite an alive thread.
-    (assert-eq (nyxt/process-mode::thread (enable mode))
-               (nyxt/process-mode::thread (enable mode)))
+    (assert-eq (nyxt/mode/process::thread (enable mode))
+               (nyxt/mode/process::thread (enable mode)))
     (disable mode)))

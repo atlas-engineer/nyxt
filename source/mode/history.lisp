@@ -1,9 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/history-mode
+(nyxt:define-package :nyxt/mode/history
     (:documentation "Mode to store current buffer navigation into the global history."))
-(in-package :nyxt/history-mode)
+(in-package :nyxt/mode/history)
 
 (define-mode history-mode ()
   "Mode to manage navigation history."
@@ -353,11 +353,11 @@ Clicking on a link navigates the history in the corresponding buffer."
                        "")))))))
 
 (define-internal-page buffer-history-tree (&key (id (id (current-buffer))))
-    (:title "*History Tree*" :page-mode 'nyxt/history-tree-mode:history-tree-mode)
+    (:title "*History Tree*" :page-mode 'nyxt/mode/history-tree:history-tree-mode)
   "Display the history tree of a buffer.
 ID is a buffer `id'."
   (let ((buffer (nyxt::buffers-get id))
-        (mode (find-submode 'nyxt/history-tree-mode:history-tree-mode)))
+        (mode (find-submode 'nyxt/mode/history-tree:history-tree-mode)))
     (spinneret:with-html-string
       (:nstyle (style mode))
       (:h1 (format nil "History of ~a" buffer))
@@ -370,7 +370,7 @@ ID is a buffer `id'."
   (buffer-load-internal-page-focus 'buffer-history-tree :id (id buffer)))
 
 (define-internal-page-command-global history-tree ()
-  (output-buffer "*History*" 'nyxt/history-tree-mode:history-tree-mode)
+  (output-buffer "*History*" 'nyxt/mode/history-tree:history-tree-mode)
   "Display the whole, global history tree.
 It displays one branch per buffer.
 
@@ -379,7 +379,7 @@ times.
 
 Thus it is not representative of how the Global History Tree deduplicates nodes
 internally, but this display is clearer and more navigable."
-  (let ((mode (find-submode 'nyxt/history-tree-mode:history-tree-mode output-buffer)))
+  (let ((mode (find-submode 'nyxt/mode/history-tree:history-tree-mode output-buffer)))
     (spinneret:with-html-string
      (:nstyle (style mode))
      (:body
@@ -388,10 +388,10 @@ internally, but this display is clearer and more navigable."
         (:div (:raw (render-buffer-history-tree buffer))))))))
 
 (define-internal-page-command-global list-history (&key (limit 100))
-  (buffer "*History list*" 'nyxt/list-history-mode:list-history-mode) ; TODO: Remove list-history-mode if we add a style slot to `internal-page'.
+  (buffer "*History list*" 'nyxt/mode/list-history:list-history-mode) ; TODO: Remove list-history-mode if we add a style slot to `internal-page'.
   "Print the user history as a list."
   (spinneret:with-html-string
-    (:nstyle (style (find-submode 'nyxt/list-history-mode:list-history-mode buffer)))
+    (:nstyle (style (find-submode 'nyxt/mode/list-history:list-history-mode buffer)))
     (:h1 "History")
     (:p (format nil "The last ~a history entries:" limit))
     (:ul (:raw (nyxt::history-html-list :limit limit)))))

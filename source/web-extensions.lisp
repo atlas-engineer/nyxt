@@ -45,14 +45,14 @@ A list of objects. Does not necessarily have the same order as `files' of the sc
   (dolist (file (files script))
     (if (equal (pathname-type file) "css")
         (push (ffi-buffer-add-user-style
-               buffer (make-instance 'nyxt/user-script-mode:user-style
+               buffer (make-instance 'nyxt/mode/user-script:user-style
                                      :base-path (merge-extension-path extension file)
                                      :world-name (name extension)
                                      :allow-list (match-patterns script)))
               (user-styles script))
         (push
          (ffi-buffer-add-user-script
-          buffer (make-instance 'nyxt/user-script-mode:user-script
+          buffer (make-instance 'nyxt/mode/user-script:user-script
                                 :code (uiop:read-file-string
                                        (merge-extension-path extension file))
                                 :all-frames-p t
@@ -258,7 +258,7 @@ Value is the loadable URL of that file.")
                                            (if (equal (mimes:mime file) "text/html")
                                                (format nil "file://~a" file)
                                                (make-data-url file)))))
-                                 (nyxt/file-manager-mode:recursive-directory-elements
+                                 (nyxt/mode/file-manager:recursive-directory-elements
                                   (extension-directory mode))))))))
   (:toggler-command-p nil))
 

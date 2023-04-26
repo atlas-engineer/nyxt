@@ -6,5 +6,5 @@
 (define-test toggle-no-webgl-mode ()
   (let ((buffer (make-instance 'modable-buffer)))
     (with-current-buffer buffer
-      (assert-true (enable-modes* 'nyxt/no-webgl-mode:no-webgl-mode buffer))
-      (assert-true (disable-modes* 'nyxt/no-webgl-mode:no-webgl-mode buffer)))))
+      (assert-true (enable-modes* 'nyxt/mode/no-webgl:no-webgl-mode buffer))
+      (assert-true (disable-modes* 'nyxt/mode/no-webgl:no-webgl-mode buffer)))))

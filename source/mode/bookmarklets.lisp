@@ -7,10 +7,10 @@
 ;;;; are released into the public domain, per the license available
 ;;;; here: https://www.squarefree.com/bookmarklets/copyright.html
 
-(nyxt:define-package :nyxt/bookmarklets-mode
+(nyxt:define-package :nyxt/mode/bookmarklets
   (:documentation "Easily create 'bookmarklets' (JavaScript snippets) to alter
 the content of HTML pages."))
-(in-package :nyxt/bookmarklets-mode)
+(in-package :nyxt/mode/bookmarklets)
 
 (define-mode bookmarklets-mode ()
   "Mode for 'bookmarklets' commands.

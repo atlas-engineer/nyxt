@@ -6,5 +6,5 @@
 (define-test toggle-no-image-mode ()
   (let ((buffer (make-instance 'modable-buffer)))
     (with-current-buffer buffer
-      (assert-true (enable-modes* 'nyxt/no-image-mode:no-image-mode buffer))
-      (assert-true (disable-modes* 'nyxt/no-image-mode:no-image-mode buffer)))))
+      (assert-true (enable-modes* 'nyxt/mode/no-image:no-image-mode buffer))
+      (assert-true (disable-modes* 'nyxt/mode/no-image:no-image-mode buffer)))))

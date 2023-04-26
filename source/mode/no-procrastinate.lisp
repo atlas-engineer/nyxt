@@ -1,10 +1,10 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/no-procrastinate-mode
-  (:use :nyxt/blocker-mode)
+(nyxt:define-package :nyxt/mode/no-procrastinate
+  (:use :nyxt/mode/blocker)
   (:documentation "Block resource queries for listed hosts."))
-(in-package :nyxt/no-procrastinate-mode)
+(in-package :nyxt/mode/no-procrastinate)
 
 (export-always '*default-hostlist-no-procrastinate*)
 (defparameter *default-hostlist-no-procrastinate*
@@ -18,7 +18,7 @@
    (files:name "no-procrastinate-hosts"))
   (:export-class-name-p t))
 
-(define-mode no-procrastinate-mode (nyxt/blocker-mode:blocker-mode)
+(define-mode no-procrastinate-mode (nyxt/mode/blocker:blocker-mode)
   "Mode to block access to hosts associated with procrastination."
   ((rememberable-p nil)
    (no-procrastinate-hosts-file
@@ -36,8 +36,8 @@
               :border           "none"
               :outline          "none"
               :text-align       "left")))
-   (nyxt/blocker-mode:hostlists
-    (list (nyxt/blocker-mode:make-hostlist
+   (nyxt/mode/blocker:hostlists
+    (list (nyxt/mode/blocker:make-hostlist
            :hosts (mapcar #'(lambda (y) (hostname y))
                           (when (current-buffer)
                             (files:content (no-procrastinate-hosts-file (current-buffer))))))
@@ -61,7 +61,7 @@
     (no-procrastinate-hosts-buffer "*No Procrastinate Hosts*")
   "List all hosts to avoid procrastination in a new buffer."
   (let ((no-procrastinate-hosts (group-no-procrastinate-hosts no-procrastinate-hosts-buffer))
-        (mode (find-submode 'nyxt/no-procrastinate-mode:no-procrastinate-mode
+        (mode (find-submode 'nyxt/mode/no-procrastinate:no-procrastinate-mode
                             no-procrastinate-hosts-buffer)))
     (spinneret:with-html-string
       (:nstyle (style mode))

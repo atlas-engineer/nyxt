@@ -1,11 +1,11 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/file-manager-mode
+(nyxt:define-package :nyxt/mode/file-manager
     (:documentation "Mode for file management from the prompt buffer."))
-(in-package :nyxt/file-manager-mode)
+(in-package :nyxt/mode/file-manager)
 
-(nyxt/prompt-buffer-mode::define-command-prompt directory-up (prompt-buffer)
+(nyxt/mode/prompt-buffer::define-command-prompt directory-up (prompt-buffer)
   "Remove one level of directory nesting from the current PROMPT-BUFFER file input."
   (let* ((input (prompter:input prompt-buffer))
          (path (uiop:parse-native-namestring input))
@@ -14,7 +14,7 @@
                      (uiop:pathname-directory-pathname path))))
     (nyxt:set-prompt-buffer-input (namestring parent) prompt-buffer)))
 
-(define-mode file-manager-mode (nyxt/prompt-buffer-mode:prompt-buffer-mode)
+(define-mode file-manager-mode (nyxt/mode/prompt-buffer:prompt-buffer-mode)
   "Prompt buffer mode to manage file systems.
 Return actions include deleting, renaming and opening files with external
 programs."
@@ -215,7 +215,7 @@ See `supported-media-types' of `file-mode'."
 (define-command-global edit-file-with-external-editor
     (&optional (files (prompt :prompt "File(s) to edit"
                               :input (uiop:native-namestring (uiop:getcwd))
-                              :extra-modes 'nyxt/file-manager-mode:file-manager-mode
+                              :extra-modes 'nyxt/mode/file-manager:file-manager-mode
                               :sources 'file-source)))
   "Edit the FILES using `external-editor-program'.
 If FILES are not provided, prompt for them."

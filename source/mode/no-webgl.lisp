@@ -1,9 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/no-webgl-mode
+(nyxt:define-package :nyxt/mode/no-webgl
     (:documentation "Disable WebGL."))
-(in-package :nyxt/no-webgl-mode)
+(in-package :nyxt/mode/no-webgl)
 
 (define-mode no-webgl-mode ()
   "Disable WebGL in current buffer."

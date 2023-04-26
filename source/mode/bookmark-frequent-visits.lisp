@@ -21,7 +21,7 @@ bookmarks. If this is the case, prompt the user about bookmarking it."
              already bookmarked or not."
              (let ((bookmark-url-strings
                      (mapcar #'(lambda (e) (render-url (url e)))
-                             (files:content (nyxt/bookmark-mode:bookmarks-file (current-buffer))))))
+                             (files:content (nyxt/mode/bookmark:bookmarks-file (current-buffer))))))
                (find url-address bookmark-url-strings :test #'string=))))
     (sera:and-let* ((history-entries (let ((history (buffer-history)))
                                        (mapcar #'htree:data (alex:hash-table-keys (htree:entries history)))))
@@ -34,7 +34,7 @@ bookmarks. If this is the case, prompt the user about bookmarking it."
       (when (and (> implicit-visits-value threshold)
                  (not (bookmarked-url-p current-url-string)))
         (if-confirm ((format nil "Bookmark ~a?" current-url-string))
-                    (nyxt/bookmark-mode:bookmark-url :url current-url-string))))))
+                    (nyxt/mode/bookmark:bookmark-url :url current-url-string))))))
 
 (defmethod nyxt:on-signal-load-finished ((mode bookmark-frequent-visits-mode) url)
   (bookmark-frequent-visit (threshold mode))

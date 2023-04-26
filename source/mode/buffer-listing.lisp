@@ -1,9 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/buffer-listing-mode
+(nyxt:define-package :nyxt/mode/buffer-listing
     (:documentation "Mode for buffer-listings"))
-(in-package :nyxt/buffer-listing-mode)
+(in-package :nyxt/mode/buffer-listing)
 
 (define-mode buffer-listing-mode ()
   "Mode for buffer-listing."
@@ -12,7 +12,7 @@
 
 (define-internal-page-command-global list-buffers (&key (cluster nil)
                                                   linear-view-p) ; TODO: Document `cluster'.
-    (listing-buffer "*Buffers*" 'nyxt/buffer-listing-mode:buffer-listing-mode)
+    (listing-buffer "*Buffers*" 'nyxt/mode/buffer-listing:buffer-listing-mode)
   "Show a buffer listing all buffer trees.
 Buffers have relationships.  When a buffer is spawned from another one (e.g. by
 middle-clicking on a link), the new buffer is a child buffer.
@@ -69,10 +69,10 @@ With LINEAR-VIEW-P, list buffers linearly instead."
       (:h1 "Buffers")
       (:nbutton
         :text "Tree display"
-        '(nyxt/buffer-listing-mode::list-buffers))
+        '(nyxt/mode/buffer-listing::list-buffers))
       (:nbutton
         :text "Linear display"
-        '(nyxt/buffer-listing-mode::list-buffers :linear-view-p t))
+        '(nyxt/mode/buffer-listing::list-buffers :linear-view-p t))
       (:br)
       (:div
        (if cluster

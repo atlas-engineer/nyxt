@@ -1,11 +1,11 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/repeat-mode
+(nyxt:define-package :nyxt/mode/repeat
     (:documentation "Mode to repeat actions."))
-(in-package :nyxt/repeat-mode)
+(in-package :nyxt/mode/repeat)
 
-(define-mode repeat-mode (nyxt/process-mode:process-mode)
+(define-mode repeat-mode (nyxt/mode/process:process-mode)
   "Repeat the execution of a command while enabled."
   ((visible-in-status-p nil)
    (rememberable-p nil)
@@ -22,7 +22,7 @@
     :type (or null (function (repeat-mode)))
     :documentation "The action to repeat.
 It takes a `repeat-mode' instance as argument.")
-   (nyxt/process-mode:firing-condition
+   (nyxt/mode/process:firing-condition
     #'(lambda (path-url mode)
         (declare (ignore path-url))
         (when (repeat-interval mode)
@@ -32,20 +32,20 @@ It takes a `repeat-mode' instance as argument.")
                    :return
                    (decf (repeat-count mode))))
               (t t)))
-    :documentation "See `nyxt/process-mode:firing-condition'.")
-   (nyxt/process-mode:action
+    :documentation "See `nyxt/mode/process:firing-condition'.")
+   (nyxt/mode/process:action
     #'(lambda (path-url mode)
         (declare (ignore path-url))
         (funcall* (repeat-action mode) mode))
-    :documentation "See `nyxt/process-mode:action'.")
-   (nyxt/process-mode:cleanup
+    :documentation "See `nyxt/mode/process:action'.")
+   (nyxt/mode/process:cleanup
     #'(lambda (path-url mode)
         (declare (ignore path-url))
         ;; Needed since the mode object might not have been garbage collected.
         (setf (repeat-action mode) nil
               (repeat-count mode) nil
               (repeat-interval mode) 1.0))
-    :documentation "See `nyxt/process-mode:cleanup'.")))
+    :documentation "See `nyxt/mode/process:cleanup'.")))
 
 (defmethod enable ((mode repeat-mode) &key)
   ;; TODO: Remember prompt input now that we have prompt-buffer hooks.

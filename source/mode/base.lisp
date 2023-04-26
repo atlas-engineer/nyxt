@@ -33,8 +33,8 @@ This mode is a good candidate to be passed to `make-buffer'."
        "f1 s" 'describe-slot
        "f1 v" 'describe-variable
        "f11" 'toggle-fullscreen
-       "C-shift-y" 'nyxt/download-mode:list-downloads
-       "C-shift-Y" 'nyxt/download-mode:list-downloads
+       "C-shift-y" 'nyxt/mode/download:list-downloads
+       "C-shift-Y" 'nyxt/mode/download:list-downloads
        "C-space" 'execute-command
        "C-M-space" 'execute-extended-command
        "C-shift-space" 'execute-predicted-command
@@ -57,7 +57,7 @@ This mode is a good candidate to be passed to `make-buffer'."
        "M-c l" 'copy-url
        "M-c t" 'copy-title
        "C-O" 'load-file
-       "C-o" 'nyxt/file-manager-mode:open-file
+       "C-o" 'nyxt/mode/file-manager:open-file
        "C-q" 'quit)
       keyscheme:emacs
       (list
@@ -69,7 +69,7 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-x b" 'switch-buffer
        "C-x k" 'delete-buffer
        "C-x C-k" 'delete-current-buffer
-       "C-x C-b" 'nyxt/buffer-listing-mode::list-buffers
+       "C-x C-b" 'nyxt/mode/buffer-listing::list-buffers
        "C-M-l" 'copy-url
        "C-M-t" 'copy-title
        "C-h t" 'tutorial
@@ -82,22 +82,22 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-h p" 'describe-package
        "C-h s" 'describe-slot
        "C-h v" 'describe-variable
-       "C-d" 'nyxt/download-mode:list-downloads
+       "C-d" 'nyxt/mode/download:list-downloads
        "C-x 5 2" 'make-window
        "C-x 5 0" 'delete-current-window
        "C-x 5 1" 'delete-window
-       "C-x C-f" 'nyxt/file-manager-mode:open-file
+       "C-x C-f" 'nyxt/mode/file-manager:open-file
        "M-x" 'execute-command
        "C-M-x" 'execute-extended-command
-       "M-1" (read-from-string "nyxt/repeat-mode:repeat-key")
-       "M-2" (read-from-string "nyxt/repeat-mode:repeat-key")
-       "M-3" (read-from-string "nyxt/repeat-mode:repeat-key")
-       "M-4" (read-from-string "nyxt/repeat-mode:repeat-key")
-       "M-5" (read-from-string "nyxt/repeat-mode:repeat-key")
-       "M-6" (read-from-string "nyxt/repeat-mode:repeat-key")
-       "M-7" (read-from-string "nyxt/repeat-mode:repeat-key")
-       "M-8" (read-from-string "nyxt/repeat-mode:repeat-key")
-       "M-9" (read-from-string "nyxt/repeat-mode:repeat-key")
+       "M-1" (read-from-string "nyxt/mode/repeat:repeat-key")
+       "M-2" (read-from-string "nyxt/mode/repeat:repeat-key")
+       "M-3" (read-from-string "nyxt/mode/repeat:repeat-key")
+       "M-4" (read-from-string "nyxt/mode/repeat:repeat-key")
+       "M-5" (read-from-string "nyxt/mode/repeat:repeat-key")
+       "M-6" (read-from-string "nyxt/mode/repeat:repeat-key")
+       "M-7" (read-from-string "nyxt/mode/repeat:repeat-key")
+       "M-8" (read-from-string "nyxt/mode/repeat:repeat-key")
+       "M-9" (read-from-string "nyxt/mode/repeat:repeat-key")
        "C-x C-c" 'quit)
       keyscheme:vi-normal
       (list
@@ -120,14 +120,14 @@ This mode is a good candidate to be passed to `make-buffer'."
        "y u" 'copy-url
        "y t" 'copy-title
        ":" 'execute-command
-       "1" (read-from-string "nyxt/repeat-mode:repeat-key")
-       "2" (read-from-string "nyxt/repeat-mode:repeat-key")
-       "3" (read-from-string "nyxt/repeat-mode:repeat-key")
-       "4" (read-from-string "nyxt/repeat-mode:repeat-key")
-       "5" (read-from-string "nyxt/repeat-mode:repeat-key")
-       "6" (read-from-string "nyxt/repeat-mode:repeat-key")
-       "7" (read-from-string "nyxt/repeat-mode:repeat-key")
-       "8" (read-from-string "nyxt/repeat-mode:repeat-key")
-       "9" (read-from-string "nyxt/repeat-mode:repeat-key")
+       "1" (read-from-string "nyxt/mode/repeat:repeat-key")
+       "2" (read-from-string "nyxt/mode/repeat:repeat-key")
+       "3" (read-from-string "nyxt/mode/repeat:repeat-key")
+       "4" (read-from-string "nyxt/mode/repeat:repeat-key")
+       "5" (read-from-string "nyxt/mode/repeat:repeat-key")
+       "6" (read-from-string "nyxt/mode/repeat:repeat-key")
+       "7" (read-from-string "nyxt/mode/repeat:repeat-key")
+       "8" (read-from-string "nyxt/mode/repeat:repeat-key")
+       "9" (read-from-string "nyxt/mode/repeat:repeat-key")
        "Z Z" 'quit))))
   (:toggler-command-p nil))

@@ -4,11 +4,11 @@
 (in-package :nyxt/tests)
 
 (define-test toggle-editor-mode ()
-  (let ((editor-buffer (make-instance 'nyxt/editor-mode:editor-buffer)))
+  (let ((editor-buffer (make-instance 'nyxt/mode/editor:editor-buffer)))
     (with-current-buffer editor-buffer
-      (assert-true (enable-modes* 'nyxt/editor-mode:editor-mode editor-buffer))
-      (assert-true (disable-modes* 'nyxt/editor-mode:editor-mode editor-buffer))
-      (assert-true (enable-modes* 'nyxt/editor-mode:plaintext-editor-mode
+      (assert-true (enable-modes* 'nyxt/mode/editor:editor-mode editor-buffer))
+      (assert-true (disable-modes* 'nyxt/mode/editor:editor-mode editor-buffer))
+      (assert-true (enable-modes* 'nyxt/mode/editor:plaintext-editor-mode
                                   editor-buffer))
-      (assert-true (disable-modes* 'nyxt/editor-mode:plaintext-editor-mode
+      (assert-true (disable-modes* 'nyxt/mode/editor:plaintext-editor-mode
                                    editor-buffer)))))
