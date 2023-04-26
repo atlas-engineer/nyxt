@@ -109,6 +109,7 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                #-sbcl
                osicat
                parenscript
+               prompter
                py-configparser
                quri
                serapeum
@@ -132,7 +133,6 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                nyxt/analysis
                nyxt/download-manager
                nyxt/password-manager
-               nyxt/prompter
                nyxt/theme)
   :pathname #p"NYXT:source;"
   :components ((:file "utilities")
@@ -272,8 +272,7 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
   :in-order-to ((test-op (test-op "nyxt/tests")
                          ;; We test if manual dumping works, since it may catch
                          ;; some subtle mistakes:
-                         (compile-op "nyxt/documentation")
-                         (test-op "nyxt/prompter/tests"))))
+                         (compile-op "nyxt/documentation"))))
 
 (defsystem "nyxt/submodules"
   :defsystem-depends-on ("nasdf")
@@ -600,38 +599,6 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                (:file "password-security")
                ;; Keep password-store last so that it has higher priority.
                (:file "password-pass")))
-
-(defsystem "nyxt/prompter"
-  :defsystem-depends-on ("nasdf")
-  :class :nasdf-system
-  :depends-on (alexandria
-               calispel
-               cl-containers
-               closer-mop
-               lparallel
-               moptilities
-               nclasses
-               serapeum
-               str
-               trivial-package-local-nicknames)
-  :pathname #p"NYXT:libraries;prompter;"
-  :components ((:file "package")
-               (:file "filter-preprocessor")
-               (:file "filter")
-               (:file "prompter-source")
-               (:file "prompter"))
-  :in-order-to ((test-op (test-op "nyxt/prompter/tests"))))
-
-(defsystem "nyxt/prompter/tests"
-  :defsystem-depends-on ("nasdf")
-  :class :nasdf-test-system
-  :depends-on (nyxt/prompter)
-  :targets (:package :prompter/tests)
-  :pathname #p"NYXT:libraries;prompter;tests;"
-  :components ((:file "package")
-               (:file "tests")
-               (:file "fuzzy")
-               (:file "submatches")))
 
 (defsystem "nyxt/theme"
   :defsystem-depends-on ("nasdf")
