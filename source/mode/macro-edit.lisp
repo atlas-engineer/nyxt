@@ -1,9 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/macro-edit-mode
+(nyxt:define-package :nyxt/mode/macro-edit
     (:documentation "Mode for editing macros."))
-(in-package :nyxt/macro-edit-mode)
+(in-package :nyxt/mode/macro-edit)
 
 (define-mode macro-edit-mode ()
   "Mode for creating and editing macros."
@@ -25,7 +25,7 @@
            collect (:tr (:td (:nbutton :class "button"
                                :text "✕"
                                :title "Remove from the macro"
-                               `(nyxt/macro-edit-mode::remove-function
+                               `(nyxt/mode/macro-edit::remove-function
                                  (find-submode 'macro-edit-mode)
                                  ,index)))
                         (:td
@@ -41,7 +41,7 @@
                                    name))))))))
 
 (define-internal-page-command-global edit-macro ()
-    (buffer "*Macro edit*" 'nyxt/macro-edit-mode:macro-edit-mode)
+    (buffer "*Macro edit*" 'nyxt/mode/macro-edit:macro-edit-mode)
   "Edit a macro."
   (spinneret:with-html-string
     (:nstyle (style buffer))
@@ -51,20 +51,20 @@
     (:p "Commands")
     (:p (:nbutton
           :text "+ Add command"
-          '(nyxt/macro-edit-mode::add-command)))
+          '(nyxt/mode/macro-edit::add-command)))
     (:div
      :id "commands"
      (:raw
       (render-functions
-       (find-submode 'nyxt/macro-edit-mode:macro-edit-mode))))
+       (find-submode 'nyxt/mode/macro-edit:macro-edit-mode))))
     (:br)
     (:hr)
     (:nbutton
       :text "Save macro"
-      '(nyxt/macro-edit-mode::save-macro))
+      '(nyxt/mode/macro-edit::save-macro))
     (:nbutton
       :text "Compile macro"
-      '(nyxt/macro-edit-mode::evaluate-macro))))
+      '(nyxt/mode/macro-edit::evaluate-macro))))
 
 (defmethod add-function ((macro-editor macro-edit-mode) command)
   (alex:appendf (functions macro-editor)

@@ -1,17 +1,17 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/process-mode
+(nyxt:define-package :nyxt/mode/process
     (:documentation "Act on file/directory based on a certain condition."))
-(in-package :nyxt/process-mode)
+(in-package :nyxt/mode/process)
 
 (define-mode process-mode ()
   "Conditionally execute a file/directory-related `action' in a separate thread.
 
 Possible applications:
 - Web server.
-- Live preview of documents (`nyxt/preview-mode').
-- Refreshing a URL at regular intervals (`nyxt/watch-mode').
+- Live preview of documents (`nyxt/mode/preview').
+- Refreshing a URL at regular intervals (`nyxt/mode/watch').
 - Live tracking of filesystem/data in a file/directory."
   ((visible-in-status-p nil)
    (rememberable-p nil)

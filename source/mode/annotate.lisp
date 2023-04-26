@@ -1,10 +1,10 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/annotate-mode
+(nyxt:define-package :nyxt/mode/annotate
   (:documentation "Mode to annotate documents.
 Annotations are persisted to disk."))
-(in-package :nyxt/annotate-mode)
+(in-package :nyxt/mode/annotate)
 
 (define-mode annotate-mode ()
   "Annotate document with arbitrary comments.

@@ -89,12 +89,12 @@
    (exec-with-config
     `(progn
        (nyxt:define-configuration nyxt:web-buffer
-         ((nyxt:default-modes (append '(nyxt/reading-line-mode:reading-line-mode) nyxt:%slot-value%))))
+         ((nyxt:default-modes (append '(nyxt/mode/reading-line:reading-line-mode) nyxt:%slot-value%))))
        (nyxt:define-configuration nyxt:web-buffer
-         ((nyxt:default-modes (append '(nyxt/style-mode:dark-mode) nyxt:%slot-value%)))))
+         ((nyxt:default-modes (append '(nyxt/mode/style:dark-mode) nyxt:%slot-value%)))))
     (eval-on-startup
-     `(assert (member 'nyxt/reading-line-mode:reading-line-mode (nyxt:default-modes (nyxt:current-buffer))))
-     `(assert (member 'nyxt/style-mode:dark-mode (nyxt:default-modes (nyxt:current-buffer))))
+     `(assert (member 'nyxt/mode/reading-line:reading-line-mode (nyxt:default-modes (nyxt:current-buffer))))
+     `(assert (member 'nyxt/mode/style:dark-mode (nyxt:default-modes (nyxt:current-buffer))))
      `(nyxt:quit)))))
 
 (define-test manual-examples ()

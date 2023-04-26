@@ -1,9 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/download-mode
+(nyxt:define-package :nyxt/mode/download
     (:documentation "Mode to manage downloads and the download listing page."))
-(in-package :nyxt/download-mode)
+(in-package :nyxt/mode/download)
 
 (export-always 'renderer-download)
 (defclass renderer-download ()
@@ -53,8 +53,8 @@ The handlers take the `download' instance as argument.
 
 Example: echo the file name to be downloaded
 
-\(define-configuration nyxt/download-mode:download
-  ((nyxt/download-mode:before-download-hook
+\(define-configuration nyxt/mode/download:download
+  ((nyxt/mode/download:before-download-hook
     (hooks:add-hook %slot-value%
                     (make-instance 'hooks:handler
                                    :fn (lambda (download)
@@ -67,15 +67,15 @@ Example: echo the file name to be downloaded
 The handlers take the `download' instance as argument.
 
 Example: open the loaded files with XDG-open
-\(define-configuration nyxt/download-mode:download
-  ((nyxt/download-mode:after-download-hook
+\(define-configuration nyxt/mode/download:download
+  ((nyxt/mode/download:after-download-hook
     (hooks:add-hook
      %slot-value%
      (make-instance 'hooks:handler
                     :fn (lambda (download)
                           (uiop:launch-program
                            (list \"xdg-open\" (uiop:native-namestring
-                                             (nyxt/download-mode:destination-path download)))))
+                                             (nyxt/mode/download:destination-path download)))))
                     :name 'xdg-open-download)))))")
    (cancel-function nil
                     :reader t
@@ -142,7 +142,7 @@ finds it, it will invoke its cancel-function."
 (defmethod (setf destination-path) (path (download download))
   (setf (slot-value download 'destination-path) path)
   (setf (user-interface:action (open-button download))
-        (ps:ps (nyxt/ps:lisp-eval (:title "open-file") (nyxt/file-manager-mode:default-open-file-function path)))))
+        (ps:ps (nyxt/ps:lisp-eval (:title "open-file") (nyxt/mode/file-manager:default-open-file-function path)))))
 
 (defmethod connect ((download download) buffer)
   "Connect the user-interface objects within the download to the
@@ -287,11 +287,11 @@ Return the download object matching the download."
 (define-command download-hint-url ()
   "Prompt for element hints and download them."
   (let ((buffer (current-buffer)))
-    (nyxt/hint-mode:query-hints
+    (nyxt/mode/hint:query-hints
      "Download link URL"
      (lambda (selected-links)
        (loop for link in selected-links
              ;; TODO: sleep should NOT be necessary to avoid breaking download
-             do (nyxt/download-mode:download buffer (url link))
+             do (nyxt/mode/download:download buffer (url link))
                 (sleep 0.25)))
      :selector "a")))

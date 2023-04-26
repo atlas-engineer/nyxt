@@ -1,12 +1,12 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/document-mode
+(nyxt:define-package :nyxt/mode/document
   (:shadow #:focus-first-input-field)
   (:documentation "Mode to interact with structured documents.
 This is typically for HTML pages, but other format may be supported at some point.
 It does not assume being online."))
-(in-package :nyxt/document-mode)
+(in-package :nyxt/mode/document)
 
 ;; TODO: Remove document-mode from special buffers (e.g. help).
 ;; This is required because special buffers cannot be part of a history (and it breaks it).
@@ -22,7 +22,7 @@ It does not assume being online."))
     (define-keyscheme-map "document-mode" ()
       keyscheme:default
       (list
-       "C-M-Z" 'nyxt/passthrough-mode:passthrough-mode
+       "C-M-Z" 'nyxt/mode/passthrough:passthrough-mode
        "M-i" 'focus-first-input-field
        "C-M-c" 'open-inspector
        "C-S-c" 'open-inspector

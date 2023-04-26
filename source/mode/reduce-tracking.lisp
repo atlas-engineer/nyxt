@@ -1,9 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/reduce-tracking-mode
+(nyxt:define-package :nyxt/mode/reduce-tracking
     (:documentation "Mode to mitigate fingerprinting."))
-(in-package :nyxt/reduce-tracking-mode)
+(in-package :nyxt/mode/reduce-tracking)
 
 (define-mode reduce-tracking-mode ()
   "Set specific settings in the web view in order to mitigate fingerprinting,

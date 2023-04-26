@@ -55,7 +55,7 @@ similar programming language.")
         (:p "Example:")
         (:ncode
           '(define-configuration web-buffer
-            ((default-modes (pushnew 'nyxt/no-script-mode:no-script-mode %slot-value%)))))
+            ((default-modes (pushnew 'nyxt/mode/no-script:no-script-mode %slot-value%)))))
         (:p "The above turns on the 'no-script-mode' (disables JavaScript) by default for
 every buffer.")
         (:p "The " (:nxref :macro 'define-configuration) " macro can be used to customize
@@ -68,7 +68,7 @@ run " (:nxref :command 'describe-command) " and type 'mode'."))
         (:p "Slots store values that can be either accessed (get) or changed
 (set). Setting new values for slots allows many possibilities of customization.
 For instance, keyboard layouts vary across the world. The slot "
-            (:nxref :slot 'nyxt/hint-mode:hints-alphabet :class-name 'nyxt/hint-mode:hint-mode)
+            (:nxref :slot 'nyxt/mode/hint:hints-alphabet :class-name 'nyxt/mode/hint:hint-mode)
             " has the default value of "
             (:code "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
             ". If the user has an American keyboard, they can do:")
@@ -80,7 +80,7 @@ For instance, keyboard layouts vary across the world. The slot "
          (:li "Insert the string \"asfdghjkl\"") ".")
         (:p "This will make link-hinting more comfortable for this user. In
 addition, other similar approaches of customization can be applied to slots
-such as " (:nxref :slot 'nyxt/spell-check-mode:spell-check-language :class-name 'nyxt/spell-check-mode:spell-check-mode)
+such as " (:nxref :slot 'nyxt/mode/spell-check:spell-check-language :class-name 'nyxt/mode/spell-check:spell-check-mode)
 ", which can be expanded to do the spelling-check of other languages besides English."))
 
       (:nsection :title "Different types of buffers"
@@ -102,17 +102,17 @@ For instance if you configure the " (:nxref :slot 'override-map :class-name 'inp
         (:p "Nyxt supports multiple " (:i "bindings schemes") " such as CUA (the
     default), Emacs or vi.  Changing scheme is as simple as setting the
     corresponding mode as default, e.g. "
-            (:nxref :class-name 'nyxt/emacs-mode:emacs-mode) ".  To make the change persistent across sessions,
+            (:nxref :class-name 'nyxt/mode/emacs:emacs-mode) ".  To make the change persistent across sessions,
 add the following to your configuration:")
         (:ul
          (:li "vi bindings:"
               (:ncode
                 '(define-configuration buffer
-                  ((default-modes (pushnew 'nyxt/vi-mode:vi-normal-mode %slot-value%))))))
+                  ((default-modes (pushnew 'nyxt/mode/vi:vi-normal-mode %slot-value%))))))
          (:li "Emacs bindings:"
               (:ncode
                 '(define-configuration buffer
-                  ((default-modes (pushnew 'nyxt/emacs-mode:emacs-mode %slot-value%)))))))
+                  ((default-modes (pushnew 'nyxt/mode/emacs:emacs-mode %slot-value%)))))))
         (:p "You can create new scheme names with " (:nxref :function 'nkeymaps:make-keyscheme)
             ".  Also see the "
             (:nxref :function 'keymaps:define-keyscheme-map "define-keyscheme-map macro") ".")
@@ -166,8 +166,8 @@ keymap.")
         (:ncode
           '(defvar *my-keymap* (make-keymap "my-map"))
           '(define-key *my-keymap*
-            "C-f" 'nyxt/history-mode:history-forwards
-            "C-b" 'nyxt/history-mode:history-backwards)
+            "C-f" 'nyxt/mode/history:history-forwards
+            "C-b" 'nyxt/mode/history:history-backwards)
 
           '(define-mode my-mode ()
             "Dummy mode for the custom key bindings in `*my-keymap*'."
@@ -246,22 +246,22 @@ follows.")
 
       (:nsection :title "History"
         (:p "Nyxt history model is a tree whose nodes are URLs. It branches out through all
-the buffers. If you create a new buffer (via " (:nxref :command 'nyxt/hint-mode:follow-hint-new-buffer)
+the buffers. If you create a new buffer (via " (:nxref :command 'nyxt/mode/hint:follow-hint-new-buffer)
 " or " (:nxref :command 'make-buffer) "), it becomes a new history branch originating
 from the branch of the previous buffer.")
         (:p "History can be navigated with the arrow keys in the status buffer, or with
-commands like " (:nxref :command 'nyxt/history-mode:history-backwards) " and "
-(:nxref :command 'nyxt/history-mode:history-forwards)
+commands like " (:nxref :command 'nyxt/mode/history:history-backwards) " and "
+(:nxref :command 'nyxt/mode/history:history-forwards)
 " (which the arrows are bound to).")
         (:p "If the beyond-buffer-boundaries behavior sounds like too much to you, or you
 prefer the behavior of Nyxt 2, where the history was still a tree, but was not
 spilling across the buffers, then configure "
-            (:nxref :slot 'nyxt/history-mode:conservative-history-movement-p
-              :class-name 'nyxt/history-mode:history-mode)
+            (:nxref :slot 'nyxt/mode/history:conservative-history-movement-p
+              :class-name 'nyxt/mode/history:history-mode)
             " to be T. This would make all buffers to have their own history, not connected
 to the other buffers at all. All the history commands (like "
-            (:nxref :command 'nyxt/history-mode:history-backwards) " and "
-            (:nxref :command 'nyxt/history-mode:history-forwards)
+            (:nxref :command 'nyxt/mode/history:history-backwards) " and "
+            (:nxref :command 'nyxt/mode/history:history-forwards)
             ") will only work inside the buffer history then.")
         (:p "Nyxt supra-buffer history has benefits, though: it optimizes browsing patterns
 into more intuitive and productive structures. One particular pattern Nyxt
@@ -269,37 +269,37 @@ history optimizes is hub-and-spoke search, where you keep returning to a certain
 hub to start your search/navigation from a familiar point. You can enable the
 optimization (merely going back in history to the hub page, instead of creating
 a new history node) for this strategy by configuring "
-            (:nxref :slot 'nyxt/history-mode:backtrack-to-hubs-p
-              :class-name 'nyxt/history-mode:history-mode)
+            (:nxref :slot 'nyxt/mode/history:backtrack-to-hubs-p
+              :class-name 'nyxt/mode/history:history-mode)
             " to T.")
         (:p "Another useful side to Nyxt tree-like history are braching-aware history
 commands, like "
-            (:nxref :command 'nyxt/history-mode:history-forwards-query)
+            (:nxref :command 'nyxt/mode/history:history-forwards-query)
             ", allowing one to choose which branch of history they are going to visit, if
 there are several. If there's only one branch, then this command behaves much
-like regular " (:nxref :command 'nyxt/history-mode:history-forwards) ".")
+like regular " (:nxref :command 'nyxt/mode/history:history-forwards) ".")
         (:p "There are commands that allow to move across all the history before or after
 the current node:")
-        (:ul (list-command-information '(nyxt/history-mode:history-backwards-query
-                                         nyxt/history-mode:history-forwards-all-query
-                                         nyxt/history-mode:history-all-query)))
+        (:ul (list-command-information '(nyxt/mode/history:history-backwards-query
+                                         nyxt/mode/history:history-forwards-all-query
+                                         nyxt/mode/history:history-all-query)))
         (:p "If you need to know more: most of the optimizations and data structures are
 in " (:nxref :package :history-tree) " library, while most of the Nyxt-specific interface is in "
-(:nxref :package :nyxt/history-tree-mode) "."))
+(:nxref :package :nyxt/mode/history-tree) "."))
 
       (:nsection :title "Downloads"
-        (:p "See the " (:nxref :command 'nyxt/download-mode:list-downloads) " command and the "
+        (:p "See the " (:nxref :command 'nyxt/mode/download:list-downloads) " command and the "
             (:nxref :slot 'download-path :class-name 'buffer) " buffer slot documentation."))
 
       (:nsection :title "Proxy and Tor"
-        (:p "See the " (:nxref :class-name 'nyxt/proxy-mode:proxy-mode) " documentation."))
+        (:p "See the " (:nxref :class-name 'nyxt/mode/proxy:proxy-mode) " documentation."))
 
       (:nsection :title "Blocker mode"
         (:p "This mode blocks access to websites related to specific hosts. To see
 all hosts being blocked, execute command " (:code "describe-variable") ", choose variable "
-(:code "NYXT/BLOCKER-MODE:*DEFAULT-HOSTLIST*") ", and read data on "
-(:code "nyxt/blocker-mode:url-body") " slot." " To customize host blocking, read the "
-(:nxref :class-name 'nyxt/blocker-mode:blocker-mode) " documentation."))
+(:code "NYXT/MODE/BLOCKER:*DEFAULT-HOSTLIST*") ", and read data on "
+(:code "nyxt/mode/blocker:url-body") " slot." " To customize host blocking, read the "
+(:nxref :class-name 'nyxt/mode/blocker:blocker-mode) " documentation."))
 
       (:nsection :title "URL-dispatchers"
         (:p "You can configure which actions to take depending on the URL to be
@@ -358,7 +358,7 @@ Lisp function, except the form is " (:code "define-command") " instead of "
             (let ((url (prompt
                         :prompt "Bookmark URL"
                         :sources 'prompter:raw-source)))
-              (nyxt/bookmark-mode:bookmark-add url))))
+              (nyxt/mode/bookmark:bookmark-add url))))
         (:p "See the " (:nxref :class-name 'prompt-buffer) " class documentation for how
 to write custom prompt buffers.")
         (:p "You can also create your own context menu entries binding those to Lisp commands, using "
@@ -376,7 +376,7 @@ Nyxt provides. For example, one can use the "
         (:ncode
           '(ffi-add-context-menu-command
             (lambda ()
-              (nyxt/bookmark-mode:bookmark-add (url-at-point (current-buffer))))
+              (nyxt/mode/bookmark:bookmark-add (url-at-point (current-buffer))))
             "Bookmark Link")))
 
       (:nsection :title "Custom URL schemes"
@@ -538,11 +538,11 @@ you can safely set new inputs and select the necessary suggestions."))
                (:code "(defmethod set-url :after (&key (prefill-current-url-p t)) ...)")
                " to do something after the set-url finishes executing."))
          (:li "Modes 'enable' and 'disable' methods and their :before, :after, and :around methods.")
-         (:li "Mode-specific hooks, like " (:nxref :slot 'nyxt/download-mode:before-download-hook
-                                             :class-name 'nyxt/download-mode:download-mode)
-              " and " (:nxref :slot 'nyxt/download-mode:after-download-hook
-                        :class-name 'nyxt/download-mode:download-mode)
-              " for " (:nxref :class-name 'nyxt/download-mode:download) "."))
+         (:li "Mode-specific hooks, like " (:nxref :slot 'nyxt/mode/download:before-download-hook
+                                             :class-name 'nyxt/mode/download:download-mode)
+              " and " (:nxref :slot 'nyxt/mode/download:after-download-hook
+                        :class-name 'nyxt/mode/download:download-mode)
+              " for " (:nxref :class-name 'nyxt/mode/download:download) "."))
         (:p "For instance, if you want to force 'old.reddit.com' over 'www.reddit.com', you
 can set a hook like the following in your configuration file:")
         (:ncode
@@ -626,8 +626,8 @@ any of the password interfaces to configure them. Please make sure to
 use the package prefixed class name/slot designators within
 the " (:nxref :macro 'define-configuration) ".")
         (:ul
-         (:li (:nxref :command 'nyxt/password-mode:save-new-password) ": Query for name and new password to persist in the database.")
-         (:li (:nxref :command 'nyxt/password-mode:copy-password) ": " (command-docstring-first-sentence 'nyxt/password-mode:copy-password)))
+         (:li (:nxref :command 'nyxt/mode/password:save-new-password) ": Query for name and new password to persist in the database.")
+         (:li (:nxref :command 'nyxt/mode/password:copy-password) ": " (command-docstring-first-sentence 'nyxt/mode/password:copy-password)))
 
         (:nsection :title "KeePassXC support"
           (:p "The interface for KeePassXC should cover most use-cases for KeePassXC, as it
@@ -648,10 +648,10 @@ peeking at the screen."
               (setf (password:password-file interface) "/path/to/your/passwords.kdbx"
                (password:key-file interface) "/path/to/your/keyfile"
                (password:yubikey-slot interface) "1:1111"))
-            '(define-configuration nyxt/password-mode:password-mode
-              ((nyxt/password-mode:password-interface (make-instance 'password:keepassxc-interface))))
+            '(define-configuration nyxt/mode/password:password-mode
+              ((nyxt/mode/password:password-interface (make-instance 'password:keepassxc-interface))))
             '(define-configuration buffer
-              ((default-modes (append (list 'nyxt/password-mode:password-mode) %slot-value%)))))))
+              ((default-modes (append (list 'nyxt/mode/password:password-mode) %slot-value%)))))))
 
       (:nsection :title "Appearance"
         (:p "Much of the visual style can be configured by the user. You can use the
@@ -679,7 +679,7 @@ every individual class controlling Nyxt interface elements. All such classes hav
             (:nxref :function 'nyxt:style)
             " slot that you can configure with your own CSS like this:")
         (:ncode
-          '(define-configuration nyxt/style-mode:dark-mode
+          '(define-configuration nyxt/mode/style:dark-mode
             ((style
               (theme:themed-css (theme *browser*)
                 `(*
@@ -690,7 +690,7 @@ every individual class controlling Nyxt interface elements. All such classes hav
                   :background-color ,theme:background "!important"
                   :background-image none "!important"
                   :color "#AAAAAA" "!important"))))))
-        (:p "This snippet alters the " (:nxref :slot 'style :class-name 'nyxt/style-mode:dark-mode)
+        (:p "This snippet alters the " (:nxref :slot 'style :class-name 'nyxt/mode/style:dark-mode)
             " of Nyxt dark mode to have a more theme-compliant colors, using the "
             (:code "theme:themed-css")
             " macro (making all the theme colors you've configured earlier available as
@@ -762,17 +762,17 @@ inner working and allow you to change the page and JavaScript objects associated
 to it.")
         (:p "As an example, you can remove navbars from all the pages you visit with this
 small configuration snippet (note that you'd need to have "
-            (:nxref :class-name 'nyxt/user-script-mode:user-script-mode)
+            (:nxref :class-name 'nyxt/mode/user-script:user-script-mode)
             " in your " (:nxref :function 'default-modes "buffer default-modes") " ):")
         (:ncode
           '(define-configuration web-buffer
             "Enable user-script-mode, if you didn't already."
-            ((default-modes (pushnew 'nyxt/user-script-mode:user-script-mode %slot-value%))))
+            ((default-modes (pushnew 'nyxt/mode/user-script:user-script-mode %slot-value%))))
 
-          '(define-configuration nyxt/user-script-mode:user-script-mode
-            ((nyxt/user-script-mode:user-scripts
+          '(define-configuration nyxt/mode/user-script:user-script-mode
+            ((nyxt/mode/user-script:user-scripts
               (list
-               (make-instance 'nyxt/user-script-mode:user-script
+               (make-instance 'nyxt/mode/user-script:user-script
                 :code "// ==UserScript==
                               // @name          No navbars!
                               // @description	A simple script to remove navbars
@@ -794,7 +794,7 @@ url (quri:uri \"https://example.com/script.user.js\")"))))
             " lists all the possible properties that a user script might have. To Nyxt
 implementation, only those are meaningful:")
         (:dl
-         (:dt "@include and " (:nxref :function 'nyxt/user-script-mode:include))
+         (:dt "@include and " (:nxref :function 'nyxt/mode/user-script:include))
          (:dd "Sets the URL pattern to enable this script for. Follows the pattern "
               (:code "scheme://host/path")
               ", where scheme is either a literal scheme or and asterisk (matching any
@@ -802,13 +802,13 @@ scheme), and host and path are any valid characters plus asterisks (matching any
 set of characters) anywhere.")
          (:dt "@match")
          (:dd "Same as @include.")
-         (:dt "@exclude and " (:nxref :function 'nyxt/user-script-mode:exclude))
+         (:dt "@exclude and " (:nxref :function 'nyxt/mode/user-script:exclude))
          (:dd "Similar to @include, but rather disables the script for the matching pages.")
-         (:dt "@noframes and " (:nxref :function 'nyxt/user-script-mode:all-frames-p))
+         (:dt "@noframes and " (:nxref :function 'nyxt/mode/user-script:all-frames-p))
          (:dd "When present, disables the script for all the frames but toplevel ones. When
 absent, injects the script everywhere. The Lisp-side"
-              (:nxref :function 'nyxt/user-script-mode:all-frames-p) "works in an opposite way.")
-         (:dt "@run-at and " (:nxref :function 'nyxt/user-script-mode:run-at))
+              (:nxref :function 'nyxt/mode/user-script:all-frames-p) "works in an opposite way.")
+         (:dt "@run-at and " (:nxref :function 'nyxt/mode/user-script:run-at))
          (:dd "When to run a script. Allowed values: document-start, document-end,
 document-idle (in Nyxt implementation, same as document-end).")
          (:dt "@require")
@@ -912,7 +912,7 @@ handle. Useful to parallelize computations.")
 
       (:nsection :title "Built-in REPL"
         (:p "Nyxt has a built-in REPL, available with "
-            (:nxref :command 'nyxt/repl-mode:repl) " command."
+            (:nxref :command 'nyxt/mode/repl:repl) " command."
             "The REPL can be used to try out some code snippets for automation or quickly
 make some Lisp calculations. All the packages Nyxt depends on are available in
 REPL with convenient nicknames, and all the code is evaluated in "
@@ -925,77 +925,77 @@ input area containing familiar code, with some " (:code "v332 = \"Hello, Nyxt!\"
 " variable assignment, and with a verbatim text outputted by your code:")
         (:pre (:code "Hello, Nyxt!"))
         (:p "This cell-based code evaluation is the basis of the Nyxt REPL. For more features, see "
-            (:nxref :package :nyxt/repl-mode "REPL mode documentation") ".")
+            (:nxref :package :nyxt/mode/repl "REPL mode documentation") ".")
         (:nsection :title "Extending the REPL"
           (:p "Nyxt REPL is made to be extensible and allow to make custom cell types with
 their own display and functionality. The two cell types provided by default are:")
           (:ul
-           (:li (:nxref :class-name 'nyxt/repl-mode:lisp-cell))
-           (:li "and " (:nxref :class-name 'nyxt/repl-mode:shell-cell)))
+           (:li (:nxref :class-name 'nyxt/mode/repl:lisp-cell))
+           (:li "and " (:nxref :class-name 'nyxt/mode/repl:shell-cell)))
           (:p "Both of these serve as examples of cell extension, but it may be more
 illuminating to create one of a different type from the default ones. A
 commentary cell, for example—the type of cell one can use as an annotation to
 other cells.")
-          (:p "First, define a new " (:nxref :class-name 'nyxt/repl-mode:cell) " type:")
+          (:p "First, define a new " (:nxref :class-name 'nyxt/mode/repl:cell) " type:")
           (:ncode
-            '(define-class comment-cell (nyxt/repl-mode:cell)
+            '(define-class comment-cell (nyxt/mode/repl:cell)
               ((name "Commentary"))
               (:export-class-name-p t)
               (:export-accessor-names-p t)))
-          (:p "There are methods of " (:nxref :class-name 'nyxt/repl-mode:cell)
+          (:p "There are methods of " (:nxref :class-name 'nyxt/mode/repl:cell)
               " that can be redefined for a better display:")
           (:ul
-           (:li (:nxref :function 'nyxt/repl-mode:evaluate)
+           (:li (:nxref :function 'nyxt/mode/repl:evaluate)
                 " as a function to get results from the cell.")
-           (:li (:nxref :function 'nyxt/repl-mode:render-input)
+           (:li (:nxref :function 'nyxt/mode/repl:render-input)
                 " as the one rendering the input area for the cell.")
-           (:li (:nxref :function 'nyxt/repl-mode:render-actions)
+           (:li (:nxref :function 'nyxt/mode/repl:render-actions)
                 ", allowing to render a custom set of actions.")
-           (:li "And " (:nxref :function 'nyxt/repl-mode:render-results)
+           (:li "And " (:nxref :function 'nyxt/mode/repl:render-results)
                 " to show cell results (the immediate values "
-                (:nxref :function 'nyxt/repl-mode:evaluate "evaluation")
+                (:nxref :function 'nyxt/mode/repl:evaluate "evaluation")
                 " returns) and output (the text printed out while "
-                (:nxref :function 'nyxt/repl-mode:evaluate "evaluating")
+                (:nxref :function 'nyxt/mode/repl:evaluate "evaluating")
                 " the cell).")
            (:li "And, in case none of those fits well, "
-                (:nxref :function 'nyxt/repl-mode:render-cell)
+                (:nxref :function 'nyxt/mode/repl:render-cell)
                 " to override all the rendering code."))
-          (:p "The easiest thing is " (:nxref :function 'nyxt/repl-mode:render-input)
+          (:p "The easiest thing is " (:nxref :function 'nyxt/mode/repl:render-input)
               ": it's already defined as an input field updating the cell "
-              (:nxref :function 'nyxt/repl-mode:input)
+              (:nxref :function 'nyxt/mode/repl:input)
               " at every keypress. The only change to it that is needed for the commentary
-cell is to render as a <pre> tag when marked " (:nxref :function 'nyxt/repl-mode:ready-p) ":")
+cell is to render as a <pre> tag when marked " (:nxref :function 'nyxt/mode/repl:ready-p) ":")
           (:ncode
-            '(defmethod nyxt/repl-mode:render-input ((cell comment-cell))
+            '(defmethod nyxt/mode/repl:render-input ((cell comment-cell))
               "Render as a pre tag when ready, render as default input otherwise."
-              (if (nyxt/repl-mode:ready-p cell)
+              (if (nyxt/mode/repl:ready-p cell)
                   (spinneret:with-html-string
                     (:pre (input cell)))
                   (call-next-method))))
-          (:p (:nxref :function 'nyxt/repl-mode:render-results)
+          (:p (:nxref :function 'nyxt/mode/repl:render-results)
               " is another method useless for comment cell. It can safely return the empty
 string:")
           (:ncode
-            '(defmethod nyxt/repl-mode:render-results ((cell comment-cell))
+            '(defmethod nyxt/mode/repl:render-results ((cell comment-cell))
               (declare (ignore cell))
               ""))
-          (:p (:nxref :function 'nyxt/repl-mode:render-actions)
+          (:p (:nxref :function 'nyxt/mode/repl:render-actions)
               " should stay as it is, because it produces an aesthetic set of buttons near the
 input. No need to tweak it in this case.")
-          (:p "Last but not least, " (:nxref :function 'nyxt/repl-mode:evaluate)
-              ". This method should produce the " (:nxref :function 'nyxt/repl-mode:results)
-              " and " (:nxref :function 'nyxt/repl-mode:output)
+          (:p "Last but not least, " (:nxref :function 'nyxt/mode/repl:evaluate)
+              ". This method should produce the " (:nxref :function 'nyxt/mode/repl:results)
+              " and " (:nxref :function 'nyxt/mode/repl:output)
               " of the cell. The REPL infrastructure sets "
-              (:nxref :function 'nyxt/repl-mode:ready-p)
+              (:nxref :function 'nyxt/mode/repl:ready-p)
               "to T when the evaluation ends, which enables the <pre> rendering. Given that
 comment cells produce no result "
-              (:nxref :function 'nyxt/repl-mode:evaluate) " can stay empty:")
+              (:nxref :function 'nyxt/mode/repl:evaluate) " can stay empty:")
           (:ncode
-            '(defmethod nyxt/repl-mode:evaluate ((cell comment-cell))
+            '(defmethod nyxt/mode/repl:evaluate ((cell comment-cell))
               (declare (ignore cell))))
           (:p "After all of these methods are defined in the configuration file and Nyxt restarted,
 invoking "
-              (:nxref :command 'nyxt/repl-mode:repl) " and pressing the " (:code "Add a cell")
+              (:nxref :command 'nyxt/mode/repl:repl) " and pressing the " (:code "Add a cell")
               " button will allow to create a new comment cell.")
           (:p "Note that the display of the comment cell is not exactly concise. But making it
 better is left as an exercise to the reader.")))

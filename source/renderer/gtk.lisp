@@ -1051,10 +1051,10 @@ See `finalize-buffer'."
        ((and (quri:uri= url (url request-data))
              (str:starts-with-p "text/gemini" (mime-type request-data)))
         (log:debug "Processing gemtext from ~a." (render-url url))
-        (enable-modes* 'nyxt/small-web-mode:small-web-mode (buffer request-data))
+        (enable-modes* 'nyxt/mode/small-web:small-web-mode (buffer request-data))
         (webkit:webkit-policy-decision-ignore response-policy-decision)
         (ffi-buffer-load-html
-         buffer (nyxt/small-web-mode:gemtext-render (or (ignore-errors (dex:get (quri:render-uri url))) "") buffer)
+         buffer (nyxt/mode/small-web:gemtext-render (or (ignore-errors (dex:get (quri:render-uri url))) "") buffer)
          url))
        ((not (known-type-p request-data))
         (log:debug "Initiate download of ~s." (render-url (url request-data)))
@@ -1263,8 +1263,8 @@ the `active-buffer'."
                                              (webkit:webkit-file-chooser-request-selected-files
                                               file-chooser-request)))
                                            (uiop:native-namestring (uiop:getcwd)))
-                                   :extra-modes 'nyxt/file-manager-mode:file-manager-mode
-                                   :sources (make-instance 'nyxt/file-manager-mode:file-source
+                                   :extra-modes 'nyxt/mode/file-manager:file-manager-mode
+                                   :sources (make-instance 'nyxt/mode/file-manager:file-source
                                                            :enable-marks-p multiple))
                          (prompt-buffer-canceled ()
                            nil)))))
@@ -1794,25 +1794,25 @@ local anyways, and it's better to refresh it if a load was queried."
   (let* ((content-manager
            (webkit:webkit-web-view-get-user-content-manager
             (gtk-object buffer)))
-         (frames (if (nyxt/user-script-mode:all-frames-p style)
+         (frames (if (nyxt/mode/user-script:all-frames-p style)
                      :webkit-user-content-inject-all-frames
                      :webkit-user-content-inject-top-frame))
-         (style-level (if (eq (nyxt/user-script-mode:level style) :author)
+         (style-level (if (eq (nyxt/mode/user-script:level style) :author)
                           :webkit-user-style-level-author
                           :webkit-user-style-level-user))
          (style-sheet
-           (if (nyxt/user-script-mode:world-name style)
+           (if (nyxt/mode/user-script:world-name style)
                (webkit:webkit-user-style-sheet-new-for-world
-                (nyxt/user-script-mode:code style)
+                (nyxt/mode/user-script:code style)
                 frames style-level
-                (nyxt/user-script-mode:world-name style)
-                (list-of-string-to-foreign (nyxt/user-script-mode:include style))
-                (list-of-string-to-foreign (nyxt/user-script-mode:exclude style)))
+                (nyxt/mode/user-script:world-name style)
+                (list-of-string-to-foreign (nyxt/mode/user-script:include style))
+                (list-of-string-to-foreign (nyxt/mode/user-script:exclude style)))
                (webkit:webkit-user-style-sheet-new
-                (nyxt/user-script-mode:code style)
+                (nyxt/mode/user-script:code style)
                 frames style-level
-                (list-of-string-to-foreign (nyxt/user-script-mode:include style))
-                (list-of-string-to-foreign (nyxt/user-script-mode:exclude style))))))
+                (list-of-string-to-foreign (nyxt/mode/user-script:include style))
+                (list-of-string-to-foreign (nyxt/mode/user-script:exclude style))))))
     (setf (gtk-object style) style-sheet)
     (webkit:webkit-user-content-manager-add-style-sheet
      content-manager style-sheet)
@@ -1834,25 +1834,25 @@ local anyways, and it's better to refresh it if a load was queried."
 
 
 (define-ffi-method ffi-buffer-add-user-script ((buffer gtk-buffer) (script gtk-user-script))
-  (alex:if-let ((code (nyxt/user-script-mode:code script)))
+  (alex:if-let ((code (nyxt/mode/user-script:code script)))
     (let* ((content-manager
              (webkit:webkit-web-view-get-user-content-manager
               (gtk-object buffer)))
-           (frames (if (nyxt/user-script-mode:all-frames-p script)
+           (frames (if (nyxt/mode/user-script:all-frames-p script)
                        :webkit-user-content-inject-all-frames
                        :webkit-user-content-inject-top-frame))
-           (inject-time (if (eq :document-start (nyxt/user-script-mode:run-at script))
+           (inject-time (if (eq :document-start (nyxt/mode/user-script:run-at script))
                             :webkit-user-script-inject-at-document-start
                             :webkit-user-script-inject-at-document-end))
            (allow-list (list-of-string-to-foreign
-                        (or (nyxt/user-script-mode:include script)
+                        (or (nyxt/mode/user-script:include script)
                             '("http://*/*" "https://*/*"))))
            (block-list (list-of-string-to-foreign
-                        (nyxt/user-script-mode:exclude script)))
-           (user-script (if (nyxt/user-script-mode:world-name script)
+                        (nyxt/mode/user-script:exclude script)))
+           (user-script (if (nyxt/mode/user-script:world-name script)
                             (webkit:webkit-user-script-new-for-world
                              code frames inject-time
-                             (nyxt/user-script-mode:world-name script) allow-list block-list)
+                             (nyxt/mode/user-script:world-name script) allow-list block-list)
                             (webkit:webkit-user-script-new
                              code frames inject-time allow-list block-list))))
       (setf (gtk-object script) user-script)
@@ -1899,22 +1899,22 @@ local anyways, and it's better to refresh it if a load was queried."
   (webkit:webkit-web-view-set-is-muted (gtk-object buffer) (not value)))
 
 (defun wrap-download (webkit-download)
-  (sera:lret ((download (make-instance 'nyxt/download-mode:download
+  (sera:lret ((download (make-instance 'nyxt/mode/download:download
                                        :url (webkit:webkit-uri-request-uri
                                              (webkit:webkit-download-get-request webkit-download))
                                        :gtk-object webkit-download)))
-    (nyxt/download-mode:list-downloads)
-    (setf (nyxt/download-mode::cancel-function download)
+    (nyxt/mode/download:list-downloads)
+    (setf (nyxt/mode/download::cancel-function download)
           #'(lambda ()
-              (setf (nyxt/download-mode:status download) :canceled)
+              (setf (nyxt/mode/download:status download) :canceled)
               (webkit:webkit-download-cancel webkit-download)))
-    (hooks:run-hook (nyxt/download-mode:before-download-hook download) download)
+    (hooks:run-hook (nyxt/mode/download:before-download-hook download) download)
     (push download (downloads *browser*))
     (connect-signal download "received-data" nil (webkit-download data-length)
       (declare (ignore data-length))
-      (setf (nyxt/download-mode:bytes-downloaded download)
+      (setf (nyxt/mode/download:bytes-downloaded download)
             (webkit:webkit-download-get-received-data-length webkit-download))
-      (setf (nyxt/download-mode:completion-percentage download)
+      (setf (nyxt/mode/download:completion-percentage download)
             (* 100 (webkit:webkit-download-estimated-progress webkit-download))))
     (connect-signal download "decide-destination" nil (webkit-download suggested-file-name)
       (alex:when-let* ((download-dir (or (ignore-errors
@@ -1934,28 +1934,28 @@ local anyways, and it's better to refresh it if a load was queried."
         (webkit:webkit-download-set-destination webkit-download file-path)))
     (connect-signal download "created-destination" nil (webkit-download destination)
       (declare (ignore destination))
-      (setf (nyxt/download-mode:destination-path download)
+      (setf (nyxt/mode/download:destination-path download)
             (uiop:ensure-pathname
              (quri:uri-path (quri:uri
                              (webkit:webkit-download-destination webkit-download))))))
     (connect-signal download "failed" nil (webkit-download error)
       (declare (ignore error))
-      (unless (eq (nyxt/download-mode:status download) :canceled)
-        (setf (nyxt/download-mode:status download) :failed))
+      (unless (eq (nyxt/mode/download:status download) :canceled)
+        (setf (nyxt/mode/download:status download) :failed))
       (echo "Download failed for ~s."
             (webkit:webkit-uri-request-uri
              (webkit:webkit-download-get-request webkit-download))))
     (connect-signal download "finished" nil (webkit-download)
       (declare (ignore webkit-download))
-      (unless (member (nyxt/download-mode:status download) '(:canceled :failed))
-        (setf (nyxt/download-mode:status download) :finished)
+      (unless (member (nyxt/mode/download:status download) '(:canceled :failed))
+        (setf (nyxt/mode/download:status download) :finished)
         ;; If download was too small, it may not have been updated.
-        (setf (nyxt/download-mode:completion-percentage download) 100)
-        (hooks:run-hook (nyxt/download-mode:after-download-hook download) download)))))
+        (setf (nyxt/mode/download:completion-percentage download) 100)
+        (hooks:run-hook (nyxt/mode/download:after-download-hook download) download)))))
 
 (defmethod ffi-buffer-download ((buffer gtk-buffer) url)
   (let* ((webkit-download (webkit:webkit-web-view-download-uri (gtk-object buffer) url))
-         (download (make-instance 'nyxt/download-mode:download
+         (download (make-instance 'nyxt/mode/download:download
                                   :url url
                                   :gtk-object webkit-download)))
     (wrap-download webkit-download)
@@ -2288,11 +2288,11 @@ See `make-buffer' for a description of the other arguments."
     (mapc #'set-superclasses '((renderer-browser gtk-browser)
                                (renderer-window gtk-window)
                                (renderer-buffer gtk-buffer)
-                               (nyxt/download-mode:renderer-download gtk-download)
+                               (nyxt/mode/download:renderer-download gtk-download)
                                (renderer-request-data gtk-request-data )
                                (renderer-scheme gtk-scheme)
-                               (nyxt/user-script-mode:renderer-user-style gtk-user-style)
-                               (nyxt/user-script-mode:renderer-user-script gtk-user-script)))))
+                               (nyxt/mode/user-script:renderer-user-style gtk-user-style)
+                               (nyxt/mode/user-script:renderer-user-script gtk-user-script)))))
 
 (defmethod uninstall ((renderer gtk-renderer))
   (flet ((remove-superclasses (renderer-class-sym)
@@ -2303,10 +2303,10 @@ See `make-buffer' for a description of the other arguments."
     (mapc #'remove-superclasses '(renderer-browser
                                   renderer-window
                                   renderer-buffer
-                                  nyxt/download-mode:renderer-download
+                                  nyxt/mode/download:renderer-download
                                   renderer-request-data
                                   renderer-scheme
-                                  nyxt/user-script-mode:renderer-user-style
-                                  nyxt/user-script-mode:renderer-user-script))))
+                                  nyxt/mode/user-script:renderer-user-style
+                                  nyxt/mode/user-script:renderer-user-script))))
 
 (setf nyxt::*renderer* (make-instance 'gtk-renderer))

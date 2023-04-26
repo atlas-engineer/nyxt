@@ -6,5 +6,5 @@
 (define-test toggle-no-script-mode ()
   (let ((buffer (make-instance 'modable-buffer)))
     (with-current-buffer buffer
-      (assert-true (enable-modes* 'nyxt/no-script-mode:no-script-mode buffer))
-      (assert-true (disable-modes* 'nyxt/no-script-mode:no-script-mode buffer)))))
+      (assert-true (enable-modes* 'nyxt/mode/no-script:no-script-mode buffer))
+      (assert-true (disable-modes* 'nyxt/mode/no-script:no-script-mode buffer)))))

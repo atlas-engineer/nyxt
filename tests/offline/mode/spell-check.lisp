@@ -6,5 +6,5 @@
 (define-test toggle-spell-check-mode ()
   (let ((buffer (make-instance 'modable-buffer)))
     (with-current-buffer buffer
-      (assert-true (enable-modes* 'nyxt/spell-check-mode:spell-check-mode buffer))
-      (assert-true (disable-modes* 'nyxt/spell-check-mode:spell-check-mode buffer)))))
+      (assert-true (enable-modes* 'nyxt/mode/spell-check:spell-check-mode buffer))
+      (assert-true (disable-modes* 'nyxt/mode/spell-check:spell-check-mode buffer)))))

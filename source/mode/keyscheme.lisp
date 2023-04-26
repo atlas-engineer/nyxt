@@ -1,14 +1,14 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/keyscheme-mode
+(nyxt:define-package :nyxt/mode/keyscheme
   (:documentation "All modes that set `keyscheme' should inherit from this mode.
-Ensures that a single keybindings mode, such as `nyxt/emacs-mode', is enabled."))
-(in-package :nyxt/keyscheme-mode)
+Ensures that a single keybindings mode, such as `nyxt/mode/emacs', is enabled."))
+(in-package :nyxt/mode/keyscheme)
 
 (define-mode keyscheme-mode ()
   "All modes that set `keyscheme' should inherit from this mode.
-Ensures that a single keybindings mode, such as `nyxt/emacs-mode', is enabled."
+Ensures that a single keybindings mode, such as `nyxt/mode/emacs', is enabled."
   ((rememberable-p nil)
    (keyscheme                           ; This specialized `nyxt:keyscheme'.
     keyscheme:cua

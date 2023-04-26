@@ -1,9 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/prompt-buffer-mode
+(nyxt:define-package :nyxt/mode/prompt-buffer
     (:documentation "Mode for prompter buffer."))
-(in-package :nyxt/prompt-buffer-mode)
+(in-package :nyxt/mode/prompt-buffer)
 
 (define-mode prompt-buffer-mode ()
   "The prompt buffer is where all interactions between Nyxt and the user take place.
@@ -90,14 +90,14 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "C-g" 'quit-prompt-buffer
        "C-e" 'move-end-of-input
        "C-a" 'move-start-of-input
-       "C-b" 'nyxt/input-edit-mode:cursor-backwards
-       "C-f" 'nyxt/input-edit-mode:cursor-forwards
-       "C-d" 'nyxt/input-edit-mode:delete-forwards
-       "M-b" 'nyxt/input-edit-mode:cursor-backwards-word
-       "M-f" 'nyxt/input-edit-mode:cursor-forwards-word
-       "C-backspace" 'nyxt/input-edit-mode:delete-backwards-word
-       "M-backspace" 'nyxt/input-edit-mode:delete-backwards-word
-       "M-d" 'nyxt/input-edit-mode:delete-forwards-word
+       "C-b" 'nyxt/mode/input-edit:cursor-backwards
+       "C-f" 'nyxt/mode/input-edit:cursor-forwards
+       "C-d" 'nyxt/mode/input-edit:delete-forwards
+       "M-b" 'nyxt/mode/input-edit:cursor-backwards-word
+       "M-f" 'nyxt/mode/input-edit:cursor-forwards-word
+       "C-backspace" 'nyxt/mode/input-edit:delete-backwards-word
+       "M-backspace" 'nyxt/mode/input-edit:delete-backwards-word
+       "M-d" 'nyxt/mode/input-edit:delete-forwards-word
        "C-x h" 'select-all
        "M-w" 'copy-selection
        "C-y" 'paste
@@ -127,13 +127,13 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "C-M-k" 'scroll-page-up-other-buffer
        "$" 'move-end-of-input
        "^" 'move-start-of-input
-       "l" 'nyxt/input-edit-mode:cursor-forwards
-       "h" 'nyxt/input-edit-mode:cursor-backwards
-       "w" 'nyxt/input-edit-mode:cursor-forwards-word
-       "b" 'nyxt/input-edit-mode:cursor-backwards-word
-       "x" 'nyxt/input-edit-mode:delete-forwards
+       "l" 'nyxt/mode/input-edit:cursor-forwards
+       "h" 'nyxt/mode/input-edit:cursor-backwards
+       "w" 'nyxt/mode/input-edit:cursor-forwards-word
+       "b" 'nyxt/mode/input-edit:cursor-backwards-word
+       "x" 'nyxt/mode/input-edit:delete-forwards
        ;; VI has no short keybinding for delete-backwards-word, hasn't it?
-       "d w" 'nyxt/input-edit-mode:delete-forwards-word
+       "d w" 'nyxt/mode/input-edit:delete-forwards-word
        "z f" 'toggle-actions-on-current-suggestion-enabled
        "z a" 'toggle-attributes-display
        "y" 'copy-selection
@@ -555,7 +555,7 @@ Only available if `prompter:enable-marks-p' is non-nil."
     (spinneret:with-html-string
       (:h1 (prompter:prompt prompt-buffer))
       (:pre (:code (:raw (resolve-backtick-quote-links
-                          (documentation 'prompt-buffer 'type) :nyxt/prompt-buffer-mode))))
+                          (documentation 'prompt-buffer 'type) :nyxt/mode/prompt-buffer))))
       (:h2 "Modes:")
       (:ul
        (loop for mode in modes

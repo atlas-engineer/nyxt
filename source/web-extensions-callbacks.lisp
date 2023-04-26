@@ -244,7 +244,7 @@ the description of the mechanism that sends the results back."
                         (ffi-buffer-add-user-style
                          buffer-to-insert
                          (apply #'make-instance
-                                'nyxt/user-script-mode:user-style
+                                'nyxt/mode/user-script:user-style
                                 :level (if (not (and level (stringp level) (string= level "user")))
                                            :author
                                            :user)
@@ -294,7 +294,7 @@ the description of the mechanism that sends the results back."
       (ffi-buffer-add-user-script
        buffer-to-insert
        (make-instance
-        'nyxt/user-script-mode:user-script
+        'nyxt/mode/user-script:user-script
         :code (if file
                   (uiop:read-file-string
                    (nyxt/web-extensions:merge-extension-path extension file))
@@ -491,7 +491,7 @@ there. `reply-user-message' takes care of sending the response back."
          (wrap-in-channel
           (j:encode (buffer->tab-description buffer))))
         ("tabs.print"
-         (wrap-in-channel (nyxt/document-mode:print-buffer)))
+         (wrap-in-channel (nyxt/mode/document:print-buffer)))
         ("tabs.get"
          (wrap-in-channel
           (j:encode (buffer->tab-description (nyxt::buffers-get message-params)))))

@@ -1,9 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/record-input-field-mode
+(nyxt:define-package :nyxt/mode/record-input-field
     (:documentation "Record input fields to be refilled later."))
-(in-package :nyxt/record-input-field-mode)
+(in-package :nyxt/mode/record-input-field)
 
 ;;; FIXME: Use "submit-form" WebkitWebView signal instead.
 (define-mode record-input-field-mode ()

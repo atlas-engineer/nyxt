@@ -72,9 +72,9 @@ On error, return the condition as a first value and the backtrace as second valu
                     (if (uiop:file-exists-p config-path)
                         (uiop:pathname-directory-pathname config-path)
                         (uiop:getcwd))))
-          :extra-modes 'nyxt/file-manager-mode:file-manager-mode
+          :extra-modes 'nyxt/mode/file-manager:file-manager-mode
           :sources
-          (make-instance 'nyxt/file-manager-mode:file-source
+          (make-instance 'nyxt/mode/file-manager:file-source
                          :extensions '("lisp")
                          :actions-on-return (lambda-command load-file* (files)
                                               (dolist (file files)

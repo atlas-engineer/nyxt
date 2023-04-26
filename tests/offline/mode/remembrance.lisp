@@ -6,5 +6,5 @@
 (define-test toggle-remembrance-mode ()
   (let ((buffer (make-instance 'modable-buffer)))
     (with-current-buffer buffer
-      (assert-true (enable-modes* 'nyxt/remembrance-mode:remembrance-mode buffer))
-      (assert-true (disable-modes* 'nyxt/remembrance-mode:remembrance-mode buffer)))))
+      (assert-true (enable-modes* 'nyxt/mode/remembrance:remembrance-mode buffer))
+      (assert-true (disable-modes* 'nyxt/mode/remembrance:remembrance-mode buffer)))))

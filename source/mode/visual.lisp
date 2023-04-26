@@ -1,14 +1,14 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/visual-mode
+(nyxt:define-package :nyxt/mode/visual
   (:documentation "Visual mode."))
-(in-package :nyxt/visual-mode)
+(in-package :nyxt/mode/visual)
 
-(define-mode visual-mode (nyxt/hint-mode:hint-mode)
+(define-mode visual-mode (nyxt/mode/hint:hint-mode)
   "Visual mode. For documentation on commands and keybindings, see the manual."
   ((rememberable-p nil)
-   (nyxt/hint-mode:hints-selector
+   (nyxt/mode/hint:hints-selector
     "a, b, p, del, h1, h2, h3, h4, h5, h6, i, option,
 strong, sub, sup, listing, xmp, plaintext, basefont, big, blink, center, font,
 marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
@@ -125,9 +125,9 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
 
 (define-command select-paragraph (&optional (mode (find-submode 'visual-mode)))
   "Add hints to text elements on the page and query them."
-  (nyxt/hint-mode:query-hints "Set caret on element"
+  (nyxt/mode/hint:query-hints "Set caret on element"
                               (lambda (results) (%follow-hint (first results)))
-                              :selector (nyxt/hint-mode:hints-selector mode)))
+                              :selector (nyxt/mode/hint:hints-selector mode)))
 
 (define-parenscript collapsed-p ()
   "Return T if mark's start and end are the same value, nil otherwise."

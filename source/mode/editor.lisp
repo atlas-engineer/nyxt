@@ -1,9 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/editor-mode
+(nyxt:define-package :nyxt/mode/editor
     (:documentation "Mode for editors."))
-(in-package :nyxt/editor-mode)
+(in-package :nyxt/mode/editor)
 
 (define-mode editor-mode ()
   "Mode for editor modes to extend.
@@ -13,7 +13,7 @@ Importantly, it is required to implement the methods `get-content',
 to get/set content from/to the file (which is necessary for operation).
 
 To install the mode implementing the following, add this snippet to your config
-(define-configuration nyxt/editor-mode::editor-buffer
+(define-configuration nyxt/mode/editor::editor-buffer
   ((default-modes (cons 'your-editor-mode %slot-value%))))"
   ((keyscheme-map
     (define-keyscheme-map "editor-mode" ()
@@ -82,7 +82,7 @@ See `describe-class editor-mode' for details."))
   (:export-predicate-name-p t)
   (:metaclass user-class)
   (:documentation "Each editor buffer matches a file. Each editor buffer
-contains an `nyxt/editor-mode:editor-mode' instance (or a subclass thereof)."))
+contains an `nyxt/mode/editor:editor-mode' instance (or a subclass thereof)."))
 
 (defmethod nyxt:default-modes :around ((buffer editor-buffer))
   ;; REVIEW: Really remove document-mode from editor-buffer?
@@ -126,10 +126,10 @@ contains an `nyxt/editor-mode:editor-mode' instance (or a subclass thereof)."))
    (pathname
     (prompt1
      :prompt "Open file"
-     :extra-modes 'nyxt/file-manager-mode:file-manager-mode
+     :extra-modes 'nyxt/mode/file-manager:file-manager-mode
      :input (uiop:native-namestring (uiop:getcwd))
      :sources
-     (list (make-instance 'nyxt/file-manager-mode:file-source
+     (list (make-instance 'nyxt/mode/file-manager:file-source
                           :name "Existing file"
                           :actions-on-return #'identity)
            (make-instance 'prompter:raw-source
