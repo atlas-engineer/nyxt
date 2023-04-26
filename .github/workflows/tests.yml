@@ -74,8 +74,7 @@ jobs:
     - name: Load Nyxt
       shell: bash
       run: |
-        # TODO: Can we make CCL backtraces more readable?  With trivial-backtrace maybe?
-        ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)' -e '(handler-bind ((error (lambda (a) (uiop:print-condition-backtrace a) (format *error-output* "Error: ~a~&" a) (uiop:quit 17)))) (asdf:load-system :nyxt/${{matrix.renderer}}-application))'
+        ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)' -e '(handler-case (asdf:load-system :nyxt/${{matrix.renderer}}-application) (error (a) (format t "caught error ~s~%~a~%" a a) (uiop:quit 17)))'
 
     - name: Build Nyxt executable
       shell: bash
