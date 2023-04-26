@@ -108,7 +108,11 @@
         (nyxt/no-script-mode:no-script-mode)
         (assert-false (enabled-p mode))
         (set-url-blocking +non-matching-url1+)
-        (assert-true (enabled-p mode))))))
+        (assert-false (enabled-p mode))
+        (set-url-blocking +matching-url1+)
+        (assert-true (enabled-p mode))
+        (set-url-blocking +non-matching-url2+)
+        (assert-false (enabled-p mode))))))
 
 (define-test auto-rules-navigate-and-reload ()
   (with-browser-test ("virtual-test")
