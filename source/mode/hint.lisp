@@ -52,7 +52,9 @@ background color.")
    (hints-alphabet
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     :type string
-    :documentation "The alphabet (charset) to use for hints.")
+    :documentation "The alphabet (charset) to use for hints.
+Order matters -- the ones that go first are more likely to appear more often and
+to index the top of the page.")
    (hints-selector
     "a, button, input, textarea, details, select"
     :type string
