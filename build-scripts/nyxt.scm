@@ -176,6 +176,7 @@
           cl-plump
           cl-ppcre
           cl-prevalence
+          cl-prompter
           cl-py-configparser
           cl-qrencode
           cl-quri
