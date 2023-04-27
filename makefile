@@ -72,7 +72,7 @@ check:
 
 .PHONY: clean-submodules
 clean-submodules:
-	git submodule deinit  --all
+	git submodule deinit --force --all
 
 .PHONY: clean
 clean: clean-submodules
