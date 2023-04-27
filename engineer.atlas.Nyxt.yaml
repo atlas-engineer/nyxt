@@ -9,6 +9,7 @@ command: nyxt
 finish-args:
   - --device=dri
   - --share=network
+  - --share=ipc
   - --socket=wayland
   - --socket=fallback-x11
   - --socket=pulseaudio
