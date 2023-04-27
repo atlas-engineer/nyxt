@@ -162,78 +162,66 @@ Otherwise prompt for matches."
     ((or string null)
      (run-thread "describe-any prompter"
        (let* ((*interactive-p* t)
-              (preprocessor (if (uiop:emptyp input)
-                                'prompter:delete-inexact-matches
-                                'prompter:filter-exact-match))
               (sources
                 (list (make-instance
+                       'command-source
+                       :actions-on-return (lambda-command describe-command* (commands)
+                                            (describe-command :command (name (first commands)))))
+                      (make-instance
+                       'mode-source
+                       :actions-on-return (lambda-command describe-command* (modes)
+                                            (describe-mode :mode (name (first modes)))))
+                      (make-instance
                        'variable-source
                        :actions-on-return (lambda-command describe-variable* (variables)
-                                            (describe-variable :variable (first variables)))
-                       :filter-preprocessor preprocessor)
-                      (make-instance
-                       'variable-non-nyxt-source
-                       :actions-on-return (lambda-command describe-variable* (variables)
-                                            (describe-variable :variable (first variables)))
-                       :filter-preprocessor preprocessor)
-                      (make-instance
-                       'variable-internal-source
-                       :actions-on-return (lambda-command describe-variable* (variables)
-                                            (describe-variable :variable (first variables)))
-                       :filter-preprocessor preprocessor)
+                                            (describe-variable :variable (first variables))))
                       (make-instance
                        'function-source
                        :actions-on-return (lambda-command describe-function* (functions)
-                                            (describe-function :fn (first functions)))
-                       :filter-preprocessor preprocessor)
-                      (make-instance
-                       'function-non-nyxt-source
-                       :actions-on-return (lambda-command describe-function* (functions)
-                                            (describe-function :fn (first functions)))
-                       :filter-preprocessor preprocessor)
-                      (make-instance
-                       'function-internal-source
-                       :actions-on-return (lambda-command describe-function* (functions)
-                                            (describe-function :fn (first functions)))
-                       :filter-preprocessor preprocessor)
-                      (make-instance
-                       'command-source
-                       :actions-on-return (lambda-command describe-command* (commands)
-                                            (describe-command :command (name (first commands))))
-                       :filter-preprocessor preprocessor)
+                                            (describe-function :fn (first functions))))
                       (make-instance
                        'class-source
                        :actions-on-return (lambda-command describe-class* (classes)
-                                            (describe-class :class (first classes)))
-                       :filter-preprocessor preprocessor)
-                      (make-instance
-                       'class-non-nyxt-source
-                       :actions-on-return (lambda-command describe-class* (classes)
-                                            (describe-class :class (first classes)))
-                       :filter-preprocessor preprocessor)
-                      (make-instance
-                       'class-internal-source
-                       :actions-on-return (lambda-command describe-class* (classes)
-                                            (describe-class :class (first classes)))
-                       :filter-preprocessor preprocessor)
+                                            (describe-class :class (first classes))))
                       (make-instance
                        'slot-source
                        :actions-on-return (lambda-command describe-slot** (slots)
                                             (describe-slot :class (class-sym (first slots))
-                                                           :name (name (first slots))))
-                       :filter-preprocessor preprocessor)
+                                                           :name (name (first slots)))))
+                      (make-instance
+                       'variable-non-nyxt-source
+                       :actions-on-return (lambda-command describe-variable* (variables)
+                                            (describe-variable :variable (first variables))))
+                      (make-instance
+                       'function-non-nyxt-source
+                       :actions-on-return (lambda-command describe-function* (functions)
+                                            (describe-function :fn (first functions))))
+                      (make-instance
+                       'class-non-nyxt-source
+                       :actions-on-return (lambda-command describe-class* (classes)
+                                            (describe-class :class (first classes))))
                       (make-instance
                        'slot-non-nyxt-source
                        :actions-on-return (lambda-command describe-slot** (slots)
                                             (describe-slot :class (class-sym (first slots))
-                                                           :name (name (first slots))))
-                       :filter-preprocessor preprocessor)
+                                                           :name (name (first slots)))))
+                      (make-instance
+                       'variable-internal-source
+                       :actions-on-return (lambda-command describe-variable* (variables)
+                                            (describe-variable :variable (first variables))))
+                      (make-instance
+                       'function-internal-source
+                       :actions-on-return (lambda-command describe-function* (functions)
+                                            (describe-function :fn (first functions))))
+                      (make-instance
+                       'class-internal-source
+                       :actions-on-return (lambda-command describe-class* (classes)
+                                            (describe-class :class (first classes))))
                       (make-instance
                        'slot-internal-source
                        :actions-on-return (lambda-command describe-slot** (slots)
                                             (describe-slot :class (class-sym (first slots))
-                                                           :name (name (first slots))))
-                       :filter-preprocessor preprocessor))))
+                                                           :name (name (first slots))))))))
          (let ((suggestion+action-pairs
                  (and input
                       (loop with result = '()
