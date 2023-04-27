@@ -339,7 +339,7 @@ FUNCTION is the action to perform on the selected elements."
         `(("Hint" ,(plump:attribute element "nyxt-hint"))))
     ;; Ensure that all of Body, URL and Value are there, even if empty.
     ,@(let ((attributes (call-next-method)))
-        (dolist (attr '("Body" "URL" "Value"))
+        (dolist (attr '("Body" "URL"))
           (unless (assoc attr attributes :test 'string=)
             (alex:nconcf attributes `((,attr "")))))
         attributes)
@@ -384,9 +384,7 @@ FUNCTION is the action to perform on the selected elements."
 
 (defmethod prompter:object-attributes ((option nyxt/dom:option-element) (source prompter:source))
   (declare (ignore source))
-  `(("Body" ,(nyxt/dom:body option))
-    ,@(when (plump:attribute option "value")
-        `(("Value" ,(plump:attribute option "value"))))))
+  `(("Body" ,(nyxt/dom:body option))))
 
 (defmethod prompter:object-attributes ((img nyxt/dom:img-element) (source hint-source))
   (append
