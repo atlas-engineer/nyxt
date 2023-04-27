@@ -335,7 +335,7 @@ FUNCTION is the action to perform on the selected elements."
 (defmethod prompter:object-attributes :around ((element plump:element) (source hint-source))
   `(,@(when (plump:attribute element "nyxt-hint")
         `(("Hint" ,(plump:attribute element "nyxt-hint"))))
-    ;; Ensure that all of Body, URL and Value are there, even if empty.
+    ;; Ensure that all of Body and URL are there, even if empty.
     ,@(loop with attributes = (call-next-method)
             for attr in '("Body" "URL")
             for (same-attr val . rest) = (assoc attr attributes :test 'string=)
