@@ -1,4 +1,6 @@
 app-id: engineer.atlas.Nyxt
+# TODO Should be replaced it with org.gnome.Platform.  Shared libraries aren't
+# available from org.gnome.Platform, therefore we use the development runtime.
 runtime: org.gnome.Sdk
 runtime-version: "44"
 sdk: org.gnome.Sdk
