@@ -338,7 +338,7 @@ FUNCTION is the action to perform on the selected elements."
     ;; Ensure that all of Body and URL are there, even if empty.
     ,@(loop with attributes = (call-next-method)
             for attr in '("Body" "URL")
-            for (same-attr val . rest) = (assoc attr attributes :test 'string=)
+            for (same-attr val) = (assoc attr attributes :test 'string=)
             if same-attr
               collect (list same-attr val nil 3)
             else collect (list attr "" nil 3))
