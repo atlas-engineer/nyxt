@@ -410,14 +410,6 @@ Return two values:
         (ps:chain element (set-attribute "selected" t))
         (setf (ps:@ parent-select value) (ps:@ element value)))))
 
-(export-always 'hover-element)
-(define-parenscript hover-element (element)
-  (ps:let ((element (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element))))
-           (event (ps:new (*Event "mouseenter"))))
-    (unless (nyxt/ps:element-in-view-port-p element)
-      (ps:chain element (scroll-into-view)))
-    (ps:chain element (dispatch-event event))))
-
 (export-always 'scroll-to-element)
 (define-parenscript scroll-to-element (element)
   (ps:chain (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element)))

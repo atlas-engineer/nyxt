@@ -302,11 +302,6 @@ Consult https://developer.mozilla.org/en-US/docs/Web/CSS/visibility."
             (dolist (element (rest elements))
               (nyxt/dom:focus-select-element element))
             (nyxt/dom:focus-select-element (first elements))
-            nil)
-          (lambda-command hover* (elements)
-            (dolist (element (rest elements))
-              (nyxt/dom:hover-element element))
-            (nyxt/dom:hover-element (first elements))
             nil)))))
 
 (export-always 'query-hints)
