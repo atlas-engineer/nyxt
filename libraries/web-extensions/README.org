@@ -16,6 +16,9 @@ variables:
 
 #+begin_src sh
 export WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS=1
+# Older WebKit versions require setting this environment variable instead.
+# See https://github.com/WebKit/WebKit/pull/8591.
+export WEBKIT_FORCE_SANDBOX=1
 #+end_src
 
 This is obviously disabling a critical security measure, so only do this in a
