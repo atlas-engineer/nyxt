@@ -836,8 +836,10 @@ See `gtk-browser's `modifier-translator' slot."
     (when (and (not (nfiles:nil-pathname-p gtk-extensions-path))
                ;; Either the directory exists.
                (or (uiop:directory-exists-p gtk-extensions-path)
-                   ;; Or successfully create it.
-                   (nth-value 1 (ensure-directories-exist gtk-extensions-path))))
+                   ;; Or try to create it.
+                   (handler-case
+                       (nth-value 1 (ensure-directories-exist gtk-extensions-path))
+                     (file-error ()))))
       (log:info "GTK extensions directory: ~s" gtk-extensions-path)
       ;; TODO: Should we also use `connect-signal' here?  Does this yield a memory leak?
       (gobject:g-signal-connect
