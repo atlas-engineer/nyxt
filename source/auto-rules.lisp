@@ -158,17 +158,25 @@ ARGS as in make-instance of `auto-rule'."
         (disable-modes* modes buffer)))))
 
 (defun can-save-last-active-modes-p (buffer url)
+  "Checks whether `last-active-modes' can be saved.
+Does not save when reloading the page or when transitioning from the page with a
+rule to the one with no rule."
   (and url
        (or (null (last-active-modes-url buffer))
            (not (quri:uri= url (last-active-modes-url buffer)))
            (not (matching-auto-rules (previous-url buffer) buffer)))))
 
 (defun save-last-active-modes (buffer url)
+  "Save `last-active-modes'.
+These modes will be restored later, when transitioning from the page with a rule
+to the one without any rule."
   (when (can-save-last-active-modes-p buffer url)
     (setf (last-active-modes buffer) (normalize-modes (modes buffer))
           (last-active-modes-url buffer) url)))
 
 (defun reapply-last-active-modes (buffer)
+  "Restore the full set of `last-active-modes' over the current buffer `modes'.
+This is useful to clean up after an applied rule."
   (alex:when-let ((modes (mapcar #'first
                                  (set-difference (normalize-modes (modes buffer))
                                                  (last-active-modes buffer)
@@ -205,6 +213,12 @@ The rules are:
       (t `(match-url ,(render-url url))))))
 
 (defun remember-on-mode-toggle (modes buffers &key (enabled-p t))
+  "Save last active modes based on the MODES enabled/disabled in BUFFERS.
+
+In case `prompt-on-mode-toggle-p' is off, just `save-last-active-modes'.
+
+In case `prompt-on-mode-toggle-p' is on, prompt for whether to save this mode to
+a rule. Unless saving to a rule, append the modes to the `last-active-modes'."
   (dolist (buffer (uiop:ensure-list buffers))
     (if (prompt-on-mode-toggle-p buffer)
         (sera:and-let* ((invocations (mapcar #'normalize-mode (uiop:ensure-list modes)))
