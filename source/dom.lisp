@@ -345,8 +345,9 @@ Return two values:
   (:documentation "Return the textual contents of the ELEMENT and its recursive children."))
 
 (defmethod body ((input input-element))
-  (alex:when-let ((body (or (plump:get-attribute input "value")
-                            (plump:get-attribute input "placeholder"))))
+  (alex:when-let ((body (if (uiop:emptyp (plump:attribute input "value"))
+                            (plump:attribute input "placeholder")
+                            (plump:attribute input "value"))))
     body))
 
 (defmethod body ((textarea textarea-element))
