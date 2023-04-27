@@ -338,11 +338,12 @@ FUNCTION is the action to perform on the selected elements."
   `(,@(when (plump:attribute element "nyxt-hint")
         `(("Hint" ,(plump:attribute element "nyxt-hint"))))
     ;; Ensure that all of Body, URL and Value are there, even if empty.
-    ,@(let ((attributes (call-next-method)))
-        (dolist (attr '("Body" "URL"))
-          (unless (assoc attr attributes :test 'string=)
-            (alex:nconcf attributes `((,attr "")))))
-        attributes)
+    ,@(loop with attributes = (call-next-method)
+            for attr in '("Body" "URL")
+            for (same-attr val . rest) = (assoc attr attributes :test 'string=)
+            if same-attr
+              collect (list same-attr val nil 3)
+            else collect (list attr "" nil 3))
     ("Type" ,(str:capitalize (str:string-case
                                  (plump:tag-name element)
                                ("a" "link")
