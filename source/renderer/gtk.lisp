@@ -1001,6 +1001,7 @@ See `finalize-buffer'."
                              (let ((headers (webkit:webkit-uri-response-get-http-headers response)))
                                (unless (cffi:null-pointer-p headers)
                                  (webkit:soup-message-headers-get-headers headers)))))
+    ;; See `nyxt:toplevel-p' in `nyxt:request-data'.
     (setf toplevel-p (quri:uri=
                       url (quri:uri (webkit:webkit-web-view-uri
                                      (gtk-object buffer)))))

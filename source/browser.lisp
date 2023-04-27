@@ -489,7 +489,12 @@ new window.")
     :documentation "Dotted alist of headers for the response to the given request.")
    (toplevel-p
     nil
-    :documentation "Whether the request happens in a toplevel frame.")
+    :documentation "Toplevel requests are usually those that open a new page/URL.
+
+Non-toplevel ones are background resource loads. For example, opening github.com
+is a toplevel request, while avatars.githubusercontent.com/u/... is a resource
+request for some image used as part of the github.com page. Same for CSS, JS and
+other resources.")
    (resource-p
     nil
     :documentation "Whether the request is a resource request.
