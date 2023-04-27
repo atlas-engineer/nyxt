@@ -1487,10 +1487,14 @@ the `active-buffer'."
   (when (document-buffer-p buffer)
     (setf (ffi-buffer-smooth-scrolling-enabled-p buffer) (smooth-scrolling buffer)))
   ;; TODO: Maybe define an FFI method?
-  (when (getf *options* :verbose)
-    (setf (webkit:webkit-settings-enable-write-console-messages-to-stdout
-           (webkit:webkit-web-view-get-settings (gtk-object buffer)))
-          t))
+  (let ((settings (webkit:webkit-web-view-get-settings (gtk-object buffer))))
+    (when (getf *options* :verbose)
+      (setf (webkit:webkit-settings-enable-write-console-messages-to-stdout settings)
+            t))
+    (setf (webkit:webkit-settings-enable-resizable-text-areas settings) t
+          (webkit:webkit-settings-enable-developer-extras settings) t
+          (webkit:webkit-settings-enable-page-cache settings) t
+          (webkit:webkit-settings-enable-encrypted-media settings) t))
   (connect-signal-function buffer "decide-policy" (make-decide-policy-handler buffer))
   (connect-signal buffer "resource-load-started" nil (web-view resource request)
     (declare (ignore web-view))
@@ -2025,9 +2029,6 @@ custom (the specified proxy) and none."
   (gdk:gdk-event-send-event event))
 
 (define-ffi-method ffi-inspector-show ((buffer gtk-buffer))
-  (setf (webkit:webkit-settings-enable-developer-extras
-         (webkit:webkit-web-view-get-settings (gtk-object buffer)))
-        t)
   (webkit:webkit-web-inspector-show
    (webkit:webkit-web-view-get-inspector (gtk-object buffer))))
 
