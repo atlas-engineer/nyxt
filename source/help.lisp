@@ -108,6 +108,7 @@ CLASS is a class symbol."
                                                          (slot-value (symbol-value theme-symbol) text-color))
                                           (slot-value (symbol-value theme-symbol) color))))))))
       (:h2 "Theme style")
+      (:p "Note that changing the theme requires restarting Nyxt.")
       (:ul
        (:li (:raw (generate-colors 'theme::+light-theme+ "Use default (Light theme)")))
        (:li (:raw (generate-colors 'theme::+dark-theme+ "Use Dark theme")))))
