@@ -759,7 +759,8 @@ extension."))
         " are now deprecated in favor of "
         (:nxref :slot 'nyxt/mode/hint:hinting-type :class-name 'nyxt/mode/hint:hint-mode)
         ".")
-   (:li "Move the " (:code "prompter") " library to a separate repository."))
+   (:li "Move the " (:code "prompter") " library to a separate repository.")
+   (:li "Revision of default light and dark themes colors."))
   (:h3 "Bindings")
   (:ul
    (:li "Rebind " (:nxref :command 'nyxt/mode/download:list-downloads)"."
@@ -767,4 +768,6 @@ extension."))
         (:nxref :command 'nyxt/mode/hint:follow-hint) "."))
   (:h3 "Programming interface")
   (:ul
-   (:li "All mode packages have been renamed to " (:code "nyxt/mode/mode-name") ".")))
+   (:li "All mode packages have been renamed to " (:code "nyxt/mode/mode-name") ".")
+   (:li "The color palette of the " (:nxref :class-name 'theme:theme) "library
+has been revised and extended.")))
