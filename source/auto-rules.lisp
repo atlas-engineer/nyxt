@@ -373,13 +373,21 @@ For the storage format see the comment in the header of your `auto-rules-file'."
 (-> add-modes-to-auto-rules
     (list &key
           (:append-p boolean)
-          (:exclude (or (cons rememberable-mode-invocation *) null))
+          (:exclude (list-of rememberable-mode-invocation))
           (:buffer modable-buffer)
-          (:include (or (cons rememberable-mode-invocation *) null))
+          (:include (list-of rememberable-mode-invocation))
           (:exact-p boolean))
     (values list &optional))
 (export-always 'add-modes-to-auto-rules)
 (defun add-modes-to-auto-rules (test &key (buffer (nyxt:current-buffer)) (append-p nil) exclude include (exact-p nil))
+  "Save the EXCLUDE-d and INCLUDE-d modes to the rule with TEST.
+TEST should be an s-expression returning a predicate on evaluation. This
+predicate, accepting a single `url-designator', should return a boolean for
+whether to `enable-matching-modes'.
+When APPEND-P, append to the existing rule (if there's one), otherwise overwrite
+any rules there are.
+
+TEST, EXCLUDE, INCLUDE, and EXACT-P are `auto-rule' slots."
   (files:with-file-content (rules (auto-rules-file buffer))
     (let* ((rule (or (find test rules
                            :key #'test :test #'equal)
