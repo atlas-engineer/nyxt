@@ -195,7 +195,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                  (let ((url-href (render-url (url bookmark))))
                    (:div
                     (:p (title bookmark))
-                    (:p (:a :href url-href :target "_blank" url-href))))))
+                    (:p (:a :href url-href url-href))))))
          (format nil "No bookmarks in ~s." (files:expand (files:content (bookmarks-file (current-buffer)))))))))
 
 (export-always 'url-bookmark-tags)
@@ -429,6 +429,84 @@ background buffers."
                               :tags (when tags
                                       (str:split "," tags))))))))
       (echo "The file doesn't exist or is not an HTML file.")))
+      
+;; Support importing bookmarks from XBEL, an XML based bookmark format.
+;; This is a rather quick-and-dirty solution which just assumes the
+;; input file is simple and valid
+;; fixes issue #2622
+
+(defclass import-xbel-seed ()
+  (
+    (current-bookmark-href :initarg :current-bookmark-href :initform nil)
+    (bookmarks :initarg :bookmarks :initform '())
+  )
+)
+
+;; For some reason reading the attributes works ONLY with :test #'string-equal
+;; even though this very function, get-attribute-value, is defined in 
+;; ./_build/cl-prevalence/src/serialization/xml.lisp using :test #'eq
+(defun get-attribute-value (name attributes)
+  (cdr (assoc name attributes :test #'string-equal)))
+  
+;; XBELs have a <title>Some text</title> either within a <folder> element
+;; or a <bookmark href="url"> element, the latter is what we're interested in. 
+(defun import-xbel-new-element-hook (name attributes seed)
+    (when (string-equal name "bookmark")
+        (setf (slot-value seed 'current-bookmark-href) (get-attribute-value :href attributes))
+    ) 
+    seed
+)
+
+(defun import-xbel-finish-element-hook (name attributes parent-seed seed)
+    (declare 
+        (ignore parent-seed)
+        (ignore attributes))
+    (when (string-equal name "bookmark")
+        (setf (slot-value seed 'current-bookmark-href) nil)
+    )
+    seed
+)
+
+(defun import-xbel-text-hook (string seed)
+    (let ((s (slot-value seed 'current-bookmark-href)))
+        (when s
+            (let ((b (slot-value seed 'bookmarks)))
+                (setf (slot-value seed 'bookmarks) (cons (cons s string) b))
+            )))
+    seed
+)
+     
+(define-command import-bookmarks-from-xbel
+    (&key (xml-file (prompt1
+                       ;; TODO: Is there a more intuitive directory for bookmarks?
+                       :input (uiop:native-namestring (uiop:getcwd))
+                       :extra-modes 'nyxt/file-manager-mode:file-manager-mode
+                       :sources (make-instance
+                                 'nyxt/file-manager-mode:file-source
+                                 :extensions '("xbel")))))
+  "Import bookmarks from an XBEL-FILE."
+  (if (and (uiop:file-exists-p xml-file)
+           (equal (pathname-type xml-file) "xbel"))
+      (with-open-file (in-xml xml-file :external-format :utf-8)
+          (let ((state (make-instance 'import-xbel-seed)))
+              (s-xml:start-parse-xml in-xml
+		           (make-instance 's-xml:xml-parser-state
+				          :seed state
+				          :new-element-hook #'import-xbel-new-element-hook
+				          :finish-element-hook #'import-xbel-finish-element-hook
+				          :text-hook #'import-xbel-text-hook))
+              (dolist (bk (reverse (slot-value state 'bookmarks)))
+                ;; bk is a (cons href text)
+                (let ((uri (quri:uri (car bk)))
+                      (title (cdr bk))
+                     )
+                    (bookmark-add uri
+                              :title title)))
+          )
+        )
+      (echo "The file doesn't exist or is not an XBEL file.")))      
+
+;; end support importing bookmarks from XBEL
 
 (define-command bookmark-hint ()
   "Prompt for element hints and bookmark them."
