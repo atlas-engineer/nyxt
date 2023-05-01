@@ -143,6 +143,8 @@
 ;; | no rule -> no rule |         | remembered-modes + 1 |                 |
 ;; | rule -> no rule    |         | navigation... + 1    |                 |
 ;; | no rule -> rule    |         | basic                |                 |
+;; | reload (rule)      |         |                      |                 |
+;; | reload (no rule)   |         |                      |                 |
 
 (define-test rule->rule ()
   (with-browser-test ("virtual-test")
