@@ -52,8 +52,12 @@ some point.")
      (mouse-support-p
       t
       :type boolean
-      :documentation "Whether to allow mouse events to set and return the
-current suggestion in the prompt buffer.")
+      :documentation "Whether to allow mouse events to act on prompt buffer suggestions.
+The following mouse keybindings are available:
+- button1: `run-action-on-return'
+- C-button1: `toggle-mark-forwards'
+- s-button1: `toggle-mark-forwards'
+- M-button1: `set-action-on-return'.")
      (dynamic-attribute-width-p
       nil
       :type boolean
