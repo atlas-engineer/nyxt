@@ -52,8 +52,10 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "keypadenter" 'run-action-on-return
        "M-return" 'set-action-on-return
        "M-keypadenter" 'set-action-on-return
-       "C-return" 'run-action-on-current-suggestion
-       "C-keypadenter" 'run-action-on-current-suggestion
+       "C-return" 'toggle-mark-forwards
+       "C-keypadenter" 'toggle-mark-forwards
+       "s-return" 'toggle-mark-forwards
+       "s-keypadenter" 'toggle-mark-forwards
        "C-c C-j" 'set-action-on-current-suggestion
        "tab" 'insert-current-suggestion
        ; TODO: This is the Emacs Helm binding.  Better?
