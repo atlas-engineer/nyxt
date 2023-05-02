@@ -765,7 +765,9 @@ extension."))
   (:ul
    (:li "Rebind " (:nxref :command 'nyxt/mode/download:list-downloads)"."
         "When using the CUA keyscheme, the keybindingo was shadowed by "
-        (:nxref :command 'nyxt/mode/hint:follow-hint) "."))
+        (:nxref :command 'nyxt/mode/hint:follow-hint) ".")
+   (:li "Rebind " (:nxref :command 'nyxt/mode/document:jump-to-heading)" for the
+CUA keyscheme."))
   (:h3 "Programming interface")
   (:ul
    (:li "All mode packages have been renamed to " (:code "nyxt/mode/mode-name") ".")
