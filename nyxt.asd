@@ -609,6 +609,7 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                serapeum)
   :pathname #p"NYXT:libraries;theme;"
   :components ((:file "package")
+               (:file "utilities")
                (:file "theme"))
   :in-order-to ((test-op (test-op "nyxt/theme/tests"))))
 

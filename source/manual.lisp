@@ -662,7 +662,6 @@ to your configuration file:")
         (:ncode
           '(define-configuration browser
             ((theme (make-instance 'theme:theme
-                     :dark-p t
                      :background-color "black"
                      :on-background-color "#808080"
                      :accent-color "#37a8e4"
