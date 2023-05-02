@@ -238,7 +238,7 @@ Return two values, where the first corresponds to the sequence that meets PRED."
 
 (export-always 'themed-css)
 (defmacro themed-css (theme &body blocks)
-  "Generate a CSS styled according to the THEME and BLOCKS.
+  "Generate CSS BLOCKS styled according to THEME.
 
 BLOCKS is a list of LASS blocks.
 
@@ -247,20 +247,16 @@ arbitrary code before the blocks are compiled to CSS. For the convenience of
 quasi-quoted forms, this macro let-binds the set of symbols/slots for THEME
 around the BLOCKS.
 
-Example: color all the paragraph text in accent color if the theme is dark, and
-in secondary color otherwise. Use the text color as background color. Make
-headings have border of secondary color.
+Example: if the theme is dark, color all paragraphs' text in accent color, or in
+secondary color otherwise; color the borders of all headings in secondary color.
 
-\(themed-css (make-instance 'theme
-                            :on-background-color \"red\"
-                            :accent-color \"blue\")
+\(themed-css (make-instance 'theme :accent-color \"blue\")
            `(|h1,h2,h3,h4,h5,h6|
              :border-style \"solid\"
              :border-width \"1px\"
              :border-color ,theme:secondary)
            `(p
-             :color ,(if (theme:dark-p theme:theme) theme:accent theme:secondary)
-             :background-color ,theme:background))"
+             :color ,(if (theme:dark-p theme:theme) theme:accent theme:secondary)))"
   `(with-theme ,theme
      (lass:compile-and-write
       ;; NOTE: This loop allows to omit quotes for most trivial rules,
