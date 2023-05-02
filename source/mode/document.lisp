@@ -26,8 +26,6 @@ It does not assume being online."))
        "M-i" 'focus-first-input-field
        "C-M-c" 'open-inspector
        "C-S-c" 'open-inspector
-       "C-." 'jump-to-heading
-       "C-M-." 'jump-to-heading-buffers
        "M-." 'headings-panel
        "M-{" 'previous-heading
        "M-}" 'next-heading
@@ -35,6 +33,8 @@ It does not assume being online."))
        "C-R" 'reload-with-modes)
       keyscheme:cua
       (list
+       "C-h" 'jump-to-heading
+       "C-M-h" 'jump-to-heading-buffers
        "C-c" 'copy
        "C-v" 'paste
        "M-v" 'paste-from-clipboard-ring
@@ -67,6 +67,8 @@ It does not assume being online."))
        "C-u C-o" 'edit-with-external-editor)
       keyscheme:emacs
       (list
+       "C-." 'jump-to-heading
+       "C-M-." 'jump-to-heading-buffers
        "C-g" 'nothing              ; Emacs users may hit C-g out of habit.
        "M-w" 'copy
        "C-y" 'paste
