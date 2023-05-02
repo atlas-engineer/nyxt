@@ -772,4 +772,8 @@ CUA keyscheme."))
   (:ul
    (:li "All mode packages have been renamed to " (:code "nyxt/mode/mode-name") ".")
    (:li "The color palette of the " (:nxref :class-name 'theme:theme) "library
-has been revised and extended.")))
+has been revised and extended."))
+  (:h3 "Bug fixes")
+  (:ul
+   (:li "Update Flatpak build version.")
+   (:li "Extensions directory is more carefully checked to avoid crashes.")))
