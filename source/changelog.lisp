@@ -764,7 +764,7 @@ extension."))
   (:h3 "Bindings")
   (:ul
    (:li "Rebind " (:nxref :command 'nyxt/mode/download:list-downloads)"."
-        "When using the CUA keyscheme, the keybindingo was shadowed by "
+        "When using the CUA keyscheme, the keybinding was shadowed by "
         (:nxref :command 'nyxt/mode/hint:follow-hint) ".")
    (:li "Rebind " (:nxref :command 'nyxt/mode/document:jump-to-heading)" for the
 CUA keyscheme."))
