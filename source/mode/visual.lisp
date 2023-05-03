@@ -59,8 +59,10 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
       ;; vi keybindings only enable use of vim's plain "visual" mode for now
       keyscheme:vi-normal
       (list
-       ;; "caret mode" it does not select text. might break in the future?
-       ;; also thought about just making a keyscheme for vi-insert and using that as caret mode, seems more robust
+       ;; FIXME: WebKit's "caret browsing"
+       ;; (https://webkitgtk.org/reference/webkit2gtk/stable/property.Settings.enable-caret-browsing.html)
+       ;; does not allow selecting text. Might break in the future. Maybe make a
+       ;; keyscheme for vi-insert and use it with caret mode?
        "c" 'clear-selection
        "h" 'backward-char
        "l" 'forward-char
