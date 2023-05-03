@@ -231,3 +231,8 @@ package set to current package."
           (subtypep (type-of object) (class-name
                                       (first (closer-mop:method-specializers method)))))
         (closer-mop:generic-function-methods generic-function)))
+
+(export-always 'smart-case-test)
+(-> smart-case-test (string) function)
+(defun smart-case-test (string)
+  (if (str:downcasep string) #'string-equal #'string=))

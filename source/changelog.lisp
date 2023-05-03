@@ -760,7 +760,16 @@ extension."))
         (:nxref :slot 'nyxt/mode/hint:hinting-type :class-name 'nyxt/mode/hint:hint-mode)
         ".")
    (:li "Move the " (:code "prompter") " library to a separate repository.")
-   (:li "Revision of default light and dark themes colors."))
+   (:li "Revision of default light and dark themes colors.")
+   (:li "Major "
+        (:nxref :class-name 'nyxt/mode/search-buffer:search-buffer-mode)
+        " refactor."
+        "The new implementation is more accurate and more flexible, as it allows
+manipulating matches as Lisp objects.")
+   (:li "Rename " (:code "keep-search-hints-p") "slot to "
+        (:nxref :slot 'keep-search-marks-p :class-name 'document-buffer)".")
+   (:li "Rename " (:code "remove-search-hints") "command to "
+        (:nxref :command 'nyxt/mode/search-buffer:remove-search-marks)"."))
   (:h3 "Bindings")
   (:ul
    (:li "Rebind " (:nxref :command 'nyxt/mode/download:list-downloads)"."
