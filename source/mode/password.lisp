@@ -1,9 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/password-mode
+(nyxt:define-package :nyxt/mode/password
     (:documentation "Interface with third-party password managers."))
-(in-package :nyxt/password-mode)
+(in-package :nyxt/mode/password)
 
 (define-mode password-mode ()
   "Enable interface with third-party password managers.
@@ -115,8 +115,8 @@ for which the `executable' slot is non-nil."
                    (uiop:native-namestring
                     (prompt1
                      :prompt "Password database file (.kdbx)"
-                     :extra-modes 'nyxt/file-manager-mode:file-manager-mode
-                     :sources (make-instance 'nyxt/file-manager-mode:file-source
+                     :extra-modes 'nyxt/mode/file-manager:file-manager-mode
+                     :sources (make-instance 'nyxt/mode/file-manager:file-source
                                              :extensions '("kdbx")))))
         unless (password::key-file password-interface)
           do (if-confirm ("Do you use key file for password database locking?")
@@ -124,8 +124,8 @@ for which the `executable' slot is non-nil."
                        (uiop:native-namestring
                         (prompt1
                          :prompt "Password database key file"
-                         :extra-modes 'nyxt/file-manager-mode:file-manager-mode
-                         :sources (make-instance 'nyxt/file-manager-mode:file-source)))))
+                         :extra-modes 'nyxt/mode/file-manager:file-manager-mode
+                         :sources (make-instance 'nyxt/mode/file-manager:file-source)))))
         unless (password::yubikey-slot password-interface)
           do (if-confirm ("Do you use Yubikey for password database locking")
                  (setf (password::yubikey-slot password-interface)

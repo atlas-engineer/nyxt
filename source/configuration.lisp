@@ -298,8 +298,8 @@ In the above, `%slot-default%' will be substituted with the return value of
 
 Example to get the `blocker-mode' command to use a new default hostlists:
 
-\(define-configuration nyxt/blocker-mode:blocker-mode
-  ((nyxt/blocker-mode:hostlists (append (list *my-blocked-hosts*) %slot-default%)
+\(define-configuration nyxt/mode/blocker:blocker-mode
+  ((nyxt/mode/blocker:hostlists (append (list *my-blocked-hosts*) %slot-default%)
                                 :doc \"You have to define *my-blocked-hosts* first.\")))
 
 To discover the default value of a slot or all slots of a class, use the

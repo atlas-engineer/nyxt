@@ -6,5 +6,5 @@
 (define-test toggle-style-mode ()
   (let ((buffer (make-instance 'modable-buffer)))
     (with-current-buffer buffer
-      (assert-true (enable-modes* 'nyxt/style-mode:style-mode buffer))
-      (assert-true (disable-modes* 'nyxt/style-mode:style-mode buffer)))))
+      (assert-true (enable-modes* 'nyxt/mode/style:style-mode buffer))
+      (assert-true (disable-modes* 'nyxt/mode/style:style-mode buffer)))))

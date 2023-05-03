@@ -12,10 +12,10 @@
 
 ;; TODO: Add tests for garbage collection, caching history, exact matches.
 
-(nyxt:define-package :nyxt/remembrance-mode
+(nyxt:define-package :nyxt/mode/remembrance
     (:documentation "Mode to cache visited content to disk.
 The textual content can be searched and displayed."))
-(in-package :nyxt/remembrance-mode)
+(in-package :nyxt/mode/remembrance)
 
 ;; We superclass with `files:read-only-file' instead of `files:virtual-file'
 ;; because the latter does not expand to a path on disk.
@@ -195,15 +195,15 @@ Cached pages older than `discard-interval' are automatically purged.
 
 Return cached page.
 Return NIL if URL is not cached, for instance if it's on
-`nyxt/history-mode:history-mode' `history-blocklist'.
+`nyxt/mode/history:history-mode' `history-blocklist'.
 Return NIL if page content is empty."
   ;; We drop the fragment as it does not change the page content.
   (let* ((url (quri:copy-uri (url buffer) :fragment nil))
          (page (find-url url remembrance-mode)))
-    (let ((history-mode (find-submode 'nyxt/history-mode:history-mode)))
+    (let ((history-mode (find-submode 'nyxt/mode/history:history-mode)))
       (unless (or (internal-url-p url)
                   (and history-mode
-                       (nyxt/history-mode:blocked-p url history-mode)))
+                       (nyxt/mode/history:blocked-p url history-mode)))
         (prog1
             (if (or force
                     (not page)
@@ -274,10 +274,10 @@ This induces a performance cost."))
 (defvar *remembrance-node-class-name* "nyxt-remembrance-highlight-node")
 
 (defun add-search-hint (buffer term)
-  ;; TODO: Add this to the  `nyxt/search-buffer-mode' API?
+  ;; TODO: Add this to the  `nyxt/mode/search-buffer' API?
   (unless (uiop:emptyp term)
     (with-current-buffer buffer
-      (nyxt/search-buffer-mode::query-buffer
+      (nyxt/mode/search-buffer::query-buffer
        :query term
        :keep-previous-hints t
        :node-class-name *remembrance-node-class-name*
@@ -421,14 +421,14 @@ BOOKMARK can be a list of bookmarks."
   (let ((bookmarks (or (alex:ensure-list bookmark)
                        (prompt
                         :prompt "Cache content of bookmarks"
-                        :sources (make-instance 'nyxt/bookmark-mode:bookmark-source
+                        :sources (make-instance 'nyxt/mode/bookmark:bookmark-source
                                                 :enable-marks-p t)))))
     (mapc (compose #'url->cache #'url) bookmarks)))
 
 (define-command remember-history-entry ()
   "Cache the queried history entries URL, title and textual content."
   (let ((history-nodes (prompt :prompt "Cache history entries"
-                               :sources (make-instance 'nyxt/history-mode:history-all-source
+                               :sources (make-instance 'nyxt/mode/history:history-all-source
                                                        :buffer (current-buffer)))))
     (mapc (compose #'url->cache #'url) history-nodes)))
 

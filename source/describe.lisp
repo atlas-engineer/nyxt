@@ -137,9 +137,12 @@ See `sym:package-functions' for an example."
 (define-class slot-internal-source (slot-source describe-internal-source)
   ((prompter:name "Internal Slots")))
 
+(defun non-keyword-package-variables (packages)
+  (remove-if #'keywordp (sym:package-variables packages)))
+
 (define-class variable-source (describe-nyxt-source)
   ((prompter:name "Variables")
-   (prompter:constructor (description-constructor #'sym:package-variables)))
+   (prompter:constructor (description-constructor #'non-keyword-package-variables)))
   (:export-accessor-names-p t))
 
 (define-class variable-non-nyxt-source (variable-source describe-non-nyxt-source)
@@ -154,7 +157,7 @@ See `sym:package-functions' for an example."
    (prompter:filter-preprocessor #'prompter:filter-exact-matches)))
 
 (define-internal-page-command-global describe-any (&key input)
-    (buffer (format nil "*Describe-~a*" input) 'nyxt/help-mode:help-mode)
+    (buffer (format nil "*Describe-~a*" input) 'nyxt/mode/help:help-mode)
   "Inspect anything and show it in a help buffer.
 When input exists, list all the symbols that may match it.
 Otherwise prompt for matches."
@@ -280,7 +283,7 @@ Otherwise prompt for matches."
 
 (define-internal-page describe-value
     (&key id)
-    (:title "*Help-value*" :page-mode 'nyxt/help-mode:help-mode)
+    (:title "*Help-value*" :page-mode 'nyxt/mode/help:help-mode)
   "Inspect value under ID and show it in a help buffer."
   (sera:and-let* ((id id)
                   (value (inspected-value id)))
@@ -297,7 +300,7 @@ Otherwise prompt for matches."
     (&key (package
            (prompt1 :prompt "Describe package"
                     :sources 'package-source)))
-    (buffer (str:concat "*Help-" (package-name (find-package package)) "*") 'nyxt/help-mode:help-mode)
+    (buffer (str:concat "*Help-" (package-name (find-package package)) "*") 'nyxt/mode/help:help-mode)
   "Inspect a package and show it in a help buffer."
   (let* ((package (find-package package))
          (total-symbols (sym:package-symbols (list package)))
@@ -332,7 +335,7 @@ Otherwise prompt for matches."
                         :sources '(variable-source
                                    variable-non-nyxt-source
                                    variable-internal-source))))
-    (buffer (str:concat "*Help-" (symbol-name variable) "*") 'nyxt/help-mode:help-mode)
+    (buffer (str:concat "*Help-" (symbol-name variable) "*") 'nyxt/mode/help:help-mode)
   "Inspect a variable and show it in a help buffer."
   (let ((*print-case* :downcase))
     (if (boundp variable)
@@ -382,7 +385,7 @@ Otherwise prompt for matches."
                              function-internal-source)))
      ;; This is to have a full-word alternative to :fn for those that prefer it.
      (function fn))
-    (buffer (str:concat "*Help-" (symbol-name function) "*") 'nyxt/help-mode:help-mode)
+    (buffer (str:concat "*Help-" (symbol-name function) "*") 'nyxt/mode/help:help-mode)
   "Inspect a function and show it in a help buffer.
 For generic functions, describe all the methods."
   (if function
@@ -508,7 +511,7 @@ A command is a special kind of function that can be called with
 
 (define-internal-page-command-global describe-slot
     (&key class name)
-    (buffer (str:concat "*Help-" (symbol-name name) "*") 'nyxt/help-mode:help-mode)
+    (buffer (str:concat "*Help-" (symbol-name name) "*") 'nyxt/mode/help:help-mode)
   "Inspect a slot and show it in a help buffer."
   (unless (and class name)
     (let ((slot (prompt1
@@ -564,7 +567,7 @@ A command is a special kind of function that can be called with
              :sources '(class-source
                         class-non-nyxt-source
                         class-internal-source))))
-    (buffer (str:concat "*Help-" (symbol-name class) "*") 'nyxt/help-mode:help-mode)
+    (buffer (str:concat "*Help-" (symbol-name class) "*") 'nyxt/mode/help:help-mode)
   "Inspect a class and show it in a help buffer."
   (if (find-class class nil)
       (let* ((slots (safe-sort (class-slots class :visibility :external)))
@@ -617,7 +620,7 @@ A command is a special kind of function that can be called with
     (describe-class :class mode)))
 
 (define-internal-page describe-bindings (&key (id (id (current-buffer))))
-    (:title "*Help-bindings*" :page-mode 'nyxt/help-mode:help-mode)
+    (:title "*Help-bindings*" :page-mode 'nyxt/mode/help:help-mode)
   "Show a buffer with the list of all known bindings for the current buffer."
   (alex:if-let ((buffer (nyxt::buffers-get id)))
     (spinneret:with-html-string

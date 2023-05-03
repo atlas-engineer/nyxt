@@ -1,9 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/bookmark-mode
+(nyxt:define-package :nyxt/mode/bookmark
     (:documentation "Manage bookmarks."))
-(in-package :nyxt/bookmark-mode)
+(in-package :nyxt/mode/bookmark)
 
 ;;; We don't use CL-prevalence to serialize / deserialize bookmarks for a couple for reasons:
 ;;; - It's too verbose, e.g. a list is
@@ -407,9 +407,9 @@ background buffers."
     (&key (html-file (prompt1
                        ;; TODO: Is there a more intuitive directory for bookmarks?
                        :input (uiop:native-namestring (uiop:getcwd))
-                       :extra-modes 'nyxt/file-manager-mode:file-manager-mode
+                       :extra-modes 'nyxt/mode/file-manager:file-manager-mode
                        :sources (make-instance
-                                 'nyxt/file-manager-mode:file-source
+                                 'nyxt/mode/file-manager:file-source
                                  :extensions '("html")))))
   "Import bookmarks from an HTML-FILE."
   (if (and (uiop:file-exists-p html-file)
@@ -510,7 +510,7 @@ background buffers."
 
 (define-command bookmark-hint ()
   "Prompt for element hints and bookmark them."
-  (nyxt/hint-mode:query-hints
+  (nyxt/mode/hint:query-hints
    "Bookmark hint"
    (lambda (result)
      (dolist (url (mapcar #'url result))
@@ -521,6 +521,6 @@ background buffers."
                                              :name "New tags"
                                              :enable-marks-p t)
                               (make-instance 'tag-source
-                                             :marks (nyxt/bookmark-mode:url-bookmark-tags url))))))
-         (nyxt/bookmark-mode:bookmark-add url :tags tags :title (fetch-url-title url)))))
+                                             :marks (nyxt/mode/bookmark:url-bookmark-tags url))))))
+         (nyxt/mode/bookmark:bookmark-add url :tags tags :title (fetch-url-title url)))))
    :selector "a"))

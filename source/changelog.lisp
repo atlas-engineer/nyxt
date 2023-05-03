@@ -440,42 +440,42 @@ SLY install.")
 
 (define-version "3-pre-release-2"
   (:ul
-   (:li (:nxref :class-name 'nyxt/reduce-tracking-mode:reduce-tracking-mode)
+   (:li (:nxref :class-name 'nyxt/mode/reduce-tracking:reduce-tracking-mode)
         " cleans widely known tracking query parameters.")
    (:li "Improve the algorithm that determines whether an element is in viewport.")
-   (:li "Rename " (:code "nyxt/hint-mode:box-style") " to "
-        (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'style) ".")
-   (:li "Deprecate "(:code "nyxt/hint-mode:highlighted-box-style") "and merge
-        into " (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'style) ".")
-   (:li "Remove " (:nxref :class-name 'nyxt/hint-mode:hint-mode) " image support
+   (:li "Rename " (:code "nyxt/mode/hint:box-style") " to "
+        (:nxref :class-name 'nyxt/mode/hint:hint-mode :slot 'style) ".")
+   (:li "Deprecate "(:code "nyxt/mode/hint:highlighted-box-style") "and merge
+        into " (:nxref :class-name 'nyxt/mode/hint:hint-mode :slot 'style) ".")
+   (:li "Remove " (:nxref :class-name 'nyxt/mode/hint:hint-mode) " image support
         by default.")
    (:li "Add "
-        (:code "nyxt/hint-mode:compute-hints-in-view-port-p")
+        (:code "nyxt/mode/hint:compute-hints-in-view-port-p")
         " allowing hints to be optionally computed in viewport.")
    (:li "Add " (:nxref :class-name 'prompt-buffer :slot 'height) ".")
    (:li "Add "
-        (:code "nyxt/hint-mode:fit-to-prompt-p")
+        (:code "nyxt/mode/hint:fit-to-prompt-p")
         " minimizing the space taken by the prompt buffer while navigating hints.")
    (:li "Add "
-        (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'nyxt/hint-mode:show-hint-scope-p)
+        (:nxref :class-name 'nyxt/mode/hint:hint-mode :slot 'nyxt/mode/hint:show-hint-scope-p)
         "for element highlighting of hinted elements.")
    (:li "Add " (:code "prompter:marks-actions")
         " that run when marked items on prompt-buffer change.")
-   (:li "Extend " (:nxref :class-name 'nyxt/hint-mode:hint-mode :slot 'style)
+   (:li "Extend " (:nxref :class-name 'nyxt/mode/hint:hint-mode :slot 'style)
         " to accommodate for marked hints.")
    (:li (:code "default-modes") " can be configured with "
         (:code "%slot-value%") ".")
    (:li "Add " (:nxref :command 'toggle-maximize) " command for maximizing a window.")
    (:li "All copying and pasting commands populate "
         (:nxref :class-name 'browser :slot 'clipboard-ring) " reliably, thus fixing the "
-        (:nxref :command 'nyxt/document-mode:paste-from-clipboard-ring) " command.")
-   (:li "Major improvement of " (:nxref :class-name 'nyxt/editor-mode:editor-mode) ".")
+        (:nxref :command 'nyxt/mode/document:paste-from-clipboard-ring) " command.")
+   (:li "Major improvement of " (:nxref :class-name 'nyxt/mode/editor:editor-mode) ".")
    (:li (:code "execute-command")
         " evaluates arbitrary Lisp code and provides inline documentation for symbols.")
-   (:li "New " (:nxref :class-name 'nyxt/remembrance-mode:remembrance-mode)
+   (:li "New " (:nxref :class-name 'nyxt/mode/remembrance:remembrance-mode)
         " to automatically cache the visited page content. "
         "The cache can be looked up and the page textual content can be displayed even offline."
-        "See " (:nxref :function 'nyxt/remembrance-mode:recollect-visited-page) ".")
+        "See " (:nxref :function 'nyxt/mode/remembrance:recollect-visited-page) ".")
    (:li (:code "auto-mode")
         " is incorporated into Nyxt core, with its settings residing in "
         (:nxref :class-name 'modable-buffer) ".")
@@ -490,17 +490,17 @@ auto-mode-rules.lisp)")))
 
   (:h3 "Bindings")
   (:ul
-   (:li (:nxref :class-name 'nyxt/editor-mode:editor-mode)
+   (:li (:nxref :class-name 'nyxt/mode/editor:editor-mode)
         " now has an equally powerful set of bindings in all key schemes, allowing one
 to open a file, save it, switch buffer or delete current buffer.")
-   (:li (:nxref :command 'nyxt/document-mode:paste-from-clipboard-ring) " is now conveniently bound to "
+   (:li (:nxref :command 'nyxt/mode/document:paste-from-clipboard-ring) " is now conveniently bound to "
         (:code "M-y") " in Emacs scheme of "
-        (:nxref :class-name 'nyxt/document-mode:document-mode) ".")
+        (:nxref :class-name 'nyxt/mode/document:document-mode) ".")
    (:li "Prompt buffer now has familiar bindings for text cutting.")
-   (:li "Add " (:code "nyxt/prompt-buffer-mode:set-selection-action")
+   (:li "Add " (:code "nyxt/mode/prompt-buffer:set-selection-action")
         ", bound to " (:code "C-c C-j") "by default.")
    (:li (:code "return-selection-over-action") " renamed to "
-        (:code "nyxt/prompt-buffer-mode:return-marks-action")
+        (:code "nyxt/mode/prompt-buffer:return-marks-action")
         ".  The default keybinding is the same."))
 
   (:h3 "Programming interface")
@@ -508,17 +508,17 @@ to open a file, save it, switch buffer or delete current buffer.")
    (:li (:nxref :function 'ffi-buffer-copy) " and " (:nxref :function 'ffi-buffer-paste)
         " now accept optional second argument — string to put into clipboard instead of
 the selection, and the string to paste instead of the clipboard (respectively).")
-   (:li (:nxref :class-name 'nyxt/editor-mode:editor-mode) " now has an additional method to implement for the backends:"
-        (:nxref :function 'nyxt/editor-mode:markup)
+   (:li (:nxref :class-name 'nyxt/mode/editor:editor-mode) " now has an additional method to implement for the backends:"
+        (:nxref :function 'nyxt/mode/editor:markup)
         ". This method defines how the initial editor markup (not necessarily HTML one) will look like.")
    (:li (:code "encode-json")  " and " (:code "decode-json")
         " functions are now capable of encoding from/decoding to files, strings and streams.")
    (:li (:nxref :function 'nyxt/dom:copy) " generic to copy elements and whole DOMs.")
-   (:li "New " (:code 'nyxt/bookmarklets-mode:define-bookmarklet-command-global)
+   (:li "New " (:code 'nyxt/mode/bookmarklets:define-bookmarklet-command-global)
         " that allows to define bookmarklets globally.")
    (:li (:code "open-new-editor-with-file") " renamed to "
-        (:nxref :command 'nyxt/editor-mode:edit-file) ".")
-   (:li "Add " (:nxref :command 'nyxt/file-manager-mode:edit-file-with-external-editor)
+        (:nxref :command 'nyxt/mode/editor:edit-file) ".")
+   (:li "Add " (:nxref :command 'nyxt/mode/file-manager:edit-file-with-external-editor)
         " to edit arbitrary files in the editor of choice.")
    (:li (:code "peval") " and " (:code "pflet") " renamed to " (:nxref :function 'ps-eval) " and "
         (:nxref :function 'ps-labels) " (respectively).")
@@ -537,21 +537,21 @@ the selection, and the string to paste instead of the clipboard (respectively)."
    (:li "Setting " (:nxref :slot 'restore-session-on-startup-p :class-name 'browser)
         " no longer hangs the browser.")
    (:li "Fix buffer re-attachment from the deleted window.")
-   (:li "Move download hooks to " (:nxref :class-name 'nyxt/download-mode:download)
+   (:li "Move download hooks to " (:nxref :class-name 'nyxt/mode/download:download)
         " enabling proper typing and adding handlers to them.")
    (:li "Clipboard ring is properly filled on every clipboard action happening
         inside Nyxt.")
-   (:li (:nxref :command 'nyxt/document-mode:view-source)
+   (:li (:nxref :command 'nyxt/mode/document:view-source)
         " returns an unmodified DOM without " (:code "nyxt-identifier")
         "s or other Nyxt-specific implementation details.")
-   (:li "Fix " (:nxref :command 'nyxt/history-mode:history-backwards)
+   (:li "Fix " (:nxref :command 'nyxt/mode/history:history-backwards)
         " by gracefully handling pages that are not yet done loading.")
    (:li "Fix full-screening event handling — status buffer no longer goes
         off-sync with the full-screened page/video.")))
 
 (define-version "3-pre-release-3"
   (:ul
-   (:li (:code "nyxt/repl-mode:lisp-repl") " renamed to " (:nxref :command 'nyxt/repl-mode:repl)
+   (:li (:code "nyxt/mode/repl:lisp-repl") " renamed to " (:nxref :command 'nyxt/mode/repl:repl)
         " and redesigned to be more approachable with buttons and commands controlling cell
 formatting, deletion, cleaning, and movement.")
    (:li "New prediction capabilities. Nyxt can now predict your next command, it will
@@ -573,7 +573,7 @@ auto-mode-rules.lisp)."))
    (:li (:code "diff-mode") " is removed.")
    (:li "History globality can be set on a per-buffer basis. "
         "See the " (:code "global-history-p") " slot in " (:code "context-buffer") ".")
-   (:li (:nxref :slot 'backtrack-to-hubs-p :class-name 'nyxt/history-mode:history-mode)
+   (:li (:nxref :slot 'backtrack-to-hubs-p :class-name 'nyxt/mode/history:history-mode)
         " allows to revisit the \"hub\" URLs you often visit, instead of adding them to history anew.")
    (:li "nyxt:// pages can be linked from the outside Internet due to scheme security
 settings changes.")
@@ -583,7 +583,7 @@ settings changes.")
 
   (:h3 "Bindings")
   (:ul
-   (:li "Add " (:nxref :command 'nyxt/prompt-buffer-mode:set-action-on-current-suggestion)
+   (:li "Add " (:nxref :command 'nyxt/mode/prompt-buffer:set-action-on-current-suggestion)
         ", bound to " (:code "C-c C-j") "by default."))
 
   (:h3 "Programming interface")
@@ -633,53 +633,53 @@ regular commands, such as "
         (:nxref :slot 'prompter:actions-on-current-suggestion :class-name 'prompter) ".")
    (:li "Rename " (:code "prompter:multi-selection-p") " to "
         (:nxref :slot 'prompter:enable-marks-p :class-name 'prompter) ".")
-   (:li (:code "nyxt/prompt-buffer-mode:return-selection") " renamed to "
-        (:nxref :command 'nyxt/prompt-buffer-mode:run-action-on-return)
+   (:li (:code "nyxt/mode/prompt-buffer:return-selection") " renamed to "
+        (:nxref :command 'nyxt/mode/prompt-buffer:run-action-on-return)
         ".  The default keybinding is the same.")
-   (:li (:code "nyxt/prompt-buffer-mode:cancel-input") " renamed to "
-        (:nxref :command 'nyxt/prompt-buffer-mode:quit-prompt-buffer)
+   (:li (:code "nyxt/mode/prompt-buffer:cancel-input") " renamed to "
+        (:nxref :command 'nyxt/mode/prompt-buffer:quit-prompt-buffer)
         ".  The default keybinding is the same.")
-   (:li (:code "nyxt/prompt-buffer-mode:toggle-toggle-mark-backwards") " renamed to "
-        (:nxref :command 'nyxt/prompt-buffer-mode:toggle-mark-backwards)
+   (:li (:code "nyxt/mode/prompt-buffer:toggle-toggle-mark-backwards") " renamed to "
+        (:nxref :command 'nyxt/mode/prompt-buffer:toggle-mark-backwards)
         ".  The default keybinding is the same.")
-   (:li (:code "nyxt/prompt-buffer-mode:toggle-mark") " renamed to "
-        (:nxref :command 'nyxt/prompt-buffer-mode:toggle-mark-forwards)
+   (:li (:code "nyxt/mode/prompt-buffer:toggle-mark") " renamed to "
+        (:nxref :command 'nyxt/mode/prompt-buffer:toggle-mark-forwards)
         ".  The default keybinding is the same.")
-   (:li (:code "nyxt/prompt-buffer-mode:select-next-source") " renamed to "
-        (:nxref :command 'nyxt/prompt-buffer-mode:next-source)
+   (:li (:code "nyxt/mode/prompt-buffer:select-next-source") " renamed to "
+        (:nxref :command 'nyxt/mode/prompt-buffer:next-source)
         ".  The default keybinding is the same.")
-   (:li (:code "nyxt/prompt-buffer-mode:select-previous-source") " renamed to "
-        (:nxref :command 'nyxt/prompt-buffer-mode:previous-source)
+   (:li (:code "nyxt/mode/prompt-buffer:select-previous-source") " renamed to "
+        (:nxref :command 'nyxt/mode/prompt-buffer:previous-source)
         ".  The default keybinding is the same.")
-   (:li (:code "nyxt/prompt-buffer-mode:select-next-page") " renamed to "
-        (:nxref :command 'nyxt/prompt-buffer-mode:next-page)
+   (:li (:code "nyxt/mode/prompt-buffer:select-next-page") " renamed to "
+        (:nxref :command 'nyxt/mode/prompt-buffer:next-page)
         ".  The default keybinding is the same.")
-   (:li (:code "nyxt/prompt-buffer-mode:select-previous-page") " renamed to "
-        (:nxref :command 'nyxt/prompt-buffer-mode:previous-page)
+   (:li (:code "nyxt/mode/prompt-buffer:select-previous-page") " renamed to "
+        (:nxref :command 'nyxt/mode/prompt-buffer:previous-page)
         ".  The default keybinding is the same.")
-   (:li (:code "nyxt/prompt-buffer-mode:select-last") " renamed to "
-        (:nxref :command 'nyxt/prompt-buffer-mode:last-suggestion)
+   (:li (:code "nyxt/mode/prompt-buffer:select-last") " renamed to "
+        (:nxref :command 'nyxt/mode/prompt-buffer:last-suggestion)
         ".  The default keybinding is the same.")
-   (:li (:code "nyxt/prompt-buffer-mode:select-first") " renamed to "
-        (:nxref :command 'nyxt/prompt-buffer-mode:first-suggestion)
+   (:li (:code "nyxt/mode/prompt-buffer:select-first") " renamed to "
+        (:nxref :command 'nyxt/mode/prompt-buffer:first-suggestion)
         ".  The default keybinding is the same.")
-   (:li (:code "nyxt/prompt-buffer-mode:select-next") " renamed to "
-        (:nxref :command 'nyxt/prompt-buffer-mode:next-suggestion)
+   (:li (:code "nyxt/mode/prompt-buffer:select-next") " renamed to "
+        (:nxref :command 'nyxt/mode/prompt-buffer:next-suggestion)
         ".  The default keybinding is the same.")
-   (:li (:code "nyxt/prompt-buffer-mode:select-previous") " renamed to "
-        (:nxref :command 'nyxt/prompt-buffer-mode:previous-suggestion)
+   (:li (:code "nyxt/mode/prompt-buffer:select-previous") " renamed to "
+        (:nxref :command 'nyxt/mode/prompt-buffer:previous-suggestion)
         ".  The default keybinding is the same.")
-   (:li (:code "nyxt/prompt-buffer-mode:set-selection-action") " renamed to "
-        (:nxref :command 'nyxt/prompt-buffer-mode:set-action-on-return)
+   (:li (:code "nyxt/mode/prompt-buffer:set-selection-action") " renamed to "
+        (:nxref :command 'nyxt/mode/prompt-buffer:set-action-on-return)
         ".  The default keybinding is the same.")
-   (:li (:code "nyxt/prompt-buffer-mode:run-selection-action") " renamed to "
-        (:nxref :command 'nyxt/prompt-buffer-mode:run-action-on-current-suggestion)
+   (:li (:code "nyxt/mode/prompt-buffer:run-selection-action") " renamed to "
+        (:nxref :command 'nyxt/mode/prompt-buffer:run-action-on-current-suggestion)
         ".  The default keybinding is the same.")
-   (:li (:code "nyxt/prompt-buffer-mode:toggle-selection-actions-enabled") " renamed to "
-        (:nxref :command 'nyxt/prompt-buffer-mode:toggle-actions-on-current-suggestion-enabled)
+   (:li (:code "nyxt/mode/prompt-buffer:toggle-selection-actions-enabled") " renamed to "
+        (:nxref :command 'nyxt/mode/prompt-buffer:toggle-actions-on-current-suggestion-enabled)
         ".  The default keybinding is the same.")
-   (:li (:code "nyxt/prompt-buffer-mode:insert-selection") " renamed to "
-        (:nxref :command 'nyxt/prompt-buffer-mode:insert-current-suggestion)
+   (:li (:code "nyxt/mode/prompt-buffer:insert-selection") " renamed to "
+        (:nxref :command 'nyxt/mode/prompt-buffer:insert-current-suggestion)
         ".  The default keybinding is the same."))
 
   (:h3 "Bug fixes")
@@ -705,8 +705,8 @@ like buttons.")
   (:h3 "Bindings")
   (:ul
    (:li "Add " (:nxref :command 'nyxt:toggle-prompt-buffer-focus) ".")
-   (:li "Add " (:nxref :command 'nyxt/prompt-buffer-mode:first-suggestion-within-source) ".")
-   (:li "Add " (:nxref :command 'nyxt/prompt-buffer-mode:last-suggestion-within-source) "."))
+   (:li "Add " (:nxref :command 'nyxt/mode/prompt-buffer:first-suggestion-within-source) ".")
+   (:li "Add " (:nxref :command 'nyxt/mode/prompt-buffer:last-suggestion-within-source) "."))
   (:h3 "Bug fixes")
   (:ul
    (:li "Trying to delete a hanged buffer destroys it, instead of leaving it dangling forever.")))
@@ -714,7 +714,7 @@ like buttons.")
 (define-version "3-pre-release-5"
   (:ul
    (:li "Code listings on manual and help system are more readable.")
-   (:li "The REPL features " (:nxref :class-name 'nyxt/repl-mode:shell-cell "shell cells")
+   (:li "The REPL features " (:nxref :class-name 'nyxt/mode/repl:shell-cell "shell cells")
         ", which pass commands to the underlying system shell.")
    (:li "The prompt buffer tab interface has been updated. Tabs are stably sorted and do
 not shuffle around. It is now possible to middle click to delete tabs.")
@@ -725,7 +725,7 @@ not shuffle around. It is now possible to middle click to delete tabs.")
    (:li "Spinneret tags like " (:code ":nxref") ", " (:code ":ncode") ", and "
         (:code ":nbutton") " are refactored for debuggability and obviousness.")
    (:li "New " (:code "ntoc") " tag for Table of Contents generation.")
-   (:li "The REPL is extensible via " (:nxref :class-name 'nyxt/repl-mode:cell "cell class")
+   (:li "The REPL is extensible via " (:nxref :class-name 'nyxt/mode/repl:cell "cell class")
         " and its methods.")))
 
 (define-version "3-pre-release-6"
@@ -733,9 +733,9 @@ not shuffle around. It is now possible to middle click to delete tabs.")
    (:li "Move " (:code "lisp-system") " to separate repository as extension. The functions "
         (:code "list-system") " and " (:code "load-system") " are no longer available.")
    (:li "Add tree style hinting when both "
-        (:code "nyxt/hint-mode:fit-to-prompt-p")
+        (:code "nyxt/mode/hint:fit-to-prompt-p")
         " and "
-        (:code "nyxt/hint-mode:auto-follow-hints-p")
+        (:code "nyxt/mode/hint:auto-follow-hints-p")
         "are enabled.")
    (:li "Tree style hinting now highlights hints by dimming the matched characters.")
    (:li "Move " (:code "os-package-manager-mode") " to separate repository as
@@ -751,17 +751,29 @@ extension."))
 (define-version "3-pre-release-7"
   (:ul
    (:li "The configuration slots: "
-        (:code "nyxt/hint-mode:fit-to-prompt-p")
+        (:code "nyxt/mode/hint:fit-to-prompt-p")
         ", "
-        (:code "nyxt/hint-mode:auto-follow-hints-p")
+        (:code "nyxt/mode/hint:auto-follow-hints-p")
         "and "
-        (:code "nyxt/hint-mode:compute-hints-in-view-port-p")
+        (:code "nyxt/mode/hint:compute-hints-in-view-port-p")
         " are now deprecated in favor of "
-        (:nxref :slot 'nyxt/hint-mode:hinting-type :class-name 'nyxt/hint-mode:hint-mode)
+        (:nxref :slot 'nyxt/mode/hint:hinting-type :class-name 'nyxt/mode/hint:hint-mode)
         ".")
-   (:li "Move the " (:code "prompter") " library to a separate repository."))
+   (:li "Move the " (:code "prompter") " library to a separate repository.")
+   (:li "Revision of default light and dark themes colors."))
   (:h3 "Bindings")
   (:ul
-   (:li "Rebind " (:nxref :command 'nyxt/download-mode:list-downloads)"."
-        "When using the CUA keyscheme, the keybindingo was shadowed by "
-        (:nxref :command 'nyxt/hint-mode:follow-hint) ".")))
+   (:li "Rebind " (:nxref :command 'nyxt/mode/download:list-downloads)"."
+        "When using the CUA keyscheme, the keybinding was shadowed by "
+        (:nxref :command 'nyxt/mode/hint:follow-hint) ".")
+   (:li "Rebind " (:nxref :command 'nyxt/mode/document:jump-to-heading)" for the
+CUA keyscheme."))
+  (:h3 "Programming interface")
+  (:ul
+   (:li "All mode packages have been renamed to " (:code "nyxt/mode/mode-name") ".")
+   (:li "The color palette of the " (:nxref :class-name 'theme:theme) "library
+has been revised and extended."))
+  (:h3 "Bug fixes")
+  (:ul
+   (:li "Update Flatpak build version.")
+   (:li "Extensions directory is more carefully checked to avoid crashes.")))

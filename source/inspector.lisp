@@ -238,7 +238,7 @@ values in help buffers, REPL and elsewhere."))
                 ((and (uiop:directory-pathname-p value)
                       (not compact-p))
                  ;; REVIEW: This should use
-                 ;; `nyxt/file-manager-mode:directory-elements' (not accessible
+                 ;; `nyxt/mode/file-manager:directory-elements' (not accessible
                  ;; at the time this is loaded) or an NFiles equivalent (should
                  ;; we abstract most of File Manager to Nfiles?)
                  (dolist (element (append (uiop:subdirectories value)

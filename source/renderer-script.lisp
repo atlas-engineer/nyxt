@@ -101,7 +101,7 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
   (with-current-buffer buffer
     (let ((position (%document-scroll-position)))
       (when (listp position)
-        position ))))
+        position))))
 
 (defmethod (setf document-scroll-position) (value &optional (buffer (current-buffer)))
   (when value

@@ -1,7 +1,7 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/repl-mode
+(nyxt:define-package :nyxt/mode/repl
     (:documentation "Common Lisp REPL mode for interactive programming.
 
 The interface is composed by cell pairs of input and output that evaluate CL
@@ -18,7 +18,7 @@ Features:
 - Binding results to the automatically-generated variables.
 - Inline debugging (similar to Nyxt-native debugging when `*debug-on-error*')
 - Both keyboard and mouse oriented UIs."))
-(in-package :nyxt/repl-mode)
+(in-package :nyxt/mode/repl)
 
 (define-class cell ()
   ((name
@@ -307,7 +307,7 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
                           (setf (working-directory cell)
                                 (prompt1 :prompt "Directory"
                                          :input (uiop:native-namestring (uiop:getcwd))
-                                         :sources (make-instance 'nyxt/file-manager-mode:file-source
+                                         :sources (make-instance 'nyxt/mode/file-manager:file-source
                                                                  :path-filter #'uiop:directory-pathname-p)))
                           (reload-buffer (buffer (mode-instance cell))))))))
   (:metaclass user-class)
@@ -374,14 +374,14 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
       keyscheme:emacs
       (list
        "C-M-x" 'evaluate-cell
-       "C-b" 'nyxt/input-edit-mode:cursor-backwards
-       "C-f" 'nyxt/input-edit-mode:cursor-forwards
-       "C-d" 'nyxt/input-edit-mode:delete-forwards
-       "M-b" 'nyxt/input-edit-mode:cursor-backwards-word
-       "M-f" 'nyxt/input-edit-mode:cursor-forwards-word
-       "M-backspace" 'nyxt/input-edit-mode:delete-backwards-word
-       "C-backspace" 'nyxt/input-edit-mode:delete-backwards-word
-       "M-d" 'nyxt/input-edit-mode:delete-forwards-word
+       "C-b" 'nyxt/mode/input-edit:cursor-backwards
+       "C-f" 'nyxt/mode/input-edit:cursor-forwards
+       "C-d" 'nyxt/mode/input-edit:delete-forwards
+       "M-b" 'nyxt/mode/input-edit:cursor-backwards-word
+       "M-f" 'nyxt/mode/input-edit:cursor-forwards-word
+       "M-backspace" 'nyxt/mode/input-edit:delete-backwards-word
+       "C-backspace" 'nyxt/mode/input-edit:delete-backwards-word
+       "M-d" 'nyxt/mode/input-edit:delete-forwards-word
        "M-p" 'previous-cell
        "M-n" 'next-cell
        ;; FIXME: Org uses C-c C-_ and C-c C-^, but those are shadowed by C-c in Nyxt.
@@ -393,13 +393,13 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
       keyscheme:vi-normal
       (list
        ;; TODO: deleting chars/words
-       "h" 'nyxt/input-edit-mode:cursor-backwards
-       "l" 'nyxt/input-edit-mode:cursor-forwards
-       "x" 'nyxt/input-edit-mode:delete-forwards
-       "b" 'nyxt/input-edit-mode:cursor-backwards-word
-       "w" 'nyxt/input-edit-mode:cursor-forwards-word
-       "d b" 'nyxt/input-edit-mode:delete-backwards-word
-       "d w" 'nyxt/input-edit-mode:delete-forwards-word
+       "h" 'nyxt/mode/input-edit:cursor-backwards
+       "l" 'nyxt/mode/input-edit:cursor-forwards
+       "x" 'nyxt/mode/input-edit:delete-forwards
+       "b" 'nyxt/mode/input-edit:cursor-backwards-word
+       "w" 'nyxt/mode/input-edit:cursor-forwards-word
+       "d b" 'nyxt/mode/input-edit:delete-backwards-word
+       "d w" 'nyxt/mode/input-edit:delete-forwards-word
        "k" 'previous-cell
        "j" 'next-cell
        "K" 'move-cell-up

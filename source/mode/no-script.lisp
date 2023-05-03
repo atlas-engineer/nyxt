@@ -1,9 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/no-script-mode
+(nyxt:define-package :nyxt/mode/no-script
     (:documentation "Disable Javascript."))
-(in-package :nyxt/no-script-mode)
+(in-package :nyxt/mode/no-script)
 
 (define-mode no-script-mode ()
   "Disable Javascript in current buffer.

@@ -46,7 +46,7 @@ CLASS is a class symbol."
          (echo "Update slot ~s to ~s. You might need to restart to experience the change." slot input))))))
 
 (define-internal-page-command-global common-settings ()
-    (buffer "*Settings*" 'nyxt/help-mode:help-mode)
+    (buffer "*Settings*" 'nyxt/mode/help:help-mode)
   "Configure a set of frequently used settings."
   (spinneret:with-html-string
     (:h1 "Common Settings")
@@ -58,30 +58,30 @@ CLASS is a class symbol."
                                   (:title "set-cua-scheme")
                                   (nyxt::auto-configure
                                    :class-name 'input-buffer
-                                   :form '(disable-modes* 'nyxt/emacs-mode:emacs-mode input-buffer))
+                                   :form '(disable-modes* 'nyxt/mode/emacs:emacs-mode input-buffer))
                                   (nyxt::auto-configure
                                    :class-name 'input-buffer
-                                   :form '(disable-modes* 'nyxt/vi-mode:vi-normal-mode input-buffer))))
+                                   :form '(disable-modes* 'nyxt/mode/vi:vi-normal-mode input-buffer))))
                  "Use default (CUA)"))
     (:p (:button :class "button"
                  :onclick (ps:ps (nyxt/ps:lisp-eval
                                   (:title "set-emacs-scheme")
                                   (nyxt::auto-configure
                                    :class-name 'input-buffer
-                                   :form '(disable-modes* 'nyxt/vi-mode:vi-normal-mode input-buffer))
+                                   :form '(disable-modes* 'nyxt/mode/vi:vi-normal-mode input-buffer))
                                   (nyxt::auto-configure
                                    :class-name 'input-buffer
-                                   :form '(enable-modes* 'nyxt/emacs-mode:emacs-mode input-buffer))))
+                                   :form '(enable-modes* 'nyxt/mode/emacs:emacs-mode input-buffer))))
                  "Use Emacs"))
     (:p (:button :class "button"
                  :onclick (ps:ps (nyxt/ps:lisp-eval
                                   (:title "set-vi-scheme")
                                   (nyxt::auto-configure
                                    :class-name 'input-buffer
-                                   :form '(disable-modes* 'nyxt/emacs-mode:emacs-mode input-buffer))
+                                   :form '(disable-modes* 'nyxt/mode/emacs:emacs-mode input-buffer))
                                   (nyxt::auto-configure
                                    :class-name 'input-buffer
-                                   :form '(enable-modes* 'nyxt/vi-mode:vi-normal-mode input-buffer))))
+                                   :form '(enable-modes* 'nyxt/mode/vi:vi-normal-mode input-buffer))))
                  "Use vi"))
     (flet ((generate-colors (theme-symbol text)
              (spinneret:with-html-string
@@ -153,7 +153,7 @@ disabling compositing, you will need to restart Nyxt."))
                           `(div
                             :display inline-block))
                         (describe-bindings))
-  (nyxt/document-mode:print-buffer))
+  (nyxt/mode/document:print-buffer))
 
 (defun tls-help (buffer url)
   "Helper function invoked upon TLS certificate errors."
@@ -195,8 +195,8 @@ The version number is saved to clipboard."
 bring up the same prompt as " (:code "set-url") " does.")
     (:p "If you get stuck, you can always use arrow keys in the status bar (this area
 with buttons below the page you browse), or use commands like "
-        (:nxref :command 'nyxt/history-mode:history-backwards) " and "
-        (:nxref :command 'nyxt/history-mode:history-forwards)
+        (:nxref :command 'nyxt/mode/history:history-backwards) " and "
+        (:nxref :command 'nyxt/mode/history:history-forwards)
         " to navigate around the pages you visited.")
     (:p "You can run any command you wish and get familiar with all the actions you
 have, using " (:nxref :command 'execute-command)
@@ -300,14 +300,14 @@ useful actions there, including the familiar " (:code "set-url") ", " (:code "hi
 
 (sera:eval-always ; To satisfy `fboundp' of `manual' at compile-time (e.g. CCL).
   (define-internal-page-command-global manual ()
-      (buffer "*Manual*" 'nyxt/help-mode:help-mode)
+      (buffer "*Manual*" 'nyxt/mode/help:help-mode)
     "Show the manual."
     (spinneret:with-html-string
       (:nstyle (lass:compile-and-write '(body :max-width "80ch")))
       (:raw (manual-content)))))
 
 (define-internal-page-command-global tutorial ()
-    (buffer "*Tutorial*" 'nyxt/help-mode:help-mode)
+    (buffer "*Tutorial*" 'nyxt/mode/help:help-mode)
   "Show the tutorial."
   (spinneret:with-html-string
     (:nstyle (lass:compile-and-write '(body :max-width "80ch")))
@@ -336,13 +336,13 @@ System information is also saved to clipboard."
   "Print a dashboard."
   (flet ((list-bookmarks (&key (limit 50) (separator " → "))
            (spinneret:with-html-string
-             (let ((mode (make-instance 'nyxt/bookmark-mode:bookmark-mode)))
-               (alex:if-let ((bookmarks (files:content (nyxt/bookmark-mode:bookmarks-file mode))))
-                 (dolist (bookmark (sera:take limit (the list (sort-by-time bookmarks :key #'nyxt/bookmark-mode:date))))
+             (let ((mode (make-instance 'nyxt/mode/bookmark:bookmark-mode)))
+               (alex:if-let ((bookmarks (files:content (nyxt/mode/bookmark:bookmarks-file mode))))
+                 (dolist (bookmark (sera:take limit (the list (sort-by-time bookmarks :key #'nyxt/mode/bookmark:date))))
                    (:li (title bookmark) separator
                         (:a :href (render-url (url bookmark))
                             (render-url (url bookmark)))))
-                 (:p (format nil "No bookmarks in ~s." (files:expand (nyxt/bookmark-mode:bookmarks-file mode)))))))))
+                 (:p (format nil "No bookmarks in ~s." (files:expand (nyxt/mode/bookmark:bookmarks-file mode)))))))))
     (let ((dashboard-style (theme:themed-css (theme *browser*)
                              `(body
                                :background-color ,theme:background

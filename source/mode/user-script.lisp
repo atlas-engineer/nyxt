@@ -1,9 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/user-script-mode
+(nyxt:define-package :nyxt/mode/user-script
     (:documentation "Mode to load 'user scripts', such as GreaseMonkey scripts."))
-(in-package :nyxt/user-script-mode)
+(in-package :nyxt/mode/user-script)
 
 (defun inject-user-scripts (scripts buffer)
   (mapcar (lambda (script) (ffi-buffer-add-user-script buffer script)) scripts))

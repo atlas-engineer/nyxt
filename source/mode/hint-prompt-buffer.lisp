@@ -1,9 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/hint-prompt-buffer-mode
+(nyxt:define-package :nyxt/mode/hint-prompt-buffer
     (:documentation "Prompt buffer mode for element hints."))
-(in-package :nyxt/hint-prompt-buffer-mode)
+(in-package :nyxt/mode/hint-prompt-buffer)
 
 (define-command toggle-hints-transparency (&key (buffer (current-buffer)))
   "Toggle the on-screen element hints transparency."
@@ -17,10 +17,10 @@
 (define-command scroll-to-hint (&key (buffer (current-buffer)))
   "Show the selected hint on screen."
   (with-current-buffer buffer
-    (nyxt/hint-mode:highlight-selected-hint :element (current-suggestion-value)
+    (nyxt/mode/hint:highlight-selected-hint :element (current-suggestion-value)
                                             :scroll t)))
 
-(define-mode hint-prompt-buffer-mode (nyxt/prompt-buffer-mode:prompt-buffer-mode)
+(define-mode hint-prompt-buffer-mode (nyxt/mode/prompt-buffer:prompt-buffer-mode)
   "Prompt buffer mode for element hinting."
   ((visible-in-status-p nil)
    (keyscheme-map

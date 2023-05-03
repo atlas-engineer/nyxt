@@ -6,5 +6,5 @@
 (define-test toggle-passthrough-mode ()
   (let ((buffer (make-instance 'input-and-modable-buffer)))
     (with-current-buffer buffer
-      (assert-true (enable-modes* 'nyxt/passthrough-mode:passthrough-mode buffer))
-      (assert-true (disable-modes* 'nyxt/passthrough-mode:passthrough-mode buffer)))))
+      (assert-true (enable-modes* 'nyxt/mode/passthrough:passthrough-mode buffer))
+      (assert-true (disable-modes* 'nyxt/mode/passthrough:passthrough-mode buffer)))))

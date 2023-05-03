@@ -36,6 +36,7 @@
     (mode (list (name mode)))
     ((cons sym:mode-symbol *) mode)
     (sym:mode-symbol (list mode))
+    (keyword (normalize-mode (resolve-user-symbol mode :mode)))
     (t nil)))
 
 (-> normalize-modes (list) (maybe (cons mode-invocation *)))

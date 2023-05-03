@@ -6,7 +6,7 @@
 (define-test toggle-certificate-exception-mode ()
   (let ((buffer (make-instance 'network-and-modable-buffer)))
     (with-current-buffer buffer
-      (assert-true (enable-modes* 'nyxt/certificate-exception-mode:certificate-exception-mode
+      (assert-true (enable-modes* 'nyxt/mode/certificate-exception:certificate-exception-mode
                                   buffer))
-      (assert-true (disable-modes* 'nyxt/certificate-exception-mode:certificate-exception-mode
+      (assert-true (disable-modes* 'nyxt/mode/certificate-exception:certificate-exception-mode
                                    buffer)))))

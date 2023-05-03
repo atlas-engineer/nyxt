@@ -6,5 +6,5 @@
 (define-test toggle-keyscheme-mode ()
   (let ((buffer (make-instance 'input-and-modable-buffer)))
     (with-current-buffer buffer
-      (assert-true (enable-modes* 'nyxt/keyscheme-mode:keyscheme-mode buffer))
-      (assert-true (disable-modes* 'nyxt/keyscheme-mode:keyscheme-mode buffer)))))
+      (assert-true (enable-modes* 'nyxt/mode/keyscheme:keyscheme-mode buffer))
+      (assert-true (disable-modes* 'nyxt/mode/keyscheme:keyscheme-mode buffer)))))

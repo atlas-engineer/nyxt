@@ -44,7 +44,7 @@
       (prompter:all-ready-p prompt-buffer)
       (hooks:once-on (nyxt:buffer-loaded-hook (nyxt:current-buffer)) buffer
         (calispel:! url-channel (nyxt:render-url (nyxt:url buffer))))
-      (nyxt/prompt-buffer-mode:run-action-on-return prompt-buffer))
+      (nyxt/mode/prompt-buffer:run-action-on-return prompt-buffer))
     (nyxt:run-thread "run set-url"
       ;; TODO: Test if thread returns.
       (let ((nyxt::*interactive-p* t))

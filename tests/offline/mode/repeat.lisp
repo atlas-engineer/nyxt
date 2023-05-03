@@ -8,5 +8,5 @@
 (define-test toggle-repeat-mode ()
   (let ((buffer (make-instance 'modable-buffer)))
     (with-current-buffer buffer
-      (assert-true (enable-modes* 'nyxt/repeat-mode:repeat-mode buffer))
-      (assert-true (disable-modes* 'nyxt/repeat-mode:repeat-mode buffer)))))
+      (assert-true (enable-modes* 'nyxt/mode/repeat:repeat-mode buffer))
+      (assert-true (disable-modes* 'nyxt/mode/repeat:repeat-mode buffer)))))
