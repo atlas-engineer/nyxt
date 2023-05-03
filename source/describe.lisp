@@ -137,9 +137,12 @@ See `sym:package-functions' for an example."
 (define-class slot-internal-source (slot-source describe-internal-source)
   ((prompter:name "Internal Slots")))
 
+(defun non-keyword-package-variables (packages)
+  (remove-if #'keywordp (sym:package-variables packages)))
+
 (define-class variable-source (describe-nyxt-source)
   ((prompter:name "Variables")
-   (prompter:constructor (description-constructor #'sym:package-variables)))
+   (prompter:constructor (description-constructor #'non-keyword-package-variables)))
   (:export-accessor-names-p t))
 
 (define-class variable-non-nyxt-source (variable-source describe-non-nyxt-source)
