@@ -93,7 +93,7 @@ Uses the built-in MOP abilities of every Lisp."
                   (typep (symbol-function symbol) 'generic-function)
                   (some (lambda (class)
                           (ignore-errors
-                           (typep (find-method (symbol-function symbol) '() (list (find-class class)) nil)
+                           (typep (find-method (symbol-function symbol) '() (list (find-class class)))
                                   '(or standard-accessor-method standard-reader-method standard-writer-method))))
                         classes))))
       (do-external-symbols (s (find-package package) result)
@@ -134,7 +134,7 @@ Uses the built-in MOP abilities of every Lisp."
                                       nil))))
                             report))))
       (when report
-        (error "~a~&Found unbound exported symbols in ~a package~:p."
+        (error "~s~&Found unbound exported symbols in ~a package~:p."
                report (length report))))
     #-(or sbcl ccl ecl clisp) nil)
 
@@ -158,7 +158,7 @@ documentation (e.g. slot names)."
                                       nil))))
                             report))))
       (when report
-        (error "~a~&Found undocumented exported symbols in ~a package~:p."
+        (error "~s~&Found undocumented exported symbols in ~a package~:p."
                report (length report))))))
 
 (defmethod asdf:perform ((op asdf:test-op) (c nasdf-compilation-test-system))
