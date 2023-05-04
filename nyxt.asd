@@ -425,7 +425,8 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
   :components ((:file "web-extensions")
                (:file "web-extensions-callbacks")
                (:file "renderer/gtk-clipboard")
-               (:file "renderer/gtk")))
+               (:file "renderer/gtk"))
+  :in-order-to ((test-op (test-op "nyxt/gi-gtk/tests"))))
 
 (defsystem "nyxt/gi-gtk"
   :defsystem-depends-on ("nasdf")
