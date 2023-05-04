@@ -137,7 +137,7 @@ disabling compositing, you will need to restart Nyxt."))
      (:li (:button :class "button"
                    :onclick (ps:ps (nyxt/ps:lisp-eval
                                     (:title "edit-user-file")
-                                    '(nyxt::edit-user-file-with-external-editor)))
+                                    (nyxt::edit-user-file-with-external-editor)))
                    "Edit user files")
           (:p "Edit user configuration and other files in external text editor.")))))
 
