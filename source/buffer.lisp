@@ -1678,7 +1678,10 @@ any.")
             :filter-preprocessor #'prompter:filter-exact-matches
             :actions-on-return (append
                                 (list (lambda-unmapped-command set-current-buffer))
-                                actions-on-return))
+                                actions-on-return)
+            :filter-postprocessor (lambda (suggestions source input)
+                                    (declare (ignore source input))
+                                    (remove (current-buffer) suggestions :key #'prompter:value)))
            (make-instance
             'global-history-source
             :actions-on-return (append actions-on-return
