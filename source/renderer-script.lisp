@@ -119,12 +119,14 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
     (ps:chain result (slice 0 (ps:lisp limit)))))
 
 (export-always 'add-stylesheet)
-(defun add-stylesheet (style &optional (buffer (current-buffer)))
+(defun add-stylesheet (stylesheet-name style &optional (buffer (current-buffer)))
   (ps-eval :async t :buffer buffer
-    (unless (nyxt/ps:qs document "#nyxt-stylesheet")
+    (unless (nyxt/ps:qs document (ps:lisp
+                                  (concatenate
+                                   'string '(#\#) stylesheet-name)))
       (ps:try
        (ps:let ((style-element (ps:chain document (create-element "style"))))
-         (setf (ps:@ style-element id) "nyxt-stylesheet")
+         (setf (ps:@ style-element id) (ps:lisp stylesheet-name))
          (ps:chain document head (append-child style-element))
          (setf (ps:chain style-element inner-text) (ps:lisp style)))
        (:catch (error))))))

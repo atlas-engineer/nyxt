@@ -158,7 +158,8 @@ For instance, to include images:
     (ps:chain element (remove-attribute "nyxt-hintable"))))
 
 (defun add-hints (&key selector (buffer (current-buffer)))
-  (add-stylesheet (style (find-submode 'hint-mode))
+  (add-stylesheet "nyxt-hint-stylesheet"
+                  (style (find-submode 'hint-mode))
                   buffer)
   (set-hintable-attribute selector)
   (update-document-model :buffer buffer)

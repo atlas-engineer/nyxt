@@ -490,8 +490,9 @@ For shorter search patterns, `initial-delay' applies.")
         (maybe-remove-search-marks (buffer match))
         match)))
    (prompter:constructor
-    (lambda (source) (add-stylesheet (style (find-submode 'search-buffer-mode))
-                                (buffer source))))
+    (lambda (source) (add-stylesheet "nyxt-search-stylesheet"
+                                     (style (find-submode 'search-buffer-mode))
+                                     (buffer source))))
    (prompter:destructor
     (lambda (prompter source)
       (declare (ignore source))
