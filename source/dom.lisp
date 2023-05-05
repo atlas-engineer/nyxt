@@ -229,6 +229,7 @@ Full copy means recursively descending to the children of the NODE too."))
   (:documentation "Get the recursive parents of the NODE.
 The closest parent goes first, the furthest one goes last."))
 
+;; TODO: Copy the algo from https://github.com/antonmedv/finder
 (export-always 'get-unique-selector)
 (-> get-unique-selector (plump:element) t)
 (defmemo get-unique-selector (element)
