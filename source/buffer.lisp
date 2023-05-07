@@ -1005,14 +1005,16 @@ when `proxied-downloads-p' is true."
   "Set BUFFER's `url' slot, then dispatch `on-signal-notify-uri' over the
 BUFFER's modes."
   (declare (ignore no-url))
+  ;; Need to run the mode-specific actions first so that modes can modify the
+  ;; behavior of buffer.
+  (dolist (mode (modes buffer))
+    (on-signal-notify-uri mode (url buffer)))
   (let ((view-url (ffi-buffer-url buffer)))
     (unless (or (load-failed-p buffer)
                 (url-empty-p view-url))
       ;; When a buffer fails to load and `ffi-buffer-url' returns an empty
       ;; URL, we don't set (url buffer) to keep access to the old value.
       (setf (url buffer) (ffi-buffer-url buffer))))
-  (dolist (mode (modes buffer))
-    (on-signal-notify-uri mode (url buffer)))
   (url buffer))
 
 (export-always 'on-signal-notify-title)
