@@ -130,7 +130,7 @@ the URL.)"
                       (sort-by-time (buffer-list))
                       (reverse (buffer-list))))
          (domain-deduplicated-urls (remove-duplicates
-                                    (mapcar #'url buffers)
+                                    (mapcar #'url (remove nil buffers))
                                     :test #'string=
                                     :key #'quri:uri-domain)))
     (spinneret:with-html-string
