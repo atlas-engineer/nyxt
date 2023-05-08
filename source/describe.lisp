@@ -513,16 +513,15 @@ A command is a special kind of function that can be called with
     (&key class name)
     (buffer (str:concat "*Help-" (symbol-name name) "*") 'nyxt/mode/help:help-mode)
   "Inspect a slot and show it in a help buffer."
-  (unless (and class name)
-    (let ((slot (prompt1
-                 :prompt "Describe slot"
-                 :sources '(slot-source
-                            slot-non-nyxt-source
-                            slot-internal-source))))
-      (setf name (name slot)
-            class (class-sym slot))
-      ""))
-  (describe-slot* name class :independent-p t))
+  (if (and class name)
+      (describe-slot* name class :independent-p t)
+      (let ((slot (prompt1
+                   :prompt "Describe slot"
+                   :sources '(slot-source
+                              slot-non-nyxt-source
+                              slot-internal-source))))
+        (describe-slot :class (class-sym slot) :name (name slot))
+        "")))
 
 (defun describe-slot* (slot class &key independent-p)
   "Create the HTML that represents a slot."
