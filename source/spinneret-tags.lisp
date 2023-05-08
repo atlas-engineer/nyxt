@@ -298,7 +298,7 @@ Returns all the linkable symbols from FORM as multiple values:
 
 (defun %ncode-prini (object package)
   "Custom `:ncode'-specific `nyxt:prini-string-string' with narrower margins."
-  (nyxt:prini-to-string object :readably t :circle nil :right-margin 70 :package package))
+  (nyxt:prini-to-string object :readably t :right-margin 70 :package package))
 
 (defun %ncode-htmlize-body (form package &optional (listing (%ncode-prini form package)))
   "Turn the FORM into an HTMLized rich text, augmented with `:nxref's to the used entities.
