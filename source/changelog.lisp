@@ -726,6 +726,8 @@ color-picker support as an example application for this feature.")
 
 (define-version "3.X.Y"
   (:ul
+   (:li "Clicked links are now fully inspectable and all the functionality of
+Nyxt works properly with these.")
    (:li "The " (:code "external-editor-program") " slot no longer signals when the program is a string containing spaces.")
    (:li "The " (:code "external-editor-program") " returns the slot value directly rather than returning a string value in a list.")
    (:li "Remove restrictions on zoom level in the form of "

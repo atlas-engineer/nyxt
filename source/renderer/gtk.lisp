@@ -106,7 +106,13 @@ See https://developer.gnome.org/gobject/stable/gobject-Signals.html#signal-memor
                              :documentation "Internal hack, do not use me!
 WebKitGTK may trigger 'load-failed' when loading a page from the WebKit-history
 cache.  Upstream bug?  We use this slot to know when to ignore these load
-failures."))
+failures.")
+   (currently-loading-url
+    nil
+    :documentation "The URL that the buffer loads right now.
+If the URL in `on-signal-notify-uri' is not the same as this URL, reload the
+buffer to force all the `on-signal-decide-policy' etc. request inspection
+things."))
   (:export-class-name-p t)
   (:export-accessor-names-p t))
 
@@ -1100,6 +1106,10 @@ See `finalize-buffer'."
            (url (if (url-empty-p url)
                     (url buffer)
                     url)))
+      (setf (currently-loading-url buffer)
+            (if (eq load-event :webkit-load-finished)
+                nil
+                url))
       (cond ((eq load-event :webkit-load-started)
              (setf (nyxt::status buffer) :loading)
              (nyxt/web-extensions::tabs-on-updated buffer '(("status" . "loading")))
@@ -1554,6 +1564,24 @@ the `active-buffer'."
     (declare (ignore param-spec))
     (nyxt/web-extensions::tabs-on-updated
      buffer `(("url" . ,(webkit:webkit-web-view-uri web-view))))
+    ;; This is to force clicked links to be loaded again, this time through all
+    ;; the handlers we have. Otherwise clicked links might:
+    ;; - Open the otherwise blocked/redirected pages.
+    ;; - Avoid toggling auto-rules.
+    ;; - Confuse URL hook handlers (be it core handlers or user ones) in general.
+    (let ((url (ensure-url (webkit:webkit-web-view-uri web-view))))
+      (unless (or (url-empty-p url)
+                  ;; Reload.
+                  (and (not (url-empty-p (url buffer)))
+                       (quri:uri= url (url buffer)))
+                  ;; We ignore hooks when loading WebKit history, but that
+                  ;; doesn't need reloading, so we ignore history case here.
+                  (loading-webkit-history-p buffer)
+                  (and (not (url-empty-p (currently-loading-url buffer)))
+                       (quri:uri= url (currently-loading-url buffer))))
+        (log:debug "URL ~a is neither current URL (~a) nor the last committed URL (~a). Might be a clicked link. Reloading."
+                   url (url buffer) (currently-loading-url buffer))
+        (buffer-load url :buffer buffer)))
     (on-signal-notify-uri buffer nil))
   (connect-signal buffer "notify::title" nil (web-view param-spec)
     (declare (ignore  param-spec))
