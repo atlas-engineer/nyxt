@@ -74,8 +74,8 @@ jobs:
     #   run: |
     #     echo "Command: guix pack -RR --no-grafts --compression=xz --symlink=/usr/local/bin/nyxt=bin/nyxt --root=nyxt-$(cat version).tar.xz -L build-scripts/ nyxt" >> guix-recipe.txt
     #     guix pack -RR --no-grafts --compression=xz --symlink=/usr/local/bin/nyxt=bin/nyxt --root=nyxt-$(cat version).tar.xz -L build-scripts/ nyxt > store-path.txt
-    # - name: Generate release notes
-    #   shell: bash
+    - name: Generate release notes
+      shell: bash
       run: |
         echo "Release notes: https://nyxt.atlas.engineer/article/release-3.0.0.org" >> release.txt
         echo "" >> release.txt
