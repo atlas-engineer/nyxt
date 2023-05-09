@@ -76,9 +76,9 @@ jobs:
     #     guix pack -RR --no-grafts --compression=xz --symlink=/usr/local/bin/nyxt=bin/nyxt --root=nyxt-$(cat version).tar.xz -L build-scripts/ nyxt > store-path.txt
     # - name: Generate release notes
     #   shell: bash
-    #   run: |
-    #     echo "Release notes: https://nyxt.atlas.engineer/article/release-$(cat version).org" >> release.txt
-    #     echo "" >> release.txt
+      run: |
+        echo "Release notes: https://nyxt.atlas.engineer/article/release-3.0.0.org" >> release.txt
+        echo "" >> release.txt
     #     echo "To compile from source, prefer the tarball including the submodules if you don't manage the Lisp dependencies yourself." >> release.txt
     # - name: Generate Guix pack reproduction recipe
     #   shell: bash
