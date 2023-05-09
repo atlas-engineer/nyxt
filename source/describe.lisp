@@ -161,125 +161,113 @@ See `sym:package-functions' for an example."
   "Inspect anything and show it in a help buffer.
 When input exists, list all the symbols that may match it.
 Otherwise prompt for matches."
-  (typecase input
-    ((or string null)
-     (run-thread "describe-any prompter"
-       (let* ((*interactive-p* t)
-              (sources
-                (list (make-instance
-                       'command-source
-                       :actions-on-return (lambda-command describe-command* (commands)
-                                            (describe-command :command (name (first commands)))))
-                      (make-instance
-                       'mode-source
-                       :actions-on-return (lambda-command describe-command* (modes)
-                                            (describe-mode :mode (name (first modes)))))
-                      (make-instance
-                       'variable-source
-                       :actions-on-return (lambda-command describe-variable* (variables)
-                                            (describe-variable :variable (first variables))))
-                      (make-instance
-                       'function-source
-                       :actions-on-return (lambda-command describe-function* (functions)
-                                            (describe-function :fn (first functions))))
-                      (make-instance
-                       'class-source
-                       :actions-on-return (lambda-command describe-class* (classes)
-                                            (describe-class :class (first classes))))
-                      (make-instance
-                       'slot-source
-                       :actions-on-return (lambda-command describe-slot** (slots)
-                                            (describe-slot :class (class-sym (first slots))
-                                                           :name (name (first slots)))))
-                      (make-instance
-                       'variable-non-nyxt-source
-                       :actions-on-return (lambda-command describe-variable* (variables)
-                                            (describe-variable :variable (first variables))))
-                      (make-instance
-                       'function-non-nyxt-source
-                       :actions-on-return (lambda-command describe-function* (functions)
-                                            (describe-function :fn (first functions))))
-                      (make-instance
-                       'class-non-nyxt-source
-                       :actions-on-return (lambda-command describe-class* (classes)
-                                            (describe-class :class (first classes))))
-                      (make-instance
-                       'slot-non-nyxt-source
-                       :actions-on-return (lambda-command describe-slot** (slots)
-                                            (describe-slot :class (class-sym (first slots))
-                                                           :name (name (first slots)))))
-                      (make-instance
-                       'variable-internal-source
-                       :actions-on-return (lambda-command describe-variable* (variables)
-                                            (describe-variable :variable (first variables))))
-                      (make-instance
-                       'function-internal-source
-                       :actions-on-return (lambda-command describe-function* (functions)
-                                            (describe-function :fn (first functions))))
-                      (make-instance
-                       'class-internal-source
-                       :actions-on-return (lambda-command describe-class* (classes)
-                                            (describe-class :class (first classes))))
-                      (make-instance
-                       'slot-internal-source
-                       :actions-on-return (lambda-command describe-slot** (slots)
-                                            (describe-slot :class (class-sym (first slots))
-                                                           :name (name (first slots))))))))
-         (let ((suggestion+action-pairs
-                 (and input
-                      (loop with result = '()
-                            for source in sources
-                            do (loop for suggestion in (prompter:suggestions source)
-                                     while (< (length result) 2)
-                                     when (string-equal input (prompter:attributes-default suggestion))
-                                       do (push (list (prompter:value suggestion)
-                                                      (prompter:default-action-on-return source))
-                                                result))
-                            return result))))
-           (match suggestion+action-pairs
-             ((list (list suggestion action))
-              (funcall action (list suggestion)))
-             (_ (prompt
-                 :prompt "Describe"
-                 :input input
-                 :sources sources)))))
-       (buffer-delete buffer))
-     "")
-    (symbol
-     (spinneret:with-html-string
-       (:h1 (princ-to-string input))
-       (:p (princ-to-string input)
-           " may refer to several things. Please choose the one that you need.")
-       (:dl
-        (when (boundp input)
-          (:dt "Variable")
-          (:dd (:nxref :variable input)))
-        (cond
-          ((sym:mode-symbol-p input)
-           (:dt "Mode")
-           (:dd (:nxref :mode input)))
-          ((sym:class-symbol-p input)
-           (:dt "Class")
-           (:nxref :class-name input))
-          (t nil))
-        (cond
-          ((sym:command-symbol-p input)
-           (:dt "Command")
-           (:dd (:nxref :command input)))
-          ((sym:macro-symbol-p input)
-           (:dt "Macro")
-           (:dd (:nxref :macro input)))
-          ((sym:function-symbol-p input)
-           (:dt "Function")
-           (:dd (:nxref :function input))))
-        (when (find-package input)
-          (:dt "Package")
-          (:dd (:nxref :package input)))
-        (dolist (class (sym:package-classes (union (nyxt-packages) (list (symbol-package input)))
-                                            :external))
-          (when (find input (class-slots class))
-            (:dt "Slot in " (:nxref :class-name class))
-            (:dd (:nxref :class-name class :slot input)))))))))
+  (when (symbolp input)
+    (spinneret:with-html-string
+      (:h1 (princ-to-string input))
+      (:p (princ-to-string input)
+          " may refer to several things. Please choose the one that you need.")
+      (:dl
+       (when (boundp input)
+         (:dt "Variable")
+         (:dd (:nxref :variable input)))
+       (cond
+         ((sym:mode-symbol-p input)
+          (:dt "Mode")
+          (:dd (:nxref :mode input)))
+         ((sym:class-symbol-p input)
+          (:dt "Class")
+          (:nxref :class-name input))
+         (t nil))
+       (cond
+         ((sym:command-symbol-p input)
+          (:dt "Command")
+          (:dd (:nxref :command input)))
+         ((sym:macro-symbol-p input)
+          (:dt "Macro")
+          (:dd (:nxref :macro input)))
+         ((sym:function-symbol-p input)
+          (:dt "Function")
+          (:dd (:nxref :function input))))
+       (when (find-package input)
+         (:dt "Package")
+         (:dd (:nxref :package input)))
+       (dolist (class (sym:package-classes (union (nyxt-packages) (list (symbol-package input)))
+                                           :external))
+         (when (find input (class-slots class))
+           (:dt "Slot in " (:nxref :class-name class))
+           (:dd (:nxref :class-name class :slot input))))))))
+
+(defmethod describe-any :around (&key (input nil input-provided-p))
+  (declare (ignorable input))
+  (cond
+    ((and input-provided-p (symbolp input))
+     (call-next-method))
+    (t
+     (let* ((*interactive-p* t)
+            (sources
+              (list (make-instance
+                     'command-source
+                     :actions-on-return (lambda-command describe-command* (commands)
+                                          (describe-command :command (name (first commands)))))
+                    (make-instance
+                     'mode-source
+                     :actions-on-return (lambda-command describe-command* (modes)
+                                          (describe-mode :mode (first modes))))
+                    (make-instance
+                     'variable-source
+                     :actions-on-return (lambda-command describe-variable* (variables)
+                                          (describe-variable :variable (first variables))))
+                    (make-instance
+                     'function-source
+                     :actions-on-return (lambda-command describe-function* (functions)
+                                          (describe-function :fn (first functions))))
+                    (make-instance
+                     'class-source
+                     :actions-on-return (lambda-command describe-class* (classes)
+                                          (describe-class :class (first classes))))
+                    (make-instance
+                     'slot-source
+                     :actions-on-return (lambda-command describe-slot** (slots)
+                                          (describe-slot :class (class-sym (first slots))
+                                                         :name (name (first slots)))))
+                    (make-instance
+                     'variable-non-nyxt-source
+                     :actions-on-return (lambda-command describe-variable* (variables)
+                                          (describe-variable :variable (first variables))))
+                    (make-instance
+                     'function-non-nyxt-source
+                     :actions-on-return (lambda-command describe-function* (functions)
+                                          (describe-function :fn (first functions))))
+                    (make-instance
+                     'class-non-nyxt-source
+                     :actions-on-return (lambda-command describe-class* (classes)
+                                          (describe-class :class (first classes))))
+                    (make-instance
+                     'slot-non-nyxt-source
+                     :actions-on-return (lambda-command describe-slot** (slots)
+                                          (describe-slot :class (class-sym (first slots))
+                                                         :name (name (first slots)))))
+                    (make-instance
+                     'variable-internal-source
+                     :actions-on-return (lambda-command describe-variable* (variables)
+                                          (describe-variable :variable (first variables))))
+                    (make-instance
+                     'function-internal-source
+                     :actions-on-return (lambda-command describe-function* (functions)
+                                          (describe-function :fn (first functions))))
+                    (make-instance
+                     'class-internal-source
+                     :actions-on-return (lambda-command describe-class* (classes)
+                                          (describe-class :class (first classes))))
+                    (make-instance
+                     'slot-internal-source
+                     :actions-on-return (lambda-command describe-slot** (slots)
+                                          (describe-slot :class (class-sym (first slots))
+                                                         :name (name (first slots))))))))
+       (prompt
+        :prompt "Describe"
+        :input input
+        :sources sources)))))
 
 (define-internal-page describe-value
     (&key id)
