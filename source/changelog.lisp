@@ -748,7 +748,7 @@ extension."))
    (:li "Fix " (:code "list-bookmarks") ".")
    (:li "Fix " (:code "select-frame-new-buffer") " and " (:code "select-frame-expedition") ".")))
 
-(define-version "3-pre-release-7"
+(define-version "3.0.0"
   (:ul
    (:li "The configuration slots: "
         (:code "nyxt/mode/hint:fit-to-prompt-p")
