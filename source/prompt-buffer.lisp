@@ -89,6 +89,7 @@ See `nyxt::attribute-widths'.")
           :width "100%")
         `("#prompt"
           :background-color ,theme:primary
+          :color ,theme:on-primary
           :padding-left "10px"
           :line-height "28px")
         `("#prompt-input"
@@ -97,8 +98,9 @@ See `nyxt::attribute-widths'.")
         `("#prompt-extra"
           :z-index "1"
           :min-width "12px"
-          :padding-right "14px !important"
+          :padding-right 14px !important
           :background-color ,theme:primary
+          :color ,theme:on-primary
           :line-height "28px"
           :padding-right "7px")
         `("#prompt-modes"
