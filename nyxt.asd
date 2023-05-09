@@ -359,19 +359,6 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                (:file "tests/offline/prompt-buffer")
                (:file "tests/online/urls")))
 
-(defsystem "nyxt/tests/renderer"
-  :defsystem-depends-on ("nasdf")
-  :class :nasdf-test-system
-  :targets (:package :nyxt/tests/renderer)
-  :serial t
-  :components ((:file "tests/renderer-package")
-               (:file "tests/renderer-offline/set-url")
-               (:file "tests/renderer-offline/execute-command-eval")
-               (:file "tests/renderer-offline/remembrance")
-               (:file "tests/renderer-offline/nyxt-url-security")
-               (:file "tests/renderer-offline/search-buffer")
-               (:file "tests/renderer-online/set-url")))
-
 (defsystem "nyxt/benchmark"
   :defsystem-depends-on ("nasdf")
   :depends-on (alexandria
@@ -439,7 +426,7 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                (:file "web-extensions-callbacks")
                (:file "renderer/gtk-clipboard")
                (:file "renderer/gtk"))
-  :in-order-to ((test-op (test-op "nyxt/tests/renderer"))))
+  :in-order-to ((test-op (test-op "nyxt/gi-gtk/tests"))))
 
 (defsystem "nyxt/gi-gtk"
   :defsystem-depends-on ("nasdf")
@@ -450,7 +437,21 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
   :pathname #p"NYXT:source;"
   :around-compile "NASDF:FAIL-ON-WARNINGS"
   :components ((:file "renderer/gi-gtk"))
-  :in-order-to ((test-op (test-op "nyxt/tests/renderer"))))
+  :in-order-to ((test-op (test-op "nyxt/gi-gtk/tests"))))
+
+(defsystem "nyxt/gi-gtk/tests"
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-test-system
+  :depends-on (nyxt/gi-gtk)
+  :targets (:package :nyxt/tests/renderer)
+  :serial t
+  :components ((:file "tests/renderer-package")
+               (:file "tests/renderer-offline/set-url")
+               (:file "tests/renderer-offline/execute-command-eval")
+               (:file "tests/renderer-offline/remembrance")
+               (:file "tests/renderer-offline/nyxt-url-security")
+               (:file "tests/renderer-offline/search-buffer")
+               (:file "tests/renderer-online/set-url")))
 
 (defsystem "nyxt/qt"
   :depends-on (cl-webengine
