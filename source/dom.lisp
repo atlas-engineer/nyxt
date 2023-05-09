@@ -230,7 +230,6 @@ Full copy means recursively descending to the children of the NODE too."))
 The closest parent goes first, the furthest one goes last."))
 
 ;; TODO: Copy the algo from https://github.com/antonmedv/finder
-(export-always 'get-unique-selector)
 (-> get-unique-selector (plump:element) t)
 (defmemo get-unique-selector (element)
   "Find the shortest selector that uniquely identifies the element on a page.
