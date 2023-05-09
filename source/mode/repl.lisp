@@ -162,8 +162,9 @@ By default utilizes `render-input', `render-actions', and `render-results'.
 Generic function to specialize against new REPL cell types."))
 
 (defun reload-repl (repl)
-  (with-current-buffer (buffer repl)
-    (repl)))
+  (when (and *browser* (buffer repl))
+    (with-current-buffer (buffer repl)
+      (repl))))
 
 (export-always 'cancel-cell)
 (defmethod cancel-cell ((cell cell))
