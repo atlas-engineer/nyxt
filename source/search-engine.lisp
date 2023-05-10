@@ -33,6 +33,9 @@ Simple completion functions can be built via `make-search-completion-function'")
   (:export-class-name-p t)
   (:export-accessor-names-p t))
 
+(defmethod url ((object search-engine))
+  (fallback-url object))
+
 (defmethod fallback-url ((engine search-engine))
   (or (slot-value engine 'fallback-url)
       (quri:uri (format nil (search-url engine) ""))))
