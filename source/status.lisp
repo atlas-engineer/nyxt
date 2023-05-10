@@ -130,6 +130,11 @@ the URL.)"
                       (sort-by-time (buffer-list))
                       (reverse (buffer-list))))
          (domain-deduplicated-urls (remove-duplicates
+                                    ;; FIXME: remove nil here because early on
+                                    ;; startup some buffers can be NIL (why?)
+                                    ;; and we have to clean them out. Debug the
+                                    ;; startup sequence (in particular the (setf
+                                    ;; buffers) :after handler) and remove this.
                                     (mapcar #'url (remove nil buffers))
                                     :test #'string=
                                     :key #'quri:uri-domain)))
