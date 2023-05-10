@@ -120,11 +120,16 @@ Destination directory is given by the `dest-source-dir' generic function."))
   *libdir*)
 
 (export-always '*dest-source-dir*)
-(defvar *dest-source-dir* (path-from-env "NASDF_SOURCE_PATH" *datadir*))
+(defvar *dest-source-dir* (path-from-env "NASDF_SOURCE_PATH" *datadir*)
+  "Root of where the source will be installed.
+Final path is resolved in `dest-source-dir'.")
 
 (export-always 'dest-source-dir)
 (defmethod dest-source-dir ((component nasdf-source-directory))
-  *dest-source-dir*)
+  "The directory into which the source is installed."
+  (let ((name (asdf:primary-system-name (asdf:component-system component))))
+    (ensure-directory-pathname
+     (merge-pathnames* name *dest-source-dir*))))
 
 (export-always '*chmod-program*)
 (defvar *chmod-program* "chmod")
