@@ -19,6 +19,9 @@ Commands changing velocity are:
   each update interval. A positive velocity corresponds to scrolling down, a
   negative velocity corresponds to scrolling up.")
    (nyxt/mode/repeat:repeat-interval 0.10)
+   ;; We're overriding it explicitly so that the cleanup of repeat-mode does not
+   ;; erase the repeat action.
+   (nyxt/mode/process:cleanup nil)
    (keyscheme-map
     (define-keyscheme-map "cruise-control-mode" ()
       keyscheme:default
