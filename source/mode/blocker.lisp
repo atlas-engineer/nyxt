@@ -2,7 +2,15 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/blocker
-    (:documentation "Block resource queries for listed hosts."))
+  (:documentation "Block resource queries for listed hosts.
+`blocker-mode' relies on:
+- `hostlist' as the hostlist representation.
+- `*default-hostlist*' as the most reliable hostlist.
+- `load-hostlists' as the function forcing hostlist update and the user-space
+  `update-hostlists' commands relying on it.
+
+- `request-resource-block' as the hook handler that does all the automagic
+  blocking."))
 (in-package :nyxt/mode/blocker)
 
 ;; TODO: Add convenient interface to block hosts depending on the current URL.
@@ -40,7 +48,7 @@ See the `hostlist' class documentation."
 (define-mode blocker-mode ()
   "Enable blocking of listed hosts.
 To customize the list of blocked hosts, set the `hostlists' slot.
-See the `hostlist' class documentation.
+To force hostlist update, use `update-hostlists'.
 
 Example:
 
@@ -54,7 +62,7 @@ Example:
   \"Blocker mode with custom hosts from `*my-blocked-hosts*'.\"
   ((nyxt/mode/blocker:hostlists (list *my-blocked-hosts* nyxt/mode/blocker:*default-hostlist*))))
 
-\(define-configuration buffer
+\(define-configuration :buffer
   ((default-modes (append '(my-blocker-mode) %slot-default%))))"
   ((hostlists (list *default-hostlist*))
    (blocked-hosts

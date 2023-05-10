@@ -3,12 +3,29 @@
 
 (nyxt:define-package :nyxt/mode/annotate
   (:documentation "Mode to annotate documents.
-Annotations are persisted to disk."))
+
+Important pieces of functionality are (together with an obvious
+`annotate-mode'):
+- `annotation' and its subclasses: `url-annotation' and `snippet-annotation'.
+- Commands:
+  - `annotate-current-url'.
+  - `annotate-highlighted-text'.
+  - `show-annotation'.
+  - `show-annotations'.
+  - `show-annotations-for-current-url'."))
 (in-package :nyxt/mode/annotate)
 
 (define-mode annotate-mode ()
   "Annotate document with arbitrary comments.
-Annotations are persisted to disk, see the `annotations-file' mode slot."
+Annotations are persisted to disk, see the `annotations-file' mode slot.
+
+Commands are:
+- `annotate-current-url' and `annotate-highlighted-text' to create
+  annotations.
+- `show-annotation' and `show-annotations' to show the annotations
+  unconditionally.
+- And `show-annotations-for-current-url' to show the ones associated with the
+  current page."
   ((visible-in-status-p nil)
    (annotations-file
     (make-instance 'annotations-file)
@@ -33,18 +50,26 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
     :type (list-of string))
    (date (time:now)))
   (:export-class-name-p t)
-  (:export-accessor-names-p t))
+  (:export-accessor-names-p t)
+  (:documentation "An umbrella annotation type.
+Should not be instantiated on its own. Instead, use `url-annotation' and
+`snippet-annotation'."))
 
 (define-class url-annotation (annotation)
   ((url nil)
    (page-title ""))
   (:export-class-name-p t)
-  (:export-accessor-names-p t))
+  (:export-accessor-names-p t)
+  (:documentation "Annotation for a page with a certain URL.
+Command to create one is `annotate-current-url'."))
 
 (define-class snippet-annotation (url-annotation)
   ((snippet nil :documentation "The snippet of text being annotated."))
   (:export-class-name-p t)
-  (:export-accessor-names-p t))
+  (:export-accessor-names-p t)
+  (:documentation "Annotation in relation to a text on a certain page.
+The page is handled by underlying `url-annotation', while the snippet is
+extracted by `annotate-highlighted-text' command."))
 
 ;; TODO: Wrap in <div>s with special CSS classes.
 (defmethod render ((annotation url-annotation))

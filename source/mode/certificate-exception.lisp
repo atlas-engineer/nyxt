@@ -2,7 +2,10 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/certificate-exception
-    (:documentation "Control which invalid certificates to accept or reject."))
+  (:documentation "Control which invalid certificates to accept or reject.
+Important parts are:
+- `*default-certificate-exceptions*' variable.
+- and `add-domain-to-certificate-exceptions' command."))
 (in-package :nyxt/mode/certificate-exception)
 
 (export-always '*default-certificate-exceptions*)
@@ -12,7 +15,7 @@ See the `add-domain-to-certificate-exceptions' command.")
 
 (define-mode certificate-exception-mode ()
   "Control which invalid certificates to accept or reject.
-This can apply to specific buffers.
+This applies to specific buffers.
 See the `add-domain-to-certificate-exceptions' command."
   ((visible-in-status-p nil)
    (certificate-exceptions *default-certificate-exceptions*
@@ -24,7 +27,7 @@ See the `add-domain-to-certificate-exceptions' command."
 (defmethod disable ((mode certificate-exception-mode) &key)
   (setf (certificate-exceptions (buffer mode)) nil))
 
-(define-command add-domain-to-certificate-exceptions (&optional (buffer (current-buffer)))
+(define-command add-domain-to-certificate-exceptions (&key (buffer (current-buffer)))
   "Add the current hostname to the buffer's certificate exception list.
 This is only effective if `certificate-exception-mode' is enabled.
 

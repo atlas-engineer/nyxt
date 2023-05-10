@@ -191,7 +191,7 @@ Bookmarks can have the following settings:")
                                      nyxt/mode/bookmark:set-url-from-bookmark nyxt/mode/bookmark:delete-bookmark
                                      nyxt/mode/bookmark:list-bookmarks
                                      nyxt/mode/bookmark:import-bookmarks-from-html
-                                     nyxt/bookmark-frequent-visits:bookmark-frequent-visits-mode))))
+                                     nyxt/mode/bookmark-frequent-visits:bookmark-frequent-visits-mode))))
 
       (:nsection :title "Annotations"
         (:p "Annotations can have the following settings:")

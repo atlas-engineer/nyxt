@@ -2,7 +2,18 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/autofill
-    (:documentation "Mode to fill forms more rapidly."))
+  (:documentation "Mode to fill forms more rapidly.
+
+The whole API is centered around `autofill' class and its slots:
+- `name' as the descriptive name of the autofill. Accessed with `autofill-name'.
+- and `fill' as the actual content-designating thing (string or a
+  function). Accessed with `autofill-fill'.
+
+`autofill' is funcallable. When funcallable, returns the string produced by the
+autofill.
+
+Then, the command eponymously called `autofill' actually fills (with
+`ffi-buffer-paste') the contents into the page."))
 (in-package :nyxt/mode/autofill)
 
 (export-always 'make-autofill)
@@ -10,7 +21,7 @@
   (apply #'make-instance 'autofill args))
 
 (define-mode autofill-mode ()
-  "Mode to fill forms more rapidly."
+  "Mode to fill forms more rapidly (with `autofill' command)."
   ((visible-in-status-p nil)
    (rememberable-p t)
    (autofills

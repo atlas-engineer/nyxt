@@ -2,11 +2,18 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/cruise-control
-    (:documentation "Mode for scrolling continuously at a pre-defined speed."))
+  (:documentation "Mode for scrolling continuously at a configurable speed.
+The main API point is `cruise-control-mode'."))
 (in-package :nyxt/mode/cruise-control)
 
 (define-mode cruise-control-mode (nyxt/mode/repeat:repeat-mode)
-  "Mode for automatically scrolling up and down the page."
+  "Mode for automatically scrolling up and down the page.
+Is an extension of `nyxt/mode/repeat:repeat-mode'.
+
+Commands changing velocity are:
+- `velocity-incf'.
+- `velocity-decf'.
+- `velocity-zero'."
   ((rememberable-p t)
    (velocity 0 :documentation "The distance the page is scrolling up or down
   each update interval. A positive velocity corresponds to scrolling down, a
