@@ -33,13 +33,6 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
   `((asdf:load-op ,(format nil "nyxt/~a-application" *nyxt-renderer*))
     ,@(call-next-method)))
 
-(defclass nyxt-source-directory (nasdf:nasdf-source-directory)
-  ())
-(import 'nyxt-source-directory :asdf-user)
-
-(defmethod nasdf:dest-source-dir ((component nyxt-source-directory))
-  (uiop:merge-pathnames* "nyxt/" (call-next-method)))
-
 (defclass nyxt-library-file (nasdf:nasdf-library-file)
   ())
 (import 'nyxt-library-file :asdf-user)
@@ -516,9 +509,9 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
   :components ((:nasdf-desktop-file "assets/nyxt.desktop")
                (:nasdf-icon-directory "assets/")
                (:nasdf-binary-file "nyxt")
-               (:nyxt-source-directory "source")
-               (:nyxt-source-directory "nasdf")
-               (:nyxt-source-directory "libraries"
+               (:nasdf-source-directory "source")
+               (:nasdf-source-directory "nasdf")
+               (:nasdf-source-directory "libraries"
                 :exclude-subpath ("web-extensions") ; Do not install this non-Lisp source.
                 :exclude-types ("o" "c" "h" ; C code and artifacts.
                                     "fasl"))))
