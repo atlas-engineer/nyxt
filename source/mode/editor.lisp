@@ -84,6 +84,10 @@ See `describe-class editor-mode' for details."))
   (:documentation "Each editor buffer matches a file. Each editor buffer
 contains an `nyxt/mode/editor:editor-mode' instance (or a subclass thereof)."))
 
+(defmethod nyxt:default-modes append ((buffer editor-buffer))
+  "Add `editor-mode' to `editor-buffer' by default."
+  (list 'editor-mode))
+
 (defmethod nyxt:default-modes :around ((buffer editor-buffer))
   ;; REVIEW: Really remove document-mode from editor-buffer?
   ;; FIXME: How to disable the annoying base-mode bindings in the editor!?
