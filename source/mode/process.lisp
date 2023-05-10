@@ -2,7 +2,22 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/process
-    (:documentation "Act on file/directory based on a certain condition."))
+  (:documentation "Package for `process-mode', mode to conditionally act on file/directory.
+
+APIs that `process-mode' has:
+- Slots:
+  - `path-url' to set the path tracked by the mode.
+  - `firing-condition', continuously checked for whether to run the...
+  - `action'---the actual thing to run.
+  - `cleanup' runs after `firing-condition' returns :RETURN to clean up the mode.
+  - `thread' as the thread that all the `action's happen on. Usually needs not
+    be altered, because the default is intuitive enough.
+- Internal helpers:
+  - `thread-alive-p' to check on the `thread'.
+  - `call-cleanup' to relay things to `cleanup' code.
+
+It also uses threading utilities like `destroy-thread*', `sera:synchronized',
+and `bt:thread-alive-p'."))
 (in-package :nyxt/mode/process)
 
 (define-mode process-mode ()
@@ -12,7 +27,12 @@ Possible applications:
 - Web server.
 - Live preview of documents (`nyxt/mode/preview').
 - Refreshing a URL at regular intervals (`nyxt/mode/watch').
-- Live tracking of filesystem/data in a file/directory."
+- Live tracking of filesystem/data in a file/directory.
+
+The mode itself should not be used directly. Rather, it should be subclassed and
+extended with custom logic.
+
+See `nyxt/mode/process' package documentation for implementation details and internal programming APIs."
   ((visible-in-status-p nil)
    (rememberable-p nil)
    (path-url

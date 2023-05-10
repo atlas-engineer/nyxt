@@ -2,8 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/buffer-listing
-  (:documentation "Mode for buffer listing.
-See `buffer-listing-mode'."))
+  (:documentation "Package for `buffer-listing-mode', mode for buffer listing."))
 (in-package :nyxt/mode/buffer-listing)
 
 (define-mode buffer-listing-mode ()

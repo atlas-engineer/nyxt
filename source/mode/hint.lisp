@@ -2,7 +2,11 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/hint
-    (:documentation "Mode for element hints."))
+  (:documentation "Package for element hints infrastructure and `hint-mode'.
+
+Exposes the APIs below:
+- `query-hints' as the main driver for hinting procedures.
+- `hint-source' for `prompt-buffer' interaction."))
 (in-package :nyxt/mode/hint)
 
 (define-mode hint-mode ()

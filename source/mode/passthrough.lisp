@@ -2,16 +2,19 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/passthrough
-    (:documentation "Forward all keybindings to the web view except those in the `override-map'."))
+  (:documentation "Package for `passthrough-mode', mode to forward all keybindings to the page.
+
+Keybindings in the `override-map' are an exception to the passthrough.
+
+Utilizes the `nyxt/keyscheme' API, `nyxt/mode/keyscheme' APIs, and
+`current-keymaps-hook' or `input-buffer'."))
 (in-package :nyxt/mode/passthrough)
 
-;;; Moving modes out of the `modes' slot is a bad idea: too many parts rely on
-;;; the presence of the `modes' slot. Instead, use a hook to temporarily override
-;;; the keymaps of all modes (except the override-map).
-
 (define-mode passthrough-mode ()
-  "Mode that forwards all keys to the renderer.
-See the mode `keyscheme-map' for special bindings."
+  "Mode that forwards all keys to the page.
+
+See the mode `keyscheme-map' for special bindings and `nyxt/mode/passthrough'
+package documentation for implementation details and internal programming APIs."
   ((visible-in-status-p nil)
    (keyscheme-map
     (define-keyscheme-map "passthrough-mode" ()

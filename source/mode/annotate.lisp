@@ -2,30 +2,20 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/annotate
-  (:documentation "Mode to annotate documents.
+  (:documentation "Package for `annotate-mode', mode to annotate documents.
 
-Important pieces of functionality are (together with an obvious
-`annotate-mode'):
-- `annotation' and its subclasses: `url-annotation' and `snippet-annotation'.
-- Commands:
-  - `annotate-current-url'.
-  - `annotate-highlighted-text'.
-  - `show-annotation'.
-  - `show-annotations'.
-  - `show-annotations-for-current-url'."))
+The most important piece of functionality is the `annotation' class and its
+subclasses: `url-annotation' and `snippet-annotation'.
+
+See the `annotate-mode' for the external user-facing APIs."))
 (in-package :nyxt/mode/annotate)
 
 (define-mode annotate-mode ()
   "Annotate document with arbitrary comments.
 Annotations are persisted to disk, see the `annotations-file' mode slot.
 
-Commands are:
-- `annotate-current-url' and `annotate-highlighted-text' to create
-  annotations.
-- `show-annotation' and `show-annotations' to show the annotations
-  unconditionally.
-- And `show-annotations-for-current-url' to show the ones associated with the
-  current page."
+See `nyxt/mode/annotate' package documentation for implementation details and
+internal programming APIs."
   ((visible-in-status-p nil)
    (annotations-file
     (make-instance 'annotations-file)

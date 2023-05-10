@@ -2,19 +2,30 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/editor
-    (:documentation "Mode for editors."))
+    (:documentation "Package for `editor-mode', mode for implementation of Nyxt-resident editors.
+
+The new editor mode should subclass `editor-mode'. It is also required to
+implement the methods `get-content', `set-content', and `markup'. This will
+allow the subclassed mode to get/set content from/to the file (which is
+necessary for its operation)."))
 (in-package :nyxt/mode/editor)
 
 (define-mode editor-mode ()
   "Mode for editor modes to extend.
 
-Importantly, it is required to implement the methods `get-content',
-`set-content', `markup' for each editor-mode. This will allow your mode
-to get/set content from/to the file (which is necessary for operation).
+Commands portable across all the `editor-mode' editors:
+- `edit-file': Open a file in the new `editor-buffer'.
+- `editor-open-file': Open a new file in the existing editor.
+- `editor-write-file': Save the file to disk.
 
 To install the mode implementing the following, add this snippet to your config
 (define-configuration nyxt/mode/editor::editor-buffer
-  ((default-modes (cons 'your-editor-mode %slot-value%))))"
+  ((default-modes (cons 'your-editor-mode %slot-value%))))
+
+See `nyxt/mode/editor' package documentation for implementation details and
+internal programming APIs, including the methods for custom editors'
+implementation. Also see `plaintext-editor-mode' for an example
+impelementation."
   ((keyscheme-map
     (define-keyscheme-map "editor-mode" ()
       keyscheme:default
@@ -48,7 +59,7 @@ To install the mode implementing the following, add this snippet to your config
   (:method ((editor editor-mode))
     (declare (ignore editor))
     (echo-warning "Editor buffer cannot edit files without configured editor mode."))
-  (:documentation "Get the content of the editor."))
+  (:documentation "Get the content of the EDITOR-SUBMODE as a string."))
 
 ;; IMPORTANT: Implement this method specializing on your class extending editor-mode.
 (export-always 'set-content)
@@ -57,7 +68,7 @@ To install the mode implementing the following, add this snippet to your config
     (declare (ignore editor))
     (echo-warning "Editor buffer cannot edit files without configured editor mode.
 See `describe-class editor-mode' for details."))
-  (:documentation "Set the content of the editor."))
+  (:documentation "Set the content of the EDITOR-SUBMODE to a new string/other CONTENT."))
 
 ;; IMPORTANT: Implement this method specializing on your class extending editor-mode.
 (export-always 'markup)
@@ -70,9 +81,10 @@ See `describe-class editor-mode' for details."))
        (:p "Please configure an editor mode to use an editor buffer. See "
            (:code "describe-class") " for " (:code "editor-buffer")
            " to see the list of functions to implement."))))
-  (:documentation "Produce:
-- A string/byte-array of the initial buffer contents.
-- (optional, \"text/html\" is not provided) content type text."))
+  (:documentation "Produce at least a string/byte-array of the initial buffer contents.
+
+See the `scheme' documentation for the format and the number of values that
+`markup' specializations could/should return."))
 
 (define-class editor-buffer (network-buffer ; Questionable, but needed for `buffer-load'.
                              context-buffer modable-buffer document-buffer input-buffer)
@@ -140,19 +152,17 @@ contains an `nyxt/mode/editor:editor-mode' instance (or a subclass thereof)."))
                           :name "Create new file"))))))
 
 (define-command editor-open-file (&key (buffer (current-buffer)) (file (prompt-for-editor-file)))
-  "Open a file in the internal editor."
+  "Open a new file in and already open internal `editor-buffer'."
   (buffer-load (quri:make-uri :scheme "editor" :path file) :buffer buffer))
 
-(define-command editor-write-file (&key (buffer (current-buffer)) (if-exists :error))
-  "Write the FILE of the BUFFER to storage."
+(define-command editor-write-file (&key (buffer (current-buffer)))
+  "Write the file of the BUFFER (`editor-buffer') to storage."
   (if (uiop:file-exists-p (file buffer))
       (if-confirm ((format nil "Overwrite ~s?" (file buffer))
                    :yes "overwrite" :no "cancel")
-                  (echo "File ~s ~:[not ~;~]saved." (file buffer)
-                        (write-file-with-editor buffer :if-exists :overwrite))
-                  (echo "File ~s not saved." (file buffer)))
-      (echo "File ~s ~:[not ~;~]saved." (file buffer)
-            (write-file-with-editor buffer :if-exists if-exists))))
+          (echo "File ~s ~:[not ~;~]saved."
+                (file buffer) (write-file-with-editor buffer :if-exists :overwrite)))
+      (echo "File ~s ~:[not ~;~]saved." (file buffer) (write-file-with-editor buffer))))
 
 (define-command-global edit-file (&optional (file (prompt-for-editor-file)))
   "Open a new editor and query a FILE to edit in it."

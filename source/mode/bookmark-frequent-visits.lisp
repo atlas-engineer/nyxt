@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/bookmark-frequent-visits
-  (:documentation "Mode to bookmark frequently visited URLs.
+  (:documentation "Package for `bookmark-frequent-visits-mode', mode to bookmark frequently visited URLs.
 The substance of it is `bookmark-frequent-visit' function."))
 (in-package :nyxt/mode/bookmark-frequent-visits)
 

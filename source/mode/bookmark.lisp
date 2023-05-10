@@ -2,15 +2,11 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/bookmark
-  (:documentation "Manage bookmarks.
+  (:documentation "Package for `bookmark-mode', mode to manage bookmarks.
 The main object is `bookmark-entry'. The main function to add a bookmark is
-`bookmark-add'. Commands utilizing it are:
-- `bookmarks-panel' (panel command).
-- `list-bookmarks' (internal page).
-- `bookmark-current-url', `bookmark-buffer-url', `bookmark-url', and
-  `bookmark-hint' to add bookmarks. `delete-bookmark' to remove.
-- `set-url-from-bookmark'.
-- `import-bookmarks-from-html'."))
+`bookmark-add'.
+
+See the `bookmark-mode' for the external user-facing APIs."))
 (in-package :nyxt/mode/bookmark)
 
 ;;; We don't use CL-prevalence to serialize / deserialize bookmarks for a couple for reasons:
@@ -30,12 +26,8 @@ The main object is `bookmark-entry'. The main function to add a bookmark is
   "Manage bookmarks.
 Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot.
 
-- `bookmark-current-url', `bookmark-buffer-url', `bookmark-url', and
-  `bookmark-hint' to add bookmarks. `delete-bookmark' to remove them.
-- `set-url-from-bookmark' to open a bookmark.
-- `list-bookmarks' to list bookmarks as a separate page.
-- `bookmarks-panel' to show all bookmarks as a panel.
-- `import-bookmarks-from-html' to import the HTML-formatted bookmarks."
+See `nyxt/mode/bookmark' package documentation for implementation details and
+internal programming APIs."
   ((visible-in-status-p nil)
    (bookmarks-file
     (make-instance 'bookmarks-file)

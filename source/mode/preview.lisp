@@ -2,7 +2,12 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/preview
-    (:documentation "Refresh file when changed on disk."))
+  (:documentation "Package for `preview-mode', mode to refresh file when changed on disk.
+
+Extends `nyxt/mode/process:process-mode' with custom actions and relies on the
+custom `updated-file-p' `nyxt/mode/process:firing-condition'.
+
+See the `preview-mode' documentation for the external user-facing APIs."))
 (in-package :nyxt/mode/preview)
 
 (defun updated-file-p (path-url mode)
@@ -14,7 +19,9 @@
          (last-access mode)))))
 
 (define-mode preview-mode (nyxt/mode/process:process-mode)
-  "Refreshes the buffer when associated local file is changed."
+  "Refreshes the buffer when associated local file is changed.
+
+See `nyxt/mode/preview' package documentation for implementation details and internal programming APIs."
   ((visible-in-status-p nil)
    (rememberable-p t)
    (nyxt/mode/process:firing-condition #'updated-file-p)
@@ -28,12 +35,10 @@
 
 (in-package :nyxt)
 
-(define-command preview-file (&optional file (buffer (current-buffer)))
-  "Open FILE in BUFFER and call `preview-mode' to continuously watch and refresh
-it."
-  (alex:when-let
-      ((file (or file (prompt :prompt "File to preview"
-                              :input (quri:uri-path (url (current-buffer)))
-                              :sources 'nyxt/mode/file-manager:file-source))))
-    (buffer-load (quri.uri.file:make-uri-file :path file) :buffer buffer)
-    (enable (make-instance 'nyxt/mode/preview:preview-mode :buffer buffer))))
+(define-command preview-file (&key (buffer (current-buffer))
+                              (file (prompt :prompt "File to preview"
+                                            :input (quri:uri-path (url buffer))
+                                            :sources 'nyxt/mode/file-manager:file-source)))
+  "Open a local FILE in BUFFER and call `preview-mode' to watch and refresh it."
+  (buffer-load (quri.uri.file:make-uri-file :path file) :buffer buffer)
+  (enable (make-instance 'nyxt/mode/preview:preview-mode :buffer buffer)))

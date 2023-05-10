@@ -2,11 +2,31 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/history
-    (:documentation "Mode to store current buffer navigation into the global history."))
+  (:documentation "Package for `history-mode', mode to store current buffer navigation into the global history.
+
+In addition to the external APIs listed in `history-mode' documentation, there
+are useful internal APIs for history reusal:
+- `load-history-url' to load the URL that's already in history.
+- `with-history' and `with-history-access' macros to (respectively) get access
+  to history contents and have an opportunity to modify it.
+
+- Unexported `prompt-buffer' `prompter:source's (most corresponding to the
+  respective commands) like:
+  - `history-backwards-source'
+  - `direct-history-forwards-source'
+  - `all-history-forwards-source'
+  - `history-forwards-source'
+  - `history-all-owner-nodes-source'
+  - `history-all-source'."))
 (in-package :nyxt/mode/history)
 
 (define-mode history-mode ()
-  "Mode to manage navigation history."
+  "Mode to manage navigation history.
+
+`history-mode' itself has several configurable options:
+- `history-blocklist' to ignore certain pages and not include them in history.
+- `backtrack-to-hubs-p' to optimize the pages one often gets back to as
+  \"hubs\"."
   ((visible-in-status-p nil)
    (history-blocklist '("https://duckduckgo.com/l/")
                       ;; TODO: Find a more automated way to do it.  WebKitGTK
@@ -72,20 +92,22 @@ Experimental, may not always produce intuitive enough history trees.")
        "L" 'history-forwards-maybe-query
        "M-H" 'history-all-query)))))
 
+(-> load-history-url ((or nyxt::url-designator history-entry)
+                      &key (:buffer (maybe buffer))
+                      (:message string))
+    t)
 (defun load-history-url (url-or-node
                          &key (buffer (current-buffer))
                               (message "History entry is already the current URL."))
-  "Go to HISTORY-NODE's URL."
+  "Go to URL-OR-NODE's history URL (in BUFFER), if any.
+Error if there's no such URL in history.
+Show MESSAGE if no need to move."
   (let ((url (if (typep url-or-node 'htree:node)
                  (url (htree:data url-or-node))
                  url-or-node)))
     (cond
       ((not (quri:uri-p url))
-       (funcall
-        (if nyxt::*run-from-repl-p*
-            'error
-            'echo-warning )
-        "Not a URL nor a history node: ~a" url-or-node))
+       (error "Not a URL nor a history node: ~a" url-or-node))
       ((quri:uri= url (url buffer))
        (echo message))
       (t (buffer-load url)))))
@@ -101,8 +123,14 @@ This does not save the history to disk."
          (echo "Buffer ~a has no history." (id ,buffer)))))
 
 (defmacro with-history-access ((history-sym buffer) &body body)
-  "Run body if BUFFER has history entries, that is, if it owns some nodes.
-This saves the history to disk when BODY exits."
+  "Run body if BUFFER has `history-entry'es, that is, if it owns some nodes.
+
+This saves the possibly modified history to disk when BODY exits. Possible
+history modification operations are:
+- `htree:forward' and `htree:backward'.
+- `htree:go-to-child' and `htree:visit'.
+- `htree:add-entry', `htree:add-child', `htree:add-children',
+  `htree:add-owner'."
   `(files:with-file-content (,history-sym (history-file (or ,buffer (current-buffer))))
      (if (and ,history-sym
               (or (not ,buffer)
@@ -110,8 +138,8 @@ This saves the history to disk when BODY exits."
          (progn ,@body)
          (echo "Buffer ~a has no history." (id ,buffer)))))
 
-(define-command history-backwards (&optional (buffer (current-buffer)))
-  "Go to parent URL in history."
+(define-command history-backwards (&key (buffer (current-buffer)))
+  "Go to parent URL of BUFFER in history."
   (alex:when-let ((new-node
                    (with-history-access (history buffer)
                      (cond
@@ -131,7 +159,7 @@ This saves the history to disk when BODY exits."
                       :message "No backward history.")))
 
 (define-command history-forwards (&optional (buffer (current-buffer)))
-  "Go to forward URL in history."
+  "Go forward one step/URL in BUFFER's history."
   (let ((new-node
           (with-history-access (history buffer)
             (htree:forward history (id buffer))
@@ -151,7 +179,8 @@ This saves the history to disk when BODY exits."
               (htree:all-contiguous-owned-parents history owner)
               (htree:all-parents history :owner owner)))))))
   (:export-class-name-p t)
-  (:metaclass user-class))
+  (:metaclass user-class)
+  (:documentation "Source for all the parent URLs/`history-entry'es of the current buffer."))
 
 (defmethod prompter:object-attributes ((node history-tree:node) (source prompter:source))
   (declare (ignore source))
@@ -181,7 +210,7 @@ This saves the history to disk when BODY exits."
         (if (conservative-history-movement-p (find-submode 'history-mode (buffer source)))
             (htree:owned-children (htree:owner history (id (buffer source))))
             (htree:children (htree:owner-node history (id (buffer source)))))))))
-  (:documentation "Direct children of the current history node.")
+  (:documentation "Direct children of the current `history-entry'.")
   (:export-class-name-p t)
   (:metaclass user-class))
 
@@ -208,7 +237,7 @@ Otherwise go forward to the only child."
         (history-forwards))))
 
 (define-class history-forwards-source (prompter:source)
-  ((prompter:name "All children URLs of the current forward-branch")
+  ((prompter:name "All forwards children")
    (buffer :initarg :buffer :accessor buffer :initform nil)
    (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:constructor
@@ -216,7 +245,8 @@ Otherwise go forward to the only child."
       (with-history (history (buffer source))
         (htree:all-forward-children history (id (buffer source)))))))
   (:export-class-name-p t)
-  (:metaclass user-class))
+  (:metaclass user-class)
+  (:documentation "All children URLs of the current `history-entry'."))
 
 (define-command history-forwards-query (&optional (buffer (current-buffer)))
   "Query forward-URL to navigate to."
@@ -244,7 +274,8 @@ Otherwise go forward to the only child."
               (htree:all-contiguous-owned-children history owner)
               (htree:all-children history :owner owner)))))))
   (:export-class-name-p t)
-  (:metaclass user-class))
+  (:metaclass user-class)
+  (:documentation "Source for `htree:all-children' of the current `hsitory-entry'."))
 
 (define-command history-forwards-all-query (&optional (buffer (current-buffer)))
   "Query URL to forward to, from all child branches."
@@ -269,7 +300,8 @@ Otherwise go forward to the only child."
                  history
                  (htree:owner history (id (buffer source))))))))
   (:export-class-name-p t)
-  (:metaclass user-class))
+  (:metaclass user-class)
+  (:documentation "All the nodes of the current buffer."))
 
 (define-command history-all-owner-nodes-query (&optional (buffer (current-buffer)))
   "Query URL to go to, from the list of all nodes owned by BUFFER."
@@ -290,7 +322,8 @@ Otherwise go forward to the only child."
       (with-history (history (buffer source))
         (htree:all-data history)))))
   (:export-class-name-p t)
-  (:metaclass user-class))
+  (:metaclass user-class)
+  (:documentation "Source for all the `htree:entry'es (`htree:all-data') in history."))
 
 (define-command history-all-query (&optional (buffer (current-buffer)))
   "Query URL to go to, from the whole history."
@@ -355,7 +388,7 @@ Clicking on a link navigates the history in the corresponding buffer."
 (define-internal-page buffer-history-tree (&key (id (id (current-buffer))))
     (:title "*History Tree*" :page-mode 'nyxt/mode/history-tree:history-tree-mode)
   "Display the history tree of a buffer.
-ID is a buffer `id'."
+ID is a `buffer''s `id'."
   (let ((buffer (nyxt::buffers-get id))
         (mode (find-submode 'nyxt/mode/history-tree:history-tree-mode)))
     (spinneret:with-html-string
@@ -366,7 +399,7 @@ ID is a buffer `id'."
                 "Buffer no longer exists.")))))
 
 (define-command-global buffer-history-tree (&key (buffer (current-buffer)))
-  "Display the history tree of a buffer."
+  "Display the history tree of a BUFFER."
   (buffer-load-internal-page-focus 'buffer-history-tree :id (id buffer)))
 
 (define-internal-page-command-global history-tree ()
@@ -388,8 +421,10 @@ internally, but this display is clearer and more navigable."
         (:div (:raw (render-buffer-history-tree buffer))))))))
 
 (define-internal-page-command-global list-history (&key (limit 100))
-  (buffer "*History list*" 'nyxt/mode/list-history:list-history-mode) ; TODO: Remove list-history-mode if we add a style slot to `internal-page'.
-  "Print the user history as a list."
+    ;; TODO: Remove list-history-mode if we add a style slot to `internal-page's.
+    (buffer "*History list*" 'nyxt/mode/list-history:list-history-mode)
+  "Display the user history as a list.
+Cut the display at LIMIT nodes."
   (spinneret:with-html-string
     (:nstyle (style (find-submode 'nyxt/mode/list-history:list-history-mode buffer)))
     (:h1 "History")
@@ -427,10 +462,13 @@ case."
 
 (export-always 'blocked-p)
 (defun blocked-p (url mode)
+  "Check whether URL belongs to MODE's `history-blocklist'."
   (find-if (rcurry #'str:starts-with? (render-url url))
            (history-blocklist mode)))
 
 (defun add-url-to-history (url buffer mode)
+  "Add URL to BUFFER's `history-MODE'.
+Uses `history-add' internally."
   (unless (or (url-empty-p url)
               (blocked-p url mode))
     (log:debug "Notify URL ~a for buffer ~a with load status ~a"

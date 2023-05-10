@@ -30,6 +30,7 @@
                                     (type (getf (mopu:slot-properties (find-class class) slot)
                                                 :type)))
   "Set value of CLASS' SLOT in `*auto-config-file*'.
+Prompt for a new value and type-check it against the SLOT's TYPE, if any.
 CLASS is a class symbol."
   (sera:nlet lp ()
     (let ((input (read-from-string
@@ -47,11 +48,15 @@ CLASS is a class symbol."
 
 (define-internal-page-command-global common-settings ()
     (buffer "*Settings*" 'nyxt/mode/help:help-mode)
-  "Configure a set of frequently used settings."
+  "Display an interface to tweak frequently sought-after user options.
+The changes are saved to `*auto-config-file*', and persist from one Nyxt session
+to the next."
   (spinneret:with-html-string
     (:h1 "Common Settings")
-    (:p "Set the values for frequently configured settings. "
-        "Changes only apply to newly created buffers.")
+    (:p "Tweak frequently sought-after settings. The changes persist from one
+Nyxt session to the next.
+
+Note that some settings may require creating a new buffer to take effect.")
     (:h2 "Keybinding style")
     (:p (:button :class "button"
                  :onclick (ps:ps (nyxt/ps:lisp-eval
@@ -142,7 +147,7 @@ disabling compositing, you will need to restart Nyxt."))
           (:p "Edit user configuration and other files in external text editor.")))))
 
 (define-command print-bindings ()
-  "Print all known bindings for the current buffer."
+  "Display all known bindings for the current buffer."
   (nyxt::html-set-style (theme:themed-css (theme *browser*)
                           `(h3
                             :font-size "10px"
@@ -180,13 +185,14 @@ file, see the "
    buffer))
 
 (define-command nyxt-version ()
-  "Version number of this version of Nyxt.
-The version number is saved to clipboard."
+  "Display the version of Nyxt in the `message-buffer'.
+The value is saved to clipboard."
   (trivial-clipboard:text +version+)
   (echo "Version ~a" +version+))
 
 (define-panel-command intro ()
     (panel "*Introduction*" :left)
+  "Display a short introduction to Nyxt in a side panel."
   (spinneret:with-html-string
     (:h1 "Getting Started with Nyxt")
     (:p "If you want to start browsing right away, then you probably want to use "
@@ -214,7 +220,7 @@ useful actions there, including the familiar " (:code "set-url") ", " (:code "hi
 
 (define-internal-page-command-global new ()
     (buffer "*New buffer*")
-  "Open up a buffer with useful links suitable for `default-new-buffer-url'."
+  "Display a page suitable as `default-new-buffer-url'."
   (spinneret:with-html-string
    (:nstyle (theme:themed-css (theme *browser*)
                               `(body
@@ -301,14 +307,14 @@ useful actions there, including the familiar " (:code "set-url") ", " (:code "hi
 (sera:eval-always ; To satisfy `fboundp' of `manual' at compile-time (e.g. CCL).
   (define-internal-page-command-global manual ()
       (buffer "*Manual*" 'nyxt/mode/help:help-mode)
-    "Show the manual."
+    "Display Nyxt manual."
     (spinneret:with-html-string
       (:nstyle (lass:compile-and-write '(body :max-width "80ch")))
       (:raw (manual-content)))))
 
 (define-internal-page-command-global tutorial ()
     (buffer "*Tutorial*" 'nyxt/mode/help:help-mode)
-  "Show the tutorial."
+  "Display Nyxt tutorial."
   (spinneret:with-html-string
     (:nstyle (lass:compile-and-write '(body :max-width "80ch")))
     (:h1 "Nyxt tutorial")
@@ -319,8 +325,10 @@ the " (:code (:a.link :href (nyxt-url 'manual) "manual")) ".")
 
 (define-internal-page-command-global show-system-information ()
     (buffer "*System information*")
-  "Show buffer with Lisp version, Lisp features, OS kernel, etc.
-System information is also saved to clipboard."
+  "Display information about the currently running Nyxt system.
+
+It is of particular interest when reporting bugs.  The content is saved to
+clipboard."
   (let* ((*print-length* nil)
          (nyxt-information (system-information)))
     (prog1
@@ -333,7 +341,7 @@ System information is also saved to clipboard."
 
 (define-internal-page-command-global dashboard ()
     (buffer "*Dashboard*")
-  "Print a dashboard."
+  "Display a dashboard featuring bookmarks, recent URLs and other useful actions."
   (flet ((list-bookmarks (&key (limit 50) (separator " → "))
            (spinneret:with-html-string
              (let ((mode (make-instance 'nyxt/mode/bookmark:bookmark-mode)))

@@ -13,7 +13,9 @@ The whole API is centered around `autofill' class and its slots:
 autofill.
 
 Then, the command eponymously called `autofill' actually fills (with
-`ffi-buffer-paste') the contents into the page."))
+`ffi-buffer-paste') the contents into the page.
+
+See the `autofill-mode' for the external user-facing APIs."))
 (in-package :nyxt/mode/autofill)
 
 (export-always 'make-autofill)
@@ -21,7 +23,10 @@ Then, the command eponymously called `autofill' actually fills (with
   (apply #'make-instance 'autofill args))
 
 (define-mode autofill-mode ()
-  "Mode to fill forms more rapidly (with `autofill' command)."
+  "Mode to fill forms more rapidly.
+
+See `nyxt/mode/autofill' package documentation for implementation details and
+internal programming APIs."
   ((visible-in-status-p nil)
    (rememberable-p t)
    (autofills

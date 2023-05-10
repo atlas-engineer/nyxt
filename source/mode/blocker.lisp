@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/blocker
-  (:documentation "Block resource queries for listed hosts.
+  (:documentation "Package for `blocker-mode', mode to block requests for listed hosts.
 `blocker-mode' relies on:
 - `hostlist' as the hostlist representation.
 - `*default-hostlist*' as the most reliable hostlist.
@@ -63,7 +63,10 @@ Example:
   ((nyxt/mode/blocker:hostlists (list *my-blocked-hosts* nyxt/mode/blocker:*default-hostlist*))))
 
 \(define-configuration :buffer
-  ((default-modes (append '(my-blocker-mode) %slot-default%))))"
+  ((default-modes (append '(my-blocker-mode) %slot-default%))))
+
+See `nyxt/mode/blocker' package documentation for implementation details and
+internal programming APIs."
   ((hostlists (list *default-hostlist*))
    (blocked-hosts
     (make-hash-table :test 'equal)

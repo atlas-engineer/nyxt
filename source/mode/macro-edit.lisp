@@ -2,16 +2,24 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/macro-edit
-    (:documentation "Mode for editing macros."))
+    (:documentation "Package for `macro-edit-mode', mode for editing macros.
+
+There are implementation details for (almost) every command in this mode:
+- `edit-macro': `render-functions'.
+- `add-command': `add-function', `remove-function', `macro-name', and
+  `generate-macro-form'.
+- `save-macro': `macro-form-valid-p'."))
 (in-package :nyxt/mode/macro-edit)
 
 (define-mode macro-edit-mode ()
-  "Mode for creating and editing macros."
+  "Mode for creating and editing macros.
+
+See `nyxt/mode/macro-edit' package documentation for implementation details."
   ((visible-in-status-p nil)
    (macro-name
     ""
     :accessor nil
-    :documentation "The name used for the macro.")
+    :documentation "The descriptive name used for the macro.")
    (functions
     '()
     :documentation "Functions the user has added to their macro."))
