@@ -64,7 +64,8 @@ See also the `web-contexts' slot."))
                              (make-context name :ephemeral-p ephemeral-p)))
 
 (define-class gtk-window ()
-  ((gtk-object)
+  ((gtk-object
+    :export t)                          ; TODO: Unexport?
    (handler-ids
     :documentation "See `gtk-buffer' slot of the same name.")
    (root-box-layout)
@@ -82,8 +83,7 @@ See also the `web-contexts' slot."))
    (message-view)
    (key-string-buffer))
   (:export-class-name-p t)
-  ;; TODO: Unexport?
-  (:export-accessor-names-p t))
+  (:export-accessor-names-p nil))
 
 (define-class gtk-buffer ()
   ((gtk-object)
@@ -95,6 +95,7 @@ When given the same context, multiple buffers share their internal browsing data
 `+default+' is the default context.
 `+internal+' is a context that's not persisted to disk.")
    (handler-ids
+    :export nil
     :documentation "Store all GObject signal handler IDs so that we can disconnect the signal handler when the object is finalised.
 See https://developer.gnome.org/gobject/stable/gobject-Signals.html#signal-memory-management.")
    (gtk-proxy-url (quri:uri ""))
@@ -330,6 +331,7 @@ By default it is found in the source directory."))
 (define-class gtk-download ()
   ((gtk-object)
    (handler-ids
+    :export nil
     :documentation "See `gtk-buffer' slot of the same name.")))
 
 (defclass webkit-web-view-ephemeral (webkit:webkit-web-view) ()
@@ -379,6 +381,8 @@ By default it is found in the source directory."))
     nil
     :type (maybe webkit:webkit-web-resource)))
   (:export-class-name-p t)
+  ;; We export these accessors because it can be useful to inspect the guts of a
+  ;; request, plus the upstream WebKit API is stable enough ere.
   (:export-accessor-names-p t)
   (:metaclass user-class))
 
