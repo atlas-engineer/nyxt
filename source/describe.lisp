@@ -559,14 +559,25 @@ A command is a special kind of function that can be called with
   (if (find-class class nil)
       (let* ((slots (safe-sort (class-slots class :visibility :external)))
              (slot-descs (sera:string-join (mapcar (rcurry #'describe-slot* class) slots) ""))
-             (*print-case* :downcase))
+             (*print-case* :downcase)
+             (mode-p (subtypep class 'mode)))
         (spinneret:with-html-string
           (:nstyle (style buffer))
           (:h1 (symbol-name class) " (" (sera:class-name-of (find-class class)) ")")
           (:pre (:code (:raw (resolve-backtick-quote-links (documentation class 'type) (symbol-package class)))))
+          ;; TODO: Show mode keybindings for a better mode help (would be a
+          ;; killer one)? We'd need to do some hack to inspect the keybindings
+          ;; from the class somehow. Maybe :allocation :class so that keymap is
+          ;; allocated/modified in place?
           (:nsection
             :title "Slots"
             (:raw slot-descs))
+          (when mode-p
+            (:nsection
+              :title "Commands"
+              (:ul
+               (dolist (command (sym:package-commands (symbol-package class)))
+                 (:li (:nxref :command command))))))
           (:nsection
             :title "Source"
             (multiple-value-bind (source s-expr file)
