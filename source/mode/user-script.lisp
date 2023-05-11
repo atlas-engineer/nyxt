@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/user-script
-    (:documentation "Mode to load 'user scripts', such as GreaseMonkey scripts."))
+  (:documentation "Package for `user-script-mode' to load so-called 'user scripts', such as GreaseMonkey scripts."))
 (in-package :nyxt/mode/user-script)
 
 (defun inject-user-scripts (scripts buffer)
@@ -46,9 +46,9 @@ If false, runs on the toplevel frame only.")
       :type (member :document-start :document-end :document-idle)
       :documentation "When to run the script.
 Possible values:
-- :document-start (page started loading).
-- :document-end (page loaded, resources aren't).
-- :document-idle (page and resources are loaded)."))
+- `:document-start' (page started loading).
+- `:document-end' (page loaded, resources aren't).
+- `:document-idle' (page and resources are loaded)."))
     (:export-class-name-p t)
     (:export-accessor-names-p t)
     (:documentation "The Nyxt-internal representation of user scripts to bridge with the renderer.")
@@ -61,7 +61,7 @@ Possible values:
   "A helper to get the URL to a SCRIPT string.
 Return:
 - a final URL;
-- a boolean when it's a file URL."
+- T when it's a file URL, NIL otherwise."
   (cond
     ((valid-url-p script)
      (let ((script (quri:uri script)))
@@ -216,7 +216,9 @@ If false, runs on the toplevel frame only.")
     (setf (code style) (files:content style))))
 
 (define-mode user-script-mode ()
-  "Load user scripts such as GreaseMonkey scripts."
+  "Mode to manage user scripts such as GreaseMonkey scripts.
+The mode can manage multiple scripts.  Each `user-script' behaves following to
+its own independent settings."
   ((rememberable-p nil)
    (user-scripts
     nil

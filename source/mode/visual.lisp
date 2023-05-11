@@ -2,11 +2,12 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/visual
-  (:documentation "Visual mode."))
+  (:documentation "Package for `visual-mode', which enables keyboard-driven HTML selection."))
 (in-package :nyxt/mode/visual)
 
 (define-mode visual-mode (nyxt/mode/hint:hint-mode)
-  "Visual mode. For documentation on commands and keybindings, see the manual."
+  "Visual mode enables HTML element selection and provides commands to select text using keyboard only.
+For documentation on commands and keybindings, see the manual."
   ((rememberable-p nil)
    (nyxt/mode/hint:hints-selector
     "a, b, p, del, h1, h2, h3, h4, h5, h6, i, option,

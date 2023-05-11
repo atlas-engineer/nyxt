@@ -2,18 +2,21 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/reading-line
-    (:documentation "Mode for drawing a line to keep track of the reading position."))
+  (:documentation "Package for `reading-line-mode', for drawing a line to keep track of the
+reading position."))
 (in-package :nyxt/mode/reading-line)
 
 (define-mode reading-line-mode ()
   "Mode for drawing a line on screen that you can use to keep track of
-your reading position. To use this mode, first enable this mode and
-then use the bindings for `reading-line-cursor-up' and
-`reading-line-cursor-down' to move the reading line cursor. If you
-navigate away from the reading line, you can always invoke the command
-`jump-to-reading-line-cursor' to jump back to your reading
-position. To remove the reading line from the screen, disable this
-mode."
+your reading position.
+
+Commands:
+
+- `reading-line-cursor-up' and `reading-line-cursor-down' to move the reading
+  line cursor.
+
+- `jump-to-reading-line-cursor': If you navigate away from the reading line, you
+  can always invoke this command to jump back to your reading position."
   ((rememberable-p nil)
    (visible-in-status-p nil)
    (keyscheme-map

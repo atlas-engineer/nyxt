@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/repl
-    (:documentation "Common Lisp REPL mode for interactive programming.
+  (:documentation "Common Lisp REPL mode for interactive programming.
 
 The interface is composed by cell pairs of input and output that evaluate CL
 symbolic expressions.

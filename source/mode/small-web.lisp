@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/small-web
-    (:documentation "Mode for Gopher/Gemini page interaction."))
+  (:documentation "Package for `small-web-mode', which powers Gopher/Gemini page interaction."))
 (in-package :nyxt/mode/small-web)
 
 (define-mode small-web-mode ()
@@ -29,7 +29,7 @@ loading, you'd need to override `line->html' in the following way:
 \(defmethod line->html ((line cl-gopher:gif)) (image->link line))
 \(defmethod line->html ((line cl-gopher:png)) (image->link line))
 
-Gemini support is a bit more chaotic, but you can override `line->html' for
+Gemini support is a bit more brittle, but you can override `line->html' for
 `phos/gemtext' elements too."
   ((visible-in-status-p nil)
    (url :documentation "The URL being opened.")

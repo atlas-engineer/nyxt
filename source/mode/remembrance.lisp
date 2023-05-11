@@ -13,8 +13,10 @@
 ;; TODO: Add tests for garbage collection, caching history, exact matches.
 
 (nyxt:define-package :nyxt/mode/remembrance
-    (:documentation "Mode to cache visited content to disk.
-The textual content can be searched and displayed."))
+  (:documentation "Package for `remembrance-mode' to cache visited content to disk.
+The textual content can be searched and displayed.
+
+It leverages `montezuma' as a full-text-search powered database."))
 (in-package :nyxt/mode/remembrance)
 
 ;; We superclass with `files:read-only-file' instead of `files:virtual-file'
@@ -35,7 +37,15 @@ The textual content can be searched and displayed."))
 
 (define-mode remembrance-mode ()
   "Cache the textual content of visited pages.
-The caching can be done automatically or manually, see `auto-cache-on-load-p'."
+
+Commands include:
+- `remember-buffer': Manually cache the page of a buffer.
+- `toggle-auto-cache': Cache on load.
+- `recollect-visited-page': Search the cache for some content.
+- `view-page-changes': Show the differences between a buffer and its cache.
+
+Options include:
+- `auto-cache-on-load-p': Whether the caching should be done automatically or manually."
   ((visible-in-status-p nil)
    (cache-path
     (make-instance 'cache-path)
