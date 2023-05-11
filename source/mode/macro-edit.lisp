@@ -126,5 +126,5 @@ See `nyxt/mode/macro-edit' package documentation for implementation details."
       (progn
         (eval (generate-macro-form macro-editor))
         (echo "Macro compiled, you may now use the ~s command."
-              (name macro-editor)))
+              (macro-name macro-editor)))
       (echo "Macro form is invalid; check it has a title and functions.")))
