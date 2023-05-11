@@ -593,11 +593,11 @@
 	path = _build/nclasses
 	url = https://github.com/atlas-engineer/nclasses/
 	shallow = true
-[submodule "_build/cl-colors2"]
-	path = _build/cl-colors2
-	url = https://notabug.org/cage/cl-colors2
-	shallow = true
 [submodule "_build/prompter"]
 	path = _build/prompter
 	url = https://github.com/atlas-engineer/prompter
 	shallow = true
+[submodule "_build/cl-colors2_fixed"]
+	path = _build/cl-colors2
+	url = https://notabug.org/cage/cl-colors2
+	shallow = false # Notabug does not advertize commits.
