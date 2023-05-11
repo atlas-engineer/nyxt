@@ -382,7 +382,7 @@ By default it is found in the source directory."))
     :type (maybe webkit:webkit-web-resource)))
   (:export-class-name-p t)
   ;; We export these accessors because it can be useful to inspect the guts of a
-  ;; request, plus the upstream WebKit API is stable enough ere.
+  ;; request, plus the upstream WebKit API is stable enough.
   (:export-accessor-names-p t)
   (:metaclass user-class))
 
