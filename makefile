@@ -36,7 +36,7 @@ lisp_eval:=$(LISP) $(LISP_FLAGS) \
 	--eval '(when (string= "$(NYXT_SUBMODULES)" "true") (setf asdf:*default-source-registries* (list (quote asdf/source-registry:environment-source-registry))) (asdf:clear-configuration) (asdf:load-asd "$(makefile_dir)/libraries/nasdf/nasdf.asd") (asdf:load-asd "$(makefile_dir)/nyxt.asd") (asdf:load-system :nyxt/submodules))' \
 	--eval '(asdf:load-asd "$(makefile_dir)/libraries/nasdf/nasdf.asd")' \
 	--eval '(asdf:load-asd "$(makefile_dir)/nyxt.asd")' \
-	--eval '(format t "~&; NASDF ~a: ~a~&" (asdf:system-version (asdf:find-system :nasdf)) (nth-value 2 (asdf:locate-system :nasdf)))' \
+	--eval '(format t "~&; NASDF ~a: ~a~&" (asdf:component-version (asdf:find-system :nasdf)) (nth-value 2 (asdf:locate-system :nasdf)))' \
   --eval '(when (find-package :ql) (funcall (read-from-string "ql:quickload") :cffi))' \
   --eval '(when (and (find-package :cffi) (uiop:getenv "GUIX_ENVIRONMENT")) (pushnew (pathname (format nil "~a/lib/" (uiop:getenv "GUIX_ENVIRONMENT"))) (symbol-value (read-from-string "cffi:*foreign-library-directories*" )) :test (quote equal)))' \
 	--eval
