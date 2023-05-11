@@ -17,8 +17,9 @@
 (define-command scroll-to-hint (&key (buffer (current-buffer)))
   "Display the current hint and center it in BUFFER."
   (with-current-buffer buffer
-    (nyxt/mode/hint:highlight-selected-hint :element (current-suggestion-value)
-                                            :scroll t)))
+    (nyxt/mode/hint:highlight-selected-hint
+     :element (current-suggestion-value)
+     :scroll t)))
 
 (define-mode hint-prompt-buffer-mode (nyxt/mode/prompt-buffer:prompt-buffer-mode)
   "`prompt-buffer' mode for element hinting.
