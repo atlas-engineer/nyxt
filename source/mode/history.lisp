@@ -92,9 +92,8 @@ Experimental, may not always produce intuitive enough history trees.")
        "L" 'history-forwards-maybe-query
        "M-H" 'history-all-query)))))
 
-(-> load-history-url ((or nyxt::url-designator history-entry)
-                      &key (:buffer (maybe buffer))
-                      (:message string))
+(-> load-history-url (nyxt::url-designator
+                      &key (:buffer (maybe buffer)) (:message string))
     t)
 (defun load-history-url (url-or-node
                          &key (buffer (current-buffer))
@@ -102,15 +101,13 @@ Experimental, may not always produce intuitive enough history trees.")
   "Go to URL-OR-NODE's history URL (in BUFFER), if any.
 Error if there's no such URL in history.
 Show MESSAGE if no need to move."
-  (let ((url (if (typep url-or-node 'htree:node)
-                 (url (htree:data url-or-node))
-                 url-or-node)))
+  (let ((url (url url-or-node)))
     (cond
       ((not (quri:uri-p url))
        (error "Not a URL nor a history node: ~a" url-or-node))
       ((quri:uri= url (url buffer))
        (echo message))
-      (t (buffer-load url)))))
+      (t (buffer-load url :buffer buffer)))))
 
 (defmacro with-history ((history-sym buffer) &body body)
   "Run body if BUFFER has history entries, that is, if it owns some nodes.
@@ -158,14 +155,18 @@ history modification operations are:
     (load-history-url new-node
                       :message "No backward history.")))
 
+;; FIXME: Sometimes this command short-circuits on the same page. htree modes
+;; seems to work just fine, and the right URL is passed to `buffer-load', but it
+;; loads the wrong one somewhy. Heisenbug!
 (define-command history-forwards (&optional (buffer (current-buffer)))
   "Go forward one step/URL in BUFFER's history."
   (let ((new-node
           (with-history-access (history buffer)
             (htree:forward history (id buffer))
             (htree:owner-node history (id buffer)))))
-    (load-history-url new-node
-                      :message "No forward history.")))
+    (load-history-url
+     new-node
+     :message "No forward history.")))
 
 (define-class history-backwards-source (prompter:source)
   ((prompter:name "Parent URLs")
