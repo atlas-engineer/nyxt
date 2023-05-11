@@ -2,11 +2,13 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/spell-check
-    (:documentation "Mode to spell-check text in buffers."))
+  (:documentation "Package for `spell-check-mode' to spell-check text in buffers.
+
+It leverages `enchant' under the hood."))
 (in-package :nyxt/mode/spell-check)
 
 (define-mode spell-check-mode ()
-  ""
+  "Enable spell checking of various text sources."
   ((visible-in-status-p nil)
    (rememberable-p t)
    (spell-check-language

@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/prompt-buffer
-    (:documentation "Mode for prompter buffer."))
+  (:documentation "Package for `prompt-buffer-mode' to interact with the `prompt-buffer'."))
 (in-package :nyxt/mode/prompt-buffer)
 
 (define-mode prompt-buffer-mode ()

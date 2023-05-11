@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/vi
-  (:documentation "VI-style bindings."))
+  (:documentation "Package for `vi-normal-mode' and `vi-insert-mode', which provide VI-style bindings."))
 (in-package :nyxt/mode/vi)
 
 (define-mode vi-normal-mode (nyxt/mode/keyscheme:keyscheme-mode)

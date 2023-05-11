@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/search-buffer
-  (:documentation "Incremental buffer search."))
+  (:documentation "Package for `search-buffer-mode', for incremental buffer search."))
 (in-package :nyxt/mode/search-buffer)
 
 (define-mode search-buffer-mode ()
