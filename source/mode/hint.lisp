@@ -267,8 +267,9 @@ Consult https://developer.mozilla.org/en-US/docs/Web/CSS/visibility."
     (when (eq :emacs (hinting-type (find-submode 'hint-mode)))
       (lambda-command highlight-selected-hint* (suggestion)
         "Highlight hint."
-        (highlight-selected-hint :element suggestion
-                                 :scroll nil))))
+        (highlight-selected-hint
+         :element suggestion
+         :scroll nil))))
    (prompter:actions-on-marks
     (lambda (marks)
       (let ((%marks (mapcar (lambda (mark) (str:concat "#nyxt-hint-" (identifier mark)))
@@ -417,6 +418,11 @@ FUNCTION is the action to perform on the selected elements."
     (dolist (option (mapcar (rcurry #'find options :test #'equalp) values))
       (nyxt/dom:select-option-element option select))))
 
+(-> unsupported (plump:element string) t)
+(defun unsupported (element action)
+  (echo "Unsupported operation for <~a> hint: can't ~a."
+        (plump:tag-name element) action))
+
 (defmethod %follow-hint-new-buffer-focus ((a nyxt/dom:a-element) &optional parent-buffer)
   (make-buffer-focus :url (url a)
                      :parent-buffer parent-buffer
@@ -424,26 +430,26 @@ FUNCTION is the action to perform on the selected elements."
 
 (defmethod %follow-hint-new-buffer-focus ((element plump:element) &optional parent-buffer)
   (declare (ignore parent-buffer))
-  (echo "Unsupported operation for hint: can't open in new buffer."))
+  (unsupported element "open in new buffer"))
 
 (defmethod %follow-hint-new-buffer ((a nyxt/dom:a-element) &optional parent-buffer)
   (make-buffer :url (url a) :parent-buffer parent-buffer :load-url-p nil))
 
 (defmethod %follow-hint-new-buffer ((element plump:element) &optional parent-buffer)
   (declare (ignore parent-buffer))
-  (echo "Unsupported operation for hint: can't open in new buffer."))
+  (unsupported element "open in new buffer"))
 
 (defmethod %follow-hint-nosave-buffer-focus ((a nyxt/dom:a-element))
   (make-buffer-focus :url (url a) :nosave-buffer-p t))
 
 (defmethod %follow-hint-nosave-buffer-focus ((element plump:element))
-  (echo "Unsupported operation for hint: can't open in new buffer."))
+  (unsupported element "open in nosave buffer"))
 
 (defmethod %follow-hint-nosave-buffer ((a nyxt/dom:a-element))
   (make-nosave-buffer :url (url a)))
 
 (defmethod %follow-hint-nosave-buffer ((element plump:element))
-  (echo "Unsupported operation for hint: can't open in new buffer."))
+  (unsupported element "open in nosave buffer"))
 
 (defmethod %follow-hint-with-current-modes-new-buffer ((a nyxt/dom:a-element) &optional parent-buffer)
   (make-buffer :url (url a)
@@ -452,7 +458,7 @@ FUNCTION is the action to perform on the selected elements."
 
 (defmethod %follow-hint-with-current-modes-new-buffer ((element plump:element) &optional parent-buffer)
   (declare (ignore parent-buffer))
-  (echo "Unsupported operation for hint: can't open in new buffer."))
+  (unsupported element "open in new buffer with saved modes"))
 
 (defmethod %copy-hint-url ((a nyxt/dom:a-element))
   (ffi-buffer-copy (current-buffer) (render-url (url a))))
@@ -461,10 +467,11 @@ FUNCTION is the action to perform on the selected elements."
   (ffi-buffer-copy (current-buffer) (render-url (url img))))
 
 (defmethod %copy-hint-url ((element plump:element))
-  (echo "Unsupported operation for hint: can't copy URL."))
+  (unsupported element "copy hint URL"))
 
 (define-command follow-hint ()
-  "Prompt for element hints and open them in the current buffer."
+  "Prompt for element hints and open them in the current buffer.
+Uses `%follow-hint' internally."
   (let ((buffer (current-buffer)))
     (query-hints "Interact with element"
                  (lambda (results)
@@ -473,14 +480,16 @@ FUNCTION is the action to perform on the selected elements."
                            (rest results))))))
 
 (define-command follow-hint-new-buffer ()
-  "Like `follow-hint', but open the selected hints in new buffers (no focus)."
+  "Like `follow-hint', but open the selected hints in new buffers (no focus).
+Uses `%follow-hint-new-buffer' internally."
   (let ((buffer (current-buffer)))
     (query-hints "Open element in new buffer"
                  (lambda (result) (mapcar (rcurry #'%follow-hint-new-buffer buffer)
                                           result)))))
 
 (define-command follow-hint-new-buffer-focus ()
-  "Like `follow-hint-new-buffer', but with focus."
+  "Like `follow-hint-new-buffer', but with focus.
+Uses `%follow-hint-new-buffer-focus' internally."
   (let ((buffer (current-buffer)))
     (query-hints "Open element in new buffer"
                  (lambda (result)
@@ -490,20 +499,22 @@ FUNCTION is the action to perform on the selected elements."
 
 (define-command follow-hint-nosave-buffer ()
   "Like `follow-hint', but open the selected hints in new `nosave-buffer's (no
-focus)."
+focus).
+Uses `%follow-hint-nosave-buffer' internally."
   (query-hints "Open element in new buffer"
                (lambda (result) (mapcar #'%follow-hint-nosave-buffer result))))
 
 (define-command follow-hint-nosave-buffer-focus ()
-  "Like `follow-hint-nosave-buffer', but with focus."
+  "Like `follow-hint-nosave-buffer', but with focus.
+Uses `%follow-hint-nosave-buffer-focus' internally."
   (query-hints "Open element in new buffer"
                (lambda (result)
                  (%follow-hint-nosave-buffer-focus (first result))
                  (mapcar #'%follow-hint-nosave-buffer (rest result)))))
 
 (define-command follow-hint-with-current-modes-new-buffer ()
-  "Prompt for element hints and open them in a new buffer with current
-modes."
+  "Prompt for element hints and open them in a new buffer with current modes.
+Uses `%follow-hint-with-current-modes-new-buffer' internally."
   (let ((buffer (current-buffer)))
     (query-hints "Open element with current modes in new buffer"
                  (lambda (result)
@@ -511,7 +522,8 @@ modes."
                            result)))))
 
 (define-command copy-hint-url ()
-  "Prompt for element hints and save its corresponding URLs to clipboard."
+  "Prompt for element hints and save its corresponding URLs to clipboard.
+Uses `%copy-hint-url' internally."
   (query-hints "Copy element URL"
                (lambda (result) (%copy-hint-url (first result)))
                :enable-marks-p nil
