@@ -363,11 +363,7 @@ current unmarked suggestion."
                                               (function (slynk-backend:function-name action))
                                               (t action))))
                               "Lambda"))
-                 ("Documentation" ,(or (first (sera:lines
-                                               (typecase action
-                                                 (command (documentation action t))
-                                                 (t (documentation action 'function)))))
-                                       "")))))
+                 ("Documentation" ,(documentation-line action 'function "")))))
 
 (define-class action-on-return-source (prompter:source)
   ((prompter:name "List of actions-on-return")

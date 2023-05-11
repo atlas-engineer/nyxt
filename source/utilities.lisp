@@ -159,6 +159,15 @@ Return the lambda s-expression as a second value, if possible."
                 expression)
         (source-for-thing fun))))
 
+(-> documentation-line (t &optional symbol t)
+    t)
+(export-always 'documentation-line)
+(defun documentation-line (object &optional (type t) default)
+  "Return the first line of OBJECT `documentation' with TYPE.
+If there's no documentation, return DEFAULT."
+  (or (first (sera:lines (documentation object type) :count 1))
+      default))
+
 (-> last-word (string) string)
 (export-always 'last-word)
 (defun last-word (s)

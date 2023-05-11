@@ -217,7 +217,7 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
 
 (defmethod prompter:object-attributes ((class standard-class) (source cell-source))
   `(("Name" ,(class-name class))
-    ("Documentation" ,(first (sera:lines (documentation class 'type))))))
+    ("Documentation" ,(documentation-line class 'type ""))))
 
 (sera:defmethods lisp-cell
     (self

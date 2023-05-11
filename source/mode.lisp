@@ -324,8 +324,7 @@ For production code, see `find-submode' instead."
   (make-instance 'prompter:suggestion
                  :value mode
                  :attributes `(("Mode" ,(string-downcase (symbol-name mode)))
-                               ("Documentation" ,(or (first (sera:lines (documentation mode 'type)))
-                                                     ""))
+                               ("Documentation" ,(documentation-line mode 'type ""))
                                ("Package" ,(string-downcase (package-name (symbol-package mode)))))))
 
 (define-class mode-source (prompter:source)

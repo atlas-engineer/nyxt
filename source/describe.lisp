@@ -640,8 +640,7 @@ A command is a special kind of function that can be called with
                                                 (sym:command-symbol (:nxref :command bound-value))
                                                 (command (:nxref :command (name bound-value)))
                                                 (t (prini-to-string bound-value))))
-                                         (:td (or (first (sera::lines (documentation bound-value 'function)))
-                                                  "")))))))))
+                                         (:td (documentation-line bound-value 'function "")))))))))
     (spinneret:with-html-string
       (:h1 "Bindings")
       (:p (format nil "Buffer with ID ~a does not exist." id)))))
