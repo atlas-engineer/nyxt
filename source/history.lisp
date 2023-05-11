@@ -53,6 +53,9 @@ The total number of visit for a given URL is (+ explicit-visits implicit-visits)
 (defmethod (setf url) (value (he history-entry))
   (setf (slot-value he 'url) (url value)))
 
+(defmethod url ((node htree:node))
+  (url (htree:data node)))
+
 (defmethod prompter:object-attributes ((entry history-entry) (source prompter:source))
   (declare (ignore source))
   `(("URL" ,(render-url (url entry))
