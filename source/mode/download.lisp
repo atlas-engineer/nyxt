@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/download
-    (:documentation "Mode to manage downloads and the download listing page."))
+  (:documentation "Package for `download-mode', mode to manage downloads and the downloads page."))
 (in-package :nyxt/mode/download)
 
 (export-always 'renderer-download)
@@ -11,40 +11,39 @@
   (:metaclass interface-class))
 
 (define-class download (renderer-download)
-  ((url (error "URL required.")
-        :documentation "A string representation of a URL to be shown in the
-interface.")
-   (status :unloaded
-           :export t
-           :reader status
-           :type (member :unloaded
-                         :loading
-                         :finished
-                         :failed
-                         :canceled)
-           :documentation "Status of the download.")
-   (status-text (make-instance 'user-interface:paragraph)
-                :export nil)
-   (completion-percentage 0.0
-                          :reader t
-                          :export t
-                          :type float
-                          :documentation "A number between 0 and 100
-showing the percentage a download is complete.")
-   (bytes-downloaded "-"
-                     :reader t
-                     :export t
-                     :documentation "The number of bytes downloaded.")
-   (bytes-text (make-instance 'user-interface:paragraph)
-               :export nil
-               :documentation "The interface element showing how many bytes have
-been downloaded.")
-   (destination-path #p""
-                     :reader t
-                     :export t
-                     :type pathname
-                     :documentation "Where the file will be downloaded to
-disk.")
+  ((url
+    (error "URL required.")
+    :documentation "A string representation of the URL.")
+   (status
+    :unloaded
+    :export t
+    :reader status
+    :type (member :unloaded :loading :finished :failed :canceled)
+    :documentation "Status of the download.")
+   (status-text
+    (make-instance 'user-interface:paragraph)
+    :export nil)
+   (completion-percentage
+    0.0
+    :reader t
+    :export t
+    :type float
+    :documentation "The download complete percentage.")
+   (bytes-downloaded
+    "-"
+    :reader t
+    :export t
+    :documentation "The number of bytes downloaded.")
+   (bytes-text
+    (make-instance 'user-interface:paragraph)
+    :export nil
+    :documentation "The interface element that shows `bytes-downloaded'.")
+   (destination-path
+    #p""
+    :reader t
+    :export t
+    :type pathname
+    :documentation "The path where the download is written to.")
    (before-download-hook
     (make-instance 'hook-download)
     :type hook-download
@@ -77,43 +76,52 @@ Example: open the loaded files with XDG-open
                            (list \"xdg-open\" (uiop:native-namestring
                                              (nyxt/mode/download:destination-path download)))))
                     :name 'xdg-open-download)))))")
-   (cancel-function nil
-                    :reader t
-                    :export t
-                    :type (or null function)
-                    :documentation "The function to call when
-canceling a download. This can be set by the download engine.")
-   (cancel-button (make-instance 'user-interface:button
-                                 :text "✕ Cancel"
-                                 :action (ps:ps (nyxt/ps:lisp-eval () (echo "Can't cancel download."))))
-                  :export nil
-                  :documentation "The download is referenced by its
-URL. The URL for this button is therefore encoded as a funcall to
-cancel-download with an argument of the URL to cancel.")
-   (open-button (make-instance 'user-interface:button
-                               :text "🗁 Open"
-                               :action (ps:ps (nyxt/ps:lisp-eval () (echo "Can't open file, file path unknown."))))
-                :export nil
-                :documentation "The file name to open is encoded
-within the button's URL when the destination path is set.")
-   (progress-text (make-instance 'user-interface:paragraph)
-                  :export nil)
-   (progress (make-instance 'user-interface:progress-bar)
-             :export nil))
+   (cancel-function
+    nil
+    :reader t
+    :export t
+    :type (or null function)
+    :documentation "The function that cancels the download.
+It can be set by the download engine.")
+   (cancel-button
+    (make-instance 'user-interface:button
+                   :text "✕ Cancel"
+                   :action (ps:ps (nyxt/ps:lisp-eval
+                                   () (echo "Can't cancel download."))))
+    :export nil
+    :documentation "The interface element to cancel the download.
+The download is referenced by its URL. The URL for this button is therefore
+encoded as a funcall to cancel-download with an argument of the URL to cancel.")
+   (open-button
+    (make-instance 'user-interface:button
+                   :text "🗁 Open"
+                   :action (ps:ps (nyxt/ps:lisp-eval
+                                   () (echo "Can't open file, file path unknown."))))
+    :export nil
+    :documentation "The interface element to open the download.
+The file name to open is encoded within the button's URL when the destination
+path is set.")
+   (progress-text
+    (make-instance 'user-interface:paragraph)
+    :export nil)
+   (progress
+    (make-instance 'user-interface:progress-bar)
+    :export nil))
   (:metaclass user-class)
   (:export-accessor-names-p t)
   (:export-class-name-p t)
-  (:documentation "This class is used to represent a download within
-the *Downloads* buffer. The browser class contains a list of these
-download objects: `downloads'."))
+  (:documentation "This class is used to represent a download within the *Downloads* buffer.
+The `downloads' slot is populated by a list of these objects."))
 
 (hooks:define-hook-type download (function (download)))
 
+(-> cancel-download (nyxt::url-designator) t)
 (defun cancel-download (url)
-  "This function is called by the cancel-button with an argument of
-the URL. It will search the URLs of all the existing downloads, if it
-finds it, it will invoke its cancel-function."
-  (alex:when-let ((download (find url (downloads *browser*) :key #'url :test #'equal)))
+  "This function is called by the cancel-button with an argument of the URL.
+
+It will search the URLs of all the existing downloads, if it finds it, it will
+invoke its cancel-function."
+  (alex:when-let ((download (find (url url) (downloads *browser*) :key #'url :test #'equal)))
     (funcall (cancel-function download))
     (echo "Download canceled: ~a." url)))
 
@@ -157,34 +165,34 @@ appearance in the buffer when they are setf'd."
 
 (define-mode download-mode ()
   "Display list of downloads."
-  ((style (theme:themed-css (theme *browser*)
-            `(".download"
-              :background-color ,theme:background
-              :color ,theme:on-background
-              :margin-top "10px"
-              :padding-left "5px"
-              :brightness "80%"
-              :border-radius "3px")
-            `(".download-url"
-              :overflow "auto"
-              :white-space "nowrap")
-            `(".download-url a"
-              :color ,theme:on-background
-              :font-size "small")
-            `(".status p"
-              :display "inline-block"
-              :margin-right "10px")
-            `(".progress-bar-container"
-              :height "20px"
-              :width "100%")
-            `(".progress-bar-base"
-              :background-color ,theme:primary
-              :height "100%")
-            `(".progress-bar-fill"
-              :background-color ,theme:secondary
-              :height "100%"))))
+  ((style
+    (theme:themed-css (theme *browser*)
+      `(".download"
+        :background-color ,theme:background
+        :color ,theme:on-background
+        :margin-top "10px"
+        :padding-left "5px"
+        :brightness "80%"
+        :border-radius "3px")
+      `(".download-url"
+        :overflow "auto"
+        :white-space "nowrap")
+      `(".download-url a"
+        :color ,theme:on-background
+        :font-size "small")
+      `(".status p"
+        :display "inline-block"
+        :margin-right "10px")
+      `(".progress-bar-container"
+        :height "20px"
+        :width "100%")
+      `(".progress-bar-base"
+        :background-color ,theme:primary
+        :height "100%")
+      `(".progress-bar-fill"
+        :background-color ,theme:secondary
+        :height "100%"))))
   (:toggler-command-p nil))
-
 
 (define-internal-page-command-global list-downloads ()
     (buffer "*Downloads*" 'download-mode)
@@ -219,14 +227,12 @@ download."
                        (:raw (user-interface:to-html-string bytes-text))
                        (:raw (user-interface:to-html-string status-text))))))))
 
-
 (defun download-watch (download-render download-object)
   "Update the *Downloads* buffer.
-This function is meant to be run in the background. There is a
-potential thread starvation issue if one thread consumes all
-messages. If in practice this becomes a problem, we should poll on
-each thread until the completion percentage is 100 OR a timeout is
-reached (during which no new progress has been made)."
+This function is meant to be run in the background. There is a potential thread
+starvation issue if one thread consumes all messages. If in practice this
+becomes a problem, we should poll on each thread until the completion percentage
+is 100 OR a timeout is reached (during which no new progress has been made)."
   (when download-manager:*notifications*
     (loop for d = (calispel:? download-manager:*notifications*)
           while d
@@ -244,11 +250,11 @@ reached (during which no new progress has been made)."
 ;; query cookies.
 (export-always 'download)
 (defmethod download ((buffer buffer) url &key cookies (proxy-url :auto))
-  "Download URL.
+  "Download URL in BUFFER.
 When PROXY-URL is :AUTO (the default), the proxy address is guessed from the
 current buffer.
-
-Return the download object matching the download."
+Rely on `download-engine' of the BUFFER.
+Return the `download' object matching the download."
   (prog1
       (match (download-engine buffer)
         (:lisp

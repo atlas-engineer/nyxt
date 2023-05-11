@@ -2,7 +2,14 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/file-manager
-    (:documentation "Mode for file management from the prompt buffer."))
+  (:documentation "Package for `file-manager-mode', mode for file management
+from the prompt buffer.
+
+Exposes the following `prompter:source's: `program-source', `file-source' and
+`open-file-source'.
+
+Uses CL `delete-file' and `rename-file', together with `open-file-function', to
+act of files."))
 (in-package :nyxt/mode/file-manager)
 
 (nyxt/mode/prompt-buffer::define-command-prompt directory-up (prompt-buffer)
@@ -16,8 +23,9 @@
 
 (define-mode file-manager-mode (nyxt/mode/prompt-buffer:prompt-buffer-mode)
   "Prompt buffer mode to manage file systems.
-Return actions include deleting, renaming and opening files with external
-programs."
+
+Provides a handful of prompt buffer return actions such as deleting, renaming or
+opening files with external programs."
   ((visible-in-status-p nil)
    (keyscheme-map
     (define-keyscheme-map "file-manager-mode" ()

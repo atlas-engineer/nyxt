@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/force-https
-    (:documentation "Mode for enforcing HTTPS on any URL clicked/hinted/set by user."))
+  (:documentation "Package for `force-https-mode', mode to redirect all HTTP traffic to HTTPS."))
 (in-package :nyxt/mode/force-https)
 
 ;; TODO: Add style to loop help page?
@@ -27,9 +27,10 @@ help on how to proceed."
    buffer))
 
 (define-mode force-https-mode ()
-  "Impose HTTPS on every queried URL.
-Use at your own risk -- it can break websites whose certificates are not known
-and websites that still don't have HTTPS version (shame on them!).
+  "Redirect HTTP traffic to HTTPS.
+
+Notice that it may break websites whose certificates are not known, or those who
+don't have an HTTPS version.
 
 To permanently bypass the \"Unacceptable TLS Certificate\" error:
 \(setf nyxt/mode/certificate-exception:*default-certificate-exceptions*
