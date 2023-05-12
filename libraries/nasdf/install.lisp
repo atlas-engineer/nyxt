@@ -84,8 +84,8 @@ Destination directory is given by the `dest-source-dir' generic function."))
       (first (last (pathname-directory
                     ;; Ensure directory _after_ truenamizing, otherwise if
                     ;; non-directory file exists it may not yield a directory.
-                    (uiop:ensure-directory-pathname
-                     (uiop:ensure-pathname pathname :truenamize t)))))))
+                    (ensure-directory-pathname
+                     (ensure-pathname pathname :truenamize t)))))))
 
 (defun path-from-env (environment-variable default)
   (let ((env (getenv environment-variable)))
@@ -163,12 +163,12 @@ Final path is resolved in `dest-source-dir'.")
   nil)
 
 (defmethod asdf:output-files ((op asdf:compile-op) (c nasdf-file))
-  (values (list (uiop:merge-pathnames* (pathname-name (asdf:component-name c))
-                                       *prefix*))
+  (values (list (merge-pathnames* (pathname-name (asdf:component-name c))
+                                  *prefix*))
           t))
 
 (defmethod asdf:output-files ((op asdf:compile-op) (c nasdf-binary-file))
-  (values (list (uiop:merge-pathnames* (basename (asdf:component-name c)) *bindir*))
+  (values (list (merge-pathnames* (basename (asdf:component-name c)) *bindir*))
           t))
 
 (defmethod asdf:perform ((op asdf:compile-op) (c nasdf-binary-file))
@@ -177,14 +177,14 @@ Final path is resolved in `dest-source-dir'.")
   nil)
 
 (defmethod asdf:output-files ((op asdf:compile-op) (c nasdf-library-file))
-  (values (list (uiop:merge-pathnames* (basename (asdf:component-name c)) (libdir c)))
+  (values (list (merge-pathnames* (basename (asdf:component-name c)) (libdir c)))
           t))
 
 (defmethod asdf:output-files ((op asdf:compile-op) (c nasdf-desktop-file))
-  (values (list (uiop:merge-pathnames* (uiop:merge-pathnames*
-                                        (basename (asdf:component-name c))
-                                        "applications/")
-                                       *datadir*))
+  (values (list (merge-pathnames* (merge-pathnames*
+                                   (basename (asdf:component-name c))
+                                   "applications/")
+                                  *datadir*))
           t))
 
 (defun scan-last-number (path)
@@ -197,7 +197,7 @@ Return NIL is there is none."
                                 (if result
                                     (return-from red result)
                                     result)))
-                          (uiop:native-namestring path)
+                          (native-namestring path)
                           :initial-value '()
                           :from-end t))))
     (when result
@@ -207,8 +207,8 @@ Return NIL is there is none."
   "Return all files of NASDF-ICON-DIRECTORY `type' in its directory.
 File must contain a number in their path."
   (let ((result (remove-if (complement #'scan-last-number)
-                           (uiop:directory-files (asdf:component-pathname c)
-                                                 (uiop:strcat "*." (asdf:file-type c))))))
+                           (directory-files (asdf:component-pathname c)
+                                            (strcat "*." (asdf:file-type c))))))
     (let* ((dimensions (mapcar #'scan-last-number result))
            (dups (set-difference dimensions
                                  (remove-duplicates dimensions)
@@ -247,13 +247,13 @@ File must contain a number in their path."
      (constantly t)
      (lambda (dir)
        (notany (lambda (exclusion)
-                 (uiop:string-suffix-p (basename dir) exclusion))
+                 (string-suffix-p (basename dir) exclusion))
                (mapcar #'basename exclude-subpath)))
      (lambda (subdirectory)
        (setf result (append result
                             (remove-if
                              (lambda (file) (file-excluded-type file exclude-types))
-                             (uiop:directory-files subdirectory))))))
+                             (directory-files subdirectory))))))
     result))
 
 (export-always 'copy-directory)
@@ -278,18 +278,18 @@ They are either listed with 'git ls-files' or directly if Git is not found."
   (let ((source (asdf:component-pathname component))
         (root (asdf:system-source-directory (asdf:component-system component))))
     (handler-case
-        (uiop:with-current-directory (root)
+        (with-current-directory (root)
           (let ((absolute-exclusions (mapcar (lambda (exclusion)
                                                (namestring
                                                 (merge-pathnames*
-                                                 (uiop:ensure-directory-pathname exclusion)
-                                                 (uiop:ensure-directory-pathname source))))
+                                                 (ensure-directory-pathname exclusion)
+                                                 (ensure-directory-pathname source))))
                                              (exclude-subpath component))))
             (remove-if (lambda (file)
                          (or (file-excluded-type file (exclude-types component))
                              (let ((file-string (namestring file)))
                                (some (lambda (exclusion)
-                                       (uiop:string-prefix-p exclusion file-string))
+                                       (string-prefix-p exclusion file-string))
                                      absolute-exclusions))))
                        (mapcar (lambda (path)
                                  (ensure-pathname path :truenamize t))
@@ -298,7 +298,7 @@ They are either listed with 'git ls-files' or directly if Git is not found."
                                 source)))))
       (error (c)
         (warn "~a~&Git error, falling back to direct listing." c)
-        (uiop:with-current-directory (root)
+        (with-current-directory (root)
           (list-directory source :exclude-subpath (exclude-subpath component)
                                  :exclude-types (exclude-types component)))))))
 
