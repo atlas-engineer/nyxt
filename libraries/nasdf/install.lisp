@@ -309,3 +309,20 @@ They are either listed with 'git ls-files' or directly if Git is not found."
                (merge-pathnames* (uiop:subpathp path root) (dest-source-dir component)))
              (asdf:input-files op component))
      t)))
+
+(export-always 'nasdf-source-file)
+(defclass nasdf-source-file (nasdf-file) ()
+  (:documentation "Common Lisp source files.
+
+Destination directory is given by the `dest-source-dir' generic function."))
+(import 'nasdf-source-file :asdf-user)
+
+(defmethod dest-source-dir ((component nasdf-source-file)) ; TODO: Factor with other method?
+  "The directory into which the source is installed."
+  (let ((name (asdf:primary-system-name (asdf:component-system component))))
+    (ensure-directory-pathname
+     (merge-pathnames* name *dest-source-dir*))))
+
+(defmethod asdf:output-files ((op asdf:compile-op) (c nasdf-source-file))
+  (values (list (merge-pathnames* (basename (asdf:component-name c)) (dest-source-dir c)))
+          t))
