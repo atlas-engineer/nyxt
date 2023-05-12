@@ -26,8 +26,11 @@
                 #:run-program
                 #:split-string
                 #:strcat
+                #:string-prefix-p
+                #:string-suffix-p
                 #:subpathp
-                #:symbol-call)
+                #:symbol-call
+                #:with-current-directory)
   (:import-from :asdf
                 #:clear-configuration
                 #:perform
