@@ -17,7 +17,7 @@ Not modifiable."
 (define-class history-entry ()          ; TODO: Export?
   ((url
     (quri:uri "")
-    :accessor nil
+    :writer nil
     :type (or quri:uri string))
    (title "")
    (last-access "" ; TODO: Remove with Nyxt 2.0?
@@ -46,9 +46,6 @@ It's a list of a form (Y &OPTIONAL X)."))
   (:export-accessor-names-p t)
   (:documentation "Entry for the global history.
 The total number of visit for a given URL is (+ explicit-visits implicit-visits)."))
-
-(defmethod url ((he history-entry))
-  (slot-value he 'url))
 
 (defmethod (setf url) (value (he history-entry))
   (setf (slot-value he 'url) (url value)))
