@@ -156,7 +156,8 @@ Example:
                                 ".image"))))
   (setq root (expand-file-name (or root
                                    (concat nyxt-guix-profile-directory "/nyxt"))))
-  (let ((cl-source-registry (format "%s:%s"
+  (let ((cl-source-registry (format "%s:%s:%s"
+                                    (concat nyxt-checkout "/libraries/nasdf/")
                                     nyxt-checkout
                                     (or (getenv "CL_SOURCE_REGISTRY") "")))
         (guix-def (concat nyxt-checkout "/build-scripts/nyxt.scm")))
