@@ -38,7 +38,6 @@ File ot type `type' are looked for.
 The last number found in the file name is used to install the icon in the right directory."))
 (import 'nasdf-icon-directory :asdf-user)
 
-;; TODO: Is it possible to list all files targetted by an ASDF system?
 (export-always 'nasdf-source-directory)
 (defclass nasdf-source-directory (nasdf-file)
   ((exclude-subpath
@@ -302,13 +301,15 @@ They are either listed with 'git ls-files' or directly if Git is not found."
           (list-directory source :exclude-subpath (exclude-subpath component)
                                  :exclude-types (exclude-types component)))))))
 
-(defmethod asdf:output-files ((op asdf:compile-op) (component nasdf-source-directory))
+(defun resolve-destination (component file)
   (let ((root (asdf:system-source-directory (asdf:component-system component))))
-    (values
-     (mapcar (lambda (path)
-               (merge-pathnames* (uiop:subpathp path root) (dest-source-dir component)))
-             (asdf:input-files op component))
-     t)))
+    (merge-pathnames* (uiop:subpathp file root) (dest-source-dir component))))
+
+(defmethod asdf:output-files ((op asdf:compile-op) (component nasdf-source-directory))
+  (values
+   (mapcar (lambda (f) (resolve-destination component f))
+           (asdf:input-files op component))
+   t))
 
 (export-always 'nasdf-source-file)
 (defclass nasdf-source-file (nasdf-file) ()
@@ -326,3 +327,56 @@ Destination directory is given by the `dest-source-dir' generic function."))
 (defmethod asdf:output-files ((op asdf:compile-op) (c nasdf-source-file))
   (values (list (merge-pathnames* (basename (asdf:component-name c)) (dest-source-dir c)))
           t))
+
+(export-always 'nasdf-install-system)
+(defclass nasdf-install-system (asdf:system)
+  ((include-source-p
+    :initform t
+    :type boolean
+    :accessor include-source-p
+    :initarg :include-source-p
+    :documentation "Whether to install the source code."))
+  (:documentation "System for installation.
+It installs the component files of all systems defined in the hosting .asd to `dest-source-dir'.
+Extra files can be specified as components.  Example:
+
+\(defsystem \"my-app/install\"
+  :defsystem-depends-on (\"nasdf\")
+  :class :nasdf-install-system
+  :components ((:nasdf-desktop-file \"assets/my-app.desktop\")
+               (:nasdf-icon-directory \"assets/\")
+               (:nasdf-binary-file \"my-app\")
+               (:nasdf-source-directory \"libraries\"
+                :exclude-subpath (\"web-extensions\") ; Do not install this non-Lisp source.
+                :exclude-types (\"o\" \"c\" \"h\" ; C code and artifacts.
+                                    \"fasl\"))))"))
+(import 'nasdf-install-system  :asdf-user)
+
+(defmethod dest-source-dir ((component nasdf-install-system))
+  "The directory into which the source is installed."
+  (let ((name (asdf:primary-system-name (asdf:component-system component))))
+    (ensure-directory-pathname
+     (merge-pathnames* name *dest-source-dir*))))
+
+(defmethod asdf:perform ((op asdf:compile-op) (c nasdf-install-system))
+  (when (include-source-p c)
+    ;; TODO: Can we avoid installing the .asd multiple times?
+    (mapc (lambda (s)
+            (logger "Installing system ~a" s)
+            (mapcar (lambda (f)
+                      (let ((dest (resolve-destination c f)))
+                        (install-file f dest)
+                        (logger "installed ~s" dest)))
+                    (cons (asdf:system-source-file s)
+                          (remove-if #'uiop:directory-exists-p
+                                     (mapcar #'asdf:component-pathname (asdf:required-components s))))))
+          (cons :nasdf
+                (let ((systems-in-host-asd '()))
+                  (asdf:map-systems (lambda (s) (when (and (uiop:pathname-equal (asdf:system-source-file c)
+                                                                                (asdf:system-source-file s))
+                                                           ;; Do not include the install system itself:
+                                                           (not (eq s c)))
+                                                  (push s systems-in-host-asd))))
+                  systems-in-host-asd))))
+  (call-next-method)
+  nil)
