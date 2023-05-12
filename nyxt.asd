@@ -265,7 +265,10 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
   :in-order-to ((test-op (test-op "nyxt/tests")
                          ;; We test if manual dumping works, since it may catch
                          ;; some subtle mistakes:
-                         (compile-op "nyxt/documentation"))))
+                         (compile-op "nyxt/documentation")
+                         ;; Subsystems:
+                         (test-op "nyxt/analysis")
+                         (test-op "nyxt/theme"))))
 
 (defsystem "nyxt/submodules"
   :defsystem-depends-on ("nasdf")
