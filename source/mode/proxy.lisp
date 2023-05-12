@@ -3,7 +3,9 @@
 
 (nyxt:define-package :nyxt/mode/proxy
   (:shadow #:proxy) ; Because of exported slot of the same below.
-  (:documentation "Proxy mode can be used to do all the networking (optionally
+  (:documentation "Package for `proxy-mode' to configure a proxy connection.
+
+Proxy mode can be used to do all the networking (optionally
 including downloads) via a proxy server.
 It can also be configured to forward all the networking through local services
 like Tor."))
@@ -24,11 +26,12 @@ Example to use Tor as a proxy both for browsing and downloading:
 
 \(define-configuration web-buffer
   ((default-modes (append '(proxy-mode) %slot-value%))))"
-  ((proxy (make-instance 'nyxt:proxy
-                         :url (quri:uri "socks5://localhost:9050")
-                         :allowlist '("localhost" "localhost:8080")
-                         :proxied-downloads-p t)
-          :type nyxt:proxy)))
+  ((proxy
+    (make-instance 'nyxt:proxy
+                   :url (quri:uri "socks5://localhost:9050")
+                   :allowlist '("localhost" "localhost:8080")
+                   :proxied-downloads-p t)
+    :type nyxt:proxy)))
 
 (defmethod enable ((mode proxy-mode) &key)
   (if (web-buffer-p (buffer mode))

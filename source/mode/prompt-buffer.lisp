@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/prompt-buffer
-    (:documentation "Mode for prompter buffer."))
+  (:documentation "Package for `prompt-buffer-mode' to interact with the `prompt-buffer'."))
 (in-package :nyxt/mode/prompt-buffer)
 
 (define-mode prompt-buffer-mode ()
@@ -52,8 +52,11 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "keypadenter" 'run-action-on-return
        "M-return" 'set-action-on-return
        "M-keypadenter" 'set-action-on-return
-       "C-return" 'run-action-on-current-suggestion
-       "C-keypadenter" 'run-action-on-current-suggestion
+       "C-return" 'toggle-mark-forwards
+       "C-keypadenter" 'toggle-mark-forwards
+       "s-return" 'toggle-mark-forwards
+       "s-keypadenter" 'toggle-mark-forwards
+       "C-j" 'run-action-on-current-suggestion
        "C-c C-j" 'set-action-on-current-suggestion
        "tab" 'insert-current-suggestion
        ; TODO: This is the Emacs Helm binding.  Better?
@@ -360,11 +363,7 @@ current unmarked suggestion."
                                               (function (slynk-backend:function-name action))
                                               (t action))))
                               "Lambda"))
-                 ("Documentation" ,(or (first (sera:lines
-                                               (typecase action
-                                                 (command (documentation action t))
-                                                 (t (documentation action 'function)))))
-                                       "")))))
+                 ("Documentation" ,(documentation-line action 'function "")))))
 
 (define-class action-on-return-source (prompter:source)
   ((prompter:name "List of actions-on-return")

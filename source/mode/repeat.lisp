@@ -2,11 +2,34 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/repeat
-    (:documentation "Mode to repeat actions."))
+  (:documentation "Package for `repeat-mode', a mode to repeat actions.
+
+Parts of the API are:
+- `repeat-mode' slots:
+  - `repeat-action': the action to repeat.
+  - `repeat-count': the number of times to repeat the `repeat-action'.
+  - `repeat-interval': the interval to repeat `repeat-action' at.
+- Internal keyboard dispatchers (can be a good example of Nyxt input handling):
+  - `make-repeat-command-dispatcher'.
+  - `skip-repeat-dispatch'.
+
+`repeat-mode' is based on `nyxt/mode/process:process-mode' and customizes the
+`nyxt/mode/process:firing-condition', `nyxt/mode/process:action', and
+`nyxt/mode/process:cleanup' to repeat the action on the dedicated thread.
+
+See the `repeat-mode' for the external user-facing APIs."))
 (in-package :nyxt/mode/repeat)
 
 (define-mode repeat-mode (nyxt/mode/process:process-mode)
-  "Repeat the execution of a command while enabled."
+  "Repeat the execution of a command while enabled.
+
+The commands that `repeat-mode' exposes are:
+- `repeat-every' to repeat an action every X seconds.
+- `repeat-times' to repeat an action only X times.
+- `repeat-key' to repeat the command bound to the keybinding.
+
+See `nyxt/mode/repeat' package documentation for implementation details and
+internal programming APIs."
   ((visible-in-status-p nil)
    (rememberable-p nil)
    (repeat-count
@@ -58,38 +81,39 @@ It takes a `repeat-mode' instance as argument.")
                 (declare (ignore mode))
                 (funcall prompted-action))))))
 
-(define-command-global repeat-every (&optional seconds function)
+(define-command-global repeat-every (&key (seconds (sera:parse-float
+                                                    (prompt1 :prompt "Repeat every X seconds"
+                                                             :input "5"
+                                                             :hide-suggestion-count-p t
+                                                             :sources 'prompter:raw-source)
+                                                    :type 'single-float))
+                                     function)
   "Prompt for FUNCTION to be run every SECONDS."
-  (alex:when-let ((seconds (or seconds
-                               (ignore-errors
-                                (parse-integer
-                                 (prompt1 :prompt "Repeat every X seconds"
-                                          :input "5"
-                                          :hide-suggestion-count-p t
-                                          :sources 'prompter:raw-source))))))
-    (enable-modes* 'repeat-mode
-                   (current-buffer)
-                   :repeat-interval seconds
-                   :repeat-action function)))
+  (enable-modes* 'repeat-mode
+                 (current-buffer)
+                 :repeat-interval seconds
+                 :repeat-action function))
 
-(define-command-global repeat-times (&optional times function)
+(define-command-global repeat-times (&key (times
+                                           (parse-integer
+                                            (prompt1 :prompt "Repeat for X times"
+                                                     :input "4"
+                                                     :hide-suggestion-count-p t
+                                                     :sources 'prompter:raw-source)))
+                                     function)
   "Prompt for FUNCTION to be run a number of TIMES."
-  (alex:when-let ((times (or times
-                             (ignore-errors
-                              (parse-integer
-                               (prompt1 :prompt "Repeat for X times"
-                                        :input "4"
-                                        :hide-suggestion-count-p t
-                                        :sources 'prompter:raw-source))))))
-    (enable-modes* 'repeat-mode
-                   (current-buffer)
-                   :repeat-count times
-                   :repeat-action function)))
+  (enable-modes* 'repeat-mode
+                 (current-buffer)
+                 :repeat-count times
+                 :repeat-action function))
 
 (defvar *repeat-times-stack* 0
   "The current number of repetitions.")
 
 (defun make-repeat-command-dispatcher (times)
+  "Create a command dispatcher that counts the M-digit keys and adds them together.
+Once a non-number key is pressed, it dispatches this key to a command and starts
+repeating it like a regular `repeat-mode' does."
   (lambda (command)
     (if (eq 'repeat-key command)
         (dispatch-command command)
@@ -102,6 +126,7 @@ It takes a `repeat-mode' instance as argument.")
                 *repeat-times-stack* 0)))))
 
 (defun skip-repeat-dispatch (keyspec)
+  "A stub copy of `dispatch-input-skip' customized for `repeat-mode'."
   (declare (ignore keyspec))
   (echo "Canceled repeat-key.")
   (setf (command-dispatcher (current-window)) #'dispatch-command

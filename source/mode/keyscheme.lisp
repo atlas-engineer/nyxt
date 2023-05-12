@@ -2,13 +2,26 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/keyscheme
-  (:documentation "All modes that set `keyscheme' should inherit from this mode.
+  (:documentation "Package for `keyscheme-mode' that all modes setting `keyscheme' should inherit from.
 Ensures that a single keybindings mode, such as `nyxt/mode/emacs', is enabled."))
 (in-package :nyxt/mode/keyscheme)
 
 (define-mode keyscheme-mode ()
   "All modes that set `keyscheme' should inherit from this mode.
-Ensures that a single keybindings mode, such as `nyxt/mode/emacs', is enabled."
+Ensures that a single keybindings mode, such as `nyxt/mode/emacs', is enabled.
+
+In addition to inheriting this mode for your keyscheme mode, define a new
+keyscheme in `nyxt/keyscheme' with `nyxt/keyscheme:make-keyscheme' so that you
+can conveniently reference it with \"keyscheme:mode-name\" shortcut.
+
+Example of defining a keyscheme mode:
+
+;; Beware that this may raise package locks condition on SBCL.
+(defvar keyscheme:my-keyscheme-mode
+        (keyscheme:make-keyscheme \"my-keyscheme-mode\" keyscheme:default))
+
+(define-mode my-keyscheme-mode (nyxt/mode/keyscheme:keyscheme-mode)
+  ((keyscheme keyscheme:my-keyscheme-mode)))"
   ((rememberable-p nil)
    (keyscheme                           ; This specialized `nyxt:keyscheme'.
     keyscheme:cua

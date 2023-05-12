@@ -2,13 +2,15 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/expedition
-    (:documentation "Traverse a list of links."))
+  (:documentation "Package for `expedition-mode', mode to traverse chosen URLs."))
 (in-package :nyxt/mode/expedition)
 
 (define-mode expedition-mode ()
-  "Mode for traversing a set of URLs."
+  "Mode to traverse URLs delimited by a user specified buffer rectangle."
   ((urls (list))
-   (index 0 :documentation "The index of the current element in URLs.")
+   (index
+    0
+    :documentation "The index of the current element in URLs.")
    (keyscheme-map
     (define-keyscheme-map "expedition-mode" ()
       keyscheme:cua

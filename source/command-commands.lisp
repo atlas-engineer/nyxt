@@ -15,8 +15,7 @@
                     (current-keymaps buffer))))
     `(("Name" ,(string-downcase (closer-mop:generic-function-name command)))
       ("Bindings" ,(format nil "~{~a~^, ~}" bindings))
-      ("Docstring" ,(or (first (sera::lines (documentation command 'function)))
-                        "") nil 4)
+      ("Docstring" ,(documentation-line command 'function "") nil 4)
       ("Mode" ,(let ((package-name (str:downcase (uiop:symbol-package-name (closer-mop:generic-function-name command)))))
                  (if (sera:in package-name "nyxt" "nyxt-user")
                      ""
@@ -113,8 +112,7 @@ Includes all commands and modes, and adds arbitrary Lisp functions on top of tha
         (*print-case* :downcase))
     `(("Expression" ,(format nil "~s" extended-command))
       ("Arguments" ,(remove #\newline (format nil "~{~a~^ ~}" (arglist function))))
-      ("Documentation" ,(or (first (sera::lines (documentation function 'function)))
-                            "") nil 4))))
+      ("Documentation" ,(documentation-line function 'function "") nil 4))))
 
 (defmethod prompter:object-attributes ((extended-command symbol) (source extended-command-source))
   (declare (ignore source))
@@ -123,7 +121,7 @@ Includes all commands and modes, and adds arbitrary Lisp functions on top of tha
         (let ((function (symbol-function extended-command)))
           `(("Expression" ,(format nil "~s" extended-command))
             ("Arguments" ,(remove #\newline (format nil "~{~a~^ ~}" (arglist function))))
-            ("Documentation" ,(or (first (sera::lines (documentation function 'function))) "") nil 4)))
+            ("Documentation" ,(documentation-line function 'function "") nil 4)))
         `(("Expression" ,(prini-to-string extended-command))
           ("Arguments" "")
           ("Documentation" ,(or (documentation extended-command 'variable) "") nil 4)))))

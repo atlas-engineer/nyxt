@@ -30,13 +30,13 @@
 (export-always 'make-keyscheme)
 (defun make-keyscheme (name &rest parents)
   "Return a new `nkeymaps:keyscheme' object of type `nyxt-keymap-value'.
-The scheme name inherits from the optional PARENTS, ordered by priority.
+The keyscheme inherits from the optional PARENTS, ordered by priority.
 
 Example:
 
-  (defvar emacs (make-keyscheme \"emacs\" cua))
+  (defvar cua-child (make-keyscheme \"cua-child\" cua))
 
-In the above, we define a new scheme name called `emacs' which inherits from the
+In above example defines a keyscheme called `cua-child', which inherits from the
 existing keyscheme `cua'."
   (the (values nkeymaps:keyscheme &optional)
        (make-instance 'nkeymaps:keyscheme

@@ -76,7 +76,7 @@ The most useful functions are:
   img-element input-element ins-element kbd-element label-element legend-element
   (li-element list-element) link-element (main-element semantic-element) map-element
   (mark-element semantic-element) meta-element meter-element (nav-element semantic-element)
-  noscript-element object-element (ol-element list-element) optgroup-element
+  (noscript-element plump:fulltext-element) object-element (ol-element list-element) optgroup-element
   (option-element text-element) output-element (p-element text-element) param-element
   (pre-element text-element) progress-element q-element rp-element rt-element rtc-element
   ruby-element samp-element (script-element plump:fulltext-element)
@@ -229,7 +229,7 @@ Full copy means recursively descending to the children of the NODE too."))
   (:documentation "Get the recursive parents of the NODE.
 The closest parent goes first, the furthest one goes last."))
 
-(export-always 'get-unique-selector)
+;; TODO: Copy the algo from https://github.com/antonmedv/finder
 (-> get-unique-selector (plump:element) t)
 (defmemo get-unique-selector (element)
   "Find the shortest selector that uniquely identifies the element on a page.

@@ -2,17 +2,17 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/tts
-    (:documentation "Mode for interacting with Text-to-Speech (TTS) software."))
+  (:documentation "Package for `tts-mode', for leveraging Text-To-Speech (TTS) in Nyxt buffers."))
 (in-package :nyxt/mode/tts)
 
 (define-mode tts-mode ()
-  "A mode for interacting with Text-to-Speech (TTS) software.
+  "A mode for interacting with Text-To-Speech (TTS) software.
 
-By default, no executable is configured, so for the mode to work, you need to
-configure an executable that can take a string of text. Something like `espeak`
-or `espeak-ng` should work out of the box. The content that will be sent to the
+By default, no executable is configured, so you need to
+configure an executable that can take a string of text. Something like 'espeak'
+or 'espeak-ng' should work out of the box. The content that will be sent to the
 executable is the text content of paragraph and heading tags on the page. This
-can be configured by changing the `selector` slot.
+can be configured by configuring the `selector' slot.
 
 Example:
 
@@ -20,15 +20,18 @@ Example:
    ((nyxt/mode/tts:executable \"espeak\")
     (nyxt/mode/tts:selector \"p, h1, h2, h3, h4, h5, h6\")))"
   ((visible-in-status-p nil)
-   (executable nil
-               :type (or string null)
-               :documentation "The executable command to run.")
-   (selector "p, h1, h2, h3, h4, h5, h6"
-       :type string
-     :documentation "CSS selector that describes which elements' text to speak.")
-   (executable-process-info nil
-                            :type (or uiop/launch-program::process-info null)
-                            :documentation "Holds the process-info object of the running process")))
+   (executable
+    nil
+    :type (or string null)
+    :documentation "The executable command to run.")
+   (selector
+    "p, h1, h2, h3, h4, h5, h6"
+    :type string
+    :documentation "CSS selector that describes which elements' text to speak.")
+   (executable-process-info
+    nil
+    :type (or uiop/launch-program::process-info null)
+    :documentation "Holds the process-info object of the running process")))
 
 (defmethod process-document ((mode tts-mode))
   "Fetch the text in buffer that matches `selector` and send it off to the TTS."

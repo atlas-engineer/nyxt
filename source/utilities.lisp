@@ -73,7 +73,7 @@ Particularly useful to avoid errors on already terminated threads."
       :default))
 
 (export-always 'prini)
-(defun prini (value stream &rest keys &key (case :downcase) (pretty t)  (circle t)
+(defun prini (value stream &rest keys &key (case :downcase) (pretty t)  (circle nil)
                                         (readably nil) (package *package*) &allow-other-keys)
   "PRINt for Interface: a printing primitive with the best aesthetics for Nyxt interfaces.
 `write'-s the VALUE to STREAM with CASE, PRETTY, CIRCLE, and READABLY set to the
@@ -87,7 +87,7 @@ most intuitive values."
     (apply #'write value :stream stream keys)))
 
 (export-always 'prini-to-string)
-(defun prini-to-string (value &rest keys &key (case :downcase) (pretty t) (circle t)
+(defun prini-to-string (value &rest keys &key (case :downcase) (pretty t) (circle nil)
                                            (readably nil) (package *package*) &allow-other-keys)
   "A string-returning version of `prini'."
   (declare (ignorable case pretty circle readably package))
@@ -158,6 +158,15 @@ Return the lambda s-expression as a second value, if possible."
         (values (prini-to-string expression)
                 expression)
         (source-for-thing fun))))
+
+(-> documentation-line (t &optional symbol t)
+    t)
+(export-always 'documentation-line)
+(defun documentation-line (object &optional (type t) default)
+  "Return the first line of OBJECT `documentation' with TYPE.
+If there's no documentation, return DEFAULT."
+  (or (first (sera:lines (documentation object type) :count 1))
+      default))
 
 (-> last-word (string) string)
 (export-always 'last-word)
@@ -231,3 +240,8 @@ package set to current package."
           (subtypep (type-of object) (class-name
                                       (first (closer-mop:method-specializers method)))))
         (closer-mop:generic-function-methods generic-function)))
+
+(export-always 'smart-case-test)
+(-> smart-case-test (string) function)
+(defun smart-case-test (string)
+  (if (str:downcasep string) #'string-equal #'string=))

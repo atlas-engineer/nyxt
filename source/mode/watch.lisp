@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/watch
-  (:documentation "Mode for reloading buffers at regular time intervals."))
+  (:documentation "Package for `watch-mode', which reloads buffers at regular time intervals."))
 (in-package :nyxt/mode/watch)
 
 (defun seconds-from-user-input ()

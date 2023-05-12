@@ -6,7 +6,10 @@
 (define-mode plaintext-editor-mode (editor-mode)
   "Mode for basic plaintext editing.
 
+It renders the file in a single textarea HTML element.
+
 To enable it, add this to your configuration file:
+
 \(define-configuration nyxt/mode/editor::editor-buffer
   ((default-modes (cons 'nyxt/mode/editor::plaintext-editor-mode %slot-value%))))"
   ((visible-in-status-p nil)

@@ -197,6 +197,11 @@ major versions."
       " Query replace the regexp "
       (:code "nyxt/\([a-z-]*\)-mode") " with " (:code "nyxt/mode/\\1") ".")
 
+  nyxt/bookmark-frequent-visits
+  (:p "Renamed to " (:nxref :class-name 'nyxt/mode/bookmark-frequent-visits) "."
+      " Query replace the regexp "
+      (:code "nyxt/\([a-z-]*\)-mode") " with " (:code "nyxt/mode/\\1") ".")
+
   nyxt/bookmark-mode
   (:p "Renamed to " (:nxref :class-name 'nyxt/mode/bookmark) "."
       " Query replace the regexp "

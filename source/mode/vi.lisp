@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/vi
-  (:documentation "VI-style bindings."))
+  (:documentation "Package for `vi-normal-mode' and `vi-insert-mode', which provide VI-style bindings."))
 (in-package :nyxt/mode/vi)
 
 (define-mode vi-normal-mode (nyxt/mode/keyscheme:keyscheme-mode)
@@ -27,7 +27,8 @@ See also `vi-insert-mode'."
     (define-keyscheme-map "vi-normal-mode" ()
       keyscheme:vi-normal
       (list
-       "i" 'vi-insert-mode)))))
+       "i" 'vi-insert-mode
+       "v" 'nyxt/mode/visual:visual-mode)))))
 
 
 ;; TODO: Move ESCAPE binding to the override map?

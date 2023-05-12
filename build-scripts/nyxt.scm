@@ -10,7 +10,7 @@
 ;;
 ;; To use as the basis for a development environment, run:
 ;;
-;;   guix shell --container -D -f build-scripts/nyxt.scm glib glib-networking gsettings-desktop-schemas
+;;   guix shell --container --network -D -f build-scripts/nyxt.scm glib glib-networking gsettings-desktop-schemas git nss-certs
 ;;
 ;; Replace --container by --pure if you still want ASDF to see external
 ;; libraries in ~/common-lisp, etc.

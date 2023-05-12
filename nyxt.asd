@@ -33,13 +33,6 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
   `((asdf:load-op ,(format nil "nyxt/~a-application" *nyxt-renderer*))
     ,@(call-next-method)))
 
-(defclass nyxt-source-directory (nasdf:nasdf-source-directory)
-  ())
-(import 'nyxt-source-directory :asdf-user)
-
-(defmethod nasdf:dest-source-dir ((component nyxt-source-directory))
-  (uiop:merge-pathnames* "nyxt/" (call-next-method)))
-
 (defclass nyxt-library-file (nasdf:nasdf-library-file)
   ())
 (import 'nyxt-library-file :asdf-user)
@@ -64,7 +57,7 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
 (defsystem "nyxt"
   :defsystem-depends-on ("nasdf")
   :class :nasdf-system
-  :version "3"                          ;  3-pre-release-7 / Development version
+  :version "3.0.0"
   :author "Atlas Engineer LLC"
   :homepage "https://nyxt.atlas.engineer"
   :description "Extensible web browser in Common Lisp"
@@ -264,8 +257,8 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                  (:file "small-web")
                  (:file "style" :depends-on ("bookmarklets"))
                  (:file "tts")
-                 (:file "vi")
                  (:file "visual")
+                 (:file "vi")
                  (:file "watch"))))
   :around-compile "NASDF:FAIL-ON-WARNINGS"
   :in-order-to ((test-op (test-op "nyxt/tests")
@@ -425,7 +418,8 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
   :components ((:file "web-extensions")
                (:file "web-extensions-callbacks")
                (:file "renderer/gtk-clipboard")
-               (:file "renderer/gtk")))
+               (:file "renderer/gtk"))
+  :in-order-to ((test-op (test-op "nyxt/gi-gtk/tests"))))
 
 (defsystem "nyxt/gi-gtk"
   :defsystem-depends-on ("nasdf")
@@ -449,6 +443,7 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                (:file "tests/renderer-offline/execute-command-eval")
                (:file "tests/renderer-offline/remembrance")
                (:file "tests/renderer-offline/nyxt-url-security")
+               (:file "tests/renderer-offline/search-buffer")
                (:file "tests/renderer-online/set-url")))
 
 (defsystem "nyxt/qt"
@@ -514,9 +509,10 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
   :components ((:nasdf-desktop-file "assets/nyxt.desktop")
                (:nasdf-icon-directory "assets/")
                (:nasdf-binary-file "nyxt")
-               (:nyxt-source-directory "source")
-               (:nyxt-source-directory "nasdf")
-               (:nyxt-source-directory "libraries"
+               (:nasdf-source-file "nyxt.asd")
+               (:nasdf-source-directory "source")
+               (:nasdf-source-directory "nasdf")
+               (:nasdf-source-directory "libraries"
                 :exclude-subpath ("web-extensions") ; Do not install this non-Lisp source.
                 :exclude-types ("o" "c" "h" ; C code and artifacts.
                                     "fasl"))))

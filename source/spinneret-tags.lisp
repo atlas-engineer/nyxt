@@ -260,11 +260,13 @@ Returns all the linkable symbols from FORM as multiple values:
                          ((list 'quote name)
                           (pushnew name functions))
                          ((list 'function name)
-                          (pushnew name functions)))
+                          (when (symbolp name)
+                            (pushnew name functions))))
                        (mapc #'resolve-symbols-internal args))
                       ((function value)
                        (push first specials)
-                       (pushnew value functions))
+                       (when (symbolp value)
+                         (pushnew value functions)))
                       (((go locally) &rest values)
                        (declare (ignore values))
                        (push first specials))
@@ -297,8 +299,8 @@ Returns all the linkable symbols from FORM as multiple values:
       (values (set-difference functions all-specials) classes variables macros specials linkable-strings))))
 
 (defun %ncode-prini (object package)
-  "Custom `:ncode'-specific `nyxt:prini-string-string' with narrower margins."
-  (nyxt:prini-to-string object :readably t :circle nil :right-margin 70 :package package))
+  "Custom `:ncode'-specific `nyxt:prini-to-string' with narrower margins."
+  (nyxt:prini-to-string object :readably t :right-margin 70 :package package))
 
 (defun %ncode-htmlize-body (form package &optional (listing (%ncode-prini form package)))
   "Turn the FORM into an HTMLized rich text, augmented with `:nxref's to the used entities.

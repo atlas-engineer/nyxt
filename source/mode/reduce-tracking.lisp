@@ -2,14 +2,14 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/reduce-tracking
-    (:documentation "Mode to mitigate fingerprinting."))
+  (:documentation "Package for `reduce-tracking-mode' to mitigate fingerprinting."))
 (in-package :nyxt/mode/reduce-tracking)
 
 (define-mode reduce-tracking-mode ()
-  "Set specific settings in the web view in order to mitigate fingerprinting,
+  "Set specific settings in the web view in order to mitigate fingerprinting
 (how third-party trackers attempt to identify you).
 
-Fingerprinting can be tested with https://panopticlick.eff.org/."
+Fingerprinting can be tested at https://panopticlick.eff.org/."
   ((preferred-languages
     '("en_US")
     :type (list-of string)

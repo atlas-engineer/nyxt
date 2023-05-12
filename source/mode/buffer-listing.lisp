@@ -2,21 +2,23 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/buffer-listing
-    (:documentation "Mode for buffer-listings"))
+  (:documentation "Package for `buffer-listing-mode', mode for buffer listing."))
 (in-package :nyxt/mode/buffer-listing)
 
 (define-mode buffer-listing-mode ()
-  "Mode for buffer-listing."
+  "Mode for buffer-listing.
+Hosts `list-buffers' page and `buffers-panel' panel."
   ((visible-in-status-p nil))
   (:toggler-command-p nil))
 
 (define-internal-page-command-global list-buffers (&key (cluster nil)
                                                   linear-view-p) ; TODO: Document `cluster'.
     (listing-buffer "*Buffers*" 'nyxt/mode/buffer-listing:buffer-listing-mode)
-  "Show a buffer listing all buffer trees.
-Buffers have relationships.  When a buffer is spawned from another one (e.g. by
-middle-clicking on a link), the new buffer is a child buffer.
-This kind of relationships creates 'trees' of buffers.
+  "Show all buffers and their interrelations.
+
+When a buffer is spawned from another one (e.g. by middle-clicking on a link),
+the new buffer is a child buffer. This kind of relationships creates 'trees' of
+buffers.
 
 With LINEAR-VIEW-P, list buffers linearly instead."
   (labels ((cluster-buffers ()
