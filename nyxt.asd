@@ -20,7 +20,7 @@
 ;;   (:documentation "Specialized systems for Nyxt users."))
 ;; (import 'nyxt-user-system :asdf-user)
 
-(defclass nyxt-renderer-system (asdf:system) ()
+(defclass nyxt-renderer-system (nasdf:nasdf-install-system) ()
   (:documentation "Specialized systems for Nyxt with renderer dependency.
 The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
 (import 'nyxt-renderer-system :asdf-user)
@@ -508,14 +508,7 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                str)
   :components ((:nasdf-desktop-file "assets/nyxt.desktop")
                (:nasdf-icon-directory "assets/")
-               (:nasdf-binary-file "nyxt")
-               (:nasdf-source-file "nyxt.asd")
-               (:nasdf-source-directory "source")
-               (:nasdf-source-directory "nasdf")
-               (:nasdf-source-directory "libraries"
-                :exclude-subpath ("web-extensions") ; Do not install this non-Lisp source.
-                :exclude-types ("o" "c" "h" ; C code and artifacts.
-                                    "fasl"))))
+               (:nasdf-binary-file "nyxt") ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Library subsystems:
