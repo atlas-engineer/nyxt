@@ -137,8 +137,8 @@ See `sym:package-functions' for an example."
 (define-class slot-internal-source (slot-source describe-internal-source)
   ((prompter:name "Internal Slots")))
 
-(defun non-keyword-package-variables (packages)
-  (remove-if #'keywordp (sym:package-variables packages)))
+(defun non-keyword-package-variables (packages visibility)
+  (remove-if #'keywordp (sym:package-variables packages visibility)))
 
 (define-class variable-source (describe-nyxt-source)
   ((prompter:name "Variables")
@@ -319,10 +319,11 @@ Otherwise prompt for matches."
 
 (define-internal-page-command-global describe-variable
     (&key
-     (variable (prompt1 :prompt "Describe variable"
-                        :sources '(variable-source
-                                   variable-non-nyxt-source
-                                   variable-internal-source))))
+     (variable (let ((*interactive-p* t))
+                 (prompt1 :prompt "Describe variable"
+                          :sources '(variable-source
+                                     variable-non-nyxt-source
+                                     variable-internal-source)))))
     (buffer (str:concat "*Help-" (symbol-name variable) "*") 'nyxt/mode/help:help-mode)
   "Inspect a variable and show it in a help buffer."
   (let ((*print-case* :downcase))
