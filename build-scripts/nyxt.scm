@@ -76,7 +76,7 @@
   (package
    (name "nyxt")
    (version (nyxt-git-version))
-   (source (local-file %source-dir #:recursive? #t #:select? (git-predicate %source-dir)))
+   (source (local-file %source-dir #:recursive? #t))
    (build-system gnu-build-system) ; TODO: Use glib-or-gtk-build-system instead?
    (arguments
     (list
