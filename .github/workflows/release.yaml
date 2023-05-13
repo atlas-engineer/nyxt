@@ -56,11 +56,14 @@ jobs:
         key: guix-cache-${{ github.sha }}
         restore-keys: |
           guix-cache-
+
     # Cannot use a cache for /gnu/store, since restore fails
     - name: Install Guix
       uses: PromyLOPh/guix-install-action@v1
+
     - name: Ensure no locale warning
       run: test -z "$(guix --version 2>&1 >/dev/null)"
+
     - name: Build Guix package
       run: |
           guix shell --container -D -f build-scripts/nyxt.scm --user=dummy-user guix -- make all NYXT_SUBMODULES=false
@@ -68,24 +71,28 @@ jobs:
     - name: Generate version file
       shell: bash
       run: echo $(./nyxt --version | cut -d' ' -f3) > version
+
     # Balance out '.
     - name: Pack (Relocatable Binary)
       shell: bash
       run: |
         echo "Command: guix pack -RR --no-grafts --compression=xz --symlink=/usr/local/bin/nyxt=bin/nyxt --root=nyxt-$(cat version).tar.xz -L build-scripts/ nyxt" >> guix-recipe.txt
         guix pack -RR --no-grafts --compression=xz --symlink=/usr/local/bin/nyxt=bin/nyxt --root=nyxt-$(cat version).tar.xz -L build-scripts/ nyxt > store-path.txt
+
     - name: Generate release notes
       shell: bash
       run: |
         echo "Release notes: https://nyxt.atlas.engineer/article/release-$(cat version).org" >> release.txt
         echo "" >> release.txt
         echo "To compile from source, prefer the tarball including the submodules if you don't manage the Lisp dependencies yourself." >> release.txt
+
     - name: Generate Guix pack reproduction recipe
       shell: bash
       run: |
         sha256sum nyxt-*.tar.xz > nyxt-$(cat version).tar.xz.sha256sum
         echo "Store path: $(cat store-path.txt)" >> guix-recipe.txt
         echo "Guix describe: $(guix describe)" >> guix-recipe.txt
+
     - name: Generate source archive with submodules
       shell: bash
       run: git ls-files --recurse-submodules | tar caf nyxt-$(cat version)-source-with-submodules.tar.xz -T-
