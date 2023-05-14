@@ -107,6 +107,11 @@ Generic function to specialize for all the REPL cell types.
 Use CELL (and, likely, its `input') and set its `results' and `output' to the
 meaningful values."))
 
+(export-always 'suggest)
+(defgeneric suggest (cell)
+  (:documentation "Get a single most intuitive suggestion string for CELL contents.
+The suggestion listing may rely on the CELL's contents."))
+
 (export-always 'render-input)
 (defgeneric render-input (cell)
   (:method ((cell cell))
@@ -252,6 +257,18 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
                      (setf results (multiple-value-list (eval s-exp))
                            output (get-output-stream-string *standard-output*)))
                    (safe-slurp-stream-forms in)))))))
+  (:method suggest (self)
+    (alex:when-let ((sugestion (prompt1 :prompt "Symbol to insert"
+                                        :sources '(nyxt::function-source
+                                                   nyxt::variable-source
+                                                   nyxt::class-source
+                                                   nyxt::function-non-nyxt-source
+                                                   nyxt::variable-non-nyxt-source
+                                                   nyxt::class-non-nyxt-source
+                                                   nyxt::function-internal-source
+                                                   nyxt::variable-internal-source
+                                                   nyxt::class-internal-source))))
+      (prini-to-string sugestion :package (eval-package self))))
   (:method render-results (self)
     (spinneret:with-html-string
       (unless (uiop:emptyp output)
@@ -374,6 +391,7 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
     (define-keyscheme-map "repl-mode" ()
       keyscheme:default
       (list
+       "tab" 'suggest-into-cell
        "C-return" 'evaluate-cell)
       keyscheme:emacs
       (list
@@ -393,7 +411,8 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
        "C-_" 'move-cell-down
        "C-k" 'clean-cell
        "C-M-k" 'delete-cell
-       "M-q" 'reformat-cell)
+       "M-q" 'reformat-cell
+       "C-i" 'suggest-into-cell)
       keyscheme:vi-normal
       (list
        ;; TODO: deleting chars/words
@@ -475,6 +494,11 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
                             (setf (ready-p cell) t)
                             (reload-repl repl)))
       (reload-repl repl))))
+
+(define-command suggest-into-cell (&optional (cell (current-cell (find-submode 'repl-mode))))
+  "Paste the chosen symbol into the CELL.
+Relies on `suggest' of the CELL class."
+  (ffi-buffer-paste (buffer (mode-instance cell)) (suggest cell)))
 
 (define-command add-cell (&optional (cell (current-cell (find-submode 'repl-mode)))
                           (class (let ((nyxt::*interactive-p* t))
