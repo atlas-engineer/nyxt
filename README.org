@@ -92,7 +92,7 @@ the following platforms:
   - LEAP:
 
     #+begin_src sh
-    zypper ar https://build.opensuse.org/repositories/home:/bobbie424242:/nyxt/15.4/ nyxt
+    zypper ar https://download.opensuse.org/repositories/home:/bobbie424242:/nyxt/15.4/ nyxt
     #+end_src
 
   Then install with =zypper in nyxt= for the latest stable release or =zypper in
