@@ -86,7 +86,7 @@ the following platforms:
   - Tumbleweed:
 
     #+begin_src sh
-    zypper ar  https://download.opensuse.org/repositories/home:/bobbie424242:/nyxt/openSUSE_Tumbleweed/ nyxt
+    zypper ar https://download.opensuse.org/repositories/home:/bobbie424242:/nyxt/openSUSE_Tumbleweed/ nyxt
     #+end_src
 
   - LEAP:
