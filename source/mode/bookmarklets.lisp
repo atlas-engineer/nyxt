@@ -26,11 +26,7 @@ By default, this mode does nothing but expose the default bookmarklet commands."
            `(let* ((source ,source)
                    (source (etypecase source
                              (pathname (files:content (make-instance 'files:file :base-path source)))
-                             (string source)))
-                   (source (if (str:starts-with-p "javascript:" source)
-                               (or (ignore-errors (quri:url-decode (quri:uri-path (quri:uri source))))
-                                   (subseq source 11))
-                               source)))
+                             (string source))))
               (ffi-buffer-evaluate-javascript-async buffer source))))
     (export 'define-bookmarklet-command)
     (defmacro define-bookmarklet-command (name documentation source)
@@ -129,4 +125,4 @@ See `define-bookmarklet-command'."
 (define-bookmarklet-command darken
   "Darken the page."
   ;; This bookmarklet was sourced form 'https://github.com/x08d/222' with permission under the GPL v3.0
-  "javascript:document.querySelectorAll('*').forEach(e=>e.setAttribute('style','background-color:#222 !important;background-image:none !important;color:#'+(/^A|BU/.test(e.tagName)?'36c;text-decoration:underline;':'eee;')+e.getAttribute('style')))")
+  "document.querySelectorAll('*').forEach(e=>e.setAttribute('style','background-color:#222 !important;background-image:none !important;color:#'+(/^A|BU/.test(e.tagName)?'36c;text-decoration:underline;':'eee;')+e.getAttribute('style')))")
