@@ -2316,3 +2316,6 @@ See `make-buffer' for a description of the other arguments."
                                   nyxt/mode/user-script:renderer-user-script))))
 
 (setf nyxt::*renderer* (make-instance 'gtk-renderer))
+
+(defmethod browser-schemes append ((browser gtk-browser))
+  '("webkit" "webkit-pdfjs-viewer"))
