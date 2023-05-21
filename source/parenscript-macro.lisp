@@ -29,7 +29,25 @@
 (export-always 'qs-nyxt-id)
 (defpsmacro qs-nyxt-id (context id)
   "context.querySelector() tailored for Nyxt IDs."
-  `(chain ,context (query-selector (lisp (format nil "[nyxt-identifier=\"~a\"]" ,id)))))
+  `(chain ,context (query-selector (stringify "[nyxt-identifier=\"" ,id "\"]"))))
+
+(export-always 'rqs-nyxt-id)
+(defpsmacro rqs-nyxt-id (context id)
+  "Recursive version of `qs-nyxt-id` which goes through Shadow DOMs if there's
+at least one."
+  `(flet ((recursive-query-selector (context selector)
+            (let ((node (qs context selector)))
+              (if node
+                  node
+                  (let ((node-iterator (chain document (create-node-iterator context (@ *node #:|ELEMENT_NODE|))))
+                        current-node)
+                    (loop while (and (setf current-node (chain node-iterator (next-node))) (not node))
+                          do (when (@ current-node shadow-root)
+                               (setf node (recursive-query-selector (@ current-node shadow-root) selector))))
+                    node)))))
+     (if (chain ,context (query-selector "[nyxt-shadow-root]"))
+         (recursive-query-selector ,context (stringify "[nyxt-identifier=\"" ,id "\"]"))
+         (qs-nyxt-id ,context ,id))))
 
 (export-always 'active-element)
 (defpsmacro active-element (context)
@@ -151,13 +169,15 @@
           (radius (parse-float (chain computed-style border-top-left-radius)))
           (rounded-border-offset (ceiling (* radius (- 1 (sin (/ pi 4))))))
           (offset (max coord-truncation-offset rounded-border-offset))
-          (el (chain document (element-from-point (+ (chain rect left) offset)
-                                                  (+ (chain rect top) offset)))))
+          (el (chain ,element (get-root-node) (element-from-point (+ (chain rect left) offset)
+                                                                  (+ (chain rect top) offset)))))
      (if (or (>= offset (chain rect width))
              (>= offset (chain rect height)))
          t
          (progn (loop while (and el (not (eq el element)))
-                      do (setf el (chain el parent-node)))
+                      do (setf el (if (instanceof (chain el parent-node) *shadow-root)
+                                      (chain el parent-node host)
+                                      (chain el parent-node))))
                 (null el)))))
 
 (export-always 'element-invisible-p)
@@ -179,3 +199,19 @@
   "element.classList.remove(class) tailored for Nyxt IDs."
   `(let ((element (nyxt/ps:qs-nyxt-id document (ps:lisp ,id))))
      (ps:chain element class-list (remove ,class))))
+
+(export-always 'rqsa)
+(defpsmacro rqsa (context selector)
+  "Recursive version of context.querySelectorAll() which goes through
+Shadow DOMs if there's at least one."
+  `(flet ((recursive-query-selector-all (context selector)
+            (ps:let ((nodes (ps:chain *array (from (nyxt/ps:qsa context selector))))
+                     (node-iterator (ps:chain document (create-node-iterator context (ps:@ *node #:|ELEMENT_NODE|))))
+                     current-node)
+              (ps:loop while (ps:setf current-node (ps:chain node-iterator (next-node)))
+                 do (ps:when (ps:@ current-node shadow-root)
+                      (ps:chain *array prototype push (apply nodes (recursive-query-selector-all (ps:@ current-node shadow-root) selector)))))
+              nodes)))
+     (if (chain ,context (query-selector "[nyxt-shadow-root]"))
+         (recursive-query-selector-all ,context ,selector)
+         (qsa ,context ,selector))))
