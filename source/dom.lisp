@@ -129,6 +129,13 @@ The most useful functions are:
         (setf (ps:chain object :children)
               (loop for child in (ps:chain element child-nodes)
                     collect (process-element child))))
+      (when (and (ps:@ element shadow-root)
+                 (ps:@ element shadow-root first-child))
+        (setf (ps:chain object :children)
+              (loop for child in (ps:chain *array
+                                           (from (ps:@ element shadow-root children))
+                                           (concat (ps:chain *array (from (ps:@ element children)))))
+                    collect (process-element child))))
       (when (or (equal (ps:@ element node-name) "#text")
                 (equal (ps:@ element node-name) "#comment")
                 (equal (ps:@ element node-name) "#cdata-section"))
@@ -387,11 +394,11 @@ Return two values:
 
 (export-always 'click-element)
 (define-parenscript click-element (element)
-  (ps:chain (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element))) (click)))
+  (ps:chain (nyxt/ps:rqs-nyxt-id document (ps:lisp (get-nyxt-id element))) (click)))
 
 (export-always 'focus-select-element)
 (define-parenscript focus-select-element (element)
-  (let ((element (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element)))))
+  (let ((element (nyxt/ps:rqs-nyxt-id document (ps:lisp (get-nyxt-id element)))))
     (unless (nyxt/ps:element-in-view-port-p element)
       (ps:chain element (scroll-into-view)))
     (ps:chain element (focus))
@@ -400,14 +407,14 @@ Return two values:
 
 (export-always 'check-element)
 (define-parenscript check-element (element &key (value t))
-  (let ((element (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element)))))
+  (let ((element (nyxt/ps:rqs-nyxt-id document (ps:lisp (get-nyxt-id element)))))
     (unless (nyxt/ps:element-in-view-port-p element)
       (ps:chain element (scroll-into-view)))
     (ps:chain element (set-attribute "checked" (ps:lisp value)))))
 
 (export-always 'toggle-details-element)
 (define-parenscript toggle-details-element (element)
-  (ps:let ((element (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element)))))
+  (ps:let ((element (nyxt/ps:rqs-nyxt-id document (ps:lisp (get-nyxt-id element)))))
     (unless (nyxt/ps:element-in-view-port-p element)
       (ps:chain element (scroll-into-view)))
     (if (ps:chain element (get-attribute "open"))
@@ -416,8 +423,8 @@ Return two values:
 
 (export-always 'select-option-element)
 (define-parenscript select-option-element (element parent)
-  (ps:let* ((element (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element))))
-            (parent-select (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id parent)))))
+  (ps:let* ((element (nyxt/ps:rqs-nyxt-id document (ps:lisp (get-nyxt-id element))))
+            (parent-select (nyxt/ps:rqs-nyxt-id document (ps:lisp (get-nyxt-id parent)))))
     (unless (nyxt/ps:element-in-view-port-p element)
       (ps:chain element (scroll-into-view)))
     (if (ps:chain element (get-attribute "multiple"))
@@ -426,7 +433,7 @@ Return two values:
 
 (export-always 'scroll-to-element)
 (define-parenscript scroll-to-element (element)
-  (ps:chain (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element)))
+  (ps:chain (nyxt/ps:rqs-nyxt-id document (ps:lisp (get-nyxt-id element)))
             (scroll-into-view)))
 
 (export-always 'set-caret-on-start)

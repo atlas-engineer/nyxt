@@ -938,7 +938,14 @@ identifiers."
         (ps:chain node (set-attribute "nyxt-identifier"
                                       (ps:stringify nyxt-identifier-counter))))
       (incf nyxt-identifier-counter)
-      (dolist (child (ps:chain node children)) (add-nyxt-identifiers child))
+      (dolist (child (if (ps:chain node shadow-root)
+                         (ps:chain *array
+                                   (from (ps:@ node shadow-root children))
+                                   (concat (ps:chain *array (from (ps:@ node children)))))
+                         (ps:chain node children)))
+        (add-nyxt-identifiers child))
+      (when (ps:@ node shadow-root)
+        (ps:chain node (set-attribute "nyxt-shadow-root" "")))
       nyxt-identifier-counter)
     (setf nyxt-identifier-counter (add-nyxt-identifiers (ps:chain document body))))
   (alex:when-let ((body-json (with-current-buffer buffer
