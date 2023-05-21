@@ -419,7 +419,7 @@ The inner-text must not be modified, so that we can jump to the anchor of the sa
   (ps-labels :buffer buffer
     ((heading-scroll-position
       :buffer buffer (element)
-      (ps:chain (nyxt/ps:qs-nyxt-id document (ps:lisp (nyxt/dom:get-nyxt-id element)))
+      (ps:chain (nyxt/ps:rqs-nyxt-id document (ps:lisp (nyxt/dom:get-nyxt-id element)))
                 (get-bounding-client-rect) y)))
     (map 'list
          (lambda (e)
@@ -450,9 +450,10 @@ The inner-text must not be modified, so that we can jump to the anchor of the sa
   "Scroll to the N adjacent heading of the BUFFER."
   (sera:and-let* ((headings (get-headings :buffer buffer))
                   (new-position (+ n
-                                   (position (element (current-heading buffer))
+                                   (position (nyxt/dom:body (element (current-heading buffer)))
                                              headings
-                                             :key #'element)))
+                                             :key (compose #'nyxt/dom:body #'element)
+                                             :test #'equal)))
                   (_ (<= 0 new-position (1- (length headings)))))
     (scroll-page-to-heading (elt headings new-position))))
 
