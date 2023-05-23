@@ -696,4 +696,9 @@ color-picker support as an example application for this feature.")
 
 (define-version "3.X.Y"
   (:ul
-   (:li "REPL provides symbol suggestions with " (:code "tab") "/" (:code "C-i") ".")))
+   (:li "REPL provides symbol suggestions with " (:code "tab") "/" (:code "C-i") ".")
+   (:li "Re-enable global history."))
+  (:h3 "Programming interfaces")
+  (:ul
+   (:li (:code "conservative-history-movement-p") " was deprecated in favor of "
+        (:nxref :slot 'global-history-p :class-name 'buffer) ".")))
