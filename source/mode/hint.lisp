@@ -418,11 +418,6 @@ FUNCTION is the action to perform on the selected elements."
     (dolist (option (mapcar (rcurry #'find options :test #'equalp) values))
       (nyxt/dom:select-option-element option select))))
 
-(-> unsupported (plump:element string) t)
-(defun unsupported (element action)
-  (echo "Unsupported operation for <~a> hint: can't ~a."
-        (plump:tag-name element) action))
-
 (defmethod %follow-hint-new-buffer-focus ((a nyxt/dom:a-element) &optional parent-buffer)
   (make-buffer-focus :url (url a)
                      :parent-buffer parent-buffer
@@ -430,26 +425,26 @@ FUNCTION is the action to perform on the selected elements."
 
 (defmethod %follow-hint-new-buffer-focus ((element plump:element) &optional parent-buffer)
   (declare (ignore parent-buffer))
-  (unsupported element "open in new buffer"))
+  (%follow-hint element))
 
 (defmethod %follow-hint-new-buffer ((a nyxt/dom:a-element) &optional parent-buffer)
   (make-buffer :url (url a) :parent-buffer parent-buffer :load-url-p nil))
 
 (defmethod %follow-hint-new-buffer ((element plump:element) &optional parent-buffer)
   (declare (ignore parent-buffer))
-  (unsupported element "open in new buffer"))
+  (%follow-hint element))
 
 (defmethod %follow-hint-nosave-buffer-focus ((a nyxt/dom:a-element))
   (make-buffer-focus :url (url a) :nosave-buffer-p t))
 
 (defmethod %follow-hint-nosave-buffer-focus ((element plump:element))
-  (unsupported element "open in nosave buffer"))
+  (%follow-hint element))
 
 (defmethod %follow-hint-nosave-buffer ((a nyxt/dom:a-element))
   (make-nosave-buffer :url (url a)))
 
 (defmethod %follow-hint-nosave-buffer ((element plump:element))
-  (unsupported element "open in nosave buffer"))
+  (%follow-hint element))
 
 (defmethod %follow-hint-with-current-modes-new-buffer ((a nyxt/dom:a-element) &optional parent-buffer)
   (make-buffer :url (url a)
@@ -458,7 +453,7 @@ FUNCTION is the action to perform on the selected elements."
 
 (defmethod %follow-hint-with-current-modes-new-buffer ((element plump:element) &optional parent-buffer)
   (declare (ignore parent-buffer))
-  (unsupported element "open in new buffer with saved modes"))
+  (%follow-hint element))
 
 (defmethod %copy-hint-url ((a nyxt/dom:a-element))
   (ffi-buffer-copy (current-buffer) (render-url (url a))))
@@ -467,7 +462,8 @@ FUNCTION is the action to perform on the selected elements."
   (ffi-buffer-copy (current-buffer) (render-url (url img))))
 
 (defmethod %copy-hint-url ((element plump:element))
-  (unsupported element "copy hint URL"))
+  (echo "Unsupported operation for <~a> hint: can't copy hint URL."
+        (plump:tag-name element)))
 
 (define-command follow-hint ()
   "Prompt for element hints and open them in the current buffer.
