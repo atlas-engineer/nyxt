@@ -470,7 +470,7 @@ Suggestions are computed by the default search engine.")
     :documentation "Select a download engine to use, such as `:lisp' or
 `:renderer'.")
    (global-history-p
-    nil
+    t
     :type boolean
     :documentation "Whether the history is linked to the buffer's parent.
 
