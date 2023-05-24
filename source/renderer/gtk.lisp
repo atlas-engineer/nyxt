@@ -1571,9 +1571,8 @@ the `active-buffer'."
     ;; - Confuse URL hook handlers (be it core handlers or user ones) in general.
     (let ((url (ensure-url (webkit:webkit-web-view-uri web-view))))
       (unless (or (url-empty-p url)
-                  ;; Reload.
-                  (and (not (url-empty-p (url buffer)))
-                       (quri:uri= url (url buffer)))
+                  (url-empty-p (url buffer)) ; Ignore just-created buffers.
+                  (quri:uri= url (url buffer)) ; Ignore reloads.
                   ;; We ignore hooks when loading WebKit history, but that
                   ;; doesn't need reloading, so we ignore history case here.
                   (loading-webkit-history-p buffer)
