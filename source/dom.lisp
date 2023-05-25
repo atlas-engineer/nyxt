@@ -344,16 +344,28 @@ Return two values:
         (sera:collapse-whitespace (sera:trim-whitespace result)))))
   (:documentation "Return the textual contents of the ELEMENT and its recursive children."))
 
-(defmethod body ((input input-element))
-  (alex:when-let ((body (if (uiop:emptyp (plump:attribute input "value"))
-                            (plump:attribute input "placeholder")
-                            (plump:attribute input "value"))))
+(defun label-of (element)
+  (let ((label-for (and (plump:has-attribute element "name")
+                        (ignore-errors
+                         (elt (clss:select (format nil "label[for=\"~a\"]"
+                                                   (plump:attribute element "name"))
+                                (alex:lastcar (parents element)))
+                              0)))))
+    (cond
+      ((label-element-p (plump:parent element)) (body (plump:parent element)))
+      (label-for (body label-for))
+      (t nil))))
+
+(defun fallback-body (element)
+  (alex:when-let ((body (or (plump:get-attribute element "value")
+                            (plump:get-attribute element "placeholder"))))
     body))
 
+(defmethod body ((input input-element))
+  (or (label-of input) (fallback-body input)))
+
 (defmethod body ((textarea textarea-element))
-  (alex:when-let ((body (or (plump:get-attribute textarea "value")
-                            (plump:get-attribute textarea "placeholder"))))
-    body))
+  (or (label-of textarea) (fallback-body textarea)))
 
 (defmethod body ((details details-element))
   (let ((summary (clss:select "summary" details)))
@@ -361,8 +373,9 @@ Return two values:
       (plump:text (elt summary 0)))))
 
 (defmethod body ((select select-element))
-  (str:join ", " (map 'list #'plump:text
-                      (clss:select "option" select))))
+  (or (label-of select)
+      (str:join ", " (map 'list #'plump:text
+                          (clss:select "option" select)))))
 
 (defmethod body ((img img-element))
   (when (plump:has-attribute img "alt")
