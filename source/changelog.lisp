@@ -728,6 +728,8 @@ color-picker support as an example application for this feature.")
   (:ul
    (:li "Fix bug that didn't respect the value of "
         (:nxref :slot 'zoom-ratio-default :class-name 'document-buffer) ".")
+   (:li "The " (:code "external-editor-program") " slot no longer signals when the program is a string containing spaces.")
+   (:li "The " (:code "external-editor-program") " returns the slot value directly rather than returning a string value in a list.")
    (:li (:a :href (nyxt-url 'common-settings) "Common Settings screen")
         " generates more correct configuration for most of the settings.")
    (:li "Improved " (:nxref :command 'nyxt/mode/prompt-buffer:describe-prompt-buffer) ":")
