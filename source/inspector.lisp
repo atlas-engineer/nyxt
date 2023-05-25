@@ -18,12 +18,7 @@
 - character,
 - string,
 - non-complex number."
-  (funcall (alex:disjoin
-            'symbolp
-            'characterp
-            'stringp
-            (rcurry 'typep '(and number (not complex))))
-           object))
+  (typep object '(or symbol character string real)))
 
 (export-always 'inspected-value)
 (defmethod inspected-value (id)
