@@ -61,7 +61,10 @@ modes, commands, etc."))
   #+sb-package-locks
   `(sb-ext:without-package-locks
      ,@body)
-  #-sb-package-locks
+  #+(and ecl package-locks)
+  `(ext:without-package-locks
+     ,@body)
+  #-(or sb-package-locks package-locks)
   `(progn ,@body))
 
 (serapeum:export-always 'define-class :nyxt)
