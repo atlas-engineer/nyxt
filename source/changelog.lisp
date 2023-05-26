@@ -693,3 +693,7 @@ JavaScript calls.")
           " attribute list is interpreted as display HTML for the suggestion. See the
 color-picker support as an example application for this feature.")
      (:li "New " (:nxref :function 'match-port) " URL designator predicate for auto-rules."))))
+
+(define-version "3.X.Y"
+  (:ul
+   (:li "REPL provides symbol suggestions with " (:code "tab") "/" (:code "C-i") ".")))
