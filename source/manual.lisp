@@ -256,10 +256,13 @@ commands like " (:nxref :command 'nyxt/mode/history:history-backwards) " and "
         (:p "If the beyond-buffer-boundaries behavior sounds like too much to you, or you
 prefer the behavior of Nyxt 2, where the history was still a tree, but was not
 spilling across the buffers, then configure "
-            (:nxref :slot 'nyxt/mode/history:conservative-history-movement-p
-              :class-name 'nyxt/mode/history:history-mode)
-            " to be T. This would make all buffers to have their own history, not connected
-to the other buffers at all. All the history commands (like "
+            (:nxref :slot 'global-history-p :class-name 'context-buffer)
+            " to be NIL:"
+            (:ncode
+              '(define-configuration :context-buffer
+                (global-history-p nil)))
+            " This would make all buffers to have their own history, not connected to the
+other buffers at all. All the history commands (like "
             (:nxref :command 'nyxt/mode/history:history-backwards) " and "
             (:nxref :command 'nyxt/mode/history:history-forwards)
             ") will only work inside the buffer history then.")

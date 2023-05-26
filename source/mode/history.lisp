@@ -37,10 +37,12 @@ are useful internal APIs for history reusal:
 Example: DuckDuckGo redirections should be ignored or else going backward in
 history after consulting a result reloads the result, not the DuckDuckGo
 search.")
-   (conservative-history-movement-p
+   (conservative-history-movement-p ; Deprecated, remove in 4.0.
     nil
     :type boolean
-    :documentation "Whether history navigation is restricted by buffer-local history.")
+    :documentation "Whether history navigation is restricted by buffer-local history.
+Deprecated, does nothing, and will be removed in 4.0, use `global-history-p'
+instead!")
    (backtrack-to-hubs-p
     nil
     :type boolean
@@ -147,8 +149,6 @@ history modification operations are:
                              (not (quri:uri= (url buffer)
                                              (url (htree:data (htree:owner-node history (id buffer)))))))
                         nil)
-                       ((conservative-history-movement-p (find-submode 'history-mode buffer))
-                        (htree:backward-owned-parents history (id buffer)))
                        (t
                         (htree:backward history (id buffer))))
                      (htree:owner-node history (id buffer)))))
@@ -176,9 +176,7 @@ history modification operations are:
     (lambda (source)
       (with-history (history (buffer source))
         (let ((owner (htree:owner history (id (buffer source)))))
-          (if (conservative-history-movement-p (find-submode 'history-mode (buffer source)))
-              (htree:all-contiguous-owned-parents history owner)
-              (htree:all-parents history :owner owner)))))))
+          (htree:all-parents history :owner owner))))))
   (:export-class-name-p t)
   (:metaclass user-class)
   (:documentation "Source for all the parent URLs/`history-entry'es of the current buffer."))
@@ -208,9 +206,7 @@ history modification operations are:
    (prompter:constructor
     (lambda (source)
       (with-history (history (buffer source))
-        (if (conservative-history-movement-p (find-submode 'history-mode (buffer source)))
-            (htree:owned-children (htree:owner history (id (buffer source))))
-            (htree:children (htree:owner-node history (id (buffer source)))))))))
+        (htree:children (htree:owner-node history (id (buffer source))))))))
   (:documentation "Direct children of the current `history-entry'.")
   (:export-class-name-p t)
   (:metaclass user-class))
@@ -231,9 +227,7 @@ history modification operations are:
 Otherwise go forward to the only child."
   (with-history (history buffer)
     (if (<= 2 (length
-               (if (conservative-history-movement-p (find-submode 'history-mode buffer))
-                   (htree:owned-children (htree:owner history (id buffer)))
-                   (htree:children (htree:owner-node history (id buffer))))))
+               (htree:children (htree:owner-node history (id buffer)))))
         (history-forwards-direct-children)
         (history-forwards))))
 
@@ -271,9 +265,7 @@ Otherwise go forward to the only child."
     (lambda (source)
       (with-history (history (buffer source))
         (let ((owner (htree:owner history (id (buffer source)))))
-          (if (conservative-history-movement-p (find-submode 'history-mode (buffer source)))
-              (htree:all-contiguous-owned-children history owner)
-              (htree:all-children history :owner owner)))))))
+          (htree:all-children history :owner owner))))))
   (:export-class-name-p t)
   (:metaclass user-class)
   (:documentation "Source for `htree:all-children' of the current `hsitory-entry'."))
@@ -295,11 +287,8 @@ Otherwise go forward to the only child."
    (prompter:constructor
     (lambda (source)
       (with-history (history (buffer source))
-        (funcall (if (conservative-history-movement-p (find-submode 'history-mode (buffer source)))
-                     #'htree:all-owner-nodes
-                     #'htree:all-branch-nodes)
-                 history
-                 (htree:owner history (id (buffer source))))))))
+        (htree:all-branch-nodes
+         history (htree:owner history (id (buffer source))))))))
   (:export-class-name-p t)
   (:metaclass user-class)
   (:documentation "All the nodes of the current buffer."))
