@@ -946,6 +946,8 @@ other cells.")
           (:ul
            (:li (:nxref :function 'nyxt/mode/repl:evaluate)
                 " as a function to get results from the cell.")
+           (:li (:nxref :function 'nyxt/mode/repl:suggest)
+                " for choosing the most intuitive content to paste into the cell.")
            (:li (:nxref :function 'nyxt/mode/repl:render-input)
                 " as the one rendering the input area for the cell.")
            (:li (:nxref :function 'nyxt/mode/repl:render-actions)
