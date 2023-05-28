@@ -697,7 +697,9 @@ color-picker support as an example application for this feature.")
 (define-version "3.X.Y"
   (:ul
    (:li "REPL provides symbol suggestions with " (:code "tab") "/" (:code "C-i") ".")
-   (:li "Re-enable global history."))
+   (:li "Re-enable global history.")
+   (:li "Bind " (:nxref :command 'nyxt:delete-current-buffer) " uniformly for
+all modes, when using the CUA keyscheme."))
   (:h3 "Programming interfaces")
   (:ul
    (:li (:code "conservative-history-movement-p") " was deprecated in favor of "

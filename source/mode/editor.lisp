@@ -36,7 +36,7 @@ impelementation."
       (list
        "C-o" 'editor-open-file
        "C-s" 'editor-write-file
-       "C-q" 'delete-current-buffer
+       "C-w" 'delete-current-buffer
        "C-tab" 'switch-buffer)
       keyscheme:emacs
       (list
