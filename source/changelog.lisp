@@ -694,13 +694,17 @@ JavaScript calls.")
 color-picker support as an example application for this feature.")
      (:li "New " (:nxref :function 'match-port) " URL designator predicate for auto-rules."))))
 
-(define-version "3.X.Y"
+(define-version "3.1.0"
   (:ul
-   (:li "REPL provides symbol suggestions with " (:code "tab") "/" (:code "C-i") ".")
-   (:li "Re-enable global history.")
+   (:li "The REPL provides symbol suggestions by issuing "
+        (:nxref :command 'nyxt/mode/repl:suggest-into-cell) ", bound to "
+        (:code "TAB (↹)") ".")
+   (:li (:nxref :slot 'global-history-p :class-name 'buffer)
+        " is enabled by default.  The old behavior can be recovered by setting
+        it to " (:code "nil") ".")
    (:li "Bind " (:nxref :command 'nyxt:delete-current-buffer) " uniformly for
-all modes, when using the CUA keyscheme."))
+        all modes, when using the CUA keyscheme."))
   (:h3 "Programming interfaces")
   (:ul
-   (:li (:code "conservative-history-movement-p") " was deprecated in favor of "
+   (:li (:code "conservative-history-movement-p") " is deprecated in favor of "
         (:nxref :slot 'global-history-p :class-name 'buffer) ".")))
