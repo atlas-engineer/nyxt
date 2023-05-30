@@ -17,19 +17,7 @@
         :border-radius 3px
         :z-index #.(1- (expt 2 31)))
       `("span[nyxt-search-mark].nyxt-current-search-mark"
-        :animation-name "mark"
-        :animation-duration "1s"
-        :animation-delay "0.3s"
-        :animation-timing-function "ease"
-        :animation-iteration-count "infinite"
-        :animation-direction "alternate"
-        :background ,(format nil
-                             "linear-gradient(0deg, ~a 0% 35%, ~a 49% 51%, ~a 65% 100%)"
-                             theme:accent theme:background-alt theme:accent)
-        :background-size 200% 200%)
-      `(:keyframes "mark"
-                   (0% :background-position 0 0%)
-                   (100% :background-position 0 100%)))
+        :background ,(str:concat "#FFEF00" " !important")))
     :documentation "The style of the search overlays.")
    (keyscheme-map
     (define-keyscheme-map "search-buffer-mode" ()
