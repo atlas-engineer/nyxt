@@ -13,6 +13,8 @@
      (height
       :default
       :type (or keyword integer)
+      :writer nil
+      :reader height
       :documentation "The height occupied by the prompt buffer.
 The options are:
 - `:default', which sets it to the value of `prompt-buffer-open-height';
@@ -227,6 +229,15 @@ See `prompt' for how to invoke prompts.")
                      (sera:class-name-of (first (prompter:sources prompt-buffer))))))
     (setf (height prompt-buffer) :fit-to-prompt)))
 
+(defmethod (setf height) (value (prompt-buffer prompt-buffer))
+  (setf (ffi-height prompt-buffer)
+        (case value
+          (:default (prompt-buffer-open-height (window prompt-buffer)))
+          (:fit-to-prompt (ps-eval :buffer prompt-buffer
+                            (ps:chain (nyxt/ps:qs document "#prompt") offset-height)))
+          (t value)))
+  (setf (slot-value prompt-buffer 'height) value))
+
 (export-always 'current-source)
 (defun current-source (&optional (prompt-buffer (current-prompt-buffer)))
   (prompter:current-source prompt-buffer))
@@ -249,13 +260,7 @@ See also `hide-prompt-buffer'."
     (push prompt-buffer (active-prompt-buffers (window prompt-buffer)))
     (calispel:! (prompt-buffer-channel (window prompt-buffer)) prompt-buffer)
     (prompt-render prompt-buffer)
-    (setf (ffi-height prompt-buffer)
-          (case height
-            (:default (prompt-buffer-open-height (window prompt-buffer)))
-            (:fit-to-prompt
-             (ps-eval :buffer prompt-buffer
-               (ps:chain (nyxt/ps:qs document "#prompt") offset-height)))
-            (t height)))
+    (setf (height prompt-buffer) height)
     (run-thread "Show prompt watcher"
       (let ((prompt-buffer prompt-buffer))
         (update-prompt-input prompt-buffer)
