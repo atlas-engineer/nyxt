@@ -1315,9 +1315,8 @@ proceeding."
                                              "Set current BUFFER for the active window."
                                              (set-current-buffer buffer :focus nil)))
    (prompter:destructor (let ((buffer (current-buffer)))
-                          (lambda (prompter source)
-                            (declare (ignore source))
-                            (unless (or (prompter:returned-p prompter)
+                          (lambda (source)
+                            (unless (or (prompter:returned-p (prompter:prompter source))
                                         (eq buffer (current-buffer)))
                               (set-current-buffer buffer))))))
   (:export-class-name-p t)
