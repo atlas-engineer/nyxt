@@ -149,11 +149,21 @@ together with the arglists and documentations of the functions typed in."
                     (make-instance
                      'extended-command-source
                      :actions-on-return
-                     (lambda-command evaluate-lisp-expression* (exprs)
-                       "Evaluate the Lisp expression and print the result to message buffer."
-                       (run-thread "evaluator"
-                         (let ((*interactive-p* t))
-                           (echo "~{~s~^, ~}" (multiple-value-list (eval (first exprs))))))))
+                     (list
+                      (lambda-command evaluate-lisp-expression* (exprs)
+                        "Evaluate the Lisp expression and print the result to message buffer."
+                        (run-thread "evaluator"
+                          (let ((*interactive-p* t))
+                            (echo "~{~s~^, ~}" (multiple-value-list (eval (first exprs)))))))
+                      (lambda-command evaluate-lisp-expression-and-describe* (exprs)
+                        "Evaluate the Lisp expression and `describe-value' the result."
+                        (run-thread "evaluator"
+                          (let ((*interactive-p* t))
+                            ;; FIXME: Only supports one value, because internal
+                            ;; pages (including `describe-value') reuse pages
+                            ;; with the same command.
+                            (buffer-load-internal-page-focus
+                             'describe-value :id (ensure-inspected-id (eval (first exprs)))))))))
                     (make-instance
                      'predicted-command-source
                      :actions-on-return
