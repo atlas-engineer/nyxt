@@ -1904,8 +1904,26 @@ local anyways, and it's better to refresh it if a load was queried."
    buffer (alex:alist-hash-table `(("audible" . ,value))))
   (webkit:webkit-web-view-set-is-muted (gtk-object buffer) (not value)))
 
+;; KLUDGE: PDF.js in WebKit (actual for version 2.41.4) always saves
+;; PDFs as "document.pdf". This is because WebKit does not pass "file"
+;; parameter to the viewer. See
+;; https://stackoverflow.com/questions/47098206/pdf-js-downloading-as-document-pdf-instead-of-filename .
+;; Here we restore the original file name from an URL if a suggested
+;; file name looks suspicious.
+(sera:-> maybe-fix-pdfjs-filename (string quri:uri)
+         (values string &optional))
+(defun maybe-fix-pdfjs-filename (suggested-file-name uri)
+  (let ((pathname (pathname (quri:uri-path uri))))
+    (if (and (string= suggested-file-name "document.pdf")
+             (string= (pathname-type pathname) "pdf"))
+        (uiop:native-namestring
+         (make-pathname :name (pathname-name pathname)
+                        :type "pdf"))
+        suggested-file-name)))
+
 (defun wrap-download (webkit-download)
-  (sera:lret ((download (make-instance 'nyxt/mode/download:download
+  (sera:lret ((original-url (url (current-buffer)))
+              (download (make-instance 'nyxt/mode/download:download
                                        :url (webkit:webkit-uri-request-uri
                                              (webkit:webkit-download-get-request webkit-download))
                                        :gtk-object webkit-download)))
@@ -1923,7 +1941,8 @@ local anyways, and it's better to refresh it if a load was queried."
       (setf (nyxt/mode/download:completion-percentage download)
             (* 100 (webkit:webkit-download-estimated-progress webkit-download))))
     (connect-signal download "decide-destination" nil (webkit-download suggested-file-name)
-      (alex:when-let* ((download-dir (or (ignore-errors
+      (alex:when-let* ((suggested-file-name (maybe-fix-pdfjs-filename suggested-file-name original-url))
+                       (download-dir (or (ignore-errors
                                           (download-directory
                                            (find (webkit:webkit-download-get-web-view webkit-download)
                                                  (buffer-list) :key #'gtk-object)))
@@ -2316,3 +2335,6 @@ See `make-buffer' for a description of the other arguments."
                                   nyxt/mode/user-script:renderer-user-script))))
 
 (setf nyxt::*renderer* (make-instance 'gtk-renderer))
+
+(defmethod browser-schemes append ((browser gtk-browser))
+  '("webkit" "webkit-pdfjs-viewer"))
