@@ -713,4 +713,10 @@ color-picker support as an example application for this feature.")
   (:ul
    (:li "Add new command, "
         (:nxref :command 'nyxt/mode/prompt-buffer:toggle-suggestions-display)
-         ", that allows collapsing the prompt buffer to its input area.")))
+        ", that allows collapsing the prompt buffer to its input area."))
+  (:h3 "Programming interfaces")
+  (:ul
+   (:li "The " (:code "prompter") " was updated and uses a slightly different API based on Lparallel.
+Noteworthy changes include " (:code "prompter:result-channel") " which is replaced by "
+(:code "result")" and " (:code "prompt-buffer-canceled") " which has been deprecated in favor
+of " (:code "prompter:canceled") ".")))
