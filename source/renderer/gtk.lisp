@@ -1272,7 +1272,7 @@ the `active-buffer'."
                                    :extra-modes 'nyxt/mode/file-manager:file-manager-mode
                                    :sources (make-instance 'nyxt/mode/file-manager:file-source
                                                            :enable-marks-p multiple))
-                         (prompt-buffer-canceled ()
+                         (prompter:canceled ()
                            nil)))))
           (if files
               (webkit:webkit-file-chooser-request-select-files
@@ -1416,7 +1416,7 @@ the `active-buffer'."
                                        :prompt (webkit:webkit-script-dialog-get-message dialog)
                                        :input (webkit:webkit-script-dialog-prompt-get-default-text dialog)
                                        :sources 'prompter:raw-source)
-                                    (prompt-buffer-canceled () nil)))))
+                                    (prompter:canceled () nil)))))
                  (if text
                      (webkit:webkit-script-dialog-prompt-set-text dialog text)
                      (progn

@@ -348,7 +348,7 @@ current unmarked suggestion."
         (prompter:actions-on-return first-prompt-buffer))
       (progn
         (echo-warning "No actions to choose from.")
-        (error 'prompt-buffer-canceled))))
+        (error 'prompt-buffer-canceled)))) ; TODO: Obsolete, switch to `promter:canceled' with 4.0.0.
 
 (defun prompt-buffer-actions-on-current-suggestion (&optional (window (current-window)))
   (sera:and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))

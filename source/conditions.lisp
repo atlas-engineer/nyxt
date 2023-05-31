@@ -20,8 +20,9 @@ It should abort the ongoing command, but not the whole process."))
   ((context :initarg :context :reader context)))
 
 (export-always 'prompt-buffer-canceled)
-(define-condition prompt-buffer-canceled (error)
-  ())
+(define-condition prompt-buffer-canceled (prompter:canceled) ; TODO: Remove with 4.0.0.
+  ()
+  (:documentation "Obsolete.  Use `prompter:canceled' instead."))
 (export-always 'prompt-buffer-non-interactive)
 (define-condition prompt-buffer-non-interactive (error)
   ((name :initarg :name :accessor name))

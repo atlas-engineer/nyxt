@@ -618,13 +618,8 @@ See `update-prompt-input' to update the changes visually."
   "Block and return PROMPT-BUFFER results."
   (when (prompt-buffer-p prompt-buffer)
     (show-prompt-buffer prompt-buffer)
-    (calispel:fair-alt
-      ((calispel:? (prompter:result-channel prompt-buffer) results)
-       (hide-prompt-buffer prompt-buffer)
-       results)
-      ((calispel:? (prompter:interrupt-channel prompt-buffer))
-       (hide-prompt-buffer prompt-buffer)
-       (error 'prompt-buffer-canceled)))))
+    (unwind-protect (prompter:result prompt-buffer)
+      (hide-prompt-buffer prompt-buffer))))
 
 (sera:eval-always
   (defvar %prompt-args (delete-duplicates
@@ -652,23 +647,20 @@ See the documentation of `prompt-buffer' to know more about the options."
       (restart-case
           (error 'prompt-buffer-non-interactive :name prompter:prompt)
         (prompt-anyway () nil)
-        (cancel () (error 'prompt-buffer-canceled))))
+        (cancel () (error 'prompter:canceled))))
     (alex:when-let ((prompt-text (getf args :prompt)))
       (when (str:ends-with-p ":" prompt-text)
         (log:warn "Prompt text ~s should not end with a ':'." prompt-text)
         (setf (getf args :prompt) (string-right-trim (uiop:strcat ":" serapeum:whitespace) prompt-text))))
-    (let ((prompt-object-channel (make-channel 1)))
+    (let ((prompt-promise (lpara:promise)))
       (ffi-within-renderer-thread
        *browser*
        (lambda ()
          (let ((prompt-buffer (apply #'make-instance 'prompt-buffer
                                      (append args
-                                             (list
-                                              :window (current-window)
-                                              :result-channel (make-channel)
-                                              :interrupt-channel (make-channel))))))
-           (calispel:! prompt-object-channel prompt-buffer))))
-      (let ((new-prompt (calispel:? prompt-object-channel)))
+                                             (list :window (current-window))))))
+           (lpara:fulfill prompt-promise prompt-buffer))))
+      (let ((new-prompt (lpara:force prompt-promise)))
         (wait-on-prompt-buffer new-prompt)))))
 
 (export-always 'prompt1)

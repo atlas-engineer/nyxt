@@ -347,7 +347,7 @@ Otherwise prompt for matches."
                                         (prompt1
                                          :prompt (format nil "Set ~a to" variable)
                                          :sources 'prompter:raw-source))))
-                              (prompt-buffer-canceled nil))))
+                              (prompter:canceled nil))))
            "Change value")
           (:p (:raw (value->html (symbol-value variable))))
           (:nsection

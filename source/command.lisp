@@ -339,7 +339,7 @@ With MODE-SYMBOLS and GLOBAL-P, include global commands."
   (with-current-buffer (current-buffer)
     (let ((*interactive-p* t))
       (handler-case (apply #'funcall command args)
-        (prompt-buffer-canceled ()
+        (prompter:canceled ()
           (log:debug "Prompt buffer interrupted")
           nil)))))
 

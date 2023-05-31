@@ -445,7 +445,7 @@ Examples:
                                               ,@(when explicit-no-p
                                                   (list :no no)))
                       :hide-suggestion-count-p t)
-                   (prompt-buffer-canceled () nil))))
+                   (prompter:canceled () nil))))
      (if answer
          ,yes-form
          ,no-form)))

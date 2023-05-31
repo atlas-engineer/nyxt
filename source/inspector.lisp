@@ -280,7 +280,7 @@ values in help buffers, REPL and elsewhere."))
                                                 (prompt1
                                                  :prompt (format nil "Set ~a to" slot-name)
                                                  :sources 'prompter:raw-source))))
-                                      (prompt-buffer-canceled nil))))
+                                      (prompter:canceled nil))))
                    "change "))
              (:dd (:raw (value->html (slot-value value slot-name) t)))))
           (:raw (escaped-literal-print value))))))

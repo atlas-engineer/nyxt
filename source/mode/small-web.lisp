@@ -296,7 +296,7 @@ Implies that `small-web-mode' is enabled."
                                 (prompt1 :prompt meta
                                          :sources 'prompter:raw-source
                                          :invisible-input-p (eq status :sensitive-input))
-                              (nyxt::prompt-buffer-canceled () "")))))
+                              (prompter:canceled () "")))))
                  (buffer-load (str:concat url "?" text) :buffer buffer)))
               (:success
                (if (str:starts-with-p "text/gemini" meta)
