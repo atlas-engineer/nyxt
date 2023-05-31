@@ -150,10 +150,10 @@ together with the arglists and documentations of the functions typed in."
                      'extended-command-source
                      :actions-on-return
                      (lambda-command evaluate-lisp-expression* (exprs)
-                       "Evaluate the inputted Lisp expression."
+                       "Evaluate the Lisp expression and print the result to message buffer."
                        (run-thread "evaluator"
                          (let ((*interactive-p* t))
-                           (echo "~s" (eval (first exprs)))))))
+                           (echo "~{~s~^, ~}" (multiple-value-list (eval (first exprs))))))))
                     (make-instance
                      'predicted-command-source
                      :actions-on-return
