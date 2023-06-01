@@ -152,15 +152,15 @@ Generic function to specialize against new REPL cell types."))
   (:method ((cell cell))
     (spinneret:with-html-string
       (:div.cell
-       (:div
-        :class "input-area"
-        (:code (name cell))
-        (:br)
-        (:raw (render-input cell))
-        (:br)
-        (:raw (render-actions cell)))
-       (:div :class "evaluation-result"
-             (:raw (render-results cell))))))
+       (:div.input-area
+        (:div.cell-name
+         (:code (name cell)))
+        (:div.cell-input
+         (:raw (render-input cell)))
+        (:div.cell-actions
+         (:raw (render-actions cell))))
+       (:div.evaluation-result
+        (:raw (render-results cell))))))
   (:documentation "Generate HTML for the CELL.
 Overrides all the methods defined for the CELL type.
 By default utilizes `render-input', `render-actions', and `render-results'.
@@ -465,7 +465,11 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
               :font-size "14px"
               :position "absolute"
               :bottom "1em"
-              :right "1em"))
+              :right "1em")
+            `(.cell-actions
+              :display none)
+            `(":focus-within ~ .cell-actions"
+              :display block))
           :documentation "The CSS applied to a REPL when it is set-up.")
    (cells
     (list (make-instance 'lisp-cell :input "\"Hello, Nyxt!\""))
