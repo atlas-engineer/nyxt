@@ -708,3 +708,9 @@ color-picker support as an example application for this feature.")
   (:ul
    (:li (:code "conservative-history-movement-p") " is deprecated in favor of "
         (:nxref :slot 'global-history-p :class-name 'buffer) ".")))
+
+(define-version "3.X.Y"
+  (:ul
+   (:li "Add new command, "
+        (:nxref :command 'nyxt/mode/prompt-buffer:toggle-suggestions-display)
+         ", that allows collapsing the prompt buffer to its input area.")))
