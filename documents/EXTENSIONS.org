@@ -28,7 +28,7 @@
   block lists, open resources with external applications, all in a cohesive
   configuration language.
 
-- [[https://git.sr.ht/~mmoreno/nx-tailor][nx-tailor]] ::
+- [[https://github.com/mianmoreno/nx-tailor][nx-tailor]] ::
   nx-tailor is a tailor for all-things Nyxt themes which helps you manage them,
   change them on-the-fly, and discover new ones in a unified interface.
 
