@@ -3,6 +3,10 @@
 
 (in-package :theme)
 
+;; Copied from Nyxt.
+(deftype maybe (&rest types)
+  `(or null ,@types))
+
 (define-class theme ()
   ((background-color
     "white"
