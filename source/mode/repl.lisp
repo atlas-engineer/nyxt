@@ -152,8 +152,6 @@ Generic function to specialize against new REPL cell types."))
   (:method ((cell cell))
     (spinneret:with-html-string
       (:div.cell
-       :class (when (eq cell (current-cell (mode-instance cell)))
-                "current")
        (:div.input-area
         (:div.cell-name
          (:code (name cell)))
@@ -470,9 +468,8 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
               :right "1em")
             `(.cell-actions
               :display none)
-            `(":focus-within ~ .cell-actions"
-              :display block)
-            `(".current .cell-actions"
+            `(":focus-within ~ .cell-actions,
+.cell:hover .cell-actions"
               :display block))
           :documentation "The CSS applied to a REPL when it is set-up.")
    (cells
