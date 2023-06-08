@@ -389,14 +389,15 @@ See also `show-prompt-buffer'."
                 with attributes = (mapcar (rcurry #'prompter:active-attributes :source source) suggestions)
                 for key in (prompter:active-attributes-keys source)
                 for width
-                  = (funcall width-function (mapcar (compose #'first (rcurry #'str:s-assoc-value key))
-                                                    attributes))
+                  = (funcall width-function (mapcar #'prompter:attribute-value
+                                                    (remove key attributes :test 'string/= :key #'prompter:attribute-key)))
                 collect width into widths
                 finally (return (clip-extremes (width-normalization widths))))
           (sera:and-let* ((suggestions (prompter:suggestions source))
-                          (fourth-attributes
-                           (mapcar #'fourth (prompter:active-attributes (first suggestions) :source source)))
-                          (coefficients (substitute 1 nil fourth-attributes)))
+                          (second-option
+                           (mapcar (compose #'second #'prompter:attribute-options)
+                                   (prompter:active-attributes (first suggestions) :source source)))
+                          (coefficients (substitute 1 nil second-option)))
             (width-normalization coefficients)))))
   (:documentation "Compute the widths of SOURCE attribute columns (as percent).
 
@@ -474,12 +475,13 @@ an integer."))
                                             (- suggestion-index cursor-index))
                                            (prompter:run-action-on-return
                                             (nyxt::current-prompt-buffer)))))))
-                          (loop for (nil attribute attribute-display)
-                                in (prompter:active-attributes suggestion :source source)
-                                collect (:td :title attribute
+                          (loop for attribute in (prompter:active-attributes suggestion :source source)
+                                for attribute-display = (first (prompter:attribute-options attribute))
+                                for attribute-value = (prompter:attribute-value attribute)
+                                collect (:td :title attribute-value
                                              (if attribute-display
                                                  (:raw attribute-display)
-                                                 attribute))))))))))
+                                                 attribute-value))))))))))
 
 (export 'prompt-render-suggestions)
 (defmethod prompt-render-suggestions ((prompt-buffer prompt-buffer))
