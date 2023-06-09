@@ -78,7 +78,7 @@ This leverages `mode-status' which can be specialized for individual modes."
       :buffer status
       :id "execute"
       :text "λ"
-      :title "Execute"
+      :title "Execute-Command Menu"
       '(nyxt:execute-command))))
 
 (export-always 'format-status-load-status)
