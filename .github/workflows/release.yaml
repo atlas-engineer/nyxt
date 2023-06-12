@@ -48,36 +48,36 @@ jobs:
         make flatpak-repository
         make flatpak-bundle
 
-    # - name: Guix cache
-    #   uses: actions/cache@v2
-    #   with:
-    #     path: ~/.cache/guix
-    #     # use a key that (almost) never matches
-    #     key: guix-cache-${{ github.sha }}
-    #     restore-keys: |
-    #       guix-cache-
+    - name: Guix cache
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/guix
+        # use a key that (almost) never matches
+        key: guix-cache-${{ github.sha }}
+        restore-keys: |
+          guix-cache-
 
-    # # Cannot use a cache for /gnu/store, since restore fails
-    # - name: Install Guix
-    #   uses: PromyLOPh/guix-install-action@v1
+    # Cannot use a cache for /gnu/store, since restore fails
+    - name: Install Guix
+      uses: PromyLOPh/guix-install-action@v1
 
-    # - name: Ensure no locale warning
-    #   run: test -z "$(guix --version 2>&1 >/dev/null)"
+    - name: Ensure no locale warning
+      run: test -z "$(guix --version 2>&1 >/dev/null)"
 
-    # - name: Build Guix package
-    #   run: |
-    #       guix shell --container -D -f build-scripts/nyxt.scm --user=dummy-user guix -- make all NYXT_SUBMODULES=false
+    - name: Build Guix package
+      run: |
+          guix shell --container -D -f build-scripts/nyxt.scm --user=dummy-user guix -- make all NYXT_SUBMODULES=false
 
     - name: Generate version file
       shell: bash
       run: echo $(./nyxt --version | cut -d' ' -f3) > version
 
     # # Balance out '.
-    # - name: Pack (Relocatable Binary)
-    #   shell: bash
-    #   run: |
-    #     echo "Command: guix pack -RR --no-grafts --compression=xz --symlink=/usr/local/bin/nyxt=bin/nyxt --root=nyxt-$(cat version).tar.xz -L build-scripts/ nyxt" >> guix-recipe.txt
-    #     guix pack -RR --no-grafts --compression=xz --symlink=/usr/local/bin/nyxt=bin/nyxt --root=nyxt-$(cat version).tar.xz -L build-scripts/ nyxt > store-path.txt
+    - name: Pack (Relocatable Binary)
+      shell: bash
+      run: |
+        echo "Command: guix pack -RR --no-grafts --compression=xz --symlink=/usr/local/bin/nyxt=bin/nyxt --root=nyxt-$(cat version).tar.xz -L build-scripts/ nyxt" >> guix-recipe.txt
+         guix pack -RR --no-grafts --compression=xz --symlink=/usr/local/bin/nyxt=bin/nyxt --root=nyxt-$(cat version).tar.xz -L build-scripts/ nyxt > store-path.txt
 
     - name: Generate release notes
       shell: bash
