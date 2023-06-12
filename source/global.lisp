@@ -88,7 +88,7 @@ Don't set this, it would lose its meaning.")
 (defvar +guix-build-information+
   (when (sera:resolve-executable "guix")
     `(:version
-      ;; `guix describe' is not reliable within `guix environment'.
+      ;; `guix describe' is not reliable within `guix shell'.
       ,(fourth (sera:tokens
                 (first (sera:lines
                         (uiop:run-program '("guix" "--version") :output :string)))))))
