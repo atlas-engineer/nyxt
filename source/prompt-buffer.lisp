@@ -386,11 +386,15 @@ See also `show-prompt-buffer'."
       ;; critical.
       (if dynamic-p
           (loop with suggestions = (prompter:suggestions source)
-                with attributes = (mapcar (rcurry #'prompter:active-attributes :source source) suggestions)
+                with suggestions-attributes = (mapcar (rcurry #'prompter:active-attributes :source source) suggestions)
                 for key in (prompter:active-attributes-keys source)
+                ;; REVIEW: A `prompter' function to retrieve attributes by key would be nice.
                 for width
-                  = (funcall width-function (mapcar #'prompter:attribute-value
-                                                    (remove key attributes :test 'string/= :key #'prompter:attribute-key)))
+                  = (funcall width-function (mapcar (lambda (attributes)
+                                                      (prompter:attribute-value
+                                                       (find key attributes :test 'string=
+                                                                            :key #'prompter:attribute-key)))
+                                                    suggestions-attributes))
                 collect width into widths
                 finally (return (clip-extremes (width-normalization widths))))
           (sera:and-let* ((suggestions (prompter:suggestions source))
