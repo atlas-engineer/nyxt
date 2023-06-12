@@ -34,7 +34,7 @@ makefile_dir := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 ## what then when not using submodules?
 export CL_SOURCE_REGISTRY := $(makefile_dir)libraries/nasdf/:$(CL_SOURCE_REGISTRY)
 
-# The CFFI-specific snippet is useful when running in a Guix environment to register its libraries in CFFI.
+# The CFFI-specific snippet is useful when running in a Guix shell to register its libraries in CFFI.
 # TODO: Find a better way to do it.
 lisp_eval:=$(LISP) $(LISP_FLAGS) \
 	--eval '(require "asdf")' \
