@@ -709,8 +709,13 @@ color-picker support as an example application for this feature.")
    (:li (:code "conservative-history-movement-p") " is deprecated in favor of "
         (:nxref :slot 'global-history-p :class-name 'buffer) ".")))
 
-(define-version "3.X.Y"
+(define-version "3.2.0"
   (:ul
-   (:li "Add new command, "
+   (:li "Add support for PDF.js.")
+   (:li "Add command "
         (:nxref :command 'nyxt/mode/prompt-buffer:toggle-suggestions-display)
-         ", that allows collapsing the prompt buffer to its input area.")))
+        ", that allows collapsing the prompt buffer to its input area.")
+   (:li "Improve the UI of the REPL.")
+   (:li "Output multiple values when evaluating Lisp expressions from "
+        (:nxref :command 'nyxt:execute-command) ".")
+   (:li "Bug fixes.")))
