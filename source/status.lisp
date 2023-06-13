@@ -141,7 +141,8 @@ the URL.)"
     (spinneret:with-html-string
       (loop for url in domain-deduplicated-urls
             collect
-            (let* ((internal-buffers (remove-if-not #'internal-url-p (buffer-list) :key #'url))
+            ;; FIXME: Removing NIL buffers here too, the same reason as above.
+            (let* ((internal-buffers (remove-if-not #'internal-url-p (remove nil (buffer-list)) :key #'url))
                    (domain (quri:uri-domain url))
                    (tab-display-text (if (internal-url-p url)
                                          "internal"
