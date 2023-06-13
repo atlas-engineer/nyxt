@@ -55,6 +55,7 @@
   #:use-module (gnu packages lisp)
   #:use-module (gnu packages lisp-check)
   #:use-module (gnu packages lisp-xyz)
+  #:use-module (gnu packages haskell-xyz) ; For pandoc.
   #:use-module (gnu packages gnome)
   #:use-module (gnu packages gnupg)
   #:use-module (gnu packages gstreamer)
@@ -193,6 +194,25 @@
           cl-trivial-package-local-nicknames
           cl-trivial-types
           cl-unix-opts
+          ;; Nyxt website dependencies, unneeded for the upstream Guix package:
+          pandoc
+          cl-caveman
+          cl-project
+          cl-clack
+          cl-lack
+          cl-markup
+          cl-smtp
+          cl-envy
+          cl-ironclad
+          cl-mito
+          cl-s-xml
+          cl-sxql
+          cl-uuid
+          ;; Dependencies for https://github.com/atlas-engineer/stripe.  Needed
+          ;; for Nyxt website.  Unneeded for the upstream Guix package.
+          cl-dexador
+          cl-golden-utils
+          cl-yason
           ;; System deps
           gcc-toolchain                 ; Needed for cl-iolib
           cl-cffi-gtk
