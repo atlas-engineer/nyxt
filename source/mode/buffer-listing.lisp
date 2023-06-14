@@ -103,12 +103,11 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                    :buffer panel-buffer
                    `(nyxt::switch-buffer :buffer ,buffer))))))
     (spinneret:with-html-string
-      (:nstyle (lass:compile-and-write
-                '(.button
-                  :white-space nowrap
-                  :overflow-x hidden
-                  :display block
-                  :text-overflow ellipsis)))
+      (:nstyle '(.button
+                 :white-space nowrap
+                 :overflow-x hidden
+                 :display block
+                 :text-overflow ellipsis))
       (:body
        (:h1 "Buffers")
        (:nbutton :text "Update ↺"
