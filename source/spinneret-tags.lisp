@@ -13,17 +13,32 @@
                (progn ,@body)
                (escape-string (progn ,@body))))))
 
+(defun %nstyle-body (forms)
+  (reduce #'uiop:strcat
+          (mapcar (lambda (f) (typecase f
+                                (list (lass:compile-and-write f))
+                                (string f)))
+                  forms)))
+
 (deftag :nstyle (body attrs &rest keys &key &allow-other-keys)
   "Regular <style>, but with contents staying unescaped."
   (let ((keys keys))
     (declare (ignorable keys))
-    `(:style ,@attrs (:raw ,@body))))
+    `(:style ,@attrs (:raw (theme:with-theme (nyxt::theme nyxt:*browser*)
+                             (%nstyle-body (list ,@body)))))))
+
+(defun %nscript-body (forms)
+  (reduce #'uiop:strcat
+          (mapcar (lambda (f) (typecase f
+                                (list (ps:ps* f))
+                                (string f)))
+                  forms)))
 
 (deftag :nscript (body attrs &rest keys &key &allow-other-keys)
   "Regular <script>, but with contents staying unescaped."
   (let ((keys keys))
     (declare (ignorable keys))
-    `(:script ,@attrs (:raw ,@body))))
+    `(:script ,@attrs (:raw (%nscript-body (list ,@body))))))
 
 (serapeum:-> %nselect-onchange (string (nyxt:maybe nyxt:buffer) (nyxt:list-of list)) t)
 (defun %nselect-onchange (id buffer clauses)
@@ -457,6 +472,20 @@ Most *-P arguments mandate whether to add the buttons for:
                        (:pre ,@attrs ,select-code
                              (:code (:raw ,htmlized))))))))))
 
+(defun %nsection-id (title)
+  (if (stringp title)
+      (reduce (lambda (string char)
+                (if (and (plusp (length string))
+                         (eql (elt string (1- (length string))) #\-)
+                         (eql char #\-))
+                    string
+                    (uiop:strcat string char)))
+              (substitute-if-not
+               #\- #'alphanumericp
+               (string-trim serapeum:whitespace (string-downcase title)))
+              :initial-value "")
+      (alexandria:required-argument 'id)))
+
 (deftag :nsection (body attrs &rest keys
                         &key (title (alexandria:required-argument 'title))
                         level
@@ -618,7 +647,8 @@ Looks for section tags with ID-s to link to.
   (let ((keys keys))
     (declare (ignorable keys))
     (with-gensyms (body-var)
-      `(let ((,body-var (with-html-string ,@body)))
+      `(let* ((*html-style* :tree)
+              (,body-var (with-html-string ,@body)))
          (:nav#toc
           ,@attrs
           (:nsection
