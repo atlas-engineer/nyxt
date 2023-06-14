@@ -266,8 +266,7 @@ Important pieces of functionality are:
   nil)
 
 (defmethod nyxt:on-signal-load-finished ((mode document-mode) url)
-  (reset-page-zoom :buffer (buffer mode)
-                   :ratio (current-zoom-ratio (buffer mode)))
+  (reset-page-zoom :buffer (buffer mode))
   url)
 
 (define-internal-page show-url-qrcode (&key url)
@@ -361,26 +360,18 @@ The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
   (ps-eval (ps:chain window (scroll-by 0 (- (* (ps:lisp (page-scroll-ratio (current-buffer)))
                                              (ps:@ window inner-height)))))))
 
-(defun ensure-zoom-ratio-range (zoom &optional (buffer (current-buffer)))
-  (let* ((ratio (funcall zoom (current-zoom-ratio buffer) (zoom-ratio-step buffer))))
-    (setf ratio (max ratio (zoom-ratio-min buffer)))
-    (setf ratio (min ratio (zoom-ratio-max buffer)))
-    (setf (current-zoom-ratio buffer) ratio)))
-
 (define-command zoom-page (&key (buffer (current-buffer)))
   "Zoom in the current page BUFFER."
-  (ensure-zoom-ratio-range #'+ buffer)
-  (setf (ffi-buffer-zoom-level buffer) (current-zoom-ratio buffer)))
+  (incf (current-zoom-ratio buffer) (zoom-ratio-step buffer)))
 
 (define-command unzoom-page (&key (buffer (current-buffer)))
   "Zoom out the current page in BUFFER."
-  (ensure-zoom-ratio-range #'- buffer)
-  (setf (ffi-buffer-zoom-level buffer) (current-zoom-ratio buffer)))
+  (decf (current-zoom-ratio buffer) (zoom-ratio-step buffer)))
 
 (define-command reset-page-zoom (&key (buffer (current-buffer))
                                       (ratio (zoom-ratio-default buffer)))
   "Reset the BUFFER zoom to the `zoom-ratio-default' or RATIO."
-  (setf (ffi-buffer-zoom-level buffer) (setf (current-zoom-ratio buffer) ratio)))
+  (setf (current-zoom-ratio buffer) ratio))
 
 (define-internal-page summarize-buffer (&key (summary-length 5) (id (id (current-buffer))))
     (:title "*Summary*")
