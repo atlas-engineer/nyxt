@@ -222,34 +222,34 @@ useful actions there, including the familiar " (:code "set-url") ", " (:code "hi
     (buffer "*New buffer*")
   "Display a page suitable as `default-new-buffer-url'."
   (spinneret:with-html-string
-   (:nstyle (theme:themed-css (theme *browser*)
-                              `(body
-                                :min-height "100vh")
-                              `(nav
-                                :text-align "center"
-                                :top 0)
-                              `(details
-                                :display "inline"
-                                :margin "1em")
-                              `(h1
-                                :font-size "5em"
-                                :margin "0.1em")
-                              `(main
-                                :padding "10%"
-                                :text-align "center"
-                                :display "flex"
-                                :flex-direction "column"
-                                :justify-content "center")
-                              `(.centered
-                                :text-align "center")
-                              `(.button
-                                :min-width "100px")
-                              `(.container
-                                :min-height "100%")
-                              `(.copyright
-                                :position "absolute"
-                                :bottom "1em"
-                                :right "1em")))
+    (:nstyle
+      `(body
+        :min-height "100vh")
+      `(nav
+        :text-align "center"
+        :top 0)
+      `(details
+        :display "inline"
+        :margin "1em")
+      `(h1
+        :font-size "5em"
+        :margin "0.1em")
+      `(main
+        :padding "10%"
+        :text-align "center"
+        :display "flex"
+        :flex-direction "column"
+        :justify-content "center")
+      `(.centered
+        :text-align "center")
+      `(.button
+        :min-width "100px")
+      `(.container
+        :min-height "100%")
+      `(.copyright
+        :position "absolute"
+        :bottom "1em"
+        :right "1em"))
     (:div
      :class "container"
      (:nav
@@ -309,14 +309,14 @@ useful actions there, including the familiar " (:code "set-url") ", " (:code "hi
       (buffer "*Manual*" 'nyxt/mode/help:help-mode)
     "Display Nyxt manual."
     (spinneret:with-html-string
-      (:nstyle (lass:compile-and-write '(body :max-width "80ch")))
+      (:nstyle '(body :max-width "80ch"))
       (:raw (manual-content)))))
 
 (define-internal-page-command-global tutorial ()
     (buffer "*Tutorial*" 'nyxt/mode/help:help-mode)
   "Display Nyxt tutorial."
   (spinneret:with-html-string
-    (:nstyle (lass:compile-and-write '(body :max-width "80ch")))
+    (:nstyle '(body :max-width "80ch"))
     (:h1 "Nyxt tutorial")
     (:p "The following tutorial introduces core concepts and
 basic usage.  For more details, especially regarding configuration, see
