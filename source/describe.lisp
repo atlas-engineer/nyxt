@@ -647,7 +647,7 @@ A command is a special kind of function that can be called with
       (:p (format nil "Buffer with ID ~a does not exist." id)))))
 
 (define-command-global describe-bindings (&key (buffer (current-buffer)))
-  "Show a buffer with the list of all known bindings for the current buffer."
+  "Show a buffer with the list of all known key bindings for the current buffer."
   (buffer-load-internal-page-focus 'describe-bindings :id (id buffer)))
 
 (defun describe-key-dispatch (command)
