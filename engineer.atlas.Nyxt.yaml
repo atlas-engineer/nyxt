@@ -36,6 +36,13 @@ modules:
     build-commands:
       - sh install.sh
 
+  - name: xsel
+    buildsystem: autotools
+    sources:
+      - type: git
+        url: https://github.com/kfish/xsel.git
+        tag: 1.2.1
+
   - name: libfixposix
     buildsystem: autotools
     sources:
@@ -58,6 +65,6 @@ modules:
         LISP_FLAGS: "--dynamic-space-size 4096 --no-userinit --non-interactive"
     build-commands:
       - make all
-      - mkdir $FLATPAK_DEST/bin
+      - mkdir -p $FLATPAK_DEST/bin
       - mv nyxt $FLATPAK_DEST/bin/
       - install -D assets/engineer.atlas.Nyxt.appdata.xml /app/share/appdata/engineer.atlas.Nyxt.appdata.xml
