@@ -83,6 +83,9 @@ See `nyxt::attribute-widths'.")
         `("#prompt-area"
           :background-color ,theme:primary
           :color ,theme:on-primary
+          :border-top "2px solid"
+          :border-bottom "2px solid"
+          :border-color ,theme:primary
           :display "grid"
           :grid-template-columns "auto auto 1fr auto auto"
           :width "100%")
@@ -146,13 +149,15 @@ See `nyxt::attribute-widths'.")
           :background-color ,theme:background
           :color ,theme:on-background
           :opacity 0.9
-          :border 2px solid ,theme:primary
+          :border "none"
           :outline "none"
           :padding "3px"
           :width "100%"
           :autofocus "true")
         `("#input:focus"
-          :border-color ,theme:accent)
+          :box-shadow ,(format nil
+                               "inset 11px 0px 0 2px ~a~X, inset -21px 0px 0 2px ~a~X"
+                               theme:accent-alt 75 theme:accent-alt 75))
         `(".source"
           :margin-left "10px"
           :margin-top "15px")
