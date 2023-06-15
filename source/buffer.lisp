@@ -1351,9 +1351,24 @@ second latest buffer first."
       (set-current-buffer buffer)
       (prompt
        :prompt "Switch to buffer"
-       :sources (make-instance 'buffer-source
-                               :constructor (buffer-initial-suggestions
-                                             :current-is-last-p current-is-last-p)))))
+       :sources (list
+                 (make-instance 'buffer-source
+                                :constructor (buffer-initial-suggestions
+                                              :current-is-last-p current-is-last-p))
+                 (make-instance
+                  'new-url-or-search-source
+                  :name "Create new buffer"
+                  :actions-on-return (list (lambda-command new-buffer-load* (suggestion-values)
+                                             "Load URL(s) in new buffer(s)"
+                                             (mapc (lambda (suggestion) (make-buffer :url (url suggestion)))
+                                                   (rest suggestion-values))
+                                             (make-buffer-focus :url (url (first suggestion-values))))
+                                           (lambda-command new-nosave-buffer-load* (suggestion-values)
+                                             "Load URL(s) in new nosave buffer(s)"
+                                             (mapc (lambda (suggestion) (make-nosave-buffer :url (url suggestion)))
+                                                   (rest suggestion-values))
+                                             (make-buffer-focus :url (url (first suggestion-values))
+                                                                :nosave-buffer-p t))))))))
 
 (define-command switch-buffer-domain (&key domain (buffer (current-buffer)))
   "Switch the active buffer in the current window from the current domain."
@@ -1736,11 +1751,18 @@ any.")
   (if explicit-url-p
       (make-buffer-focus :url (url url))
       (let ((history (set-url-history *browser*))
-            (actions-on-return (lambda-command new-buffer-load (suggestion-values)
-                                 "Load URL(s) in new buffer(s)"
-                                 (mapc (lambda (suggestion) (make-buffer :url (url suggestion)))
-                                       (rest suggestion-values))
-                                 (make-buffer-focus :url (url (first suggestion-values))))))
+            (actions-on-return
+              (list (lambda-command new-buffer-load (suggestion-values)
+                      "Load URL(s) in new buffer(s)"
+                      (mapc (lambda (suggestion) (make-buffer :url (url suggestion)))
+                            (rest suggestion-values))
+                      (make-buffer-focus :url (url (first suggestion-values))))
+                    (lambda-command new-nosave-buffer-load (suggestion-values)
+                      "Load URL(s) in new nosave buffer(s)"
+                      (mapc (lambda (suggestion) (make-nosave-buffer :url (url suggestion)))
+                            (rest suggestion-values))
+                      (make-buffer-focus :url (url (first suggestion-values))
+                                         :nosave-buffer-p t)))))
         (pushnew-url-history history (url (current-buffer)))
         (prompt
          :prompt "Open URL in new buffer"
