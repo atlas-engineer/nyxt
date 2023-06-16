@@ -23,18 +23,23 @@
 
 (define-class command-source (prompter:source)
   ((prompter:name "Commands")
-   (global-p t
-             :type boolean
-             :documentation "Whether global commands are included in the suggestions.")
-   (buffer (current-buffer)
-           :type buffer)
-   (prompter:constructor (lambda (source)
-                           (sort-by-time
-                            (list-commands
-                             :global-p (global-p source)
-                             :mode-symbols (mapcar #'sera:class-name-of (sera:filter #'enabled-p (modes (buffer source))))))))
-   (prompter:active-attributes-keys '("Name" "Bindings" "Docstring")
-                                    :accessor nil)
+   (global-p
+    t
+    :type boolean
+    :documentation "Whether global commands are included in the suggestions.")
+   (buffer
+    (current-buffer)
+    :type buffer)
+   (prompter:constructor
+    (lambda (source)
+      (sort-by-time
+       (list-commands :global-p (global-p source)
+                      :mode-symbols (mapcar #'sera:class-name-of
+                                            (sera:filter #'enabled-p
+                                                         (modes (buffer source))))))))
+   (prompter:active-attributes-keys
+    '("Name" "Bindings" "Docstring")
+    :accessor nil)
    (prompter:filter-preprocessor #'prompter:filter-exact-matches))
   (:export-class-name-p t)
   (:documentation "Prompter source to execute commands.
