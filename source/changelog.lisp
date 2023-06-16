@@ -719,3 +719,8 @@ color-picker support as an example application for this feature.")
    (:li "Output multiple values when evaluating Lisp expressions from "
         (:nxref :command 'nyxt:execute-command) ".")
    (:li "Bug fixes.")))
+
+(define-version "3.X.Y"
+  (:ul
+   (:li "Remove restrictions on zoom level in the form of "
+    (:code "zoom-ratio-min") " and " (:code "zoom-ratio-max") ".")))
