@@ -813,6 +813,75 @@ See `gtk-browser's `modifier-translator' slot."
   (:export-class-name-p t)
   (:export-accessor-names-p t))
 
+;; From https://github.com/umpirsky/language-list/tree/master/data directory
+;; listing $(ls /data) and processed with:
+;; (defun iso-languages (languages-file-string)
+;;   (remove-if (lambda (lang)
+;;                (or (uiop:emptyp lang)
+;;                    (/= 1 (count #\_ lang))
+;;                    (notevery #'upper-case-p (subseq lang 3))))
+;;              (uiop:split-string languages-file-string :separator '(#\Space #\Tab #\Newline))))
+(defvar *spell-check-languages*
+  (list "be_BY" "en_LC" "en_VG" "ff_MR" "fr_SC" "ln_CF" "nl_BE" "rm_CH" "uk_UA"
+        "af_NA" "el_CY" "en_LR" "en_VI" "ff_SN" "fr_SN" "ii_CN" "ln_CG" "nl_BQ"
+        "af_ZA" "bg_BG" "el_GR" "en_LS" "en_VU" "fr_SY" "nl_CW" "rn_BI" "ur_IN"
+        "en_MG" "en_WS" "fi_FI" "fr_TD" "is_IS" "lo_LA" "nl_NL" "ur_PK" "ak_GH"
+        "en_AG" "en_MH" "en_ZA" "fr_TG" "nl_SR" "ro_MD" "en_AI" "en_MO" "en_ZM"
+        "fo_FO" "fr_TN" "it_CH" "lt_LT" "nl_SX" "ro_RO" "uz_AF" "am_ET" "en_AS"
+        "en_MP" "en_ZW" "fr_VU" "it_IT" "bn_BD" "en_AU" "en_MS" "fr_BE" "fr_WF"
+        "it_SM" "lu_CD" "nn_NO" "ru_BY" "ar_AE" "bn_IN" "en_BB" "en_MT" "fr_BF"
+        "fr_YT" "ru_KG" "sr_ME" "ar_BH" "en_BE" "en_MU" "es_AR" "fr_BI" "ja_JP"
+        "lv_LV" "no_NO" "ru_KZ" "sr_RS" "ar_DJ" "bo_CN" "en_BM" "en_MW" "es_BO"
+        "fr_BJ" "fy_NL" "ru_MD" "sr_XK" "ar_DZ" "bo_IN" "en_BS" "en_MY" "es_CL"
+        "fr_BL" "ka_GE" "mg_MG" "om_ET" "ru_RU" "ar_EG" "en_BW" "en_NA" "es_CO"
+        "fr_CA" "ga_IE" "om_KE" "ru_UA" "sv_AX" "uz_UZ" "ar_EH" "br_FR" "en_BZ"
+        "en_NF" "es_CR" "fr_CD" "ki_KE" "mk_MK" "sv_FI" "ar_ER" "en_CA" "en_NG"
+        "es_CU" "fr_CF" "gd_GB" "or_IN" "rw_RW" "sv_SE" "vi_VN" "ar_IL" "bs_BA"
+        "en_CC" "en_NR" "es_DO" "fr_CG" "ml_IN" "ar_IQ" "en_CK" "en_NU" "es_EA"
+        "fr_CH" "gl_ES" "os_GE" "se_FI" "sw_CD" "ar_JO" "en_CM" "en_NZ" "es_EC"
+        "fr_CI" "kk_KZ" "os_RU" "se_NO" "sw_KE" "yo_BJ" "ar_KM" "en_CX" "en_PG"
+        "es_ES" "fr_CM" "gu_IN" "se_SE" "sw_TZ" "yo_NG" "ar_KW" "en_DG" "en_PH"
+        "es_GQ" "fr_DJ" "kl_GL" "mn_MN" "sw_UG" "ar_LB" "en_DM" "en_PK" "es_GT"
+        "fr_DZ" "gv_IM" "sg_CF" "zh_CN" "ar_LY" "ca_AD" "en_ER" "en_PN" "es_HN"
+        "fr_FR" "km_KH" "mr_IN" "ta_IN" "zh_HK" "ar_MA" "ca_ES" "en_FJ" "en_PR"
+        "es_IC" "fr_GA" "ha_GH" "sh_BA" "ta_LK" "ar_MR" "ca_FR" "en_FK" "en_PW"
+        "es_MX" "fr_GF" "kn_IN" "ms_BN" "pa_IN" "ta_MY" "ar_OM" "ca_IT" "en_FM"
+        "en_RW" "es_NI" "fr_GN" "pa_PK" "si_LK" "ta_SG" "ar_PS" "en_GB" "en_SB"
+        "es_PA" "fr_GP" "ko_KP" "ar_QA" "cs_CZ" "en_GD" "en_SC" "es_PE" "fr_GQ"
+        "ko_KR" "pl_PL" "sk_SK" "te_IN" "ar_SA" "en_GG" "en_SD" "es_PH" "fr_HT"
+        "ha_NE" "ar_SD" "cy_GB" "en_GH" "en_SG" "es_PR" "fr_KM" "ha_NG" "ms_MY"
+        "ps_AF" "sl_SI" "th_TH" "ar_SO" "en_GI" "en_SH" "es_PY" "fr_LU" "ms_SG"
+        "ar_SS" "da_DK" "en_GM" "en_SL" "es_SV" "fr_MA" "he_IL" "ks_IN" "pt_AO"
+        "sn_ZW" "ti_ER" "ar_SY" "da_GL" "en_GU" "en_SS" "es_US" "fr_MC" "mt_MT"
+        "pt_BR" "ti_ET" "zh_MO" "ar_TD" "en_GY" "en_SX" "es_UY" "fr_MF" "hi_IN"
+        "kw_GB" "pt_CV" "so_DJ" "zh_SG" "ar_TN" "de_AT" "en_HK" "en_SZ" "es_VE"
+        "fr_MG" "my_MM" "pt_GW" "so_ET" "tl_PH" "zh_TW" "ar_YE" "de_BE" "en_IE"
+        "en_TC" "fr_ML" "hr_BA" "pt_MO" "so_KE" "de_CH" "en_IM" "en_TK" "et_EE"
+        "fr_MQ" "hr_HR" "nb_NO" "pt_MZ" "so_SO" "to_TO" "zu_ZA" "as_IN" "de_DE"
+        "en_IN" "en_TO" "fr_MR" "ky_KG" "nb_SJ" "pt_PT" "de_LI" "en_IO" "en_TT"
+        "eu_ES" "fr_MU" "hu_HU" "pt_ST" "sq_AL" "tr_CY" "az_AZ" "de_LU" "en_JE"
+        "en_TV" "fr_NC" "lb_LU" "nd_ZW" "pt_TL" "sq_MK" "tr_TR" "en_JM" "en_TZ"
+        "fa_AF" "fr_NE" "hy_AM" "sq_XK" "dz_BT" "en_KE" "en_UG" "fa_IR" "fr_PF"
+        "lg_UG" "ne_IN" "qu_BO" "en_KI" "en_UM" "fr_PM" "id_ID" "ne_NP" "qu_EC"
+        "sr_BA" "ee_GH" "en_KN" "en_US" "ff_CM" "fr_RE" "ln_AO" "qu_PE" "ug_CN"
+        "ee_TG" "en_KY" "en_VC" "ff_GN" "fr_RW" "ig_NG" "ln_CD" "nl_AW")
+  "The list of languages available for spell checking in `set-spell-check-languages'.")
+
+(define-command-global set-spell-check-languages
+    (&key (buffer (current-buffer))
+     (languages (prompt :prompt "Languages to spell check"
+                        :sources (make-instance 'prompter:source
+                                                :name "Language codes"
+                                                :enable-marks-p t
+                                                :constructor *spell-check-languages*))))
+  (let ((pointer (cffi:foreign-alloc :string
+                                     :initial-contents languages
+                                     :null-terminated-p t)))
+    (webkit:webkit-web-context-set-spell-checking-languages
+     (webkit:webkit-web-view-web-context (gtk-object buffer))
+     pointer)
+    (cffi:foreign-free pointer)))
+
 (defun make-context (name &key ephemeral-p)
   (let* ((context
            (if ephemeral-p
@@ -837,6 +906,16 @@ See `gtk-browser's `modifier-translator' slot."
                                                            (cffi:null-pointer)))))))
          (gtk-extensions-path (files:expand (make-instance 'gtk-extensions-directory)))
          (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
+    (webkit:webkit-web-context-set-spell-checking-enabled context t)
+    ;; Need to set the initial language list.
+    (let ((pointer (cffi:foreign-alloc :string
+                                       :initial-contents (list (or (uiop:getenv "LANG")
+                                                                   (uiop:getenv "LANGUAGE")
+                                                                   (uiop:getenv "LC_CTYPE")
+                                                                   "en_US"))
+                                       :null-terminated-p t)))
+      (webkit:webkit-web-context-set-spell-checking-languages context pointer)
+      (cffi:foreign-free pointer))
     (when (and (not (nfiles:nil-pathname-p gtk-extensions-path))
                ;; Either the directory exists.
                (or (uiop:directory-exists-p gtk-extensions-path)
