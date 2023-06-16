@@ -772,6 +772,9 @@ color-picker support as an example application for this feature.")
   (:ul
    (:li "Theme is now properly configurable via "
         (:a :href (nyxt-url 'common-settings) "Common Settings Menu") ".")
+   (:li "WebKitGTK port: enable native spell-checking and allow to change spell checking
+languages with " (:code "set-spell-check-languages")
+" command. The spell-checker relies on Enchant dictionaries.")
    (:li "Add prompt buffer keybindings for commands "
           (:nxref :command 'nyxt/mode/prompt-buffer:previous-page) " and "
           (:nxref :command 'nyxt/mode/prompt-buffer:next-page) ".")
