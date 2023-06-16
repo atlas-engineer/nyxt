@@ -637,7 +637,9 @@ A command is a special kind of function that can be called with
                                   in (keymaps:keymap-with-parents->map keymap)
                                     using (hash-value bound-value)
                                 collect (:tr
-                                         (:td keyspec)
+                                         (:td
+                                          (first (keymaps:binding-keys bound-value
+                                                                       keymap)))
                                          (:td (typecase bound-value
                                                 (sym:command-symbol (:nxref :command bound-value))
                                                 (command (:nxref :command (name bound-value)))
