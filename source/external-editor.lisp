@@ -30,7 +30,7 @@ Signals an error if COMMAND is nil or an empty string."
 PROGRAM defaults to `external-editor-program'"
   (let ((command (%append-uiop-command program (uiop:native-namestring path))))
     (log:debug "External editor opens ~s" command)
-    (uiop:run-program command :ignore-error-status t)))
+    (uiop:run-program command)))
 
 (export-always 'launch-external-editor)
 (defun launch-external-editor (path &optional (program (external-editor-program *browser*)))
