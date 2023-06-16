@@ -126,8 +126,8 @@ Note that some settings may require creating a new buffer to take effect.")
                    "Set default new buffer URL"))
      (:li (:button :class "button"
                    :onclick (ps:ps (nyxt/ps:lisp-eval
-                                    (:title "set-zoom-ration")
-                                    (nyxt::configure-slot 'current-zoom-ratio 'document-buffer)))
+                                    (:title "set-zoom-ratio")
+                                    (nyxt::configure-slot 'zoom-ratio-default 'document-buffer)))
                    "Set default zoom ratio"))
      (:li (:button :class "button"
                    :onclick (ps:ps (nyxt/ps:lisp-eval
