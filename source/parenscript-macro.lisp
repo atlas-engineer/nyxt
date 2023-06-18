@@ -167,3 +167,15 @@
           0)
        (= (chain window (get-computed-style ,element) "visibility")
           "hidden")))
+
+(export-always 'add-class-nyxt-id)
+(defpsmacro add-class-nyxt-id (id class)
+  "element.classList.add(class) tailored for Nyxt IDs."
+  `(let ((element (nyxt/ps:qs-nyxt-id document (ps:lisp ,id))))
+     (ps:chain element class-list (add ,class))))
+
+(export-always 'remove-class-nyxt-id)
+(defpsmacro remove-class-nyxt-id (id class)
+  "element.classList.remove(class) tailored for Nyxt IDs."
+  `(let ((element (nyxt/ps:qs-nyxt-id document (ps:lisp ,id))))
+     (ps:chain element class-list (remove ,class))))
