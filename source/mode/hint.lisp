@@ -237,13 +237,22 @@ Consult https://developer.mozilla.org/en-US/docs/Web/CSS/visibility."
           (declare (ignore source))
           (loop for suggestion in suggestions
                 for hint = (prompter:value suggestion)
+                for hinted-element-id = (nyxt/dom:get-nyxt-id hint)
                 if (str:starts-with-p input
                                       (prompter:attributes-default suggestion)
                                       :ignore-case t)
                   do (set-hint-visibility hint "visible")
+                  and do (when (show-hint-scope-p (find-submode 'hint-mode))
+                           (ps-eval
+                             (nyxt/ps:add-class-nyxt-id hinted-element-id
+                                                        "nyxt-element-hint")))
                   and do (dim-hint-prefix hint (length input))
                   and collect suggestion
-                else do (set-hint-visibility hint "hidden")))
+                else do (set-hint-visibility hint "hidden")
+                     and do (when (show-hint-scope-p (find-submode 'hint-mode))
+                              (ps-eval
+                                (nyxt/ps:remove-class-nyxt-id hinted-element-id
+                                                              "nyxt-element-hint")))))
         #'prompter:delete-inexact-matches))
    (prompter:filter
     (if (eq :vi (hinting-type (find-submode 'hint-mode)))
