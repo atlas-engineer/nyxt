@@ -106,6 +106,7 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "M-w" 'copy-selection
        "C-y" 'paste
        "C-w" 'cut
+       "C-h m" 'describe-prompt-buffer
        "C-h b" 'run-prompt-buffer-command
        "C-j" 'run-action-on-current-suggestion)
       keyscheme:vi-normal
