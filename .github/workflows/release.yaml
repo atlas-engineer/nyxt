@@ -85,9 +85,9 @@ jobs:
         echo "" >> release.txt
         echo "To compile from source, prefer the tarball including the submodules if you don't manage the Lisp dependencies yourself." >> release.txt
         echo "" >> release.txt
-        echo "\`$(cat version).tar.xz\` is a self-contained bundle that runs on any GNU/Linux machine:" >> release.txt
+        echo "\`nyxt-$(cat version).tar.xz\` is a self-contained bundle that runs on any GNU/Linux machine:" >> release.txt
         echo "" >> release.txt
-        echo "1. Extract the archive, e.g. \`tar -xf /path/to/$(cat version).tar.xz\`;" >> release.txt
+        echo "1. Extract the archive, e.g. \`tar -xf /path/to/nyxt-$(cat version).tar.xz\`;" >> release.txt
         echo "2. Issue \`./usr/local/bin/nyxt\`." >> release.txt
 
     - name: Generate source archive with submodules
