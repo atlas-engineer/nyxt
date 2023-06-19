@@ -588,10 +588,7 @@ Only available if `prompter:enable-marks-p' is non-nil."
              else
                collect (:dd "No binding")))
       (:h2 "Sources:")
-      (:ul
+      (:dl
        (loop for source in sources
-             collect (:li (:a :href
-                              (nyxt-url
-                               'describe-class
-                               :class (sera:class-name-of source))
-                              (string (sera:class-name-of source)))))))))
+             collect (:dt (:nxref :class-name (sera:class-name-of source)))
+             collect (:dd (documentation (class-of source) t)))))))
