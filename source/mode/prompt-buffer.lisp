@@ -553,22 +553,39 @@ Only available if `prompter:enable-marks-p' is non-nil."
     (buffer (str:concat "*Help-" (prompter:prompt (current-prompt-buffer)) "-prompter*")
             ;; TODO: Can we somehow fix the load order in the .asd?
             (sym:resolve-symbol :help-mode :mode))
+  ;; FIXME: List the documentation of the command using the prompt instead of
+  ;; the prompt-buffer documentation somehow?
   "Describe a prompt buffer instance."
   (let* ((prompt-buffer (current-prompt-buffer))
          (modes (modes prompt-buffer))
          (sources (prompter:sources prompt-buffer)))
     (spinneret:with-html-string
-      (:h1 (prompter:prompt prompt-buffer))
+      (:h1 (prompter:prompt prompt-buffer) "(" (:nxref :class-name 'prompt-buffer) ")")
       (:pre (:code (:raw (resolve-backtick-quote-links
                           (documentation 'prompt-buffer 'type) :nyxt/mode/prompt-buffer))))
-      (:h2 "Modes:")
-      (:ul
+      (:h2 "Modes and keybindings:")
+      (:dl
+       ;; TODO: Reuse `describe-bindings' infra.
        (loop for mode in modes
-             collect (:li (:a :href
-                              (nyxt-url
-                               'describe-class
-                               :class (sera:class-name-of mode))
-                              (string (sera:class-name-of mode))))))
+             collect (:dt (:nxref :class-name (sera:class-name-of mode)))
+             if (gethash (keyscheme prompt-buffer) (keyscheme-map mode))
+               collect  (:dd (:table
+                              (:tr (:th "Binding") (:th "Command"))
+                              (loop for (keyspec . binding)
+                                      in (alex:hash-table-alist
+                                          (keymaps:keymap->map
+                                           (nyxt::get-keymap prompt-buffer (keyscheme-map mode))))
+                                    collect (:tr (:td keyspec)
+                                                 (:td (typecase binding
+                                                        (symbol (:nxref :function binding))
+                                                        (command (:nxref :function (name binding)))
+                                                        (keyword (:nxref :function (sym:resolve-symbol binding :function)))
+                                                        (t (:a :href (nyxt-url
+                                                                      'describe-value
+                                                                      :id (nyxt::ensure-inspected-id binding))
+                                                               binding))))))))
+             else
+               collect (:dd "No binding")))
       (:h2 "Sources:")
       (:ul
        (loop for source in sources
