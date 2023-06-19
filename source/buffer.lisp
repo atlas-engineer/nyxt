@@ -734,7 +734,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
     :documentation "Whether tabs are dynamically ordered by last access time.")
    (style (theme:themed-css (theme *browser*)
             `(body
-              :line-height "20px"
+              :line-height "24px"
               :font-size "14px"
               :padding 0
               :margin 0)
