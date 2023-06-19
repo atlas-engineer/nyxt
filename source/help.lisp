@@ -52,55 +52,44 @@ CLASS is a class symbol."
 The changes are saved to `*auto-config-file*', and persist from one Nyxt session
 to the next."
   (spinneret:with-html-string
+    (:nstyle
+      `(.button
+        :display block))
     (:h1 "Common Settings")
     (:p "Tweak frequently sought-after settings. The changes persist from one
 Nyxt session to the next.
 
-Note that some settings may require creating a new buffer to take effect.")
+Note that some settings may require restarting Nyxt to take effect.")
     (:h2 "Keybinding style")
-    (:p (:button :class "button"
-                 :onclick (ps:ps (nyxt/ps:lisp-eval
-                                  (:title "set-cua-scheme")
-                                  (nyxt::auto-configure
-                                   :class-name 'input-buffer
-                                   :form '(disable-modes* 'nyxt/mode/emacs:emacs-mode input-buffer))
-                                  (nyxt::auto-configure
-                                   :class-name 'input-buffer
-                                   :form '(disable-modes* 'nyxt/mode/vi:vi-normal-mode input-buffer))))
-                 "Use default (CUA)"))
-    (:p (:button :class "button"
-                 :onclick (ps:ps (nyxt/ps:lisp-eval
-                                  (:title "set-emacs-scheme")
-                                  (nyxt::auto-configure
-                                   :class-name 'input-buffer
-                                   :form '(disable-modes* 'nyxt/mode/vi:vi-normal-mode input-buffer))
-                                  (nyxt::auto-configure
-                                   :class-name 'input-buffer
-                                   :form '(enable-modes* 'nyxt/mode/emacs:emacs-mode input-buffer))))
-                 "Use Emacs"))
-    (:p (:button :class "button"
-                 :onclick (ps:ps (nyxt/ps:lisp-eval
-                                  (:title "set-vi-scheme")
-                                  (nyxt::auto-configure
-                                   :class-name 'input-buffer
-                                   :form '(disable-modes* 'nyxt/mode/emacs:emacs-mode input-buffer))
-                                  (nyxt::auto-configure
-                                   :class-name 'input-buffer
-                                   :form '(enable-modes* 'nyxt/mode/vi:vi-normal-mode input-buffer))))
-                 "Use vi"))
+    (:nselect
+      :id "keybinding-style"
+      :buffer buffer
+      '((cua "Use default (CUA)")
+        (nyxt::auto-configure
+         :form '(define-configuration web-buffer
+                 ((default-modes (remove-if (lambda (m)
+                                              (find (symbol-name (name m))
+                                                    '("EMACS-MODE" "VI-NORMAL-MODE" "VI-INSERT-MODE")))
+                                  %slot-value%))))))
+      '((emacs "Use Emacs")
+        (nyxt::auto-configure
+         :form '(define-configuration web-buffer
+                 ((default-modes (pushnew 'nyxt/mode/emacs:emacs-mode %slot-value%))))))
+      '((vi "Use vi")
+        (nyxt::auto-configure
+         :form '(define-configuration web-buffer
+                 ((default-modes (pushnew 'nyxt/mode/vi:vi-normal-mode %slot-value%)))))))
     (flet ((generate-colors (theme-symbol text)
              (spinneret:with-html-string
-               (:p (:button :class "button"
-                            :style (format nil "background-color: ~a; color: ~a"
-                                           (theme:accent-color (symbol-value theme-symbol))
-                                           (theme:on-accent-color (symbol-value theme-symbol)))
-                            :onclick (ps:ps (nyxt/ps:lisp-eval
-                                             (:title "set-theme")
-                                             (nyxt::auto-configure
-                                              :class-name 'browser
-                                              :slot 'theme
-                                              :slot-value theme-symbol)))
-                            text))
+               (:nbutton
+                 :text text
+                 :style (format nil "background-color: ~a; color: ~a"
+                                (theme:accent-color (symbol-value theme-symbol))
+                                (theme:on-accent-color (symbol-value theme-symbol)))
+                 `(nyxt::auto-configure
+                   :class-name 'browser
+                   :slot 'theme
+                   :slot-value ,theme-symbol))
                (:p "Colors:")
                (:dl
                 (loop for (name color text-color) in '(("Background" theme:background-color theme:on-background-color)
@@ -119,32 +108,21 @@ Note that some settings may require creating a new buffer to take effect.")
        (:li (:raw (generate-colors 'theme::+dark-theme+ "Use Dark theme")))))
     (:h2 "Miscellaneous")
     (:ul
-     (:li (:button :class "button"
-                   :onclick (ps:ps (nyxt/ps:lisp-eval
-                                    (:title "default-new-buffer-url")
-                                    (nyxt::configure-slot 'default-new-buffer-url 'browser :type 'string)))
-                   "Set default new buffer URL"))
-     (:li (:button :class "button"
-                   :onclick (ps:ps (nyxt/ps:lisp-eval
-                                    (:title "set-zoom-ratio")
-                                    (nyxt::configure-slot 'zoom-ratio-default 'document-buffer)))
-                   "Set default zoom ratio"))
-     (:li (:button :class "button"
-                   :onclick (ps:ps (nyxt/ps:lisp-eval
-                                    (:title "disable-compositing")
-                                    (nyxt::auto-configure
-                                     :form '(setf (uiop:getenv "WEBKIT_DISABLE_COMPOSITING_MODE") "1"))))
-                   "Disable compositing")
-          (:p "On some systems, compositing can cause issues with rendering. If
+     (:nbutton :text "Set default new buffer URL"
+       '(nyxt::configure-slot 'default-new-buffer-url 'browser :type 'string))
+     (:nbutton :text "Set default zoom ratio"
+       '(nyxt::configure-slot 'zoom-ratio-default 'document-buffer))
+     (:p "On some systems, compositing can cause issues with rendering. If
 you are experiencing blank web-views, you can try to disable compositing. After
-disabling compositing, you will need to restart Nyxt."))
+disabling compositing, you will need to restart Nyxt.")
+     (:nbutton :text "Disable compositing"
+       '(nyxt::auto-configure
+         :form '(setf (uiop:getenv "WEBKIT_DISABLE_COMPOSITING_MODE") "1")))
 
-     (:li (:button :class "button"
-                   :onclick (ps:ps (nyxt/ps:lisp-eval
-                                    (:title "edit-user-file")
-                                    (nyxt::edit-user-file-with-external-editor)))
-                   "Edit user files")
-          (:p "Edit user configuration and other files in external text editor.")))))
+     (:label
+      "Edit user configuration and other files in external text editor."
+      (:nbutton :text "Edit user files"
+        '(nyxt::edit-user-file-with-external-editor))))))
 
 (define-command print-bindings ()
   "Display all known bindings for the current buffer."
