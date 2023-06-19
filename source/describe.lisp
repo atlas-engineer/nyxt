@@ -570,6 +570,7 @@ A command is a special kind of function that can be called with
           ;; killer one)? We'd need to do some hack to inspect the keybindings
           ;; from the class somehow. Maybe :allocation :class so that keymap is
           ;; allocated/modified in place?
+          ;; REVIEW: Maybe (make-instance MODE-NAME)?
           (:nsection
             :title "Slots"
             (:raw slot-descs))
