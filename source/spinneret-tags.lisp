@@ -21,7 +21,11 @@
                   forms)))
 
 (deftag :nstyle (body attrs &rest keys &key &allow-other-keys)
-  "Regular <style>, but with contents staying unescaped."
+  "Regular <style>, but with contents staying unescaped.
+Forms in BODY can be:
+- Literal strings --- get concatenated into a stylesheet as is.
+- Lists --- get processed by LASS' `lass:compile-and-write' and then
+  concatenated."
   (let ((keys keys))
     (declare (ignorable keys))
     `(:style ,@attrs (:raw (theme:with-theme (nyxt::theme nyxt:*browser*)
@@ -35,7 +39,10 @@
                   forms)))
 
 (deftag :nscript (body attrs &rest keys &key &allow-other-keys)
-  "Regular <script>, but with contents staying unescaped."
+  "Regular <script>, but with contents staying unescaped.
+Forms in BODY can be:
+- Literal strings --- get concatenated into a stylesheet as is.
+- Lists --- get processed by Parenscript's `ps:ps*' and then concatenated."
   (let ((keys keys))
     (declare (ignorable keys))
     `(:script ,@attrs (:raw (%nscript-body (list ,@body))))))
