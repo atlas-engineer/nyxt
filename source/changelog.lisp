@@ -727,4 +727,8 @@ color-picker support as an example application for this feature.")
 (define-version "3.3.0"
   (:ul
    (:li "Fix bug that didn't respect the value of "
-        (:nxref :slot 'zoom-ratio-default :class-name 'document-buffer) ".")))
+        (:nxref :slot 'zoom-ratio-default :class-name 'document-buffer) ".")
+   (:li "Improved " (:nxref :command 'nyxt/mode/prompt-buffer:describe-prompt-buffer) ":")
+   (:ul
+    (:li "List all the accessible keybindings in all the enabled prompt modes.")
+    (:li "Print documentation for the sources used."))))
