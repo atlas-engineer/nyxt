@@ -739,4 +739,7 @@ color-picker support as an example application for this feature.")
         (:nxref :class-name 'nyxt/mode/hint:hint-mode :slot 'hinting-type)
         " and "
         (:nxref :class-name 'nyxt/mode/hint:hint-mode :slot 'show-hint-scope-p)
-        "are set to " (:code ":vi") " and " (:code "t") ", respectively.")))
+        "are set to " (:code ":vi") " and " (:code "t") ", respectively.")
+   (:li "Add keybindings for commands "
+        (:nxref :command 'nyxt:delete-panel-buffer) " and "
+        (:nxref :command 'nyxt:delete-all-panel-buffers) ".")))
