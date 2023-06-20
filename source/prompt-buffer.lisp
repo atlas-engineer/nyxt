@@ -551,17 +551,6 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                              "password"
                                              "text")
                                    :id "input"
-                                   :placeholder (format nil "Use ~s to return ~
-~@[(or ~s to choose return action)~]~
-, ~s to see the history of the prompts, and ~s to get help."
-                                                        (binding-keys (read-from-string "nyxt/mode/prompt-buffer:run-action-on-return")
-                                                                      :modes (modes prompt-buffer))
-                                                        (binding-keys (read-from-string "nyxt/mode/prompt-buffer:set-action-on-return")
-                                                                      :modes (modes prompt-buffer))
-                                                        (binding-keys (read-from-string "nyxt/mode/prompt-buffer:history")
-                                                                      :modes (modes prompt-buffer))
-                                                        (binding-keys (read-from-string "nyxt/mode/prompt-buffer:describe-prompt-buffer")
-                                                                      :modes (modes prompt-buffer)))
                                    :value (prompter:input prompt-buffer)))
                      (:div :id "prompt-modes" :class "arrow-left" "")
                      (:div :id "close-button" :class "arrow-left"
