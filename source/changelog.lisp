@@ -728,6 +728,8 @@ color-picker support as an example application for this feature.")
   (:ul
    (:li "Fix bug that didn't respect the value of "
         (:nxref :slot 'zoom-ratio-default :class-name 'document-buffer) ".")
+   (:li (:a :href (nyxt-url 'common-settings) "Common Settings screen")
+        " generates more correct configuration for most of the settings.")
    (:li "Improved " (:nxref :command 'nyxt/mode/prompt-buffer:describe-prompt-buffer) ":")
    (:ul
     (:li "List all the accessible keybindings in all the enabled prompt modes.")
