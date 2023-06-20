@@ -236,7 +236,8 @@ See `find-internal-page-buffer'."))
                                          (apply #'dynamic-title
                                                 (gethash (name page) *nyxt-url-commands*)
                                                 args)))
-                               (:style (:raw (style (current-buffer)))))
+                               (:style (:raw (style (or (find-panel-buffer (name page))
+                                                        (find-internal-page-buffer (name page)))))))
                               (:body (:raw contents))))))
                   (values contents type status headers reason))))))))
 
