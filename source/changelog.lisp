@@ -727,4 +727,8 @@ color-picker support as an example application for this feature.")
 (define-version "3.X.Y"
   (:ul
    (:li "Remove restrictions on zoom level in the form of "
-    (:code "zoom-ratio-min") " and " (:code "zoom-ratio-max") ".")))
+    (:code "zoom-ratio-min") " and " (:code "zoom-ratio-max") ".")
+   (:li "Improved " (:nxref :command 'nyxt/mode/prompt-buffer:describe-prompt-buffer) ":")
+   (:ul
+    (:li "List all the accessible keybindings in all the enabled prompt modes.")
+    (:li "Print documentation for the sources used."))))
