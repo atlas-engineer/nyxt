@@ -22,6 +22,8 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-T" 'reopen-buffer
        "C-t" 'make-buffer-focus
        "M-o" 'toggle-prompt-buffer-focus
+       "f4" 'delete-panel-buffer
+       "s-f4" 'delete-all-panel-buffers
        "f1 r" 'manual
        "f1 t" 'tutorial
        "f1 b" 'describe-bindings
