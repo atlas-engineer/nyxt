@@ -76,6 +76,7 @@ The main difference is that their command toggles the panel."))
                         (:raw contents)
                         (let ((buffer (find-panel-buffer (name page))))
                           (:button.button
+                           :id "close"
                            :style "position: absolute; top: 1em; right: 1em;"
                            :title "Close this panel buffer"
                            :onclick (ps:ps (nyxt/ps:lisp-eval
