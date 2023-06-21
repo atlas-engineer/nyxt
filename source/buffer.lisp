@@ -685,7 +685,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
             `(a
               :color ,theme:primary)
             `("#close"
-              :position "absolute"
+              :position "fixed"
               :top "4px"
               :right "4px"
               :line-height "12px")
