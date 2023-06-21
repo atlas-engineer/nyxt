@@ -2292,6 +2292,13 @@ As a second value, return the current buffer index starting from 0."
       (call-next-method)
       (webkit:webkit-web-view-reload (gtk-object buffer))))
 
+(define-command-global force-reload-buffers (&optional (buffer (prompt
+                                                                :prompt "Reload buffer(s)"
+                                                                :sources (make-instance 'buffer-source))))
+  "Reload the BUFFER(s) bypassing renderer CSS cache.
+WebKit-specific."
+  (webkit:webkit-web-view-reload-bypass-cache (gtk-object buffer)))
+
 (define-class context-source (prompter:source)
   ((prompter:name "Context list")
    (prompter:constructor (sort (delete-duplicates (append (mapcar #'context-name (buffer-list))
