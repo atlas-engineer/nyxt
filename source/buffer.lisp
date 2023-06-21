@@ -668,13 +668,14 @@ store them somewhere and `ffi-buffer-delete' them once done."))
   (:documentation "Like `web-buffer', but don't persist data to disk."))
 
 (define-class panel-buffer (input-buffer modable-buffer document-buffer network-buffer)
-  ((width 250 :documentation "The width in pixels.")
+  ((width 256 :documentation "The width in pixels.")
    (style (theme:themed-css (theme *browser*)
             `(body
-              :background-color ,theme:background
-              :color ,theme:on-background
+              :background-color ,theme:background-alt
+              :color ,theme:on-background-alt
               :margin "0"
               :padding "10px"
+              :padding-top "24px"
               :border-style "solid"
               :border-width "0px 1px"
               :border-color ,theme:secondary)
@@ -683,8 +684,14 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :font-weight 500)
             `(a
               :color ,theme:primary)
+            `("#close"
+              :position "absolute"
+              :top "4px"
+              :right "4px"
+              :line-height "12px")
             `(button
               :background "transparent"
+              :max-width "100%"
               :color "inherit"
               :border "none"
               :padding 0
