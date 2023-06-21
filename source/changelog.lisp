@@ -738,9 +738,9 @@ color-picker support as an example application for this feature.")
     (:li "Print documentation for the sources used."))
    (:li "Fix behavior of "
         (:nxref :class-name 'nyxt/mode/hint:hint-mode) "when slots "
-        (:nxref :class-name 'nyxt/mode/hint:hint-mode :slot 'hinting-type)
+        (:nxref :class-name 'nyxt/mode/hint:hint-mode :slot 'nyxt/mode/hint:hinting-type)
         " and "
-        (:nxref :class-name 'nyxt/mode/hint:hint-mode :slot 'show-hint-scope-p)
+        (:nxref :class-name 'nyxt/mode/hint:hint-mode :slot 'nyxt/mode/hint:show-hint-scope-p)
         "are set to " (:code ":vi") " and " (:code "t") ", respectively.")
    (:li "Add keybindings for commands "
         (:nxref :command 'nyxt:delete-panel-buffer) " and "
