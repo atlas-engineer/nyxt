@@ -113,7 +113,7 @@ See `nyxt::attribute-widths'.")
           :text-align "right"
           :background-color ,theme:primary
           :min-width "24px"
-          :line-height "24px"
+          :line-height "28px"
           :font-weight "bold"
           :font-size "20px")
         `(".arrow-right"
