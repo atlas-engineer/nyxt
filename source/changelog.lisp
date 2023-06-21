@@ -733,4 +733,10 @@ color-picker support as an example application for this feature.")
    (:li "Improved " (:nxref :command 'nyxt/mode/prompt-buffer:describe-prompt-buffer) ":")
    (:ul
     (:li "List all the accessible keybindings in all the enabled prompt modes.")
-    (:li "Print documentation for the sources used."))))
+    (:li "Print documentation for the sources used."))
+   (:li "Fix behavior of "
+        (:nxref :class-name 'nyxt/mode/hint:hint-mode) "when slots "
+        (:nxref :class-name 'nyxt/mode/hint:hint-mode :slot 'hinting-type)
+        " and "
+        (:nxref :class-name 'nyxt/mode/hint:hint-mode :slot 'show-hint-scope-p)
+        "are set to " (:code ":vi") " and " (:code "t") ", respectively.")))
