@@ -261,11 +261,10 @@ The handlers take the `prompt-buffer' as argument.")
     (or (uiop:getenv "VISUAL")
         (uiop:getenv "EDITOR"))
     :type (or (cons string *) string null)
-    :writer t
     :export t
     :documentation "The external editor to use for
 editing files.  You can specify the full command line arguments with a list of
-strings."))
+strings, or a single string with spaces between the arguments."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:documentation "The browser class defines the overall behavior of Nyxt, in
@@ -287,9 +286,6 @@ prevents otherwise.")
   "Fallback theme in case `*browser*' is NIL."
   (declare (ignore ignored))
   (make-instance 'theme:theme))
-
-(defmethod external-editor-program ((browser browser))
-  (alex:ensure-list (slot-value browser 'external-editor-program)))
 
 (defmethod get-containing-window-for-buffer ((buffer buffer) (browser browser))
   "Get the window containing a buffer."

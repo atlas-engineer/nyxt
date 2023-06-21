@@ -443,10 +443,8 @@ Most *-P arguments mandate whether to add the buttons for:
                       `(`((external-editor
                            "Open in external editor"
                            "Open the file this code comes from in external editor.")
-                          (uiop:launch-program
-                           (append (funcall (read-from-string "nyxt:external-editor-program")
-                                            (symbol-value (read-from-string "nyxt:*browser*")))
-                                   (list (uiop:native-namestring ,,file-var))))))))))
+                          (funcall (read-from-string "nyxt:launch-external-editor")
+                                   (uiop:native-namestring ,,file-var))))))))
         (declare (ignorable keys))
         `(let* ((,body-var (list ,@body))
                 (,first (first ,body-var))
