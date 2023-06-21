@@ -652,7 +652,7 @@ also added.")
           (:nxref :slot 'command-dispatcher :class-name 'window)
           " and " (:nxref :slot 'input-skip-dispatcher :class-name 'window) ".")
      (:li "Rename buffer slot " (:code "load-status") " to "
-          (:nxref :slot 'status :class-name 'buffer) ".")
+          (:nxref :slot 'status :class-name 'network-buffer) ".")
      (:li "The core " (:code "nyxt")
           " packages are now locked to prevent against accidental clobbering from the user
 side.")
