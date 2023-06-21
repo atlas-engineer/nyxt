@@ -43,6 +43,16 @@ modules:
         url: https://github.com/kfish/xsel.git
         tag: 1.2.1
 
+  - name: wl-clipboard
+    buildsystem: meson
+    config-opts:
+      - -Dzshcompletiondir=no
+      - -Dfishcompletiondir=no
+    sources:
+      - type: git
+        url: https://github.com/bugaevc/wl-clipboard.git
+        tag: v2.1.0
+
   - name: libfixposix
     buildsystem: autotools
     sources:
