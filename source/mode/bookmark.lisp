@@ -190,7 +190,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
         :font-size "12px"
         :margin 0
         :white-space nowrap
-        :overflow-x nidden
+        :overflow-x hidden
         :text-overflow ellipsis)
       '(div
         :padding-bottom "10px"))
