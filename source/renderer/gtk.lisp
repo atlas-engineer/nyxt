@@ -1623,55 +1623,57 @@ the `active-buffer'."
       (gtk-object (make-buffer-focus :url (quri:uri url) :parent-buffer (current-buffer)))))
   (connect-signal buffer "context-menu" nil (web-view context-menu event hit-test-result)
     (declare (ignore web-view event hit-test-result))
-    (let ((length (webkit:webkit-context-menu-get-n-items context-menu)))
-      (dotimes (i length)
-        (if (status-buffer-p buffer)
-            (webkit:webkit-context-menu-remove
-             context-menu (webkit:webkit-context-menu-get-item-at-position context-menu i))
-            (let ((item (webkit:webkit-context-menu-get-item-at-position context-menu i)))
-              (match (webkit:webkit-context-menu-item-get-stock-action item)
-                (:webkit-context-menu-action-open-link-in-new-window
-                 (webkit:webkit-context-menu-remove context-menu item)
-                 (webkit:webkit-context-menu-insert
-                  context-menu
-                  (webkit:webkit-context-menu-item-new-from-stock-action-with-label
-                   :webkit-context-menu-action-open-link-in-new-window
-                   "Open Link in New Buffer")
-                  i))))))
-      (webkit:webkit-context-menu-append
-       context-menu (webkit:webkit-context-menu-item-new-separator))
-      (let* ((accessible-commands
-               (mapcar #'name
-                       (nyxt::list-commands
-                        :global-p t
-                        :mode-symbols (mapcar #'sera:class-name-of
-                                              (sera:filter #'enabled-p (modes buffer)))))))
-        (maphash (lambda (label function)
-                   (flet ((make-item (label function)
-                            ;; Using stock actions here, because cl-cffi-gtk has a terrible API
-                            ;; for GActions, requiring an exact type to be passed and disallowing
-                            ;; NULL as a type :/
-                            (sera:lret ((item (webkit:webkit-context-menu-item-new-from-stock-action-with-label
-                                               :webkit-context-menu-action-action-custom label)))
-                              (gobject:g-signal-connect
-                               (webkit:webkit-context-menu-item-get-g-action item) "activate"
-                               (lambda (action parameter)
-                                 (declare (ignore action parameter))
-                                 (nyxt::run-async function))))))
-                     (cond
-                       ((or (and (command-p function)
-                                 (member function accessible-commands))
-                            (functionp function))
-                        (webkit:webkit-context-menu-append context-menu (make-item label function)))
-                       ((listp function)
-                        (let ((submenu (webkit:webkit-context-menu-new)))
-                          (loop for (command command-label) in function
-                                do (webkit:webkit-context-menu-append
-                                    submenu (make-item command-label command)))
-                          (webkit:webkit-context-menu-append
-                           context-menu
-                           (webkit:webkit-context-menu-item-new-with-submenu label submenu)))))))
-                 nyxt::*context-menu-commands*)))
+    (loop with length = (webkit:webkit-context-menu-get-n-items context-menu)
+          for i below length
+          for item = (webkit:webkit-context-menu-get-item-at-position context-menu i)
+          when (and (status-buffer-p buffer)
+                    (not (eq (webkit:webkit-context-menu-item-get-stock-action item)
+                             :webkit-context-menu-action-inspect-element)))
+            do (webkit:webkit-context-menu-remove context-menu item)
+          else
+            do (match (webkit:webkit-context-menu-item-get-stock-action item)
+                 (:webkit-context-menu-action-open-link-in-new-window
+                  (webkit:webkit-context-menu-remove context-menu item)
+                  (webkit:webkit-context-menu-insert
+                   context-menu
+                   (webkit:webkit-context-menu-item-new-from-stock-action-with-label
+                    :webkit-context-menu-action-open-link-in-new-window
+                    "Open Link in New Buffer")
+                   i))))
+    (webkit:webkit-context-menu-append
+     context-menu (webkit:webkit-context-menu-item-new-separator))
+    (let* ((accessible-commands
+             (mapcar #'name
+                     (nyxt::list-commands
+                      :global-p t
+                      :mode-symbols (mapcar #'sera:class-name-of
+                                            (sera:filter #'enabled-p (modes buffer)))))))
+      (maphash (lambda (label function)
+                 (flet ((make-item (label function)
+                          ;; Using stock actions here, because cl-cffi-gtk has a terrible API
+                          ;; for GActions, requiring an exact type to be passed and disallowing
+                          ;; NULL as a type :/
+                          (sera:lret ((item (webkit:webkit-context-menu-item-new-from-stock-action-with-label
+                                             :webkit-context-menu-action-action-custom label)))
+                            (gobject:g-signal-connect
+                             (webkit:webkit-context-menu-item-get-g-action item) "activate"
+                             (lambda (action parameter)
+                               (declare (ignore action parameter))
+                               (nyxt::run-async function))))))
+                   (cond
+                     ((or (and (command-p function)
+                               (member function accessible-commands))
+                          (functionp function))
+                      (webkit:webkit-context-menu-append context-menu (make-item label function)))
+                     ((listp function)
+                      (let ((submenu (webkit:webkit-context-menu-new)))
+                        (loop for (command command-label) in function
+                              do (webkit:webkit-context-menu-append
+                                  submenu (make-item command-label command)))
+                        (webkit:webkit-context-menu-append
+                         context-menu
+                         (webkit:webkit-context-menu-item-new-with-submenu label submenu)))))))
+               nyxt::*context-menu-commands*))
     nil)
   (connect-signal buffer "enter-fullscreen" nil (web-view)
     (declare (ignore web-view))
