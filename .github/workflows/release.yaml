@@ -72,11 +72,12 @@ jobs:
     #   shell: bash
     #   run: echo $(./nyxt --version | cut -d' ' -f3) > version
 
-    # # # Balance out '.
-    # - name: Pack (Relocatable Binary)
+    # Balance out '.
+    # - name: Bundle (Relocatable Binary)
     #   shell: bash
     #   run: |
-    #      guix pack -RR --no-grafts --compression=xz --symlink=/usr/local/bin/nyxt=bin/nyxt --root=nyxt-$(cat version).tar.xz -L build-scripts/ nyxt > store-path.txt
+    #     echo "Command: guix pack -RR --no-grafts --compression=xz --symlink=/usr/local/bin/nyxt=bin/nyxt --root=nyxt-bundle-$(cat version).tar.xz -L build-scripts/ nyxt" >> nyxt-bundle-reproducibility-recipe.txt
+    #      guix pack -RR --no-grafts --compression=xz --symlink=/usr/local/bin/nyxt=bin/nyxt --root=nyxt-bundle-$(cat version).tar.xz -L build-scripts/ nyxt > store-path.txt
 
     - name: Generate release notes
       shell: bash
@@ -85,10 +86,18 @@ jobs:
         echo "" >> release.txt
         echo "To compile from source, prefer the tarball including the submodules if you don't manage the Lisp dependencies yourself." >> release.txt
         # echo "" >> release.txt
-        # echo "\`nyxt-$(cat version).tar.xz\` is a self-contained bundle that runs on any GNU/Linux machine:" >> release.txt
+        # echo "\`nyxt-bundle-$(cat version).tar.xz\` is a self-contained bundle that runs on any GNU/Linux machine:" >> release.txt
         # echo "" >> release.txt
-        # echo "1. Extract the archive, e.g. \`tar -xf /path/to/nyxt-$(cat version).tar.xz\`;" >> release.txt
-        # echo "2. Issue \`./usr/local/bin/nyxt\`." >> release.txt
+        # echo "1. (Optional) Verify the checksum: \`cat nyxt-bundle-$(cat version).tar.xz.sha256sum | sha256sum --check\`;" >> release.txt
+        # echo "2. Extract the archive, e.g. \`tar -xf /path/to/nyxt-bundle-$(cat version).tar.xz\`;" >> release.txt
+        # echo "3. Issue \`./usr/local/bin/nyxt\`." >> release.txt
+
+    # - name: Generate bundle reproduction recipe
+    #   shell: bash
+    #   run: |
+    #     sha256sum nyxt-bundle-*.tar.xz > nyxt-bundle-$(cat version).tar.xz.sha256sum
+    #     echo "Store path: $(cat store-path.txt)" >> nyxt-bundle-reproducibility-recipe.txt
+    #     echo "Guix describe: $(guix describe)" >> nyxt-bundle-reproducibility-recipe.txt
 
     - name: Generate source archive with submodules
       shell: bash
@@ -98,4 +107,4 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         bodyFile: release.txt
-        artifacts: "nyxt-*.tar.xz*, *.flatpak"
+        artifacts: "nyxt-*.tar.xz*,nyxt-bundle-reproducibility-recipe.txt,*.flatpak"
