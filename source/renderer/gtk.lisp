@@ -94,6 +94,8 @@ See also the `web-contexts' slot."))
 When given the same context, multiple buffers share their internal browsing data.
 `+default+' is the default context.
 `+internal+' is a context that's not persisted to disk.")
+   (filter-store (webkit:webkit-user-content-filter-store-new
+                  (uiop:native-namestring (files:expand (make-instance 'filter-store-directory)))))
    (handler-ids
     :export nil
     :documentation "Store all GObject signal handler IDs so that we can disconnect the signal handler when the object is finalised.
@@ -369,6 +371,36 @@ By default it is found in the source directory."))
   (make-instance 'webkit-web-view-ephemeral
                  :web-context (get-context *browser* (context-name buffer)
                                            :ephemeral-p t)))
+
+(define-class filter-store-directory (files:data-file nyxt-file)
+  ()
+  (:export-class-name-p t))
+
+(defmethod files:resolve ((profile nyxt-profile) (file filter-store-directory))
+  (merge-pathnames #p"user-filter-store/" (call-next-method)))
+
+(cffi:defcallback filter-saved :void
+    ((source-object :pointer) (result :pointer) (user-data :pointer))
+  (webkit:webkit-user-content-manager-add-filter
+   user-data (webkit:webkit-user-content-filter-store-load-finish source-object result)))
+
+;; Optimizing blocker mode: use WebKit content filters instead of request hook.
+(defmethod enable :around ((mode nyxt/mode/blocker:blocker-mode) &key &allow-other-keys)
+  (let* ((buffer (buffer mode))
+         (view (gtk-object buffer))
+         (content-manager (webkit2:webkit-web-view-user-content-manager view))
+         (filter-store (filter-store buffer))
+         (hosts (reduce #'append (mapcar #'nyxt/mode/blocker:hosts (nyxt/mode/blocker:hostlists mode)))))
+    (dolist (host hosts)
+      (webkit:webkit-user-content-filter-store-save
+       filter-store host
+       (njson:encode (vector (sera:dict "trigger" (sera:dict "url-filter"
+                                                             (str:replace-all "." "\\." host)))
+                             (sera:dict "action" (sera:dict "type" "block"))))
+       (cffi:null-pointer) (cffi:callback filter-saved) content-manager))
+    (call-next-method)
+    (hooks:remove-hook (request-resource-hook buffer)
+                       'nyxt/mode/blocker::request-resource-block)))
 
 (define-class gtk-request-data ()
   ((gtk-request
