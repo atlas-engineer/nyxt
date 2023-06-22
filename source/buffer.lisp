@@ -671,8 +671,8 @@ store them somewhere and `ffi-buffer-delete' them once done."))
   ((width 256 :documentation "The width in pixels.")
    (style (theme:themed-css (theme *browser*)
             `(body
-              :background-color ,theme:background
-              :color ,theme:on-background
+              :background-color ,theme:background-alt
+              :color ,theme:on-background-alt
               :margin "0"
               :padding "10px"
               :padding-top "24px"
