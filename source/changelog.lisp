@@ -746,4 +746,5 @@ color-picker support as an example application for this feature.")
         "are set to " (:code ":vi") " and " (:code "t") ", respectively.")
    (:li "Add keybindings for commands "
         (:nxref :command 'nyxt:delete-panel-buffer) " and "
-        (:nxref :command 'nyxt:delete-all-panel-buffers) ".")))
+        (:nxref :command 'nyxt:delete-all-panel-buffers) ".")
+   (:li "Fix clipboard support for the Flatpak on Wayland.")))
