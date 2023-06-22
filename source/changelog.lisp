@@ -726,6 +726,10 @@ color-picker support as an example application for this feature.")
 
 (define-version "3.X.Y"
   (:ul
+   (:li "Add a " (:nxref :command 'nyxt:pick-color)
+        " command for fast color search and copying.")
+   (:li "Improve the color listing in native color picker and " (:nxref :command 'nyxt:pick-color)
+        ", showing HEX, RGB, and HSL code for the listed colors.")
    (:li "The " (:code "external-editor-program") " slot no longer signals when the program is a string containing spaces.")
    (:li "The " (:code "external-editor-program") " returns the slot value directly rather than returning a string value in a list.")
    (:li "Remove restrictions on zoom level in the form of "
