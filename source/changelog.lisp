@@ -751,4 +751,5 @@ color-picker support as an example application for this feature.")
    (:li "Add keybindings for commands "
         (:nxref :command 'nyxt:delete-panel-buffer) " and "
         (:nxref :command 'nyxt:delete-all-panel-buffers) ".")
-   (:li "Fix clipboard support for the Flatpak on Wayland.")))
+   (:li "Fix clipboard support for the Flatpak on Wayland.")
+   (:li "Add hinting support for pages using Shadow DOMs.")))
