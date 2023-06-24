@@ -796,6 +796,7 @@ buffers.")
   (:nsection :title "Features"
     (:ul
      (:li "Add new quick start tutorial.")
+     (:li "Add hinting support for pages using Shadow DOMs.")
      (:li "Add keybindings for command " (:nxref :command 'describe-any) ".")))
   ;; (:nsection :title "Bug fixes"
   ;;   (:ul))
