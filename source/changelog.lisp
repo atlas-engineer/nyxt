@@ -726,6 +726,7 @@ color-picker support as an example application for this feature.")
 
 (define-version "3.X.Y"
   (:ul
+   (:li "Change the default search engine to Atlas instance of SearXNG.")
    (:li "Add a " (:nxref :command 'nyxt:pick-color)
         " command for fast color search and copying.")
    (:li "Improve the color listing in native color picker and " (:nxref :command 'nyxt:pick-color)
