@@ -725,30 +725,43 @@ color-picker support as an example application for this feature.")
    (:li "Fix clipboard support for the Flatpak.")))
 
 (define-version "3.3.0"
+  (:nsection :title "Features"
   (:ul
-   (:li "Fix bug that didn't respect the value of "
-        (:nxref :slot 'zoom-ratio-default :class-name 'document-buffer) ".")
-   (:li "Add a " (:nxref :command 'nyxt:pick-color)
-        " command for fast color search and copying.")
-   (:li "Improve the color listing in native color picker and " (:nxref :command 'nyxt:pick-color)
-        ", showing HEX, RGB, and HSL code for the listed colors.")
-   (:li "The " (:code "external-editor-program") " slot no longer signals when the program is a string containing spaces.")
-   (:li "The " (:code "external-editor-program") " returns the slot value directly rather than returning a string value in a list.")
-   (:li (:a :href (nyxt-url 'common-settings) "Common Settings screen")
-        " generates more correct configuration for most of the settings.")
-   (:li "Improved " (:nxref :command 'nyxt/mode/prompt-buffer:describe-prompt-buffer) ":")
-   (:li "Fix panel buffer appearance to add border between it and main content area.")
-   (:li "Fix bug that prevented panel buffer style from being applied to panel buffers.")
-   (:ul
-    (:li "List all the accessible keybindings in all the enabled prompt modes.")
-    (:li "Print documentation for the sources used."))
-   (:li "Fix behavior of "
-        (:nxref :class-name 'nyxt/mode/hint:hint-mode) "when slots "
-        (:nxref :class-name 'nyxt/mode/hint:hint-mode :slot 'nyxt/mode/hint:hinting-type)
-        " and "
-        (:nxref :class-name 'nyxt/mode/hint:hint-mode :slot 'nyxt/mode/hint:show-hint-scope-p)
-        "are set to " (:code ":vi") " and " (:code "t") ", respectively.")
+   (:li "Add command " (:nxref :command 'nyxt:pick-color)
+        ", to pick a color and copy its HEX, RGB or HSL code to clipboard.")
    (:li "Add keybindings for commands "
         (:nxref :command 'nyxt:delete-panel-buffer) " and "
         (:nxref :command 'nyxt:delete-all-panel-buffers) ".")
-   (:li "Fix clipboard support for the Flatpak on Wayland.")))
+   (:li "Improve " (:nxref :command 'nyxt/mode/prompt-buffer:describe-prompt-buffer) ":")
+   (:ul
+    (:li "List available keybindings for enabled prompt buffer modes.")
+    (:li "Reference current prompt buffer sources."))))
+  (:nsection :title "Bug fixes"
+  (:ul
+   (:li "Honor the value of "
+        (:nxref :slot 'zoom-ratio-default :class-name 'document-buffer) ".")
+   (:li "Honor the value of the panel buffer's "
+        (:nxref :slot 'style :class-name 'panel-buffer) ".")
+   (:li "Fix bugs in the "
+        (:a :href (nyxt-url 'common-settings) "common settings interface") ".")
+   (:li "Fix clipboard support for the Flatpak on Wayland.")
+   (:li "Fix behavior of "
+        (:nxref :class-name 'nyxt/mode/hint:hint-mode) "when slots "
+        (:nxref :class-name 'nyxt/mode/hint:hint-mode
+          :slot 'nyxt/mode/hint:hinting-type)
+        " and "
+        (:nxref :class-name 'nyxt/mode/hint:hint-mode
+          :slot 'nyxt/mode/hint:show-hint-scope-p)
+        "are set to " (:code ":vi") " and " (:code "t") ", respectively.")))
+  (:nsection :title "UI"
+    (:ul
+     (:li "Add border between panel buffer and main content area.")
+     (:li "Apply nuanced background color to panel buffers.")))
+  (:nsection :title "Programming interface"
+    (:ul
+
+     (:li (:nxref :class-name 'browser :slot 'external-editor-program)
+          " no longer signals when the program is a string containing spaces.")
+     (:li (:nxref :class-name 'browser :slot 'external-editor-program)
+          " returns its value rather than returning a string value in a list.")))
+  (:ul))
