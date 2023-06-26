@@ -723,3 +723,8 @@ color-picker support as an example application for this feature.")
 (define-version "3.2.1"
   (:ul
    (:li "Fix clipboard support for the Flatpak.")))
+
+(define-version "3.3.0"
+  (:ul
+   (:li "Fix bug that didn't respect the value of "
+        (:nxref :slot 'zoom-ratio-default :class-name 'document-buffer) ".")))

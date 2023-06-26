@@ -380,7 +380,7 @@ scroll-right will scroll.")
    (current-zoom-ratio
     1.0
     :type float
-    :documentation "The current zoom relative to the default zoom.")
+    :documentation "The current zoom ratio.")
    (zoom-ratio-step
     0.2
     :type float
@@ -408,6 +408,10 @@ down."))
   (:export-predicate-name-p t)
   (:metaclass user-class)
   (:documentation "Buffers holding structured documents."))
+
+(defmethod customize-instance :after ((buffer document-buffer) &key)
+    (setf (current-zoom-ratio buffer)
+          (zoom-ratio-default buffer)))
 
 (define-class context-buffer (buffer)
   ((last-access
