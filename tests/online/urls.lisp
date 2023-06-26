@@ -23,7 +23,7 @@
                      (url (first (nyxt::input->queries "wiki wiki+pédia"))))
     ;; "default search engine"
     (assert-equality #'quri:uri=
-                     (quri:uri "https://duckduckgo.com/?q=nyxt browser")
+                     (quri:uri "https://search.atlas.engineer/searxng/search?q=nyxt browser")
                      (url (first (nyxt::input->queries "nyxt browser"))))
     ;; "wiki search engine"
     (assert-equality #'quri:uri=
@@ -35,11 +35,11 @@
                      (url (first (nyxt::input->queries "file:///readme.org"))))
     ;; "empty domain"
     (assert-equality #'quri:uri=
-                     (quri:uri "https://duckduckgo.com/?q=foo")
+                     (quri:uri "https://search.atlas.engineer/searxng/search?q=foo")
                      (url (first (nyxt::input->queries "foo"))))
     ;; "same domain and TLD"
     (assert-equality #'quri:uri=
-                     (quri:uri "https://duckduckgo.com/?q=algo")
+                     (quri:uri "https://search.atlas.engineer/searxng/search?q=algo")
                      (url (first (nyxt::input->queries "algo"))))
     ;; "localhost"
     (assert-equality #'quri:uri=
@@ -47,7 +47,7 @@
                      (url (first (nyxt::input->queries "http://localhost:8080"))))
     ;; "ignore wildcards"
     (assert-equality #'quri:uri=
-                     (quri:uri "https://duckduckgo.com/?q=*spurious*")
+                     (quri:uri "https://search.atlas.engineer/searxng/search?q=*spurious*")
                      (url (first (nyxt::input->queries "*spurious*"))))
     ;; "about:blank"
     (assert-equality #'quri:uri=
@@ -55,7 +55,7 @@
                      (url (first (nyxt::input->queries "about:blank"))))
     ;; "valid syntax but unknown scheme"
     (assert-equality #'quri:uri=
-                     (quri:uri "https://duckduckgo.com/?q=foo:blank")
+                     (quri:uri "https://search.atlas.engineer/searxng/search?q=foo:blank")
                      (url (first (nyxt::input->queries "foo:blank"))))))
 
 (define-test url-processing (:tags :online)
