@@ -414,33 +414,40 @@ down."))
     :export nil
     :documentation "Timestamp when the buffer was last switched to.")
    (search-engines
-    (list (make-instance 'search-engine
-                         :name "Wikipedia"
-                         :shortcut "wiki"
-                         :search-url "https://en.wikipedia.org/w/index.php?search=~a"
-                         :fallback-url (quri:uri "https://en.wikipedia.org/")
-                         :completion-function
-                         (make-search-completion-function
-                          :base-url "https://en.wikipedia.org/w/api.php?action=opensearch&format=json&search=~a"
-                          :processing-function
-                          #'(lambda (results)
-                              (alex:when-let* ((results results)
-                                               (results (j:decode results)))
-                                (map 'list #'list (j:get 1 results) (j:get 3 results))))))
-          (make-instance 'search-engine
-                         :name "DuckDuckGo"
-                         :shortcut "ddg"
-                         :search-url "https://duckduckgo.com/?q=~a"
-                         :fallback-url (quri:uri "https://duckduckgo.com/")
-                         :completion-function
-                         (make-search-completion-function
-                          :base-url "https://duckduckgo.com/ac/?q=~a"
-                          :processing-function
-                          #'(lambda (results)
-                              (when results
-                                (map 'list (lambda (hash-table)
-                                             (first (alex:hash-table-values hash-table)))
-                                     (j:decode results)))))))
+    (let ((ddg-completion
+           (make-search-completion-function
+            :base-url "https://duckduckgo.com/ac/?q=~a"
+            :processing-function
+            #'(lambda (results)
+                (when results
+                  (map 'list (lambda (hash-table)
+                               (first (alex:hash-table-values hash-table)))
+                       (j:decode results)))))))
+      (list (make-instance 'search-engine
+                           :name "Wikipedia"
+                           :shortcut "wiki"
+                           :search-url "https://en.wikipedia.org/w/index.php?search=~a"
+                           :fallback-url (quri:uri "https://en.wikipedia.org/")
+                           :completion-function
+                           (make-search-completion-function
+                            :base-url "https://en.wikipedia.org/w/api.php?action=opensearch&format=json&search=~a"
+                            :processing-function
+                            #'(lambda (results)
+                                (alex:when-let* ((results results)
+                                                 (results (j:decode results)))
+                                                (map 'list #'list (j:get 1 results) (j:get 3 results))))))
+            (make-instance 'search-engine
+                           :name "DuckDuckGo"
+                           :shortcut "ddg"
+                           :search-url "https://duckduckgo.com/?q=~a"
+                           :fallback-url (quri:uri "https://duckduckgo.com/")
+                           :completion-function ddg-completion)
+            (make-instance 'search-engine
+                           :name "Atlas SearXNG instance"
+                           :shortcut "a"
+                           :search-url "https://search.atlas.engineer/searxng/search?q=~a"
+                           :fallback-url (quri:uri "https://search.atlas.engineer")
+                           :completion-function ddg-completion)))
     :type (cons search-engine *)
     :documentation "A list of the `search-engine' objects.
 You can invoke them from the prompt buffer by prefixing your query with
