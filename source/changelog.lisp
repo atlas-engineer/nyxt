@@ -727,6 +727,9 @@ color-picker support as an example application for this feature.")
 (define-version "3.3.0"
   (:nsection :title "Features"
   (:ul
+   (:li "Change default search engine to "
+        (:a :href "https://search.atlas.engineer/searxng"
+            "Atlas' own SearXNG instance") ".")
    (:li "Add command " (:nxref :command 'nyxt:pick-color)
         ", to pick a color and copy its HEX, RGB or HSL code to clipboard.")
    (:li "Add keybindings for commands "
