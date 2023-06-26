@@ -738,8 +738,10 @@ color-picker support as an example application for this feature.")
    (:li (:a :href (nyxt-url 'common-settings) "Common Settings screen")
         " generates more correct configuration for most of the settings.")
    (:li "Improved " (:nxref :command 'nyxt/mode/prompt-buffer:describe-prompt-buffer) ":")
-   (:li "Fix panel buffer appearance to add border between it and main content area.")
-   (:li "Fix bug that prevented panel buffer style from being applied to panel buffers.")
+   (:li "Panel buffer styling:")
+   (:ul
+    (:li "Change panel buffers' background color to separate them from the main buffer.")
+    (:li "Fix bug that prevented panel buffer style from being applied to panel buffers."))
    (:ul
     (:li "List all the accessible keybindings in all the enabled prompt modes.")
     (:li "Print documentation for the sources used."))
