@@ -193,7 +193,14 @@ shifts.  For instance if " (:code "C-x C-F") " fails to match anything " (:code 
 documentation.  Bookmarks can also be used as search engines, see the
 corresponding section.")
         (:p "Nyxt comes with default search engines for "
-            (:code "en.wikipedia.org, duckduckgo.com, search.atlas.engineer") ". "
+            (:code
+             (format nil "~{~a~^, ~}"
+                     (mapcar (lambda (engine) (quri:uri-host (quri:uri (getf engine
+                                                                        :search-url))))
+                             (rest (third (getf (mopu:slot-properties 'context-buffer
+                                                                      'search-engines)
+                                                :initform))))))
+            ". "
             "The following example shows one way to add new search engines.")
         (:ncode
           '(defvar *my-search-engines*
