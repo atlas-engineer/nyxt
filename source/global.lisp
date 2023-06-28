@@ -154,6 +154,7 @@ Return nil on error."
     (when +version+
       (push-feature +version+))
     (when (search "pre-release" +version+)
+      (push-feature (format nil "~a-pre-release" major))
       (push-feature (str:join "-" (subseq (str:split "-" +version+) 0 4))))
     (when major
       (push-feature major))
