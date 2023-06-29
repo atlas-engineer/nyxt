@@ -85,6 +85,5 @@ rgb()/hsl() CSS functions representing them."))
 (define-command-global pick-color ()
   "Pick a color and copy it to clipboard."
   (prompt :prompt "Color"
-          :input "#37A8E4"
           :sources (make-instance 'color-source
                                   :actions-on-return copy-actions)))
