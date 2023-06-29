@@ -171,7 +171,7 @@ Generic function to specialize against new REPL cell types."))
     (repl)))
 
 (export-always 'cancel-cell)
-(defmethod cancel-cell ((cell cell))
+(define-generic cancel-cell ((cell cell))
   "Destroy the evaluation thread and set `ready-p' to NIL."
   (destroy-thread* (thread cell))
   (setf (thread cell) nil
