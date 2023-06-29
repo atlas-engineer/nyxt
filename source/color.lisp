@@ -83,8 +83,13 @@ rgb()/hsl() CSS functions representing them."))
         ("HSL" ,hsl ,(display hsl))))))
 
 (define-command-global pick-color ()
-  "Pick a color and copy it to clipboard."
+  "Pick a color and copy it to clipboard.
+The current color is previewed in the prompt buffer's input area.
+
+Color can be entered as:
+- CSS color name: \"PapayaWhip\" (capitalization is optional.)
+- HEX code: \"#37A8E4\".
+- HSL and RGB functions inspired by CSS."
   (prompt :prompt "Color"
-          :input "#37A8E4"
           :sources (make-instance 'color-source
                                   :actions-on-return copy-actions)))
