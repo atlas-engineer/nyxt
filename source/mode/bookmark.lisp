@@ -114,11 +114,14 @@ internal programming APIs."
     ("Tags" ,(format nil "~{~a ~}" (tags entry)))
     ("Date" ,(local-time:format-timestring nil (date entry) :format local-time:+asctime-format+))))
 
-(export-always 'equals)
-(defmethod equals ((e1 bookmark-entry) (e2 bookmark-entry))
-  "Entries are equal if the hosts and the paths are equal.
+;; FIXME: Move somewhere else, where Nyxt-global function declarations belong?
+(define-generic equals (object1 object2)
+  "Nyxt-specific equality function."
+  (:method ((e1 bookmark-entry) (e2 bookmark-entry))
+    "Entries are equal if the hosts and the paths are equal.
 In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
-  (url-equal (url e1) (url e2)))
+    (url-equal (url e1) (url e2)))
+  (:export-generic-name-p t))
 
 (-> bookmark-add
     (quri:uri &key (:title string) (:date (or time:timestamp null)) (:tags t))
