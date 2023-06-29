@@ -28,6 +28,7 @@ modes, commands, etc."))
 (defvar *imports* '((:alexandria #:compose #:curry #:mappend #:rcurry)
                     (:trivia #:match #:multiple-value-match #:lambda-match #:guard)
                     (:nkeymaps #:define-key #:define-keyscheme-map)
+                    (:nclasses #:define-generic)
                     (:serapeum #:export-always #:->))
   "Default list of symbol imports used by `nyxt:define-package'.")
 
