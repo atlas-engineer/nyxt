@@ -109,11 +109,17 @@ Don't set this, it would lose its meaning.")
 (export-always '+version+)
 (alex:define-constant +version+
     (or (uiop:getenv "NYXT_VERSION")      ; This is useful for build systems without Git.
-        (ignore-errors
-         (uiop:with-current-directory ((asdf:system-source-directory :nyxt))
-           (uiop:run-program (list "git" "describe" "--always" "--tags")
-                             :output '(:string :stripped t))))
-        (asdf/component:component-version (asdf:find-system :nyxt)))
+        (let ((version-from-git-tag
+                (ignore-errors
+                 (uiop:with-current-directory ((asdf:system-source-directory :nyxt))
+                   (uiop:run-program (list "git" "describe" "--always" "--tags")
+                                     :output '(:string :stripped t)))))
+              (version-from-asdf
+                (asdf/component:component-version (asdf:find-system :nyxt))))
+          (if (uiop:version< (first (str:split "-" version-from-git-tag))
+                             version-from-asdf)
+              version-from-asdf
+              version-from-git-tag)))
   :test #'equal)
 
 (defun version ()
