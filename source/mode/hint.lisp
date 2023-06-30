@@ -191,7 +191,7 @@ For instance, to include images:
   (update-document-model :buffer buffer))
 
 (export-always 'identifier)
-(defmethod identifier ((element plump:element))
+(define-generic identifier ((element plump:element))
   (plump:attribute element "nyxt-hint"))
 
 (export-always 'highlight-selected-hint)
