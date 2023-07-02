@@ -73,6 +73,7 @@ modules:
       env:
         LISP: "/app/sbcl/usr/local/bin/sbcl"
         LISP_FLAGS: "--dynamic-space-size 4096 --no-userinit --non-interactive"
+        FLATPAK_ID: "engineer.atlas.Nyxt"
     build-commands:
       - make all
       - mkdir -p $FLATPAK_DEST/bin
