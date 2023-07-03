@@ -697,6 +697,11 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :font-weight 500)
             `(a
               :color ,theme:primary)
+            `((:and a :hover)
+              :cursor "pointer"
+              :text-decoration "underline")
+            `((:and a :active)
+              :opacity 0.6)
             `("#close"
               :position "fixed"
               :top "4px"
