@@ -134,6 +134,7 @@ See `nyxt::attribute-widths'.")
           :background-color ,theme:accent
           :color ,theme:on-accent)
         `((:and .button :hover)
+          :cursor "pointer"
           :opacity 0.6)
         `((:and .button (:or :visited :active))
           :color ,theme:background)

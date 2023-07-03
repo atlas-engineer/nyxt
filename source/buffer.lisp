@@ -97,6 +97,7 @@ See also the `profile' slot in the `browser' class.")
               !important
               :min-height "2rem")
             `((:and .button :hover)
+              :cursor "pointer"
               :opacity 0.8)
             `((:and .button (:or :visited :active))
               :color ,theme:background)
@@ -721,6 +722,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :background-color ,theme:accent
               :color ,theme:on-accent)
             `((:and .button :hover)
+              :cursor "pointer"
               :opacity 0.8)
             `((:and .button (:or :visited :active))
               :color ,theme:background)
@@ -860,6 +862,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :background-color ,theme:accent
               :color ,theme:on-accent)
             `((:and .button :hover)
+              :cursor "pointer"
               :opacity 0.6)
             `((:and .button (:or :visited :active))
               :color ,theme:background)
