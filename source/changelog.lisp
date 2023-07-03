@@ -774,4 +774,6 @@ color-picker support as an example application for this feature.")
 
 (define-version "4.0.0"
   (:ul
-   (:li "Fix bug that made Nyxt display an out of date version in several places.")))
+   (:li "Fix bug that made Nyxt display an out of date version in several places.")
+   (:li "Make internal buffer and panel buffer buttons change cursor on hover to
+indicate they are interactive.")))
