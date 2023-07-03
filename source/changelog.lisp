@@ -768,6 +768,11 @@ color-picker support as an example application for this feature.")
      (:li (:nxref :class-name 'browser :slot 'external-editor-program)
           " returns its value rather than returning a string value in a list."))))
 
+(define-version "3.X.Y"
+  (:ul
+   (:li "Theme is now properly configurable via "
+        (:a :href (nyxt-url 'common-settings) "Common Settings Menu") ".")))
+
 (define-version "4-pre-release-1"
   (:li "When on pre-release, push " (:code "X-pre-release")
        " feature in addition to " (:code "X-pre-release-N") "one."))
