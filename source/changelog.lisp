@@ -776,4 +776,5 @@ color-picker support as an example application for this feature.")
   (:ul
    (:li "Fix bug that made Nyxt display an out of date version in several places.")
    (:li "Make internal buffer and panel buffer buttons change cursor on hover to
-indicate they are interactive.")))
+indicate they are interactive.")
+   (:li "Make panel buffer links change style on hover and active.")))
