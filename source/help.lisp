@@ -86,10 +86,8 @@ Note that some settings may require restarting Nyxt to take effect.")
                  :style (format nil "background-color: ~a; color: ~a"
                                 (theme:accent-color (symbol-value theme-symbol))
                                 (theme:on-accent-color (symbol-value theme-symbol)))
-                 `(nyxt::auto-configure
-                   :class-name 'browser
-                   :slot 'theme
-                   :slot-value ,theme-symbol))
+                 `(nyxt::auto-configure :form '(define-configuration browser
+                                                ((theme ,theme-symbol)))))
                (:p "Colors:")
                (:dl
                 (loop for (name color text-color) in '(("Background" theme:background-color theme:on-background-color)
