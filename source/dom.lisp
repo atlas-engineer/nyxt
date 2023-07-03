@@ -382,18 +382,15 @@ Return two values:
     (plump:attribute img "alt")))
 
 (export-always 'get-nyxt-id)
-(define-generic get-nyxt-id ((element plump:element))
-  "Get the on-page identifier of the ELEMENT."
+(defmethod get-nyxt-id ((element plump:element))
   (plump:attribute element "nyxt-identifier"))
 
 (export-always 'click-element)
 (define-parenscript click-element (element)
-  "Programmatically click the ELEMENT via JavaScript."
   (ps:chain (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element))) (click)))
 
 (export-always 'focus-select-element)
 (define-parenscript focus-select-element (element)
-  "Focus the element and put the cursor inside it (when possible)."
   (let ((element (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element)))))
     (unless (nyxt/ps:element-in-view-port-p element)
       (ps:chain element (scroll-into-view)))
@@ -403,7 +400,6 @@ Return two values:
 
 (export-always 'check-element)
 (define-parenscript check-element (element &key (value t))
-  "Toggle the state of a radio/checkbox ELEMENT to VALUE."
   (let ((element (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element)))))
     (unless (nyxt/ps:element-in-view-port-p element)
       (ps:chain element (scroll-into-view)))
@@ -411,7 +407,6 @@ Return two values:
 
 (export-always 'toggle-details-element)
 (define-parenscript toggle-details-element (element)
-  "Open/close the ELEMENT contents."
   (ps:let ((element (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element)))))
     (unless (nyxt/ps:element-in-view-port-p element)
       (ps:chain element (scroll-into-view)))
@@ -421,7 +416,6 @@ Return two values:
 
 (export-always 'select-option-element)
 (define-parenscript select-option-element (element parent)
-  "Select ELEMENT to be a chosen option in PARENT."
   (ps:let* ((element (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element))))
             (parent-select (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id parent)))))
     (unless (nyxt/ps:element-in-view-port-p element)
@@ -432,13 +426,11 @@ Return two values:
 
 (export-always 'scroll-to-element)
 (define-parenscript scroll-to-element (element)
-  "Scroll ELEMENT into view."
   (ps:chain (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element)))
             (scroll-into-view)))
 
 (export-always 'set-caret-on-start)
 (define-parenscript set-caret-on-start (element)
-  "Focus and put the input caret before the first character in ELEMENT."
   (let ((el (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element))))
         (range (ps:chain document (create-range)))
         (sel (ps:chain #:window (get-selection))))

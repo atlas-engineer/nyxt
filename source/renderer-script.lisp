@@ -43,16 +43,9 @@ Examples:
 SCRIPT-BODY must be a valid parenscript and will be wrapped in (PS:PS ...).
 Any Lisp expression must be wrapped in (PS:LISP ...).
 
-If the first form in SCRIPT-BODY is a string, then it'll be used as
-documentation string for SCRIPT-NAME. It also is propagated as the first element
-in SCRIPT-BODY on the JavaScript side.
-
 The returned function sends the compiled Javascript to the current buffer webview.
 The function can be passed Lisp ARGS."
-  `(define-generic ,script-name ,args
-     ,@(when (stringp (first script-body))
-         (list (first script-body)))
-     (ps-eval :buffer (current-buffer) ,@script-body)))
+  `(defmethod ,script-name ,args (ps-eval :buffer (current-buffer) ,@script-body)))
 
 (export-always 'define-parenscript-async)
 (defmacro define-parenscript-async (script-name args &body script-body)
