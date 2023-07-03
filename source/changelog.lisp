@@ -766,5 +766,9 @@ color-picker support as an example application for this feature.")
      (:li (:nxref :class-name 'browser :slot 'external-editor-program)
           " no longer signals when the program is a string containing spaces.")
      (:li (:nxref :class-name 'browser :slot 'external-editor-program)
-          " returns its value rather than returning a string value in a list.")))
-  (:ul))
+          " returns its value rather than returning a string value in a list."))))
+
+(define-version "3.X.Y"
+  (:ul
+   (:li "Theme is now properly configurable via "
+        (:a :href (nyxt-url 'common-settings) "Common Settings Menu") ".")))
