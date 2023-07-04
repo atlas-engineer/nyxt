@@ -93,8 +93,8 @@ You can also run the tests locally with:
 (asdf:test-system :nyxt/gi-gtk)
 #+end_src
 
-Keep in mind that it is recommended to restart the SLY session by typing
-~, RET quit lisp RET~ in the REPL before and after running the tests.
+Keep in mind that it is recommended to restart the SLY session before and 
+after running the tests.
 
 * Developer's installation with Guix
 
