@@ -8,6 +8,7 @@
 :TOC:      :include all :ignore this
 :END:
 :CONTENTS:
+- [[#run-from-source-with-guix-emacs-and-sly][Run from source with Guix, Emacs and SLY]]
 - [[#developers-installation-with-guix][Developer's installation with Guix]]
 - [[#developers-installation-with-nix][Developer's installation with Nix]]
   - [[#building-for-local-development][Building for local development]]
@@ -39,6 +40,62 @@
   - [[#branch-management][Branch management]]
   - [[#programming-conventions][Programming conventions]]
 :END:
+* Run from source with Guix, Emacs and SLY
+
+If you are new to developing Nyxt, you may want a straightforward way to
+set up the environment so that you can hack on Nyxt with minimal friction.
+This is one way to achieve that goal. Keep in mind that this part of the
+manual is highly opinionated in it's choice of tools. If you wish to use
+other tools, refer to the rest of the manual below.
+
+To proceed, make sure that you have the following installed:
+- [[https://www.sbcl.org/][SBCL]]
+- [[https://guix.gnu.org][The GUIX package manager]]
+- [[https://www.gnu.org/software/emacs/][Emacs]]
+- [[https://github.com/joaotavora/sly][SLY]]
+
+Now that you have those working on your system, clone the Nyxt repository into
+=~/common-lisp=. Then, in your Emacs configuration file, add the following and
+restart Emacs:
+
+#+begin_src lisp
+(load "~/common-lisp/nyxt/build-scripts/nyxt-guix.el" :noerror)
+
+(setq sly-lisp-implementations
+        '((nyxt-sbcl
+           (lambda () (nyxt-make-guix-cl-for-nyxt
+                  "~/common-lisp/nyxt"
+                  :force t
+                  :cl-implementation "sbcl"
+                  :cl-system "nyxt/gi-gtk"
+                  :no-grafts t
+                  :ad-hoc '("emacs" "xdg-utils" "git"))))))
+#+end_src
+
+Next, in Emacs, run ~M-- M-x sly RET nyxt-sbcl RET~ to start the SLY REPL.
+Wait for it to finish and the REPL will open. At this point you are almost ready
+to start hacking. In the SLY REPL, write the following:
+
+#+begin_src lisp
+(asdf:load-system :nyxt/gi-gtk)
+(nyxt:start)
+#+end_src
+
+With Nyxt started in this way, you can hack on Nyxt without recompiling the
+whole codebase or even restarting the browser. You can make your changes,
+recompile only the relevant file/expression with SLY and it's done.
+
+You can also run the tests locally with:
+
+#+begin_src lisp
+(asdf:test-system :nyxt)
+; and
+(asdf:test-system :nyxt/gi-gtk)
+#+end_src
+
+Keep in mind that it is recommended to restart the SLY session by typing
+~, RET quit lisp RET~ in the REPL before and after running the tests.
+
 * Developer's installation with Guix
 
 First, clone the Nyxt repository.  It is most convenient to clone the Nyxt
