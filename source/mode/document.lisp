@@ -9,7 +9,6 @@ The APIs that it includes/uses internally are:
 - Page scrolling: `call-non-input-command-or-forward'.
 - Copy-pasting: `ffi-buffer-copy', `ffi-buffer-paste', `ffi-buffer-cut',
   `ffi-buffer-select-all', `ffi-buffer-undo', `ffi-buffer-redo'.
-- Nyxt renderer signals: `on-signal-load-committed', `on-signal-load-finished'
 - Heading management: `heading' class, `get-headings', `current-heading',
   `scroll-page-to-heading', and `scroll-page-to-n-headings'.
 - `get-url-source' function.
@@ -260,10 +259,6 @@ Important pieces of functionality are:
                 (nyxt/ps:qs-nyxt-id document (ps:lisp (nyxt/dom:get-nyxt-id input)))))
           do (nyxt/dom:focus-select-element input)
           and do (return input)))
-
-(defmethod nyxt:on-signal-load-committed ((mode document-mode) url)
-  (declare (ignore mode url))
-  nil)
 
 (defmethod nyxt:on-signal-load-finished ((mode document-mode) url)
   (reset-page-zoom :buffer (buffer mode))

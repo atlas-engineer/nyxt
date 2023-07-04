@@ -548,39 +548,6 @@ If there is no corresponding keymap, return nil."
                           keyscheme:cua)
                       (keyscheme-map mode)))
 
-(defmethod on-signal-notify-uri ((mode mode) url)
-  url)
-
-(defmethod on-signal-notify-title ((mode mode) title)
-  (on-signal-notify-uri mode (url (buffer mode)))
-  title)
-
-(defmethod on-signal-load-started ((mode mode) url)
-  url)
-
-(defmethod on-signal-load-redirected ((mode mode) url)
-  url)
-
-(defmethod on-signal-load-canceled ((mode mode) url)
-  url)
-
-(defmethod on-signal-load-committed ((mode mode) url)
-  url)
-
-(defmethod on-signal-load-finished ((mode mode) url)
-  url)
-
-(defmethod on-signal-load-failed ((mode mode) url)
-  url)
-
-(defmethod on-signal-button-press ((mode mode) button-key)
-  (declare (ignorable button-key))
-  nil)
-
-(defmethod on-signal-key-press ((mode mode) key)
-  (declare (ignorable key))
-  nil)
-
 (defmethod url-sources ((mode mode) actions-on-return)
   (declare (ignore actions-on-return))
   nil)

@@ -441,3 +441,125 @@ Example:
                                                            result-callback
                                                            error-callback)
   "Send message to WebExtensions pages.")
+
+
+;;; Signals
+
+(export-always 'on-signal-notify-uri)
+(define-generic on-signal-notify-uri (object url)
+  "Invoked when URL changes in OBJECT.
+Dispatches on buffers and modes."
+  (:method ((buffer buffer) no-url)
+    (declare (ignore no-url))
+    ;; Need to run the mode-specific actions first so that modes can modify the
+    ;; behavior of buffer.
+    (dolist (mode (modes buffer))
+      (on-signal-notify-uri mode (url buffer)))
+    (let ((view-url (ffi-buffer-url buffer)))
+      (unless (or (load-failed-p buffer)
+                  (url-empty-p view-url))
+        ;; When a buffer fails to load and `ffi-buffer-url' returns an empty
+        ;; URL, we don't set (url buffer) to keep access to the old value.
+        (setf (url buffer) (ffi-buffer-url buffer))))
+    (url buffer))
+  (:method ((mode mode) url)
+    url))
+
+(export-always 'on-signal-notify-title)
+(define-generic on-signal-notify-title (object title)
+  "Invoked when page TITLE is set in OBJECT.
+Dispatches on buffers and modes."
+  (:method ((buffer buffer) no-title)
+    (declare (ignore no-title))
+    (setf (title buffer) (ffi-buffer-title buffer))
+    (dolist (mode (modes buffer))
+      (on-signal-notify-title mode (url buffer)))
+    (title buffer))
+  (:method ((mode mode) title)
+    (on-signal-notify-uri mode (url (buffer mode)))
+    title))
+
+;; See https://webkitgtk.org/reference/webkit2gtk/stable/WebKitWebView.html#WebKitLoadEvent
+(export-always 'on-signal-load-started)
+(define-generic on-signal-load-started (object url)
+  "Invoked when URL starts loading in OBJECT.
+Dispatches on buffers and modes."
+  (:method ((buffer buffer) url)
+    (dolist (mode (modes buffer))
+      (on-signal-load-started mode url)))
+  (:method ((mode mode) url)
+    url))
+
+(export-always 'on-signal-load-redirected)
+(define-generic on-signal-load-redirected (object url)
+  "Invoked when the request gets redirected to URL in OBJECT.
+Dispatches on buffers and modes."
+  (:method ((buffer buffer) url)
+    (dolist (mode (modes buffer))
+      (on-signal-load-redirected mode url)))
+  (:method ((mode mode) url)
+    url))
+
+(export-always 'on-signal-load-canceled)
+(define-generic on-signal-load-canceled (object url)
+  "Invoked when URL loading is canceled in OBJECT.
+Dispatches on buffers and modes."
+  (:method ((buffer buffer) url)
+    (dolist (mode (modes buffer))
+      (on-signal-load-canceled mode url)))
+  (:method ((mode mode) url)
+    url))
+
+(export-always 'on-signal-load-committed)
+(define-generic on-signal-load-committed (object url)
+  "Invoked when URL loading is approved in OBJECT.
+Dispatches on buffers and modes."
+  (:method ((buffer buffer) url)
+    (dolist (mode (modes buffer))
+      (on-signal-load-committed mode url)))
+  (:method ((mode mode) url)
+    url))
+
+(export-always 'on-signal-load-finished)
+(define-generic on-signal-load-finished (object url)
+  "Invoked when done loading URL in OBJECT.
+Dispatches on buffers and modes."
+  (:method ((buffer buffer) url)
+    (update-document-model :buffer buffer)
+    (dolist (mode (modes buffer))
+      (on-signal-load-finished mode url))
+    (run-thread "buffer-loaded-hook" (hooks:run-hook (buffer-loaded-hook buffer) buffer)))
+  (:method ((mode mode) url)
+    url))
+
+(export-always 'on-signal-load-failed)
+(define-generic on-signal-load-failed (object url)
+  "Invoked when URL loading has failed in OBJECT.
+Dispatches on buffers and modes."
+  (:method ((buffer buffer) url)
+    (dolist (mode (modes buffer))
+      (on-signal-load-failed mode url)))
+  (:method ((mode mode) url)
+    url))
+
+(export-always 'on-signal-button-press)
+(define-generic on-signal-button-press (object button-key)
+  "Invoked on BUTTON-KEY press.
+Dispatches on buffers and modes."
+  (:method ((buffer buffer) button-key)
+    (dolist (mode (modes buffer))
+      (on-signal-button-press mode button-key)))
+  (:method ((mode mode) button-key)
+    (declare (ignorable button-key))
+    nil))
+
+(export-always 'on-signal-key-press)
+(define-generic on-signal-key-press (object key)
+  "Invoked on KEY press.
+Dispatches on buffers and modes."
+  (:method ((buffer buffer) key)
+    (dolist (mode (modes buffer))
+      (on-signal-key-press mode key)))
+  (:method ((mode mode) key)
+    (declare (ignorable key))
+    nil))
