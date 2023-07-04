@@ -13,10 +13,16 @@
 ;; Ensure the top-level exported forms are alphabetically sorted.
 
 (export-always '+newline+)
-(alex:define-constant +newline+ (string #\newline) :test #'equal)
+(alex:define-constant +newline+ (string #\newline)
+  :test #'equal
+  :documentation "String containing newline.
+Useful for functions operating on strings, like `str:concat'.")
 
 (export-always '+escape+)
-(alex:define-constant +escape+ (string #\escape) :test #'equal)
+(alex:define-constant +escape+ (string #\escape)
+  :test #'equal
+  :documentation "String containing ASCII escape (#x1B) char.
+Useful when concatenating escaped strings, like in nyxt: URLs.")
 
 (export-always 'new-id)
 (defun new-id ()
@@ -244,4 +250,7 @@ package set to current package."
 (export-always 'smart-case-test)
 (-> smart-case-test (string) function)
 (defun smart-case-test (string)
+  "Get the string-comparison test based on STRING.
+If the string is all lowercase, then the search is likely case-insensitive.
+If there's any uppercase character, then it's case-sensitive."
   (if (str:downcasep string) #'string-equal #'string=))
