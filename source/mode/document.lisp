@@ -209,7 +209,9 @@ Important pieces of functionality are:
    (prompter:actions-on-return (lambda-command paste* (ring-items)
                                  (ffi-buffer-paste (current-buffer) (first ring-items)))))
   (:export-class-name-p t)
-  (:metaclass user-class))
+  (:metaclass user-class)
+  (:documentation "Source for previous clipboard contents.
+Only includes the strings that were pasted/copied inside Nyxt."))
 
 (define-command paste-from-clipboard-ring ()
   "Show `*browser*' clipboard ring and paste selected entry."
@@ -285,6 +287,9 @@ Warning: URL is a string."
 
 (export-always 'get-url-source)
 (defun get-url-source (url)
+  "Get HTML source for URL page, as a string.
+If the page is open in one of the buffers, just get the source from there.
+Otherwise, create a dummy buffer with URL to get its source."
   (let ((buffer (or (find (url url) (buffer-list) :test #'quri:uri= :key #'url)
                     (make-background-buffer :url (url url)))))
     (unwind-protect
