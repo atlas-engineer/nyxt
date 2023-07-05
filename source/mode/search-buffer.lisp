@@ -500,7 +500,9 @@ For shorter search patterns, `initial-delay' applies.")
         (mapcar #'maybe-remove-search-marks search-buffers)))))
   (:export-accessor-names-p t)
   (:export-class-name-p t)
-  (:metaclass user-class))
+  (:metaclass user-class)
+  (:documentation "The source for search suggestions.
+Fetches all the suggestions in `buffer' that match the input as per `test-function'."))
 
 (defmethod maybe-update-marks (current-match (source search-buffer-source))
   "Recompute search marks, if needed.
