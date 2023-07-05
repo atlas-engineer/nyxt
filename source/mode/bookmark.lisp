@@ -105,7 +105,10 @@ internal programming APIs."
     '()
     :type (list-of string)))
   (:export-class-name-p t)
-  (:export-accessor-names-p t))
+  (:export-accessor-names-p t)
+  (:documentation "Represents Nyxt bookmark.
+`url' is the identity of the `bookmark-entry', used in `equals'.
+`title', `annotation', `date', `tags' are useful pieces of metadata."))
 
 (defmethod prompter:object-attributes ((entry bookmark-entry) (source prompter:source))
   (declare (ignore source))
@@ -128,6 +131,10 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
     t)
 (export-always 'bookmark-add)
 (defun bookmark-add (url &key date title tags)
+  "Store the bookmark for URL in `bookmarks-file' of the current buffer.
+Creates a `bookmark-entry' with DATE, TITLE, and TAGS, when provided.
+If there's a bookmarks with the same URL, update the TITLE, TAGS, and DATE
+instead."
   (files:with-file-content (bookmarks (bookmarks-file (current-buffer)))
     (unless (or (url-empty-p url)
                 (string= "about:blank" (render-url url)))
@@ -154,7 +161,10 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
    (prompter:constructor (files:content (bookmarks-file (current-buffer))))
    (prompter:enable-marks-p t)
    (prompter:active-attributes-keys '("URL" "Title" "Tags")))
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:documentation "Source for bookmark search.
+By default, matches URL, title, and tags of the bookmark, but can also match
+against date, given `prompter:active-attributes-keys' configuration."))
 
 (defmethod url-sources ((mode bookmark-mode) actions-on-return)
   (make-instance 'bookmark-source :actions-on-return actions-on-return))
