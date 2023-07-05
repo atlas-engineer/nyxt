@@ -771,4 +771,7 @@ color-picker support as an example application for this feature.")
 (define-version "3.X.Y"
   (:ul
    (:li "Theme is now properly configurable via "
-        (:a :href (nyxt-url 'common-settings) "Common Settings Menu") ".")))
+        (:a :href (nyxt-url 'common-settings) "Common Settings Menu") ".")
+   (:li "Add prompt buffer keybindings for commands "
+          (:nxref :command 'nyxt/mode/prompt-buffer:previous-page) " and "
+          (:nxref :command 'nyxt/mode/prompt-buffer:next-page) ".")))
