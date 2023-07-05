@@ -9,6 +9,8 @@ The whole API is centered around `autofill' class and its slots:
 - and `fill' as the actual content-designating thing (string or a
   function). Accessed with `autofill-fill'.
 
+There's a shortcut function to create `autofill's: `make-autofill'.
+
 `autofill' is funcallable. When funcallable, returns the string produced by the
 autofill.
 
@@ -20,6 +22,7 @@ See the `autofill-mode' for the external user-facing APIs."))
 
 (export-always 'make-autofill)
 (defun make-autofill (&rest args)
+  "Shortcut to create `autofill's: ARGS are keyword initargs."
   (apply #'make-instance 'autofill args))
 
 (define-mode autofill-mode ()
@@ -82,7 +85,8 @@ it will be in conflict with common-lisp:fill."))
       (ffi-buffer-paste (current-buffer)
                         (funcall (first autofills))))))
   (:export-class-name-p t)
-  (:metaclass user-class))
+  (:metaclass user-class)
+  (:document "A source listing all the available `autofill's in the current `autofill-mode'."))
 
 (defmethod prompter:object-attributes ((autofill autofill) (source prompter:source))
   (declare (ignore source))
