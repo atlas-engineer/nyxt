@@ -86,7 +86,7 @@ it will be in conflict with common-lisp:fill."))
                         (funcall (first autofills))))))
   (:export-class-name-p t)
   (:metaclass user-class)
-  (:document "A source listing all the available `autofill's in the current `autofill-mode'."))
+  (:documentation "A source listing all the available `autofill's in the current `autofill-mode'."))
 
 (defmethod prompter:object-attributes ((autofill autofill) (source prompter:source))
   (declare (ignore source))
