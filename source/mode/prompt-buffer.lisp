@@ -32,6 +32,8 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "pagehome" 'first-suggestion
        "end" 'last-suggestion
        "pageend" 'last-suggestion
+       "pageup" 'previous-page
+       "pagedown" 'next-page
        "shift-up" 'previous-source
        "shift-down" 'next-source
        "shift-left" 'first-suggestion-within-source
