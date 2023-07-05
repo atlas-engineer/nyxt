@@ -39,10 +39,16 @@ Unlike `(cons TYPE *)', it checks all the elements.
 
 (export-always 'alist-of)
 (deftype alist-of (key-type &optional value-type)
+  "Alist of dotted conses."
   `(list-of (cons ,key-type ,(or value-type key-type))))
 
+;; FIXME: Maybe define it at use site, or even inline it there?
 (export-always 'cookie-policy)
 (deftype cookie-policy ()
+  "Enum of cookie policies:
+- allow :ALWAYS,
+- allow :NEVER,
+- allow all, but :NO-THIRD-PARTY."
   `(member :always :never :no-third-party))
 
 ;; The following types represent the positional arguments documented at
@@ -78,8 +84,10 @@ Unlike `(cons TYPE *)', it checks all the elements.
 
 (export-always 'maybe)
 (deftype maybe (&rest types)
+  "An optional/maybe type for a value that is either one of TYPES, or NIL."
   `(or null ,@types))
 
 (export-always 'maybe*)
 (deftype maybe* (&rest types)
+  "A lenient `maybe' with all the 'empty' sequences as null value."
   `(or null (array * (0)) ,@types))
