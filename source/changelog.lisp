@@ -774,7 +774,11 @@ color-picker support as an example application for this feature.")
         (:a :href (nyxt-url 'common-settings) "Common Settings Menu") ".")
    (:li "Add prompt buffer keybindings for commands "
           (:nxref :command 'nyxt/mode/prompt-buffer:previous-page) " and "
-          (:nxref :command 'nyxt/mode/prompt-buffer:next-page) ".")))
+          (:nxref :command 'nyxt/mode/prompt-buffer:next-page) ".")
+   (:li "Honor the value of environment variables "
+        (:code "$XDG_DATA_HOME") ", "
+        (:code "$XDG_CONFIG_HOME") "and "
+        (:code "$XDG_CACHE_HOME") "for the Flatpak.")))
 
 (define-version "4-pre-release-1"
   (:li "When on pre-release, push " (:code "X-pre-release")
