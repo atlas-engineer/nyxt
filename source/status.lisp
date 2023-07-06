@@ -126,31 +126,33 @@ the URL.)"
 
 (export-always 'format-status-tabs)
 (defmethod format-status-tabs ((status status-buffer))
-  (let* ((buffers (if (display-tabs-by-last-access-p status)
-                      (sort-by-time (buffer-list))
-                      (reverse (buffer-list))))
+  ;; FIXME: remove nil here because early on startup some buffers can be NIL
+  ;; (why?)  and we have to clean them out. Debug the startup sequence (in
+  ;; particular the (setf buffers) :after handler) and remove this.
+  (let* ((buffers (remove
+                   nil (if (display-tabs-by-last-access-p status)
+                           (sort-by-time (buffer-list))
+                           (reverse (buffer-list)))))
          (domain-deduplicated-urls (remove-duplicates
-                                    ;; FIXME: remove nil here because early on
-                                    ;; startup some buffers can be NIL (why?)
-                                    ;; and we have to clean them out. Debug the
-                                    ;; startup sequence (in particular the (setf
-                                    ;; buffers) :after handler) and remove this.
-                                    (mapcar #'url (remove nil buffers))
+                                    (mapcar #'url buffers)
                                     :test #'string=
                                     :key #'quri:uri-domain)))
     (spinneret:with-html-string
       (loop for url in domain-deduplicated-urls
             collect
             ;; FIXME: Removing NIL buffers here too, the same reason as above.
-            (let* ((internal-buffers (remove-if-not #'internal-url-p (remove nil (buffer-list)) :key #'url))
+            (let* ((internal-buffers (remove-if-not #'internal-url-p buffers :key #'url))
                    (domain (quri:uri-domain url))
                    (tab-display-text (if (internal-url-p url)
                                          "internal"
                                          domain))
-                   (url url))
+                   (url url)
+                   ;; Current buffer might be NIL too.
+                   (current (current-buffer (window status))))
               (:span
-               :class (if (string= (quri:uri-domain (url (current-buffer (window status))))
-                                   (quri:uri-domain url))
+               :class (if (and current
+                               (string= (quri:uri-domain (url current))
+                                        (quri:uri-domain url)))
                           "selected-tab tab"
                           "tab")
                :onclick (ps:ps
@@ -162,7 +164,7 @@ the URL.)"
                                (let ((buffers-to-delete
                                        (if (internal-url-p url)
                                            internal-buffers
-                                           (sera:filter (match-domain domain) (buffer-list)))))
+                                           (sera:filter (match-domain domain) buffers))))
                                  (prompt
                                   :prompt "Delete buffer(s)"
                                   :sources (make-instance 'buffer-source
