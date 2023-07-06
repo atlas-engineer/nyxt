@@ -1,6 +1,0 @@
-#+TITLE: Nyxt User Manual
-
-This manual has been moved.
-
-- For Nyxt 2.0 and builds following master, run the =help= command from the application.
-- For Nyxt 1.5 (then called Next), see https://github.com/atlas-engineer/nyxt/blob/1.5.0/documents/MANUAL.org.
