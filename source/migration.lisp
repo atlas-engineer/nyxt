@@ -33,7 +33,9 @@ passed to `spinneret' on render.
 This is useful to delay the evaluation of the tip until it's rendered."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:export-predicate-name-p t))
+  (:export-predicate-name-p t)
+  (:documentation "Representation of migration suggestion.
+`symbols' are the offending ones deprecated in `version'."))
 
 (defmethod print-object ((object suggestion) stream)
   (print-unreadable-object (object stream :type t :identity t)
@@ -99,6 +101,7 @@ major versions."
 
 (export-always 'find-suggestions)
 (defun find-suggestions (string)
+  "Find the migration suggestions that match the symbol from STRING."
   (alex:when-let ((sym (ignore-errors (uiop:safe-read-from-string
                                        string :package (find-package :nyxt)))))
     (gethash (symbol-name sym) +migration-suggestions+)))
