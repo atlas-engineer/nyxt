@@ -129,7 +129,9 @@ details and internal programming APIs."
     '()
     :type (list-of string)))
   (:export-class-name-p t)
-  (:export-accessor-names-p t))
+  (:export-accessor-names-p t)
+  (:documentation "A singular `no-procrastinate-mode' entry.
+Represents the `hostname' to block."))
 
 (defmethod equals ((e1 no-procrastinate-entry) (e2 no-procrastinate-entry))
   "Entries are equal if the hosts and the paths are equal.
