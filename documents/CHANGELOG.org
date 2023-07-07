@@ -1,6 +1,0 @@
-#+TITLE: Nyxt CHANGELOG
-
-This changelog has been moved.
-
-- For Nyxt newer builds following master, see https://nyxt.atlas.engineer/articles/release
-- For Nyxt 2.2.1 and older versions, see https://github.com/atlas-engineer/nyxt/blob/2.2.1/documents/CHANGELOG.org
