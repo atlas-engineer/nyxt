@@ -72,15 +72,18 @@ Unlike `(cons TYPE *)', it checks all the elements.
 
 (export-always 'html-string-p)
 (defun html-string-p (string)
+  "Check whether the STRING is an HTML string:
+- Having proper starting/ending tags.
+- Being parseable with Plump."
   (serapeum:and-let*
-      ((string string)
-       (-p (stringp string))
-       (trimmed (string-trim serapeum:whitespace string))
-       (has-closing-tag (ppcre:scan "</\\w+>$" trimmed))
-       (html (ignore-errors (plump:parse trimmed)))
-       (single-child (serapeum:single (plump:children html)))
-       (child (elt (plump:children html) 0)))
-    (plump:element-p child)))
+   ((string string)
+    (-p (stringp string))
+    (trimmed (string-trim serapeum:whitespace string))
+    (has-closing-tag (ppcre:scan "</\\w+>$" trimmed))
+    (html (ignore-errors (plump:parse trimmed)))
+    (single-child (serapeum:single (plump:children html)))
+    (child (elt (plump:children html) 0)))
+   (plump:element-p child)))
 
 (export-always 'maybe)
 (deftype maybe (&rest types)
