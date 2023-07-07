@@ -268,13 +268,16 @@ If it cannot be derived, return an empty `quri:uri'."
 (-> empty-path-url-p (quri:uri) boolean)
 (export-always 'empty-path-url-p)
 (defun empty-path-url-p (url)
+  "Whether the URL is a root one, having no path or empty one."
   (or (string= (quri:uri-path url) "/")
       (null (quri:uri-path url))))
 
 (-> host-only-url-p (quri:uri) boolean)
 (export-always 'host-only-url-p)
 (defun host-only-url-p (url)
+  "Check whether the URL only has a host, and none other URL elements."
   (every #'null
+         ;; FIXME: Check path too? `empty-path-url-p'?
          (list (quri:uri-query url)
                (quri:uri-fragment url)
                (quri:uri-userinfo url))))
@@ -380,6 +383,8 @@ Example:
 
 (export-always 'internal-url-p)
 (defun internal-url-p (url)
+  "Whether the URL is the `internal-page' one."
+  ;; FIXME: Too simple. Maybe check for command presence too?
   (string= "nyxt" (quri:uri-scheme (url url))))
 
 (-> query-params->arglist ((types:association-list string string)) (values list &optional))
