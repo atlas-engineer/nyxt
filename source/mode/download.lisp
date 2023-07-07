@@ -8,7 +8,9 @@
 (export-always 'renderer-download)
 (defclass renderer-download ()
   ()
-  (:metaclass interface-class))
+  (:metaclass interface-class)
+  (:documentation "A basis for renderer-specific download objects.
+Should be redefined by the renderer."))
 
 (define-class download (renderer-download)
   ((url

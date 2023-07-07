@@ -175,7 +175,9 @@ Return:
 (export-always 'renderer-user-style)
 (defclass renderer-user-style ()
   ()
-  (:metaclass interface-class))
+  (:metaclass interface-class)
+  (:documentation "The basis for renderer-specific user style extensions.
+Should be redefined by the renderer."))
 
 (sera:eval-always
   (define-class user-style (renderer-user-style files:data-file nyxt-remote-file)
@@ -254,4 +256,6 @@ its own independent settings."
 (export-always 'renderer-user-script)
 (defclass renderer-user-script ()
   ()
-  (:metaclass interface-class))
+  (:metaclass interface-class)
+  (:documentation "The basis for renderer-specific user scripts.
+Should be redefined by the renderer."))

@@ -11,7 +11,9 @@
 (export-always 'renderer-buffer)
 (defclass renderer-buffer ()
   ()
-  (:metaclass interface-class))
+  (:metaclass interface-class)
+  (:documentation "Renderer-specific buffer objects.
+Should be redefined by the renderer."))
 
 (defvar %default-modes '(base-mode)
   "The default modes for unspecialized buffers.
