@@ -8,7 +8,9 @@
 (export-always 'renderer-window)
 (defclass renderer-window ()
   ()
-  (:metaclass interface-class))
+  (:metaclass interface-class)
+  (:documentation "Renderer-specific window widget.
+Should be redefined by the renderer."))
 
 (define-class window (renderer-window)
   ((id

@@ -44,7 +44,9 @@ Without handler, return ARG.  This is an acceptable `combination' for
 (export-always 'renderer-browser)
 (defclass renderer-browser ()
   ()
-  (:metaclass interface-class))
+  (:metaclass interface-class)
+  (:documentation "Renderer-specific representation for the global browser.
+Should be redefined by the renderer."))
 
 (define-class browser (renderer-browser)
   ((profile
@@ -452,7 +454,9 @@ If none is found, fall back to `keyscheme:cua'."
 (export-always 'renderer-request-data)
 (defclass renderer-request-data ()
   ()
-  (:metaclass interface-class))
+  (:metaclass interface-class)
+  (:documentation "Renderer-specific request object.
+Should be redefined by the renderer."))
 
 (define-class request-data (renderer-request-data)
   ((buffer

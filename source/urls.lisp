@@ -91,7 +91,9 @@ The URL is fetched, which explains possible bottlenecks."
 (export-always 'renderer-scheme)
 (defclass renderer-scheme ()
   ()
-  (:metaclass interface-class))
+  (:metaclass interface-class)
+  (:documentation "Renderer-specific representation of the custom scheme.
+Should be redefined by the renderer."))
 
 (define-class scheme (renderer-scheme)
   ((name (error "Scheme must have a name/scheme")
