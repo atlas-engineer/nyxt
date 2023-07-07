@@ -21,11 +21,12 @@ first."
     (append keyscheme-mode other-modes)))
 
 (export-always 'format-status-modes)
-(defmethod format-status-modes ((status status-buffer))
-  "Render the enabled modes.
+(define-generic format-status-modes ((status status-buffer))
+  "Render the enabled modes to HTML string.
 Any `nyxt/mode/keyscheme:keyscheme-mode' is placed first.
 
-This leverages `mode-status' which can be specialized for individual modes."
+This leverages `mode-status' which can be specialized for individual modes.
+Augment this with `style' of STATUS, if necessary."
   (let ((buffer (current-buffer (window status))))
     (if (modable-buffer-p buffer)
         (let ((sorted-modes (sort-modes-for-status (modes buffer))))
@@ -54,8 +55,9 @@ This leverages `mode-status' which can be specialized for individual modes."
     (format nil "~{~a~^ ~}" (mapcar #'princ-to-string (modes buffer)))))
 
 (export-always 'format-status-buttons)
-(defmethod format-status-buttons ((status status-buffer))
-  "Render interactive buttons."
+(define-generic format-status-buttons ((status status-buffer))
+  "Render interactive buttons to HTML string.
+Augment this with `style' of STATUS, if necessary."
   (spinneret:with-html-string
     ;; TODO: Firefox-like additional click actions? See
     ;; https://support.mozilla.org/en-US/kb/mouse-shortcuts-perform-common-tasks
@@ -82,7 +84,10 @@ This leverages `mode-status' which can be specialized for individual modes."
       '(nyxt:execute-command))))
 
 (export-always 'format-status-load-status)
-(defmethod format-status-load-status ((status status-buffer))
+(define-generic format-status-load-status ((status status-buffer))
+  "Render the load status to HTML string.
+By default, renders a spinning loading ring when loading a URL.
+Augment this with `style' of STATUS, if necessary."
   (let ((buffer (current-buffer (window status))))
     (spinneret:with-html-string
       (:div :class (if (and (web-buffer-p buffer)
@@ -90,13 +95,15 @@ This leverages `mode-status' which can be specialized for individual modes."
                        "loader" "")))))
 
 (export-always 'format-status-url)
-(defmethod format-status-url ((status status-buffer))
+(define-generic format-status-url ((status status-buffer))
   "Formats the currently open URL for the STATUS buffer.
 
 MODIFY AT YOUR OWN RISK! The current implementation goes a great way to make the
 display safe, in particular to prevent IDN-spoofing by showing the Unicode
 domains as punicode (the Unicode aesthetic domain is shown in parentheses after
-the URL.)"
+the URL.)
+
+Augment this with `style' of STATUS, if necessary."
   ;; However this function changes, it should always:
   ;; - Prevent IDN/Unicode-spoofing.
   ;; - Clearly show subdomains (except maybe "trivial" ones) to prevent
@@ -125,7 +132,9 @@ the URL.)"
    ""))
 
 (export-always 'format-status-tabs)
-(defmethod format-status-tabs ((status status-buffer))
+(define-generic format-status-tabs ((status status-buffer))
+  "Render the open buffers to HTML string suitable for STATUS.
+Augment this with `style' of STATUS, if necessary."
   ;; FIXME: remove nil here because early on startup some buffers can be NIL
   ;; (why?)  and we have to clean them out. Debug the startup sequence (in
   ;; particular the (setf buffers) :after handler) and remove this.
@@ -183,7 +192,12 @@ the URL.)"
                tab-display-text))))))
 
 (export-always 'format-status)
-(defmethod format-status ((status status-buffer))
+(define-generic format-status ((status status-buffer))
+  "Render all of the STATUS.
+
+This is the best point to override the structure of the STATUS, because all the
+other functions (like `format-status-url', `format-status-modes') are used here
+and can all be overriden with one method redefinition."
   (let* ((buffer (current-buffer (window status))))
     (spinneret:with-html-string
       (:div :id "container"
