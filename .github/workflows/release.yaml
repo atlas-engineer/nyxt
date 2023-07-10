@@ -107,4 +107,4 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         bodyFile: release.txt
-        artifacts: "nyxt-bundle-*.tar.xz*,nyxt-bundle-reproducibility-recipe.txt,*.flatpak"
+        artifacts: "nyxt-*.tar.xz*,nyxt-bundle-reproducibility-recipe.txt,*.flatpak"
