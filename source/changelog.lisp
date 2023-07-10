@@ -768,17 +768,26 @@ color-picker support as an example application for this feature.")
      (:li (:nxref :class-name 'browser :slot 'external-editor-program)
           " returns its value rather than returning a string value in a list."))))
 
-(define-version "3.X.Y"
-  (:ul
-   (:li "Theme is now properly configurable via "
-        (:a :href (nyxt-url 'common-settings) "Common Settings Menu") ".")
-   (:li "WebKitGTK port: enable native spell-checking and allow to change spell checking
-languages with " (:code "set-spell-check-languages")
-" command. The spell-checker relies on Enchant dictionaries.")
-   (:li "Add prompt buffer keybindings for commands "
+(define-version "3.4.0"
+  (:nsection :title "Features"
+    (:ul
+     (:li "Enable native spell-checking from WebKitGTK. The language can be set via
+command "
+          (:code "set-spell-check-languages")
+          ". The list of dictionaries is provided by Enchant.")
+     (:li "Add prompt buffer keybindings for commands "
           (:nxref :command 'nyxt/mode/prompt-buffer:previous-page) " and "
-          (:nxref :command 'nyxt/mode/prompt-buffer:next-page) ".")
-   (:li "Honor the value of environment variables "
-        (:code "$XDG_DATA_HOME") ", "
-        (:code "$XDG_CONFIG_HOME") "and "
-        (:code "$XDG_CACHE_HOME") "for the Flatpak.")))
+          (:nxref :command 'nyxt/mode/prompt-buffer:next-page) ".")))
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix theme configuration via "
+          (:a :href (nyxt-url 'common-settings) "Common Settings Menu") ".")
+     (:li "Honor the value of environment variables "
+          (:code "$XDG_DATA_HOME") ", "
+          (:code "$XDG_CONFIG_HOME") "and "
+          (:code "$XDG_CACHE_HOME") "for the Flatpak.")))
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "Add cursor change on hover for buttons and links in internal pages and panel
+buffers.")
+     (:li "Improve user experience of " (:nxref :command 'nyxt:pick-color) "."))))
