@@ -194,7 +194,7 @@ git clone https://github.com/joachifm/cl-webkit ~/common-lisp/cl-webkit
 
 - Arch Linux:
   #+begin_src sh
-  sudo pacman -S git sbcl cl-asdf webkit2gtk glib-networking gsettings-desktop-schemas enchant libfixposix
+  sudo pacman -S git sbcl cl-asdf webkit2gtk gobject-introspection glib-networking gsettings-desktop-schemas enchant libfixposix
   #+end_src
 
 - Fedora:
