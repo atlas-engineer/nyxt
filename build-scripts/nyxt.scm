@@ -143,6 +143,7 @@
           cl-clss
           cl-cluffer
           cl-custom-hash-table
+          cl-dbi
           cl-dexador
           cl-dissect
           cl-trivial-custom-debugger

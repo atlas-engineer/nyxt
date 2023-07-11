@@ -599,4 +599,7 @@
 [submodule "_build/cl-json"]
 	path = _build/cl-json
 	url = https://github.com/sharplispers/cl-json
+[submodule "_build/cl-dbi"]
+	path = _build/cl-dbi
+	url = https://github.com/fukamachi/cl-dbi
 	shallow = true
