@@ -1,12 +1,14 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/spell-check-mode
-    (:documentation "Mode to spell-check text in buffers."))
-(in-package :nyxt/spell-check-mode)
+(nyxt:define-package :nyxt/mode/spell-check
+  (:documentation "Package for `spell-check-mode' to spell-check text in buffers.
+
+It leverages `enchant' under the hood."))
+(in-package :nyxt/mode/spell-check)
 
 (define-mode spell-check-mode ()
-  ""
+  "Enable spell checking of various text sources."
   ((visible-in-status-p nil)
    (rememberable-p t)
    (spell-check-language
@@ -63,8 +65,8 @@ suggestions."
 
 (define-command spell-check-word-at-cursor ()
   "Spell check the word at the cursor."
-  (nyxt/input-edit-mode:with-input-area (contents cursor-pos)
-    (nyxt/input-edit-mode:with-text-buffer (text-buffer cursor contents cursor-pos)
+  (nyxt/mode/input-edit:with-input-area (contents cursor-pos)
+    (nyxt/mode/input-edit:with-text-buffer (text-buffer cursor contents cursor-pos)
       (spell-check-prompt (text-buffer::word-at-cursor cursor)))))
 
 (define-command spell-check-suggest-word (&key word)

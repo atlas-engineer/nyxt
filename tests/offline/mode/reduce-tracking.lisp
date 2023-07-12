@@ -6,7 +6,7 @@
 (define-test toggle-reduce-tracking-mode ()
   (let ((buffer (make-instance 'network-and-modable-buffer)))
     (with-current-buffer buffer
-      (assert-true (enable-modes* 'nyxt/reduce-tracking-mode:reduce-tracking-mode
+      (assert-true (enable-modes* 'nyxt/mode/reduce-tracking:reduce-tracking-mode
                                   buffer))
-      (assert-true (disable-modes* 'nyxt/reduce-tracking-mode:reduce-tracking-mode
+      (assert-true (disable-modes* 'nyxt/mode/reduce-tracking:reduce-tracking-mode
                                    buffer)))))

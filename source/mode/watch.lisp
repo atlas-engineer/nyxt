@@ -1,9 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/watch-mode
-  (:documentation "Mode for reloading buffers at regular time intervals."))
-(in-package :nyxt/watch-mode)
+(nyxt:define-package :nyxt/mode/watch
+  (:documentation "Package for `watch-mode', which reloads buffers at regular time intervals."))
+(in-package :nyxt/mode/watch)
 
 (defun seconds-from-user-input ()
   "Query the numerical time inputs and collate them into seconds."
@@ -31,14 +31,14 @@
     (reduce #'+ (mapcar (lambda (time multiplier) (* time multiplier))
                         times to-seconds-multipliers))))
 
-(define-mode watch-mode (nyxt/repeat-mode:repeat-mode)
+(define-mode watch-mode (nyxt/mode/repeat:repeat-mode)
   "Reload the current buffer every 5 minutes."
   ((rememberable-p t)
-   (nyxt/repeat-mode:repeat-interval 300.0)
-   (nyxt/repeat-mode:repeat-action
+   (nyxt/mode/repeat:repeat-interval 300.0)
+   (nyxt/mode/repeat:repeat-action
     #'(lambda (mode)
         (reload-buffer (buffer mode)))
-    :type (maybe (function (nyxt/repeat-mode:repeat-mode))))))
+    :type (maybe (function (nyxt/mode/repeat:repeat-mode))))))
 
 (define-command-global watch-buffer (&optional (buffer (current-buffer)))
   "Reload BUFFER at a prompted interval."

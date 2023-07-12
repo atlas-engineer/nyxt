@@ -33,6 +33,9 @@ Simple completion functions can be built via `make-search-completion-function'")
   (:export-class-name-p t)
   (:export-accessor-names-p t))
 
+(defmethod url ((object search-engine))
+  (fallback-url object))
+
 (defmethod fallback-url ((engine search-engine))
   (or (slot-value engine 'fallback-url)
       (quri:uri (format nil (search-url engine) ""))))
@@ -59,7 +62,7 @@ Simple completion functions can be built via `make-search-completion-function'")
                                                    (echo-warning "There's no Internet connection to make search completion")
                                                    nil))))
                                           request-args
-                                          (processing-function #'j:decode))
+                                          (processing-function (lambda (data) (coerce (j:decode data) 'list))))
   "Return a function suitable to be a `completion-function' of `search-engine'.
 
 BASE-URL is a one-placeholder format string (e.g.,

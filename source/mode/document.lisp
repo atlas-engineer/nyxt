@@ -1,12 +1,22 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/document-mode
+(nyxt:define-package :nyxt/mode/document
   (:shadow #:focus-first-input-field)
-  (:documentation "Mode to interact with structured documents.
-This is typically for HTML pages, but other format may be supported at some point.
-It does not assume being online."))
-(in-package :nyxt/document-mode)
+  (:documentation "Package for `document-mode', mode to interact with structured documents.
+
+The APIs that it includes/uses internally are:
+- Page scrolling: `call-non-input-command-or-forward'.
+- Copy-pasting: `ffi-buffer-copy', `ffi-buffer-paste', `ffi-buffer-cut',
+  `ffi-buffer-select-all', `ffi-buffer-undo', `ffi-buffer-redo'.
+- Nyxt renderer signals: `on-signal-load-committed', `on-signal-load-finished'
+- Heading management: `heading' class, `get-headings', `current-heading',
+  `scroll-page-to-heading', and `scroll-page-to-n-headings'.
+- `get-url-source' function.
+
+Libraries used are `plump', `clss', `nyxt/dom', `cl-base64', `cl-qrencode',
+`analysis'."))
+(in-package :nyxt/mode/document)
 
 ;; TODO: Remove document-mode from special buffers (e.g. help).
 ;; This is required because special buffers cannot be part of a history (and it breaks it).
@@ -15,19 +25,27 @@ It does not assume being online."))
 ;; Or else we require that all special-buffer-generating commands open a new buffer.
 
 (define-mode document-mode ()
-  "Base mode for interacting with documents."
+  "Mode to interact with structured documents.
+This is typically for HTML pages, but other formats could be supported too.
+It does not assume being online.
+
+Important pieces of functionality are:
+- Page scrolling and zooming.
+- QR code generation.
+- view-source: for URLs.
+- Buffer content summarization.
+- Heading navigation.
+- Frame selection."
   ((visible-in-status-p nil)
    (rememberable-p nil)
    (keyscheme-map
     (define-keyscheme-map "document-mode" ()
       keyscheme:default
       (list
-       "C-M-Z" 'nyxt/passthrough-mode:passthrough-mode
+       "C-M-Z" 'nyxt/mode/passthrough:passthrough-mode
        "M-i" 'focus-first-input-field
        "C-M-c" 'open-inspector
        "C-S-c" 'open-inspector
-       "C-." 'jump-to-heading
-       "C-M-." 'jump-to-heading-buffers
        "M-." 'headings-panel
        "M-{" 'previous-heading
        "M-}" 'next-heading
@@ -35,6 +53,8 @@ It does not assume being online."))
        "C-R" 'reload-with-modes)
       keyscheme:cua
       (list
+       "C-h" 'jump-to-heading
+       "C-M-h" 'jump-to-heading-buffers
        "C-c" 'copy
        "C-v" 'paste
        "M-v" 'paste-from-clipboard-ring
@@ -67,6 +87,8 @@ It does not assume being online."))
        "C-u C-o" 'edit-with-external-editor)
       keyscheme:emacs
       (list
+       "C-." 'jump-to-heading
+       "C-M-." 'jump-to-heading-buffers
        "C-g" 'nothing              ; Emacs users may hit C-g out of habit.
        "M-w" 'copy
        "C-y" 'paste
@@ -200,12 +222,13 @@ It does not assume being online."))
   "Copy selected text to clipboard."
   (ffi-buffer-copy buffer))
 
-(define-command copy-placeholder ()
+(define-command copy-placeholder (&optional (buffer (current-buffer)))
   "Copy placeholder text to clipboard."
-  (let ((current-value (ps-eval (ps:@ (nyxt/ps:active-element document) placeholder))))
+  (let ((current-value (ps-eval :buffer buffer
+                         (ps:@ (nyxt/ps:active-element document) placeholder))))
     (if (eq current-value :undefined)
         (echo "No active selected placeholder.")
-        (progn (copy-to-clipboard current-value)
+        (progn (ffi-buffer-copy buffer current-value)
                (echo "Placeholder copied.")))))
 
 (define-command cut (&optional (buffer (current-buffer)))
@@ -225,7 +248,7 @@ It does not assume being online."))
   (ffi-buffer-select-all buffer))
 
 (define-command focus-first-input-field (&key (buffer (current-buffer)))
-  "Move the focus to the first input field of BUFFER."
+  "Move the focus to the first inputtable element of BUFFER."
   ;; There are two basic ways to have an editable widget on a webpage:
   ;; - Using <input>/<textarea>,
   ;; - or marking any other element as contenteditable:
@@ -243,15 +266,15 @@ It does not assume being online."))
   nil)
 
 (defmethod nyxt:on-signal-load-finished ((mode document-mode) url)
-  (reset-page-zoom :buffer (buffer mode)
-                   :ratio (current-zoom-ratio (buffer mode)))
+  (reset-page-zoom :buffer (buffer mode))
   url)
 
 (define-internal-page show-url-qrcode (&key url)
     (:title "*Buffer URL QR code*")
   "Display the QR code containing URL.
 Warning: URL is a string."
-  (let* ((stream (flex:make-in-memory-output-stream)))
+  (let* ((url (quri:render-uri (url url)))
+         (stream (flex:make-in-memory-output-stream)))
     (cl-qrencode:encode-png-stream url stream)
     (spinneret:with-html-string
       (:p (:u url))
@@ -337,26 +360,18 @@ The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
   (ps-eval (ps:chain window (scroll-by 0 (- (* (ps:lisp (page-scroll-ratio (current-buffer)))
                                              (ps:@ window inner-height)))))))
 
-(defun ensure-zoom-ratio-range (zoom &optional (buffer (current-buffer)))
-  (let* ((ratio (funcall zoom (current-zoom-ratio buffer) (zoom-ratio-step buffer))))
-    (setf ratio (max ratio (zoom-ratio-min buffer)))
-    (setf ratio (min ratio (zoom-ratio-max buffer)))
-    (setf (current-zoom-ratio buffer) ratio)))
-
 (define-command zoom-page (&key (buffer (current-buffer)))
-  "Zoom in the current page."
-  (ensure-zoom-ratio-range #'+ buffer)
-  (setf (ffi-buffer-zoom-level buffer) (current-zoom-ratio buffer)))
+  "Zoom in the current page BUFFER."
+  (incf (current-zoom-ratio buffer) (zoom-ratio-step buffer)))
 
 (define-command unzoom-page (&key (buffer (current-buffer)))
-  "Zoom out the current page."
-  (ensure-zoom-ratio-range #'- buffer)
-  (setf (ffi-buffer-zoom-level buffer) (current-zoom-ratio buffer)))
+  "Zoom out the current page in BUFFER."
+  (decf (current-zoom-ratio buffer) (zoom-ratio-step buffer)))
 
 (define-command reset-page-zoom (&key (buffer (current-buffer))
                                       (ratio (zoom-ratio-default buffer)))
-  "Reset the page zoom to the zoom-ratio-default."
-  (setf (ffi-buffer-zoom-level buffer) (setf (current-zoom-ratio buffer) ratio)))
+  "Reset the BUFFER zoom to the `zoom-ratio-default' or RATIO."
+  (setf (current-zoom-ratio buffer) ratio))
 
 (define-internal-page summarize-buffer (&key (summary-length 5) (id (id (current-buffer))))
     (:title "*Summary*")
@@ -375,7 +390,8 @@ ID is a buffer `id'."
                collect (:li point)))))))
 
 (define-command-global summarize-buffer (&key (summary-length 5) (buffer (current-buffer)))
-  "Summarize the current buffer by creating a new summary buffer."
+  "Summarize the current buffer by creating a new summary buffer.
+SUMMARY-LENGTH allows to list more/less summary items."
   (buffer-load-internal-page-focus 'summarize-buffer :summary-length summary-length :id (id buffer)))
 
 (define-class heading ()
@@ -384,8 +400,8 @@ ID is a buffer `id'."
    (buffer :documentation "The buffer to which this heading belongs.")
    (keywords :documentation "Keywords associated with this heading.")
    (scroll-position :documentation "The scroll position of the heading."))
-  (:documentation "A heading. The inner-text must not be modified, so that we
-  can jump to the anchor of the same name."))
+  (:documentation "A heading representation with all the attached metadata.
+The inner-text must not be modified, so that we can jump to the anchor of the same name."))
 
 (defmethod title ((heading heading))
   (subseq (inner-text heading) 0 (position #\[ (inner-text heading))))

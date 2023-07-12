@@ -76,7 +76,7 @@ The most useful functions are:
   img-element input-element ins-element kbd-element label-element legend-element
   (li-element list-element) link-element (main-element semantic-element) map-element
   (mark-element semantic-element) meta-element meter-element (nav-element semantic-element)
-  noscript-element object-element (ol-element list-element) optgroup-element
+  (noscript-element plump:fulltext-element) object-element (ol-element list-element) optgroup-element
   (option-element text-element) output-element (p-element text-element) param-element
   (pre-element text-element) progress-element q-element rp-element rt-element rtc-element
   ruby-element samp-element (script-element plump:fulltext-element)
@@ -229,7 +229,7 @@ Full copy means recursively descending to the children of the NODE too."))
   (:documentation "Get the recursive parents of the NODE.
 The closest parent goes first, the furthest one goes last."))
 
-(export-always 'get-unique-selector)
+;; TODO: Copy the algo from https://github.com/antonmedv/finder
 (-> get-unique-selector (plump:element) t)
 (defmemo get-unique-selector (element)
   "Find the shortest selector that uniquely identifies the element on a page.
@@ -344,15 +344,28 @@ Return two values:
         (sera:collapse-whitespace (sera:trim-whitespace result)))))
   (:documentation "Return the textual contents of the ELEMENT and its recursive children."))
 
-(defmethod body ((input input-element))
-  (alex:when-let ((body (or (plump:get-attribute input "value")
-                            (plump:get-attribute input "placeholder"))))
+(defun label-of (element)
+  (let ((label-for (and (plump:has-attribute element "name")
+                        (ignore-errors
+                         (elt (clss:select (format nil "label[for=\"~a\"]"
+                                                   (plump:attribute element "name"))
+                                (alex:lastcar (parents element)))
+                              0)))))
+    (cond
+      ((label-element-p (plump:parent element)) (body (plump:parent element)))
+      (label-for (body label-for))
+      (t nil))))
+
+(defun fallback-body (element)
+  (alex:when-let ((body (or (plump:get-attribute element "value")
+                            (plump:get-attribute element "placeholder"))))
     body))
 
+(defmethod body ((input input-element))
+  (or (label-of input) (fallback-body input)))
+
 (defmethod body ((textarea textarea-element))
-  (alex:when-let ((body (or (plump:get-attribute textarea "value")
-                            (plump:get-attribute textarea "placeholder"))))
-    body))
+  (or (label-of textarea) (fallback-body textarea)))
 
 (defmethod body ((details details-element))
   (let ((summary (clss:select "summary" details)))
@@ -360,8 +373,9 @@ Return two values:
       (plump:text (elt summary 0)))))
 
 (defmethod body ((select select-element))
-  (str:join ", " (map 'list #'plump:text
-                      (clss:select "option" select))))
+  (or (label-of select)
+      (str:join ", " (map 'list #'plump:text
+                          (clss:select "option" select)))))
 
 (defmethod body ((img img-element))
   (when (plump:has-attribute img "alt")
@@ -409,14 +423,6 @@ Return two values:
     (if (ps:chain element (get-attribute "multiple"))
         (ps:chain element (set-attribute "selected" t))
         (setf (ps:@ parent-select value) (ps:@ element value)))))
-
-(export-always 'hover-element)
-(define-parenscript hover-element (element)
-  (ps:let ((element (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element))))
-           (event (ps:new (*Event "mouseenter"))))
-    (unless (nyxt/ps:element-in-view-port-p element)
-      (ps:chain element (scroll-into-view)))
-    (ps:chain element (dispatch-event event))))
 
 (export-always 'scroll-to-element)
 (define-parenscript scroll-to-element (element)

@@ -30,10 +30,10 @@ Multiple key presses can be chained: in 'C-x C-s', you would have to press
          (list-command-information '(set-url reload-current-buffer
                                      set-url-new-buffer
                                      switch-buffer-previous
-                                     nyxt/history-mode:history-backwards
-                                     nyxt/history-mode:history-forwards
-                                     nyxt/hint-mode:follow-hint
-                                     nyxt/hint-mode:follow-hint-new-buffer
+                                     nyxt/mode/history:history-backwards
+                                     nyxt/mode/history:history-forwards
+                                     nyxt/mode/hint:follow-hint
+                                     nyxt/mode/hint:follow-hint-new-buffer
                                      quit execute-command describe-bindings))))
 
       (:nsection :title "Buffers"
@@ -59,12 +59,12 @@ supply the URL you would like to navigate to.  The prompt buffer can provide
 suggestions.  The list of suggestions will automatically narrow down to those
 matching your input as you type.")
         (:ul
-         (:li  (:nxref :command 'nyxt/prompt-buffer-mode:run-action-on-return
-                 :mode 'nyxt/prompt-buffer-mode:prompt-buffer-mode)
+         (:li  (:nxref :command 'nyxt/mode/prompt-buffer:run-action-on-return
+                 :mode 'nyxt/mode/prompt-buffer:prompt-buffer-mode)
                ": Validate the selected suggestion(s) or the current input if there is
 no suggestion.")
-         (:li  (:nxref :command 'nyxt/prompt-buffer-mode:set-action-on-return
-                 :mode 'nyxt/prompt-buffer-mode:prompt-buffer-mode)
+         (:li  (:nxref :command 'nyxt/mode/prompt-buffer:set-action-on-return
+                 :mode 'nyxt/mode/prompt-buffer:prompt-buffer-mode)
                ": Query the user for an action to run over the marked suggestion(s)."))
         (:p " Some commands support marks, for
 instance " (:code "delete-buffer") " can delete all selected buffers at once.
@@ -73,26 +73,26 @@ not altered even if the marked suggestions aren't visible.")
         (:p "When at least one suggestion is marked, only the marked suggestions are processed
 upon return.  The suggestion under the cursor is not processed if not marked.")
         (:ul
-         (:li  (:nxref :command 'nyxt/prompt-buffer-mode:toggle-mark-forwards
-                 :mode 'nyxt/prompt-buffer-mode:prompt-buffer-mode)
+         (:li  (:nxref :command 'nyxt/mode/prompt-buffer:toggle-mark-forwards
+                 :mode 'nyxt/mode/prompt-buffer:prompt-buffer-mode)
                ": Select or deselect the current suggestion.")
-         (:li  (:nxref :command 'nyxt/prompt-buffer-mode:mark-all
-                 :mode 'nyxt/prompt-buffer-mode:prompt-buffer-mode)
+         (:li  (:nxref :command 'nyxt/mode/prompt-buffer:mark-all
+                 :mode 'nyxt/mode/prompt-buffer:prompt-buffer-mode)
                ": Select all currently-displayed suggestions.")
-         (:li  (:nxref :command 'nyxt/prompt-buffer-mode:unmark-all
-                 :mode 'nyxt/prompt-buffer-mode:prompt-buffer-mode)
+         (:li  (:nxref :command 'nyxt/mode/prompt-buffer:unmark-all
+                 :mode 'nyxt/mode/prompt-buffer:prompt-buffer-mode)
                ": Deselect all currently-displayed suggestions.")
-         (:li  (:nxref :command 'nyxt/prompt-buffer-mode:toggle-mark-all
-                 :mode 'nyxt/prompt-buffer-mode:prompt-buffer-mode)
+         (:li  (:nxref :command 'nyxt/mode/prompt-buffer:toggle-mark-all
+                 :mode 'nyxt/mode/prompt-buffer:prompt-buffer-mode)
                ": Toggle the mark of all currently-displayed suggestions.")
-         (:li  (:nxref :command 'nyxt/prompt-buffer-mode:toggle-attributes-display
-                 :mode 'nyxt/prompt-buffer-mode:prompt-buffer-mode)
+         (:li  (:nxref :command 'nyxt/mode/prompt-buffer:toggle-attributes-display
+                 :mode 'nyxt/mode/prompt-buffer:prompt-buffer-mode)
                ": Change which attributes are displayed in the suggestions list.")))
 
       (:nsection :title "Message area"
         (:p "The message area represents a space (typically at the bottom of a
 window) where Nyxt outputs messages back to you. To view the history of all
-messages, invoke the command " (:nxref :command 'nyxt/message-mode:list-messages) "."))
+messages, invoke the command " (:nxref :command 'nyxt/mode/message:list-messages) "."))
 
       (:nsection :title "Status buffer"
         (:p "The status buffer is where information about the state of that buffer is
@@ -104,12 +104,12 @@ active modes, the URL, and the title of the current buffer.")))
       (:nsection :title "Moving within a buffer"
         (:p "To move within a buffer, several commands are provided:")
         (:ul
-         (list-command-information '(nyxt/document-mode:scroll-down
-                                     nyxt/document-mode:scroll-up
-                                     nyxt/document-mode:scroll-page-down
-                                     nyxt/document-mode:scroll-page-up
-                                     nyxt/document-mode:scroll-to-bottom
-                                     nyxt/document-mode:scroll-to-top))))
+         (list-command-information '(nyxt/mode/document:scroll-down
+                                     nyxt/mode/document:scroll-up
+                                     nyxt/mode/document:scroll-page-down
+                                     nyxt/mode/document:scroll-page-up
+                                     nyxt/mode/document:scroll-to-bottom
+                                     nyxt/mode/document:scroll-to-top))))
 
       (:nsection :title "Setting the URL"
         (:p "When ambiguous URLs are inputted, Nyxt will attempt the best guess it
@@ -127,16 +127,16 @@ full URL including the 'http://' prefix.")
         (:p "Unlike other web browsers, Nyxt provides powerful ways of copying
    and pasting content via different commands. Starting from:")
         (:ul
-         (list-command-information '(nyxt/document-mode:copy nyxt/document-mode:paste)))
+         (list-command-information '(nyxt/mode/document:copy nyxt/mode/document:paste)))
         (:p "Passing through webpage's data:")
         (:ul
-         (list-command-information '(copy-url copy-title nyxt/document-mode:copy-placeholder nyxt/hint-mode:copy-hint-url)))
+         (list-command-information '(copy-url copy-title nyxt/mode/document:copy-placeholder nyxt/mode/hint:copy-hint-url)))
         (:p "Leveraging password managers: ")
         (:ul
-         (list-command-information '(nyxt/password-mode:copy-username nyxt/password-mode:copy-password nyxt/password-mode:copy-password-prompt-details)))
+         (list-command-information '(nyxt/mode/password:copy-username nyxt/mode/password:copy-password nyxt/mode/password:copy-password-prompt-details)))
         (:p "And more: ")
         (:ul
-         (list-command-information '(nyxt/document-mode:paste-from-clipboard-ring show-system-information))))
+         (list-command-information '(nyxt/mode/document:paste-from-clipboard-ring show-system-information))))
 
       (:nsection :title "Link navigation"
         (:p "Link-hinting allows you to visit URLs on a page without using the mouse.
@@ -144,9 +144,9 @@ Invoke one of the commands below: several hints will appear on screen and all
 links on the page will be listed in the prompt buffer.  You can select the hints
 by matching against the hint, the URL or the title.")
         (:ul
-         (list-command-information '(nyxt/hint-mode:follow-hint
-                                     nyxt/hint-mode:follow-hint-new-buffer-focus
-                                     nyxt/hint-mode:follow-hint-new-buffer))))
+         (list-command-information '(nyxt/mode/hint:follow-hint
+                                     nyxt/mode/hint:follow-hint-new-buffer-focus
+                                     nyxt/mode/hint:follow-hint-new-buffer))))
 
       (:nsection :title "Using the buffer history"
         (:p "History is represented as a tree that you can traverse: when you go back
@@ -154,28 +154,30 @@ in history, then follow a new URL, it effectively creates a new branch without
 deleting the old path. The tree makes sure you never lose track of where you've
 been.")
         (:ul
-         (list-command-information '(nyxt/history-mode:history-forwards
-                                     nyxt/history-mode:history-backwards
-                                     nyxt/history-mode:history-forwards-query
-                                     nyxt/history-mode:history-backwards-query
-                                     nyxt/history-mode:history-forwards-all-query
-                                     nyxt/history-mode:history-all-query)))
+         (list-command-information '(nyxt/mode/history:history-forwards
+                                     nyxt/mode/history:history-backwards
+                                     nyxt/mode/history:history-forwards-query
+                                     nyxt/mode/history:history-backwards-query
+                                     nyxt/mode/history:history-forwards-all-query
+                                     nyxt/mode/history:history-all-query)))
         (:p "You can also view a full tree of the history for a given buffer by
 invoking the command 'buffer-history-tree'."))
 
-      (:nsection :title "Searching"
-        (:p "Nyxt can search a single buffer or multiple buffers at the same time.")
-        (:p "You can view suggestions for search results in the prompt buffer in one
-place rather than having to jump around in a buffer (or multiple buffers).")
+      (:nsection :title "Incremental Search"
+        (:p "Nyxt's search is incremental, i.e. it begins as soon as you type
+the first character of the search string.  A single or multiple buffers can be
+queried, and all results are displayed in the prompt buffer.")
+        (:p "This makes it easy to interact with results found in different URLs
+from a unified interface.")
         (:ul
-         (list-command-information '(nyxt/search-buffer-mode:search-buffer
-                                     nyxt/search-buffer-mode:search-buffers
-                                     nyxt/search-buffer-mode:remove-search-hints))))
+         (list-command-information '(nyxt/mode/search-buffer:search-buffer
+                                     nyxt/mode/search-buffer:search-buffers
+                                     nyxt/mode/search-buffer:remove-search-marks))))
 
       (:nsection :title "Bookmarks"
         (:p "The bookmark file "
-            (:code (let ((mode (make-instance 'nyxt/bookmark-mode:bookmark-mode)))
-                     (files:expand (nyxt/bookmark-mode:bookmarks-file mode))))
+            (:code (let ((mode (make-instance 'nyxt/mode/bookmark:bookmark-mode)))
+                     (files:expand (nyxt/mode/bookmark:bookmarks-file mode))))
             " is made to be human readable and editable.
 Bookmarks can have the following settings:")
         (:ul
@@ -184,36 +186,36 @@ Bookmarks can have the following settings:")
          (:li (:code ":tags") ": A list of strings.  Useful to categorize and filter bookmarks."))
         (:p "Bookmark-related commands")
         (:ul
-         (list-command-information '(nyxt/bookmark-mode:bookmark-current-url nyxt/bookmark-mode:bookmark-buffer-url
-                                     nyxt/bookmark-mode:bookmark-url nyxt/bookmark-mode:bookmark-hint
-                                     nyxt/bookmark-mode:set-url-from-bookmark nyxt/bookmark-mode:delete-bookmark
-                                     nyxt/bookmark-mode:list-bookmarks
-                                     nyxt/bookmark-mode:import-bookmarks-from-html
-                                     nyxt/bookmark-frequent-visits:bookmark-frequent-visits-mode))))
+         (list-command-information '(nyxt/mode/bookmark:bookmark-current-url nyxt/mode/bookmark:bookmark-buffer-url
+                                     nyxt/mode/bookmark:bookmark-url nyxt/mode/bookmark:bookmark-hint
+                                     nyxt/mode/bookmark:set-url-from-bookmark nyxt/mode/bookmark:delete-bookmark
+                                     nyxt/mode/bookmark:list-bookmarks
+                                     nyxt/mode/bookmark:import-bookmarks-from-html
+                                     nyxt/mode/bookmark-frequent-visits:bookmark-frequent-visits-mode))))
 
       (:nsection :title "Annotations"
         (:p "Annotations can have the following settings:")
         (:ul
-         (:li (:nxref :slot 'nyxt/annotate-mode:snippet
-                :class-name 'nyxt/annotate-mode:snippet-annotation)
+         (:li (:nxref :slot 'nyxt/mode/annotate:snippet
+                :class-name 'nyxt/mode/annotate:snippet-annotation)
               ": The snippet which was highlighted by the user.")
-         (:li (:nxref :slot 'nyxt/annotate-mode::url
-                :class-name 'nyxt/annotate-mode:url-annotation)
+         (:li (:nxref :slot 'nyxt/mode/annotate::url
+                :class-name 'nyxt/mode/annotate:url-annotation)
               ": The URL of the annotation.")
-         (:li (:nxref :slot 'nyxt/annotate-mode:page-title
-                :class-name 'nyxt/annotate-mode:url-annotation)
+         (:li (:nxref :slot 'nyxt/mode/annotate:page-title
+                :class-name 'nyxt/mode/annotate:url-annotation)
               ": The title of the annotation.")
-         (:li (:nxref :slot 'nyxt/annotate-mode::data
-                :class-name 'nyxt/annotate-mode:annotation)
+         (:li (:nxref :slot 'nyxt/mode/annotate::data
+                :class-name 'nyxt/mode/annotate:annotation)
               ": The comment about the highlighted snippet or
 the URL.")
-         (:li (:nxref :slot 'nyxt/annotate-mode:tags
-                :class-name 'nyxt/annotate-mode:annotation)
+         (:li (:nxref :slot 'nyxt/mode/annotate:tags
+                :class-name 'nyxt/mode/annotate:annotation)
               ": A list of strings.  Useful to categorize and filter annotations."))
         (:p "Annotate-related commands")
         (:ul
-         (list-command-information '(nyxt/annotate-mode:annotate-current-url nyxt/annotate-mode:annotate-highlighted-text
-                                     nyxt/annotate-mode:show-annotation nyxt/annotate-mode:show-annotations nyxt/annotate-mode:show-annotations-for-current-url))))
+         (list-command-information '(nyxt/mode/annotate:annotate-current-url nyxt/mode/annotate:annotate-highlighted-text
+                                     nyxt/mode/annotate:show-annotation nyxt/mode/annotate:show-annotations nyxt/mode/annotate:show-annotations-for-current-url))))
 
       (:nsection :title "Passthrough mode"
         (:p "The command " (:code "passthrough-mode") " forwards all keys to the
@@ -236,102 +238,102 @@ buffer."))
       (:nsection :title "Light navigation"
         (:p "Reduce bandwidth usage via: ")
         (:ul
-         (list-command-information '(nyxt/no-image-mode:no-image-mode
-                                     nyxt/no-script-mode:no-script-mode
-                                     nyxt/no-webgl-mode:no-webgl-mode)))
+         (list-command-information '(nyxt/mode/no-image:no-image-mode
+                                     nyxt/mode/no-script:no-script-mode
+                                     nyxt/mode/no-webgl:no-webgl-mode)))
         (:p "It is possible to enable these three modes at once
    with: " (:code "reduce-bandwidth-mode") "."))
 
       (:nsection :title "Structural navigation"
         (:p "It is possible to navigate using the structure in between the file: ")
         (:ul
-         (list-command-information '(nyxt/document-mode:jump-to-heading
-                                     nyxt/document-mode:previous-heading
-                                     nyxt/document-mode:next-heading
-                                     nyxt/document-mode:jump-to-heading-buffers)))
+         (list-command-information '(nyxt/mode/document:jump-to-heading
+                                     nyxt/mode/document:previous-heading
+                                     nyxt/mode/document:next-heading
+                                     nyxt/mode/document:jump-to-heading-buffers)))
         (:p "And navigate to interconnected files: ")
         (:ul
-         (list-command-information '(nyxt/document-mode:go-next
-                                     nyxt/document-mode:go-previous
-                                     nyxt/document-mode:go-up
-                                     nyxt/document-mode:go-to-homepage))))
+         (list-command-information '(nyxt/mode/document:go-next
+                                     nyxt/mode/document:go-previous
+                                     nyxt/mode/document:go-up
+                                     nyxt/mode/document:go-to-homepage))))
 
       (:nsection :title "Spelling check"
         (:p "Several commands are provided to spell check words. The default is
-English but it is possible to change the slot"
-            (:nxref :slot 'nyxt/spell-check-mode:spell-check-language :class-name 'nyxt/spell-check-mode:spell-check-mode)
+English but it is possible to change the slot "
+            (:nxref :slot 'nyxt/mode/spell-check:spell-check-language :class-name 'nyxt/mode/spell-check:spell-check-mode)
             " for other languages:")
         (:ul
-         (list-command-information '(nyxt/spell-check-mode:spell-check-word
-                                     nyxt/spell-check-mode:spell-check-word-at-cursor
-                                     nyxt/spell-check-mode:spell-check-suggest-word
-                                     nyxt/spell-check-mode:spell-check-highlighted-word
-                                     nyxt/spell-check-mode:spell-check-list-languages
-                                     nyxt/spell-check-mode:spell-check-text-input))))
+         (list-command-information '(nyxt/mode/spell-check:spell-check-word
+                                     nyxt/mode/spell-check:spell-check-word-at-cursor
+                                     nyxt/mode/spell-check:spell-check-suggest-word
+                                     nyxt/mode/spell-check:spell-check-highlighted-word
+                                     nyxt/mode/spell-check:spell-check-list-languages
+                                     nyxt/mode/spell-check:spell-check-text-input))))
 
       (:nsection :title "Visual mode"
         (:p "Select text without a mouse. Nyxt's "
             (:code "visual-mode") " imitates Vim's visual mode (and comes with the
 CUA and Emacs-like keybindings out of the box, too). Activate it with the "
-            (:nxref :command 'nyxt/visual-mode:visual-mode) " command.")
+            (:nxref :command 'nyxt/mode/visual:visual-mode) " command.")
         (:p "Visual mode provides the following commands: ")
         (:ul
-         (:li (:nxref :command 'nyxt/visual-mode:visual-mode
-                :mode 'nyxt/visual-mode:visual-mode)
+         (:li (:nxref :command 'nyxt/mode/visual:visual-mode
+                :mode 'nyxt/mode/visual:visual-mode)
               ": Quit visual mode.")
-         (:li (:nxref :command 'nyxt/visual-mode:select-paragraph
-                :mode 'nyxt/visual-mode:visual-mode)
-              ": " (command-docstring-first-sentence 'nyxt/visual-mode:select-paragraph))
-         (:li (:nxref :command 'nyxt/visual-mode:toggle-mark
-                :mode 'nyxt/visual-mode:visual-mode)
-              ": " (command-docstring-first-sentence 'nyxt/visual-mode:toggle-mark))
-         (:li (:nxref :command 'nyxt/visual-mode:forward-char
-                :mode 'nyxt/visual-mode:visual-mode)
-              ": " (command-docstring-first-sentence 'nyxt/visual-mode:forward-char))
-         (:li (:nxref :command 'nyxt/visual-mode:backward-char
-                :mode 'nyxt/visual-mode:visual-mode)
-              ": " (command-docstring-first-sentence 'nyxt/visual-mode:backward-char))
-         (:li (:nxref :command 'nyxt/visual-mode:forward-word
-                :mode 'nyxt/visual-mode:visual-mode)
-              ": " (command-docstring-first-sentence 'nyxt/visual-mode:forward-word))
-         (:li (:nxref :command 'nyxt/visual-mode:backward-word
-                :mode 'nyxt/visual-mode:visual-mode)
-              ": " (command-docstring-first-sentence 'nyxt/visual-mode:backward-word))
-         (:li (:nxref :command 'nyxt/visual-mode:forward-line
-                :mode 'nyxt/visual-mode:visual-mode)
-              ": " (command-docstring-first-sentence 'nyxt/visual-mode:forward-line))
-         (:li (:nxref :command 'nyxt/visual-mode:backward-line
-                :mode 'nyxt/visual-mode:visual-mode)
-              ": " (command-docstring-first-sentence 'nyxt/visual-mode:backward-line))
-         (:li (:nxref :command 'nyxt/visual-mode:beginning-line
-                :mode 'nyxt/visual-mode:visual-mode)
-              ": " (command-docstring-first-sentence 'nyxt/visual-mode:beginning-line))
-         (:li (:nxref :command 'nyxt/visual-mode:end-line
-                :mode 'nyxt/visual-mode:visual-mode)
-              ": " (command-docstring-first-sentence 'nyxt/visual-mode:end-line))
-         (:li (:nxref :command 'nyxt/visual-mode:forward-sentence
-                :mode 'nyxt/visual-mode:visual-mode)
-              ": " (command-docstring-first-sentence 'nyxt/visual-mode:forward-sentence))
-         (:li (:nxref :command 'nyxt/visual-mode:backward-sentence
-                :mode 'nyxt/visual-mode:visual-mode)
-              ": " (command-docstring-first-sentence 'nyxt/visual-mode:backward-sentence)))
+         (:li (:nxref :command 'nyxt/mode/visual:select-paragraph
+                :mode 'nyxt/mode/visual:visual-mode)
+              ": " (command-docstring-first-sentence 'nyxt/mode/visual:select-paragraph))
+         (:li (:nxref :command 'nyxt/mode/visual:toggle-mark
+                :mode 'nyxt/mode/visual:visual-mode)
+              ": " (command-docstring-first-sentence 'nyxt/mode/visual:toggle-mark))
+         (:li (:nxref :command 'nyxt/mode/visual:forward-char
+                :mode 'nyxt/mode/visual:visual-mode)
+              ": " (command-docstring-first-sentence 'nyxt/mode/visual:forward-char))
+         (:li (:nxref :command 'nyxt/mode/visual:backward-char
+                :mode 'nyxt/mode/visual:visual-mode)
+              ": " (command-docstring-first-sentence 'nyxt/mode/visual:backward-char))
+         (:li (:nxref :command 'nyxt/mode/visual:forward-word
+                :mode 'nyxt/mode/visual:visual-mode)
+              ": " (command-docstring-first-sentence 'nyxt/mode/visual:forward-word))
+         (:li (:nxref :command 'nyxt/mode/visual:backward-word
+                :mode 'nyxt/mode/visual:visual-mode)
+              ": " (command-docstring-first-sentence 'nyxt/mode/visual:backward-word))
+         (:li (:nxref :command 'nyxt/mode/visual:forward-line
+                :mode 'nyxt/mode/visual:visual-mode)
+              ": " (command-docstring-first-sentence 'nyxt/mode/visual:forward-line))
+         (:li (:nxref :command 'nyxt/mode/visual:backward-line
+                :mode 'nyxt/mode/visual:visual-mode)
+              ": " (command-docstring-first-sentence 'nyxt/mode/visual:backward-line))
+         (:li (:nxref :command 'nyxt/mode/visual:beginning-line
+                :mode 'nyxt/mode/visual:visual-mode)
+              ": " (command-docstring-first-sentence 'nyxt/mode/visual:beginning-line))
+         (:li (:nxref :command 'nyxt/mode/visual:end-line
+                :mode 'nyxt/mode/visual:visual-mode)
+              ": " (command-docstring-first-sentence 'nyxt/mode/visual:end-line))
+         (:li (:nxref :command 'nyxt/mode/visual:forward-sentence
+                :mode 'nyxt/mode/visual:visual-mode)
+              ": " (command-docstring-first-sentence 'nyxt/mode/visual:forward-sentence))
+         (:li (:nxref :command 'nyxt/mode/visual:backward-sentence
+                :mode 'nyxt/mode/visual:visual-mode)
+              ": " (command-docstring-first-sentence 'nyxt/mode/visual:backward-sentence)))
         (:p "Commands designed to ease the use for CUA users (but available to all users): ")
         (:ul
-         (:li (:nxref :command 'nyxt/visual-mode:forward-char-with-selection
-                :mode 'nyxt/visual-mode:visual-mode)
-              ": " (command-docstring-first-sentence 'nyxt/visual-mode:forward-char-with-selection))
-         (:li (:nxref :command 'nyxt/visual-mode:backward-char-with-selection
-                :mode 'nyxt/visual-mode:visual-mode)
-              ": " (command-docstring-first-sentence 'nyxt/visual-mode:backward-char-with-selection))
-         (:li (:nxref :command 'nyxt/visual-mode:forward-line-with-selection
-                :mode 'nyxt/visual-mode:visual-mode)
-              ": " (command-docstring-first-sentence 'nyxt/visual-mode:forward-line-with-selection))
-         (:li (:nxref :command 'nyxt/visual-mode:backward-line-with-selection
-                :mode 'nyxt/visual-mode:visual-mode)
-              ": " (command-docstring-first-sentence 'nyxt/visual-mode:backward-line-with-selection)))
+         (:li (:nxref :command 'nyxt/mode/visual:forward-char-with-selection
+                :mode 'nyxt/mode/visual:visual-mode)
+              ": " (command-docstring-first-sentence 'nyxt/mode/visual:forward-char-with-selection))
+         (:li (:nxref :command 'nyxt/mode/visual:backward-char-with-selection
+                :mode 'nyxt/mode/visual:visual-mode)
+              ": " (command-docstring-first-sentence 'nyxt/mode/visual:backward-char-with-selection))
+         (:li (:nxref :command 'nyxt/mode/visual:forward-line-with-selection
+                :mode 'nyxt/mode/visual:visual-mode)
+              ": " (command-docstring-first-sentence 'nyxt/mode/visual:forward-line-with-selection))
+         (:li (:nxref :command 'nyxt/mode/visual:backward-line-with-selection
+                :mode 'nyxt/mode/visual:visual-mode)
+              ": " (command-docstring-first-sentence 'nyxt/mode/visual:backward-line-with-selection)))
         (:p "A note for " (:code "emacs-mode") " users: unlike in Emacs, in Nyxt the command "
-            (:nxref :command 'nyxt/visual-mode:toggle-mark
-              :mode 'nyxt/visual-mode:visual-mode)
+            (:nxref :command 'nyxt/mode/visual:toggle-mark
+              :mode 'nyxt/mode/visual:visual-mode)
             " is bound to Shift-space, as C-space is bound to 'execute-command,
 overriding any mode keybinding. If you want to toggle mark with C-space,
 you'll need to set your own override-map such that C-space is not bound.
@@ -346,41 +348,41 @@ An example:")
         (:p "Nyxt has many facilities for automation. For instance, it is possible to
 automate the reading experience:")
         (:ul
-         (list-command-information '(nyxt/cruise-control-mode:cruise-control-mode)))
+         (list-command-information '(nyxt/mode/cruise-control:cruise-control-mode)))
         (:p "Symmetrically, it is possible to automate the filling of forms: ")
         (:ul
-         (list-command-information '(nyxt/autofill-mode:autofill
-                                     nyxt/bookmarklets-mode::toggle-checkboxes)))
+         (list-command-information '(nyxt/mode/autofill:autofill
+                                     nyxt/mode/bookmarklets::toggle-checkboxes)))
         (:p "In addition, it is possible to automate actions over time: "
             (:ul
-             (list-command-information '(nyxt/watch-mode:watch-mode))
-             (:li (:nxref :command 'nyxt/repeat-mode:repeat-every) ": "
-                  (command-docstring-first-sentence 'nyxt/repeat-mode:repeat-every
+             (list-command-information '(nyxt/mode/watch:watch-mode))
+             (:li (:nxref :command 'nyxt/mode/repeat:repeat-every) ": "
+                  (command-docstring-first-sentence 'nyxt/mode/repeat:repeat-every
                                                     :sentence-case-p t))))
         (:p "Or even automate actions based on conditions: "
             (:ul
-             (list-command-information '(nyxt/repeat-mode:repeat-mode
-                                         nyxt/preview-mode:preview-mode))))
+             (list-command-information '(nyxt/mode/repeat:repeat-mode
+                                         nyxt/mode/preview:preview-mode))))
         (:p "Nyxt also offers a no-code interface to build automation via Common Lisp
 macros: ")
         (:ul
-         (list-command-information '(nyxt/macro-edit-mode:edit-macro)))
-        (:p "Lastly, the  " (:nxref :mode 'nyxt/process-mode:process-mode) " must be highlighted: ")
-        (:p (:nxref :mode 'nyxt/process-mode:process-mode) " is actually a building block
-for other modes previously mentioned, such as " (:nxref :mode 'nyxt/repeat-mode:repeat-mode) ".
+         (list-command-information '(nyxt/mode/macro-edit:edit-macro)))
+        (:p "Lastly, the  " (:nxref :mode 'nyxt/mode/process:process-mode) " must be highlighted: ")
+        (:p (:nxref :mode 'nyxt/mode/process:process-mode) " is actually a building block
+for other modes previously mentioned, such as " (:nxref :mode 'nyxt/mode/repeat:repeat-mode) ".
 The extension relationship goes further, since
-" (:nxref :mode 'nyxt/cruise-control-mode:cruise-control-mode) " is in its turn an
-extension and a composition of " (:nxref :mode 'nyxt/repeat-mode:repeat-mode) " and "
-(:nxref :command 'nyxt/document-mode:scroll-down) ". Further extensions and compositions can be
+" (:nxref :mode 'nyxt/mode/cruise-control:cruise-control-mode) " is in its turn an
+extension and a composition of " (:nxref :mode 'nyxt/mode/repeat:repeat-mode) " and "
+(:nxref :command 'nyxt/mode/document:scroll-down) ". Further extensions and compositions can be
 creatively tailor-made by users to automate their own use of Nyxt."))
 
       (:nsection :title "Miscellaneous"
         (:ul
-         (list-command-information '(nyxt/document-mode:zoom-page
-                                     nyxt/document-mode:unzoom-page
-                                     nyxt/document-mode:reset-page-zoom
-                                     nyxt/autofill-mode::autofill
-                                     nyxt/file-manager-mode:download-open-file
+         (list-command-information '(nyxt/mode/document:zoom-page
+                                     nyxt/mode/document:unzoom-page
+                                     nyxt/mode/document:reset-page-zoom
+                                     nyxt/mode/autofill::autofill
+                                     nyxt/mode/file-manager:download-open-file
                                      edit-with-external-editor)))))
 
     (:nsection :title "The Nyxt help system"

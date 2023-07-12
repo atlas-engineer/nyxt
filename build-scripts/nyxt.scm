@@ -10,7 +10,7 @@
 ;;
 ;; To use as the basis for a development environment, run:
 ;;
-;;   guix shell --container -D -f build-scripts/nyxt.scm glib glib-networking gsettings-desktop-schemas
+;;   guix shell --container --network -D -f build-scripts/nyxt.scm glib glib-networking gsettings-desktop-schemas git nss-certs
 ;;
 ;; Replace --container by --pure if you still want ASDF to see external
 ;; libraries in ~/common-lisp, etc.
@@ -44,7 +44,6 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix licenses)
   #:use-module (guix git-download)
-  #:use-module (guix build-system asdf) ; TODO: Remove sbcl-cl-webkit once Guix has 3.5.0.
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system glib-or-gtk)
   #:use-module (gnu packages)
@@ -76,7 +75,7 @@
   (package
    (name "nyxt")
    (version (nyxt-git-version))
-   (source (local-file %source-dir #:recursive? #t #:select? (git-predicate %source-dir)))
+   (source (local-file %source-dir #:recursive? #t))
    (build-system gnu-build-system) ; TODO: Use glib-or-gtk-build-system instead?
    (arguments
     (list
@@ -138,6 +137,7 @@
           cl-bordeaux-threads
           cl-base64
           cl-calispel
+          cl-colors2
           cl-containers
           cl-closer-mop
           cl-clss
@@ -152,7 +152,6 @@
           cl-gopher
           cl-history-tree
           cl-html-diff
-          cl-hu.dwim.defclass-star
           cl-iolib
           cl-json
           cl-lass
@@ -171,12 +170,12 @@
           cl-nkeymaps
           cl-nsymbols
           cl-osicat ; Not needed for SBCL, remove it in Guix upstream package.
-          cl-ospm
           cl-parenscript
           cl-phos
           cl-plump
           cl-ppcre
           cl-prevalence
+          cl-prompter
           cl-py-configparser
           cl-qrencode
           cl-quri

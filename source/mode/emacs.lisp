@@ -1,14 +1,16 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/emacs-mode
-    (:documentation "Emacs-style bindings."))
-(in-package :nyxt/emacs-mode)
+(nyxt:define-package :nyxt/mode/emacs
+  (:documentation "Package for `emacs-mode', mode to host Emacs inspired
+keybindings."))
+(in-package :nyxt/mode/emacs)
 
-(define-mode emacs-mode (nyxt/keyscheme-mode:keyscheme-mode)
-  "Enable Emacs-style bindings.
-To enable these bindings by default, add the mode to the list of default modes
-in your configuration file.
+(define-mode emacs-mode (nyxt/mode/keyscheme:keyscheme-mode)
+  "Enable Emacs inspired keybindings.
+
+To enable them by default, append the mode to the list of `default-modes' in
+your configuration file.
 
 Example:
 

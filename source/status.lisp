@@ -13,17 +13,17 @@
 Upon returning NIL, the mode is not displayed."))
 
 (defun sort-modes-for-status (modes)
-  "Return visible modes in MODES, with `nyxt/keyscheme-mode:keyscheme-mode' placed
+  "Return visible modes in MODES, with `nyxt/mode/keyscheme:keyscheme-mode' placed
 first."
   (multiple-value-bind (keyscheme-mode other-modes)
-      (sera:partition #'nyxt/keyscheme-mode::keyscheme-mode-p
+      (sera:partition #'nyxt/mode/keyscheme::keyscheme-mode-p
                       (sera:filter #'visible-in-status-p modes))
     (append keyscheme-mode other-modes)))
 
 (export-always 'format-status-modes)
 (defmethod format-status-modes ((status status-buffer))
   "Render the enabled modes.
-Any `nyxt/keyscheme-mode:keyscheme-mode' is placed first.
+Any `nyxt/mode/keyscheme:keyscheme-mode' is placed first.
 
 This leverages `mode-status' which can be specialized for individual modes."
   (let ((buffer (current-buffer (window status))))
@@ -63,7 +63,7 @@ This leverages `mode-status' which can be specialized for individual modes."
       :buffer status
       :text "←"
       :title "Backwards"
-      '(nyxt/history-mode:history-backwards))
+      '(nyxt/mode/history:history-backwards))
     (:nbutton
       :buffer status
       :text "↺"
@@ -73,12 +73,12 @@ This leverages `mode-status' which can be specialized for individual modes."
       :buffer status
       :text "→"
       :title "Forwards"
-      '(nyxt/history-mode:history-forwards))
+      '(nyxt/mode/history:history-forwards))
     (:nbutton
       :buffer status
       :id "execute"
       :text "λ"
-      :title "Execute"
+      :title "Execute-Command Menu"
       '(nyxt:execute-command))))
 
 (export-always 'format-status-load-status)
@@ -126,9 +126,13 @@ the URL.)"
 
 (export-always 'format-status-tabs)
 (defmethod format-status-tabs ((status status-buffer))
-  (let* ((buffers (if (display-tabs-by-last-access-p status)
-                      (sort-by-time (buffer-list))
-                      (reverse (buffer-list))))
+  ;; FIXME: remove nil here because early on startup some buffers can be NIL
+  ;; (why?)  and we have to clean them out. Debug the startup sequence (in
+  ;; particular the (setf buffers) :after handler) and remove this.
+  (let* ((buffers (remove
+                   nil (if (display-tabs-by-last-access-p status)
+                           (sort-by-time (buffer-list))
+                           (reverse (buffer-list)))))
          (domain-deduplicated-urls (remove-duplicates
                                     (mapcar #'url buffers)
                                     :test #'string=
@@ -136,15 +140,19 @@ the URL.)"
     (spinneret:with-html-string
       (loop for url in domain-deduplicated-urls
             collect
-            (let* ((internal-buffers (remove-if-not #'internal-url-p (buffer-list) :key #'url))
+            ;; FIXME: Removing NIL buffers here too, the same reason as above.
+            (let* ((internal-buffers (remove-if-not #'internal-url-p buffers :key #'url))
                    (domain (quri:uri-domain url))
                    (tab-display-text (if (internal-url-p url)
                                          "internal"
                                          domain))
-                   (url url))
+                   (url url)
+                   ;; Current buffer might be NIL too.
+                   (current (current-buffer (window status))))
               (:span
-               :class (if (string= (quri:uri-domain (url (current-buffer (window status))))
-                                   (quri:uri-domain url))
+               :class (if (and current
+                               (string= (quri:uri-domain (url current))
+                                        (quri:uri-domain url)))
                           "selected-tab tab"
                           "tab")
                :onclick (ps:ps
@@ -156,7 +164,7 @@ the URL.)"
                                (let ((buffers-to-delete
                                        (if (internal-url-p url)
                                            internal-buffers
-                                           (sera:filter (match-domain domain) (buffer-list)))))
+                                           (sera:filter (match-domain domain) buffers))))
                                  (prompt
                                   :prompt "Delete buffer(s)"
                                   :sources (make-instance 'buffer-source

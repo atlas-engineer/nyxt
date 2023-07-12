@@ -1,11 +1,11 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/vi-mode
-  (:documentation "VI-style bindings."))
-(in-package :nyxt/vi-mode)
+(nyxt:define-package :nyxt/mode/vi
+  (:documentation "Package for `vi-normal-mode' and `vi-insert-mode', which provide VI-style bindings."))
+(in-package :nyxt/mode/vi)
 
-(define-mode vi-normal-mode (nyxt/keyscheme-mode:keyscheme-mode)
+(define-mode vi-normal-mode (nyxt/mode/keyscheme:keyscheme-mode)
   "Enable VI-style modal bindings (normal mode).
 To enable these bindings by default, add the mode to the list of default modes
 in your configuration file.
@@ -27,11 +27,12 @@ See also `vi-insert-mode'."
     (define-keyscheme-map "vi-normal-mode" ()
       keyscheme:vi-normal
       (list
-       "i" 'vi-insert-mode)))))
+       "i" 'vi-insert-mode
+       "v" 'nyxt/mode/visual:visual-mode)))))
 
 
 ;; TODO: Move ESCAPE binding to the override map?
-(define-mode vi-insert-mode (nyxt/keyscheme-mode:keyscheme-mode)
+(define-mode vi-insert-mode (nyxt/mode/keyscheme:keyscheme-mode)
   "Enable VI-style modal bindings (insert mode).
 See `vi-normal-mode'."
   ;; We could inherit from vi-normal-mode to save the declaration of this slot
@@ -45,7 +46,7 @@ See `vi-normal-mode'."
     (define-keyscheme-map "vi-insert-mode" ()
       keyscheme:vi-insert
       (list
-       "C-z" 'nyxt/passthrough-mode:passthrough-mode
+       "C-z" 'nyxt/mode/passthrough:passthrough-mode
        "escape" 'switch-to-vi-normal-mode)))
    (passthrough-mode-p nil
                        :type boolean
@@ -55,9 +56,9 @@ See `vi-normal-mode'."
 (defmethod enable ((mode vi-normal-mode) &key)
   (with-accessors ((buffer buffer)) mode
     (let ((vi-insert (find-submode 'vi-insert-mode buffer)))
-      (setf (nyxt/keyscheme-mode:previous-keyscheme mode)
+      (setf (nyxt/mode/keyscheme:previous-keyscheme mode)
             (if vi-insert
-                (nyxt/keyscheme-mode:previous-keyscheme vi-insert)
+                (nyxt/mode/keyscheme:previous-keyscheme vi-insert)
                 (keyscheme buffer)))
       (when vi-insert
         ;; Destroy vi-normal mode after setting previous-keyscheme, or else we
@@ -81,9 +82,9 @@ See also `vi-normal-mode' and `vi-insert-mode'."
 (defmethod enable ((mode vi-insert-mode) &key)
   (with-accessors ((buffer buffer)) mode
     (let ((vi-normal (find-submode 'vi-normal-mode buffer)))
-      (setf (nyxt/keyscheme-mode:previous-keyscheme mode)
+      (setf (nyxt/mode/keyscheme:previous-keyscheme mode)
             (if vi-normal
-                (nyxt/keyscheme-mode:previous-keyscheme vi-normal)
+                (nyxt/mode/keyscheme:previous-keyscheme vi-normal)
                 (keyscheme buffer))
             (previous-vi-normal-mode mode)
             vi-normal)
@@ -91,7 +92,7 @@ See also `vi-normal-mode' and `vi-insert-mode'."
         (disable vi-normal)))
     ;; Somehow use inheritance instead?
     (when (passthrough-mode-p mode)
-      (enable-modes* 'nyxt/passthrough-mode:passthrough-mode buffer))))
+      (enable-modes* 'nyxt/mode/passthrough:passthrough-mode buffer))))
 
 (defun vi-insert-on-input-fields (buffer)
   (cond
@@ -130,13 +131,13 @@ See also `vi-normal-mode' and `vi-insert-mode'."
   (spinneret:with-html-string
     (:button :type "button"
              :title "vi-normal-mode"
-             :onclick (ps:ps (nyxt/ps:lisp-eval (:title "vi-insert-mode") (nyxt/vi-mode:vi-insert-mode)))
+             :onclick (ps:ps (nyxt/ps:lisp-eval (:title "vi-insert-mode") (nyxt/mode/vi:vi-insert-mode)))
              (:code "N"))))
 
 (defmethod nyxt:mode-status ((status status-buffer) (vi-normal vi-insert-mode))
   (spinneret:with-html-string
     (:button :type "button"
              :title "vi-insert-mode"
-             :onclick (ps:ps (nyxt/ps:lisp-eval (:title "vi-normal-mode") (nyxt/vi-mode:vi-normal-mode)))
+             :onclick (ps:ps (nyxt/ps:lisp-eval (:title "vi-normal-mode") (nyxt/mode/vi:vi-normal-mode)))
              ;; Note: We use :code to make it monospaced, so that it's more clickable.
              (:code "I"))))

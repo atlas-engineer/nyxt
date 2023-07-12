@@ -1,15 +1,15 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/reduce-tracking-mode
-    (:documentation "Mode to mitigate fingerprinting."))
-(in-package :nyxt/reduce-tracking-mode)
+(nyxt:define-package :nyxt/mode/reduce-tracking
+  (:documentation "Package for `reduce-tracking-mode' to mitigate fingerprinting."))
+(in-package :nyxt/mode/reduce-tracking)
 
 (define-mode reduce-tracking-mode ()
-  "Set specific settings in the web view in order to mitigate fingerprinting,
+  "Set specific settings in the web view in order to mitigate fingerprinting
 (how third-party trackers attempt to identify you).
 
-Fingerprinting can be tested with https://panopticlick.eff.org/."
+Fingerprinting can be tested at https://panopticlick.eff.org/."
   ((preferred-languages
     '("en_US")
     :type (list-of string)
@@ -18,7 +18,7 @@ Accept-Language HTTP header.")
    (preferred-user-agent
     ;; Check https://techblog.willshouse.com/2012/01/03/most-common-user-agents
     ;; occasionally and refresh when necessary.
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.3 Safari/605.1.15"
     :type string
     :documentation "The user agent to set when enabling `reduce-tracking-mode'.
 It's Safari on macOS by default, because this way we break fewer websites while

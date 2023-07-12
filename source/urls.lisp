@@ -45,9 +45,9 @@ counterpart, unless there are unprintable characters.
 If URL contains non-ascii chars in domain part (IDN), return two values:
 - The aesthetic decoded URL, and
 - The safe punicode-encoded one."
-  (let* ((initial-url (url url))
+  (let* ((initial-url (url url))        ; Ensure `quri:uri'.
          (url (quri:render-uri
-               (quri:copy-uri url :query (ignore-errors (quri:url-decode (quri:uri-query url))))))
+               (quri:copy-uri initial-url :query (ignore-errors (quri:url-decode (quri:uri-query initial-url))))))
          (displayed (or (ignore-errors (ffi-display-url *browser* url))
                         url)))
     (cond
@@ -189,28 +189,36 @@ documentation."
 Public Suffix list, T otherwise."
   (sera:true (cl:ignore-errors (cl-tld:get-tld hostname))))
 
+(export-always 'browser-schemes)
+(defgeneric browser-schemes (browser)
+  (:method-combination append)
+  (:documentation "Return a list of schemes supported by a browser"))
+
+;; Set specifier to T because *BROWSER* can be bound to NIL
+(defmethod browser-schemes append ((browser t))
+  (let ((nyxt-schemes (append '("blob" "javascript") (alex:hash-table-keys *schemes*)))
+        ;; List of URI schemes: https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
+        ;; Last updated 2020-08-26.
+        (iana-schemes
+         '("aaa" "aaas" "about" "acap" "acct" "cap" "cid" "coap" "coap+tcp" "coap+ws"
+           "coaps" "coaps+tcp" "coaps+ws" "crid" "data" "dav" "dict" "dns" "example" "file"
+           "ftp" "geo" "go" "gopher" "h323" "http" "https" "iax" "icap" "im" "imap" "info"
+           "ipp" "ipps" "iris" "iris.beep" "iris.lwz" "iris.xpc" "iris.xpcs" "jabber"
+           "ldap" "leaptofrogans" "mailto" "mid" "msrp" "msrps" "mtqp" "mupdate" "news"
+           "nfs" "ni" "nih" "nntp" "opaquelocktoken" "pkcs11" "pop" "pres" "reload" "rtsp"
+           "rtsps" "rtspu" "service" "session" "shttp" "sieve" "sip" "sips" "sms" "snmp"
+           "soap.beep" "soap.beeps" "stun" "stuns" "tag" "tel" "telnet" "tftp"
+           "thismessage" "tip" "tn3270" "turn" "turns" "tv" "urn" "vemmi" "vnc" "ws" "wss"
+           "xcon" "xcon-userid" "xmlrpc.beep" "xmlrpc.beeps" "xmpp" "z39.50r" "z39.50s"))
+        ;; https://www.iana.org/assignments/special-use-domain-names/special-use-domain-names.xml
+        ;; TODO: Remove when https://github.com/lu4nx/cl-tld/issues/2 is fixed.
+        (special-use-schemes
+         '("example" "invalid" "local" "localhost" "onion" "test")))
+    (append nyxt-schemes iana-schemes special-use-schemes)))
+
 (export-always 'valid-scheme-p)
 (defun valid-scheme-p (scheme)
-  (let* ((nyxt-schemes (append '("blob" "javascript") (alex:hash-table-keys *schemes*)))
-         ;; List of URI schemes: https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
-         ;; Last updated 2020-08-26.
-         (iana-schemes
-           '("aaa" "aaas" "about" "acap" "acct" "cap" "cid" "coap" "coap+tcp" "coap+ws"
-             "coaps" "coaps+tcp" "coaps+ws" "crid" "data" "dav" "dict" "dns" "example" "file"
-             "ftp" "geo" "go" "gopher" "h323" "http" "https" "iax" "icap" "im" "imap" "info"
-             "ipp" "ipps" "iris" "iris.beep" "iris.lwz" "iris.xpc" "iris.xpcs" "jabber"
-             "ldap" "leaptofrogans" "mailto" "mid" "msrp" "msrps" "mtqp" "mupdate" "news"
-             "nfs" "ni" "nih" "nntp" "opaquelocktoken" "pkcs11" "pop" "pres" "reload" "rtsp"
-             "rtsps" "rtspu" "service" "session" "shttp" "sieve" "sip" "sips" "sms" "snmp"
-             "soap.beep" "soap.beeps" "stun" "stuns" "tag" "tel" "telnet" "tftp"
-             "thismessage" "tip" "tn3270" "turn" "turns" "tv" "urn" "vemmi" "vnc" "ws" "wss"
-             "xcon" "xcon-userid" "xmlrpc.beep" "xmlrpc.beeps" "xmpp" "z39.50r" "z39.50s"))
-         ;; https://www.iana.org/assignments/special-use-domain-names/special-use-domain-names.xml
-         ;; TODO: Remove when https://github.com/lu4nx/cl-tld/issues/2 is fixed.
-         (special-use-schemes
-           '("example" "invalid" "local" "localhost" "onion" "test"))
-         (valid-schemes (append nyxt-schemes iana-schemes special-use-schemes)))
-    (sera:true (find scheme valid-schemes :test #'string=))))
+  (sera:true (find scheme (browser-schemes *browser*) :test #'string=)))
 
 (export-always 'valid-url-p)
 (defun valid-url-p (url &key (check-dns-p t))

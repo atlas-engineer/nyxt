@@ -8,8 +8,9 @@ _build/submodules/system-index.txt
 # Ignore PNG and XCF
 *.xcf
 *.png
-# Except for this foler
+# Except for these folders
 !libraries/prompter/*.png
+!libraries/theme/*.png
 
 # Ignore compiled lisp files
 *.FASL

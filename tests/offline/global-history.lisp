@@ -17,11 +17,11 @@
   (let* ((*browser* (make-instance 'browser :profile (make-instance 'test-profile)))
          (buffer (nyxt::make-buffer)))
     (nyxt:with-current-buffer buffer
-      (enable-modes* 'nyxt/history-mode:history-mode buffer)
+      (enable-modes* 'nyxt/mode/history:history-mode buffer)
       (let ((file (history-file buffer))
-            (mode (find-submode 'nyxt/history-mode:history-mode buffer)))
+            (mode (find-submode 'nyxt/mode/history:history-mode buffer)))
         (assert-true mode)
-        (nyxt/history-mode::history-add (quri:uri "http://example.org"))
+        (nyxt/mode/history::history-add (quri:uri "http://example.org"))
         ;; history has 1 entry
         (assert-eq 1
                    (length (htree:all-data (files:content file))))
@@ -33,7 +33,7 @@
           ;; "value has no title"
           (assert-string= ""
                           (title entry)))
-        (nyxt/history-mode::history-add (quri:uri "http://example.org") :title "foo")
+        (nyxt/mode/history::history-add (quri:uri "http://example.org") :title "foo")
         ;; "history has still 1 entry after adding same URL"
         (assert-eq 1
                    (length (htree:all-data (files:content file))))
@@ -43,15 +43,15 @@
           ;; "value now has title"
           (assert-string= "foo"
                           (title entry)))
-        (nyxt/history-mode::history-add (quri:uri "http://example.org/sub"))
+        (nyxt/mode/history::history-add (quri:uri "http://example.org/sub"))
         ;; "history now has 2 entries"
         (assert-eq 2
                    (length (htree:all-data (files:content file))))
         (sleep 0.2)
         ;; Enable hub backtracking.
-        (setf (nyxt/history-mode:backtrack-to-hubs-p mode) t)
+        (setf (nyxt/mode/history:backtrack-to-hubs-p mode) t)
         ;; Add the same URL and test if backtracking worked.
-        (nyxt/history-mode::history-add (quri:uri "http://example.org"))
+        (nyxt/mode/history::history-add (quri:uri "http://example.org"))
         (assert-eq 2
                    (length (htree:all-data (files:content file))))
         (let* ((current (htree:current (htree:owner (files:content file) (id buffer))))

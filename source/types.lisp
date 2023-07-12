@@ -24,8 +24,13 @@ Unlike `(cons TYPE *)', it checks all the elements.
 `(cons TYPE *)' does not accept the empty list."
   (unless (trivial-types:type-specifier-p type)
     (error "Invalid type specifier: ~a" type))
-  (let ((predicate-name (intern (uiop:strcat "LIST-OF-" (symbol-name type) "-P")
-                                (find-package :nyxt/types))))
+  (let ((predicate-name (intern
+                         (string-upcase
+                          (uiop:strcat "LIST-OF-"
+                                       (remove-if (complement #'alphanumericp)
+                                                  (princ-to-string type))
+                                       "-P"))
+                         (find-package :nyxt/types))))
     (unless (fboundp predicate-name)
       (setf (fdefinition predicate-name)
             (lambda (object)

@@ -10,12 +10,15 @@
 
 (export-always 'buffer-history)
 (defun buffer-history (&optional (buffer (current-buffer)))
+  "Get the history of BUFFER.
+Not modifiable."
   (files:content (history-file buffer)))
 
 (define-class history-entry ()          ; TODO: Export?
-  ((url (quri:uri "")
-        :accessor nil
-        :type (or quri:uri string))
+  ((url
+    (quri:uri "")
+    :writer nil
+    :type (or quri:uri string))
    (title "")
    (last-access "" ; TODO: Remove with Nyxt 2.0?
                 :type (or string time:timestamp)
@@ -25,25 +28,30 @@ compatibility to import the old flat history.")
    ;; TODO: For now we never increment the explicit-visits count.  Maybe we
    ;; could use a new buffer slot to signal that the last load came from an
    ;; explicit request?
-   (explicit-visits 0
-                    :type integer
-                    :documentation "
-Number of times the URL was visited by a prompt buffer request.  This does not
+   (explicit-visits
+    0
+    :type integer
+    :documentation "Number of times the URL was visited by a prompt buffer request.  This does not
 include implicit visits.")
-   (implicit-visits 0
-                    :type integer
-                    :documentation "
-Number of times the URL was visited by following a link on a page.  This does
-not include explicit visits.")
+   (implicit-visits
+    0
+    :type integer
+    :documentation "Number of times the URL was visited by following a link on a page.
+This does not include explicit visits.")
    (scroll-position '()
                     :type (list-of number)
                     :documentation "The scroll position user was at when last visiting the page.
 It's a list of a form (Y &OPTIONAL X)."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:documentation "
-Entry for the global history.
+  (:documentation "Entry for the global history.
 The total number of visit for a given URL is (+ explicit-visits implicit-visits)."))
+
+(defmethod (setf url) (value (he history-entry))
+  (setf (slot-value he 'url) (url value)))
+
+(defmethod url ((node htree:node))
+  (url (htree:data node)))
 
 (defmethod prompter:object-attributes ((entry history-entry) (source prompter:source))
   (declare (ignore source))
@@ -98,7 +106,8 @@ class."
   (htree:make :key 'history-tree-key :initial-owners (when buffer (list (id buffer)))))
 
 (define-command delete-history-entry (&key (buffer (current-buffer)))
-  "Delete queried history entries."
+  "Delete queried history entries.
+Only deletes the disowned entries (= the ones not belonging to a buffer)."
   (let ((entries (prompt
                   :prompt "Delete entries"
                   :sources (make-instance 'history-disowned-source
@@ -107,19 +116,18 @@ class."
       (dolist (entry entries)
         (htree:delete-data history entry)))))
 
-(define-command reset-buffer-history (&optional buffer)
-  "Set selected buffers history to the current URL only.
+(define-command reset-buffer-history (&key (buffers (prompt :prompt "Reset histories of buffer(s)"
+                                                            :sources (make-instance
+                                                                      'buffer-source
+                                                                      :actions-on-return #'identity))))
+  "Set selected BUFFER's history to the current URL only.
 This removes the parenthood with the parent buffer, if there was any.
 
 When called over many or all buffers, it may free many history entries which
 then become available for deletion with `delete-history-entry'."
-  (let ((buffers (or (alex:ensure-list buffer)
-                     (prompt :prompt "Reset histories of buffer(s)"
-                             :sources (make-instance 'buffer-source
-                                                     :actions-on-return #'identity)))))
-    (files:with-file-content (history (history-file (current-buffer)))
-      (dolist (buffer buffers)
-        (htree:reset-owner history (id buffer))))))
+  (files:with-file-content (history (history-file (current-buffer)))
+    (dolist (buffer buffers)
+      (htree:reset-owner history (id buffer)))))
 
 (defun score-history-entry (htree-entry)
   "Return history ENTRY score.
@@ -138,8 +146,7 @@ lot."
            (* 1.0
               ;; Inverse number of hours since the last access.
               (/ 1
-                 (1+ (/ (time:timestamp-difference (time:now)
-                                                         last-access)
+                 (1+ (/ (time:timestamp-difference (time:now) last-access)
                         (* 60 60)))))
            0))))
 
@@ -313,7 +320,7 @@ lot."
     history))
 
 (defun restore-history-buffers (history history-file)
-  "Restore buffers corresponding to the HISTORY owners.
+  "Restore buffers corresponding to the HISTORY owners from HISTORY-FILE.
 
 This modifies the history owners as follows.
 For each owner, make a buffer, swap old owner identifier for the new buffer ID
@@ -371,10 +378,13 @@ Return non-NIL of history was restored, NIL otherwise."
            nil)))))
 
 (defun histories-directory (&optional (buffer (current-buffer)))
+  "Get the directory where history files are stored, based on `history-file' of BUFFER."
   (when (context-buffer-p buffer)
     (files:parent (files:expand (history-file buffer)))))
 
 (defun histories-list (&optional (buffer (current-buffer)))
+  "List all the files with persisted history.
+Uses `histories-directory' of the BUFFER to get files."
   (alex:when-let ((dir (histories-directory buffer)))
     (sera:keep "lisp" (uiop:directory-files dir)
                :test 'string-equal
@@ -385,13 +395,14 @@ Return non-NIL of history was restored, NIL otherwise."
    (prompter:constructor (mapcar #'pathname-name (histories-list)))
    (prompter:hide-attribute-header-p :single)))
 
-(define-command store-history-by-name ()
-  "Store the history data in the file named by user input.
-Useful for session snapshots, as `restore-history-by-name' will restore opened buffers."
-  (sera:and-let* ((name (prompt1
-                         :prompt "The name to store history with"
-                         :sources (list 'prompter:raw-source
-                                        (make-instance 'history-name-source))))
+(define-command store-history-by-name (&key (name (prompt1
+                                                   :prompt "The name to store history with"
+                                                   :sources (list 'prompter:raw-source
+                                                                  (make-instance 'history-name-source)))))
+  "Store the history data in the file with NAME.
+Useful for session snapshots, as `restore-history-by-name' will restore opened
+buffers alongside history contents."
+  (sera:and-let* ((name name)
                   (new-file (make-instance 'history-file
                                            :base-path (make-pathname
                                                        :name name
@@ -401,14 +412,14 @@ Useful for session snapshots, as `restore-history-by-name' will restore opened b
       (setf (files:content new-file) (buffer-history))
       (echo "History stored to ~s." (files:expand new-file)))))
 
-(define-command restore-history-by-name ()
-  "Delete all the buffers of the current session/history and import the history chosen by user.
+(define-command restore-history-by-name (&key (name (prompt1 :prompt "The name of the history to restore"
+                                                             :sources 'history-name-source)))
+  "Delete all the buffers of the current session/history and import the history with NAME.
 The imported history file is untouched while the current one is overwritten.
 If you want to save the current history file beforehand, call
 `store-history-by-name' to save it under a new name."
   ;; TODO: backup current history?
-  (sera:and-let* ((name (prompt1 :prompt "The name of the history to restore"
-                                 :sources 'history-name-source))
+  (sera:and-let* ((name name)
                   (new-file (make-instance 'history-file
                                            :base-path (make-pathname
                                                        :name name

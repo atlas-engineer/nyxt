@@ -30,6 +30,7 @@
                                     (type (getf (mopu:slot-properties (find-class class) slot)
                                                 :type)))
   "Set value of CLASS' SLOT in `*auto-config-file*'.
+Prompt for a new value and type-check it against the SLOT's TYPE, if any.
 CLASS is a class symbol."
   (sera:nlet lp ()
     (let ((input (read-from-string
@@ -46,56 +47,47 @@ CLASS is a class symbol."
          (echo "Update slot ~s to ~s. You might need to restart to experience the change." slot input))))))
 
 (define-internal-page-command-global common-settings ()
-    (buffer "*Settings*" 'nyxt/help-mode:help-mode)
-  "Configure a set of frequently used settings."
+    (buffer "*Settings*" 'nyxt/mode/help:help-mode)
+  "Display an interface to tweak frequently sought-after user options.
+The changes are saved to `*auto-config-file*', and persist from one Nyxt session
+to the next."
   (spinneret:with-html-string
+    (:nstyle
+      `(.button
+        :display block))
     (:h1 "Common Settings")
-    (:p "Set the values for frequently configured settings. "
-        "Changes only apply to newly created buffers.")
+    (:p "Tweak frequently sought-after settings. The changes persist from one
+Nyxt session to the next.
+
+Note that some settings may require restarting Nyxt to take effect.")
     (:h2 "Keybinding style")
-    (:p (:button :class "button"
-                 :onclick (ps:ps (nyxt/ps:lisp-eval
-                                  (:title "set-cua-scheme")
-                                  (nyxt::auto-configure
-                                   :class-name 'input-buffer
-                                   :form '(disable-modes* 'nyxt/emacs-mode:emacs-mode input-buffer))
-                                  (nyxt::auto-configure
-                                   :class-name 'input-buffer
-                                   :form '(disable-modes* 'nyxt/vi-mode:vi-normal-mode input-buffer))))
-                 "Use default (CUA)"))
-    (:p (:button :class "button"
-                 :onclick (ps:ps (nyxt/ps:lisp-eval
-                                  (:title "set-emacs-scheme")
-                                  (nyxt::auto-configure
-                                   :class-name 'input-buffer
-                                   :form '(disable-modes* 'nyxt/vi-mode:vi-normal-mode input-buffer))
-                                  (nyxt::auto-configure
-                                   :class-name 'input-buffer
-                                   :form '(enable-modes* 'nyxt/emacs-mode:emacs-mode input-buffer))))
-                 "Use Emacs"))
-    (:p (:button :class "button"
-                 :onclick (ps:ps (nyxt/ps:lisp-eval
-                                  (:title "set-vi-scheme")
-                                  (nyxt::auto-configure
-                                   :class-name 'input-buffer
-                                   :form '(disable-modes* 'nyxt/emacs-mode:emacs-mode input-buffer))
-                                  (nyxt::auto-configure
-                                   :class-name 'input-buffer
-                                   :form '(enable-modes* 'nyxt/vi-mode:vi-normal-mode input-buffer))))
-                 "Use vi"))
+    (:nselect
+      :id "keybinding-style"
+      :buffer buffer
+      '((cua "Use default (CUA)")
+        (nyxt::auto-configure
+         :form '(define-configuration web-buffer
+                 ((default-modes (remove-if (lambda (m)
+                                              (find (symbol-name (name m))
+                                                    '("EMACS-MODE" "VI-NORMAL-MODE" "VI-INSERT-MODE")))
+                                  %slot-value%))))))
+      '((emacs "Use Emacs")
+        (nyxt::auto-configure
+         :form '(define-configuration web-buffer
+                 ((default-modes (pushnew 'nyxt/mode/emacs:emacs-mode %slot-value%))))))
+      '((vi "Use vi")
+        (nyxt::auto-configure
+         :form '(define-configuration web-buffer
+                 ((default-modes (pushnew 'nyxt/mode/vi:vi-normal-mode %slot-value%)))))))
     (flet ((generate-colors (theme-symbol text)
              (spinneret:with-html-string
-               (:p (:button :class "button"
-                            :style (format nil "background-color: ~a; color: ~a"
-                                           (theme:accent-color (symbol-value theme-symbol))
-                                           (theme:on-accent-color (symbol-value theme-symbol)))
-                            :onclick (ps:ps (nyxt/ps:lisp-eval
-                                             (:title "set-theme")
-                                             (nyxt::auto-configure
-                                              :class-name 'browser
-                                              :slot 'theme
-                                              :slot-value theme-symbol)))
-                            text))
+               (:nbutton
+                 :text text
+                 :style (format nil "background-color: ~a; color: ~a"
+                                (theme:accent-color (symbol-value theme-symbol))
+                                (theme:on-accent-color (symbol-value theme-symbol)))
+                 `(nyxt::auto-configure :form '(define-configuration browser
+                                                ((theme ,theme-symbol)))))
                (:p "Colors:")
                (:dl
                 (loop for (name color text-color) in '(("Background" theme:background-color theme:on-background-color)
@@ -108,40 +100,30 @@ CLASS is a class symbol."
                                                          (slot-value (symbol-value theme-symbol) text-color))
                                           (slot-value (symbol-value theme-symbol) color))))))))
       (:h2 "Theme style")
+      (:p "Note that changing the theme requires restarting Nyxt.")
       (:ul
        (:li (:raw (generate-colors 'theme::+light-theme+ "Use default (Light theme)")))
        (:li (:raw (generate-colors 'theme::+dark-theme+ "Use Dark theme")))))
     (:h2 "Miscellaneous")
     (:ul
-     (:li (:button :class "button"
-                   :onclick (ps:ps (nyxt/ps:lisp-eval
-                                    (:title "default-new-buffer-url")
-                                    (nyxt::configure-slot 'default-new-buffer-url 'browser :type 'string)))
-                   "Set default new buffer URL"))
-     (:li (:button :class "button"
-                   :onclick (ps:ps (nyxt/ps:lisp-eval
-                                    (:title "set-zoom-ration")
-                                    (nyxt::configure-slot 'current-zoom-ratio 'document-buffer)))
-                   "Set default zoom ratio"))
-     (:li (:button :class "button"
-                   :onclick (ps:ps (nyxt/ps:lisp-eval
-                                    (:title "disable-compositing")
-                                    (nyxt::auto-configure
-                                     :form '(setf (uiop:getenv "WEBKIT_DISABLE_COMPOSITING_MODE") "1"))))
-                   "Disable compositing")
-          (:p "On some systems, compositing can cause issues with rendering. If
+     (:nbutton :text "Set default new buffer URL"
+       '(nyxt::configure-slot 'default-new-buffer-url 'browser :type 'string))
+     (:nbutton :text "Set default zoom ratio"
+       '(nyxt::configure-slot 'zoom-ratio-default 'document-buffer))
+     (:p "On some systems, compositing can cause issues with rendering. If
 you are experiencing blank web-views, you can try to disable compositing. After
-disabling compositing, you will need to restart Nyxt."))
+disabling compositing, you will need to restart Nyxt.")
+     (:nbutton :text "Disable compositing"
+       '(nyxt::auto-configure
+         :form '(setf (uiop:getenv "WEBKIT_DISABLE_COMPOSITING_MODE") "1")))
 
-     (:li (:button :class "button"
-                   :onclick (ps:ps (nyxt/ps:lisp-eval
-                                    (:title "edit-user-file")
-                                    '(nyxt::edit-user-file-with-external-editor)))
-                   "Edit user files")
-          (:p "Edit user configuration and other files in external text editor.")))))
+     (:label
+      "Edit user configuration and other files in external text editor."
+      (:nbutton :text "Edit user files"
+        '(nyxt::edit-user-file-with-external-editor))))))
 
-(define-command print-bindings-cheatsheet ()
-  "Print a buffer listing all known bindings for the current buffer."
+(define-command print-bindings ()
+  "Display all known bindings for the current buffer."
   (nyxt::html-set-style (theme:themed-css (theme *browser*)
                           `(h3
                             :font-size "10px"
@@ -152,7 +134,7 @@ disabling compositing, you will need to restart Nyxt."))
                           `(div
                             :display inline-block))
                         (describe-bindings))
-  (nyxt/document-mode:print-buffer))
+  (nyxt/mode/document:print-buffer))
 
 (defun tls-help (buffer url)
   "Helper function invoked upon TLS certificate errors."
@@ -179,13 +161,14 @@ file, see the "
    buffer))
 
 (define-command nyxt-version ()
-  "Version number of this version of Nyxt.
-The version number is saved to clipboard."
+  "Display the version of Nyxt in the `message-buffer'.
+The value is saved to clipboard."
   (trivial-clipboard:text +version+)
   (echo "Version ~a" +version+))
 
 (define-panel-command intro ()
     (panel "*Introduction*" :left)
+  "Display a short introduction to Nyxt in a side panel."
   (spinneret:with-html-string
     (:h1 "Getting Started with Nyxt")
     (:p "If you want to start browsing right away, then you probably want to use "
@@ -194,8 +177,8 @@ The version number is saved to clipboard."
 bring up the same prompt as " (:code "set-url") " does.")
     (:p "If you get stuck, you can always use arrow keys in the status bar (this area
 with buttons below the page you browse), or use commands like "
-        (:nxref :command 'nyxt/history-mode:history-backwards) " and "
-        (:nxref :command 'nyxt/history-mode:history-forwards)
+        (:nxref :command 'nyxt/mode/history:history-backwards) " and "
+        (:nxref :command 'nyxt/mode/history:history-forwards)
         " to navigate around the pages you visited.")
     (:p "You can run any command you wish and get familiar with all the actions you
 have, using " (:nxref :command 'execute-command)
@@ -213,36 +196,36 @@ useful actions there, including the familiar " (:code "set-url") ", " (:code "hi
 
 (define-internal-page-command-global new ()
     (buffer "*New buffer*")
-  "Open up a buffer with useful links suitable for `default-new-buffer-url'."
+  "Display a page suitable as `default-new-buffer-url'."
   (spinneret:with-html-string
-   (:nstyle (theme:themed-css (theme *browser*)
-                              `(body
-                                :min-height "100vh")
-                              `(nav
-                                :text-align "center"
-                                :top 0)
-                              `(details
-                                :display "inline"
-                                :margin "1em")
-                              `(h1
-                                :font-size "5em"
-                                :margin "0.1em")
-                              `(main
-                                :padding "10%"
-                                :text-align "center"
-                                :display "flex"
-                                :flex-direction "column"
-                                :justify-content "center")
-                              `(.centered
-                                :text-align "center")
-                              `(.button
-                                :min-width "100px")
-                              `(.container
-                                :min-height "100%")
-                              `(.copyright
-                                :position "absolute"
-                                :bottom "1em"
-                                :right "1em")))
+    (:nstyle
+      `(body
+        :min-height "100vh")
+      `(nav
+        :text-align "center"
+        :top 0)
+      `(details
+        :display "inline"
+        :margin "1em")
+      `(h1
+        :font-size "5em"
+        :margin "0.1em")
+      `(main
+        :padding "10%"
+        :text-align "center"
+        :display "flex"
+        :flex-direction "column"
+        :justify-content "center")
+      `(.centered
+        :text-align "center")
+      `(.button
+        :min-width "100px")
+      `(.container
+        :min-height "100%")
+      `(.copyright
+        :position "absolute"
+        :bottom "1em"
+        :right "1em"))
     (:div
      :class "container"
      (:nav
@@ -258,7 +241,7 @@ useful actions there, including the familiar " (:code "set-url") ", " (:code "hi
           "Change Log")
       (:a :class "button" :href (nyxt-url 'describe-bindings)
           :title "List all bindings for the current buffer."
-          "List bindings")
+          "Describe bindings")
       (:a :class "button" :href (nyxt-url 'common-settings)
           :title "Switch between Emacs/vi/CUA key bindings, set home page URL, and zoom level."
           "⚙ Settings")
@@ -299,17 +282,17 @@ useful actions there, including the familiar " (:code "set-url") ", " (:code "hi
 
 (sera:eval-always ; To satisfy `fboundp' of `manual' at compile-time (e.g. CCL).
   (define-internal-page-command-global manual ()
-      (buffer "*Manual*" 'nyxt/help-mode:help-mode)
-    "Show the manual."
+      (buffer "*Manual*" 'nyxt/mode/help:help-mode)
+    "Display Nyxt manual."
     (spinneret:with-html-string
-      (:nstyle (lass:compile-and-write '(body :max-width "80ch")))
+      (:nstyle '(body :max-width "80ch"))
       (:raw (manual-content)))))
 
 (define-internal-page-command-global tutorial ()
-    (buffer "*Tutorial*" 'nyxt/help-mode:help-mode)
-  "Show the tutorial."
+    (buffer "*Tutorial*" 'nyxt/mode/help:help-mode)
+  "Display Nyxt tutorial."
   (spinneret:with-html-string
-    (:nstyle (lass:compile-and-write '(body :max-width "80ch")))
+    (:nstyle '(body :max-width "80ch"))
     (:h1 "Nyxt tutorial")
     (:p "The following tutorial introduces core concepts and
 basic usage.  For more details, especially regarding configuration, see
@@ -318,8 +301,10 @@ the " (:code (:a.link :href (nyxt-url 'manual) "manual")) ".")
 
 (define-internal-page-command-global show-system-information ()
     (buffer "*System information*")
-  "Show buffer with Lisp version, Lisp features, OS kernel, etc.
-System information is also saved to clipboard."
+  "Display information about the currently running Nyxt system.
+
+It is of particular interest when reporting bugs.  The content is saved to
+clipboard."
   (let* ((*print-length* nil)
          (nyxt-information (system-information)))
     (prog1
@@ -332,16 +317,16 @@ System information is also saved to clipboard."
 
 (define-internal-page-command-global dashboard ()
     (buffer "*Dashboard*")
-  "Print a dashboard."
+  "Display a dashboard featuring bookmarks, recent URLs and other useful actions."
   (flet ((list-bookmarks (&key (limit 50) (separator " → "))
            (spinneret:with-html-string
-             (let ((mode (make-instance 'nyxt/bookmark-mode:bookmark-mode)))
-               (alex:if-let ((bookmarks (files:content (nyxt/bookmark-mode:bookmarks-file mode))))
-                 (dolist (bookmark (sera:take limit (the list (sort-by-time bookmarks :key #'nyxt/bookmark-mode:date))))
+             (let ((mode (make-instance 'nyxt/mode/bookmark:bookmark-mode)))
+               (alex:if-let ((bookmarks (files:content (nyxt/mode/bookmark:bookmarks-file mode))))
+                 (dolist (bookmark (sera:take limit (the list (sort-by-time bookmarks :key #'nyxt/mode/bookmark:date))))
                    (:li (title bookmark) separator
                         (:a :href (render-url (url bookmark))
                             (render-url (url bookmark)))))
-                 (:p (format nil "No bookmarks in ~s." (files:expand (nyxt/bookmark-mode:bookmarks-file mode)))))))))
+                 (:p (format nil "No bookmarks in ~s." (files:expand (nyxt/mode/bookmark:bookmarks-file mode)))))))))
     (let ((dashboard-style (theme:themed-css (theme *browser*)
                              `(body
                                :background-color ,theme:background

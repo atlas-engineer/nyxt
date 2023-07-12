@@ -1,14 +1,27 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/no-procrastinate-mode
-  (:use :nyxt/blocker-mode)
-  (:documentation "Block resource queries for listed hosts."))
-(in-package :nyxt/no-procrastinate-mode)
+(nyxt:define-package :nyxt/mode/no-procrastinate
+  (:use :nyxt/mode/blocker)
+  (:documentation "Package for `no-procrastinate-mode' to lock requests for listed hosts.
+
+`no-procrastinate-entry' is the main class encapsulating the logic of
+entries. `no-procrastinate-add' is the wrapper around it to add new entries.
+
+`serialize-object' is the method to print these hosts to the Lisp file
+`read'ably.
+
+The mode itself inherits from `nyxt/mode/blocker:blocker-mode' and reuses its APIs."))
+(in-package :nyxt/mode/no-procrastinate)
+
+;;; TODO: Remove? It's mostly poorly duplicating the blocker-mode logic and is
+;;; poorly written, rotting in the dark.
 
 (export-always '*default-hostlist-no-procrastinate*)
 (defparameter *default-hostlist-no-procrastinate*
   (make-instance 'hostlist
+                 ;; FIXME: Use a local file instead of the absolutely
+                 ;; unnecessary network round-trip.
                  :url (quri:uri "https://raw.githubusercontent.com/atlas-engineer/default-hosts-no-procrastinate/main/hosts")
                  :base-path #p"hostlist-no-procrastinate.txt")
   "Default hostlist for `no-procrastinate-mode'.")
@@ -18,8 +31,17 @@
    (files:name "no-procrastinate-hosts"))
   (:export-class-name-p t))
 
-(define-mode no-procrastinate-mode (nyxt/blocker-mode:blocker-mode)
-  "Mode to block access to hosts associated with procrastination."
+(define-mode no-procrastinate-mode (nyxt/mode/blocker:blocker-mode)
+  "Mode to block access to hosts associated with procrastination.
+
+Hostlists belong to hostlist-no-procrastinate.txt file in data directory.
+
+`*default-hostlist-no-procrastinate*' is a simple way to set things up for your
+hostlists. See `nyxt/mode/blocker:blocker-mode' documentation for how to
+configure such a hostlist variable.
+
+See `nyxt/mode/no-procrastinate' package documentation for implementation
+details and internal programming APIs."
   ((rememberable-p nil)
    (no-procrastinate-hosts-file
     (make-instance 'no-procrastinate-hosts-file)
@@ -36,8 +58,8 @@
               :border           "none"
               :outline          "none"
               :text-align       "left")))
-   (nyxt/blocker-mode:hostlists
-    (list (nyxt/blocker-mode:make-hostlist
+   (nyxt/mode/blocker:hostlists
+    (list (nyxt/mode/blocker:make-hostlist
            :hosts (mapcar #'(lambda (y) (hostname y))
                           (when (current-buffer)
                             (files:content (no-procrastinate-hosts-file (current-buffer))))))
@@ -61,7 +83,7 @@
     (no-procrastinate-hosts-buffer "*No Procrastinate Hosts*")
   "List all hosts to avoid procrastination in a new buffer."
   (let ((no-procrastinate-hosts (group-no-procrastinate-hosts no-procrastinate-hosts-buffer))
-        (mode (find-submode 'nyxt/no-procrastinate-mode:no-procrastinate-mode
+        (mode (find-submode 'nyxt/mode/no-procrastinate:no-procrastinate-mode
                             no-procrastinate-hosts-buffer)))
     (spinneret:with-html-string
       (:nstyle (style mode))

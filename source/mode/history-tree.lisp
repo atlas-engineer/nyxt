@@ -1,12 +1,15 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/history-tree-mode
-    (:documentation "Mode for history-trees."))
-(in-package :nyxt/history-tree-mode)
+(nyxt:define-package :nyxt/mode/history-tree
+  (:documentation "Package for `history-tree-mode', mode for history-trees styling."))
+(in-package :nyxt/mode/history-tree)
 
 (define-mode history-tree-mode ()
-  "Mode for history-tree listing."
+  "Mode for history-tree listing.
+
+Used by pages like `nyxt/mode/history:buffer-history-tree' and
+`nyxt/mode/history:history-tree'."
   ((visible-in-status-p nil)
    (style (theme:themed-css (theme *browser*)
             `(* :margin 0
@@ -34,7 +37,7 @@
               :content "' '"
               :position "absolute"
               :width "1px"
-              :background-color ,theme:on-background ; is this right??
+              :background-color ,theme:on-background ; FIXME: Is this right?
               :color ,theme:background
               :top "5px"
               :bottom "-12px"
@@ -48,7 +51,7 @@
               :content "' '"
               :position "absolute"
               :width "1px"
-              :background-color ,theme:on-background ; is this right??
+              :background-color ,theme:on-background ; FIXME: Is this right?
               :color ,theme:background
               :top "5px"
               :bottom "7px"
@@ -60,7 +63,7 @@
               :left "-10px"
               :width "10px"
               :height "1px"
-              :background-color ,theme:on-background ; is this right
+              :background-color ,theme:on-background ; FIXME: Is this right?
               :color ,theme:background
               :top "12px"))))
   (:toggler-command-p nil))

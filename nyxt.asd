@@ -33,13 +33,6 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
   `((asdf:load-op ,(format nil "nyxt/~a-application" *nyxt-renderer*))
     ,@(call-next-method)))
 
-(defclass nyxt-source-directory (nasdf:nasdf-source-directory)
-  ())
-(import 'nyxt-source-directory :asdf-user)
-
-(defmethod nasdf:dest-source-dir ((component nyxt-source-directory))
-  (uiop:merge-pathnames* "nyxt/" (call-next-method)))
-
 (defclass nyxt-library-file (nasdf:nasdf-library-file)
   ())
 (import 'nyxt-library-file :asdf-user)
@@ -64,7 +57,7 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
 (defsystem "nyxt"
   :defsystem-depends-on ("nasdf")
   :class :nasdf-system
-  :version "3"                          ;  3-pre-release-5 / Development version
+  :version "4"
   :author "Atlas Engineer LLC"
   :homepage "https://nyxt.atlas.engineer"
   :description "Extensible web browser in Common Lisp"
@@ -73,6 +66,7 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                bordeaux-threads
                calispel
                cl-base64
+               cl-colors2
                cl-gopher
                cl-html-diff
                cl-json
@@ -101,14 +95,13 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                nclasses
                nfiles
                njson/cl-json
-               njson/aliases
                nhooks
                nkeymaps
                nsymbols/star
                #-sbcl
                osicat
-               ospm
                parenscript
+               prompter
                py-configparser
                quri
                serapeum
@@ -132,7 +125,6 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                nyxt/analysis
                nyxt/download-manager
                nyxt/password-manager
-               nyxt/prompter
                nyxt/theme)
   :pathname #p"NYXT:source;"
   :components ((:file "utilities")
@@ -177,6 +169,7 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                  (:file "browser")
                  (:file "foreign-interface")
                  (:file "clipboard")
+                 (:file "color")
                  (:file "input")
                  (:file "prompt-buffer")
                  (:file "command-commands")
@@ -253,7 +246,6 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                  (:file "no-script")
                  (:file "no-sound")
                  (:file "no-webgl")
-                 (:file "os-package-manager")
                  (:file "password")
                  (:file "preview")
                  (:file "reading-line")
@@ -266,15 +258,14 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                  (:file "small-web")
                  (:file "style" :depends-on ("bookmarklets"))
                  (:file "tts")
-                 (:file "vi")
                  (:file "visual")
+                 (:file "vi")
                  (:file "watch"))))
   :around-compile "NASDF:FAIL-ON-WARNINGS"
   :in-order-to ((test-op (test-op "nyxt/tests")
                          ;; We test if manual dumping works, since it may catch
                          ;; some subtle mistakes:
-                         (compile-op "nyxt/documentation")
-                         (test-op "nyxt/prompter/tests"))))
+                         (compile-op "nyxt/documentation"))))
 
 (defsystem "nyxt/submodules"
   :defsystem-depends-on ("nasdf")
@@ -333,7 +324,6 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                  (:file "no-script")
                  (:file "no-sound")
                  (:file "no-webgl")
-                 (:file "os-package-manager")
                  (:file "passthrough")
                  (:file "password")
                  (:file "preview")
@@ -429,7 +419,8 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
   :components ((:file "web-extensions")
                (:file "web-extensions-callbacks")
                (:file "renderer/gtk-clipboard")
-               (:file "renderer/gtk")))
+               (:file "renderer/gtk"))
+  :in-order-to ((test-op (test-op "nyxt/gi-gtk/tests"))))
 
 (defsystem "nyxt/gi-gtk"
   :defsystem-depends-on ("nasdf")
@@ -453,6 +444,7 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                (:file "tests/renderer-offline/execute-command-eval")
                (:file "tests/renderer-offline/remembrance")
                (:file "tests/renderer-offline/nyxt-url-security")
+               (:file "tests/renderer-offline/search-buffer")
                (:file "tests/renderer-online/set-url")))
 
 (defsystem "nyxt/qt"
@@ -518,11 +510,10 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
   :components ((:nasdf-desktop-file "assets/nyxt.desktop")
                (:nasdf-icon-directory "assets/")
                (:nasdf-binary-file "nyxt")
-               (:nyxt-library-file "libraries/web-extensions/libnyxt.so"
-                                   :if-does-not-exist nil)
-               (:nyxt-source-directory "source")
-               (:nyxt-source-directory "nasdf")
-               (:nyxt-source-directory "libraries"
+               (:nasdf-source-file "nyxt.asd")
+               (:nasdf-source-directory "source")
+               (:nasdf-source-directory "nasdf")
+               (:nasdf-source-directory "libraries"
                 :exclude-subpath ("web-extensions") ; Do not install this non-Lisp source.
                 :exclude-types ("o" "c" "h" ; C code and artifacts.
                                     "fasl"))))
@@ -605,47 +596,17 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                ;; Keep password-store last so that it has higher priority.
                (:file "password-pass")))
 
-(defsystem "nyxt/prompter"
-  :defsystem-depends-on ("nasdf")
-  :class :nasdf-system
-  :depends-on (alexandria
-               calispel
-               cl-containers
-               closer-mop
-               lparallel
-               moptilities
-               nclasses
-               serapeum
-               str
-               trivial-package-local-nicknames)
-  :pathname #p"NYXT:libraries;prompter;"
-  :components ((:file "package")
-               (:file "filter-preprocessor")
-               (:file "filter")
-               (:file "prompter-source")
-               (:file "prompter"))
-  :in-order-to ((test-op (test-op "nyxt/prompter/tests"))))
-
-(defsystem "nyxt/prompter/tests"
-  :defsystem-depends-on ("nasdf")
-  :class :nasdf-test-system
-  :depends-on (nyxt/prompter)
-  :targets (:package :prompter/tests)
-  :pathname #p"NYXT:libraries;prompter;tests;"
-  :components ((:file "package")
-               (:file "tests")
-               (:file "fuzzy")
-               (:file "submatches")))
-
 (defsystem "nyxt/theme"
   :defsystem-depends-on ("nasdf")
   :class :nasdf-system
   :depends-on (alexandria
+               cl-colors2
                lass
                nclasses
                serapeum)
   :pathname #p"NYXT:libraries;theme;"
   :components ((:file "package")
+               (:file "utilities")
                (:file "theme"))
   :in-order-to ((test-op (test-op "nyxt/theme/tests"))))
 

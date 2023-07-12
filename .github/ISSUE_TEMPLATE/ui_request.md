@@ -2,7 +2,7 @@
 name: UI request
 about: Suggest a UI change for this project
 title: ''
-labels: ui
+labels: ui/ux
 assignees: ''
 
 ---

@@ -1,12 +1,15 @@
 app-id: engineer.atlas.Nyxt
+# TODO Should be replaced it with org.gnome.Platform.  Shared libraries aren't
+# available from org.gnome.Platform, therefore we use the development runtime.
 runtime: org.gnome.Sdk
-runtime-version: "42"
+runtime-version: "44"
 sdk: org.gnome.Sdk
 command: nyxt
 
 finish-args:
   - --device=dri
   - --share=network
+  - --share=ipc
   - --socket=wayland
   - --socket=fallback-x11
   - --socket=pulseaudio
@@ -25,13 +28,30 @@ modules:
     buildsystem: simple
     sources:
       - type: archive
-        url: http://prdownloads.sourceforge.net/sbcl/sbcl-2.0.11-x86-64-linux-binary.tar.bz2
-        sha256: b7e61bc6b8d238f8878e660bc0635e99c2ea1255bfd6153d702fe9a00f8138fd
+        url: http://prdownloads.sourceforge.net/sbcl/sbcl-2.3.2-x86-64-linux-binary.tar.bz2
+        sha256: 4cf817f1d889244b5ebd4dbf7208d7f66a38a8300b4eb7e823e3b304cfefde11
     build-options:
       env:
         BUILD_ROOT: "/app/sbcl"
     build-commands:
       - sh install.sh
+
+  - name: xsel
+    buildsystem: autotools
+    sources:
+      - type: git
+        url: https://github.com/kfish/xsel.git
+        tag: 1.2.1
+
+  - name: wl-clipboard
+    buildsystem: meson
+    config-opts:
+      - -Dzshcompletiondir=no
+      - -Dfishcompletiondir=no
+    sources:
+      - type: git
+        url: https://github.com/bugaevc/wl-clipboard.git
+        tag: v2.1.0
 
   - name: libfixposix
     buildsystem: autotools
@@ -53,8 +73,9 @@ modules:
       env:
         LISP: "/app/sbcl/usr/local/bin/sbcl"
         LISP_FLAGS: "--dynamic-space-size 4096 --no-userinit --non-interactive"
+        FLATPAK_ID: "engineer.atlas.Nyxt"
     build-commands:
       - make all
-      - mkdir $FLATPAK_DEST/bin
+      - mkdir -p $FLATPAK_DEST/bin
       - mv nyxt $FLATPAK_DEST/bin/
       - install -D assets/engineer.atlas.Nyxt.appdata.xml /app/share/appdata/engineer.atlas.Nyxt.appdata.xml

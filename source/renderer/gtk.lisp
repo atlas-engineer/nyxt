@@ -64,7 +64,8 @@ See also the `web-contexts' slot."))
                              (make-context name :ephemeral-p ephemeral-p)))
 
 (define-class gtk-window ()
-  ((gtk-object)
+  ((gtk-object
+    :export t)                          ; TODO: Unexport?
    (handler-ids
     :documentation "See `gtk-buffer' slot of the same name.")
    (root-box-layout)
@@ -82,8 +83,7 @@ See also the `web-contexts' slot."))
    (message-view)
    (key-string-buffer))
   (:export-class-name-p t)
-  ;; TODO: Unexport?
-  (:export-accessor-names-p t))
+  (:export-accessor-names-p nil))
 
 (define-class gtk-buffer ()
   ((gtk-object)
@@ -95,6 +95,7 @@ When given the same context, multiple buffers share their internal browsing data
 `+default+' is the default context.
 `+internal+' is a context that's not persisted to disk.")
    (handler-ids
+    :export nil
     :documentation "Store all GObject signal handler IDs so that we can disconnect the signal handler when the object is finalised.
 See https://developer.gnome.org/gobject/stable/gobject-Signals.html#signal-memory-management.")
    (gtk-proxy-url (quri:uri ""))
@@ -242,7 +243,6 @@ the renderer thread, use `defmethod' instead."
    on."
   (declare (ignore urls startup-timestamp))
   (log:debug "Initializing GTK Interface")
-  (setf (uiop:getenv "WEBKIT_FORCE_SANDBOX") "0")
   (if gtk-running-p
       (within-gtk-thread
         (call-next-method))
@@ -331,6 +331,7 @@ By default it is found in the source directory."))
 (define-class gtk-download ()
   ((gtk-object)
    (handler-ids
+    :export nil
     :documentation "See `gtk-buffer' slot of the same name.")))
 
 (defclass webkit-web-view-ephemeral (webkit:webkit-web-view) ()
@@ -380,6 +381,8 @@ By default it is found in the source directory."))
     nil
     :type (maybe webkit:webkit-web-resource)))
   (:export-class-name-p t)
+  ;; We export these accessors because it can be useful to inspect the guts of a
+  ;; request, plus the upstream WebKit API is stable enough.
   (:export-accessor-names-p t)
   (:metaclass user-class))
 
@@ -810,6 +813,75 @@ See `gtk-browser's `modifier-translator' slot."
   (:export-class-name-p t)
   (:export-accessor-names-p t))
 
+;; From https://github.com/umpirsky/language-list/tree/master/data directory
+;; listing $(ls /data) and processed with:
+;; (defun iso-languages (languages-file-string)
+;;   (remove-if (lambda (lang)
+;;                (or (uiop:emptyp lang)
+;;                    (/= 1 (count #\_ lang))
+;;                    (notevery #'upper-case-p (subseq lang 3))))
+;;              (uiop:split-string languages-file-string :separator '(#\Space #\Tab #\Newline))))
+(defvar *spell-check-languages*
+  (list "be_BY" "en_LC" "en_VG" "ff_MR" "fr_SC" "ln_CF" "nl_BE" "rm_CH" "uk_UA"
+        "af_NA" "el_CY" "en_LR" "en_VI" "ff_SN" "fr_SN" "ii_CN" "ln_CG" "nl_BQ"
+        "af_ZA" "bg_BG" "el_GR" "en_LS" "en_VU" "fr_SY" "nl_CW" "rn_BI" "ur_IN"
+        "en_MG" "en_WS" "fi_FI" "fr_TD" "is_IS" "lo_LA" "nl_NL" "ur_PK" "ak_GH"
+        "en_AG" "en_MH" "en_ZA" "fr_TG" "nl_SR" "ro_MD" "en_AI" "en_MO" "en_ZM"
+        "fo_FO" "fr_TN" "it_CH" "lt_LT" "nl_SX" "ro_RO" "uz_AF" "am_ET" "en_AS"
+        "en_MP" "en_ZW" "fr_VU" "it_IT" "bn_BD" "en_AU" "en_MS" "fr_BE" "fr_WF"
+        "it_SM" "lu_CD" "nn_NO" "ru_BY" "ar_AE" "bn_IN" "en_BB" "en_MT" "fr_BF"
+        "fr_YT" "ru_KG" "sr_ME" "ar_BH" "en_BE" "en_MU" "es_AR" "fr_BI" "ja_JP"
+        "lv_LV" "no_NO" "ru_KZ" "sr_RS" "ar_DJ" "bo_CN" "en_BM" "en_MW" "es_BO"
+        "fr_BJ" "fy_NL" "ru_MD" "sr_XK" "ar_DZ" "bo_IN" "en_BS" "en_MY" "es_CL"
+        "fr_BL" "ka_GE" "mg_MG" "om_ET" "ru_RU" "ar_EG" "en_BW" "en_NA" "es_CO"
+        "fr_CA" "ga_IE" "om_KE" "ru_UA" "sv_AX" "uz_UZ" "ar_EH" "br_FR" "en_BZ"
+        "en_NF" "es_CR" "fr_CD" "ki_KE" "mk_MK" "sv_FI" "ar_ER" "en_CA" "en_NG"
+        "es_CU" "fr_CF" "gd_GB" "or_IN" "rw_RW" "sv_SE" "vi_VN" "ar_IL" "bs_BA"
+        "en_CC" "en_NR" "es_DO" "fr_CG" "ml_IN" "ar_IQ" "en_CK" "en_NU" "es_EA"
+        "fr_CH" "gl_ES" "os_GE" "se_FI" "sw_CD" "ar_JO" "en_CM" "en_NZ" "es_EC"
+        "fr_CI" "kk_KZ" "os_RU" "se_NO" "sw_KE" "yo_BJ" "ar_KM" "en_CX" "en_PG"
+        "es_ES" "fr_CM" "gu_IN" "se_SE" "sw_TZ" "yo_NG" "ar_KW" "en_DG" "en_PH"
+        "es_GQ" "fr_DJ" "kl_GL" "mn_MN" "sw_UG" "ar_LB" "en_DM" "en_PK" "es_GT"
+        "fr_DZ" "gv_IM" "sg_CF" "zh_CN" "ar_LY" "ca_AD" "en_ER" "en_PN" "es_HN"
+        "fr_FR" "km_KH" "mr_IN" "ta_IN" "zh_HK" "ar_MA" "ca_ES" "en_FJ" "en_PR"
+        "es_IC" "fr_GA" "ha_GH" "sh_BA" "ta_LK" "ar_MR" "ca_FR" "en_FK" "en_PW"
+        "es_MX" "fr_GF" "kn_IN" "ms_BN" "pa_IN" "ta_MY" "ar_OM" "ca_IT" "en_FM"
+        "en_RW" "es_NI" "fr_GN" "pa_PK" "si_LK" "ta_SG" "ar_PS" "en_GB" "en_SB"
+        "es_PA" "fr_GP" "ko_KP" "ar_QA" "cs_CZ" "en_GD" "en_SC" "es_PE" "fr_GQ"
+        "ko_KR" "pl_PL" "sk_SK" "te_IN" "ar_SA" "en_GG" "en_SD" "es_PH" "fr_HT"
+        "ha_NE" "ar_SD" "cy_GB" "en_GH" "en_SG" "es_PR" "fr_KM" "ha_NG" "ms_MY"
+        "ps_AF" "sl_SI" "th_TH" "ar_SO" "en_GI" "en_SH" "es_PY" "fr_LU" "ms_SG"
+        "ar_SS" "da_DK" "en_GM" "en_SL" "es_SV" "fr_MA" "he_IL" "ks_IN" "pt_AO"
+        "sn_ZW" "ti_ER" "ar_SY" "da_GL" "en_GU" "en_SS" "es_US" "fr_MC" "mt_MT"
+        "pt_BR" "ti_ET" "zh_MO" "ar_TD" "en_GY" "en_SX" "es_UY" "fr_MF" "hi_IN"
+        "kw_GB" "pt_CV" "so_DJ" "zh_SG" "ar_TN" "de_AT" "en_HK" "en_SZ" "es_VE"
+        "fr_MG" "my_MM" "pt_GW" "so_ET" "tl_PH" "zh_TW" "ar_YE" "de_BE" "en_IE"
+        "en_TC" "fr_ML" "hr_BA" "pt_MO" "so_KE" "de_CH" "en_IM" "en_TK" "et_EE"
+        "fr_MQ" "hr_HR" "nb_NO" "pt_MZ" "so_SO" "to_TO" "zu_ZA" "as_IN" "de_DE"
+        "en_IN" "en_TO" "fr_MR" "ky_KG" "nb_SJ" "pt_PT" "de_LI" "en_IO" "en_TT"
+        "eu_ES" "fr_MU" "hu_HU" "pt_ST" "sq_AL" "tr_CY" "az_AZ" "de_LU" "en_JE"
+        "en_TV" "fr_NC" "lb_LU" "nd_ZW" "pt_TL" "sq_MK" "tr_TR" "en_JM" "en_TZ"
+        "fa_AF" "fr_NE" "hy_AM" "sq_XK" "dz_BT" "en_KE" "en_UG" "fa_IR" "fr_PF"
+        "lg_UG" "ne_IN" "qu_BO" "en_KI" "en_UM" "fr_PM" "id_ID" "ne_NP" "qu_EC"
+        "sr_BA" "ee_GH" "en_KN" "en_US" "ff_CM" "fr_RE" "ln_AO" "qu_PE" "ug_CN"
+        "ee_TG" "en_KY" "en_VC" "ff_GN" "fr_RW" "ig_NG" "ln_CD" "nl_AW")
+  "The list of languages available for spell checking in `set-spell-check-languages'.")
+
+(define-command-global set-spell-check-languages
+    (&key (buffer (current-buffer))
+     (languages (prompt :prompt "Languages to spell check"
+                        :sources (make-instance 'prompter:source
+                                                :name "Language codes"
+                                                :enable-marks-p t
+                                                :constructor *spell-check-languages*))))
+  (let ((pointer (cffi:foreign-alloc :string
+                                     :initial-contents languages
+                                     :null-terminated-p t)))
+    (webkit:webkit-web-context-set-spell-checking-languages
+     (webkit:webkit-web-view-web-context (gtk-object buffer))
+     pointer)
+    (cffi:foreign-free pointer)))
+
 (defun make-context (name &key ephemeral-p)
   (let* ((context
            (if ephemeral-p
@@ -834,7 +906,23 @@ See `gtk-browser's `modifier-translator' slot."
                                                            (cffi:null-pointer)))))))
          (gtk-extensions-path (files:expand (make-instance 'gtk-extensions-directory)))
          (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
-    (unless (uiop:emptyp gtk-extensions-path)
+    (webkit:webkit-web-context-set-spell-checking-enabled context t)
+    ;; Need to set the initial language list.
+    (let ((pointer (cffi:foreign-alloc :string
+                                       :initial-contents (list (or (uiop:getenv "LANG")
+                                                                   (uiop:getenv "LANGUAGE")
+                                                                   (uiop:getenv "LC_CTYPE")
+                                                                   "en_US"))
+                                       :null-terminated-p t)))
+      (webkit:webkit-web-context-set-spell-checking-languages context pointer)
+      (cffi:foreign-free pointer))
+    (when (and (not (nfiles:nil-pathname-p gtk-extensions-path))
+               ;; Either the directory exists.
+               (or (uiop:directory-exists-p gtk-extensions-path)
+                   ;; Or try to create it.
+                   (handler-case
+                       (nth-value 1 (ensure-directories-exist gtk-extensions-path))
+                     (file-error ()))))
       (log:info "GTK extensions directory: ~s" gtk-extensions-path)
       ;; TODO: Should we also use `connect-signal' here?  Does this yield a memory leak?
       (gobject:g-signal-connect
@@ -1001,9 +1089,6 @@ See `finalize-buffer'."
     (setf toplevel-p (quri:uri=
                       url (quri:uri (webkit:webkit-web-view-uri
                                      (gtk-object buffer)))))
-    (setf toplevel-p (quri:uri=
-                      url (quri:uri (webkit:webkit-web-view-uri
-                                     (gtk-object buffer)))))
     (when toplevel-p
       (apply-auto-rules url buffer))
     (let* ((request-data
@@ -1051,10 +1136,10 @@ See `finalize-buffer'."
        ((and (quri:uri= url (url request-data))
              (str:starts-with-p "text/gemini" (mime-type request-data)))
         (log:debug "Processing gemtext from ~a." (render-url url))
-        (enable-modes* 'nyxt/small-web-mode:small-web-mode (buffer request-data))
+        (enable-modes* 'nyxt/mode/small-web:small-web-mode (buffer request-data))
         (webkit:webkit-policy-decision-ignore response-policy-decision)
         (ffi-buffer-load-html
-         buffer (nyxt/small-web-mode:gemtext-render (or (ignore-errors (dex:get (quri:render-uri url))) "") buffer)
+         buffer (nyxt/mode/small-web:gemtext-render (or (ignore-errors (dex:get (quri:render-uri url))) "") buffer)
          url))
        ((not (known-type-p request-data))
         (log:debug "Initiate download of ~s." (render-url (url request-data)))
@@ -1263,8 +1348,8 @@ the `active-buffer'."
                                              (webkit:webkit-file-chooser-request-selected-files
                                               file-chooser-request)))
                                            (uiop:native-namestring (uiop:getcwd)))
-                                   :extra-modes 'nyxt/file-manager-mode:file-manager-mode
-                                   :sources (make-instance 'nyxt/file-manager-mode:file-source
+                                   :extra-modes 'nyxt/mode/file-manager:file-manager-mode
+                                   :sources (make-instance 'nyxt/mode/file-manager:file-source
                                                            :enable-marks-p multiple))
                          (prompt-buffer-canceled ()
                            nil)))))
@@ -1279,74 +1364,6 @@ the `active-buffer'."
                                    :null-terminated-p t))
               (webkit:webkit-file-chooser-request-cancel file-chooser-request))))
       t)))
-
-(defvar *css-colors*
-  '("AliceBlue" "AntiqueWhite" "Aqua" "Aquamarine" "Azure" "Beige" "Bisque" "Black" "BlanchedAlmond"
-    "Blue" "BlueViolet" "Brown" "BurlyWood" "CadetBlue" "Chartreuse" "Chocolate" "Coral"
-    "CornflowerBlue" "Cornsilk" "Crimson" "Cyan" "DarkBlue" "DarkCyan" "DarkGoldenRod" "DarkGray"
-    "DarkGrey" "DarkGreen" "DarkKhaki" "DarkMagenta" "DarkOliveGreen" "DarkOrange" "DarkOrchid"
-    "DarkRed" "DarkSalmon" "DarkSeaGreen" "DarkSlateBlue" "DarkSlateGray" "DarkSlateGrey"
-    "DarkTurquoise" "DarkViolet" "DeepPink" "DeepSkyBlue" "DimGray" "DimGrey" "DodgerBlue"
-    "FireBrick" "FloralWhite" "ForestGreen" "Fuchsia" "Gainsboro" "GhostWhite" "Gold" "GoldenRod"
-    "Gray" "Grey" "Green" "GreenYellow" "HoneyDew" "HotPink" "IndianRed" "Indigo" "Ivory" "Khaki"
-    "Lavender" "LavenderBlush" "LawnGreen" "LemonChiffon" "LightBlue" "LightCoral" "LightCyan"
-    "LightGoldenRodYellow" "LightGray" "LightGrey" "LightGreen" "LightPink" "LightSalmon"
-    "LightSeaGreen" "LightSkyBlue" "LightSlateGray" "LightSlateGrey" "LightSteelBlue" "LightYellow"
-    "Lime" "LimeGreen" "Linen" "Magenta" "Maroon" "MediumAquaMarine" "MediumBlue" "MediumOrchid"
-    "MediumPurple" "MediumSeaGreen" "MediumSlateBlue" "MediumSpringGreen" "MediumTurquoise"
-    "MediumVioletRed" "MidnightBlue" "MintCream" "MistyRose" "Moccasin" "NavajoWhite" "Navy"
-    "OldLace" "Olive" "OliveDrab" "Orange" "OrangeRed" "Orchid" "PaleGoldenRod" "PaleGreen"
-    "PaleTurquoise" "PaleVioletRed" "PapayaWhip" "PeachPuff" "Peru" "Pink" "Plum" "PowderBlue"
-    "Purple" "RebeccaPurple" "Red" "RosyBrown" "RoyalBlue" "SaddleBrown" "Salmon" "SandyBrown"
-    "SeaGreen" "SeaShell" "Sienna" "Silver" "SkyBlue" "SlateBlue" "SlateGray" "SlateGrey" "Snow"
-    "SpringGreen" "SteelBlue" "Tan" "Teal" "Thistle" "Tomato" "Turquoise" "Violet" "Wheat" "White"
-    "WhiteSmoke" "Yellow" "YellowGreen")
-  "All the named CSS colors to construct `color-source' from.")
-
-(defun contrasting-color (color)
-  (let ((rgba (gdk:gdk-rgba-parse color)))
-    (flet ((relative-luminance (components)
-             (loop for const in '(0.2126 0.7152 0.0722)
-                   for rgb-component in components
-                   sum (* const (if (<= rgb-component 0.03928)
-                                    (/ rgb-component 12.92)
-                                    (expt (/ (+ rgb-component 0.055) 1.055) 2.4))))))
-      (if (< (relative-luminance (list (gdk:gdk-rgba-red rgba)
-                                       (gdk:gdk-rgba-green rgba)
-                                       (gdk:gdk-rgba-blue rgba)))
-             ;; Roughly the luminance of #777, the color
-             ;; equally contrasting with black and white.
-             0.2)
-          "white"
-          "black"))))
-
-(define-class color-source (prompter:source)
-  ((prompter:name "Color")
-   (prompter:constructor *css-colors*)
-   (prompter:filter-preprocessor #'prompter:filter-exact-matches)
-   (prompter:filter-postprocessor
-    (lambda (suggestions source input)
-      (let ((input-color input))
-        (cons (make-instance 'prompter:suggestion
-                             :value input-color
-                             :attributes (prompter:object-attributes input-color source))
-              suggestions))))
-   (prompter:actions-on-current-suggestion-enabled-p t)
-   (prompter:actions-on-current-suggestion
-    (lambda (color)
-      (ps-eval :buffer (current-prompt-buffer)
-        (setf (ps:@ (nyxt/ps:qs document "#input") style background-color) (ps:lisp color)))
-      (ps-eval :buffer (current-prompt-buffer)
-               (setf (ps:@ (nyxt/ps:qs document "#input") style color) (ps:lisp (contrasting-color color))))))))
-
-(defmethod prompter:object-attributes ((color string) (source color-source))
-  `(("Color"
-     ,color
-     ,(let ((spinneret:*html-style* :tree))
-        (spinneret:with-html-string
-          (:span :style (format nil "background-color: ~a; color: ~a; border: 0.1em solid ~a; border-radius: 0.1em"
-                                color (contrasting-color color) (contrasting-color color))
-                 color))))))
 
 (defun process-color-chooser-request (web-view color-chooser-request)
   (declare (ignore web-view))
@@ -1487,10 +1504,14 @@ the `active-buffer'."
   (when (document-buffer-p buffer)
     (setf (ffi-buffer-smooth-scrolling-enabled-p buffer) (smooth-scrolling buffer)))
   ;; TODO: Maybe define an FFI method?
-  (when (getf *options* :verbose)
-    (setf (webkit:webkit-settings-enable-write-console-messages-to-stdout
-           (webkit:webkit-web-view-get-settings (gtk-object buffer)))
-          t))
+  (let ((settings (webkit:webkit-web-view-get-settings (gtk-object buffer))))
+    (when (getf *options* :verbose)
+      (setf (webkit:webkit-settings-enable-write-console-messages-to-stdout settings)
+            t))
+    (setf (webkit:webkit-settings-enable-resizable-text-areas settings) t
+          (webkit:webkit-settings-enable-developer-extras settings) t
+          (webkit:webkit-settings-enable-page-cache settings) t
+          (webkit:webkit-settings-enable-encrypted-media settings) t))
   (connect-signal-function buffer "decide-policy" (make-decide-policy-handler buffer))
   (connect-signal buffer "resource-load-started" nil (web-view resource request)
     (declare (ignore web-view))
@@ -1613,55 +1634,57 @@ the `active-buffer'."
       (gtk-object (make-buffer-focus :url (quri:uri url) :parent-buffer (current-buffer)))))
   (connect-signal buffer "context-menu" nil (web-view context-menu event hit-test-result)
     (declare (ignore web-view event hit-test-result))
-    (let ((length (webkit:webkit-context-menu-get-n-items context-menu)))
-      (dotimes (i length)
-        (if (status-buffer-p buffer)
-            (webkit:webkit-context-menu-remove
-             context-menu (webkit:webkit-context-menu-get-item-at-position context-menu i))
-            (let ((item (webkit:webkit-context-menu-get-item-at-position context-menu i)))
-              (match (webkit:webkit-context-menu-item-get-stock-action item)
-                (:webkit-context-menu-action-open-link-in-new-window
-                 (webkit:webkit-context-menu-remove context-menu item)
-                 (webkit:webkit-context-menu-insert
-                  context-menu
-                  (webkit:webkit-context-menu-item-new-from-stock-action-with-label
-                   :webkit-context-menu-action-open-link-in-new-window
-                   "Open Link in New Buffer")
-                  i))))))
-      (webkit:webkit-context-menu-append
-       context-menu (webkit:webkit-context-menu-item-new-separator))
-      (let* ((accessible-commands
-               (mapcar #'name
-                       (nyxt::list-commands
-                        :global-p t
-                        :mode-symbols (mapcar #'sera:class-name-of
-                                              (sera:filter #'enabled-p (modes buffer)))))))
-        (maphash (lambda (label function)
-                   (flet ((make-item (label function)
-                            ;; Using stock actions here, because cl-cffi-gtk has a terrible API
-                            ;; for GActions, requiring an exact type to be passed and disallowing
-                            ;; NULL as a type :/
-                            (sera:lret ((item (webkit:webkit-context-menu-item-new-from-stock-action-with-label
-                                               :webkit-context-menu-action-action-custom label)))
-                              (gobject:g-signal-connect
-                               (webkit:webkit-context-menu-item-get-g-action item) "activate"
-                               (lambda (action parameter)
-                                 (declare (ignore action parameter))
-                                 (nyxt::run-async function))))))
-                     (cond
-                       ((or (and (command-p function)
-                                 (member function accessible-commands))
-                            (functionp function))
-                        (webkit:webkit-context-menu-append context-menu (make-item label function)))
-                       ((listp function)
-                        (let ((submenu (webkit:webkit-context-menu-new)))
-                          (loop for (command command-label) in function
-                                do (webkit:webkit-context-menu-append
-                                    submenu (make-item command-label command)))
-                          (webkit:webkit-context-menu-append
-                           context-menu
-                           (webkit:webkit-context-menu-item-new-with-submenu label submenu)))))))
-                 nyxt::*context-menu-commands*)))
+    (loop with length = (webkit:webkit-context-menu-get-n-items context-menu)
+          for i below length
+          for item = (webkit:webkit-context-menu-get-item-at-position context-menu i)
+          when (and (status-buffer-p buffer)
+                    (not (eq (webkit:webkit-context-menu-item-get-stock-action item)
+                             :webkit-context-menu-action-inspect-element)))
+            do (webkit:webkit-context-menu-remove context-menu item)
+          else
+            do (match (webkit:webkit-context-menu-item-get-stock-action item)
+                 (:webkit-context-menu-action-open-link-in-new-window
+                  (webkit:webkit-context-menu-remove context-menu item)
+                  (webkit:webkit-context-menu-insert
+                   context-menu
+                   (webkit:webkit-context-menu-item-new-from-stock-action-with-label
+                    :webkit-context-menu-action-open-link-in-new-window
+                    "Open Link in New Buffer")
+                   i))))
+    (webkit:webkit-context-menu-append
+     context-menu (webkit:webkit-context-menu-item-new-separator))
+    (let* ((accessible-commands
+             (mapcar #'name
+                     (nyxt::list-commands
+                      :global-p t
+                      :mode-symbols (mapcar #'sera:class-name-of
+                                            (sera:filter #'enabled-p (modes buffer)))))))
+      (maphash (lambda (label function)
+                 (flet ((make-item (label function)
+                          ;; Using stock actions here, because cl-cffi-gtk has a terrible API
+                          ;; for GActions, requiring an exact type to be passed and disallowing
+                          ;; NULL as a type :/
+                          (sera:lret ((item (webkit:webkit-context-menu-item-new-from-stock-action-with-label
+                                             :webkit-context-menu-action-action-custom label)))
+                            (gobject:g-signal-connect
+                             (webkit:webkit-context-menu-item-get-g-action item) "activate"
+                             (lambda (action parameter)
+                               (declare (ignore action parameter))
+                               (nyxt::run-async function))))))
+                   (cond
+                     ((or (and (command-p function)
+                               (member function accessible-commands))
+                          (functionp function))
+                      (webkit:webkit-context-menu-append context-menu (make-item label function)))
+                     ((listp function)
+                      (let ((submenu (webkit:webkit-context-menu-new)))
+                        (loop for (command command-label) in function
+                              do (webkit:webkit-context-menu-append
+                                  submenu (make-item command-label command)))
+                        (webkit:webkit-context-menu-append
+                         context-menu
+                         (webkit:webkit-context-menu-item-new-with-submenu label submenu)))))))
+               nyxt::*context-menu-commands*))
     nil)
   (connect-signal buffer "enter-fullscreen" nil (web-view)
     (declare (ignore web-view))
@@ -1790,25 +1813,25 @@ local anyways, and it's better to refresh it if a load was queried."
   (let* ((content-manager
            (webkit:webkit-web-view-get-user-content-manager
             (gtk-object buffer)))
-         (frames (if (nyxt/user-script-mode:all-frames-p style)
+         (frames (if (nyxt/mode/user-script:all-frames-p style)
                      :webkit-user-content-inject-all-frames
                      :webkit-user-content-inject-top-frame))
-         (style-level (if (eq (nyxt/user-script-mode:level style) :author)
+         (style-level (if (eq (nyxt/mode/user-script:level style) :author)
                           :webkit-user-style-level-author
                           :webkit-user-style-level-user))
          (style-sheet
-           (if (nyxt/user-script-mode:world-name style)
+           (if (nyxt/mode/user-script:world-name style)
                (webkit:webkit-user-style-sheet-new-for-world
-                (nyxt/user-script-mode:code style)
+                (nyxt/mode/user-script:code style)
                 frames style-level
-                (nyxt/user-script-mode:world-name style)
-                (list-of-string-to-foreign (nyxt/user-script-mode:include style))
-                (list-of-string-to-foreign (nyxt/user-script-mode:exclude style)))
+                (nyxt/mode/user-script:world-name style)
+                (list-of-string-to-foreign (nyxt/mode/user-script:include style))
+                (list-of-string-to-foreign (nyxt/mode/user-script:exclude style)))
                (webkit:webkit-user-style-sheet-new
-                (nyxt/user-script-mode:code style)
+                (nyxt/mode/user-script:code style)
                 frames style-level
-                (list-of-string-to-foreign (nyxt/user-script-mode:include style))
-                (list-of-string-to-foreign (nyxt/user-script-mode:exclude style))))))
+                (list-of-string-to-foreign (nyxt/mode/user-script:include style))
+                (list-of-string-to-foreign (nyxt/mode/user-script:exclude style))))))
     (setf (gtk-object style) style-sheet)
     (webkit:webkit-user-content-manager-add-style-sheet
      content-manager style-sheet)
@@ -1830,25 +1853,25 @@ local anyways, and it's better to refresh it if a load was queried."
 
 
 (define-ffi-method ffi-buffer-add-user-script ((buffer gtk-buffer) (script gtk-user-script))
-  (alex:if-let ((code (nyxt/user-script-mode:code script)))
+  (alex:if-let ((code (nyxt/mode/user-script:code script)))
     (let* ((content-manager
              (webkit:webkit-web-view-get-user-content-manager
               (gtk-object buffer)))
-           (frames (if (nyxt/user-script-mode:all-frames-p script)
+           (frames (if (nyxt/mode/user-script:all-frames-p script)
                        :webkit-user-content-inject-all-frames
                        :webkit-user-content-inject-top-frame))
-           (inject-time (if (eq :document-start (nyxt/user-script-mode:run-at script))
+           (inject-time (if (eq :document-start (nyxt/mode/user-script:run-at script))
                             :webkit-user-script-inject-at-document-start
                             :webkit-user-script-inject-at-document-end))
            (allow-list (list-of-string-to-foreign
-                        (or (nyxt/user-script-mode:include script)
+                        (or (nyxt/mode/user-script:include script)
                             '("http://*/*" "https://*/*"))))
            (block-list (list-of-string-to-foreign
-                        (nyxt/user-script-mode:exclude script)))
-           (user-script (if (nyxt/user-script-mode:world-name script)
+                        (nyxt/mode/user-script:exclude script)))
+           (user-script (if (nyxt/mode/user-script:world-name script)
                             (webkit:webkit-user-script-new-for-world
                              code frames inject-time
-                             (nyxt/user-script-mode:world-name script) allow-list block-list)
+                             (nyxt/mode/user-script:world-name script) allow-list block-list)
                             (webkit:webkit-user-script-new
                              code frames inject-time allow-list block-list))))
       (setf (gtk-object script) user-script)
@@ -1894,26 +1917,45 @@ local anyways, and it's better to refresh it if a load was queried."
    buffer (alex:alist-hash-table `(("audible" . ,value))))
   (webkit:webkit-web-view-set-is-muted (gtk-object buffer) (not value)))
 
+;; KLUDGE: PDF.js in WebKit (actual for version 2.41.4) always saves
+;; PDFs as "document.pdf". This is because WebKit does not pass "file"
+;; parameter to the viewer. See
+;; https://stackoverflow.com/questions/47098206/pdf-js-downloading-as-document-pdf-instead-of-filename .
+;; Here we restore the original file name from an URL if a suggested
+;; file name looks suspicious.
+(sera:-> maybe-fix-pdfjs-filename (string quri:uri)
+         (values string &optional))
+(defun maybe-fix-pdfjs-filename (suggested-file-name uri)
+  (let ((pathname (pathname (quri:uri-path uri))))
+    (if (and (string= suggested-file-name "document.pdf")
+             (string= (pathname-type pathname) "pdf"))
+        (uiop:native-namestring
+         (make-pathname :name (pathname-name pathname)
+                        :type "pdf"))
+        suggested-file-name)))
+
 (defun wrap-download (webkit-download)
-  (sera:lret ((download (make-instance 'nyxt/download-mode:download
+  (sera:lret ((original-url (url (current-buffer)))
+              (download (make-instance 'nyxt/mode/download:download
                                        :url (webkit:webkit-uri-request-uri
                                              (webkit:webkit-download-get-request webkit-download))
                                        :gtk-object webkit-download)))
-    (nyxt/download-mode:list-downloads)
-    (setf (nyxt/download-mode::cancel-function download)
+    (nyxt/mode/download:list-downloads)
+    (setf (nyxt/mode/download::cancel-function download)
           #'(lambda ()
-              (setf (nyxt/download-mode:status download) :canceled)
+              (setf (nyxt/mode/download:status download) :canceled)
               (webkit:webkit-download-cancel webkit-download)))
-    (hooks:run-hook (nyxt/download-mode:before-download-hook download) download)
+    (hooks:run-hook (nyxt/mode/download:before-download-hook download) download)
     (push download (downloads *browser*))
     (connect-signal download "received-data" nil (webkit-download data-length)
       (declare (ignore data-length))
-      (setf (nyxt/download-mode:bytes-downloaded download)
+      (setf (nyxt/mode/download:bytes-downloaded download)
             (webkit:webkit-download-get-received-data-length webkit-download))
-      (setf (nyxt/download-mode:completion-percentage download)
+      (setf (nyxt/mode/download:completion-percentage download)
             (* 100 (webkit:webkit-download-estimated-progress webkit-download))))
     (connect-signal download "decide-destination" nil (webkit-download suggested-file-name)
-      (alex:when-let* ((download-dir (or (ignore-errors
+      (alex:when-let* ((suggested-file-name (maybe-fix-pdfjs-filename suggested-file-name original-url))
+                       (download-dir (or (ignore-errors
                                           (download-directory
                                            (find (webkit:webkit-download-get-web-view webkit-download)
                                                  (buffer-list) :key #'gtk-object)))
@@ -1930,28 +1972,28 @@ local anyways, and it's better to refresh it if a load was queried."
         (webkit:webkit-download-set-destination webkit-download file-path)))
     (connect-signal download "created-destination" nil (webkit-download destination)
       (declare (ignore destination))
-      (setf (nyxt/download-mode:destination-path download)
+      (setf (nyxt/mode/download:destination-path download)
             (uiop:ensure-pathname
              (quri:uri-path (quri:uri
                              (webkit:webkit-download-destination webkit-download))))))
     (connect-signal download "failed" nil (webkit-download error)
       (declare (ignore error))
-      (unless (eq (nyxt/download-mode:status download) :canceled)
-        (setf (nyxt/download-mode:status download) :failed))
+      (unless (eq (nyxt/mode/download:status download) :canceled)
+        (setf (nyxt/mode/download:status download) :failed))
       (echo "Download failed for ~s."
             (webkit:webkit-uri-request-uri
              (webkit:webkit-download-get-request webkit-download))))
     (connect-signal download "finished" nil (webkit-download)
       (declare (ignore webkit-download))
-      (unless (member (nyxt/download-mode:status download) '(:canceled :failed))
-        (setf (nyxt/download-mode:status download) :finished)
+      (unless (member (nyxt/mode/download:status download) '(:canceled :failed))
+        (setf (nyxt/mode/download:status download) :finished)
         ;; If download was too small, it may not have been updated.
-        (setf (nyxt/download-mode:completion-percentage download) 100)
-        (hooks:run-hook (nyxt/download-mode:after-download-hook download) download)))))
+        (setf (nyxt/mode/download:completion-percentage download) 100)
+        (hooks:run-hook (nyxt/mode/download:after-download-hook download) download)))))
 
 (defmethod ffi-buffer-download ((buffer gtk-buffer) url)
   (let* ((webkit-download (webkit:webkit-web-view-download-uri (gtk-object buffer) url))
-         (download (make-instance 'nyxt/download-mode:download
+         (download (make-instance 'nyxt/mode/download:download
                                   :url url
                                   :gtk-object webkit-download)))
     (wrap-download webkit-download)
@@ -2025,9 +2067,6 @@ custom (the specified proxy) and none."
   (gdk:gdk-event-send-event event))
 
 (define-ffi-method ffi-inspector-show ((buffer gtk-buffer))
-  (setf (webkit:webkit-settings-enable-developer-extras
-         (webkit:webkit-web-view-get-settings (gtk-object buffer)))
-        t)
   (webkit:webkit-web-inspector-show
    (webkit:webkit-web-view-get-inspector (gtk-object buffer))))
 
@@ -2255,6 +2294,22 @@ As a second value, return the current buffer index starting from 0."
         (gtk-object gtk-buffer) webkit2:+webkit-editing-command-redo+)))
    (lambda (e) (echo-warning "Cannot redo: ~a" e))))
 
+(defmethod reload-buffer :around (&optional (buffer (prompt
+                                                     :prompt "Reload buffer(s)"
+                                                     :sources (make-instance 'buffer-source))))
+  "Override Nyxt reload with a DWIM one from WebKit."
+  ;; FIXME: We use `reload-buffer' on unloaded buffers???
+  (if (member (nyxt::status buffer) '(:unloaded))
+      (call-next-method)
+      (webkit:webkit-web-view-reload (gtk-object buffer))))
+
+(define-command-global force-reload-buffers (&optional (buffer (prompt
+                                                                :prompt "Reload buffer(s)"
+                                                                :sources (make-instance 'buffer-source))))
+  "Reload the BUFFER(s) bypassing renderer CSS cache.
+WebKit-specific."
+  (webkit:webkit-web-view-reload-bypass-cache (gtk-object buffer)))
+
 (define-class context-source (prompter:source)
   ((prompter:name "Context list")
    (prompter:constructor (sort (delete-duplicates (append (mapcar #'context-name (buffer-list))
@@ -2287,11 +2342,11 @@ See `make-buffer' for a description of the other arguments."
     (mapc #'set-superclasses '((renderer-browser gtk-browser)
                                (renderer-window gtk-window)
                                (renderer-buffer gtk-buffer)
-                               (nyxt/download-mode:renderer-download gtk-download)
+                               (nyxt/mode/download:renderer-download gtk-download)
                                (renderer-request-data gtk-request-data )
                                (renderer-scheme gtk-scheme)
-                               (nyxt/user-script-mode:renderer-user-style gtk-user-style)
-                               (nyxt/user-script-mode:renderer-user-script gtk-user-script)))))
+                               (nyxt/mode/user-script:renderer-user-style gtk-user-style)
+                               (nyxt/mode/user-script:renderer-user-script gtk-user-script)))))
 
 (defmethod uninstall ((renderer gtk-renderer))
   (flet ((remove-superclasses (renderer-class-sym)
@@ -2302,10 +2357,13 @@ See `make-buffer' for a description of the other arguments."
     (mapc #'remove-superclasses '(renderer-browser
                                   renderer-window
                                   renderer-buffer
-                                  nyxt/download-mode:renderer-download
+                                  nyxt/mode/download:renderer-download
                                   renderer-request-data
                                   renderer-scheme
-                                  nyxt/user-script-mode:renderer-user-style
-                                  nyxt/user-script-mode:renderer-user-script))))
+                                  nyxt/mode/user-script:renderer-user-style
+                                  nyxt/mode/user-script:renderer-user-script))))
 
 (setf nyxt::*renderer* (make-instance 'gtk-renderer))
+
+(defmethod browser-schemes append ((browser gtk-browser))
+  '("webkit" "webkit-pdfjs-viewer"))

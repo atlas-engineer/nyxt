@@ -15,8 +15,7 @@
                     (current-keymaps buffer))))
     `(("Name" ,(string-downcase (closer-mop:generic-function-name command)))
       ("Bindings" ,(format nil "~{~a~^, ~}" bindings))
-      ("Docstring" ,(or (first (sera::lines (documentation command 'function)))
-                        "") nil 4)
+      ("Docstring" ,(documentation-line command 'function "") nil 4)
       ("Mode" ,(let ((package-name (str:downcase (uiop:symbol-package-name (closer-mop:generic-function-name command)))))
                  (if (sera:in package-name "nyxt" "nyxt-user")
                      ""
@@ -113,8 +112,7 @@ Includes all commands and modes, and adds arbitrary Lisp functions on top of tha
         (*print-case* :downcase))
     `(("Expression" ,(format nil "~s" extended-command))
       ("Arguments" ,(remove #\newline (format nil "~{~a~^ ~}" (arglist function))))
-      ("Documentation" ,(or (first (sera::lines (documentation function 'function)))
-                            "") nil 4))))
+      ("Documentation" ,(documentation-line function 'function "") nil 4))))
 
 (defmethod prompter:object-attributes ((extended-command symbol) (source extended-command-source))
   (declare (ignore source))
@@ -123,7 +121,7 @@ Includes all commands and modes, and adds arbitrary Lisp functions on top of tha
         (let ((function (symbol-function extended-command)))
           `(("Expression" ,(format nil "~s" extended-command))
             ("Arguments" ,(remove #\newline (format nil "~{~a~^ ~}" (arglist function))))
-            ("Documentation" ,(or (first (sera::lines (documentation function 'function))) "") nil 4)))
+            ("Documentation" ,(documentation-line function 'function "") nil 4)))
         `(("Expression" ,(prini-to-string extended-command))
           ("Arguments" "")
           ("Documentation" ,(or (documentation extended-command 'variable) "") nil 4)))))
@@ -151,11 +149,21 @@ together with the arglists and documentations of the functions typed in."
                     (make-instance
                      'extended-command-source
                      :actions-on-return
-                     (lambda-command evaluate-lisp-expression* (exprs)
-                       "Evaluate the inputted Lisp expression."
-                       (run-thread "evaluator"
-                         (let ((*interactive-p* t))
-                           (echo "~s" (eval (first exprs)))))))
+                     (list
+                      (lambda-command evaluate-lisp-expression* (exprs)
+                        "Evaluate the Lisp expression and print the result to message buffer."
+                        (run-thread "evaluator"
+                          (let ((*interactive-p* t))
+                            (echo "~{~s~^, ~}" (multiple-value-list (eval (first exprs)))))))
+                      (lambda-command evaluate-lisp-expression-and-describe* (exprs)
+                        "Evaluate the Lisp expression and `describe-value' the result."
+                        (run-thread "evaluator"
+                          (let ((*interactive-p* t))
+                            ;; FIXME: Only supports one value, because internal
+                            ;; pages (including `describe-value') reuse pages
+                            ;; with the same command.
+                            (buffer-load-internal-page-focus
+                             'describe-value :id (ensure-inspected-id (eval (first exprs)))))))))
                     (make-instance
                      'predicted-command-source
                      :actions-on-return

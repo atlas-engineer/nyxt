@@ -88,7 +88,7 @@ Don't set this, it would lose its meaning.")
 (defvar +guix-build-information+
   (when (sera:resolve-executable "guix")
     `(:version
-      ;; `guix describe' is not reliable within `guix environment'.
+      ;; `guix describe' is not reliable within `guix shell'.
       ,(fourth (sera:tokens
                 (first (sera:lines
                         (uiop:run-program '("guix" "--version") :output :string)))))))
@@ -109,11 +109,17 @@ Don't set this, it would lose its meaning.")
 (export-always '+version+)
 (alex:define-constant +version+
     (or (uiop:getenv "NYXT_VERSION")      ; This is useful for build systems without Git.
-        (ignore-errors
-         (uiop:with-current-directory ((asdf:system-source-directory :nyxt))
-           (uiop:run-program (list "git" "describe" "--always" "--tags")
-                             :output '(:string :stripped t))))
-        (asdf/component:component-version (asdf:find-system :nyxt)))
+        (let ((version-from-git-tag
+                (ignore-errors
+                 (uiop:with-current-directory ((asdf:system-source-directory :nyxt))
+                   (uiop:run-program (list "git" "describe" "--always" "--tags")
+                                     :output '(:string :stripped t)))))
+              (version-from-asdf
+                (asdf/component:component-version (asdf:find-system :nyxt))))
+          (if (uiop:version< (first (str:split "-" version-from-git-tag))
+                             version-from-asdf)
+              version-from-asdf
+              version-from-git-tag)))
   :test #'equal)
 
 (defun version ()
@@ -148,6 +154,7 @@ Return nil on error."
     (when +version+
       (push-feature +version+))
     (when (search "pre-release" +version+)
+      (push-feature (format nil "~a-pre-release" major))
       (push-feature (str:join "-" (subseq (str:split "-" +version+) 0 4))))
     (when major
       (push-feature major))

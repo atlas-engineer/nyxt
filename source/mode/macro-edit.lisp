@@ -1,17 +1,25 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/macro-edit-mode
-    (:documentation "Mode for editing macros."))
-(in-package :nyxt/macro-edit-mode)
+(nyxt:define-package :nyxt/mode/macro-edit
+    (:documentation "Package for `macro-edit-mode', mode for editing macros.
+
+There are implementation details for (almost) every command in this mode:
+- `edit-macro': `render-functions'.
+- `add-command': `add-function', `remove-function', `macro-name', and
+  `generate-macro-form'.
+- `save-macro': `macro-form-valid-p'."))
+(in-package :nyxt/mode/macro-edit)
 
 (define-mode macro-edit-mode ()
-  "Mode for creating and editing macros."
+  "Mode for creating and editing macros.
+
+See `nyxt/mode/macro-edit' package documentation for implementation details."
   ((visible-in-status-p nil)
    (macro-name
     ""
     :accessor nil
-    :documentation "The name used for the macro.")
+    :documentation "The descriptive name used for the macro.")
    (functions
     '()
     :documentation "Functions the user has added to their macro."))
@@ -25,7 +33,7 @@
            collect (:tr (:td (:nbutton :class "button"
                                :text "✕"
                                :title "Remove from the macro"
-                               `(nyxt/macro-edit-mode::remove-function
+                               `(nyxt/mode/macro-edit::remove-function
                                  (find-submode 'macro-edit-mode)
                                  ,index)))
                         (:td
@@ -41,7 +49,7 @@
                                    name))))))))
 
 (define-internal-page-command-global edit-macro ()
-    (buffer "*Macro edit*" 'nyxt/macro-edit-mode:macro-edit-mode)
+    (buffer "*Macro edit*" 'nyxt/mode/macro-edit:macro-edit-mode)
   "Edit a macro."
   (spinneret:with-html-string
     (:nstyle (style buffer))
@@ -51,20 +59,20 @@
     (:p "Commands")
     (:p (:nbutton
           :text "+ Add command"
-          '(nyxt/macro-edit-mode::add-command)))
+          '(nyxt/mode/macro-edit::add-command)))
     (:div
      :id "commands"
      (:raw
       (render-functions
-       (find-submode 'nyxt/macro-edit-mode:macro-edit-mode))))
+       (find-submode 'nyxt/mode/macro-edit:macro-edit-mode))))
     (:br)
     (:hr)
     (:nbutton
       :text "Save macro"
-      '(nyxt/macro-edit-mode::save-macro))
+      '(nyxt/mode/macro-edit::save-macro))
     (:nbutton
       :text "Compile macro"
-      '(nyxt/macro-edit-mode::evaluate-macro))))
+      '(nyxt/mode/macro-edit::evaluate-macro))))
 
 (defmethod add-function ((macro-editor macro-edit-mode) command)
   (alex:appendf (functions macro-editor)
@@ -118,5 +126,5 @@
       (progn
         (eval (generate-macro-form macro-editor))
         (echo "Macro compiled, you may now use the ~s command."
-              (name macro-editor)))
+              (macro-name macro-editor)))
       (echo "Macro form is invalid; check it has a title and functions.")))

@@ -1,22 +1,24 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/buffer-listing-mode
-    (:documentation "Mode for buffer-listings"))
-(in-package :nyxt/buffer-listing-mode)
+(nyxt:define-package :nyxt/mode/buffer-listing
+  (:documentation "Package for `buffer-listing-mode', mode for buffer listing."))
+(in-package :nyxt/mode/buffer-listing)
 
 (define-mode buffer-listing-mode ()
-  "Mode for buffer-listing."
+  "Mode for buffer-listing.
+Hosts `list-buffers' page and `buffers-panel' panel."
   ((visible-in-status-p nil))
   (:toggler-command-p nil))
 
 (define-internal-page-command-global list-buffers (&key (cluster nil)
                                                   linear-view-p) ; TODO: Document `cluster'.
-    (listing-buffer "*Buffers*" 'nyxt/buffer-listing-mode:buffer-listing-mode)
-  "Show a buffer listing all buffer trees.
-Buffers have relationships.  When a buffer is spawned from another one (e.g. by
-middle-clicking on a link), the new buffer is a child buffer.
-This kind of relationships creates 'trees' of buffers.
+    (listing-buffer "*Buffers*" 'nyxt/mode/buffer-listing:buffer-listing-mode)
+  "Show all buffers and their interrelations.
+
+When a buffer is spawned from another one (e.g. by middle-clicking on a link),
+the new buffer is a child buffer. This kind of relationships creates 'trees' of
+buffers.
 
 With LINEAR-VIEW-P, list buffers linearly instead."
   (labels ((cluster-buffers ()
@@ -69,10 +71,10 @@ With LINEAR-VIEW-P, list buffers linearly instead."
       (:h1 "Buffers")
       (:nbutton
         :text "Tree display"
-        '(nyxt/buffer-listing-mode::list-buffers))
+        '(nyxt/mode/buffer-listing::list-buffers))
       (:nbutton
         :text "Linear display"
-        '(nyxt/buffer-listing-mode::list-buffers :linear-view-p t))
+        '(nyxt/mode/buffer-listing::list-buffers :linear-view-p t))
       (:br)
       (:div
        (if cluster
@@ -101,12 +103,11 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                    :buffer panel-buffer
                    `(nyxt::switch-buffer :buffer ,buffer))))))
     (spinneret:with-html-string
-      (:nstyle (lass:compile-and-write
-                '(.button
-                  :white-space nowrap
-                  :overflow-x hidden
-                  :display block
-                  :text-overflow ellipsis)))
+      (:nstyle '(.button
+                 :white-space nowrap
+                 :overflow-x hidden
+                 :display block
+                 :text-overflow ellipsis))
       (:body
        (:h1 "Buffers")
        (:nbutton :text "Update ↺"

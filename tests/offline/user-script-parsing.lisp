@@ -18,21 +18,21 @@
 // @noframes
 // ==/UserScript==")
          (file-backed-script (make-instance
-                              'nyxt/user-script-mode:user-script
+                              'nyxt/mode/user-script:user-script
                               :code code :base-path #p"testing-script.user.js"))
-         (virtual-script (make-instance 'nyxt/user-script-mode:user-script :code code)))
+         (virtual-script (make-instance 'nyxt/mode/user-script:user-script :code code)))
     ;; Virtual user script code equality
     (assert-string= code
-                    (nyxt/user-script-mode:code virtual-script))
+                    (nyxt/mode/user-script:code virtual-script))
     ;; Virtual user script noframes
-    (assert-false (nyxt/user-script-mode:all-frames-p virtual-script))
+    (assert-false (nyxt/mode/user-script:all-frames-p virtual-script))
     ;; Virtual user script document start
-    (assert-eq :document-start (nyxt/user-script-mode:run-at virtual-script))
+    (assert-eq :document-start (nyxt/mode/user-script:run-at virtual-script))
     ;; Virtual user script @include
     (assert-equal '("http://*/*" "https://*/*")
-                  (nyxt/user-script-mode:include virtual-script))
+                  (nyxt/mode/user-script:include virtual-script))
     ;; TODO:  Check the file serialization.
     ;; Virtual user script code equality
-    (assert-equal (nyxt/user-script-mode:code virtual-script)
-                  (nyxt/user-script-mode:code file-backed-script))
+    (assert-equal (nyxt/mode/user-script:code virtual-script)
+                  (nyxt/mode/user-script:code file-backed-script))
     (uiop:delete-file-if-exists (files:expand file-backed-script))))

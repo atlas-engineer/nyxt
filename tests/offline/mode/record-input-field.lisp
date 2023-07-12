@@ -6,7 +6,7 @@
 (define-test toggle-record-input-field-mode ()
   (let ((buffer (make-instance 'modable-buffer)))
     (with-current-buffer buffer
-      (assert-true (enable-modes* 'nyxt/record-input-field-mode:record-input-field-mode
+      (assert-true (enable-modes* 'nyxt/mode/record-input-field:record-input-field-mode
                                   buffer))
-      (assert-true (disable-modes* 'nyxt/record-input-field-mode:record-input-field-mode
+      (assert-true (disable-modes* 'nyxt/mode/record-input-field:record-input-field-mode
                                    buffer)))))

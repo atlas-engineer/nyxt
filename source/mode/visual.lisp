@@ -1,14 +1,15 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/visual-mode
-  (:documentation "Visual mode."))
-(in-package :nyxt/visual-mode)
+(nyxt:define-package :nyxt/mode/visual
+  (:documentation "Package for `visual-mode', which enables keyboard-driven HTML selection."))
+(in-package :nyxt/mode/visual)
 
-(define-mode visual-mode (nyxt/hint-mode:hint-mode)
-  "Visual mode. For documentation on commands and keybindings, see the manual."
+(define-mode visual-mode (nyxt/mode/hint:hint-mode)
+  "Visual mode enables HTML element selection and provides commands to select text using keyboard only.
+For documentation on commands and keybindings, see the manual."
   ((rememberable-p nil)
-   (nyxt/hint-mode:hints-selector
+   (nyxt/mode/hint:hints-selector
     "a, b, p, del, h1, h2, h3, h4, h5, h6, i, option,
 strong, sub, sup, listing, xmp, plaintext, basefont, big, blink, center, font,
 marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
@@ -59,8 +60,10 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
       ;; vi keybindings only enable use of vim's plain "visual" mode for now
       keyscheme:vi-normal
       (list
+       "c" 'clear-selection
        "h" 'backward-char
        "l" 'forward-char
+       "p" 'query-selection-in-search-engine
        "k" 'backward-line
        "j" 'forward-line
        "b" 'backward-word
@@ -69,11 +72,13 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
        ")" 'forward-sentence
        "{" 'backward-paragraph
        "}" 'forward-paragraph
+       "escape" 'visual-mode
        "g g" 'backward-document
        "G" 'forward-document
        "0" 'beginning-line
        "$" 'end-line
        "v" 'toggle-mark
+       "y" 'nyxt/mode/document:copy
        "C-c" 'visual-mode)))
    (mark-set nil)))
 
@@ -125,9 +130,9 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
 
 (define-command select-paragraph (&optional (mode (find-submode 'visual-mode)))
   "Add hints to text elements on the page and query them."
-  (nyxt/hint-mode:query-hints "Set caret on element"
+  (nyxt/mode/hint:query-hints "Set caret on element"
                               (lambda (results) (%follow-hint (first results)))
-                              :selector (nyxt/hint-mode:hints-selector mode)))
+                              :selector (nyxt/mode/hint:hints-selector mode)))
 
 (define-parenscript collapsed-p ()
   "Return T if mark's start and end are the same value, nil otherwise."

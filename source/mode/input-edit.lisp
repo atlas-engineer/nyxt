@@ -1,11 +1,24 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/input-edit-mode
-    (:documentation "Mode for editing HTML input areas."))
-(in-package :nyxt/input-edit-mode)
+(nyxt:define-package :nyxt/mode/input-edit
+  (:documentation "Mode for editing HTML input areas with convenient keybindings.
 
-;;;; commands for navigating/editing input fields on HTML pages
+In addition to the commands `input-edit-mode' exposes, there are
+several internal utilities for general HTML input editing:
+- Parenscript functions:
+  - `active-input-area-content'.
+  - `set-active-input-area-content'.
+  - `active-input-area-cursor'.
+  - `set-active-input-area-cursor'.
+- Macros `with-text-buffer' and `with-input-area'.
+- Definition macro `define-input-edit-command'.
+
+Several editing commands are based on `move-n-elements' internal
+function."))
+(in-package :nyxt/mode/input-edit)
+
+;;;; Commands for navigating/editing input fields on HTML pages.
 
 (define-parenscript active-input-area-content ()
   (ps:chain (nyxt/ps:active-element document) value))
@@ -26,7 +39,7 @@
 (export-always 'with-text-buffer)
 (defmacro with-text-buffer ((buffer-name cursor-name
                              &optional initial-contents
-                                       initial-cursor-position)
+                               initial-cursor-position)
                             &body body)
   `(let ((,buffer-name (make-instance 'text-buffer:text-buffer))
          (,cursor-name (make-instance 'text-buffer:cursor)))
@@ -130,9 +143,9 @@
                                     (cluffer:cursor-position cursor)))))
 
 (define-mode input-edit-mode ()
-  "Mode for editing input areas in HTML. Overrides many of the
-bindings in other modes, so you will have to disable/enable it as
-necessary."
+  "Mode for editing input areas in HTML.
+Overrides many of the bindings in other modes, so you will have to
+disable/enable it as necessary."
   ((visible-in-status-p nil)
    (rememberable-p nil)
    (keyscheme-map

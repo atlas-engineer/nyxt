@@ -1,14 +1,17 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :nyxt/editor-mode)
+(in-package :nyxt/mode/editor)
 
 (define-mode plaintext-editor-mode (editor-mode)
   "Mode for basic plaintext editing.
 
+It renders the file in a single textarea HTML element.
+
 To enable it, add this to your configuration file:
-\(define-configuration nyxt/editor-mode::editor-buffer
-  ((default-modes (cons 'nyxt/editor-mode::plaintext-editor-mode %slot-value%))))"
+
+\(define-configuration nyxt/mode/editor::editor-buffer
+  ((default-modes (cons 'nyxt/mode/editor::plaintext-editor-mode %slot-value%))))"
   ((visible-in-status-p nil)
    (rememberable-p nil)
    (style (theme:themed-css (theme *browser*)

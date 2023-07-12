@@ -101,7 +101,7 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
   (with-current-buffer buffer
     (let ((position (%document-scroll-position)))
       (when (listp position)
-        position ))))
+        position))))
 
 (defmethod (setf document-scroll-position) (value &optional (buffer (current-buffer)))
   (when value
@@ -117,6 +117,19 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
           do (setf result (+ result
                              (ps:chain element text-content))))
     (ps:chain result (slice 0 (ps:lisp limit)))))
+
+(export-always 'add-stylesheet)
+(defun add-stylesheet (stylesheet-name style &optional (buffer (current-buffer)))
+  (ps-eval :async t :buffer buffer
+    (unless (nyxt/ps:qs document (ps:lisp
+                                  (concatenate
+                                   'string '(#\#) stylesheet-name)))
+      (ps:try
+       (ps:let ((style-element (ps:chain document (create-element "style"))))
+         (setf (ps:@ style-element id) (ps:lisp stylesheet-name))
+         (ps:chain document head (append-child style-element))
+         (setf (ps:chain style-element inner-text) (ps:lisp style)))
+       (:catch (error))))))
 
 (defun html-write (content &optional (buffer (current-buffer)))
   (ps-eval :async t :buffer buffer
@@ -223,7 +236,8 @@ See `find-internal-page-buffer'."))
                                          (apply #'dynamic-title
                                                 (gethash (name page) *nyxt-url-commands*)
                                                 args)))
-                               (:style (:raw (style (current-buffer)))))
+                               (:style (:raw (style (or (find-panel-buffer (name page))
+                                                        (find-internal-page-buffer (name page)))))))
                               (:body (:raw contents))))))
                   (values contents type status headers reason))))))))
 

@@ -1,9 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/small-web-mode
-    (:documentation "Mode for Gopher/Gemini page interaction."))
-(in-package :nyxt/small-web-mode)
+(nyxt:define-package :nyxt/mode/small-web
+  (:documentation "Package for `small-web-mode', which powers Gopher/Gemini page interaction."))
+(in-package :nyxt/mode/small-web)
 
 (define-mode small-web-mode ()
   "Gopher/Gemini page interaction mode.
@@ -29,7 +29,7 @@ loading, you'd need to override `line->html' in the following way:
 \(defmethod line->html ((line cl-gopher:gif)) (image->link line))
 \(defmethod line->html ((line cl-gopher:png)) (image->link line))
 
-Gemini support is a bit more chaotic, but you can override `line->html' for
+Gemini support is a bit more brittle, but you can override `line->html' for
 `phos/gemtext' elements too."
   ((visible-in-status-p nil)
    (url :documentation "The URL being opened.")
@@ -279,7 +279,7 @@ Implies that `small-web-mode' is enabled."
               (when mode
                 (:nstyle (style mode)))
               (loop for element in elements
-                    collect (:raw (nyxt/small-web-mode:line->html element))))
+                    collect (:raw (nyxt/mode/small-web:line->html element))))
             "text/html;charset=utf8")))
 
 ;; TODO: :secure-p t? Gemini is encrypted, so it can be considered secure.
@@ -288,7 +288,7 @@ Implies that `small-web-mode' is enabled."
       (handler-case
           (sera:mvlet* ((status meta body (gemini:request url)))
             (unless (member status '(:redirect :permanent-redirect))
-              (setf (nyxt/small-web-mode:redirections (find-submode 'small-web-mode)) nil))
+              (setf (nyxt/mode/small-web:redirections (find-submode 'small-web-mode)) nil))
             (case status
               ((:input :sensitive-input)
                (let ((text (quri:url-encode
@@ -303,16 +303,16 @@ Implies that `small-web-mode' is enabled."
                    (gemtext-render body buffer)
                    (values body meta)))
               ((:redirect :permanent-redirect)
-               (push url (nyxt/small-web-mode:redirections (find-submode 'small-web-mode)))
-               (if (< (length (nyxt/small-web-mode:redirections (find-submode 'small-web-mode)))
-                      (nyxt/small-web-mode:allowed-redirections-count (find-submode 'small-web-mode)))
+               (push url (nyxt/mode/small-web:redirections (find-submode 'small-web-mode)))
+               (if (< (length (nyxt/mode/small-web:redirections (find-submode 'small-web-mode)))
+                      (nyxt/mode/small-web:allowed-redirections-count (find-submode 'small-web-mode)))
                    (buffer-load (quri:merge-uris (quri:uri meta) (quri:uri url)) :buffer buffer)
                    (error-help
                     "Error"
                     (format nil "The server has caused too many (~a+) redirections.~& ~a~{ -> ~a~}"
-                            (nyxt/small-web-mode:allowed-redirections-count (find-submode 'small-web-mode))
-                            (alex:lastcar (nyxt/small-web-mode:redirections (find-submode 'small-web-mode)))
-                            (butlast (nyxt/small-web-mode:redirections (find-submode 'small-web-mode)))))))
+                            (nyxt/mode/small-web:allowed-redirections-count (find-submode 'small-web-mode))
+                            (alex:lastcar (nyxt/mode/small-web:redirections (find-submode 'small-web-mode)))
+                            (butlast (nyxt/mode/small-web:redirections (find-submode 'small-web-mode)))))))
               ((:temporary-failure :server-unavailable :cgi-error :proxy-error
                 :permanent-failure :not-found :gone :proxy-request-refused :bad-request)
                (error-help "Error" meta))

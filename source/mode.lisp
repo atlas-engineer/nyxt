@@ -324,8 +324,7 @@ For production code, see `find-submode' instead."
   (make-instance 'prompter:suggestion
                  :value mode
                  :attributes `(("Mode" ,(string-downcase (symbol-name mode)))
-                               ("Documentation" ,(or (first (sera:lines (documentation mode 'type)))
-                                                     ""))
+                               ("Documentation" ,(documentation-line mode 'type ""))
                                ("Package" ,(string-downcase (package-name (symbol-package mode)))))))
 
 (define-class mode-source (prompter:source)
@@ -363,8 +362,9 @@ For production code, see `find-submode' instead."
    (prompter:constructor (lambda (source)
                            (let ((common-modes
                                    (reduce #'intersection
-                                           (mappend (compose #'name #'modes)
-                                                    (uiop:ensure-list (buffers source))))))
+                                           (mapcar (lambda (b)
+                                                     (mapcar #'name (modes b)))
+                                                   (uiop:ensure-list (buffers source))))))
                              (set-difference (all-mode-symbols) common-modes)))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
@@ -511,8 +511,7 @@ If it's a single buffer, return it directly (not as a list)."
             (echo "~@(~a~) mode enabled." mode))
           (when existing-instance
             (disable existing-instance)
-            (echo "~@(~a~) mode disabled." existing-instance)))
-      (remember-on-mode-toggle mode-sym buffer :enabled-p activate))))
+            (echo "~@(~a~) mode disabled." existing-instance))))))
 
 (define-command-global reload-with-modes (&optional (buffer (current-buffer)))
   "Reload the BUFFER with the queried modes.

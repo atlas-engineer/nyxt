@@ -2,10 +2,18 @@ This document serves as a Software Bill of Materials.  It indicates
 which external dependencies we are directly relying on.
 
 * Foreign Dependencies
-- GObject Introspection https://wiki.gnome.org/Projects/GObjectIntrospection
-- Qt https://www.qt.io
+** Common Lisp Implementation
 - SBCL http://www.sbcl.org
-- WebkitGTK+ https://webkitgtk.org
+
+** Renderer
+*** WebKitGTK
+- WebKitGTK https://webkitgtk.org (version 4.0.1 or higher)
+- GObject Introspection https://wiki.gnome.org/Projects/GObjectIntrospection
+
+*** QtWebEngine
+- QtWebEngine https://wiki.qt.io/QtWebEngine
+
+Experimental support.
 
 * Lisp Dependencies
 - alexandria
@@ -25,7 +33,6 @@ which external dependencies we are directly relying on.
 - dexador
 - enchant
 - fset
-- hu.dwim.defclass-star
 - iolib
 - lass
 - local-time

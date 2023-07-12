@@ -95,10 +95,27 @@ This is global because logging starts before the `*browser*' is even initialized
   (:export-class-name-p t))
 
 (defmethod files:resolve ((profile nyxt-profile) (directory nyxt-source-directory))
+  "Try hard to find Nyxt source on disk.
+Return #p\"\" if not found."
   (let ((asd-path (ignore-errors (asdf:system-source-directory :nyxt))))
     (if (uiop:directory-exists-p asd-path)
         asd-path
-        nasdf:*dest-source-dir*)))
+        (or
+         ;; XDG / FHS:
+         (find-if (lambda (d)
+                    (uiop:file-exists-p (uiop:merge-pathnames* "nyxt.asd" d)))
+                  (uiop:xdg-data-dirs "nyxt"))
+         ;; Location relative to the binary:
+         (let ((relative-dir (uiop:merge-pathnames*
+                              "share/nyxt/"
+                              (files:parent
+                               (files:parent
+                                (uiop:ensure-pathname
+                                 (first (uiop:raw-command-line-arguments)) :truenamize t))))))
+           (when (uiop:file-exists-p (uiop:merge-pathnames* "nyxt.asd" relative-dir))
+             relative-dir))
+         ;; Not found:
+         #p""))))
 
 (export-always '*source-directory*)
 (defvar *source-directory* (make-instance 'nyxt-source-directory)
@@ -298,8 +315,8 @@ In the above, `%slot-default%' will be substituted with the return value of
 
 Example to get the `blocker-mode' command to use a new default hostlists:
 
-\(define-configuration nyxt/blocker-mode:blocker-mode
-  ((nyxt/blocker-mode:hostlists (append (list *my-blocked-hosts*) %slot-default%)
+\(define-configuration nyxt/mode/blocker:blocker-mode
+  ((nyxt/mode/blocker:hostlists (append (list *my-blocked-hosts*) %slot-default%)
                                 :doc \"You have to define *my-blocked-hosts* first.\")))
 
 To discover the default value of a slot or all slots of a class, use the

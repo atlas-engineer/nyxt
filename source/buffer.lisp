@@ -97,6 +97,7 @@ See also the `profile' slot in the `browser' class.")
               !important
               :min-height "2rem")
             `((:and .button :hover)
+              :cursor "pointer"
               :opacity 0.8)
             `((:and .button (:or :visited :active))
               :color ,theme:background)
@@ -360,11 +361,11 @@ exceed this amount."
     :type (or null plump:node)
     :documentation "A parsed representation of the rendered buffer.
 Computed by `plump:parse', see `update-document-model' for details.")
-   (keep-search-hints-p
+   (keep-search-marks-p
     t
     :type boolean
-    :documentation "Whether to keep search hints when the search prompt for the
-`search-buffer' command is closed.")
+    :documentation "Whether to keep search marks after exiting the prompt
+buffer.")
    (scroll-distance
     50
     :type integer
@@ -380,19 +381,13 @@ scroll-right will scroll.")
    (current-zoom-ratio
     1.0
     :type float
-    :documentation "The current zoom relative to the default zoom.")
+    :reader t
+    :export t
+    :documentation "The current zoom ratio.")
    (zoom-ratio-step
     0.2
     :type float
     :documentation "The step size for zooming in and out.")
-   (zoom-ratio-min
-    0.2
-    :type float
-    :documentation "The minimum zoom ratio relative to the default.")
-   (zoom-ratio-max
-    5.0
-    :type float
-    :documentation "The maximum zoom ratio relative to the default.")
    (zoom-ratio-default
     1.0
     :type float
@@ -409,39 +404,51 @@ down."))
   (:metaclass user-class)
   (:documentation "Buffers holding structured documents."))
 
+(defmethod (setf current-zoom-ratio) (value (buffer document-buffer))
+  (when (plusp value)
+    (setf (slot-value buffer 'current-zoom-ratio) value
+          (ffi-buffer-zoom-level buffer) value)))
+
 (define-class context-buffer (buffer)
   ((last-access
     (time:now)
     :export nil
     :documentation "Timestamp when the buffer was last switched to.")
    (search-engines
-    (list (make-instance 'search-engine
-                         :name "Wikipedia"
-                         :shortcut "wiki"
-                         :search-url "https://en.wikipedia.org/w/index.php?search=~a"
-                         :fallback-url (quri:uri "https://en.wikipedia.org/")
-                         :completion-function
-                         (make-search-completion-function
-                          :base-url "https://en.wikipedia.org/w/api.php?action=opensearch&format=json&search=~a"
-                          :processing-function
-                          #'(lambda (results)
-                              (alex:when-let* ((results results)
-                                               (results (j:decode results)))
-                                (mapcar #'list (j:get 1 results) (j:get 3 results))))))
-          (make-instance 'search-engine
-                         :name "DuckDuckGo"
-                         :shortcut "ddg"
-                         :search-url "https://duckduckgo.com/?q=~a"
-                         :fallback-url (quri:uri "https://duckduckgo.com/")
-                         :completion-function
-                         (make-search-completion-function
-                          :base-url "https://duckduckgo.com/ac/?q=~a"
-                          :processing-function
-                          #'(lambda (results)
-                              (when results
-                                (mapcar (lambda (hash-table)
-                                          (first (alex:hash-table-values hash-table)))
-                                        (j:decode results)))))))
+    (let ((ddg-completion
+           (make-search-completion-function
+            :base-url "https://duckduckgo.com/ac/?q=~a"
+            :processing-function
+            #'(lambda (results)
+                (when results
+                  (map 'list (lambda (hash-table)
+                               (first (alex:hash-table-values hash-table)))
+                       (j:decode results)))))))
+      (list (make-instance 'search-engine
+                           :name "Wikipedia"
+                           :shortcut "wiki"
+                           :search-url "https://en.wikipedia.org/w/index.php?search=~a"
+                           :fallback-url (quri:uri "https://en.wikipedia.org/")
+                           :completion-function
+                           (make-search-completion-function
+                            :base-url "https://en.wikipedia.org/w/api.php?action=opensearch&format=json&search=~a"
+                            :processing-function
+                            #'(lambda (results)
+                                (alex:when-let* ((results results)
+                                                 (results (j:decode results)))
+                                                (map 'list #'list (j:get 1 results) (j:get 3 results))))))
+            (make-instance 'search-engine
+                           :name "DuckDuckGo"
+                           :shortcut "ddg"
+                           :search-url "https://duckduckgo.com/?q=~a"
+                           :fallback-url (quri:uri "https://duckduckgo.com/")
+                           :completion-function ddg-completion)
+            (make-instance 'search-engine
+                           :name "Atlas SearXNG instance"
+                           :shortcut "a"
+                           :search-url "https://search.atlas.engineer/searxng/search?q=~a"
+                           :fallback-url (quri:uri "https://search.atlas.engineer")
+                           :completion-function ddg-completion)))
     :type (cons search-engine *)
     :documentation "A list of the `search-engine' objects.
 You can invoke them from the prompt buffer by prefixing your query with
@@ -470,7 +477,7 @@ Suggestions are computed by the default search engine.")
     :documentation "Select a download engine to use, such as `:lisp' or
 `:renderer'.")
    (global-history-p
-    nil
+    t
     :type boolean
     :documentation "Whether the history is linked to the buffer's parent.
 
@@ -669,13 +676,14 @@ store them somewhere and `ffi-buffer-delete' them once done."))
   (:documentation "Like `web-buffer', but don't persist data to disk."))
 
 (define-class panel-buffer (input-buffer modable-buffer document-buffer network-buffer)
-  ((width 250 :documentation "The width in pixels.")
+  ((width 256 :documentation "The width in pixels.")
    (style (theme:themed-css (theme *browser*)
             `(body
-              :background-color ,theme:background
-              :color ,theme:on-background
+              :background-color ,theme:background-alt
+              :color ,theme:on-background-alt
               :margin "0"
               :padding "10px"
+              :padding-top "24px"
               :border-style "solid"
               :border-width "0px 1px"
               :border-color ,theme:secondary)
@@ -684,8 +692,19 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :font-weight 500)
             `(a
               :color ,theme:primary)
+            `((:and a :hover)
+              :cursor "pointer"
+              :text-decoration "underline")
+            `((:and a :active)
+              :opacity 0.6)
+            `("#close"
+              :position "fixed"
+              :top "4px"
+              :right "4px"
+              :line-height "12px")
             `(button
               :background "transparent"
+              :max-width "100%"
               :color "inherit"
               :border "none"
               :padding 0
@@ -703,9 +722,12 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :background-color ,theme:accent
               :color ,theme:on-accent)
             `((:and .button :hover)
+              :cursor "pointer"
               :opacity 0.8)
             `((:and .button (:or :visited :active))
-              :color ,theme:background))))
+              :color ,theme:background)
+           `("a:visited"
+              :color ,theme:secondary))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
@@ -728,7 +750,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
     :documentation "Whether tabs are dynamically ordered by last access time.")
    (style (theme:themed-css (theme *browser*)
             `(body
-              :line-height "20px"
+              :line-height "24px"
               :font-size "14px"
               :padding 0
               :margin 0)
@@ -840,6 +862,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :background-color ,theme:accent
               :color ,theme:on-accent)
             `((:and .button :hover)
+              :cursor "pointer"
               :opacity 0.6)
             `((:and .button (:or :visited :active))
               :color ,theme:background)
@@ -1005,14 +1028,16 @@ when `proxied-downloads-p' is true."
   "Set BUFFER's `url' slot, then dispatch `on-signal-notify-uri' over the
 BUFFER's modes."
   (declare (ignore no-url))
+  ;; Need to run the mode-specific actions first so that modes can modify the
+  ;; behavior of buffer.
+  (dolist (mode (modes buffer))
+    (on-signal-notify-uri mode (url buffer)))
   (let ((view-url (ffi-buffer-url buffer)))
     (unless (or (load-failed-p buffer)
                 (url-empty-p view-url))
       ;; When a buffer fails to load and `ffi-buffer-url' returns an empty
       ;; URL, we don't set (url buffer) to keep access to the old value.
       (setf (url buffer) (ffi-buffer-url buffer))))
-  (dolist (mode (modes buffer))
-    (on-signal-notify-uri mode (url buffer)))
   (url buffer))
 
 (export-always 'on-signal-notify-title)
@@ -1341,9 +1366,24 @@ second latest buffer first."
       (set-current-buffer buffer)
       (prompt
        :prompt "Switch to buffer"
-       :sources (make-instance 'buffer-source
-                               :constructor (buffer-initial-suggestions
-                                             :current-is-last-p current-is-last-p)))))
+       :sources (list
+                 (make-instance 'buffer-source
+                                :constructor (buffer-initial-suggestions
+                                              :current-is-last-p current-is-last-p))
+                 (make-instance
+                  'new-url-or-search-source
+                  :name "Create new buffer"
+                  :actions-on-return (list (lambda-command new-buffer-load* (suggestion-values)
+                                             "Load URL(s) in new buffer(s)"
+                                             (mapc (lambda (suggestion) (make-buffer :url (url suggestion)))
+                                                   (rest suggestion-values))
+                                             (make-buffer-focus :url (url (first suggestion-values))))
+                                           (lambda-command new-nosave-buffer-load* (suggestion-values)
+                                             "Load URL(s) in new nosave buffer(s)"
+                                             (mapc (lambda (suggestion) (make-nosave-buffer :url (url suggestion)))
+                                                   (rest suggestion-values))
+                                             (make-buffer-focus :url (url (first suggestion-values))
+                                                                :nosave-buffer-p t))))))))
 
 (define-command switch-buffer-domain (&key domain (buffer (current-buffer)))
   "Switch the active buffer in the current window from the current domain."
@@ -1678,7 +1718,10 @@ any.")
             :filter-preprocessor #'prompter:filter-exact-matches
             :actions-on-return (append
                                 (list (lambda-unmapped-command set-current-buffer))
-                                actions-on-return))
+                                actions-on-return)
+            :filter-postprocessor (lambda (suggestions source input)
+                                    (declare (ignore source input))
+                                    (remove (current-buffer) suggestions :key #'prompter:value)))
            (make-instance
             'global-history-source
             :actions-on-return (append actions-on-return
@@ -1723,11 +1766,18 @@ any.")
   (if explicit-url-p
       (make-buffer-focus :url (url url))
       (let ((history (set-url-history *browser*))
-            (actions-on-return (lambda-command new-buffer-load (suggestion-values)
-                                 "Load URL(s) in new buffer(s)"
-                                 (mapc (lambda (suggestion) (make-buffer :url (url suggestion)))
-                                       (rest suggestion-values))
-                                 (make-buffer-focus :url (url (first suggestion-values))))))
+            (actions-on-return
+              (list (lambda-command new-buffer-load (suggestion-values)
+                      "Load URL(s) in new buffer(s)"
+                      (mapc (lambda (suggestion) (make-buffer :url (url suggestion)))
+                            (rest suggestion-values))
+                      (make-buffer-focus :url (url (first suggestion-values))))
+                    (lambda-command new-nosave-buffer-load (suggestion-values)
+                      "Load URL(s) in new nosave buffer(s)"
+                      (mapc (lambda (suggestion) (make-nosave-buffer :url (url suggestion)))
+                            (rest suggestion-values))
+                      (make-buffer-focus :url (url (first suggestion-values))
+                                         :nosave-buffer-p t)))))
         (pushnew-url-history history (url (current-buffer)))
         (prompt
          :prompt "Open URL in new buffer"

@@ -6,5 +6,5 @@
 (define-test toggle-file-manager-mode ()
   (let ((buffer (make-instance 'modable-buffer)))
     (with-current-buffer buffer
-      (assert-true (enable-modes* 'nyxt/file-manager-mode:file-manager-mode buffer))
-      (assert-true (disable-modes* 'nyxt/file-manager-mode:file-manager-mode buffer)))))
+      (assert-true (enable-modes* 'nyxt/mode/file-manager:file-manager-mode buffer))
+      (assert-true (disable-modes* 'nyxt/mode/file-manager:file-manager-mode buffer)))))

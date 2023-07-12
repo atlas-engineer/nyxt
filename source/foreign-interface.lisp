@@ -371,11 +371,13 @@ Return the text cut."))
     (echo-warning "Redoing edits is not yet implemented for this renderer."))
   (:documentation "Redo the last undone text edit performed in BUFFER's web view."))
 
+;; TODO: Move to alists for arbitrary number of params?
 (defvar *context-menu-commands* (make-hash-table)
-  "A hash table from command symbols to context menu labels for those.
+  "A hash table from labels to context menu commands.
 Once a context menu appears, those commands will be added to it as actions with
-the labels they have as hash values.")
+the labels they have as hash keys.")
 
+;; TODO: Add TEST arg to decide on whether to display?
 (define-ffi-generic ffi-add-context-menu-command (command label)
   (:method ((command command) (label string))
     (setf (gethash label *context-menu-commands*)

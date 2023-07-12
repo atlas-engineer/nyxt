@@ -1,14 +1,16 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/expedition-mode
-    (:documentation "Traverse a list of links."))
-(in-package :nyxt/expedition-mode)
+(nyxt:define-package :nyxt/mode/expedition
+  (:documentation "Package for `expedition-mode', mode to traverse chosen URLs."))
+(in-package :nyxt/mode/expedition)
 
 (define-mode expedition-mode ()
-  "Mode for traversing a set of URLs."
+  "Mode to traverse URLs delimited by a user specified buffer rectangle."
   ((urls (list))
-   (index 0 :documentation "The index of the current element in URLs.")
+   (index
+    0
+    :documentation "The index of the current element in URLs.")
    (keyscheme-map
     (define-keyscheme-map "expedition-mode" ()
       keyscheme:cua
@@ -40,13 +42,13 @@
 (define-command-global select-frame-expedition (&key (buffer (current-buffer)))
   "Run an expedition through a set of URLs selected with a rectangle."
   (let* ((urls (reverse (prompt :prompt "Start expedition with the following links"
-                                :sources (make-instance 'nyxt/document-mode::frame-source
+                                :sources (make-instance 'nyxt/mode/document::frame-source
                                                         :buffer buffer
                                                         :enable-marks-p t)
                                 :after-destructor
                                 (lambda ()
                                   (with-current-buffer buffer
-                                    (nyxt/document-mode::frame-element-clear))))))
+                                    (nyxt/mode/document::frame-element-clear))))))
          (urls (mapcar #'quri:uri urls))
          (buffer (make-buffer :title "" :url (first urls))))
     (enable (make-instance 'expedition-mode :urls urls :buffer buffer))

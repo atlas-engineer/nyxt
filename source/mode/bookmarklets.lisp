@@ -7,14 +7,18 @@
 ;;;; are released into the public domain, per the license available
 ;;;; here: https://www.squarefree.com/bookmarklets/copyright.html
 
-(nyxt:define-package :nyxt/bookmarklets-mode
-  (:documentation "Easily create 'bookmarklets' (JavaScript snippets) to alter
-the content of HTML pages."))
-(in-package :nyxt/bookmarklets-mode)
+(nyxt:define-package :nyxt/mode/bookmarklets
+  (:documentation "Collection of 'bookmarklets' (JavaScript snippets) to interact with web pages.
+
+All bookmarklets are defined with `define-bookmarklet-command' and
+`define-bookmarklet-command-global'. All the defined bookmarklets are `command's
+and also global functions. Which means: they can have `:around' and other
+qualified methods to modify their behavior."))
+(in-package :nyxt/mode/bookmarklets)
 
 (define-mode bookmarklets-mode ()
   "Mode for 'bookmarklets' commands.
-By default, this mode does nothing but expose the default bookmarklets."
+By default, this mode does nothing but expose the default bookmarklet commands."
   ((visible-in-status-p nil)))
 
 (sera:eval-always
@@ -24,8 +28,7 @@ By default, this mode does nothing but expose the default bookmarklets."
                              (pathname (files:content (make-instance 'files:file :base-path source)))
                              (string source)))
                    (source (if (str:starts-with-p "javascript:" source)
-                               (or (ignore-errors (quri:url-decode (quri:uri-path (quri:uri source))))
-                                   (subseq source 11))
+                               (quri:url-decode (subseq source 11))
                                source)))
               (ffi-buffer-evaluate-javascript-async buffer source))))
     (export 'define-bookmarklet-command)

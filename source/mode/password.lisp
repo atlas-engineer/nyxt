@@ -1,15 +1,31 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/password-mode
-    (:documentation "Interface with third-party password managers."))
-(in-package :nyxt/password-mode)
+(nyxt:define-package :nyxt/mode/password
+  (:documentation "Package for `password-mode', mode to  interface with password managers.
+
+Relies on the `password' library for most package manager interactions. In
+particular:
+- Specifies `password::execute' for KeePassXC to prompt for Yubikey tap.
+- Specifies `password:complete-interface' to prompt for details for interfaces
+  that need it.
+- Adds a `with-password' macro relying on `password:password-correct-p' to
+  decide whether the interface is properly connected and complete, and calling
+  `password:complete-interface' if it's not.
+
+Also note the internal `make-password-interface-user-classes' function to force
+password interfaces to become `user-class'es and thus
+`define-configuration'-friendly.
+
+See the `password-mode' for the external user-facing APIs."))
+(in-package :nyxt/mode/password)
 
 (define-mode password-mode ()
   "Enable interface with third-party password managers.
 You can customize the default interface with the mode slot `password-interface'.
-To interact with the password manager, see commands like `copy-password' or
-`save-new-password'."
+
+See `nyxt/mode/password' package documentation for implementation details and
+internal programming APIs."
   ((visible-in-status-p nil)
    (password-interface
     (make-password-interface)
@@ -115,8 +131,8 @@ for which the `executable' slot is non-nil."
                    (uiop:native-namestring
                     (prompt1
                      :prompt "Password database file (.kdbx)"
-                     :extra-modes 'nyxt/file-manager-mode:file-manager-mode
-                     :sources (make-instance 'nyxt/file-manager-mode:file-source
+                     :extra-modes 'nyxt/mode/file-manager:file-manager-mode
+                     :sources (make-instance 'nyxt/mode/file-manager:file-source
                                              :extensions '("kdbx")))))
         unless (password::key-file password-interface)
           do (if-confirm ("Do you use key file for password database locking?")
@@ -124,8 +140,8 @@ for which the `executable' slot is non-nil."
                        (uiop:native-namestring
                         (prompt1
                          :prompt "Password database key file"
-                         :extra-modes 'nyxt/file-manager-mode:file-manager-mode
-                         :sources (make-instance 'nyxt/file-manager-mode:file-source)))))
+                         :extra-modes 'nyxt/mode/file-manager:file-manager-mode
+                         :sources (make-instance 'nyxt/mode/file-manager:file-source)))))
         unless (password::yubikey-slot password-interface)
           do (if-confirm ("Do you use Yubikey for password database locking")
                  (setf (password::yubikey-slot password-interface)

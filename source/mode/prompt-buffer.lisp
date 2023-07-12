@@ -1,9 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/prompt-buffer-mode
-    (:documentation "Mode for prompter buffer."))
-(in-package :nyxt/prompt-buffer-mode)
+(nyxt:define-package :nyxt/mode/prompt-buffer
+  (:documentation "Package for `prompt-buffer-mode' to interact with the `prompt-buffer'."))
+(in-package :nyxt/mode/prompt-buffer)
 
 (define-mode prompt-buffer-mode ()
   "The prompt buffer is where all interactions between Nyxt and the user take place.
@@ -32,6 +32,8 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "pagehome" 'first-suggestion
        "end" 'last-suggestion
        "pageend" 'last-suggestion
+       "pageup" 'previous-page
+       "pagedown" 'next-page
        "shift-up" 'previous-source
        "shift-down" 'next-source
        "shift-left" 'first-suggestion-within-source
@@ -52,14 +54,18 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "keypadenter" 'run-action-on-return
        "M-return" 'set-action-on-return
        "M-keypadenter" 'set-action-on-return
-       "C-return" 'run-action-on-current-suggestion
-       "C-keypadenter" 'run-action-on-current-suggestion
+       "C-return" 'toggle-mark-forwards
+       "C-keypadenter" 'toggle-mark-forwards
+       "s-return" 'toggle-mark-forwards
+       "s-keypadenter" 'toggle-mark-forwards
+       "C-j" 'run-action-on-current-suggestion
        "C-c C-j" 'set-action-on-current-suggestion
        "tab" 'insert-current-suggestion
        ; TODO: This is the Emacs Helm binding.  Better?
        "C-c C-f" 'toggle-actions-on-current-suggestion-enabled
        ; TODO: This is the Emacs Helm binding.  Better?
-       "C-]" 'toggle-attributes-display)
+       "C-]" 'toggle-attributes-display
+       "M-shift-up" 'toggle-suggestions-display)
       keyscheme:cua
       (list
        "C-up" 'first-suggestion
@@ -90,18 +96,19 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "C-g" 'quit-prompt-buffer
        "C-e" 'move-end-of-input
        "C-a" 'move-start-of-input
-       "C-b" 'nyxt/input-edit-mode:cursor-backwards
-       "C-f" 'nyxt/input-edit-mode:cursor-forwards
-       "C-d" 'nyxt/input-edit-mode:delete-forwards
-       "M-b" 'nyxt/input-edit-mode:cursor-backwards-word
-       "M-f" 'nyxt/input-edit-mode:cursor-forwards-word
-       "C-backspace" 'nyxt/input-edit-mode:delete-backwards-word
-       "M-backspace" 'nyxt/input-edit-mode:delete-backwards-word
-       "M-d" 'nyxt/input-edit-mode:delete-forwards-word
+       "C-b" 'nyxt/mode/input-edit:cursor-backwards
+       "C-f" 'nyxt/mode/input-edit:cursor-forwards
+       "C-d" 'nyxt/mode/input-edit:delete-forwards
+       "M-b" 'nyxt/mode/input-edit:cursor-backwards-word
+       "M-f" 'nyxt/mode/input-edit:cursor-forwards-word
+       "C-backspace" 'nyxt/mode/input-edit:delete-backwards-word
+       "M-backspace" 'nyxt/mode/input-edit:delete-backwards-word
+       "M-d" 'nyxt/mode/input-edit:delete-forwards-word
        "C-x h" 'select-all
        "M-w" 'copy-selection
        "C-y" 'paste
        "C-w" 'cut
+       "C-h m" 'describe-prompt-buffer
        "C-h b" 'run-prompt-buffer-command
        "C-j" 'run-action-on-current-suggestion)
       keyscheme:vi-normal
@@ -127,13 +134,13 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "C-M-k" 'scroll-page-up-other-buffer
        "$" 'move-end-of-input
        "^" 'move-start-of-input
-       "l" 'nyxt/input-edit-mode:cursor-forwards
-       "h" 'nyxt/input-edit-mode:cursor-backwards
-       "w" 'nyxt/input-edit-mode:cursor-forwards-word
-       "b" 'nyxt/input-edit-mode:cursor-backwards-word
-       "x" 'nyxt/input-edit-mode:delete-forwards
+       "l" 'nyxt/mode/input-edit:cursor-forwards
+       "h" 'nyxt/mode/input-edit:cursor-backwards
+       "w" 'nyxt/mode/input-edit:cursor-forwards-word
+       "b" 'nyxt/mode/input-edit:cursor-backwards-word
+       "x" 'nyxt/mode/input-edit:delete-forwards
        ;; VI has no short keybinding for delete-backwards-word, hasn't it?
-       "d w" 'nyxt/input-edit-mode:delete-forwards-word
+       "d w" 'nyxt/mode/input-edit:delete-forwards-word
        "z f" 'toggle-actions-on-current-suggestion-enabled
        "z a" 'toggle-attributes-display
        "y" 'copy-selection
@@ -313,6 +320,11 @@ current unmarked suggestion."
           attributes)
     (prompt-render-suggestions prompt-buffer)))
 
+(define-command-prompt toggle-suggestions-display (prompt-buffer)
+  "Toggle between showing suggestions."
+  (setf (height prompt-buffer)
+        (if (eq (height prompt-buffer) :fit-to-prompt) :default :fit-to-prompt)))
+
 (define-class prompt-buffer-command-source (command-source)
   ((prompter:name "Prompt buffer commands")
    (parent-prompt-buffer (error "Parent prompt buffer required"))
@@ -360,11 +372,7 @@ current unmarked suggestion."
                                               (function (slynk-backend:function-name action))
                                               (t action))))
                               "Lambda"))
-                 ("Documentation" ,(or (first (sera:lines
-                                               (typecase action
-                                                 (command (documentation action t))
-                                                 (t (documentation action 'function)))))
-                                       "")))))
+                 ("Documentation" ,(documentation-line action 'function "")))))
 
 (define-class action-on-return-source (prompter:source)
   ((prompter:name "List of actions-on-return")
@@ -548,27 +556,41 @@ Only available if `prompter:enable-marks-p' is non-nil."
     (buffer (str:concat "*Help-" (prompter:prompt (current-prompt-buffer)) "-prompter*")
             ;; TODO: Can we somehow fix the load order in the .asd?
             (sym:resolve-symbol :help-mode :mode))
+  ;; FIXME: List the documentation of the command using the prompt instead of
+  ;; the prompt-buffer documentation somehow?
   "Describe a prompt buffer instance."
   (let* ((prompt-buffer (current-prompt-buffer))
          (modes (modes prompt-buffer))
          (sources (prompter:sources prompt-buffer)))
     (spinneret:with-html-string
-      (:h1 (prompter:prompt prompt-buffer))
+      (:h1 (prompter:prompt prompt-buffer) "(" (:nxref :class-name 'prompt-buffer) ")")
       (:pre (:code (:raw (resolve-backtick-quote-links
-                          (documentation 'prompt-buffer 'type) :nyxt/prompt-buffer-mode))))
-      (:h2 "Modes:")
-      (:ul
+                          (documentation 'prompt-buffer 'type) :nyxt/mode/prompt-buffer))))
+      (:h2 "Modes and keybindings:")
+      (:dl
+       ;; TODO: Reuse `describe-bindings' infra.
        (loop for mode in modes
-             collect (:li (:a :href
-                              (nyxt-url
-                               'describe-class
-                               :class (sera:class-name-of mode))
-                              (string (sera:class-name-of mode))))))
+             collect (:dt (:nxref :class-name (sera:class-name-of mode)))
+             if (gethash (keyscheme prompt-buffer) (keyscheme-map mode))
+               collect  (:dd (:table
+                              (:tr (:th "Binding") (:th "Command"))
+                              (loop for (keyspec . binding)
+                                      in (alex:hash-table-alist
+                                          (keymaps:keymap->map
+                                           (nyxt::get-keymap prompt-buffer (keyscheme-map mode))))
+                                    collect (:tr (:td keyspec)
+                                                 (:td (typecase binding
+                                                        (symbol (:nxref :function binding))
+                                                        (command (:nxref :function (name binding)))
+                                                        (keyword (:nxref :function (sym:resolve-symbol binding :function)))
+                                                        (t (:a :href (nyxt-url
+                                                                      'describe-value
+                                                                      :id (nyxt::ensure-inspected-id binding))
+                                                               binding))))))))
+             else
+               collect (:dd "No binding")))
       (:h2 "Sources:")
-      (:ul
+      (:dl
        (loop for source in sources
-             collect (:li (:a :href
-                              (nyxt-url
-                               'describe-class
-                               :class (sera:class-name-of source))
-                              (string (sera:class-name-of source)))))))))
+             collect (:dt (:nxref :class-name (sera:class-name-of source)))
+             collect (:dd (documentation (class-of source) t)))))))

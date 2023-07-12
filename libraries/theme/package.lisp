@@ -3,5 +3,6 @@
 
 (uiop:define-package :theme
   (:use :cl)
+  (:shadow #:warning)
   (:import-from :serapeum #:export-always)
   (:import-from :nclasses #:define-class))

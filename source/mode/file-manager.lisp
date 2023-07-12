@@ -1,11 +1,18 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/file-manager-mode
-    (:documentation "Mode for file management from the prompt buffer."))
-(in-package :nyxt/file-manager-mode)
+(nyxt:define-package :nyxt/mode/file-manager
+  (:documentation "Package for `file-manager-mode', mode for file management
+from the prompt buffer.
 
-(nyxt/prompt-buffer-mode::define-command-prompt directory-up (prompt-buffer)
+Exposes the following `prompter:source's: `program-source', `file-source' and
+`open-file-source'.
+
+Uses CL `delete-file' and `rename-file', together with `open-file-function', to
+act of files."))
+(in-package :nyxt/mode/file-manager)
+
+(nyxt/mode/prompt-buffer::define-command-prompt directory-up (prompt-buffer)
   "Remove one level of directory nesting from the current PROMPT-BUFFER file input."
   (let* ((input (prompter:input prompt-buffer))
          (path (uiop:parse-native-namestring input))
@@ -14,10 +21,11 @@
                      (uiop:pathname-directory-pathname path))))
     (nyxt:set-prompt-buffer-input (namestring parent) prompt-buffer)))
 
-(define-mode file-manager-mode (nyxt/prompt-buffer-mode:prompt-buffer-mode)
+(define-mode file-manager-mode (nyxt/mode/prompt-buffer:prompt-buffer-mode)
   "Prompt buffer mode to manage file systems.
-Return actions include deleting, renaming and opening files with external
-programs."
+
+Provides a handful of prompt buffer return actions such as deleting, renaming or
+opening files with external programs."
   ((visible-in-status-p nil)
    (keyscheme-map
     (define-keyscheme-map "file-manager-mode" ()
@@ -215,15 +223,12 @@ See `supported-media-types' of `file-mode'."
 (define-command-global edit-file-with-external-editor
     (&optional (files (prompt :prompt "File(s) to edit"
                               :input (uiop:native-namestring (uiop:getcwd))
-                              :extra-modes 'nyxt/file-manager-mode:file-manager-mode
+                              :extra-modes 'nyxt/mode/file-manager:file-manager-mode
                               :sources 'file-source)))
   "Edit the FILES using `external-editor-program'.
 If FILES are not provided, prompt for them."
   (if (external-editor-program *browser*)
-      (progn
-        (echo "Using \"~{~a~^ ~}\" to edit ~s." (external-editor-program *browser*) files)
-        (uiop:launch-program `(,@(external-editor-program *browser*)
-                               ,@(mapcar #'uiop:native-namestring files))))
+      (apply #'launch-external-editor (mapcar #'uiop:native-namestring files))
       (echo-warning "Please set `external-editor-program' browser slot.")))
 
 (defmethod initialize-instance :after ((source open-file-source) &key)

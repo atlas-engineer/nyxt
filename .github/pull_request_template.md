@@ -32,6 +32,7 @@ Everything in this checklist is required for each PR.  Please do not approve a P
   - I have updated the existing documentation to match my changes.
   - I have commented my code in hard-to-understand areas.
   - I have updated the `changelog.lisp` with my changes if it's anything user-facing (new features, important bug fix, compatibility breakage).
+    - Changelog update should be a separate commit.
   - I have added a `migration.lisp` entry for all compatibility-breaking changes.
   - (If this changes something about the features showcased on Nyxt website) I have these changes described in the new/existing article at Nyxt website or will notify one of maintainters to do so.
 - [ ] Compilation and tests:

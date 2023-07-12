@@ -1,8 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-package :nyxt/repl-mode
-    (:documentation "Common Lisp REPL mode for interactive programming.
+(nyxt:define-package :nyxt/mode/repl
+  (:documentation "Common Lisp REPL mode for interactive programming.
 
 The interface is composed by cell pairs of input and output that evaluate CL
 symbolic expressions.
@@ -18,7 +18,7 @@ Features:
 - Binding results to the automatically-generated variables.
 - Inline debugging (similar to Nyxt-native debugging when `*debug-on-error*')
 - Both keyboard and mouse oriented UIs."))
-(in-package :nyxt/repl-mode)
+(in-package :nyxt/mode/repl)
 
 (define-class cell ()
   ((name
@@ -67,7 +67,6 @@ has a single argument---the `cell'.")
     :documentation "The results (as a list) of cell `evaluate'-ion."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "The universal REPL cell, allowing to customize the REPL.
 To make custom cell type, subclass `cell' and specify a set of methods:
 - `evaluate',
@@ -107,6 +106,11 @@ new cells via UI."))
 Generic function to specialize for all the REPL cell types.
 Use CELL (and, likely, its `input') and set its `results' and `output' to the
 meaningful values."))
+
+(export-always 'suggest)
+(defgeneric suggest (cell)
+  (:documentation "Get a single most intuitive suggestion string for CELL contents.
+The suggestion listing may rely on the CELL's contents."))
 
 (export-always 'render-input)
 (defgeneric render-input (cell)
@@ -148,19 +152,23 @@ Generic function to specialize against new REPL cell types."))
   (:method ((cell cell))
     (spinneret:with-html-string
       (:div.cell
-       (:div
-        :class "input-area"
-        (:code (name cell))
-        (:br)
-        (:raw (render-input cell))
-        (:br)
-        (:raw (render-actions cell)))
-       (:div :class "evaluation-result"
-             (:raw (render-results cell))))))
+       (:div.input-area
+        (:div.cell-name
+         (:code (name cell)))
+        (:div.cell-input
+         (:raw (render-input cell)))
+        (:div.cell-actions
+         (:raw (render-actions cell))))
+       (:div.evaluation-result
+        (:raw (render-results cell))))))
   (:documentation "Generate HTML for the CELL.
 Overrides all the methods defined for the CELL type.
 By default utilizes `render-input', `render-actions', and `render-results'.
 Generic function to specialize against new REPL cell types."))
+
+(defun reload-repl (repl)
+  (with-current-buffer (buffer repl)
+    (repl)))
 
 (export-always 'cancel-cell)
 (defmethod cancel-cell ((cell cell))
@@ -168,7 +176,7 @@ Generic function to specialize against new REPL cell types."))
   (destroy-thread* (thread cell))
   (setf (thread cell) nil
         (ready-p cell) nil)
-  (reload-buffer (buffer (mode-instance cell))))
+  (reload-repl (mode-instance cell)))
 
 ;;; Lisp cell
 (define-class lisp-cell (cell)
@@ -214,7 +222,7 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
 
 (defmethod prompter:object-attributes ((class standard-class) (source cell-source))
   `(("Name" ,(class-name class))
-    ("Documentation" ,(first (sera:lines (documentation class 'type))))))
+    ("Documentation" ,(documentation-line class 'type ""))))
 
 (sera:defmethods lisp-cell
     (self
@@ -242,13 +250,25 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
            :ui-cleanup (lambda (wrapper)
                          (declare (ignore wrapper))
                          (setf raised-condition nil)
-                         (reload-buffer (buffer mode-instance))))
+                         (reload-repl mode-instance)))
         (with-input-from-string (in input)
           (alex:lastcar
            (mapcar (lambda (s-exp)
                      (setf results (multiple-value-list (eval s-exp))
                            output (get-output-stream-string *standard-output*)))
                    (safe-slurp-stream-forms in)))))))
+  (:method suggest (self)
+    (alex:when-let ((sugestion (prompt1 :prompt "Symbol to insert"
+                                        :sources '(nyxt::function-source
+                                                   nyxt::variable-source
+                                                   nyxt::class-source
+                                                   nyxt::function-non-nyxt-source
+                                                   nyxt::variable-non-nyxt-source
+                                                   nyxt::class-non-nyxt-source
+                                                   nyxt::function-internal-source
+                                                   nyxt::variable-internal-source
+                                                   nyxt::class-internal-source))))
+      (prini-to-string sugestion :package (eval-package self))))
   (:method render-results (self)
     (spinneret:with-html-string
       (unless (uiop:emptyp output)
@@ -308,13 +328,12 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
                           (setf (working-directory cell)
                                 (prompt1 :prompt "Directory"
                                          :input (uiop:native-namestring (uiop:getcwd))
-                                         :sources (make-instance 'nyxt/file-manager-mode:file-source
+                                         :sources (make-instance 'nyxt/mode/file-manager:file-source
                                                                  :path-filter #'uiop:directory-pathname-p)))
-                          (reload-buffer (buffer (mode-instance cell))))))))
+                          (reload-repl (mode-instance cell)))))))
   (:metaclass user-class)
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "A cell type for shell commands.
 `evaluate' runs a `shell' with `input' in the `working-directory'.
 `results' are a list of the error/success code.
@@ -372,18 +391,19 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
     (define-keyscheme-map "repl-mode" ()
       keyscheme:default
       (list
+       "tab" 'suggest-into-cell
        "C-return" 'evaluate-cell)
       keyscheme:emacs
       (list
        "C-M-x" 'evaluate-cell
-       "C-b" 'nyxt/input-edit-mode:cursor-backwards
-       "C-f" 'nyxt/input-edit-mode:cursor-forwards
-       "C-d" 'nyxt/input-edit-mode:delete-forwards
-       "M-b" 'nyxt/input-edit-mode:cursor-backwards-word
-       "M-f" 'nyxt/input-edit-mode:cursor-forwards-word
-       "M-backspace" 'nyxt/input-edit-mode:delete-backwards-word
-       "C-backspace" 'nyxt/input-edit-mode:delete-backwards-word
-       "M-d" 'nyxt/input-edit-mode:delete-forwards-word
+       "C-b" 'nyxt/mode/input-edit:cursor-backwards
+       "C-f" 'nyxt/mode/input-edit:cursor-forwards
+       "C-d" 'nyxt/mode/input-edit:delete-forwards
+       "M-b" 'nyxt/mode/input-edit:cursor-backwards-word
+       "M-f" 'nyxt/mode/input-edit:cursor-forwards-word
+       "M-backspace" 'nyxt/mode/input-edit:delete-backwards-word
+       "C-backspace" 'nyxt/mode/input-edit:delete-backwards-word
+       "M-d" 'nyxt/mode/input-edit:delete-forwards-word
        "M-p" 'previous-cell
        "M-n" 'next-cell
        ;; FIXME: Org uses C-c C-_ and C-c C-^, but those are shadowed by C-c in Nyxt.
@@ -391,17 +411,18 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
        "C-_" 'move-cell-down
        "C-k" 'clean-cell
        "C-M-k" 'delete-cell
-       "M-q" 'reformat-cell)
+       "M-q" 'reformat-cell
+       "C-i" 'suggest-into-cell)
       keyscheme:vi-normal
       (list
        ;; TODO: deleting chars/words
-       "h" 'nyxt/input-edit-mode:cursor-backwards
-       "l" 'nyxt/input-edit-mode:cursor-forwards
-       "x" 'nyxt/input-edit-mode:delete-forwards
-       "b" 'nyxt/input-edit-mode:cursor-backwards-word
-       "w" 'nyxt/input-edit-mode:cursor-forwards-word
-       "d b" 'nyxt/input-edit-mode:delete-backwards-word
-       "d w" 'nyxt/input-edit-mode:delete-forwards-word
+       "h" 'nyxt/mode/input-edit:cursor-backwards
+       "l" 'nyxt/mode/input-edit:cursor-forwards
+       "x" 'nyxt/mode/input-edit:delete-forwards
+       "b" 'nyxt/mode/input-edit:cursor-backwards-word
+       "w" 'nyxt/mode/input-edit:cursor-forwards-word
+       "d b" 'nyxt/mode/input-edit:delete-backwards-word
+       "d w" 'nyxt/mode/input-edit:delete-forwards-word
        "k" 'previous-cell
        "j" 'next-cell
        "K" 'move-cell-up
@@ -444,7 +465,12 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
               :font-size "14px"
               :position "absolute"
               :bottom "1em"
-              :right "1em"))
+              :right "1em")
+            `(.cell-actions
+              :display none)
+            `(":focus-within ~ .cell-actions,
+.cell:hover .cell-actions"
+              :display block))
           :documentation "The CSS applied to a REPL when it is set-up.")
    (cells
     (list (make-instance 'lisp-cell :input "\"Hello, Nyxt!\""))
@@ -457,7 +483,7 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
 (defmethod (setf cells) :after ((new-value null) (mode repl-mode))
   "A watcher to set `current-cell' to NIL when `cells' are empty."
   (setf (current-cell mode) nil)
-  (reload-buffer (buffer mode)))
+  (reload-repl mode))
 
 (defmethod focus-cell ((cell cell))
   (setf (current-cell (mode-instance cell)) cell))
@@ -471,8 +497,13 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
             (thread cell) (run-thread "repl cell evaluation"
                             (evaluate cell)
                             (setf (ready-p cell) t)
-                            (reload-buffer (buffer repl))))
-      (reload-buffer (buffer repl)))))
+                            (reload-repl repl)))
+      (reload-repl repl))))
+
+(define-command suggest-into-cell (&optional (cell (current-cell (find-submode 'repl-mode))))
+  "Paste the chosen symbol into the CELL.
+Relies on `suggest' of the CELL class."
+  (ffi-buffer-paste (buffer (mode-instance cell)) (suggest cell)))
 
 (define-command add-cell (&optional (cell (current-cell (find-submode 'repl-mode)))
                           (class (let ((nyxt::*interactive-p* t))
@@ -490,7 +521,7 @@ If CELL is not provided, add the new cell below all the cells in REPL."
                   (list new-cell)
                   (subseq (cells repl) cell-position)))
     (focus-cell new-cell)
-    (reload-buffer (buffer repl))))
+    (reload-repl repl)))
 
 (define-command clean-cell (&optional (cell (current-cell (find-submode 'repl-mode))))
   "Clean the CELL, removing all input and accumulated state.
@@ -499,7 +530,7 @@ If CELL is not provided, clean the current cell."
     (focus-cell cell)
     (setf (cells repl)
           (substitute (make-instance (class-of cell) :input "") cell (cells repl)))
-    (reload-buffer (buffer repl))))
+    (reload-repl repl)))
 
 (define-command delete-cell (&optional (cell (current-cell (find-submode 'repl-mode))))
   "Remove the CELL.
@@ -508,7 +539,7 @@ If CELL is not provided, remove the current cell."
          (position (position cell (cells repl))))
     (setf (cells repl) (remove cell (cells repl)))
     (focus-cell (elt (cells repl) (max 0 (1- position))))
-    (reload-buffer (buffer repl))))
+    (reload-repl repl)))
 
 (defun format-form (form package)
   (prini-to-string form :readably t :package package))
@@ -524,7 +555,7 @@ Follows what the compiler finds aesthetically pleasing."
           (setf (input cell)
                 (format-form (read-from-string (input cell))
                              (eval-package cell)))
-          (reload-buffer (buffer repl)))
+          (reload-repl repl))
       (error (e)
         (echo "The input appears malformed. Stop reformatting. Original message: ~a" e)))))
 
@@ -546,14 +577,14 @@ Follows what the compiler finds aesthetically pleasing."
   (when cell
     (setf (eval-package cell) package
           (name cell) (format nil "Lisp expression (~a)" (package-name package)))
-    (reload-buffer (buffer (mode-instance cell)))))
+    (reload-repl (mode-instance cell))))
 
 (define-command previous-cell (&optional (cell (current-cell (find-submode 'repl-mode))))
   "Navigate to the previous input cell."
   (let ((repl (mode-instance cell)))
     (when (cells repl)
       (focus-cell (elt (cells repl) (max 0 (1- (position cell (cells repl))))))
-      (reload-buffer (buffer repl)))))
+      (reload-repl repl))))
 
 (define-command next-cell (&optional (cell (current-cell (find-submode 'repl-mode))))
   "Navigate to the next input cell."
@@ -562,7 +593,7 @@ Follows what the compiler finds aesthetically pleasing."
       (focus-cell (elt (cells repl)
                        (min (1- (length (cells repl)))
                             (1+ (position cell (cells repl))))))
-      (reload-buffer (buffer repl)))))
+      (reload-repl repl))))
 
 (define-command move-cell-up (&optional (cell (current-cell (find-submode 'repl-mode))))
   "Move the current code cell up, swapping it with the one above."
@@ -573,7 +604,7 @@ Follows what the compiler finds aesthetically pleasing."
       (unless (eq cell (first cells))
         (psetf (elt cells (1- cell-position)) cell
                (elt cells cell-position) (elt cells (1- cell-position)))
-        (reload-buffer (buffer (mode-instance cell)))))))
+        (reload-repl (mode-instance cell))))))
 
 (define-command move-cell-down (&optional (cell (current-cell (find-submode 'repl-mode))))
   "Move the current code cell down, swapping it with the one below."
@@ -584,7 +615,7 @@ Follows what the compiler finds aesthetically pleasing."
       (unless (eq cell (alex:lastcar cells))
         (psetf (elt cells (1+ cell-position)) cell
                (elt cells cell-position) (elt cells (1+ cell-position)))
-        (reload-buffer (buffer (mode-instance cell)))))))
+        (reload-repl (mode-instance cell))))))
 
 (define-internal-page-command-global repl (&key (class nil) (form nil))
     (repl-buffer "*REPL*" 'repl-mode)
@@ -627,9 +658,9 @@ Follows what the compiler finds aesthetically pleasing."
                                                             :input (function-lambda-string
                                                                     (symbol-function sym))))
                                            functions)))
-                            (reload-buffer (buffer repl-mode))))))
+                            (reload-repl repl-mode)))))
          (:nbutton
            :text "✕ Delete all"
            :title "Delete all cells in the REPL buffer."
            `(setf (cells ,repl-mode) nil)
-           `(reload-buffer (buffer ,repl-mode))))))))
+           `(reload-repl ,repl-mode)))))))

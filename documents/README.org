@@ -8,6 +8,7 @@
 :TOC:      :include all :ignore this
 :END:
 :CONTENTS:
+- [[#run-from-source-with-guix-emacs-and-sly][Run from source with Guix, Emacs and SLY]]
 - [[#developers-installation-with-guix][Developer's installation with Guix]]
 - [[#developers-installation-with-nix][Developer's installation with Nix]]
   - [[#building-for-local-development][Building for local development]]
@@ -17,11 +18,6 @@
   - [[#gtk-dependencies][GTK dependencies]]
     - [[#lisp-dependencies][Lisp dependencies]]
     - [[#gnulinux-freebsd-gtk-dependencies][GNU/Linux, FreeBSD GTK dependencies]]
-    - [[#macos-specific-dependencies][macOS specific dependencies]]
-  - [[#qt-dependencies][Qt dependencies]]
-    - [[#lisp-dependencies][Lisp dependencies]]
-    - [[#gnulinux-freebsd-dependencies][GNU/Linux, FreeBSD dependencies]]
-    - [[#macos-dependencies][macOS dependencies]]
   - [[#fetch-the-source-code][Fetch the source code]]
     - [[#observation][Observation]]
   - [[#compile][Compile]]
@@ -38,12 +34,68 @@
 - [[#help--community][Help & Community]]
   - [[#issue-tracker][Issue tracker]]
   - [[#learning-common-lisp][Learning Common Lisp]]
-  - [[#contributing][Contributing]]
+  - [[#irc-channel][IRC Channel]]
+- [[#contributing][Contributing]]
   - [[#commit-style][Commit style]]
   - [[#branch-management][Branch management]]
   - [[#programming-conventions][Programming conventions]]
-  - [[#irc-channel][IRC Channel]]
 :END:
+* Run from source with Guix, Emacs and SLY
+
+If you are new to developing Nyxt, you may want a straightforward way to
+set up the environment so that you can hack on Nyxt with minimal friction.
+This is one way to achieve that goal. Keep in mind that this part of the
+manual is highly opinionated in it's choice of tools. If you wish to use
+other tools, refer to the rest of the manual below.
+
+To proceed, make sure that you have the following installed:
+- [[https://www.sbcl.org/][SBCL]]
+- [[https://guix.gnu.org][The GUIX package manager]]
+- [[https://www.gnu.org/software/emacs/][Emacs]]
+- [[https://github.com/joaotavora/sly][SLY]]
+
+Now that you have those working on your system, clone the Nyxt repository into
+=~/common-lisp=. Then, in your Emacs configuration file, add the following and
+restart Emacs:
+
+#+begin_src lisp
+(load "~/common-lisp/nyxt/build-scripts/nyxt-guix.el" :noerror)
+
+(setq sly-lisp-implementations
+        '((nyxt-sbcl
+           (lambda () (nyxt-make-guix-cl-for-nyxt
+                  "~/common-lisp/nyxt"
+                  :force t
+                  :cl-implementation "sbcl"
+                  :cl-system "nyxt/gi-gtk"
+                  :no-grafts t
+                  :ad-hoc '("emacs" "xdg-utils" "git"))))))
+#+end_src
+
+Next, in Emacs, run ~M-- M-x sly RET nyxt-sbcl RET~ to start the SLY REPL.
+Wait for it to finish and the REPL will open. At this point you are almost ready
+to start hacking. In the SLY REPL, write the following:
+
+#+begin_src lisp
+(asdf:load-system :nyxt/gi-gtk)
+(nyxt:start)
+#+end_src
+
+With Nyxt started in this way, you can hack on Nyxt without recompiling the
+whole codebase or even restarting the browser. You can make your changes,
+recompile only the relevant file/expression with SLY and it's done.
+
+You can also run the tests locally with:
+
+#+begin_src lisp
+(asdf:test-system :nyxt)
+; and
+(asdf:test-system :nyxt/gi-gtk)
+#+end_src
+
+Keep in mind that it is recommended to restart the SLY session before and 
+after running the tests.
+
 * Developer's installation with Guix
 
 First, clone the Nyxt repository.  It is most convenient to clone the Nyxt
@@ -142,7 +194,7 @@ git clone https://github.com/joachifm/cl-webkit ~/common-lisp/cl-webkit
 
 - Arch Linux:
   #+begin_src sh
-  sudo pacman -S git sbcl cl-asdf webkit2gtk glib-networking gsettings-desktop-schemas enchant libfixposix
+  sudo pacman -S git sbcl cl-asdf webkit2gtk gobject-introspection glib-networking gsettings-desktop-schemas enchant libfixposix
   #+end_src
 
 - Fedora:
@@ -181,65 +233,6 @@ the the distribution provider to update their packages to take advantage of
 these fixes.
 #+end_quote
 
-*** macOS specific dependencies
-
-- GTK 3.24.12+
-- WebKitGTK+
-- XQuartz
-- libfixposix
-- pkg-config
-
-Notes:
-
-1. If you install dependencies via MacPorts and your Lisp is SBCL, please try
-   putting the following into your =~/.sbclrc=:
-
-   #+begin_src lisp
-   (ql:quickload :cffi)
-   (pushnew "/opt/local/lib" cffi:*foreign-library-directories* :test #'equal)
-   #+end_src
-
-2. To install the WebKitGTK+ dependency, you may want to install
-   `webkit2-gtk(-devel)` instead of `webkit-gtk3` via your favorite package
-   manager. If you are on a legacy version of macOS which is not supported by
-   HomeBrew, you may want to try install these via MacPorts.
-
-** Qt dependencies
-
-Qt is only required if you want to build Nyxt over the WebEngine renderer.
-
-*Warning:* It's highly experimental and may not build on =master=.
-
-*** Lisp dependencies
-
-Nyxt on Qt requires the latest version of the cl-webengine library.  Clone the
-cl-webengine repository into =~/common-lisp= (or [[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][another directory where ASDF
-will find it]]):
-
-#+begin_src sh
-mkdir -p ~/common-lisp
-git clone https://github.com/atlas-engineer/cl-webengine.git ~/common-lisp/cl-webengine
-#+end_src
-
-Please follow the instructions in the cl-webengine repository for details about
-how to install it on your system.
-
-*** GNU/Linux, FreeBSD dependencies
-
-- Qt 5 (qtbase, qtwebchannel, qtdeclarative)
-- Qt 5 WebEngine
-- libfixposix
-- xclip (for clipboard support)
-- enchant (for spellchecking)
-- pkg-config (for web-extensions)
-
-*** macOS dependencies
-
-- Qt 5.14.0+
-- Qt WebEngine
-- libfixposix
-- pkg-config
-
 ** Fetch the source code
 
 Clone the Nyxt repository into =~/common-lisp= (or [[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][another directory where ASDF
@@ -261,8 +254,7 @@ repository at =~/quicklisp/local-projects=.
 ** Compile
 *** Using the Makefile
 
-The following command will build the Lisp core.  On macOS this will produce an
-application bundle which you can copy into your =/Applications= folder.
+The following command will build the Lisp core.
 
 - GNU/Linux:
   #+begin_src sh
@@ -272,12 +264,6 @@ application bundle which you can copy into your =/Applications= folder.
 - FreeBSD
   #+begin_src sh
   gmake all
-  #+end_src
-
-- macOS:
-  #+begin_src sh
-  make all
-  make app-bundle
   #+end_src
 
 Inside the Makefile you'll find many options you can specify.  You can specify
@@ -291,13 +277,6 @@ Start your Lisp and run the following commands:
 #+NAME: compile
 #+begin_src lisp
 (asdf:make :nyxt/gtk-application)
-#+end_src
-
-or, alternatively for the QtWebEngine renderer:
-
-#+NAME: compile
-#+begin_src lisp
-(asdf:make :nyxt/qt-application)
 #+end_src
 
 Your Lisp implementation must have produced an executable in the directory where
@@ -464,7 +443,11 @@ suggestion you wish to discuss.
 
 See https://nyxt.atlas.engineer/learn-lisp for a few recommendations.
 
-** Contributing
+** IRC Channel
+
+#+html: You can find Nyxt on Libera IRC: <a href="https://kiwiirc.com/nextclient/irc.libera.chat/nyxt">#nyxt</a>
+
+* Contributing
 
 Nyxt is a joint effort and we need you to make it succeed!  You can find ideas
 [[https://github.com/atlas-engineer/nyxt/issues?q=is%3Aissue+is%3Aopen+label%3Agood-first-issue][on our issue tracker]] to suit your interests and skills.  Feel free to contact us
@@ -630,10 +613,6 @@ When =slot-value= is the only parameter specified then:
 #   only one that comes to mind is =url= which does not follow this convention...
 
 # - Blocking function should be prefixed with =wait-on-=.
-
-** IRC Channel
-
-#+html: You can find Nyxt on Libera IRC: <a href="https://kiwiirc.com/nextclient/irc.libera.chat/nyxt">#nyxt</a>
 
 # Local Variables:
 # eval: (add-hook 'before-save-hook

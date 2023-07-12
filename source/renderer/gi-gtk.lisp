@@ -43,7 +43,6 @@ For now it is also partly based on `nyxt/renderer/gtk'."))
 interface. On Darwin, we must run the GTK thread on the main thread."
   (declare (ignore urls startup-timestamp))
   (log:debug "Initializing GI-GTK Interface")
-  (setf (uiop:getenv "WEBKIT_FORCE_SANDBOX") "0")
   (if nyxt/renderer/gtk::gtk-running-p
       (nyxt/renderer/gtk::within-gtk-thread
         (call-next-method))

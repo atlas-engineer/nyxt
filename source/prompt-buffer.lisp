@@ -13,6 +13,8 @@
      (height
       :default
       :type (or keyword integer)
+      :writer nil
+      :reader height
       :documentation "The height occupied by the prompt buffer.
 The options are:
 - `:default', which sets it to the value of `prompt-buffer-open-height';
@@ -52,8 +54,12 @@ some point.")
      (mouse-support-p
       t
       :type boolean
-      :documentation "Whether to allow mouse events to set and return the
-current suggestion in the prompt buffer.")
+      :documentation "Whether to allow mouse events to act on prompt buffer suggestions.
+The following mouse keybindings are available:
+- button1: `run-action-on-return'
+- C-button1: `toggle-mark-forwards'
+- s-button1: `toggle-mark-forwards'
+- M-button1: `set-action-on-return'.")
      (dynamic-attribute-width-p
       nil
       :type boolean
@@ -75,16 +81,17 @@ See `nyxt::attribute-widths'.")
           :margin "0"
           :padding "0")
         `("#prompt-area"
+          :background-color ,theme:primary
+          :color ,theme:on-primary
           :border-top "2px solid"
           :border-bottom "2px solid"
           :border-color ,theme:primary
-          :background-color ,theme:primary
-          :color ,theme:on-primary
           :display "grid"
           :grid-template-columns "auto auto 1fr auto auto"
           :width "100%")
         `("#prompt"
           :background-color ,theme:primary
+          :color ,theme:on-primary
           :padding-left "10px"
           :line-height "28px")
         `("#prompt-input"
@@ -93,8 +100,9 @@ See `nyxt::attribute-widths'.")
         `("#prompt-extra"
           :z-index "1"
           :min-width "12px"
-          :padding-right "14px !important"
+          :padding-right 14px !important
           :background-color ,theme:primary
+          :color ,theme:on-primary
           :line-height "28px"
           :padding-right "7px")
         `("#prompt-modes"
@@ -108,7 +116,7 @@ See `nyxt::attribute-widths'.")
           :text-align "right"
           :background-color ,theme:primary
           :min-width "24px"
-          :line-height "24px"
+          :line-height "28px"
           :font-weight "bold"
           :font-size "20px")
         `(".arrow-right"
@@ -129,6 +137,7 @@ See `nyxt::attribute-widths'.")
           :background-color ,theme:accent
           :color ,theme:on-accent)
         `((:and .button :hover)
+          :cursor "pointer"
           :opacity 0.6)
         `((:and .button (:or :visited :active))
           :color ,theme:background)
@@ -145,6 +154,8 @@ See `nyxt::attribute-widths'.")
           :padding "3px"
           :width "100%"
           :autofocus "true")
+        `("#input:focus"
+          :box-shadow ,(format nil "inset 0 0 0 2px ~a~X" theme:accent-alt 75))
         `(".source"
           :margin-left "10px"
           :margin-top "15px")
@@ -171,8 +182,8 @@ See `nyxt::attribute-widths'.")
            :height "20px"
            :overflow "auto")
           ("tr:hover"
-           :background-color ,theme:secondary
-           :color ,theme:on-secondary
+           :background-color ,theme:accent-alt
+           :color ,theme:on-accent-alt
            :cursor "pointer")
           (th
            :background-color ,theme:primary
@@ -222,6 +233,15 @@ See `prompt' for how to invoke prompts.")
                      (sera:class-name-of (first (prompter:sources prompt-buffer))))))
     (setf (height prompt-buffer) :fit-to-prompt)))
 
+(defmethod (setf height) (value (prompt-buffer prompt-buffer))
+  (setf (ffi-height prompt-buffer)
+        (case value
+          (:default (prompt-buffer-open-height (window prompt-buffer)))
+          (:fit-to-prompt (ps-eval :buffer prompt-buffer
+                            (ps:chain (nyxt/ps:qs document "#prompt") offset-height)))
+          (t value)))
+  (setf (slot-value prompt-buffer 'height) value))
+
 (export-always 'current-source)
 (defun current-source (&optional (prompt-buffer (current-prompt-buffer)))
   (prompter:current-source prompt-buffer))
@@ -244,13 +264,7 @@ See also `hide-prompt-buffer'."
     (push prompt-buffer (active-prompt-buffers (window prompt-buffer)))
     (calispel:! (prompt-buffer-channel (window prompt-buffer)) prompt-buffer)
     (prompt-render prompt-buffer)
-    (setf (ffi-height prompt-buffer)
-          (case height
-            (:default (prompt-buffer-open-height (window prompt-buffer)))
-            (:fit-to-prompt
-             (ps-eval :buffer prompt-buffer
-               (ps:chain (nyxt/ps:qs document "#prompt") offset-height)))
-            (t height)))
+    (setf (height prompt-buffer) height)
     (run-thread "Show prompt watcher"
       (let ((prompt-buffer prompt-buffer))
         (update-prompt-input prompt-buffer)
@@ -431,26 +445,39 @@ an integer."))
                                    "marked")
                           :onclick (when (mouse-support-p prompt-buffer)
                                      (ps:ps
-                                       (if (ps:chain window event ctrl-key)
-                                           (nyxt/ps:lisp-eval
-                                            (:title "mark-this-suggestion"
-                                             :buffer prompt-buffer)
-                                            (prompter::set-current-suggestion
-                                             prompt-buffer
-                                             (- suggestion-index cursor-index))
-                                            (prompter:toggle-mark prompt-buffer)
-                                            (prompter::set-current-suggestion
-                                             prompt-buffer
-                                             (- cursor-index suggestion-index))
-                                            (prompt-render-suggestions prompt-buffer))
-                                           (nyxt/ps:lisp-eval
-                                            (:title "return-this-suggestion"
-                                             :buffer prompt-buffer)
-                                            (prompter::set-current-suggestion
-                                             prompt-buffer
-                                             (- suggestion-index cursor-index))
-                                            (prompter:run-action-on-return
-                                             (nyxt::current-prompt-buffer))))))
+                                       (cond
+                                         ((or (ps:chain window event ctrl-key)
+                                              (ps:chain window event shift-key))
+                                          (nyxt/ps:lisp-eval
+                                           (:title "mark-this-suggestion"
+                                            :buffer prompt-buffer)
+                                           (prompter::set-current-suggestion
+                                            prompt-buffer
+                                            (- suggestion-index cursor-index))
+                                           (prompter:toggle-mark prompt-buffer)
+                                           (prompter::set-current-suggestion
+                                            prompt-buffer
+                                            (- cursor-index suggestion-index))
+                                           (prompt-render-suggestions prompt-buffer)))
+                                         ((ps:chain window event alt-key)
+                                          (nyxt/ps:lisp-eval
+                                           (:title "return-this-suggestion-with-another-action"
+                                            :buffer prompt-buffer)
+                                           (prompter::set-current-suggestion
+                                            prompt-buffer
+                                            (- suggestion-index cursor-index))
+                                           (uiop:symbol-call
+                                            :nyxt/prompt-buffer-mode :set-action-on-return
+                                            (nyxt::current-prompt-buffer))))
+                                         (t
+                                          (nyxt/ps:lisp-eval
+                                           (:title "return-this-suggestion"
+                                            :buffer prompt-buffer)
+                                           (prompter::set-current-suggestion
+                                            prompt-buffer
+                                            (- suggestion-index cursor-index))
+                                           (prompter:run-action-on-return
+                                            (nyxt::current-prompt-buffer)))))))
                           (loop for (nil attribute attribute-display)
                                 in (prompter:active-attributes suggestion :source source)
                                 collect (:td :title attribute

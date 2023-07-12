@@ -11,8 +11,7 @@
                        :type string
                        :reader password-directory))
   (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:export-accessor-names-p t))
 
 (push 'password-store-interface *interfaces*)
 
