@@ -5,7 +5,8 @@
 
 (define-class config-directory-file (files:config-file nyxt-file)
   ((files:base-path #p""))
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:documentation "Nyxt directory for config files."))
 
 (define-class config-special-file (config-directory-file)
   ((files:base-path #p"")
@@ -80,7 +81,8 @@ Consider porting your configuration to ~a."
 (define-class log-file (files:data-file nyxt-file)
   ((files:base-path #p"nyxt.log")
    (files:name "log-file"))
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:documentation "Data file for Nyxt logs."))
 
 (export-always '*log-file*)
 (defvar *log-file* (make-instance 'log-file)
@@ -92,7 +94,8 @@ This is global because logging starts before the `*browser*' is even initialized
 
 (define-class nyxt-source-directory (nyxt-file)
   ((files:name "source"))
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:documentation "Directory with Nyxt sources."))
 
 (defmethod files:resolve ((profile nyxt-profile) (directory nyxt-source-directory))
   "Try hard to find Nyxt source on disk.
