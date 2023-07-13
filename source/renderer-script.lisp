@@ -62,6 +62,36 @@ The function can be passed Lisp ARGS."
 
 (export-always 'ps-labels)
 (defmacro ps-labels (&body args)
+  "Create `labels'-like Parenscript functions callable from Lisp.
+ARGS can start with :ASYNC and :BUFFER keyword args.
+- :BUFFER is the buffer to run the created functions in. Defaults to
+  `current-buffer'.
+- :ASYNC is whether the function runs asynchronously. Defaults to NIL, so the
+  bound functions return the result of JS evaluation synchronously.
+
+Bindings are similar to the `labels'/`flet' bindings. They have a structure of:
+\(NAME [:BUFFER BUFFER] [:ASYNC BOOLEAN] ARGS
+   &BODY BODY)
+
+Binding-specific :BUFFER and :ASYNC can override the `pl-labels'-global :BUFFER
+and :ASYNC.
+
+Example:
+\(ps-labels
+  :buffer some-buffer
+  :async t ;; Run functions asynchronously by default.
+  ((print-to-console
+    ;; Override the buffer to current one.
+    :buffer (current-buffer)
+    (something)
+    ;; Notice the `ps:lisp': args are Lisp values.
+    (ps:chain console (log (ps:stringify (ps:lisp something)))))
+   (add
+    ;; Override the :ASYNC for the function to be synchronous.
+    :async nil
+    (n1 n2)
+    (+ (ps:lisp n1) (ps:lisp n2))))
+  (print-to-console (add 5 200.8)))"
   (let* ((global-buffer (second (member :buffer args)))
          (global-async (second (member :async args)))
          (functions (find-if (lambda (e) (and (listp e) (every #'listp e)))
