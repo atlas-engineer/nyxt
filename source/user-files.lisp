@@ -45,11 +45,13 @@ If the file is modified externally, Nyxt automatically reloads it."))
 
 (define-class nyxt-data-directory (files:data-file nyxt-file)
   ((files:base-path #p""))
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:documentation "Directory for Nyxt data (history, bookmarks etc.) files."))
 
 (define-class nyxt-temporary-directory (files:data-file nyxt-file)
   ((files:base-path #p""))
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:documentation "File for a /tmp/`profile'-name/ directory."))
 
 (defmethod files:resolve ((profile nyxt-profile) (path nyxt-temporary-directory))
   "Expand all data paths inside a temporary directory."
