@@ -129,7 +129,8 @@ This is set globally so that it can be looked up if there is no
 (define-class extensions-directory (files:data-file nyxt-file)
   ((files:base-path #p"extensions/")
    (files:name "extensions"))
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:documentation "Nyxt data subdirectory for Lisp extensions."))
 
 (export-always '*extensions-directory*)
 (defvar *extensions-directory* (make-instance 'extensions-directory)
