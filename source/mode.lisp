@@ -334,7 +334,8 @@ For production code, see `find-submode' instead."
    (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:suggestion-maker 'make-mode-suggestion))
   (:export-class-name-p t)
-  (:metaclass user-class))
+  (:metaclass user-class)
+  (:documentation "Source for all the existing modes."))
 
 (defmethod prompter:object-attributes ((mode mode) (source prompter:source))
   (declare (ignore source))
@@ -353,7 +354,8 @@ For production code, see `find-submode' instead."
                               (uiop:ensure-list (buffers source))))))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:metaclass user-class))
+  (:metaclass user-class)
+  (:documentation "Source listing names of all the `enable'd modes in `buffers'."))
 
 (define-class inactive-mode-source (mode-source)
   ((prompter:name "Inactive modes")
@@ -368,7 +370,8 @@ For production code, see `find-submode' instead."
                              (set-difference (all-mode-symbols) common-modes)))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:metaclass user-class))
+  (:metaclass user-class)
+  (:documentation "Source listing names of modes not yet `enable'd (or `disable'd) in `buffers'."))
 
 (export-always 'enable-modes*)
 (defgeneric enable-modes* (modes buffers &rest args &key remember-p &allow-other-keys)
@@ -393,7 +396,7 @@ For production code, see `find-submode' instead."
                 buffer)
               (sera:filter #'modable-buffer-p buffers))))
   (:documentation "Enable MODES in BUFFERS.
-ARGS are the keyword arguments for `make-instance' on MODES.
+ARGS are the keyword arguments for `make-instance'/`enable' on MODES.
 If REMEMBER-P is true, save active modes so that auto-rules don't override those."))
 
 (define-command enable-modes (&key

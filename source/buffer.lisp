@@ -1028,7 +1028,8 @@ identifiers."
    (prompter:enable-marks-p t)
    (prompter:constructor (lambda (source)
                            (mapcar #'first (nyxt::keywords (buffer source))))))
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:documentation "Source listing the keywords for source `buffer'."))
 
 (-> proxy-url (buffer &key (:downloads-only boolean)) *)
 (defun proxy-url (buffer &key (downloads-only nil))
@@ -1295,7 +1296,11 @@ proceeding."
                                         (eq buffer (current-buffer)))
                               (set-current-buffer buffer))))))
   (:export-class-name-p t)
-  (:metaclass user-class))
+  (:metaclass user-class)
+  (:documentation "Source for choosing one (or several) of the open buffers.
+
+The `prompter:actions-on-current-suggestion' are set up to preview/switch to the
+buffer currently chosen as suggestion."))
 
 (defmethod prompter:object-attributes ((buffer buffer) (source prompter:source))
   (declare (ignore source))
@@ -1481,7 +1486,9 @@ URL-DESIGNATOR is then transformed by BUFFER's `buffer-load-hook'."
    (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:actions-on-return #'buffer-load*))
   (:export-class-name-p t)
-  (:metaclass user-class))
+  (:metaclass user-class)
+  (:documentation "Source listing all the entries in history.
+Loads the entry with default `prompter:actions-on-return'."))
 
 (define-class new-url-query ()
   ((query ""
