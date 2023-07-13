@@ -1662,7 +1662,10 @@ any.")
     (prompter::history-pushnew history (render-url url))))
 
 (export-always 'url-sources)
-(defmethod url-sources ((buffer buffer) actions-on-return)
+(define-generic url-sources ((buffer buffer) actions-on-return)
+  "Return list of `set-url' sources.
+The returned sources should have `url' or `prompter:actions-on-return' methods
+specified for their contents."
   (let ((actions-on-return (uiop:ensure-list actions-on-return)))
     (append
      (list (make-instance 'new-url-or-search-source :actions-on-return actions-on-return)
