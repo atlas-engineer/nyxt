@@ -184,9 +184,8 @@ Useful in FFI functions where we usually specialize things against
   buffer)
 
 (export-always 'finalize-buffer)
-(defmethod finalize-buffer ((buffer buffer) &key (browser *browser*) &allow-other-keys)
-  "Finalize instantiation of BUFFER.
-Nothing to do for the simplest `buffer' type."
+(define-generic finalize-buffer ((buffer buffer) &key (browser *browser*) &allow-other-keys)
+  "Finalize instantiation of BUFFER."
   (declare (ignore browser))
   t)
 
