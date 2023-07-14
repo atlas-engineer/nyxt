@@ -1182,21 +1182,28 @@ This is a low-level function.  See `buffer-delete' for the high-level version."
    :key #'id))
 
 (defun buffers-get (id)
+  "Get the `buffer' with the corresponding ID."
   (gethash id (slot-value *browser* 'buffers)))
 
 (defun buffers-set (id buffer)
+  "Set the BUFFER as the one corresponding to ID in `browser'."
   (when *browser*
     (setf (gethash id (slot-value *browser* 'buffers)) buffer)
     ;; Force setf call so that slot is seen as changed, e.g. by status buffer watcher.
     (setf (buffers *browser*) (buffers *browser*))))
 
 (defun buffers-delete (id)
+  "Remove the buffer with respective ID from the browser.
+
+Low-level function, use `buffer-delete' to properly close the buffer, or
+`delete-buffer' command from inside Nyxt."
   (remhash id (slot-value *browser* 'buffers))
   ;; Force setf call so that slot is seen as changed, e.g. by status buffer watcher.
   (setf (buffers *browser*) (buffers *browser*)))
 
 (export-always 'window-list)
 (defun window-list ()
+  "Return a list of all the open `windows'."
   (when *browser*
     (alex:hash-table-values (windows *browser*))))
 
