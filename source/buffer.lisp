@@ -750,7 +750,13 @@ store them somewhere and `ffi-buffer-delete' them once done."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:metaclass user-class))
+  (:metaclass user-class)
+  (:documentation "Panel buffer (also known as sidebar): small view on the side of the screen.
+
+Panels (pages openable in panel buffer with respective commands) are defined
+with `define-panel-command' and `define-panel-command-global'.
+
+Also see `panel-page'."))
 
 (define-class status-buffer (input-buffer)
   ((window

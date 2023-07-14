@@ -35,7 +35,8 @@ When provided, PANELS are deleted instead."
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:documentation "Internal page for `panel-buffers'.
-The main difference is that their command toggles the panel."))
+The main difference from `internal-page' is that panel command toggles the
+panel."))
 
 (defun find-panel-buffer (name)
   "Return first panel buffer which URL is a NAME `panel-page'."
