@@ -4,9 +4,12 @@
 (in-package :nyxt)
 
 (hooks:define-hook-type keymaps-buffer (function ((list-of keymaps:keymap) buffer)
-                                                 (values &optional (list-of keymaps:keymap) buffer)))
+                                                 (values &optional (list-of keymaps:keymap) buffer))
+  "Hook to modify keymaps.
+Get a list of `nkeymaps:keymap's and `buffer' and return a new list and buffer.")
 (export-always '(hook-keymaps-buffer))
-(hooks:define-hook-type url->url (function (quri:uri) quri:uri))
+(hooks:define-hook-type url->url (function (quri:uri) quri:uri)
+  "Hook getting a `quri:uri' and returning same/another one. ")
 
 (export-always 'renderer-buffer)
 (defclass renderer-buffer ()
@@ -1042,7 +1045,8 @@ when `proxied-downloads-p' is true."
   (and (network-buffer-p buffer)
        (eq (slot-value buffer 'status) :failed)))
 
-(hooks:define-hook-type buffer (function (buffer)))
+(hooks:define-hook-type buffer (function (buffer))
+  "Hook acting on `buffer's.")
 
 (define-command make-buffer (&rest args &key (title "") modes
                              (url (if *browser*

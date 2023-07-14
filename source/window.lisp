@@ -3,7 +3,8 @@
 
 (in-package :nyxt)
 
-(hooks:define-hook-type window-buffer (function (window buffer)))
+(hooks:define-hook-type window-buffer (function (window buffer))
+  "Hook acting on `window' and `buffer'.")
 
 (export-always 'renderer-window)
 (defclass renderer-window ()
@@ -165,7 +166,8 @@ The handlers take the window as argument."))
      window
      (format-status (status-buffer window)))))
 
-(hooks:define-hook-type window (function (window)))
+(hooks:define-hook-type window (function (window))
+  "Hook acting on `window's.")
 
 (export-always 'window-make)
 (defun window-make (browser)
