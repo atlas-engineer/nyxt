@@ -32,6 +32,8 @@ Members of URL-STRINGS corresponding to the empty URL are discarded."
   (has-method-p object #'url))
 
 (deftype url-designator ()
+  "Type for anything URL-like.
+Means that `url' can be applied to it to get `quri:uri'."
   `(satisfies has-url-method-p))
 
 (export-always 'render-url)
@@ -140,7 +142,9 @@ Requires encryption or other means of security.")
     :documentation "Empty document schemes can be loaded synchronously by websites referring to them."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:documentation "Representation of Nyxt-specific internal schemes.")
+  (:documentation "Representation of Nyxt-specific internal schemes.
+Has `name' it can be accessed with. When accessed, runs `callback' to return
+content. In case something goes wrong, runs `error-callback'.")
   (:metaclass user-class))
 
 (defmethod print-object ((scheme scheme) stream)
@@ -159,7 +163,7 @@ Keys are scheme strings, values are `scheme' objects.")
                                  secure-p
                                  cors-enabled-p
                                &allow-other-keys)
-  "Define a handler (running CALLBACK) for SCHEME-NAME scheme.
+  "Define a handler (running CALLBACK) for SCHEME-NAME `scheme'.
 
 CALLBACK is called with two arguments:
 - the URL that was requested with this scheme, and
@@ -220,13 +224,17 @@ Public Suffix list, T otherwise."
 
 (export-always 'valid-scheme-p)
 (defun valid-scheme-p (scheme)
+  "Whether the scheme is supported by Nyxt.
+Usually means that either:
+- SCHEME is IANA-approved,
+- or SCHEME is a Nyxt-specific `scheme'."
   (sera:true (find scheme (browser-schemes *browser*) :test #'string=)))
 
 (export-always 'valid-url-p)
 (defun valid-url-p (url &key (check-dns-p t))
   "Return non-nil when URL is a valid URL.
-The domain name existence is verified only if CHECK-DNS-P is T. Domain
-name validation may take significant time since it looks up the DNS."
+The domain name existence is verified only if CHECK-DNS-P is T. Domain name
+validation may take significant time since it looks up the DNS."
   (let ((url (ignore-errors (quri:uri url))))
     (and url
          (quri:uri-p url)
@@ -261,14 +269,14 @@ If it cannot be derived, return an empty `quri:uri'."
 (-> url-empty-p ((or quri:uri string null)) boolean)
 (export-always 'url-empty-p)
 (defun url-empty-p (url)
-  "Small convenience function to check whether the given URL is empty."
+  "Check whether the given URL is empty (renders to empty string)."
   (the (values boolean &optional)
        (uiop:emptyp (if (quri:uri-p url) (quri:render-uri url) url))))
 
 (-> empty-path-url-p (quri:uri) boolean)
 (export-always 'empty-path-url-p)
 (defun empty-path-url-p (url)
-  "Whether the URL is a root one, having no path or empty one."
+  "Whether the URL is a root one, having no path or an empty path."
   (or (string= (quri:uri-path url) "/")
       (null (quri:uri-path url))))
 
