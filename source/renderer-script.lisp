@@ -158,6 +158,7 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
 
 (export-always 'add-stylesheet)
 (defun add-stylesheet (stylesheet-name style &optional (buffer (current-buffer)))
+  "Find/create a STYLESHEET-NAMEd element and set the STYLE as it's content."
   (ps-eval :async t :buffer buffer
     (unless (nyxt/ps:qs document (ps:lisp
                                   (concatenate
@@ -170,10 +171,12 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
        (:catch (error))))))
 
 (defun html-write (content &optional (buffer (current-buffer)))
+  "Write CONTENT into BUFFER page."
   (ps-eval :async t :buffer buffer
     (ps:chain document (write (ps:lisp content)))))
 
 (defun html-set (content &optional (buffer (current-buffer)))
+  "Set BUFFER contents to CONTENT."
   (ps-eval :async t :buffer buffer
     (setf (ps:@ document body |innerHTML|) (ps:lisp content))))
 
@@ -191,6 +194,7 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
   (gethash sym *nyxt-url-commands*))
 
 (deftype internal-page-symbol ()
+  "Whether the value is a symbol having an `internal-page' associated to it."
   `(and symbol (satisfies internal-page-symbol-p)))
 
 (export-always 'match-internal-page)
