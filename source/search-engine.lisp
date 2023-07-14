@@ -6,32 +6,50 @@
 (define-class search-engine ()
   ((name nil
          :type (maybe string)
-         :documentation "Human-readable name of the search engine, like \"Wikipedia\" or \"Searx\".")
-   (shortcut (error "Slot `shortcut' must be set")
-             :type string
-             :documentation "The word used to refer to the search engine, for
-instance from the `set-url' commands.")
-   (search-url (error "Slot `search-url' must be set")
-               :type string
-               :documentation "The URL containing a '~a' which will be replaced with the search query.")
-   (fallback-url nil
-                 :type (or null quri:uri)
-                 :writer t
-                 :documentation "The URL to fall back to when given an empty
-query.  This is optional: if nil, use `search-url' instead with ~a expanded to
-the empty string.")
-   (completion-function nil
-                        :type (or null function)
-                        :documentation "A function taking a user input and returning a list of suggested search queries.
+         :documentation "Human-readable name of the search engine, like \"Wikipedia\" or \"Searx\".
+In case no name is defined, `shortcut' is used as the engine name.")
+   (shortcut
+    (alex:required-argument 'shortcut)
+    :type string
+    :documentation "The word or set of letters used to refer to the search engine.
+For instance, `shortcut's are used in `set-url' commands.")
+   (search-url
+    (alex:required-argument 'search-url)
+    :type string
+    :documentation "Format string with an '~a' to be replaced with the search query.")
+   (fallback-url
+    nil
+    :type (or null quri:uri)
+    :writer t
+    :documentation "The URL to fall back to when given an empty query.
+This is optional: if NIL, use `search-url' instead with ~a expanded to the empty
+string.")
+   (completion-function
+    nil
+    :type (or null function)
+    :documentation "A function taking a user input and returning a list of suggested search queries.
 The list should contain either
-- strings with text completions,
+- strings with text completion,
 - or a list of form (TEXT URL), where
   - TEXT is completion text, and
   - URL is the string.
 
 Simple completion functions can be built via `make-search-completion-function'"))
   (:export-class-name-p t)
-  (:export-accessor-names-p t))
+  (:export-accessor-names-p t)
+  (:documentation "A representation of search engine, as used in Nyxt.
+
+Minimal search engines can contain as little as `search-url' and `shortcut'.
+More involved engines can have:
+- Human-readable `name's.
+- `fallback-url' as the search home/error page.
+- And `completion-function' to list search suggestions in Nyxt
+  prompts (`set-url' in particular).
+
+For the actual uses and configuration of search engines, see:
+- `search-engines'.
+- `search-auto-complete-p'.
+- `search-always-auto-complete-p'."))
 
 (defmethod url ((object search-engine))
   (fallback-url object))
