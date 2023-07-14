@@ -33,11 +33,12 @@ Example: \"http://192.168.1.254:8080\".")
 This can apply to specific buffer."))
 
 (export-always 'combine-composed-hook-until-nil)
-(defmethod combine-composed-hook-until-nil ((hook hooks:hook) &optional arg)
-  "Return the result of the composition of the HOOK handlers on ARG, from
-oldest to youngest.  Stop processing when a handler returns nil.
-Without handler, return ARG.  This is an acceptable `combination' for
-`hook'."
+(define-generic combine-composed-hook-until-nil ((hook hooks:hook) &optional arg)
+  "Return the composition of the HOOK handlers on ARG, from oldest to youngest.
+
+Stop processing when a handler returns nil. Without handlers, return ARG.
+
+This is an acceptable `hooks:combination' for `hooks:hook'."
   (labels ((compose-handlers (handlers result)
              (if handlers
                  (let ((new-result (funcall (first handlers) result)))
