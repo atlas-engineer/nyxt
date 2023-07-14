@@ -23,9 +23,6 @@ we cannot predict the package in which it happened.")
 NIL means suggestion concerns all versions.")
    (tip
     ""
-    :export t
-    :writer t
-    :reader nil
     :type (or cons string function)
     :documentation "Suggestion how to update the symbols.
 It can be initialized with a string or a form; if the latter, it's automatically
@@ -71,10 +68,11 @@ Order is stable."
           #'string<
           :key (compose #'first #'uiop:ensure-list #'symbols))))
 
-(defmethod tip ((suggestion suggestion))
-  (if (stringp (slot-value suggestion 'tip))
-      (slot-value suggestion 'tip)
-      (funcall (slot-value suggestion 'tip))))
+(defmethod tip :around ((suggestion suggestion))
+  (let ((value (call-next-method)))
+    (if (stringp value)
+        value
+        (funcall value))))
 
 (defmethod render-version-migration (major-version)
   (spinneret:with-html-string
