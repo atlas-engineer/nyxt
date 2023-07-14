@@ -140,6 +140,7 @@ This is set globally so that extensions can be loaded even if there is no
 
 (export-always 'nyxt-source-registry)
 (defun nyxt-source-registry ()
+  "Return Nyxt-specific ASDF registry, with source and extension directories."
   `(:source-registry
     (:tree ,(files:expand *extensions-directory*))
     (:tree ,(files:expand *source-directory*)) ; Probably useless since systems are immutable.
