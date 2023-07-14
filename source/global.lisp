@@ -114,7 +114,14 @@ Don't set this, it would lose its meaning.")
            (uiop:run-program (list "git" "describe" "--always" "--tags")
                              :output '(:string :stripped t))))
         (asdf/component:component-version (asdf:find-system :nyxt)))
-  :test #'equal)
+  :test #'equal
+  :documentation "Nyxt version.
+Fetched from ASDF (higher priority) or Git tag.
+
+Can be overridden with NYXT_VERSION environment variable on build systems
+relying on neither ASDF nor Git.
+
+`version' and Nyxt-related feature expressions all rely on `+version+'.")
 
 (defun version ()
   "Return 5 values:
