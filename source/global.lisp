@@ -108,7 +108,7 @@ Don't set this, it would lose its meaning.")
 
 (export-always '+version+)
 (alex:define-constant +version+
-    (or (uiop:getenv "NYXT_VERSION")      ; This is useful for build systems without Git.
+    (or (uiop:getenv "NYXT_VERSION")
         (let ((version-from-git-tag
                 (ignore-errors
                  (uiop:with-current-directory ((asdf:system-source-directory :nyxt))
@@ -120,7 +120,14 @@ Don't set this, it would lose its meaning.")
                              version-from-asdf)
               version-from-asdf
               version-from-git-tag)))
-  :test #'equal)
+  :test #'equal
+  :documentation "Nyxt version.
+Fetched from ASDF (higher priority) or Git tag.
+
+Can be overridden with NYXT_VERSION environment variable on build systems
+relying on neither ASDF nor Git.
+
+`version' and Nyxt-related feature expressions all rely on `+version+'.")
 
 (defun version ()
   "Return 5 values:
