@@ -278,10 +278,12 @@ of BUFFER."
   (unless no-hook-p
     (hooks:run-hook (buffer-after-make-hook browser) buffer)))
 
-(defmethod modes ((buffer buffer))
-  "Non-modable buffers never have modes.
-This specialization is useful to be able to call the method regardless of the
-buffer, with a meaningful result."
+(define-generic modes ((buffer buffer))
+  "Return the modes active in BUFFER.
+
+Non-`modable-buffer's never have modes.
+The default specialization on `buffer' is useful to be able to call the method
+regardless of the buffer, with a meaningful result."
   '())
 
 (defmethod modes ((buffer modable-buffer))
@@ -980,7 +982,11 @@ identifiers."
   (ffi-buffer-make dead-buffer)
   dead-buffer)
 
-(defmethod document-model ((buffer buffer))
+(define-generic document-model ((buffer buffer))
+  "A wraparound accessor to BUFFER's `document-model'.
+
+In case the page changed more than `document-model-delta-threshold', runs
+`update-document-model'."
   (ps-labels :buffer buffer
     ((%count-dom-elements
       ()
