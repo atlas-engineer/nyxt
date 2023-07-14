@@ -50,7 +50,7 @@ Only used to mandate whether the mode needs a toggler command:
     nil
     :type (maybe string)
     :accessor nil
-    :documentation "A glyph used to represent this mode.")
+    :documentation "A glyph used to represent this mode when `glyph-mode-presentation-p'.")
    (visible-in-status-p
     t
     :documentation "Whether the mode is visible in the status line.")
@@ -78,7 +78,18 @@ The handlers take the mode as argument.")
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
   (:toggler-command-p nil)
-  (:metaclass mode-class))
+  (:metaclass mode-class)
+  (:documentation "Representation of Nyxt mode.
+Belongs to `buffer', has `keyscheme-map' and is/isn't `rememberable-p'.
+
+When `visible-in-status-p', shows mode name (or `glyph', when
+`glyph-mode-presentation-p') in status buffer.
+
+Define new modes with `define-mode'.
+
+Specify `enable' and `disable' methods to include mode-specific
+initialization/destruction or hook into `enable-hook' or `disable-hook' to know
+when it gets toggled."))
 
 (defmethod initialize-instance :after ((mode mode) &key)
   (when (eq 'mode (sera:class-name-of mode))
@@ -547,9 +558,9 @@ Auto-rules are re-applied once the page is reloaded once again."
            (buffer-list)))
 
 (export-always 'keymap)
-(defmethod keymap ((mode mode))
-  "Return the keymap of MODE according to its buffer `keyscheme-map'.
-If there is no corresponding keymap, return nil."
+(define-generic keymap ((mode mode))
+  "Return the `nkeymaps:keymap' of MODE according to its buffer `nyxt/mode/keyscheme::keyscheme'.
+If there is no corresponding keymap, return NIL."
   (keymaps:get-keymap (if (buffer mode)
                           (keyscheme (buffer mode))
                           keyscheme:cua)
