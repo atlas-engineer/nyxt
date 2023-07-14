@@ -3,7 +3,9 @@
 
 (in-package :nyxt)
 
-(defvar *inspected-values* (tg:make-weak-hash-table :test 'equal :weakness :value))
+(defvar *inspected-values*
+  (tg:make-weak-hash-table :test 'equal :weakness :value)
+  "All the values Nyxt inspected (with `describe-value', for example).")
 
 (export-always 'sequence-p)
 (defun sequence-p (object)
@@ -21,13 +23,17 @@
   (typep object '(or symbol character string real)))
 
 (export-always 'inspected-value)
-(defmethod inspected-value (id)
+(define-generic inspected-value (id)
+  "Get the inspected value corresponding to ID."
   (gethash id *inspected-values*))
 
-(defmethod (setf inspected-value) (new-value id)
+(define-generic (setf inspected-value) (new-value id)
+  "Set the ID-indexed inspected value."
   (setf (gethash id *inspected-values*) new-value))
 
 (defun ensure-inspected-id (value)
+  "In case VALUE was already inspected, return its ID.
+If it wasn't, add it to inspected values and return its new ID."
   (maphash
    (lambda (id object)
      (when (equal value object)
@@ -44,6 +50,7 @@
 Can cause a renderer to choke when set to a high value. Use with caution!")
 
 (defun escaped-literal-print (value)
+  "Print the constant/literal/`scalar-p' VALUE to HTML-escaped string."
   (spinneret:with-html-string
     (:code (:raw (spinneret::escape-string
                   (let ((*print-lines* 2)
@@ -51,6 +58,8 @@ Can cause a renderer to choke when set to a high value. Use with caution!")
                     (prini-to-string value)))))))
 
 (defun link-to (object)
+  "Convert the OBJECT to a `describe-value' link inspecting it.
+In case it's `scalar-p', simply print it."
   (if (scalar-p object)
       (spinneret:with-html-string
         (:raw (escaped-literal-print object)))
@@ -59,6 +68,7 @@ Can cause a renderer to choke when set to a high value. Use with caution!")
             (:raw (escaped-literal-print object))))))
 
 (defun compact-listing (sequence &key table-p)
+  "Print the SEQUENCE head as table with a link to the rest of the sequence."
   (let ((length (min (length sequence) *inspector-print-length*)))
     (spinneret:with-html-string
       (cond
