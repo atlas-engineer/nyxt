@@ -28,7 +28,8 @@ For user-facing controls, see `*run-from-repl-p*' and `*debug-on-error*'.")
 (defvar *open-program*
   #+darwin "open"
   #+(or linux bsd) "xdg-open"
-  #-(or linux bsd darwin) nil)
+  #-(or linux bsd darwin) nil
+  "The program to open unsupported files with.")
 
 (defvar *headless-p* nil
   "If non-nil, don't display anything.
@@ -45,7 +46,9 @@ It's possible to run multiple interfaces of Nyxt at the same time.  You can
 let-bind *browser* to temporarily switch interface.")
 
 (defvar *interactive-p* nil
-  "When non-nil, allow prompt buffers during BODY execution.
+  "When non-nil, allow `prompt'-ing.
+Otherwise error with `prompt-buffer-non-interactive'.
+
 This is useful to spot potential blocks when non-interactive code (for instance
 scripts) tries to invoke the prompt buffer.")
 
@@ -75,7 +78,8 @@ Example:
     '(:cl-cffi-gtk
       :cl-gobject-introspection
       :cl-webkit2)
-  :test #'equal)
+  :test #'equal
+  :documentation "Dependencies without which Nyxt won't be able to display content and work.")
 
 (defvar +asdf-build-information+
   `(:version ,(asdf:asdf-version)
