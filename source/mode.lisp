@@ -8,7 +8,10 @@
     :initform (list t)
     :initarg :toggler-command-p
     :type (cons boolean null)
-    :documentation "Whether to define a toggler command for the defined mode.")))
+    :documentation "Whether to define a toggler command for the defined mode."))
+  (:documentation "Metaclass for all the `mode's.
+Only used to mandate whether the mode needs a toggler command:
+`toggler-command-p'."))
 (export-always 'mode-class)
 
 (defmethod closer-mop:validate-superclass ((class mode-class)
