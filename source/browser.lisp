@@ -3,9 +3,15 @@
 
 (in-package :nyxt)
 
-(hooks:define-hook-type prompt-buffer (function (prompt-buffer)))
-(hooks:define-hook-type resource (function (request-data) (or request-data null)))
-(hooks:define-hook-type browser (function (browser)))
+(hooks:define-hook-type prompt-buffer (function (prompt-buffer))
+  "Hook acting on `prompt-buffer'.")
+(hooks:define-hook-type resource (function (request-data) (or request-data null))
+  "Hook acting on `request-data' resource.
+Returns:
+- Possibly modified `request-data'---redirect/block request.
+- NIL---block request.")
+(hooks:define-hook-type browser (function (browser))
+  "Hook acting on `browser' (likely `*browser*').")
 (export-always '(hook-resource))
 
 (define-class proxy ()

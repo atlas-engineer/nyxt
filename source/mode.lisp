@@ -194,7 +194,8 @@ The `mode' superclass is automatically added if not present."
                      (:export-predicate-name-p t)
                      (:metaclass mode-class)))))))
 
-(hooks:define-hook-type mode (function (mode)))
+(hooks:define-hook-type mode (function (mode))
+  "Hook acting on `mode's.")
 
 (export-always 'glyph)
 (defmethod glyph ((mode mode))

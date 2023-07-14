@@ -115,7 +115,8 @@ path is set.")
   (:documentation "This class is used to represent a download within the *Downloads* buffer.
 The `downloads' slot is populated by a list of these objects."))
 
-(hooks:define-hook-type download (function (download)))
+(hooks:define-hook-type download (function (download))
+  "Hook acting on `download' objects.")
 
 (-> cancel-download (nyxt::url-designator) t)
 (defun cancel-download (url)
