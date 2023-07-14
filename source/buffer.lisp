@@ -737,10 +737,10 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :height "20px"
               :width "100%")
             `(".progress-bar-base"
-              :background-color ,theme:primary
+              :background-color ,theme:secondary
               :height "100%")
             `(".progress-bar-fill"
-              :background-color ,theme:secondary
+              :background-color ,theme:primary
               :height "100%"))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
