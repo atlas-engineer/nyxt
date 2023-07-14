@@ -130,7 +130,7 @@ Example:
               (ps:chain window page-x-offset)))))
 
 (export-always 'document-scroll-position)
-(defmethod document-scroll-position (&optional (buffer (current-buffer)))
+(define-generic document-scroll-position (&optional (buffer (current-buffer)))
   "Get current scroll position or set it.
 If passed no arguments, return a list of two elements: vertical (Y) and
 horizontal (X) offset.
@@ -141,7 +141,7 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
       (when (listp position)
         position))))
 
-(defmethod (setf document-scroll-position) (value &optional (buffer (current-buffer)))
+(define-generic (setf document-scroll-position) (value &optional (buffer (current-buffer)))
   (when value
     (with-current-buffer buffer
       (destructuring-bind (y &optional x)
@@ -150,6 +150,7 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
 
 (export-always 'document-get-paragraph-contents)
 (define-parenscript document-get-paragraph-contents (&key (limit 100000))
+  "Get all the <p> elements text."
   (let ((result ""))
     (loop for element in (nyxt/ps:qsa document (list "p"))
           do (setf result (+ result
