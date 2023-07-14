@@ -175,14 +175,16 @@ translations are preserved."
          :type symbol)
    (value nil
           :type t))
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:documentation "A form to set slot with `name' to `value'."))
 
 (define-class class-form ()
   ((class-name nil
                :type symbol)
    (forms '()
           :type (maybe (cons (or cons slot-form) *))))
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:documentation "A set of `forms' for class configuration."))
 
 (defun read-init-form-slot (class-name sexp)
   "Return 2 values:
