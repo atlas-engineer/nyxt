@@ -535,7 +535,9 @@ the buffer (which gives us more flexibility)."))
   (set-window-title))
 
 (export-always 'default-modes)
-(defgeneric default-modes (buffer)
+(define-generic default-modes (buffer)
+  "BUFFER's default modes.
+`append's all the methods applicable to BUFFER to get the full list of modes."
   (:method-combination append)
   ;; TODO: Add a warning method when passing NIL to guard the current buffer not
   ;; bound errors?
