@@ -53,5 +53,6 @@ Untrusted content should be given as argument with a format string."
       (log:warn "Warning while echoing: ~a" c))))
 
 (export-always 'echo-dismiss)
-(defmethod echo-dismiss ()
+(define-generic echo-dismiss ()
+  "Clean the message buffer from the previous `echo'/`echo-warning' message."
   (%echo ""))
