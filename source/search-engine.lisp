@@ -110,7 +110,8 @@ Example (Tor-proxied completion function for Wikipedia):
     ("Search URL" ,(search-url engine) nil 3)))
 
 (defun all-search-engines ()
-  "Return the `search-engines' from the current buffer."
+  "Return the `search-engine's from the `current-buffer'.
+If there's no buffer, create a dummy one and get search engines from there."
   (let* ((current-buffer (current-buffer))
          (buffer (or current-buffer
                      (make-instance 'context-buffer))))
@@ -119,23 +120,27 @@ Example (Tor-proxied completion function for Wikipedia):
       (unless current-buffer
         (buffer-delete buffer)))))
 
-(defun default-search-engine (&optional (search-engines (all-search-engines)))
-  "Return the last search engine of the SEARCH-ENGINES."
+(define-generic default-search-engine (&optional (search-engines (all-search-engines)))
+  "Return the default search engine out of the SEARCH-ENGINES.
+Right now default search engine is the last one."
   (first (last search-engines)))
 
 (define-class search-engine-source (prompter:source)
   ((prompter:name "Search Engines")
    (prompter:constructor (all-search-engines))
-   (prompter:filter-preprocessor #'prompter:filter-exact-matches)))
+   (prompter:filter-preprocessor #'prompter:filter-exact-matches))
+  (:documentation "Source listing `all-search-engines' in the current buffer."))
 
 (define-class search-engine-url-source (prompter:source)
   ((prompter:name "Search Engines")
    (prompter:constructor (delete nil (mapcar #'fallback-url (all-search-engines))))
    (prompter:filter-preprocessor #'prompter:filter-exact-matches)
-   (prompter:enable-marks-p t)))
+   (prompter:enable-marks-p t))
+  (:documentation "Source listing the `fallback-url's of all the search engines in the buffer."))
 
 (define-command query-selection-in-search-engine (&key (query-in-new-buffer-p t))
-  "Search selected text using the queried search engine."
+  "Search selected text using the queried search engine.
+QUERY-IN-NEW-BUFFER creates a new buffer with the search results."
   (let* ((selection (ffi-buffer-copy (current-buffer)))
          (engine (prompt1 :prompt "Search engine"
                           :sources 'search-engine-source))
