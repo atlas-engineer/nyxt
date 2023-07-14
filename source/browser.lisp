@@ -519,7 +519,14 @@ view.")
     :type list
     :documentation "The key sequence that generated the request."))
   (:export-class-name-p t)
-  (:export-accessor-names-p t))
+  (:export-accessor-names-p t)
+  (:documentation "Representation of HTTP(S) request.
+Most important slots are:
+- `buffer' request belongs to.
+- `url' requested.
+- `request-headers'/`response-headers' for headers it's requested with.
+- and `toplevel-p'/`resource-p' for whether it's a new page or resource
+  request (respectively)."))
 
 (export-always 'url-dispatching-handler)
 (-> url-dispatching-handler
@@ -528,17 +535,21 @@ view.")
      (or string (function (quri:uri) (or quri:uri null))))
     *)
 (defun url-dispatching-handler (name test action)
-  "Return a `resource' handler that, if `add-hook'ed to the `request-resource-hook',
-will automatically apply its ACTION on the URLs that conform to TEST.
+  "Return a `hook-request' handler apply its ACTION on the URLs conforming to TEST.
+Fit for `request-resource-hook'.
 
 TEST should be function of one argument, the requested URL.
-ACTION can be either a shell command as a string, or a function taking a URL as argument.
-In case ACTION returns nil (always the case for shell command), URL request is aborted.
-The new URL returned by ACTION is loaded otherwise.
 
-`match-host', `match-scheme', `match-domain' and `match-file-extension'
-can be used to create TEST-functions, but any other function of one argument
-would fit the TEST slot as well.
+ACTION can be either
+- a shell command as a string,
+- or a function taking a URL as argument.
+
+In case ACTION returns nil (always the case for shell command), URL request is
+aborted. If ACTION returns a URL, it's loaded.
+
+`match-host', `match-scheme', `match-domain' and `match-file-extension' can be
+used to create TEST-functions, but any other function of one argument would fit
+the TEST slot as well.
 
 The following example does a few things:
 - Forward DOI links to the doi.org website.
