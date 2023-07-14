@@ -60,6 +60,9 @@ For the actual uses and configuration of search engines, see:
 
 (export-always 'make-search-engine)
 (defun make-search-engine (shortcut search-url &optional fallback-url)
+  "Utility to create simple `search-engine's.
+Sets `shortcut', `search-url', and `fallback-url' of the search engine to the
+values of respective arguments."
   (make-instance 'search-engine
                  :shortcut shortcut
                  :search-url search-url
