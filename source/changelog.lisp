@@ -791,3 +791,13 @@ command "
      (:li "Add cursor change on hover for buttons and links in internal pages and panel
 buffers.")
      (:li "Improve user experience of " (:nxref :command 'nyxt:pick-color) "."))))
+
+(define-version "3.X.Y"
+  (:nsection :title "Features"
+    (:ul
+     (:li "Add new quick start tutorial.")
+     (:li "Add keybindings for command " (:nxref :command 'describe-any) ".")))
+  ;; (:nsection :title "Bug fixes"
+  ;;   (:ul))
+  (:nsection :title "UI/UX"
+    (:ul (:li "Fix styling of progress bar."))))
