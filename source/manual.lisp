@@ -623,16 +623,18 @@ with " (:code "nyxt --profile dev --socket /tmp/nyxt.socket") "."))
       (:nsection :title "Password management"
         (:p "Nyxt provides a uniform interface to some password managers including "
             (:a :href "https://keepassxc.org/" "KeepassXC")
-            " and " (:a :href "https://www.passwordstore.org/" "Password Store") ". "
-            "The supported installed password manager is automatically detected."
-            "See the " (:code "password-interface") " buffer slot for customization.")
+            ", " (:a :href "https://www.passwordstore.org/" "Password Store")
+            " and " (:a :href "https://specifications.freedesktop.org/secret-service" "Secret Service") ". "
+            "The supported installed password manager is automatically detected. See the "
+            (:code "password-interface") " buffer slot for customization.")
         (:p "You may use the " (:nxref :macro 'define-configuration) " macro with
 any of the password interfaces to configure them. Please make sure to
 use the package prefixed class name/slot designators within
 the " (:nxref :macro 'define-configuration) ".")
         (:ul
          (:li (:nxref :command 'nyxt/mode/password:save-new-password) ": Query for name and new password to persist in the database.")
-         (:li (:nxref :command 'nyxt/mode/password:copy-password) ": " (command-docstring-first-sentence 'nyxt/mode/password:copy-password)))
+         (:li (:nxref :command 'nyxt/mode/password:copy-password) ": " (command-docstring-first-sentence 'nyxt/mode/password:copy-password))
+         (:li (:nxref :command 'nyxt/mode/password:copy-username) ": " (command-docstring-first-sentence 'nyxt/mode/password:copy-username)))
 
         (:nsection :title "KeePassXC support"
           (:p "The interface for KeePassXC should cover most use-cases for KeePassXC, as it
@@ -644,8 +646,6 @@ supports password database locking with")
           (:p "To configure KeePassXC interface, you might need to add something like this
 snippet to your config:")
           (:ncode
-            ;; FIXME: Why does `define-configuration' not work for password
-            ;; interfaces? Something's fishy with user classes...
             '(defmethod initialize-instance :after ((interface password:keepassxc-interface) &key &allow-other-keys)
               "It's obviously not recommended to set master password here,
 as your config is likely unencrypted and can reveal your password to someone
@@ -655,6 +655,33 @@ peeking at the screen."
                (password:yubikey-slot interface) "1:1111"))
             '(define-configuration nyxt/mode/password:password-mode
               ((nyxt/mode/password:password-interface (make-instance 'password:keepassxc-interface))))
+            '(define-configuration buffer
+              ((default-modes (append (list 'nyxt/mode/password:password-mode) %slot-value%))))))
+
+        (:nsection :title "Secret Service support"
+          (:p "This interface accesses password entries in the default collection (service)
+provided by Secret Service. This is normally the login collection.
+On at least Ubuntu this collection is by default open the whole time a user is logged in.
+So there is no need to unlock the collection, using a master password, when logging in at a web page.")
+          (:p "The interface depends on two python packages and three additional command line scripts:")
+          (:ul
+           (:li "Password entries are retrieved using python package "
+                (:a :href "https://pypi.org/project/SecretStorage" "SecretStorage")
+                ". This package may be provided by your linux distribution. In Ubuntu python3-secretstorage")
+           (:li "Password entries are written using python package "
+                (:a :href "https://pypi.org/project/keyring" "keyring")
+                ". This package may be provided by your linux distribution. In Ubuntu python3-keyring")
+           (:li "The three extra command line scripts are documented in the interface lisp file.
+They may also be retrieved from "
+                (:a :href "https://github.com/johanwiden/secret-service-scripts" "secret-service-scripts")))
+          (:p "A current limitation of the interface, is that it does not generate a new password,
+if the user saves an empty password.
+The user must use some other facility to generate a new password.")
+          (:p "To configure the Secret Service interface, you might need to add something like this
+snippet to your config:")
+          (:ncode
+            '(define-configuration nyxt/mode/password:password-mode
+              ((nyxt/mode/password:password-interface (make-instance 'password:password-secret-service-interface))))
             '(define-configuration buffer
               ((default-modes (append (list 'nyxt/mode/password:password-mode) %slot-value%)))))))
 
