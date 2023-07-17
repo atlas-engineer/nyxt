@@ -62,10 +62,6 @@
 	path = _build/cl-difflib
 	url = https://github.com/wiseman/cl-difflib
 	shallow = true
-[submodule "_build/cl-json"]
-	path = _build/cl-json
-	url = https://github.com/hankhero/cl-json
-	shallow = true
 [submodule "_build/cl-ppcre"]
 	path = _build/cl-ppcre
 	url = https://github.com/edicl/cl-ppcre
@@ -599,4 +595,8 @@
 [submodule "_build/cl-cffi-gtk"]
 	path = _build/cl-cffi-gtk
 	url = https://github.com/sharplispers/cl-cffi-gtk
+	shallow = true
+[submodule "_build/cl-json"]
+	path = _build/cl-json
+	url = https://github.com/sharplispers/cl-json
 	shallow = true
