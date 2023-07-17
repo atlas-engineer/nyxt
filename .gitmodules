@@ -462,10 +462,6 @@
 	path = _build/unix-opts
 	url = https://github.com/libre-man/unix-opts
 	shallow = true
-[submodule "_build/cl-cffi-gtk"]
-	path = _build/cl-cffi-gtk
-	url = https://github.com/Ferada/cl-cffi-gtk/
-	shallow = true
 [submodule "_build/cl-webkit"]
 	path = _build/cl-webkit
 	url = https://github.com/joachifm/cl-webkit
@@ -600,4 +596,7 @@
 [submodule "_build/chipz"]
 	path = _build/chipz
 	url = https://github.com/sharplispers/chipz
+[submodule "_build/cl-cffi-gtk"]
+	path = _build/cl-cffi-gtk
+	url = https://github.com/sharplispers/cl-cffi-gtk
 	shallow = true
