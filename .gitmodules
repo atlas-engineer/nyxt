@@ -230,10 +230,6 @@
 	path = _build/cl-fad
 	url = https://github.com/edicl/cl-fad/
 	shallow = true
-[submodule "_build/chipz"]
-	path = _build/chipz
-	url = https://github.com/froydnj/chipz
-	shallow = true
 [submodule "_build/cl-base64"]
 	path = _build/cl-base64
 	url = https://gitlab.common-lisp.net/nyxt/cl-base64.git
@@ -601,3 +597,7 @@
 	path = _build/cl-colors2
 	url = https://notabug.org/cage/cl-colors2
 	shallow = false # Notabug does not advertize commits.
+[submodule "_build/chipz"]
+	path = _build/chipz
+	url = https://github.com/sharplispers/chipz
+	shallow = true
