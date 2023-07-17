@@ -166,34 +166,6 @@ The value is saved to clipboard."
   (trivial-clipboard:text +version+)
   (echo "Version ~a" +version+))
 
-(define-panel-command intro ()
-    (panel "*Introduction*" :left)
-  "Display a short introduction to Nyxt in a side panel."
-  (spinneret:with-html-string
-    (:h1 "Getting Started with Nyxt")
-    (:p "If you want to start browsing right away, then you probably want to use "
-        (:nxref :command 'set-url)
-        ". As an alternative, you can click on the link currently open, and it will
-bring up the same prompt as " (:code "set-url") " does.")
-    (:p "If you get stuck, you can always use arrow keys in the status bar (this area
-with buttons below the page you browse), or use commands like "
-        (:nxref :command 'nyxt/mode/history:history-backwards) " and "
-        (:nxref :command 'nyxt/mode/history:history-forwards)
-        " to navigate around the pages you visited.")
-    (:p "You can run any command you wish and get familiar with all the actions you
-have, using " (:nxref :command 'execute-command)
-". Nyxt has lots of features represented by commands, so you can find lots of
-useful actions there, including the familiar " (:code "set-url") ", " (:code "history-backwards")
-", and " (:code "history-forwards") ".")
-    (:div (:nbutton :text "I want to know more, show me the manual!"
-            :buffer panel
-            '(manual))
-          (:nbutton
-            :buffer panel
-            :class "accent"
-            :text "Got it, close this panel"
-            `(delete-panel-buffer :panels ,panel)))))
-
 (define-internal-page-command-global new ()
     (buffer "*New buffer*")
   "Display a page suitable as `default-new-buffer-url'."
@@ -273,8 +245,8 @@ useful actions there, including the familiar " (:code "set-url") ", " (:code "hi
       (:i "The Internet on your terms.")
       (:div (:nbutton :text "Start searching!"
               '(set-url :prefill-current-url-p nil)))
-      (:div (:nbutton :text "How do I..."
-              '(intro))))
+      (:div (:nbutton :text "Quick Start"
+              '(quick-start))))
      (:p :class "copyright"
          (format nil "Nyxt/~a ~a" (name *renderer*) +version+)
          (:br)
