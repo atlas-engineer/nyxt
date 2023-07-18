@@ -397,3 +397,125 @@ definition and documentation.")
       (:p "A good starting point is to study the documentation of the classes "
           (:code "browser") ", " (:code "window") ", " (:code "buffer") " and "
           (:code "prompt-buffer") "."))))
+
+(defun quick-start-exit (panel-buffer)
+  "Close tutorial panel buffer and set the main buffer to `default-new-buffer-url'"
+  (delete-panel-buffer :panels panel-buffer)
+  (alex:if-let ((default-new (find (default-new-buffer-url *browser*) (buffer-list)
+                                   :test #'quri:uri= :key #'url)))
+    (set-current-buffer default-new)
+    (make-buffer-focus)))
+
+(define-panel-command-global quick-start (&key (page 0))
+    (panel "*Quick Start*" :left)
+  "Display Nyxt quick start tutorial."
+  ;; FIXME Maybe add a width parameter to `define-panel-*'?
+  (setf (ffi-width panel) 350)
+  (spinneret:with-html-string
+    (let* ((titles '("Quick Start" "Buffers" "Commands"
+                     "Basic Navigation" "Modes" "Well Done"))
+           (len-titles (length titles)))
+      (case page
+        (0
+         (:h2 (nth page titles))
+         (:p "This " (:b "quick start")
+             "presents you the key concepts to be effective at extracting
+information from the Internet with Nyxt.")
+         (:div :style "height: 20px;")
+         (:hr)
+         (:div :style "height: 20px;")
+         (:p :style "text-align:center;" "Table of Contents")
+         (:ol
+          (loop for title in (rest titles) and page from 1
+                do (:li (:a :href (nyxt-url 'quick-start :page page) title))))
+         (:div :style "height: 20px;"))
+        (1
+         (:h2 (nth page titles))
+         (:p "The " (:b "buffer")
+             "is the fundamental unit of information in Nyxt.")
+         (:p "While " (:b "buffers")
+             "are similar to browser tabs, they can be navigated and organized
+in more complex ways such as filtering, or grouping by URLs, titles, contexts,
+tags, keywords, and bookmarks."))
+        (2
+         (:h2 (nth page titles))
+         (:p "Commands are invocations that trigger certain actions.  For
+example, mouse clicks trigger commands.")
+         (:p "All commands in Nyxt have a " (:b "name")
+             ", and some have an associated key binding (also known as keyboard
+shortcuts).")
+         (:p "Commands can be called by name from the "
+             (:b "Execute-Command Menu") ":")
+         (:li (:nxref :command 'nyxt:execute-command) " to open;")
+         (:li (:nxref :command 'nyxt/mode/prompt-buffer:quit-prompt-buffer) " to close.")
+         (:p "This menu is called the prompt buffer and most of the interaction
+between you and Nyxt goes through it.")
+         (:hr)
+         (:p "Some other commands to try:")
+         (:li (:nxref :command 'nyxt:reload-current-buffer) " reloads the main buffer;")
+         (:li (:nxref :command 'nyxt:make-buffer-focus) " opens a new one."))
+        (3
+         (:h2 (nth page titles))
+         (:p (:nxref :command 'nyxt:set-url) " invokes the address bar.")
+         (:p (:nxref :command 'nyxt:set-url-new-buffer) " as above, but creates a new buffer.")
+         (:p (:nxref :command 'nyxt:switch-buffer) " to show a list of buffers.")
+         (:p (:nxref :command 'nyxt:delete-current-buffer) " to close a buffer.")
+         (:hr)
+         (:p "Notice that most of these commands invoke the prompt
+buffer. Every time that a command request input from the user, this menu will
+appear.")
+         (:p "Each command can either be called by name or by its corresponding keyboard
+shortcut."))
+        (4
+         (:h2 (nth page titles))
+         (:p "Separate tasks are best handled with separate settings.")
+         (:p (:b "Modes") " are toggled [on/off] for different settings in each
+         buffer.")
+         (:hr)
+         (:p "Example:")
+         (:p "To enjoy the image-less Web, you can enable "
+             (:nxref :mode 'nyxt/mode/no-image:no-image-mode)
+             " by invoking the command "
+             (:nxref :command 'nyxt/mode/no-image:no-image-mode) ".")
+         (:p "Again, you can access this command, and all others via "
+             (:nxref :command 'nyxt:execute-command) ".")
+         (:hr)
+         (:small "A list of all modes (including those currently enabled) is
+available by invoking the " (:nxref :command 'nyxt:toggle-modes)
+" command."))
+        (5
+         (:h2 (nth page titles))
+         (:p "You are now licensed to build, destroy, and enjoy Nyxt. Where you
+go from here is up to you.")
+         (:div :style "height: 20px;")
+         (:div :style "text-align: center;"
+               (:nbutton
+                 :title "Visit default new buffer"
+                 :text "Start using Nyxt"
+                 :buffer panel
+                 `(quick-start-exit ,panel))
+               (:div :style "height: 20px;")
+               (:p (:i "Happy Hacking!"))
+               (:div :style "height: 20px;"))
+         (:hr)
+         (:small "Find further information by issuing commands that start with
+describe, such as "
+                 (:nxref :command 'describe-bindings) " or "
+                 (:nxref :command 'describe-any) ".")))
+      (:hr)
+      ;; FIXME There must be a cleaner way to do it.
+      (:div
+       :style "position: fixed; bottom: 4px; width: 80%;  margin: 4px 7%;"
+       :class "progress-bar-container"
+       (:div :class "progress-bar-base"
+             (:div
+              :class "progress-bar-fill"
+              :style (format nil "width: ~,1f%;" (* 100 (/ (1+ page) len-titles)))))
+       (:a.button
+        :style "line-height: 12px; text-decoration: none; position: fixed; bottom: 4px; left: 4px;"
+        :href (nyxt-url 'quick-start :page (max (1- page) 0))
+        "⬅")
+       (:a.button
+        :style "line-height: 12px; text-decoration: none; position: fixed; bottom: 4px; right: 4px;"
+        :href (nyxt-url 'quick-start :page (min (1+ page) (1- len-titles)))
+        "➡")))))

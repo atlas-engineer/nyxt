@@ -726,8 +726,17 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :opacity 0.8)
             `((:and .button (:or :visited :active))
               :color ,theme:background)
-           `("a:visited"
-              :color ,theme:secondary))))
+            `("a:visited"
+              :color ,theme:secondary)
+            `(".progress-bar-container"
+              :height "20px"
+              :width "100%")
+            `(".progress-bar-base"
+              :background-color ,theme:secondary
+              :height "100%")
+            `(".progress-bar-fill"
+              :background-color ,theme:primary
+              :height "100%"))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
