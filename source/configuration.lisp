@@ -5,7 +5,8 @@
 
 (define-class config-directory-file (files:config-file nyxt-file)
   ((files:base-path #p""))
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:documentation "Nyxt directory for config files."))
 
 (define-class config-special-file (config-directory-file)
   ((files:base-path #p"")
@@ -80,7 +81,8 @@ Consider porting your configuration to ~a."
 (define-class log-file (files:data-file nyxt-file)
   ((files:base-path #p"nyxt.log")
    (files:name "log-file"))
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:documentation "Data file for Nyxt logs."))
 
 (export-always '*log-file*)
 (defvar *log-file* (make-instance 'log-file)
@@ -92,7 +94,8 @@ This is global because logging starts before the `*browser*' is even initialized
 
 (define-class nyxt-source-directory (nyxt-file)
   ((files:name "source"))
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:documentation "Directory with Nyxt sources."))
 
 (defmethod files:resolve ((profile nyxt-profile) (directory nyxt-source-directory))
   "Try hard to find Nyxt source on disk.
@@ -126,7 +129,8 @@ This is set globally so that it can be looked up if there is no
 (define-class extensions-directory (files:data-file nyxt-file)
   ((files:base-path #p"extensions/")
    (files:name "extensions"))
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:documentation "Nyxt data subdirectory for Lisp extensions."))
 
 (export-always '*extensions-directory*)
 (defvar *extensions-directory* (make-instance 'extensions-directory)
@@ -136,6 +140,7 @@ This is set globally so that extensions can be loaded even if there is no
 
 (export-always 'nyxt-source-registry)
 (defun nyxt-source-registry ()
+  "Return Nyxt-specific ASDF registry, with source and extension directories."
   `(:source-registry
     (:tree ,(files:expand *extensions-directory*))
     (:tree ,(files:expand *source-directory*)) ; Probably useless since systems are immutable.
@@ -170,14 +175,16 @@ translations are preserved."
          :type symbol)
    (value nil
           :type t))
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:documentation "A form to set slot with `name' to `value'."))
 
 (define-class class-form ()
   ((class-name nil
                :type symbol)
    (forms '()
           :type (maybe (cons (or cons slot-form) *))))
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:documentation "A set of `forms' for class configuration."))
 
 (defun read-init-form-slot (class-name sexp)
   "Return 2 values:

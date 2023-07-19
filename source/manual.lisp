@@ -5,6 +5,7 @@
 
 (export-always 'manual-content)
 (defun manual-content ()
+  "Proxy function returning `manual' contents."
   (spinneret:with-html-string
     (:h1 "Nyxt manual")
     (:p "This manual first includes the tutorial, then covers the configuration

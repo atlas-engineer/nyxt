@@ -4,14 +4,19 @@
 (in-package :nyxt)
 
 (hooks:define-hook-type keymaps-buffer (function ((list-of keymaps:keymap) buffer)
-                                                 (values &optional (list-of keymaps:keymap) buffer)))
+                                                 (values &optional (list-of keymaps:keymap) buffer))
+  "Hook to modify keymaps.
+Get a list of `nkeymaps:keymap's and `buffer' and return a new list and buffer.")
 (export-always '(hook-keymaps-buffer))
-(hooks:define-hook-type url->url (function (quri:uri) quri:uri))
+(hooks:define-hook-type url->url (function (quri:uri) quri:uri)
+  "Hook getting a `quri:uri' and returning same/another one. ")
 
 (export-always 'renderer-buffer)
 (defclass renderer-buffer ()
   ()
-  (:metaclass interface-class))
+  (:metaclass interface-class)
+  (:documentation "Renderer-specific buffer objects.
+Should be redefined by the renderer."))
 
 (defvar %default-modes '(base-mode)
   "The default modes for unspecialized buffers.
@@ -179,9 +184,8 @@ Useful in FFI functions where we usually specialize things against
   buffer)
 
 (export-always 'finalize-buffer)
-(defmethod finalize-buffer ((buffer buffer) &key (browser *browser*) &allow-other-keys)
-  "Finalize instantiation of BUFFER.
-Nothing to do for the simplest `buffer' type."
+(define-generic finalize-buffer ((buffer buffer) &key (browser *browser*) &allow-other-keys)
+  "Finalize instantiation of BUFFER."
   (declare (ignore browser))
   t)
 
@@ -274,10 +278,12 @@ of BUFFER."
   (unless no-hook-p
     (hooks:run-hook (buffer-after-make-hook browser) buffer)))
 
-(defmethod modes ((buffer buffer))
-  "Non-modable buffers never have modes.
-This specialization is useful to be able to call the method regardless of the
-buffer, with a meaningful result."
+(define-generic modes ((buffer buffer))
+  "Return the modes active in BUFFER.
+
+Non-`modable-buffer's never have modes.
+The default specialization on `buffer' is useful to be able to call the method
+regardless of the buffer, with a meaningful result."
   '())
 
 (defmethod modes ((buffer modable-buffer))
@@ -525,7 +531,9 @@ the buffer (which gives us more flexibility)."))
   (set-window-title))
 
 (export-always 'default-modes)
-(defgeneric default-modes (buffer)
+(define-generic default-modes (buffer)
+  "BUFFER's default modes.
+`append's all the methods applicable to BUFFER to get the full list of modes."
   (:method-combination append)
   ;; TODO: Add a warning method when passing NIL to guard the current buffer not
   ;; bound errors?
@@ -740,7 +748,13 @@ store them somewhere and `ffi-buffer-delete' them once done."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:metaclass user-class))
+  (:metaclass user-class)
+  (:documentation "Panel buffer (also known as sidebar): small view on the side of the screen.
+
+Panels (pages openable in panel buffer with respective commands) are defined
+with `define-panel-command' and `define-panel-command-global'.
+
+Also see `panel-page'."))
 
 (define-class status-buffer (input-buffer)
   ((window
@@ -963,7 +977,11 @@ identifiers."
   (ffi-buffer-make dead-buffer)
   dead-buffer)
 
-(defmethod document-model ((buffer buffer))
+(define-generic document-model ((buffer buffer))
+  "A wraparound accessor to BUFFER's `document-model'.
+
+In case the page changed more than `document-model-delta-threshold', runs
+`update-document-model'."
   (ps-labels :buffer buffer
     ((%count-dom-elements
       ()
@@ -1021,7 +1039,8 @@ identifiers."
    (prompter:enable-marks-p t)
    (prompter:constructor (lambda (source)
                            (mapcar #'first (nyxt::keywords (buffer source))))))
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:documentation "Source listing the keywords for source `buffer'."))
 
 (-> proxy-url (buffer &key (:downloads-only boolean)) *)
 (defun proxy-url (buffer &key (downloads-only nil))
@@ -1039,77 +1058,8 @@ when `proxied-downloads-p' is true."
   (and (network-buffer-p buffer)
        (eq (slot-value buffer 'status) :failed)))
 
-(export-always 'on-signal-notify-uri)
-(defmethod on-signal-notify-uri ((buffer buffer) no-url)
-  "Set BUFFER's `url' slot, then dispatch `on-signal-notify-uri' over the
-BUFFER's modes."
-  (declare (ignore no-url))
-  ;; Need to run the mode-specific actions first so that modes can modify the
-  ;; behavior of buffer.
-  (dolist (mode (modes buffer))
-    (on-signal-notify-uri mode (url buffer)))
-  (let ((view-url (ffi-buffer-url buffer)))
-    (unless (or (load-failed-p buffer)
-                (url-empty-p view-url))
-      ;; When a buffer fails to load and `ffi-buffer-url' returns an empty
-      ;; URL, we don't set (url buffer) to keep access to the old value.
-      (setf (url buffer) (ffi-buffer-url buffer))))
-  (url buffer))
-
-(export-always 'on-signal-notify-title)
-(defmethod on-signal-notify-title ((buffer buffer) no-title)
-  "Set BUFFER's `title' slot, then dispatch `on-signal-notify-title' over the
-BUFFER's modes."
-  (declare (ignore no-title))
-  (setf (title buffer) (ffi-buffer-title buffer))
-  (dolist (mode (modes buffer))
-    (on-signal-notify-title mode (url buffer)))
-  (title buffer))
-
-;; See https://webkitgtk.org/reference/webkit2gtk/stable/WebKitWebView.html#WebKitLoadEvent
-(export-always 'on-signal-load-started)
-(defmethod on-signal-load-started ((buffer buffer) url)
-  (dolist (mode (modes buffer))
-    (on-signal-load-started mode url)))
-
-(export-always 'on-signal-load-redirected)
-(defmethod on-signal-load-redirected ((buffer buffer) url)
-  (dolist (mode (modes buffer))
-    (on-signal-load-redirected mode url)))
-
-(export-always 'on-signal-load-canceled)
-(defmethod on-signal-load-canceled ((buffer buffer) url)
-  (dolist (mode (modes buffer))
-    (on-signal-load-canceled mode url)))
-
-(export-always 'on-signal-load-committed)
-(defmethod on-signal-load-committed ((buffer buffer) url)
-  (dolist (mode (modes buffer))
-    (on-signal-load-committed mode url)))
-
-(export-always 'on-signal-load-finished)
-(defmethod on-signal-load-finished ((buffer buffer) url)
-  (update-document-model :buffer buffer)
-  (dolist (mode (modes buffer))
-    (on-signal-load-finished mode url))
-  (run-thread "buffer-loaded-hook" (hooks:run-hook (buffer-loaded-hook buffer) buffer)))
-
-(export-always 'on-signal-load-failed)
-(defmethod on-signal-load-failed ((buffer buffer) url)
-  (dolist (mode (modes buffer))
-    (on-signal-load-failed mode url)))
-
-(export-always 'on-signal-button-press)
-(defmethod on-signal-button-press ((buffer buffer) button-key)
-  (dolist (mode (modes buffer))
-    (on-signal-button-press mode button-key)))
-
-(export-always 'on-signal-key-press)
-(defmethod on-signal-key-press ((buffer buffer) key)
-  (dolist (mode (modes buffer))
-    (on-signal-key-press mode key)))
-
-(hooks:define-hook-type buffer (function (buffer)))
+(hooks:define-hook-type buffer (function (buffer))
+  "Hook acting on `buffer's.")
 
 (define-command make-buffer (&rest args &key (title "") modes
                              (url (if *browser*
@@ -1237,21 +1187,28 @@ This is a low-level function.  See `buffer-delete' for the high-level version."
    :key #'id))
 
 (defun buffers-get (id)
+  "Get the `buffer' with the corresponding ID."
   (gethash id (slot-value *browser* 'buffers)))
 
 (defun buffers-set (id buffer)
+  "Set the BUFFER as the one corresponding to ID in `browser'."
   (when *browser*
     (setf (gethash id (slot-value *browser* 'buffers)) buffer)
     ;; Force setf call so that slot is seen as changed, e.g. by status buffer watcher.
     (setf (buffers *browser*) (buffers *browser*))))
 
 (defun buffers-delete (id)
+  "Remove the buffer with respective ID from the browser.
+
+Low-level function, use `buffer-delete' to properly close the buffer, or
+`delete-buffer' command from inside Nyxt."
   (remhash id (slot-value *browser* 'buffers))
   ;; Force setf call so that slot is seen as changed, e.g. by status buffer watcher.
   (setf (buffers *browser*) (buffers *browser*)))
 
 (export-always 'window-list)
 (defun window-list ()
+  "Return a list of all the open `windows'."
   (when *browser*
     (alex:hash-table-values (windows *browser*))))
 
@@ -1358,7 +1315,11 @@ proceeding."
                                         (eq buffer (current-buffer)))
                               (set-current-buffer buffer))))))
   (:export-class-name-p t)
-  (:metaclass user-class))
+  (:metaclass user-class)
+  (:documentation "Source for choosing one (or several) of the open buffers.
+
+The `prompter:actions-on-current-suggestion' are set up to preview/switch to the
+buffer currently chosen as suggestion."))
 
 (defmethod prompter:object-attributes ((buffer buffer) (source prompter:source))
   (declare (ignore source))
@@ -1544,7 +1505,9 @@ URL-DESIGNATOR is then transformed by BUFFER's `buffer-load-hook'."
    (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:actions-on-return #'buffer-load*))
   (:export-class-name-p t)
-  (:metaclass user-class))
+  (:metaclass user-class)
+  (:documentation "Source listing all the entries in history.
+Loads the entry with default `prompter:actions-on-return'."))
 
 (define-class new-url-query ()
   ((query ""
@@ -1725,7 +1688,10 @@ any.")
     (prompter::history-pushnew history (render-url url))))
 
 (export-always 'url-sources)
-(defmethod url-sources ((buffer buffer) actions-on-return)
+(define-generic url-sources ((buffer buffer) actions-on-return)
+  "Return list of `set-url' sources.
+The returned sources should have `url' or `prompter:actions-on-return' methods
+specified for their contents."
   (let ((actions-on-return (uiop:ensure-list actions-on-return)))
     (append
      (list (make-instance 'new-url-or-search-source :actions-on-return actions-on-return)

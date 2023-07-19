@@ -3,9 +3,15 @@
 
 (in-package :nyxt)
 
-(hooks:define-hook-type prompt-buffer (function (prompt-buffer)))
-(hooks:define-hook-type resource (function (request-data) (or request-data null)))
-(hooks:define-hook-type browser (function (browser)))
+(hooks:define-hook-type prompt-buffer (function (prompt-buffer))
+  "Hook acting on `prompt-buffer'.")
+(hooks:define-hook-type resource (function (request-data) (or request-data null))
+  "Hook acting on `request-data' resource.
+Returns:
+- Possibly modified `request-data'---redirect/block request.
+- NIL---block request.")
+(hooks:define-hook-type browser (function (browser))
+  "Hook acting on `browser' (likely `*browser*').")
 (export-always '(hook-resource))
 
 (define-class proxy ()
@@ -27,11 +33,12 @@ Example: \"http://192.168.1.254:8080\".")
 This can apply to specific buffer."))
 
 (export-always 'combine-composed-hook-until-nil)
-(defmethod combine-composed-hook-until-nil ((hook hooks:hook) &optional arg)
-  "Return the result of the composition of the HOOK handlers on ARG, from
-oldest to youngest.  Stop processing when a handler returns nil.
-Without handler, return ARG.  This is an acceptable `combination' for
-`hook'."
+(define-generic combine-composed-hook-until-nil ((hook hooks:hook) &optional arg)
+  "Return the composition of the HOOK handlers on ARG, from oldest to youngest.
+
+Stop processing when a handler returns nil. Without handlers, return ARG.
+
+This is an acceptable `hooks:combination' for `hooks:hook'."
   (labels ((compose-handlers (handlers result)
              (if handlers
                  (let ((new-result (funcall (first handlers) result)))
@@ -44,7 +51,9 @@ Without handler, return ARG.  This is an acceptable `combination' for
 (export-always 'renderer-browser)
 (defclass renderer-browser ()
   ()
-  (:metaclass interface-class))
+  (:metaclass interface-class)
+  (:documentation "Renderer-specific representation for the global browser.
+Should be redefined by the renderer."))
 
 (define-class browser (renderer-browser)
   ((profile
@@ -452,7 +461,9 @@ If none is found, fall back to `keyscheme:cua'."
 (export-always 'renderer-request-data)
 (defclass renderer-request-data ()
   ()
-  (:metaclass interface-class))
+  (:metaclass interface-class)
+  (:documentation "Renderer-specific request object.
+Should be redefined by the renderer."))
 
 (define-class request-data (renderer-request-data)
   ((buffer
@@ -508,7 +519,14 @@ view.")
     :type list
     :documentation "The key sequence that generated the request."))
   (:export-class-name-p t)
-  (:export-accessor-names-p t))
+  (:export-accessor-names-p t)
+  (:documentation "Representation of HTTP(S) request.
+Most important slots are:
+- `buffer' request belongs to.
+- `url' requested.
+- `request-headers'/`response-headers' for headers it's requested with.
+- and `toplevel-p'/`resource-p' for whether it's a new page or resource
+  request (respectively)."))
 
 (export-always 'url-dispatching-handler)
 (-> url-dispatching-handler
@@ -517,17 +535,21 @@ view.")
      (or string (function (quri:uri) (or quri:uri null))))
     *)
 (defun url-dispatching-handler (name test action)
-  "Return a `resource' handler that, if `add-hook'ed to the `request-resource-hook',
-will automatically apply its ACTION on the URLs that conform to TEST.
+  "Return a `hook-request' handler apply its ACTION on the URLs conforming to TEST.
+Fit for `request-resource-hook'.
 
 TEST should be function of one argument, the requested URL.
-ACTION can be either a shell command as a string, or a function taking a URL as argument.
-In case ACTION returns nil (always the case for shell command), URL request is aborted.
-The new URL returned by ACTION is loaded otherwise.
 
-`match-host', `match-scheme', `match-domain' and `match-file-extension'
-can be used to create TEST-functions, but any other function of one argument
-would fit the TEST slot as well.
+ACTION can be either
+- a shell command as a string,
+- or a function taking a URL as argument.
+
+In case ACTION returns nil (always the case for shell command), URL request is
+aborted. If ACTION returns a URL, it's loaded.
+
+`match-host', `match-scheme', `match-domain' and `match-file-extension' can be
+used to create TEST-functions, but any other function of one argument would fit
+the TEST slot as well.
 
 The following example does a few things:
 - Forward DOI links to the doi.org website.

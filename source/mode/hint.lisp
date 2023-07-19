@@ -191,11 +191,15 @@ For instance, to include images:
   (update-document-model :buffer buffer))
 
 (export-always 'identifier)
-(defmethod identifier ((element plump:element))
+(define-generic identifier ((element plump:element))
+  "ELEMENT's on-page identifier (constructed from `hint-alphabet' characters.)"
   (plump:attribute element "nyxt-hint"))
 
 (export-always 'highlight-selected-hint)
 (define-parenscript highlight-selected-hint (&key element scroll)
+  ;; TODO: Also change border or something else to augment color change.
+  "Accent the hint for the ELEMENT to be distinguishable from other hints.
+If SCROLL (default to NIL), scroll the hint into view."
   (let ((%element (nyxt/ps:qs document (ps:lisp (format nil "#nyxt-hint-~a"
                                                         (identifier element))))))
     (when %element

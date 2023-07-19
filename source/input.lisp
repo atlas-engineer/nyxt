@@ -86,6 +86,7 @@ KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
 (-> dispatch-command ((or sym:function-symbol function)) *)
 (export-always 'dispatch-command)
 (defun dispatch-command (function)
+  "Default `command-dispatcher'. Runs FUNCTION asynchronously."
   (echo-dismiss)                        ; Clean up message-view on command.
   ;; TODO: Instead of hard-coding these ignored-commands, we could add a boolean
   ;; slot to the `command' class.
@@ -108,6 +109,7 @@ KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
 
 (export-always 'dispatch-input-skip)
 (defun dispatch-input-skip (keyspecs)
+  "Default `input-scrip-dispatcher'. Logs the skipped key."
   (log:debug "Skipping input event key ~s" keyspecs))
 
 (export-always 'dispatch-input-event)

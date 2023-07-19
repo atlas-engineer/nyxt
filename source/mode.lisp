@@ -8,7 +8,10 @@
     :initform (list t)
     :initarg :toggler-command-p
     :type (cons boolean null)
-    :documentation "Whether to define a toggler command for the defined mode.")))
+    :documentation "Whether to define a toggler command for the defined mode."))
+  (:documentation "Metaclass for all the `mode's.
+Only used to mandate whether the mode needs a toggler command:
+`toggler-command-p'."))
 (export-always 'mode-class)
 
 (defmethod closer-mop:validate-superclass ((class mode-class)
@@ -47,7 +50,7 @@
     nil
     :type (maybe string)
     :accessor nil
-    :documentation "A glyph used to represent this mode.")
+    :documentation "A glyph used to represent this mode when `glyph-mode-presentation-p'.")
    (visible-in-status-p
     t
     :documentation "Whether the mode is visible in the status line.")
@@ -75,7 +78,18 @@ The handlers take the mode as argument.")
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
   (:toggler-command-p nil)
-  (:metaclass mode-class))
+  (:metaclass mode-class)
+  (:documentation "Representation of Nyxt mode.
+Belongs to `buffer', has `keyscheme-map' and is/isn't `rememberable-p'.
+
+When `visible-in-status-p', shows mode name (or `glyph', when
+`glyph-mode-presentation-p') in status buffer.
+
+Define new modes with `define-mode'.
+
+Specify `enable' and `disable' methods to include mode-specific
+initialization/destruction or hook into `enable-hook' or `disable-hook' to know
+when it gets toggled."))
 
 (defmethod initialize-instance :after ((mode mode) &key)
   (when (eq 'mode (sera:class-name-of mode))
@@ -194,7 +208,8 @@ The `mode' superclass is automatically added if not present."
                      (:export-predicate-name-p t)
                      (:metaclass mode-class)))))))
 
-(hooks:define-hook-type mode (function (mode)))
+(hooks:define-hook-type mode (function (mode))
+  "Hook acting on `mode's.")
 
 (export-always 'glyph)
 (defmethod glyph ((mode mode))
@@ -334,7 +349,8 @@ For production code, see `find-submode' instead."
    (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:suggestion-maker 'make-mode-suggestion))
   (:export-class-name-p t)
-  (:metaclass user-class))
+  (:metaclass user-class)
+  (:documentation "Source for all the existing modes."))
 
 (defmethod prompter:object-attributes ((mode mode) (source prompter:source))
   (declare (ignore source))
@@ -353,7 +369,8 @@ For production code, see `find-submode' instead."
                               (uiop:ensure-list (buffers source))))))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:metaclass user-class))
+  (:metaclass user-class)
+  (:documentation "Source listing names of all the `enable'd modes in `buffers'."))
 
 (define-class inactive-mode-source (mode-source)
   ((prompter:name "Inactive modes")
@@ -368,7 +385,8 @@ For production code, see `find-submode' instead."
                              (set-difference (all-mode-symbols) common-modes)))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:metaclass user-class))
+  (:metaclass user-class)
+  (:documentation "Source listing names of modes not yet `enable'd (or `disable'd) in `buffers'."))
 
 (export-always 'enable-modes*)
 (defgeneric enable-modes* (modes buffers &rest args &key remember-p &allow-other-keys)
@@ -393,7 +411,7 @@ For production code, see `find-submode' instead."
                 buffer)
               (sera:filter #'modable-buffer-p buffers))))
   (:documentation "Enable MODES in BUFFERS.
-ARGS are the keyword arguments for `make-instance' on MODES.
+ARGS are the keyword arguments for `make-instance'/`enable' on MODES.
 If REMEMBER-P is true, save active modes so that auto-rules don't override those."))
 
 (define-command enable-modes (&key
@@ -540,46 +558,13 @@ Auto-rules are re-applied once the page is reloaded once again."
            (buffer-list)))
 
 (export-always 'keymap)
-(defmethod keymap ((mode mode))
-  "Return the keymap of MODE according to its buffer `keyscheme-map'.
-If there is no corresponding keymap, return nil."
+(define-generic keymap ((mode mode))
+  "Return the `nkeymaps:keymap' of MODE according to its buffer `nyxt/mode/keyscheme::keyscheme'.
+If there is no corresponding keymap, return NIL."
   (keymaps:get-keymap (if (buffer mode)
                           (keyscheme (buffer mode))
                           keyscheme:cua)
                       (keyscheme-map mode)))
-
-(defmethod on-signal-notify-uri ((mode mode) url)
-  url)
-
-(defmethod on-signal-notify-title ((mode mode) title)
-  (on-signal-notify-uri mode (url (buffer mode)))
-  title)
-
-(defmethod on-signal-load-started ((mode mode) url)
-  url)
-
-(defmethod on-signal-load-redirected ((mode mode) url)
-  url)
-
-(defmethod on-signal-load-canceled ((mode mode) url)
-  url)
-
-(defmethod on-signal-load-committed ((mode mode) url)
-  url)
-
-(defmethod on-signal-load-finished ((mode mode) url)
-  url)
-
-(defmethod on-signal-load-failed ((mode mode) url)
-  url)
-
-(defmethod on-signal-button-press ((mode mode) button-key)
-  (declare (ignorable button-key))
-  nil)
-
-(defmethod on-signal-key-press ((mode mode) key)
-  (declare (ignorable key))
-  nil)
 
 (defmethod url-sources ((mode mode) actions-on-return)
   (declare (ignore actions-on-return))

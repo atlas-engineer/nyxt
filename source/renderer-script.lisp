@@ -45,7 +45,15 @@ Any Lisp expression must be wrapped in (PS:LISP ...).
 
 The returned function sends the compiled Javascript to the current buffer webview.
 The function can be passed Lisp ARGS."
-  `(defmethod ,script-name ,args (ps-eval :buffer (current-buffer) ,@script-body)))
+  (let ((doc (when (and (> (length script-body) 1)
+                        (stringp (first script-body)))
+               (first script-body))))
+    `(define-generic ,script-name ,args
+       ,@(when doc (list doc))
+       (ps-eval :buffer (current-buffer)
+         ,@(if doc
+               (rest script-body)
+               script-body)))))
 
 (export-always 'define-parenscript-async)
 (defmacro define-parenscript-async (script-name args &body script-body)
@@ -54,6 +62,36 @@ The function can be passed Lisp ARGS."
 
 (export-always 'ps-labels)
 (defmacro ps-labels (&body args)
+  "Create `labels'-like Parenscript functions callable from Lisp.
+ARGS can start with :ASYNC and :BUFFER keyword args.
+- :BUFFER is the buffer to run the created functions in. Defaults to
+  `current-buffer'.
+- :ASYNC is whether the function runs asynchronously. Defaults to NIL, so the
+  bound functions return the result of JS evaluation synchronously.
+
+Bindings are similar to the `labels'/`flet' bindings. They have a structure of:
+\(NAME [:BUFFER BUFFER] [:ASYNC BOOLEAN] ARGS
+   &BODY BODY)
+
+Binding-specific :BUFFER and :ASYNC can override the `pl-labels'-global :BUFFER
+and :ASYNC.
+
+Example:
+\(ps-labels
+  :buffer some-buffer
+  :async t ;; Run functions asynchronously by default.
+  ((print-to-console
+    ;; Override the buffer to current one.
+    :buffer (current-buffer)
+    (something)
+    ;; Notice the `ps:lisp': args are Lisp values.
+    (ps:chain console (log (ps:stringify (ps:lisp something)))))
+   (add
+    ;; Override the :ASYNC for the function to be synchronous.
+    :async nil
+    (n1 n2)
+    (+ (ps:lisp n1) (ps:lisp n2))))
+  (print-to-console (add 5 200.8)))"
   (let* ((global-buffer (second (member :buffer args)))
          (global-async (second (member :async args)))
          (functions (find-if (lambda (e) (and (listp e) (every #'listp e)))
@@ -92,7 +130,7 @@ The function can be passed Lisp ARGS."
               (ps:chain window page-x-offset)))))
 
 (export-always 'document-scroll-position)
-(defmethod document-scroll-position (&optional (buffer (current-buffer)))
+(define-generic document-scroll-position (&optional (buffer (current-buffer)))
   "Get current scroll position or set it.
 If passed no arguments, return a list of two elements: vertical (Y) and
 horizontal (X) offset.
@@ -103,7 +141,7 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
       (when (listp position)
         position))))
 
-(defmethod (setf document-scroll-position) (value &optional (buffer (current-buffer)))
+(define-generic (setf document-scroll-position) (value &optional (buffer (current-buffer)))
   (when value
     (with-current-buffer buffer
       (destructuring-bind (y &optional x)
@@ -112,6 +150,7 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
 
 (export-always 'document-get-paragraph-contents)
 (define-parenscript document-get-paragraph-contents (&key (limit 100000))
+  "Get all the <p> elements text."
   (let ((result ""))
     (loop for element in (nyxt/ps:qsa document (list "p"))
           do (setf result (+ result
@@ -120,6 +159,7 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
 
 (export-always 'add-stylesheet)
 (defun add-stylesheet (stylesheet-name style &optional (buffer (current-buffer)))
+  "Find/create a STYLESHEET-NAMEd element and set the STYLE as it's content."
   (ps-eval :async t :buffer buffer
     (unless (nyxt/ps:qs document (ps:lisp
                                   (concatenate
@@ -132,10 +172,12 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
        (:catch (error))))))
 
 (defun html-write (content &optional (buffer (current-buffer)))
+  "Write CONTENT into BUFFER page."
   (ps-eval :async t :buffer buffer
     (ps:chain document (write (ps:lisp content)))))
 
 (defun html-set (content &optional (buffer (current-buffer)))
+  "Set BUFFER contents to CONTENT."
   (ps-eval :async t :buffer buffer
     (setf (ps:@ document body |innerHTML|) (ps:lisp content))))
 
@@ -153,6 +195,7 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
   (gethash sym *nyxt-url-commands*))
 
 (deftype internal-page-symbol ()
+  "Whether the value is a symbol having an `internal-page' associated to it."
   `(and symbol (satisfies internal-page-symbol-p)))
 
 (export-always 'match-internal-page)

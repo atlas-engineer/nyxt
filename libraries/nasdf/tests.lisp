@@ -57,15 +57,17 @@ If the NASDF_TESTS_NO_NETWORK environment variable is set, tests with the `:onli
     (let ((exclude-tags (append (when (getenv "NASDF_TESTS_NO_NETWORK")
                                   '(:online))
                                 exclude-tags)))
-      (let ((missing-packages (remove-if  #'find-package (uiop:ensure-list package))))
+      (let ((missing-packages (remove-if #'find-package (uiop:ensure-list package))))
         (when missing-packages
           (logger "Undefined test packages: ~s" missing-packages)))
-      (let ((test-results
-              (uiop:symbol-call :lisp-unit2 :run-tests
-                                :package package
-                                :tags tags
-                                :exclude-tags exclude-tags
-                                :run-contexts (find-symbol "WITH-SUMMARY-CONTEXT" :lisp-unit2))))
+      ;; Binding `*package*' to test package makes for more reproducible tests.
+      (let* ((*package* (find-package package))
+             (test-results
+               (uiop:symbol-call :lisp-unit2 :run-tests
+                                 :package package
+                                 :tags tags
+                                 :exclude-tags exclude-tags
+                                 :run-contexts (find-symbol "WITH-SUMMARY-CONTEXT" :lisp-unit2))))
         (when (and
                (or
                 (uiop:symbol-call :lisp-unit2 :failed test-results)

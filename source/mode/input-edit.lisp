@@ -41,6 +41,8 @@ function."))
                              &optional initial-contents
                                initial-cursor-position)
                             &body body)
+  "Create a BUFFER-NAME buffer with INITIAL-CONTENTS and CURSOR-NAME at INITIAL-CURSOR-POSITION.
+Run the BODY in the environment with these bound."
   `(let ((,buffer-name (make-instance 'text-buffer:text-buffer))
          (,cursor-name (make-instance 'text-buffer:cursor)))
      (cluffer:attach-cursor ,cursor-name ,buffer-name)
@@ -52,6 +54,7 @@ function."))
 
 (export-always 'with-input-area)
 (defmacro with-input-area ((contents cursor-position) &body body)
+  "Bind CONTENTS and CURSOR-POSITION to the ones in the currently focused input field."
   (let ((unprocessed-cursor (gensym)))
     `(let* ((,contents (active-input-area-content))
             (,unprocessed-cursor (active-input-area-cursor))

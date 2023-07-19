@@ -9,7 +9,6 @@ The APIs that it includes/uses internally are:
 - Page scrolling: `call-non-input-command-or-forward'.
 - Copy-pasting: `ffi-buffer-copy', `ffi-buffer-paste', `ffi-buffer-cut',
   `ffi-buffer-select-all', `ffi-buffer-undo', `ffi-buffer-redo'.
-- Nyxt renderer signals: `on-signal-load-committed', `on-signal-load-finished'
 - Heading management: `heading' class, `get-headings', `current-heading',
   `scroll-page-to-heading', and `scroll-page-to-n-headings'.
 - `get-url-source' function.
@@ -210,7 +209,9 @@ Important pieces of functionality are:
    (prompter:actions-on-return (lambda-command paste* (ring-items)
                                  (ffi-buffer-paste (current-buffer) (first ring-items)))))
   (:export-class-name-p t)
-  (:metaclass user-class))
+  (:metaclass user-class)
+  (:documentation "Source for previous clipboard contents.
+Only includes the strings that were pasted/copied inside Nyxt."))
 
 (define-command paste-from-clipboard-ring ()
   "Show `*browser*' clipboard ring and paste selected entry."
@@ -261,10 +262,6 @@ Important pieces of functionality are:
           do (nyxt/dom:focus-select-element input)
           and do (return input)))
 
-(defmethod nyxt:on-signal-load-committed ((mode document-mode) url)
-  (declare (ignore mode url))
-  nil)
-
 (defmethod nyxt:on-signal-load-finished ((mode document-mode) url)
   (reset-page-zoom :buffer (buffer mode))
   url)
@@ -289,6 +286,9 @@ Warning: URL is a string."
 
 (export-always 'get-url-source)
 (defun get-url-source (url)
+  "Get HTML source for URL page, as a string.
+If the page is open in one of the buffers, just get the source from there.
+Otherwise, create a dummy buffer with URL to get its source."
   (let ((buffer (or (find (url url) (buffer-list) :test #'quri:uri= :key #'url)
                     (make-background-buffer :url (url url)))))
     (unwind-protect

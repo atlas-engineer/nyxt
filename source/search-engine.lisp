@@ -6,32 +6,50 @@
 (define-class search-engine ()
   ((name nil
          :type (maybe string)
-         :documentation "Human-readable name of the search engine, like \"Wikipedia\" or \"Searx\".")
-   (shortcut (error "Slot `shortcut' must be set")
-             :type string
-             :documentation "The word used to refer to the search engine, for
-instance from the `set-url' commands.")
-   (search-url (error "Slot `search-url' must be set")
-               :type string
-               :documentation "The URL containing a '~a' which will be replaced with the search query.")
-   (fallback-url nil
-                 :type (or null quri:uri)
-                 :writer t
-                 :documentation "The URL to fall back to when given an empty
-query.  This is optional: if nil, use `search-url' instead with ~a expanded to
-the empty string.")
-   (completion-function nil
-                        :type (or null function)
-                        :documentation "A function taking a user input and returning a list of suggested search queries.
+         :documentation "Human-readable name of the search engine, like \"Wikipedia\" or \"Searx\".
+In case no name is defined, `shortcut' is used as the engine name.")
+   (shortcut
+    (alex:required-argument 'shortcut)
+    :type string
+    :documentation "The word or set of letters used to refer to the search engine.
+For instance, `shortcut's are used in `set-url' commands.")
+   (search-url
+    (alex:required-argument 'search-url)
+    :type string
+    :documentation "Format string with an '~a' to be replaced with the search query.")
+   (fallback-url
+    nil
+    :type (or null quri:uri)
+    :writer t
+    :documentation "The URL to fall back to when given an empty query.
+This is optional: if NIL, use `search-url' instead with ~a expanded to the empty
+string.")
+   (completion-function
+    nil
+    :type (or null function)
+    :documentation "A function taking a user input and returning a list of suggested search queries.
 The list should contain either
-- strings with text completions,
+- strings with text completion,
 - or a list of form (TEXT URL), where
   - TEXT is completion text, and
   - URL is the string.
 
 Simple completion functions can be built via `make-search-completion-function'"))
   (:export-class-name-p t)
-  (:export-accessor-names-p t))
+  (:export-accessor-names-p t)
+  (:documentation "A representation of search engine, as used in Nyxt.
+
+Minimal search engines can contain as little as `search-url' and `shortcut'.
+More involved engines can have:
+- Human-readable `name's.
+- `fallback-url' as the search home/error page.
+- And `completion-function' to list search suggestions in Nyxt
+  prompts (`set-url' in particular).
+
+For the actual uses and configuration of search engines, see:
+- `search-engines'.
+- `search-auto-complete-p'.
+- `search-always-auto-complete-p'."))
 
 (defmethod url ((object search-engine))
   (fallback-url object))
@@ -42,6 +60,9 @@ Simple completion functions can be built via `make-search-completion-function'")
 
 (export-always 'make-search-engine)
 (defun make-search-engine (shortcut search-url &optional fallback-url)
+  "Utility to create simple `search-engine's.
+Sets `shortcut', `search-url', and `fallback-url' of the search engine to the
+values of respective arguments."
   (make-instance 'search-engine
                  :shortcut shortcut
                  :search-url search-url
@@ -89,7 +110,8 @@ Example (Tor-proxied completion function for Wikipedia):
     ("Search URL" ,(search-url engine) nil 3)))
 
 (defun all-search-engines ()
-  "Return the `search-engines' from the current buffer."
+  "Return the `search-engine's from the `current-buffer'.
+If there's no buffer, create a dummy one and get search engines from there."
   (let* ((current-buffer (current-buffer))
          (buffer (or current-buffer
                      (make-instance 'context-buffer))))
@@ -98,23 +120,27 @@ Example (Tor-proxied completion function for Wikipedia):
       (unless current-buffer
         (buffer-delete buffer)))))
 
-(defun default-search-engine (&optional (search-engines (all-search-engines)))
-  "Return the last search engine of the SEARCH-ENGINES."
+(define-generic default-search-engine (&optional (search-engines (all-search-engines)))
+  "Return the default search engine out of the SEARCH-ENGINES.
+Right now default search engine is the last one."
   (first (last search-engines)))
 
 (define-class search-engine-source (prompter:source)
   ((prompter:name "Search Engines")
    (prompter:constructor (all-search-engines))
-   (prompter:filter-preprocessor #'prompter:filter-exact-matches)))
+   (prompter:filter-preprocessor #'prompter:filter-exact-matches))
+  (:documentation "Source listing `all-search-engines' in the current buffer."))
 
 (define-class search-engine-url-source (prompter:source)
   ((prompter:name "Search Engines")
    (prompter:constructor (delete nil (mapcar #'fallback-url (all-search-engines))))
    (prompter:filter-preprocessor #'prompter:filter-exact-matches)
-   (prompter:enable-marks-p t)))
+   (prompter:enable-marks-p t))
+  (:documentation "Source listing the `fallback-url's of all the search engines in the buffer."))
 
 (define-command query-selection-in-search-engine (&key (query-in-new-buffer-p t))
-  "Search selected text using the queried search engine."
+  "Search selected text using the queried search engine.
+QUERY-IN-NEW-BUFFER creates a new buffer with the search results."
   (let* ((selection (ffi-buffer-copy (current-buffer)))
          (engine (prompt1 :prompt "Search engine"
                           :sources 'search-engine-source))

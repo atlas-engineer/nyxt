@@ -39,10 +39,16 @@ Unlike `(cons TYPE *)', it checks all the elements.
 
 (export-always 'alist-of)
 (deftype alist-of (key-type &optional value-type)
+  "Alist of dotted conses."
   `(list-of (cons ,key-type ,(or value-type key-type))))
 
+;; FIXME: Maybe define it at use site, or even inline it there?
 (export-always 'cookie-policy)
 (deftype cookie-policy ()
+  "Enum of cookie policies:
+- allow :ALWAYS,
+- allow :NEVER,
+- allow all, but :NO-THIRD-PARTY."
   `(member :always :never :no-third-party))
 
 ;; The following types represent the positional arguments documented at
@@ -66,20 +72,25 @@ Unlike `(cons TYPE *)', it checks all the elements.
 
 (export-always 'html-string-p)
 (defun html-string-p (string)
+  "Check whether the STRING is an HTML string:
+- Having proper starting/ending tags.
+- Being parseable with Plump."
   (serapeum:and-let*
-      ((string string)
-       (-p (stringp string))
-       (trimmed (string-trim serapeum:whitespace string))
-       (has-closing-tag (ppcre:scan "</\\w+>$" trimmed))
-       (html (ignore-errors (plump:parse trimmed)))
-       (single-child (serapeum:single (plump:children html)))
-       (child (elt (plump:children html) 0)))
-    (plump:element-p child)))
+   ((string string)
+    (-p (stringp string))
+    (trimmed (string-trim serapeum:whitespace string))
+    (has-closing-tag (ppcre:scan "</\\w+>$" trimmed))
+    (html (ignore-errors (plump:parse trimmed)))
+    (single-child (serapeum:single (plump:children html)))
+    (child (elt (plump:children html) 0)))
+   (plump:element-p child)))
 
 (export-always 'maybe)
 (deftype maybe (&rest types)
+  "An optional/maybe type for a value that is either one of TYPES, or NIL."
   `(or null ,@types))
 
 (export-always 'maybe*)
 (deftype maybe* (&rest types)
+  "A lenient `maybe' with all the 'empty' sequences as null value."
   `(or null (array * (0)) ,@types))
