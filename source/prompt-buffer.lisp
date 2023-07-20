@@ -155,7 +155,8 @@ See `nyxt::attribute-widths'.")
           :width "100%"
           :autofocus "true")
         `("#input:focus"
-          :box-shadow ,(format nil "inset 0 0 0 2px ~a~X" theme:accent-alt 75))
+          :box-shadow ,(format nil "inset 0 0 0 3px ~a"
+                               (cl-colors2:print-hex theme:accent-alt :alpha 0.40)))
         `(".source"
           :margin-left "10px"
           :margin-top "15px")
