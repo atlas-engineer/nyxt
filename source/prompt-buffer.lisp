@@ -236,9 +236,15 @@ See `prompt' for how to invoke prompts.")
 (defmethod (setf height) (value (prompt-buffer prompt-buffer))
   (setf (ffi-height prompt-buffer)
         (case value
-          (:default (prompt-buffer-open-height (window prompt-buffer)))
-          (:fit-to-prompt (ps-eval :buffer prompt-buffer
-                            (ps:chain (nyxt/ps:qs document "#prompt") offset-height)))
+          (:default
+           (prompt-buffer-open-height (window prompt-buffer)))
+          (:fit-to-prompt
+           (ps-eval :buffer prompt-buffer
+             (+ (ps:chain (nyxt/ps:qs document "#prompt-area") offset-height)
+                ;; Buffer whitespace between the prompt buffer's input area and
+                ;; the status buffer.  Not clear how to the derive the value
+                ;; from another element's height.
+                4)))
           (t value)))
   (setf (slot-value prompt-buffer 'height) value))
 
