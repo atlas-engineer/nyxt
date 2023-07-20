@@ -118,9 +118,10 @@ repeating it like a regular `repeat-mode' does."
     (if (eq 'repeat-key command)
         (dispatch-command command)
         (unwind-protect
-             (repeat-times times (lambda (mode)
-                                   (declare (ignore mode))
-                                   (nyxt::run command)))
+             (repeat-times :times times
+                           :function (lambda (mode)
+                                       (declare (ignore mode))
+                                       (nyxt::run command)))
           (setf (command-dispatcher (current-window)) #'dispatch-command
                 (input-skip-dispatcher (current-window)) #'dispatch-input-skip
                 *repeat-times-stack* 0)))))
