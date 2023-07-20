@@ -801,7 +801,9 @@ buffers.")
   ;; (:nsection :title "Bug fixes"
   ;;   (:ul))
   (:nsection :title "UI/UX"
-    (:ul (:li "Fix styling of progress bar."))))
+    (:ul
+     (:li "Fix styling of progress bar.")
+     (:li "Fix styling of prompt buffer's input area."))))
 
 (define-version "4-pre-release-1"
   (:li "When on pre-release, push " (:code "X-pre-release")
