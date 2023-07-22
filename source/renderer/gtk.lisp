@@ -1537,7 +1537,8 @@ the `active-buffer'."
       (setf (gtk-response request-data) response
             (gtk-request request-data) request
             (gtk-resource request-data) resource)
-      (hooks:run-hook (request-resource-hook buffer) request-data)))
+      (when (request-resource-hook buffer)
+        (hooks:run-hook (request-resource-hook buffer) request-data))))
   (connect-signal buffer "load-changed" t (web-view load-event)
     (declare (ignore web-view))
     (on-signal-load-changed buffer load-event))
