@@ -177,3 +177,5 @@ Return nil on error."
       (push-feature (string-upcase commit)))
     (when (and commits (not (zerop commits)))
       (push-feature "UNSTABLE"))))
+
+(defvar +logo-svg+ (alexandria:read-file-into-string (asdf:system-relative-pathname :nyxt "assets/nyxt.svg")))
