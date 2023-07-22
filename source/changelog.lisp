@@ -802,9 +802,9 @@ buffers.")
     (:ul
      (:li "Fix bug in command " (:nxref :command 'nyxt/mode/repeat:repeat-key) ".")))
   (:nsection :title "UI/UX"
-    (:ul
-     (:li "Fix styling of progress bar.")
-     (:li "Fix styling of prompt buffer's input area."))))
+    (:ul (:li "Fix styling of progress bar.")
+         (:li "Redesign start page.")
+         (:li "Fix styling of prompt buffer's input area."))))
 
 (define-version "4-pre-release-1"
   (:li "When on pre-release, push " (:code "X-pre-release")
