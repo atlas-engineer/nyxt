@@ -63,17 +63,12 @@ Augment this with `style' of STATUS, if necessary."
     ;; https://support.mozilla.org/en-US/kb/mouse-shortcuts-perform-common-tasks
     (:nbutton
       :buffer status
-      :text "←"
+      :text "◁"
       :title "Backwards"
       '(nyxt/mode/history:history-backwards))
     (:nbutton
       :buffer status
-      :text "↺"
-      :title "Reload"
-      '(nyxt:reload-current-buffer))
-    (:nbutton
-      :buffer status
-      :text "→"
+      :text "▷"
       :title "Forwards"
       '(nyxt/mode/history:history-forwards))
     (:nbutton
