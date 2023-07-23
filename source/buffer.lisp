@@ -810,13 +810,12 @@ Also see `panel-page'."))
             `("#controls"
               :background-color ,theme:secondary
               :color ,theme:on-secondary
-              :font-weight "700"
               :padding-left "5px"
               :overflow "hidden"
               :white-space "nowrap"
               :z-index "3"
-              :flex-basis "94px")
-            '("#execute"
+              :flex-basis "70px")
+            `("#execute"
               :margin-left "10px")
             `("#url"
               :background-color ,theme:primary
@@ -839,7 +838,7 @@ Also see `panel-page'."))
               :white-space "nowrap"
               :overflow-x "scroll"
               :text-align "left"
-              :padding-left "20px"
+              :padding-left "3px"
               :padding-right "20px"
               :z-index "1"
               :flex-grow "10"
