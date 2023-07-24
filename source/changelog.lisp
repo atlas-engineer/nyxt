@@ -792,19 +792,22 @@ command "
 buffers.")
      (:li "Improve user experience of " (:nxref :command 'nyxt:pick-color) "."))))
 
-(define-version "3.X.Y"
+(define-version "3.5.0"
   (:nsection :title "Features"
     (:ul
-     (:li "Add new quick start tutorial.")
+     (:li "Add new quick start tutorial, accesible via command "
+            (:nxref :command 'nyxt:quick-start) ".")
      (:li "Add hinting support for pages using Shadow DOMs.")
-     (:li "Add keybindings for command " (:nxref :command 'describe-any) ".")))
+     (:li "Add keybinding for command " (:nxref :command 'describe-any) ".")))
   (:nsection :title "Bug fixes"
     (:ul
+     (:li "Fix status buffer history buttons.")
      (:li "Fix bug in command " (:nxref :command 'nyxt/mode/repeat:repeat-key) ".")))
   (:nsection :title "UI/UX"
-    (:ul (:li "Fix styling of progress bar.")
-         (:li "Redesign start page.")
-         (:li "Fix styling of prompt buffer's input area."))))
+    (:ul
+     (:li "Redesign " (:a :href (nyxt-url 'new) "start page") ".")
+     (:li "Fix styling of progress bar.")
+     (:li "Fix styling of prompt buffer's input area."))))
 
 (define-version "4-pre-release-1"
   (:li "When on pre-release, push " (:code "X-pre-release")
