@@ -21,7 +21,7 @@
     <binary>nyxt</binary>
   </provides>
   <releases>
-    <release version="3.4.0" date="2023-07-10" />
+    <release version="3.5.0" date="2023-07-24" />
   </releases>
   <screenshots>
     <screenshot type="default">
