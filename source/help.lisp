@@ -60,11 +60,11 @@ to the next."
 Nyxt session to the next.
 
 Note that some settings may require restarting Nyxt to take effect.")
-    (:h2 "Keybinding style")
+    (:h2 "Keyscheme (keyboard shortcuts)")
     (:nselect
-      :id "keybinding-style"
+      :id "keyscheme"
       :buffer buffer
-      '((cua "Use default (CUA)")
+      '((cua "CUA (default)")
         (nyxt::auto-configure
          :form '(define-configuration (web-buffer prompt-buffer
                                        panel-buffer nyxt/mode/editor:editor-buffer)
@@ -72,12 +72,12 @@ Note that some settings may require restarting Nyxt to take effect.")
                                               (find (symbol-name (name m))
                                                     '("EMACS-MODE" "VI-NORMAL-MODE" "VI-INSERT-MODE")))
                                   %slot-value%))))))
-      '((emacs "Use Emacs")
+      '((emacs "Emacs")
         (nyxt::auto-configure
          :form '(define-configuration (web-buffer prompt-buffer
                                        panel-buffer nyxt/mode/editor:editor-buffer)
                  ((default-modes (pushnew 'nyxt/mode/emacs:emacs-mode %slot-value%))))))
-      '((vi "Use vi")
+      '((vi "VI")
         (nyxt::auto-configure
          :form '(define-configuration (web-buffer prompt-buffer
                                        panel-buffer nyxt/mode/editor:editor-buffer)
