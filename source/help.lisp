@@ -66,18 +66,21 @@ Note that some settings may require restarting Nyxt to take effect.")
       :buffer buffer
       '((cua "Use default (CUA)")
         (nyxt::auto-configure
-         :form '(define-configuration web-buffer
+         :form '(define-configuration (web-buffer prompt-buffer
+                                       panel-buffer nyxt/mode/editor:editor-buffer)
                  ((default-modes (remove-if (lambda (m)
                                               (find (symbol-name (name m))
                                                     '("EMACS-MODE" "VI-NORMAL-MODE" "VI-INSERT-MODE")))
                                   %slot-value%))))))
       '((emacs "Use Emacs")
         (nyxt::auto-configure
-         :form '(define-configuration web-buffer
+         :form '(define-configuration (web-buffer prompt-buffer
+                                       panel-buffer nyxt/mode/editor:editor-buffer)
                  ((default-modes (pushnew 'nyxt/mode/emacs:emacs-mode %slot-value%))))))
       '((vi "Use vi")
         (nyxt::auto-configure
-         :form '(define-configuration web-buffer
+         :form '(define-configuration (web-buffer prompt-buffer
+                                       panel-buffer nyxt/mode/editor:editor-buffer)
                  ((default-modes (pushnew 'nyxt/mode/vi:vi-normal-mode %slot-value%)))))))
     (flet ((generate-colors (theme-symbol text)
              (spinneret:with-html-string
