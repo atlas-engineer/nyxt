@@ -82,22 +82,14 @@ the following platforms:
 - [[https://nixos.org/nix/][Nix]]: Install with =nix-env --install nyxt=.
 - [[https://guix.gnu.org][Guix]]: Install with =guix install nyxt=.
 - [[https://voidlinux.org/][Void]]: Install with =xbps-install nyxt=.
-- [[https://www.opensuse.org/][OpenSuse]] (user-maintained package of stable and latest `git master` build):
-  - Tumbleweed:
-
-    #+begin_src sh
-    zypper ar https://download.opensuse.org/repositories/home:/bobbie424242:/nyxt/openSUSE_Tumbleweed/ nyxt
-    #+end_src
-
-  - LEAP:
-
-    #+begin_src sh
-    zypper ar https://download.opensuse.org/repositories/home:/bobbie424242:/nyxt/15.4/ nyxt
-    #+end_src
-
-  Then install with =zypper in nyxt= for the latest stable release or =zypper in
-  nyxt-git= for the latest `git master` build. Both versions cannot be installed
-  at the same time.
+- [[https://get.opensuse.org/tumbleweed/][openSUSE Tumbleweed]]: Install with =zypper in nyxt=. 
+- [[https://get.opensuse.org/leap/][openSUSE LEAP]]:
+   Available as user maintained package.
+   1. Add user repository:
+   
+    - LEAP 15.4: =zypper ar https://download.opensuse.org/repositories/home:/bobbie424242:/nyxt/15.4/ nyxt=
+    - LEAP 15.5: =zypper ar https://download.opensuse.org/repositories/home:/bobbie424242:/nyxt/15.5/ nyxt=
+   2. Install with =zypper in nyxt=. 
 
 To install from source, please refer to the [[file:documents/README.org][developer's manual]].
 
