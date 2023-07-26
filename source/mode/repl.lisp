@@ -448,7 +448,7 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
             `(.button
               :display "inline")
             `("textarea,input"
-              :color ,theme:on-accent
+              :color ,theme:on-action
               :opacity "0.9"
               :border "none"
               :outline "none"

@@ -12,21 +12,12 @@
    (style
     (theme:themed-css (theme *browser*)
       `("span[nyxt-search-mark]"
-        :background-color ,(str:concat theme:secondary " !important")
-        :color ,(str:concat theme:on-secondary " !important")
+        :background-color ,theme:secondary !important
+        :color ,theme:on-secondary !important
         :border-radius 3px
         :z-index #.(1- (expt 2 31)))
       `("span[nyxt-search-mark].nyxt-current-search-mark"
-        :animation-name "mark"
-        :animation-duration "1s"
-        :animation-delay "0.3s"
-        :animation-timing-function "ease"
-        :animation-iteration-count "infinite"
-        :animation-direction "alternate"
-        :background ,(format nil
-                             "linear-gradient(0deg, ~a 0% 35%, ~a 49% 51%, ~a 65% 100%)"
-                             theme:accent theme:background-alt theme:accent)
-        :background-size 200% 200%)
+        :background-color ,theme:highlight !important)
       `(:keyframes "mark"
                    (0% :background-position 0 0%)
                    (100% :background-position 0 100%)))

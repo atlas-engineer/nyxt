@@ -50,11 +50,11 @@ Gemini support is a bit more brittle, but you can override `line->html' for
               :margin "0 3px 3px 0"
               :font-size "15px")
             `(.search
-              :background-color ,theme:accent
-              :color ,theme:on-accent)
+              :background-color ,theme:action
+              :color ,theme:on-action)
             `(.error
-              :background-color ,theme:accent
-              :color ,theme:on-accent
+              :background-color ,theme:warning
+              :color ,theme:on-warning
               :padding "1em 0"))))
   (:toggler-command-p nil))
 

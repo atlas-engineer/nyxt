@@ -670,8 +670,8 @@ to your configuration file:")
             ((theme (make-instance 'theme:theme
                      :background-color "black"
                      :on-background-color "#808080"
-                     :accent-color "#37a8e4"
-                     :on-accent-color "black"
+                     :action-color "#37a8e4"
+                     :on-action-color "black"
                      :primary-color "gray"
                      :on-primary-color "white"
                      :secondary-color "darkgray"

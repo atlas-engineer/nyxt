@@ -38,14 +38,14 @@ in viewport only and they're followed when user input matches the hint string.")
         :color ,theme:on-secondary
         :font-weight "bold")
       `(".nyxt-hint.nyxt-select-hint"
-        :background-color ,theme:accent
-        :color ,theme:on-accent)
+        :background-color ,theme:action
+        :color ,theme:on-action)
       `(".nyxt-hint.nyxt-match-hint"
         :padding "0px"
         :border-style "none"
         :opacity "0.5")
       `(".nyxt-element-hint"
-        :background-color ,theme:accent))
+        :background-color ,theme:action))
     :documentation "The style of the hint overlays.")
    (show-hint-scope-p
     nil

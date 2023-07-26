@@ -193,7 +193,7 @@ appearance in the buffer when they are setf'd."
         :background-color ,theme:secondary
         :height "100%")
       `(".progress-bar-fill"
-        :background-color ,theme:primary
+        :background-color ,theme:success
         :height "100%"))))
   (:toggler-command-p nil))
 
