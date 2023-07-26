@@ -133,9 +133,9 @@ See `nyxt::attribute-widths'.")
           :padding 0
           :font "inherit"
           :outline "inherit")
-        `(.button.accent
-          :background-color ,theme:accent
-          :color ,theme:on-accent)
+        `(.button.action
+          :background-color ,theme:action
+          :color ,theme:on-action)
         `((:and .button :hover)
           :cursor "pointer"
           :opacity 0.6)
@@ -155,8 +155,7 @@ See `nyxt::attribute-widths'.")
           :width "100%"
           :autofocus "true")
         `("#input:focus"
-          :box-shadow ,(format nil "inset 0 0 0 3px ~a"
-                               (cl-colors2:print-hex theme:accent-alt :alpha 0.40)))
+          :box-shadow inset 0 0 0 3px ,(cl-colors2:print-hex theme:action- :alpha 0.40))
         `(".source"
           :margin-left "10px"
           :margin-top "15px")
@@ -185,8 +184,8 @@ See `nyxt::attribute-widths'.")
            :padding-left "4px"
            :overflow "auto")
           ("tr:hover"
-           :background-color ,theme:accent-alt
-           :color ,theme:on-accent-alt
+           :background-color ,theme:action-
+           :color ,theme:on-action
            :cursor "pointer")
           (th
            :background-color ,theme:primary
@@ -197,8 +196,8 @@ See `nyxt::attribute-widths'.")
           ("td::-webkit-scrollbar"
            :display "none"))
         `("#selection"
-          :background-color ,theme:accent
-          :color ,theme:on-accent)
+          :background-color ,theme:action
+          :color ,theme:on-action)
         `(.marked
           :background-color ,theme:secondary
           :color ,theme:on-secondary
@@ -712,3 +711,4 @@ See the documentation of `prompt-buffer' to know more about the options."
     (when old-prompt
       (prompter:resume old-prompt)
       (wait-on-prompt-buffer old-prompt))))
+

@@ -87,14 +87,14 @@ Note that some settings may require restarting Nyxt to take effect.")
                (:nbutton
                  :text text
                  :style (format nil "background-color: ~a; color: ~a"
-                                (theme:accent-color (symbol-value theme-symbol))
-                                (theme:on-accent-color (symbol-value theme-symbol)))
+                                (theme:action-color (symbol-value theme-symbol))
+                                (theme:on-action-color (symbol-value theme-symbol)))
                  `(nyxt::auto-configure :form '(define-configuration browser
                                                 ((theme ,theme-symbol)))))
                (:p "Colors:")
                (:dl
                 (loop for (name color text-color) in '(("Background" theme:background-color theme:on-background-color)
-                                                       ("Accent" theme:accent-color theme:on-accent-color)
+                                                       ("Action" theme:action-color theme:on-action-color)
                                                        ("Primary" theme:primary-color theme:on-primary-color)
                                                        ("Secondary" theme:secondary-color theme:on-secondary-color))
                       collect (:dt name ": ")
@@ -195,7 +195,7 @@ The value is saved to clipboard."
         :bottom "12px"
         :right "48px")
       `(.program-name
-        :color ,theme:accent
+        :color ,theme:action
         :font-size "24px"
         :font-weight "bold")
       `(.main
@@ -212,8 +212,8 @@ The value is saved to clipboard."
         :min-width "180px"
         :height "40px"
         :line-height "30px"
-        :color ,theme:on-accent
-        :background-color ,theme:accent
+        :color ,theme:on-action
+        :background-color ,theme:action
         :border "none"
         :border-width "2px"
         :border-radius "3px"

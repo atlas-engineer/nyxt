@@ -132,20 +132,13 @@ See also the `profile' slot in the `browser' class.")
               :padding "0.2em"
               :margin "0.2em"
               :min-height "2rem")
-            `(.button.accent
-              :background-color ,theme:accent
-              :color ,theme:on-accent
-              :border-color ,theme:accent)
             `(select.button
               :appearance auto
               :background-color ,theme:primary !important
               ;; WebKit does not allow to style <select> tags and always leaves
               ;; us with white buttons in place of those. So we need to use an
               ;; invariably dark color for the text on it
-              :color ,(if (theme:dark-p theme:theme)
-                          theme:background
-                          theme:on-background)
-              !important
+              :color ,(theme:contrasting-text-color theme:theme "white") !important
               :min-height "2rem")
             `((:and .button :hover)
               :cursor "pointer"
@@ -159,8 +152,18 @@ See also the `profile' slot in the `browser' class.")
               :color ,theme:primary)
             `(".link:hover"
               :opacity 0.8)
-            `(.accent
-              :color ,theme:accent)
+            `(.action
+              :color ,theme:action)
+            `(.button.action
+              :background-color ,theme:action
+              :color ,theme:on-action
+              :border-color ,theme:action+)
+            `(.warning
+              :color ,theme:warning)
+            `(.button.warning
+              :background-color ,theme:warning
+              :color ,theme:on-warning
+              :border-color ,theme:warning+)
             `(.plain
               :color ,theme:on-background
               :background-color ,theme:background)
@@ -181,14 +184,19 @@ See also the `profile' slot in the `browser' class.")
             `(pre
               :border-radius "3px"
               :overflow "auto"
-              :color ,theme:on-background
-              :background-color ,theme:background
-              :border "2px" solid ,theme:primary
               :padding "5px")
             `("table"
               :border-radius "3px"
               :border-spacing "0"
               :width "100%")
+            `("pre, p code"
+              :color ,theme:on-codeblock
+              :background-color ,theme:codeblock)
+            ;; FIXME: CSS4 has a :has() selector that would be perfect here:
+            ;; a:has(code) { color: theme:on-codeblock;} Unfortunately, LASS
+            ;; doesn't (yet?) support it. Thus the hack:
+            `("a code"
+              :text-decoration underline)
             `("table, th, td"
               :border-color ,theme:secondary
               :border-width "1px"
@@ -205,8 +213,8 @@ See also the `profile' slot in the `browser' class.")
               :font-weight "bold"
               :margin-top "2em")
             `("::selection"
-              :color ,theme:on-accent
-              :background-color ,theme:accent)))
+              :color ,theme:on-action
+              :background-color ,theme:action)))
    (buffer-delete-hook          ; TODO: Should we move this to `context-buffer'?
     (make-instance 'hook-buffer)
     :type hook-buffer
@@ -778,9 +786,9 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :border-radius "2px"
               :padding "6px"
               :margin "2px")
-            `(.button.accent
-              :background-color ,theme:accent
-              :color ,theme:on-accent)
+            `(.button.action
+              :background-color ,theme:action
+              :color ,theme:on-action)
             `((:and .button :hover)
               :cursor "pointer"
               :opacity 0.8)
@@ -837,8 +845,8 @@ Also see `panel-page'."))
               :border-width "2px"
               :border-style "solid"
               :border-color "transparent"
-              :border-top-color ,theme:accent
-              :border-left-color ,theme:accent
+              :border-top-color ,theme:action
+              :border-left-color ,theme:action
               :border-radius "50%"
               :display "inline-block"
               :width "7px"
@@ -944,9 +952,9 @@ Also see `panel-page'."))
               :padding 0
               :font "inherit"
               :outline "inherit")
-            `(.button.accent
-              :background-color ,theme:accent
-              :color ,theme:on-accent)
+            `(.button.action
+              :background-color ,theme:action
+              :color ,theme:on-action)
             `((:and .button :hover)
               :cursor "pointer"
               :opacity 0.6)
