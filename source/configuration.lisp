@@ -141,10 +141,12 @@ This is set globally so that extensions can be loaded even if there is no
 (export-always 'nyxt-source-registry)
 (defun nyxt-source-registry ()
   "Return Nyxt-specific ASDF registry, with source and extension directories."
-  `(:source-registry
-    (:tree ,(files:expand *extensions-directory*))
-    (:tree ,(files:expand *source-directory*)) ; Probably useless since systems are immutable.
-    :inherit-configuration))
+  (let ((source-dir (files:expand *source-directory*)))
+    `(:source-registry
+      (:tree ,(files:expand *extensions-directory*))
+      ,@(unless (uiop:absolute-pathname-p source-dir)
+          `((:tree ,source-dir))) ; Probably useless since systems are immutable.
+      :inherit-configuration)))
 
 (defun set-nyxt-source-location (pathname) ; From `sb-ext:set-sbcl-source-location'.
   "Initialize the NYXT logical host based on PATHNAME, which should be the
