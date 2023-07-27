@@ -143,7 +143,6 @@
           cl-clss
           cl-cluffer
           cl-custom-hash-table
-          cl-dbi
           cl-dexador
           cl-dissect
           cl-trivial-custom-debugger
@@ -185,6 +184,7 @@
           cl-str
           cl-slime-swank
           cl-slynk
+          cl-sqlite
           cl-tld
           cl-trivia
           cl-trivial-clipboard

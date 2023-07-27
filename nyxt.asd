@@ -67,7 +67,6 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                calispel
                cl-base64
                cl-colors2
-               cl-dbi
                cl-gopher
                cl-html-diff
                cl-json
@@ -112,6 +111,7 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                clss
                spinneret
                slynk
+               sqlite
                swank
                trivia
                trivial-clipboard
