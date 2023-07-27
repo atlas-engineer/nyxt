@@ -21,13 +21,13 @@ Experimental support.
 - calispel
 - cl-containers
 - cl-custom-hash-table
-- cl-dbi
 - cl-html-diff
 - cl-json
 - cl-ppcre
 - cl-ppcre-unicode
 - cl-prevalence
 - cl-qrencode
+- cl-sqlite
 - cl-tld
 - closer-mop
 - cluffer
