@@ -259,7 +259,8 @@ Return NIL if page content is empty."
     :documentation "Whether to match suffixes in queries.
 For instance 'nana' will match 'banana'.
 This induces a performance cost."))
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:documentation "The source for all the remembrance cache entries."))
 
 (define-class remembrance-exact-source (remembrance-source)
   ((prompter:name "Exact page matches")
@@ -273,7 +274,8 @@ This induces a performance cost."))
    (prompter:filter-preprocessor nil)
    (prompter:enable-marks-p t)
    (prompter:active-attributes-keys '("URL" "Title" "Keywords")))
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:documentation "The source for the cache entries that contain the exact input text."))
 
 (defmethod prompter:object-attributes ((doc montezuma:document) (source remembrance-source))
   (declare (ignore source))

@@ -155,7 +155,8 @@ See `nyxt::attribute-widths'.")
           :width "100%"
           :autofocus "true")
         `("#input:focus"
-          :box-shadow ,(format nil "inset 0 0 0 2px ~a~X" theme:accent-alt 75))
+          :box-shadow ,(format nil "inset 0 0 0 3px ~a"
+                               (cl-colors2:print-hex theme:accent-alt :alpha 0.40)))
         `(".source"
           :margin-left "10px"
           :margin-top "15px")
@@ -236,20 +237,28 @@ See `prompt' for how to invoke prompts.")
 (defmethod (setf height) (value (prompt-buffer prompt-buffer))
   (setf (ffi-height prompt-buffer)
         (case value
-          (:default (prompt-buffer-open-height (window prompt-buffer)))
-          (:fit-to-prompt (ps-eval :buffer prompt-buffer
-                            (ps:chain (nyxt/ps:qs document "#prompt") offset-height)))
+          (:default
+           (prompt-buffer-open-height (window prompt-buffer)))
+          (:fit-to-prompt
+           (ps-eval :buffer prompt-buffer
+             (+ (ps:chain (nyxt/ps:qs document "#prompt-area") offset-height)
+                ;; Buffer whitespace between the prompt buffer's input area and
+                ;; the status buffer.  Not clear how to the derive the value
+                ;; from another element's height.
+                4)))
           (t value)))
   (setf (slot-value prompt-buffer 'height) value))
 
 (export-always 'current-source)
 (defun current-source (&optional (prompt-buffer (current-prompt-buffer)))
+  "Current PROMPT-BUFFER `prompter:source'.
+If PROMPT-BUFFER is not provided, use `current-prompt-buffer'."
   (prompter:current-source prompt-buffer))
 
 (export-always 'current-suggestion-value)
 (defun current-suggestion-value (&optional (prompt-buffer (current-prompt-buffer)))
-  "Return selected PROMPT-BUFFER suggestion value.
-Return source as second value.
+  "Return selected PROMPT-BUFFER `prompter:suggestion' `prompter:value'.
+Return `prompter:source' as second value.
 To access the suggestion instead, see `prompter:%current-suggestion'."
   (multiple-value-bind (suggestion source)
       (prompter:%current-suggestion prompt-buffer)
@@ -357,52 +366,8 @@ See also `show-prompt-buffer'."
         0
         (/ total (length values)))))
 
-(defgeneric attribute-widths (source &key width-function dynamic-p)
-  (:method (source &key (width-function #'average-attribute-width) dynamic-p)
-    (labels ((clip-extremes (widths)
-               (let* ((length (length widths))
-                      (minimal-size (/ 1 length 2)))
-                 (cond
-                   ((= 1 length)
-                    (list 1))
-                   ((some (rcurry #'< minimal-size) widths)
-                    (let* ((lacking (remove-if-not #'plusp
-                                                   (mapcar (curry #'- minimal-size) widths)))
-                           (abundant (set-difference widths lacking))
-                           (lack (reduce #'+ lacking)))
-                      (loop for width in widths
-                            when (< width minimal-size)
-                              collect minimal-size into new-widths
-                            else
-                              collect (- width
-                                         (* lack
-                                            (/ width
-                                               (reduce #'+ abundant))))
-                                into new-widths
-                            finally (return new-widths))))
-                   (t widths))))
-             (width-normalization (widths)
-               (let ((total (reduce #'+ widths)))
-                 (mapcar (lambda (w) (if (zerop total) 0 (/ w total))) widths))))
-      ;; FIXME: This loop ignores attribute names in the attribute width
-      ;; computation. Because of this, attribute names could theoretically get
-      ;; cropped if the values are short enough. This is bad, but not exactly
-      ;; critical.
-      (if dynamic-p
-          (loop with suggestions = (prompter:suggestions source)
-                with attributes = (mapcar (rcurry #'prompter:active-attributes :source source) suggestions)
-                for key in (prompter:active-attributes-keys source)
-                for width
-                  = (funcall width-function (mapcar (compose #'first (rcurry #'str:s-assoc-value key))
-                                                    attributes))
-                collect width into widths
-                finally (return (clip-extremes (width-normalization widths))))
-          (sera:and-let* ((suggestions (prompter:suggestions source))
-                          (fourth-attributes
-                           (mapcar #'fourth (prompter:active-attributes (first suggestions) :source source)))
-                          (coefficients (substitute 1 nil fourth-attributes)))
-            (width-normalization coefficients)))))
-  (:documentation "Compute the widths of SOURCE attribute columns (as percent).
+(define-generic attribute-widths (source &key (width-function #'average-attribute-width) dynamic-p)
+  "Compute the widths of SOURCE attribute columns (as percent).
 
 If DYNAMIC-P, compute widths based on content length. Otherwise, rely on the
 fourth value of `prompter:object-attributes' for the given source.
@@ -411,7 +376,50 @@ Returns a list of ratios that sum up to one.
 Uses the WIDTH-FUNCTION (by default computing average length of non-blank
 attribute values) to derive the width of the list of attribute
 values. WIDTH-FUNCTION is a function accepting a list of strings and returning
-an integer."))
+an integer."
+  (labels ((clip-extremes (widths)
+             (let* ((length (length widths))
+                    (minimal-size (/ 1 length 2)))
+               (cond
+                 ((= 1 length)
+                  (list 1))
+                 ((some (rcurry #'< minimal-size) widths)
+                  (let* ((lacking (remove-if-not #'plusp
+                                                 (mapcar (curry #'- minimal-size) widths)))
+                         (abundant (set-difference widths lacking))
+                         (lack (reduce #'+ lacking)))
+                    (loop for width in widths
+                          when (< width minimal-size)
+                            collect minimal-size into new-widths
+                          else
+                            collect (- width
+                                       (* lack
+                                          (/ width
+                                             (reduce #'+ abundant))))
+                              into new-widths
+                          finally (return new-widths))))
+                 (t widths))))
+           (width-normalization (widths)
+             (let ((total (reduce #'+ widths)))
+               (mapcar (lambda (w) (if (zerop total) 0 (/ w total))) widths))))
+    ;; FIXME: This loop ignores attribute names in the attribute width
+    ;; computation. Because of this, attribute names could theoretically get
+    ;; cropped if the values are short enough. This is bad, but not exactly
+    ;; critical.
+    (if dynamic-p
+        (loop with suggestions = (prompter:suggestions source)
+              with attributes = (mapcar (rcurry #'prompter:active-attributes :source source) suggestions)
+              for key in (prompter:active-attributes-keys source)
+              for width
+                = (funcall width-function (mapcar (compose #'first (rcurry #'str:s-assoc-value key))
+                                                  attributes))
+              collect width into widths
+              finally (return (clip-extremes (width-normalization widths))))
+        (sera:and-let* ((suggestions (prompter:suggestions source))
+                        (fourth-attributes
+                         (mapcar #'fourth (prompter:active-attributes (first suggestions) :source source)))
+                        (coefficients (substitute 1 nil fourth-attributes)))
+          (width-normalization coefficients)))))
 
 (defun render-attributes (source prompt-buffer)
   (spinneret:with-html-string
@@ -486,9 +494,9 @@ an integer."))
                                                  attribute))))))))))
 
 (export 'prompt-render-suggestions)
-(defmethod prompt-render-suggestions ((prompt-buffer prompt-buffer))
-  "Refresh the rendering of the suggestion list.
-This does not redraw the whole prompt buffer, unlike `prompt-render'."
+(define-generic prompt-render-suggestions ((prompt-buffer prompt-buffer))
+  "Refresh the rendering of the suggestion list in PROMPT-BUFFER.
+This does not redraw the whole prompt buffer, use `prompt-render' for that."
   (let* ((sources (prompter:sources prompt-buffer))
          (current-source-index (position (current-source prompt-buffer) sources))
          (last-source-index (1- (length sources))))

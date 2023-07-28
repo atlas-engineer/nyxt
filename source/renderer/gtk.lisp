@@ -1333,36 +1333,36 @@ the `active-buffer'."
     (when (native-dialogs *browser*)
       (gobject:g-object-ref (gobject:pointer file-chooser-request))
       (run-thread "file chooser"
-        (let* ((nyxt::*interactive-p* t)
-               (multiple (webkit:webkit-file-chooser-request-select-multiple
-                          file-chooser-request))
-               (files (mapcar
-                       #'uiop:native-namestring
-                       (handler-case
-                           (prompt :prompt (format nil "File~@[s~*~] to input" multiple)
-                                   :input (or
-                                           (and
-                                            (webkit:webkit-file-chooser-request-selected-files
-                                             file-chooser-request)
-                                            (first
-                                             (webkit:webkit-file-chooser-request-selected-files
-                                              file-chooser-request)))
-                                           (uiop:native-namestring (uiop:getcwd)))
-                                   :extra-modes 'nyxt/mode/file-manager:file-manager-mode
-                                   :sources (make-instance 'nyxt/mode/file-manager:file-source
-                                                           :enable-marks-p multiple))
-                         (prompt-buffer-canceled ()
-                           nil)))))
-          (if files
-              (webkit:webkit-file-chooser-request-select-files
-               file-chooser-request
-               (cffi:foreign-alloc :string
-                                   :initial-contents (mapcar #'cffi:foreign-string-alloc files)
-                                   :count (if multiple
-                                              (length files)
-                                              1)
-                                   :null-terminated-p t))
-              (webkit:webkit-file-chooser-request-cancel file-chooser-request))))
+                  (let* ((nyxt::*interactive-p* t)
+                         (multiple (webkit:webkit-file-chooser-request-select-multiple
+                                    file-chooser-request))
+                         (files (mapcar
+                                 #'uiop:native-namestring
+                                 (handler-case
+                                     (prompt :prompt (format nil "File~@[s~*~] to input" multiple)
+                                             :input (or
+                                                     (and
+                                                      (webkit:webkit-file-chooser-request-selected-files
+                                                       file-chooser-request)
+                                                      (first
+                                                       (webkit:webkit-file-chooser-request-selected-files
+                                                        file-chooser-request)))
+                                                     (uiop:native-namestring (uiop:getcwd)))
+                                             :extra-modes 'nyxt/mode/file-manager:file-manager-mode
+                                             :sources (make-instance 'nyxt/mode/file-manager:file-source
+                                                                     :enable-marks-p multiple))
+                                   (prompt-buffer-canceled ()
+                                     nil)))))
+                    (if files
+                        (webkit:webkit-file-chooser-request-select-files
+                         file-chooser-request
+                         (cffi:foreign-alloc :string
+                                             :initial-contents (mapcar #'cffi:foreign-string-alloc files)
+                                             :count (if multiple
+                                                        (length files)
+                                                        1)
+                                             :null-terminated-p t))
+                        (webkit:webkit-file-chooser-request-cancel file-chooser-request))))
       t)))
 
 (defun process-color-chooser-request (web-view color-chooser-request)
@@ -1537,7 +1537,8 @@ the `active-buffer'."
       (setf (gtk-response request-data) response
             (gtk-request request-data) request
             (gtk-resource request-data) resource)
-      (hooks:run-hook (request-resource-hook buffer) request-data)))
+      (when (request-resource-hook buffer)
+        (hooks:run-hook (request-resource-hook buffer) request-data))))
   (connect-signal buffer "load-changed" t (web-view load-event)
     (declare (ignore web-view))
     (on-signal-load-changed buffer load-event))

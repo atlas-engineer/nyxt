@@ -37,6 +37,7 @@ opening files with external programs."
        "C-l" 'directory-up)))))
 
 (export-always 'directory-elements)
+(-> directory-elements (types:pathname-designator) (list-of pathname))
 (defun directory-elements (directory)
   "Return list of all the files and subdirectories inside DIRECTORY."
   (let ((directory (pathname directory)))
@@ -44,7 +45,12 @@ opening files with external programs."
             (uiop:directory-files directory))))
 
 (export-always 'recursive-directory-elements)
+(-> recursive-directory-elements (types:pathname-designator &key (:include-directories-p boolean))
+    (list-of pathname))
 (defun recursive-directory-elements (directory &key include-directories-p)
+  "Get contents of DIRECTORY and all of its recursive subdirectories.
+When INCLUDE-DIRECTORIES-P, include both directories and files,
+otherwise (default) only include files."
   (loop with included-directories = '()
         with files = (directory-elements directory)
         for directories = (sera:filter #'uiop:directory-pathname-p files)

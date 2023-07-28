@@ -28,7 +28,8 @@ For user-facing controls, see `*run-from-repl-p*' and `*debug-on-error*'.")
 (defvar *open-program*
   #+darwin "open"
   #+(or linux bsd) "xdg-open"
-  #-(or linux bsd darwin) nil)
+  #-(or linux bsd darwin) nil
+  "The program to open unsupported files with.")
 
 (defvar *headless-p* nil
   "If non-nil, don't display anything.
@@ -45,7 +46,9 @@ It's possible to run multiple interfaces of Nyxt at the same time.  You can
 let-bind *browser* to temporarily switch interface.")
 
 (defvar *interactive-p* nil
-  "When non-nil, allow prompt buffers during BODY execution.
+  "When non-nil, allow `prompt'-ing.
+Otherwise error with `prompt-buffer-non-interactive'.
+
 This is useful to spot potential blocks when non-interactive code (for instance
 scripts) tries to invoke the prompt buffer.")
 
@@ -75,7 +78,8 @@ Example:
     '(:cl-cffi-gtk
       :cl-gobject-introspection
       :cl-webkit2)
-  :test #'equal)
+  :test #'equal
+  :documentation "Dependencies without which Nyxt won't be able to display content and work.")
 
 (defvar +asdf-build-information+
   `(:version ,(asdf:asdf-version)
@@ -108,7 +112,7 @@ Don't set this, it would lose its meaning.")
 
 (export-always '+version+)
 (alex:define-constant +version+
-    (or (uiop:getenv "NYXT_VERSION")      ; This is useful for build systems without Git.
+    (or (uiop:getenv "NYXT_VERSION")
         (let ((version-from-git-tag
                 (ignore-errors
                  (uiop:with-current-directory ((asdf:system-source-directory :nyxt))
@@ -120,7 +124,14 @@ Don't set this, it would lose its meaning.")
                              version-from-asdf)
               version-from-asdf
               version-from-git-tag)))
-  :test #'equal)
+  :test #'equal
+  :documentation "Nyxt version.
+Fetched from ASDF (higher priority) or Git tag.
+
+Can be overridden with NYXT_VERSION environment variable on build systems
+relying on neither ASDF nor Git.
+
+`version' and Nyxt-related feature expressions all rely on `+version+'.")
 
 (defun version ()
   "Return 5 values:
@@ -166,3 +177,5 @@ Return nil on error."
       (push-feature (string-upcase commit)))
     (when (and commits (not (zerop commits)))
       (push-feature "UNSTABLE"))))
+
+(defvar +logo-svg+ (alexandria:read-file-into-string (asdf:system-relative-pathname :nyxt "assets/nyxt.svg")))

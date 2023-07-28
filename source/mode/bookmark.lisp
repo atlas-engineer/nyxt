@@ -105,7 +105,10 @@ internal programming APIs."
     '()
     :type (list-of string)))
   (:export-class-name-p t)
-  (:export-accessor-names-p t))
+  (:export-accessor-names-p t)
+  (:documentation "Represents Nyxt bookmark.
+`url' is the identity of the `bookmark-entry', used in `equals'.
+`title', `annotation', `date', `tags' are useful pieces of metadata."))
 
 (defmethod prompter:object-attributes ((entry bookmark-entry) (source prompter:source))
   (declare (ignore source))
@@ -114,17 +117,24 @@ internal programming APIs."
     ("Tags" ,(format nil "~{~a ~}" (tags entry)))
     ("Date" ,(local-time:format-timestring nil (date entry) :format local-time:+asctime-format+))))
 
-(export-always 'equals)
-(defmethod equals ((e1 bookmark-entry) (e2 bookmark-entry))
-  "Entries are equal if the hosts and the paths are equal.
+;; FIXME: Move somewhere else, where Nyxt-global function declarations belong?
+(define-generic equals (object1 object2)
+  "Nyxt-specific equality function."
+  (:method ((e1 bookmark-entry) (e2 bookmark-entry))
+    "Entries are equal if the hosts and the paths are equal.
 In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
-  (url-equal (url e1) (url e2)))
+    (url-equal (url e1) (url e2)))
+  (:export-generic-name-p t))
 
 (-> bookmark-add
     (quri:uri &key (:title string) (:date (or time:timestamp null)) (:tags t))
     t)
 (export-always 'bookmark-add)
 (defun bookmark-add (url &key date title tags)
+  "Store the bookmark for URL in `bookmarks-file' of the current buffer.
+Creates a `bookmark-entry' with DATE, TITLE, and TAGS, when provided.
+If there's a bookmarks with the same URL, update the TITLE, TAGS, and DATE
+instead."
   (files:with-file-content (bookmarks (bookmarks-file (current-buffer)))
     (unless (or (url-empty-p url)
                 (string= "about:blank" (render-url url)))
@@ -151,7 +161,10 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
    (prompter:constructor (files:content (bookmarks-file (current-buffer))))
    (prompter:enable-marks-p t)
    (prompter:active-attributes-keys '("URL" "Title" "Tags")))
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:documentation "Source for bookmark search.
+By default, matches URL, title, and tags of the bookmark, but can also match
+against date, given `prompter:active-attributes-keys' configuration."))
 
 (defmethod url-sources ((mode bookmark-mode) actions-on-return)
   (make-instance 'bookmark-source :actions-on-return actions-on-return))

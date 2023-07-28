@@ -62,10 +62,6 @@
 	path = _build/cl-difflib
 	url = https://github.com/wiseman/cl-difflib
 	shallow = true
-[submodule "_build/cl-json"]
-	path = _build/cl-json
-	url = https://github.com/hankhero/cl-json
-	shallow = true
 [submodule "_build/cl-ppcre"]
 	path = _build/cl-ppcre
 	url = https://github.com/edicl/cl-ppcre
@@ -229,10 +225,6 @@
 [submodule "_build/cl-fad"]
 	path = _build/cl-fad
 	url = https://github.com/edicl/cl-fad/
-	shallow = true
-[submodule "_build/chipz"]
-	path = _build/chipz
-	url = https://github.com/froydnj/chipz
 	shallow = true
 [submodule "_build/cl-base64"]
 	path = _build/cl-base64
@@ -466,10 +458,6 @@
 	path = _build/unix-opts
 	url = https://github.com/libre-man/unix-opts
 	shallow = true
-[submodule "_build/cl-cffi-gtk"]
-	path = _build/cl-cffi-gtk
-	url = https://github.com/Ferada/cl-cffi-gtk/
-	shallow = true
 [submodule "_build/cl-webkit"]
 	path = _build/cl-webkit
 	url = https://github.com/joachifm/cl-webkit
@@ -601,3 +589,14 @@
 	path = _build/cl-colors2
 	url = https://notabug.org/cage/cl-colors2
 	shallow = false # Notabug does not advertize commits.
+[submodule "_build/chipz"]
+	path = _build/chipz
+	url = https://github.com/sharplispers/chipz
+[submodule "_build/cl-cffi-gtk"]
+	path = _build/cl-cffi-gtk
+	url = https://github.com/sharplispers/cl-cffi-gtk
+	shallow = true
+[submodule "_build/cl-json"]
+	path = _build/cl-json
+	url = https://github.com/sharplispers/cl-json
+	shallow = true

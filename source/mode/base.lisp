@@ -26,6 +26,7 @@ This mode is a good candidate to be passed to `make-buffer'."
        "s-f4" 'delete-all-panel-buffers
        "f1 r" 'manual
        "f1 t" 'tutorial
+       "f1 a" 'describe-any
        "f1 b" 'describe-bindings
        "f1 C" 'describe-class
        "f1 c" 'describe-command
@@ -76,6 +77,7 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-M-t" 'copy-title
        "C-h t" 'tutorial
        "C-h r" 'manual
+       "C-h a" 'describe-any
        "C-h b" 'describe-bindings
        "C-h C" 'describe-class
        "C-h c" 'describe-command

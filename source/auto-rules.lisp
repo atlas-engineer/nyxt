@@ -73,7 +73,12 @@
     :type boolean
     :documentation "Whether to exclusively enable the `included' modes."))
   (:export-class-name-p t)
-  (:export-accessor-names-p t))
+  (:export-accessor-names-p t)
+  (:documentation "A representation of a URL-matching rule.
+- `test' mandates which `request-data' to match.
+- `included' and `excluded' lists of modes to enable/disable (respectively).
+- `exact-p' is whether the `included'/`excluded' are applied exclusively, with
+  all the other modes disabled."))
 
 (defmethod print-object ((rule auto-rule) stream)
   (print-unreadable-object (rule stream :type t :identity t)
@@ -363,6 +368,11 @@ For the storage format see the comment in the header of your `auto-rules-file'."
     (values list &optional))
 (export-always 'add-modes-to-auto-rules)
 (defun add-modes-to-auto-rules (test &key (buffer (nyxt:current-buffer)) (append-p nil) exclude include (exact-p nil))
+  "Add a rule with TEST, EXCLUDE, INCLUDE, EXACT-P to the set of rules in BUFFER.
+Adds it to browser-global rules file by default.
+If there's an existing rule:
+- And APPEND-P is non-nil: add the modes to the rule.
+- And replace the rule otherwise."
   (files:with-file-content (rules (auto-rules-file buffer))
     (let* ((rule (or (find test rules
                            :key #'test :test #'equal)

@@ -45,11 +45,13 @@ If the file is modified externally, Nyxt automatically reloads it."))
 
 (define-class nyxt-data-directory (files:data-file nyxt-file)
   ((files:base-path #p""))
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:documentation "Directory for Nyxt data (history, bookmarks etc.) files."))
 
 (define-class nyxt-temporary-directory (files:data-file nyxt-file)
   ((files:base-path #p""))
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:documentation "File for a /tmp/`profile'-name/ directory."))
 
 (defmethod files:resolve ((profile nyxt-profile) (path nyxt-temporary-directory))
   "Expand all data paths inside a temporary directory."
@@ -155,8 +157,11 @@ Example: when passed command line option --with-file foo=bar,
                                  (setf (gethash full-path path-map) file))))
                            (alexandria:hash-table-values path-map)))))
 
+;; TODO: Contribute to UIOP?
 (export-always 'xdg-download-dir)
 (defun xdg-download-dir ()
+  "Get the directory for user downloads.
+Tries hard to find the XDG directory or at least ~/Downloads one."
   (let ((dir (ignore-errors (uiop:run-program '("xdg-user-dir" "DOWNLOAD")
                                               :output '(:string :stripped t)))))
     (when (or (null dir) (uiop:pathname-equal dir (user-homedir-pathname)))
@@ -172,17 +177,19 @@ Example: when passed command line option --with-file foo=bar,
 
 (export-always 'profile-name)
 (defun profile-name (profile-class)
+  "Get the displayable name of the PROFILE-CLASS."
   (string-downcase
    (sera:drop-suffix "-PROFILE" (symbol-name (class-name profile-class)))))
 
 (export-always 'list-profile-classes)
 (defun list-profile-classes ()
+  "List all the `nyxt-profile's available."
   (cons (find-class 'nyxt:nyxt-profile)
         (mopu:subclasses 'nyxt:nyxt-profile)))
 
 (export-always 'find-profile-class)
 (defun find-profile-class (name)
-  "Return the `nyxt:nyxt-profile' subclass whose name is NAME-profile."
+  "Return the `nyxt-profile' subclass whose name is NAME-profile."
   (find (string-downcase name)
         (list-profile-classes)
         :test 'string=

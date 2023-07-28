@@ -8,7 +8,9 @@
 (export-always 'renderer-download)
 (defclass renderer-download ()
   ()
-  (:metaclass interface-class))
+  (:metaclass interface-class)
+  (:documentation "A basis for renderer-specific download objects.
+Should be redefined by the renderer."))
 
 (define-class download (renderer-download)
   ((url
@@ -113,7 +115,8 @@ path is set.")
   (:documentation "This class is used to represent a download within the *Downloads* buffer.
 The `downloads' slot is populated by a list of these objects."))
 
-(hooks:define-hook-type download (function (download)))
+(hooks:define-hook-type download (function (download))
+  "Hook acting on `download' objects.")
 
 (-> cancel-download (nyxt::url-designator) t)
 (defun cancel-download (url)
@@ -187,10 +190,10 @@ appearance in the buffer when they are setf'd."
         :height "20px"
         :width "100%")
       `(".progress-bar-base"
-        :background-color ,theme:primary
+        :background-color ,theme:secondary
         :height "100%")
       `(".progress-bar-fill"
-        :background-color ,theme:secondary
+        :background-color ,theme:primary
         :height "100%"))))
   (:toggler-command-p nil))
 

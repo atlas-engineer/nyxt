@@ -21,10 +21,13 @@
 (export-always 'nyxt-keymap-value)
 #+nyxt-debug-keymap
 (deftype nyxt-keymap-value ()
+  "A Nyxt-specific type suitable for `nkeymaps:bound-type'.
+Augmented with the exact values for keymap debugging."
   '(or nkeymaps:keymap nsymbols:function-symbol nyxt::command))
 
 #-nyxt-debug-keymap
 (deftype nyxt-keymap-value ()
+  "A Nyxt-specific type suitable for `nkeymaps:bound-type'."
   '(or nkeymaps:keymap t))
 
 (export-always 'make-keyscheme)
@@ -45,12 +48,17 @@ existing keyscheme `cua'."
                       :bound-type 'nyxt-keymap-value)))
 
 (export-always 'default)
-(defvar default (make-keyscheme "default"))
+(defvar default (make-keyscheme "default")
+  "The root keyscheme from which all the other Nyxt keyschemes (command ones, at least) inherit.")
 (export-always 'cua)
-(defvar cua (make-keyscheme "cua" default))
+(defvar cua (make-keyscheme "cua" default)
+  "CUA (Common User Access) keyscheme with conventional bindings typical to major browsers.")
 (export-always 'emacs)
-(defvar emacs (make-keyscheme "emacs" default))
+(defvar emacs (make-keyscheme "emacs" default)
+  "Keyscheme inspired by Emacs text editor.")
 (export-always 'vi-normal)
-(defvar vi-normal (make-keyscheme "vi-normal" default))
+(defvar vi-normal (make-keyscheme "vi-normal" default)
+  "Keyscheme inspired by the command mode in VI-family text editors.")
 (export-always 'vi-insert)
-(defvar vi-insert (make-keyscheme "vi-insert"))
+(defvar vi-insert (make-keyscheme "vi-insert")
+  "Mostly blank keyscheme resembling the insert mode in VI-family editors.")

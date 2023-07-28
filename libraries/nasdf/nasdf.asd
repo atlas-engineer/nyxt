@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (defsystem "nasdf"
-  :version "0.1.1"
+  :version "0.1.6"
   :author "Atlas Engineer LLC"
   :homepage "https://github.com/atlas-engineer/ntemplate"
   :description "ASDF helpers for system setup, testing and installation."

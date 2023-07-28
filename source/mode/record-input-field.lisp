@@ -65,7 +65,8 @@ Options:
    (date (time:now))
    (input-data '()))
   (:export-class-name-p t)
-  (:export-accessor-names-p t))
+  (:export-accessor-names-p t)
+  (:documentation "Input recorded from the page."))
 
 (define-command save-input-data ()
   "Save HTML input data in a local file."

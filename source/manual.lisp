@@ -5,6 +5,7 @@
 
 (export-always 'manual-content)
 (defun manual-content ()
+  "Proxy function returning `manual' contents."
   (spinneret:with-html-string
     (:h1 "Nyxt manual")
     (:p "This manual first includes the tutorial, then covers the configuration
@@ -1107,4 +1108,12 @@ nyxt
     can try to disable compositing. To disable compositing from your
     initialization file, you can do the following: ")
           (:ncode
-            '(setf (uiop:getenv "WEBKIT_DISABLE_COMPOSITING_MODE") "1")))))))
+            '(setf (uiop:getenv "WEBKIT_DISABLE_COMPOSITING_MODE") "1")))
+
+        (:nsection :title "Missing cursor icons"
+          (:p "If you are having issues with the cursor not changing when
+hovering over buttons or links, it might be because Nyxt can't locate your cursor theme.
+To fix that, try adding the following to your" (:code ".bash_profile") " or similar:")
+          (:ncode :repl-p nil :config-p nil
+            "export XCURSOR_PATH=${XCURSOR_PATH}:/usr/share/icons
+export XCURSOR_PATH=${XCURSOR_PATH}:~/.local/share/icons"))))))

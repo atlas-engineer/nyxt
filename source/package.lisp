@@ -28,6 +28,7 @@ modes, commands, etc."))
 (defvar *imports* '((:alexandria #:compose #:curry #:mappend #:rcurry)
                     (:trivia #:match #:multiple-value-match #:lambda-match #:guard)
                     (:nkeymaps #:define-key #:define-keyscheme-map)
+                    (:nclasses #:define-generic)
                     (:serapeum #:export-always #:->))
   "Default list of symbol imports used by `nyxt:define-package'.")
 
@@ -51,6 +52,8 @@ modes, commands, etc."))
         :do (trivial-package-local-nicknames:add-package-local-nickname nickname package :nyxt)))
 
 (defmacro nyxt::use-nyxt-package-nicknames (&optional (package *package*))
+  "Define package nicknames in PACKAGE for Nyxt-used libraries.
+Effectively makes programming in PACKAGE same as programming in `:nyxt'."
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      (let ((*package* (find-package ,package)))
        (dolist (pkgs (trivial-package-local-nicknames:package-local-nicknames :nyxt))
@@ -58,6 +61,8 @@ modes, commands, etc."))
                                                                      (find-package ,package))))))
 
 (defmacro without-package-locks (&body body)
+  "Ignore package locks for the duration of the BODY.
+Same as `progn' on implementations that don't have package locks."
   #+sb-package-locks
   `(sb-ext:without-package-locks
      ,@body)
@@ -69,7 +74,7 @@ modes, commands, etc."))
 
 (serapeum:export-always 'define-class :nyxt)
 (defmacro define-class (name supers slots &rest options)
-  "`nclasses:define-star' with automatic types and always-dashed predicates."
+  "`nclasses:define-class' with automatic types and always-dashed predicates."
   `(nclasses:define-class ,name ,supers ,slots
      ,@(append
         '((:automatic-types-p t)

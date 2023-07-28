@@ -23,9 +23,6 @@ we cannot predict the package in which it happened.")
 NIL means suggestion concerns all versions.")
    (tip
     ""
-    :export t
-    :writer t
-    :reader nil
     :type (or cons string function)
     :documentation "Suggestion how to update the symbols.
 It can be initialized with a string or a form; if the latter, it's automatically
@@ -33,7 +30,9 @@ passed to `spinneret' on render.
 This is useful to delay the evaluation of the tip until it's rendered."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:export-predicate-name-p t))
+  (:export-predicate-name-p t)
+  (:documentation "Representation of migration suggestion.
+`symbols' are the offending ones deprecated in `version'."))
 
 (defmethod print-object ((object suggestion) stream)
   (print-unreadable-object (object stream :type t :identity t)
@@ -69,10 +68,11 @@ Order is stable."
           #'string<
           :key (compose #'first #'uiop:ensure-list #'symbols))))
 
-(defmethod tip ((suggestion suggestion))
-  (if (stringp (slot-value suggestion 'tip))
-      (slot-value suggestion 'tip)
-      (funcall (slot-value suggestion 'tip))))
+(defmethod tip :around ((suggestion suggestion))
+  (let ((value (call-next-method)))
+    (if (stringp value)
+        value
+        (funcall value))))
 
 (defmethod render-version-migration (major-version)
   (spinneret:with-html-string
@@ -99,6 +99,7 @@ major versions."
 
 (export-always 'find-suggestions)
 (defun find-suggestions (string)
+  "Find the migration suggestions that match the symbol from STRING."
   (alex:when-let ((sym (ignore-errors (uiop:safe-read-from-string
                                        string :package (find-package :nyxt)))))
     (gethash (symbol-name sym) +migration-suggestions+)))
