@@ -25,7 +25,7 @@ To install the mode implementing the following, add this snippet to your config
 See `nyxt/mode/editor' package documentation for implementation details and
 internal programming APIs, including the methods for custom editors'
 implementation. Also see `plaintext-editor-mode' for an example
-impelementation."
+implementation."
   ((keyscheme-map
     (define-keyscheme-map "editor-mode" ()
       keyscheme:default
