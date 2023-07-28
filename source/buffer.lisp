@@ -153,17 +153,35 @@ See also the `profile' slot in the `browser' class.")
             `(".link:hover"
               :opacity 0.8)
             `(.action
-              :color ,theme:action)
-            `(.button.action
-              :background-color ,theme:action
-              :color ,theme:on-action
-              :border-color ,theme:action+)
+              :color ,theme:action
+              (.button
+               :background-color ,theme:action
+               :color ,theme:on-action
+               :border-color ,theme:action+))
             `(.warning
-              :color ,theme:warning)
-            `(.button.warning
-              :background-color ,theme:warning
-              :color ,theme:on-warning
-              :border-color ,theme:warning+)
+              :color ,theme:warning
+              (.button
+               :background-color ,theme:warning
+               :color ,theme:on-warning
+               :border-color ,theme:warning+))
+            `(.success
+              :color ,theme:success
+              (.button
+               :background-color ,theme:success
+               :color ,theme:on-success
+               :border-color ,theme:success+))
+            `(.highlight
+              :color ,theme:highlight
+              (.button
+               :background-color ,theme:highlight
+               :color ,theme:on-highlight
+               :border-color ,theme:highlight+))
+            `(.highlight
+              :color ,theme:highlight)
+            `(.button.highlight
+              :background-color ,theme:highlight
+              :color ,theme:on-highlight
+              :border-color ,theme:highlight+)
             `(.plain
               :color ,theme:on-background
               :background-color ,theme:background)
