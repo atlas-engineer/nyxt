@@ -48,7 +48,9 @@ See also the `profile' slot in the `browser' class.")
    (title "")
 
    (style (theme:themed-css (theme *browser*)
+            (:import (url "https://fonts.cdnfonts.com/css/public-sans"))
             `(*
+              :font-family ,theme:font-family
               :box-sizing border-box)
             `(body
               :background-color ,theme:background
@@ -57,6 +59,20 @@ See also the `profile' slot in the `browser' class.")
               :margin-top "20px")
             `(.section
               :margin-top "2em")
+            `("h1"
+              :font-size "44px")
+            `("h2"
+              :font-size "36px")
+            `("h3"
+              :font-size "32px")
+            `("h4"
+              :font-size "28px")
+            `("h5"
+              :font-size "24px")
+            `("h6"
+              :font-size "20px")
+            `("p"
+              :font-size "16px")
             `("h1,h2,h3,h4,h5,h6"
               :color ,theme:primary
               :font-family ,theme:font-family)
