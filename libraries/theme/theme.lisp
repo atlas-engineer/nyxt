@@ -102,7 +102,7 @@ out from all of the other theme colors.")
     :documentation "The color applied to elements appearing in front of
 `warning-alt-color'.  Must strongly contrast with `warning-alt-color'.")
    (font-family
-    "Helvetica Neue, Helvetica"
+    "Public Sans"
     :type string
     :documentation "The font family to use by default."))
   (:export-class-name-p t)
