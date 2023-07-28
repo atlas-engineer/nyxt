@@ -221,7 +221,11 @@ The value is saved to clipboard."
         :border "none"
         :background-color ,theme:primary
         :border-color ,theme:primary
-        :color ,theme:on-primary))
+        :color ,theme:on-primary)
+      `(.binding
+        :margin-left "12px"
+        :font-weight "bold"
+        :color ,theme:secondary))
     (:div
      :class "container"
      (:main
@@ -236,14 +240,18 @@ The value is saved to clipboard."
            "Manual")
        (:a :class "button" :href (nyxt-url 'common-settings)
            :title "Switch between Emacs/vi/CUA key bindings, set home page URL, and zoom level."
-           "⚙ Settings"))
+           "Settings"))
       (:div :class "main"
             (:div :class "logo" (:raw +logo-svg+))
             (:div
-             (:div (:nbutton :class "set-url" :text "Set-URL 🡪"
-                             '(set-url :prefill-current-url-p nil)))
-             (:div (:nbutton :class "execute-command" :text "Execute-Command 🡪"
-                             '(execute-command))))))
+             (:div (:nbutton :class "set-url" :text "Set-URL"
+                             '(set-url :prefill-current-url-p nil))
+                   (:span :class "binding"
+                          (format nil "(~a)" (nyxt::binding-keys 'set-url))))
+             (:div (:nbutton :class "execute-command" :text "Execute-Command"
+                             '(execute-command))
+                   (:span :class "binding"
+                          (format nil "(~a)" (nyxt::binding-keys 'execute-command)))))))
      (:p :class "copyright"
          (:span :class "program-name" "Nyxt")
          (format nil " ~a (~a)" +version+ (name *renderer*))
