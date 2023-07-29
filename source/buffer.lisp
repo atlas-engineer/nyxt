@@ -776,6 +776,14 @@ Also see `panel-page'."))
    (display-tabs-by-last-access-p
     nil
     :documentation "Whether tabs are dynamically ordered by last access time.")
+   (glyph-left (alexandria:read-file-into-string
+                (asdf:system-relative-pathname :nyxt "assets/left.svg")))
+   (glyph-right (alexandria:read-file-into-string
+                 (asdf:system-relative-pathname :nyxt "assets/right.svg")))
+   (glyph-reload (alexandria:read-file-into-string
+                  (asdf:system-relative-pathname :nyxt "assets/reload.svg")))
+   (glyph-lambda (alexandria:read-file-into-string
+                  (asdf:system-relative-pathname :nyxt "assets/lambda.svg")))
    (style (theme:themed-css (theme *browser*)
             `(body
               :line-height "24px"
@@ -810,13 +818,21 @@ Also see `panel-page'."))
             `("#controls"
               :background-color ,theme:secondary
               :color ,theme:on-secondary
-              :padding-left "5px"
+              :padding-left "10px"
               :overflow "hidden"
               :white-space "nowrap"
               :z-index "3"
-              :flex-basis "70px")
-            `("#execute"
-              :margin-left "10px")
+              :height "24px"
+              :flex-basis "80px")
+            `("#controls > button"
+              :width "22px"
+              :margin-left "-8px")
+            `("#reload"
+              :width "24px !important")
+            `("#controls > button:hover"
+              :background-color ,theme:accent
+              :color ,theme:on-accent
+              :opacity "1.0")
             `("#url"
               :background-color ,theme:primary
               :color ,theme:on-primary

@@ -59,22 +59,25 @@ Augment this with `style' of STATUS, if necessary."
   "Render interactive buttons to HTML string.
 Augment this with `style' of STATUS, if necessary."
   (spinneret:with-html-string
-    ;; TODO: Firefox-like additional click actions? See
-    ;; https://support.mozilla.org/en-US/kb/mouse-shortcuts-perform-common-tasks
     (:nbutton
       :buffer status
-      :text "◁"
+      :text (:raw (glyph-left status))
       :title "Backwards"
       '(nyxt/mode/history:history-backwards))
     (:nbutton
       :buffer status
-      :text "▷"
+      :text (:raw (glyph-right status))
       :title "Forwards"
       '(nyxt/mode/history:history-forwards))
     (:nbutton
       :buffer status
-      :id "execute"
-      :text "λ"
+      :id "reload"
+      :text (:raw (glyph-reload status))
+      :title "Reload"
+      '(nyxt:reload-current-buffer))
+    (:nbutton
+      :buffer status
+      :text (:raw (glyph-lambda status))
       :title "Execute-Command Menu"
       '(nyxt:execute-command))))
 
