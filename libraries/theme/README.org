@@ -11,29 +11,49 @@ Owing to its flexibility, it can be used to theme other projects.
 
 ** Palette's rationale
 
-5 conceptual color groups are defined:
+8 conceptual/semantic color groups are defined:
 
-- ~background~ :: color that covers large surfaces.
-- ~primary~ :: color of interface elements that contrasts with ~background~;
-  neutral and harmonious relative to ~secondary~.
-- ~secondary~ :: color of interface elements that contrasts with ~background~'s
-  foreground; neutral and harmonious relative to ~primary~.
-- ~accent~ :: color that highlights actionable interface elements or draws
-  particular attention.
-- ~warning~ :: color that highlights errors or invalid operations.
+- ~background~ :: large surfaces.
+- ~primary~ :: primary interface elements.
+- ~secondary~ ::  secondary or decorative interface elements.
+- ~action~ :: focus or call to action.
+- ~success~ :: successful completion, download, or evaluation.
+- ~warning~ :: errors, invalid operations, or consequential actions.
+- ~highlight~ :: eye-catching text highlighting.
+- ~codeblock~ :: code and citations background.
 
-Each color has a corresponding on-color pair.  In other words, each color pair
-features a foreground and background value.  This eases attaining constant
-contrast ratio among all pairs.
+On top of that, every color has a plus (stronger contrast) and minus (weaker
+contrast) variation. These are intended for a surface variety and cases of
+complex overlapping interfaces.
 
-On top of that, these pairs are doubled by another pair (~alt-color~,
-~on-alt-color~), that provides a nuanced variation of (~color~, ~on-color~).
+As a ninth-ish conceptual group, there are text colors:
+- ~text~ :: the regular foreground color used on most surfaces and guaranteed to
+  work on ~background~ colors.
+- ~contrasting-text~ :: color for elements that need a different contrasting
+  foreground color.
+- ~text-~ and ~text+~ :: less and more contrasting variations of ~text~.
 
-For instance, within the conceptual group of background colors, the following
-are available: ~background~, ~on-background~, ~alt-background~,
-~on-alt-background~.
+Based on these text colors, each surface color group gets an on-colors
+(e.g. ~on-background~), a foreground color for all the colors in the group. This
+on-color is either ~text~ or ~contrast-text~, depending on which has a higher
+contrast with the surface color.
 
-This amounts to 20 available colors in the palette, not necessarily distinct.
+~text-~ and ~text+~ are not used as on-colors and are intended for typography
+and text document variety.
+
+As a total amount of colors, there are:
+- 8 conceptual/semantic groups of colors.
+  - Three surface color per group, e.g.
+    - ~background-~
+    - ~background~
+    - ~background+~
+  - One on-color (~on-background~) per group.
+- And four text colors that on-colors are picked from.
+
+Which totals to
+#+begin_src lisp
+  (+ (* (+ 3 1) 8) 4)
+#+end_src
 
 This rationale is loosely based on [[https://m2.material.io/design/material-theming/implementing-your-theme.html][Google Material Design Guidelines]].
 
@@ -46,55 +66,100 @@ This rationale is loosely based on [[https://m2.material.io/design/material-them
 ** Example
 
 #+begin_src lisp
-;; When you omit the values for on-colors, they're automatically set to
-;; either black or white, according to what achieves a better contrast.
-(defvar my-theme (make-instance 'theme:theme
-                                :background-color "black"
-                                :primary-color "#e5cfef"
-                                :secondary-color "#7042a2"
-                                :accent-color "#b8e2b8"
-                                :font-family "Iosevka"))
+;; When you omit the values for on-colors, they're automatically set
+;; to either `theme:text-color' or `theme:contrast-text-color',
+;; according to what achieves a better contrast.
+(defvar my-theme (make-instance
+                  'theme:theme
+                  :text-color "#1e1e1e"
+                  :contrast-text-color "white"
+                  :background-color "#f0f0f0"
+                  :background-color+ "white"
+                  :success-color- "#d8f8e1"
+                  :success-color "#aee5be"
+                  :success-color+ "#8cca8c"
+                  :warning-color- "#ffe9e9"
+                  :warning-color "#f3b5af"
+                  :warning-color+ "#d84a4f"
+                  :highlight-color- "#ffefbf"
+                  :highlight-color "#fac090"
+                  :highlight-color+ "#d7c20a"
+                  :action-color "#5fcfff"
+                  :primary-color "#595959"
+                  :secondary-color "#e6e6e6"
+                  :codeblock-color- "#354fcf"
+                  :codeblock-color "#003497"
+                  :codeblock-color+ "#0000b0"
+                  :font-family "Iosevka")
+  "A theme roughly inspired by Modus Operandi Emacs theme.
+Some (primary, secondary) +/- colors are auto-generated from the main color.")
 ;; =>
-;; BACKGROUND-COLOR        = "black"
-;; ON-BACKGROUND-COLOR     = "white"
-;; BACKGROUND-ALT-COLOR    = "#eeeeee"
-;; ON-BACKGROUND-ALT-COLOR = "black"
-;; PRIMARY-COLOR           = "#e5cfef"
-;; ON-PRIMARY-COLOR        = "black"
-;; PRIMARY-ALT-COLOR       = "#686868"
-;; ON-PRIMARY-ALT-COLOR    = "white"
-;; SECONDARY-COLOR         = "#7042a2"
-;; ON-SECONDARY-COLOR      = "white"
-;; SECONDARY-ALT-COLOR     = "#909090"
-;; ON-SECONDARY-ALT-COLOR  = "black"
-;; ACCENT-COLOR            = "#b8e2b8"
-;; ON-ACCENT-COLOR         = "black"
-;; ACCENT-ALT-COLOR        = "#178DCC"
-;; ON-ACCENT-ALT-COLOR     = "black"
-;; WARNING-COLOR           = "#AF1923"
-;; ON-WARNING-COLOR        = "white"
-;; WARNING-ALT-COLOR       = "#D2232E"
-;; ON-WARNING-ALT-COLOR    = "white"
-;; FONT-FAMILY             = "Iosevka"
+;; ACTION-COLOR        = "#5fcfff"
+;; ACTION-COLOR+       = "#72cdfe"
+;; ACTION-COLOR-       = "#178dcc"
+;; BACKGROUND-COLOR    = "#f0f0f0"
+;; BACKGROUND-COLOR+   = "white"
+;; BACKGROUND-COLOR-   = "#ececec"
+;; CODEBLOCK-COLOR     = "#003497"
+;; CODEBLOCK-COLOR+    = "#0000b0"
+;; CODEBLOCK-COLOR-    = "#354fcf"
+;; CONTRAST-TEXT-COLOR = "white"
+;; FONT-FAMILY         = "Iosevka"
+;; HIGHLIGHT-COLOR     = "#fac090"
+;; HIGHLIGHT-COLOR+    = "#d7c20a"
+;; HIGHLIGHT-COLOR-    = "#ffefbf"
+;; ON-ACTION-COLOR     = "#1e1e1e"
+;; ON-BACKGROUND-COLOR = "#1e1e1e"
+;; ON-CODEBLOCK-COLOR  = "white"
+;; ON-HIGHLIGHT-COLOR  = "#1e1e1e"
+;; ON-PRIMARY-COLOR    = "white"
+;; ON-SECONDARY-COLOR  = "#1e1e1e"
+;; ON-SUCCESS-COLOR    = "#1e1e1e"
+;; ON-WARNING-COLOR    = "#1e1e1e"
+;; PRIMARY-COLOR       = "#595959"
+;; PRIMARY-COLOR+      = "#474747"
+;; PRIMARY-COLOR-      = "#686868"
+;; SECONDARY-COLOR     = "#e6e6e6"
+;; SECONDARY-COLOR+    = "#bfbfbf"
+;; SECONDARY-COLOR-    = "#909090"
+;; SUCCESS-COLOR       = "#aee5be"
+;; SUCCESS-COLOR+      = "#8cca8c"
+;; SUCCESS-COLOR-      = "#d8f8e1"
+;; TEXT-COLOR          = "#1e1e1e"
+;; TEXT-COLOR+         = "#000000"
+;; TEXT-COLOR-         = "#19191a"
+;; WARNING-COLOR       = "#f3b5af"
+;; WARNING-COLOR+      = "#d84a4f"
+;; WARNING-COLOR-      = "#ffe9e9"
 
 ;; Set the theme in Nyxt's config file
 (define-configuration browser ((theme my-theme)))
 #+end_src
 
+And here's how it looks in Nyxt manual:
+[[./custom-modus-theme.png]]
+
 * Defaults
 
 ** Colors
 
-We suggest following the WCGA (Web Content Accessibility Guidelines) with
+We suggest following the WCAG (Web Content Accessibility Guidelines) with
 respect to contrast ratios.  The lowest standard (Level AA) requires a ratio of
 4.5:1, while a higher standard requires 7:1.
+
+The distribution of contrast in groups is:
+- Minus color (~background-~) :: at least 4.5 contrast ratio against the
+  on-color.
+- Regular color (~background~) :: at least 6.5.
+- Plus color (~background+~) :: at least 8.5.
 
 *** Light theme
 
 The scheme below gives a taste of the default light palette.
 
-[[file:default-light-theme.png]]
+[[./light-theme.svg]]
 
+**** COMMENT Contrast ratios for light theme (outdated!)
 Find the contrast ratio of each pair of colors in the table below.
 
 | Color Name       | Value   | ~on-*~ Value | Contrast |
@@ -119,7 +184,9 @@ Find the contrast ratio of each pair of colors in the table below.
 
 The scheme below gives a taste of the default dark palette.
 
-[[file:default-dark-theme.png]]
+[[./dark-theme.svg]]
+
+**** COMMENT Contrast ratios for dark theme (outdated!)
 
 Find the contrast ratio of each pair of colors in the table below.
 
@@ -143,13 +210,14 @@ Find the contrast ratio of each pair of colors in the table below.
 
 ** Fonts
 
-The font family defaults to Helvetica Neue and Helvetica and is used for
-headings in the built-in help system.
+The font family defaults to Public Sans and is used for headings in the built-in
+help system.
 
 ** Remarks
 
-~on-colors~, when omitted, are set to either white or black, depending on what
-results in a higher contrast ratio with its corresponding ~color~.
+~on-colors~, when omitted, are set to either ~text~ or ~contrast-text~,
+depending on which results in a higher contrast ratio with its corresponding
+~color~.
 
 One might be tempted to think that ~on-colors~ are meant to be used solely for
 text, but the principle holds more generality, when placing tiny elements over
