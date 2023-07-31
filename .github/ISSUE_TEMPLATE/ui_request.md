@@ -7,33 +7,26 @@ assignees: ''
 
 ---
 
-**Purpose**
+**Purpose of request:**
 
-_What is the purpose of this proposal?_
 
-**What is your proposed change?**
+**Describe your proposed change:**
 
-_A clear and concise description of the proposed change._
 
-**Rationale**
+**Why do you believe this to be an improvement?**
 
-_Why do you believe this to be an improvement?_
 
-**Constraints**
 
-_What are the constraints?_
+**Additional context/User story:**
 
-**Additional context/User story**
 
-_Add any other context here._
+**Screenshots/Mock ups:**
 
-**Screenshots/Mock ups**
 
-_Attach any relevant screenshots/images here._
+---
 
-# Pre-Build Checklist:
-_talk through the change with someone, then come back and mark off what you can_
-- [ ] I have consulted with the team.
+### Pre-Build Checklist:
+- [ ] Discussion has occured.
 - [ ] One or more developers have signed off on this change.
 - [ ] One or more user researchers have signed off on this change.
 
