@@ -23,14 +23,14 @@
   nx-fruit lets you discover the fruit of the day!  A simple extension that you
   can use to test your Nyxt installation (i.e. can you load extensions).
 
-- [[https://git.sr.ht/~mmoreno/nx-router/][nx-router]] ::
-  nx-router is a URL routing extension for Nyxt.  You can set up URL redirects,
-  block lists, open resources with external applications, all in a cohesive
-  configuration language.
+- [[https://github.com/migalmoreno/nx-router][nx-router]] ::
+  nx-router is a URL routing extension for Nyxt.  It provides a
+  batteries-included abstraction around request resource handlers via =router=
+  objects.
 
-- [[https://github.com/mianmoreno/nx-tailor][nx-tailor]] ::
-  nx-tailor is a tailor for all-things Nyxt themes which helps you manage them,
-  change them on-the-fly, and discover new ones in a unified interface.
+- [[https://github.com/migalmoreno/nx-tailor][nx-tailor]] ::
+  nx-tailor is a wrapper around =nyxt/theme= that allows rule-based runtime theme
+  switching.
 
 - [[https://github.com/rolling-robot/nx-zotero][nx-zotero]] ::
   nx-zotero is a simple Zotero connector for Nyxt.
