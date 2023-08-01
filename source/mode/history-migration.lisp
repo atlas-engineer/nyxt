@@ -14,16 +14,21 @@ browsers."))
 
 (define-class external-browser-history-source (prompter:source)
   ((prompter:name "History files")
-   (browser-pattern :accessor browser-pattern :initarg :browser-pattern)
+   (browser-lambda :accessor browser-lambda :initarg :browser-lambda)
    (prompter:constructor
     (lambda (source)
       (echo "Searching for history file. This may take some time.")
-      (or (sera:filter #'str:non-empty-string-p
-                       (str:split #\newline
-                                  (nth-value 0
-                                             (uiop:run-program (list "find" (uiop:native-namestring "~/")
-                                                                     "-regex" (browser-pattern source))
-                                                               :output :string))))
+      (or (let ((results '()))
+            (uiop:collect-sub*directories
+             (user-homedir-pathname)
+             (constantly t)
+             (lambda (subdir)
+               (equal (iolib/os:file-kind subdir) :directory))
+             (lambda (subdir)
+               (let ((browser-history-file (funcall* (browser-lambda source) subdir)))
+                 (when browser-history-file
+                   (push browser-history-file results)))))
+            results)
           (echo-warning "No history files found."))))))
 
 (defmacro define-history-import-command (name docstring &key sql-query file-path)
@@ -61,32 +66,50 @@ Or the equivalent columns for the browser in question."
   :sql-query "SELECT url, title, last_visit_date/1000000, visit_count FROM moz_places WHERE last_visit_date not null"
   :file-path (prompt1 :prompt "Choose Mozilla Firefox places.sqlite file"
                       :sources (make-instance 'external-browser-history-source
-                                              :browser-pattern ".*/places\.sqlite$")))
+                                              :browser-lambda (lambda (subdir)
+                                                                (when (uiop:file-exists-p (uiop:merge-pathnames* "places.sqlite" subdir))
+                                                                  (uiop:merge-pathnames* "places.sqlite" subdir))))))
 
 (define-history-import-command import-history-from-google-chrome
   "Import history from Google Chrome."
   :sql-query "SELECT url, title, last_visit_time/1000000-11644473600, visit_count FROM urls"
   :file-path (prompt1 :prompt "Choose Google Chrome History file"
                       :sources (make-instance 'external-browser-history-source
-                                              :browser-pattern ".*/google-chrome/Default/History$")))
+                                              :browser-lambda (lambda (subdir)
+                                                                (when (and (string= "google-chrome"
+                                                                                    (nfiles:basename (nfiles:parent subdir)))
+                                                                           (uiop:file-exists-p (uiop:merge-pathnames* "History" subdir)))
+                                                                  (uiop:merge-pathnames* "History" subdir))))))
 
 (define-history-import-command import-history-from-chromium
   "Import history from Chromium."
   :sql-query "SELECT url, title, last_visit_time/1000000-11644473600, visit_count FROM urls"
   :file-path (prompt1 :prompt "Choose Chromium History file"
                       :sources (make-instance 'external-browser-history-source
-                                              :browser-pattern ".*/chromium/Default/History$")))
+                                              :browser-lambda (lambda (subdir)
+                                                                (when (and (string= "chromium"
+                                                                                    (nfiles:basename (nfiles:parent subdir)))
+                                                                           (uiop:file-exists-p (uiop:merge-pathnames* "History" subdir)))
+                                                                  (uiop:merge-pathnames* "History" subdir))))))
 
 (define-history-import-command import-history-from-brave
   "Import history from Brave."
   :sql-query "SELECT url, title, last_visit_time/1000000-11644473600, visit_count FROM urls"
   :file-path (prompt1 :prompt "Choose Brave History file"
                       :sources (make-instance 'external-browser-history-source
-                                              :browser-pattern ".*/BraveSoftware/Brave-Browser/Default/History$")))
+                                              :browser-lambda (lambda (subdir)
+                                                                (when (and (string= "Brave-Browser"
+                                                                                    (nfiles:basename (nfiles:parent subdir)))
+                                                                           (uiop:file-exists-p (uiop:merge-pathnames* "History" subdir)))
+                                                                  (uiop:merge-pathnames* "History" subdir))))))
 
 (define-history-import-command import-history-from-vivaldi
   "Import history from Vivaldi."
   :sql-query "SELECT url, title, last_visit_time/1000000-11644473600, visit_count FROM urls"
   :file-path (prompt1 :prompt "Choose Vivaldi History file"
                       :sources (make-instance 'external-browser-history-source
-                                              :browser-pattern ".*/vivaldi(-snapshot)?/Default/History$")))
+                                              :browser-lambda (lambda (subdir)
+                                                                (when (and (str:starts-with-p "vivaldi"
+                                                                                              (nfiles:basename (nfiles:parent subdir)))
+                                                                           (uiop:file-exists-p (uiop:merge-pathnames* "History" subdir)))
+                                                                  (uiop:merge-pathnames* "History" subdir))))))
