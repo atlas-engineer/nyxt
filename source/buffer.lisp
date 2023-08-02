@@ -771,14 +771,14 @@ Also see `panel-page'."))
    (display-tabs-by-last-access-p
     nil
     :documentation "Whether tabs are dynamically ordered by last access time.")
-   (glyph-left (alexandria:read-file-into-string
-                (asdf:system-relative-pathname :nyxt "assets/left.svg")))
-   (glyph-right (alexandria:read-file-into-string
-                 (asdf:system-relative-pathname :nyxt "assets/right.svg")))
-   (glyph-reload (alexandria:read-file-into-string
-                  (asdf:system-relative-pathname :nyxt "assets/reload.svg")))
-   (glyph-lambda (alexandria:read-file-into-string
-                  (asdf:system-relative-pathname :nyxt "assets/lambda.svg")))
+   (glyph-left #.(alexandria:read-file-into-string
+                  (asdf:system-relative-pathname :nyxt "assets/left.svg")))
+   (glyph-right #.(alexandria:read-file-into-string
+                   (asdf:system-relative-pathname :nyxt "assets/right.svg")))
+   (glyph-reload #.(alexandria:read-file-into-string
+                    (asdf:system-relative-pathname :nyxt "assets/reload.svg")))
+   (glyph-lambda #.(alexandria:read-file-into-string
+                    (asdf:system-relative-pathname :nyxt "assets/lambda.svg")))
    (style (theme:themed-css (theme *browser*)
             `(body
               :line-height "24px"
