@@ -184,7 +184,8 @@ Return nil on error."
 
 ;; Load all static files into the Lisp Image.
 (mapcar (lambda (static-file)
-          (setf (gethash (asdf:component-name static-file) *static-data*)
-                (alexandria:read-file-into-byte-vector
-                 (asdf:component-pathname static-file))))
+          (when (uiop:file-exists-p (asdf:component-pathname static-file))
+            (setf (gethash (asdf:component-name static-file) *static-data*)
+                  (alexandria:read-file-into-byte-vector
+                   (asdf:component-pathname static-file)))))
         (nyxt/static:collect-static-file-components :nyxt/assets))
