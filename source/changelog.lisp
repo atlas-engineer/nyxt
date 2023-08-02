@@ -813,7 +813,8 @@ buffers.")
   (:ul
    (:li "Add commands for importing history from other browsers.
 Currently, the supported browsers are Firefox, Google Chrome,
-Chromium, Brave and Vivaldi.")))
+Chromium, Brave and Vivaldi.")
+   (:li "Add Public Sans font and set it as the default.")))
 
 (define-version "4-pre-release-1"
   (:li "When on pre-release, push " (:code "X-pre-release")
