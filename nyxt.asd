@@ -273,6 +273,33 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                          (test-op "nyxt/analysis")
                          (test-op "nyxt/theme"))))
 
+(defsystem "nyxt/assets"
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-system
+  :pathname #p"NYXT:assets;"
+  :serial t
+  :components ((:module "Fonts"
+                :pathname "fonts"
+                :components
+                ((:static-file "PublicSans-Black.woff")
+                 (:static-file "PublicSans-BlackItalic.woff")
+                 (:static-file "PublicSans-Bold.woff")
+                 (:static-file "PublicSans-BoldItalic.woff")
+                 (:static-file "PublicSans-ExtraBold.woff")
+                 (:static-file "PublicSans-ExtraBoldItalic.woff")
+                 (:static-file "PublicSans-ExtraLight.woff")
+                 (:static-file "PublicSans-ExtraLightItalic.woff")
+                 (:static-file "PublicSans-Italic.woff")
+                 (:static-file "PublicSans-Light.woff")
+                 (:static-file "PublicSans-LightItalic.woff")
+                 (:static-file "PublicSans-Medium.woff")
+                 (:static-file "PublicSans-MediumItalic.woff")
+                 (:static-file "PublicSans-Regular.woff")
+                 (:static-file "PublicSans-SemiBold.woff")
+                 (:static-file "PublicSans-SemiBoldItalic.woff")
+                 (:static-file "PublicSans-Thin.woff")
+                 (:static-file "PublicSans-ThinItalic.woff")))))
+
 (defsystem "nyxt/submodules"
   :defsystem-depends-on ("nasdf")
   :class :nasdf-submodule-system)
@@ -418,7 +445,8 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
   :class :nasdf-system
   :depends-on (cl-cffi-gtk
                cl-webkit2
-               nyxt)
+               nyxt
+               nyxt/assets)
   :pathname #p"NYXT:source;"
   :serial t
   :around-compile "NASDF:FAIL-ON-WARNINGS"
