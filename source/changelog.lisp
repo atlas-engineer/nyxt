@@ -808,3 +808,9 @@ buffers.")
      (:li "Redesign " (:a :href (nyxt-url 'new) "start page") ".")
      (:li "Fix styling of progress bar.")
      (:li "Fix styling of prompt buffer's input area."))))
+
+(define-version "3.X.Y"
+  (:ul
+   (:li "Add commands for importing history from other browsers.
+Currently, the supported browsers are Firefox, Google Chrome,
+Chromium, Brave and Vivaldi.")))
