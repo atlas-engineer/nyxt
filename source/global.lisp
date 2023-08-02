@@ -175,10 +175,23 @@ Return nil on error."
 (defvar *static-data* (make-hash-table :test 'equal)
   "Static data for usage in Nyxt.")
 
-;; Load all static files into the Lisp Image.
-(mapcar (lambda (static-file)
-          (when (uiop:file-exists-p (asdf:component-pathname static-file))
-            (setf (gethash (asdf:component-name static-file) *static-data*)
-                  (alexandria:read-file-into-byte-vector
-                   (asdf:component-pathname static-file)))))
-        (nyxt/static:collect-static-file-components :nyxt/assets))
+(setf (gethash "PublicSans-ThinItalic.woff" *static-data*) (alexandria:read-file-into-byte-vector (asdf:system-relative-pathname :nyxt "assets/fonts/PublicSans-ThinItalic.woff")))
+(setf (gethash "PublicSans-Thin.woff" *static-data*) (alexandria:read-file-into-byte-vector (asdf:system-relative-pathname :nyxt "assets/fonts/PublicSans-Thin.woff")))
+(setf (gethash "PublicSans-SemiBoldItalic.woff" *static-data*) (alexandria:read-file-into-byte-vector (asdf:system-relative-pathname :nyxt "assets/fonts/PublicSans-SemiBoldItalic.woff")))
+(setf (gethash "PublicSans-SemiBold.woff" *static-data*) (alexandria:read-file-into-byte-vector (asdf:system-relative-pathname :nyxt "assets/fonts/PublicSans-SemiBold.woff")))
+(setf (gethash "PublicSans-Regular.woff" *static-data*) (alexandria:read-file-into-byte-vector (asdf:system-relative-pathname :nyxt "assets/fonts/PublicSans-Regular.woff")))
+(setf (gethash "PublicSans-MediumItalic.woff" *static-data*) (alexandria:read-file-into-byte-vector (asdf:system-relative-pathname :nyxt "assets/fonts/PublicSans-MediumItalic.woff")))
+(setf (gethash "PublicSans-Medium.woff" *static-data*) (alexandria:read-file-into-byte-vector (asdf:system-relative-pathname :nyxt "assets/fonts/PublicSans-Medium.woff")))
+(setf (gethash "PublicSans-LightItalic.woff" *static-data*) (alexandria:read-file-into-byte-vector (asdf:system-relative-pathname :nyxt "assets/fonts/PublicSans-LightItalic.woff")))
+(setf (gethash "PublicSans-Light.woff" *static-data*) (alexandria:read-file-into-byte-vector (asdf:system-relative-pathname :nyxt "assets/fonts/PublicSans-Light.woff")))
+(setf (gethash "PublicSans-Italic.woff" *static-data*) (alexandria:read-file-into-byte-vector (asdf:system-relative-pathname :nyxt "assets/fonts/PublicSans-Italic.woff")))
+(setf (gethash "PublicSans-ExtraLightItalic.woff" *static-data*) (alexandria:read-file-into-byte-vector (asdf:system-relative-pathname :nyxt "assets/fonts/PublicSans-ExtraLightItalic.woff")))
+(setf (gethash "PublicSans-ExtraLight.woff" *static-data*) (alexandria:read-file-into-byte-vector (asdf:system-relative-pathname :nyxt "assets/fonts/PublicSans-ExtraLight.woff")))
+(setf (gethash "PublicSans-ExtraBoldItalic.woff" *static-data*) (alexandria:read-file-into-byte-vector (asdf:system-relative-pathname :nyxt "assets/fonts/PublicSans-ExtraBoldItalic.woff")))
+(setf (gethash "PublicSans-ExtraBold.woff" *static-data*) (alexandria:read-file-into-byte-vector (asdf:system-relative-pathname :nyxt "assets/fonts/PublicSans-ExtraBold.woff")))
+(setf (gethash "PublicSans-BoldItalic.woff" *static-data*) (alexandria:read-file-into-byte-vector (asdf:system-relative-pathname :nyxt "assets/fonts/PublicSans-BoldItalic.woff")))
+(setf (gethash "PublicSans-Bold.woff" *static-data*) (alexandria:read-file-into-byte-vector (asdf:system-relative-pathname :nyxt "assets/fonts/PublicSans-Bold.woff")))
+(setf (gethash "PublicSans-BlackItalic.woff" *static-data*) (alexandria:read-file-into-byte-vector (asdf:system-relative-pathname :nyxt "assets/fonts/PublicSans-BlackItalic.woff")))
+(setf (gethash "PublicSans-Black.woff" *static-data*) (alexandria:read-file-into-byte-vector (asdf:system-relative-pathname :nyxt "assets/fonts/PublicSans-Black.woff")))
+
+
