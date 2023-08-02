@@ -184,6 +184,7 @@
           cl-str
           cl-slime-swank
           cl-slynk
+          cl-sqlite
           cl-tld
           cl-trivia
           cl-trivial-clipboard

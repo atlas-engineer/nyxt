@@ -600,3 +600,7 @@
 	path = _build/cl-json
 	url = https://github.com/sharplispers/cl-json
 	shallow = true
+[submodule "_build/cl-sqlite"]
+	path = _build/cl-sqlite
+	url = https://github.com/TeMPOraL/cl-sqlite
+	shallow = true

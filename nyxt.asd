@@ -111,6 +111,7 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                clss
                spinneret
                slynk
+               sqlite
                swank
                trivia
                trivial-clipboard
@@ -240,6 +241,7 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                  (:file "emacs")
                  (:file "expedition")
                  (:file "force-https")
+                 (:file "history-migration")
                  (:file "macro-edit")
                  (:file "no-image")
                  (:file "no-procrastinate" :depends-on ("blocker"))

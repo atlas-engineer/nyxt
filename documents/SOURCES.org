@@ -27,6 +27,7 @@ Experimental support.
 - cl-ppcre-unicode
 - cl-prevalence
 - cl-qrencode
+- cl-sqlite
 - cl-tld
 - closer-mop
 - cluffer
