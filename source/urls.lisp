@@ -457,6 +457,13 @@ guarantee of the same result."
                 (setf (url buffer) (quri:uri url))
                 (apply (form internal-page) args))))))))
 
+(define-internal-scheme "nyxt-resource"
+    (lambda (url buffer)
+      (declare (ignore buffer))
+      (alexandria:read-file-into-byte-vector
+       (asdf:system-relative-pathname :nyxt (quri:uri-path (url url)))))
+  :secure-p t)
+
 (-> lisp-url (&rest t &key
                     (:id string)
                     (:buffer t) ;; `document-buffer', actually.
