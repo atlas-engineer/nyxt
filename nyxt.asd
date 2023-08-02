@@ -139,7 +139,8 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                  (:file "keyscheme")
                  (:file "conditions")
                  (:file "debug")
-                 (:file "user-interface")))
+                 (:file "user-interface")
+                 (:file "static-components")))
                (:module "Core"
                 :pathname ""
                 :serial t
