@@ -460,8 +460,10 @@ guarantee of the same result."
 (define-internal-scheme "nyxt-resource"
     (lambda (url buffer)
       (declare (ignore buffer))
-      (alexandria:read-file-into-byte-vector
-       (asdf:system-relative-pathname :nyxt (quri:uri-path (url url)))))
+      (multiple-value-bind (data exists)
+          (gethash (quri:uri-path (url url)) *static-data*)
+        (declare (ignore exists))
+        data))
   :secure-p t)
 
 (-> lisp-url (&rest t &key
