@@ -457,6 +457,15 @@ guarantee of the same result."
                 (setf (url buffer) (quri:uri url))
                 (apply (form internal-page) args))))))))
 
+(define-internal-scheme "nyxt-resource"
+    (lambda (url buffer)
+      (declare (ignore buffer))
+      (multiple-value-bind (data exists)
+          (gethash (quri:uri-path (url url)) *static-data*)
+        (declare (ignore exists))
+        data))
+  :secure-p t)
+
 (-> lisp-url (&rest t &key
                     (:id string)
                     (:buffer t) ;; `document-buffer', actually.

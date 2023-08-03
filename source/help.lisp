@@ -200,6 +200,7 @@ The value is saved to clipboard."
         :display "flex"
         :flex-direction "row")
       `(.logo
+        :color ,theme:on-background
         :width "100px"
         :height "100px"
         :padding-top "3px"
@@ -242,7 +243,7 @@ The value is saved to clipboard."
            :title "Switch between Emacs/vi/CUA key bindings, set home page URL, and zoom level."
            "Settings"))
       (:div :class "main"
-            (:div :class "logo" (:raw +logo-svg+))
+            (:div :class "logo" (:raw (glyph-logo *browser*)))
             (:div
              (:div (:nbutton :class "set-url" :text "Set-URL"
                              '(set-url :prefill-current-url-p nil))

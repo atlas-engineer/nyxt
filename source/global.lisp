@@ -178,4 +178,11 @@ Return nil on error."
     (when (and commits (not (zerop commits)))
       (push-feature "UNSTABLE"))))
 
-(defvar +logo-svg+ (alexandria:read-file-into-string (asdf:system-relative-pathname :nyxt "assets/nyxt.svg")))
+(export-always '*static-data*)
+(defvar *static-data* (make-hash-table :test 'equal)
+  "Static data for usage in Nyxt.")
+
+(mapcar (lambda (i)
+          (setf (gethash (file-namestring i) *static-data*)
+                (alexandria:read-file-into-byte-vector i)))
+        (uiop:directory-files (asdf:system-relative-pathname :nyxt "assets/fonts/")))
