@@ -1218,10 +1218,6 @@ See `finalize-buffer'."
       (nyxt::print-message "")
       (setf (url-at-point buffer) (quri:uri "")))))
 
-(define-ffi-method ffi-window-make ((browser gtk-browser))
-  "Make a window."
-  (make-instance 'window))
-
 (define-ffi-method ffi-window-to-foreground ((window gtk-window))
   "Show window in foreground."
   (unless nyxt::*headless-p*
