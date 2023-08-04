@@ -97,8 +97,8 @@ See the `scheme' documentation for the format and the number of values that
 contains an `nyxt/mode/editor:editor-mode' instance (or a subclass thereof)."))
 
 (defmethod nyxt:default-modes append ((buffer editor-buffer))
-  "Add `editor-mode' to `editor-buffer' by default."
-  (list 'editor-mode))
+  "Add `editor-mode' and `plaintext-editor-mode' to `editor-buffer' by default."
+  (list 'editor-mode 'plaintext-editor-mode))
 
 (defmethod nyxt:default-modes :around ((buffer editor-buffer))
   ;; REVIEW: Really remove document-mode from editor-buffer?
