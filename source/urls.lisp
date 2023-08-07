@@ -460,10 +460,7 @@ guarantee of the same result."
 (define-internal-scheme "nyxt-resource"
     (lambda (url buffer)
       (declare (ignore buffer))
-      (multiple-value-bind (data exists)
-          (gethash (quri:uri-path (url url)) *static-data*)
-        (declare (ignore exists))
-        data))
+      (nth-value 0 (gethash (quri:uri-path (url url)) *static-data*)))
   :secure-p t)
 
 (-> lisp-url (&rest t &key
