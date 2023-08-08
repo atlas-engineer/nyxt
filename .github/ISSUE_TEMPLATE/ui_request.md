@@ -26,7 +26,7 @@ assignees: ''
 ---
 
 ### Pre-Build Checklist:
-- [ ] Discussion has occured.
+- [ ] Discussion has occurred.
 - [ ] One or more developers have signed off on this change.
 - [ ] One or more user researchers have signed off on this change.
 
