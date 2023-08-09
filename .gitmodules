@@ -587,7 +587,7 @@
 	shallow = true
 [submodule "_build/cl-colors2_fixed"]
 	path = _build/cl-colors2
-	url = https://notabug.org/cage/cl-colors2
+	url = https://codeberg.org/cage/cl-colors2
 	shallow = false # Notabug does not advertize commits.
 [submodule "_build/chipz"]
 	path = _build/chipz
