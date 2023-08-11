@@ -508,7 +508,9 @@ Return the persisted file as second value."
 
     (values config target))
   #-(and unix (not darwin))
-  (log:warn "Only supported on GNU / BSD systems running XDG-compatible desktop environments."))
+  (progn
+    (declare (ignore name targets))
+    (log:warn "Only supported on GNU / BSD systems running XDG-compatible desktop environments.")))
 
 
 ;; TODO: Report compilation errors.
