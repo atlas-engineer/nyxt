@@ -27,7 +27,7 @@ For user-facing controls, see `*run-from-repl-p*' and `*debug-on-error*'.")
 (declaim (type (or string null) *open-program*))
 (defvar *open-program*
   #+darwin "open"
-  #+(or linux bsd) "xdg-open"
+  #+(and (or linux bsd) (not darwin)) "xdg-open"
   #-(or linux bsd darwin) nil
   "The program to open unsupported files with.")
 
