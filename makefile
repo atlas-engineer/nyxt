@@ -19,9 +19,13 @@ FLATPAK_APP_ID = engineer.atlas.Nyxt
 FLATPAK_MANIFEST := $(FLATPAK_APP_ID).yaml
 FLATPAK_EXPORT_REPOSITORY = _build/nyxt-flatpak-repository
 
-export NYXT_SUBMODULES=true
-export NYXT_RENDERER=gi-gtk
-export NASDF_USE_LOGICAL_PATHS=true
+NYXT_SUBMODULES ?= true
+NYXT_RENDERER ?= gi-gtk
+NASDF_USE_LOGICAL_PATHS ?= true
+
+export NYXT_SUBMODULES
+export NYXT_RENDERER
+export NASDF_USE_LOGICAL_PATHS
 
 .PHONY: help
 help:
