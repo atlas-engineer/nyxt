@@ -508,6 +508,8 @@ Return the persisted file as second value."
 
     (values config target))
   #-(and unix (not darwin))
+  (declare (ignore name))
+  (declare (ignore targets))
   (log:warn "Only supported on GNU / BSD systems running XDG-compatible desktop environments."))
 
 
