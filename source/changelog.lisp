@@ -814,7 +814,9 @@ buffers.")
    (:li "Add commands for importing history from other browsers.
 Currently, the supported browsers are Firefox, Google Chrome,
 Chromium, Brave and Vivaldi.")
-   (:li "Add Public Sans font and set it as the default.")))
+   (:li "Add Public Sans font and set it as the default.")
+   (:li "Fix keyscheme configuration via "
+          (:a :href (nyxt-url 'common-settings) "Common Settings Menu") ".")))
 
 (define-version "4-pre-release-1"
   (:li "When on pre-release, push " (:code "X-pre-release")
