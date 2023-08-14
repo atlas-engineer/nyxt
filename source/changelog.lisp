@@ -809,14 +809,21 @@ buffers.")
      (:li "Fix styling of progress bar.")
      (:li "Fix styling of prompt buffer's input area."))))
 
-(define-version "3.X.Y"
-  (:ul
-   (:li "Add commands for importing history from other browsers.
-Currently, the supported browsers are Firefox, Google Chrome,
-Chromium, Brave and Vivaldi.")
-   (:li "Add Public Sans font and set it as the default.")
-   (:li "Fix keyscheme configuration via "
+(define-version "3.6.0"
+  (:nsection :title "Features"
+    (:ul
+     (:li "Add commands for importing history from Firefox, Google Chrome,
+Chromium, Brave and Vivaldi. For instance, "
+          (:nxref :command 'nyxt/mode/history-migration:import-history-from-firefox) ".")))
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix keyscheme configuration via "
           (:a :href (nyxt-url 'common-settings) "Common Settings Menu") ".")))
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "Add Public Sans font and set it as the default.")
+     (:li "Redesign status buffer buttons.")
+     (:li "Minor review of " (:a :href (nyxt-url 'new) "start page") "."))))
 
 (define-version "4-pre-release-1"
   (:li "When on pre-release, push " (:code "X-pre-release")
