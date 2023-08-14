@@ -59,7 +59,10 @@
     :writer nil))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:documentation "XXX:"))
+  (:documentation "A setting is a convenient way to keep track of and handle
+configuration in Nyxt. It can handle updating the target class in
+the auto-config file, a set of live instances and all new instances.
+See `apply-setting'."))
 
 ;; TODO: Allow re-init with shared-initialize?
 (defmethod initialize-instance :after ((setting setting) &key)
@@ -74,7 +77,8 @@
     :type t))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:documentation "XXX:"))
+  (:documentation "A slot setting is used for configuring slots in Nyxt by
+providing a SLOT-NAME and SLOT-VALUE."))
 
 (define-class generic-setting (setting)
   ((handler
@@ -82,7 +86,8 @@
     :type function))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:documentation "XXX:"))
+  (:documentation "A generic setting is used for configuring Nyxt by applying
+a HANDLER function to the target class."))
 
 (defmethod extend-configuration ((setting generic-setting)) ; TODO: Better name?
   "Configure SETTING's TARGET-CLASS-NAME for new instances.
@@ -107,6 +112,10 @@ See `apply-setting'."
     :append t
     :fn (lambda (object)
           (declare (ignorable object))
+          ;; TODO: Fix the writer lookup.
+          ;; `slot-definition-writers' only works on direct slot definitions.
+          ;; We need to be able to find a slot writer even if it's defined
+          ;; in a superclass. This is necessary for `buffer-setting' to work.
           (alex:if-let ((writer (first (closer-mop:slot-definition-writers
                                  (mopu:get-slot-definition (target-class-name setting) (slot-name setting))))))
                 (funcall (fdefinition writer) (new-value setting) object)
@@ -149,6 +158,8 @@ automatically filtered out. "
                                            (funcall (all-instances setting))))
                                  :key #'sera:class-name-of))))
     (mapc (lambda (instance)
+            ;; TODO: Fix the writer lookup.
+            ;; See comment in `extend-configuration'.
             (alex:if-let ((writer (first (closer-mop:slot-definition-writers
                                  (mopu:get-slot-definition (target-class-name setting) (slot-name setting))))))
                 (funcall (fdefinition writer) (new-value setting) instance)
@@ -191,7 +202,7 @@ automatically filtered out. "
     :writer nil))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:documentation "XXX:"))
+  (:documentation "A browser setting is used for configuring the browser instance."))
 
 (define-class buffer-setting (setting)
   ((target-class-name
@@ -217,14 +228,17 @@ automatically filtered out. "
     :writer nil))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:documentation "XXX:"))
+  (:documentation "A buffer setting is used for configuring buffers."))
 
 (define-class keystyle (buffer-setting slot-setting)
   ((slot-name 'keyscheme))
-  (:documentation "The slot-value is for example the 'nyxt/emacs-mode:emacs-mode' string."))
+  (:documentation "A setting for configuring the keyscheme.
+The new value is for example the 'nyxt/emacs-mode:emacs-mode' string."))
 
 (define-class zoom-ratio-default-setting (buffer-setting slot-setting)
-  ((slot-name 'zoom-ratio-default)))
+  ((slot-name 'zoom-ratio-default))
+  (:documentation "A setting for configuring `zoom-ratio-default'.
+The new value should be a float."))
 
 (defun find-setting (setting-designator)
   (gethash (intern (symbol-name setting-designator))
