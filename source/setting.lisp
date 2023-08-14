@@ -1,12 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-;; TODO: Change `auto-configure' to accept setting instead?
-
-;; TODO: New package?
 (in-package :nyxt)
 (nyxt:define-package :nyxt/setting
-  (:documentation "User-convenience to configure Nyxt."))
+  (:documentation "Package defining `setting', a user-convenience class to configure Nyxt."))
 (in-package :nyxt/setting)
 
 (defvar *settings* (make-hash-table)
@@ -60,13 +57,11 @@
     :initarg nil
     :reader t
     :writer nil))
-  (:metaclass closer-mop:funcallable-standard-class)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:documentation "XXX:"))
 
-;; TODO: Allow re-init with shared-initilize?
+;; TODO: Allow re-init with shared-initialize?
 (defmethod initialize-instance :after ((setting setting) &key)
   (setf (gethash (name setting) *settings*) setting))
 
@@ -77,8 +72,6 @@
    (new-value
     nil
     :type t))
-  (:metaclass closer-mop:funcallable-standard-class)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:documentation "XXX:"))
@@ -87,8 +80,6 @@
   ((handler
     (alexandria:required-argument 'handler)
     :type function))
-  (:metaclass closer-mop:funcallable-standard-class)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:documentation "XXX:"))
@@ -100,6 +91,7 @@ See `apply-setting'."
    (slot-value (find-class (target-class-name setting)) 'nyxt::customize-hook)
    (make-instance
     'hooks:handler
+    :append t
     :fn (lambda (object)
           (declare (ignorable object))
           (funcall (handler setting) object))
@@ -112,16 +104,16 @@ See `apply-setting'."
    (slot-value (find-class (target-class-name setting)) 'nyxt::customize-hook)
    (make-instance
     'hooks:handler
+    :append t
     :fn (lambda (object)
           (declare (ignorable object))
-          (let* ((writer (first (closer-mop:slot-definition-writers
-                                 (mopu:get-slot-definition 'foo 'age)))))
-            (if writer
+          (alex:if-let ((writer (first (closer-mop:slot-definition-writers
+                                 (mopu:get-slot-definition (target-class-name setting) (slot-name setting))))))
                 (funcall (fdefinition writer) (new-value setting) object)
-                ;; No writer method found:
-                (setf (slot-value object (slot-name setting)) (new-value setting)))))
+                (setf (slot-value object (slot-name setting)) (new-value setting))))
     ;; TODO: Use `:place' / `:value'?
     ;; What if we want to stack the changes?
+    ;; Also, does that ignore the slot writer?
     :name (gensym "EXTEND-CONFIGURATION"))))
 
 ;; TODO: SLOT should be WRITER-NAME (a symbol) instead.
@@ -146,8 +138,8 @@ automatically filtered out. "
   ;; TODO: Factor instance listing?  Do we need it at all?
   ;; For existing instances:
   (let ((instances (delete-duplicates
-                    (sera:filter (if (class-name setting)
-                                     (sera:eqs (class-name setting))
+                    (sera:filter (if (target-class-name setting)
+                                     (sera:eqs (target-class-name setting))
                                      #'identity)
                                  (append (when (and current-instance-p
                                                     (current-instance-p setting))
@@ -157,9 +149,10 @@ automatically filtered out. "
                                            (funcall (all-instances setting))))
                                  :key #'sera:class-name-of))))
     (mapc (lambda (instance)
-            ;; TODO: use writer?  If so, factor code from `extend-configuration'.
-            (setf (slot-value instance (slot-name setting))
-                  (new-value setting)))
+            (alex:if-let ((writer (first (closer-mop:slot-definition-writers
+                                 (mopu:get-slot-definition (target-class-name setting) (slot-name setting))))))
+                (funcall (fdefinition writer) (new-value setting) instance)
+                (setf (slot-value instance (slot-name setting)) (new-value setting))))
           instances)))
 
 (defmethod apply-setting ((setting generic-setting)
@@ -170,12 +163,12 @@ automatically filtered out. "
   (call-next-method)
   (when auto-config-p
     (apply #'nyxt::auto-configure
-           :class-name (class-name setting)
+           :class-name (target-class-name setting)
            :form (handler setting)))
   ;; For existing instances:
   (let ((instances (delete-duplicates
-                    (sera:filter (if (class-name setting)
-                                     (sera:eqs (class-name setting))
+                    (sera:filter (if (target-class-name setting)
+                                     (sera:eqs (target-class-name setting))
                                      #'identity)
                                  (append (when (and current-instance-p
                                                     (current-instance-p setting))
@@ -196,8 +189,6 @@ automatically filtered out. "
     :initarg nil
     :reader t
     :writer nil))
-  (:metaclass closer-mop:funcallable-standard-class)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:documentation "XXX:"))
@@ -224,74 +215,16 @@ automatically filtered out. "
     :initarg nil
     :reader t
     :writer nil))
-  (:metaclass closer-mop:funcallable-standard-class)
-  (:accessor-name-transformer (class*:make-name-transformer name))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:documentation "XXX:"))
-
-;; (define-setting (buffer-setting keystyle) (style)
-;;   "STYLE is for example the 'nyxt/emacs-mode:emacs-mode' string."
-;;   ;; (lambda (input-buffer)
-;;   ;;   (setf (keyscheme input-buffer) (symbol-value (intern (string-upcase style)))))
-;;   (values
-;;    (symbol-value (intern (string-upcase style)))
-;;    keyscheme))
-
-;; (defvar keystyle
-;;   (make-instance 'buffer-slot-setting
-;;                  :slot-name keyscheme
-;;                  :slot-value (symbol-value (intern (string-upcase style)))))
 
 (define-class keystyle (buffer-setting slot-setting)
   ((slot-name 'keyscheme))
   (:documentation "The slot-value is for example the 'nyxt/emacs-mode:emacs-mode' string."))
 
-;; (setf (gethash :keystyle *settings*)
-;;       (lambda (keystyle &key current-instance-p all-instances-p new-instances-p auto-config-p)
-;;         "KEYSTYLE is for example the 'nyxt/emacs-mode:emacs-mode' string."
-;;         (unless (uiop:emptyp keystyle)
-;;           (apply-configuration
-;;            :lambda (lambda (input-buffer)
-;;                      (setf (keyscheme input-buffer) (symbol-value (intern (string-upcase  keystyle)))))
-;;            :class-name 'input-buffer
-;;            :current-instance (when current-instance-p (current-buffer))
-;;            :instances (when all-instances-p (buffer-list))
-;;            :new-instances-p new-instances-p
-;;            :auto-config-p auto-config-p))))
-
-;; (setf (gethash :theme *settings*)
-;;       (lambda (theme &key auto-config-p &allow-other-keys)
-;;         "THEME is for example the 'theme::+light-theme+' string."
-;;         (unless (uiop:emptyp theme)
-;;           (apply-configuration
-;;            :slot 'theme
-;;            :slot-value (symbol-value (intern (string-upcase theme)))
-;;            :current-instance *browser*
-;;            :auto-config-p auto-config-p))))
-
-;; (setf (gethash :default-new-buffer-url *settings*)
-;;       (lambda (url &key new-instances-p auto-config-p &allow-other-keys)
-;;         "URL is a string."
-;;         (unless (uiop:emptyp url)
-;;           (apply-configuration
-;;            :slot 'default-new-buffer-url
-;;            :slot-value url
-;;            :current-instance *browser*
-;;            :new-instances-p new-instances-p
-;;            :auto-config-p auto-config-p))))
-
-;; (setf (gethash :set-zoom-ratio *settings*)
-;;       (lambda (zoom-ratio &key new-instances-p auto-config-p &allow-other-keys)
-;;         "URL is a string."
-;;         (unless (uiop:emptyp url)
-;;           (apply-configuration
-;;            :slot 'current-zoom-ratio
-;;            :slot-value zoom-ratio
-;;            :current-instance (when current-instance-p (current-buffer))
-;;            :instances (when all-instances-p (sera:filter #'document-buffer-p (buffer-list)))
-;;            :new-instances-p new-instances-p
-;;            :auto-config-p auto-config-p))))
+(define-class zoom-ratio-default-setting (buffer-setting slot-setting)
+  ((slot-name 'zoom-ratio-default)))
 
 (defun find-setting (setting-designator)
   (gethash (intern (symbol-name setting-designator))
