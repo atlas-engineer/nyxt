@@ -824,3 +824,15 @@ Chromium, Brave and Vivaldi. For instance, "
      (:li "Add Public Sans font and set it as the default.")
      (:li "Redesign status buffer buttons.")
      (:li "Minor review of " (:a :href (nyxt-url 'new) "start page") "."))))
+
+(define-version "3.X.Y"
+  ;; (:nsection :title "Features"
+  ;;   (:ul
+  ;;    (:li "")))
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix clipboard facilities on X11 and Wayland.")))
+  ;; (:nsection :title "UI/UX"
+  ;;   (:ul
+  ;;    (:li "")))
+  )
