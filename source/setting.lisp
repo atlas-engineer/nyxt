@@ -68,6 +68,20 @@ See `apply-setting'."))
 (defmethod initialize-instance :after ((setting setting) &key)
   (setf (gethash (name setting) *settings*) setting))
 
+;; TODO: Simplify and maybe move to a different package.
+(defun find-writer (class-name slot-name)
+  (if (member slot-name (mopu:direct-slot-names class-name))
+      (fdefinition (first (closer-mop:slot-definition-writers
+                           (mopu:get-slot-definition class-name
+                                                     slot-name))))
+      (alex:when-let ((class-with-writer
+                       (find-if (lambda (c)
+                                  (member slot-name (mopu:direct-slot-names c)))
+                                (mopu:superclasses class-name))))
+        (fdefinition (first (closer-mop:slot-definition-writers
+                             (mopu:get-slot-definition class-with-writer
+                                                       slot-name)))))))
+
 (define-class slot-setting (setting)
   ((slot-name
     nil
@@ -96,11 +110,11 @@ See `apply-setting'."
    (slot-value (find-class (target-class-name setting)) 'nyxt::customize-hook)
    (make-instance
     'hooks:handler
-    :append t
     :fn (lambda (object)
           (declare (ignorable object))
           (funcall (handler setting) object))
-    :name (gensym "EXTEND-CONFIGURATION"))))
+    :name (gensym "EXTEND-CONFIGURATION"))
+   :append t))
 
 (defmethod extend-configuration ((setting slot-setting))
   "Configure SETTING's TARGET-CLASS-NAME for new instances.
@@ -109,21 +123,17 @@ See `apply-setting'."
    (slot-value (find-class (target-class-name setting)) 'nyxt::customize-hook)
    (make-instance
     'hooks:handler
-    :append t
     :fn (lambda (object)
           (declare (ignorable object))
-          ;; TODO: Fix the writer lookup.
-          ;; `slot-definition-writers' only works on direct slot definitions.
-          ;; We need to be able to find a slot writer even if it's defined
-          ;; in a superclass. This is necessary for `buffer-setting' to work.
-          (alex:if-let ((writer (first (closer-mop:slot-definition-writers
-                                 (mopu:get-slot-definition (target-class-name setting) (slot-name setting))))))
-                (funcall (fdefinition writer) (new-value setting) object)
-                (setf (slot-value object (slot-name setting)) (new-value setting))))
+          (alex:if-let ((writer (find-writer (target-class-name setting)
+                                             (slot-name setting))))
+            (funcall writer (new-value setting) object)
+            (setf (slot-value object (slot-name setting)) (new-value setting))))
     ;; TODO: Use `:place' / `:value'?
     ;; What if we want to stack the changes?
     ;; Also, does that ignore the slot writer?
-    :name (gensym "EXTEND-CONFIGURATION"))))
+    :name (gensym "EXTEND-CONFIGURATION"))
+   :append t))
 
 ;; TODO: SLOT should be WRITER-NAME (a symbol) instead.
 (defmethod apply-setting ((setting setting)
@@ -158,12 +168,10 @@ automatically filtered out. "
                                            (funcall (all-instances setting))))
                                  :key #'sera:class-name-of))))
     (mapc (lambda (instance)
-            ;; TODO: Fix the writer lookup.
-            ;; See comment in `extend-configuration'.
-            (alex:if-let ((writer (first (closer-mop:slot-definition-writers
-                                 (mopu:get-slot-definition (target-class-name setting) (slot-name setting))))))
-                (funcall (fdefinition writer) (new-value setting) instance)
-                (setf (slot-value instance (slot-name setting)) (new-value setting))))
+          (alex:if-let ((writer (find-writer (target-class-name setting)
+                                             (slot-name setting))))
+            (funcall writer (new-value setting) instance)
+              (setf (slot-value instance (slot-name setting)) (new-value setting))))
           instances)))
 
 (defmethod apply-setting ((setting generic-setting)
