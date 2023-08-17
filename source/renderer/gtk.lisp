@@ -1299,30 +1299,29 @@ the `active-buffer'."
   prompt-buffer)
 
 (define-ffi-method ffi-height ((buffer status-buffer))
-  (nth-value 1 (gtk:gtk-widget-size-request (status-container (window buffer)))))
+  (gtk:gtk-widget-height-request (status-container (window buffer))))
 (define-ffi-method (setf ffi-height) (height (buffer status-buffer))
-  (setf (gtk:gtk-widget-size-request (status-container (window buffer)))
-        (list -1 height)))
+  (setf (gtk:gtk-widget-height-request (status-container (window buffer)))
+        height))
 
 (define-ffi-method ffi-height ((buffer message-buffer))
-  (nth-value 1 (gtk:gtk-widget-size-request (message-container (window buffer)))))
+  (gtk:gtk-widget-height-request (message-container (window buffer))))
 (define-ffi-method (setf ffi-height) (height (buffer message-buffer))
-  (setf (gtk:gtk-widget-size-request (message-container (window buffer)))
-        (list -1 height)))
+  (setf (gtk:gtk-widget-height-request (message-container (window buffer)))
+        height))
+
+(defun get-bounds (object)
+  (gtk:gtk-widget-get-allocation (nyxt/renderer/gtk::gtk-object object)))
 
 (define-ffi-method ffi-height ((buffer gtk-buffer))
-  (gdk:gdk-rectangle-height
-   (gtk:gtk-widget-get-allocation (nyxt/renderer/gtk::gtk-object buffer))))
+  (gdk:gdk-rectangle-height (get-bounds buffer)))
 (define-ffi-method ffi-width ((buffer gtk-buffer))
-  (gdk:gdk-rectangle-width
-   (gtk:gtk-widget-get-allocation (nyxt/renderer/gtk::gtk-object buffer))))
+  (gdk:gdk-rectangle-width (get-bounds buffer)))
 
-(define-ffi-method ffi-height ((buffer gtk-window))
-  (gdk:gdk-rectangle-height
-   (gtk:gtk-widget-get-allocation (nyxt/renderer/gtk::gtk-object buffer))))
-(define-ffi-method ffi-width ((buffer gtk-window))
-  (gdk:gdk-rectangle-width
-   (gtk:gtk-widget-get-allocation (nyxt/renderer/gtk::gtk-object buffer))))
+(define-ffi-method ffi-height ((window gtk-window))
+  (gdk:gdk-rectangle-height (get-bounds window)))
+(define-ffi-method ffi-width ((window gtk-window))
+  (gdk:gdk-rectangle-width (get-bounds window)))
 
 (defun process-file-chooser-request (web-view file-chooser-request)
   (declare (ignore web-view))
