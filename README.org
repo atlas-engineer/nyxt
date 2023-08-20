@@ -2,19 +2,16 @@
 
 * Nyxt browser
 
-*Nyxt* [nýkst] is a keyboard-driven web browser designed for power users.  Inspired by
+*Nyxt* [nýkst] is a keyboard-driven web browser designed for hackers.  Inspired by
 Emacs and Vim, it has familiar keybindings ([[https://en.wikipedia.org/wiki/Emacs][Emacs]], [[https://en.wikipedia.org/wiki/Vim_(text_editor)][vi]], [[https://en.wikipedia.org/wiki/IBM_Common_User_Access][CUA]]), and is infinitely
 extensible in Lisp.
 
-If you like Nyxt and you would like to help future development, please give us a
-star, spread the word, and support us on [[https://www.patreon.com/nyxt][Patreon]], thank you!
-
-*Attention:* Nyxt is under active development.  Feel free to [[https://github.com/atlas-engineer/nyxt/issues][report]] bugs,
+*Attention:* Nyxt is under active development.  Please feel free to [[https://github.com/atlas-engineer/nyxt/issues][report]] bugs,
 instabilities or feature wishes.
 
 -----
 
-#+html: <div align="center"> <a href="http://nyxt.atlas.engineer/">Homepage</a> | <a href="https://nyxt.atlas.engineer/download">Downloads</a> | <a href="https://nyxt.atlas.engineer/articles">Articles</a> | <a href="https://store.nyxt.atlas.engineer/">Store</a> | <a href="https://github.com/atlas-engineer/nyxt/blob/master/documents/README.org">Developer's Manual</a> | <a href="https://discourse.atlas.engineer/">Forum</a> | <a href="https://kiwiirc.com/nextclient/irc.libera.chat/nyxt">Chat</a> </div>
+#+html: <div align="center"> <a href="http://nyxt.atlas.engineer/">Homepage</a> | <a href="https://nyxt.atlas.engineer/download">Downloads</a> | <a href="https://nyxt.atlas.engineer/articles">Articles</a> | <a href="https://github.com/atlas-engineer/nyxt/blob/master/documents/README.org">Developer's Manual</a> | <a href="https://discourse.atlas.engineer/">Forum</a> | <a href="https://kiwiirc.com/nextclient/irc.libera.chat/nyxt">Chat</a> </div>
 
 -----
 
