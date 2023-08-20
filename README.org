@@ -66,32 +66,11 @@ you never lose track of where you've been.
 Nyxt supports:
 
 - GNU/Linux
-- macOS (unofficial)
+- macOS (in development)
+- Windows (in development)
 - FreeBSD (unofficial)
 
-Nyxt has engine support for WebKit and _experimental support_ for
-WebEngine/Blink.
-
-Please find pre-built binaries at [[https://nyxt.atlas.engineer/download][Nyxt's downloads page]].  Nyxt is available on
-the following platforms:
-
-- [[https://www.alpinelinux.org/][Alpine]].
-- [[https://www.debian.org][Debian]] and derivatives such as [[https://ubuntu.com/][Ubuntu]] and [[https://linuxmint.com/][Linux Mint]].
-- [[https://github.com/atlas-engineer/ports][MacPorts]].
-- [[https://archlinux.org/][Arch Linux]]: Install with =pacman -Syu nyxt=.
-- [[https://nixos.org/nix/][Nix]]: Install with =nix-env --install nyxt=.
-- [[https://guix.gnu.org][Guix]]: Install with =guix install nyxt=.
-- [[https://voidlinux.org/][Void]]: Install with =xbps-install nyxt=.
-- [[https://get.opensuse.org/tumbleweed/][openSUSE Tumbleweed]]: Install with =zypper in nyxt=. 
-- [[https://get.opensuse.org/leap/][openSUSE LEAP]]:
-   Available as user maintained package.
-   1. Add user repository:
-   
-    - LEAP 15.4: =zypper ar https://download.opensuse.org/repositories/home:/bobbie424242:/nyxt/15.4/ nyxt=
-    - LEAP 15.5: =zypper ar https://download.opensuse.org/repositories/home:/bobbie424242:/nyxt/15.5/ nyxt=
-   2. Install with =zypper in nyxt=. 
-
-To install from source, please refer to the [[file:documents/README.org][developer's manual]].
+Please find pre-built binaries at [[https://nyxt.atlas.engineer/download][Nyxt's downloads page]].
 
 ** Documentation & Customization
 
@@ -101,8 +80,3 @@ refer to the embedded manual.  To get started, run the =manual= command (press
 
 If you want to help with development, or build Nyxt from source, read the
 developer's documentation at [[file:documents/README.org][documents/README.org]].
-
-** History of changes
-
-If you are running a recent version of Nyxt please run the =changelog= command.
-For older versions, please refer to the [[https://github.com/atlas-engineer/nyxt/blob/2.2.1/documents/CHANGELOG.org][CHANGELOG]].
