@@ -45,6 +45,7 @@ jobs:
         sudo flatpak install --noninteractive org.gnome.Sdk/x86_64/44
         make flatpak-repository
         make flatpak-bundle
+        mv nyxt.flatpak nyxt-$(cat version).flatpak
 
     - name: Generate release notes
       shell: bash
