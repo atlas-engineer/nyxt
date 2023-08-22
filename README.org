@@ -61,34 +61,21 @@ you never lose track of where you've been.
 
 Supported platforms:
 
+- GNU/Linux
 - macOS (in development)
 - Windows (in development)
-- GNU/Linux
 - FreeBSD (unofficial)
 
 ** GNU/Linux
 
-The Nyxt team officially maintains the following distribution means:
+The Nyxt team maintains the following distribution means:
 
-- [[https://github.com/atlas-engineer/nyxt/releases][Flakpak]]
-- [[https://packages.guix.gnu.org/packages/nyxt/3.6.0/][Guix package]] (Guix can be installed on top of any GNU/Linux system)
-
-A pre-built binary can also be found [[https://nyxt.atlas.engineer/download][on our website]].
+- [[https://github.com/atlas-engineer/nyxt/releases][Download Nyxt as a Flatpak]]
+- [[https://packages.guix.gnu.org/packages/nyxt/3.6.0/][Get Nyxt via Guix Package Manager]]
 
 [[https://repology.org/project/nyxt/versions][Non-official distribution means are supported by the community as well]].  We're
-not accountable for its quality, so we kindly ask to report issues to the
-maintainers of those packaging efforts.  Package maintainers are welcome to get
-in touch when they face difficulties packaging Nyxt.
-
-* Getting started
-
-The default homepage URL, accessible by issuing the =new= command (=control= +
-=space=, type =new= and confirm with =return=) features links to pages of
-relevance, such as a quick start tutorial or an intuitive settings interface.
-
-For an in-depth reference, please refer to the embedded manual by issuing the
-=manual= command (press =control= + =space=, type =manual= and confirm with
-=return=).
+not accountable for their quality, so we kindly ask to report issues to the
+maintainers of those packaging efforts.
 
 * Contributing
 
