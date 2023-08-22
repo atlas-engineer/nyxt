@@ -28,6 +28,10 @@ jobs:
       with:
         submodules: 'true'
 
+    - name: Generate version file
+      shell: bash
+      run: echo $(git -C $GITHUB_WORKSPACE describe --tags --abbrev=0) > version
+
     - name: Install dependencies
       shell: bash
       run: |
