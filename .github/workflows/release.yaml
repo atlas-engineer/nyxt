@@ -36,7 +36,7 @@ jobs:
       shell: bash
       run: |
         sudo apt-get update -qq
-        sudo apt-get install -y git-core flatpak-builder
+        sudo apt-get install -y flatpak-builder
 
     - name: Build Flatpak
       shell: bash
