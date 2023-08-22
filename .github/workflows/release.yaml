@@ -12,10 +12,10 @@ jobs:
     strategy:
       matrix:
         lisp: [sbcl]
-        # See https://github.com/actions/virtual-environments
-        # for the list of official distributions.
-        os: [ubuntu-20.04]
-      # fail-fast: false
+        # See https://github.com/actions/virtual-environments for the list of
+        # official distributions.
+        os: [ubuntu-latest]
+        # fail-fast: false
 
     runs-on: ${{ matrix.os }}
 
