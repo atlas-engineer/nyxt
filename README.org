@@ -57,23 +57,26 @@ you never lose track of where you've been.
 
 #+html: <img src="https://nyxt.atlas.engineer/static/image/history.png?" align="center"/>
 
-* Getting started
-** Install Nyxt
+* Installation
 
-Nyxt supports:
+Supported platforms:
 
 - GNU/Linux
 - macOS (in development)
 - Windows (in development)
 - FreeBSD (unofficial)
 
-Please find pre-built binaries at [[https://nyxt.atlas.engineer/download][Nyxt's downloads page]].
+** GNU/Linux
 
-** Documentation & Customization
+The Nyxt team maintains the following distribution means:
 
-For full documentation about Nyxt, how it works, and how to extend it please
-refer to the embedded manual.  To get started, run the =manual= command (press
-=control= + =space=, type =manual= and confirm with =return=).
+- [[https://github.com/atlas-engineer/nyxt/releases][Download Nyxt as a Flatpak]]
+- [[https://packages.guix.gnu.org/packages/nyxt/3.6.0/][Get Nyxt via Guix Package Manager]]
 
-If you want to help with development, or build Nyxt from source, read the
-developer's documentation at [[file:documents/README.org][documents/README.org]].
+[[https://repology.org/project/nyxt/versions][Non-official distribution means are supported by the community as well]].  We're
+not accountable for their quality, so we kindly ask to report issues to the
+maintainers of those packaging efforts.
+
+* Contributing
+
+Please refer to the developer's documentation at [[file:documents/README.org][documents/README.org]].
