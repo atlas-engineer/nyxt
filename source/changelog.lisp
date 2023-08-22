@@ -825,6 +825,18 @@ Chromium, Brave and Vivaldi. For instance, "
      (:li "Redesign status buffer buttons.")
      (:li "Minor review of " (:a :href (nyxt-url 'new) "start page") "."))))
 
+(define-version "3.X.Y"
+  ;; (:nsection :title "Features"
+  ;;   (:ul
+  ;;    (:li "")))
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix clipboard facilities on X11 and Wayland.")))
+  ;; (:nsection :title "UI/UX"
+  ;;   (:ul
+  ;;    (:li "")))
+  )
+
 (define-version "4-pre-release-1"
   (:li "When on pre-release, push " (:code "X-pre-release")
        " feature in addition to " (:code "X-pre-release-N") "one."))
