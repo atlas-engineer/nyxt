@@ -22,6 +22,8 @@ finish-args:
   - --filesystem=xdg-videos
   - --filesystem=xdg-pictures
   - --talk-name=org.a11y.Bus
+  # See http://sbcl.org/getting.html
+  - --env=SBCL_HOME="/app/lib/sbcl"
 
 modules:
   - name: sbcl
@@ -32,7 +34,7 @@ modules:
         sha256: 24b38951712a08a3220cac289e6d89692e26d345fd62d9d99c6fc49618cebe8c
     build-options:
       env:
-        BUILD_ROOT: "/app/sbcl"
+        INSTALL_ROOT: /app
     build-commands:
       - sh install.sh
 
@@ -69,11 +71,6 @@ modules:
     sources:
       - type: dir
         path: .
-    build-options:
-      env:
-        LISP: "/app/sbcl/usr/local/bin/sbcl"
-        LISP_FLAGS: "--dynamic-space-size 4096 --no-userinit --non-interactive"
-        FLATPAK_ID: "engineer.atlas.Nyxt"
     build-commands:
       - make all
       - mkdir -p $FLATPAK_DEST/bin
