@@ -28,8 +28,8 @@ modules:
     buildsystem: simple
     sources:
       - type: archive
-        url: http://prdownloads.sourceforge.net/sbcl/sbcl-2.3.2-x86-64-linux-binary.tar.bz2
-        sha256: 4cf817f1d889244b5ebd4dbf7208d7f66a38a8300b4eb7e823e3b304cfefde11
+        url: http://prdownloads.sourceforge.net/sbcl/sbcl-2.3.7-x86-64-linux-binary.tar.bz2
+        sha256: 24b38951712a08a3220cac289e6d89692e26d345fd62d9d99c6fc49618cebe8c
     build-options:
       env:
         BUILD_ROOT: "/app/sbcl"
