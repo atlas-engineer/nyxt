@@ -831,7 +831,8 @@ Chromium, Brave and Vivaldi. For instance, "
   ;;    (:li "")))
   (:nsection :title "Bug fixes"
     (:ul
-     (:li "Fix clipboard facilities on X11 and Wayland.")))
+     (:li "Fix clipboard facilities on X11 and Wayland.")
+     (:li "Fix source code location on Flatpak.")))
   ;; (:nsection :title "UI/UX"
   ;;   (:ul
   ;;    (:li "")))
