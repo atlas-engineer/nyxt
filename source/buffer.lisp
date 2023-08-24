@@ -172,13 +172,18 @@ See also the `profile' slot in the `browser' class.")
               :background-color ,theme:background
               :border "2px" solid ,theme:primary
               :padding "5px")
+            `("table"
+              :border-radius "3px"
+              :border-spacing "0"
+              :width "100%")
             `("table, th, td"
               :border-color ,theme:secondary
-              :border-collapse "collapse"
               :border-width "1px"
               :border-style "solid"
               :background-color ,theme:background
               :color ,theme:on-background)
+            `("td, th"
+              :padding "6px")
             `(th
               :background-color ,theme:primary
               :color ,theme:on-primary
