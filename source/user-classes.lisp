@@ -67,10 +67,10 @@ Do not specialize the standard method in public code, prefer
 (defmethod #+nyxt-debug-make-instance cl:make-instance #-nyxt-debug-make-instance make-instance
   :around ((class user-mixin-class) &rest initargs &key &allow-other-keys)
   (sera:lret ((initialized-object (call-next-method)))
+    (apply #'customize-instance initialized-object initargs)
     (mapcar (lambda (class)
               (hooks:run-hook (slot-value class 'customize-hook) initialized-object))
-            (sera:filter #'user-class-p (cons class (mopu:superclasses class))))
-    (apply #'customize-instance initialized-object initargs)))
+            (sera:filter #'user-class-p (cons class (mopu:superclasses class))))))
 
 (defun user-class-p (class-specifier)
   (let ((metaclass (cond
