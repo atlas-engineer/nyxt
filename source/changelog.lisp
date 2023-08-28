@@ -832,7 +832,10 @@ Chromium, Brave and Vivaldi. For instance, "
   (:nsection :title "Bug fixes"
     (:ul
      (:li "Fix clipboard facilities on X11 and Wayland.")
-     (:li "Fix source code location on Flatpak.")))
+     (:li "Fix source code location on Flatpak.")
+     (:li "Fix " (:nxref :mode 'nyxt/mode/style:dark-mode)
+        " and the " (:nxref :command 'nyxt/mode/bookmarklets:darken)
+        " bookmarklet command.")))
   ;; (:nsection :title "UI/UX"
   ;;   (:ul
   ;;    (:li "")))
