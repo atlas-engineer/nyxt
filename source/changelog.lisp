@@ -825,18 +825,11 @@ Chromium, Brave and Vivaldi. For instance, "
      (:li "Redesign status buffer buttons.")
      (:li "Minor review of " (:a :href (nyxt-url 'new) "start page") "."))))
 
-(define-version "3.X.Y"
-  ;; (:nsection :title "Features"
-  ;;   (:ul
-  ;;    (:li "")))
+(define-version "3.6.1"
   (:nsection :title "Bug fixes"
     (:ul
      (:li "Fix clipboard facilities on X11 and Wayland.")
      (:li "Fix source code location on Flatpak.")
      (:li "Fix " (:nxref :mode 'nyxt/mode/style:dark-mode)
         " and the " (:nxref :command 'nyxt/mode/bookmarklets:darken)
-        " bookmarklet command.")))
-  ;; (:nsection :title "UI/UX"
-  ;;   (:ul
-  ;;    (:li "")))
-  )
+        " bookmarklet command."))))
