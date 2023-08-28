@@ -110,9 +110,9 @@ Note that some settings may require restarting Nyxt to take effect.")
     (:h2 "Miscellaneous")
     (:ul
      (:nbutton :text "Set default new buffer URL"
-       '(nyxt::configure-slot 'default-new-buffer-url 'browser :type 'string))
+       '(nyxt/setting:apply-slot-setting 'default-new-buffer-url 'nyxt/setting:browser-slot-setting))
      (:nbutton :text "Set default zoom ratio"
-       '(nyxt::configure-slot 'zoom-ratio-default 'document-buffer))
+       '(nyxt/setting:apply-slot-setting 'zoom-ratio-default 'nyxt/setting:buffer-slot-setting))
      (:p "On some systems, compositing can cause issues with rendering. If
 you are experiencing blank web-views, you can try to disable compositing. After
 disabling compositing, you will need to restart Nyxt.")

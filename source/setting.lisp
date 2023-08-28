@@ -168,9 +168,9 @@ automatically filtered out. "
                                            (funcall (all-instances setting))))
                                  :key #'sera:class-name-of))))
     (mapc (lambda (instance)
-          (alex:if-let ((writer (find-writer (target-class-name setting)
-                                             (slot-name setting))))
-            (funcall writer (new-value setting) instance)
+            (alex:if-let ((writer (find-writer (target-class-name setting)
+                                               (slot-name setting))))
+              (funcall writer (new-value setting) instance)
               (setf (slot-value instance (slot-name setting)) (new-value setting))))
           instances)))
 
@@ -238,15 +238,44 @@ automatically filtered out. "
   (:export-accessor-names-p t)
   (:documentation "A buffer setting is used for configuring buffers."))
 
-(define-class keystyle (buffer-setting slot-setting)
-  ((slot-name 'keyscheme))
-  (:documentation "A setting for configuring the keyscheme.
-The new value is for example the 'nyxt/emacs-mode:emacs-mode' string."))
+(define-class buffer-slot-setting (buffer-setting slot-setting)
+  ((slot-name
+    nil
+    :type symbol)
+   (new-value
+    nil
+    :type t))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:documentation "A setting for configuring a buffer slot."))
 
-(define-class zoom-ratio-default-setting (buffer-setting slot-setting)
-  ((slot-name 'zoom-ratio-default))
-  (:documentation "A setting for configuring `zoom-ratio-default'.
-The new value should be a float."))
+(define-class browser-slot-setting (browser-setting slot-setting)
+  ((slot-name
+    nil
+    :type symbol)
+   (new-value
+    nil
+    :type t))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:documentation "A setting for configuring a browser slot."))
+
+(export-always 'apply-slot-setting)
+(defun apply-slot-setting (slot-name slot-setting-class)
+  (let ((new-value (read-from-string
+                    (prompt1
+                     :prompt (format nil "Configure slot value ~a" slot-name)
+                     :sources 'prompter:raw-source)))
+        (auto-config-p (if-confirm ("Apply this setting on restart?")))
+        (new-instances-p (if-confirm ("Apply this setting until the end of this session?")))
+        (all-instances-p (if-confirm ("Apply this setting immediately?"))))
+    (when (mopu:subclassp slot-setting-class 'slot-setting)
+      (apply-setting (make-instance slot-setting-class
+                                    :slot-name slot-name
+                                    :new-value new-value)
+                     :auto-config-p auto-config-p
+                     :new-instances-p new-instances-p
+                     :all-instances-p all-instances-p))))
 
 (defun find-setting (setting-designator)
   (gethash (intern (symbol-name setting-designator))
