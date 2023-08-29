@@ -120,10 +120,10 @@ See `nyxt::attribute-widths'.")
           :font-weight "bold"
           :font-size "20px")
         `(".arrow-right"
-          :clip-path "polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)"
+          :clip-path "polygon(0 0, calc(100% - 10px) 0, 100% calc(50% - 1px), 100% 50%, 100% calc(50% + 1px), calc(100% - 10px) 100%, 0 100%)"
           :margin-right "-10px")
         `(".arrow-left"
-          :clip-path "polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0% 50%)"
+          :clip-path "polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0px calc(50% + 1px), 0% 50%, 0px calc(50% - 1px))"
           :margin-left "-10px")
         `(button
           :background "transparent"

@@ -843,10 +843,10 @@ Also see `panel-page'."))
               ("0%" :transform "rotate(0deg)")
               ("100%" :transform "rotate(360deg)"))
             `(".arrow-right"
-              :clip-path "polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)"
+              :clip-path "polygon(0 0, calc(100% - 10px) 0, 100% calc(50% - 1px), 100% 50%, 100% calc(50% + 1px), calc(100% - 10px) 100%, 0 100%)"
               :margin-right "-10px")
             `(".arrow-left"
-              :clip-path "polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0% 50%)"
+              :clip-path "polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0px calc(50% + 1px), 0% 50%, 0px calc(50% - 1px))"
               :margin-left "-10px")
             `("#container"
               :display "flex"
@@ -915,7 +915,7 @@ Also see `panel-page'."))
               :border-radius "1px"
               :font "inherit"
               :outline "inherit"
-              :clip-path "polygon(calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0% 100%, 10px 50%, 0% 0%)")
+              :clip-path "polygon(calc(100% - 10px) 0, 100% calc(50% - 1px), 100% 50%, 100% calc(50% + 1px), calc(100% - 10px) 100%, 0% 100%, 10px calc(50% + 1px), 10px 50%, 10px calc(50% - 1px),  0% 0%)")
             `(".tab:hover"
               :opacity 0.8
               :cursor "pointer")
