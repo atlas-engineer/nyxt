@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component type="desktop-application">
+  <!-- Spec: https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html -->
+  <id>engineer.atlas.Nyxt</id>
+  <metadata_license>CC-BY-SA-3.0</metadata_license>
+  <project_license>BSD-3-Clause</project_license>
+  <content_rating type="oars-1.1" />
+  <developer_name>Atlas Engineer</developer_name>
+  <name>Nyxt</name>
+  <summary>The hacker's browser</summary>
+  <description>
+    <p>Quickly analyze, navigate, and extract information from the
+    Internet. Nyxt is fully hackable — all of its source code can be
+    introspected, modified, and tweaked to your exact specification.</p>
+  </description>
+  <categories>
+    <category>Network</category>
+  </categories>
+  <url type="homepage">https://nyxt.atlas.engineer/</url>
+  <url type="bugtracker">https://github.com/atlas-engineer/nyxt/issues</url>
+  <url type="faq">https://nyxt.atlas.engineer/faq</url>
+  <url type="help">https://discourse.atlas.engineer/</url>
+  <url type="donation">https://nyxt.atlas.engineer/purchase</url>
+  <!-- <url type="translate"></url> -->
+  <url type="contact">https://atlas.engineer/contact</url>
+  <url type="contribute">https://github.com/atlas-engineer/nyxt/blob/master/documents/README.org</url>
+  <launchable type="desktop-id">nyxt.desktop</launchable>
+  <provides>
+    <binary>nyxt</binary>
+  </provides>
+  <screenshots>
+    <screenshot type="default">
+      <!-- TODO Add new ones. -->
+      <image>https://nyxt.atlas.engineer/static/image/article/nyxt-3.5.0-prompt-expanded.png</image>
+      <caption>Startup Page</caption>
+    </screenshot>
+  </screenshots>
+  <!-- Only those published on Flathub are listed -->
+  <releases>
+    <release version="3.6.1" date="2023-08-28">
+      <url>https://nyxt.atlas.engineer/article/release-3.6.1.org</url>
+    </release>
+  </releases>
+</component>
