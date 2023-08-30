@@ -834,6 +834,12 @@ Chromium, Brave and Vivaldi. For instance, "
         " and the " (:nxref :command 'nyxt/mode/bookmarklets:darken)
         " bookmarklet command."))))
 
+(define-version "3.6.2"
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "Make padding for source columns and suggestions consistent.")
+     (:li "Round corners on arrows in status buffer."))))
+
 (define-version "4-pre-release-1"
   (:li "When on pre-release, push " (:code "X-pre-release")
        " feature in addition to " (:code "X-pre-release-N") "one."))
