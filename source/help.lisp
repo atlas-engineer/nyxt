@@ -89,8 +89,7 @@ Note that some settings may require restarting Nyxt to take effect.")
                  :style (format nil "background-color: ~a; color: ~a"
                                 (theme:accent-color (symbol-value theme-symbol))
                                 (theme:on-accent-color (symbol-value theme-symbol)))
-                 `(nyxt::auto-configure :form '(define-configuration browser
-                                                ((theme ,theme-symbol)))))
+                 `(nyxt/setting::apply-slot-setting 'theme 'nyxt/setting::browser-slot-setting ,theme-symbol))
                (:p "Colors:")
                (:dl
                 (loop for (name color text-color) in '(("Background" theme:background-color theme:on-background-color)
@@ -110,9 +109,9 @@ Note that some settings may require restarting Nyxt to take effect.")
     (:h2 "Miscellaneous")
     (:ul
      (:nbutton :text "Set default new buffer URL"
-       '(nyxt/setting:apply-slot-setting 'default-new-buffer-url 'nyxt/setting:browser-slot-setting))
+       '(nyxt/setting::apply-slot-setting 'default-new-buffer-url 'nyxt/setting::browser-slot-setting))
      (:nbutton :text "Set default zoom ratio"
-       '(nyxt/setting:apply-slot-setting 'zoom-ratio-default 'nyxt/setting:buffer-slot-setting))
+       '(nyxt/setting::apply-slot-setting 'title 'nyxt/setting::buffer-slot-setting))
      (:p "On some systems, compositing can cause issues with rendering. If
 you are experiencing blank web-views, you can try to disable compositing. After
 disabling compositing, you will need to restart Nyxt.")

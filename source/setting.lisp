@@ -1,7 +1,6 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :nyxt)
 (nyxt:define-package :nyxt/setting
   (:documentation "Package defining `setting', a user-convenience class to configure Nyxt."))
 (in-package :nyxt/setting)
@@ -260,22 +259,57 @@ automatically filtered out. "
   (:export-accessor-names-p t)
   (:documentation "A setting for configuring a browser slot."))
 
+(define-class buffer-generic-setting (buffer-setting generic-setting)
+  ((handler
+    (alexandria:required-argument 'handler)
+    :type function))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:documentation "A setting for applying a HANDLER to buffers."))
+
+(define-class browser-generic-setting (browser-setting generic-setting)
+  ((handler
+    (alexandria:required-argument 'handler)
+    :type function))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:documentation "A setting for applying a HANDLER to browser."))
+
+(export-always 'apply-generic-setting)
+(defun apply-generic-setting (handler generic-setting-class)
+  "Configure a class by applying a handler with generic setting."
+  (let ((auto-config-p (if-confirm ("Apply this setting on restart?")))
+        (new-instances-p (if-confirm ("Apply this setting until the end of this session?")))
+        (all-instances-p (if-confirm ("Apply this setting immediately?")))
+        (current-instance-p (if-confirm ("Apply this setting to the current instance?"))))
+    (when (mopu:subclassp generic-setting-class 'generic-setting)
+      (apply-setting (make-instance generic-setting-class
+                                    :handler handler)
+                     :auto-config-p auto-config-p
+                     :new-instances-p new-instances-p
+                     :all-instances-p all-instances-p
+                     :current-instance-p current-instance-p))))
+
 (export-always 'apply-slot-setting)
-(defun apply-slot-setting (slot-name slot-setting-class)
-  (let ((new-value (read-from-string
-                    (prompt1
-                     :prompt (format nil "Configure slot value ~a" slot-name)
-                     :sources 'prompter:raw-source)))
+(defun apply-slot-setting (slot-name slot-setting-class &optional new-value)
+  "Configure a slot by applying a slot setting."
+  (let ((new-value (or new-value
+                       (read-from-string
+                        (prompt1
+                         :prompt (format nil "Configure slot value ~a" slot-name)
+                         :sources 'prompter:raw-source))))
         (auto-config-p (if-confirm ("Apply this setting on restart?")))
         (new-instances-p (if-confirm ("Apply this setting until the end of this session?")))
-        (all-instances-p (if-confirm ("Apply this setting immediately?"))))
+        (all-instances-p (if-confirm ("Apply this setting immediately?")))
+        (current-instance-p (if-confirm ("Apply this setting to the current instance?"))))
     (when (mopu:subclassp slot-setting-class 'slot-setting)
       (apply-setting (make-instance slot-setting-class
                                     :slot-name slot-name
                                     :new-value new-value)
                      :auto-config-p auto-config-p
                      :new-instances-p new-instances-p
-                     :all-instances-p all-instances-p))))
+                     :all-instances-p all-instances-p
+                     :current-instance-p current-instance-p))))
 
 (defun find-setting (setting-designator)
   (gethash (intern (symbol-name setting-designator))

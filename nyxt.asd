@@ -219,8 +219,8 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                 :pathname ""
                 :depends-on ("Core modes" "Modes")
                 :components
-                ((:file "help")
-                 (:file "setting")     ; REVIEW: Move to other module?
+                ((:file "setting")     ; REVIEW: Move to other module?
+                 (:file "help")
                  (:file "about")
                  (:file "tutorial")
                  (:file "changelog")
