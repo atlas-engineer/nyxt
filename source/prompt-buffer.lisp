@@ -181,6 +181,7 @@ See `nyxt::attribute-widths'.")
           (td
            :white-space "nowrap"
            :height "20px"
+           :padding-left "4px"
            :overflow "auto")
           ("tr:hover"
            :background-color ,theme:accent-alt
@@ -190,7 +191,7 @@ See `nyxt::attribute-widths'.")
            :background-color ,theme:primary
            :color ,theme:on-primary
            :font-weight "normal"
-           :padding-left "3px"
+           :padding-left "4px"
            :text-align "left")
           ("td::-webkit-scrollbar"
            :display "none"))
