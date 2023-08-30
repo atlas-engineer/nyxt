@@ -75,7 +75,7 @@ modules:
       - make all
       - mkdir -p $FLATPAK_DEST/bin
       - mv nyxt $FLATPAK_DEST/bin/
-      - install -D assets/engineer.atlas.Nyxt.appdata.xml /app/share/appdata/engineer.atlas.Nyxt.appdata.xml
+      - install -D assets/nyxt.metainfo.xml /app/share/appdata/engineer.atlas.Nyxt.appdata.xml
       # See method files:resolve that specializes nyxt-source-directory
       - mkdir -p $FLATPAK_DEST/share/nyxt
       - mv * $FLATPAK_DEST/share/nyxt
