@@ -833,3 +833,9 @@ Chromium, Brave and Vivaldi. For instance, "
      (:li "Fix " (:nxref :mode 'nyxt/mode/style:dark-mode)
         " and the " (:nxref :command 'nyxt/mode/bookmarklets:darken)
         " bookmarklet command."))))
+
+(define-version "3.6.2"
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "Make padding for source columns and suggestions consistent.")
+     (:li "Round corners on arrows in status buffer."))))
