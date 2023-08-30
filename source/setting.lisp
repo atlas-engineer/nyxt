@@ -69,17 +69,12 @@ See `apply-setting'."))
 
 ;; TODO: Simplify and maybe move to a different package.
 (defun find-writer (class-name slot-name)
-  (if (member slot-name (mopu:direct-slot-names class-name))
-      (fdefinition (first (closer-mop:slot-definition-writers
-                           (mopu:get-slot-definition class-name
-                                                     slot-name))))
-      (alex:when-let ((class-with-writer
-                       (find-if (lambda (c)
-                                  (member slot-name (mopu:direct-slot-names c)))
-                                (mopu:superclasses class-name))))
-        (fdefinition (first (closer-mop:slot-definition-writers
-                             (mopu:get-slot-definition class-with-writer
-                                                       slot-name)))))))
+  (some (lambda (c)
+          (find-method (fdefinition `(setf ,slot-name))
+                       '()
+                       (list (sera:find-class-safe t) c)
+                       nil))
+        (cons (sera:find-class-safe class-name) (mopu:superclasses class-name))))
 
 (define-class slot-setting (setting)
   ((slot-name
@@ -126,7 +121,7 @@ See `apply-setting'."
           (declare (ignorable object))
           (alex:if-let ((writer (find-writer (target-class-name setting)
                                              (slot-name setting))))
-            (funcall writer (new-value setting) object)
+            (funcall (closer-mop:method-generic-function writer) (new-value setting) object)
             (setf (slot-value object (slot-name setting)) (new-value setting))))
     ;; TODO: Use `:place' / `:value'?
     ;; What if we want to stack the changes?
@@ -169,7 +164,7 @@ automatically filtered out. "
     (mapc (lambda (instance)
             (alex:if-let ((writer (find-writer (target-class-name setting)
                                                (slot-name setting))))
-              (funcall writer (new-value setting) instance)
+              (funcall (closer-mop:method-generic-function writer) (new-value setting) instance)
               (setf (slot-value instance (slot-name setting)) (new-value setting))))
           instances)))
 
