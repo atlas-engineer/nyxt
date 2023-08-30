@@ -86,11 +86,12 @@ clean: clean-submodules
 
 .PHONY: flatpak-build
 flatpak-build:
-	@$(FLATPAK_BUILDER) --user --install --force-clean build $(FLATPAK_MANIFEST)
+	@$(FLATPAK_BUILDER) --force-clean --user --install --default-branch=local build $(FLATPAK_MANIFEST)
 
 .PHONY: flatpak-run
 flatpak-run:
-	@$(FLATPAK_COMMAND) run $(FLATPAK_APP_ID)
+	@$(FLATPAK_COMMAND) update -y $(FLATPAK_APP_ID)
+	@$(FLATPAK_COMMAND) run --branch=local $(FLATPAK_APP_ID)
 
 .PHONY: flatpak-repository
 flatpak-repository:
