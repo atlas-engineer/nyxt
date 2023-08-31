@@ -834,7 +834,11 @@ Chromium, Brave and Vivaldi. For instance, "
         " and the " (:nxref :command 'nyxt/mode/bookmarklets:darken)
         " bookmarklet command."))))
 
-(define-version "3.6.2"
+(define-version "3.X.X"
+  (:nsection :title "Features"
+    (:ul
+     (:li "The installation process now takes into account the Appdata file and
+a scalable icon.")))
   (:nsection :title "UI/UX"
     (:ul
      (:li "Make padding for source columns and suggestions consistent.")
