@@ -35,6 +35,11 @@
   (:documentation "Component type for Appdata files to install."))
 (import 'nasdf-appdata-file :asdf-user)
 
+(export-always 'nasdf-icon-scalable-file)
+(defclass nasdf-icon-scalable-file (nasdf-file) ()
+  (:documentation "Component type for the SVG icon."))
+(import 'nasdf-icon-scalable-file :asdf-user)
+
 (export-always 'nasdf-icon-directory)
 (defclass nasdf-icon-directory (nasdf-file)
   ((asdf/interface::type :initform "png")) ; TODO: Is there a standard way to access the type?
@@ -196,6 +201,13 @@ Final path is resolved in `dest-source-dir'.")
   (values (list (merge-pathnames* (merge-pathnames*
                                    (basename (asdf:component-name c))
                                    "metainfo/")
+                                  *datadir*))
+          t))
+
+(defmethod asdf:output-files ((op asdf:compile-op) (c nasdf-icon-scalable-file))
+  (values (list (merge-pathnames* (merge-pathnames*
+                                   (basename (asdf:component-name c))
+                                   "icons/hicolor/scalable/apps/")
                                   *datadir*))
           t))
 
