@@ -182,7 +182,11 @@ Return nil on error."
 (defvar *static-data* (make-hash-table :test 'equal)
   "Static data for usage in Nyxt.")
 
-(mapcar (lambda (i)
-          (setf (gethash (file-namestring i) *static-data*)
-                (alexandria:read-file-into-byte-vector i)))
-        (uiop:directory-files (asdf:system-relative-pathname :nyxt "assets/fonts/")))
+(defun load-assets (subdirectory read-function)
+  (mapcar (lambda (i)
+            (setf (gethash (file-namestring i) *static-data*)
+                  (funcall read-function i)))
+          (uiop:directory-files (asdf:system-relative-pathname :nyxt (format nil "assets/~a/" subdirectory)))))
+
+(load-assets "fonts" #'alexandria:read-file-into-byte-vector)
+(load-assets "glyphs" #'alexandria:read-file-into-string)
