@@ -44,7 +44,7 @@
 (defclass nasdf-icon-directory (nasdf-file)
   ((asdf/interface::type :initform "png")) ; TODO: Is there a standard way to access the type?
   (:documentation "Component type for directory containing icon files to install.
-File ot type `type' are looked for.
+File of type `type' are looked for.
 The last number found in the file name is used to install the icon in the right directory."))
 (import 'nasdf-icon-directory :asdf-user)
 
