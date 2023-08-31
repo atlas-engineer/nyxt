@@ -16,7 +16,7 @@ LISP_FLAGS ?= $(SBCL_FLAGS) --no-userinit --non-interactive
 FLATPAK_COMMAND = flatpak
 FLATPAK_BUILDER = flatpak-builder
 FLATPAK_APP_ID = engineer.atlas.Nyxt
-FLATPAK_MANIFEST := $(FLATPAK_APP_ID).yaml
+FLATPAK_MANIFEST := build-scripts/$(FLATPAK_APP_ID).yaml
 FLATPAK_EXPORT_REPOSITORY = _build/nyxt-flatpak-repository
 
 export NYXT_SUBMODULES=true
