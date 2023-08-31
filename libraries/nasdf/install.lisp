@@ -211,6 +211,7 @@ Final path is resolved in `dest-source-dir'.")
                                   *datadir*))
           t))
 
+;; TODO Moving png icons to assets/icons would simplify their handling.
 (defun scan-last-number (path)
   "Return the last number found in PATH.
 Return NIL is there is none."
