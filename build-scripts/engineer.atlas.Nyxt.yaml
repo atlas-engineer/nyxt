@@ -1,9 +1,17 @@
+# Keep in sync with https://github.com/flathub/engineer.atlas.Nyxt/.
 app-id: engineer.atlas.Nyxt
-# TODO Should be replaced it with org.gnome.Platform.  Shared libraries aren't
-# available from org.gnome.Platform, therefore we use the development runtime.
+# org.gnome.Sdk instead of org.gnome.Platform since shared object
+# libwebkit2gtk-4.1.so can only be found on the latter.
+# The cl-webkit submodule can't be patched in this manifest since it would be
+# overwritten by the calls to (asdf:load-system :nyxt/submodules), from make
+# install.
+# A fix is to merge https://github.com/joachifm/cl-webkit/pull/73.
 runtime: org.gnome.Sdk
-runtime-version: "44"
+runtime-version: '44'
 sdk: org.gnome.Sdk
+rename-icon: nyxt
+rename-appdata-file: nyxt.metainfo.xml
+rename-desktop-file: nyxt.desktop
 command: nyxt
 
 finish-args:
@@ -14,29 +22,24 @@ finish-args:
   - --socket=fallback-x11
   - --socket=pulseaudio
   - --socket=cups
-  - --filesystem=xdg-cache
-  - --filesystem=xdg-config
   - --filesystem=xdg-documents
   - --filesystem=xdg-download
   - --filesystem=xdg-music
   - --filesystem=xdg-videos
   - --filesystem=xdg-pictures
-  - --talk-name=org.a11y.Bus
   # See http://sbcl.org/getting.html
-  - --env=SBCL_HOME="/app/lib/sbcl"
+  - --env=SBCL_HOME=/app/lib/sbcl
 
 modules:
   - name: sbcl
     buildsystem: simple
     sources:
       - type: archive
-        url: http://prdownloads.sourceforge.net/sbcl/sbcl-2.3.7-x86-64-linux-binary.tar.bz2
-        sha256: 24b38951712a08a3220cac289e6d89692e26d345fd62d9d99c6fc49618cebe8c
-    build-options:
-      env:
-        INSTALL_ROOT: /app
+        url: http://prdownloads.sourceforge.net/sbcl/sbcl-2.3.8-x86-64-linux-binary.tar.bz2
+        sha256: 153405265c2bd069a874b0e05ac1d607ff9aaf2a65022df873458dfb95a989cf
+        only-arches: [x86_64]
     build-commands:
-      - sh install.sh
+      - INSTALL_ROOT=${FLATPAK_DEST} sh install.sh
 
   - name: xsel
     buildsystem: autotools
@@ -53,7 +56,7 @@ modules:
     sources:
       - type: git
         url: https://github.com/bugaevc/wl-clipboard.git
-        tag: v2.1.0
+        tag: v2.2.1
 
   - name: libfixposix
     buildsystem: autotools
@@ -65,17 +68,17 @@ modules:
         dest-filename: autogen.sh
         commands:
           - autoreconf -fi
+    cleanup:
+      - /lib/pkgconfig
+      - /include
+      - '*.h'
+      - '*.pc'
+      - '*.la'
 
   - name: nyxt
     buildsystem: simple
     sources:
       - type: dir
-        path: .
+        path: ..
     build-commands:
-      - make all
-      - mkdir -p $FLATPAK_DEST/bin
-      - mv nyxt $FLATPAK_DEST/bin/
-      - install -D assets/nyxt.metainfo.xml /app/share/appdata/engineer.atlas.Nyxt.appdata.xml
-      # See method files:resolve that specializes nyxt-source-directory
-      - mkdir -p $FLATPAK_DEST/share/nyxt
-      - mv * $FLATPAK_DEST/share/nyxt
+      - make install DESTDIR=${FLATPAK_DEST} PREFIX=
