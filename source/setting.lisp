@@ -271,7 +271,7 @@ automatically filtered out. "
   (:documentation "A setting for applying a HANDLER to browser."))
 
 (export-always 'apply-generic-setting)
-(defun apply-generic-setting (handler generic-setting-class)
+(defun apply-generic-setting (generic-setting-class handler)
   "Configure a class by applying a handler with generic setting."
   (let ((auto-config-p (if-confirm ("Apply this setting on restart?")))
         (new-instances-p (if-confirm ("Apply this setting until the end of this session?")))
