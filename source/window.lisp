@@ -161,10 +161,9 @@ The handlers take the window as argument."))
   (setf (slot-value window 'active-buffer) buffer))
 
 (defun print-status (&optional (window (current-window)))
-  (when (and window (status-buffer window))
-    (ffi-print-status
-     window
-     (format-status (status-buffer window)))))
+  (with-slots (status-buffer) window
+    (when (and window status-buffer)
+      (ffi-print-status window (format-status status-buffer)))))
 
 (hooks:define-hook-type window (function (window))
   "Hook acting on `window's.")
