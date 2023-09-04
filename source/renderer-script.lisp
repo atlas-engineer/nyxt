@@ -171,10 +171,14 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
          (setf (ps:chain style-element inner-text) (ps:lisp style)))
        (:catch (error))))))
 
-(defun html-write (content &optional (buffer (current-buffer)))
-  "Write CONTENT into BUFFER page."
-  (ps-eval :async t :buffer buffer
-    (ps:chain document (write (ps:lisp content)))))
+(defun html-write (html-document &optional (buffer (current-buffer)))
+  "Set BUFFER's document to HTML-DOCUMENT.
+Overwrites the whole HTML document (head and body elements included)."
+  ;; Don't use document.write().
+  ;; See https://developer.mozilla.org/en-US/docs/Web/API/Document/write.
+  (ps-eval :buffer buffer
+    (setf (ps:chain document (get-elements-by-tag-name "html") 0 |innerHTML|)
+          (ps:lisp html-document))))
 
 (defun html-set (content &optional (buffer (current-buffer)))
   "Set BUFFER contents to CONTENT."
