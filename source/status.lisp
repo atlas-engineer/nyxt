@@ -191,11 +191,11 @@ Augment this with `style' of STATUS, if necessary."
 
 (export-always 'format-status)
 (define-generic format-status ((status status-buffer))
-  "Render all of the STATUS.
+  "Return a string corresponding to the body of the HTML document of STATUS.
 
-This is the best point to override the structure of the STATUS, because all the
-other functions (like `format-status-url', `format-status-modes') are used here
-and can all be overriden with one method redefinition."
+To override all that is displayed on STATUS, redefine this method.  To partially
+override it, redefine methods such as `format-status-url' or
+`format-status-modes'."
   (let* ((buffer (current-buffer (window status))))
     (spinneret:with-html-string
       (:div :id "container"
