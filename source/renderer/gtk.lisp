@@ -2071,15 +2071,6 @@ custom (the specified proxy) and none."
   (webkit:webkit-web-inspector-show
    (webkit:webkit-web-view-get-inspector (gtk-object buffer))))
 
-(define-ffi-method ffi-print-status ((window gtk-window) text)
-  (with-slots (status-buffer) window
-    (webkit2:webkit-web-view-evaluate-javascript
-     (gtk-object status-buffer)
-     (ps:ps (setf (ps:chain document (get-elements-by-tag-name "html") 0 |innerHTML|)
-                  (ps:lisp (spinneret:with-html-string
-                             (:head (:nstyle (style status-buffer)))
-                             (:body (:raw text)))))))))
-
 (define-ffi-method ffi-print-message ((window gtk-window) message)
   (webkit2:webkit-web-view-evaluate-javascript
    (message-view window)

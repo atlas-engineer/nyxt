@@ -254,9 +254,17 @@ When done, call `call-next-method' to finalize the startup."
 (define-ffi-generic ffi-inspector-show (buffer)
   "Show the renderer built-in inspector.")
 
-(define-ffi-generic ffi-print-status (window text)
-  "Display TEXT in the WINDOW status buffer.")
+(define-ffi-generic ffi-print-status (window html-body)
+  "Display status buffer in WINDOW according to HTML-BODY.
+The `style' of the status buffer is honored."
+  (with-slots (status-buffer) window
+    (html-write (spinneret:with-html-string
+                  (:head (:nstyle (style status-buffer)))
+                  (:body (:raw html-body)))
+                status-buffer)))
 
+;; The strategy taken in `ffi-print-status' can't be replicated since the
+;; message buffer isn't a buffer.
 (define-ffi-generic ffi-print-message (window message)
   "Print MESSAGE (an HTML string) in the WINDOW message buffer.")
 
