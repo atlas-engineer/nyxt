@@ -266,7 +266,7 @@ The `style' of the status buffer is honored."
 ;; The strategy taken in `ffi-print-status' can't be replicated since the
 ;; message buffer isn't a buffer.
 (define-ffi-generic ffi-print-message (window message)
-  "Print MESSAGE (an HTML string) in the WINDOW message buffer.")
+  "Print MESSAGE in the WINDOW's message buffer.")
 
 (define-ffi-generic ffi-display-url (browser url)
   "Return URL as a human-readable string.
