@@ -192,7 +192,9 @@ It takes a pathname and returns a boolean.  For simpler cases, use
       ;; Audio.
       "mp3" "oga" "m4a"
       ;; Video.
-      "flac" "ogv" "m4v" "flv" "mov" "wmv" "webm" "mkv")
+      "flac" "ogv" "m4v" "flv" "mov" "wmv" "webm" "mkv"
+      ;; Documents
+      "pdf")
     :type (list-of string)
     :documentation "Media types that Nyxt opens.
 Other formats are opened relying on the OS.")
