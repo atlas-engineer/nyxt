@@ -185,8 +185,7 @@ prompt buffer.")
     :type theme:theme
     :documentation "The theme to use for all the browser interface elements.")
    (glyph-logo
-    #.(alexandria:read-file-into-string
-       (asdf:system-relative-pathname :nyxt "assets/nyxt.svg"))
+    (gethash "nyxt.svg" *static-data*)
     :documentation "The logo of Nyxt as an SVG.")
    (history-file
     (make-instance 'history-file)
