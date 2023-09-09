@@ -74,6 +74,19 @@ See also the `profile' slot in the `browser' class.")
               :color ,theme:on-background
               :margin-left "20px"
               :margin-top "20px")
+            `(ul
+              :margin-top "0"
+              :margin-bottom "0")
+            `("details > *"
+              :margin-left "18px")
+            `("details > ul"
+              :margin-left "inherit")
+            `("details summary"
+              :margin-left "inherit"
+              :margin-bottom "8px"
+              :cursor "pointer")
+            `("summary::-webkit-details-marker"
+              :padding-bottom "4px")
             `(.section
               :margin-top "2em")
             `("h1"
