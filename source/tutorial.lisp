@@ -503,19 +503,21 @@ describe, such as "
                  (:nxref :command 'describe-bindings) " or "
                  (:nxref :command 'describe-any) ".")))
       (:hr)
-      ;; FIXME There must be a cleaner way to do it.
-      (:div
-       :style "position: fixed; bottom: 4px; width: 80%;  margin: 4px 7%;"
-       :class "progress-bar-container"
-       (:div :class "progress-bar-base"
-             (:div
-              :class "progress-bar-fill"
-              :style (format nil "width: ~,1f%;" (* 100 (/ (1+ page) len-titles)))))
-       (:a.button
-        :style "line-height: 12px; text-decoration: none; position: fixed; bottom: 4px; left: 4px;"
-        :href (nyxt-url 'quick-start :page (max (1- page) 0))
-        "⬅")
-       (:a.button
-        :style "line-height: 12px; text-decoration: none; position: fixed; bottom: 4px; right: 4px;"
-        :href (nyxt-url 'quick-start :page (min (1+ page) (1- len-titles)))
-        "➡")))))
+      (:div :style "position: absolute; bottom: 10px; right: 10px; left: 10px"
+            (:div :style "display: grid; grid-template-columns: 20px 1fr 20px; grid-gap: 10px"
+                  (:div
+                   (:a.button
+                    :style "width: 100%; padding: 0"
+                    :href (nyxt-url 'quick-start :page (max (1- page) 0))
+                    (:raw (gethash "left.svg" *static-data*))))
+                  (:div :class "progress-bar-container"
+                        :style "margin: auto;"
+                        (:div :class "progress-bar-base"
+                              (:div
+                               :class "progress-bar-fill"
+                               :style (format nil "width: ~,1f%;" (* 100 (/ (1+ page) len-titles))))))
+                  (:div
+                   (:a.button
+                    :style "width: 100%; padding: 0;"
+                    :href (nyxt-url 'quick-start :page (min (1+ page) (1- len-titles)))
+                    (:raw (gethash "right.svg" *static-data*)))))))))
