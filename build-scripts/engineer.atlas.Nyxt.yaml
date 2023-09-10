@@ -1,12 +1,6 @@
 # Keep in sync with https://github.com/flathub/engineer.atlas.Nyxt/.
 app-id: engineer.atlas.Nyxt
-# org.gnome.Sdk instead of org.gnome.Platform since shared object
-# libwebkit2gtk-4.1.so can only be found on the latter.
-# The cl-webkit submodule can't be patched in this manifest since it would be
-# overwritten by the calls to (asdf:load-system :nyxt/submodules), from make
-# install.
-# A fix is to merge https://github.com/joachifm/cl-webkit/pull/73.
-runtime: org.gnome.Sdk
+runtime: org.gnome.Platform
 runtime-version: '44'
 sdk: org.gnome.Sdk
 rename-icon: nyxt
@@ -22,11 +16,7 @@ finish-args:
   - --socket=fallback-x11
   - --socket=pulseaudio
   - --socket=cups
-  - --filesystem=xdg-documents
-  - --filesystem=xdg-download
-  - --filesystem=xdg-music
-  - --filesystem=xdg-videos
-  - --filesystem=xdg-pictures
+  - --filesystem=host
   # See http://sbcl.org/getting.html
   - --env=SBCL_HOME=/app/lib/sbcl
 
