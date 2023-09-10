@@ -42,6 +42,7 @@ jobs:
       shell: bash
       run: |
         sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+        sudo flatpak install --noninteractive org.gnome.Platform/x86_64/44
         sudo flatpak install --noninteractive org.gnome.Sdk/x86_64/44
         make flatpak-repository
         make flatpak-bundle
