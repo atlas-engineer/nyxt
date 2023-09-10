@@ -834,12 +834,14 @@ Chromium, Brave and Vivaldi. For instance, "
         " and the " (:nxref :command 'nyxt/mode/bookmarklets:darken)
         " bookmarklet command."))))
 
-(define-version "3.X.X"
-  (:nsection :title "Features"
-    (:ul
-     (:li "The installation process now takes into account the Appdata file and
-a scalable icon.")))
+(define-version "3.7.0"
   (:nsection :title "UI/UX"
     (:ul
-     (:li "Make padding for source columns and suggestions consistent.")
-     (:li "Round corners on arrows in status buffer."))))
+     (:li "Minor UI improvements on the status and prompt buffer.")
+     (:li "Stylistic review of the manual to improve readability.")))
+  (:nsection :title "Features"
+    (:ul
+     (:li "Add possibility to open PDF files via command "
+          (:nxref :command 'nyxt/mode/file-manager:open-file) ".")
+     (:li "The installation process now takes into account the Appdata file and
+a scalable icon."))))
