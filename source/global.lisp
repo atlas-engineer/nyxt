@@ -127,20 +127,23 @@ relying on neither ASDF nor Git.
 
 `version' and Nyxt-related feature expressions all rely on `+version+'.")
 
-(defun version ()
-  "Return 5 values:
+(defun parse-version (version)
+  "Helper for `version' to parse any version string, not only `+version+'.
+
+Return 5 values:
 - MAJOR version as integer,
 - MINOR version as integer,
 - PATCH version as integer,
-- COMMITS as number of commits from the last release,
-- and current COMMIT as string.
-Return nil on error."
+- current COMMIT as string.
+- and COMMITS as number of commits from the last release,
+
+Return NIL on error."
   (ignore-errors
    ;; Pre-releases are falling outside the conventional version values.
-   (if (search "pre-release" +version+)
-       (parse-integer (first (str:split "-" +version+)))
+   (if (search "pre-release" version)
+       (parse-integer (first (str:split "-" version)))
        (destructuring-bind (version &optional commits commit)
-           (str:split "-" +version+)
+           (str:split "-" version)
          (let* ((integer-commits-p (and commits (every #'digit-char-p commits)))
                 (commits-number (if integer-commits-p
                                     (parse-integer commits)
@@ -151,6 +154,11 @@ Return nil on error."
            (destructuring-bind (&optional major minor patch)
                (uiop:parse-version version)
              (values major minor patch commit commits-number)))))))
+
+(defun version ()
+  "Get the version of Nyxt parsed as multiple values.
+See `parse-version' for details on the returned values."
+  (parse-version +version+))
 
 (multiple-value-bind (major minor patch commit commits)
     (version)
