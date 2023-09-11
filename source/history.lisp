@@ -369,9 +369,11 @@ Return non-NIL of history was restored, NIL otherwise."
     (match data
       (nil nil)
       ((guard (list version history) t)
-       (unless (string= version +version+)
-         (log:warn "History version ~s differs from current version ~s"
-                   version +version+))
+       ;; The equality is exclusively established on the first return value,
+       ;; i.e. the major version.
+       (unless (= (parse-version version) (version))
+         (log:warn "History major version ~s differs from current major version ~s"
+                   (parse-version version) (version)))
        history)
       (_ (progn
            (error "Expected (list version history) structure.")
