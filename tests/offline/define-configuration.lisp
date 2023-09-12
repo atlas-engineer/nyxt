@@ -7,32 +7,40 @@
   (let ((test-url (quri:uri "about:blank")))
     (nyxt:define-configuration nyxt:browser
       ((nyxt:default-new-buffer-url test-url)))
-    (let ((browser (make-instance 'browser)))
-      (assert-equality #'quri:uri=
-                       test-url
-                       (nyxt:default-new-buffer-url browser)))
+    (assert-equality #'quri:uri=
+                     test-url
+                     (nyxt:default-new-buffer-url (make-instance 'browser)))
     (nyxt:clean-configuration)
-    (let ((browser (make-instance 'browser)))
-      (assert-equality #'quri:uri=
-                       (quri:uri (nyxt-url 'new))
-                       (nyxt:default-new-buffer-url browser)))
+    (assert-equality #'quri:uri=
+                     (quri:uri (nyxt-url 'new))
+                     (nyxt:default-new-buffer-url (make-instance 'browser)))
+    (nyxt:clean-configuration)))
+
+(define-test overwritten-configuration ()
+  (let ((test-first-url (quri:uri "https://example.com/first"))
+        (test-second-url (quri:uri "https://example.com/second")))
+    (nyxt:define-configuration nyxt:browser
+      ((nyxt:default-new-buffer-url test-first-url)))
+    (nyxt:define-configuration nyxt:browser
+      ((nyxt:default-new-buffer-url test-second-url)))
+    (assert-equality #'quri:uri=
+                     test-second-url
+                     (nyxt:default-new-buffer-url (make-instance 'browser)))
     (nyxt:clean-configuration)))
 
 (define-test slot-default ()
   (let ((test-url (quri:uri "about:blank")))
     (nyxt:define-configuration nyxt:browser
       ((nyxt:default-new-buffer-url test-url)))
-    (let ((browser (make-instance 'browser)))
-      (assert-equality #'quri:uri=
-                       test-url
-                       (nyxt:default-new-buffer-url browser)))
+    (assert-equality #'quri:uri=
+                     test-url
+                     (nyxt:default-new-buffer-url (make-instance 'browser)))
     (nyxt:clean-configuration)
     (nyxt:define-configuration nyxt:browser
       ((nyxt:default-new-buffer-url nyxt:%slot-default%)))
-    (let ((browser (make-instance 'browser)))
-      (assert-equality #'quri:uri=
-                       (quri:uri (nyxt-url 'new))
-                       (nyxt:default-new-buffer-url browser)))
+    (assert-equality #'quri:uri=
+                     (quri:uri (nyxt-url 'new))
+                     (nyxt:default-new-buffer-url (make-instance 'browser)))
     (nyxt:clean-configuration)))
 
 (define-test test-slot-value ()
@@ -46,6 +54,5 @@
                                             (make-instance 'hooks:handler
                                                            :fn (lambda () (print 'dummy2))
                                                            :name 'dummy2)))))
-  (let ((browser (make-instance 'browser)))
-    (assert-eql 2
-                (length (hooks:handlers (nyxt:before-exit-hook browser))))))
+  (assert-eql 2
+              (length (hooks:handlers (nyxt:before-exit-hook (make-instance 'browser))))))
