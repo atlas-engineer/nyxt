@@ -20,33 +20,9 @@
    (target-class-name
     t
     :type symbol)
-   (current-instance-p
-    t
-    :type boolean
-    :initarg nil
-    :reader t
-    :writer nil)
-   (current-instance
+   (target-instances
     (constantly nil)
     :type function
-    :initarg nil
-    :reader t
-    :writer nil)
-   (all-instances-p
-    nil
-    :type boolean
-    :initarg nil
-    :reader t
-    :writer nil)
-   (all-instances
-    (constantly nil)
-    :type function
-    :initarg nil
-    :reader t
-    :writer nil)
-   (new-instances-p
-    t
-    :type boolean
     :initarg nil
     :reader t
     :writer nil)
@@ -67,7 +43,6 @@ See `apply-setting'."))
 (defmethod initialize-instance :after ((setting setting) &key)
   (setf (gethash (name setting) *settings*) setting))
 
-;; TODO: Simplify and maybe move to a different package.
 (defun find-writer (class-name slot-name)
   (some (lambda (c)
           (find-method (fdefinition `(setf ,slot-name))
@@ -123,27 +98,24 @@ See `apply-setting'."
                                              (slot-name setting))))
             (funcall (closer-mop:method-generic-function writer) (new-value setting) object)
             (setf (slot-value object (slot-name setting)) (new-value setting))))
-    ;; TODO: Use `:place' / `:value'?
-    ;; What if we want to stack the changes?
-    ;; Also, does that ignore the slot writer?
     :name (gensym "EXTEND-CONFIGURATION"))
    :append t))
 
 ;; TODO: SLOT should be WRITER-NAME (a symbol) instead.
 (defmethod apply-setting ((setting setting)
-                          &key current-instance instances new-instances-p auto-config-p)
+                          &key target-instances-p new-instances-p auto-config-p)
   "Update new instances of SETTING's `target-class-name'."
-  (declare (ignore current-instance instances auto-config-p))
-  (when (and (new-instances-p setting) new-instances-p)
+  (declare (ignore target-instances-p auto-config-p))
+  (when new-instances-p
     (extend-configuration setting)))
 
 (defmethod apply-setting ((setting slot-setting)
-                          &key current-instance-p all-instances-p new-instances-p auto-config-p)
-  "With CLASS-NAME, CURRENT-INSTANCE and INSTANCES that are not of this class are
+                          &key target-instances-p new-instances-p auto-config-p)
+  "With CLASS-NAME, TARGET-INSTANCES that are not of this class are
 automatically filtered out. "
   (declare (ignore new-instances-p))
   (call-next-method)
-  (when (and (auto-config-p setting) auto-config-p)
+  (when auto-config-p
     (nyxt::auto-configure
      :class-name (target-class-name setting)
      :slot (slot-name setting)
@@ -154,12 +126,8 @@ automatically filtered out. "
                     (sera:filter (if (target-class-name setting)
                                      (sera:eqs (target-class-name setting))
                                      #'identity)
-                                 (append (when (and current-instance-p
-                                                    (current-instance-p setting))
-                                           (uiop:ensure-list (funcall (current-instance setting))))
-                                         (when (and all-instances-p
-                                                    (all-instances-p setting))
-                                           (funcall (all-instances setting))))
+                                 (when target-instances-p
+                                   (uiop:ensure-list (funcall (target-instances setting))))
                                  :key #'sera:class-name-of))))
     (mapc (lambda (instance)
             (alex:if-let ((writer (find-writer (target-class-name setting)
@@ -169,7 +137,7 @@ automatically filtered out. "
           instances)))
 
 (defmethod apply-setting ((setting generic-setting)
-                          &key current-instance-p all-instances-p new-instances-p auto-config-p)
+                          &key target-instances-p new-instances-p auto-config-p)
   "With CLASS-NAME, CURRENT-INSTANCE and INSTANCES that are not of this class are
 automatically filtered out. "
   (declare (ignore new-instances-p))
@@ -183,12 +151,8 @@ automatically filtered out. "
                     (sera:filter (if (target-class-name setting)
                                      (sera:eqs (target-class-name setting))
                                      #'identity)
-                                 (append (when (and current-instance-p
-                                                    (current-instance-p setting))
-                                           (uiop:ensure-list (funcall (current-instance setting))))
-                                         (when (and all-instances-p
-                                                    (all-instances-p setting))
-                                           (funcall (all-instances setting))))
+                                 (when target-instances-p
+                                   (uiop:ensure-list (funcall (target-instances setting))))
                                  :key #'sera:class-name-of))))
     (mapc (handler setting) instances)))
 
@@ -196,8 +160,8 @@ automatically filtered out. "
   ((target-class-name
     'browser
     :type symbol)
-   (current-instance
-    (lambda () *browser*)
+   (target-instances
+    (lambda () (list *browser*))
     :type function
     :initarg nil
     :reader t
@@ -210,20 +174,8 @@ automatically filtered out. "
   ((target-class-name
     'web-buffer
     :type symbol)
-   (all-instances-p
-    t
-    :type boolean
-    :initarg nil
-    :reader t
-    :writer nil)
-   (all-instances
+   (target-instances
     (lambda () (buffer-list))
-    :type function
-    :initarg nil
-    :reader t
-    :writer nil)
-   (current-instance
-    (lambda () (current-buffer))
     :type function
     :initarg nil
     :reader t
@@ -273,17 +225,15 @@ automatically filtered out. "
 (export-always 'apply-generic-setting)
 (defun apply-generic-setting (generic-setting-class handler)
   "Configure a class by applying a handler with generic setting."
-  (let ((auto-config-p (if-confirm ("Apply this setting on restart?")))
+  (let ((target-instances-p (if-confirm ("Apply this setting immediately?")))
         (new-instances-p (if-confirm ("Apply this setting until the end of this session?")))
-        (all-instances-p (if-confirm ("Apply this setting immediately?")))
-        (current-instance-p (if-confirm ("Apply this setting to the current instance?"))))
+        (auto-config-p (if-confirm ("Apply this setting on restart?"))))
     (when (mopu:subclassp generic-setting-class 'generic-setting)
       (apply-setting (make-instance generic-setting-class
                                     :handler handler)
                      :auto-config-p auto-config-p
                      :new-instances-p new-instances-p
-                     :all-instances-p all-instances-p
-                     :current-instance-p current-instance-p))))
+                     :target-instances-p target-instances-p))))
 
 (export-always 'apply-slot-setting)
 (defun apply-slot-setting (slot-name slot-setting-class &optional new-value)
@@ -293,18 +243,16 @@ automatically filtered out. "
                         (prompt1
                          :prompt (format nil "Configure slot value ~a" slot-name)
                          :sources 'prompter:raw-source))))
-        (auto-config-p (if-confirm ("Apply this setting on restart?")))
+        (target-instances-p (if-confirm ("Apply this setting immediately?")))
         (new-instances-p (if-confirm ("Apply this setting until the end of this session?")))
-        (all-instances-p (if-confirm ("Apply this setting immediately?")))
-        (current-instance-p (if-confirm ("Apply this setting to the current instance?"))))
+        (auto-config-p (if-confirm ("Apply this setting on restart?"))))
     (when (mopu:subclassp slot-setting-class 'slot-setting)
       (apply-setting (make-instance slot-setting-class
                                     :slot-name slot-name
                                     :new-value new-value)
                      :auto-config-p auto-config-p
                      :new-instances-p new-instances-p
-                     :all-instances-p all-instances-p
-                     :current-instance-p current-instance-p))))
+                     :target-instances-p target-instances-p))))
 
 (defun find-setting (setting-designator)
   (gethash (intern (symbol-name setting-designator))
