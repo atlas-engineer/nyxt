@@ -960,6 +960,29 @@ Also see `panel-page'."))
   (:export-predicate-name-p t)
   (:metaclass user-class))
 
+(define-class message-buffer (input-buffer)
+  ((window
+    nil
+    :type (maybe window)
+    :documentation "The `window' to which the message buffer is attached.")
+   (height
+    16
+    :type integer
+    :documentation "The height of the message buffer in pixels.")
+   (style (theme:themed-css (theme *browser*)
+            `(body
+              :background-color ,theme:background
+              :color ,theme:on-background
+              :opacity 0.9
+              :font-size "12px"
+              :padding 0
+              :padding-left "4px"
+              :margin 0))))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:export-predicate-name-p t)
+  (:metaclass user-class))
+
 (defmethod customize-instance :after ((buffer buffer)
                                       &key (browser *browser*)
                                         no-hook-p
