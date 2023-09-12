@@ -757,7 +757,7 @@ existing instance instead of a separate instance that exits immediately.")
             " when dealing with a remote instance, it will go into a REPL mode, allowing an
 immediate communication with an instance:")
         (:pre (:code "nyxt --remote
-(echo \"~s\" (+ 1 2)) ;; Shows '3' in the message area of remote Nyxt")))
+(echo \"~s\" (+ 1 2)) ;; Shows '3' in the message buffer of remote Nyxt")))
 
       (:nsection :title "User scripts"
         (:p "User scripts are a conventional and lightweight way to run arbitrary JavaScript

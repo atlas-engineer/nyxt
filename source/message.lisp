@@ -27,7 +27,7 @@ LOGGER is the log4cl logger to user, for instance `log:warn'."
        (let ((,expanded-text ,text))
          (unless (str:emptyp ,expanded-text)
            (,logger "~a" ,expanded-text))
-         ;; Allow empty strings to clear message area.
+         ;; Allow empty strings to clear message buffer.
          (print-message ,expanded-text)))))
 
 (export-always 'echo)

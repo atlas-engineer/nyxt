@@ -299,28 +299,19 @@ Return NIL if not a class form."
 (export-always 'define-configuration)
 (defmacro define-configuration (classes &body slots-and-values)
   "Helper macro to customize the class slots of the CLASSES.
-CLASSES is either a symbol or a list of symbols.
 
-Classes can be modes or a one of the user-configurable classes like `browser',
-`buffer', `prompt-buffer', `window'.
+CLASSES is either a symbol or a list of symbols.  Only user-configurable classes
+are valid, such as `browser', `buffer', `prompt-buffer', `window' or modes such
+as `nyxt/mode/hint:hint-mode'.
 
 SLOTS-AND-VALUES is a list of slot re-definitions, optionally preceded by a
-docstring. The `%slot-default%' variable is replaced by the slot initform, the
-`%slot-value%' is replaced by the current value of the slot.
+docstring. The `%slot-default%' variable is replaced by the slot's initform,
+while `%slot-value%' is replaced by the slot's current value .
 
-Example that sets some defaults for all buffers:
+Example:
 
-\(define-configuration (buffer web-buffer)
-  \"Increase the height of the status buffer (mode line) and use VI keybindings.\"
-  ((status-buffer-height (* 2 %slot-value%)
-                         :doc \"Use this is status buffer is too small.\")
-   (default-modes (append '(vi-normal-mode) %slot-default%)
-                  :documentation \"You can use %SLOT-VALUE% instead.
-This will make your config more composable.\")))
-
-In the above, `%slot-default%' will be substituted with the return value of
-`default-modes', and `%slot-value%' will be substituted with the value of
-`status-buffer-height' at the moment of configuration code running.
+\(define-configuration web-buffer
+  ((default-modes (pushnew 'nyxt/mode/force-https:force-https-mode %slot-value%))))
 
 Example to get the `blocker-mode' command to use a new default hostlists:
 
@@ -329,7 +320,7 @@ Example to get the `blocker-mode' command to use a new default hostlists:
                                 :doc \"You have to define *my-blocked-hosts* first.\")))
 
 To discover the default value of a slot or all slots of a class, use the
-`describe-slot' or `describe-class' commands respectively."
+`describe-slot' or `describe-class' commands, respectively."
   (alex:with-gensyms (handler hook)
     `(progn
        ,@(loop

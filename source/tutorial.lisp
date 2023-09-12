@@ -89,8 +89,8 @@ upon return.  The suggestion under the cursor is not processed if not marked.")
                  :mode 'nyxt/mode/prompt-buffer:prompt-buffer-mode)
                ": Change which attributes are displayed in the suggestions list.")))
 
-      (:nsection :title "Message area"
-        (:p "The message area represents a space (typically at the bottom of a
+      (:nsection :title "Message buffer"
+        (:p "The message buffer represents a space (typically at the bottom of a
 window) where Nyxt outputs messages back to you. To view the history of all
 messages, invoke the command " (:nxref :command 'nyxt/mode/message:list-messages) "."))
 

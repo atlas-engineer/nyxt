@@ -615,10 +615,10 @@ The following example does a few things:
 (defun javascript-error-handler (condition)
   (echo-warning "JavaScript error: ~a" condition))
 
-(defun print-message (message &optional window)
-  (let ((window (or window (current-window))))
-    (when window
-      (ffi-print-message window message))))
+(defun print-message (html-body &optional (window (current-window)))
+  (with-slots (message-buffer) window
+    (when (and window message-buffer)
+      (ffi-print-message window html-body))))
 
 (export-always 'current-window)
 (defun current-window (&optional no-rescan)
@@ -660,7 +660,8 @@ Return BUFFER."
   (find-if #'ffi-focused-p
            (list (first (active-prompt-buffers window))
                  (active-buffer window)
-                 (status-buffer window))))
+                 (status-buffer window)
+                 (message-buffer window))))
 
 (define-internal-page-command-global reduce-to-buffer (&key (delete t))
     (reduced-buffer "*Reduced Buffers*")

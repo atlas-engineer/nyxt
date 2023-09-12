@@ -971,9 +971,8 @@ Also see `panel-page'."))
     :documentation "The height of the message buffer in pixels.")
    (style (theme:themed-css (theme *browser*)
             `(body
-              :background-color ,theme:background
-              :color ,theme:on-background
-              :opacity 0.9
+              :background-color ,theme:background-alt
+              :color ,theme:on-background-alt
               :font-size "12px"
               :padding 0
               :padding-left "4px"
