@@ -80,7 +80,6 @@ See also the `web-contexts' slot."))
     :documentation "Shared web view between all prompt buffers of this window.")
    (status-container)
    (message-container)
-   (message-view)
    (key-string-buffer))
   (:export-class-name-p t)
   (:export-accessor-names-p nil))
@@ -443,7 +442,7 @@ response.  The BODY is wrapped with `with-protect'."
                   nyxt::active-buffer prompt-buffer-container
                   prompt-buffer-view
                   status-buffer status-container
-                  message-container message-view
+                  message-buffer message-container
                   key-string-buffer)
          window
        (unless gtk-object
@@ -490,11 +489,11 @@ response.  The BODY is wrapped with `with-protect'."
          (gtk:gtk-box-pack-start horizontal-box-layout panel-buffer-container-right :expand nil)
          (gtk:gtk-box-pack-start root-box-layout horizontal-box-layout :expand t :fill t)
 
-         (setf message-view (make-web-view (global-profile) nil))
          (gtk:gtk-box-pack-end root-box-layout message-container :expand nil)
-         (gtk:gtk-box-pack-start message-container message-view :expand t)
+         (gtk:gtk-box-pack-start root-box-layout message-container :expand nil)
+         (gtk:gtk-box-pack-start message-container (gtk-object message-buffer) :expand t)
          (setf (gtk:gtk-widget-size-request message-container)
-               (list -1 (message-buffer-height window)))
+               (list -1 (height message-buffer)))
 
          (when (eq (status-buffer-position window) :bottom)
            (gtk:gtk-box-pack-end root-box-layout status-container :expand nil))
@@ -955,10 +954,12 @@ See `gtk-browser's `modifier-translator' slot."
                       (webkit:webkit-uri-scheme-request-get-uri request)
                       (find (webkit:webkit-uri-scheme-request-get-web-view request)
                             (delete nil
-                                    (append (list (status-buffer (current-window)))
+                                    (append (list (status-buffer (current-window))
+                                                  (message-buffer (current-window)))
                                             (nyxt::active-prompt-buffers (current-window))
                                             (nyxt::panel-buffers (current-window))
-                                            (buffer-list))) :key #'gtk-object))))
+                                            (buffer-list)))
+                            :key #'gtk-object))))
         (or (error-callback scheme-object)
             (lambda (condition)
               (echo-warning "Error while routing ~s resource: ~a" scheme condition))))
@@ -1307,10 +1308,10 @@ the `active-buffer'."
   (setf (gtk:gtk-widget-size-request (status-container (window buffer)))
         (list -1 height)))
 
-(define-ffi-method ffi-window-message-buffer-height ((window gtk-window))
-  (nth-value 1 (gtk:gtk-widget-size-request (message-container window))))
-(define-ffi-method (setf ffi-window-message-buffer-height) (height (window gtk-window))
-  (setf (gtk:gtk-widget-size-request (message-container window))
+(define-ffi-method ffi-height ((buffer message-buffer))
+  (nth-value 1 (gtk:gtk-widget-size-request (message-container (window buffer)))))
+(define-ffi-method (setf ffi-height) (height (buffer message-buffer))
+  (setf (gtk:gtk-widget-size-request (message-container (window buffer)))
         (list -1 height)))
 
 (define-ffi-method ffi-height ((buffer gtk-buffer))
@@ -1638,7 +1639,7 @@ the `active-buffer'."
     (loop with length = (webkit:webkit-context-menu-get-n-items context-menu)
           for i below length
           for item = (webkit:webkit-context-menu-get-item-at-position context-menu i)
-          when (and (status-buffer-p buffer)
+          when (and (or (status-buffer-p buffer) (message-buffer-p buffer))
                     (not (eq (webkit:webkit-context-menu-item-get-stock-action item)
                              :webkit-context-menu-action-inspect-element)))
             do (webkit:webkit-context-menu-remove context-menu item)
@@ -2070,14 +2071,6 @@ custom (the specified proxy) and none."
 (define-ffi-method ffi-inspector-show ((buffer gtk-buffer))
   (webkit:webkit-web-inspector-show
    (webkit:webkit-web-view-get-inspector (gtk-object buffer))))
-
-(define-ffi-method ffi-print-message ((window gtk-window) message)
-  (webkit2:webkit-web-view-evaluate-javascript
-   (message-view window)
-   (ps:ps (setf (ps:chain document (get-elements-by-tag-name "html") 0 |innerHTML|)
-                (ps:lisp (spinneret:with-html-string
-                           (:head (:nstyle (message-buffer-style window)))
-                           (:body (:raw message))))))))
 
 ;; This method does not need a renderer, so no need to use `define-ffi-method'
 ;; which is prone to race conditions.
