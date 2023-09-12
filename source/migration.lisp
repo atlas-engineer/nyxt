@@ -116,6 +116,13 @@ major versions."
                                               :version ,major-version-string)
                               result)))))
 
+(define-migration "4"
+  (message-buffer-height)
+  (:p "Deprecated in favor of " (:nxref :slot 'height :class-name 'message-buffer) ".")
+
+  (ffi-window-message-buffer-height)
+  (:p "Deprecated since it is now handled by " (:nxref :function 'ffi-height) "."))
+
 (define-migration "3"
   (%slot-default)
   (:p "Use " (:nxref :variable '%slot-default%) " or " (:nxref :variable '%slot-value%) " instead.")
@@ -447,4 +454,3 @@ major versions."
   (:p "Renamed to " (:nxref :class-name 'nyxt/mode/watch) "."
       " Query replace the regexp "
       (:code "nyxt/\([a-z-]*\)-mode") " with " (:code "nyxt/mode/\\1") "."))
-
