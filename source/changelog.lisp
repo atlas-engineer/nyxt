@@ -852,4 +852,6 @@ a scalable icon."))))
 
 (define-version "4.0.0"
   (:ul
-   (:li "Fix bug that made Nyxt display an out of date version in several places.")))
+   (:li "Fix bug that made Nyxt display an out of date version in several places.")
+   (:li "Add " (:nxref :class-name 'message-buffer) " as a user class, thus
+enabling its customization.")))
