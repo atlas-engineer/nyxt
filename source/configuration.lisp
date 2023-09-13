@@ -377,7 +377,7 @@ To discover the default value of a slot or all slots of a class, use the
                                                         (declare (ignorable %slot-value% %slot-default%))
                                                         ,value)))
                                           :name (quote ,handler-name))))
-                           (hooks:add-hook ,hook ,handler))
+                           (hooks:add-hook ,hook ,handler :append t))
                         else
                           do (log:warn "Not found slot ~a in class ~a, generating the wrapper method for configuration."
                                        slot-name class)
