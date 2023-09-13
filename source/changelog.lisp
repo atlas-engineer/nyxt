@@ -846,6 +846,12 @@ Chromium, Brave and Vivaldi. For instance, "
      (:li "The installation process now takes into account the Appdata file and
 a scalable icon."))))
 
+(define-version "3.X.Y"
+  (:ul
+   (:li "Fix bug with subsequent invocations of "
+        (:nxref :macro 'define-configuration) " on the same class and slot
+being overwritten by the first.")))
+
 (define-version "4-pre-release-1"
   (:li "When on pre-release, push " (:code "X-pre-release")
        " feature in addition to " (:code "X-pre-release-N") "one."))
