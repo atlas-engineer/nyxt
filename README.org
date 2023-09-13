@@ -25,7 +25,7 @@ Switch easily between your open tabs via fuzzy search.  If you are looking for
 ~https://www.example.com~, you could type in ~ele~, ~exa~, ~epl~, or any other
 matching series of letters.
 
-#+html: <img src="https://nyxt.atlas.engineer/static/image/switch-buffer.png?" align="center"/>
+#+html: <img src="https://nyxt.atlas.engineer/static/image/switch-buffer.png" align="center"/>
 
 ** Multiple marking
 
@@ -33,21 +33,21 @@ Commands can accept multiple inputs, allowing you to quickly perform an
 operation against multiple objects.  In the example below we search for
 cactuses, and open up several images simultaneously:
 
-#+html: <img src="https://nyxt.atlas.engineer/static/image/multi-select.png?" align="center"/>
+#+html: <img src="https://nyxt.atlas.engineer/static/image/multi-select.png" align="center"/>
 
 ** Powerful bookmarks
 
 Bookmark a page with tags.  Search bookmarks with compound queries.  Capture
 more data about your bookmarks, and group and wrangle them in any way you like.
 
-#+html: <img src="https://nyxt.atlas.engineer/static/image/bookmark.png?" align="center"/>
+#+html: <img src="https://nyxt.atlas.engineer/static/image/bookmark.png" align="center"/>
 
 ** Multi tab search
 
 Search multiple tabs at the same time, and view all the results in a single
 window.  Jump quickly through your open tabs to find what you need.
 
-#+html: <img src="https://nyxt.atlas.engineer/static/image/multi-search.png?" align="center"/>
+#+html: <img src="https://nyxt.atlas.engineer/static/image/multi-search.png" align="center"/>
 
 ** History as a tree
 
@@ -55,7 +55,7 @@ History is represented as a tree that you can traverse.  Smarter than the
 "forwards-backwards" abstraction found in other browsers, the tree makes sure
 you never lose track of where you've been.
 
-#+html: <img src="https://nyxt.atlas.engineer/static/image/history.png?" align="center"/>
+#+html: <img src="https://nyxt.atlas.engineer/static/image/history.png" align="center"/>
 
 * Installation
 
