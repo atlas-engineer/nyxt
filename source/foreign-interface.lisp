@@ -102,20 +102,13 @@ SIDE is one of `:left' or `:right'.")
 
 (define-ffi-generic ffi-height (object)
   "Return the OBJECT height in pixels as a number.
-Dispatches over: `window', `buffer', `status-buffer'.
+Dispatches over `window' and classes inheriting from `buffer'.
 Usually setf-able."
   (:setter-p t))
 (define-ffi-generic ffi-width (object)
   "Return the OBJECT width in pixels as a number.
-Dispatches over: `window', `buffer', `panel-buffer'.
+Dispatches over `window' and classes inheriting from `buffer'.
 Usually setf-able."
-  (:setter-p t))
-
-;; FIXME: Cannot yet be implemented as an `ffi-height', because there's nothing
-;; to dispatch on.
-(define-ffi-generic ffi-window-message-buffer-height (window)
-  "Return the WINDOW message buffer height as a number.
-Setf-able."
   (:setter-p t))
 
 (define-ffi-generic ffi-buffer-make (buffer)
@@ -256,17 +249,21 @@ When done, call `call-next-method' to finalize the startup."
 
 (define-ffi-generic ffi-print-status (window html-body)
   "Display status buffer in WINDOW according to HTML-BODY.
-The `style' of the status buffer is honored."
+The `style' of the `status-buffer' is honored."
   (with-slots (status-buffer) window
     (html-write (spinneret:with-html-string
                   (:head (:nstyle (style status-buffer)))
                   (:body (:raw html-body)))
                 status-buffer)))
 
-;; The strategy taken in `ffi-print-status' can't be replicated since the
-;; message buffer isn't a buffer.
-(define-ffi-generic ffi-print-message (window message)
-  "Print MESSAGE in the WINDOW's message buffer.")
+(define-ffi-generic ffi-print-message (window html-body)
+  "Print HTML-BODY in the WINDOW's message buffer.
+The `style' of the `message-buffer' is honored."
+  (with-slots (message-buffer) window
+    (html-write (spinneret:with-html-string
+                  (:head (:nstyle (style message-buffer)))
+                  (:body (:raw html-body)))
+                message-buffer)))
 
 (define-ffi-generic ffi-display-url (browser url)
   "Return URL as a human-readable string.

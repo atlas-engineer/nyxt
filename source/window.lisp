@@ -70,9 +70,10 @@ the generic functions on `status-buffer'.  Finally set the `window'
     :bottom
     :type (member :top :bottom)
     :documentation "The position where to place the status buffer in the GTK window.")
-   (message-buffer-height
-    16
-    :documentation "The height of the message buffer in pixels.")
+   (message-buffer
+    (make-instance 'message-buffer)
+    :type message-buffer
+    :documentation "The `message-buffer' instance for this window.")
    (message-buffer-style
     (theme:themed-css (theme *browser*)
       `(html
@@ -130,6 +131,7 @@ The handlers take the window as argument."))
                                        &allow-other-keys)
   "Initialize some required slots like ID and status-buffer."
   (setf (window (status-buffer window)) window)
+  (setf (window (message-buffer window)) window)
   (when browser
     (setf (id window) (new-id))
     (setf (slot-value browser 'last-active-window) window))
@@ -255,13 +257,13 @@ When `skip-renderer-resize' is non-nil, don't ask the renderer to fullscreen the
   (setf (ffi-height (status-buffer window)) 0))
 
 (defun enable-message-buffer (&optional (window (current-window)))
-  (setf (ffi-window-message-buffer-height window) (message-buffer-height window)))
+  (setf (ffi-height (message-buffer window)) (height (message-buffer window))))
 
 (defun disable-message-buffer (&optional (window (current-window)))
-  (setf (ffi-window-message-buffer-height window) 0))
+  (setf (ffi-height (message-buffer window)) 0))
 
 (define-command toggle-toolbars (&optional (window (current-window)))
-  "Toggle the visibility of the message and status buffer areas."
+  "Toggle the visibility of the message and status buffers."
   (toggle-status-buffer :window window)
   (toggle-message-buffer :window window))
 
@@ -289,6 +291,6 @@ If SHOW-P is provided:
   (cond ((and show-provided-p show-p)
          (enable-message-buffer window))
         ((and (not show-provided-p)
-              (zerop (ffi-window-message-buffer-height window)))
+              (zerop (height (message-buffer window))))
          (enable-message-buffer window))
         (t (disable-message-buffer window))))
