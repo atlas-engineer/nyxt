@@ -845,3 +845,9 @@ Chromium, Brave and Vivaldi. For instance, "
           (:nxref :command 'nyxt/mode/file-manager:open-file) ".")
      (:li "The installation process now takes into account the Appdata file and
 a scalable icon."))))
+
+(define-version "3.X.Y"
+  (:ul
+   (:li "Fix bug with subsequent invocations of "
+        (:nxref :macro 'define-configuration) " on the same class and slot
+being overwritten by the first.")))
