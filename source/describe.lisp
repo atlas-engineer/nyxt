@@ -383,7 +383,7 @@ For generic functions, describe all the methods."
                  (spinneret:with-html-string
                    (:pre (:code (:raw (resolve-backtick-quote-links (documentation input 'function) (symbol-package input)))))
                    (when (sym:command-symbol-p input)
-                     (let* ((key-keymap-pairs (nth-value 1 (keymaps:binding-keys input (all-keymaps))))
+                     (let* ((key-keymap-pairs (nth-value 1 (keymaps:pretty-binding-keys input (all-keymaps) :print-style (keymaps:name (keyscheme buffer)))))
                             (key-keymapname-pairs (mapcar (lambda (pair)
                                                             (list (first pair)
                                                                   (keymaps:name (second pair))))
