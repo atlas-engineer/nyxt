@@ -630,14 +630,12 @@ A command is a special kind of function that can be called with
                          (:h3 (keymaps:name keymap))
                          (:table
                           (:tr
-                           (:th "Binding")
                            (:th "Command")
                            (:th "Documentation"))
                           (loop for keyspec being the hash-keys
                                   in (keymaps:keymap-with-parents->map keymap)
                                     using (hash-value bound-value)
                                 collect (:tr
-                                         (:td keyspec)
                                          (:td (typecase bound-value
                                                 (sym:command-symbol (:nxref :command bound-value))
                                                 (command (:nxref :command (name bound-value)))
