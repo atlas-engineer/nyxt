@@ -16,7 +16,8 @@
          (buffer (or (current-buffer)
                      (make-instance 'input-buffer)))
          (keymaps (cons (override-map buffer)
-                        (delete nil (mapcar #'keymap modes)))))
+                        (delete nil (mapcar #'keymap modes))))
+         (nkeymaps:*print-shortcut* (keymaps:name (keyscheme buffer))))
     (unwind-protect
          (or (first (keymaps:binding-keys fn keymaps))
              "UNBOUND")
