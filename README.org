@@ -30,8 +30,8 @@ matching series of letters.
 ** Multiple marking
 
 Commands can accept multiple inputs, allowing you to quickly perform an
-operation against multiple objects.  In the example below we search for
-cactuses, and open up several images simultaneously:
+operation against multiple objects.  In the example below we simultaneously open
+several bookmarks.
 
 #+html: <img src="https://nyxt.atlas.engineer/static/image/multi-select.png" align="center"/>
 
