@@ -46,18 +46,18 @@
            (assert-match-count (pattern expected-count
                                 &optional (buffer (current-buffer)))
              (reload-buffer buffer)
-             (sleep 0.1)
+             (sleep 0.5)
              (nyxt/mode/search-buffer:search-document
               pattern
               :buffer buffer
               :node (elt (clss:select "body" (document-model buffer)) 0)
               :mark-p t)
-             (sleep 0.1)
+             (sleep 0.5)
              (assert= expected-count (count-matches buffer)))
            (assert-dom-immutability (expected-dom-body
                                      &optional (buffer (current-buffer)))
              (nyxt/mode/search-buffer:remove-search-marks)
-             (sleep 0.1)
+             (sleep 0.5)
              (assert-string= expected-dom-body (body buffer))))
     (buffer-load-internal-page-focus 'test-search-buffer)
     ;; Allow enough time to load the internal page.
