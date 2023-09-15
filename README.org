@@ -70,8 +70,8 @@ Supported platforms:
 
 The Nyxt team maintains the following distribution means:
 
-- [[https://github.com/atlas-engineer/nyxt/releases][Download Nyxt as a Flatpak]]
-- [[https://packages.guix.gnu.org/packages/nyxt/3.6.0/][Get Nyxt via Guix Package Manager]]
+- [[https://flathub.org/apps/engineer.atlas.Nyxt][Nyxt on Flathub]]
+- [[https://packages.guix.gnu.org/packages/nyxt/][Nyxt on Guix]]
 
 [[https://repology.org/project/nyxt/versions][Non-official distribution means are supported by the community as well]].  We're
 not accountable for their quality, so we kindly ask to report issues to the
