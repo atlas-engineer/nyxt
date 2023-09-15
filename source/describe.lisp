@@ -383,7 +383,7 @@ For generic functions, describe all the methods."
                  (spinneret:with-html-string
                    (:pre (:code (:raw (resolve-backtick-quote-links (documentation input 'function) (symbol-package input)))))
                    (when (sym:command-symbol-p input)
-                     (let* ((key-keymap-pairs (nth-value 1 (keymaps:binding-keys input (all-keymaps))))
+                     (let* ((key-keymap-pairs (nth-value 1 (keymaps:pretty-binding-keys input (all-keymaps) :print-style (keymaps:name (keyscheme buffer)))))
                             (key-keymapname-pairs (mapcar (lambda (pair)
                                                             (list (first pair)
                                                                   (keymaps:name (second pair))))
@@ -630,14 +630,12 @@ A command is a special kind of function that can be called with
                          (:h3 (keymaps:name keymap))
                          (:table
                           (:tr
-                           (:th "Binding")
                            (:th "Command")
                            (:th "Documentation"))
                           (loop for keyspec being the hash-keys
                                   in (keymaps:keymap-with-parents->map keymap)
                                     using (hash-value bound-value)
                                 collect (:tr
-                                         (:td keyspec)
                                          (:td (typecase bound-value
                                                 (sym:command-symbol (:nxref :command bound-value))
                                                 (command (:nxref :command (name bound-value)))
