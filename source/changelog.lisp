@@ -855,4 +855,6 @@ being overwritten by the first.")))
   (:nsection :title "UI/UX"
     (:ul
      (:li "Keybindings are shown in a more user-friendly way, when using the CUA
-keyscheme."))))
+keyscheme.")
+     (:li "Modes in the status area are shown vertically in their tooltip. This makes them
+easier to read."))))
