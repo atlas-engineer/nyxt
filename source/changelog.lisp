@@ -847,10 +847,15 @@ Chromium, Brave and Vivaldi. For instance, "
 a scalable icon."))))
 
 (define-version "3.X.Y"
-  (:ul
-   (:li "Fix bug with subsequent invocations of "
-        (:nxref :macro 'define-configuration) " on the same class and slot
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix bug with subsequent invocations of "
+          (:nxref :macro 'define-configuration) " on the same class and slot
 being overwritten by the first.")))
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "Keybindings are shown in a more user-friendly way, when using the CUA
+keyscheme."))))
 
 (define-version "4-pre-release-1"
   (:li "When on pre-release, push " (:code "X-pre-release")
