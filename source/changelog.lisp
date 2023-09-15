@@ -855,7 +855,9 @@ being overwritten by the first.")))
   (:nsection :title "UI/UX"
     (:ul
      (:li "Keybindings are shown in a more user-friendly way, when using the CUA
-keyscheme."))))
+keyscheme.")
+     (:li "Modes in the status area are shown vertically in their tooltip. This makes them
+easier to read."))))
 
 (define-version "4-pre-release-1"
   (:li "When on pre-release, push " (:code "X-pre-release")
