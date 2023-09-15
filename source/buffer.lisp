@@ -1022,7 +1022,8 @@ Also see `panel-page'."))
             `(body
               :background-color ,theme:background-alt
               :color ,theme:on-background-alt
-              :font-size "12px"
+              :font-size "75vh"
+              :line-height "100vh"
               :padding 0
               :padding-left "4px"
               :margin 0))))
