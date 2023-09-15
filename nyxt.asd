@@ -451,7 +451,9 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                (:file "tests/renderer-offline/remembrance")
                (:file "tests/renderer-offline/nyxt-url-security")
                (:file "tests/renderer-offline/search-buffer")
-               (:file "tests/renderer-online/set-url")))
+               ;; See https://github.com/atlas-engineer/nyxt/issues/3172
+               ;; (:file "tests/renderer-online/set-url")
+               ))
 
 (defsystem "nyxt/qt"
   :depends-on (cl-webengine
