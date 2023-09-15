@@ -35,7 +35,7 @@ Augment this with `style' of STATUS, if necessary."
             (:nbutton
               :buffer status
               :text "✚"
-              :title (str:concat "Enabled modes: " (modes-string buffer))
+              :title (modes-string buffer)
               '(nyxt:toggle-modes))
             (loop for mode in sorted-modes
                   collect
@@ -52,7 +52,8 @@ Augment this with `style' of STATUS, if necessary."
 
 (defun modes-string (buffer)
   (when (modable-buffer-p buffer)
-    (format nil "~{~a~^ ~}" (mapcar #'princ-to-string (modes buffer)))))
+    (format nil "~{~a~^~%~}" (append '("Enabled modes:")
+                                     (mapcar #'princ-to-string (modes buffer))))))
 
 (export-always 'format-status-buttons)
 (define-generic format-status-buttons ((status status-buffer))
