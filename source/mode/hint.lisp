@@ -69,6 +69,16 @@ define which elements are picked up by element hinting.
 For instance, to include images:
 
     a, button, input, textarea, details, select, img:not([alt=\"\"])")
+   (hints-offset-x
+    0
+    :type integer
+    :documentation "The number of pixels that hint overlays are horizontally shifted by.
+A positive value shifts to the right.")
+   (hints-offset-y
+    0
+    :type integer
+    :documentation "The number of pixels that hint overlays are vertically shifted by.
+A positive value shifts to the bottom.")
    (keyscheme-map
     (define-keyscheme-map "hint-mode" ()
       keyscheme:cua
@@ -100,14 +110,24 @@ For instance, to include images:
 (define-parenscript-async hint-elements (hints nyxt-identifiers)
   (defun create-hint-overlay (original-element hint)
     "Create a DOM element to be used as a hint."
-    (ps:let* ((rect (ps:chain original-element (get-bounding-client-rect)))
-              (element (ps:chain document (create-element "span"))))
-      (setf (ps:@ element class-name) "nyxt-hint")
-      (setf (ps:@ element style position) "absolute")
-      (setf (ps:@ element style left) (+ (ps:@ window page-x-offset) (ps:@ rect left) "px"))
-      (setf (ps:@ element style top) (+ (ps:@ window page-y-offset) (ps:@ rect top) "px"))
-      (setf (ps:@ element id) (+ "nyxt-hint-" hint))
-      (setf (ps:@ element text-content) hint)
+    (ps:let ((user-x-offset (ps:lisp (hints-offset-x (find-submode 'hint-mode))))
+             (user-y-offset (ps:lisp (hints-offset-y (find-submode 'hint-mode))))
+             (rect (ps:chain original-element (get-bounding-client-rect)))
+             (element (ps:chain document (create-element "span"))))
+      (setf (ps:@ element class-name) "nyxt-hint"
+            (ps:@ element style position) "absolute"
+            (ps:@ element style left) (+ (ps:max (+ (ps:@ window page-x-offset)
+                                                    (ps:@ rect left)
+                                                    user-x-offset)
+                                                 0)
+                                         "px")
+            (ps:@ element style top) (+ (ps:max (+ (ps:@ window page-y-offset)
+                                                   (ps:@ rect top)
+                                                   user-y-offset)
+                                                0)
+                                        "px")
+            (ps:@ element id) (+ "nyxt-hint-" hint)
+            (ps:@ element text-content) hint)
       element))
 
   (let ((fragment (ps:chain document (create-document-fragment)))
