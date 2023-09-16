@@ -847,6 +847,12 @@ Chromium, Brave and Vivaldi. For instance, "
 a scalable icon."))))
 
 (define-version "3.X.Y"
+  (:nsection :title "Features"
+    (:ul
+     (:li "Add new slots "
+          (:nxref :class-name 'nyxt/mode/hint:hint-mode :slot 'nyxt/mode/hint:hints-offset-x)
+          (:nxref :class-name 'nyxt/mode/hint:hint-mode :slot 'nyxt/mode/hint:hints-offset-y)
+          ", to change the position of hint overlays.")))
   (:nsection :title "Bug fixes"
     (:ul
      (:li "Fix bug with subsequent invocations of "
