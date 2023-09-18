@@ -656,7 +656,6 @@ Return BUFFER."
 (export-always 'focused-buffer)
 (defun focused-buffer (&optional (window (current-window)) )
   "Return the currently focused buffer."
-  ;; TODO: Add message-buffer when we have the slot in `window'.
   (find-if #'ffi-focused-p
            (list (first (active-prompt-buffers window))
                  (active-buffer window)
