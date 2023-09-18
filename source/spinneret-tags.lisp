@@ -126,6 +126,43 @@ Example:
                 `((:option :selected t :disabled t ,default)))
             (:raw (%nselect-options ,body-var))))))))
 
+(serapeum:-> %nradio-onchange (list (nyxt:maybe nyxt:buffer)) t)
+(defun %nradio-onchange (onchange buffer)
+  "Produce Parenscript to run ONCHANGE expression in BUFFER when :nradio is modified."
+  (when (or buffer (nyxt:current-buffer))
+    (ps:ps*
+     `(nyxt/ps:lisp-eval
+       (:title "nradio onchange"
+               ,@(when buffer
+                   (list :buffer buffer)))
+       ,onchange))))
+
+(serapeum:-> %nradio-inputs (string (nyxt:maybe nyxt:buffer) (nyxt:list-of list)) t)
+(defun %nradio-inputs (name buffer clauses)
+  (spinneret:with-html-string
+          (loop for (id label body) in (mapcar #'uiop:ensure-list clauses)
+                collect (:label
+                         (:input
+                          :type "radio"
+                          :id (nyxt:prini-to-string id)
+                          :onchange (%nradio-onchange body buffer)
+                          :name name)
+                         label))))
+
+(deftag :nradio (body attrs &rest keys &key (name (alexandria:required-argument 'name)) buffer &allow-other-keys)
+  "Generate radio buttons corresponding to clauses in BODY.
+Clauses should be of the form (ID LABEL . FORM), where FORM is evaluated
+when a radio button is selected."
+  (let ((keys keys)
+        (attrs attrs))
+    (declare (ignorable keys attrs))
+  (with-gensyms (body-var)
+    `(let ((,body-var ,(if (serapeum:single body)
+                           (first body)
+                           `(list ,@body))))
+       (:form
+        (:raw (%nradio-inputs ,name ,buffer ,body-var)))))))
+
 (defun %nxref-doc (type symbol &optional (class-name (when (eq type :slot)
                                                        (alexandria:required-argument 'class-name))))
   "NOTE: TYPE for classes is :CLASS, not :CLASS-NAME (as in `:nxref')."
