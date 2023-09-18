@@ -137,19 +137,20 @@ Example:
                    (list :buffer buffer)))
        ,onchange))))
 
-(serapeum:-> %nradio-inputs (string (nyxt:maybe nyxt:buffer) (nyxt:list-of list)) t)
-(defun %nradio-inputs (name buffer clauses)
+(serapeum:-> %nradio-inputs (string (nyxt:maybe nyxt:buffer) boolean (nyxt:list-of list)) t)
+(defun %nradio-inputs (name buffer vertical clauses)
   (spinneret:with-html-string
           (loop for (id label body) in (mapcar #'uiop:ensure-list clauses)
                 collect (:label
                          (:input
+                          :class "radio-label"
                           :type "radio"
                           :id (nyxt:prini-to-string id)
                           :onchange (%nradio-onchange body buffer)
                           :name name)
-                         label))))
+                         label (when vertical (:br))))))
 
-(deftag :nradio (body attrs &rest keys &key (name (alexandria:required-argument 'name)) buffer &allow-other-keys)
+(deftag :nradio (body attrs &rest keys &key (name (alexandria:required-argument 'name)) vertical buffer &allow-other-keys)
   "Generate radio buttons corresponding to clauses in BODY.
 Clauses should be of the form (ID LABEL . FORM), where FORM is evaluated
 when a radio button is selected."
@@ -161,7 +162,7 @@ when a radio button is selected."
                            (first body)
                            `(list ,@body))))
        (:form
-        (:raw (%nradio-inputs ,name ,buffer ,body-var)))))))
+        (:raw (%nradio-inputs ,name ,buffer ,vertical ,body-var)))))))
 
 (defun %nxref-doc (type symbol &optional (class-name (when (eq type :slot)
                                                        (alexandria:required-argument 'class-name))))
