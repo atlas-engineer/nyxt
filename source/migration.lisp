@@ -120,6 +120,9 @@ major versions."
   (message-buffer-height)
   (:p "Deprecated in favor of " (:nxref :slot 'height :class-name 'message-buffer) ".")
 
+  (message-buffer-style)
+  (:p "Deprecated in favor of " (:nxref :slot 'style :class-name 'message-buffer) ".")
+
   (ffi-window-message-buffer-height)
   (:p "Deprecated since it is now handled by " (:nxref :function 'ffi-height) "."))
 
