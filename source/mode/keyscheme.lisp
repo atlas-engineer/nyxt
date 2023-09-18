@@ -8,11 +8,7 @@ Ensures that a single keybindings mode, such as `nyxt/mode/emacs', is enabled.")
 
 (define-mode keyscheme-mode ()
   "All modes that set `keyscheme' should inherit from this mode.
-Ensures that a single keybindings mode, such as `nyxt/mode/emacs', is enabled.
-
-In addition to inheriting this mode for your keyscheme mode, define a new
-keyscheme in `nyxt/keyscheme' with `nyxt/keyscheme:make-keyscheme' so that you
-can conveniently reference it with \"keyscheme:mode-name\" shortcut.
+Ensures that a single keyscheme mode, such as `nyxt/mode/emacs', is enabled.
 
 Example of defining a keyscheme mode:
 
