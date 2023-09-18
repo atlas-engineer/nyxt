@@ -74,19 +74,6 @@ the generic functions on `status-buffer'.  Finally set the `window'
     (make-instance 'message-buffer)
     :type message-buffer
     :documentation "The `message-buffer' instance for this window.")
-   (message-buffer-style
-    (theme:themed-css (theme *browser*)
-      `(html
-        :background-color ,theme:primary
-        :color ,theme:on-primary)
-      `(body
-        :background-color ,theme:background
-        :color ,theme:on-background
-        :opacity 0.9
-        :font-size "12px"
-        :padding 0
-        :padding-left "4px"
-        :margin 0)))
    (prompt-buffer-open-height
     ;; Ensures that 10 suggestions are vertically shown, while the last entry
     ;; appears truncated thus making it clear that more follow. It's also set
