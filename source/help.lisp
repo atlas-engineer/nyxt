@@ -54,30 +54,38 @@ to the next."
   (spinneret:with-html-string
     (:nstyle
       `(.button
-        :display block))
+        :display block)
+      `(.radio-label
+        :display block
+        :padding-bottom "0.7em")
+      `(.radio-input
+        :display inline-block
+        :margin-right "0.7em"
+        :margin-left "3em"))
     (:h1 "Common Settings")
     (:p "Tweak frequently sought-after settings. The changes persist from one
 Nyxt session to the next.
 
 Note that some settings may require restarting Nyxt to take effect.")
-    (:h2 "Keyscheme (keyboard shortcuts)")
-    (:nselect
-      :id "keyscheme"
+    (:h2 "Keybinding scheme")
+    (:nradio
+      :name "keyscheme"
+      :vertical t
       :buffer buffer
-      '((cua "CUA (default)")
+      '(cua "CUA (default)"
         (nyxt::auto-configure
          :form '(define-configuration (web-buffer prompt-buffer
                                        panel-buffer nyxt/mode/editor:editor-buffer)
                  ((default-modes (remove-if (lambda (m)
-                                              (find (symbol-name (name m))
+                                              (find (symbol-name m)
                                                     '("EMACS-MODE" "VI-NORMAL-MODE" "VI-INSERT-MODE")))
                                   %slot-value%))))))
-      '((emacs "Emacs")
+      '(emacs "Emacs"
         (nyxt::auto-configure
          :form '(define-configuration (web-buffer prompt-buffer
                                        panel-buffer nyxt/mode/editor:editor-buffer)
                  ((default-modes (pushnew 'nyxt/mode/emacs:emacs-mode %slot-value%))))))
-      '((vi "VI")
+      '(vi "VI"
         (nyxt::auto-configure
          :form '(define-configuration (web-buffer prompt-buffer
                                        panel-buffer nyxt/mode/editor:editor-buffer)
