@@ -142,8 +142,9 @@ Example:
   (spinneret:with-html-string
           (loop for (id label body) in (mapcar #'uiop:ensure-list clauses)
                 collect (:label
+                         :class "radio-label"
                          (:input
-                          :class "radio-label"
+                          :class "radio-input"
                           :type "radio"
                           :id (nyxt:prini-to-string id)
                           :onchange (%nradio-onchange body buffer)
