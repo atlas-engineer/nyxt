@@ -90,31 +90,17 @@ Note that some settings may require restarting Nyxt to take effect.")
          :form '(define-configuration (web-buffer prompt-buffer
                                        panel-buffer nyxt/mode/editor:editor-buffer)
                  ((default-modes (pushnew 'nyxt/mode/vi:vi-normal-mode %slot-value%)))))))
-    (flet ((generate-colors (theme-symbol text)
-             (spinneret:with-html-string
-               (:nbutton
-                 :text text
-                 :style (format nil "background-color: ~a; color: ~a"
-                                (theme:action-color (symbol-value theme-symbol))
-                                (theme:on-action-color (symbol-value theme-symbol)))
-                 `(nyxt::auto-configure :form '(define-configuration browser
-                                                ((theme ,theme-symbol)))))
-               (:p "Colors:")
-               (:dl
-                (loop for (name color text-color) in '(("Background" theme:background-color theme:on-background-color)
-                                                       ("Action" theme:action-color theme:on-action-color)
-                                                       ("Primary" theme:primary-color theme:on-primary-color)
-                                                       ("Secondary" theme:secondary-color theme:on-secondary-color))
-                      collect (:dt name ": ")
-                      collect (:dd (:span :style (format nil "background-color: ~a; color: ~a; border-radius: 0.2em"
-                                                         (slot-value (symbol-value theme-symbol) color)
-                                                         (slot-value (symbol-value theme-symbol) text-color))
-                                          (slot-value (symbol-value theme-symbol) color))))))))
-      (:h2 "Theme style")
-      (:p "Note that changing the theme requires restarting Nyxt.")
-      (:ul
-       (:li (:raw (generate-colors 'theme::+light-theme+ "Use default (Light theme)")))
-       (:li (:raw (generate-colors 'theme::+dark-theme+ "Use Dark theme")))))
+    (:h2 "Theme & style")
+    (:nradio
+      :name "theme"
+      :vertical t
+      :buffer buffer
+      '(theme::+light-theme+ "Light theme"
+        (nyxt::auto-configure :form '(define-configuration browser
+                                      ((theme theme::+light-theme+)))))
+      '(theme::+light-theme+ "Dark theme"
+        (nyxt::auto-configure :form '(define-configuration browser
+                                      ((theme theme::+dark-theme+))))))
     (:h2 "Miscellaneous")
     (:ul
      (:nbutton :text "Set default new buffer URL"
