@@ -91,6 +91,7 @@ Note that some settings may require restarting Nyxt to take effect.")
                                        panel-buffer nyxt/mode/editor:editor-buffer)
                  ((default-modes (pushnew 'nyxt/mode/vi:vi-normal-mode %slot-value%)))))))
     (:h2 "Theme & style")
+    (:h5 "Browser interface")
     (:nradio
       :name "theme"
       :vertical t
@@ -101,6 +102,21 @@ Note that some settings may require restarting Nyxt to take effect.")
       '(theme::+light-theme+ "Dark theme"
         (nyxt::auto-configure :form '(define-configuration browser
                                       ((theme theme::+dark-theme+))))))
+    (:h5 "Webpage theme")
+    (:nradio
+      :name "darken"
+      :vertical t
+      :buffer buffer
+      '(auto "Default Web"
+        (nyxt::auto-configure
+         :form '(define-configuration (web-buffer)
+                 ((default-modes (remove-if (lambda (m)
+                                              (string= (symbol-name m) "DARK-MODE"))
+                                  %slot-value%))))))
+      '(dark "Darkened Web"
+        (nyxt::auto-configure
+         :form '(define-configuration (web-buffer)
+                 ((default-modes (pushnew 'nyxt/mode/style:dark-mode %slot-value%)))))))
     (:h2 "Miscellaneous")
     (:ul
      (:nbutton :text "Set default new buffer URL"
