@@ -55,13 +55,17 @@ to the next."
     (:nstyle
       `(.button
         :display block)
+      `(.radio-div
+        :margin-top "1em")
       `(.radio-label
         :display block
-        :padding-bottom "0.7em")
+        :padding-bottom "0.5em")
       `(.radio-input
         :display inline-block
         :margin-right "0.7em"
-        :margin-left "3em"))
+        :margin-left "3em")
+      `("#default-zoom-ratio"
+        :margin-left "2.6em"))
     (:h1 "Common Settings")
     (:p "Tweak frequently sought-after settings. The changes persist from one
 Nyxt session to the next.
@@ -124,7 +128,21 @@ Note that some settings may require restarting Nyxt to take effect.")
           '(dark "Darkened Web"
             (nyxt::auto-configure
              :form '(define-configuration (web-buffer)
-                     ((default-modes (pushnew 'nyxt/mode/style:dark-mode %slot-value%)))))))))
+                     ((default-modes (pushnew 'nyxt/mode/style:dark-mode %slot-value%))))))))
+      (:nsection
+        :title "Default zoom ratio"
+        :level 5
+        (:nselect
+          :id "default-zoom-ratio"
+          :default "100%"
+          (loop for number in '(30 50 67 80 90 100
+                                110 120 133 150 170
+                                200 240 300 400 500)
+                collect `((,number ,(format nil "~a%" number))
+                          (nyxt::auto-configure
+                           :class-name 'document-buffer
+                           :slot 'zoom-ratio-default
+                           :slot-value ,(/ number 100.0)))))))
     (:h2 "Miscellaneous")
     (:ul
      (:nbutton :text "Set default new buffer URL"
