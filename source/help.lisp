@@ -67,56 +67,64 @@ to the next."
 Nyxt session to the next.
 
 Note that some settings may require restarting Nyxt to take effect.")
-    (:h2 "Keybinding scheme")
-    (:nradio
-      :name "keyscheme"
-      :vertical t
-      :buffer buffer
-      '(cua "CUA (default)"
-        (nyxt::auto-configure
-         :form '(define-configuration (web-buffer prompt-buffer
-                                       panel-buffer nyxt/mode/editor:editor-buffer)
-                 ((default-modes (remove-if (lambda (m)
-                                              (find (symbol-name m)
-                                                    '("EMACS-MODE" "VI-NORMAL-MODE" "VI-INSERT-MODE")))
-                                  %slot-value%))))))
-      '(emacs "Emacs"
-        (nyxt::auto-configure
-         :form '(define-configuration (web-buffer prompt-buffer
-                                       panel-buffer nyxt/mode/editor:editor-buffer)
-                 ((default-modes (pushnew 'nyxt/mode/emacs:emacs-mode %slot-value%))))))
-      '(vi "VI"
-        (nyxt::auto-configure
-         :form '(define-configuration (web-buffer prompt-buffer
-                                       panel-buffer nyxt/mode/editor:editor-buffer)
-                 ((default-modes (pushnew 'nyxt/mode/vi:vi-normal-mode %slot-value%)))))))
-    (:h2 "Theme & style")
-    (:h5 "Browser interface")
-    (:nradio
-      :name "theme"
-      :vertical t
-      :buffer buffer
-      '(theme::+light-theme+ "Light theme"
-        (nyxt::auto-configure :form '(define-configuration browser
-                                      ((theme theme::+light-theme+)))))
-      '(theme::+light-theme+ "Dark theme"
-        (nyxt::auto-configure :form '(define-configuration browser
-                                      ((theme theme::+dark-theme+))))))
-    (:h5 "Webpage theme")
-    (:nradio
-      :name "darken"
-      :vertical t
-      :buffer buffer
-      '(auto "Default Web"
-        (nyxt::auto-configure
-         :form '(define-configuration (web-buffer)
-                 ((default-modes (remove-if (lambda (m)
-                                              (string= (symbol-name m) "DARK-MODE"))
-                                  %slot-value%))))))
-      '(dark "Darkened Web"
-        (nyxt::auto-configure
-         :form '(define-configuration (web-buffer)
-                 ((default-modes (pushnew 'nyxt/mode/style:dark-mode %slot-value%)))))))
+    (:nsection
+      :title "Keybinding scheme"
+      :level 2
+      (:nradio
+        :name "keyscheme"
+        :vertical t
+        :buffer buffer
+        '(cua "CUA (default)"
+          (nyxt::auto-configure
+           :form '(define-configuration (web-buffer prompt-buffer
+                                         panel-buffer nyxt/mode/editor:editor-buffer)
+                   ((default-modes (remove-if (lambda (m)
+                                                (find (symbol-name m)
+                                                      '("EMACS-MODE" "VI-NORMAL-MODE" "VI-INSERT-MODE")))
+                                    %slot-value%))))))
+        '(emacs "Emacs"
+          (nyxt::auto-configure
+           :form '(define-configuration (web-buffer prompt-buffer
+                                         panel-buffer nyxt/mode/editor:editor-buffer)
+                   ((default-modes (pushnew 'nyxt/mode/emacs:emacs-mode %slot-value%))))))
+        '(vi "VI"
+          (nyxt::auto-configure
+           :form '(define-configuration (web-buffer prompt-buffer
+                                         panel-buffer nyxt/mode/editor:editor-buffer)
+                   ((default-modes (pushnew 'nyxt/mode/vi:vi-normal-mode %slot-value%))))))))
+    (:nsection
+      :title "Theme & style"
+      :level 2
+      (:nsection
+        :title "Browser interface"
+        :level 5
+        (:nradio
+          :name "theme"
+          :vertical t
+          :buffer buffer
+          '(theme::+light-theme+ "Light theme"
+            (nyxt::auto-configure :form '(define-configuration browser
+                                          ((theme theme::+light-theme+)))))
+          '(theme::+light-theme+ "Dark theme"
+            (nyxt::auto-configure :form '(define-configuration browser
+                                          ((theme theme::+dark-theme+)))))))
+      (:nsection
+        :title "Webpage theme"
+        :level 5
+        (:nradio
+          :name "darken"
+          :vertical t
+          :buffer buffer
+          '(auto "Default Web"
+            (nyxt::auto-configure
+             :form '(define-configuration (web-buffer)
+                     ((default-modes (remove-if (lambda (m)
+                                                  (string= (symbol-name m) "DARK-MODE"))
+                                      %slot-value%))))))
+          '(dark "Darkened Web"
+            (nyxt::auto-configure
+             :form '(define-configuration (web-buffer)
+                     ((default-modes (pushnew 'nyxt/mode/style:dark-mode %slot-value%)))))))))
     (:h2 "Miscellaneous")
     (:ul
      (:nbutton :text "Set default new buffer URL"
@@ -245,7 +253,7 @@ The value is saved to clipboard."
      (:main
       (:nav
        (:nbutton :text "Quick-Start"
-                 '(quick-start))
+         '(quick-start))
        (:a :class "button" :href (nyxt-url 'describe-bindings)
            :title "List all bindings for the current buffer."
            "Describe-Bindings")
@@ -259,11 +267,11 @@ The value is saved to clipboard."
             (:div :class "logo" (:raw (glyph-logo *browser*)))
             (:div
              (:div (:nbutton :class "set-url" :text "Set-URL"
-                             '(set-url :prefill-current-url-p nil))
+                     '(set-url :prefill-current-url-p nil))
                    (:span :class "binding"
                           (format nil "(~a)" (nyxt::binding-keys 'set-url))))
              (:div (:nbutton :class "execute-command" :text "Execute-Command"
-                             '(execute-command))
+                     '(execute-command))
                    (:span :class "binding"
                           (format nil "(~a)" (nyxt::binding-keys 'execute-command)))))))
      (:p :class "copyright"
