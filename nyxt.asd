@@ -111,8 +111,16 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                clss
                spinneret
                slynk
+               slynk/arglists
+               slynk/fancy-inspector
+               slynk/indentation
+               slynk/mrepl
+               slynk/package-fu
+               slynk/stickers
+               slynk/trace-dialog
                sqlite
                swank
+               swank/exts
                trivia
                trivial-clipboard
                trivial-features
