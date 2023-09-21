@@ -162,7 +162,8 @@ when a radio button is selected."
     `(let ((,body-var ,(if (serapeum:single body)
                            (first body)
                            `(list ,@body))))
-       (:form
+       (:div
+        :class "radio-div"
         (:raw (%nradio-inputs ,name ,buffer ,vertical ,body-var)))))))
 
 (defun %nxref-doc (type symbol &optional (class-name (when (eq type :slot)
