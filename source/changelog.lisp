@@ -916,4 +916,6 @@ Nyxt version exists.  It is only raised when the major version differs.")
   (:nsection :title "Bug fixes"
     (:ul
      (:li (:nxref :mode 'nyxt/mode/blocker:blocker-mode)
-          " ensures that hostlist files are loaded when missing."))))
+          " ensures that hostlist files are loaded when missing.")
+     (:li "Fix connection to Nyxt via commands "
+          (:code "start-swank") " and " (:code "start-slynk") "."))))
