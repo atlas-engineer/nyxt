@@ -62,59 +62,67 @@ to the next."
         :padding-bottom "0.5em")
       `(.radio-input
         :display inline-block
-        :margin-right "0.7em"
+        :margin-right "0.5em"
         :margin-left "3em")
-      `("#default-zoom-ratio"
-        :margin-left "2.6em"))
-    (:h1 "Common Settings")
-    (:p "Tweak frequently sought-after settings. The changes persist from one
-Nyxt session to the next.
-
-Note that some settings may require restarting Nyxt to take effect.")
-    (:nsection
-      :title "Keybinding scheme"
-      :level 2
+      `(select.button
+        :display inline-block
+        :margin "1.5em 0 0.5em 3em")
+      `(.section-div
+        :margin 0
+        :padding "0.5em 0 0.5em 1.5em")
+      `(.title-div
+        :margin 0
+        :padding "0.5em 0 0.5em 1.5em")
+      `("h1,h2,h5"
+        :margin 0))
+    (:div
+     :class "title-div"
+     (:h1 "Common Settings")
+     (:p "Adjustments made here will persist across Nyxt sessions."))
+    (:div
+     :class "section-div"
+     (:h2 "Keybinding scheme")
+     (:nradio
+       :name "keyscheme"
+       :vertical t
+       :buffer buffer
+       '(cua "CUA (default)"
+         (nyxt::auto-configure
+          :form '(define-configuration (web-buffer prompt-buffer
+                                        panel-buffer nyxt/mode/editor:editor-buffer)
+                  ((default-modes (remove-if (lambda (m)
+                                               (find (symbol-name m)
+                                                     '("EMACS-MODE" "VI-NORMAL-MODE" "VI-INSERT-MODE")))
+                                   %slot-value%))))))
+       '(emacs "Emacs"
+         (nyxt::auto-configure
+          :form '(define-configuration (web-buffer prompt-buffer
+                                        panel-buffer nyxt/mode/editor:editor-buffer)
+                  ((default-modes (pushnew 'nyxt/mode/emacs:emacs-mode %slot-value%))))))
+       '(vi "VI"
+         (nyxt::auto-configure
+          :form '(define-configuration (web-buffer prompt-buffer
+                                        panel-buffer nyxt/mode/editor:editor-buffer)
+                  ((default-modes (pushnew 'nyxt/mode/vi:vi-normal-mode %slot-value%))))))))
+    (:div
+     :class "section-div"
+     (:h2 "Theme & style")
+     (:div
+      :class "section-div"
+      (:h5 "Browser interface")
       (:nradio
-        :name "keyscheme"
+        :name "theme"
         :vertical t
         :buffer buffer
-        '(cua "CUA (default)"
-          (nyxt::auto-configure
-           :form '(define-configuration (web-buffer prompt-buffer
-                                         panel-buffer nyxt/mode/editor:editor-buffer)
-                   ((default-modes (remove-if (lambda (m)
-                                                (find (symbol-name m)
-                                                      '("EMACS-MODE" "VI-NORMAL-MODE" "VI-INSERT-MODE")))
-                                    %slot-value%))))))
-        '(emacs "Emacs"
-          (nyxt::auto-configure
-           :form '(define-configuration (web-buffer prompt-buffer
-                                         panel-buffer nyxt/mode/editor:editor-buffer)
-                   ((default-modes (pushnew 'nyxt/mode/emacs:emacs-mode %slot-value%))))))
-        '(vi "VI"
-          (nyxt::auto-configure
-           :form '(define-configuration (web-buffer prompt-buffer
-                                         panel-buffer nyxt/mode/editor:editor-buffer)
-                   ((default-modes (pushnew 'nyxt/mode/vi:vi-normal-mode %slot-value%))))))))
-    (:nsection
-      :title "Theme & style"
-      :level 2
-      (:nsection
-        :title "Browser interface"
-        :level 5
-        (:nradio
-          :name "theme"
-          :vertical t
-          :buffer buffer
-          '(theme::+light-theme+ "Light theme"
-            (nyxt::auto-configure :form '(define-configuration browser
-                                          ((theme theme::+light-theme+)))))
-          '(theme::+light-theme+ "Dark theme"
-            (nyxt::auto-configure :form '(define-configuration browser
-                                          ((theme theme::+dark-theme+)))))))
-      (:nsection
-        :title "Webpage theme"
-        :level 5
+        '(theme::+light-theme+ "Light theme"
+          (nyxt::auto-configure :form '(define-configuration browser
+                                        ((theme theme::+light-theme+)))))
+        '(theme::+light-theme+ "Dark theme"
+          (nyxt::auto-configure :form '(define-configuration browser
+                                        ((theme theme::+dark-theme+)))))))
+     (:div
+      :class "section-div"
+      (:h5 "Webpage theme")
         (:nradio
           :name "darken"
           :vertical t
@@ -129,9 +137,9 @@ Note that some settings may require restarting Nyxt to take effect.")
             (nyxt::auto-configure
              :form '(define-configuration (web-buffer)
                      ((default-modes (pushnew 'nyxt/mode/style:dark-mode %slot-value%))))))))
-      (:nsection
-        :title "Default zoom ratio"
-        :level 5
+      (:div
+       :class "section-div"
+        (:h5 "Default zoom ratio")
         (:nselect
           :id "default-zoom-ratio"
           :default "100%"
