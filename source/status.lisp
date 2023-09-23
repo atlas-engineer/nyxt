@@ -63,12 +63,12 @@ Augment this with `style' of STATUS, if necessary."
     (:nbutton
       :buffer status
       :text (:raw (glyph-left status))
-      :title "Backwards"
+      :title "History-Backwards"
       '(nyxt/mode/history:history-backwards))
     (:nbutton
       :buffer status
       :text (:raw (glyph-right status))
-      :title "Forwards"
+      :title "History-Forwards"
       '(nyxt/mode/history:history-forwards))
     (:nbutton
       :buffer status
