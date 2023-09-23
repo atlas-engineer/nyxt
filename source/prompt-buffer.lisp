@@ -164,7 +164,8 @@ See `nyxt::attribute-widths'.")
           :background-color ,theme:secondary
           :color ,theme:on-secondary
           :padding-left "5px"
-          :line-height "24px")
+          :line-height "24px"
+          :border-radius "3px 0 0 0")
         `("#suggestions"
           :background-color ,theme:background
           :color ,theme:on-background
