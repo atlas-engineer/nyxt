@@ -202,7 +202,8 @@ See also the `profile' slot in the `browser' class.")
               :color ,theme:on-primary
               :text-align "left")
             `(dt
-              :font-weight "bold")
+              :font-weight "bold"
+              :margin-top "2em")
             `("::selection"
               :color ,theme:on-accent
               :background-color ,theme:accent)))
