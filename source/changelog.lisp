@@ -846,11 +846,12 @@ Chromium, Brave and Vivaldi. For instance, "
      (:li "The installation process now takes into account the Appdata file and
 a scalable icon."))))
 
-(define-version "3.X.Y"
+(define-version "3.8.0"
   (:nsection :title "Features"
     (:ul
      (:li "Add new slots "
           (:nxref :class-name 'nyxt/mode/hint:hint-mode :slot 'nyxt/mode/hint:hints-offset-x)
+          " and "
           (:nxref :class-name 'nyxt/mode/hint:hint-mode :slot 'nyxt/mode/hint:hints-offset-y)
           ", to change the position of hint overlays.")))
   (:nsection :title "Bug fixes"
@@ -862,8 +863,18 @@ being overwritten by the first.")))
     (:ul
      (:li "Keybindings are shown in a more user-friendly way, when using the CUA
 keyscheme.")
-     (:li "Modes in the status area are shown vertically in their tooltip. This makes them
-easier to read."))))
+     (:li "Modes in the status area are shown vertically in their tooltip to
+improve readability.")
+     (:li "Stylistic review of the help system pages to improve readability.")))
+  (:nsection :title "Programming interface"
+    (:ul
+     (:li "Fix Nyxt connection via commands " (:code "start-slynk") "
+and " (:code "start-swank") " on the Flatpak distribution.")
+     (:li "Fix warning signaling when a mismatch between the history file and the current
+Nyxt version exists.  It is only raised when the major version differs.")
+     (:li "Buffers of type " (:nxref :class-name 'nyxt/mode/editor:editor-buffer) " have  "
+          (:nxref :class-name 'nyxt/mode/editor:plaintext-editor-mode)
+          "enabled by default."))))
 
 (define-version "4-pre-release-1"
   (:li "When on pre-release, push " (:code "X-pre-release")
