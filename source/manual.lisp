@@ -663,22 +663,48 @@ peeking at the screen."
         (:p "Much of the visual style can be configured by the user. You can use the
 facilities provided by " (:nxref :package :theme) " and "
 (:nxref :slot 'nyxt:theme :class-name 'nyxt:browser "browser theme slot")
-". For example, to set a theme to a midnight-like one, you can add this snippet
+". The simplest option would be to use a built-in theme:")
+	(:ncode
+          '(define-configuration browser
+            ((theme theme:+dark-theme+
+              :doc "Setting dark theme.
+The default is `theme:+light-theme+'."))))
+	(:p "There's also an option of creating a custom theme. For example, to set a theme
+to a midnight-like one, you can add this snippet
 to your configuration file:")
         (:ncode
           '(define-configuration browser
-            ((theme (make-instance 'theme:theme
-                     :background-color "black"
-                     :on-background-color "#808080"
-                     :action-color "#37a8e4"
-                     :on-action-color "black"
-                     :primary-color "gray"
-                     :on-primary-color "white"
-                     :secondary-color "darkgray"
-                     :on-secondary-color "black")
+            ((theme (make-instance
+		     'theme:theme
+		     :background-color "black"
+		     :action-color "#37a8e4"
+		     :primary-color "#808080"
+		     :secondary-color "darkgray"
+		     :text-color "lightgray"
+		     :contrast-text-color "black")
               :doc "You can omit the colors you like in default theme, and they will stay as they were."))))
         (:p "This, on the next restart of Nyxt, will repaint all the interface elements into
 a dark-ish theme.")
+	(:p "As a more involved theme example, here's how one can redefine most of the
+semantic colors Nyxt uses to be compliant with Solarized Light theme:")
+	(:ncode
+	  '(define-configuration browser
+            ((theme (make-instance
+		     'theme:theme
+		     :background-color "#eee8d5"
+		     :action-color "#268bd2"
+		     :primary-color "#073642"
+		     :secondary-color "#586e75"
+		     :success-color "#2aa198"
+		     :warning-color "#dc322f"
+		     :highlight-color "#d33682"
+		     :codeblock-color "#6c71c4"
+		     :text-color "#002b36"
+		     :contrast-text-color "#fdf6e3")
+              :doc "Covers all the semantic groups (`warning-color', `codeblock-color' etc.)
+Note that you can also define more nuanced colors, like `warning-color+', so
+that the interface gets even nicer. Otherwise Nyxt generates the missing colors
+automatically, which should be good enough... for most cases."))))
         (:p "As an alternative to the all-encompassing themes, you can alter the style of
 every individual class controlling Nyxt interface elements. All such classes have a "
             (:nxref :function 'nyxt:style)
@@ -694,7 +720,8 @@ every individual class controlling Nyxt interface elements. All such classes hav
                 `(a
                   :background-color ,theme:background "!important"
                   :background-image none "!important"
-                  :color "#AAAAAA" "!important"))))))
+                  :color "#AAAAAA" "!important"))))
+	    :doc "Notice the use of `theme:themed-css' for convenient theme color injection."))
         (:p "This snippet alters the " (:nxref :slot 'style :class-name 'nyxt/mode/style:dark-mode)
             " of Nyxt dark mode to have a more theme-compliant colors, using the "
             (:code "theme:themed-css")
