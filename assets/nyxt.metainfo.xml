@@ -30,11 +30,46 @@
   </provides>
   <screenshots>
     <screenshot type="default">
-      <!-- TODO Add new ones. -->
-      <image>https://nyxt.atlas.engineer/static/image/article/nyxt-3.5.0-prompt-expanded.png</image>
-      <caption>Startup Page</caption>
+      <image>https://nyxt.atlas.engineer/image/animation/jump-heading.png</image>
+      <caption>Jump heading</caption>
     </screenshot>
-  </screenshots>
+    <screenshot>
+      <image>https://nyxt.atlas.engineer/image/animation/kill-buffers.png</image>
+      <caption>Map selection</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://nyxt.atlas.engineer/image/animation/execute-commands.png</image>
+      <caption>Execute commands easily</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://nyxt.atlas.engineer/image/animation/switch-buffer.png</image>
+      <caption>Instantly switch buffers</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://nyxt.atlas.engineer/image/animation/element-hint.png</image>
+      <caption>Powerful link hinting</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://nyxt.atlas.engineer/image/animation/lisp-repl.png</image>
+      <caption>Built-in programmability</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://nyxt.atlas.engineer/image/animation/bookmark-search.png</image>
+      <caption>Smart bookmark search</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://nyxt.atlas.engineer/image/animation/auto-fill.png</image>
+      <caption>Customizable autofills</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://nyxt.atlas.engineer/image/animation/paste-ring.png</image>
+      <caption>Clipboard history</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://nyxt.atlas.engineer/image/animation/history.png</image>
+      <caption>Lossless tree history</caption>
+    </screenshot>
+</screenshots>
   <!-- Only those published on Flathub are listed -->
   <releases>
     <release version="3.7.0" date="2023-09-11">
