@@ -1,7 +1,7 @@
 # Keep in sync with https://github.com/flathub/engineer.atlas.Nyxt/.
 app-id: engineer.atlas.Nyxt
 runtime: org.gnome.Platform
-runtime-version: '44'
+runtime-version: '45'
 sdk: org.gnome.Sdk
 rename-icon: nyxt
 rename-appdata-file: nyxt.metainfo.xml
