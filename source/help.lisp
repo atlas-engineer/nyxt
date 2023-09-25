@@ -28,15 +28,16 @@
 
 (defun configure-slot (slot class &key
                                     (type (getf (mopu:slot-properties (find-class class) slot)
-                                                :type)))
+                                                :type))
+                                    (sources 'prompter:raw-source))
   "Set value of CLASS' SLOT in `*auto-config-file*'.
-Prompt for a new value and type-check it against the SLOT's TYPE, if any.
-CLASS is a class symbol."
+Prompt for a new value with prompt SOURCES and type-check
+ it against the SLOT's TYPE, if any. CLASS is a class symbol."
   (sera:nlet lp ()
     (let ((input (read-from-string
                   (prompt1
                    :prompt (format nil "Configure slot value ~a" slot)
-                   :sources 'prompter:raw-source))))
+                   :sources sources))))
       (cond
         ((and type (not (typep input type)))
          (echo-warning "Type mismatch for ~a: got ~a, expected ~a."
@@ -53,19 +54,17 @@ The changes are saved to `*auto-config-file*', and persist from one Nyxt session
 to the next."
   (spinneret:with-html-string
     (:nstyle
-      `(.button
-        :display block)
       `(.radio-div
         :margin-top "1em")
-      `(.radio-label
+      `(".radio-label,.checkbox-input"
         :display block
         :padding-bottom "0.5em")
-      `(.radio-input
+      `(".radio-input,.checkbox-input"
         :display inline-block
         :margin-right "0.5em"
         :margin-left "3em")
-      `(select.button
-        :display inline-block
+      `(.button
+        :display block
         :margin "1.5em 0 0.5em 3em")
       `(.section-div
         :margin 0
@@ -151,6 +150,29 @@ to the next."
                            :class-name 'document-buffer
                            :slot 'zoom-ratio-default
                            :slot-value ,(/ number 100.0)))))))
+    (:div
+     :class "section-div"
+     (:h2 "New Buffer Settings")
+     (:div
+      :class "section-div"
+      (:h5 "Homepage")
+      (:nbutton :text "Set default new buffer URL"
+       '(nyxt::configure-slot 'default-new-buffer-url 'browser :type 'string)))
+     (:div
+      :class "section-div"
+      (:h5 "Session")
+      (:ncheckbox
+        :name "restore-session"
+        :buffer buffer
+        '((restore-session-on-startup-p "Restore session on startup")
+          (nyxt::auto-configure
+           :class-name 'browser
+           :slot 'restore-session-on-startup-p
+           :slot-value t)
+          (nyxt::auto-configure
+           :class-name 'browser
+           :slot 'restore-session-on-startup-p
+           :slot-value nil)))))
     (:h2 "Miscellaneous")
     (:ul
      (:nbutton :text "Set default new buffer URL"
