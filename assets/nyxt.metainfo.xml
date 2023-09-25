@@ -72,6 +72,9 @@
 </screenshots>
   <!-- Only those published on Flathub are listed -->
   <releases>
+    <release version="3.8.0" date="2023-09-25">
+      <url>https://nyxt.atlas.engineer/article/release-3.8.0.org</url>
+    </release>
     <release version="3.7.0" date="2023-09-11">
       <url>https://nyxt.atlas.engineer/article/release-3.7.0.org</url>
     </release>
