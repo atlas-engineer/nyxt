@@ -875,3 +875,9 @@ Nyxt version exists.  It is only raised when the major version differs.")
      (:li "Buffers of type " (:nxref :class-name 'nyxt/mode/editor:editor-buffer) " have  "
           (:nxref :class-name 'nyxt/mode/editor:plaintext-editor-mode)
           "enabled by default."))))
+
+(define-version "3.X.Y"
+  (:nsection :title "Features"
+    (:ul
+     (:li "Revamp the " (:nxref :package :theme)
+	  " API to allow for more nuanced themes and prettier Nyxt-internal interfaces."))))
