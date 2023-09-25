@@ -166,6 +166,54 @@ when a radio button is selected."
         :class "radio-div"
         (:raw (%nradio-inputs ,name ,buffer ,vertical ,body-var)))))))
 
+(serapeum:-> %ncheckbox-onchange (list list (nyxt:maybe nyxt:buffer)) t)
+(defun %ncheckbox-onchange (checked-body unchecked-body buffer)
+  "Produce Parenscript to run ONCHANGE expression in BUFFER when :ncheckbox is modified."
+  (when (or buffer (nyxt:current-buffer))
+    (ps:ps*
+     `(if (ps:chain window event target checked)
+         (nyxt/ps:lisp-eval
+           (:title "ncheckbox checked"
+                   ,@(when buffer
+                       (list :buffer buffer)))
+           ,checked-body)
+         (nyxt/ps:lisp-eval
+           (:title "ncheckbox unchecked"
+                   ,@(when buffer
+                       (list :buffer buffer)))
+           ,unchecked-body)))))
+
+(serapeum:-> %ncheckbox-inputs (string (nyxt:maybe nyxt:buffer) list) t)
+(defun %ncheckbox-inputs (name buffer body)
+  (destructuring-bind ((id label) checked unchecked)
+      (mapcar #'uiop:ensure-list body)
+    (spinneret:with-html-string
+      (:input
+       :class "checkbox-input"
+       :type "checkbox"
+       :id (nyxt:prini-to-string id)
+       :onchange (%ncheckbox-onchange checked unchecked buffer)
+       :name name)
+      (:label
+       :class "checkbox-label"
+       :for name
+       label))))
+
+(deftag :ncheckbox (body attrs &rest keys &key (name (alexandria:required-argument 'name)) buffer &allow-other-keys)
+  "Generate a checkbox corresponding to BODY.
+BODY should be of the form (ID LABEL FORM-CHECKED . FORM-UNCHECKED), where FORM-CHECKED is evaluated
+when the checkbox is checked and FORM-UNCHECKED when it is unchecked."
+  (let ((keys keys)
+        (attrs attrs))
+    (declare (ignorable keys attrs))
+    (with-gensyms (body-var)
+      `(let* ((,body-var ,(if (serapeum:single body)
+                              (first body)
+                              `(list ,@body))))
+         (:div
+          :class "checkbox-div"
+          (:raw (%ncheckbox-inputs ,name ,buffer ,body-var)))))))
+
 (defun %nxref-doc (type symbol &optional (class-name (when (eq type :slot)
                                                        (alexandria:required-argument 'class-name))))
   "NOTE: TYPE for classes is :CLASS, not :CLASS-NAME (as in `:nxref')."
