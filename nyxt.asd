@@ -375,31 +375,6 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
                                               :verbose t))))
                       (symbol-call :nasdf :print-benchmark results))))
 
-(defsystem "nyxt/clean-fasls"
-  :depends-on (swank)
-  :perform (compile-op (o c)
-                       (load (merge-pathnames
-                              "contrib/swank-asdf.lisp"
-                              (symbol-value
-                               (find-symbol* :*source-directory* :swank-loader))))
-                       (symbol-call :swank :delete-system-fasls "nyxt")))
-
-;; We use a temporary "version" file to generate the final nyxt.desktop with the
-;; right version number.  Since "version" is a file target, third-party
-;; packaging systems can choose to generate "version" in advance before calling
-;; "make install-assets", so that they won't need to rely on submodules.
-(defsystem "nyxt/version"
-  :depends-on (nyxt)
-  :output-files (compile-op (o c)
-                            (values (list (system-relative-pathname c "version"))
-                                    t))
-  :perform (compile-op (o c)
-                       (with-open-file (out (output-file o c)
-                                            :direction :output
-                                            :if-exists :supersede)
-                         (princ (symbol-value (find-symbol* :+version+ :nyxt))
-                                out))))
-
 (defsystem "nyxt/documentation"         ; TODO: Only rebuild if input changed.
   :depends-on (nyxt)
   :output-files (compile-op (o c)
@@ -513,7 +488,6 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
   :defsystem-depends-on ("nasdf")
   :class :nyxt-renderer-system
   :depends-on (alexandria
-               nyxt/version
                str)
   :components ((:nasdf-desktop-file "assets/nyxt.desktop")
                (:nasdf-appdata-file "assets/nyxt.metainfo.xml")
