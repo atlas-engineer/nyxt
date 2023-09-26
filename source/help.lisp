@@ -29,15 +29,18 @@
 (defun configure-slot (slot class &key
                                     (type (getf (mopu:slot-properties (find-class class) slot)
                                                 :type))
-                                    (sources 'prompter:raw-source))
+                                    (sources 'prompter:raw-source)
+                                    (postprocess #'read-from-string))
   "Set value of CLASS' SLOT in `*auto-config-file*'.
 Prompt for a new value with prompt SOURCES and type-check
  it against the SLOT's TYPE, if any. CLASS is a class symbol."
   (sera:nlet lp ()
-    (let ((input (read-from-string
-                  (prompt1
+    (let* ((input (prompt
                    :prompt (format nil "Configure slot value ~a" slot)
-                   :sources sources))))
+                   :sources sources))
+           (input (if (serapeum:single input)
+                      (funcall postprocess (first input))
+                      (funcall postprocess input))))
       (cond
         ((and type (not (typep input type)))
          (echo-warning "Type mismatch for ~a: got ~a, expected ~a."
@@ -172,7 +175,18 @@ to the next."
           (nyxt::auto-configure
            :class-name 'browser
            :slot 'restore-session-on-startup-p
-           :slot-value nil)))))
+           :slot-value nil))))
+     (:div
+      :class "section-div"
+      (:h5 "Modes")
+      (:nbutton :text "Set default modes"
+        '(nyxt::configure-slot 'default-modes 'buffer
+          :sources (make-instance
+                    'mode-source
+                    :marks (default-modes (current-buffer)))
+          :postprocess (lambda (modes)
+                         `(quote ,modes))
+          :type 'cons))))
     (:h2 "Miscellaneous")
     (:ul
      (:nbutton :text "Set default new buffer URL"
