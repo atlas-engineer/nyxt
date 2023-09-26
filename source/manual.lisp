@@ -66,23 +66,19 @@ class and slot documentation for the individual details.")
 run " (:nxref :command 'describe-command) " and type 'mode'."))
 
       (:nsection :title "Slot configuration"
-        (:p "Slots store values that can be either accessed (get) or changed
-(set). Setting new values for slots allows many possibilities of customization.
-For instance, keyboard layouts vary across the world. The slot "
-            (:nxref :slot 'nyxt/mode/hint:hints-alphabet :class-name 'nyxt/mode/hint:hint-mode)
-            " has the default value of "
-            (:code "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-            ". If the user has an American keyboard, they can do:")
+        (:p "Slot values can be queried and tweaked, enabling many customization
+possibilities.  For instance, slot "
+            (:nxref :slot 'zoom-ratio-default :class-name 'document-buffer)
+            " has the default value of " (:code "1.0") ". Follow the steps
+            below to tweak it:")
         (:ol
          (:li "Execute command " (:nxref :command 'describe-slot) ";")
-         (:li "Type " (:code "hints-alphabet")";")
-         (:li "Select " (:code "hints-alphabet") " (" (:code "hint-mode") " class option);")
-         (:li "Press the button " (:code "Configure") ", and;")
-         (:li "Insert the string \"asfdghjkl\"") ".")
-        (:p "This will make link-hinting more comfortable for this user. In
-addition, other similar approaches of customization can be applied to slots
-such as " (:nxref :slot 'nyxt/mode/spell-check:spell-check-language :class-name 'nyxt/mode/spell-check:spell-check-mode)
-", which can be expanded to do the spelling-check of other languages besides English."))
+         (:li "Type " (:code "zoom-ratio-default") " to select the one from " (:code "document-buffer") ";")
+         (:li "Press the " (:code "Configure") " button;")
+         (:li "Type the desired value, for instance, " (:code "1.3") ".")
+         (:li "After restarting Nyxt, every page will be zoomed accordingly."))
+        (:p "There are plenty of customizable slots and these can be discovered
+by inspecting classes via " (:nxref :command 'describe-class) "."))
 
       (:nsection :title "Different types of buffers"
         (:p "There are multiple buffer classes, such as "
