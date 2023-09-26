@@ -57,74 +57,108 @@ The changes are saved to `*auto-config-file*', and persist from one Nyxt session
 to the next."
   (spinneret:with-html-string
     (:nstyle
-      `(.radio-div
-        :margin-top "1em")
-      `(".radio-label,.checkbox-input"
-        :display block
-        :padding-bottom "0.5em")
-      `(".radio-input,.checkbox-input"
-        :display inline-block
-        :margin-right "0.5em"
-        :margin-left "3em")
-      `(.button
-        :display block
-        :margin "1.5em 0 0.5em 3em")
-      `(.section-div
-        :margin 0
-        :padding "0.5em 0 0.5em 1.5em")
-      `(.title-div
-        :margin 0
-        :padding "0.5em 0 0.5em 1.5em")
-      `("h1,h2,h5"
-        :margin 0))
+      (theme:themed-css (theme *browser*)
+        `(".radio-div,.checkbox-div"
+          :margin-top "1em")
+        `(".radio-label,.checkbox-input"
+          :display block
+          :padding-bottom "0.5em")
+        `(".radio-input,.checkbox-input"
+          :display inline-block
+          :margin-right "0.5em"
+          :margin-left "3em")
+        `(.button
+          :display block
+          :margin "1.5em 0 0.5em 3em")
+        `(.section-div
+          :margin 0
+          :padding "0.5em 0 0.5em 1.5em")
+        `(.title-div
+          :margin 0
+          :padding "0.5em 0 0.5em 1.5em")
+        `("h1,h2,h5"
+          :margin 0)
+        `(.row
+          :display "flex")
+        `(.left
+          :flex "35%")
+        `(.right
+          :color ,theme:secondary
+          :flex "65%")))
     (:div
      :class "title-div"
      (:h1 "Common Settings")
-     (:p "Adjustments made here will persist across Nyxt sessions."))
+     (:div
+      :class "row"
+      (:div
+       :class "column left"
+       (:p "Adjustments made here will persist across Nyxt sessions."))
+      (:div
+       :class "column right"
+       (:p "Note that settings may require restarting Nyxt to take effect."))))
     (:div
      :class "section-div"
      (:h2 "Keybinding scheme")
-     (:nradio
-       :name "keyscheme"
-       :vertical t
-       :buffer buffer
-       '(cua "CUA (default)"
-         (nyxt::auto-configure
-          :form '(define-configuration (web-buffer prompt-buffer
-                                        panel-buffer nyxt/mode/editor:editor-buffer)
-                  ((default-modes (remove-if (lambda (m)
-                                               (find (symbol-name m)
-                                                     '("EMACS-MODE" "VI-NORMAL-MODE" "VI-INSERT-MODE")))
-                                   %slot-value%))))))
-       '(emacs "Emacs"
-         (nyxt::auto-configure
-          :form '(define-configuration (web-buffer prompt-buffer
-                                        panel-buffer nyxt/mode/editor:editor-buffer)
-                  ((default-modes (pushnew 'nyxt/mode/emacs:emacs-mode %slot-value%))))))
-       '(vi "VI"
-         (nyxt::auto-configure
-          :form '(define-configuration (web-buffer prompt-buffer
-                                        panel-buffer nyxt/mode/editor:editor-buffer)
-                  ((default-modes (pushnew 'nyxt/mode/vi:vi-normal-mode %slot-value%))))))))
+     (:div
+      :class "row"
+      (:div
+       :class "column left"
+       (:nradio
+         :name "keyscheme"
+         :vertical t
+         :buffer buffer
+         '(cua "CUA (default)"
+           (nyxt::auto-configure
+            :form '(define-configuration (web-buffer prompt-buffer
+                                          panel-buffer nyxt/mode/editor:editor-buffer)
+                    ((default-modes (remove-if (lambda (m)
+                                                 (find (symbol-name m)
+                                                       '("EMACS-MODE" "VI-NORMAL-MODE" "VI-INSERT-MODE")))
+                                     %slot-value%))))))
+         '(emacs "Emacs"
+           (nyxt::auto-configure
+            :form '(define-configuration (web-buffer prompt-buffer
+                                          panel-buffer nyxt/mode/editor:editor-buffer)
+                    ((default-modes (pushnew 'nyxt/mode/emacs:emacs-mode %slot-value%))))))
+         '(vi "VI"
+           (nyxt::auto-configure
+            :form '(define-configuration (web-buffer prompt-buffer
+                                          panel-buffer nyxt/mode/editor:editor-buffer)
+                    ((default-modes (pushnew 'nyxt/mode/vi:vi-normal-mode %slot-value%))))))))
+      (:div
+       :class "column right"
+       (:p "For individual buffers - keyschemes can be toggled with the (toggle-modes) command.")
+       (:p "For a persistent keyscheme each time you start Nyxt - make a selection here."))))
     (:div
      :class "section-div"
      (:h2 "Theme & style")
      (:div
       :class "section-div"
       (:h5 "Browser interface")
-      (:nradio
-        :name "theme"
-        :vertical t
-        :buffer buffer
-        '(theme::+light-theme+ "Light theme"
-          (nyxt::auto-configure :form '(define-configuration browser
-                                        ((theme theme::+light-theme+)))))
-        '(theme::+light-theme+ "Dark theme"
-          (nyxt::auto-configure :form '(define-configuration browser
-                                        ((theme theme::+dark-theme+)))))))
+      (:div
+       :class "row"
+       (:div
+        :class "column left"
+        (:nradio
+          :name "theme"
+          :vertical t
+          :buffer buffer
+          '(theme::+light-theme+ "Light theme"
+            (nyxt::auto-configure :form '(define-configuration browser
+                                          ((theme theme::+light-theme+)))))
+          '(theme::+light-theme+ "Dark theme"
+            (nyxt::auto-configure :form '(define-configuration browser
+                                          ((theme theme::+dark-theme+)))))))
+       (:div
+        :class "column right"
+        (:p "Themes for the browser interface, panel buffers, and internal Nyxt pages like manual, bindings, and common settings."))))
      (:div
       :class "section-div"
       (:h5 "Webpage theme")
+      (:div
+       :class "row"
+       (:div
+        :class "column left"
         (:nradio
           :name "darken"
           :vertical t
@@ -139,9 +173,17 @@ to the next."
             (nyxt::auto-configure
              :form '(define-configuration (web-buffer)
                      ((default-modes (pushnew 'nyxt/mode/style:dark-mode %slot-value%))))))))
+       (:div
+        :class "column right"
+        (:p "Select Default Web to view webpages as they are designed.")
+        (:p "Select Dark Web to have Nyxt darken any webpage you visit."))))
+     (:div
+      :class "section-div"
+      (:h5 "Default zoom ratio")
       (:div
-       :class "section-div"
-        (:h5 "Default zoom ratio")
+       :class "row"
+       (:div
+        :class "column left"
         (:nselect
           :id "default-zoom-ratio"
           :default "100%"
@@ -152,68 +194,76 @@ to the next."
                           (nyxt::auto-configure
                            :class-name 'document-buffer
                            :slot 'zoom-ratio-default
-                           :slot-value ,(/ number 100.0)))))))
+                           :slot-value ,(/ number 100.0))))))
+       (:div
+        :class "column right"
+        (:p "Incremental changes advised.")))))
     (:div
      :class "section-div"
      (:h2 "New Buffer Settings")
      (:div
       :class "section-div"
       (:h5 "Homepage")
-      (:nbutton :text "Set default new buffer URL"
-       '(nyxt::configure-slot 'default-new-buffer-url 'browser
-         :sources (list
-                   (make-instance
-                    'prompter:raw-source
-                    :name "New URL")
-                   (make-instance
-                    'global-history-source
-                    :enable-marks-p nil
-                    :actions-on-return #'identity))
-         :postprocess (lambda (url-or-history-entry)
-                        (render-url (url url-or-history-entry))))))
+      (:div
+       :class "row"
+       (:div
+        :class "column left"
+        (:nbutton :text "Set default new buffer URL"
+          '(nyxt::configure-slot 'default-new-buffer-url 'browser
+            :sources (list
+                      (make-instance
+                       'prompter:raw-source
+                       :name "New URL")
+                      (make-instance
+                       'global-history-source
+                       :enable-marks-p nil
+                       :actions-on-return #'identity))
+            :postprocess (lambda (url-or-history-entry)
+                           (render-url (url url-or-history-entry))))))
+       (:div
+        :class "column right"
+        (:p "Choose your homepage. By default your homepage is set to the internal Nyxt page (nyxt:new)."))))
      (:div
       :class "section-div"
       (:h5 "Session")
-      (:ncheckbox
-        :name "restore-session"
-        :buffer buffer
-        '((restore-session-on-startup-p "Restore session on startup")
-          (nyxt::auto-configure
-           :class-name 'browser
-           :slot 'restore-session-on-startup-p
-           :slot-value t)
-          (nyxt::auto-configure
-           :class-name 'browser
-           :slot 'restore-session-on-startup-p
-           :slot-value nil))))
+      (:div
+       :class "row"
+       (:div
+        :class "column left"
+        (:ncheckbox
+          :name "restore-session"
+          :buffer buffer
+          '((restore-session-on-startup-p "Restore session on startup")
+            (nyxt::auto-configure
+             :class-name 'browser
+             :slot 'restore-session-on-startup-p
+             :slot-value t)
+            (nyxt::auto-configure
+             :class-name 'browser
+             :slot 'restore-session-on-startup-p
+             :slot-value nil))))
+       (:div
+        :class "column right"
+        (:p "Choose whether to restore buffers from previous sessions."))))
      (:div
       :class "section-div"
       (:h5 "Modes")
-      (:nbutton :text "Set default modes"
-        '(nyxt::configure-slot 'default-modes 'buffer
-          :sources (make-instance
-                    'mode-source
-                    :marks (default-modes (current-buffer)))
-          :postprocess (lambda (modes)
-                         `(quote ,modes))
-          :type 'cons))))
-    (:h2 "Miscellaneous")
-    (:ul
-     (:nbutton :text "Set default new buffer URL"
-       '(nyxt::configure-slot 'default-new-buffer-url 'browser :type 'string))
-     (:nbutton :text "Set default zoom ratio"
-       '(nyxt::configure-slot 'zoom-ratio-default 'document-buffer))
-     (:p "On some systems, compositing can cause issues with rendering. If
-you are experiencing blank web-views, you can try to disable compositing. After
-disabling compositing, you will need to restart Nyxt.")
-     (:nbutton :text "Disable compositing"
-       '(nyxt::auto-configure
-         :form '(setf (uiop:getenv "WEBKIT_DISABLE_COMPOSITING_MODE") "1")))
-
-     (:label
-      "Edit user configuration and other files in external text editor."
-      (:nbutton :text "Edit user files"
-        '(nyxt::edit-user-file-with-external-editor))))))
+      (:div
+       :class "row"
+       (:div
+        :class "column left"
+        (:nbutton :text "Set default modes"
+          '(nyxt::configure-slot 'default-modes 'buffer
+            :sources (make-instance
+                      'mode-source
+                      :marks (default-modes (current-buffer)))
+            :postprocess (lambda (modes)
+                           `(quote ,modes))
+            :type 'cons)))
+       (:div
+        :class "column right"
+        (:p "Specify default modes for all new buffers.")
+        (:p "To set modes for individual buffers, use the (toggle-modes) command, or a specific command like (toggle-no-script-mode).")))))))
 
 (define-command print-bindings ()
   "Display all known bindings for the current buffer."
