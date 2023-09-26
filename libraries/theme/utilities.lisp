@@ -7,13 +7,13 @@
              real) ;; What's the range?
 (defun relative-luminance (color)
   "Compute relative luminance of COLOR."
-  ;; See https://www.w3.org/TR/WCAG20/#relativeluminancedef
+  ;; See https://developer.mozilla.org/en-US/docs/Web/Accessibility/Understanding_Colors_and_Luminance#modeling_light_color_and_vision
   (loop with rgb = (cl-colors2:as-rgb color)
         for const in '(0.2126 0.7152 0.0722)
         for rgb-component in (list (cl-colors2:rgb-red (cl-colors2:as-rgb color))
                                    (cl-colors2:rgb-green (cl-colors2:as-rgb color))
                                    (cl-colors2:rgb-blue (cl-colors2:as-rgb color)))
-        sum (* const (if (<= rgb-component 0.03928)
+        sum (* const (if (<= rgb-component 0.04045)
                          (/ rgb-component 12.92)
                          (expt (/ (+ rgb-component 0.055) 1.055) 2.4)))))
 
