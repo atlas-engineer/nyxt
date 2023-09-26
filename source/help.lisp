@@ -160,7 +160,17 @@ to the next."
       :class "section-div"
       (:h5 "Homepage")
       (:nbutton :text "Set default new buffer URL"
-       '(nyxt::configure-slot 'default-new-buffer-url 'browser :type 'string)))
+       '(nyxt::configure-slot 'default-new-buffer-url 'browser
+         :sources (list
+                   (make-instance
+                    'prompter:raw-source
+                    :name "New URL")
+                   (make-instance
+                    'global-history-source
+                    :enable-marks-p nil
+                    :actions-on-return #'identity))
+         :postprocess (lambda (url-or-history-entry)
+                        (render-url (url url-or-history-entry))))))
      (:div
       :class "section-div"
       (:h5 "Session")
