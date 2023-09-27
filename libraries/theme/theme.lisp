@@ -93,13 +93,13 @@
     nil
     :documentation "The color for elements/text in front of `warning-color'.")
    (codeblock-color-
-    "#e7e7c0"
+    "#e9ebed"
     :documentation "Less contrasting variation of `codeblock-color'.")
    (codeblock-color
-    "#f6f6e8"
+    "#dde1e3"
     :documentation "The color for code listings.")
    (codeblock-color+
-    "#fefff6"
+    "#d2d7da"
     :documentation "More contrasting variation of `codeblock-color'.")
    (on-codeblock-color
     nil
