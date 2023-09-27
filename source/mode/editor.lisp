@@ -169,3 +169,14 @@ contains an `nyxt/mode/editor:editor-mode' instance (or a subclass thereof)."))
   (let ((buffer (make-instance 'editor-buffer
                                :url (quri:make-uri :scheme "editor" :path file))))
     (set-current-buffer buffer)))
+
+(defun prompt-for-editor-user-file ()
+  (uiop:native-namestring
+   (files:expand
+    (prompt1 :prompt "Edit user file"
+             :sources 'nyxt::user-file-source))))
+
+(define-command-global edit-user-file (&optional (file (prompt-for-editor-user-file)))
+  (let ((buffer (make-instance 'editor-buffer
+                               :url (quri:make-uri :scheme "editor" :path file))))
+    (set-current-buffer buffer)))

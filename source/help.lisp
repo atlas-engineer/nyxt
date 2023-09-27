@@ -332,7 +332,22 @@ to the next."
                                       %slot-value%))))))))
        (:div
         :class "column right"
-        (:p "Select commonly used security modes here to add them to your default modes for new buffers.")))))))
+        (:p "Select commonly used security modes here to add them to your default modes for new buffers.")))))
+    (:div
+     :class "section-div"
+     (:h2 "Text & Code Editing")
+     (:div
+      :class "row"
+      (:div
+       :class "column left"
+       (:nbutton :text "Edit user files with internal editor"
+         '(nyxt/mode/editor::edit-user-file))
+       (:nbutton :text "Edit user files with external editor"
+         '(nyxt::edit-user-file-with-external-editor)))
+      (:div
+       :class "column right"
+       (:p "To use the external editor, you need to set the VISUAL or EDITOR environment variables on your system.")
+       (:p "Otherwise, you can use the basic internal text editor."))))))
 
 (define-command print-bindings ()
   "Display all known bindings for the current buffer."
