@@ -137,8 +137,8 @@ Example:
                    (list :buffer buffer)))
        ,onchange))))
 
-(serapeum:-> %nradio-inputs (string (nyxt:maybe nyxt:buffer) boolean (nyxt:list-of list)) t)
-(defun %nradio-inputs (name buffer vertical clauses)
+(serapeum:-> %nradio-inputs (string (nyxt:maybe nyxt:buffer) symbol boolean (nyxt:list-of list)) t)
+(defun %nradio-inputs (name buffer checked vertical clauses)
   (spinneret:with-html-string
           (loop for (id label body) in (mapcar #'uiop:ensure-list clauses)
                 collect (:label
@@ -148,10 +148,11 @@ Example:
                           :type "radio"
                           :id (nyxt:prini-to-string id)
                           :onchange (%nradio-onchange body buffer)
-                          :name name)
+                          :name name
+                          :checked (equal id checked))
                          label (when vertical (:br))))))
 
-(deftag :nradio (body attrs &rest keys &key (name (alexandria:required-argument 'name)) vertical buffer &allow-other-keys)
+(deftag :nradio (body attrs &rest keys &key (name (alexandria:required-argument 'name)) checked vertical buffer &allow-other-keys)
   "Generate radio buttons corresponding to clauses in BODY.
 Clauses should be of the form (ID LABEL . FORM), where FORM is evaluated
 when a radio button is selected."
@@ -164,7 +165,7 @@ when a radio button is selected."
                            `(list ,@body))))
        (:div
         :class "radio-div"
-        (:raw (%nradio-inputs ,name ,buffer ,vertical ,body-var)))))))
+        (:raw (%nradio-inputs ,name ,buffer ,checked ,vertical ,body-var)))))))
 
 (serapeum:-> %ncheckbox-onchange (list list (nyxt:maybe nyxt:buffer)) t)
 (defun %ncheckbox-onchange (checked-body unchecked-body buffer)
@@ -183,23 +184,24 @@ when a radio button is selected."
                        (list :buffer buffer)))
            ,unchecked-body)))))
 
-(serapeum:-> %ncheckbox-inputs (string (nyxt:maybe nyxt:buffer) list) t)
-(defun %ncheckbox-inputs (name buffer body)
-  (destructuring-bind ((id label) checked unchecked)
+(serapeum:-> %ncheckbox-inputs (string (nyxt:maybe nyxt:buffer) boolean list) t)
+(defun %ncheckbox-inputs (name buffer checked body)
+  (destructuring-bind ((id label) checked-body unchecked-body)
       (mapcar #'uiop:ensure-list body)
     (spinneret:with-html-string
       (:input
        :class "checkbox-input"
        :type "checkbox"
        :id (nyxt:prini-to-string id)
-       :onchange (%ncheckbox-onchange checked unchecked buffer)
-       :name name)
+       :onchange (%ncheckbox-onchange checked-body unchecked-body buffer)
+       :name name
+       :checked checked)
       (:label
        :class "checkbox-label"
        :for name
        label))))
 
-(deftag :ncheckbox (body attrs &rest keys &key (name (alexandria:required-argument 'name)) buffer &allow-other-keys)
+(deftag :ncheckbox (body attrs &rest keys &key (name (alexandria:required-argument 'name)) checked buffer &allow-other-keys)
   "Generate a checkbox corresponding to BODY.
 BODY should be of the form (ID LABEL FORM-CHECKED . FORM-UNCHECKED), where FORM-CHECKED is evaluated
 when the checkbox is checked and FORM-UNCHECKED when it is unchecked."
@@ -212,7 +214,7 @@ when the checkbox is checked and FORM-UNCHECKED when it is unchecked."
                               `(list ,@body))))
          (:div
           :class "checkbox-div"
-          (:raw (%ncheckbox-inputs ,name ,buffer ,body-var)))))))
+          (:raw (%ncheckbox-inputs ,name ,buffer ,checked ,body-var)))))))
 
 (defun %nxref-doc (type symbol &optional (class-name (when (eq type :slot)
                                                        (alexandria:required-argument 'class-name))))

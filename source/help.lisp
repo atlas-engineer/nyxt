@@ -30,6 +30,7 @@
                                     (type (getf (mopu:slot-properties (find-class class) slot)
                                                 :type))
                                     (sources 'prompter:raw-source)
+                                    (input "")
                                     (postprocess #'read-from-string))
   "Set value of CLASS' SLOT in `*auto-config-file*'.
 Prompt for a new value with prompt SOURCES and type-check
@@ -37,6 +38,7 @@ Prompt for a new value with prompt SOURCES and type-check
   (sera:nlet lp ()
     (let* ((input (prompt
                    :prompt (format nil "Configure slot value ~a" slot)
+                   :input input
                    :sources sources))
            (input (if (serapeum:single input)
                       (funcall postprocess (first input))
@@ -83,7 +85,7 @@ to the next."
         `(.left
           :flex "35%")
         `(.right
-          :color ,theme:secondary
+          :color ,theme:primary
           :flex "65%")))
     (:div
      :class "title-div"
@@ -106,6 +108,11 @@ to the next."
        (:nradio
          :name "keyscheme"
          :vertical t
+         :checked (cond
+                    ((find 'nyxt/mode/emacs:emacs-mode (default-modes (current-buffer))) 'emacs)
+                    ((find 'nyxt/mode/vi:vi-normal-mode (default-modes (current-buffer))) 'vi)
+                    ((find 'nyxt/mode/vi:vi-insert-mode (default-modes (current-buffer))) 'vi)
+                    (t 'cua))
          :buffer buffer
          '(cua "CUA (default)"
            (nyxt::auto-configure
@@ -113,14 +120,15 @@ to the next."
                                           panel-buffer nyxt/mode/editor:editor-buffer)
                     ((default-modes (remove-if (lambda (m)
                                                  (find (symbol-name m)
-                                                       '("EMACS-MODE" "VI-NORMAL-MODE" "VI-INSERT-MODE")))
+                                                       '("EMACS-MODE" "VI-NORMAL-MODE" "VI-INSERT-MODE")
+                                                       :test #'string=))
                                      %slot-value%))))))
          '(emacs "Emacs"
            (nyxt::auto-configure
             :form '(define-configuration (web-buffer prompt-buffer
                                           panel-buffer nyxt/mode/editor:editor-buffer)
                     ((default-modes (pushnew 'nyxt/mode/emacs:emacs-mode %slot-value%))))))
-         '(vi "VI"
+         '(vi "vi"
            (nyxt::auto-configure
             :form '(define-configuration (web-buffer prompt-buffer
                                           panel-buffer nyxt/mode/editor:editor-buffer)
@@ -141,12 +149,16 @@ to the next."
         :class "column left"
         (:nradio
           :name "theme"
+          :checked (if (equal (theme:background-color (theme *browser*))
+                              (theme:background-color theme::+light-theme+))
+                       'theme::+light-theme+
+                       'theme::+dark-theme+)
           :vertical t
           :buffer buffer
           '(theme::+light-theme+ "Light theme"
             (nyxt::auto-configure :form '(define-configuration browser
                                           ((theme theme::+light-theme+)))))
-          '(theme::+light-theme+ "Dark theme"
+          '(theme::+dark-theme+ "Dark theme"
             (nyxt::auto-configure :form '(define-configuration browser
                                           ((theme theme::+dark-theme+)))))))
        (:div
@@ -161,6 +173,9 @@ to the next."
         :class "column left"
         (:nradio
           :name "darken"
+          :checked (if (find 'nyxt/mode/style:dark-mode (default-modes (current-buffer)))
+                       'dark
+                       'auto)
           :vertical t
           :buffer buffer
           '(auto "Default Web"
@@ -186,7 +201,7 @@ to the next."
         :class "column left"
         (:nselect
           :id "default-zoom-ratio"
-          :default "100%"
+          :default (format nil "~a%" (* 100 (zoom-ratio-default (current-buffer))))
           (loop for number in '(30 50 67 80 90 100
                                 110 120 133 150 170
                                 200 240 300 400 500)
@@ -218,6 +233,7 @@ to the next."
                        'global-history-source
                        :enable-marks-p nil
                        :actions-on-return #'identity))
+            :input (render-url (default-new-buffer-url *browser*))
             :postprocess (lambda (url-or-history-entry)
                            (render-url (url url-or-history-entry))))))
        (:div
@@ -232,6 +248,7 @@ to the next."
         :class "column left"
         (:ncheckbox
           :name "restore-session"
+          :checked (restore-session-on-startup-p *browser*)
           :buffer buffer
           '((restore-session-on-startup-p "Restore session on startup")
             (nyxt::auto-configure
