@@ -280,7 +280,59 @@ to the next."
        (:div
         :class "column right"
         (:p "Specify default modes for all new buffers.")
-        (:p "To set modes for individual buffers, use the (toggle-modes) command, or a specific command like (toggle-no-script-mode).")))))))
+        (:p "To set modes for individual buffers, use the (toggle-modes) command, or a specific command like (toggle-no-script-mode).")))))
+    (:div
+     :class "section-div"
+     (:h2 "Privacy & Security")
+     (:div
+      :class "section-div"
+      (:h5 "Privacy & Security Modes")
+      (:div
+       :class "row"
+       (:div
+        :class "column left"
+        (:ncheckbox
+          :name "blocker-mode"
+          :checked (find 'nyxt/mode/blocker:blocker-mode (default-modes (current-buffer)))
+          :buffer buffer
+          '((blocker-mode "Blocker mode")
+            (nyxt::auto-configure
+             :form '(define-configuration (web-buffer)
+                     ((default-modes (pushnew 'nyxt/mode/blocker:blocker-mode %slot-value%)))))
+            (nyxt::auto-configure
+             :form '(define-configuration (web-buffer)
+                     ((default-modes (remove-if (lambda (m)
+                                                  (string= (symbol-name m) "BLOCKER-MODE"))
+                                      %slot-value%)))))))
+        (:ncheckbox
+          :name "no-script-mode"
+          :checked (find 'nyxt/mode/no-script:no-script-mode (default-modes (current-buffer)))
+          :buffer buffer
+          '((no-script-mode "No-Script mode")
+            (nyxt::auto-configure
+             :form '(define-configuration (web-buffer)
+                     ((default-modes (pushnew 'nyxt/mode/no-script:no-script-mode %slot-value%)))))
+            (nyxt::auto-configure
+             :form '(define-configuration (web-buffer)
+                     ((default-modes (remove-if (lambda (m)
+                                                  (string= (symbol-name m) "NO-SCRIPT-MODE"))
+                                      %slot-value%)))))))
+        (:ncheckbox
+          :name "reduce-tracking-mode"
+          :checked (find 'nyxt/mode/reduce-tracking:reduce-tracking-mode (default-modes (current-buffer)))
+          :buffer buffer
+          '((reduce-tracking-mode "Reduce-Tracking mode")
+            (nyxt::auto-configure
+             :form '(define-configuration (web-buffer)
+                     ((default-modes (pushnew 'nyxt/mode/reduce-tracking:reduce-tracking-mode %slot-value%)))))
+            (nyxt::auto-configure
+             :form '(define-configuration (web-buffer)
+                     ((default-modes (remove-if (lambda (m)
+                                                  (string= (symbol-name m) "REDUCE-TRACKING-MODE"))
+                                      %slot-value%))))))))
+       (:div
+        :class "column right"
+        (:p "Select commonly used security modes here to add them to your default modes for new buffers.")))))))
 
 (define-command print-bindings ()
   "Display all known bindings for the current buffer."
