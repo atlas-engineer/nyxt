@@ -139,7 +139,7 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "w" 'nyxt/mode/input-edit:cursor-forwards-word
        "b" 'nyxt/mode/input-edit:cursor-backwards-word
        "x" 'nyxt/mode/input-edit:delete-forwards
-       ;; VI has no short keybinding for delete-backwards-word, hasn't it?
+       "d b" 'nyxt/mode/input-edit:delete-backwards-word
        "d w" 'nyxt/mode/input-edit:delete-forwards-word
        "z f" 'toggle-actions-on-current-suggestion-enabled
        "z a" 'toggle-attributes-display
