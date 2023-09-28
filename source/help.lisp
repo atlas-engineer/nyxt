@@ -52,7 +52,7 @@ Prompt for a new value with prompt SOURCES and type-check
          (auto-configure :class-name class :slot slot :slot-value input)
          (echo "Update slot ~s to ~s. You might need to restart to experience the change." slot input))))))
 
-(define-internal-page-command-global common-settings (&key (section 'keybinding))
+(define-internal-page-command-global common-settings (&key (section 'keybindings))
     (buffer "*Settings*" 'nyxt/mode/help:help-mode)
   "Display an interface to tweak frequently sought-after user options.
 The changes are saved to `*auto-config-file*', and persist from one Nyxt session
@@ -60,6 +60,8 @@ to the next."
   (spinneret:with-html-string
     (:nstyle
       (theme:themed-css (theme *browser*)
+        `("body,h5"
+          :margin 0)
         `(".radio-div,.checkbox-div"
           :margin-top "1em")
         `(".radio-label,.checkbox-input"
@@ -75,236 +77,275 @@ to the next."
         `(.section
           :margin 0
           :padding "0.5em 0 0.5em 1.5em")
-        `(.title
-          :margin 0
-          :padding "0.5em 0 0.5em 1.5em")
-        `("h1,h2,h5"
-          :margin 0)
         `(.row
           :display "flex")
+        `(.tabs
+          :flex "15%"
+          :background-color ,theme:background+)
+        `(.content
+          :flex "85%"
+          :background-color ,theme:background-)
         `(.left
           :flex "35%")
         `(.right
           :color ,theme:primary
-          :flex "65%")))
-    (:div.title
-     (:h1 "Common Settings")
-     (:div.row
-      (:div.left
-       (:p "Adjustments made here will persist across Nyxt sessions."))
-      (:div.right
-       (:p "Note that settings may require restarting Nyxt to take effect."))))
-    (:div.section
-     (:h2 "Keybinding scheme")
-     (:div.row
-      (:div.left
-       (:nradio
-         :name "keyscheme"
-         :vertical t
-         :checked (cond
-                    ((find 'nyxt/mode/emacs:emacs-mode (default-modes (current-buffer))) 'emacs)
-                    ((find 'nyxt/mode/vi:vi-normal-mode (default-modes (current-buffer))) 'vi)
-                    ((find 'nyxt/mode/vi:vi-insert-mode (default-modes (current-buffer))) 'vi)
-                    (t 'cua))
-         :buffer buffer
-         '(cua "CUA (default)"
-           (nyxt::auto-configure
-            :form '(define-configuration (web-buffer prompt-buffer
-                                          panel-buffer nyxt/mode/editor:editor-buffer)
-                    ((default-modes (remove-if (lambda (m)
-                                                 (find (symbol-name m)
-                                                       '("EMACS-MODE" "VI-NORMAL-MODE" "VI-INSERT-MODE")
-                                                       :test #'string=))
-                                     %slot-value%))))))
-         '(emacs "Emacs"
-           (nyxt::auto-configure
-            :form '(define-configuration (web-buffer prompt-buffer
-                                          panel-buffer nyxt/mode/editor:editor-buffer)
-                    ((default-modes (pushnew 'nyxt/mode/emacs:emacs-mode %slot-value%))))))
-         '(vi "vi"
-           (nyxt::auto-configure
-            :form '(define-configuration (web-buffer prompt-buffer
-                                          panel-buffer nyxt/mode/editor:editor-buffer)
-                    ((default-modes (pushnew 'nyxt/mode/vi:vi-normal-mode %slot-value%))))))))
-      (:div.right
-       (:p "For individual buffers - keyschemes can be toggled with the (toggle-modes) command.")
-       (:p "For a persistent keyscheme each time you start Nyxt - make a selection here."))))
-    (:div.section
-     (:h2 "Theme & style")
-     (:div.section
-      (:h5 "Browser interface")
-      (:div.row
-       (:div.left
-        (:nradio
-          :name "theme"
-          :checked (if (equal (theme:background-color (theme *browser*))
-                              (theme:background-color theme::+light-theme+))
-                       'theme::+light-theme+
-                       'theme::+dark-theme+)
-          :vertical t
-          :buffer buffer
-          '(theme::+light-theme+ "Light theme"
-            (nyxt::auto-configure :form '(define-configuration browser
-                                          ((theme theme::+light-theme+)))))
-          '(theme::+dark-theme+ "Dark theme"
-            (nyxt::auto-configure :form '(define-configuration browser
-                                          ((theme theme::+dark-theme+)))))))
-       (:div.right
-        (:p "Themes for the browser interface, panel buffers, and internal Nyxt pages like manual, bindings, and common settings."))))
-     (:div.section
-      (:h5 "Webpage theme")
-      (:div.row
-       (:div.left
-        (:nradio
-          :name "darken"
-          :checked (if (find 'nyxt/mode/style:dark-mode (default-modes (current-buffer)))
-                       'dark
-                       'auto)
-          :vertical t
-          :buffer buffer
-          '(auto "Default Web"
-            (nyxt::auto-configure
-             :form '(define-configuration (web-buffer)
-                     ((default-modes (remove-if (lambda (m)
-                                                  (string= (symbol-name m) "DARK-MODE"))
-                                      %slot-value%))))))
-          '(dark "Darkened Web"
-            (nyxt::auto-configure
-             :form '(define-configuration (web-buffer)
-                     ((default-modes (pushnew 'nyxt/mode/style:dark-mode %slot-value%))))))))
-       (:div.right
-        (:p "Select Default Web to view webpages as they are designed.")
-        (:p "Select Dark Web to have Nyxt darken any webpage you visit."))))
-     (:div.section
-      (:h5 "Default zoom ratio")
-      (:div.row
-       (:div.left
-        (:nselect
-          :id "default-zoom-ratio"
-          :default (format nil "~a%" (* 100 (zoom-ratio-default (current-buffer))))
-          (loop for number in '(30 50 67 80 90 100
-                                110 120 133 150 170
-                                200 240 300 400 500)
-                collect `((,number ,(format nil "~a%" number))
-                          (nyxt::auto-configure
-                           :class-name 'document-buffer
-                           :slot 'zoom-ratio-default
-                           :slot-value ,(/ number 100.0))))))
-       (:div.right
-        (:p "Incremental changes advised.")))))
-    (:div.section
-     (:h2 "New Buffer Settings")
-     (:div.section
-      (:h5 "Homepage")
-      (:div.row
-       (:div.left
-        (:nbutton :text "Set default new buffer URL"
-          '(nyxt::configure-slot 'default-new-buffer-url 'browser
-            :sources (list
-                      (make-instance
-                       'prompter:raw-source
-                       :name "New URL")
-                      (make-instance
-                       'global-history-source
-                       :enable-marks-p nil
-                       :actions-on-return #'identity))
-            :input (render-url (default-new-buffer-url *browser*))
-            :postprocess (lambda (url-or-history-entry)
-                           (render-url (url url-or-history-entry))))))
-       (:div.right
-        (:p "Choose your homepage. By default your homepage is set to the internal Nyxt page (nyxt:new)."))))
-     (:div.section
-      (:h5 "Session")
-      (:div.row
-       (:div.left
-        (:ncheckbox
-          :name "restore-session"
-          :checked (restore-session-on-startup-p *browser*)
-          :buffer buffer
-          '((restore-session-on-startup-p "Restore session on startup")
-            (nyxt::auto-configure
-             :class-name 'browser
-             :slot 'restore-session-on-startup-p
-             :slot-value t)
-            (nyxt::auto-configure
-             :class-name 'browser
-             :slot 'restore-session-on-startup-p
-             :slot-value nil))))
-       (:div.right
-        (:p "Choose whether to restore buffers from previous sessions."))))
-     (:div.section
-      (:h5 "Modes")
-      (:div.row
-       (:div.left
-        (:nbutton :text "Set default modes"
-          '(nyxt::configure-slot 'default-modes 'buffer
-            :sources (make-instance
-                      'mode-source
-                      :marks (default-modes (current-buffer)))
-            :postprocess (lambda (modes)
-                           `(quote ,modes))
-            :type 'cons)))
-       (:div.right
-        (:p "Specify default modes for all new buffers.")
-        (:p "To set modes for individual buffers, use the (toggle-modes) command, or a specific command like (toggle-no-script-mode).")))))
-    (:div.section
-     (:h2 "Privacy & Security")
-     (:div.section
-      (:h5 "Privacy & Security Modes")
-      (:div.row
-       (:div.left
-        (:ncheckbox
-          :name "blocker-mode"
-          :checked (find 'nyxt/mode/blocker:blocker-mode (default-modes (current-buffer)))
-          :buffer buffer
-          '((blocker-mode "Blocker mode")
-            (nyxt::auto-configure
-             :form '(define-configuration (web-buffer)
-                     ((default-modes (pushnew 'nyxt/mode/blocker:blocker-mode %slot-value%)))))
-            (nyxt::auto-configure
-             :form '(define-configuration (web-buffer)
-                     ((default-modes (remove-if (lambda (m)
-                                                  (string= (symbol-name m) "BLOCKER-MODE"))
-                                      %slot-value%)))))))
-        (:ncheckbox
-          :name "no-script-mode"
-          :checked (find 'nyxt/mode/no-script:no-script-mode (default-modes (current-buffer)))
-          :buffer buffer
-          '((no-script-mode "No-Script mode")
-            (nyxt::auto-configure
-             :form '(define-configuration (web-buffer)
-                     ((default-modes (pushnew 'nyxt/mode/no-script:no-script-mode %slot-value%)))))
-            (nyxt::auto-configure
-             :form '(define-configuration (web-buffer)
-                     ((default-modes (remove-if (lambda (m)
-                                                  (string= (symbol-name m) "NO-SCRIPT-MODE"))
-                                      %slot-value%)))))))
-        (:ncheckbox
-          :name "reduce-tracking-mode"
-          :checked (find 'nyxt/mode/reduce-tracking:reduce-tracking-mode (default-modes (current-buffer)))
-          :buffer buffer
-          '((reduce-tracking-mode "Reduce-Tracking mode")
-            (nyxt::auto-configure
-             :form '(define-configuration (web-buffer)
-                     ((default-modes (pushnew 'nyxt/mode/reduce-tracking:reduce-tracking-mode %slot-value%)))))
-            (nyxt::auto-configure
-             :form '(define-configuration (web-buffer)
-                     ((default-modes (remove-if (lambda (m)
-                                                  (string= (symbol-name m) "REDUCE-TRACKING-MODE"))
-                                      %slot-value%))))))))
-       (:div.right
-        (:p "Select commonly used security modes here to add them to your default modes for new buffers.")))))
-    (:div.section
-     (:h2 "Text & Code Editing")
-     (:div.row
-      (:div.left
-       (:nbutton :text "Edit user files with internal editor"
-         '(nyxt/mode/editor::edit-user-file))
-       (:nbutton :text "Edit user files with external editor"
-         '(nyxt::edit-user-file-with-external-editor)))
-      (:div.right
-       (:p "To use the external editor, you need to set the VISUAL or EDITOR environment variables on your system.")
-       (:p "Otherwise, you can use the basic internal text editor."))))))
+          :flex "65%")
+        `(.tab-button
+          :display "block"
+          :text-decoration "none"
+          :background-color ,theme:background+
+          :color ,theme:action-
+          :padding "1.5em 1em"
+          :width "100%"
+          :border "none"
+          :outline "none"
+          :text-align "left"
+          :cursor "pointer")
+        `((:and .tab-button :hover)
+          :background-color ,theme:background-)
+        `(.tab-button.active
+          :background-color ,theme:background-
+          :color ,theme:text-)))
+    (:div.row
+     :style "height: 100%; margin: 0"
+     (:div.tabs
+      (:a.tab-button
+       :class (when (equal section 'keybindings) "active")
+       :href (nyxt-url 'common-settings :section 'keybindings)
+       "Keybindings")
+      (:a.tab-button
+       :class (when (equal section 'theme-and-style) "active")
+       :href (nyxt-url 'common-settings :section 'theme-and-style)
+       "Theme & Style")
+      (:a.tab-button
+       :class (when (equal section 'buffer-defaults) "active")
+       :href (nyxt-url 'common-settings :section 'buffer-defaults)
+       "Buffer settings")
+      (:a.tab-button
+       :class (when (equal section 'privacy-and-security) "active")
+       :href (nyxt-url 'common-settings :section 'privacy-and-security)
+       "Privacy & Security")
+      (:a.tab-button
+       :class (when (equal section 'text-and-code) "active")
+       :href (nyxt-url 'common-settings :section 'text-and-code)
+       "Text Editing"))
+     (:div.content
+      (case section
+        (keybindings
+         (:div.section
+          (:div.section
+           (:h5 "Keybinding mode")
+           (:div.row
+            (:div.left
+             (:nradio
+               :name "keyscheme"
+               :vertical t
+               :checked (cond
+                          ((find 'nyxt/mode/emacs:emacs-mode (default-modes (current-buffer))) 'emacs)
+                          ((find 'nyxt/mode/vi:vi-normal-mode (default-modes (current-buffer))) 'vi)
+                          ((find 'nyxt/mode/vi:vi-insert-mode (default-modes (current-buffer))) 'vi)
+                          (t 'cua))
+               :buffer buffer
+               '(cua "CUA (default)"
+                 (nyxt::auto-configure
+                  :form '(define-configuration (web-buffer prompt-buffer
+                                                panel-buffer nyxt/mode/editor:editor-buffer)
+                          ((default-modes (remove-if (lambda (m)
+                                                       (find (symbol-name m)
+                                                             '("EMACS-MODE" "VI-NORMAL-MODE" "VI-INSERT-MODE")
+                                                             :test #'string=))
+                                           %slot-value%))))))
+               '(emacs "Emacs"
+                 (nyxt::auto-configure
+                  :form '(define-configuration (web-buffer prompt-buffer
+                                                panel-buffer nyxt/mode/editor:editor-buffer)
+                          ((default-modes (pushnew 'nyxt/mode/emacs:emacs-mode %slot-value%))))))
+               '(vi "vi"
+                 (nyxt::auto-configure
+                  :form '(define-configuration (web-buffer prompt-buffer
+                                                panel-buffer nyxt/mode/editor:editor-buffer)
+                          ((default-modes (pushnew 'nyxt/mode/vi:vi-normal-mode %slot-value%))))))))
+            (:div.right
+             (:p "For individual buffers - keyschemes can be toggled with the (toggle-modes) command.")
+             (:p "For a persistent keyscheme each time you start Nyxt - make a selection here."))))))
+        (theme-and-style
+         (:div.section
+          (:div.section
+           (:h5 "Browser interface")
+           (:div.row
+            (:div.left
+             (:nradio
+               :name "theme"
+               :checked (if (equal (theme:background-color (theme *browser*))
+                                   (theme:background-color theme::+light-theme+))
+                            'theme::+light-theme+
+                            'theme::+dark-theme+)
+               :vertical t
+               :buffer buffer
+               '(theme::+light-theme+ "Light theme"
+                 (nyxt::auto-configure :form '(define-configuration browser
+                                               ((theme theme::+light-theme+)))))
+               '(theme::+dark-theme+ "Dark theme"
+                 (nyxt::auto-configure :form '(define-configuration browser
+                                               ((theme theme::+dark-theme+)))))))
+            (:div.right
+             (:p "Themes for the browser interface, panel buffers, and internal Nyxt pages like manual, bindings, and common settings."))))
+          (:div.section
+           (:h5 "Webpage theme")
+           (:div.row
+            (:div.left
+             (:nradio
+               :name "darken"
+               :checked (if (find 'nyxt/mode/style:dark-mode (default-modes (current-buffer)))
+                            'dark
+                            'auto)
+               :vertical t
+               :buffer buffer
+               '(auto "Default Web"
+                 (nyxt::auto-configure
+                  :form '(define-configuration (web-buffer)
+                          ((default-modes (remove-if (lambda (m)
+                                                       (string= (symbol-name m) "DARK-MODE"))
+                                           %slot-value%))))))
+               '(dark "Darkened Web"
+                 (nyxt::auto-configure
+                  :form '(define-configuration (web-buffer)
+                          ((default-modes (pushnew 'nyxt/mode/style:dark-mode %slot-value%))))))))
+            (:div.right
+             (:p "Select Default Web to view webpages as they are designed.")
+             (:p "Select Dark Web to have Nyxt darken any webpage you visit."))))
+          (:div.section
+           (:h5 "Default zoom ratio")
+           (:div.row
+            (:div.left
+             (:nselect
+               :id "default-zoom-ratio"
+               :default (format nil "~a%" (* 100 (zoom-ratio-default (current-buffer))))
+               (loop for number in '(30 50 67 80 90 100
+                                     110 120 133 150 170
+                                     200 240 300 400 500)
+                     collect `((,number ,(format nil "~a%" number))
+                               (nyxt::auto-configure
+                                :class-name 'document-buffer
+                                :slot 'zoom-ratio-default
+                                :slot-value ,(/ number 100.0))))))
+            (:div.right
+             (:p "Incremental changes advised."))))))
+        (buffer-defaults
+         (:div.section
+          (:div.section
+           (:h5 "Homepage")
+           (:div.row
+            (:div.left
+             (:nbutton :text "Set default new buffer URL"
+               '(nyxt::configure-slot 'default-new-buffer-url 'browser
+                 :sources (list
+                           (make-instance
+                            'prompter:raw-source
+                            :name "New URL")
+                           (make-instance
+                            'global-history-source
+                            :enable-marks-p nil
+                            :actions-on-return #'identity))
+                 :input (render-url (default-new-buffer-url *browser*))
+                 :postprocess (lambda (url-or-history-entry)
+                                (render-url (url url-or-history-entry))))))
+            (:div.right
+             (:p "Choose your homepage. By default your homepage is set to the internal Nyxt page (nyxt:new)."))))
+          (:div.section
+           (:h5 "Session")
+           (:div.row
+            (:div.left
+             (:ncheckbox
+               :name "restore-session"
+               :checked (restore-session-on-startup-p *browser*)
+               :buffer buffer
+               '((restore-session-on-startup-p "Restore session on startup")
+                 (nyxt::auto-configure
+                  :class-name 'browser
+                  :slot 'restore-session-on-startup-p
+                  :slot-value t)
+                 (nyxt::auto-configure
+                  :class-name 'browser
+                  :slot 'restore-session-on-startup-p
+                  :slot-value nil))))
+            (:div.right
+             (:p "Choose whether to restore buffers from previous sessions."))))
+          (:div.section
+           (:h5 "Modes")
+           (:div.row
+            (:div.left
+             (:nbutton :text "Set default modes"
+               '(nyxt::configure-slot 'default-modes 'buffer
+                 :sources (make-instance
+                           'mode-source
+                           :marks (default-modes (current-buffer)))
+                 :postprocess (lambda (modes)
+                                `(quote ,modes))
+                 :type 'cons)))
+            (:div.right
+             (:p "Specify default modes for all new buffers.")
+             (:p "To set modes for individual buffers, use the (toggle-modes) command, or a specific command like (toggle-no-script-mode)."))))))
+        (privacy-and-security
+         (:div.section
+          (:div.section
+           (:h5 "Privacy & Security Modes")
+           (:div.row
+            (:div.left
+             (:ncheckbox
+               :name "blocker-mode"
+               :checked (find 'nyxt/mode/blocker:blocker-mode (default-modes (current-buffer)))
+               :buffer buffer
+               '((blocker-mode "Blocker mode")
+                 (nyxt::auto-configure
+                  :form '(define-configuration (web-buffer)
+                          ((default-modes (pushnew 'nyxt/mode/blocker:blocker-mode %slot-value%)))))
+                 (nyxt::auto-configure
+                  :form '(define-configuration (web-buffer)
+                          ((default-modes (remove-if (lambda (m)
+                                                       (string= (symbol-name m) "BLOCKER-MODE"))
+                                           %slot-value%)))))))
+             (:ncheckbox
+               :name "no-script-mode"
+               :checked (find 'nyxt/mode/no-script:no-script-mode (default-modes (current-buffer)))
+               :buffer buffer
+               '((no-script-mode "No-Script mode")
+                 (nyxt::auto-configure
+                  :form '(define-configuration (web-buffer)
+                          ((default-modes (pushnew 'nyxt/mode/no-script:no-script-mode %slot-value%)))))
+                 (nyxt::auto-configure
+                  :form '(define-configuration (web-buffer)
+                          ((default-modes (remove-if (lambda (m)
+                                                       (string= (symbol-name m) "NO-SCRIPT-MODE"))
+                                           %slot-value%)))))))
+             (:ncheckbox
+               :name "reduce-tracking-mode"
+               :checked (find 'nyxt/mode/reduce-tracking:reduce-tracking-mode (default-modes (current-buffer)))
+               :buffer buffer
+               '((reduce-tracking-mode "Reduce-Tracking mode")
+                 (nyxt::auto-configure
+                  :form '(define-configuration (web-buffer)
+                          ((default-modes (pushnew 'nyxt/mode/reduce-tracking:reduce-tracking-mode %slot-value%)))))
+                 (nyxt::auto-configure
+                  :form '(define-configuration (web-buffer)
+                          ((default-modes (remove-if (lambda (m)
+                                                       (string= (symbol-name m) "REDUCE-TRACKING-MODE"))
+                                           %slot-value%))))))))
+            (:div.right
+             (:p "Select commonly used security modes here to add them to your default modes for new buffers."))))))
+        (text-and-code
+         (:div.section
+          (:div.section
+           (:h5 "Edit user files")
+           (:div.row
+            (:div.left
+             (:nbutton :text "Edit user files with internal editor"
+               '(nyxt/mode/editor::edit-user-file))
+             (:nbutton :text "Edit user files with external editor"
+               '(nyxt::edit-user-file-with-external-editor)))
+            (:div.right
+             (:p "To use the external editor, you need to set the VISUAL or EDITOR environment variables on your system.")
+             (:p "Otherwise, you can use the basic internal text editor.")))))))))))
 
 (define-command print-bindings ()
   "Display all known bindings for the current buffer."
