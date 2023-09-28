@@ -52,7 +52,7 @@ Prompt for a new value with prompt SOURCES and type-check
          (auto-configure :class-name class :slot slot :slot-value input)
          (echo "Update slot ~s to ~s. You might need to restart to experience the change." slot input))))))
 
-(define-internal-page-command-global common-settings ()
+(define-internal-page-command-global common-settings (&key (section 'keybinding))
     (buffer "*Settings*" 'nyxt/mode/help:help-mode)
   "Display an interface to tweak frequently sought-after user options.
 The changes are saved to `*auto-config-file*', and persist from one Nyxt session
@@ -72,10 +72,10 @@ to the next."
         `(.button
           :display block
           :margin "1.5em 0 0.5em 3em")
-        `(.section-div
+        `(.section
           :margin 0
           :padding "0.5em 0 0.5em 1.5em")
-        `(.title-div
+        `(.title
           :margin 0
           :padding "0.5em 0 0.5em 1.5em")
         `("h1,h2,h5"
@@ -87,24 +87,17 @@ to the next."
         `(.right
           :color ,theme:primary
           :flex "65%")))
-    (:div
-     :class "title-div"
+    (:div.title
      (:h1 "Common Settings")
-     (:div
-      :class "row"
-      (:div
-       :class "column left"
+     (:div.row
+      (:div.left
        (:p "Adjustments made here will persist across Nyxt sessions."))
-      (:div
-       :class "column right"
+      (:div.right
        (:p "Note that settings may require restarting Nyxt to take effect."))))
-    (:div
-     :class "section-div"
+    (:div.section
      (:h2 "Keybinding scheme")
-     (:div
-      :class "row"
-      (:div
-       :class "column left"
+     (:div.row
+      (:div.left
        (:nradio
          :name "keyscheme"
          :vertical t
@@ -133,20 +126,15 @@ to the next."
             :form '(define-configuration (web-buffer prompt-buffer
                                           panel-buffer nyxt/mode/editor:editor-buffer)
                     ((default-modes (pushnew 'nyxt/mode/vi:vi-normal-mode %slot-value%))))))))
-      (:div
-       :class "column right"
+      (:div.right
        (:p "For individual buffers - keyschemes can be toggled with the (toggle-modes) command.")
        (:p "For a persistent keyscheme each time you start Nyxt - make a selection here."))))
-    (:div
-     :class "section-div"
+    (:div.section
      (:h2 "Theme & style")
-     (:div
-      :class "section-div"
+     (:div.section
       (:h5 "Browser interface")
-      (:div
-       :class "row"
-       (:div
-        :class "column left"
+      (:div.row
+       (:div.left
         (:nradio
           :name "theme"
           :checked (if (equal (theme:background-color (theme *browser*))
@@ -161,16 +149,12 @@ to the next."
           '(theme::+dark-theme+ "Dark theme"
             (nyxt::auto-configure :form '(define-configuration browser
                                           ((theme theme::+dark-theme+)))))))
-       (:div
-        :class "column right"
+       (:div.right
         (:p "Themes for the browser interface, panel buffers, and internal Nyxt pages like manual, bindings, and common settings."))))
-     (:div
-      :class "section-div"
+     (:div.section
       (:h5 "Webpage theme")
-      (:div
-       :class "row"
-       (:div
-        :class "column left"
+      (:div.row
+       (:div.left
         (:nradio
           :name "darken"
           :checked (if (find 'nyxt/mode/style:dark-mode (default-modes (current-buffer)))
@@ -188,17 +172,13 @@ to the next."
             (nyxt::auto-configure
              :form '(define-configuration (web-buffer)
                      ((default-modes (pushnew 'nyxt/mode/style:dark-mode %slot-value%))))))))
-       (:div
-        :class "column right"
+       (:div.right
         (:p "Select Default Web to view webpages as they are designed.")
         (:p "Select Dark Web to have Nyxt darken any webpage you visit."))))
-     (:div
-      :class "section-div"
+     (:div.section
       (:h5 "Default zoom ratio")
-      (:div
-       :class "row"
-       (:div
-        :class "column left"
+      (:div.row
+       (:div.left
         (:nselect
           :id "default-zoom-ratio"
           :default (format nil "~a%" (* 100 (zoom-ratio-default (current-buffer))))
@@ -210,19 +190,14 @@ to the next."
                            :class-name 'document-buffer
                            :slot 'zoom-ratio-default
                            :slot-value ,(/ number 100.0))))))
-       (:div
-        :class "column right"
+       (:div.right
         (:p "Incremental changes advised.")))))
-    (:div
-     :class "section-div"
+    (:div.section
      (:h2 "New Buffer Settings")
-     (:div
-      :class "section-div"
+     (:div.section
       (:h5 "Homepage")
-      (:div
-       :class "row"
-       (:div
-        :class "column left"
+      (:div.row
+       (:div.left
         (:nbutton :text "Set default new buffer URL"
           '(nyxt::configure-slot 'default-new-buffer-url 'browser
             :sources (list
@@ -236,16 +211,12 @@ to the next."
             :input (render-url (default-new-buffer-url *browser*))
             :postprocess (lambda (url-or-history-entry)
                            (render-url (url url-or-history-entry))))))
-       (:div
-        :class "column right"
+       (:div.right
         (:p "Choose your homepage. By default your homepage is set to the internal Nyxt page (nyxt:new)."))))
-     (:div
-      :class "section-div"
+     (:div.section
       (:h5 "Session")
-      (:div
-       :class "row"
-       (:div
-        :class "column left"
+      (:div.row
+       (:div.left
         (:ncheckbox
           :name "restore-session"
           :checked (restore-session-on-startup-p *browser*)
@@ -259,16 +230,12 @@ to the next."
              :class-name 'browser
              :slot 'restore-session-on-startup-p
              :slot-value nil))))
-       (:div
-        :class "column right"
+       (:div.right
         (:p "Choose whether to restore buffers from previous sessions."))))
-     (:div
-      :class "section-div"
+     (:div.section
       (:h5 "Modes")
-      (:div
-       :class "row"
-       (:div
-        :class "column left"
+      (:div.row
+       (:div.left
         (:nbutton :text "Set default modes"
           '(nyxt::configure-slot 'default-modes 'buffer
             :sources (make-instance
@@ -277,20 +244,15 @@ to the next."
             :postprocess (lambda (modes)
                            `(quote ,modes))
             :type 'cons)))
-       (:div
-        :class "column right"
+       (:div.right
         (:p "Specify default modes for all new buffers.")
         (:p "To set modes for individual buffers, use the (toggle-modes) command, or a specific command like (toggle-no-script-mode).")))))
-    (:div
-     :class "section-div"
+    (:div.section
      (:h2 "Privacy & Security")
-     (:div
-      :class "section-div"
+     (:div.section
       (:h5 "Privacy & Security Modes")
-      (:div
-       :class "row"
-       (:div
-        :class "column left"
+      (:div.row
+       (:div.left
         (:ncheckbox
           :name "blocker-mode"
           :checked (find 'nyxt/mode/blocker:blocker-mode (default-modes (current-buffer)))
@@ -330,22 +292,17 @@ to the next."
                      ((default-modes (remove-if (lambda (m)
                                                   (string= (symbol-name m) "REDUCE-TRACKING-MODE"))
                                       %slot-value%))))))))
-       (:div
-        :class "column right"
+       (:div.right
         (:p "Select commonly used security modes here to add them to your default modes for new buffers.")))))
-    (:div
-     :class "section-div"
+    (:div.section
      (:h2 "Text & Code Editing")
-     (:div
-      :class "row"
-      (:div
-       :class "column left"
+     (:div.row
+      (:div.left
        (:nbutton :text "Edit user files with internal editor"
          '(nyxt/mode/editor::edit-user-file))
        (:nbutton :text "Edit user files with external editor"
          '(nyxt::edit-user-file-with-external-editor)))
-      (:div
-       :class "column right"
+      (:div.right
        (:p "To use the external editor, you need to set the VISUAL or EDITOR environment variables on your system.")
        (:p "Otherwise, you can use the basic internal text editor."))))))
 
