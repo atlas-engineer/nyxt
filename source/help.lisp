@@ -71,9 +71,9 @@ to the next."
           :display inline-block
           :margin-right "0.5em"
           :margin-left "3em")
-        `(.button
+        `("select.button,.button"
           :display block
-          :margin "1.5em 0 0.5em 3em")
+          :margin "1em 0 0.5em 2.5em")
         `(.section
           :margin 0
           :padding "0.5em 0 0.5em 1.5em")
@@ -89,7 +89,11 @@ to the next."
           :flex "35%")
         `(.right
           :color ,theme:primary
+          :padding-top "1em"
           :flex "65%")
+        `(p
+          :margin 0
+          :padding-bottom "0.5em")
         `(.tab-button
           :display "block"
           :text-decoration "none"
@@ -332,7 +336,35 @@ to the next."
                                                        (string= (symbol-name m) "REDUCE-TRACKING-MODE"))
                                            %slot-value%))))))))
             (:div.right
-             (:p "Select commonly used security modes here to add them to your default modes for new buffers."))))))
+             (:p "Select commonly used security modes here to add them to your default modes for new buffers."))))
+          (:div.section
+           (:h5 "Cookie policy")
+           (:div.row
+           (:div.left
+            (:nradio
+             :name "default-cookie-policy"
+             :vertical t
+             :checked (default-cookie-policy *browser*)
+             :buffer buffer
+             '(:no-third-party "No third party"
+               (nyxt::auto-configure
+                :class-name 'browser
+                :slot 'default-cookie-policy
+                :slot-value :no-third-party))
+             '(:always "Always accept"
+               (nyxt::auto-configure
+                :class-name 'browser
+                :slot 'default-cookie-policy
+                :slot-value :always))
+             '(:never "Never accept"
+               (nyxt::auto-configure
+                :class-name 'browser
+                :slot 'default-cookie-policy
+                :slot-value :never))))
+            (:div.right
+             (:p "To accept cookies for current website only, choose \"No third party\".")
+             (:p "To always accept cookies, choose \"Always accept\".")
+             (:p "To never accept cookies, choose \"Never accept\"."))))))
         (text-and-code
          (:div.section
           (:div.section
