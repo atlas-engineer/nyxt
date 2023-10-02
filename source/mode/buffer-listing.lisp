@@ -87,8 +87,6 @@ shown linearly instead."
                    (buffer-tree->html buffer)))))))))
 
 ;; FIXME: It's a terribly confusing panel:
-;; - Update button and buffer names are styled the same and are not visually
-;;   separated.
 ;; - Buffer as a button is quite confusing and does not match the idea of a
 ;;   switchable-to entity better separate action (switch, delete) from
 ;;   presentation.
@@ -108,8 +106,8 @@ shown linearly instead."
                  :display block
                  :text-overflow ellipsis))
       (:body
-       (:h1 "Buffers")
        (:nbutton :text "Update ↺"
+         :style "background-color:green;"
          :buffer panel-buffer
          `(reload-buffer
            (find
@@ -118,5 +116,6 @@ shown linearly instead."
             :test #'string=
             :key (compose
                   #'render-url #'url))))
+       (:h1 "Buffers")
        (loop for buffer in (buffer-list)
              collect (:raw (buffer-markup buffer)))))))
