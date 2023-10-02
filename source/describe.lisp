@@ -3,16 +3,19 @@
 
 (in-package :nyxt)
 
-(defun description-constructor (lister)
-  "LISTER is a function return a list of symbols from the given packages.
-See `sym:package-functions' for an example."
+(defun description-constructor (lister &key (test #'eql))
+  "LISTER is a function that returns a list of symbols or objects representing them
+from the given packages. TEST is a function that checks for equality for the purpose of
+deduplicating the result.
+See `sym:package-functions' for an example of LISTER."
   (lambda (source)
     (delete-duplicates
      (append
       (funcall lister (packages source) (visibility source))
       (funcall lister (internal-visibility-packages source) :internal)
       (funcall lister (external-visibility-packages source) :external)
-      (funcall lister (inherited-visibility-packages source) :inherited)))))
+      (funcall lister (inherited-visibility-packages source) :inherited))
+     :test test)))
 
 (define-class describe-nyxt-source (prompter:source)
   ((visibility
@@ -128,7 +131,11 @@ See `sym:package-functions' for an example."
 
 (define-class slot-source (describe-nyxt-source)
   ((prompter:name "Slots")
-   (prompter:constructor (description-constructor #'package-slots)))
+   (prompter:constructor
+    (description-constructor #'package-slots
+                             :test (lambda (slot-a slot-b)
+                                     (equal `(,(name slot-a) ,(class-sym slot-a))
+                                            `(,(name slot-b) ,(class-sym slot-b)))))))
   (:export-accessor-names-p t))
 
 (define-class slot-non-nyxt-source (slot-source describe-non-nyxt-source)
