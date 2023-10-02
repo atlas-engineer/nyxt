@@ -880,7 +880,11 @@ Nyxt version exists.  It is only raised when the major version differs.")
   (:nsection :title "Features"
     (:ul
      (:li "Revamp the " (:nxref :package :theme)
-	  " API to allow for more nuanced themes and prettier Nyxt-internal interfaces."))))
+	  " API to allow for more nuanced themes and prettier Nyxt-internal interfaces.")))
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Remove duplicate slots that appear in the prompt buffer
+when using " (:nxref :command 'describe-slot) "."))))
 
 (define-version "4-pre-release-1"
   (:li "When on pre-release, push " (:code "X-pre-release")
