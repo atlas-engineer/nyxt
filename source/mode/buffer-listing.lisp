@@ -93,12 +93,13 @@ shown linearly instead."
 (define-panel-command-global buffers-panel ()
     (panel-buffer "*Buffers panel*")
   "Display a list of buffers with easy switching."
-  (flet ((buffer-markup (buffer)
+  (flet ((buffer-markup (buffer &optional highlight)
            "Create the presentation for a buffer."
            (spinneret:with-html-string
              (:p (:nbutton :text (title buffer)
-                   :buffer panel-buffer
-                   `(nyxt::switch-buffer :buffer ,buffer))))))
+                  :buffer panel-buffer
+                  :class (when highlight "action")
+                  `(nyxt::switch-buffer :buffer ,buffer))))))
     (spinneret:with-html-string
       (:nstyle '(.button
                  :white-space nowrap
@@ -107,15 +108,26 @@ shown linearly instead."
                  :text-overflow ellipsis))
       (:body
        (:nbutton :text "Update ↺"
-         :style "background-color:green;"
          :buffer panel-buffer
-         `(reload-buffer
-           (find
-            (render-url (url ,panel-buffer))
-            (nyxt::panel-buffers (current-window))
-            :test #'string=
-            :key (compose
-                  #'render-url #'url))))
+         :class "success"
+         `(reload-panel-buffer ,panel-buffer))
        (:h1 "Buffers")
        (loop for buffer in (buffer-list)
-             collect (:raw (buffer-markup buffer)))))))
+             collect (:raw (buffer-markup buffer (eq buffer (current-buffer)))))))))
+
+(defun reload-panel-buffer (panel-buffer)
+  (reload-buffer (find
+                   (render-url (url panel-buffer))
+                   (nyxt::panel-buffers (current-window))
+                   :test #'string=
+                   :key (compose #'render-url #'url))))
+
+(defun buffers-panel-handler (window buffer)
+  (declare (ignore buffer))
+  (let ((panel-buffer (first (nyxt::panel-buffers window))))
+    (when panel-buffer
+      (reload-panel-buffer panel-buffer))))
+
+(define-configuration window
+  ((window-set-buffer-hook
+    (hooks:add-hook %slot-default% 'buffers-panel-handler))))
