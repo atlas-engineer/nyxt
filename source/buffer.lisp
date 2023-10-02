@@ -809,9 +809,36 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :border-radius "2px"
               :padding "6px"
               :margin "2px")
-            `(.button.action
-              :background-color ,theme:action
-              :color ,theme:on-action)
+	    `(.action
+              :color ,theme:action
+              (.button
+               :background-color ,theme:action
+               :color ,theme:on-action
+               :border-color ,theme:action+))
+            `(.warning
+              :color ,theme:warning
+              (.button
+               :background-color ,theme:warning
+               :color ,theme:on-warning
+               :border-color ,theme:warning+))
+            `(.success
+              :color ,theme:success
+              (.button
+               :background-color ,theme:success
+               :color ,theme:on-success
+               :border-color ,theme:success+))
+            `(.highlight
+              :color ,theme:highlight
+              (.button
+               :background-color ,theme:highlight
+               :color ,theme:on-highlight
+               :border-color ,theme:highlight+))
+            `(.highlight
+              :color ,theme:highlight)
+            `(.button.highlight
+              :background-color ,theme:highlight
+              :color ,theme:on-highlight
+              :border-color ,theme:highlight+)
             `((:and .button :hover)
               :cursor "pointer"
               :opacity 0.8)
