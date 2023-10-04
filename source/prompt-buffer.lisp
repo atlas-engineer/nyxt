@@ -37,7 +37,7 @@ new history for each new prompt buffer.  Here we set the history to be shared gl
 is useful to conceal passwords.")
      (hide-suggestion-count-p
       nil
-      :documentation "Whether to show the number of chosen suggestions inside
+      :documentation "Whether to hide the number of chosen suggestions inside
 brackets.")
      (max-suggestions
       0
