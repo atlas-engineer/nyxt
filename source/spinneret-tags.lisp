@@ -126,6 +126,96 @@ Example:
                 `((:option :selected t :disabled t ,default)))
             (:raw (%nselect-options ,body-var))))))))
 
+(serapeum:-> %nradio-onchange (list (nyxt:maybe nyxt:buffer)) t)
+(defun %nradio-onchange (onchange buffer)
+  "Produce Parenscript to run ONCHANGE expression in BUFFER when :nradio is modified."
+  (when (or buffer (nyxt:current-buffer))
+    (ps:ps*
+     `(nyxt/ps:lisp-eval
+       (:title "nradio onchange"
+               ,@(when buffer
+                   (list :buffer buffer)))
+       ,onchange))))
+
+(serapeum:-> %nradio-inputs (string (nyxt:maybe nyxt:buffer) symbol boolean (nyxt:list-of list)) t)
+(defun %nradio-inputs (name buffer checked vertical clauses)
+  (spinneret:with-html-string
+          (loop for (id label body) in (mapcar #'uiop:ensure-list clauses)
+                collect (:label
+                         :class "radio-label"
+                         (:input
+                          :class "radio-input"
+                          :type "radio"
+                          :id (nyxt:prini-to-string id)
+                          :onchange (%nradio-onchange body buffer)
+                          :name name
+                          :checked (equal id checked))
+                         label (when vertical (:br))))))
+
+(deftag :nradio (body attrs &rest keys &key (name (alexandria:required-argument 'name)) checked vertical buffer &allow-other-keys)
+  "Generate radio buttons corresponding to clauses in BODY.
+Clauses should be of the form (ID LABEL . FORM), where FORM is evaluated
+when a radio button is selected."
+  (let ((keys keys)
+        (attrs attrs))
+    (declare (ignorable keys attrs))
+  (with-gensyms (body-var)
+    `(let ((,body-var ,(if (serapeum:single body)
+                           (first body)
+                           `(list ,@body))))
+       (:div
+        :class "radio-div"
+        (:raw (%nradio-inputs ,name ,buffer ,checked ,vertical ,body-var)))))))
+
+(serapeum:-> %ncheckbox-onchange (list list (nyxt:maybe nyxt:buffer)) t)
+(defun %ncheckbox-onchange (checked-body unchecked-body buffer)
+  "Produce Parenscript to run ONCHANGE expression in BUFFER when :ncheckbox is modified."
+  (when (or buffer (nyxt:current-buffer))
+    (ps:ps*
+     `(if (ps:chain window event target checked)
+         (nyxt/ps:lisp-eval
+           (:title "ncheckbox checked"
+                   ,@(when buffer
+                       (list :buffer buffer)))
+           ,checked-body)
+         (nyxt/ps:lisp-eval
+           (:title "ncheckbox unchecked"
+                   ,@(when buffer
+                       (list :buffer buffer)))
+           ,unchecked-body)))))
+
+(serapeum:-> %ncheckbox-inputs (string (nyxt:maybe nyxt:buffer) boolean list) t)
+(defun %ncheckbox-inputs (name buffer checked body)
+  (destructuring-bind ((id label) checked-body unchecked-body)
+      (mapcar #'uiop:ensure-list body)
+    (spinneret:with-html-string
+      (:input
+       :class "checkbox-input"
+       :type "checkbox"
+       :id (nyxt:prini-to-string id)
+       :onchange (%ncheckbox-onchange checked-body unchecked-body buffer)
+       :name name
+       :checked checked)
+      (:label
+       :class "checkbox-label"
+       :for name
+       label))))
+
+(deftag :ncheckbox (body attrs &rest keys &key (name (alexandria:required-argument 'name)) checked buffer &allow-other-keys)
+  "Generate a checkbox corresponding to BODY.
+BODY should be of the form (ID LABEL FORM-CHECKED . FORM-UNCHECKED), where FORM-CHECKED is evaluated
+when the checkbox is checked and FORM-UNCHECKED when it is unchecked."
+  (let ((keys keys)
+        (attrs attrs))
+    (declare (ignorable keys attrs))
+    (with-gensyms (body-var)
+      `(let* ((,body-var ,(if (serapeum:single body)
+                              (first body)
+                              `(list ,@body))))
+         (:div
+          :class "checkbox-div"
+          (:raw (%ncheckbox-inputs ,name ,buffer ,checked ,body-var)))))))
+
 (defun %nxref-doc (type symbol &optional (class-name (when (eq type :slot)
                                                        (alexandria:required-argument 'class-name))))
   "NOTE: TYPE for classes is :CLASS, not :CLASS-NAME (as in `:nxref')."
