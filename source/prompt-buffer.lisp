@@ -141,6 +141,8 @@ See `nyxt::attribute-widths'.")
           :opacity 0.6)
         `((:and .button (:or :visited :active))
           :color ,theme:background)
+        `(".button.inactive svg path"
+           :stroke ,theme:secondary-)
         `("#input"
           :height "28px"
           :margin-top "0"
@@ -162,9 +164,16 @@ See `nyxt::attribute-widths'.")
         `(".source-name"
           :background-color ,theme:secondary
           :color ,theme:on-secondary
-          :padding-left "5px"
+          :display "flex"
+          :justify-content "space-between"
+          :align-items "stretch"
           :line-height "24px"
           :border-radius "3px 0 0 0")
+        `(".source-name > div > button"
+          :padding "5px 4px 5px 4px"
+          :min-height "100%")
+        `(".source-heading > div > button:hover"
+          :background-color ,theme:secondary+)
         `("#suggestions"
           :background-color ,theme:background
           :color ,theme:on-background
@@ -491,39 +500,57 @@ This does not redraw the whole prompt buffer, use `prompt-render' for that."
          (last-source-index (1- (length sources))))
     (flet ((source->html (source)
              (spinneret:with-html-string
-               (:div :class "source"
-                     (:div :class "source-name"
-                           :style (if (and (hide-single-source-header-p prompt-buffer)
-                                           (sera:single sources))
-                                      "display:none;"
-                                      "display:revert")
-                           (:nbutton
-                             :text "↓"
-                             :title "Next source"
-                             :buffer prompt-buffer
-                             '(funcall (sym:resolve-symbol :next-source :command)))
-                           (:nbutton
-                             :text "↑"
-                             :title "Previous source"
-                             :buffer prompt-buffer
-                             '(funcall (sym:resolve-symbol :previous-source :command)))
-                           (:nbutton
-                             :text "⚙"
-                             :title "Toggle attributes display"
-                             :buffer prompt-buffer
-                             `(funcall (sym:resolve-symbol :toggle-attributes-display :command)
-                                       :source ,source))
-                           (prompter:name source)
-                           (if (prompter:hide-suggestion-count-p source)
-                               ""
-                               (suggestion-and-mark-count prompt-buffer
-                                                          (prompter:suggestions source)
-                                                          (prompter:marks source)
-                                                          :enable-marks-p (prompter:enable-marks-p source)))
-                           (if (prompter:ready-p source)
-                               ""
-                               "(In progress...)"))
-                     (:raw (render-attributes source prompt-buffer))))))
+               (:div.source
+                (:div.source-name
+                 :style (when (and (hide-single-source-header-p prompt-buffer)
+                                   (sera:single sources))
+                          "display:none")
+                 (:div
+                  (:nbutton
+                    :class (unless (prompter:adjacent-source prompt-buffer
+                                                             :source source)
+                             "inactive")
+                    :id "next-source"
+                    :text (:raw (gethash "down-arrow.svg" *static-data*))
+                    :title (format nil "Next source (~a)"
+                                   (binding-keys (sym:resolve-symbol :next-source
+                                                                     :command)
+                                                 :modes (modes prompt-buffer)))
+                    :buffer prompt-buffer
+                    '(funcall (sym:resolve-symbol :next-source :command)))
+                  (:nbutton
+                    :class (unless (prompter:adjacent-source prompt-buffer
+                                                             :steps -1
+                                                             :source source)
+                             "inactive")
+                    :id "previous-source"
+                    :text (:raw (gethash "up-arrow.svg" *static-data*))
+                    :title (format nil "Previous source (~a)"
+                                   (binding-keys (sym:resolve-symbol :previous-source
+                                                                     :command)
+                                                 :modes (modes prompt-buffer)))
+                    :buffer prompt-buffer
+                    '(funcall (sym:resolve-symbol :previous-source :command)))
+                  (prompter:name source)
+                  (if (prompter:hide-suggestion-count-p source)
+                      ""
+                      (suggestion-and-mark-count prompt-buffer
+                                                 (prompter:suggestions source)
+                                                 (prompter:marks source)
+                                                 :enable-marks-p (prompter:enable-marks-p source)))
+                  (if (prompter:ready-p source) "" "(In progress...)"))
+                 (:div
+                  (:nbutton
+                    :id "toggle-attributes"
+                    :text (:raw (gethash "plus-minus.svg" *static-data*))
+                    :title (format nil "Toggle attributes display (~a)"
+                                   (binding-keys (sym:resolve-symbol 'toggle-attributes-display
+                                                                     :command)
+                                                 :modes (modes prompt-buffer)))
+                    :buffer prompt-buffer
+                    `(funcall (sym:resolve-symbol :toggle-attributes-display :command)
+                              :source ,source))))
+                (:raw (render-attributes source prompt-buffer))))))
       (ps-eval :buffer prompt-buffer
         (setf (ps:@ (nyxt/ps:qs document "#suggestions") |innerHTML|)
               (ps:lisp
