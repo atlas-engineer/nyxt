@@ -93,12 +93,12 @@ shown linearly instead."
 (define-panel-command-global buffers-panel ()
     (panel-buffer "*Buffers panel*")
   "Display a list of buffers with easy switching."
-  (flet ((buffer-markup (buffer &optional highlight)
+  (flet ((buffer-markup (buffer highlight-p)
            "Create the presentation for a buffer."
            (spinneret:with-html-string
              (:p (:nbutton :text (title buffer)
                   :buffer panel-buffer
-                  :class (when highlight "action")
+                  :class (when highlight-p "action")
                   `(nyxt::switch-buffer :buffer ,buffer))))))
     (spinneret:with-html-string
       (:nstyle '(.button
