@@ -96,7 +96,7 @@ shown linearly instead."
   (flet ((buffer-markup (buffer highlight-p)
            "Create the presentation for a buffer."
            (spinneret:with-html-string
-             (:p (:nbutton :text (title buffer)
+             (:p (:nbutton :text (let ((text (title buffer))) (if (str:emptyp text) "Loading..." text))
                   :buffer panel-buffer
                   :class (when highlight-p "action")
                   `(nyxt::switch-buffer :buffer ,buffer))))))
