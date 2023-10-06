@@ -39,8 +39,8 @@ Example:
 
   (defvar cua-child (make-keyscheme \"cua-child\" cua))
 
-In above example defines a keyscheme called `cua-child', which inherits from the
-existing keyscheme `cua'."
+The above example defines a keyscheme called `cua-child', which inherits from
+the existing keyscheme `cua'."
   (the (values nkeymaps:keyscheme &optional)
        (make-instance 'nkeymaps:keyscheme
                       :name name
