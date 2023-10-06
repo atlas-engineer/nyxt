@@ -8,8 +8,7 @@
 (defun relative-luminance (color)
   "Compute relative luminance of COLOR."
   ;; See https://developer.mozilla.org/en-US/docs/Web/Accessibility/Understanding_Colors_and_Luminance#modeling_light_color_and_vision
-  (loop with rgb = (cl-colors2:as-rgb color)
-        for const in '(0.2126 0.7152 0.0722)
+  (loop for const in '(0.2126 0.7152 0.0722)
         for rgb-component in (list (cl-colors2:rgb-red (cl-colors2:as-rgb color))
                                    (cl-colors2:rgb-green (cl-colors2:as-rgb color))
                                    (cl-colors2:rgb-blue (cl-colors2:as-rgb color)))
