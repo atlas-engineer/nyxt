@@ -124,7 +124,7 @@ The `downloads' slot is populated by a list of these objects."))
 
 It will search the URLs of all the existing downloads, if it finds it, it will
 invoke its cancel-function."
-  (alex:when-let ((download (find (url url) (downloads *browser*) :key #'url :test #'equal)))
+  (alex:when-let ((download (find url (downloads *browser*) :key  #'url :test #'string=)))
     (funcall (cancel-function download))
     (echo "Download canceled: ~a." url)))
 

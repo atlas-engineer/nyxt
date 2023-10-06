@@ -883,6 +883,7 @@ Nyxt version exists.  It is only raised when the major version differs.")
 	  " API to allow for more nuanced themes and prettier Nyxt-internal interfaces.")))
   (:nsection :title "Bug fixes"
     (:ul
+     (:li "Fix the functionality of the download cancellation button.")
      (:li "Remove duplicate slots that appear in the prompt buffer
 when using " (:nxref :command 'describe-slot) "."))))
 
