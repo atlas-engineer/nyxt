@@ -152,11 +152,15 @@ contains an `nyxt/mode/editor:editor-mode' instance (or a subclass thereof)."))
                           :name "Create new file"))))))
 
 (define-command editor-open-file (&key (buffer (current-buffer)) (file (prompt-for-editor-file)))
-  "Open a new file in and already open internal `editor-buffer'."
+  "Open a file.
+
+BUFFER is of type `editor-buffer'."
   (buffer-load (quri:make-uri :scheme "editor" :path file) :buffer buffer))
 
 (define-command editor-write-file (&key (buffer (current-buffer)))
-  "Write the file of the BUFFER (`editor-buffer') to storage."
+  "Write a file to storage.
+
+BUFFER is of type `editor-buffer'."
   (if (uiop:file-exists-p (file buffer))
       (if-confirm ((format nil "Overwrite ~s?" (file buffer))
                    :yes "overwrite" :no "cancel")
