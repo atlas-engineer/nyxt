@@ -15,6 +15,7 @@
       :type (or keyword integer)
       :writer nil
       :reader height
+      :export t
       :documentation "The height occupied by the prompt buffer.
 The options are:
 - `:default', which sets it to the value of `prompt-buffer-open-height';
