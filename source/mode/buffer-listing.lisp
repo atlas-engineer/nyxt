@@ -17,10 +17,9 @@ Hosts `list-buffers' page and `buffers-panel' panel."
   "Show all buffers and their interrelations.
 
 When a buffer is spawned from another one (e.g. by middle-clicking on a link),
-the new buffer is a child buffer. This kind of relationships creates 'trees' of
-buffers.
-
-With LINEAR-VIEW-P, list buffers linearly instead."
+we say that a child buffer originates from a parent one. These kind of
+relationships define a buffer tree.  When LINEAR-VIEW-P is non-nil, buffers are
+shown linearly instead."
   (labels ((cluster-buffers ()
              "Return buffers as hash table, where each value is a cluster (list of documents)."
              (let ((collection (make-instance 'analysis::document-collection)))
