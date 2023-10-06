@@ -122,7 +122,7 @@ shown linearly instead."
                    :test #'string=
                    :key (compose #'render-url #'url))))
 
-(defun buffers-panel-handler (window buffer)
+(defun buffers-panel-handler-set-buffer (window buffer)
   (declare (ignore buffer))
   (let ((panel-buffer (first (nyxt::panel-buffers window))))
     (when panel-buffer
@@ -130,4 +130,14 @@ shown linearly instead."
 
 (define-configuration window
   ((window-set-buffer-hook
-    (hooks:add-hook %slot-default% 'buffers-panel-handler))))
+    (hooks:add-hook %slot-default% 'buffers-panel-handler-set-buffer))))
+
+(defun buffers-panel-handler-buffer-loaded (buffer)
+  (declare (ignore buffer))
+  (let ((panel-buffer (first (nyxt::panel-buffers (current-window)))))
+    (when panel-buffer
+      (reload-panel-buffer panel-buffer))))
+
+(define-configuration network-buffer
+  ((buffer-loaded-hook
+    (hooks:add-hook %slot-default% 'buffers-panel-handler-buffer-loaded))))
