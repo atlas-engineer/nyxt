@@ -30,44 +30,24 @@
   </provides>
   <screenshots>
     <screenshot type="default">
-      <image>https://nyxt.atlas.engineer/image/animation/jump-heading.png</image>
-      <caption>Jump heading</caption>
+      <image>https://nyxt.atlas.engineer/static/image/switch-buffer.png</image>
+      <caption>Fast tab switching</caption>
     </screenshot>
     <screenshot>
-      <image>https://nyxt.atlas.engineer/image/animation/kill-buffers.png</image>
-      <caption>Map selection</caption>
+      <image>https://nyxt.atlas.engineer/static/image/multi-select.png</image>
+      <caption>Multiple marking</caption>
     </screenshot>
     <screenshot>
-      <image>https://nyxt.atlas.engineer/image/animation/execute-commands.png</image>
-      <caption>Execute commands easily</caption>
+      <image>https://nyxt.atlas.engineer/static/image/bookmark.png</image>
+      <caption>Powerful bookmarks</caption>
     </screenshot>
     <screenshot>
-      <image>https://nyxt.atlas.engineer/image/animation/switch-buffer.png</image>
-      <caption>Instantly switch buffers</caption>
+      <image>https://nyxt.atlas.engineer/static/image/multi-search.png</image>
+      <caption>Multi tab search</caption>
     </screenshot>
     <screenshot>
-      <image>https://nyxt.atlas.engineer/image/animation/element-hint.png</image>
-      <caption>Powerful link hinting</caption>
-    </screenshot>
-    <screenshot>
-      <image>https://nyxt.atlas.engineer/image/animation/lisp-repl.png</image>
-      <caption>Built-in programmability</caption>
-    </screenshot>
-    <screenshot>
-      <image>https://nyxt.atlas.engineer/image/animation/bookmark-search.png</image>
-      <caption>Smart bookmark search</caption>
-    </screenshot>
-    <screenshot>
-      <image>https://nyxt.atlas.engineer/image/animation/auto-fill.png</image>
-      <caption>Customizable autofills</caption>
-    </screenshot>
-    <screenshot>
-      <image>https://nyxt.atlas.engineer/image/animation/paste-ring.png</image>
-      <caption>Clipboard history</caption>
-    </screenshot>
-    <screenshot>
-      <image>https://nyxt.atlas.engineer/image/animation/history.png</image>
-      <caption>Lossless tree history</caption>
+      <image>https://nyxt.atlas.engineer/static/image/history.png</image>
+      <caption>History as a tree</caption>
     </screenshot>
 </screenshots>
   <!-- Only those published on Flathub are listed -->
