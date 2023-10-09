@@ -296,7 +296,7 @@ to the next."
            (:div.left
             (:ncheckbox
               :name "blocker-mode"
-              :checked (find 'nyxt/mode/blocker:blocker-mode (default-modes (current-buffer)))
+              :checked (when (find 'nyxt/mode/blocker:blocker-mode (default-modes (current-buffer))) t)
               :buffer buffer
               '((blocker-mode "Blocker mode")
                 (nyxt::auto-configure
@@ -309,7 +309,7 @@ to the next."
                                           %slot-value%)))))))
             (:ncheckbox
               :name "no-script-mode"
-              :checked (find 'nyxt/mode/no-script:no-script-mode (default-modes (current-buffer)))
+              :checked (when (find 'nyxt/mode/no-script:no-script-mode (default-modes (current-buffer))) t)
               :buffer buffer
               '((no-script-mode "No-Script mode")
                 (nyxt::auto-configure
@@ -322,7 +322,7 @@ to the next."
                                           %slot-value%)))))))
             (:ncheckbox
               :name "reduce-tracking-mode"
-              :checked (find 'nyxt/mode/reduce-tracking:reduce-tracking-mode (default-modes (current-buffer)))
+              :checked (when (find 'nyxt/mode/reduce-tracking:reduce-tracking-mode (default-modes (current-buffer))) t)
               :buffer buffer
               '((reduce-tracking-mode "Reduce-Tracking mode")
                 (nyxt::auto-configure
