@@ -777,6 +777,11 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :font-weight 500)
             `(a
               :color ,theme:primary)
+            `(dt
+              :font-weight bold)
+            `(dd
+              :margin-inline-start 1em
+              :font-size xx-small)
             `((:and a :hover)
               :cursor "pointer"
               :text-decoration "underline")
