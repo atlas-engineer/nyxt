@@ -337,8 +337,7 @@ Splits bookmarks into groups by tags."
                 :id (or tag "unsorted")
                 :open-p nil
                 (dolist (bookmark bookmarks)
-                  (let ((uri-host (quri:uri-host (url bookmark)))
-                        (url-href (render-url (url bookmark))))
+                  (let ((url-href (render-url (url bookmark))))
                     (lisp-url-flet bookmarks-buffer
                         ((delbkm (&key href)
                            (delete-bookmark href)))
@@ -354,10 +353,9 @@ Splits bookmarks into groups by tags."
                                                             :buffer bookmarks-buffer
                                                             :args (:href url-href)))
                                        "✕")
-                              (serapeum:ellipsize (title bookmark) 80))
-                             (:dd (:a :href url-href uri-host))
+                              (:a :href url-href (title bookmark)))
                              (when (tags bookmark)
-                               (:dd (format nil " (~{~a~^, ~})" (tags bookmark)))))
+                               (:dd (format nil "Tags: ~{~a~^, ~}" (tags bookmark)))))
                             (:hr)))))))
             bookmarks))))))
 
