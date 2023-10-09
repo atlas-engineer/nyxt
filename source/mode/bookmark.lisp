@@ -197,35 +197,27 @@ against date, given `prompter:active-attributes-keys' configuration."))
 (define-panel-command-global bookmarks-panel ()
     (panel-buffer "*Bookmarks panel*")
   "Shows all the bookmarks in a compact panel-buffer layout."
-   (let ((bookmarks (group-bookmarks (current-buffer))))
+  (let ((bookmarks (group-bookmarks (current-buffer))))
+    ;; Simplified version of list-bookmarks
     (spinneret:with-html-string
-      (:nstyle
-        '(dt
-          :font-size 14px
-          :white-space nowrap
-          :overflow-x hidden
-          :text-overflow ellipsis))
       (:body
        (:h1 "Bookmarks")
        (if (zerop (hash-table-count bookmarks))
            (:p (format nil "No bookmarks in ~s."
-                       (files:expand
-                        (files:content
-                         (bookmarks-file (current-buffer))))))
-           (maphash
-            (lambda (tag bookmarks)
-              (:details
-               (:summary (or tag "Unsorted"))
-               (dolist (bookmark bookmarks)
-                 (let* ((url (url bookmark))
-                        (uri-host (quri:uri-host url))
-                        (url-href (render-url url)))
-                   (:dl
-                    (:dt (title bookmark))
-                    (:dd (:a :href url-href :target "_blank" uri-host))
-                    (when (tags bookmark)
-                      (:dd (format nil " (~{~a~^, ~})" (tags bookmark)))))))))
-             bookmarks))))))
+                       (files:expand (files:content (bookmarks-file (current-buffer))))))
+           (maphash (lambda (tag bookmarks)
+                      (:nsection
+                        :title (or tag "Unsorted")
+                        :id (or tag "unsorted")
+                        :open-p t
+                        (dolist (bookmark bookmarks)
+                          (:dl (:dt (:a :href (render-url (url bookmark))
+                                        :target "_blank"
+                                        (title bookmark)))
+                               (when (tags bookmark)
+                                 (:dd (format nil "Tags: ~{~a~^, ~}" (tags bookmark)))))
+                          (:hr))))
+                    bookmarks))))))
 
 (export-always 'url-bookmark-tags)
 (defun url-bookmark-tags (url)
