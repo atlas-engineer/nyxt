@@ -19,10 +19,10 @@ Signals an error if COMMAND is nil or an empty string."
   ;; this custom append function.
   (cond
     ((null command) (error "Unable to append arguments to a null command."))
+    ((consp command) (append command args))
     ((str:emptyp command) (error "Unable to append arguments to an empty command."))
     ((null args) command)
-    ((stringp command) (uiop:reduce/strcat (list command " " (str:unwords args))))
-    ((consp command) (append command args))))
+    ((stringp command) (uiop:reduce/strcat (list command " " (str:unwords args))))))
 
 (export-always 'run-external-editor)
 (defun run-external-editor (path &optional (program (external-editor-program *browser*)))
