@@ -274,9 +274,9 @@ The handlers take the `prompt-buffer' as argument.")
         (uiop:getenv "EDITOR"))
     :type (or (cons string *) string null)
     :export t
-    :documentation "The external editor to use for
-editing files.  You can specify the full command line arguments with a list of
-strings, or a single string with spaces between the arguments."))
+    :documentation "The external editor to use for editing files.
+The full command line arguments may specified as a list of strings, or a single
+string with spaces between the arguments."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:documentation "The browser class defines the overall behavior of Nyxt, in
