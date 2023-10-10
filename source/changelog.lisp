@@ -891,3 +891,10 @@ Nyxt version exists.  It is only raised when the major version differs.")
      (:li "Fix accepted values of "
           (:nxref :class-name 'browser :slot 'external-editor-program)
           "."))))
+
+(define-version "3.X.Y"
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "UI improvement of interfaces bound to commands "
+          (:nxref :command 'nyxt/mode/bookmark:bookmarks-panel) " and "
+          (:nxref :command 'nyxt/mode/bookmark:list-bookmarks) "."))))
