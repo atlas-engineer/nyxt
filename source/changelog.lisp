@@ -896,5 +896,6 @@ Nyxt version exists.  It is only raised when the major version differs.")
   (:nsection :title "UI/UX"
     (:ul
      (:li "UI improvement of interfaces bound to commands "
-          (:nxref :command 'nyxt/mode/bookmark:bookmarks-panel) " and "
-          (:nxref :command 'nyxt/mode/bookmark:list-bookmarks) "."))))
+          (:nxref :command 'nyxt/mode/bookmark:bookmarks-panel) ", "
+          (:nxref :command 'nyxt/mode/bookmark:list-bookmarks) " and "
+          (:nxref :command 'nyxt/mode/buffer-listing:buffers-panel) "."))))
