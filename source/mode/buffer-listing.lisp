@@ -87,20 +87,19 @@ shown linearly instead."
                    (buffer-tree->html buffer)))))))))
 
 ;; FIXME: It's a terribly confusing panel:
-;; - Update button and buffer names are styled the same and are not visually
-;;   separated.
 ;; - Buffer as a button is quite confusing and does not match the idea of a
 ;;   switchable-to entity better separate action (switch, delete) from
 ;;   presentation.
 (define-panel-command-global buffers-panel ()
     (panel-buffer "*Buffers panel*")
   "Display a list of buffers with easy switching."
-  (flet ((buffer-markup (buffer)
+  (flet ((buffer-markup (buffer highlight-p)
            "Create the presentation for a buffer."
            (spinneret:with-html-string
              (:p (:nbutton :text (title buffer)
-                   :buffer panel-buffer
-                   `(nyxt::switch-buffer :buffer ,buffer))))))
+                  :buffer panel-buffer
+                  :class (when highlight-p "action")
+                  `(nyxt::switch-buffer :buffer ,buffer))))))
     (spinneret:with-html-string
       (:nstyle '(.button
                  :white-space nowrap
@@ -109,14 +108,34 @@ shown linearly instead."
                  :text-overflow ellipsis))
       (:body
        (:h1 "Buffers")
-       (:nbutton :text "Update ↺"
-         :buffer panel-buffer
-         `(reload-buffer
-           (find
-            (render-url (url ,panel-buffer))
-            (nyxt::panel-buffers (current-window))
-            :test #'string=
-            :key (compose
-                  #'render-url #'url))))
        (loop for buffer in (buffer-list)
-             collect (:raw (buffer-markup buffer)))))))
+             collect (:raw (buffer-markup buffer (eq buffer (current-buffer)))))
+       (:nbutton :text "↺"
+         :buffer panel-buffer
+         :style "position: absolute; bottom: 10px; right: 10px;"
+         :class "success"
+         `(reload-panel-buffer ,panel-buffer))))))
+
+(defun reload-panel-buffer (panel-buffer)
+  (reload-buffer (find (render-url (url panel-buffer))
+                       (nyxt::panel-buffers (current-window))
+                       :test #'string=
+                       :key (compose #'render-url #'url))))
+
+(defun buffers-panel-handler-set-buffer (window buffer)
+  (declare (ignore buffer))
+  (alex:when-let ((panel-buffer (first (nyxt::panel-buffers window))))
+    (reload-panel-buffer panel-buffer)))
+
+(define-configuration window
+  ((window-set-buffer-hook
+    (hooks:add-hook %slot-default% 'buffers-panel-handler-set-buffer))))
+
+(defun buffers-panel-handler-buffer-loaded (buffer)
+  (declare (ignore buffer))
+  (alex:when-let ((panel-buffer (first (nyxt::panel-buffers (current-window)))))
+    (reload-panel-buffer panel-buffer)))
+
+(define-configuration network-buffer
+  ((buffer-loaded-hook
+    (hooks:add-hook %slot-default% 'buffers-panel-handler-buffer-loaded))))
