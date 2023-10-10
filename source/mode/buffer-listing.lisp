@@ -107,13 +107,14 @@ shown linearly instead."
                  :display block
                  :text-overflow ellipsis))
       (:body
-       (:nbutton :text "Update ↺"
-         :buffer panel-buffer
-         :class "success"
-         `(reload-panel-buffer ,panel-buffer))
        (:h1 "Buffers")
        (loop for buffer in (buffer-list)
-             collect (:raw (buffer-markup buffer (eq buffer (current-buffer)))))))))
+             collect (:raw (buffer-markup buffer (eq buffer (current-buffer)))))
+       (:nbutton :text "↺"
+         :buffer panel-buffer
+         :style "position: absolute; bottom: 10px; right: 10px;"
+         :class "success"
+         `(reload-panel-buffer ,panel-buffer))))))
 
 (defun reload-panel-buffer (panel-buffer)
   (reload-buffer (find
