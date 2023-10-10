@@ -897,7 +897,8 @@ Nyxt version exists.  It is only raised when the major version differs.")
     (:ul
      (:li "UI improvement of interfaces bound to commands "
           (:nxref :command 'nyxt/mode/bookmark:bookmarks-panel) " and "
-          (:nxref :command 'nyxt/mode/bookmark:list-bookmarks) "."))))
+          (:nxref :command 'nyxt/mode/bookmark:list-bookmarks) ".")
+     (:li "Highlight current buffer and redesign reload button in buffers panel."))))
 
 (define-version "4-pre-release-1"
   (:li "When on pre-release, push " (:code "X-pre-release")
