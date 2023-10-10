@@ -892,6 +892,13 @@ Nyxt version exists.  It is only raised when the major version differs.")
           (:nxref :class-name 'browser :slot 'external-editor-program)
           "."))))
 
+(define-version "3.X.Y"
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "UI improvement of interfaces bound to commands "
+          (:nxref :command 'nyxt/mode/bookmark:bookmarks-panel) " and "
+          (:nxref :command 'nyxt/mode/bookmark:list-bookmarks) "."))))
+
 (define-version "4-pre-release-1"
   (:li "When on pre-release, push " (:code "X-pre-release")
        " feature in addition to " (:code "X-pre-release-N") "one."))
