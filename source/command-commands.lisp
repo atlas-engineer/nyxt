@@ -76,7 +76,7 @@ from a key binding.")
       (declare (ignore suggestions))
       (unless (uiop:emptyp input)
         (remove-duplicates
-	 (append
+         (append
           (ignore-errors
            (let* ((proper-input (if (and (str:starts-with-p "(" input)
                                          (str:ends-with-p ")" input))
@@ -85,32 +85,32 @@ from a key binding.")
                   (expression (uiop:safe-read-from-string proper-input))
                   (symbol (symbol-name (first expression)))
                   (symbols (append (nth-value 1 (sym:resolve-symbol symbol :command (list-all-packages)))
-				   (nth-value 1 (sym:resolve-symbol symbol :function (list-all-packages)))
-				   (nth-value 1 (sym:resolve-symbol symbol :variable (list-all-packages))))))
-	     (delete
-	      nil (mapcar (lambda (sym)
-			    (funcall (prompter:suggestion-maker source)
-				     (cond
-				       ((fboundp sym)
-					(cons sym (rest expression)))
-				       ((boundp sym)
-					sym))
-				     source input))
-			  symbols))))
+                                   yyyy   (nth-value 1 (sym:resolve-symbol symbol :function (list-all-packages)))
+                                   yy     (nth-value 1 (sym:resolve-symbol symbol :variable (list-all-packages))))))
+             (delete
+              nil (mapcar (lambda (sym)
+                            (funcall (prompter:suggestion-maker source)
+                                     (cond
+                                       ((fboundp sym)
+                                        (cons sym (rest expression)))
+                                       ((boundp sym)
+                                        sym))
+                                     source input))
+                          symbols))))
           (ignore-errors
            (delete
-	    nil (mapcar (lambda (s)
-			  (funcall (prompter:suggestion-maker source)
-				   (cond
-				     ((fboundp s)
-				      (list s))
-				     ((boundp s)
-				      s))
-				   source input))
-			(mapcar (alex:rcurry #'uiop:safe-read-from-string
-					     :package (find-package :nyxt))
-				(first (swank:simple-completions input *package*)))))))
-	 :test #'equal))))
+            nil (mapcar (lambda (s)
+                          (funcall (prompter:suggestion-maker source)
+                                   (cond
+                                     ((fboundp s)
+                                      (list s))
+                                     ((boundp s)
+                                      s))
+                                   source input))
+                        (mapcar (alex:rcurry #'uiop:safe-read-from-string
+                                             :package (find-package :nyxt))
+                                (first (swank:simple-completions input *package*)))))))
+         :test #'equal))))
    (buffer (current-buffer)
            :type buffer))
   (:export-class-name-p t)
