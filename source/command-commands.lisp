@@ -95,7 +95,7 @@ from a key binding.")
                              source input)))))
          (ignore-errors
           (mapcar (lambda (s)
-                    (funcall (prompter:suggestion-maker source) s source input))
+                    (funcall (prompter:suggestion-maker source) (list s) source input))
                   (remove-if-not (alex:disjoin #'fboundp #'boundp)
                                  (mapcar (alex:rcurry #'uiop:safe-read-from-string
                                                       :package (find-package :nyxt))
