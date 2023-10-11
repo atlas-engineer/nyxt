@@ -79,7 +79,7 @@ In case it's `scalar-p', simply print it."
             (dotimes (i length)
               (:td (:raw (value->html (elt sequence i) t))))
             (when (> (length sequence) *inspector-print-length*)
-	      (:td "More: " (:raw (link-to sequence))))))))))))
+              (:td "More: " (:raw (link-to sequence))))))))))))
 
 (export-always 'value->html)
 (defgeneric value->html (value &optional compact-p)
@@ -128,7 +128,7 @@ values in help buffers, REPL and elsewhere."))
      :style "overflow-x: auto"
      (cond
        ((not (null (cdr (last value))))
-	(:raw (escaped-literal-print value)))
+        (:raw (escaped-literal-print value)))
        (compact-p
         (:raw (compact-listing value :table-p t)))
        ((types:association-list-p value)
