@@ -31,6 +31,7 @@
                      "TERM"
                      "USER"
                      "VISUAL"
+                     "XDG_SESSION_TYPE"
                      ;; Used to share files (such as communication sockets) in
                      ;; some applications like `emacsclient':
                      "XDG_RUNTIME_DIR")
