@@ -601,18 +601,19 @@ Finally, run the browser, load URL-STRINGS if any, then run
                                                  (princ-to-string condition)
                                                  backtrace)))))
                 (load-or-eval :remote nil)
-                (setf *browser* (make-instance 'browser
-                                               :startup-error-reporter-function startup-error-reporter
-                                               :startup-timestamp startup-timestamp
-                                               :socket-thread (unless (nfiles:nil-pathname-p (files:expand *socket-file*))
-                                                                (listen-or-query-socket urls))))
-                ;; Defaulting to :nyxt-user is convenient when evaluating code (such as
-                ;; remote execution or the integrated REPL).
-                ;; This must be done in a separate thread because the calling thread may
-                ;; have set `*package*' as an initial-binding (see `bt:make-thread'), as
-                ;; is the case with the SLY mrepl thread.
-                (bt:make-thread (lambda ()
-                                  (in-package :nyxt-user)))
+                (setf *browser*
+                      (make-instance
+                       'browser
+                       :startup-error-reporter-function startup-error-reporter
+                       :startup-timestamp startup-timestamp
+                       :socket-thread (unless (nfiles:nil-pathname-p (files:expand *socket-file*))
+                                        (listen-or-query-socket urls))))
+                ;; Defaulting to :nyxt-user is convenient when evaluating code
+                ;; (such as remote execution or the integrated REPL).
+                ;; This must be done in a separate thread because the calling
+                ;; thread may have set `*package*' as an initial-binding (see
+                ;; `bt:make-thread'), as is the case with the SLY mrepl thread.
+                (bt:make-thread (lambda () (in-package :nyxt-user)))
                 (ffi-initialize *browser* urls startup-timestamp)
                 (lpara:force (slot-value *browser* 'startup-promise)))
               (listen-or-query-socket urls))))
