@@ -242,8 +242,9 @@ This often translates in the termination of the \"main loop\" associated to the 
 
 (define-ffi-generic ffi-initialize (browser urls startup-timestamp)
   "Renderer-specific initialization.
-When done, call `call-next-method' to finalize the startup."
-  (finalize browser urls startup-timestamp))
+A specialization of this method must call `call-next-method' to conclude the
+startup routine."
+  (finalize-startup browser urls startup-timestamp))
 
 (define-ffi-generic ffi-inspector-show (buffer)
   "Show the renderer built-in inspector.")
