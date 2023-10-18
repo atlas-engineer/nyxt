@@ -2120,10 +2120,6 @@ As a second value, return the current buffer index starting from 0."
 (define-ffi-method ffi-focused-p ((buffer gtk-buffer))
   (gtk:gtk-widget-is-focus (gtk-object buffer)))
 
-(define-ffi-method ffi-muted-p ((buffer gtk-buffer))
-  #+webkit2-mute
-  (webkit:webkit-web-view-is-muted (gtk-object buffer)))
-
 (define-ffi-method ffi-tracking-prevention ((buffer gtk-buffer))
   #+webkit2-tracking
   (webkit:webkit-website-data-manager-get-itp-enabled

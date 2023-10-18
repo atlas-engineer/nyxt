@@ -285,9 +285,6 @@ Setf-able, where the languages value is a list of strings like '(\"en_US\"
 (define-ffi-generic ffi-focused-p (buffer)
   "Return non-nil if the BUFFER widget is the one with focus (currently displayed).")
 
-(define-ffi-generic ffi-muted-p (buffer)
-  "Return non-nil if the BUFFER cannot produce any sound.")
-
 (define-ffi-generic ffi-tracking-prevention (buffer)
   "Return if WebKit-specific Intelligent Tracking Prevention (ITP) is enabled.
 Setf-able."
