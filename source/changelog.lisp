@@ -898,4 +898,7 @@ Nyxt version exists.  It is only raised when the major version differs.")
      (:li "UI improvement of interfaces bound to commands "
           (:nxref :command 'nyxt/mode/bookmark:bookmarks-panel) ", "
           (:nxref :command 'nyxt/mode/bookmark:list-bookmarks) " and "
-          (:nxref :command 'nyxt/mode/buffer-listing:buffers-panel) "."))))
+          (:nxref :command 'nyxt/mode/buffer-listing:buffers-panel) ".")))
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix command " (:nxref :command 'nyxt/mode/bookmark:bookmark-url) "."))))
