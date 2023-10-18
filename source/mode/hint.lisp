@@ -80,6 +80,10 @@ A positive value shifts to the right.")
     :type integer
     :documentation "The number of pixels that hint overlays are vertically shifted by.
 A positive value shifts to the bottom.")
+   (hints-alignment-x
+    :on-top
+    :type keyword
+    :documentation "Where to position hints: :left, :on-top, or :right of a link.")
    (keyscheme-map
     (define-keyscheme-map "hint-mode" ()
       keyscheme:cua
@@ -114,17 +118,43 @@ A positive value shifts to the bottom.")
 (define-parenscript-async hint-elements (hints)
   (defun create-hint-overlay (original-element hint)
     "Create a DOM element to be used as a hint."
-    (ps:let ((user-x-offset (ps:lisp (hints-offset-x (find-submode 'hint-mode))))
-             (user-y-offset (ps:lisp (hints-offset-y (find-submode 'hint-mode))))
-             (rect (ps:chain original-element (get-bounding-client-rect)))
-             (element (ps:chain document (create-element "span"))))
+    (ps:let* ((user-x-offset (ps:lisp (hints-offset-x (find-submode 'hint-mode))))
+              (user-y-offset (ps:lisp (hints-offset-y (find-submode 'hint-mode))))
+              (user-x-alignment (ps:lisp (hints-alignment-x (find-submode 'hint-mode))))
+              (rect (ps:chain original-element (get-bounding-client-rect)))
+              (relative-x-position (if (eq user-x-alignment :right)
+                                       (+ (ps:@ rect right) 2)
+                                       (- (ps:@ rect left) 2)))
+              (computed-style (ps:chain window (get-computed-style original-element)))
+              (padding-left (parse-float (ps:@ computed-style padding-left)))
+              (padding-right (parse-float (ps:@ computed-style padding-right)))
+              (padding-x-adjustment (case user-x-alignment
+                                      (:left padding-left)
+                                      (:right (- padding-right))
+                                      (otherwise 0)))
+              (absolute-x-position (+ (ps:@ window page-x-offset)
+                                      relative-x-position
+                                      padding-x-adjustment
+                                      user-x-offset))
+              (inner-width (ps:@ window inner-width))
+              (max-x-position (- inner-width 25))
+              (element (ps:chain document (create-element "span"))))
       (setf (ps:@ element class-name) "nyxt-hint"
             (ps:@ element style position) "absolute"
-            (ps:@ element style left) (+ (ps:max (+ (ps:@ window page-x-offset)
-                                                    (ps:@ rect left)
-                                                    user-x-offset)
-                                                 0)
-                                         "px")
+            (ps:@ element style left) (unless (eq user-x-alignment :left)
+                                        (+ (ps:min
+                                             max-x-position
+                                             (ps:max
+                                               0
+                                               absolute-x-position))
+                                           "px"))
+            (ps:@ element style right) (when (eq user-x-alignment :left)
+                                         (+ (ps:min
+                                              max-x-position
+                                              (ps:max
+                                                0
+                                                (- inner-width absolute-x-position)))
+                                            "px"))
             (ps:@ element style top) (+ (ps:max (+ (ps:@ window page-y-offset)
                                                    (ps:@ rect top)
                                                    user-y-offset)
