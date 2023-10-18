@@ -261,9 +261,17 @@ against date, given `prompter:active-attributes-keys' configuration."))
                            :actions-on-return (lambda-mapped-command bookmark-current-url))))
 
 (define-command bookmark-url
-    (&key (url (ignore-errors (quri:uri (prompt1
-                                         :prompt "Bookmark URL"
-                                         :sources (url-sources (current-buffer) (compose #'url #'identity)))))))
+    (&key (url (prompt1
+                :prompt "Bookmark URL"
+                :sources (list
+                          (make-instance 'new-url-or-search-source
+                                         :actions-on-return (lambda-mapped-command url))
+                          (make-instance 'buffer-source
+                                         :actions-on-return (lambda-mapped-command url))
+                          (make-instance 'global-history-source
+                                         :actions-on-return (lambda-mapped-command url))
+                          (make-instance 'bookmark-source
+                                         :actions-on-return (lambda-mapped-command url))))))
   "Prompt for a URL to bookmark."
   (if (not (valid-url-p url))
       (echo "Invalid URL '~a'" url)
