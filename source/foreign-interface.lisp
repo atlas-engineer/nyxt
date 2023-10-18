@@ -33,45 +33,37 @@ If the `:setter-p' option is non-nil, then a dummy setf method is defined."
                  (declare (ignore value ,@arguments)))))))))
 
 (define-ffi-generic ffi-window-delete (window)
-  "Delete WINDOW, possibly freeing the associated widgets.
-After this call, the window should not be displayed.")
+  "Delete WINDOW.")
 
 (define-ffi-generic ffi-window-fullscreen (window)
-  "Make WINDOW fullscreen.
-Removes all the Nyxt interface element and leaves the open page as the only
-thing on the screen.")
+  "Set fullscreen WINDOW state on.")
 (define-ffi-generic ffi-window-unfullscreen (window)
-  "Un-fullscreen the WINDOW.")
+  "Set fullscreen WINDOW state off.")
 
 (define-ffi-generic ffi-window-maximize (window)
-  "Make the WINDOW to fill the screen.
-Usually possible via desktop environment interface too.")
+  "Set WINDOW to a maximized state.")
 (define-ffi-generic ffi-window-unmaximize (window)
-  "Switch the WINDOW to \"windowed\" display.
-May or may not fill the screen.")
+  "Set WINDOW to an unmaximized state.")
 
 (define-ffi-generic ffi-buffer-url (buffer)
-  "Return the `quri:uri' associated with the BUFFER.
+  "Return the URL associated with BUFFER as a `quri:uri'.
 This is used to set the BUFFER `url' slot.")
 (define-ffi-generic ffi-buffer-title (buffer)
-  "Return as a string the title of the document (or web page) showing in BUFFER.")
+  "Return a string corresponding to the BUFFER's title.")
 
 (define-ffi-generic ffi-window-make (browser)
-  "Return a `window' object, ready for display.
-The renderer specialization must handle the widget initialization."
+  "Return a `window' and display it."
   (:method ((browser t))
     (make-instance 'window)))
 
 (define-ffi-generic ffi-window-to-foreground (window)
   "Show WINDOW in the foreground.
-The specialized method may call `call-next-method' to set
-WINDOW as the `last-active-window'."
+The specialized method must invoke `call-next-method' last."
   (:method ((window t))
     (setf (slot-value *browser* 'last-active-window) window)))
 
 (define-ffi-generic ffi-window-title (window)
-  "Return as a string the title of the window.
-It is the title that's often used by the window manager to decorate the window.
+  "Return a string corresponding to the WINDOW's title.
 Setf-able."
   (:setter-p t))
 
@@ -90,87 +82,85 @@ The `:around' method ensures that `last-active-window' is set."
         (first (window-list)))))
 
 (define-ffi-generic ffi-window-set-buffer (window buffer &key focus)
-  "Set the BUFFER's widget to display in WINDOW.")
+  "Return BUFFER and display it in WINDOW as a side effect.")
 
 (define-ffi-generic ffi-focus-prompt-buffer (prompt-buffer)
   "Return PROMPT-BUFFER and focus it as a side effect.")
 
 (define-ffi-generic ffi-window-add-panel-buffer (window buffer side)
-  "Make widget for panel BUFFER and add it to the WINDOW widget.
+  "Add panel BUFFER to WINDOW.
 SIDE is one of `:left' or `:right'.")
 (define-ffi-generic ffi-window-delete-panel-buffer (window buffer)
-  "Unbind the panel BUFFER widget from WINDOW.")
+  "Delete the panel BUFFER from WINDOW.")
 
 (define-ffi-generic ffi-height (object)
-  "Return the OBJECT height in pixels as a number.
+  "Return the OBJECT's height in pixels.
 Dispatches over `window' and classes inheriting from `buffer'.
 Usually setf-able."
   (:setter-p t))
 (define-ffi-generic ffi-width (object)
-  "Return the OBJECT width in pixels as a number.
+  "Return the OBJECT's width in pixels.
 Dispatches over `window' and classes inheriting from `buffer'.
 Usually setf-able."
   (:setter-p t))
 
 (define-ffi-generic ffi-buffer-make (buffer)
-  "Make BUFFER widget.")
+  "Return BUFFER and display it.")
 (define-ffi-generic ffi-buffer-delete (buffer)
-  "Delete BUFFER widget.")
+  "Delete BUFFER.")
 
 (define-ffi-generic ffi-buffer-load (buffer url)
   "Load URL into BUFFER through the renderer.")
 
 (define-ffi-generic ffi-buffer-load-html (buffer html-content url)
   "Load HTML-CONTENT into BUFFER through the renderer.
-If URL is not nil, relative URLs are resolved against it.")
+When URL is non-nil, relative URLs are resolved against it.")
 (define-ffi-generic ffi-buffer-load-alternate-html (buffer html-content content-url url)
   "Load HTML-CONTENT for CONTENT-URL into BUFFER through the renderer.
 Like `ffi-buffer-load-html', except that it doesn't influence the BUFFER history
 or CSS/HTML cache.")
 
 (define-ffi-generic ffi-buffer-evaluate-javascript (buffer javascript &optional world-name)
-  "Evaluate JAVASCRIPT in the BUFFER web view.
-See also `ffi-buffer-evaluate-javascript-async'.")
+  "Evaluate JAVASCRIPT, encoded as a string, in BUFFER.")
 (define-ffi-generic ffi-buffer-evaluate-javascript-async (buffer javascript &optional world-name)
-  "Same as `ffi-buffer-evaluate-javascript' but don't wait for
-the termination of the JavaScript execution.")
+  "Asynchronous version of `ffi-buffer-evaluate-javascript'.")
 
 (define-ffi-generic ffi-buffer-add-user-style (buffer style)
-  "Apply the CSS style to the BUFFER web view.")
+  "Apply the CSS style to BUFFER.")
 (define-ffi-generic ffi-buffer-remove-user-style (buffer style)
   "Remove the STYLE installed with `ffi-buffer-add-user-style'.")
 
 (define-ffi-generic ffi-buffer-add-user-script (buffer user-script)
-  "Install the JAVASCRIPT  into the BUFFER web view.")
+  "Install the JAVASCRIPT into the BUFFER web view.")
 (define-ffi-generic ffi-buffer-remove-user-script (buffer script)
   "Remove the SCRIPT installed with `ffi-buffer-add-user-script'.")
 
 (define-ffi-generic ffi-buffer-javascript-enabled-p (buffer)
-  "Return whether JavaScript can run, as boolean.
+  "Return non-nil when JavaScript is enabled in BUFFER.
 Setf-able."
   (:setter-p t))
 (define-ffi-generic ffi-buffer-javascript-markup-enabled-p (buffer)
-  "Return whether JavaScript can alter the page contents, as boolean.
+  "Return non-nil when JavaScript can mutate the BUFFER' contents.
 Setf-able."
   (:setter-p t))
 (define-ffi-generic ffi-buffer-smooth-scrolling-enabled-p (buffer)
-  "Return whether the smooth scrolling is enabled, as boolean.
+  "Return non-nil when smooth scrolling is enabled in BUFFER.
 Setf-able."
   (:setter-p t))
 (define-ffi-generic ffi-buffer-media-enabled-p (buffer)
-  "Return whether video and audio playback is enabled, as boolean.
+  "Return non-nil when video and audio playback are enabled in BUFFER.
 Setf-able."
   (:setter-p t))
 (define-ffi-generic ffi-buffer-webgl-enabled-p (buffer)
-  "Return whether WebGL is enabled, as boolean.
+  "Return non-nil when WebGL is enabled in BUFFER.
 Setf-able."
   (:setter-p t))
 (define-ffi-generic ffi-buffer-auto-load-image-enabled-p (buffer)
-  "Return whether images are displayed, as boolean.
+  "Return non-nil when images are displayed in BUFFER.
 Setf-able."
   (:setter-p t))
 (define-ffi-generic ffi-buffer-sound-enabled-p (buffer)
-  "Return whether the BUFFER has sound enabled, as boolean.
+  "Return non-nil when the sound is enabled in BUFFER.
 Setf-able."
   (:setter-p t))
 
@@ -229,7 +219,7 @@ spontaneous events from programmed ones.
 See also `ffi-generated-input-event-p'.")
 
 (define-ffi-generic ffi-generated-input-event-p (window event)
-  "Return non-nil if EVENT was generated by `ffi-generate-input-event'.")
+  "Return non-nil when EVENT was generated by `ffi-generate-input-event'.")
 
 (define-ffi-generic ffi-within-renderer-thread (thunk)
   "Run THUNK (a lambda of no argument) in the renderer's thread.
@@ -239,8 +229,7 @@ specific threads."
     (funcall thunk)))
 
 (define-ffi-generic ffi-kill-browser (browser)
-  "Terminate the renderer.
-This often translates in the termination of the \"main loop\" associated to the widget engine.")
+  "Terminate the renderer process.")
 
 (define-ffi-generic ffi-initialize (browser urls startup-timestamp)
   "Renderer-specific initialization.
@@ -288,7 +277,7 @@ Setf-able, where the languages value is a list of strings like '(\"en_US\"
   (:setter-p t))
 
 (define-ffi-generic ffi-focused-p (buffer)
-  "Return non-nil if the BUFFER widget is the one with focus (currently displayed).")
+  "Return non-nil when BUFFER is focused.")
 
 (define-ffi-generic ffi-tracking-prevention (buffer)
   "Return if WebKit-specific Intelligent Tracking Prevention (ITP) is enabled.
