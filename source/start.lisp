@@ -296,9 +296,7 @@ It takes URL-STRINGS so that the URL argument can be `cl-read' in case
     (if urls
         (log:info "Externally requested URL(s): ~{~a~^, ~}" urls)
         (log:info "Externally pinged."))
-    (ffi-within-renderer-thread
-     *browser*
-     (lambda () (open-urls urls)))
+    (ffi-within-renderer-thread (lambda () (open-urls urls)))
     urls))
 
 (defun listen-socket ()
