@@ -923,10 +923,6 @@ Also see `panel-page'."))
               :margin-left "-8px")
             `("#reload"
               :width "24px !important")
-            `("#controls > button:hover"
-              :background-color ,theme:accent
-              :color ,theme:on-accent
-              :opacity "1.0")
             `("#url"
               :background-color ,theme:primary
               :color ,theme:on-primary
@@ -957,9 +953,8 @@ Also see `panel-page'."))
             `("#tabs::-webkit-scrollbar"
               :display "none")
             `(".tab"
-              :background-color ,theme:background
+              :background-color ,theme:background-
               :color ,theme:on-background
-              :opacity 0.6
               :display "inline-block"
               :margin-top "1px"
               :padding-left "18px"
@@ -972,9 +967,6 @@ Also see `panel-page'."))
               :font "inherit"
               :outline "inherit"
               :clip-path "polygon(calc(100% - 10px) 0, 100% calc(50% - 1px), 100% 50%, 100% calc(50% + 1px), calc(100% - 10px) 100%, 0% 100%, 10px calc(50% + 1px), 10px 50%, 10px calc(50% - 1px),  0% 0%)")
-            `(".tab:hover"
-              :opacity 0.8
-              :cursor "pointer")
             `("#modes"
               :background-color ,theme:primary
               :color ,theme:on-primary
@@ -995,18 +987,16 @@ Also see `panel-page'."))
               :padding 0
               :font "inherit"
               :outline "inherit")
-            `(.button.action
+            `((:and (:or .button .tab) :hover)
+              :cursor "pointer"
               :background-color ,theme:action
               :color ,theme:on-action)
-            `((:and .button :hover)
-              :cursor "pointer"
-              :opacity 0.6)
-            `((:and .button (:or :visited :active))
-              :color ,theme:background)
+            `((:and (:or .button .tab) :active)
+              :background-color ,theme:action-
+              :color ,theme:on-action)
             `(.selected-tab
-              :color ,theme:on-background
-              :opacity "1.0 !important"
-              :background-color ,theme:background))))
+              :background-color ,theme:action+
+              :color ,theme:on-action))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
