@@ -454,7 +454,7 @@ The value is saved to clipboard."
         :display "flex"
         :flex-direction "row")
       `(.logo
-        :color ,theme:on-background
+        :color ,(if (theme:dark-p theme:theme) theme:action theme:on-background)
         :width "100px"
         :height "100px"
         :padding-top "3px"
