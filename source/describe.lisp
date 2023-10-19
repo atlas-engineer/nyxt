@@ -626,10 +626,12 @@ A command is a special kind of function that can be called with
   (when mode
     (describe-class :class mode)))
 
-(define-internal-page describe-bindings (&key (id (id (current-buffer))))
+;; Buffers can't be passed as argument since Nyxt URLs don't handle unreadable
+;; objects.
+(define-internal-page describe-bindings (&key (buffer-id (id (current-buffer))))
     (:title "*Help-bindings*" :page-mode 'nyxt/mode/help:help-mode)
-  "Show a buffer with the list of all known bindings for the current buffer."
-  (alex:if-let ((buffer (nyxt::buffers-get id)))
+  "Show a list of all available keybindings for buffer corresponding to BUFFER-ID."
+  (alex:if-let ((buffer (nyxt::buffers-get buffer-id)))
     (spinneret:with-html-string
       (:h1 "Bindings")
       (:p (loop for keymap in (current-keymaps buffer)
@@ -650,11 +652,11 @@ A command is a special kind of function that can be called with
                                          (:td (documentation-line bound-value 'function "")))))))))
     (spinneret:with-html-string
       (:h1 "Bindings")
-      (:p (format nil "Buffer with ID ~a does not exist." id)))))
+      (:p (format nil "Buffer with ID ~a does not exist." buffer-id)))))
 
 (define-command-global describe-bindings (&key (buffer (current-buffer)))
-  "Show a buffer with the list of all known key bindings for the current buffer."
-  (buffer-load-internal-page-focus 'describe-bindings :id (id buffer)))
+  "Show a list of all available keybindings in the current buffer."
+  (buffer-load-internal-page-focus 'describe-bindings :buffer-id (id buffer)))
 
 (defun describe-key-dispatch (command)
   (unwind-protect
