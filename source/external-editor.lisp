@@ -3,43 +3,6 @@
 
 (in-package :nyxt)
 
-(-> %append-uiop-command ((or string (list-of string)) &rest string) (values (or string (list-of string)) &optional))
-(defun %append-uiop-command (command &rest args)
-  "Appends ARGS to an existing COMMAND (for `uiop:run-program' or `uiop:launch-program').
-
-If COMMAND is a string, ARGS is concatenated to it with spaces between the
-arguments.
-
-If COMMAND is a list, ARGS is appended to it.
-
-Signals an error if COMMAND is nil or an empty string."
-  ;; The uiop functions expect either the entire command as a string, or a list
-  ;; of strings with the command as the first element, and each parameter as
-  ;; subsequent elements. Mixing them signals an error. This is the reason for
-  ;; this custom append function.
-  (cond
-    ((null command) (error "Unable to append arguments to a null command."))
-    ((consp command) (append command args))
-    ((str:emptyp command) (error "Unable to append arguments to an empty command."))
-    ((null args) command)
-    ((stringp command) (uiop:reduce/strcat (list command " " (str:unwords args))))))
-
-(export-always 'run-external-editor)
-(defun run-external-editor (path &optional (program (external-editor-program *browser*)))
-  "Calls `uiop:run-program' with PATH as an extra parameter to PROGRAM.
-PROGRAM defaults to `external-editor-program'"
-  (let ((command (%append-uiop-command program (uiop:native-namestring path))))
-    (log:debug "External editor opens ~s" command)
-    (uiop:run-program command)))
-
-(export-always 'launch-external-editor)
-(defun launch-external-editor (path &optional (program (external-editor-program *browser*)))
-  "Calls `uiop:launch-program' with PATH as an extra parameter to PROGRAM.
-PROGRAM defaults to `external-editor-program'"
-  (let ((command (%append-uiop-command program (uiop:native-namestring path))))
-    (log:debug "Launch external editor ~s" command)
-    (uiop:launch-program command)))
-
 (defun %edit-with-external-editor (&optional input-text)
   "Edit `input-text' using `external-editor-program'.
 Create a temporary file and return its content.  The editor runs synchronously
@@ -50,8 +13,12 @@ so invoke on a separate thread when possible."
       (with-open-file (f p :direction :io
                            :if-exists :append)
         (write-sequence input-text f)))
+    (log:debug "External editor ~s opens ~s"
+               (external-editor-program *browser*) p)
     (with-protect ("Failed editing: ~a" :condition)
-      (run-external-editor p))
+      (uiop:run-program (append (uiop:ensure-list (external-editor-program *browser*))
+                                (list (uiop:native-namestring p)))
+                        :ignore-error-status t))
     (uiop:read-file-string p)))
 
 (define-parenscript select-input-field ()
@@ -108,7 +75,10 @@ If the user file is GPG-encrypted, the editor must be capable of decrypting it."
       (let* ((file (prompt1 :prompt "Edit user file in external editor"
                             :sources 'user-file-source))
              (path (files:expand file)))
-        (launch-external-editor (uiop:native-namestring path)))
+
+        (echo "Using \"~{~a~^ ~}\" to edit ~s." (external-editor-program *browser*) path)
+        (uiop:launch-program `(,@(uiop:ensure-list (external-editor-program *browser*))
+                               ,(uiop:native-namestring path))))
       (echo-warning "Please set `external-editor-program' browser slot.")))
 
 (defun %view-source-with-external-editor ()
@@ -123,8 +93,12 @@ separate thread when possible."
       (if (> (length page-source) 0)
           (progn
             (alexandria:write-string-into-file page-source p :if-exists :supersede)
+            (log:debug "External editor ~s opens ~s"
+                       (external-editor-program *browser*) p)
             (with-protect ("Failed editing: ~a" :condition)
-              (run-external-editor p)))
+              (uiop:run-program (append (uiop:ensure-list (external-editor-program *browser*))
+                                        (list (uiop:native-namestring p)))
+                                :ignore-error-status t)))
           (echo-warning "Nothing to edit.")))))
 
 (define-command-global view-source-with-external-editor ()
