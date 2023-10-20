@@ -250,13 +250,15 @@ Return NIL if not a class form."
             (uiop:slurp-stream-forms raw-content))))
 
 (defmethod files:serialize ((profile nyxt-profile) (file auto-config-file) stream &key)
-  (dolist (form (files:content file))
-    (write
-     (if (class-form-p form)
-         (write-init-form-class form)
-         form)
-     :stream stream)
-    (fresh-line stream)))
+  (loop for form in (files:content file)
+        for i from 0
+        do (when (> i 0) (terpri stream))
+           (write
+            (if (class-form-p form)
+                (write-init-form-class form)
+                form)
+            :stream stream)
+           (fresh-line stream)))
 
 (defmethod files:write-file ((profile nyxt-profile) (file auto-config-file) &key &allow-other-keys)
   (let ((*print-case* :downcase)
