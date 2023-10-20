@@ -113,7 +113,7 @@ to the next."
           :background-color ,theme:background-
           :color ,theme:text-)))
     (:div.row
-     :style "height: 100%; margin: 0"
+     :style "min-height: 100%; margin: 0"
      (:div.tabs
       (:a.tab-button
        :class (when (equal section 'keybindings) "active")
