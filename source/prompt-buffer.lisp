@@ -712,4 +712,3 @@ See the documentation of `prompt-buffer' to know more about the options."
     (when old-prompt
       (prompter:resume old-prompt)
       (wait-on-prompt-buffer old-prompt))))
-
