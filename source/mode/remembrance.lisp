@@ -252,7 +252,9 @@ Return NIL if page content is empty."
                                        (lookup input (find-submode 'remembrance-mode)
                                                :suffix-matching-p (suffix-matching-p source)))))
    (prompter:enable-marks-p t)
-   (prompter:active-attributes-keys '("URL" "Title" "Keywords"))
+   (prompter:active-attributes-keys
+    '("URL" "Title" "Keywords")
+    :accessor nil)
    (suffix-matching-p
     t
     :type boolean
@@ -273,7 +275,9 @@ This induces a performance cost."))
                         suggestion)))
    (prompter:filter-preprocessor nil)
    (prompter:enable-marks-p t)
-   (prompter:active-attributes-keys '("URL" "Title" "Keywords")))
+   (prompter:active-attributes-keys
+    '("URL" "Title" "Keywords")
+    :accessor nil))
   (:export-class-name-p t)
   (:documentation "The source for the cache entries that contain the exact input text."))
 
