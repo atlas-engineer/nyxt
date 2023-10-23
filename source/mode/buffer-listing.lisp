@@ -131,11 +131,13 @@ shown linearly instead."
   ((window-set-buffer-hook
     (hooks:add-hook %slot-default% 'buffers-panel-handler-set-buffer))))
 
-(defun buffers-panel-handler-buffer-loaded (buffer)
+(defun buffers-panel-reload-handler (buffer)
   (declare (ignore buffer))
   (alex:when-let ((panel-buffer (first (nyxt::panel-buffers (current-window)))))
     (reload-panel-buffer panel-buffer)))
 
 (define-configuration network-buffer
   ((buffer-loaded-hook
-    (hooks:add-hook %slot-default% 'buffers-panel-handler-buffer-loaded))))
+    (hooks:add-hook %slot-default% 'buffers-panel-reload-handler))
+   (buffer-delete-hook
+    (hooks:add-hook %slot-default% 'buffers-panel-reload-handler))))
