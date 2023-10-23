@@ -270,13 +270,16 @@ The handlers take the `prompt-buffer' as argument.")
     :documentation "Hook run while waiting for the prompt buffer to be available.
 The handlers take the `prompt-buffer' as argument.")
    (external-editor-program
-    (or (uiop:getenv "VISUAL")
-        (uiop:getenv "EDITOR"))
+    (or (uiop:getenvp "VISUAL")
+        (uiop:getenvp "EDITOR")
+        (when (sera:resolve-executable "gio") "gio open"))
     :type (or (cons string *) string null)
+    :reader nil
+    :writer t
     :export t
     :documentation "The external editor to use for editing files.
-The full command line arguments may specified as a list of strings, or a single
-string with spaces between the arguments."))
+The full command, including its arguments, may be specified as list of strings
+or as a single string."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:documentation "The browser class defines the overall behavior of Nyxt, in
@@ -298,6 +301,14 @@ prevents otherwise.")
   "Fallback theme in case `*browser*' is NIL."
   (declare (ignore ignored))
   (make-instance 'theme:theme))
+
+(defmethod external-editor-program ((browser browser))
+  "Specialized reader for `external-editor-program' slot."
+  (with-slots ((cmd external-editor-program)) browser
+    (typecase cmd
+      (list (unless (sera:blankp (first cmd)) cmd))
+      (string (unless (sera:blankp cmd) (str:split " " cmd)))
+      (t (echo-warning "Invalid value of `external-editor-program' browser slot.") nil))))
 
 (defmethod get-containing-window-for-buffer ((buffer buffer) (browser browser))
   "Get the window containing a buffer."

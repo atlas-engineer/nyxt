@@ -535,8 +535,8 @@ Most *-P arguments mandate whether to add the buttons for:
                       `(`((external-editor
                            "Open in external editor"
                            "Open the file this code comes from in external editor.")
-                          (funcall (read-from-string "nyxt:launch-external-editor")
-                                   (uiop:native-namestring ,,file-var))))))))
+                          (funcall (read-from-string "nyxt/mode/file-manager:edit-file-with-external-editor")
+                                   (uiop:ensure-list ,,file-var))))))))
         (declare (ignorable keys))
         `(let* ((,body-var (list ,@body))
                 (,first (first ,body-var))

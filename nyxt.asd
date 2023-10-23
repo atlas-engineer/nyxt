@@ -281,7 +281,8 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
   :defsystem-depends-on ("nasdf")
   :class :nasdf-compilation-test-system
   :depends-on (nyxt)
-  :packages (:nyxt))
+  :packages (:nyxt)
+  :undocumented-symbols-to-ignore (:external-editor-program))
 
 ;; TODO: Test that Nyxt starts and that --help, --version work.
 (defsystem "nyxt/tests"

@@ -235,9 +235,10 @@ See `supported-media-types' of `file-mode'."
                               :sources 'file-source)))
   "Edit the FILES using `external-editor-program'.
 If FILES are not provided, prompt for them."
-  (if (external-editor-program *browser*)
-      (apply #'launch-external-editor (mapcar #'uiop:native-namestring files))
-      (echo-warning "Please set `external-editor-program' browser slot.")))
+  (echo "Issued \"~{~a~^ ~}\" to edit ~s." (external-editor-program *browser*) files)
+  (with-protect ("Failed editing: ~a. See `external-editor-program' slot." :condition)
+    (uiop:launch-program `(,@(external-editor-program *browser*)
+                           ,@(mapcar #'uiop:native-namestring files)))))
 
 (defmethod initialize-instance :after ((source open-file-source) &key)
   (setf (slot-value source 'prompter:actions-on-return)
