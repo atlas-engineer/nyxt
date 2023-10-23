@@ -170,7 +170,9 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
   ((prompter:name "Hosts to avoid procrastination")
    (prompter:constructor (files:content (no-procrastinate-hosts-file (current-buffer))))
    (prompter:enable-marks-p t)
-   (prompter:active-attributes-keys '("URL" "Title" "Tags"))))
+   (prompter:active-attributes-keys
+    '("URL" "Title" "Tags")
+    :accessor nil)))
 
 (defmethod prompter:object-attributes ((entry no-procrastinate-entry) (source no-procrastinate-source))
   (declare (ignore source))

@@ -160,7 +160,9 @@ instead."
   ((prompter:name "Bookmarks")
    (prompter:constructor (files:content (bookmarks-file (current-buffer))))
    (prompter:enable-marks-p t)
-   (prompter:active-attributes-keys '("URL" "Title" "Tags")))
+   (prompter:active-attributes-keys
+    '("URL" "Title" "Tags")
+    :accessor nil))
   (:export-class-name-p t)
   (:documentation "Source for bookmark search.
 By default, matches URL, title, and tags of the bookmark, but can also match
