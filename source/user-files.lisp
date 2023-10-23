@@ -145,7 +145,9 @@ Example: when passed command line option --with-file foo=bar,
 
 (define-class user-file-source (prompter:source)
   ((prompter:name "User files")
-   (prompter:active-attributes-keys '("Path" "Exists?" "Type" "Name"))
+   (prompter:active-attributes-keys
+    '("Path" "Exists?" "Type" "Name")
+    :accessor nil)
    (prompter:constructor (let ((path-map (make-hash-table :test 'equal)))
                            (dolist (file (files:all-files))
                              (sera:and-let* ((nyxt-file-p file)

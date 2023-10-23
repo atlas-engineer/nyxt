@@ -523,7 +523,8 @@ This does not redraw the whole prompt buffer, use `prompt-render' for that."
                              :text "⚙"
                              :title "Toggle attributes display"
                              :buffer prompt-buffer
-                             '(funcall (sym:resolve-symbol :toggle-attributes-display :command)))
+                             `(funcall (sym:resolve-symbol :toggle-attributes-display :command)
+                                       :source ,source))
                            (prompter:name source)
                            (if (prompter:hide-suggestion-count-p source)
                                ""
@@ -711,4 +712,3 @@ See the documentation of `prompt-buffer' to know more about the options."
     (when old-prompt
       (prompter:resume old-prompt)
       (wait-on-prompt-buffer old-prompt))))
-

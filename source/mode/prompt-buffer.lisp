@@ -303,20 +303,18 @@ current unmarked suggestion."
                 :test #'equal)
         suggestion-values)))
 
-(define-command-prompt toggle-attributes-display (prompt-buffer)
+(define-command-prompt toggle-attributes-display (prompt-buffer
+                                                  &key (source (current-source prompt-buffer)))
   "Prompt for which prompter attributes to display."
   (let ((attributes (prompt :prompt "Mark attributes to display"
-                            :sources (make-instance
-                                      'attribute-source
-                                      :marks (intersection
-                                              (prompter:active-attributes-keys
-                                               (current-source prompt-buffer))
-                                              (prompter:attributes-keys-non-default
-                                               (current-source prompt-buffer))
-                                              :test #'string=)
-                                      :constructor (prompter:attributes-keys-non-default
-                                                    (current-source prompt-buffer))))))
-    (setf (prompter:active-attributes-keys (current-source prompt-buffer))
+                            :sources
+                            (make-instance
+                             'attribute-source
+                             :marks (intersection (prompter:active-attributes-keys source)
+                                                  (prompter:attributes-keys-non-default source)
+                                                  :test #'string=)
+                             :constructor (prompter:attributes-keys-non-default source)))))
+    (setf (prompter:active-attributes-keys source)
           attributes)
     (prompt-render-suggestions prompt-buffer)))
 

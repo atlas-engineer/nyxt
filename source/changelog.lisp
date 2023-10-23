@@ -904,7 +904,10 @@ Nyxt version exists.  It is only raised when the major version differs.")
      (:li "Fix command " (:nxref :command 'nyxt/mode/bookmark:bookmark-url) ".")
      (:li "Fix commands that rely on "
           (:nxref :class-name 'browser :slot 'external-editor-program)
-          "."))))
+          ".")
+     (:li "Fix command "
+          (:nxref :command 'nyxt/mode/prompt-buffer:toggle-attributes-display)
+          " and behavior of UI elements relying on it."))))
 
 (define-version "4-pre-release-1"
   (:li "When on pre-release, push " (:code "X-pre-release")
