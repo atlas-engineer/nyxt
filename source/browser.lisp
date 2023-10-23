@@ -270,8 +270,9 @@ The handlers take the `prompt-buffer' as argument.")
     :documentation "Hook run while waiting for the prompt buffer to be available.
 The handlers take the `prompt-buffer' as argument.")
    (external-editor-program
-    (or (uiop:getenv "VISUAL")
-        (uiop:getenv "EDITOR"))
+    (or (uiop:getenvp "VISUAL")
+        (uiop:getenvp "EDITOR")
+        (when (sera:resolve-executable "gio") "gio open"))
     :type (or (cons string *) string null)
     :reader nil
     :writer t
