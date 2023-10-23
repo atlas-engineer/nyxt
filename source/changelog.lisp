@@ -892,7 +892,7 @@ Nyxt version exists.  It is only raised when the major version differs.")
           (:nxref :class-name 'browser :slot 'external-editor-program)
           "."))))
 
-(define-version "3.X.Y"
+(define-version "3.9.1"
   (:nsection :title "UI/UX"
     (:ul
      (:li "UI improvement of interfaces bound to commands "
