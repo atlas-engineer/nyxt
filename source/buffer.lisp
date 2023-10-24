@@ -2015,12 +2015,10 @@ When there is no next buffer, go to the first one so as to cycle."
 
 (define-command switch-buffer-last ()
   "Switch to the last visited buffer.
-That is, the one with the most recent access time.
 
-Return this last buffer."
-  (let* ((buffers (sort-by-time (buffer-list))))
-    (when (second buffers)
-      (set-current-buffer (second buffers)))))
+The buffer with the most recent access time is returned."
+  (alex:when-let ((buffer (second (sort-by-time (buffer-list)))))
+    (set-current-buffer buffer)))
 
 (define-command open-inspector ()
   "Open the inspector, a graphical tool to inspect and change the buffer's content."
