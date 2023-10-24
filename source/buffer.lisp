@@ -1480,7 +1480,7 @@ is listed first."
                                              :current-is-last-p current-is-last-p)))))
 
 (define-command switch-buffer-domain (&key domain (buffer (current-buffer)))
-  "Switch the active buffer in the current window from the current domain."
+  "Switch to buffer sharing the same domain as the current one."
   (let ((domain (or domain (quri:uri-domain (url buffer)))))
     (prompt
      :prompt "Switch to buffer in current domain"
