@@ -1467,9 +1467,10 @@ buffer currently chosen as suggestion."))
 
 (define-command switch-buffer (&key buffer (current-is-last-p nil))
   "Switch buffer using fuzzy completion.
-Buffers are ordered by last access.
-With CURRENT-IS-LAST-P, the current buffer is listed last so as to list the
-second latest buffer first."
+
+Buffers are ordered by most recent access time.  When CURRENT-IS-LAST-P is
+non-nil, the current buffer is listed last so that the last visited buffer
+is listed first."
   (if buffer
       (set-current-buffer buffer)
       (prompt
