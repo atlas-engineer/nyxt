@@ -32,7 +32,7 @@ See the `add-domain-to-certificate-exceptions' command."
 This is only effective if `certificate-exception-mode' is enabled.
 
 To make this change permanent, you can customize
-`*default-certificate-exceptions*' in your init file:
+`*default-certificate-exceptions*' in your config file:
 
 \(setf nyxt/mode/certificate-exception:*default-certificate-exceptions*
       '(\"nyxt.atlas.engineer\" \"example.org\"))"
