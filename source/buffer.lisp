@@ -997,8 +997,8 @@ Also see `panel-page'."))
               :background-color ,theme:action-
               :color ,theme:on-action)
             `(.selected-tab
-              :background-color ,theme:action+
-              :color ,theme:on-action))))
+              :background-color ,theme:background+
+              :color ,theme:on-background))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
