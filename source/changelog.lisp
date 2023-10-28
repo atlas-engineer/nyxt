@@ -909,6 +909,11 @@ Nyxt version exists.  It is only raised when the major version differs.")
           (:nxref :command 'nyxt/mode/prompt-buffer:toggle-attributes-display)
           " and behavior of UI elements relying on it."))))
 
+(define-version "3.X.Y"
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "Simplify status bar CSS. Make URL area clickable."))))
+
 (define-version "4-pre-release-1"
   (:li "When on pre-release, push " (:code "X-pre-release")
        " feature in addition to " (:code "X-pre-release-N") "one."))
