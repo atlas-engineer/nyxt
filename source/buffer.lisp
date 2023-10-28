@@ -930,6 +930,9 @@ Also see `panel-page'."))
               :flex-grow "3"
               :flex-shrink "2"
               :flex-basis "144px")
+            `("#url button"
+              :text-align "left"
+              :width "100%")
             `("#tabs"
               :background-color ,theme:secondary
               :color ,theme:on-secondary
@@ -981,7 +984,7 @@ Also see `panel-page'."))
               :padding 0
               :font "inherit"
               :outline "inherit")
-            `((:and (:or .button .tab) :hover)
+            `((:and (:or .button .tab "#url") :hover)
               :cursor "pointer"
               :background-color ,theme:action
               :color ,theme:on-action)
