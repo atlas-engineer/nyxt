@@ -906,7 +906,6 @@ Also see `panel-page'."))
               :margin-left "-10px")
             `("#container"
               :display "flex"
-              ;; Columns: controls, url, tabs, modes
               :justify-content "space-between"
               :overflow-y "hidden")
             `("#controls"
