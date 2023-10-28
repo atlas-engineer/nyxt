@@ -906,7 +906,7 @@ Also see `panel-page'."))
             `("#controls"
               :background-color ,theme:secondary
               :color ,theme:on-secondary
-              :padding-left "10px"
+              :padding-left "8px"
               :overflow "hidden"
               :white-space "nowrap"
               :z-index "3"
