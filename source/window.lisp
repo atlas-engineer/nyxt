@@ -171,7 +171,7 @@ The handlers take the window as argument."))
 (export-always 'window-make)
 (defun window-make (browser)
   "Create a new window in BROWSER."
-  (let* ((window (ffi-window-make browser)))
+  (let ((window (ffi-window-make browser)))
     (setf (gethash (id window) (windows browser)) window)
     (unless (slot-value browser 'last-active-window)
       (setf (slot-value browser 'last-active-window) window))
