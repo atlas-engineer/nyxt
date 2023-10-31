@@ -354,7 +354,7 @@ See also `show-prompt-buffer'."
               prompt-buffer suggestions marks
               :pad-p t
               :enable-marks-p (some #'prompter:enable-marks-p
-                                       (prompter:sources prompt-buffer)))))
+                                    (prompter:sources prompt-buffer)))))
       (setf (ps:@ (nyxt/ps:qs document "#prompt-modes") |innerHTML|)
             (ps:lisp (str:join " "
                                (mapcar (curry #'mode-status status-buffer)
