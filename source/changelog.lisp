@@ -922,4 +922,7 @@ Nyxt version exists.  It is only raised when the major version differs.")
   (:ul
    (:li "Fix bug that made Nyxt display an out of date version in several places.")
    (:li "Add " (:nxref :class-name 'message-buffer) " as a user class, thus
-enabling its customization.")))
+enabling its customization.")
+   (:li "The height of the " (:nxref :class-name 'message-buffer) " and "
+        (:nxref :class-name 'status-buffer) " can be dynamically set and its UI
+elements are scaled accordingly.")))

@@ -862,6 +862,9 @@ Also see `panel-page'."))
    (height
     24
     :type integer
+    :writer nil
+    :reader height
+    :export t
     :documentation "The height of the status buffer in pixels.")
    (glyph-mode-presentation-p
     nil
@@ -875,7 +878,7 @@ Also see `panel-page'."))
    (glyph-lambda (gethash "lambda.svg" *static-data*))
    (style (theme:themed-css (theme *browser*)
             `(body
-              :line-height "24px"
+              :line-height "100vh"
               :font-size "14px"
               :padding 0
               :margin 0)
@@ -906,20 +909,20 @@ Also see `panel-page'."))
             `("#controls"
               :background-color ,theme:secondary
               :color ,theme:on-secondary
-              :padding-left "8px"
               :overflow "hidden"
               :white-space "nowrap"
               :z-index "3"
-              :height "24px"
-              :flex-basis "80px")
+              :flex-basis "80px"
+              :display "flex")
             `("#controls > button"
-              :width "22px"
-              :margin-left "-8px")
-            `("#reload"
-              :width "24px !important")
+              :margin-right "-3px"
+              :max-width "20px"
+              :height "100%"
+              :aspect-ratio "1/1")
             `("#url"
               :background-color ,theme:primary
               :color ,theme:on-primary
+              :font-size "60vh"
               :min-width "100px"
               :text-overflow "ellipsis"
               :overflow-x "hidden"
@@ -936,7 +939,8 @@ Also see `panel-page'."))
             `("#tabs"
               :background-color ,theme:secondary
               :color ,theme:on-secondary
-              :line-height "22px"
+              :line-height "95vh"
+              :font-size "60vh"
               :min-width "100px"
               :white-space "nowrap"
               :overflow-x "scroll"
@@ -967,6 +971,7 @@ Also see `panel-page'."))
             `("#modes"
               :background-color ,theme:primary
               :color ,theme:on-primary
+              :font-size "60vh"
               :text-align "right"
               :padding-left "10px"
               :padding-right "5px"
@@ -999,6 +1004,10 @@ Also see `panel-page'."))
   (:export-predicate-name-p t)
   (:metaclass user-class))
 
+(defmethod (setf height) (value (status-buffer status-buffer))
+  (setf (ffi-height status-buffer) value)
+  (setf (slot-value status-buffer 'height) value))
+
 (define-class message-buffer (input-buffer)
   ((window
     nil
@@ -1007,12 +1016,16 @@ Also see `panel-page'."))
    (height
     16
     :type integer
+    :writer nil
+    :reader height
+    :export t
     :documentation "The height of the message buffer in pixels.")
    (style (theme:themed-css (theme *browser*)
             `(body
               :background-color ,theme:background-alt
               :color ,theme:on-background-alt
-              :font-size "12px"
+              :font-size "75vh"
+              :line-height "100vh"
               :padding 0
               :padding-left "4px"
               :margin 0))))
@@ -1020,6 +1033,10 @@ Also see `panel-page'."))
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
   (:metaclass user-class))
+
+(defmethod (setf height) (value (message-buffer message-buffer))
+  (setf (ffi-height message-buffer) value)
+  (setf (slot-value message-buffer 'height) value))
 
 (defmethod customize-instance :after ((buffer buffer)
                                       &key (browser *browser*)
