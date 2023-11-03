@@ -31,6 +31,15 @@ seconds."))
   (:documentation "A hostlist `blocker-mode' can use for its `hostlists' slot.
 See `*default-hostlist*' for an example."))
 
+(defmethod hosts :around ((hostlist hostlist))
+  (or (call-next-method)
+      (let ((path (files:expand hostlist)))
+        (unless (uiop:file-exists-p path)
+          (echo "Updating hostlist ~s..." path))
+        (setf (slot-value hostlist 'hosts)
+              (files:content hostlist
+                             :force-update (not (uiop:file-exists-p path)))))))
+
 (export-always 'make-hostlist)
 (defun make-hostlist (&rest args)
   "Return a new `hostlist'.
@@ -73,6 +82,16 @@ internal programming APIs."
     :export nil
     :documentation "The set of host names to block.")))
 
+(defmethod blocked-hosts :around ((blocker-mode blocker-mode))
+  (let ((value (call-next-method)))
+    (unless (plusp (hash-table-count value))
+      (dolist (hostlist (hostlists blocker-mode))
+        ;; TODO: Allow running in the background, but warning, it could leak
+        ;; personal information to undesired third-party.
+        (dolist (host (hosts hostlist))
+          (setf (gethash host value) host))))
+    value))
+
 (defmethod enable ((mode blocker-mode) &key)
   (when (network-buffer-p (buffer mode))
     (hooks:add-hook (request-resource-hook (buffer mode))
@@ -104,21 +123,6 @@ This gives more integrity guarantees to the user and allows external manipulatio
                      (custom-hosts? line))
             collect (second (str:split " " line)))))
 
-(-> load-hostlists (blocker-mode &key (:force-update-p boolean)) t)
-(defun load-hostlists (blocker-mode &key force-update-p)
-  "Load BLOCKER-MODE's hostlists into `blocked-hosts' (in the background)."
-  (clrhash (blocked-hosts blocker-mode))
-  (dolist (hostlist (hostlists blocker-mode))
-    ;; TODO: Allow running in the background, but warning, it could leak
-    ;; personal information to undesired third-party.
-    (dolist (host (or (hosts hostlist)
-                      (let ((path (files:expand hostlist)))
-                        (unless (uiop:file-exists-p path)
-                          (echo "Updating hostlist ~s..." path))
-                        (files:content hostlist
-                                       :force-update force-update-p))))
-      (setf (gethash host (blocked-hosts blocker-mode)) host))))
-
 (defmethod blocklisted-host-p ((mode blocker-mode) host)
   "Return non-nil of HOST if found in the hostlists of MODE.
 Return nil if MODE's hostlist cannot be parsed."
@@ -149,4 +153,4 @@ This is an acceptable handler for `request-resource-hook'."
 
 (define-command update-hostlists (&optional (blocker-mode (find-submode 'nyxt/mode/blocker:blocker-mode (current-buffer))))
   "Forces update for all the hostlists of `blocker-mode'."
-  (load-hostlists blocker-mode :force-update-p t))
+  (clrhash (blocked-hosts blocker-mode)))
