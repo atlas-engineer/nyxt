@@ -912,4 +912,7 @@ Nyxt version exists.  It is only raised when the major version differs.")
 (define-version "3.X.Y"
   (:nsection :title "UI/UX"
     (:ul
-     (:li "Simplify status bar CSS. Make URL area clickable."))))
+     (:li "Simplify status bar CSS. Make URL area clickable.")))
+  (:nsection :title "Bug fixes"
+    (:ul (:nxref :mode 'nyxt/mode/blocker:blocker-mode)
+         " ensures that hostlist files are loaded when missing.")))
