@@ -384,7 +384,7 @@ Return the text cut."
   (echo-warning "Redoing edits is not yet implemented for this renderer."))
 
 ;; TODO: Move to alists for arbitrary number of params?
-(defvar *context-menu-commands* (make-hash-table)
+(defvar *context-menu-commands* (make-hash-table :test #'equal)
   "A hash table from labels to context menu commands.
 Once a context menu appears, those commands will be added to it as actions with
 the labels they have as hash keys.")
