@@ -43,18 +43,29 @@ If PASSWORD-NAME is empty, then generate a new password."))
     password-interface)
   (:documentation "Return the PASSWORD-INTERFACE with all the misfilled fields corrected."))
 
+(export-always 'executable-not-found)
+(define-condition executable-not-found (error)
+  ((interface :reader interface :initarg :interface))
+  (:documentation "Password interface executable missing.")
+  (:report (lambda (condition stream)
+             (format stream "Executable for ~s not found" (interface condition)))))
+
 (defgeneric execute (interface arguments &rest run-program-args &key wait-p &allow-other-keys)
   (:method ((interface password-interface) (arguments list) &rest run-program-args &key (wait-p t) &allow-other-keys)
-    (apply (if wait-p #'uiop:run-program #'uiop:launch-program)
-           (append (uiop:ensure-list (executable interface)) arguments)
-           (alexandria:remove-from-plist run-program-args :wait-p)))
+    (if (executable interface)
+        (apply (if wait-p #'uiop:run-program #'uiop:launch-program)
+               (append (uiop:ensure-list (executable interface)) arguments)
+               (alexandria:remove-from-plist run-program-args :wait-p))
+        (error 'executable-not-found :interface interface)))
   (:documentation "Execute the command matching the INTERFACE, with ARGS.
 
 `uiop:run-program' is used underneath, with RUN-PROGRAM-ARGS being its
 arguments.
 
 When the WAIT-P is NIL, `uiop:launch-program' is used instead of
-`uiop:run-program'."))
+`uiop:run-program'.
+
+Signals `executable-not-found' when there's no `executable' for INTERFACE."))
 
 (defun safe-clipboard-text ()
   "Return clipboard content, or \"\" if the content is not textual."
