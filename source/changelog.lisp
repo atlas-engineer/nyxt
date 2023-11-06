@@ -847,7 +847,221 @@ out-of-date.")
    (:li "Work around load failures when going backward or forward in history.")
    (:li "Catch more errors in search completion.")))
 
-(define-version "2.2.2"
+(define-version "3.3.0"
+  (:nsection :title "Features"
+    (:ul
+     (:li "Change default search engine to "
+          (:a :href "https://search.atlas.engineer/searxng"
+              "Atlas' own SearXNG instance") ".")
+     (:li "Add command " (:nxref :command 'nyxt:pick-color)
+          ", to pick a color and copy its HEX, RGB or HSL code to clipboard.")
+     (:li "Add keybindings for commands "
+          (:nxref :command 'nyxt:delete-panel-buffer) " and "
+          (:nxref :command 'nyxt:delete-all-panel-buffers) ".")
+     (:li "Improve " (:nxref :command 'nyxt/mode/prompt-buffer:describe-prompt-buffer) ":")
+     (:ul
+      (:li "List available keybindings for enabled prompt buffer modes.")
+      (:li "Reference current prompt buffer sources."))))
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Honor the value of "
+          (:nxref :slot 'zoom-ratio-default :class-name 'document-buffer) ".")
+     (:li "Honor the value of the panel buffer's "
+          (:nxref :slot 'style :class-name 'panel-buffer) ".")
+     (:li "Fix bugs in the "
+          (:a :href (nyxt-url 'common-settings) "common settings interface") ".")
+     (:li "Fix clipboard support for the Flatpak on Wayland.")
+     (:li "Fix behavior of "
+          (:nxref :class-name 'nyxt/mode/hint:hint-mode) "when slots "
+          (:nxref :class-name 'nyxt/mode/hint:hint-mode
+            :slot 'nyxt/mode/hint:hinting-type)
+          " and "
+          (:nxref :class-name 'nyxt/mode/hint:hint-mode
+            :slot 'nyxt/mode/hint:show-hint-scope-p)
+          "are set to " (:code ":vi") " and " (:code "t") ", respectively.")))
+  (:nsection :title "UI"
+    (:ul
+     (:li "Add border between panel buffer and main content area.")
+     (:li "Apply nuanced background color to panel buffers.")))
+  (:nsection :title "Programming interface"
+    (:ul
+
+     (:li (:nxref :class-name 'browser :slot 'external-editor-program)
+          " no longer signals when the program is a string containing spaces.")
+     (:li (:nxref :class-name 'browser :slot 'external-editor-program)
+          " returns its value rather than returning a string value in a list."))))
+
+(define-version "3.4.0"
+  (:nsection :title "Features"
+    (:ul
+     (:li "Enable native spell-checking from WebKitGTK. The language can be set via
+command "
+          (:code "set-spell-check-languages")
+          ". The list of dictionaries is provided by Enchant.")
+     (:li "Add prompt buffer keybindings for commands "
+          (:nxref :command 'nyxt/mode/prompt-buffer:previous-page) " and "
+          (:nxref :command 'nyxt/mode/prompt-buffer:next-page) ".")))
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix theme configuration via "
+          (:a :href (nyxt-url 'common-settings) "Common Settings Menu") ".")
+     (:li "Honor the value of environment variables "
+          (:code "$XDG_DATA_HOME") ", "
+          (:code "$XDG_CONFIG_HOME") "and "
+          (:code "$XDG_CACHE_HOME") "for the Flatpak.")))
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "Add cursor change on hover for buttons and links in internal pages and panel
+buffers.")
+     (:li "Improve user experience of " (:nxref :command 'nyxt:pick-color) "."))))
+
+(define-version "3.5.0"
+  (:nsection :title "Features"
+    (:ul
+     (:li "Add new quick start tutorial, accesible via command "
+            (:nxref :command 'nyxt:quick-start) ".")
+     (:li "Add hinting support for pages using Shadow DOMs.")
+     (:li "Add keybinding for command " (:nxref :command 'describe-any) ".")))
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix status buffer history buttons.")
+     (:li "Fix bug in command " (:nxref :command 'nyxt/mode/repeat:repeat-key) ".")))
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "Redesign " (:a :href (nyxt-url 'new) "start page") ".")
+     (:li "Fix styling of progress bar.")
+     (:li "Fix styling of prompt buffer's input area."))))
+
+(define-version "3.6.0"
+  (:nsection :title "Features"
+    (:ul
+     (:li "Add commands for importing history from Firefox, Google Chrome,
+Chromium, Brave and Vivaldi. For instance, "
+          (:nxref :command 'nyxt/mode/history-migration:import-history-from-firefox) ".")))
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix keyscheme configuration via "
+          (:a :href (nyxt-url 'common-settings) "Common Settings Menu") ".")))
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "Add Public Sans font and set it as the default.")
+     (:li "Redesign status buffer buttons.")
+     (:li "Minor review of " (:a :href (nyxt-url 'new) "start page") "."))))
+
+(define-version "3.6.1"
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix clipboard facilities on X11 and Wayland.")
+     (:li "Fix source code location on Flatpak.")
+     (:li "Fix " (:nxref :mode 'nyxt/mode/style:dark-mode)
+        " and the " (:nxref :command 'nyxt/mode/bookmarklets:darken)
+        " bookmarklet command."))))
+
+(define-version "3.7.0"
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "Minor UI improvements on the status and prompt buffer.")
+     (:li "Stylistic review of the manual to improve readability.")))
+  (:nsection :title "Features"
+    (:ul
+     (:li "Add possibility to open PDF files via command "
+          (:nxref :command 'nyxt/mode/file-manager:open-file) ".")
+     (:li "The installation process now takes into account the Appdata file and
+a scalable icon."))))
+
+(define-version "3.8.0"
+  (:nsection :title "Features"
+    (:ul
+     (:li "Add new slots "
+          (:nxref :class-name 'nyxt/mode/hint:hint-mode :slot 'nyxt/mode/hint:hints-offset-x)
+          " and "
+          (:nxref :class-name 'nyxt/mode/hint:hint-mode :slot 'nyxt/mode/hint:hints-offset-y)
+          ", to change the position of hint overlays.")))
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix bug with subsequent invocations of "
+          (:nxref :macro 'define-configuration) " on the same class and slot
+being overwritten by the first.")))
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "Keybindings are shown in a more user-friendly way, when using the CUA
+keyscheme.")
+     (:li "Modes in the status area are shown vertically in their tooltip to
+improve readability.")
+     (:li "Stylistic review of the help system pages to improve readability.")))
+  (:nsection :title "Programming interface"
+    (:ul
+     (:li "Fix Nyxt connection via commands " (:code "start-slynk") "
+and " (:code "start-swank") " on the Flatpak distribution.")
+     (:li "Fix warning signaling when a mismatch between the history file and the current
+Nyxt version exists.  It is only raised when the major version differs.")
+     (:li "Buffers of type " (:nxref :class-name 'nyxt/mode/editor:editor-buffer) " have  "
+          (:nxref :class-name 'nyxt/mode/editor:plaintext-editor-mode)
+          "enabled by default."))))
+
+(define-version "3.9.0"
+  (:nsection :title "Features"
+    (:ul
+     (:li "Complete refactor of the "
+          (:a :href (nyxt-url 'common-settings) "Common Settings Menu") ".")
+     (:li "Refactor the " (:nxref :package :theme)
+	  " API to allow for more nuanced themes and richer interfaces.")))
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix the functionality of the download cancellation button.")
+     (:li "Fix duplicated suggestions when issuing command "
+          (:nxref :command 'describe-slot) ".")
+     (:li "Fix accepted values of "
+          (:nxref :class-name 'browser :slot 'external-editor-program)
+          "."))))
+
+(define-version "3.9.1"
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "UI improvement of interfaces bound to commands "
+          (:nxref :command 'nyxt/mode/bookmark:bookmarks-panel) ", "
+          (:nxref :command 'nyxt/mode/bookmark:list-bookmarks) " and "
+          (:nxref :command 'nyxt/mode/buffer-listing:buffers-panel) ".")))
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix command " (:nxref :command 'nyxt/mode/bookmark:bookmark-url) ".")
+     (:li "Fix commands that rely on "
+          (:nxref :class-name 'browser :slot 'external-editor-program)
+          ".")
+     (:li "Fix command "
+          (:nxref :command 'nyxt/mode/prompt-buffer:toggle-attributes-display)
+          " and behavior of UI elements relying on it."))))
+
+(define-version "3.9.2"
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "Review of the status buffer UI.  The URL area is now clickable.")))
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li (:nxref :mode 'nyxt/mode/blocker:blocker-mode)
+          " ensures that hostlist files are loaded when missing.")
+     (:li "Fix connection to Nyxt via commands "
+          (:code "start-swank") " and " (:code "start-slynk") ".")))
+  (:nsection :title "Programming interface"
+    (:ul
+     (:li "When running Nyxt as a Flatpak, programs available on the host can be
+invoked via " (:code "flatpak-spawn --host <command> <command-args>") "."))))
+
+(define-version "3.X.Y"
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "Improve source heading buttons, layout and interactions in the "
+          (:nxref :class-name 'prompt-buffer) ".")))
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Warn when the " (:nxref :mode 'nyxt/mode/password:password-mode)
+          " cannot find password manager executable."))))
+
+(define-version "4-pre-release-1"
+  (:li "When on pre-release, push " (:code "X-pre-release")
+       " feature in addition to " (:code "X-pre-release-N") "one."))
+
+(define-version "4.0.0"
   (:ul
    (:li "HTTP redirects are no longer stored to history.")
    (:li "Selecting hints in prompt buffer no longer scrolls the page automatically, press "
