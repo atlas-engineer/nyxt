@@ -517,7 +517,7 @@ Uses `%follow-hint-new-buffer' internally."
   (let ((buffer (current-buffer)))
     (query-hints "Open element in new buffer"
                  (lambda (result) (mapcar (rcurry #'%follow-hint-new-buffer buffer)
-                                          result)))))
+                                     result)))))
 
 (define-command follow-hint-new-buffer-focus ()
   "Like `follow-hint-new-buffer', but with focus.
