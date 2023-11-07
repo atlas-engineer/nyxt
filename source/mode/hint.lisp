@@ -334,7 +334,7 @@ Consult https://developer.mozilla.org/en-US/docs/Web/CSS/visibility."
                          (selector (hints-selector (find-submode 'hint-mode))))
   "Prompt for elements matching SELECTOR, hinting them visually.
 ENABLE-MARKS-P defines whether several elements can be chosen.
-PROMPT is a text to show while prompting for hinted elements.
+PROMPT is the text to show while prompting for hinted elements.
 FUNCTION is the action to perform on the selected elements."
   (alex:when-let*
       ((buffer (current-buffer))
