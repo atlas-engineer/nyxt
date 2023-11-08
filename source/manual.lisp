@@ -1104,20 +1104,15 @@ ibus --daemonize --replace --xim")
           (:p "You can persist this change by saving the commands in
 your " (:code ".xprofile") " or similar."))
 
-        (:nsection :title "Font size on HiDPI displays"
-          (:p "On HiDPI displays, the font size used for displaying web and Nyxt's
-prompt buffer content might be too tiny.")
-          (:p "To fix this issue when using the WebKitGTK render, export the
-following environment variable before starting Nyxt:")
+        (:nsection :title "HiDPI displays"
+          (:p "The entire UI may need to be scaled up on HiDPI displays.")
+          (:p "When using the WebKitGTK renderer, export the environment
+variable below before starting Nyxt.  Note that " (:code "GDK_DPI_SCALE") " (not
+to be confused with " (:code "GDK_SCALE") ") scales text only, so tweaking it
+may be undesirable.")
           (:pre (:code "export GDK_SCALE=2
 nyxt
-"))
-          (:p "If that doesn't look satisfactory, try exporting the following environment variables before starting Nyxt:")
-          (:ncode :repl-p nil :config-p nil
-            "export GDK_SCALE=2
-export GDK_DPI_SCALE=0.5
-nyxt
-"))
+")))
 
         (:nsection :title "StumpWM mouse scroll"
           (:p "If the mouse scroll does not work for you, see the "
