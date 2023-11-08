@@ -507,9 +507,6 @@ This does not redraw the whole prompt buffer, use `prompt-render' for that."
                           "display:none")
                  (:div
                   (:nbutton
-                    :class (unless (prompter:adjacent-source prompt-buffer
-                                                             :source source)
-                             "inactive")
                     :id "next-source"
                     :text (:raw (gethash "down-arrow.svg" *static-data*))
                     :title (format nil "Next source (~a)"
@@ -519,10 +516,6 @@ This does not redraw the whole prompt buffer, use `prompt-render' for that."
                     :buffer prompt-buffer
                     '(funcall (sym:resolve-symbol :next-source :command)))
                   (:nbutton
-                    :class (unless (prompter:adjacent-source prompt-buffer
-                                                             :steps -1
-                                                             :source source)
-                             "inactive")
                     :id "previous-source"
                     :text (:raw (gethash "up-arrow.svg" *static-data*))
                     :title (format nil "Previous source (~a)"
