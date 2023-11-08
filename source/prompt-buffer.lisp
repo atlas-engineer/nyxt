@@ -588,7 +588,8 @@ If you want to set the input, see `set-prompt-buffer-input'."
     (setf (prompter:input prompt-buffer) input)
     ;; TODO: Stop loop when prompt-buffer is no longer current.
     (labels ((maybe-update-view ()
-               (let ((next-source (when (find prompt-buffer (active-prompt-buffers (window prompt-buffer)))
+               (let ((next-source (when (find prompt-buffer
+                                              (active-prompt-buffers (window prompt-buffer)))
                                     (prompter:next-ready-p prompt-buffer))))
                  (cond
                    ;; Nothing to do:
