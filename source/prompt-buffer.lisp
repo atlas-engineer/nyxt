@@ -139,11 +139,11 @@ See `nyxt::attribute-widths'.")
           :color ,theme:on-action)
         `((:and .button :hover)
           :cursor "pointer"
-          :opacity 0.6)
+          :color ,theme:action)
+        `(".button:hover svg path"
+           :stroke ,theme:action-)
         `((:and .button (:or :visited :active))
           :color ,theme:background)
-        `(".button.inactive svg path"
-           :stroke ,theme:secondary-)
         `("#input"
           :height "28px"
           :margin-top "0"
@@ -173,8 +173,6 @@ See `nyxt::attribute-widths'.")
         `(".source-name > div > button"
           :padding "5px 4px 5px 4px"
           :min-height "100%")
-        `(".source-heading > div > button:hover"
-          :background-color ,theme:secondary+)
         `("#suggestions"
           :background-color ,theme:background
           :color ,theme:on-background
