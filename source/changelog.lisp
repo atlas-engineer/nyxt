@@ -923,3 +923,9 @@ Nyxt version exists.  It is only raised when the major version differs.")
     (:ul
      (:li "When running Nyxt as a Flatpak, programs available on the host can be
 invoked via " (:code "flatpak-spawn --host <command> <command-args>") "."))))
+
+(define-version "3.X.Y"
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "Improve source heading buttons, layout and interactions in the "
+          (:nxref :class-name 'prompt-buffer) "."))))
