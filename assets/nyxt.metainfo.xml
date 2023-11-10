@@ -16,11 +16,11 @@
   <categories>
     <category>Network</category>
   </categories>
-  <url type="homepage">https://nyxt.atlas.engineer/</url>
+  <url type="homepage">https://nyxt-browser.com/</url>
   <url type="bugtracker">https://github.com/atlas-engineer/nyxt/issues</url>
-  <url type="faq">https://nyxt.atlas.engineer/faq</url>
+  <url type="faq">https://nyxt-browser.com/faq</url>
   <url type="help">https://discourse.atlas.engineer/</url>
-  <url type="donation">https://nyxt.atlas.engineer/purchase</url>
+  <url type="donation">https://nyxt-browser.com/purchase</url>
   <!-- <url type="translate"></url> -->
   <url type="contact">https://atlas.engineer/contact</url>
   <url type="contribute">https://github.com/atlas-engineer/nyxt/blob/master/documents/README.org</url>
@@ -30,30 +30,30 @@
   </provides>
   <screenshots>
     <screenshot type="default">
-      <image>https://nyxt.atlas.engineer/static/image/switch-buffer.png</image>
+      <image>https://nyxt-browser.com/static/image/switch-buffer.png</image>
       <caption>Fast tab switching</caption>
     </screenshot>
     <screenshot>
-      <image>https://nyxt.atlas.engineer/static/image/multi-select.png</image>
+      <image>https://nyxt-browser.com/static/image/multi-select.png</image>
       <caption>Multiple marking</caption>
     </screenshot>
     <screenshot>
-      <image>https://nyxt.atlas.engineer/static/image/bookmark.png</image>
+      <image>https://nyxt-browser.com/static/image/bookmark.png</image>
       <caption>Powerful bookmarks</caption>
     </screenshot>
     <screenshot>
-      <image>https://nyxt.atlas.engineer/static/image/multi-search.png</image>
+      <image>https://nyxt-browser.com/static/image/multi-search.png</image>
       <caption>Multi tab search</caption>
     </screenshot>
     <screenshot>
-      <image>https://nyxt.atlas.engineer/static/image/history.png</image>
+      <image>https://nyxt-browser.com/static/image/history.png</image>
       <caption>History as a tree</caption>
     </screenshot>
 </screenshots>
   <!-- Only those published on Flathub are listed -->
   <releases>
     <release version="3.6.1" date="2023-08-28">
-      <url>https://nyxt.atlas.engineer/article/release-3.6.1.org</url>
+      <url>https://nyxt-browser.com/article/release-3.6.1.org</url>
     </release>
   </releases>
 </component>

@@ -272,7 +272,7 @@ suggestion you wish to discuss.
 
 *** Learning Common Lisp
 
-See https://nyxt.atlas.engineer/learn-lisp for a few recommendations.
+See [[https://nyxt-browser.com/learn-lisp]] for a few recommendations.
 
 *** IRC Channel
 
