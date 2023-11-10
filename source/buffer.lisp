@@ -314,11 +314,11 @@ This is useful when alternating between URLs for which auto-rules are enabled or
 disabled.  Example browsing sequence:
 
 - https://example.org (no-script-mode no-image-mode) ; No rule.
-- https://nyxt.atlas.engineer (dark-mode) ; Rule
+- https://nyxt-browser.com (dark-mode) ; Rule
 - https://en.wikipedia.org (no-script-mode no-image-mode) ; No rule.
 
-When browsing from nyxt.atlas.engineer to en.wikipedia.org, the modes that were
-enabled before nyxt.atlas.engineer are restored.")
+When browsing from nyxt-browser.com to en.wikipedia.org, the modes that were
+enabled before nyxt-browser.com are restored.")
    (enable-mode-hook
     (make-instance 'hook-mode)
     :type hook-mode

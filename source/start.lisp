@@ -423,7 +423,7 @@ Examples:
 
 - Start the browser with increased verbosity, a different history file and
   open the given URLs.
-  (nyxt:start :urls '(\"https://nyxt.atlas.engineer\" \"https://en.wikipedia.org\")
+  (nyxt:start :urls '(\"https://nyxt-browser.com\" \"https://en.wikipedia.org\")
               :verbose t
               :with-file '(\"history\" \"/tmp/nyxt/history.lisp\"))"
             (with-output-to-string (s) (opts:describe :stream s)))

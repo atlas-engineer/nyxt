@@ -591,7 +591,7 @@ clipboard."
          (:nbutton
            :text "≡ Execute Command"
            '(nyxt::execute-command))
-         (:a :class "button" :href "https://nyxt.atlas.engineer/download" "⇡ Update"))
+         (:a :class "button" :href "https://nyxt-browser.com/download" "⇡ Update"))
         (:h3 (:b "Recent URLs"))
         (:ul (:raw (history-html-list :limit 50)))
         (:h3 (:b "Recent bookmarks"))

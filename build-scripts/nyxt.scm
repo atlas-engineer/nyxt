@@ -217,7 +217,7 @@
      aspell
      aspell-dict-en))
    (synopsis "Extensible web browser in Common Lisp")
-   (home-page "https://nyxt.atlas.engineer")
+   (home-page "https://nyxt-browser.com")
    (description "Nyxt is a keyboard-oriented, extensible web browser
 designed for power users.  The application has familiar Emacs and VI
 keybindings and is fully configurable and extensible in Common Lisp.")

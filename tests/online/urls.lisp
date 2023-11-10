@@ -7,12 +7,12 @@
   (let* ((*browser* (make-instance 'browser)))
     ;; "full URL"
     (assert-equality #'quri:uri=
-                     (quri:uri "https://nyxt.atlas.engineer")
-                     (url (make-instance 'nyxt:new-url-query :query "https://nyxt.atlas.engineer")))
+                     (quri:uri "https://nyxt-browser.com")
+                     (url (make-instance 'nyxt:new-url-query :query "https://nyxt-browser.com")))
     ;; "URL without protocol"
     (assert-equality #'quri:uri=
-                     (quri:uri "https://nyxt.atlas.engineer")
-                     (url (first (nyxt::input->queries "nyxt.atlas.engineer"))))
+                     (quri:uri "https://nyxt-browser.com")
+                     (url (first (nyxt::input->queries "nyxt-browser.com"))))
     ;; "search engine"
     (assert-equality #'quri:uri=
                      (quri:uri "https://en.wikipedia.org/w/index.php?search=wikipedia")

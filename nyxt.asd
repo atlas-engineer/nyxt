@@ -59,7 +59,7 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
   :class :nasdf-system
   :version "3.9.1"
   :author "Atlas Engineer LLC"
-  :homepage "https://nyxt.atlas.engineer"
+  :homepage "https://nyxt-browser.com"
   :description "Extensible web browser in Common Lisp"
   :license "BSD 3-Clause"
   :depends-on (alexandria

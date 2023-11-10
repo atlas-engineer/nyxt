@@ -25,7 +25,7 @@ great perk: everything in the browser can be customized by the user, even while
 it's running!")
         (:p "To get started with Common Lisp, we recommend checking out
     our web page: "
-            (:a :href "https://nyxt.atlas.engineer/learn-lisp" "Learn Lisp")
+            (:a :href "https://nyxt-browser.com/learn-lisp" "Learn Lisp")
             ". It contains numerous pointers to other resources, including
         free books both for beginners and seasoned programmers.")
         (:p "Nyxt provides a mechanism for new users unfamiliar with Lisp to
