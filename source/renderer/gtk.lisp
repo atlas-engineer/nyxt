@@ -2117,8 +2117,7 @@ Valid values are determined by the `cookie-policy' type."
   "Not supported by WebKitGTK.
 Only the setf method is."
   nil)
-(defmethod (setf ffi-preferred-languages) (language-list
-                                           (buffer gtk-buffer))
+(defmethod (setf ffi-preferred-languages) (language-list (buffer gtk-buffer))
   "LANGUAGE-LIST is a list of strings like '(\"en_US\" \"fr_FR\")."
   (let ((langs (cffi:foreign-alloc :string
                                    :initial-contents language-list
