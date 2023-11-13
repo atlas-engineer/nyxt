@@ -909,16 +909,20 @@ Nyxt version exists.  It is only raised when the major version differs.")
           (:nxref :command 'nyxt/mode/prompt-buffer:toggle-attributes-display)
           " and behavior of UI elements relying on it."))))
 
-(define-version "3.X.Y"
+(define-version "3.9.2"
   (:nsection :title "UI/UX"
     (:ul
-     (:li "Simplify status bar CSS. Make URL area clickable.")))
+     (:li "Review of the status buffer UI.  The URL area is now clickable.")))
   (:nsection :title "Bug fixes"
     (:ul
      (:li (:nxref :mode 'nyxt/mode/blocker:blocker-mode)
           " ensures that hostlist files are loaded when missing.")
      (:li "Fix connection to Nyxt via commands "
-          (:code "start-swank") " and " (:code "start-slynk") "."))))
+          (:code "start-swank") " and " (:code "start-slynk") ".")))
+  (:nsection :title "Programming interface"
+    (:ul
+     (:li "When running Nyxt as a Flatpak, programs available on the host can be
+invoked via " (:code "flatpak-spawn --host <command> <command-args>") "."))))
 
 (define-version "4-pre-release-1"
   (:li "When on pre-release, push " (:code "X-pre-release")
