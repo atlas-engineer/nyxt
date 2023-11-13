@@ -57,7 +57,7 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
 (defsystem "nyxt"
   :defsystem-depends-on ("nasdf")
   :class :nasdf-system
-  :version "3.9.1"
+  :version "3.9.2"
   :author "Atlas Engineer LLC"
   :homepage "https://nyxt-browser.com"
   :description "Extensible web browser in Common Lisp"
