@@ -42,14 +42,10 @@ Unlike `(cons TYPE *)', it checks all the elements.
   "Alist of dotted conses."
   `(list-of (cons ,key-type ,(or value-type key-type))))
 
-;; FIXME: Maybe define it at use site, or even inline it there?
 (export-always 'cookie-policy)
 (deftype cookie-policy ()
-  "Enum of cookie policies:
-- allow :ALWAYS,
-- allow :NEVER,
-- allow all, but :NO-THIRD-PARTY."
-  `(member :always :never :no-third-party))
+  "The type of cookie policy to apply."
+  `(member :accept :never :no-third-party))
 
 ;; The following types represent the positional arguments documented at
 ;; https://developer.mozilla.org/en-US/docs/Web/API/Selection/modify#parameters
