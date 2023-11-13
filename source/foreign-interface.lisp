@@ -270,10 +270,8 @@ The `style' of the `message-buffer' is honored."
 In particular, this should understand Punycode.")
 
 (define-ffi-generic ffi-buffer-cookie-policy (buffer)
-  "Return the cookie 'accept' policy, one of of`:always',
-`:never' or `:no-third-party'.
-
-Setf-able with the same aforementioned values."
+  "Return the cookie policy.
+Setf-able.  Valid values are determined by the `cookie-policy' type."
   (:setter-p t))
 
 (define-ffi-generic ffi-preferred-languages (buffer)

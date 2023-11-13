@@ -349,11 +349,11 @@ to the next."
                  :class-name 'browser
                  :slot 'default-cookie-policy
                  :slot-value :no-third-party))
-              '(:always "Always accept"
+              '(:accept "Always accept"
                 (nyxt::auto-configure
                  :class-name 'browser
                  :slot 'default-cookie-policy
-                 :slot-value :always))
+                 :slot-value :accept))
               '(:never "Never accept"
                 (nyxt::auto-configure
                  :class-name 'browser

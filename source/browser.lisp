@@ -204,8 +204,7 @@ You can store and restore sessions manually to various files with
     :no-third-party
     :type cookie-policy
     :documentation "Cookie policy of new buffers.
-Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
-`:no-third-party' (accept cookies for current website only).")
+Valid values are `:accept', `:never' and `:no-third-party'.")
    ;; Hooks follow:
    (after-init-hook
     (make-instance 'hook-browser)

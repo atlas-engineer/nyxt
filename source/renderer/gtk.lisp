@@ -2096,17 +2096,19 @@ custom (the specified proxy) and none."
                  callback
                  (cffi:null-pointer))))))
         (calispel:? result-channel))))
-(defmethod (setf ffi-buffer-cookie-policy) (cookie-policy (buffer gtk-buffer))
-  "VALUE is one of`:always', `:never' or `:no-third-party'."
+(defmethod (setf ffi-buffer-cookie-policy) (value (buffer gtk-buffer))
+  "Set the cookie policy to VALUE.
+Valid values are determined by the `cookie-policy' type."
   (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
          (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
-    (setf (ffi-buffer-cookie-policy cookie-manager) cookie-policy)
+    (setf (ffi-buffer-cookie-policy cookie-manager) value)
     buffer))
-(defmethod (setf ffi-buffer-cookie-policy) (cookie-policy (cookie-manager webkit:webkit-cookie-manager))
-  "VALUE is one of`:always', `:never' or `:no-third-party'."
+(defmethod (setf ffi-buffer-cookie-policy) (value (cookie-manager webkit:webkit-cookie-manager))
+  "Set the cookie policy to VALUE.
+Valid values are determined by the `cookie-policy' type."
   (webkit:webkit-cookie-manager-set-accept-policy
    cookie-manager
-   (match cookie-policy
+   (match value
      (:accept :webkit-cookie-policy-accept-always)
      (:never :webkit-cookie-policy-accept-never)
      (:no-third-party :webkit-cookie-policy-accept-no-third-party))))
