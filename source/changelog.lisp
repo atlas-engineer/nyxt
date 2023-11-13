@@ -914,8 +914,9 @@ Nyxt version exists.  It is only raised when the major version differs.")
     (:ul
      (:li "Simplify status bar CSS. Make URL area clickable.")))
   (:nsection :title "Bug fixes"
-    (:ul (:nxref :mode 'nyxt/mode/blocker:blocker-mode)
-         " ensures that hostlist files are loaded when missing.")))
+    (:ul
+     (:li (:nxref :mode 'nyxt/mode/blocker:blocker-mode)
+          " ensures that hostlist files are loaded when missing."))))
 
 (define-version "4-pre-release-1"
   (:li "When on pre-release, push " (:code "X-pre-release")
