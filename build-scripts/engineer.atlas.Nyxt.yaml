@@ -17,6 +17,8 @@ finish-args:
   - --socket=pulseaudio
   - --socket=cups
   - --filesystem=host
+  # Allow invoking host commands via flatpak-spawn --host <command> <command-args>
+  - --talk-name=org.freedesktop.Flatpak
   # See http://sbcl.org/getting.html
   - --env=SBCL_HOME=/app/lib/sbcl
 
@@ -25,8 +27,8 @@ modules:
     buildsystem: simple
     sources:
       - type: archive
-        url: http://prdownloads.sourceforge.net/sbcl/sbcl-2.3.8-x86-64-linux-binary.tar.bz2
-        sha256: 153405265c2bd069a874b0e05ac1d607ff9aaf2a65022df873458dfb95a989cf
+        url: http://prdownloads.sourceforge.net/sbcl/sbcl-2.3.10-x86-64-linux-binary.tar.bz2
+        sha256: 21c522e2330bfbbefd0c3dce7273590747a33d5a7be3a240beca913c9fa2299d
         only-arches: [x86_64]
     build-commands:
       - INSTALL_ROOT=${FLATPAK_DEST} sh install.sh
