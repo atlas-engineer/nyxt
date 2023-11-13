@@ -111,9 +111,10 @@ Which commands will they invoke next?")
     (make-ring)
     :documentation "The default history of all prompt buffer entries.
 This history is used if no history is specified for a given prompt buffer.")
-   (default-new-buffer-url (quri:uri (nyxt-url 'new))
-                           :type url-designator
-                           :documentation "The URL set to a new blank buffer opened by Nyxt.")
+   (default-new-buffer-url
+    (quri:uri (nyxt-url 'new))
+    :type url-designator
+    :documentation "The URL set to a new blank buffer opened by Nyxt.")
    (set-url-history
     (make-ring)
     :documentation "The history of all URLs set via set-url")
@@ -199,9 +200,10 @@ See also `history-file' in `context-buffer' for per-buffer history files.")
     :documentation "Whether to restore buffers from the previous session.
 You can store and restore sessions manually to various files with
 `store-history-by-name' and `restore-history-by-name'.")
-   (default-cookie-policy :no-third-party
-                          :type cookie-policy
-                          :documentation "Cookie policy of new buffers.
+   (default-cookie-policy
+    :no-third-party
+    :type cookie-policy
+    :documentation "Cookie policy of new buffers.
 Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 `:no-third-party' (accept cookies for current website only).")
    ;; Hooks follow:
