@@ -24,13 +24,14 @@ in viewport only and they're followed when user input matches the hint string.")
    (style
     (theme:themed-css (theme *browser*)
       `(".nyxt-hint"
-        :background-color ,theme:background
+        :background-color ,(format nil "~aef" theme:background-)
         :color ,theme:on-background
         :font-family "monospace,monospace"
+        :font-size ".85rem"
         :padding "0px 0.3em"
-        :border-color ,theme:primary
-        :border-radius "0.3em"
-        :border-width "0.2em"
+        :border-color ,(format nil "~acc" theme:primary-)
+        :border-radius "3px"
+        :border-width "2px"
         :border-style "solid"
         :z-index #.(1- (expt 2 31)))
       `(".nyxt-hint.nyxt-mark-hint"
