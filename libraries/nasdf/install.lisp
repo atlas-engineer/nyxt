@@ -125,9 +125,11 @@ Destination directory is given by the `dest-source-dir' generic function."))
 (defparameter *bindir* (path-from-env "BINDIR" (merge-pathnames* "bin/" *prefix*)))
 (export-always '*libdir*)
 (defparameter *libdir* (path-from-env "LIBDIR" (merge-pathnames* "lib/" *prefix*)))
+
 (export-always 'libdir)
 (defmethod libdir ((component nasdf-library-file))
-  *libdir*)
+  (let ((name (asdf:primary-system-name (asdf:component-system component))))
+    (ensure-directory-pathname (merge-pathnames* name *libdir*))))
 
 (export-always '*dest-source-dir*)
 (defvar *dest-source-dir* (path-from-env "NASDF_SOURCE_PATH" *datadir*)
