@@ -37,7 +37,7 @@ The logic is:
   requiring arguments.
 - If there's any other error raised by `typep', then TYPE-SPECIFIER is
   likely not a type."
-  (or (documentation type-specifier 'type)
+  (or (ignore-errors (documentation type-specifier 'type))
       (handler-case
           (progn
             (typep t type-specifier)
@@ -97,7 +97,7 @@ Uses the built-in MOP abilities of every Lisp."
                                   '(or standard-accessor-method standard-reader-method standard-writer-method))))
                         classes))))
       (do-external-symbols (s (find-package package) result)
-        (unless (or (some (lambda (doctype) (documentation s doctype))
+        (unless (or (some (lambda (doctype) (ignore-errors (documentation s doctype)))
                           '(variable function compiler-macro setf method-combination type structure))
                     (accessor-p s)
                     ;; Parenscript macros don't have documentation.
