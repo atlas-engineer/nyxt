@@ -124,7 +124,10 @@ major versions."
   (:p "Deprecated in favor of " (:nxref :slot 'style :class-name 'message-buffer) ".")
 
   (ffi-window-message-buffer-height)
-  (:p "Deprecated since it is now handled by " (:nxref :function 'ffi-height) "."))
+  (:p "Deprecated since it is now handled by " (:nxref :function 'ffi-height) ".")
+
+  (external-editor-program)
+  (:p "Deprecated support for lists as a value.  Strings are the only valid values."))
 
 (define-migration "3"
   (%slot-default)
