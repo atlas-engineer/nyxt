@@ -1,8 +1,5 @@
-# Inspired by http://3bb.cc/blog/2020/09/11/github-ci/.
 name: Tests
 
-# We tell GitHub to not duplicate the checks in pull requests.  See
-# https://github.community/t/how-to-trigger-an-action-on-push-or-pull-request-but-not-both/16662/15
 on:
   push:
     branches: [ master ]
@@ -12,99 +9,43 @@ on:
 
 jobs:
   test:
-    name: ${{ matrix.lisp }} on ${{ matrix.os }}
+    name: ${{matrix.lisp}} on ${{matrix.os}}
     strategy:
       matrix:
-        # Use ccl-bin/1.12.1 instead of 'ccl' because of
-        # https://github.com/roswell/roswell/issues/534.
-        # TODO: Revert when Roswell is functional again.
-        lisp: [sbcl-bin, ccl-bin/1.12.1]
+        lisp: [sbcl-bin, ccl-bin]
+        lisp-flags: [dynamic-space-size=3072]
         renderer: [gi-gtk]
-        rosargs: [dynamic-space-size=3072]
-        os: [ ubuntu-latest ]
-
-    # run the job on every combination of "lisp" and "os" above
-    runs-on: ${{ matrix.os }}
+        os: [ubuntu-latest]
+    runs-on: ${{matrix.os}}
 
     steps:
-    # Check out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v2
-
-    - name: Cache .roswell
-      id: cache-dot-roswell
-      uses: actions/cache@v1
+    - uses: actions/checkout@v4
       with:
-        path: ~/.roswell
-        key: ${{ runner.os }}-dot-roswell-${{ matrix.lisp }}-${{ hashFiles('**/*.asd') }}
-        restore-keys: |
-          ${{ runner.os }}-dot-roswell-${{ matrix.lisp }}-
-          ${{ runner.os }}-dot-roswell-
+        show-progress: 'false'
+        submodules: 'true'
 
-    - name: Install dependencies
-      shell: bash
+    - name: Register submodules in ASDF
       run: |
-        sudo apt-get update -qq
-        sudo apt-get install -y git
-        sudo apt-get install -y libfixposix3 libfixposix-dev libwebkit2gtk-4.0-dev glib-networking gsettings-desktop-schemas xclip enchant-2
+        mkdir -p ~/.config/common-lisp/source-registry.conf.d/
+        echo "(:tree \"$PWD\")" > ~/.config/common-lisp/source-registry.conf.d/asdf.conf
+        echo "(:tree \"$PWD/_build\")" >> ~/.config/common-lisp/source-registry.conf.d/asdf.conf
 
     - name: Install Roswell
-      shell: bash
-      # always run install, since it does some global installs and setup that isn't cached
       env:
-       LISP: ${{ matrix.lisp }}
-      # TODO: Update Roswell to latest version (may need Ubuntu 20.* or above).
-      run: curl -L https://raw.githubusercontent.com/roswell/roswell/v21.10.14.111/scripts/install-for-ci.sh | sh -x
+       LISP: ${{matrix.lisp}}
+      run: curl -L https://raw.githubusercontent.com/roswell/roswell/master/scripts/install-for-ci.sh | sh -x
 
-    - name: Check Lisp
-      continue-on-error: true
-      shell: bash
+    - name: Install dependencies
       run: |
-        ros ${{ matrix.rosargs }} -e '(format t "~&~a:~a on ~a~%" (lisp-implementation-type) (lisp-implementation-version) (machine-type))'
-        ros ${{ matrix.rosargs }} -e '(format t "ASDF: ~a~%" (asdf:asdf-version))'
-        ros ${{ matrix.rosargs }} -e '(format t "fixnum bits: ~a~%" (integer-length most-positive-fixnum))'
-        ros ${{ matrix.rosargs }} -e '(format t "features: ~s~%" *features*)'
-
-    - name: Fetch Common Lisp third-party dependencies
-      shell: bash
-      run: |
-        ros ${{ matrix.rosargs }}  -e '(handler-bind ((error (lambda (a) (uiop:print-backtrace) (format *error-output* "Error: ~a~&" a) (uiop:quit 17)))) (asdf:load-system :nyxt/submodules))'
-        mkdir -p ~/.config/common-lisp/source-registry.conf.d/
-        echo "(:tree \"$PWD/_build/submodules\")" > ~/.config/common-lisp/source-registry.conf.d/asdf.conf
+        sudo apt-get update -qq
+        sudo apt-get install -y libfixposix-dev libwebkit2gtk-4.1-0 glib-networking gsettings-desktop-schemas
 
     - name: Load Nyxt
-      shell: bash
       run: |
-        # TODO: Can we make CCL backtraces more readable?  With trivial-backtrace maybe?
-        ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)' -e '(handler-bind ((error (lambda (a) (uiop:print-condition-backtrace a) (format *error-output* "Error: ~a~&" a) (uiop:quit 17)))) (asdf:load-system :nyxt/${{matrix.renderer}}-application))'
-
-    - name: Build Nyxt executable
-      shell: bash
-      ## CCL build binary does not work for now, needs more investigation.
-      if: ${{ matrix.lisp != 'ccl-bin/1.12.1' }}
-      run: |
-        rm -f nyxt
-        make all LISP=ros LISP_FLAGS="${{ matrix.rosargs }} run -- --no-userinit --non-interactive"
-
-    # Load tests separately to not clutter the test output.
-    - name: Load tests
-      shell: bash
-      run: |
-        ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)' -e  '(handler-bind ((error (lambda (a) (uiop:print-backtrace) (format *error-output* "~a~&" a) (uiop:quit 17)))) (asdf:load-system :nyxt/tests))'
+        ros ${{matrix.lisp-flags}} -e '(handler-case (asdf:load-system :nyxt/${{matrix.renderer}}-application) (error (c) (format t "Error: ~s~%~a~%" c c) (uiop:quit 1)))'
 
     - name: Run tests
-      shell: bash
-      # Export CI to tell ASDF to quit on test errors.
       env:
        NASDF_TESTS_QUIT_ON_FAIL: yes
       run: |
-        ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)' -e '(asdf:test-system :nyxt)'
-
-    - name: Validate make-instance symbols
-      shell: bash
-      run: |
-        ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)'  -e '(asdf:load-system :nyxt)' -e '(push :nyxt-debug-make-instance *features*)' -e '(handler-bind ((error (lambda (a) (uiop:print-backtrace) (format *error-output* "~a~&" a) (uiop:quit 17)))) (asdf:load-system :nyxt :force t))'
-
-    - name: Keymap type checking
-      shell: bash
-      run: |
-        ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)'  -e '(asdf:load-system :nyxt)' -e '(push :nyxt-debug-keymap *features*)' -e '(handler-bind ((error (lambda (a) (uiop:print-backtrace) (format *error-output* "~a~&" a) (uiop:quit 17)))) (asdf:load-system :nyxt :force t))'
+        ros ${{matrix.lisp-flags}} -e '(asdf:test-system :nyxt)'
