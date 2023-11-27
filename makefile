@@ -10,7 +10,7 @@ SBCL_FLAGS =
 ifeq ($(LISP), sbcl)
 	SBCL_FLAGS=--dynamic-space-size $(shell sbcl --noinform --no-userinit --non-interactive --eval '(prin1 (max 3072 (/ (sb-ext:dynamic-space-size) 1024 1024)))' --quit | tail -1)
 endif
-## We use --non-interactive with SBCL so that errors don't interrupt the CI.
+
 LISP_FLAGS ?= $(SBCL_FLAGS) --no-userinit --non-interactive
 
 FLATPAK_COMMAND = flatpak
