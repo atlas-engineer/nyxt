@@ -3,44 +3,25 @@ name: Releases
 on:
   push:
     tags: '*'
-    ## To test, uncomment the line below with branch name used for review.
-    # branches: [ my-work-branch ]
 
 jobs:
-  build-binaries:
-    name: ${{ matrix.lisp }} on ${{ matrix.os }}
-    strategy:
-      matrix:
-        lisp: [sbcl]
-        # See https://github.com/actions/virtual-environments for the list of
-        # official distributions.
-        os: [ubuntu-latest]
-        # fail-fast: false
-
-    runs-on: ${{ matrix.os }}
-
+  build:
+    runs-on: ubuntu-latest
     steps:
 
-    # Checks out Nyxt's repository under $GITHUB_WORKSPACE, so other jobs can
-    # access it
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
+        show-progress: 'false'
         submodules: 'true'
 
     - name: Generate version file
-      shell: bash
       run: echo $(git -C $GITHUB_WORKSPACE describe --tags --abbrev=0) > version
 
-    - name: Install dependencies
-      shell: bash
+    - name: Build Flatpak
       run: |
         sudo apt-get update -qq
         sudo apt-get install -y flatpak-builder
-
-    - name: Build Flatpak
-      shell: bash
-      run: |
         sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
         sudo flatpak install --noninteractive org.gnome.Platform/x86_64/45
         sudo flatpak install --noninteractive org.gnome.Sdk/x86_64/45
@@ -49,14 +30,12 @@ jobs:
         mv nyxt.flatpak nyxt-$(cat version).flatpak
 
     - name: Generate release notes
-      shell: bash
       run: |
         echo "Release notes: https://nyxt-browser.com/article/release-$(cat version).org" >> release.txt
         echo "" >> release.txt
         echo "To compile from source, prefer the tarball including the submodules if you don't manage the Lisp dependencies yourself." >> release.txt
 
     - name: Generate source archive with submodules
-      shell: bash
       run: git ls-files --recurse-submodules | tar caf nyxt-$(cat version)-source-with-submodules.tar.xz -T-
 
     - name: Release
