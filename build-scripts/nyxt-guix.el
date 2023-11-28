@@ -90,7 +90,7 @@ already exists and CONTAINER is nil, after sourcing \"etc/profile\"."
                (format "source %s && %s" (shell-quote-argument root-env)
                        (mapconcat #'shell-quote-argument command-args " "))))
       (append
-       '("guix" "shell")
+       '("guix" "shell" "--fallback")
        `(,@(when no-grafts '("--no-grafts"))
          ,@(if container
                `("--container"
