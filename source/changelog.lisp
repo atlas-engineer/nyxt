@@ -934,4 +934,5 @@ invoked via " (:code "flatpak-spawn --host <command> <command-args>") "."))))
   (:nsection :title "Bug fixes"
     (:ul
      (:li "Fix command "
-          (:nxref :command 'nyxt/mode/annotate:show-annotations-for-current-url) "."))))
+          (:nxref :command 'nyxt/mode/annotate:show-annotations-for-current-url) ".")
+     (:li "make-buffer-with-context lists previously defined contexts."))))
