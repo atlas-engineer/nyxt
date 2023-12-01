@@ -108,6 +108,9 @@ A positive value shifts to the bottom.")
        "g f" 'follow-hint-nosave-buffer
        "g F" 'follow-hint-nosave-buffer-focus)))))
 
+(define-configuration document-buffer
+  ((default-modes (cons 'hint-mode %slot-value%))))
+
 (define-parenscript-async hint-elements (hints nyxt-identifiers)
   (defun create-hint-overlay (original-element hint)
     "Create a DOM element to be used as a hint."

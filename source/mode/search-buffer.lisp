@@ -39,6 +39,9 @@
        "?" 'remove-search-marks))))
   (:toggler-command-p nil))
 
+(define-configuration document-buffer
+  ((default-modes (cons 'search-buffer-mode %slot-value%))))
+
 (define-class search-match ()
   ((pattern
     ""

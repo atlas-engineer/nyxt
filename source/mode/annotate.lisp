@@ -22,6 +22,9 @@ internal programming APIs."
     :type annotations-file
     :documentation "File where annotations are saved.")))
 
+(define-configuration context-buffer
+  ((default-modes (cons 'annotate-mode %slot-value%))))
+
 (defmethod annotations-file ((buffer buffer))
   (annotations-file (find-submode 'annotate-mode buffer)))
 

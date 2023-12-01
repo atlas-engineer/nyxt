@@ -77,6 +77,9 @@ internal programming APIs."
               :margin-left "2px"
               :margin-right "2px")))))
 
+(define-configuration context-buffer
+  ((default-modes (cons 'bookmark-mode %slot-value%))))
+
 (defmethod bookmarks-file ((buffer buffer))
   (bookmarks-file (find-submode 'bookmark-mode buffer)))
 
