@@ -17,8 +17,9 @@ Fingerprinting can be tested at https://panopticlick.eff.org/."
 Accept-Language HTTP header.")
    (preferred-user-agent
     ;; Check https://techblog.willshouse.com/2012/01/03/most-common-user-agents
+    ;; and https://www.whatismybrowser.com/guides/the-latest-user-agent/safari
     ;; occasionally and refresh when necessary.
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.3 Safari/605.1.15"
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15"
     :type string
     :documentation "The user agent to set when enabling `reduce-tracking-mode'.
 It's Safari on macOS by default, because this way we break fewer websites while
