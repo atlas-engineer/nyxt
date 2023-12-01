@@ -47,6 +47,9 @@ content dynamic to the context.")
       (list
        "C-i" 'autofill)))))
 
+(define-configuration document-buffer
+  ((default-modes (cons 'autofill-mode %slot-value%))))
+
 (define-class autofill ()
   ((name
     ""

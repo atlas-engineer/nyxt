@@ -38,6 +38,9 @@ To use, say, KeepassXC, set this slot to
 
 Password interfaces are configurable through a `customize-instance' method.")))
 
+(define-configuration context-buffer
+  ((default-modes (cons 'password-mode %slot-value%))))
+
 (defmethod password-interface ((buffer buffer))
   (password-interface (find-submode 'password-mode buffer)))
 

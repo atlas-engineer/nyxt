@@ -26,6 +26,9 @@ For a list of more languages available, see `spell-check-list-languages'.")
       (list
        "z =" 'spell-check-word)))))
 
+(define-configuration document-buffer
+  ((default-modes (cons 'spell-check-mode %slot-value%))))
+
 (defmacro with-spell-check ((variable) &body body)
   `(enchant:with-dict (,variable (spell-check-language
                                   (find-submode 'spell-check-mode)))

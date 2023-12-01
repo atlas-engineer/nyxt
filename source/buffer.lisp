@@ -620,24 +620,7 @@ Nsymbols will find the proper symbol, unless duplicate."
     (mapcar (alex:rcurry #'resolve-user-symbol :mode (list-all-packages))
             (remove-duplicates (call-next-method)
                                ;; Modes at the beginning of the list have higher priority.
-                               :from-end t)))
-  (:method append ((buffer context-buffer))
-    (list
-     ;; TODO: No need for `sym:resolve-symbol' if we move `context-buffer'
-     ;; declaration in a separate file, loaded after modes.
-     (sym:resolve-symbol :annotate-mode :mode)
-     (sym:resolve-symbol :bookmark-mode :mode)
-     (sym:resolve-symbol :history-mode :mode)
-     (sym:resolve-symbol :password-mode :mode)))
-  (:method append ((buffer document-buffer))
-    (list
-     ;; TODO: No need for `sym:resolve-symbol' if we move `document-buffer'
-     ;; declaration in a separate file, loaded after modes.
-     (sym:resolve-symbol :hint-mode :mode)
-     (sym:resolve-symbol :document-mode :mode)
-     (sym:resolve-symbol :search-buffer-mode :mode)
-     (sym:resolve-symbol :autofill-mode :mode) ; TODO: Remove from default?
-     (sym:resolve-symbol :spell-check-mode :mode))))
+                               :from-end t))))
 
 (define-class network-buffer (buffer)
   ((status

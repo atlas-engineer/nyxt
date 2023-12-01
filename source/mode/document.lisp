@@ -139,6 +139,9 @@ Important pieces of functionality are:
        "space" 'scroll-page-down
        "pagedown" 'scroll-page-down)))))
 
+(define-configuration document-buffer
+  ((default-modes (cons 'document-mode %slot-value%))))
+
 (export-always 'active-element-tag)
 (defun active-element-tag (&optional (buffer (current-buffer)))
   "The name of the active element in BUFFER."

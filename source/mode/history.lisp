@@ -94,6 +94,9 @@ Experimental, may not always produce intuitive enough history trees.")
        "L" 'history-forwards-maybe-query
        "M-H" 'history-all-query)))))
 
+(define-configuration context-buffer
+  ((default-modes (cons 'history-mode %slot-value%))))
+
 (-> load-history-url (nyxt::url-designator
                       &key (:buffer (maybe buffer)) (:message string))
     t)
