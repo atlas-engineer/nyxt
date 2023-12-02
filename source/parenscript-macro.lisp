@@ -36,15 +36,16 @@
   "Recursive version of `qs-nyxt-id` which goes through Shadow DOMs if there's
 at least one."
   `(flet ((recursive-query-selector (context selector)
-            (let ((node (qs context selector)))
-              (if node
-                  node
-                  (let ((node-iterator (chain document (create-node-iterator context (@ *node #:|ELEMENT_NODE|))))
-                        current-node)
-                    (loop while (and (setf current-node (chain node-iterator (next-node))) (not node))
-                          do (when (@ current-node shadow-root)
-                               (setf node (recursive-query-selector (@ current-node shadow-root) selector))))
-                    node)))))
+            (let ((node (qs context selector))
+                  (shadow-roots (chain *array (from (qsa context "[nyxt-shadow-root]"))))
+                  shadow-root)
+              (do ((i 0 (1+ i)))
+                  ((or node
+                       (>= i (chain shadow-roots length))))
+                (setf shadow-root (chain (elt shadow-roots i) shadow-root))
+                (chain shadow-roots push (apply shadow-roots (chain *array (from (qsa shadow-root "[nyxt-shadow-root]")))))
+                (setf node (qs shadow-root selector)))
+              node)))
      (if (chain ,context (query-selector "[nyxt-shadow-root]"))
          (recursive-query-selector ,context (stringify "[nyxt-identifier=\"" ,id "\"]"))
          (qs-nyxt-id ,context ,id))))
