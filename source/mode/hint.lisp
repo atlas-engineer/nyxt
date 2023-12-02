@@ -24,12 +24,12 @@ in viewport only and they're followed when user input matches the hint string.")
    (style
     (theme:themed-css (theme *browser*)
       `(".nyxt-hint"
-        :background-color ,(format nil "~aef" theme:background-)
+        :background-color ,(cl-colors2:print-hex theme:background- :alpha 0.925)
         :color ,theme:on-background
         :font-family "monospace,monospace"
         :font-size ".85rem"
         :padding "0px 0.3em"
-        :border-color ,(format nil "~acc" theme:primary-)
+        :border-color ,(cl-colors2:print-hex theme:primary- :alpha 0.80)
         :border-radius "3px"
         :border-width "2px"
         :border-style "solid"
