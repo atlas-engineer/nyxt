@@ -33,11 +33,6 @@ help:
 
 makefile_dir := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-## Ensure that Nyxt's NASDF is found before any other (like in ~/common-lisp).
-## TODO: Can we factorize this somehow?  We do this with nasdf/submodules, but
-## what then when not using submodules?
-export CL_SOURCE_REGISTRY := $(makefile_dir)libraries/nasdf/:$(CL_SOURCE_REGISTRY)
-
 # The CFFI-specific snippet is useful when running in a Guix shell to register its libraries in CFFI.
 # TODO: Find a better way to do it.
 lisp_eval:=$(LISP) $(LISP_FLAGS) \
@@ -45,7 +40,6 @@ lisp_eval:=$(LISP) $(LISP_FLAGS) \
 	--eval '(when (string= "$(NYXT_SUBMODULES)" "true") (setf asdf:*default-source-registries* (list (quote asdf/source-registry:environment-source-registry))) (asdf:clear-configuration) (asdf:load-asd "$(makefile_dir)/libraries/nasdf/nasdf.asd") (asdf:load-asd "$(makefile_dir)/nyxt.asd") (asdf:load-system :nyxt/submodules))' \
 	--eval '(asdf:load-asd "$(makefile_dir)/libraries/nasdf/nasdf.asd")' \
 	--eval '(asdf:load-asd "$(makefile_dir)/nyxt.asd")' \
-	--eval '(format t "~&; NASDF ~a: ~a~&" (asdf:component-version (asdf:find-system :nasdf)) (nth-value 2 (asdf:locate-system :nasdf)))' \
 	--eval '(when (and (find-package :cffi) (uiop:getenv "GUIX_ENVIRONMENT")) (pushnew (pathname (format nil "~a/lib/" (uiop:getenv "GUIX_ENVIRONMENT"))) (symbol-value (read-from-string "cffi:*foreign-library-directories*" )) :test (quote equal)))' \
 	--eval
 lisp_quit:=--eval '(uiop:quit)'

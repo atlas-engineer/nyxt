@@ -7,52 +7,11 @@
   (sb-ext:assert-version->= 2 0 0)
   (require 'sb-bsd-sockets))
 
-(require 'nasdf)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(uiop:define-package nyxt-asdf
-  (:use :cl))
-(in-package :nyxt-asdf)
-
-;; TODO: Do we need to pre-declare nyxt-user-system?
-;; (export-always 'nyxt-user-system)
-;; (defclass nyxt-user-system (asdf:system) ()
-;;   (:documentation "Specialized systems for Nyxt users."))
-;; (import 'nyxt-user-system :asdf-user)
-
-(defclass nyxt-renderer-system (asdf:system) ()
-  (:documentation "Specialized systems for Nyxt with renderer dependency.
-The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
-(import 'nyxt-renderer-system :asdf-user)
-
-(export '*nyxt-renderer*)
-(defvar *nyxt-renderer* (or (uiop:getenv "NYXT_RENDERER")
-                            "gi-gtk"))
-
-(defmethod asdf:component-depends-on ((o asdf:prepare-op) (c nyxt-renderer-system))
-  `((asdf:load-op ,(format nil "nyxt/~a-application" *nyxt-renderer*))
-    ,@(call-next-method)))
-
-(defclass nyxt-library-file (nasdf:nasdf-library-file)
-  ())
-(import 'nyxt-library-file :asdf-user)
-
-(export '*nyxt-libdir*)
-(defvar *nyxt-libdir* (uiop:merge-pathnames* "nyxt/" nasdf:*libdir*))
-(defmethod nasdf:libdir ((c nyxt-library-file))
-  ;; This forces all libraries to lib/MY-APP/* because the subdirectory is
-  ;; required in some cases, for instance WebKit extensions.  This could be
-  ;; limiting if other cases require the libs to be at the root of the libdir.
-  *nyxt-libdir*)
-
-(in-package :asdf-user)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; WARNING: We _must_ declare the translation host or else ASDF won't recognize
 ;; the pathnames as logical-pathnames, thus returning the system directory
 ;; instead.
 (setf (logical-pathname-translations "NYXT") nil)
-
 
 (defsystem "nyxt"
   :defsystem-depends-on ("nasdf")

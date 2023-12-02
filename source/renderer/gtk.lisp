@@ -307,7 +307,7 @@ the renderer thread, use `defmethod' instead."
 
 (define-class gtk-extensions-directory (nyxt-file)
   ((files:name "gtk-extensions")
-   (files:base-path nyxt-asdf:*nyxt-libdir*))
+   (files:base-path (uiop:merge-pathnames* "nyxt/" nasdf:*libdir*)))
   (:export-class-name-p t)
   (:documentation "Directory where to load the 'libnyxt' library.
 By default it is found in the source directory."))

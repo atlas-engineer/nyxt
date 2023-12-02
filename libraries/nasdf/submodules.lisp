@@ -45,13 +45,6 @@ A naive benchmark on a 16 Mbps bandwidth gives us
                (system-relative-pathname component path))))
     (setf (getenv "CL_SOURCE_REGISTRY")
           (strcat
-           ;; Register this repository's NASDF path first, to ensure we don't
-           ;; use any NASDF from submodules.
-           (native-namestring
-            (ensure-directory-pathname
-             (ensure-absolute-path "libraries/nasdf" component)))
-           (inter-directory-separator)
-           ;; Submodules:
            (native-namestring
             (ensure-directory-pathname
              (ensure-absolute-path *submodules-directory* component)))
