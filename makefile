@@ -52,9 +52,6 @@ nyxt: $(lisp_files)
 		--eval '(asdf:make :nyxt/$(NYXT_RENDERER)-application)' \
 		$(lisp_quit) || (printf "\n%s\n%s\n" "Compilation failed, see the above stacktrace." && exit 1)
 
-web-extensions:
-	$(MAKE) -C libraries/web-extensions/ all
-
 .PHONY: all
 all: nyxt
 
