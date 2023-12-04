@@ -365,9 +365,7 @@
   :pathname #p"NYXT:source;"
   :serial t
   :around-compile "NASDF:FAIL-ON-WARNINGS"
-  :components ((:file "web-extensions")
-               (:file "web-extensions-callbacks")
-               (:file "renderer/gtk-clipboard")
+  :components ((:file "renderer/gtk-clipboard")
                (:file "renderer/gtk"))
   :in-order-to ((test-op (test-op "nyxt/gi-gtk/tests"))))
 
@@ -466,7 +464,6 @@
                (:nasdf-source-directory "source")
                (:nasdf-source-directory "nasdf")
                (:nasdf-source-directory "libraries"
-                :exclude-subpath ("web-extensions") ; Do not install this non-Lisp source.
                 :exclude-types ("o" "c" "h" ; C code and artifacts.
                                     "fasl"))))
 
