@@ -93,6 +93,7 @@ See `nyxt::attribute-widths'.")
           :background-color ,theme:primary
           :color ,theme:on-primary
           :padding-left "10px"
+          :padding-right "8px"
           :line-height "28px")
         `("#prompt-input"
           :margin-right "-10px"
