@@ -436,16 +436,6 @@ Example:
     (ffi-add-context-menu-command (symbol-function command) label)))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Web Extension support
-;; TODO: Move to separate file?
-
-(define-ffi-generic ffi-web-extension-send-message (buffer javascript
-                                                           result-callback
-                                                           error-callback)
-  "Send message to WebExtensions pages.")
-
-
 ;;; Signals
 
 (export-always 'on-signal-notify-uri)
