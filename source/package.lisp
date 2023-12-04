@@ -12,8 +12,6 @@
 (uiop:define-package :nyxt
   (:use :cl)
   (:use-reexport :nyxt/utilities :nyxt/types)
-  #+nyxt-debug-make-instance
-  (:shadow #:make-instance)
   (:export #:use-nyxt-package-nicknames)
   (:documentation "The core package of Nyxt, the infinitely extensible browser.
 
@@ -107,17 +105,6 @@ Same as `progn' on implementations that don't have package locks."
 
 (deftype class-symbol ()
   `(and symbol (satisfies find-class)))
-
-#+nyxt-debug-make-instance
-(serapeum:-> make-instance (class-symbol &rest t) t)
-#+nyxt-debug-make-instance
-(defun make-instance (sym &rest args)
-  "This wrapper of `make-instance' can be used from a test suite to check if all
-calls are made on valid classes.
-
-The check seems to only work on CCL, but not even everywhere, for instance slot
-initforms may not be caught."
-  (apply #'cl:make-instance sym args))
 
 (uiop:define-package :nyxt-user
   (:use :cl :nyxt :nyxt/utilities)
