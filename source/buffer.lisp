@@ -863,7 +863,7 @@ Also see `panel-page'."))
    (glyph-lambda (gethash "lambda.svg" *static-data*))
    (style (theme:themed-css (theme *browser*)
             `(body
-              :line-height "24px"
+              :line-height "100vh"
               :font-size "14px"
               :padding 0
               :margin 0)
@@ -894,20 +894,20 @@ Also see `panel-page'."))
             `("#controls"
               :background-color ,theme:secondary
               :color ,theme:on-secondary
-              :padding-left "8px"
               :overflow "hidden"
               :white-space "nowrap"
               :z-index "3"
-              :height "24px"
-              :flex-basis "80px")
+              :flex-basis "80px"
+              :display "flex")
             `("#controls > button"
-              :width "22px"
-              :margin-left "-8px")
-            `("#reload"
-              :width "24px !important")
+              :margin-right "-3px"
+              :max-width "20px"
+              :height "100%"
+              :aspect-ratio "1/1")
             `("#url"
               :background-color ,theme:primary
               :color ,theme:on-primary
+              :font-size "60vh"
               :min-width "100px"
               :text-overflow "ellipsis"
               :overflow-x "hidden"
@@ -924,7 +924,8 @@ Also see `panel-page'."))
             `("#tabs"
               :background-color ,theme:secondary
               :color ,theme:on-secondary
-              :line-height "22px"
+              :line-height "95vh"
+              :font-size "60vh"
               :min-width "100px"
               :white-space "nowrap"
               :overflow-x "scroll"
@@ -955,6 +956,7 @@ Also see `panel-page'."))
             `("#modes"
               :background-color ,theme:primary
               :color ,theme:on-primary
+              :font-size "60vh"
               :text-align "right"
               :padding-left "10px"
               :padding-right "5px"
