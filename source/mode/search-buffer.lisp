@@ -184,9 +184,8 @@ Style it via CSS selector \"[nyxt-search-mark]\"."
 (defmethod mark-alternate ((match search-match) &key (scroll t))
   "Mark MATCH and optionally SCROLL it into view.
 
-Differs from `nyxt/mode/::mark' in the sense that is allows for a
-more refined styling.  This is particularly useful when MATCH needs to stand out
-from others matches.
+Differs from `mark' in the sense that is allows for a more refined styling.
+This is particularly useful when MATCH needs to stand out from others matches.
 
 Style it via CSS selector \".nyxt-current-search-mark\"."
   (ps-eval :buffer (buffer match)
