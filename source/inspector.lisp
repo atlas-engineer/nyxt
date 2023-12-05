@@ -81,8 +81,12 @@ In case it's `scalar-p', simply print it."
             (when (> (length sequence) *inspector-print-length*)
               (:td "More: " (:raw (link-to sequence))))))))))))
 
-(export-always 'value->html)
-(defgeneric value->html (value &optional compact-p)
+(define-generic value->html (value &optional compact-p)
+  "Produce HTML showing the structure of the VALUE.
+If it's COMPACT-P, compress the output.
+
+Specialize this generic function if you want to have a different markup for Lisp
+values in help buffers, REPL and elsewhere."
   (:method :around (value &optional compact-p)
     (let ((spinneret:*html-style* :tree))
       (call-next-method value compact-p)))
@@ -95,11 +99,7 @@ In case it's `scalar-p', simply print it."
   (:method ((value string) &optional compact-p)
     (declare (ignore compact-p))
     (escaped-literal-print value))
-  (:documentation "Produce HTML showing the structure of the VALUE.
-If it's COMPACT-P, compress the output.
-
-Specialize this generic function if you want to have a different markup for Lisp
-values in help buffers, REPL and elsewhere."))
+  (:export-generic-name-p t))
 
 (defmethod value->html ((value function) &optional compact-p)
   (spinneret:with-html-string

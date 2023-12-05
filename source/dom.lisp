@@ -186,8 +186,9 @@ JSON should have the format like what `get-document-body-json' produces:
       (json-to-plump json root)
       (name-dom-elements root))))
 
-(export-always 'copy)
-(defgeneric copy (node &optional parent)
+(define-generic copy (node &optional parent)
+  "Produce a full copy of NODE as belonging to the PARENT node.
+Full copy means recursively descending to the children of the NODE too."
   (:method ((element plump:root) &optional parent)
     (declare (ignore parent))
     (serapeum:lret ((copy (plump:make-root)))
@@ -224,17 +225,16 @@ JSON should have the format like what `get-document-body-json' produces:
                    :parent parent
                    :text (plump:text element)
                    :tag-name (plump:tag-name element)))
-  (:documentation "Produce a full copy of NODE as belonging to the PARENT node.
-Full copy means recursively descending to the children of the NODE too."))
+  (:export-generic-name-p t))
 
-(export-always 'parents)
-(defgeneric parents (node)
+(define-generic parents (node)
+  "Get the recursive parents of the NODE.
+The closest parent goes first, the furthest one goes last."
   (:method ((node plump:node)) nil)
   (:method ((node plump:child-node))
     (let ((parent (plump:parent node)))
       (cons parent (parents parent))))
-  (:documentation "Get the recursive parents of the NODE.
-The closest parent goes first, the furthest one goes last."))
+  (:export-generic-name-p t))
 
 ;; TODO: Copy the algo from https://github.com/antonmedv/finder
 (-> get-unique-selector (plump:element) t)
@@ -339,8 +339,8 @@ Return two values:
     (quri:uri (plump:get-attribute img "src"))))
 
 ;; REVIEW: Export to :nyxt? We are forced to use it with nyxt/dom: prefix.
-(export-always 'body)
-(defgeneric body (element)
+(define-generic body (element)
+  "Return the textual contents of the ELEMENT and its recursive children."
   (:method ((element plump:element))
     (when (plump:children element)
       (plump:text element)))
@@ -349,7 +349,7 @@ Return two values:
     (let ((result (call-next-method)))
       (when result
         (sera:collapse-whitespace (sera:trim-whitespace result)))))
-  (:documentation "Return the textual contents of the ELEMENT and its recursive children."))
+  (:export-generic-name-p t))
 
 (defun label-of (element)
   (let ((label-for (and (plump:has-attribute element "name")

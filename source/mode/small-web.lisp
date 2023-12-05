@@ -63,16 +63,16 @@ Gemini support is a bit more brittle, but you can override `line->html' for
 (defmethod cl-gopher:display-string :around ((line cl-gopher:gopher-line))
   (cl-ppcre:regex-replace-all "\\e\\[[\\d;]*[A-Za-z]" (slot-value line 'cl-gopher:display-string) ""))
 
-(export-always 'line->html)
-(defgeneric line->html (line)
-  (:documentation "Transform a Gopher or Gemini line to a reasonable HTML representation."))
+(define-generic line->html (line)
+  "Transform a Gopher or Gemini line to a reasonable HTML representation."
+  (:export-generic-name-p t))
 
-(export-always 'gopher-render)
-(defgeneric gopher-render (line)
-  (:documentation "Produce a Gopher page content string/array given LINE.
+(define-generic gopher-render (line)
+  "Produce a Gopher page content string/array given LINE.
 Second return value should be the MIME-type of the content.
 
-Implies that `small-web-mode' is enabled."))
+Implies that `small-web-mode' is enabled."
+  (:export-generic-name-p t))
 
 (defmethod line->html ((line cl-gopher:gopher-line))
   (spinneret:with-html-string
@@ -279,7 +279,7 @@ Implies that `small-web-mode' is enabled."
               (when mode
                 (:nstyle (style mode)))
               (loop for element in elements
-                    collect (:raw (nyxt/mode/small-web:line->html element))))
+                    collect (:raw (line->html element))))
             "text/html;charset=utf8")))
 
 ;; TODO: :secure-p t? Gemini is encrypted, so it can be considered secure.

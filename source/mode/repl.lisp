@@ -97,74 +97,69 @@ new cells via UI."))
                      (unimplemented-method c) (sera:class-name-of (cell c)))))
   (:documentation "The condition that's thrown when the REPL mode method is not implemented."))
 
-(export-always 'evaluate)
-(defgeneric evaluate (cell)
-  (:method ((cell cell))
-    (cerror "Ignore the unimplemented method"
-            'method-unimplemented :method 'evaluate :cell cell))
-  (:documentation "Evaluate CELL and get its results.
+(define-generic evaluate ((cell cell))
+  "Evaluate CELL and get its results.
 Generic function to specialize for all the REPL cell types.
 Use CELL (and, likely, its `input') and set its `results' and `output' to the
-meaningful values."))
+meaningful values."
+  (cerror "Ignore the unimplemented method"
+          'method-unimplemented :method 'evaluate :cell cell)
+  (:export-generic-name-p t))
 
-(export-always 'suggest)
-(defgeneric suggest (cell)
-  (:documentation "Get a single most intuitive suggestion string for CELL contents.
-The suggestion listing may rely on the CELL's contents."))
+(define-generic suggest (cell)
+  "Get a single most intuitive suggestion string for CELL contents.
+The suggestion listing may rely on the CELL's contents."
+  (:export-generic-name-p t))
 
-(export-always 'render-input)
-(defgeneric render-input (cell)
-  (:method ((cell cell))
-    (spinneret:with-html-string
-      (:ninput
-        :autofocus (eq (current-cell (current-mode :repl)) cell)
-        :onfocus `(focus-cell ,cell)
-        :onchange `(setf (input ,cell)
-                         (ps-eval
-                           (ps:@ (nyxt/ps:active-element document) value)))
-        (input cell))))
-  (:documentation "Generate HTML for the input area of the CELL.
+(define-generic render-input ((cell cell))
+  "Generate HTML for the input area of the CELL.
 Generic function to specialize against new REPL cell types.
 The default implementation produces an `:ninput' field that updates `cell''s
-`input' when modified."))
+`input' when modified."
+  (spinneret:with-html-string
+    (:ninput
+      :autofocus (eq (current-cell (current-mode :repl)) cell)
+      :onfocus `(focus-cell ,cell)
+      :onchange `(setf (input ,cell)
+                       (ps-eval
+                         (ps:@ (nyxt/ps:active-element document) value)))
+      (input cell)))
+  (:export-generic-name-p t))
 
-(export-always 'render-actions)
-(defgeneric render-actions (cell)
-  (:method ((cell cell))
-    (spinneret:with-html-string
-      (dolist (action (actions cell))
-        (:nbutton :text (first action)
-          `(funcall (quote ,(second action)) ,cell)))))
-  (:documentation "Generate HTML for the `actions' of the CELL.
+(define-generic render-actions ((cell cell))
+  "Generate HTML for the `actions' of the CELL.
 Generic function to specialize against new REPL cell types.
-The default method simply draws buttons."))
+The default method simply draws buttons."
+  (spinneret:with-html-string
+    (dolist (action (actions cell))
+      (:nbutton :text (first action)
+        `(funcall (quote ,(second action)) ,cell))))
+  (:export-generic-name-p t))
 
-(export-always 'render-results)
-(defgeneric render-results (cell)
-  (:method ((cell cell))
-    (cerror "Ignore the unimplemented method"
-            'method-unimplemented :method 'render-results :cell cell))
-  (:documentation "Generate HTML for the `results' and `output' of the CELL.
-Generic function to specialize against new REPL cell types."))
+(define-generic render-results ((cell cell))
+  "Generate HTML for the `results' and `output' of the CELL.
+Generic function to specialize against new REPL cell types."
+  (cerror "Ignore the unimplemented method"
+          'method-unimplemented :method 'render-results :cell cell)
+  (:export-generic-name-p t))
 
-(export-always 'render-cell)
-(defgeneric render-cell (cell)
-  (:method ((cell cell))
-    (spinneret:with-html-string
-      (:div.cell
-       (:div.input-area
-        (:div.cell-name
-         (:code (name cell)))
-        (:div.cell-input
-         (:raw (render-input cell)))
-        (:div.cell-actions
-         (:raw (render-actions cell))))
-       (:div.evaluation-result
-        (:raw (render-results cell))))))
-  (:documentation "Generate HTML for the CELL.
+(define-generic render-cell ((cell cell))
+  "Generate HTML for the CELL.
 Overrides all the methods defined for the CELL type.
 By default utilizes `render-input', `render-actions', and `render-results'.
-Generic function to specialize against new REPL cell types."))
+Generic function to specialize against new REPL cell types."
+  (spinneret:with-html-string
+    (:div.cell
+     (:div.input-area
+      (:div.cell-name
+       (:code (name cell)))
+      (:div.cell-input
+       (:raw (render-input cell)))
+      (:div.cell-actions
+       (:raw (render-actions cell))))
+     (:div.evaluation-result
+      (:raw (render-results cell)))))
+  (:export-generic-name-p t))
 
 (defun reload-repl (repl)
   (with-current-buffer (buffer repl)

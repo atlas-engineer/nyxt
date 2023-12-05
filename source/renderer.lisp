@@ -9,11 +9,11 @@
   (:export-accessor-names-p t)
   (:documentation "Specialize this class and bind an instance to `*renderer*' to set the default renderer."))
 
-(export-always 'install)
-(defgeneric install (renderer)
-  (:documentation "Setup for renderer.  This may have side effects.
-See also `uninstall'."))
+(define-generic install (renderer)
+  "Setup for renderer.  This may have side effects.
+See also `uninstall'."
+  (:export-generic-name-p t))
 
-(export-always 'uninstall)
-(defgeneric uninstall (renderer)
-  (:documentation "Revert the side effects induced by `install'."))
+(define-generic uninstall (renderer)
+  "Revert the side effects induced by `install'."
+  (:export-generic-name-p t))

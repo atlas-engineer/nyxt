@@ -104,15 +104,15 @@ ARGS as in make-instance of `auto-rule'."
                   (list :excluded (normalize-modes (uiop:ensure-list excluded))))))
         *default-auto-rules*))
 
-(export-always 'undefine-auto-rule)
-(defgeneric undefine-auto-rule (token)
+(define-generic undefine-auto-rule (token)
+  "Remove the rule with TOKEN test."
   (:method ((token list))
     (loop for rule in *default-auto-rules*
           when (equal token (test rule))
             do (alex:deletef *default-auto-rules* rule :test #'equal)))
   (:method ((token string))
     (undefine-auto-rule (list 'match-url token)))
-  (:documentation "Remove the rule with TOKEN test."))
+  (:export-generic-name-p t ))
 
 (-> matching-auto-rules (quri:uri modable-buffer) (values list &optional))
 (defun matching-auto-rules (url buffer)

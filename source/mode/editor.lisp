@@ -54,37 +54,34 @@ implementation."
   (:toggler-command-p nil))
 
 ;; IMPORTANT: Implement this method specializing on your class extending editor-mode.
-(export-always 'get-content)
-(defgeneric get-content (editor-submode)
-  (:method ((editor editor-mode))
-    (declare (ignore editor))
-    (echo-warning "Editor buffer cannot edit files without configured editor mode."))
-  (:documentation "Get the content of the EDITOR-SUBMODE as a string."))
+(define-generic get-content ((editor editor-mode))
+  "Get the content of the EDITOR-SUBMODE as a string."
+  (declare (ignore editor))
+  (echo-warning "Editor buffer cannot edit files without configured editor mode.")
+  (:export-generic-name-p t))
 
 ;; IMPORTANT: Implement this method specializing on your class extending editor-mode.
-(export-always 'set-content)
-(defgeneric set-content (editor-submode content)
-  (:method ((editor editor-mode) (content t))
-    (declare (ignore editor))
-    (echo-warning "Editor buffer cannot edit files without configured editor mode.
-See `describe-class editor-mode' for details."))
-  (:documentation "Set the content of the EDITOR-SUBMODE to a new string/other CONTENT."))
+(define-generic set-content ((editor editor-mode) (content t))
+  "Set the content of the EDITOR-SUBMODE to a new string/other CONTENT."
+  (declare (ignore editor))
+  (echo-warning "Editor buffer cannot edit files without configured editor mode.
+See `describe-class editor-mode' for details.")
+  (:export-generic-name-p t))
 
 ;; IMPORTANT: Implement this method specializing on your class extending editor-mode.
-(export-always 'markup)
-(defgeneric markup (editor-submode)
-  (:method ((editor editor-mode))
-    (spinneret:with-html-string
-      (:head
-       (:nstyle (style (buffer editor))))
-      (:body
-       (:p "Please configure an editor mode to use an editor buffer. See "
-           (:code "describe-class") " for " (:code "editor-buffer")
-           " to see the list of functions to implement."))))
-  (:documentation "Produce at least a string/byte-array of the initial buffer contents.
+(define-generic markup ((editor editor-mode))
+  "Produce at least a string/byte-array of the initial buffer contents.
 
 See the `scheme' documentation for the format and the number of values that
-`markup' specializations could/should return."))
+`markup' specializations could/should return."
+  (spinneret:with-html-string
+    (:head
+     (:nstyle (style (buffer editor))))
+    (:body
+     (:p "Please configure an editor mode to use an editor buffer. See "
+         (:code "describe-class") " for " (:code "editor-buffer")
+         " to see the list of functions to implement.")))
+  (:export-generic-name-p t))
 
 (define-class editor-buffer (network-buffer ; Questionable, but needed for `buffer-load'.
                              context-buffer modable-buffer document-buffer input-buffer)

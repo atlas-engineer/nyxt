@@ -49,10 +49,8 @@ Can be configured using `customize-instance' and `customize-hook'."))
 (defmethod closer-mop:validate-superclass ((class user-funcallable-class) (superclass user-mixin-class)) t)
 (defmethod closer-mop:validate-superclass ((superclass user-mixin-class) (class user-funcallable-class)) t)
 
-(export-always 'customize-instance)
-(defgeneric customize-instance (object &key &allow-other-keys)
-  (:method ((class t) &key) t)
-  (:documentation "Specialize this method to customize the default values and
+(define-generic customize-instance ((object t) &key &allow-other-keys)
+  "Specialize this method to customize the default values and
 behavior of some CLASS instance.
 
 This method is run after the instance has been initialized (in particular, after
@@ -62,7 +60,9 @@ The standard method is reserved for user configuration.
 
 Do not specialize the standard method in public code, prefer
 `initialize-instance :after' instead to initialize slots, and
-`customize-instance :after' for code that relies on finalized slot values."))
+`customize-instance :after' for code that relies on finalized slot values."
+  t
+  (:export-generic-name-p t))
 
 (defmethod make-instance
   :around ((class user-mixin-class) &rest initargs &key &allow-other-keys)

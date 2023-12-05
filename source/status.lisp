@@ -3,14 +3,13 @@
 
 (in-package :nyxt)
 
-(export-always 'mode-status)
-(defgeneric mode-status (status mode)
-  (:method ((status status-buffer) (mode mode))
-    (if (glyph-mode-presentation-p status)
-        (glyph mode)
-        (princ-to-string mode)))
-  (:documentation "Return a MODE `mode' string description for the STATUS `status-buffer'.
-Upon returning NIL, the mode is not displayed."))
+(define-generic mode-status ((status status-buffer) (mode mode))
+  "Return a MODE `mode' string description for the STATUS `status-buffer'.
+Upon returning NIL, the mode is not displayed."
+  (if (glyph-mode-presentation-p status)
+      (glyph mode)
+      (princ-to-string mode))
+  (:export-generic-name-p t))
 
 (defun sort-modes-for-status (modes)
   "Return visible modes in MODES, with `nyxt/mode/keyscheme:keyscheme-mode' placed

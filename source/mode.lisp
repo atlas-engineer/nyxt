@@ -98,12 +98,8 @@ when it gets toggled."))
 (defmethod name ((mode mode))
   (sera:class-name-of mode))
 
-(export-always 'enable)
-(defgeneric enable (mode &key &allow-other-keys)
-  (:method-combination cascade)
-  (:method ((mode mode) &key &allow-other-keys)
-    mode)
-  (:documentation "Run when enabling a mode.
+(define-generic enable ((mode mode) &key &allow-other-keys)
+  "Run when enabling a mode.
 The pre-defined `:after' method handles further setup.
 This method is meant to be specialized for every mode.
 It is not meant to be called directly, see `enable-modes*' instead.
@@ -112,7 +108,10 @@ All the parent modes' `enable' methods run after the exact mode one, cascading
 upwards to allow a more useful mode inheritance without duplicating the
 functionality. A `cascade' method combination is used for that.
 
-See also `disable'."))
+See also `disable'."
+  mode
+  (:method-combination cascade)
+  (:export-generic-name-p t))
 
 (defmethod enable :before ((mode mode) &rest keys &key &allow-other-keys)
   ;; Using class-direct-slots here because `enable' will cascade to parent modes anyway.
@@ -151,12 +150,8 @@ See also `disable'."))
                    buffer))
       (prompt-render-prompt buffer))))
 
-(export-always 'disable)
-(defgeneric disable (mode &key &allow-other-keys)
-  (:method-combination cascade)
-  (:method ((mode mode) &key)
-    nil)
-  (:documentation "Run when disabling a mode.
+(define-generic disable ((mode mode) &key &allow-other-keys)
+  "Run when disabling a mode.
 The pre-defined `:after' method handles further cleanup.
 This method is meant to be specialized for every mode.
 It is not meant to be called directly, see `disable-modes' instead.
@@ -165,7 +160,10 @@ All the parent modes' `disable' methods run after the exact mode one, cascading
 upwards to allow a more useful mode inheritance without duplicating the
 functionality. A `cascade' method combination is used for that.
 
-See also `enable'."))
+See also `enable'."
+  nil
+  (:method-combination cascade)
+  (:export-generic-name-p t))
 
 (defmethod disable :around ((mode mode) &key &allow-other-keys)
   (if (enabled-p mode)
@@ -388,31 +386,30 @@ For production code, see `find-submode' instead."
   (:metaclass user-class)
   (:documentation "Source listing names of modes not yet `enable'd (or `disable'd) in `buffers'."))
 
-(export-always 'enable-modes*)
-(defgeneric enable-modes* (modes buffers &rest args &key remember-p &allow-other-keys)
-  ;; FIXME: Better type dispatching? The types used to be:
-  ;; (-> enable-modes* ((or sym:mode-symbol (list-of sym:mode-symbol))
-  ;;                    (or buffer (list-of buffer))
-  ;;                    &key &allow-other-keys) *)
-  ;; TODO: accept a list of mode objects as well as symbols?
-  (:method (modes buffers &rest args &key &allow-other-keys)
-    (let ((modes (uiop:ensure-list modes))
-          (buffers (uiop:ensure-list buffers)))
-      (dolist (mode modes)
-        (check-type mode sym:mode-symbol))
-      (dolist (buffer buffers)
-        (check-type buffer buffer))
-      (mapcar (lambda (buffer)
-                (mapcar (lambda (mode-sym)
-                          (apply #'enable (or (find mode-sym (slot-value buffer 'modes) :key #'name)
-                                              (make-instance mode-sym :buffer buffer))
-                                 args))
-                        modes)
-                buffer)
-              (sera:filter #'modable-buffer-p buffers))))
-  (:documentation "Enable MODES in BUFFERS.
+;; FIXME: Better type dispatching? The types used to be:
+;; (-> enable-modes* ((or sym:mode-symbol (list-of sym:mode-symbol))
+;;                    (or buffer (list-of buffer))
+;;                    &key &allow-other-keys) *)
+;; TODO: accept a list of mode objects as well as symbols?
+(define-generic enable-modes* (modes buffers &rest args &key &allow-other-keys)
+  "Enable MODES in BUFFERS.
 ARGS are the keyword arguments for `make-instance'/`enable' on MODES.
-If REMEMBER-P is true, save active modes so that auto-rules don't override those."))
+If REMEMBER-P is true, save active modes so that auto-rules don't override those."
+  (let ((modes (uiop:ensure-list modes))
+        (buffers (uiop:ensure-list buffers)))
+    (dolist (mode modes)
+      (check-type mode sym:mode-symbol))
+    (dolist (buffer buffers)
+      (check-type buffer buffer))
+    (mapcar (lambda (buffer)
+              (mapcar (lambda (mode-sym)
+                        (apply #'enable (or (find mode-sym (slot-value buffer 'modes) :key #'name)
+                                            (make-instance mode-sym :buffer buffer))
+                               args))
+                      modes)
+              buffer)
+            (sera:filter #'modable-buffer-p buffers)))
+  (:export-generic-name-p t))
 
 (define-command enable-modes (&key
                               (modes nil explicit-modes-p)
@@ -444,23 +441,23 @@ If it's a single buffer, return it directly (not as a list)."
   buffers)
 
 (export-always 'disable-modes*)
-(defgeneric disable-modes* (modes buffers &rest args &key remember-p &allow-other-keys)
   ;; FIXME: Better type dispatching?
-  (:method (modes buffers &rest args &key &allow-other-keys)
-    (declare (ignorable args))
-    (let ((modes (uiop:ensure-list modes))
-          (buffers (uiop:ensure-list buffers)))
-      (dolist (mode modes)
-        (check-type mode sym:mode-symbol))
-      (dolist (buffer buffers)
-        (check-type buffer buffer))
-      (mapcar (lambda (buffer)
-                (mapcar #'disable
-                        (delete nil (mapcar (lambda (mode) (find mode (modes buffer) :key #'name))
-                                            modes))))
-              buffers)))
-  (:documentation "Disable MODES in BUFFERS.
-If REMEMBER-P is true, save active modes so that auto-rules don't override those."))
+(define-generic disable-modes* (modes buffers &rest args &key &allow-other-keys)
+  "Disable MODES in BUFFERS.
+If REMEMBER-P is true, save active modes so that auto-rules don't override those."
+  (declare (ignorable args))
+  (let ((modes (uiop:ensure-list modes))
+        (buffers (uiop:ensure-list buffers)))
+    (dolist (mode modes)
+      (check-type mode sym:mode-symbol))
+    (dolist (buffer buffers)
+      (check-type buffer buffer))
+    (mapcar (lambda (buffer)
+              (mapcar #'disable
+                      (delete nil (mapcar (lambda (mode) (find mode (modes buffer) :key #'name))
+                                          modes))))
+            buffers))
+  (:export-generic-name-p t))
 
 (define-command disable-modes (&key (modes nil explicit-modes-p)
                                (buffers (current-buffer) explicit-buffers-p))

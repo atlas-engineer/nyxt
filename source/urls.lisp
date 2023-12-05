@@ -195,10 +195,10 @@ documentation."
 Public Suffix list, T otherwise."
   (sera:true (cl:ignore-errors (cl-tld:get-tld hostname))))
 
-(export-always 'browser-schemes)
-(defgeneric browser-schemes (browser)
+(define-generic browser-schemes (browser)
+  "Return a list of schemes supported by a browser"
   (:method-combination append)
-  (:documentation "Return a list of schemes supported by a browser"))
+  (:export-generic-name-p t))
 
 ;; Set specifier to T because *BROWSER* can be bound to NIL
 (defmethod browser-schemes append ((browser t))

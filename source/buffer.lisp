@@ -1268,12 +1268,11 @@ See `make-buffer' for a description of the arguments."
     (containers:delete-item-if (recent-buffers *browser*) (buffer-match-predicate buffer))
     (containers:insert-item (recent-buffers *browser*) buffer)))
 
-(export-always 'buffer-delete)
-(defgeneric buffer-delete (buffer)
-  (:method ((buffer buffer))
-    (hooks:run-hook (buffer-delete-hook buffer) buffer)
-    (ffi-buffer-delete buffer))
-  (:documentation "Delete buffer after running `buffer-delete-hook'."))
+(define-generic buffer-delete ((buffer buffer))
+  "Delete buffer after running `buffer-delete-hook'."
+  (hooks:run-hook (buffer-delete-hook buffer) buffer)
+  (ffi-buffer-delete buffer)
+  (:export-generic-name-p t))
 
 (defmethod buffer-delete ((buffer context-buffer))
   (files:with-file-content (history (history-file buffer))
