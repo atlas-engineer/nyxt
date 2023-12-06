@@ -928,4 +928,8 @@ invoked via " (:code "flatpak-spawn --host <command> <command-args>") "."))))
   (:nsection :title "UI/UX"
     (:ul
      (:li "Improve source heading buttons, layout and interactions in the "
-          (:nxref :class-name 'prompt-buffer) "."))))
+          (:nxref :class-name 'prompt-buffer) ".")))
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix command "
+          (:nxref :command 'nyxt/mode/annotate:show-annotations-for-current-url) "."))))
