@@ -80,6 +80,11 @@ Same as `progn' on implementations that don't have package locks."
           (:predicate-name-transformer 'nclasses:always-dashed-predicate-name-transformer))
        options)))
 
+(serapeum:export-always 'make :nyxt)
+(defmacro make (class &rest args)
+  "A prettier (more consistent) alias for `nclasses:make-instance*'."
+  `(nclasses:make-instance* ,class ,@args))
+
 (serapeum:export-always 'define-package :nyxt)
 (defmacro define-package (name &body options)
   "A helper around `uiop:define-package'.
