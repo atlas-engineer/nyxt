@@ -41,4 +41,4 @@ See `nyxt/mode/preview' package documentation for implementation details and int
                                             :sources 'nyxt/mode/file-manager:file-source)))
   "Open a local FILE in BUFFER and call `preview-mode' to watch and refresh it."
   (buffer-load (quri.uri.file:make-uri-file :path file) :buffer buffer)
-  (enable (make-instance 'nyxt/mode/preview:preview-mode :buffer buffer)))
+  (enable (make 'nyxt/mode/preview:preview-mode (buffer) nil)))

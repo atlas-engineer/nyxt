@@ -404,7 +404,7 @@ If REMEMBER-P is true, save active modes so that auto-rules don't override those
     (mapcar (lambda (buffer)
               (mapcar (lambda (mode-sym)
                         (apply #'enable (or (find mode-sym (slot-value buffer 'modes) :key #'name)
-                                            (make-instance mode-sym :buffer buffer))
+                                            (make mode-sym (buffer) nil))
                                args))
                       modes)
               buffer)
@@ -434,8 +434,7 @@ If it's a single buffer, return it directly (not as a list)."
                     (unless explicit-modes-p
                       (prompt
                        :prompt "Enable mode(s)"
-                       :sources (make-instance 'inactive-mode-source
-                                               :buffers buffers))))))
+                       :sources (make 'inactive-mode-source (buffers) nil))))))
     (enable-modes* modes buffers)
     (remember-on-mode-toggle modes buffers :enabled-p t))
   buffers)
@@ -478,8 +477,7 @@ If it's a single buffer, return it directly (not as a list)."
                     (unless explicit-modes-p
                       (prompt
                        :prompt "Disable mode(s)"
-                       :sources (make-instance 'active-mode-source
-                                               :buffers buffers))))))
+                       :sources (make 'active-mode-source (buffers) nil))))))
     (disable-modes* modes buffers)
     (remember-on-mode-toggle modes buffers :enabled-p nil))
   buffers)
@@ -519,9 +517,7 @@ If it's a single buffer, return it directly (not as a list)."
           ;; TODO: Shall we pass args to `make-instance' or `enable'?
           ;; Have 2 args parameters?
           (let ((mode (or existing-instance
-                          (apply #'make-instance mode-sym
-                                 :buffer buffer
-                                 args))))
+                          (make mode-sym (buffer) args))))
             (enable mode)
             (echo "~@(~a~) mode enabled." mode))
           (when existing-instance

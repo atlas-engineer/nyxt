@@ -194,37 +194,30 @@ Full copy means recursively descending to the children of the NODE too."
     (serapeum:lret ((copy (plump:make-root)))
       (map nil (lambda (c) (plump:append-child copy (copy c copy))) (plump:children element))))
   (:method ((element plump:element) &optional parent)
-    (serapeum:lret ((copy (make-instance
-                           'plump:element
-                           :parent parent
+    (serapeum:lret ((copy (make
+                           'plump:element (parent)
                            :attributes (alexandria:copy-hash-table (plump:attributes element))
                            :tag-name (plump:tag-name element))))
       (map nil (lambda (c) (plump:append-child copy (copy c copy))) (plump:children element))))
   (:method ((element plump:text-node) &optional parent)
-    (make-instance 'plump:text-node
-                   :parent parent
-                   :text (plump:text element)))
+    (make 'plump:text-node (parent)
+          :text (plump:text element)))
   (:method ((element plump:comment) &optional parent)
-    (make-instance 'plump:comment
-                   :parent parent
-                   :text (plump:text element)))
+    (make 'plump:comment (parent)
+          :text (plump:text element)))
   (:method ((element plump:doctype) &optional parent)
-    (make-instance 'plump:doctype
-                   :parent parent
-                   :doctype (plump:doctype element)))
+    (make 'plump:doctype (parent)
+          :doctype (plump:doctype element)))
   (:method ((element plump:xml-header) &optional parent)
-    (make-instance 'plump:xml-header
-                   :parent parent
-                   :attributes (alexandria:copy-hash-table (plump:attributes element))))
+    (make 'plump:xml-header (parent)
+          :attributes (alexandria:copy-hash-table (plump:attributes element))))
   (:method ((element plump:cdata) &optional parent)
-    (make-instance 'plump:cdata
-                   :parent parent
-                   :text (plump:text element)))
+    (make 'plump:cdata (parent)
+          :text (plump:text element)))
   (:method ((element plump:processing-instruction) &optional parent)
-    (make-instance 'plump:processing-instruction
-                   :parent parent
-                   :text (plump:text element)
-                   :tag-name (plump:tag-name element)))
+    (make 'plump:processing-instruction (parent)
+          :text (plump:text element)
+          :tag-name (plump:tag-name element)))
   (:export-generic-name-p t))
 
 (define-generic parents (node)

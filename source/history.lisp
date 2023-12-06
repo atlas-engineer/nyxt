@@ -110,8 +110,7 @@ class."
 Only deletes the disowned entries (= the ones not belonging to a buffer)."
   (let ((entries (prompt
                   :prompt "Delete entries"
-                  :sources (make-instance 'history-disowned-source
-                                          :buffer buffer))))
+                  :sources (make 'history-disowned-source (buffer) nil))))
     (files:with-file-content (history (history-file buffer))
       (dolist (entry entries)
         (htree:delete-data history entry)))))

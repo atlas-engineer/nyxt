@@ -598,8 +598,9 @@ The following example does a few things:
       (uiop:launch-program
        `(\"emacs\" ,(quri:uri-path url)))
       nil))))"
-  (make-instance
+  (make
    'hooks:handler
+   (name)
    :fn (lambda (request-data)
          (let ((url (url request-data)))
            (if (funcall test url)
@@ -622,8 +623,7 @@ The following example does a few things:
                            (log:info "Applied ~s shell-command URL-dispatcher on ~s"
                                      (symbol-name name)
                                      (render-url url)))))
-               request-data)))
-   :name name))
+               request-data)))))
 
 (defun javascript-error-handler (condition)
   (echo-warning "JavaScript error: ~a" condition))

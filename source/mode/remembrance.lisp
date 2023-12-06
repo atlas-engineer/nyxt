@@ -81,11 +81,10 @@ Set to 0 to disable.")
   (let ((path (files:expand (cache-path mode))))
     (log:info "Remembrance cache at ~s" path)
     (setf (cache mode)
-          (make-instance 'montezuma:index
-                         :path path
-                         ;; Unless otherwise specified, queries will search all
-                         ;; these fields simultaneously.
-                         :default-field "*"))))
+          (make 'montezuma:index (path)
+                ;; Unless otherwise specified, queries will search all
+                ;; these fields simultaneously.
+                :default-field "*"))))
 
 (defmethod cache-size ((mode remembrance-mode))
   (length (all-cache-entries mode)))
@@ -359,8 +358,8 @@ query terms), even when offline."
   (prompt
    :prompt "Search cache"
    :input (ffi-buffer-copy (current-buffer))
-   :sources (list (make-instance 'remembrance-source :actions-on-return actions-on-return)
-                  (make-instance 'remembrance-exact-source :actions-on-return actions-on-return))))
+   :sources (list (make 'remembrance-source (actions-on-return) nil)
+                  (make 'remembrance-exact-source (actions-on-return) nil))))
 
 (define-command toggle-auto-cache (&key (buffer (current-buffer)))
   "Whether to cache on URL load.

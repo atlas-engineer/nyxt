@@ -42,15 +42,15 @@
 (define-command-global select-frame-expedition (&key (buffer (current-buffer)))
   "Run an expedition through a set of URLs selected with a rectangle."
   (let* ((urls (reverse (prompt :prompt "Start expedition with the following links"
-                                :sources (make-instance 'nyxt/mode/document::frame-source
-                                                        :buffer buffer
-                                                        :enable-marks-p t)
+                                :sources (make 'nyxt/mode/document::frame-source
+                                               (buffer)
+                                               :enable-marks-p t)
                                 :after-destructor
                                 (lambda ()
                                   (with-current-buffer buffer
                                     (nyxt/mode/document::frame-element-clear))))))
          (urls (mapcar #'quri:uri urls))
          (buffer (make-buffer :title "" :url (first urls))))
-    (enable (make-instance 'expedition-mode :urls urls :buffer buffer))
+    (enable (make 'expedition-mode (urls buffer) nil))
     (nyxt::remember-on-mode-toggle (list 'expedition-mode) buffer :enabled-p t)
     (set-current-buffer buffer)))

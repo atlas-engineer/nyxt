@@ -54,10 +54,8 @@ Or the equivalent columns for the browser in question."
              (loop for (url title last-access visits) in (sqlite:execute-to-list db ,sql-query)
                    do (unless (url-empty-p url)
                         (htree:add-entry history
-                                         (make-instance 'history-entry
-                                                        :url url
-                                                        :title title
-                                                        :implicit-visits visits)
+                                         (make 'history-entry (url title)
+                                               :implicit-visits visits)
                                          (local-time:unix-to-timestamp last-access))))
              (echo "History import finished.")))))))
 

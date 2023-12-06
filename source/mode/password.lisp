@@ -189,9 +189,8 @@ See also `copy-password-prompt-details'."
       (with-password (password-interface buffer)
         (prompt1 :prompt "Password"
                  :input (quri:uri-domain (url buffer))
-                 :sources (make-instance
-                           'password-source
-                           :buffer buffer
+                 :sources (make
+                           'password-source (buffer)
                            :password-instance (password-interface buffer))))
       (echo-warning "No password manager found.")))
 
@@ -202,9 +201,8 @@ See also `copy-password-prompt-details'."
       (with-password (password-interface buffer)
         (prompt :prompt "Username"
                 :input (quri:uri-domain (url buffer))
-                :sources (make-instance
-                          'password-source
-                          :buffer buffer
+                :sources (make
+                          'password-source (buffer)
                           :password-instance (password-interface buffer)
                           :actions-on-return (sera:filter (sera:eqs 'clip-username)
                                                           password-source-actions

@@ -106,16 +106,14 @@ extracted by `annotate-highlighted-text' command."))
             :sources (list (make-instance 'prompter:word-source
                                           :name "New tags"
                                           :enable-marks-p t)
-                           (make-instance 'keyword-source :buffer buffer)
+                           (make 'keyword-source (buffer) nil)
                            (make-instance 'annotation-tag-source)))))
   "Create an annotation of the URL of BUFFER.
 
 DATA and TAGS are passed as arguments to `url-annotation' make-instance."
-  (annotation-add (make-instance 'url-annotation
-                                 :url (url buffer)
-                                 :data data
-                                 :page-title (title buffer)
-                                 :tags tags)))
+  (annotation-add (make 'url-annotation (data tags)
+                        :url (url buffer)
+                        :page-title (title buffer))))
 
 (define-command annotate-highlighted-text
     (&key (buffer (current-buffer))
@@ -134,12 +132,10 @@ DATA and TAGS are passed as arguments to `url-annotation' make-instance."
 
 DATA, SNIPPET, and TAGS are passed as arguments to `snippet-annotation'
 make-instance."
-  (annotation-add (make-instance 'snippet-annotation
-                                 :snippet snippet
-                                 :url (url buffer)
-                                 :page-title (title buffer)
-                                 :data data
-                                 :tags tags)))
+  (annotation-add (make 'snippet-annotation
+                        (snippet data tags)
+                        :url (url buffer)
+                        :page-title (title buffer))))
 
 (defun render-annotations (annotations)
   "Show the ANNOTATIONS in a new buffer"

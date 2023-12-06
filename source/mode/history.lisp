@@ -194,8 +194,7 @@ history modification operations are:
   "Query parent URL to navigate back to."
   (let ((input (prompt1
                 :prompt "Navigate backwards to"
-                :sources (make-instance 'history-backwards-source
-                                        :buffer buffer))))
+                :sources (make 'history-backwards-source (buffer) nil))))
     (when input
       (with-history-access (history buffer)
         (loop until (eq input (htree:owner-node history (id buffer)))
@@ -218,8 +217,7 @@ history modification operations are:
   "Query child URL to navigate to."
   (let ((input (prompt1
                 :prompt "Navigate forwards to"
-                :sources (make-instance 'direct-history-forwards-source
-                                        :buffer buffer))))
+                :sources (make 'direct-history-forwards-source (buffer) nil))))
     (when input
       (with-history-access (history buffer)
         (htree:go-to-child (htree:data input) history (id buffer)))
@@ -249,8 +247,7 @@ Otherwise go forward to the only child."
 (define-command history-forwards-query (&optional (buffer (current-buffer)))
   "Query forward-URL to navigate to."
   (let ((input (prompt1 :prompt "Navigate forwards to"
-                        :sources (make-instance 'history-forwards-source
-                                                :buffer buffer))))
+                        :sources (make 'history-forwards-source (buffer) nil))))
     (when input
       (with-history-access (history buffer)
         ;; REVIEW: Alternatively, we could use the COUNT argument with
@@ -276,8 +273,7 @@ Otherwise go forward to the only child."
 (define-command history-forwards-all-query (&optional (buffer (current-buffer)))
   "Query URL to forward to, from all child branches."
   (let ((input (prompt1 :prompt "Navigate forwards to (all branches)"
-                        :sources (make-instance 'all-history-forwards-source
-                                                :buffer buffer))))
+                        :sources (make 'all-history-forwards-source (buffer) nil))))
     (when input
       (with-history-access (history buffer)
         (htree:visit-all history (id buffer) input))
@@ -299,8 +295,7 @@ Otherwise go forward to the only child."
 (define-command history-all-owner-nodes-query (&optional (buffer (current-buffer)))
   "Query URL to go to, from the list of all nodes owned by BUFFER."
   (let ((input (prompt1 :prompt "Navigate to"
-                        :sources (make-instance 'history-all-owner-nodes-source
-                                                :buffer buffer))))
+                        :sources (make 'history-all-owner-nodes-source (buffer) nil))))
     (when input
       (with-history-access (history buffer)
         (htree:visit-all history (id buffer) input))
@@ -322,7 +317,7 @@ Otherwise go forward to the only child."
   "Query URL to go to, from the whole history."
 
   (let ((input (prompt1 :prompt "Navigate to"
-                        :sources (make-instance 'history-all-source :buffer buffer))))
+                        :sources (make 'history-all-source (buffer) nil))))
     (when input
       (with-history (history buffer)
         (alex:when-let ((matching-node
@@ -444,9 +439,7 @@ case."
                                                :key (compose #'url #'htree:data))))))
         (if parent-position
             (htree:backward history (id buffer) (1+ parent-position))
-            (htree:add-child (make-instance 'nyxt::history-entry
-                                            :url url
-                                            :title title)
+            (htree:add-child (make 'nyxt::history-entry (url title) nil)
                              history
                              (id buffer))))
       (let* ((entry (htree:data (htree:current (htree:owner history (id buffer))))))

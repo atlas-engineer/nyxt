@@ -91,17 +91,16 @@
 (defun define-auto-rule (test &key excluded included exact-p)
   "Define a new default `auto-rule'.
 ARGS as in make-instance of `auto-rule'."
-  (push (apply #'make-instance
-               'auto-rule
-               :exact-p exact-p
-               :test (if (stringp test)
-                         `(match-url ,test)
-                         test)
-               (append
-                (when included
-                  (list :included (normalize-modes (uiop:ensure-list included))))
-                (when excluded
-                  (list :excluded (normalize-modes (uiop:ensure-list excluded))))))
+  (push (make 'auto-rule
+              (exact-p)
+              :test (if (stringp test)
+                        `(match-url ,test)
+                        test)
+              (append
+               (when included
+                 (list :included (normalize-modes (uiop:ensure-list included))))
+               (when excluded
+                 (list :excluded (normalize-modes (uiop:ensure-list excluded))))))
         *default-auto-rules*))
 
 (define-generic undefine-auto-rule (token)
@@ -376,7 +375,7 @@ If there's an existing rule:
   (files:with-file-content (rules (auto-rules-file buffer))
     (let* ((rule (or (find test rules
                            :key #'test :test #'equal)
-                     (make-instance 'auto-rule :test test)))
+                     (make 'auto-rule (test) nil)))
            (include include)
            (exclude exclude))
       (setf (exact-p rule) exact-p
@@ -496,5 +495,5 @@ If there's an existing rule:
                         (getf rule :excluded) (normalize-modes (getf rule :excluded)))
                   (when (stringp (getf rule :test))
                     (setf (getf rule :test) `(match-url ,(getf rule :test))))
-                  (apply #'make-instance 'auto-rule rule)))
+                  (make 'auto-rule () rule)))
             rules)))

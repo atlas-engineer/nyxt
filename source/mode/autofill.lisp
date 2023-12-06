@@ -23,7 +23,7 @@ See the `autofill-mode' for the external user-facing APIs."))
 (export-always 'make-autofill)
 (defun make-autofill (&rest args)
   "Shortcut to create `autofill's: ARGS are keyword initargs."
-  (apply #'make-instance 'autofill args))
+  (make 'autofill nil args))
 
 (define-mode autofill-mode ()
   "Mode to fill forms more rapidly.

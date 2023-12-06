@@ -353,12 +353,12 @@ FUNCTION is the action to perform on the selected elements."
                             :fit-to-prompt
                             :default)
                 :hide-suggestion-count-p (eq :vi (hinting-type (find-submode 'hint-mode)))
-                :sources (make-instance 'hint-source
-                                        :enable-marks-p enable-marks-p
-                                        :constructor
-                                        (lambda (source)
-                                          (declare (ignore source))
-                                          (add-hints :selector selector)))
+                :sources (make 'hint-source
+                               (enable-marks-p)
+                               :constructor
+                               (lambda (source)
+                                 (declare (ignore source))
+                                 (add-hints :selector selector)))
                 :after-destructor (lambda () (with-current-buffer buffer (remove-hints))))))
     (funcall function result)))
 

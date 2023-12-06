@@ -44,7 +44,7 @@ See `*default-hostlist*' for an example."))
 (defun make-hostlist (&rest args)
   "Return a new `hostlist'.
 See the `hostlist' class documentation."
-  (apply #'make-instance 'hostlist args))
+  (make 'hostlist nil args))
 
 
 (export-always '*default-hostlist*)

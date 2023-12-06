@@ -490,7 +490,7 @@ The inner-text must not be modified, so that we can jump to the anchor of the sa
 (define-command jump-to-heading (&key (buffer (current-buffer)))
   "Jump to a particular heading, of type h1, h2, h3, h4, h5, or h6."
   (prompt :prompt "Jump to heading"
-          :sources (make-instance 'heading-source :buffer buffer)))
+          :sources (make 'heading-source (buffer) nil)))
 
 (define-command jump-to-heading-buffers ()
   "Jump to a particular heading, of type h1, h2, h3, h4, h5, or h6 across a set
@@ -503,10 +503,9 @@ of buffers."
     (prompt
      :prompt "Jump to heading"
      :sources (loop for buffer in buffers
-                    collect (make-instance
-                             'heading-source
-                             :name (format nil "Headings: ~a" (title buffer))
-                             :buffer buffer)))))
+                    collect (make
+                             'heading-source (buffer)
+                             :name (format nil "Headings: ~a" (title buffer)))))))
 
 (define-panel-command-global headings-panel ()
     (panel-buffer "*Headings panel*")
@@ -717,9 +716,8 @@ of buffers."
 (define-command select-frame-new-buffer (&key (buffer (current-buffer)))
   "Select a frame and open the links in new buffers."
   (prompt :prompt "Open selected links in new buffers"
-          :sources (make-instance
-                    'frame-source
-                    :buffer buffer
+          :sources (make
+                    'frame-source (buffer)
                     :enable-marks-p t
                     :actions-on-return (lambda-command open-new-buffers (urls)
                                          (mapcar (lambda (i) (make-buffer :url (quri:uri i)))

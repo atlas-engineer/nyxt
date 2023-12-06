@@ -152,8 +152,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
           (sera:partition (sera:partial #'url-equal url) no-procrastinate-hosts-list :key #'url)
         (let ((entry (if entries
                          (first entries)
-                         (make-instance 'no-procrastinate-entry
-                                        :url url))))
+                         (make 'no-procrastinate-entry (url) nil))))
           (unless (str:emptyp title)
             (setf (title entry) title))
           (unless (str:emptyp hostname)
@@ -205,8 +204,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                                                (or suggestions
                                                    (list "")))
                                              :enable-marks-p t)
-                              (make-instance 'keyword-source
-                                             :buffer buffer)
+                              (make 'keyword-source (buffer) nil)
                               (make-instance 'tag-source
                                              :marks (url-no-procrastinate-host-tags (url buffer))))))
              (homepage-url-string (render-host-and-scheme (url buffer)))
@@ -329,6 +327,6 @@ URLS is either a list or a single element."
               (when (getf entry :date)
                 (setf (getf entry :date)
                       (time:parse-timestring (getf entry :date))))
-              (apply #'make-instance 'no-procrastinate-entry
-                     entry))
+              (make 'no-procrastinate-entry
+                    () entry))
             entries)))

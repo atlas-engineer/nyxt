@@ -63,10 +63,9 @@ For the actual uses and configuration of search engines, see:
   "Utility to create simple `search-engine's.
 Sets `shortcut', `search-url', and `fallback-url' of the search engine to the
 values of respective arguments."
-  (make-instance 'search-engine
-                 :shortcut shortcut
-                 :search-url search-url
-                 :fallback-url (ensure-url fallback-url)))
+  (make 'search-engine
+        (shortcut search-url)
+        :fallback-url (ensure-url fallback-url)))
 
 (export-always 'make-search-completion-function)
 (-> make-search-completion-function
@@ -148,5 +147,5 @@ QUERY-IN-NEW-BUFFER creates a new buffer with the search results."
                             (make-buffer-focus)
                             (current-buffer))))
     (when engine
-      (buffer-load (make-instance 'new-url-query :query selection :engine engine)
+      (buffer-load (make 'new-url-query (engine) :query selection)
                    :buffer target-buffer))))

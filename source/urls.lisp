@@ -173,10 +173,9 @@ For keyword arguments' meaning, see the corresponding `scheme' slot
 documentation."
   (declare (ignorable local-p no-access-p secure-p cors-enabled-p))
   (setf (gethash scheme-name *schemes*)
-        (apply #'make-instance 'scheme
-               :name scheme-name
-               :callback callback
-               keys)))
+        (make 'scheme (callback)
+              :name scheme-name
+              keys)))
 
 (defmemo lookup-hostname (name)
   "Resolve hostname NAME and memoize the result."

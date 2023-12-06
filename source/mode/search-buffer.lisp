@@ -329,11 +329,10 @@ MARK-P accepts the following values:
                          ;; Matches circumscribed to a single node
                          (loop with id = (nyxt/dom:get-nyxt-id node)
                                for match in (search-all pattern text :test test)
-                               do (push (make-instance
+                               do (push (make
                                          'search-match
-                                         :pattern pattern
+                                         (pattern buffer)
                                          :body text
-                                         :buffer buffer
                                          :nodes (list child)
                                          :id (incf idx)
                                          :identifier-beg id
@@ -355,10 +354,9 @@ MARK-P accepts the following values:
                                   (setf partial-match nil))
                                  ((null partial-match)
                                   (setf partial-match
-                                        (make-instance
+                                        (make
                                          'search-match
-                                         :pattern pattern
-                                         :buffer buffer
+                                         (pattern buffer)
                                          :nodes (list child)
                                          :identifier-beg (nyxt/dom:get-nyxt-id node)
                                          :node-index-beg index

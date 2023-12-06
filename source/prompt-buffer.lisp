@@ -683,12 +683,12 @@ See the documentation of `prompt-buffer' to know more about the options."
       (ffi-within-renderer-thread
        *browser*
        (lambda ()
-         (let ((prompt-buffer (apply #'make-instance 'prompt-buffer
-                                     (append args
-                                             (list
-                                              :window (current-window)
-                                              :result-channel (make-channel)
-                                              :interrupt-channel (make-channel))))))
+         (let ((prompt-buffer (make 'prompt-buffer ()
+                                    (append args
+                                            (list
+                                             :window (current-window)
+                                             :result-channel (make-channel)
+                                             :interrupt-channel (make-channel))))))
            (calispel:! prompt-object-channel prompt-buffer))))
       (let ((new-prompt (calispel:? prompt-object-channel)))
         (wait-on-prompt-buffer new-prompt)))))

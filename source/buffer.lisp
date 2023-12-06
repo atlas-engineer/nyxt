@@ -1198,21 +1198,19 @@ To load nothing, set it to 'about:blank'.
 PARENT-BUFFER is useful when we want to record buffer- and history relationships.
 LOAD-URL-P controls whether to load URL right at buffer creation."
   (let* ((url (url url))
-         (buffer (apply #'make-instance buffer-class
-                        :title title
-                        :extra-modes modes
-                        :parent-buffer parent-buffer
-                        :no-history-p no-history-p
-                        (append
-                         (when no-history-p
-                           (list :history-file
-                                 (make-instance 'history-file
-                                                :profile (make-instance 'nofile-profile))))
-                         (unless (url-empty-p url)
-                           (list :url url))
-                         (uiop:remove-plist-keys '(:title :modes :url :parent-buffer
-                                                   :no-history-p :load-url-p)
-                                                 args)))))
+         (buffer (make buffer-class
+                       (title parent-buffer no-history-p)
+                       :extra-modes modes
+                       (append
+                        (when no-history-p
+                          (list :history-file
+                                (make-instance 'history-file
+                                               :profile (make-instance 'nofile-profile))))
+                        (unless (url-empty-p url)
+                          (list :url url))
+                        (uiop:remove-plist-keys '(:title :modes :url :parent-buffer
+                                                  :no-history-p :load-url-p)
+                                                args)))))
     (when load-url-p
       (buffer-load url :buffer buffer))
     buffer))
@@ -1692,15 +1690,13 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
 
 (defun make-completion-query (completion &key engine (check-dns-p t))
   (typecase completion
-    (string (make-instance 'new-url-query
-                           :engine      engine
-                           :check-dns-p check-dns-p
-                           :query completion))
-    (list (make-instance 'new-url-query
-                         :engine engine
-                         :check-dns-p check-dns-p
-                         :query (second completion)
-                         :label (first completion)))))
+    (string (make 'new-url-query
+                  (engine check-dns-p)
+                  :query completion))
+    (list (make 'new-url-query
+                (engine check-dns-p)
+                :query (second completion)
+                :label (first completion)))))
 
 (defun input->queries (input &key (check-dns-p t)
                                (engine-completion-p))
@@ -1718,15 +1714,12 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
     (append (unless (and engines (member (first terms)
                                          (mapcar #'shortcut engines)
                                          :test #'string=))
-              (list (make-instance 'new-url-query
-                                   :query       input
-                                   :check-dns-p check-dns-p)))
+              (list (make 'new-url-query (check-dns-p) :query input)))
             (or (mappend (lambda (engine)
                            (append
-                            (list (make-instance 'new-url-query
-                                                 :query       (str:join " " (rest terms))
-                                                 :engine      engine
-                                                 :check-dns-p check-dns-p))
+                            (list (make 'new-url-query
+                                        (engine check-dns-p)
+                                        :query (str:join " " (rest terms))))
                             ;; Some engines (I'm looking at you, Wikipedia!)
                             ;; return garbage in response to an empty request.
                             (when (and engine-completion-p
@@ -1802,7 +1795,7 @@ The returned sources should have `url' or `prompter:actions-on-return' methods
 specified for their contents."
   (let ((actions-on-return (uiop:ensure-list actions-on-return)))
     (append
-     (list (make-instance 'new-url-or-search-source :actions-on-return actions-on-return)
+     (list (make 'new-url-or-search-source (actions-on-return) nil)
            (make-instance
             'buffer-source
             :filter-preprocessor #'prompter:filter-exact-matches
@@ -1820,7 +1813,7 @@ specified for their contents."
                                                (files:with-file-content (history (history-file buffer))
                                                  (dolist (entry suggestion-values)
                                                    (htree:delete-data history entry)))))))
-           (make-instance 'search-engine-url-source :actions-on-return actions-on-return))
+           (make 'search-engine-url-source (actions-on-return) nil))
      (mappend (rcurry #'url-sources (uiop:ensure-list actions-on-return)) (modes buffer)))))
 
 (define-command set-url (&key (url nil explicit-url-p) (prefill-current-url-p t))

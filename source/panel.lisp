@@ -16,8 +16,8 @@
 (define-command-global delete-panel-buffer (&key (window (current-window))
                                             (panels (prompt
                                                      :prompt "Delete a panel buffer"
-                                                     :sources (make-instance 'panel-buffer-source
-                                                                             :window window))))
+                                                     :sources (make 'panel-buffer-source
+                                                                    (window) nil))))
   "Prompt for panel buffer(s) to be deleted.
 When provided, PANELS are deleted instead."
   (mapc (curry #'window-delete-panel-buffer window) (uiop:ensure-list panels)))

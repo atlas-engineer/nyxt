@@ -145,8 +145,7 @@ instead."
           (sera:partition (sera:partial #'url-equal url) bookmarks :key #'url)
         (let ((entry (if entries
                          (first entries)
-                         (make-instance 'bookmark-entry
-                                        :url url))))
+                         (make 'bookmark-entry (url) nil))))
           (unless (str:emptyp title)
             (setf (title entry) title))
           (setf (tags entry)
@@ -172,7 +171,7 @@ By default, matches URL, title, and tags of the bookmark, but can also match
 against date, given `prompter:active-attributes-keys' configuration."))
 
 (defmethod url-sources ((mode bookmark-mode) actions-on-return)
-  (make-instance 'bookmark-source :actions-on-return actions-on-return))
+  (make 'bookmark-source (actions-on-return) nil))
 
 (defun tag-suggestions ()
   (let ((bookmarks (files:content (bookmarks-file (current-buffer)))))
@@ -248,8 +247,7 @@ against date, given `prompter:active-attributes-keys' configuration."))
                                               (or suggestions
                                                   (list "")))
                                             :enable-marks-p t)
-                             (make-instance 'keyword-source
-                                            :buffer buffer)
+                             (make 'keyword-source (buffer) nil)
                              (make-instance 'tag-source
                                             :marks (url-bookmark-tags (url buffer)))))))
         (bookmark-add (url buffer)

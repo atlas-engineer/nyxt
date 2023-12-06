@@ -1095,21 +1095,16 @@ See `finalize-buffer'."
     (let* ((request-data
             (hooks:run-hook
              (request-resource-hook buffer)
-             (sera:lret ((data (make-instance 'request-data
-                                              :buffer buffer
-                                              :url (quri:copy-uri url)
-                                              :keys (unless (uiop:emptyp mouse-button)
-                                                      (list (keymaps:make-key :value mouse-button
-                                                                              :modifiers modifiers)))
-                                              :event-type event-type
-                                              :new-window-p is-new-window
-                                              :http-method method
-                                              :request-headers request-headers
-                                              :response-headers response-headers
-                                              :toplevel-p toplevel-p
-                                              :mime-type mime-type
-                                              :known-type-p is-known-type
-                                              :file-name file-name)))
+             (sera:lret ((data (make 'request-data
+                                     (buffer event-type request-headers
+                                             response-headers toplevel-p mime-type file-name)
+                                     :url (quri:copy-uri url)
+                                     :keys (unless (uiop:emptyp mouse-button)
+                                             (list (keymaps:make-key :value mouse-button
+                                                                     :modifiers modifiers)))
+                                     :new-window-p is-new-window
+                                     :http-method method
+                                     :known-type-p is-known-type)))
                         (setf (gtk-request data) request
                               (gtk-response data) response))))
            (keymap (when request-data
@@ -1512,24 +1507,24 @@ the `active-buffer'."
   (connect-signal buffer "resource-load-started" nil (web-view resource request)
     (declare (ignore web-view))
     (let* ((response (webkit:webkit-web-resource-response resource))
-           (request-data (make-instance 'request-data
-                                        :buffer buffer
-                                        :url (quri:uri (webkit:webkit-uri-request-get-uri request))
-                                        :event-type :other
-                                        :new-window-p nil
-                                        :resource-p t
-                                        :http-method (webkit:webkit-uri-request-get-http-method request)
-                                        :response-headers (when response
-                                                            (let ((headers (webkit:webkit-uri-response-get-http-headers request)))
-                                                              (unless (cffi:null-pointer-p headers)
-                                                                (webkit:soup-message-headers-get-headers headers))))
-                                        :request-headers (let ((headers (webkit:webkit-uri-request-get-http-headers request)))
-                                                           (unless (cffi:null-pointer-p headers)
-                                                             (webkit:soup-message-headers-get-headers headers)))
-                                        :toplevel-p nil
-                                        :mime-type (when response
-                                                     (webkit:webkit-uri-response-mime-type response))
-                                        :known-type-p t)))
+           (request-data (make 'request-data
+                               (buffer)
+                               :url (quri:uri (webkit:webkit-uri-request-get-uri request))
+                               :event-type :other
+                               :new-window-p nil
+                               :resource-p t
+                               :http-method (webkit:webkit-uri-request-get-http-method request)
+                               :response-headers (when response
+                                                   (let ((headers (webkit:webkit-uri-response-get-http-headers request)))
+                                                     (unless (cffi:null-pointer-p headers)
+                                                       (webkit:soup-message-headers-get-headers headers))))
+                               :request-headers (let ((headers (webkit:webkit-uri-request-get-http-headers request)))
+                                                  (unless (cffi:null-pointer-p headers)
+                                                    (webkit:soup-message-headers-get-headers headers)))
+                               :toplevel-p nil
+                               :mime-type (when response
+                                            (webkit:webkit-uri-response-mime-type response))
+                               :known-type-p t)))
       (setf (gtk-response request-data) response
             (gtk-request request-data) request
             (gtk-resource request-data) resource)
@@ -1990,9 +1985,8 @@ local anyways, and it's better to refresh it if a load was queried."
 
 (defmethod ffi-buffer-download ((buffer gtk-buffer) url)
   (let* ((webkit-download (webkit:webkit-web-view-download-uri (gtk-object buffer) url))
-         (download (make-instance 'nyxt/mode/download:download
-                                  :url url
-                                  :gtk-object webkit-download)))
+         (download (make 'nyxt/mode/download:download (url)
+                         :gtk-object webkit-download)))
     (wrap-download webkit-download)
     download))
 

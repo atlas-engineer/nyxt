@@ -601,11 +601,10 @@ Finally, run the browser, load URL-STRINGS if any, then run
                                                  (princ-to-string condition)
                                                  backtrace)))))
                 (load-or-eval :remote nil)
-                (setf *browser* (make-instance 'browser
-                                               :startup-error-reporter-function startup-error-reporter
-                                               :startup-timestamp startup-timestamp
-                                               :socket-thread (unless (nfiles:nil-pathname-p (files:expand *socket-file*))
-                                                                (listen-or-query-socket urls))))
+                (setf *browser* (make 'browser (startup-timestamp)
+                                      :startup-error-reporter-function startup-error-reporter
+                                      :socket-thread (unless (nfiles:nil-pathname-p (files:expand *socket-file*))
+                                                       (listen-or-query-socket urls))))
                 ;; Defaulting to :nyxt-user is convenient when evaluating code (such as
                 ;; remote execution or the integrated REPL).
                 ;; This must be done in a separate thread because the calling thread may

@@ -222,9 +222,7 @@ Return NIL if not a class form."
                         (multiple-value-bind (name value)
                             (read-init-form-slot class-name sexp)
                           (if name
-                              (make-instance 'slot-form
-                                             :name name
-                                             :value value)
+                              (make 'slot-form (name value) nil)
                               sexp)))
                       body)))))
 
@@ -242,9 +240,9 @@ Return NIL if not a class form."
            (multiple-value-bind (name forms)
                (read-init-form-class form)
              (if name
-                 (make-instance 'class-form
-                                :class-name name
-                                :forms forms)
+                 (make 'class-form
+                       (forms)
+                       :class-name name)
                  form))))
     (mapcar #'make-init-form
             (uiop:slurp-stream-forms raw-content))))
@@ -272,7 +270,7 @@ Return NIL if not a class form."
         (flet ((ensure-class-form (class-name)
                  (or (when config
                        (find-if (sera:eqs class-name) (sera:filter #'class-form-p config) :key #'class-name))
-                     (sera:lret ((form (make-instance 'class-form :class-name class-name)))
+                     (sera:lret ((form (make 'class-form (class-name) nil)))
                        (alex:appendf config (list form)))))
                (ensure-slot-form (class-form slot)
                  (or (find-if (sera:eqs slot) (sera:filter #'slot-form-p (forms class-form)) :key #'name)

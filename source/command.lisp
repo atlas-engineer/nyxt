@@ -99,9 +99,7 @@ These specializations are reserved to the user."))
 (export-always 'make-command)
 (defun make-command (name lambda-expression &optional (visibility :anonymous))
   "Return an non-globally defined command named NAME."
-  (make-instance 'command :name name
-                          :lambda-expression lambda-expression
-                          :visibility visibility))
+  (make 'command (name lambda-expression visibility) nil))
 
 (export-always 'lambda-command)
 (defmacro lambda-command (name args &body body)
@@ -295,9 +293,7 @@ It's the complement of `nyxt-packages' and `nyxt-user-packages'."
   "Return the list of all slot symbols in PACKAGES.
 See `sym:package-symbols'."
   (mappend (lambda (class-sym)
-             (mapcar (lambda (slot) (make-instance 'slot
-                                                   :name slot
-                                                   :class-sym class-sym))
+             (mapcar (lambda (slot) (make 'slot (slot class-sym) nil))
                      (class-slots class-sym :visibility visibility)))
            (sym:package-classes packages)))
 
