@@ -4,7 +4,7 @@
 (in-package :nyxt/tests)
 
 (define-test parse-url (:tags :online)
-  (let* ((*browser* (make-instance 'browser)))
+  (let ((*browser* (make-instance 'browser)))
     ;; "full URL"
     (assert-equality #'quri:uri=
                      (quri:uri "https://nyxt-browser.com")
