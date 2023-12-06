@@ -116,7 +116,6 @@ The handlers take the window as argument."))
 
 (defmethod initialize-instance :after ((window window) &key (browser *browser*)
                                        &allow-other-keys)
-  "Initialize some required slots like ID and status-buffer."
   (setf (window (status-buffer window)) window)
   (setf (window (message-buffer window)) window)
   (when browser
