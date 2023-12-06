@@ -373,12 +373,10 @@ Return the text cut."
           (ps:chain active-element (set-selection-range 0 (ps:@ active-element value length))))))))
 
 (define-ffi-generic ffi-buffer-undo (buffer)
-  "Undo the last text edit performed in BUFFER's web view."
-  (echo-warning "Undoing edits is not yet implemented for this renderer."))
+  "Undo the last text edit performed in BUFFER's web view.")
 
 (define-ffi-generic ffi-buffer-redo (buffer)
-  "Redo the last undone text edit performed in BUFFER's web view."
-  (echo-warning "Redoing edits is not yet implemented for this renderer."))
+  "Redo the last undone text edit performed in BUFFER's web view.")
 
 ;; TODO: Move to alists for arbitrary number of params?
 (defvar *context-menu-commands* (make-hash-table :test #'equal)
