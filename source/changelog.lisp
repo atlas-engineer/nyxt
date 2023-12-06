@@ -941,4 +941,5 @@ invoked via " (:code "flatpak-spawn --host <command> <command-args>") "."))))
 enabling its customization.")
    (:li "The height of the " (:nxref :class-name 'message-buffer) " and "
         (:nxref :class-name 'status-buffer) " can be dynamically set and its UI
-elements are scaled accordingly.")))
+elements are scaled accordingly.")
+   (:li "Remove experimental support for WebExtensions via " (:code "libnyxt") ".")))

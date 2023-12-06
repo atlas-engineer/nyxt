@@ -309,14 +309,7 @@ the renderer thread, use `defmethod' instead."
   ((files:name "gtk-extensions")
    (files:base-path (uiop:merge-pathnames* "nyxt/" nasdf:*libdir*)))
   (:export-class-name-p t)
-  (:documentation "Directory where to load the 'libnyxt' library.
-By default it is found in the source directory."))
-
-(defmethod files:resolve ((profile nyxt-profile) (file gtk-extensions-directory))
-  (let ((system-directory (call-next-method)))
-    (if (uiop:directory-exists-p system-directory)
-        system-directory
-        (files:join (files:expand *source-directory*) "/libraries/web-extensions/"))))
+  (:documentation "Directory to load WebKitWebExtensions from."))
 
 (define-class cookies-file (files:data-file data-manager-file)
   ((files:name "cookies"))
@@ -922,18 +915,7 @@ See `gtk-browser's `modifier-translator' slot."
                    (handler-case
                        (nth-value 1 (ensure-directories-exist gtk-extensions-path))
                      (file-error ()))))
-      (log:info "GTK extensions directory: ~s" gtk-extensions-path)
-      ;; TODO: Should we also use `connect-signal' here?  Does this yield a memory leak?
-      (gobject:g-signal-connect
-       context "initialize-web-extensions"
-       (lambda (context)
-         (with-protect ("Error in \"initialize-web-extensions\" signal thread: ~a" :condition)
-           ;; The following calls
-           ;; `webkit:webkit-web-context-add-path-to-sandbox' for us, so no need
-           ;; to add `gtk-extensions-path' to the sandbox manually.
-           (webkit:webkit-web-context-set-web-extensions-directory
-            context
-            (uiop:native-namestring gtk-extensions-path))))))
+      (log:info "GTK extensions directory: ~s" gtk-extensions-path))
     (gobject:g-signal-connect
      context "download-started"
      (lambda (context download)
@@ -1182,26 +1164,18 @@ See `finalize-buffer'."
                     url)))
       (cond ((eq load-event :webkit-load-started)
              (setf (nyxt::status buffer) :loading)
-             (nyxt/web-extensions::tabs-on-updated buffer '(("status" . "loading")))
-             (nyxt/web-extensions::tabs-on-updated buffer `(("url" . ,(render-url url))))
              (on-signal-load-started buffer url)
              (unless (internal-url-p url)
                (echo "Loading ~s." (render-url url))))
             ((eq load-event :webkit-load-redirected)
              (setf (url buffer) url)
-             (nyxt/web-extensions::tabs-on-updated buffer '(("status" . "loading")))
-             (nyxt/web-extensions::tabs-on-updated buffer `(("url" . ,(render-url url))))
              (on-signal-load-redirected buffer url))
             ((eq load-event :webkit-load-committed)
-             (nyxt/web-extensions::tabs-on-updated buffer '(("status" . "loading")))
-             (nyxt/web-extensions::tabs-on-updated buffer `(("url" . ,(render-url url))))
              (on-signal-load-committed buffer url))
             ((eq load-event :webkit-load-finished)
              (setf (loading-webkit-history-p buffer) nil)
              (unless (eq (slot-value buffer 'nyxt::status) :failed)
                (setf (nyxt::status buffer) :finished))
-             (nyxt/web-extensions::tabs-on-updated buffer '(("status" . "complete")))
-             (nyxt/web-extensions::tabs-on-updated buffer `(("url" . ,(render-url url))))
              (on-signal-load-finished buffer url)
              (unless (internal-url-p url)
                (echo "Finished loading ~s." (render-url url))))))))
@@ -1247,10 +1221,6 @@ See `finalize-buffer'."
         (gtk:gtk-widget-show (gtk-object buffer)))
       (when focus
         (gtk:gtk-widget-grab-focus (gtk-object buffer))))
-    (nyxt/web-extensions::tabs-on-activated old-buffer buffer)
-    (nyxt/web-extensions::tabs-on-updated buffer `(("attention" . t)))
-    (nyxt/web-extensions::tabs-on-updated
-     old-buffer (alex:alist-hash-table `(("attention" . nil))))
     buffer))
 
 (define-ffi-method ffi-window-add-panel-buffer ((window gtk-window) (buffer panel-buffer) side)
@@ -1488,7 +1458,6 @@ the `active-buffer'."
   (mapc (lambda (handler-id)
           (gobject:g-signal-handler-disconnect (gtk-object buffer) handler-id))
         (handler-ids buffer))
-  (nyxt/web-extensions::tabs-on-removed buffer)
   (nyxt::buffer-hide buffer)
   (gtk:gtk-widget-destroy (gtk-object buffer))
   (setf (gtk-object buffer) nil))
@@ -1559,14 +1528,10 @@ the `active-buffer'."
     (on-signal-load-failed buffer (quri:uri failing-url))
     (on-signal-load-failed-with-tls-errors buffer certificate (quri:uri failing-url)))
   (connect-signal buffer "notify::uri" nil (web-view param-spec)
-    (declare (ignore param-spec))
-    (nyxt/web-extensions::tabs-on-updated
-     buffer `(("url" . ,(webkit:webkit-web-view-uri web-view))))
+    (declare (ignore web-view param-spec))
     (on-signal-notify-uri buffer nil))
   (connect-signal buffer "notify::title" nil (web-view param-spec)
-    (declare (ignore  param-spec))
-    (nyxt/web-extensions::tabs-on-updated
-     buffer `(("title" . ,(webkit:webkit-web-view-title web-view))))
+    (declare (ignore web-view param-spec))
     (on-signal-notify-title buffer nil))
   (connect-signal buffer "web-process-terminated" nil (web-view reason)
     ;; TODO: Bind WebKitWebProcessTerminationReason in cl-webkit.
@@ -1693,19 +1658,6 @@ the `active-buffer'."
     (setf (nyxt::fullscreen-p (current-window)) nil)
     (toggle-fullscreen :skip-renderer-resize t)
     nil)
-  (when (context-buffer-p buffer)
-    (connect-signal buffer "user-message-received" nil (view message)
-      (declare (ignorable view))
-      (g:g-object-ref (g:pointer message))
-      (run-thread
-          "Process user messsage"
-        (nyxt/web-extensions:process-user-message buffer message))
-      (sleep 0.01)
-      (run-thread
-          "Reply user message"
-        (nyxt/web-extensions:reply-user-message buffer message))
-      t)
-    (nyxt/web-extensions::tabs-on-created buffer))
   buffer)
 
 (define-ffi-method ffi-buffer-delete ((buffer gtk-buffer))
@@ -1910,8 +1862,6 @@ local anyways, and it's better to refresh it if a load was queried."
   (not (webkit:webkit-web-view-get-is-muted (gtk-object buffer))))
 #+webkit2-mute
 (defmethod (setf ffi-buffer-sound-enabled-p) (value (buffer gtk-buffer))
-  (nyxt/web-extensions::tabs-on-updated
-   buffer (alex:alist-hash-table `(("audible" . ,value))))
   (webkit:webkit-web-view-set-is-muted (gtk-object buffer) (not value)))
 
 ;; KLUDGE: PDF.js in WebKit (actual for version 2.41.4) always saves
@@ -2187,16 +2137,6 @@ As a second value, return the current buffer index starting from 0."
    (webkit:webkit-web-context-website-data-manager
     (webkit:webkit-web-view-web-context (gtk-object buffer)))
    value))
-
-(define-ffi-method ffi-web-extension-send-message ((buffer gtk-buffer)
-                                                   javascript
-                                                   result-callback
-                                                   error-callback)
-  (webkit:webkit-web-view-send-message-to-page
-   (gtk-object buffer)
-   javascript
-   result-callback
-   error-callback))
 
 (defmethod ffi-buffer-copy ((gtk-buffer gtk-buffer) &optional (text nil text-provided-p))
   (if text-provided-p

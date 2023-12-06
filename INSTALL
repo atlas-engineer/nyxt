@@ -8,9 +8,6 @@ Set DESTDIR to change the target destination.  It should be
 an absolute path.
 
 Set NASDF_SOURCE_PATH to where the source files will be installed.
-By default the GTK renderer loads the `libnyxt' library (enabling WebExtension
-support) relatively to the nyxt.asd location.  You can also configure this at
-runtime through the `gtk-extensions-directory' `resolve' method.
 
 Set LISP and LISP_FLAGS to accommodate to your Lisp compiler.
 
@@ -58,8 +55,3 @@ documentation in Nyxt itself.  Since the manual is normally dynamically
 generated at runtime (for instance the paths and the bindings are printed
 according to the user configuration), the static doc generation can only display
 the default values.
-
-WARNING: WebExtension support prototype (make web-extensions) is not included by
-default because it's unfinished, possibly prone to security issues, and
-partially abandoned for another extensions support mechanism.  Use at your own
-risk!

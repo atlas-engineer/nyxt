@@ -723,7 +723,6 @@ Example:
   (:metaclass user-class)
   (:documentation "A non-user-facing buffer to run background processes in.
 Examples of the processes to run in background buffers are:
-- WebExtensions background pages.
 - Page scraping processes.
 - Anything else requiring a renderer running invisible to the user.
 
