@@ -138,7 +138,7 @@ git clone https://github.com/joachifm/cl-webkit ~/common-lisp/cl-webkit
 - glib-networking (for WebKitGTK+)
 - gsettings-desktop-schemas (for WebKitGTK+)
 - libfixposix
-- xclip (for clipboard support)
+- xclip (if on X) or wl-clipboard (if on Wayland) (for clipboard support)
 - enchant (for spellchecking)
 - pkg-config (for web-extensions)
 
@@ -154,7 +154,7 @@ git clone https://github.com/joachifm/cl-webkit ~/common-lisp/cl-webkit
 
 - Fedora:
   #+begin_src sh
-  sudo dnf install sbcl webkit2gtk3-devel glib-networking gsettings-desktop-schemas libfixposix-devel xclip enchant pkgconf
+  sudo dnf install sbcl webkit2gtk4.0-devel glib-networking gsettings-desktop-schemas libfixposix-devel xclip wl-clipboard enchant pkgconf
   #+end_src
 
 - FreeBSD and derivatives
