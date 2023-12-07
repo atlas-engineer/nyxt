@@ -73,13 +73,6 @@ Default: ~s" (files:expand *config-file*)))
        :short #\I
        :long "no-config"
        :description "Do not load the configuration file.")
-      (:name :init
-       :long "init"
-       :arg-parser #'identity
-       :description (format nil "Alias for --config.  Deprecated."))
-      (:name :no-init
-       :long "no-init"
-       :description "Alias for --no-config.  Deprecated.")
       (:name :auto-config
        :short #\c
        :long "auto-config"
@@ -452,7 +445,6 @@ Examples:
   (destructuring-bind (&key (headless *headless-p*) verbose
                          help version system-information
                          list-profiles script
-                         config no-config init no-init ; TODO: Deprecated, remove in 4.0.
                          failsafe
                          load eval quit remote
                        &allow-other-keys)
@@ -474,12 +466,6 @@ Examples:
           (log:config :debug)
           (format t "Arguments parsed: ~a and ~a~&" options urls))
         (log:config :pattern *log-pattern*))
-
-    ;; TODO: Deprecated, remove in 4.0.
-    (when (and init (not config))
-      (setf (getf *options* :config) init))
-    (when (and no-init (not no-config))
-      (setf (getf *options* :no-config) no-init))
 
     (cond
       (help

@@ -344,7 +344,6 @@ idle, so it should do the job."
     ;; We only `handler-case' when there is an init file, this way we avoid
     ;; looping indefinitely.
     (let ((restart-on-error? (not (or (getf *options* :no-config)
-                                      (getf *options* :no-init) ; TODO: Deprecated, remove in 4.0.
                                       (not (uiop:file-exists-p (files:expand *config-file*)))))))
       ;; Set `*restart-on-error*' globally instead of let-binding it to
       ;; make it visible from all threads.
