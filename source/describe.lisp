@@ -388,6 +388,7 @@ For generic functions, describe all the methods."
       (let ((input function))
         (flet ((fun-desc (input)
                  (spinneret:with-html-string
+                   (:pre (:code (prini-to-string (arglist input) :package (symbol-package input)))) ;; Argument list
                    (:pre (:code (:raw (resolve-backtick-quote-links (documentation input 'function) (symbol-package input)))))
                    (when (sym:command-symbol-p input)
                      (let* ((key-keymap-pairs (nth-value 1 (keymaps:pretty-binding-keys input (all-keymaps) :print-style (keymaps:name (keyscheme buffer)))))
@@ -405,9 +406,6 @@ For generic functions, describe all the methods."
                             (loop for (binding keymapname) in key-keymapname-pairs
                                   collect (:tr (:td binding)
                                                (:td keymapname))))))))
-                   (:nsection
-                     :title "Argument list"
-                     (:pre (:code (prini-to-string (arglist input) :package (symbol-package input)))))
                    #+sbcl
                    (unless (or (macro-function input)
                                (eq 'function (sb-introspect:function-type input)))
