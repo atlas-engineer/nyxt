@@ -928,6 +928,8 @@ invoked via " (:code "flatpak-spawn --host <command> <command-args>") "."))))
   (:nsection :title "UI/UX"
     (:ul
      (:li "Improve source heading buttons, layout and interactions in the "
+          (:nxref :class-name 'prompt-buffer) ".")
+     (:li "Add checkboxes for suggestions within the "
           (:nxref :class-name 'prompt-buffer) ".")))
   (:nsection :title "Bug fixes"
     (:ul
