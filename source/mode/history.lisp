@@ -37,12 +37,6 @@ are useful internal APIs for history reusal:
 Example: DuckDuckGo redirections should be ignored or else going backward in
 history after consulting a result reloads the result, not the DuckDuckGo
 search.")
-   (conservative-history-movement-p ; Deprecated, remove in 4.0.
-    nil
-    :type boolean
-    :documentation "Whether history navigation is restricted by buffer-local history.
-Deprecated, does nothing, and will be removed in 4.0, use `global-history-p'
-instead!")
    (backtrack-to-hubs-p
     nil
     :type boolean
