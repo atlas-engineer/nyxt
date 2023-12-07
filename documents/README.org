@@ -84,7 +84,7 @@ You can also run the tests locally with:
 (asdf:test-system :nyxt/gi-gtk)
 #+end_src
 
-Keep in mind that it is recommended to restart the SLY session before and 
+Keep in mind that it is recommended to restart the SLY session before and
 after running the tests.
 
 * Developer's installation guide
@@ -137,7 +137,7 @@ git clone https://github.com/joachifm/cl-webkit ~/common-lisp/cl-webkit
 - glib-networking (for WebKitGTK+)
 - gsettings-desktop-schemas (for WebKitGTK+)
 - libfixposix
-- xclip (for clipboard support)
+- xclip (if on X) or wl-clipboard (if on Wayland) (for clipboard support)
 - enchant (for spellchecking)
 
 - Debian-based distributions:
@@ -152,7 +152,7 @@ git clone https://github.com/joachifm/cl-webkit ~/common-lisp/cl-webkit
 
 - Fedora:
   #+begin_src sh
-  sudo dnf install sbcl webkit2gtk3-devel glib-networking gsettings-desktop-schemas libfixposix-devel xclip enchant pkgconf
+  sudo dnf install sbcl webkit2gtk4.0-devel glib-networking gsettings-desktop-schemas libfixposix-devel xclip wl-clipboard enchant pkgconf
   #+end_src
 
 - FreeBSD and derivatives
