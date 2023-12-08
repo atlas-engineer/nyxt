@@ -2226,11 +2226,26 @@ As a second value, return the current buffer index starting from 0."
 WebKit-specific."
   (webkit:webkit-web-view-reload-bypass-cache (gtk-object buffer)))
 
+(defun list-existing-contexts ()
+  (loop for dir in (uiop:subdirectories
+                    (files:expand (make-instance 'nyxt:nyxt-data-directory)))
+        ;; PATHNAME-DIRECTORY returns a list on most implementations (UIOP
+        ;; relies on that, at least), even though the standard doesn't mandate
+        ;; it.
+        for dirname = (alex:lastcar (uiop:ensure-list (pathname-directory dir)))
+        when (uiop:string-suffix-p dirname "web-context")
+          collect (subseq dirname
+                          0
+                          (- (length dirname) (length "web-context/")))))
+
 (define-class context-source (prompter:source)
   ((prompter:name "Context list")
-   (prompter:constructor (sort (delete-duplicates (append (mapcar #'context-name (buffer-list))
-                                                          (list +internal+ +default+))
-                                                  :test 'equal)
+   (prompter:constructor (sort (delete-duplicates
+                                (append
+                                 (mapcar #'context-name (buffer-list))
+                                 (list +internal+ +default+)
+                                 (list-existing-contexts))
+                                :test 'equal)
                                'string<)))
   (:export-class-name-p t))
 
