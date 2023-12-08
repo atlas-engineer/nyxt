@@ -935,7 +935,9 @@ invoked via " (:code "flatpak-spawn --host <command> <command-args>") "."))))
     (:ul
      (:li "Fix command "
           (:nxref :command 'nyxt/mode/annotate:show-annotations-for-current-url) ".")
-     (:li "make-buffer-with-context lists previously defined contexts."))))
+     (:li "make-buffer-with-context lists previously defined contexts.")
+     (:li "Improve architecture of " (:nxref :class-name 'nyxt/mode/hint:hint-mode)
+          " as to ensure that hints are shown for arbitrary URLs." ))))
 
 (define-version "4-pre-release-1"
   (:li "When on pre-release, push " (:code "X-pre-release")
