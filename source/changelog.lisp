@@ -924,7 +924,7 @@ Nyxt version exists.  It is only raised when the major version differs.")
      (:li "When running Nyxt as a Flatpak, programs available on the host can be
 invoked via " (:code "flatpak-spawn --host <command> <command-args>") "."))))
 
-(define-version "3.X.Y"
+(define-version "3.10.0"
   (:nsection :title "UI/UX"
     (:ul
      (:li "Improve source heading buttons, layout and interactions in the "
@@ -935,4 +935,5 @@ invoked via " (:code "flatpak-spawn --host <command> <command-args>") "."))))
     (:ul
      (:li "Fix command "
           (:nxref :command 'nyxt/mode/annotate:show-annotations-for-current-url) ".")
-     (:li "make-buffer-with-context lists previously defined contexts."))))
+     (:li "Command " (:nxref :command 'nyxt/renderer/gtk:make-buffer-with-context)
+          " now lists previously defined contexts."))))
