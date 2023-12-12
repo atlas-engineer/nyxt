@@ -2316,14 +2316,9 @@ WebKit-specific."
 (defun list-existing-contexts ()
   (loop for dir in (uiop:subdirectories
                     (files:expand (make-instance 'nyxt:nyxt-data-directory)))
-        ;; PATHNAME-DIRECTORY returns a list on most implementations (UIOP
-        ;; relies on that, at least), even though the standard doesn't mandate
-        ;; it.
-        for dirname = (alex:lastcar (uiop:ensure-list (pathname-directory dir)))
+        for dirname = (files:basename dir)
         when (uiop:string-suffix-p dirname "web-context")
-          collect (subseq dirname
-                          0
-                          (- (length dirname) (length "web-context/")))))
+          collect (sera:drop (- (length "-web-context")) dirname)))
 
 (define-class context-source (prompter:source)
   ((prompter:name "Context list")
