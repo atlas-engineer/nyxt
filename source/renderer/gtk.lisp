@@ -2297,15 +2297,6 @@ As a second value, return the current buffer index starting from 0."
         (gtk-object gtk-buffer) webkit2:+webkit-editing-command-redo+)))
    (lambda (e) (echo-warning "Cannot redo: ~a" e))))
 
-(defmethod reload-buffer :around (&optional (buffer (prompt
-                                                     :prompt "Reload buffer(s)"
-                                                     :sources (make-instance 'buffer-source))))
-  "Override Nyxt reload with a DWIM one from WebKit."
-  ;; FIXME: We use `reload-buffer' on unloaded buffers???
-  (if (member (nyxt::status buffer) '(:unloaded))
-      (call-next-method)
-      (webkit:webkit-web-view-reload (gtk-object buffer))))
-
 (define-command-global force-reload-buffers (&optional (buffer (prompt
                                                                 :prompt "Reload buffer(s)"
                                                                 :sources (make-instance 'buffer-source))))
