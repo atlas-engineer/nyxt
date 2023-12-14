@@ -106,7 +106,7 @@ Uses the built-in MOP abilities of every Lisp."
           (push s result))))))
 
 (flet ((list-offending-packages (package export-lister testing-for)
-         (let* ((package (find-package package)))
+         (let ((package (find-package package)))
            (delete nil
                    (mapcar (lambda (package)
                              (logger ";;; Testing ~a for ~a" package testing-for)
