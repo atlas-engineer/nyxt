@@ -939,3 +939,10 @@ invoked via " (:code "flatpak-spawn --host <command> <command-args>") "."))))
           " now lists previously defined contexts.")
      (:li "Improve architecture of " (:nxref :class-name 'nyxt/mode/hint:hint-mode)
           " as to ensure that hints are shown for arbitrary URLs." ))))
+
+(define-version "3.X.Y"
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix commands "
+          (:nxref :command 'reopen-last-buffer) " and "
+          (:nxref :command 'reopen-buffer) "."))))
