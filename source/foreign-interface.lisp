@@ -441,8 +441,7 @@ Example:
 
 ;;; Signals
 
-(export-always 'on-signal-notify-uri)
-(define-generic on-signal-notify-uri (object url)
+(define-ffi-generic on-signal-notify-uri (object url)
   "Invoked when URL changes in OBJECT.
 Dispatches on buffers and modes."
   (:method ((buffer buffer) no-url)
@@ -461,8 +460,7 @@ Dispatches on buffers and modes."
   (:method ((mode mode) url)
     url))
 
-(export-always 'on-signal-notify-title)
-(define-generic on-signal-notify-title (object title)
+(define-ffi-generic on-signal-notify-title (object title)
   "Invoked when page TITLE is set in OBJECT.
 Dispatches on buffers and modes."
   (:method ((buffer buffer) no-title)
@@ -476,8 +474,7 @@ Dispatches on buffers and modes."
     title))
 
 ;; See https://webkitgtk.org/reference/webkit2gtk/stable/WebKitWebView.html#WebKitLoadEvent
-(export-always 'on-signal-load-started)
-(define-generic on-signal-load-started (object url)
+(define-ffi-generic on-signal-load-started (object url)
   "Invoked when URL starts loading in OBJECT.
 Dispatches on buffers and modes."
   (:method ((buffer buffer) url)
@@ -486,8 +483,7 @@ Dispatches on buffers and modes."
   (:method ((mode mode) url)
     url))
 
-(export-always 'on-signal-load-redirected)
-(define-generic on-signal-load-redirected (object url)
+(define-ffi-generic on-signal-load-redirected (object url)
   "Invoked when the request gets redirected to URL in OBJECT.
 Dispatches on buffers and modes."
   (:method ((buffer buffer) url)
@@ -496,8 +492,7 @@ Dispatches on buffers and modes."
   (:method ((mode mode) url)
     url))
 
-(export-always 'on-signal-load-canceled)
-(define-generic on-signal-load-canceled (object url)
+(define-ffi-generic on-signal-load-canceled (object url)
   "Invoked when URL loading is canceled in OBJECT.
 Dispatches on buffers and modes."
   (:method ((buffer buffer) url)
@@ -506,8 +501,7 @@ Dispatches on buffers and modes."
   (:method ((mode mode) url)
     url))
 
-(export-always 'on-signal-load-committed)
-(define-generic on-signal-load-committed (object url)
+(define-ffi-generic on-signal-load-committed (object url)
   "Invoked when URL loading is approved in OBJECT.
 Dispatches on buffers and modes."
   (:method ((buffer buffer) url)
@@ -516,8 +510,7 @@ Dispatches on buffers and modes."
   (:method ((mode mode) url)
     url))
 
-(export-always 'on-signal-load-finished)
-(define-generic on-signal-load-finished (object url)
+(define-ffi-generic on-signal-load-finished (object url)
   "Invoked when done loading URL in OBJECT.
 Dispatches on buffers and modes."
   (:method ((buffer buffer) url)
@@ -528,8 +521,7 @@ Dispatches on buffers and modes."
   (:method ((mode mode) url)
     url))
 
-(export-always 'on-signal-load-failed)
-(define-generic on-signal-load-failed (object url)
+(define-ffi-generic on-signal-load-failed (object url)
   "Invoked when URL loading has failed in OBJECT.
 Dispatches on buffers and modes."
   (:method ((buffer buffer) url)
@@ -538,8 +530,7 @@ Dispatches on buffers and modes."
   (:method ((mode mode) url)
     url))
 
-(export-always 'on-signal-button-press)
-(define-generic on-signal-button-press (object button-key)
+(define-ffi-generic on-signal-button-press (object button-key)
   "Invoked on BUTTON-KEY press.
 Dispatches on buffers and modes."
   (:method ((buffer buffer) button-key)
@@ -549,8 +540,7 @@ Dispatches on buffers and modes."
     (declare (ignorable button-key))
     nil))
 
-(export-always 'on-signal-key-press)
-(define-generic on-signal-key-press (object key)
+(define-ffi-generic on-signal-key-press (object key)
   "Invoked on KEY press.
 Dispatches on buffers and modes."
   (:method ((buffer buffer) key)
