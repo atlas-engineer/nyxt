@@ -1452,10 +1452,10 @@ is listed first."
   "Toggle the focus between the current buffer and the current prompt buffer."
   (let ((prompt-buffer (current-prompt-buffer)))
     (if (prompt-buffer-p (focused-buffer))
-        (progn (set-current-buffer (current-buffer))
+        (prog1 (set-current-buffer (current-buffer))
                (ps-eval :buffer prompt-buffer
                  (setf (ps:@ (nyxt/ps:qs document "*") style opacity) "0.5")))
-        (progn (ffi-focus-prompt-buffer (current-window) prompt-buffer)
+        (prog1 (ffi-focus-prompt-buffer (current-window) prompt-buffer)
                (ps-eval :buffer prompt-buffer
                  (setf (ps:@ (nyxt/ps:qs document "*") style opacity) "1"))))))
 
