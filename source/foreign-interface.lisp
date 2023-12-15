@@ -59,13 +59,15 @@ This is used to set the BUFFER `url' slot.")
 (define-ffi-generic ffi-window-make (browser)
   "Return a `window' object, ready for display.
 The renderer specialization must handle the widget initialization."
-  (make-instance 'window))
+  (:method ((browser t))
+    (make-instance 'window)))
 
 (define-ffi-generic ffi-window-to-foreground (window)
   "Show WINDOW in the foreground.
 The specialized method may call `call-next-method' to set
 WINDOW as the `last-active-window'."
-  (setf (slot-value *browser* 'last-active-window) window))
+  (:method ((window t))
+    (setf (slot-value *browser* 'last-active-window) window)))
 
 (define-ffi-generic ffi-window-title (window)
   "Return as a string the title of the window.
@@ -192,7 +194,7 @@ PROXY-URL is a `quri:uri' and IGNORE-HOSTS a list of strings."
 (define-ffi-generic ffi-buffer-zoom-level (buffer)
   "Return the zoom level of the document.
 Setf-able."
-  (:method (buffer)
+  (:method ((buffer t))
     (ps-eval :buffer buffer (ps:chain document body style zoom)))
   (:setter-p t))
 (defmethod (setf ffi-buffer-zoom-level) (value (buffer buffer))
@@ -234,7 +236,8 @@ See also `ffi-generated-input-event-p'.")
   "Run THUNK (a lambda of no argument) in the renderer's thread.
 It is particularly useful for renderer procedures required to be executed in
 specific threads."
-  (funcall thunk))
+  (:method ((thunk t))
+    (funcall thunk)))
 
 (define-ffi-generic ffi-kill-browser (browser)
   "Terminate the renderer.
@@ -244,7 +247,8 @@ This often translates in the termination of the \"main loop\" associated to the 
   "Renderer-specific initialization.
 A specialization of this method must call `call-next-method' to conclude the
 startup routine."
-  (finalize-startup browser urls startup-timestamp))
+  (:method ((browser t) urls startup-timestamp)
+    (finalize-startup browser urls startup-timestamp)))
 
 (define-ffi-generic ffi-inspector-show (buffer)
   "Show the renderer built-in inspector.")
@@ -252,20 +256,22 @@ startup routine."
 (define-ffi-generic ffi-print-status (window html-body)
   "Display status buffer in WINDOW according to HTML-BODY.
 The `style' of the `status-buffer' is honored."
-  (with-slots (status-buffer) window
-    (html-write (spinneret:with-html-string
-                  (:head (:nstyle (style status-buffer)))
-                  (:body (:raw html-body)))
-                status-buffer)))
+  (:method ((window t) html-body)
+    (with-slots (status-buffer) window
+      (html-write (spinneret:with-html-string
+                    (:head (:nstyle (style status-buffer)))
+                    (:body (:raw html-body)))
+                  status-buffer))))
 
 (define-ffi-generic ffi-print-message (window html-body)
   "Print HTML-BODY in the WINDOW's message buffer.
 The `style' of the `message-buffer' is honored."
-  (with-slots (message-buffer) window
-    (html-write (spinneret:with-html-string
-                  (:head (:nstyle (style message-buffer)))
-                  (:body (:raw html-body)))
-                message-buffer)))
+  (:method ((window t) html-body)
+    (with-slots (message-buffer) window
+      (html-write (spinneret:with-html-string
+                    (:head (:nstyle (style message-buffer)))
+                    (:body (:raw html-body)))
+                  message-buffer))))
 
 (define-ffi-generic ffi-display-url (browser url)
   "Return URL as a human-readable string.
