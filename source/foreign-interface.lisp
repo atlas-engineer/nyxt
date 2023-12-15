@@ -76,19 +76,18 @@ Setf-able."
   (:setter-p t))
 
 (define-ffi-generic ffi-window-active (browser)
-  "The primary method returns the focused window as per the
-renderer.
+  "Return the focused window.
 
-The `:around' method automatically ensures that the result is set to
-`last-active-window'.
+The specialized method must fallback on the primary method below, as to account
+for the case when the renderer reports that none of the windows are focused.
 
-The specialized method may call `call-next-method' to return a sensible fallback window."
-  (:method ((browser t))
-    (or (slot-value browser 'last-active-window)
-        (first (window-list))))
+The `:around' method ensures that `last-active-window' is set."
   (:method :around ((browser t))
     (setf (slot-value browser 'last-active-window)
-          (call-next-method))))
+          (call-next-method)))
+  (:method ((browser t))
+    (or (slot-value browser 'last-active-window)
+        (first (window-list)))))
 
 (define-ffi-generic ffi-window-set-buffer (window buffer &key focus)
   "Set the BUFFER's widget to display in WINDOW.")
