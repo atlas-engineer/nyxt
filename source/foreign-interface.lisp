@@ -92,8 +92,8 @@ The `:around' method ensures that `last-active-window' is set."
 (define-ffi-generic ffi-window-set-buffer (window buffer &key focus)
   "Set the BUFFER's widget to display in WINDOW.")
 
-(define-ffi-generic ffi-focus-prompt-buffer (window prompt-buffer)
-  "Focus PROMPT-BUFFER in WINDOW.")
+(define-ffi-generic ffi-focus-prompt-buffer (prompt-buffer)
+  "Return PROMPT-BUFFER and focus it as a side effect.")
 
 (define-ffi-generic ffi-window-add-panel-buffer (window buffer side)
   "Make widget for panel BUFFER and add it to the WINDOW widget.
