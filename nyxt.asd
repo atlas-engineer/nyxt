@@ -366,8 +366,7 @@
   :serial t
   :around-compile "NASDF:FAIL-ON-WARNINGS"
   :components ((:file "renderer/gtk-clipboard")
-               (:file "renderer/gtk"))
-  :in-order-to ((test-op (test-op "nyxt/gi-gtk/tests"))))
+               (:file "renderer/gtk")))
 
 (defsystem "nyxt/gi-gtk"
   :defsystem-depends-on ("nasdf")
