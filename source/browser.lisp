@@ -424,11 +424,10 @@ restored."
   (when (null browser)
     (error "There is no current *browser*. Is Nyxt started?")))
 
-(-> set-window-title (&optional window buffer) *)
+(-> set-window-title (&optional window) *)
 (export-always 'set-window-title)
-(defun set-window-title (&optional (window (current-window)) (buffer (current-buffer)))
+(defun set-window-title (&optional (window (current-window)))
   "Set current window title to the return value of (titler window). "
-  (declare (ignore buffer)) ; TODO: BUFFER is kept for backward compatibility.  Remove with 3.0.
   (setf (ffi-window-title window) (funcall (titler window) window)))
 
 (-> window-default-title (window) string)
