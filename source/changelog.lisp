@@ -940,6 +940,13 @@ invoked via " (:code "flatpak-spawn --host <command> <command-args>") "."))))
      (:li "Improve architecture of " (:nxref :class-name 'nyxt/mode/hint:hint-mode)
           " as to ensure that hints are shown for arbitrary URLs." ))))
 
+(define-version "3.X.Y"
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix commands "
+          (:nxref :command 'reopen-last-buffer) " and "
+          (:nxref :command 'reopen-buffer) "."))))
+
 (define-version "4-pre-release-1"
   (:li "When on pre-release, push " (:code "X-pre-release")
        " feature in addition to " (:code "X-pre-release-N") "one."))
