@@ -69,15 +69,12 @@ The logic is:
                        (gethash s (symbol-value (find-symbol "*MACRO-TOPLEVEL*" :parenscript)))))
         (push s result)))))
 
-(defun subpackage-p (subpackage package)
-  "Return non-nil if SUBPACKAGE is a sub-package of PACKAGE.
-A sub-package has a name that starts with that of PACKAGE followed by a '/' separator."
-  (not (null
-        (uiop:string-prefix-p (uiop:strcat (package-name package) "/")
-                              (package-name subpackage)))))
-
 (defun list-subpackages (package)
-  (remove-if (lambda (pkg) (not (subpackage-p pkg package))) (list-all-packages)))
+  "Return a list of sub-packages of PACKAGE.
+The sub-package relationship is determined by whether a common prefix exists."
+  (remove-if (lambda (pkg) (not (uiop:string-prefix-p (package-name package) pkg)))
+             (list-all-packages)
+             :key #'package-name))
 
 (defun list-undocumented-exports (package)
   (let ((result '())
@@ -106,7 +103,7 @@ Uses the built-in MOP abilities of every Lisp."
           (push s result))))))
 
 (flet ((list-offending-packages (package export-lister testing-for)
-         (let* ((package (find-package package)))
+         (let ((package (find-package package)))
            (delete nil
                    (mapcar (lambda (package)
                              (logger ";;; Testing ~a for ~a" package testing-for)

@@ -10,7 +10,8 @@
 (define-class gtk-renderer (renderer)
   ((name "GTK"))
   (:export-class-name-p t)
-  (:export-accessor-names-p t))
+  (:export-accessor-names-p t)
+  (:documentation "WebKit renderer class."))
 
 (define-class gtk-browser ()
   (#+darwin
@@ -51,7 +52,8 @@ See also the `ephemeral-web-contexts' slot.")
 See also the `web-contexts' slot."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:metaclass user-class))
+  (:metaclass user-class)
+  (:documentation "WebKit browser class."))
 
 (alex:define-constant +internal+ "internal" :test 'equal)
 (alex:define-constant +default+ "default" :test 'equal)
@@ -82,7 +84,8 @@ See also the `web-contexts' slot."))
    (message-container)
    (key-string-buffer))
   (:export-class-name-p t)
-  (:export-accessor-names-p nil))
+  (:export-accessor-names-p nil)
+  (:documentation "WebKit window class."))
 
 (define-class gtk-buffer ()
   ((gtk-object)
@@ -107,7 +110,8 @@ WebKitGTK may trigger 'load-failed' when loading a page from the WebKit-history
 cache.  Upstream bug?  We use this slot to know when to ignore these load
 failures."))
   (:export-class-name-p t)
-  (:export-accessor-names-p t))
+  (:export-accessor-names-p t)
+  (:documentation "WebKit buffer class."))
 
 (defmethod prompter:object-attributes :around ((buffer gtk-buffer) (source nyxt:buffer-source))
   (declare (ignore source))
@@ -279,7 +283,8 @@ the renderer thread, use `defmethod' instead."
 (define-class data-manager-file (nyxt-file)
   ((context-name (error "Context name required."))
    (files:name "web-context"))
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:documentation "Related to WebKitWebsiteDataManager objects."))
 
 (defmethod files:resolve :around ((profile nosave-profile) (file data-manager-file))
   "We shouldn't store any `data-manager' data for `nosave-profile'."
@@ -287,7 +292,8 @@ the renderer thread, use `defmethod' instead."
 
 (define-class data-manager-data-directory (files:data-file data-manager-file)
   ()
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:documentation "Related to WebKitWebsiteDataManager objects."))
 
 (defmethod files:resolve ((profile nyxt-profile) (file data-manager-data-directory))
   (sera:path-join
@@ -296,7 +302,8 @@ the renderer thread, use `defmethod' instead."
 
 (define-class data-manager-cache-directory (files:cache-file data-manager-file)
   ()
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:documentation "Related to WebKit's cache."))
 
 (defmethod files:resolve ((profile nyxt-profile) (file data-manager-cache-directory))
   (sera:path-join
@@ -311,7 +318,8 @@ the renderer thread, use `defmethod' instead."
 
 (define-class cookies-file (files:data-file data-manager-file)
   ((files:name "cookies"))
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:documentation "Related to WebKitCookieManager."))
 
 (defmethod files:resolve ((profile nyxt-profile) (file cookies-file))
   (sera:path-join
@@ -322,7 +330,8 @@ the renderer thread, use `defmethod' instead."
   ((gtk-object)
    (handler-ids
     :export nil
-    :documentation "See `gtk-buffer' slot of the same name.")))
+    :documentation "See `gtk-buffer' slot of the same name."))
+  (:documentation "WebKit download class."))
 
 (defclass webkit-web-view-ephemeral (webkit:webkit-web-view) ()
   (:metaclass gobject:gobject-class))
@@ -374,7 +383,8 @@ the renderer thread, use `defmethod' instead."
   ;; We export these accessors because it can be useful to inspect the guts of a
   ;; request, plus the upstream WebKit API is stable enough.
   (:export-accessor-names-p t)
-  (:metaclass user-class))
+  (:metaclass user-class)
+  (:documentation "Related to WebKit's request objects."))
 
 (defun make-decide-policy-handler (buffer)
   (lambda (web-view response-policy-decision policy-decision-type-response)
@@ -801,7 +811,8 @@ See `gtk-browser's `modifier-translator' slot."
 (define-class gtk-scheme ()
   ()
   (:export-class-name-p t)
-  (:export-accessor-names-p t))
+  (:export-accessor-names-p t)
+  (:documentation "Related to WebKit's custom schemes."))
 
 ;; From https://github.com/umpirsky/language-list/tree/master/data directory
 ;; listing $(ls /data) and processed with:
@@ -1753,7 +1764,8 @@ local anyways, and it's better to refresh it if a load was queried."
 (define-class gtk-user-style ()
   ((gtk-object))
   (:export-class-name-p t)
-  (:export-accessor-names-p t))
+  (:export-accessor-names-p t)
+  (:documentation "Related to WebKit's user style sheets."))
 
 (define-ffi-method ffi-buffer-add-user-style ((buffer gtk-buffer) (style gtk-user-style))
   (let* ((content-manager
@@ -1793,7 +1805,8 @@ local anyways, and it's better to refresh it if a load was queried."
 (define-class gtk-user-script ()
   ((gtk-object))
   (:export-class-name-p t)
-  (:export-accessor-names-p t))
+  (:export-accessor-names-p t)
+  (:documentation "Related to WebKitUserScript."))
 
 
 
@@ -2226,7 +2239,8 @@ WebKit-specific."
                                  (list-existing-contexts))
                                 :test 'equal)
                                'string<)))
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:documentation "Source listing WebKit contexts."))
 
 (define-command-global make-buffer-with-context (&rest args
                                                  &key title modes url load-url-p

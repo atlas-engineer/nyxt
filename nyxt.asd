@@ -366,8 +366,7 @@
   :serial t
   :around-compile "NASDF:FAIL-ON-WARNINGS"
   :components ((:file "renderer/gtk-clipboard")
-               (:file "renderer/gtk"))
-  :in-order-to ((test-op (test-op "nyxt/gi-gtk/tests"))))
+               (:file "renderer/gtk")))
 
 (defsystem "nyxt/gi-gtk"
   :defsystem-depends-on ("nasdf")
@@ -378,7 +377,15 @@
   :pathname #p"NYXT:source;"
   :around-compile "NASDF:FAIL-ON-WARNINGS"
   :components ((:file "renderer/gi-gtk"))
-  :in-order-to ((test-op (test-op "nyxt/gi-gtk/tests"))))
+  :in-order-to ((test-op (test-op "nyxt/gi-gtk/tests")
+                         (test-op "nyxt/tests")
+                         (test-op "nyxt/tests/compilation")
+                         ;; We test if manual dumping works, since it may catch
+                         ;; some subtle mistakes:
+                         (compile-op "nyxt/documentation")
+                         ;; Subsystems:
+                         (test-op "nyxt/analysis")
+                         (test-op "nyxt/theme"))))
 
 (defsystem "nyxt/gi-gtk/tests"
   :defsystem-depends-on ("nasdf")
