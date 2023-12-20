@@ -130,7 +130,10 @@ major versions."
   (:p "Deprecated support for lists as a value.  Strings are the only valid values.")
 
   (conservative-history-movement-p)
-  (:p "Deprecated in favor of " (:nxref :slot 'global-history-p :class-name 'buffer) "."))
+  (:p "Deprecated in favor of " (:nxref :slot 'global-history-p :class-name 'buffer) ".")
+
+  nyxt/mode/no-procrastinate
+  (:p "Deprecated mode."))
 
 (define-migration "3"
   (%slot-default)

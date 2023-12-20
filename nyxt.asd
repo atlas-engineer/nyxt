@@ -211,7 +211,6 @@
                  (:file "history-migration")
                  (:file "macro-edit")
                  (:file "no-image")
-                 (:file "no-procrastinate" :depends-on ("blocker"))
                  (:file "no-script")
                  (:file "no-sound")
                  (:file "no-webgl")
