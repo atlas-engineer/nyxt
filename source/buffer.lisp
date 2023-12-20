@@ -1486,7 +1486,7 @@ is listed first."
         (prog1 (set-current-buffer (current-buffer))
                (ps-eval :buffer prompt-buffer
                  (setf (ps:@ (nyxt/ps:qs document "*") style opacity) "0.5")))
-        (prog1 (ffi-focus-prompt-buffer (current-window) prompt-buffer)
+        (prog1 (ffi-focus-prompt-buffer prompt-buffer)
                (ps-eval :buffer prompt-buffer
                  (setf (ps:@ (nyxt/ps:qs document "*") style opacity) "1"))))))
 

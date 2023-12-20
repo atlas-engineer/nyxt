@@ -33,143 +33,134 @@ If the `:setter-p' option is non-nil, then a dummy setf method is defined."
                  (declare (ignore value ,@arguments)))))))))
 
 (define-ffi-generic ffi-window-delete (window)
-  "Delete WINDOW, possibly freeing the associated widgets.
-After this call, the window should not be displayed.")
+  "Delete WINDOW.")
 
 (define-ffi-generic ffi-window-fullscreen (window)
-  "Make WINDOW fullscreen.
-Removes all the Nyxt interface element and leaves the open page as the only
-thing on the screen.")
+  "Set fullscreen WINDOW state on.")
 (define-ffi-generic ffi-window-unfullscreen (window)
-  "Un-fullscreen the WINDOW.")
+  "Set fullscreen WINDOW state off.")
 
 (define-ffi-generic ffi-window-maximize (window)
-  "Make the WINDOW to fill the screen.
-Usually possible via desktop environment interface too.")
+  "Set WINDOW to a maximized state.")
 (define-ffi-generic ffi-window-unmaximize (window)
-  "Switch the WINDOW to \"windowed\" display.
-May or may not fill the screen.")
+  "Set WINDOW to an unmaximized state.")
 
 (define-ffi-generic ffi-buffer-url (buffer)
-  "Return the `quri:uri' associated with the BUFFER.
+  "Return the URL associated with BUFFER as a `quri:uri'.
 This is used to set the BUFFER `url' slot.")
 (define-ffi-generic ffi-buffer-title (buffer)
-  "Return as a string the title of the document (or web page) showing in BUFFER.")
+  "Return a string corresponding to the BUFFER's title.")
 
 (define-ffi-generic ffi-window-make (browser)
-  "Return a `window' object, ready for display.
-The renderer specialization must handle the widget initialization."
-  (make-instance 'window))
+  "Return a `window' and display it."
+  (:method ((browser t))
+    (make-instance 'window)))
 
 (define-ffi-generic ffi-window-to-foreground (window)
   "Show WINDOW in the foreground.
-The specialized method may call `call-next-method' to set
-WINDOW as the `last-active-window'."
-  (setf (slot-value *browser* 'last-active-window) window))
+The specialized method must invoke `call-next-method' last."
+  (:method ((window t))
+    (setf (slot-value *browser* 'last-active-window) window)))
 
 (define-ffi-generic ffi-window-title (window)
-  "Return as a string the title of the window.
-It is the title that's often used by the window manager to decorate the window.
+  "Return a string corresponding to the WINDOW's title.
 Setf-able."
   (:setter-p t))
 
 (define-ffi-generic ffi-window-active (browser)
-  "The primary method returns the focused window as per the
-renderer.
+  "Return the focused window.
 
-The `:around' method automatically ensures that the result is set to
-`last-active-window'.
+The specialized method must fallback on the primary method below, as to account
+for the case when the renderer reports that none of the windows are focused.
 
-The specialized method may call `call-next-method' to return a sensible fallback window."
-  (:method ((browser t))
-    (or (slot-value browser 'last-active-window)
-        (first (window-list))))
+The `:around' method ensures that `last-active-window' is set."
   (:method :around ((browser t))
     (setf (slot-value browser 'last-active-window)
-          (call-next-method))))
+          (call-next-method)))
+  (:method ((browser t))
+    (or (slot-value browser 'last-active-window)
+        (first (window-list)))))
 
 (define-ffi-generic ffi-window-set-buffer (window buffer &key focus)
-  "Set the BUFFER's widget to display in WINDOW.")
+  "Return BUFFER and display it in WINDOW as a side effect.")
 
-(define-ffi-generic ffi-focus-prompt-buffer (window prompt-buffer)
-  "Focus PROMPT-BUFFER in WINDOW.")
+(define-ffi-generic ffi-focus-prompt-buffer (prompt-buffer)
+  "Return PROMPT-BUFFER and focus it as a side effect.")
 
 (define-ffi-generic ffi-window-add-panel-buffer (window buffer side)
-  "Make widget for panel BUFFER and add it to the WINDOW widget.
+  "Add panel BUFFER to WINDOW.
 SIDE is one of `:left' or `:right'.")
 (define-ffi-generic ffi-window-delete-panel-buffer (window buffer)
-  "Unbind the panel BUFFER widget from WINDOW.")
+  "Delete the panel BUFFER from WINDOW.")
 
 (define-ffi-generic ffi-height (object)
-  "Return the OBJECT height in pixels as a number.
+  "Return the OBJECT's height in pixels.
 Dispatches over `window' and classes inheriting from `buffer'.
 Usually setf-able."
   (:setter-p t))
 (define-ffi-generic ffi-width (object)
-  "Return the OBJECT width in pixels as a number.
+  "Return the OBJECT's width in pixels.
 Dispatches over `window' and classes inheriting from `buffer'.
 Usually setf-able."
   (:setter-p t))
 
 (define-ffi-generic ffi-buffer-make (buffer)
-  "Make BUFFER widget.")
+  "Return BUFFER and display it.")
 (define-ffi-generic ffi-buffer-delete (buffer)
-  "Delete BUFFER widget.")
+  "Delete BUFFER.")
 
 (define-ffi-generic ffi-buffer-load (buffer url)
   "Load URL into BUFFER through the renderer.")
 
 (define-ffi-generic ffi-buffer-load-html (buffer html-content url)
   "Load HTML-CONTENT into BUFFER through the renderer.
-If URL is not nil, relative URLs are resolved against it.")
+When URL is non-nil, relative URLs are resolved against it.")
 (define-ffi-generic ffi-buffer-load-alternate-html (buffer html-content content-url url)
   "Load HTML-CONTENT for CONTENT-URL into BUFFER through the renderer.
 Like `ffi-buffer-load-html', except that it doesn't influence the BUFFER history
 or CSS/HTML cache.")
 
 (define-ffi-generic ffi-buffer-evaluate-javascript (buffer javascript &optional world-name)
-  "Evaluate JAVASCRIPT in the BUFFER web view.
-See also `ffi-buffer-evaluate-javascript-async'.")
+  "Evaluate JAVASCRIPT, encoded as a string, in BUFFER.")
 (define-ffi-generic ffi-buffer-evaluate-javascript-async (buffer javascript &optional world-name)
-  "Same as `ffi-buffer-evaluate-javascript' but don't wait for
-the termination of the JavaScript execution.")
+  "Asynchronous version of `ffi-buffer-evaluate-javascript'.")
 
 (define-ffi-generic ffi-buffer-add-user-style (buffer style)
-  "Apply the CSS style to the BUFFER web view.")
+  "Apply the CSS style to BUFFER.")
 (define-ffi-generic ffi-buffer-remove-user-style (buffer style)
   "Remove the STYLE installed with `ffi-buffer-add-user-style'.")
 
 (define-ffi-generic ffi-buffer-add-user-script (buffer user-script)
-  "Install the JAVASCRIPT  into the BUFFER web view.")
+  "Install the JAVASCRIPT into the BUFFER web view.")
 (define-ffi-generic ffi-buffer-remove-user-script (buffer script)
   "Remove the SCRIPT installed with `ffi-buffer-add-user-script'.")
 
 (define-ffi-generic ffi-buffer-javascript-enabled-p (buffer)
-  "Return whether JavaScript can run, as boolean.
+  "Return non-nil when JavaScript is enabled in BUFFER.
 Setf-able."
   (:setter-p t))
 (define-ffi-generic ffi-buffer-javascript-markup-enabled-p (buffer)
-  "Return whether JavaScript can alter the page contents, as boolean.
+  "Return non-nil when JavaScript can mutate the BUFFER' contents.
 Setf-able."
   (:setter-p t))
 (define-ffi-generic ffi-buffer-smooth-scrolling-enabled-p (buffer)
-  "Return whether the smooth scrolling is enabled, as boolean.
+  "Return non-nil when smooth scrolling is enabled in BUFFER.
 Setf-able."
   (:setter-p t))
 (define-ffi-generic ffi-buffer-media-enabled-p (buffer)
-  "Return whether video and audio playback is enabled, as boolean.
+  "Return non-nil when video and audio playback are enabled in BUFFER.
 Setf-able."
   (:setter-p t))
 (define-ffi-generic ffi-buffer-webgl-enabled-p (buffer)
-  "Return whether WebGL is enabled, as boolean.
+  "Return non-nil when WebGL is enabled in BUFFER.
 Setf-able."
   (:setter-p t))
 (define-ffi-generic ffi-buffer-auto-load-image-enabled-p (buffer)
-  "Return whether images are displayed, as boolean.
+  "Return non-nil when images are displayed in BUFFER.
 Setf-able."
   (:setter-p t))
 (define-ffi-generic ffi-buffer-sound-enabled-p (buffer)
-  "Return whether the BUFFER has sound enabled, as boolean.
+  "Return non-nil when the sound is enabled in BUFFER.
 Setf-able."
   (:setter-p t))
 
@@ -192,7 +183,7 @@ PROXY-URL is a `quri:uri' and IGNORE-HOSTS a list of strings."
 (define-ffi-generic ffi-buffer-zoom-level (buffer)
   "Return the zoom level of the document.
 Setf-able."
-  (:method (buffer)
+  (:method ((buffer t))
     (ps-eval :buffer buffer (ps:chain document body style zoom)))
   (:setter-p t))
 (defmethod (setf ffi-buffer-zoom-level) (value (buffer buffer))
@@ -228,21 +219,24 @@ spontaneous events from programmed ones.
 See also `ffi-generated-input-event-p'.")
 
 (define-ffi-generic ffi-generated-input-event-p (window event)
-  "Return non-nil if EVENT was generated by `ffi-generate-input-event'.")
+  "Return non-nil when EVENT was generated by `ffi-generate-input-event'.")
 
-(define-ffi-generic ffi-within-renderer-thread (browser thunk)
-  "Run THUNK (a lambda of no argument) from the renderer's thread.
-This is useful in particular for renderer-specific functions that cannot be run on random threads."
-  (funcall thunk))
+(define-ffi-generic ffi-within-renderer-thread (thunk)
+  "Run THUNK (a lambda of no argument) in the renderer's thread.
+It is particularly useful for renderer procedures required to be executed in
+specific threads."
+  (:method ((thunk t))
+    (funcall thunk)))
 
 (define-ffi-generic ffi-kill-browser (browser)
-  "Terminate the renderer.
-This often translates in the termination of the \"main loop\" associated to the widget engine.")
+  "Terminate the renderer process.")
 
 (define-ffi-generic ffi-initialize (browser urls startup-timestamp)
   "Renderer-specific initialization.
-When done, call `call-next-method' to finalize the startup."
-  (finalize browser urls startup-timestamp))
+A specialization of this method must call `call-next-method' to conclude the
+startup routine."
+  (:method ((browser t) urls startup-timestamp)
+    (finalize-startup browser urls startup-timestamp)))
 
 (define-ffi-generic ffi-inspector-show (buffer)
   "Show the renderer built-in inspector.")
@@ -250,20 +244,22 @@ When done, call `call-next-method' to finalize the startup."
 (define-ffi-generic ffi-print-status (window html-body)
   "Display status buffer in WINDOW according to HTML-BODY.
 The `style' of the `status-buffer' is honored."
-  (with-slots (status-buffer) window
-    (html-write (spinneret:with-html-string
-                  (:head (:nstyle (style status-buffer)))
-                  (:body (:raw html-body)))
-                status-buffer)))
+  (:method ((window t) html-body)
+    (with-slots (status-buffer) window
+      (html-write (spinneret:with-html-string
+                    (:head (:nstyle (style status-buffer)))
+                    (:body (:raw html-body)))
+                  status-buffer))))
 
 (define-ffi-generic ffi-print-message (window html-body)
   "Print HTML-BODY in the WINDOW's message buffer.
 The `style' of the `message-buffer' is honored."
-  (with-slots (message-buffer) window
-    (html-write (spinneret:with-html-string
-                  (:head (:nstyle (style message-buffer)))
-                  (:body (:raw html-body)))
-                message-buffer)))
+  (:method ((window t) html-body)
+    (with-slots (message-buffer) window
+      (html-write (spinneret:with-html-string
+                    (:head (:nstyle (style message-buffer)))
+                    (:body (:raw html-body)))
+                  message-buffer))))
 
 (define-ffi-generic ffi-display-url (browser url)
   "Return URL as a human-readable string.
@@ -281,10 +277,7 @@ Setf-able, where the languages value is a list of strings like '(\"en_US\"
   (:setter-p t))
 
 (define-ffi-generic ffi-focused-p (buffer)
-  "Return non-nil if the BUFFER widget is the one with focus (currently displayed).")
-
-(define-ffi-generic ffi-muted-p (buffer)
-  "Return non-nil if the BUFFER cannot produce any sound.")
+  "Return non-nil when BUFFER is focused.")
 
 (define-ffi-generic ffi-tracking-prevention (buffer)
   "Return if WebKit-specific Intelligent Tracking Prevention (ITP) is enabled.
@@ -374,12 +367,10 @@ Return the text cut."
           (ps:chain active-element (set-selection-range 0 (ps:@ active-element value length))))))))
 
 (define-ffi-generic ffi-buffer-undo (buffer)
-  "Undo the last text edit performed in BUFFER's web view."
-  (echo-warning "Undoing edits is not yet implemented for this renderer."))
+  "Undo the last text edit performed in BUFFER's web view.")
 
 (define-ffi-generic ffi-buffer-redo (buffer)
-  "Redo the last undone text edit performed in BUFFER's web view."
-  (echo-warning "Redoing edits is not yet implemented for this renderer."))
+  "Redo the last undone text edit performed in BUFFER's web view.")
 
 ;; TODO: Move to alists for arbitrary number of params?
 (defvar *context-menu-commands* (make-hash-table :test #'equal)
@@ -438,8 +429,7 @@ Example:
 
 ;;; Signals
 
-(export-always 'on-signal-notify-uri)
-(define-generic on-signal-notify-uri (object url)
+(define-ffi-generic on-signal-notify-uri (object url)
   "Invoked when URL changes in OBJECT.
 Dispatches on buffers and modes."
   (:method ((buffer buffer) no-url)
@@ -458,8 +448,7 @@ Dispatches on buffers and modes."
   (:method ((mode mode) url)
     url))
 
-(export-always 'on-signal-notify-title)
-(define-generic on-signal-notify-title (object title)
+(define-ffi-generic on-signal-notify-title (object title)
   "Invoked when page TITLE is set in OBJECT.
 Dispatches on buffers and modes."
   (:method ((buffer buffer) no-title)
@@ -473,8 +462,7 @@ Dispatches on buffers and modes."
     title))
 
 ;; See https://webkitgtk.org/reference/webkit2gtk/stable/WebKitWebView.html#WebKitLoadEvent
-(export-always 'on-signal-load-started)
-(define-generic on-signal-load-started (object url)
+(define-ffi-generic on-signal-load-started (object url)
   "Invoked when URL starts loading in OBJECT.
 Dispatches on buffers and modes."
   (:method ((buffer buffer) url)
@@ -483,8 +471,7 @@ Dispatches on buffers and modes."
   (:method ((mode mode) url)
     url))
 
-(export-always 'on-signal-load-redirected)
-(define-generic on-signal-load-redirected (object url)
+(define-ffi-generic on-signal-load-redirected (object url)
   "Invoked when the request gets redirected to URL in OBJECT.
 Dispatches on buffers and modes."
   (:method ((buffer buffer) url)
@@ -493,8 +480,7 @@ Dispatches on buffers and modes."
   (:method ((mode mode) url)
     url))
 
-(export-always 'on-signal-load-canceled)
-(define-generic on-signal-load-canceled (object url)
+(define-ffi-generic on-signal-load-canceled (object url)
   "Invoked when URL loading is canceled in OBJECT.
 Dispatches on buffers and modes."
   (:method ((buffer buffer) url)
@@ -503,8 +489,7 @@ Dispatches on buffers and modes."
   (:method ((mode mode) url)
     url))
 
-(export-always 'on-signal-load-committed)
-(define-generic on-signal-load-committed (object url)
+(define-ffi-generic on-signal-load-committed (object url)
   "Invoked when URL loading is approved in OBJECT.
 Dispatches on buffers and modes."
   (:method ((buffer buffer) url)
@@ -513,8 +498,7 @@ Dispatches on buffers and modes."
   (:method ((mode mode) url)
     url))
 
-(export-always 'on-signal-load-finished)
-(define-generic on-signal-load-finished (object url)
+(define-ffi-generic on-signal-load-finished (object url)
   "Invoked when done loading URL in OBJECT.
 Dispatches on buffers and modes."
   (:method ((buffer buffer) url)
@@ -525,8 +509,7 @@ Dispatches on buffers and modes."
   (:method ((mode mode) url)
     url))
 
-(export-always 'on-signal-load-failed)
-(define-generic on-signal-load-failed (object url)
+(define-ffi-generic on-signal-load-failed (object url)
   "Invoked when URL loading has failed in OBJECT.
 Dispatches on buffers and modes."
   (:method ((buffer buffer) url)
@@ -535,8 +518,7 @@ Dispatches on buffers and modes."
   (:method ((mode mode) url)
     url))
 
-(export-always 'on-signal-button-press)
-(define-generic on-signal-button-press (object button-key)
+(define-ffi-generic on-signal-button-press (object button-key)
   "Invoked on BUTTON-KEY press.
 Dispatches on buffers and modes."
   (:method ((buffer buffer) button-key)
@@ -546,8 +528,7 @@ Dispatches on buffers and modes."
     (declare (ignorable button-key))
     nil))
 
-(export-always 'on-signal-key-press)
-(define-generic on-signal-key-press (object key)
+(define-ffi-generic on-signal-key-press (object key)
   "Invoked on KEY press.
 Dispatches on buffers and modes."
   (:method ((buffer buffer) key)

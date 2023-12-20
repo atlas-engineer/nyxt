@@ -320,13 +320,9 @@ A list of strings is returned, as to comply with `uiop:launch-program' or
   "Run BODY from a new thread when renderer is ready.
 `ffi-within-renderer-thread' runs its body on the renderer thread when it's
 idle, so it should do the job."
-  `(ffi-within-renderer-thread
-    browser
-    (lambda ()
-      (run-thread ,thread-name
-        ,@body))))
+  `(ffi-within-renderer-thread (lambda () (run-thread ,thread-name ,@body))))
 
-(defmethod finalize ((browser browser) urls startup-timestamp)
+(defmethod finalize-startup ((browser browser) urls startup-timestamp)
   "Run `after-init-hook' then BROWSER's `startup'."
   ;; `messages-appender' requires `*browser*' to be initialized.
   (unless (find-if (sera:eqs 'messages-appender) (log4cl:all-appenders)

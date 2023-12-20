@@ -170,10 +170,8 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
      (with-protect ("Error on GTK thread: ~a" :condition)
        ,@body)))
 
-(defmethod ffi-within-renderer-thread ((browser gtk-browser) thunk)
-  (declare (ignore browser))
-  (within-gtk-thread
-    (funcall thunk)))
+(defmethod ffi-within-renderer-thread (thunk)
+  (within-gtk-thread (funcall thunk)))
 
 (defun %within-renderer-thread (thunk)
   "If the current thread is the renderer thread, execute THUNK with `funcall'.
@@ -1260,10 +1258,9 @@ the `active-buffer'."
         (list -1 height))
   (if (eql 0 height)
       (gtk:gtk-widget-grab-focus (gtk-object (nyxt::active-buffer (window buffer))))
-      (gtk:gtk-widget-grab-focus (prompt-buffer-view (window buffer)))))
+      (ffi-focus-prompt-buffer buffer)))
 
-(define-ffi-method ffi-focus-prompt-buffer ((window gtk-window)
-                                            (prompt-buffer prompt-buffer))
+(define-ffi-method ffi-focus-prompt-buffer ((prompt-buffer prompt-buffer))
   "Focus PROMPT-BUFFER in WINDOW."
   (gtk:gtk-widget-grab-focus (prompt-buffer-view (window prompt-buffer)))
   prompt-buffer)
@@ -2121,10 +2118,6 @@ As a second value, return the current buffer index starting from 0."
 
 (define-ffi-method ffi-focused-p ((buffer gtk-buffer))
   (gtk:gtk-widget-is-focus (gtk-object buffer)))
-
-(define-ffi-method ffi-muted-p ((buffer gtk-buffer))
-  #+webkit2-mute
-  (webkit:webkit-web-view-is-muted (gtk-object buffer)))
 
 (define-ffi-method ffi-tracking-prevention ((buffer gtk-buffer))
   #+webkit2-tracking
