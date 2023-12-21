@@ -11,6 +11,14 @@ Hosts `list-buffers' page and `buffers-panel' panel."
   ((visible-in-status-p nil))
   (:toggler-command-p nil))
 
+(define-command list-buffers-as-tree ()
+  "List buffers in a tree."
+  (list-buffers))
+
+(define-command list-buffers-as-list ()
+  "List buffers as a list."
+  (list-buffers :linear-view-p t))
+
 (define-internal-page-command-global list-buffers (&key (cluster nil)
                                                   linear-view-p) ; TODO: Document `cluster'.
     (listing-buffer "*Buffers*" 'nyxt/mode/buffer-listing:buffer-listing-mode)
@@ -67,14 +75,8 @@ shown linearly instead."
                      (loop for document in cluster
                            collect (buffer-markup (analysis::source document)))))))
     (spinneret:with-html-string
+      (render-menu 'nyxt/mode/buffer-listing:buffer-listing-mode listing-buffer)
       (:h1 "Buffers")
-      (:nbutton
-        :text "Tree display"
-        '(nyxt/mode/buffer-listing::list-buffers))
-      (:nbutton
-        :text "Linear display"
-        '(nyxt/mode/buffer-listing::list-buffers :linear-view-p t))
-      (:br)
       (:div
        (if cluster
            (loop for cluster-key being the hash-key

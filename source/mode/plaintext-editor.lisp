@@ -19,14 +19,12 @@ To enable it, add this to your configuration file:
               :margin 0)
             `("#editor"
               :margin 0
-              :position "absolute"
-              :top "0"
-              :right "0"
-              :bottom "0"
-              :left "0"
+              :height "100%"
+              :width "100%"
               :border "none"
               :outline "none"
               :padding "5px"
+              :padding-top "18px"
               :autofocus "true"
               :background-color ,theme:background
               :color ,theme:on-background))))
@@ -35,8 +33,10 @@ To enable it, add this to your configuration file:
 (defmethod markup ((editor plaintext-editor-mode))
   (spinneret:with-html-string
     (:head
-     (:nstyle (style editor)))
+     (:nstyle (style editor))
+     (:nstyle (style (nyxt::current-buffer))))
     (:body
+     (render-menu 'nyxt/mode/editor:editor-mode)
      (:textarea :id "editor" :name "editor" :autofocus t))))
 
 (defmethod set-content ((editor plaintext-editor-mode) content)

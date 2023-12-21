@@ -339,6 +339,7 @@ Splits bookmarks into groups by tags."
   (let ((bookmarks (group-bookmarks bookmarks-buffer)))
     (spinneret:with-html-string
       (:nstyle (style (find-submode 'bookmark-mode (current-buffer)))) ; TODO: Make sure this is the right buffer
+      (render-menu 'bookmark-mode bookmarks-buffer)
       (:h1 "Bookmarks")
       (cond
         ((zerop (hash-table-count bookmarks))
