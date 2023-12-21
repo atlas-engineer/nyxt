@@ -331,6 +331,16 @@ With MODE-SYMBOLS and GLOBAL-P, include global commands."
        *command-list*)
       *command-list*))
 
+(defun list-mode-commands (mode-symbol)
+  "List commands.
+Commands are instances of the `command' class.  Only commands defined within the
+context of a mode are listed."
+  (remove-if-not
+   (lambda (command)
+     (eq (symbol-package (name command))
+         (symbol-package mode-symbol)))
+   *command-list*))
+
 (defun run-command (command &optional args)
   ;; Bind current buffer for the duration of the command.  This
   ;; way, if the user switches buffer after running a command
