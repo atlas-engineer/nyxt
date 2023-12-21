@@ -308,8 +308,8 @@ See `sym:package-symbols'."
   "List commands.
 Commands are instances of the `command' class.
 When MODE-SYMBOLS are provided, list only the commands that belong to the
-corresponding mode packages or of a parent mode packages.
-Otherwise list all commands.
+corresponding mode packages or of a parent mode packages.  Otherwise list all
+commands. Additionally, list all commands within the Nyxt package.
 With MODE-SYMBOLS and GLOBAL-P, include global commands."
   ;; TODO: Make sure we list commands of inherited modes.
   (if mode-symbols
