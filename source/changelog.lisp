@@ -945,4 +945,8 @@ invoked via " (:code "flatpak-spawn --host <command> <command-args>") "."))))
     (:ul
      (:li "Fix commands "
           (:nxref :command 'reopen-last-buffer) " and "
-          (:nxref :command 'reopen-buffer) "."))))
+          (:nxref :command 'reopen-buffer) ".")))
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "Built-in modes and special pages have a dedicated menu area now. This menu
+allows access to common functions that are defined within the mode."))))
