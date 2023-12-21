@@ -53,26 +53,16 @@ See `nyxt/mode/macro-edit' package documentation for implementation details."
   "Edit a macro."
   (spinneret:with-html-string
     (:nstyle (style buffer))
+    (render-menu 'nyxt/mode/macro-edit:macro-edit-mode buffer)
     (:h1 "Macro editor")
-    (:p "Name")
+    (:p "Name: ")
     (:input :type "text" :id "macro-name")
     (:p "Commands")
-    (:p (:nbutton
-          :text "+ Add command"
-          '(nyxt/mode/macro-edit::add-command)))
     (:div
      :id "commands"
      (:raw
       (render-functions
-       (find-submode 'nyxt/mode/macro-edit:macro-edit-mode))))
-    (:br)
-    (:hr)
-    (:nbutton
-      :text "Save macro"
-      '(nyxt/mode/macro-edit::save-macro))
-    (:nbutton
-      :text "Compile macro"
-      '(nyxt/mode/macro-edit::evaluate-macro))))
+       (find-submode 'nyxt/mode/macro-edit:macro-edit-mode))))))
 
 (defmethod add-function ((macro-editor macro-edit-mode) command)
   (alex:appendf (functions macro-editor)

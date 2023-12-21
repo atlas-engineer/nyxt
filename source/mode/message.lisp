@@ -21,16 +21,8 @@ Mainly used on `list-messages' page."
     (buffer "*Messages*" 'nyxt/mode/message:message-mode)
   "Show the *Messages* buffer."
   (spinneret:with-html-string
+    (render-menu 'nyxt/mode/message:message-mode buffer)
     (:h1 "Messages")
-    (:p
-     (:button :class "button"
-              :onclick (ps:ps (nyxt/ps:lisp-eval (:title "clear-messages")
-                                                 (clear-messages)
-                                                 (nyxt:reload-buffer buffer)))
-              "Clear")
-     ; TODO: Fix load order so that `nyxt:manual' is defined here.
-     (:button :class "button" :onclick (ps:ps (nyxt/ps:lisp-eval (:title "manual") (funcall (sym:resolve-symbol :manual :function)))) "Manual"))
-    (:p (:small "See the troubleshooting section of the manual if you need help diagnosing warnings and errors."))
     (:ul
      (loop for message in (reverse (nyxt:messages-content *browser*))
            collect (if (html-string-p message)

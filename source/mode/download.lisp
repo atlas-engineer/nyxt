@@ -204,6 +204,7 @@ We iterate through the browser's downloads to draw every single
 download."
   (spinneret:with-html-string
     (:nstyle (style (find-submode 'download-mode)))
+    (render-menu 'download-mode buffer)
     (:h1 "Downloads")
     (:hr)
     (:div
