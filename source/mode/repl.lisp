@@ -441,8 +441,7 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
             `(.input-area
               :background-color ,theme:secondary
               :width "99%"
-              :padding "0.5rem"
-              :margin "1rem")
+              :padding "0.5rem")
             `(.evaluation-result
               :margin "1rem")
             `(.button
