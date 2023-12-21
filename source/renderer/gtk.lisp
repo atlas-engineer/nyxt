@@ -718,9 +718,7 @@ See `gtk-browser's `modifier-translator' slot."
                              event))
          (buffer (or (current-prompt-buffer)
                      (nyxt::active-buffer sender))))
-    (if modifiers
-        (log:debug key-string keycode character keyval-name modifiers)
-        (log:debug key-string keycode character keyval-name))
+    (log:debug key-string keycode character keyval-name modifiers)
     (when (nyxt::prompt-buffer-p buffer)
       (update-prompt buffer))
     (if key-string
