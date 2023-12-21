@@ -275,10 +275,9 @@ See `find-internal-page-buffer'."))
                       (setf contents
                             (spinneret:with-html-string
                               (:head
-                               (:title (progn
-                                         (apply #'dynamic-title
-                                                (gethash (name page) *nyxt-url-commands*)
-                                                args)))
+                               (:title (apply #'dynamic-title
+                                              (gethash (name page) *nyxt-url-commands*)
+                                              args))
                                (:style (:raw (style (or (find-panel-buffer (name page))
                                                         (find-internal-page-buffer (name page)))))))
                               (:body (:raw contents))))))
