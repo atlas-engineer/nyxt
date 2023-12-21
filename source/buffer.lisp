@@ -743,8 +743,6 @@ The current buffer URL should not be relied upon.  With WebKitGTK, it is the sam
 as (url REQUEST-DATA).
 If you need to access the URL before this request, inspect the document-mode history.
 
-There's no more ability to pass the results to the renderer with :FORWARD.
-
 Example:
 
 \(defmethod configure-instance ((buffer buffer))
