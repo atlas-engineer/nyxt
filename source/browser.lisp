@@ -437,19 +437,16 @@ This is useful to tell REPL instances from binary ones."
                      title (unless (str:emptyp title) " - ")
                      url))))
 
-;; REVIEW: Do we need :NO-FOCUS? It's not used anywhere.
-(-> open-urls ((maybe (cons quri:uri *)) &key (:no-focus boolean)) *)
-(defun open-urls (urls &key no-focus)
-  "Create new buffers from URLs.
-First URL is focused if NO-FOCUS is nil."
+(-> open-urls ((maybe (cons quri:uri *))) *)
+(defun open-urls (urls)
+  "Create new buffers and load URLS.
+The buffer corresponding to the first URL is focused."
   (with-protect ("Could not make buffer to open ~a: ~a" urls :condition)
-    (let ((first-buffer (first (mapcar
-                                (lambda (url) (make-buffer :url url))
-                                urls))))
-      (when (and first-buffer (not no-focus))
+    (let ((first-buffer (first (mapcar (lambda (url) (make-buffer :url url))
+                                       urls))))
+      (when first-buffer
         (if (open-external-link-in-new-window-p *browser*)
-            (let ((window (window-make *browser*)))
-              (window-set-buffer window first-buffer))
+            (window-set-buffer (window-make *browser*) first-buffer)
             (set-current-buffer first-buffer))))))
 
 (defun get-keymap (buffer buffer-keyscheme-map)
