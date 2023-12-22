@@ -226,7 +226,28 @@ See also the `profile' slot in the `browser' class.")
               :margin-top "2em")
             `("::selection"
               :color ,theme:on-action
-              :background-color ,theme:action)))
+              :background-color ,theme:action)
+            `(".mode-menu"
+              :overflow-x "scroll"
+              :white-space "nowrap"
+              :background-color ,theme:background-alt
+              :margin-left "-20px"
+              :margin-top "-20px"
+              :height "32px")
+            `(".mode-menu > button"
+              :color ,theme:on-secondary
+              :padding-left "8px"
+              :padding-right "8px"
+              :font-size "14px"
+              :border-radius "2px"
+              :margin "0"
+              :margin-right "12px"
+              :border "none"
+              :height "32px")
+            `(".mode-menu > .binding"
+              :background-color ,theme:secondary)
+            `(".mode-menu > .command"
+              :background-color ,theme:background-alt)))
    (buffer-delete-hook          ; TODO: Should we move this to `context-buffer'?
     (make-instance 'hook-buffer)
     :type hook-buffer

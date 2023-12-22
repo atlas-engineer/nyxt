@@ -308,8 +308,8 @@ See `sym:package-symbols'."
   "List commands.
 Commands are instances of the `command' class.
 When MODE-SYMBOLS are provided, list only the commands that belong to the
-corresponding mode packages or of a parent mode packages.
-Otherwise list all commands.
+corresponding mode packages or of a parent mode packages.  Otherwise list all
+commands. Additionally, list all commands within the Nyxt package.
 With MODE-SYMBOLS and GLOBAL-P, include global commands."
   ;; TODO: Make sure we list commands of inherited modes.
   (if mode-symbols
@@ -330,6 +330,16 @@ With MODE-SYMBOLS and GLOBAL-P, include global commands."
                mode-symbols)))
        *command-list*)
       *command-list*))
+
+(defun list-mode-commands (mode-symbol)
+  "List commands.
+Commands are instances of the `command' class.  Only commands defined within the
+context of a mode are listed."
+  (remove-if-not
+   (lambda (command)
+     (eq (symbol-package (name command))
+         (symbol-package mode-symbol)))
+   *command-list*))
 
 (defun run-command (command &optional args)
   ;; Bind current buffer for the duration of the command.  This

@@ -403,6 +403,7 @@ internally, but this display is clearer and more navigable."
     (spinneret:with-html-string
      (:nstyle (style mode))
      (:body
+      (render-menu 'nyxt/mode/history:history-mode output-buffer)
       (:h1 "History")
       (dolist (buffer (buffer-list))
         (:div (:raw (render-buffer-history-tree buffer))))))))
@@ -414,6 +415,7 @@ internally, but this display is clearer and more navigable."
 Cut the display at LIMIT nodes."
   (spinneret:with-html-string
     (:nstyle (style (find-submode 'nyxt/mode/list-history:list-history-mode buffer)))
+    (render-menu 'nyxt/mode/history:history-mode buffer)
     (:h1 "History")
     (:p (format nil "The last ~a history entries:" limit))
     (:ul (:raw (nyxt::history-html-list :limit limit)))))
