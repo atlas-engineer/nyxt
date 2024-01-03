@@ -111,7 +111,7 @@ A positive value shifts to the bottom.")
 (define-configuration document-buffer
   ((default-modes (cons 'hint-mode %slot-value%))))
 
-(define-parenscript-async hint-elements (hints nyxt-identifiers)
+(define-parenscript-async hint-elements (hints)
   (defun create-hint-overlay (original-element hint)
     "Create a DOM element to be used as a hint."
     (ps:let ((user-x-offset (ps:lisp (hints-offset-x (find-submode 'hint-mode))))
@@ -136,15 +136,14 @@ A positive value shifts to the bottom.")
 
   (let ((hints-parent (ps:chain document (create-element "div")))
         (hints (ps:lisp (list 'quote hints)))
-        (nyxt-identifiers (ps:lisp (list 'quote nyxt-identifiers))))
-    (dotimes (i (length hints))
-      (let* ((hint (aref hints i))
-             (nyxt-identifier (aref nyxt-identifiers i))
-             (element (nyxt/ps:rqs-nyxt-id document nyxt-identifier)))
+        (i 0))
+    (dolist (element (nyxt/ps:qsa document "[nyxt-hintable]"))
+      (let ((hint (aref hints i)))
         (ps:chain element (set-attribute "nyxt-hint" hint))
         (ps:chain hints-parent (append-child (create-hint-overlay element hint)))
         (when (ps:lisp (show-hint-scope-p (find-submode 'hint-mode)))
-          (ps:chain element class-list (add "nyxt-element-hint")))))
+          (ps:chain element class-list (add "nyxt-element-hint")))
+        (setf i (1+ i))))
     (setf (ps:@ hints-parent id) "nyxt-hints"
           (ps:@ hints-parent style) "all: unset !important;")
     (ps:chain document body parent-node (insert-before hints-parent (ps:@ document body next-sibling)))
@@ -176,16 +175,14 @@ A positive value shifts to the bottom.")
                                            alphabet))))))
 
 (define-parenscript set-hintable-attribute (selector)
-  (let ((elements (nyxt/ps:rqsa document (ps:lisp selector)))
-        (in-view-port-p (ps:lisp (eq :vi (hinting-type (find-submode 'hint-mode))))))
-    (ps:dolist (element elements)
-      (if in-view-port-p
-          (unless (nyxt/ps:element-overlapped-p element)
-            (ps:chain element (set-attribute "nyxt-hintable" "")))
-          (ps:chain element (set-attribute "nyxt-hintable" ""))))))
+  (ps:dolist (element (nyxt/ps:qsa document (ps:lisp selector)))
+    (if (ps:lisp (eq :vi (hinting-type (find-submode 'hint-mode))))
+        (unless (nyxt/ps:element-overlapped-p element)
+          (ps:chain element (set-attribute "nyxt-hintable" "")))
+        (ps:chain element (set-attribute "nyxt-hintable" "")))))
 
 (define-parenscript remove-hintable-attribute ()
-  (ps:dolist (element (nyxt/ps:rqsa document "[nyxt-hintable]"))
+  (ps:dolist (element (nyxt/ps:qsa document "[nyxt-hintable]"))
     (ps:chain element (remove-attribute "nyxt-hintable"))))
 
 (defun add-hints (&key selector (buffer (current-buffer)))
@@ -194,22 +191,22 @@ A positive value shifts to the bottom.")
                   buffer)
   (set-hintable-attribute selector)
   (update-document-model :buffer buffer)
-  (let* ((hintable-elements (clss:select "[nyxt-hintable]" (document-model buffer)))
-         (hints (generate-hints (length hintable-elements))))
-    (loop for elem across hintable-elements
-          for hint in hints
-          do (plump:set-attribute elem "nyxt-hint" hint)
-          collect elem
-          finally (hint-elements hints (map 'list #'(lambda (elem)
-                                                      (plump:attribute elem "nyxt-identifier"))
-                                            hintable-elements)))))
+  (loop with hintable-elements = (sera:filter
+                                  (lambda (el) (plump:attribute el "nyxt-identifier"))
+                                  (clss:select "[nyxt-hintable]" (document-model buffer)))
+        with hints = (generate-hints (length hintable-elements))
+        for elem across hintable-elements
+        for hint in hints
+        initially (hint-elements hints)
+        do (plump:set-attribute elem "nyxt-hint" hint)
+        collect elem))
 
 (define-parenscript-async remove-hint-elements ()
   (ps:let ((hints-parent (nyxt/ps:qs-id document "nyxt-hints")))
     (ps:when hints-parent
       (ps:chain hints-parent (remove))))
   (when (ps:lisp (show-hint-scope-p (find-submode 'hint-mode)))
-    (ps:dolist (element (nyxt/ps:rqsa document ".nyxt-element-hint"))
+    (ps:dolist (element (nyxt/ps:qsa document ".nyxt-element-hint"))
       (ps:chain element class-list (remove "nyxt-element-hint")))))
 
 (defun remove-hints (&key (buffer (current-buffer)))
