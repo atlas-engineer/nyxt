@@ -153,8 +153,8 @@ A positive value shifts to the bottom.")
 
 (-> select-from-alphabet (t alex:positive-integer string) (values string &optional))
 (defun select-from-alphabet (code subsequence-length alphabet)
-  (let* ((exponents (nreverse (loop for pow below subsequence-length
-                                    collect (expt (length alphabet) pow)))))
+  (let ((exponents (nreverse (loop for pow below subsequence-length
+                                   collect (expt (length alphabet) pow)))))
     (coerce (loop for exp in exponents
                   for quotient = (floor (/ code exp))
                   collect (aref alphabet quotient)
