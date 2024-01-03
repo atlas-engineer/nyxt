@@ -17,7 +17,6 @@
   - [[#fetch-the-source-code][Fetch the source code]]
   - [[#compile][Compile]]
     - [[#using-the-makefile][Using the Makefile]]
-    - [[#using-lisp][Using Lisp]]
   - [[#interacting-with-a-compiled-version-of-nyxt][Interacting with a compiled version of Nyxt]]
     - [[#slime][SLIME]]
     - [[#sly][SLY]]
@@ -213,18 +212,6 @@ The following command will build the Lisp core.
 
 Inside the Makefile you'll find many options you can specify. Run ~make~
 to display some documentation or see the [[../makefile][Makefile]] for more details.
-
-*** Using Lisp
-
-Start your Lisp and run the following commands:
-
-#+NAME: compile
-#+begin_src lisp
-(asdf:make :nyxt/gtk-application)
-#+end_src
-
-Your Lisp implementation must have produced an executable in the directory where
-the =.asd= file is located.
 
 ** Interacting with a compiled version of Nyxt
 
