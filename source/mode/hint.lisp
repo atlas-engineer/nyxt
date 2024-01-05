@@ -146,8 +146,9 @@ A positive value shifts to the bottom.")
         (setf i (1+ i))))
     (setf (ps:@ hints-parent id) "nyxt-hints"
           (ps:@ hints-parent style) "all: unset !important;")
-    (ps:chain document body parent-node (insert-before hints-parent (ps:@ document body next-sibling)))
-    ;; Returning fragment makes WebKit choke.
+    (ps:chain document body parent-node (insert-before hints-parent
+                                                       (ps:@ document body next-sibling)))
+    ;; Don't return a value.  Only the side-effects are of importance.
     nil))
 
 (-> select-from-alphabet (t alex:positive-integer string) (values string &optional))
