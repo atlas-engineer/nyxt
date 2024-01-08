@@ -947,7 +947,10 @@ invoked via " (:code "flatpak-spawn --host <command> <command-args>") "."))))
           (:nxref :command 'reopen-last-buffer) " and "
           (:nxref :command 'reopen-buffer) ".")
      (:li "Fix performance issues related to "
-          (:nxref :class-name 'nyxt/mode/hint:hint-mode) ".")))
+          (:nxref :class-name 'nyxt/mode/hint:hint-mode) ".")
+     (:li "Fix logic behind "
+          (:nxref :class-name 'prompter:source :slot 'prompter:actions-on-marks)
+          ".")))
   (:nsection :title "UI/UX"
     (:ul
      (:li "Built-in modes and special pages have a dedicated menu area now. This menu
