@@ -70,20 +70,20 @@ define which elements are picked up by element hinting.
 For instance, to include images:
 
     a, button, input, textarea, details, select, img:not([alt=\"\"])")
-   (hints-offset-x
+   (x-translation
     0
     :type integer
-    :documentation "The number of pixels that hint overlays are horizontally shifted by.
+    :documentation "The horizontal translation as a percentage of the hint's size.
 A positive value shifts to the right.")
-   (hints-offset-y
+   (y-translation
     0
     :type integer
-    :documentation "The number of pixels that hint overlays are vertically shifted by.
+    :documentation "The vertical translation as a percentage of the hint's size.
 A positive value shifts to the bottom.")
-   (hints-alignment-x
-    :on-top
+   (x-placement
+    :left
     :type keyword
-    :documentation "Where to position hints: :left, :on-top, or :right of a link.")
+    :documentation "The horizontal placement of the hints: either `:left' or `:right'.")
    (keyscheme-map
     (define-keyscheme-map "hint-mode" ()
       keyscheme:cua
@@ -116,53 +116,34 @@ A positive value shifts to the bottom.")
   ((default-modes (cons 'hint-mode %slot-value%))))
 
 (define-parenscript-async hint-elements (hints)
-  (defun create-hint-overlay (original-element hint)
+  (defun create-hint-element (hint)
+    (let ((hint-element (ps:chain document (create-element "span"))))
+      (setf (ps:@ hint-element class-name) "nyxt-hint"
+            (ps:@ hint-element id) (+ "nyxt-hint-" hint)
+            (ps:@ hint-element text-content) hint)
+      hint-element))
+
+  (defun set-hint-element-style (hint-element hinted-element)
+    (let ((right-x-alignment-p (eq (ps:lisp (x-placement (find-submode 'hint-mode)))
+                                   :right))
+          (rect (ps:chain hinted-element (get-bounding-client-rect))))
+      (setf (ps:@ hint-element style position) "absolute"
+            (ps:@ hint-element style top) (+ (ps:@ window scroll-y) (ps:@ rect top) "px")
+            (ps:@ hint-element style left) (+ (ps:@ window scroll-x) (ps:@ rect left)
+                                              (when right-x-alignment-p (ps:@ rect width)) "px")
+            (ps:@ hint-element style transform)
+            (+ "translate("
+               (+ (when right-x-alignment-p -100)
+                  (ps:lisp (x-translation (find-submode 'hint-mode))))
+               "%, "
+               (ps:lisp (y-translation (find-submode 'hint-mode)))
+               "%)"))))
+
+  (defun create-hint-overlay (hinted-element hint)
     "Create a DOM element to be used as a hint."
-    (ps:let* ((user-x-offset (ps:lisp (hints-offset-x (find-submode 'hint-mode))))
-              (user-y-offset (ps:lisp (hints-offset-y (find-submode 'hint-mode))))
-              (user-x-alignment (ps:lisp (hints-alignment-x (find-submode 'hint-mode))))
-              (rect (ps:chain original-element (get-bounding-client-rect)))
-              (relative-x-position (if (eq user-x-alignment :right)
-                                       (+ (ps:@ rect right) 2)
-                                       (- (ps:@ rect left) 2)))
-              (computed-style (ps:chain window (get-computed-style original-element)))
-              (padding-left (parse-float (ps:@ computed-style padding-left)))
-              (padding-right (parse-float (ps:@ computed-style padding-right)))
-              (padding-x-adjustment (case user-x-alignment
-                                      (:left padding-left)
-                                      (:right (- padding-right))
-                                      (otherwise 0)))
-              (absolute-x-position (+ (ps:@ window page-x-offset)
-                                      relative-x-position
-                                      padding-x-adjustment
-                                      user-x-offset))
-              (inner-width (ps:@ window inner-width))
-              (max-x-position (- inner-width 25))
-              (element (ps:chain document (create-element "span"))))
-      (setf (ps:@ element class-name) "nyxt-hint"
-            (ps:@ element style position) "absolute"
-            (ps:@ element style left) (unless (eq user-x-alignment :left)
-                                        (+ (ps:min
-                                             max-x-position
-                                             (ps:max
-                                               0
-                                               absolute-x-position))
-                                           "px"))
-            (ps:@ element style right) (when (eq user-x-alignment :left)
-                                         (+ (ps:min
-                                              max-x-position
-                                              (ps:max
-                                                0
-                                                (- inner-width absolute-x-position)))
-                                            "px"))
-            (ps:@ element style top) (+ (ps:max (+ (ps:@ window page-y-offset)
-                                                   (ps:@ rect top)
-                                                   user-y-offset)
-                                                0)
-                                        "px")
-            (ps:@ element id) (+ "nyxt-hint-" hint)
-            (ps:@ element text-content) hint)
-      element))
+    (let ((hint-element (create-hint-element hint)))
+      (set-hint-element-style hint-element hinted-element))
+    hint-element)
 
   (let ((hints-parent (ps:chain document (create-element "div")))
         (hints (ps:lisp (list 'quote hints)))
