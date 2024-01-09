@@ -303,7 +303,7 @@ Otherwise, create a dummy buffer with URL to get its source."
            (map nil #'plump:remove-child
                 ;; FIXME: This selector hardcodes the set of identifiers/classes
                 ;; we use. Update whenever we change it?
-                (reverse (clss:select ".nyxt-hint, .nyxt-search-node, .nyxt-select-hint" dom)))
+                (reverse (clss:select ".nyxt-hint, .nyxt-select-hint" dom)))
            (plump:serialize dom nil))
       (when (background-buffer-p buffer)
         (ffi-buffer-delete buffer)))))
