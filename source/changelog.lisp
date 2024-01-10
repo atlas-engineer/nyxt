@@ -850,9 +850,9 @@ a scalable icon."))))
   (:nsection :title "Features"
     (:ul
      (:li "Add new slots "
-          (:nxref :class-name 'nyxt/mode/hint:hint-mode :slot 'nyxt/mode/hint:hints-offset-x)
+          (:code "nyxt/mode/hint:hints-offset-x")
           " and "
-          (:nxref :class-name 'nyxt/mode/hint:hint-mode :slot 'nyxt/mode/hint:hints-offset-y)
+          (:code "nyxt/mode/hint:hints-offset-y")
           ", to change the position of hint overlays.")))
   (:nsection :title "Bug fixes"
     (:ul
@@ -995,6 +995,12 @@ allows access to common functions that are defined within the mode."))))
 
 (define-version "4.0.0"
   (:ul
+   (:li "Add slot "
+        (:nxref :slot 'nyxt/mode/hint:x-placement :class-name 'nyxt/mode/hint:hint-mode)
+        " to draw hints on the right of the hinted element.  By default, they
+are drawn on the left.")
+    (:li "The size of the hints is dynamically set by taking into account the
+size of the hinted element.")
    (:li "Fix bug that made Nyxt display an out of date version in several places.")
    (:li "Add " (:nxref :class-name 'message-buffer) " as a user class, thus
 enabling its customization.")
