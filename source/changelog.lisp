@@ -850,9 +850,9 @@ a scalable icon."))))
   (:nsection :title "Features"
     (:ul
      (:li "Add new slots "
-          (:nxref :class-name 'nyxt/mode/hint:hint-mode :slot 'nyxt/mode/hint:hints-offset-x)
+          (:code "nyxt/mode/hint:hints-offset-x")
           " and "
-          (:nxref :class-name 'nyxt/mode/hint:hint-mode :slot 'nyxt/mode/hint:hints-offset-y)
+          (:code "nyxt/mode/hint:hints-offset-y")
           ", to change the position of hint overlays.")))
   (:nsection :title "Bug fixes"
     (:ul
