@@ -126,7 +126,9 @@ A positive value shifts to the bottom.")
   (defun set-hint-element-style (hint-element hinted-element)
     (let ((right-x-alignment-p (eq (ps:lisp (x-placement (find-submode 'hint-mode)))
                                    :right))
-          (rect (ps:chain hinted-element (get-bounding-client-rect))))
+          (rect (ps:chain hinted-element (get-bounding-client-rect)))
+          (hinted-element-font-size (ps:@ (ps:chain window (get-computed-style hinted-element))
+                                          font-size)))
       (setf (ps:@ hint-element style position) "absolute"
             (ps:@ hint-element style top) (+ (ps:@ window scroll-y) (ps:@ rect top) "px")
             (ps:@ hint-element style left) (+ (ps:@ window scroll-x) (ps:@ rect left)
@@ -137,7 +139,9 @@ A positive value shifts to the bottom.")
                   (ps:lisp (x-translation (find-submode 'hint-mode))))
                "%, "
                (ps:lisp (y-translation (find-submode 'hint-mode)))
-               "%)"))))
+               "%)"))
+      (when (> (parse-float hinted-element-font-size) 5)
+        (setf (ps:@ hint-element style font-size) hinted-element-font-size))))
 
   (defun create-hint-overlay (hinted-element hint)
     "Create a DOM element to be used as a hint."
