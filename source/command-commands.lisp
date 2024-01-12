@@ -4,10 +4,12 @@
 (in-package :nyxt)
 
 (define-class hook-description ()
-  ((name ""
-         :documentation "The hook name.")
-   (value nil
-          :documentation "The hook value.")))
+  ((name
+    ""
+    :documentation "The hook name.")
+   (value
+    nil
+    :documentation "The hook value.")))
 
 (defun command-attributes (command &optional (buffer (active-buffer (current-window :no-rescan))))
   (let* ((bindings (keymaps:pretty-binding-keys
@@ -308,11 +310,10 @@ User input is evaluated Lisp."
 
 (define-class handler-source (prompter:source)
   ((prompter:name "Handlers")
-   (hook :accessor hook
-         :initarg :hook
-         :documentation "The hook for which to retrieve handlers for.")
-   (prompter:constructor (lambda (source)
-                           (hooks:handlers (hook source))))))
+   (hook
+    nil
+    :documentation "The hook for which to retrieve handlers for.")
+   (prompter:constructor (lambda (source) (hooks:handlers (hook source))))))
 
 (defmethod prompter:object-attributes ((handler hooks:handler) (source handler-source))
   (declare (ignore source))
