@@ -188,13 +188,9 @@ make-instance."
 
 (define-internal-page-command-global show-annotation ()
     (buffer "*Annotations*")
-  "Show an annotation(s)."
-  (let ((selected-annotations
-          (prompt
-           :prompt "Show annotation(s)"
-           :sources (make-instance 'annotation-source
-                                   :actions-on-return #'identity))))
-    (render-annotations selected-annotations)))
+  "Show prompted annotations."
+  (render-annotations (prompt :prompt "Show annotation(s)"
+                              :sources (make-instance 'annotation-source))))
 
 (define-internal-page-command-global show-annotations ()
     (buffer "*Annotations*")
