@@ -87,29 +87,26 @@ See also the `profile' slot in the `browser' class.")
               :cursor "pointer")
             `("summary::-webkit-details-marker"
               :padding-bottom "4px")
+            '("details > summary"
+              :list-style-type "none")
+            '("details > summary::-webkit-details-marker"
+              :display "none")
+            '("details > summary::before"
+              :font-weight "bold"
+              :content "+"
+              :margin-right "5px"
+              :display "inline-block")
+            '("details[open] > summary::before"
+              :content "−")
             `(.section
               :margin-top "2em")
-            `("h1"
-              :font-size "44px")
-            `("h2"
-              :font-size "36px")
-            `("h3"
-              :font-size "32px")
-            `("h4"
-              :font-size "28px")
-            `("h5"
-              :font-size "24px")
-            `("h6"
-              :font-size "20px")
-            `("p"
-              :font-size "16px")
             `("h1,h2,h3,h4,h5,h6"
               :color ,theme:primary
               :font-family ,theme:font-family)
             `(hr
               :background-color ,theme:secondary
               :color ,theme:on-secondary
-              :height "3px"
+              :height "2px"
               :border-radius "2px"
               :border-width "0")
             `(button
@@ -125,21 +122,28 @@ See also the `profile' slot in the `browser' class.")
               :color ,theme:on-primary
               :display "inline-block"
               :text-decoration "none"
-              :border-radius "0.1em"
+              :border-radius "2px"
               :border-color ,theme:primary
               :border-style "solid"
               :border-width "0.2em"
               :padding "0.2em"
-              :margin "0.2em"
-              :min-height "2rem")
+              :margin "0.2em")
             `(select.button
               :appearance auto
-              :background-color ,theme:primary !important
-              ;; WebKit does not allow to style <select> tags and always leaves
-              ;; us with white buttons in place of those. So we need to use an
-              ;; invariably dark color for the text on it
-              :color ,(theme:contrasting-text-color theme:theme "white") !important
-              :min-height "2rem")
+              :background-color ,theme:primary
+              :color ,(theme:contrasting-text-color theme:theme "white") !important)
+            `(.code-select
+              :position "absolute"
+              :top "0"
+              :right "0"
+              :padding-right "8px !important"
+              :direction "rtl"
+              :appearance "none !important"
+              :border "none"
+              :background-color "transparent !important"
+              :color ,(theme:contrasting-text-color theme:theme "white") !important)
+            `(".code-select:hover"
+              :color ,theme:accent !important)
             `((:and .button :hover)
               :cursor "pointer"
               :opacity 0.8)
@@ -185,7 +189,7 @@ See also the `profile' slot in the `browser' class.")
               :color "black"
               :background-color "white"
               :border "0.2em" solid ,theme:secondary
-              :border-radius "0.1em"
+              :border-radius "4px"
               :outline "none"
               :padding "0.2em"
               :margin "0.2em")
@@ -210,7 +214,7 @@ See also the `profile' slot in the `browser' class.")
             `("a code"
               :text-decoration underline)
             `("table, th, td"
-              :border-color ,theme:secondary
+              :border-color ,theme:primary
               :border-width "1px"
               :border-style "solid"
               :background-color ,theme:background
@@ -221,9 +225,17 @@ See also the `profile' slot in the `browser' class.")
               :background-color ,theme:primary
               :color ,theme:on-primary
               :text-align "left")
-            `(dt
-              :font-weight "bold"
-              :margin-top "2em")
+            `("th:first-of-type"
+              :border-top-left-radius "3px")
+            `("th:last-of-type"
+              :border-top-right-radius "3px")
+            `("tr:last-of-type td:first-of-type"
+              :border-bottom-left-radius "3px")
+            `("tr:last-of-type td:last-of-type"
+              :border-bottom-right-radius "3px")
+            `("table.resizable-table th"
+              :resize "horizontal"
+              :overflow "auto")
             `("::selection"
               :color ,theme:on-action
               :background-color ,theme:action)
@@ -247,7 +259,30 @@ See also the `profile' slot in the `browser' class.")
             `(".mode-menu > .binding"
               :background-color ,theme:secondary)
             `(".mode-menu > .command"
-              :background-color ,theme:background-alt)))
+              :background-color ,theme:background-alt)
+            `("dl"
+              :display "grid"
+              :grid-template-columns "max-content auto"
+              :row-gap "10px"
+              :column-gap "10px")
+            `("dt"
+              :grid-column-start 1
+              :padding "4px"
+              :padding-left "8px"
+              :padding-right "8px"
+              :border-radius "3px"
+              :font-weight "bold"
+              :background-color ,theme:background-alt)
+            `("dd"
+              :margin-inline-start "0"
+              :grid-column-start 2)
+            '("dd pre"
+              :margin-top "0"
+              :margin-bottom "0")
+            '(".nsection-anchor"
+              :display "none")
+            '(".nsection-summary:hover .nsection-anchor"
+              :display "inline-block")))
    (buffer-delete-hook          ; TODO: Should we move this to `context-buffer'?
     (make-instance 'hook-buffer)
     :type hook-buffer
@@ -775,6 +810,23 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :font-weight 500)
             `(a
               :color ,theme:primary)
+            `("details summary"
+              :margin-left "inherit"
+              :margin-bottom "8px"
+              :cursor "pointer")
+            `("summary::-webkit-details-marker"
+              :padding-bottom "4px")
+            '("details > summary"
+              :list-style-type "none")
+            '("details > summary::-webkit-details-marker"
+              :display "none")
+            '("details > summary::before"
+              :font-weight "bold"
+              :content "+"
+              :margin-right "5px"
+              :display "inline-block")
+            '("details[open] > summary::before"
+              :content "−")
             `(dt
               :font-weight bold)
             `(dd
@@ -838,12 +890,15 @@ store them somewhere and `ffi-buffer-delete' them once done."))
             `("a:visited"
               :color ,theme:secondary)
             `(".progress-bar-container"
+              :border-radius "3px"
               :height "20px"
               :width "100%")
             `(".progress-bar-base"
+              :border-radius "3px"
               :background-color ,theme:secondary
               :height "100%")
             `(".progress-bar-fill"
+              :border-radius "3px"
               :background-color ,theme:primary
               :height "100%"))))
   (:export-class-name-p t)
@@ -900,11 +955,11 @@ Also see `panel-page'."))
               ("0%" :transform "rotate(0deg)")
               ("100%" :transform "rotate(360deg)"))
             `(".arrow-right"
-              :clip-path "polygon(0 0, calc(100% - 10px) 0, 100% calc(50% - 1px), 100% 50%, 100% calc(50% + 1px), calc(100% - 10px) 100%, 0 100%)"
-              :margin-right "-10px")
+              :clip-path "polygon(0 0, calc(100% - 7px) 0, 100% calc(50% - 1px), 100% 50%, 100% calc(50% + 1px), calc(100% - 7px) 100%, 0 100%)"
+              :margin-right "-7px")
             `(".arrow-left"
-              :clip-path "polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0px calc(50% + 1px), 0% 50%, 0px calc(50% - 1px))"
-              :margin-left "-10px")
+              :clip-path "polygon(7px 0, 100% 0, 100% 100%, 7px 100%, 0px calc(50% + 1px), 0% 50%, 0px calc(50% - 1px))"
+              :margin-left "-7px")
             `("#container"
               :display "flex"
               :justify-content "space-between"
@@ -915,7 +970,7 @@ Also see `panel-page'."))
               :overflow "hidden"
               :white-space "nowrap"
               :z-index "3"
-              :flex-basis "80px"
+              :flex-basis "78px"
               :display "flex")
             `("#controls > button"
               :margin-right "-3px"
@@ -930,7 +985,7 @@ Also see `panel-page'."))
               :text-overflow "ellipsis"
               :overflow-x "hidden"
               :white-space "nowrap"
-              :padding-right "10px"
+              :padding-right "7px"
               :padding-left "15px"
               :z-index "2"
               :flex-grow "3"
@@ -963,20 +1018,20 @@ Also see `panel-page'."))
               :margin-top "1px"
               :padding-left "18px"
               :padding-right "18px"
-              :margin-right "-5px"
+              :margin-right "-1px"
               :margin-left "-4px"
               :text-decoration "transparent"
               :border "transparent"
               :border-radius "1px"
               :font "inherit"
               :outline "inherit"
-              :clip-path "polygon(calc(100% - 10px) 0, 100% calc(50% - 1px), 100% 50%, 100% calc(50% + 1px), calc(100% - 10px) 100%, 0% 100%, 10px calc(50% + 1px), 10px 50%, 10px calc(50% - 1px),  0% 0%)")
+              :clip-path "polygon(calc(100% - 7px) 0, 100% calc(50% - 1px), 100% 50%, 100% calc(50% + 1px), calc(100% - 7px) 100%, 0% 100%, 7px calc(50% + 1px), 7px 50%, 7px calc(50% - 1px),  0% 0%)")
             `("#modes"
               :background-color ,theme:primary
               :color ,theme:on-primary
               :font-size "60vh"
               :text-align "right"
-              :padding-left "10px"
+              :padding-left "7px"
               :padding-right "5px"
               :overflow-x "scroll"
               :white-space "nowrap"
