@@ -48,8 +48,7 @@ Important pieces of functionality are:
        "M-." 'headings-panel
        "M-{" 'previous-heading
        "M-}" 'next-heading
-       "C-p" 'print-buffer
-       "C-R" 'reload-with-modes)
+       "C-p" 'print-buffer)
       keyscheme:cua
       (list
        "C-h" 'jump-to-heading
