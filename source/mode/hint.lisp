@@ -487,15 +487,6 @@ FUNCTION is the action to perform on the selected elements."
 (defmethod %follow-hint-nosave-buffer ((element plump:element))
   (%follow-hint element))
 
-(defmethod %follow-hint-with-current-modes-new-buffer ((a nyxt/dom:a-element) &optional parent-buffer)
-  (make-buffer :url (url a)
-               :modes (mapcar #'sera:class-name-of (modes (current-buffer)))
-               :parent-buffer parent-buffer))
-
-(defmethod %follow-hint-with-current-modes-new-buffer ((element plump:element) &optional parent-buffer)
-  (declare (ignore parent-buffer))
-  (%follow-hint element))
-
 (defmethod %copy-hint-url ((a nyxt/dom:a-element))
   (ffi-buffer-copy (current-buffer) (render-url (url a))))
 
@@ -548,15 +539,6 @@ Uses `%follow-hint-nosave-buffer-focus' internally."
                (lambda (result)
                  (%follow-hint-nosave-buffer-focus (first result))
                  (mapcar #'%follow-hint-nosave-buffer (rest result)))))
-
-(define-command follow-hint-with-current-modes-new-buffer ()
-  "Prompt for element hints and open them in a new buffer with current modes.
-Uses `%follow-hint-with-current-modes-new-buffer' internally."
-  (let ((buffer (current-buffer)))
-    (query-hints "Open element with current modes in new buffer"
-                 (lambda (result)
-                   (mapcar (rcurry #'%follow-hint-with-current-modes-new-buffer buffer)
-                           result)))))
 
 (define-command copy-hint-url ()
   "Prompt for element hints and save its corresponding URLs to clipboard.
