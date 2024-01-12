@@ -955,3 +955,32 @@ invoked via " (:code "flatpak-spawn --host <command> <command-args>") "."))))
     (:ul
      (:li "Built-in modes and special pages have a dedicated menu area now. This menu
 allows access to common functions that are defined within the mode."))))
+
+(define-version "3.X.Y"
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "Improve user experience of "
+          (:nxref :class-name 'nyxt/mode/macro-edit:macro-edit-mode) ".")
+     (:li "Improve UI of the interfaces bound to "
+          (:nxref :class-name 'nyxt/mode/annotate:annotate-mode)
+          " commands, such as "
+          (:nxref :command 'nyxt/mode/annotate:show-annotations-for-current-url) ".")
+     (:li "Review the appearance of all help system pages such as"
+          (:nxref :command 'describe-class) ".")
+     (:li "Review font sizes.")
+     (:li "Use monospace fonts in "
+          (:nxref :class-name 'nyxt/mode/editor:plaintext-editor-mode) ".")
+     (:li "Replace source heading buttons in the "
+          (:nxref :class-name 'prompt-buffer) ".")
+     (:li "Review styling of the " (:nxref :class-name 'status-buffer) ", "
+          (:nxref :command 'nyxt/mode/repl:repl) " and " (:code "migration-guide") ".")
+     (:li "Replace glyph that collapses sections, for instance in the "
+          (:a :href (nyxt-url 'manual) "manual") ".")
+     (:li "Improve UI of the interfaces bound to commands:"
+          (:ul
+           (:li (:nxref :command 'nyxt/mode/download:list-downloads))
+           (:li (:nxref :command 'nyxt/mode/history:list-history))
+           (:li (:nxref :command 'nyxt/mode/buffer-listing:list-buffers))
+           (:li (:nxref :command 'nyxt/mode/bookmark:list-bookmarks))
+           (:li (:nxref :command 'nyxt/mode/buffer-listing:buffers-panel))
+           (:li (:nxref :command 'nyxt/mode/bookmark:bookmarks-panel)))))))
