@@ -427,7 +427,7 @@ for a better overview of lengthy attributes.")
   (:nsection
    :title "New modes"
    (:ul
-    (:li "New " (:nxref :mode 'nyxt/mode/record-input-field:record-input-field-mode)
+    (:li "New " (:code "nyxt/mode/record-input-field:record-input-field-mode")
          " to record and restore input fields.")
     (:li (:nxref :command 'nyxt/mode/repl:repl "Lisp REPL")
          " is fully redesigned into a multiple-pane environment with debugging, value

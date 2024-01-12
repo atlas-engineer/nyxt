@@ -393,7 +393,7 @@ major versions."
       (:code "nyxt/\([a-z-]*\)-mode") " with " (:code "nyxt/mode/\\1") ".")
 
   nyxt/record-input-field-mode
-  (:p "Renamed to " (:nxref :class-name 'nyxt/mode/record-input-field) "."
+  (:p "Renamed to " (:code 'nyxt/mode/record-input-field) "."
       " Query replace the regexp "
       (:code "nyxt/\([a-z-]*\)-mode") " with " (:code "nyxt/mode/\\1") ".")
 
