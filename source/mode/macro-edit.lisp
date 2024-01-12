@@ -20,6 +20,10 @@ See `nyxt/mode/macro-edit' package documentation for implementation details."
     ""
     :accessor nil
     :documentation "The descriptive name used for the macro.")
+   (macro-description
+    ""
+    :accessor nil
+    :documentation "The description used for the macro.")
    (functions
     '()
     :documentation "Functions the user has added to their macro."))
@@ -27,26 +31,30 @@ See `nyxt/mode/macro-edit' package documentation for implementation details."
 
 (defmethod render-functions ((macro-editor macro-edit-mode))
   (spinneret:with-html-string
-    (:table
-     (loop for function in (functions macro-editor)
-           for index from 0
-           collect (:tr (:td (:nbutton :class "button"
-                               :text "✕"
-                               :title "Remove from the macro"
-                               `(nyxt/mode/macro-edit::remove-function
-                                 (find-submode 'macro-edit-mode)
-                                 ,index)))
-                        (:td
-                         (:a.button
-                          :title "Help"
-                          :target "_blank"
-                          :href (nyxt-url 'describe-function
-                                          :fn (name (nth index (functions macro-editor))))
-                          "ℹ"))
-                        (:td (let ((name (symbol-name (name function))))
-                               (if (str:upcase? name)
-                                   (string-downcase name)
-                                   name))))))))
+    (if (functions macro-editor)
+        (:table
+         (:tr
+          (:th "Operations")
+          (:th "Command"))
+         (loop for function in (functions macro-editor)
+               for index from 0
+               collect (:tr (:td (:nbutton :class "button"
+                                   :text "Remove Command"
+                                   :title "Remove from the macro"
+                                   `(nyxt/mode/macro-edit::remove-function
+                                     (find-submode 'macro-edit-mode)
+                                     ,index))
+                                 (:a.button
+                                  :title "Help"
+                                  :target "_blank"
+                                  :href (nyxt-url 'describe-function
+                                                  :fn (name (nth index (functions macro-editor))))
+                                  "Command Information"))
+                            (:td (let ((name (symbol-name (name function))))
+                                   (if (str:upcase? name)
+                                       (string-downcase name)
+                                       name))))))
+        (:p "No commands added to macro."))))
 
 (define-internal-page-command-global edit-macro ()
     (buffer "*Macro edit*" 'nyxt/mode/macro-edit:macro-edit-mode)
@@ -55,9 +63,12 @@ See `nyxt/mode/macro-edit' package documentation for implementation details."
     (:nstyle (style buffer))
     (render-menu 'nyxt/mode/macro-edit:macro-edit-mode buffer)
     (:h1 "Macro editor")
-    (:p "Name: ")
-    (:input :type "text" :id "macro-name")
-    (:p "Commands")
+    (:dl
+     (:dt "Name")
+     (:dd (:input :type "text" :id "macro-name"))
+     (:dt "Description")
+     (:dd (:input :type "text" :id "macro-description")))
+    (:h2 "Commands")
     (:div
      :id "commands"
      (:raw
@@ -85,12 +96,22 @@ See `nyxt/mode/macro-edit' package documentation for implementation details."
            (slot-value macro-editor 'macro-name))
           (t nil))))
 
+(defmethod macro-description ((macro-editor macro-edit-mode))
+  (let ((name (ps-eval :buffer (buffer macro-editor)
+                (ps:chain (nyxt/ps:qs document "#macro-description") value))))
+    (cond ((not (str:emptyp name))
+           (setf (slot-value macro-editor 'macro-description) name))
+          ((slot-value macro-editor 'macro-description)
+           (slot-value macro-editor 'macro-description))
+          (t nil))))
+
 (defmethod generate-macro-form ((macro-editor macro-edit-mode))
   (let ((name (intern (macro-name macro-editor)))
+        (description (macro-description macro-editor))
         (commands (mapcar
                    (lambda (command) `(,(name command)))
                    (functions macro-editor))))
-    `(define-command-global ,name () "User generated macro form." ,@commands)))
+    `(define-command-global ,name () ,description ,@commands)))
 
 (define-command add-command (&optional (macro-editor (find-submode 'macro-edit-mode)))
   "Add a command to the macro."
