@@ -226,15 +226,6 @@ Only includes the strings that were pasted/copied inside Nyxt."))
   "Copy selected text to clipboard."
   (ffi-buffer-copy buffer))
 
-(define-command copy-placeholder (&optional (buffer (current-buffer)))
-  "Copy placeholder text to clipboard."
-  (let ((current-value (ps-eval :buffer buffer
-                         (ps:@ (nyxt/ps:active-element document) placeholder))))
-    (if (eq current-value :undefined)
-        (echo "No active selected placeholder.")
-        (progn (ffi-buffer-copy buffer current-value)
-               (echo "Placeholder copied.")))))
-
 (define-command cut (&optional (buffer (current-buffer)))
   "Cut the selected text in BUFFER."
   (ffi-buffer-cut buffer))

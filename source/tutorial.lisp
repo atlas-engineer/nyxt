@@ -130,7 +130,7 @@ full URL including the 'http://' prefix.")
          (list-command-information '(nyxt/mode/document:copy nyxt/mode/document:paste)))
         (:p "Passing through webpage's data:")
         (:ul
-         (list-command-information '(copy-url copy-title nyxt/mode/document:copy-placeholder nyxt/mode/hint:copy-hint-url)))
+         (list-command-information '(copy-url copy-title nyxt/mode/hint:copy-hint-url)))
         (:p "Leveraging password managers: ")
         (:ul
          (list-command-information '(nyxt/mode/password:copy-username nyxt/mode/password:copy-password nyxt/mode/password:copy-password-prompt-details)))
