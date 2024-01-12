@@ -171,18 +171,22 @@ translations are preserved."
               ,@current-translations)))))
 
 (define-class slot-form ()
-  ((name nil
-         :type symbol)
-   (value nil
-          :type t))
+  ((name
+    nil
+    :type symbol)
+   (value
+    nil
+    :type t))
   (:export-class-name-p t)
   (:documentation "A form to set slot with `name' to `value'."))
 
 (define-class class-form ()
-  ((class-name nil
-               :type symbol)
-   (forms '()
-          :type (maybe (cons (or cons slot-form) *))))
+  ((class-name
+    nil
+    :type symbol)
+   (forms
+    '()
+    :type (maybe (cons (or cons slot-form) *))))
   (:export-class-name-p t)
   (:documentation "A set of `forms' for class configuration."))
 
