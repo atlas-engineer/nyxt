@@ -80,8 +80,9 @@ On error, return the condition as a first value and the backtrace as second valu
                                               (dolist (file files)
                                                 (load-lisp file))))))
 
-(define-command clean-configuration ()
-  "Clean all the user configuration created with `define-configuration' or `customize-instance'."
+(export-always 'clean-configuration)
+(defun clean-configuration ()
+  "Undo user configuration set by `define-configuration' or `customize-instance'."
   (dolist (class (sera:filter #'user-class-p (sym:package-classes* (nyxt-packages))))
     (setf (hooks:handlers-alist (slot-value class 'customize-hook)) nil))
   (dolist (method (mopu:generic-function-methods #'customize-instance))
