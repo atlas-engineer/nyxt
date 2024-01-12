@@ -87,7 +87,7 @@ Example: open the loaded files with XDG-open
 It can be set by the download engine.")
    (cancel-button
     (make-instance 'user-interface:button
-                   :text "✕ Cancel"
+                   :text "Cancel"
                    :action (ps:ps (nyxt/ps:lisp-eval
                                    () (echo "Can't cancel download."))))
     :export nil
@@ -96,7 +96,7 @@ The download is referenced by its URL. The URL for this button is therefore
 encoded as a funcall to cancel-download with an argument of the URL to cancel.")
    (open-button
     (make-instance 'user-interface:button
-                   :text "🗁 Open"
+                   :text "Open"
                    :action (ps:ps (nyxt/ps:lisp-eval
                                    () (echo "Can't open file, file path unknown."))))
     :export nil
@@ -208,28 +208,30 @@ download."
     (:h1 "Downloads")
     (:hr)
     (:div
-     (loop for download in (downloads *browser*)
-           for url = (url download)
-           for status-text = (status-text download)
-           for progress-text = (progress-text download)
-           for bytes-text = (bytes-text download)
-           for progress = (progress download)
-           for open-button = (open-button download)
-           for cancel-button = (cancel-button download)
-           do (connect download buffer)
-           collect
-           (:div :class "download"
-                 (when (member (status download) '(:unloaded :loading))
-                   (:raw (user-interface:to-html-string cancel-button)))
-                 (when (eq (status download) :finished)
-                   (:raw (user-interface:to-html-string open-button)))
-                 (:p :class "download-url" (:a :href url url))
-                 (:div :class "progress-bar-container"
-                       (:raw (user-interface:to-html-string progress)))
-                 (:div :class "status"
-                       (:raw (user-interface:to-html-string progress-text))
-                       (:raw (user-interface:to-html-string bytes-text))
-                       (:raw (user-interface:to-html-string status-text))))))))
+     (or
+      (loop for download in (downloads *browser*)
+            for url = (url download)
+            for status-text = (status-text download)
+            for progress-text = (progress-text download)
+            for bytes-text = (bytes-text download)
+            for progress = (progress download)
+            for open-button = (open-button download)
+            for cancel-button = (cancel-button download)
+            do (connect download buffer)
+            collect
+               (:div :class "download"
+                     (when (member (status download) '(:unloaded :loading))
+                       (:raw (user-interface:to-html-string cancel-button)))
+                     (when (eq (status download) :finished)
+                       (:raw (user-interface:to-html-string open-button)))
+                     (:p :class "download-url" (:a :href url url))
+                     (:div :class "progress-bar-container"
+                           (:raw (user-interface:to-html-string progress)))
+                     (:div :class "status"
+                           (:raw (user-interface:to-html-string progress-text))
+                           (:raw (user-interface:to-html-string bytes-text))
+                           (:raw (user-interface:to-html-string status-text)))))
+      (:p "No downloads available.")))))
 
 (defun download-watch (download-render download-object)
   "Update the *Downloads* buffer.
