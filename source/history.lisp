@@ -189,7 +189,7 @@ lot."
   `(("URL" ,(render-url (url entry)))
     ("Title" ,(title entry))))
 
-(defun history-html-list (&key (limit 100) (separator " → "))
+(defun history-html-list (&key (limit 100))
   (let* ((history (buffer-history))
          (history-entries
            (sort-by-time (alex:hash-table-keys (htree:entries history))
@@ -197,9 +197,9 @@ lot."
     (spinneret:with-html-string
       (loop for entry in (sera:take limit (the list history-entries))
             for data = (htree:data entry)
-            collect (:li (title data) (unless (str:emptyp (title data)) separator)
-                         (:a :href (render-url (url data))
-                             (render-url (url data))))))))
+            collect (:tr (:td (title data))
+                         (:td (:a :href (render-url (url data))
+                                  (render-url (url data)))))))))
 
 (defmethod files:serialize ((profile nyxt-profile) (file history-file) stream &key)
   (let ((*package* (find-package :nyxt))

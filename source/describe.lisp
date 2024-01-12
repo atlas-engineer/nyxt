@@ -286,9 +286,9 @@ Otherwise prompt for matches."
       (:h1 (:raw (escaped-literal-print value)))
       (:dl
        (:dt "Type")
-       (:dd (if (sym:class-symbol-p (type-of value))
-                (:nxref :class-name (type-of value))
-                (prini-to-string (type-of value)))))
+       (:dd (:pre (if (sym:class-symbol-p (type-of value))
+                      (:nxref :class-name (type-of value))
+                      (prini-to-string (type-of value))))))
       (:p (:raw (value->html value))))))
 
 (define-internal-page-command-global describe-package
@@ -341,24 +341,10 @@ Otherwise prompt for matches."
           (:pre (:code (:raw (resolve-backtick-quote-links (documentation variable 'variable)
                                                            (symbol-package variable)))))
           (:h2 "Type")
-          (:p (princ-to-string (type-of (symbol-value variable))))
+          (:pre (princ-to-string (type-of (symbol-value variable))))
           (:h2 "Current Value:")
-          (:button
-           :class "button"
-           :onclick (ps:ps (nyxt/ps:lisp-eval
-                            (:title "change-value")
-                            (handler-case
-                                (setf variable
-                                      (first
-                                       (evaluate
-                                        (prompt1
-                                         :prompt (format nil "Set ~a to" variable)
-                                         :sources 'prompter:raw-source))))
-                              (prompt-buffer-canceled nil))))
-           "Change value")
           (:p (:raw (value->html (symbol-value variable))))
           (:nsection
-            :open-p nil
             :title "Describe"
            (:pre (:code (with-output-to-string (s) (describe variable s))))))
         (spinneret:with-html-string
@@ -418,14 +404,14 @@ For generic functions, describe all the methods."
                                     (not-error-p (null (getf definition :error)))
                                     (file (first (rest (getf definition :location)))))
                      (:nsection
-                       :title (format nil "Source (~a)" file)
+                       :title "Source"
                        :id "source"
+                       (:pre (format nil "Path: ~a" file))
                        (:ncode :file file
                          (multiple-value-bind (listing form)
                              (function-lambda-string (symbol-function input))
                            (or form listing)))))
                    (:nsection
-                     :open-p nil
                      :title "Describe"
                     (:pre (:code (with-output-to-string (s) (describe (symbol-function input) s)))))))
                (method-desc (method)
@@ -529,31 +515,27 @@ A command is a special kind of function that can be called with
       (if independent-p
           (:h1 (prini-to-string slot))
           (:h3 (prini-to-string slot)))
-      (when (user-class-p class)
-        (:button :class "button"
-                 :onclick (ps:ps (nyxt/ps:lisp-eval
-                                  (:title "configure-slot")
-                                  (nyxt::configure-slot slot class :type (getf props :type))))
-                 "Configure"))
       (:dl
        (when independent-p
          (:dt "Class")
-         (:dd (:a :href (nyxt-url 'describe-class :class class) class)))
+         (:dd (:pre (:a :href (nyxt-url 'describe-class :class class) class))))
        (when (getf props :type)
          (:dt "Type ")
-         (:dd (if (or (subtypep (getf props :type) 'standard-object)
-                      (subtypep (getf props :type) 'structure-object))
-                  (:a :href (nyxt-url 'describe-class
-                                      :class (getf props :type))
-                      (prini-to-string (getf props :type)))
-                  (prini-to-string (getf props :type)))))
+         (:dd (:pre (if (or (subtypep (getf props :type) 'standard-object)
+                            (subtypep (getf props :type) 'structure-object))
+                        (:a :href (nyxt-url 'describe-class
+                                            :class (getf props :type))
+                            (prini-to-string (getf props :type)))
+                        (prini-to-string (getf props :type))))))
        (when (getf props :initform)
          (:dt "Default value")
          (:dd (:ncode (prini-to-string (getf props :initform)))))
        (when (getf props :documentation)
          (:dt "Documentation")
          (:dd (:pre (:code (:raw (resolve-backtick-quote-links
-                                  (getf props :documentation) (symbol-package slot)))))))))))
+                                  (getf props :documentation) (symbol-package slot))))))))
+      (unless independent-p
+        (:br "")))))
 
 (define-internal-page-command-global describe-class
     (&key
@@ -612,7 +594,6 @@ A command is a special kind of function that can be called with
               (:ul (loop for class-name in (safe-sort (mapcar #'class-name (mopu:direct-subclasses class)))
                          collect (:li (:a :href (nyxt-url 'describe-class :class class-name) class-name))))))
           (:nsection
-            :open-p nil
             :title "Describe"
             (:pre (:code (with-output-to-string (s) (describe class s)))))))
       (spinneret:with-html-string
@@ -636,7 +617,7 @@ A command is a special kind of function that can be called with
       (:h1 "Bindings")
       (:p (loop for keymap in (current-keymaps buffer)
                 collect (:div
-                         (:h3 (keymaps:name keymap))
+                         (:h2 (keymaps:name keymap))
                          (:table
                           (:tr
                            (:th "Command")

@@ -280,21 +280,7 @@ values in help buffers, REPL and elsewhere."))
                                           (closer-mop:class-slots (class-of value)))))
           (:dl
            (dolist (slot-name slot-names)
-             (:dt (prini-to-string slot-name)
-                  " "
-                  (:button
-                   :class "button"
-                   :onclick (ps:ps (nyxt/ps:lisp-eval
-                                    (:title "change value")
-                                    (handler-case
-                                        (setf (slot-value value slot-name)
-                                              (first
-                                               (evaluate
-                                                (prompt1
-                                                 :prompt (format nil "Set ~a to" slot-name)
-                                                 :sources 'prompter:raw-source))))
-                                      (prompt-buffer-canceled nil))))
-                   "change "))
+             (:dt (prini-to-string slot-name))
              (:dd (:raw (value->html (slot-value value slot-name) t)))))
           (:raw (escaped-literal-print value))))))
 
