@@ -423,8 +423,9 @@ Cut the display at LIMIT nodes."
     (:nstyle (style (find-submode 'nyxt/mode/list-history:list-history-mode buffer)))
     (render-menu 'nyxt/mode/history:history-mode buffer)
     (:h1 "History")
-    (:p (format nil "The last ~a history entries:" limit))
-    (:ul (:raw (nyxt::history-html-list :limit limit)))))
+    (:table :class "resizable-table"
+            (:tr (:th "Title") (:th "URL"))
+            (:raw (nyxt::history-html-list :limit limit)))))
 
 (-> history-add (quri:uri &key (:title string) (:buffer buffer)) *)
 (defun history-add (url &key (title "") (buffer (current-buffer)))
