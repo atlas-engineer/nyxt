@@ -73,8 +73,9 @@ extracted by `annotate-highlighted-text' command."))
      (:dt "Title")
      (:dd (page-title annotation))
      (:dt "Tags")
-     (:dd (format nil "~{~a ~}" (tags annotation))))
-    (:p (data annotation))))
+     (:dd (:pre (format nil "~{~a ~}" (tags annotation))))
+     (:dt "Text")
+     (:dd (data annotation)))))
 
 (defmethod render ((annotation snippet-annotation))
   (spinneret:with-html-string
@@ -86,8 +87,9 @@ extracted by `annotate-highlighted-text' command."))
      (:dt "Snippet")
      (:dd (snippet annotation))
      (:dt "Tags")
-     (:dd (format nil "~{~a ~}" (tags annotation))))
-    (:p (data annotation))))
+     (:dd (:pre (format nil "~{~a ~}" (tags annotation))))
+     (:dt "Text")
+     (:dd (data annotation)))))
 
 (defun annotation-add (annotation)
   (files:with-file-content (annotations (annotations-file (current-buffer)))
@@ -145,9 +147,11 @@ make-instance."
   "Show the ANNOTATIONS in a new buffer"
   (spinneret:with-html-string
     (:h1 "Annotations")
-    (loop for annotation in annotations
-          collect (:div (:raw (render annotation))
-                        (:hr)))))
+    (or
+     (loop for annotation in annotations
+           collect (:div (:raw (render annotation))
+                         (:hr)))
+     (:p "No annotations available."))))
 
 (define-internal-page show-annotations-for-current-url (&key (id (id (current-buffer))))
     (:title "*Annotations*")
