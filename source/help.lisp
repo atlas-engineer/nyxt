@@ -376,20 +376,6 @@ to the next."
             (:p "To use the external editor, you need to set the VISUAL or EDITOR environment variables on your system.")
             (:p "Otherwise, you can use the basic internal text editor."))))))))))
 
-(define-command print-bindings ()
-  "Display all known bindings for the current buffer."
-  (nyxt::html-set-style (theme:themed-css (theme *browser*)
-                          `(h3
-                            :font-size "10px"
-                            :font-family ,theme:font-family
-                            :font-weight 500)
-                          `(tr
-                            :font-size "7px")
-                          `(div
-                            :display inline-block))
-                        (describe-bindings))
-  (nyxt/mode/document:print-buffer))
-
 (defun tls-help (buffer url)
   "Helper function invoked upon TLS certificate errors."
   (setf (status buffer) :failed)
