@@ -18,6 +18,7 @@ To enable it, add this to your configuration file:
             `("body"
               :margin 0)
             `("#editor"
+              :font-family "monospace, monospace"
               :margin 0
               :height "100%"
               :width "100%"
