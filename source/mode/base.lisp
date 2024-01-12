@@ -40,8 +40,7 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-shift-Y" 'nyxt/mode/download:list-downloads
        "C-space" 'execute-command
        "C-M-space" 'execute-extended-command
-       "C-shift-space" 'execute-predicted-command
-       "M-space" 'resume-prompt)
+       "C-shift-space" 'execute-predicted-command)
       keyscheme:cua
       (list
        "f5" 'reload-current-buffer
