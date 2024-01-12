@@ -502,9 +502,9 @@ Most *-P arguments mandate whether to add the buttons for:
              (select-code
                `(:nselect
                   :id ,id
-                  :default "Act on code"
-                  :style (unless ,inline-var
-                           "position: absolute; top: 0; right: 0; margin: 0; padding: 2PX")
+                  :class "code-select"
+                  :default "☰"
+                  :style (if ,inline-var "font-weight: bold" "font-weight: normal")
                   ,@(when copy-p
                       `(`((copy "Copy" "Copy the code to clipboard.")
                           (funcall (read-from-string "nyxt:ffi-buffer-copy")
@@ -586,6 +586,7 @@ Most *-P arguments mandate whether to add the buttons for:
 (deftag :nsection (body attrs &rest keys
                         &key (title (alexandria:required-argument 'title))
                         level
+                        (anchor-p t)
                         (open-p t)
                         (id (if (stringp title)
                                 (str:remove-punctuation (str:downcase title) :replacement "-")
@@ -621,11 +622,13 @@ by default."
           (:details
            :open ,open-p
            (:summary
+            :class "nsection-summary"
             (:header
              :style "display: inline"
              (:h* :style "display: inline"
                ,@attrs ,title)
-             " " (:a.link :href (uiop:strcat "#" ,id-var) "#")))
+             " " (when ,anchor-p
+                   (:a :class "link nsection-anchor" :href (uiop:strcat "#" ,id-var) "#"))))
            ,@body))))))
 
 (serapeum:-> %nbutton-onclick (string (nyxt:maybe nyxt:buffer) (nyxt:list-of list)) t)
