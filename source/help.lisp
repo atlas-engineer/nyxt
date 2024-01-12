@@ -60,7 +60,7 @@ to the next."
   (spinneret:with-html-string
     (:nstyle
       (theme:themed-css (theme *browser*)
-        `("body,h5"
+        `("body,h3"
           :margin 0)
         `(".radio-div,.checkbox-div"
           :margin-top "1em")
@@ -139,7 +139,7 @@ to the next."
       (case section
         (keybindings
          (:div.section
-          (:h5 "Keybinding mode")
+          (:h3 "Keybinding mode")
           (:div.row
            (:div.left
             (:nradio
@@ -175,7 +175,7 @@ to the next."
             (:p "For a persistent keyscheme each time you start Nyxt - make a selection here.")))))
         (theme-and-style
          (:div.section
-          (:h5 "Browser interface")
+          (:h3 "Browser interface")
           (:div.row
            (:div.left
             (:nradio
@@ -195,7 +195,7 @@ to the next."
            (:div.right
             (:p "Themes for the browser interface, panel buffers, and internal Nyxt pages like manual, bindings, and common settings."))))
          (:div.section
-          (:h5 "Webpage theme")
+          (:h3 "Webpage theme")
           (:div.row
            (:div.left
             (:nradio
@@ -219,7 +219,7 @@ to the next."
             (:p "Select Default Web to view webpages as they are designed.")
             (:p "Select Dark Web to have Nyxt darken any webpage you visit."))))
          (:div.section
-          (:h5 "Default zoom ratio")
+          (:h3 "Default zoom ratio")
           (:div.row
            (:div.left
             (:nselect
@@ -237,7 +237,7 @@ to the next."
             (:p "Incremental changes advised.")))))
         (buffer-defaults
          (:div.section
-          (:h5 "Homepage")
+          (:h3 "Homepage")
           (:div.row
            (:div.left
             (:nbutton :text "Set default new buffer URL"
@@ -256,7 +256,7 @@ to the next."
            (:div.right
             (:p "Choose your homepage. By default your homepage is set to the internal Nyxt page (nyxt:new)."))))
          (:div.section
-          (:h5 "Session")
+          (:h3 "Session")
           (:div.row
            (:div.left
             (:ncheckbox
@@ -275,7 +275,7 @@ to the next."
            (:div.right
             (:p "Choose whether to restore buffers from previous sessions."))))
          (:div.section
-          (:h5 "Modes")
+          (:h3 "Modes")
           (:div.row
            (:div.left
             (:nbutton :text "Set default modes"
@@ -291,7 +291,7 @@ to the next."
             (:p "To set modes for individual buffers, use the (toggle-modes) command, or a specific command like (toggle-no-script-mode).")))))
         (privacy-and-security
          (:div.section
-          (:h5 "Privacy & Security Modes")
+          (:h3 "Privacy & Security Modes")
           (:div.row
            (:div.left
             (:ncheckbox
@@ -336,7 +336,7 @@ to the next."
            (:div.right
             (:p "Select commonly used security modes here to add them to your default modes for new buffers."))))
          (:div.section
-          (:h5 "Cookie policy")
+          (:h3 "Cookie policy")
           (:div.row
            (:div.left
             (:nradio
@@ -365,7 +365,7 @@ to the next."
             (:p "To never accept cookies, choose \"Never accept\".")))))
         (text-and-code
          (:div.section
-          (:h5 "Edit user files")
+          (:h3 "Edit user files")
           (:div.row
            (:div.left
             (:nbutton :text "Use internal editor"
