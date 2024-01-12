@@ -205,6 +205,12 @@ against date, given `prompter:active-attributes-keys' configuration."))
   (let ((bookmarks (group-bookmarks (current-buffer))))
     ;; Simplified version of list-bookmarks
     (spinneret:with-html-string
+      (:nstyle
+        '(.bookmark-link
+          :margin-bottom "12px"
+          :overflow-x "scroll"
+          :white-space "nowrap"
+          :display "block"))
       (:body
        (:h1 "Bookmarks")
        (if (zerop (hash-table-count bookmarks))
@@ -215,13 +221,12 @@ against date, given `prompter:active-attributes-keys' configuration."))
                         :title (or tag "Unsorted")
                         :id (or tag "unsorted")
                         :open-p t
+                        :anchor-p nil
                         (dolist (bookmark bookmarks)
-                          (:dl (:dt (:a :href (render-url (url bookmark))
-                                        :target "_blank"
-                                        (title bookmark)))
-                               (when (tags bookmark)
-                                 (:dd (format nil "Tags: ~{~a~^, ~}" (tags bookmark)))))
-                          (:hr))))
+                          (:a :href (render-url (url bookmark))
+                              :class "bookmark-link"
+                              :target "_blank"
+                              (title bookmark)))))
                     bookmarks))))))
 
 (export-always 'url-bookmark-tags)
@@ -358,19 +363,9 @@ Splits bookmarks into groups by tags."
                       (:div :class "bookmark-entry"
                             (:dl
                              (:dt
-                              (:button :onclick
-                                       (ps:ps
-                                         (let ((section (ps:chain (nyxt/ps:active-element document)
-                                                                  (closest ".bookmark-entry"))))
-                                           (ps:chain section parent-node (remove-child section)))
-                                         (nyxt/ps:lisp-call delbkm
-                                                            :buffer bookmarks-buffer
-                                                            :args (:href url-href)))
-                                       "✕")
                               (:a :href url-href (title bookmark)))
                              (when (tags bookmark)
-                               (:dd (format nil "Tags: ~{~a~^, ~}" (tags bookmark)))))
-                            (:hr)))))))
+                               (:dd (:pre (format nil "Tags: ~{~a~^, ~}" (tags bookmark))))))))))))
             bookmarks))))))
 
 (defmethod serialize-object ((entry bookmark-entry) stream)
