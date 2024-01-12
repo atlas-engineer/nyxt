@@ -19,6 +19,8 @@ Used by pages like `nyxt/mode/history:buffer-history-tree' and
               :background ,theme:background
               :color ,theme:on-background
               :line-height "initial")
+            '("h1"
+              :margin-top "inherit")
             `(".current-buffer a"
               :color ,theme:on-background)
             `(".current-buffer a:hover"
