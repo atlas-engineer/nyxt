@@ -163,16 +163,26 @@ See `nyxt::attribute-widths'.")
           :margin-left "10px"
           :margin-top "15px")
         `(".source-name"
+          :padding-left "4px"
           :background-color ,theme:secondary
           :color ,theme:on-secondary
           :display "flex"
           :justify-content "space-between"
           :align-items "stretch"
-          :line-height "24px"
-          :border-radius "3px 0 0 0")
+          :border-radius "2px 0 0 0")
+        '(".source-name > div"
+          :line-height "22px")
         `(".source-name > div > button"
           :padding "5px 4px 5px 4px"
           :min-height "100%")
+        `("#next-source > svg, #previous-source > svg"
+          :margin-bottom "2px"
+          :height "5px")
+        '("#previous-source"
+          :margin-left "-6px"
+          :padding 0)
+        '("#next-source"
+          :padding 0)
         `("#suggestions"
           :background-color ,theme:background
           :color ,theme:on-background
@@ -529,7 +539,7 @@ This does not redraw the whole prompt buffer, use `prompt-render' for that."
                  (:div
                   (:nbutton
                     :id "next-source"
-                    :text (:raw (gethash "down-arrow.svg" *static-data*))
+                    :text (:raw (gethash "down.svg" *static-data*))
                     :title (format nil "Next source (~a)"
                                    (binding-keys (sym:resolve-symbol :next-source
                                                                      :command)
@@ -538,7 +548,7 @@ This does not redraw the whole prompt buffer, use `prompt-render' for that."
                     '(funcall (sym:resolve-symbol :next-source :command)))
                   (:nbutton
                     :id "previous-source"
-                    :text (:raw (gethash "up-arrow.svg" *static-data*))
+                    :text (:raw (gethash "up.svg" *static-data*))
                     :title (format nil "Previous source (~a)"
                                    (binding-keys (sym:resolve-symbol :previous-source
                                                                      :command)
