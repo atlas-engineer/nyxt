@@ -44,23 +44,19 @@ shown linearly instead."
                (analysis::clusters collection)))
            (buffer-markup (buffer)
              "Present a buffer in HTML."
-             ;; To avoid spurious spaces.
-             ;; See https://github.com/ruricolist/spinneret/issues/37.
              (let ((*print-pretty* nil))
                (spinneret:with-html
-                 (:p (:nbutton
+                 (:p :class "buffer-listing"
+                     (:nbutton
                        :text "✕"
                        :title "Delete buffer"
                        `(nyxt::delete-buffer :buffers ,buffer)
                        `(reload-buffer ,listing-buffer))
                      (:nbutton
-                       :text "→"
+                       :class "buffer-button"
+                       :text (format nil "~a - ~a" (render-url (url buffer)) (title buffer))
                        :title "Switch to buffer"
-                       `(nyxt::switch-buffer :buffer ,buffer))
-                     (:a :href (render-url (url buffer))
-                         (if (uiop:emptyp (title buffer))
-                             (render-url (url buffer))
-                             (title buffer)))))))
+                       `(nyxt::switch-buffer :buffer ,buffer))))))
            (buffer-tree->html (root-buffer)
              "Present a single buffer tree in HTML."
              (spinneret:with-html
@@ -77,10 +73,16 @@ shown linearly instead."
     (spinneret:with-html-string
       (render-menu 'nyxt/mode/buffer-listing:buffer-listing-mode listing-buffer)
       (:h1 "Buffers")
+      (:nstyle
+        '(.buffer-listing
+         :display "flex")
+        '(.buffer-button
+          :text-align "left"
+          :flex-grow "1"))
       (:div
        (if cluster
            (loop for cluster-key being the hash-key
-                   using (hash-value cluster) of (cluster-buffers)
+                 using (hash-value cluster) of (cluster-buffers)
                  collect (cluster-markup cluster-key cluster))
            (dolist (buffer (buffer-list))
              (if linear-view-p
@@ -88,10 +90,6 @@ shown linearly instead."
                  (unless (nyxt::buffer-parent buffer)
                    (buffer-tree->html buffer)))))))))
 
-;; FIXME: It's a terribly confusing panel:
-;; - Buffer as a button is quite confusing and does not match the idea of a
-;;   switchable-to entity better separate action (switch, delete) from
-;;   presentation.
 (define-panel-command-global buffers-panel ()
     (panel-buffer "*Buffers panel*")
   "Display a list of buffers with easy switching."
@@ -99,22 +97,26 @@ shown linearly instead."
            "Create the presentation for a buffer."
            (spinneret:with-html-string
              (:p (:nbutton :text (title buffer)
-                  :buffer panel-buffer
-                  :class (when highlight-p "action")
-                  `(nyxt::switch-buffer :buffer ,buffer))))))
+                   :buffer panel-buffer
+                   :class (if highlight-p "buffer-button action" "buffer-button")
+                   `(nyxt::switch-buffer :buffer ,buffer))))))
     (spinneret:with-html-string
-      (:nstyle '(.button
-                 :white-space nowrap
-                 :overflow-x hidden
-                 :display block
-                 :text-overflow ellipsis))
+      (:nstyle
+        '(.button
+          :white-space nowrap
+          :overflow-x hidden
+          :display block
+          :text-overflow ellipsis)
+        '(.buffer-button
+          :text-align "left"
+          :width "100%"))
       (:body
        (:h1 "Buffers")
        (loop for buffer in (buffer-list)
              collect (:raw (buffer-markup buffer (eq buffer (current-buffer)))))
        (:nbutton :text "↺"
          :buffer panel-buffer
-         :style "position: absolute; bottom: 10px; right: 10px;"
+         :style "position: absolute; bottom: 10px; right: 10px; height: 24px; width: 24px; padding: 0;"
          :class "success"
          `(reload-panel-buffer ,panel-buffer))))))
 
