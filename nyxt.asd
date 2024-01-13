@@ -223,7 +223,6 @@
                  (:file "remembrance" :depends-on ("bookmark"))
                  (:file "small-web")
                  (:file "style" :depends-on ("bookmarklets"))
-                 (:file "tts")
                  (:file "visual")
                  (:file "vi")
                  (:file "watch"))))
@@ -313,7 +312,6 @@
                  (:file "small-web")
                  (:file "spell-check")
                  (:file "style")
-                 (:file "tts")
                  (:file "vi")
                  ;; TODO Fix visual-mode architecture.  Visit the file below for
                  ;; more information.

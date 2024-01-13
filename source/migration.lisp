@@ -443,7 +443,7 @@ major versions."
       (:code "nyxt/\([a-z-]*\)-mode") " with " (:code "nyxt/mode/\\1") ".")
 
   nyxt/tts-mode
-  (:p "Renamed to " (:nxref :class-name 'nyxt/mode/tts) "."
+  (:p "Renamed to " (:code 'nyxt/mode/tts) "."
       " Query replace the regexp "
       (:code "nyxt/\([a-z-]*\)-mode") " with " (:code "nyxt/mode/\\1") ".")
 
