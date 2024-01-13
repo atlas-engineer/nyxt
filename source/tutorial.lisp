@@ -250,13 +250,7 @@ buffer."))
          (list-command-information '(nyxt/mode/document:jump-to-heading
                                      nyxt/mode/document:previous-heading
                                      nyxt/mode/document:next-heading
-                                     nyxt/mode/document:jump-to-heading-buffers)))
-        (:p "And navigate to interconnected files: ")
-        (:ul
-         (list-command-information '(nyxt/mode/document:go-next
-                                     nyxt/mode/document:go-previous
-                                     nyxt/mode/document:go-up
-                                     nyxt/mode/document:go-to-homepage))))
+                                     nyxt/mode/document:jump-to-heading-buffers))))
 
       (:nsection :title "Spelling check"
         (:p "Several commands are provided to spell check words. The default is

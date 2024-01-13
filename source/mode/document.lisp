@@ -169,35 +169,6 @@ Important pieces of functionality are:
   "Scroll to top if no input element is active, forward event otherwise."
   (call-non-input-command-or-forward #'scroll-to-top :buffer buffer))
 
-(define-command go-next ()
-  "Navigate to the next element according to the HTML 'rel' attribute."
-  (ps-eval (ps:chain (nyxt/ps:qs document "[rel=next]") 0 (click))))
-
-(define-command go-previous ()
-  "Navigate to the previous element according to the HTML 'rel' attribute."
-  (ps-eval (ps:chain (nyxt/ps:qs document "[rel=prev]") 0 (click))))
-
-(define-command go-to-homepage ()
-  "Navigate to the homepage."
-  (let* ((url (url (current-buffer)))
-         (authority (quri:uri-authority url))
-         (scheme (quri:uri-scheme url)))
-    (buffer-load (str:concat scheme "://" authority))))
-
-(define-command go-up ()
-  "Navigate to the upper level in the URL path hierarchy."
-  (let* ((url (url (current-buffer)))
-         (path (quri:uri-path url))
-         (path-splited (str:split "/" path :omit-nulls t))
-         (new-path-splited (butlast path-splited))
-         (scheme (quri:uri-scheme url))
-         (authority (quri:uri-authority url))
-         (new-path (reduce #'(lambda (x e) (str:concat x e "/"))
-                           new-path-splited
-                           :initial-value "/")))
-    (buffer-load (str:concat scheme "://" authority new-path))))
-
-
 (define-command paste (&optional (buffer (current-buffer)))
   "Paste from clipboard into active element."
   (ffi-buffer-paste buffer))
