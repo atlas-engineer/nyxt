@@ -245,7 +245,7 @@ buffer."))
    with: " (:code "reduce-bandwidth-mode") "."))
 
       (:nsection :title "Structural navigation"
-        (:p "It is possible to navigate using the structure in between the file: ")
+        (:p "It is possible to navigate through headings: ")
         (:ul
          (list-command-information '(nyxt/mode/document:jump-to-heading
                                      nyxt/mode/document:previous-heading
