@@ -368,7 +368,7 @@ major versions."
       (:code "nyxt/\([a-z-]*\)-mode") " with " (:code "nyxt/mode/\\1") ".")
 
   nyxt/preview-mode
-  (:p "Renamed to " (:nxref :class-name 'nyxt/mode/preview) "."
+  (:p "Renamed to " (:code "nyxt/mode/preview") "."
       " Query replace the regexp "
       (:code "nyxt/\([a-z-]*\)-mode") " with " (:code "nyxt/mode/\\1") ".")
 

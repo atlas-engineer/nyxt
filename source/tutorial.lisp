@@ -355,8 +355,7 @@ automate the reading experience:")
                                                     :sentence-case-p t))))
         (:p "Or even automate actions based on conditions: "
             (:ul
-             (list-command-information '(nyxt/mode/repeat:repeat-mode
-                                         nyxt/mode/preview:preview-mode))))
+             (list-command-information '(nyxt/mode/repeat:repeat-mode))))
         (:p "Nyxt also offers a no-code interface to build automation via Common Lisp
 macros: ")
         (:ul
