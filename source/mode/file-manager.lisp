@@ -194,7 +194,7 @@ It takes a pathname and returns a boolean.  For simpler cases, use
       ;; Video.
       "flac" "ogv" "m4v" "flv" "mov" "wmv" "webm" "mkv"
       ;; Documents
-      "pdf")
+      "pdf" "txt" "org")
     :type (list-of string)
     :documentation "Media types that Nyxt opens.
 Other formats are opened relying on the OS.")
