@@ -132,8 +132,27 @@ major versions."
   (conservative-history-movement-p)
   (:p "Deprecated in favor of " (:nxref :slot 'global-history-p :class-name 'buffer) ".")
 
-  nyxt/mode/no-procrastinate
-  (:p "Deprecated mode."))
+  (nyxt/mode/no-procrastinate
+   nyxt/mode/preview
+   nyxt/mode/record-input-field
+   nyxt/mode/tts)
+  (:p "Deprecated modes.")
+
+  (copy-placeholder
+   #:clean-configuration
+   dashboard
+   duplicate-buffer
+   duplicate-buffer-with-current-modes
+   follow-hint-with-current-modes-new-buffer
+   go-next
+   go-previous
+   go-to-homepage
+   go-up
+   print-bindings
+   reload-buffer
+   reload-with-modes
+   resume-prompt)
+  (:p "Deprecated commands."))
 
 (define-migration "3"
   (%slot-default)
