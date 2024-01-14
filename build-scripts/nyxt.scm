@@ -150,7 +150,6 @@
           cl-fset
           cl-gopher
           cl-history-tree
-          cl-html-diff
           cl-iolib
           cl-json
           cl-lass
@@ -158,7 +157,6 @@
           cl-lparallel
           cl-log4cl
           cl-mk-string-metrics
-          cl-montezuma
           cl-moptilities
           cl-named-readtables
           cl-nclasses

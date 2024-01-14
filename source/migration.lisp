@@ -408,7 +408,7 @@ major versions."
       (:code "nyxt/\([a-z-]*\)-mode") " with " (:code "nyxt/mode/\\1") ".")
 
   nyxt/remembrance-mode
-  (:p "Renamed to " (:nxref :class-name 'nyxt/mode/remembrance) "."
+  (:p "Renamed to " (:code "nyxt/mode/remembrance") "."
       " Query replace the regexp "
       (:code "nyxt/\([a-z-]*\)-mode") " with " (:code "nyxt/mode/\\1") ".")
 

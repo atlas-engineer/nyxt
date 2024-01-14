@@ -433,10 +433,10 @@ for a better overview of lengthy attributes.")
          " is fully redesigned into a multiple-pane environment with debugging, value
 inspection, convenient editing bindings, and full extensibility via "
          (:nxref :class-name 'nyxt/mode/repl:cell) " and " (:nxref :function 'value->html) ".")
-    (:li "New " (:nxref :class-name 'nyxt/mode/remembrance:remembrance-mode)
+    (:li "New " (:code "nyxt/mode/remembrance:remembrance-mode")
          " to automatically cache the visited page content. The cache can be looked up
 and the page textual content can be displayed even offline. See "
-         (:nxref :function 'nyxt/mode/remembrance:recollect-visited-page) ".")))
+         (:code "nyxt/mode/remembrance:recollect-visited-page") ".")))
 
   (:nsection
    :title "New commands"
