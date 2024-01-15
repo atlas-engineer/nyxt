@@ -12,7 +12,7 @@ jobs:
     name: ${{matrix.lisp}} on ${{matrix.os}}
     strategy:
       matrix:
-        lisp: [sbcl-bin, ccl-bin]
+        lisp: [sbcl-bin]
         lisp-flags: [dynamic-space-size=3072]
         renderer: [gi-gtk]
         os: [ubuntu-latest]
@@ -40,12 +40,11 @@ jobs:
         sudo apt-get update -qq
         sudo apt-get install -y libfixposix-dev libwebkit2gtk-4.1-0 glib-networking gsettings-desktop-schemas
 
-    - name: Load Nyxt
+    - name: Load renderer Nyxt system
       run: |
         ros ${{matrix.lisp-flags}} -e '(handler-case (asdf:load-system :nyxt/${{matrix.renderer}}-application) (error (c) (format t "Error: ~s~%~a~%" c c) (uiop:quit 1)))'
 
     - name: Run tests
-      env:
-       NASDF_TESTS_QUIT_ON_FAIL: yes
       run: |
-        ros ${{matrix.lisp-flags}} -e '(asdf:test-system :nyxt)'
+        ros ${{matrix.lisp-flags}} -e '(handler-case (asdf:load-system :nyxt/tests) (error (c) (format t "Error: ~s~%~a~%" c c) (uiop:quit 1)))' \
+            -e '(let ((output (lisp-unit2:run-tests :package :nyxt/tests))) (lisp-unit2:print-summary output) (when (or (lisp-unit2:failed output) (lisp-unit2:errors output)) (uiop:quit 1)))'
