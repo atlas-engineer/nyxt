@@ -322,25 +322,23 @@ User input is evaluated Lisp."
 (define-class disabled-handler-source (handler-source)
   ((prompter:constructor (lambda (source) (hooks:disabled-handlers (hook source))))))
 
+(defun manage-hook-handler (action)
+  (let ((hook (prompt1 :prompt "Hook"
+                       :sources 'hook-source)))
+    (funcall (case action
+               (:enable #'hooks:enable-hook)
+               (:disable #'hooks:disable-hook))
+             hook
+             (prompt1 :prompt "Handler"
+                      :sources (make-instance (case action
+                                                (:enable 'disabled-handler-source)
+                                                (:disable 'handler-source))
+                                              :hook hook)))))
 
 (define-command-global disable-hook-handler ()
-  "Remove handler(s) from a hook."
-  (let* ((hook-desc (prompt1
-                     :prompt "Hook where to disable handler"
-                     :sources 'hook-source))
-         (handler (prompt1
-                   :prompt (format nil "Disable handler from ~a" (name hook-desc))
-                   :sources (make-instance 'handler-source
-                                           :hook (value hook-desc)))))
-    (hooks:disable-hook (value hook-desc) handler)))
+  "Remove handler of a hook."
+  (manage-hook-handler :disable))
 
 (define-command-global enable-hook-handler ()
-  "Enable handler(s) from a hook."
-  (let* ((hook-desc (prompt1
-                     :prompt "Hook where to enable handler"
-                     :sources 'hook-source))
-         (handler (prompt1
-                   :prompt (format nil "Enable handler from ~a" (name hook-desc))
-                   :sources (make-instance 'disabled-handler-source
-                                           :hook (value hook-desc)))))
-    (hooks:enable-hook (value hook-desc) handler)))
+  "Add handler of a hook."
+  (manage-hook-handler :enable))
