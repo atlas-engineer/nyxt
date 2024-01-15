@@ -41,13 +41,11 @@ Augment this with `style' of STATUS, if necessary."
                   collect
                   (let ((mode mode))
                     (alex:when-let ((formatted-mode (mode-status status mode)))
-                      (if (html-string-p formatted-mode)
-                          (:raw formatted-mode)
-                          (:nbutton
-                            :buffer status
-                            :text formatted-mode
-                            :title (format nil "Describe ~a" mode)
-                            `(describe-class :class (quote ,(name mode))))))))))
+                      (:nbutton
+                        :buffer status
+                        :text formatted-mode
+                        :title (format nil "Describe ~a" mode)
+                        `(describe-class :class (quote ,(name mode)))))))))
         "")))
 
 (defun modes-string (buffer)

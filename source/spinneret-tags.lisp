@@ -3,16 +3,6 @@
 
 (in-package :spinneret)
 
-(deftag :mayberaw (body attrs &rest keys &key &allow-other-keys)
-  "Spinneret's :raw, but with HTML escaping if BODY _does not_ look like HTML."
-  ;; Because (declare (ignorable ...)) doesn't work.
-  (let ((attrs attrs)
-        (keys keys))
-    (declare (ignorable attrs keys))
-    `(:raw (if (nyxt:html-string-p (progn ,@body))
-               (progn ,@body)
-               (escape-string (progn ,@body))))))
-
 (defun %nstyle-body (forms)
   (reduce #'uiop:strcat
           (mapcar (lambda (f) (typecase f

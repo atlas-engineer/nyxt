@@ -25,6 +25,4 @@ Mainly used on `list-messages' page."
     (:h1 "Messages")
     (:ul
      (loop for message in (reverse (nyxt:messages-content *browser*))
-           collect (if (html-string-p message)
-                       (:li (:raw message))
-                       (:li (:pre message)))))))
+           collect (:li (:pre message))))))
