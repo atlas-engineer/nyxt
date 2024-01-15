@@ -997,4 +997,26 @@ enabling its customization.")
    (:li "The height of the " (:nxref :class-name 'message-buffer) " and "
         (:nxref :class-name 'status-buffer) " can be dynamically set and its UI
 elements are scaled accordingly.")
-   (:li "Remove experimental support for WebExtensions via " (:code "libnyxt") ".")))
+   (:li "Remove experimental support for WebExtensions via " (:code "libnyxt") ".")
+   (:li "Delete commands:"
+        (:ul
+         (:li (:code "clean-configuration"))
+         (:li (:code "copy-placeholder"))
+         (:li (:code "dashboard"))
+         (:li (:code "duplicate-buffer"))
+         (:li (:code "duplicate-buffer-with-current-modes"))
+         (:li (:code "follow-hint-with-current-modes-new-buffer"))
+         (:li (:code "go-next"))
+         (:li (:code "go-previous"))
+         (:li (:code "go-to-homepage"))
+         (:li (:code "go-up"))
+         (:li (:code "print-bindings"))
+         (:li (:code "reload-buffer"))
+         (:li (:code "reload-with-modes"))
+         (:li (:code "resume-prompt"))))
+   (:li "Delete modes:"
+        (:ul
+         (:li (:code "nyxt/mode/no-procrastinate"))
+         (:li (:code "nyxt/mode/preview"))
+         (:li (:code "nyxt/mode/record-input-field"))
+         (:li (:code "nyxt/mode/tts"))))))
