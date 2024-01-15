@@ -320,8 +320,8 @@ User input is evaluated Lisp."
   `(("Name" ,(str:downcase (hooks:name handler)))))
 
 (define-class disabled-handler-source (handler-source)
-  ((prompter:constructor (lambda (source)
-                           (hooks:disabled-handlers (hook source))))))
+  ((prompter:constructor (lambda (source) (hooks:disabled-handlers (hook source))))))
+
 
 (define-command-global disable-hook-handler ()
   "Remove handler(s) from a hook."
