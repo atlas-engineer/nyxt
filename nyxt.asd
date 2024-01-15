@@ -27,7 +27,6 @@
                cl-base64
                cl-colors2
                cl-gopher
-               cl-html-diff
                cl-json
                cl-ppcre
                cl-ppcre-unicode
@@ -48,7 +47,6 @@
                local-time
                lparallel
                log4cl
-               montezuma
                ndebug
                nclasses
                nfiles
@@ -214,17 +212,13 @@
                  (:file "no-sound")
                  (:file "no-webgl")
                  (:file "password")
-                 (:file "preview")
                  (:file "reading-line")
-                 (:file "record-input-field")
                  (:file "reduce-bandwidth")
                  (:file "reduce-tracking")
                  (:file "repeat")
                  (:file "repl")
-                 (:file "remembrance" :depends-on ("bookmark"))
                  (:file "small-web")
                  (:file "style" :depends-on ("bookmarklets"))
-                 (:file "tts")
                  (:file "visual")
                  (:file "vi")
                  (:file "watch"))))
@@ -298,15 +292,12 @@
                  (:file "no-webgl")
                  (:file "passthrough")
                  (:file "password")
-                 (:file "preview")
                  (:file "process")
                  (:file "prompt-buffer")
                  (:file "proxy")
                  (:file "reading-line")
-                 (:file "record-input-field")
                  (:file "reduce-bandwidth")
                  (:file "reduce-tracking")
-                 (:file "remembrance")
                  ;; TODO Fix repeat-mode architecture.  Visit the file below for
                  ;; more information.
                  ;; (:file "repeat")
@@ -315,7 +306,6 @@
                  (:file "small-web")
                  (:file "spell-check")
                  (:file "style")
-                 (:file "tts")
                  (:file "vi")
                  ;; TODO Fix visual-mode architecture.  Visit the file below for
                  ;; more information.
@@ -394,7 +384,6 @@
   :components ((:file "tests/renderer-package")
                (:file "tests/renderer-offline/set-url")
                (:file "tests/renderer-offline/execute-command-eval")
-               (:file "tests/renderer-offline/remembrance")
                (:file "tests/renderer-offline/nyxt-url-security")
                (:file "tests/renderer-offline/search-buffer")
                ;; See https://github.com/atlas-engineer/nyxt/issues/3172

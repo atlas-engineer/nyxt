@@ -1319,23 +1319,6 @@ See `make-buffer' for a description of the arguments."
   (declare (ignorable title modes url))
   (apply #'make-buffer (append (list :buffer-class 'background-buffer :no-history-p t) args)))
 
-(define-command duplicate-buffer-with-current-modes (&key (modes nil) parent-buffer)
-  "Duplicate current buffer in a new buffer with current modes as well."
-  (let* ((curr-buffer (current-buffer))
-         (buffer (make-buffer :title (title curr-buffer)
-                              :url (url curr-buffer)
-                              :modes (or modes
-                                         (mapcar #'sera:class-name-of
-                                                 (modes curr-buffer)))
-                              :parent-buffer parent-buffer)))
-    (set-current-buffer buffer)
-    buffer))
-
-(define-command duplicate-buffer (&key parent-buffer)
-  "Duplicate current buffer in a new buffer."
-  (duplicate-buffer-with-current-modes :modes (list (sym:resolve-symbol :document-mode :mode) 'base-mode)
-                                       :parent-buffer parent-buffer))
-
 (-> add-to-recent-buffers (buffer) *)
 (defun add-to-recent-buffers (buffer)
   "Create a recent-buffer from given buffer and add it to `recent-buffers'."
@@ -1962,15 +1945,10 @@ specified for their contents."
      :sources (url-sources (current-buffer) actions-on-return))
     (current-buffer)))
 
-(define-command reload-buffer
-    (&optional (buffer
-                (prompt
-                 :prompt "Reload buffer(s)"
-                 :sources (make-instance 'buffer-source))))
-  "Reload BUFFER.
-Return it."
-  (when buffer
-    (buffer-load (url buffer) :buffer buffer)))
+(export-always 'reload-buffer)
+(defun reload-buffer (buffer)
+  "Reload BUFFER and return it."
+  (buffer-load (url buffer) :buffer buffer))
 
 (define-command reload-current-buffer ()
   "Reload current buffer.

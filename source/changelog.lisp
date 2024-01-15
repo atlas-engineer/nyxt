@@ -427,16 +427,16 @@ for a better overview of lengthy attributes.")
   (:nsection
    :title "New modes"
    (:ul
-    (:li "New " (:nxref :mode 'nyxt/mode/record-input-field:record-input-field-mode)
+    (:li "New " (:code "nyxt/mode/record-input-field:record-input-field-mode")
          " to record and restore input fields.")
     (:li (:nxref :command 'nyxt/mode/repl:repl "Lisp REPL")
          " is fully redesigned into a multiple-pane environment with debugging, value
 inspection, convenient editing bindings, and full extensibility via "
          (:nxref :class-name 'nyxt/mode/repl:cell) " and " (:nxref :function 'value->html) ".")
-    (:li "New " (:nxref :class-name 'nyxt/mode/remembrance:remembrance-mode)
+    (:li "New " (:code "nyxt/mode/remembrance:remembrance-mode")
          " to automatically cache the visited page content. The cache can be looked up
 and the page textual content can be displayed even offline. See "
-         (:nxref :function 'nyxt/mode/remembrance:recollect-visited-page) ".")))
+         (:code "nyxt/mode/remembrance:recollect-visited-page") ".")))
 
   (:nsection
    :title "New commands"
@@ -997,4 +997,26 @@ enabling its customization.")
    (:li "The height of the " (:nxref :class-name 'message-buffer) " and "
         (:nxref :class-name 'status-buffer) " can be dynamically set and its UI
 elements are scaled accordingly.")
-   (:li "Remove experimental support for WebExtensions via " (:code "libnyxt") ".")))
+   (:li "Remove experimental support for WebExtensions via " (:code "libnyxt") ".")
+   (:li "Delete commands:"
+        (:ul
+         (:li (:code "clean-configuration"))
+         (:li (:code "copy-placeholder"))
+         (:li (:code "dashboard"))
+         (:li (:code "duplicate-buffer"))
+         (:li (:code "duplicate-buffer-with-current-modes"))
+         (:li (:code "follow-hint-with-current-modes-new-buffer"))
+         (:li (:code "go-next"))
+         (:li (:code "go-previous"))
+         (:li (:code "go-to-homepage"))
+         (:li (:code "go-up"))
+         (:li (:code "print-bindings"))
+         (:li (:code "reload-buffer"))
+         (:li (:code "reload-with-modes"))
+         (:li (:code "resume-prompt"))))
+   (:li "Delete modes:"
+        (:ul
+         (:li (:code "nyxt/mode/no-procrastinate"))
+         (:li (:code "nyxt/mode/preview"))
+         (:li (:code "nyxt/mode/record-input-field"))
+         (:li (:code "nyxt/mode/tts"))))))

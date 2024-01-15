@@ -20,7 +20,6 @@ Experimental support.
 - bordeaux-threads
 - calispel
 - cl-custom-hash-table
-- cl-html-diff
 - cl-json
 - cl-ppcre
 - cl-ppcre-unicode

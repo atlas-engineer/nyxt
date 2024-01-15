@@ -48,8 +48,7 @@ Important pieces of functionality are:
        "M-." 'headings-panel
        "M-{" 'previous-heading
        "M-}" 'next-heading
-       "C-p" 'print-buffer
-       "C-R" 'reload-with-modes)
+       "C-p" 'print-buffer)
       keyscheme:cua
       (list
        "C-h" 'jump-to-heading
@@ -169,35 +168,6 @@ Important pieces of functionality are:
   "Scroll to top if no input element is active, forward event otherwise."
   (call-non-input-command-or-forward #'scroll-to-top :buffer buffer))
 
-(define-command go-next ()
-  "Navigate to the next element according to the HTML 'rel' attribute."
-  (ps-eval (ps:chain (nyxt/ps:qs document "[rel=next]") 0 (click))))
-
-(define-command go-previous ()
-  "Navigate to the previous element according to the HTML 'rel' attribute."
-  (ps-eval (ps:chain (nyxt/ps:qs document "[rel=prev]") 0 (click))))
-
-(define-command go-to-homepage ()
-  "Navigate to the homepage."
-  (let* ((url (url (current-buffer)))
-         (authority (quri:uri-authority url))
-         (scheme (quri:uri-scheme url)))
-    (buffer-load (str:concat scheme "://" authority))))
-
-(define-command go-up ()
-  "Navigate to the upper level in the URL path hierarchy."
-  (let* ((url (url (current-buffer)))
-         (path (quri:uri-path url))
-         (path-splited (str:split "/" path :omit-nulls t))
-         (new-path-splited (butlast path-splited))
-         (scheme (quri:uri-scheme url))
-         (authority (quri:uri-authority url))
-         (new-path (reduce #'(lambda (x e) (str:concat x e "/"))
-                           new-path-splited
-                           :initial-value "/")))
-    (buffer-load (str:concat scheme "://" authority new-path))))
-
-
 (define-command paste (&optional (buffer (current-buffer)))
   "Paste from clipboard into active element."
   (ffi-buffer-paste buffer))
@@ -225,15 +195,6 @@ Only includes the strings that were pasted/copied inside Nyxt."))
 (define-command copy (&optional (buffer (current-buffer)))
   "Copy selected text to clipboard."
   (ffi-buffer-copy buffer))
-
-(define-command copy-placeholder (&optional (buffer (current-buffer)))
-  "Copy placeholder text to clipboard."
-  (let ((current-value (ps-eval :buffer buffer
-                         (ps:@ (nyxt/ps:active-element document) placeholder))))
-    (if (eq current-value :undefined)
-        (echo "No active selected placeholder.")
-        (progn (ffi-buffer-copy buffer current-value)
-               (echo "Placeholder copied.")))))
 
 (define-command cut (&optional (buffer (current-buffer)))
   "Cut the selected text in BUFFER."

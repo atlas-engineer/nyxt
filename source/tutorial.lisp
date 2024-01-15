@@ -130,7 +130,7 @@ full URL including the 'http://' prefix.")
          (list-command-information '(nyxt/mode/document:copy nyxt/mode/document:paste)))
         (:p "Passing through webpage's data:")
         (:ul
-         (list-command-information '(copy-url copy-title nyxt/mode/document:copy-placeholder nyxt/mode/hint:copy-hint-url)))
+         (list-command-information '(copy-url copy-title nyxt/mode/hint:copy-hint-url)))
         (:p "Leveraging password managers: ")
         (:ul
          (list-command-information '(nyxt/mode/password:copy-username nyxt/mode/password:copy-password nyxt/mode/password:copy-password-prompt-details)))
@@ -250,13 +250,7 @@ buffer."))
          (list-command-information '(nyxt/mode/document:jump-to-heading
                                      nyxt/mode/document:previous-heading
                                      nyxt/mode/document:next-heading
-                                     nyxt/mode/document:jump-to-heading-buffers)))
-        (:p "And navigate to interconnected files: ")
-        (:ul
-         (list-command-information '(nyxt/mode/document:go-next
-                                     nyxt/mode/document:go-previous
-                                     nyxt/mode/document:go-up
-                                     nyxt/mode/document:go-to-homepage))))
+                                     nyxt/mode/document:jump-to-heading-buffers))))
 
       (:nsection :title "Spelling check"
         (:p "Several commands are provided to spell check words. The default is
@@ -361,8 +355,7 @@ automate the reading experience:")
                                                     :sentence-case-p t))))
         (:p "Or even automate actions based on conditions: "
             (:ul
-             (list-command-information '(nyxt/mode/repeat:repeat-mode
-                                         nyxt/mode/preview:preview-mode))))
+             (list-command-information '(nyxt/mode/repeat:repeat-mode))))
         (:p "Nyxt also offers a no-code interface to build automation via Common Lisp
 macros: ")
         (:ul

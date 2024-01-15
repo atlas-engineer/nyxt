@@ -531,25 +531,6 @@ If it's a single buffer, return it directly (not as a list)."
             (disable existing-instance)
             (echo "~@(~a~) mode disabled." existing-instance))))))
 
-(define-command-global reload-with-modes (&optional (buffer (current-buffer)))
-  "Reload the BUFFER with the queried modes.
-This bypasses auto-rules.
-Auto-rules are re-applied once the page is reloaded once again."
-  (let* ((modes-to-enable (prompt
-                           :prompt "Mark modes to enable, unmark to disable"
-                           :sources (make-instance 'mode-source
-                                                   :marks (mapcar #'sera:class-name-of (modes (current-buffer))))))
-         (modes-to-disable (set-difference (all-mode-symbols) modes-to-enable
-                                           :test #'string=)))
-    (hooks:once-on (request-resource-hook buffer)
-        (request-data)
-      (when modes-to-enable
-        (disable-modes* modes-to-disable buffer))
-      (when modes-to-disable
-        (enable-modes* modes-to-enable buffer))
-      request-data)
-    (reload-buffer buffer)))
-
 (export-always 'find-buffer)
 (defun find-buffer (mode-symbol)
   "Return first buffer matching MODE-SYMBOL."

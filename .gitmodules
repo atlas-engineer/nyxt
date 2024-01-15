@@ -54,10 +54,6 @@
 	path = _build/cl-custom-hash-table
 	url = https://github.com/metawilm/cl-custom-hash-table
 	shallow = true
-[submodule "_build/cl-html-diff"]
-	path = _build/cl-html-diff
-	url = https://github.com/wiseman/cl-html-diff
-	shallow = true
 [submodule "_build/cl-difflib"]
 	path = _build/cl-difflib
 	url = https://github.com/wiseman/cl-difflib
@@ -557,10 +553,6 @@
 [submodule "_build/lisp-unit2"]
 	path = _build/lisp-unit2
 	url = https://github.com/AccelerationNet/lisp-unit2
-	shallow = true
-[submodule "_build/montezuma"]
-	path = _build/montezuma
-	url = https://github.com/sharplispers/montezuma
 	shallow = true
 [submodule "_build/nsymbols"]
 	path = _build/nsymbols

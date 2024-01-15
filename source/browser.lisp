@@ -118,11 +118,6 @@ This history is used if no history is specified for a given prompt buffer.")
    (set-url-history
     (make-ring)
     :documentation "The history of all URLs set via set-url")
-   (old-prompt-buffers
-    '()
-    :export nil
-    :documentation "The list of old prompt buffers.
-This can be used to resume former buffers.")
    (recent-buffers
     (make-ring :size 50)
     :export nil

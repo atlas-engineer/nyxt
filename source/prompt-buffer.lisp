@@ -21,8 +21,6 @@ The options are:
 - `:default', which sets it to the value of `prompt-buffer-open-height';
 - `:fit-to-prompt', which shrinks the height to fit the input area;
 - an integer, which corresponds to the height in pixels.")
-     (resumable-p t
-                  :type boolean)
      (prompter:history (prompt-buffer-generic-history *browser*)
                        ;; No need to export or define the accessor since this is
                        ;; an override of the prompter slot.
@@ -309,23 +307,7 @@ See also `show-prompt-buffer'."
     (alex:deletef (active-prompt-buffers window) prompt-buffer)
     ;; The channel values are irrelevant, so is the element order:
     (calispel:? (prompt-buffer-channel (window prompt-buffer)) 0)
-    (if (resumable-p prompt-buffer)
-        (flet ((prompter= (prompter1 prompter2)
-                 (and (string= (prompter:prompt prompter1)
-                               (prompter:prompt prompter2))
-                      (string= (prompter:input prompter1)
-                               (prompter:input prompter2)))))
-          ;; Delete previous, similar prompts, if any.
-          (mapc (lambda (old-prompt)
-                  (when (and (prompter= old-prompt prompt-buffer)
-                             (not (eq old-prompt prompt-buffer)))
-                    (ffi-buffer-delete old-prompt)))
-                (old-prompt-buffers *browser*))
-          (alex:deletef (old-prompt-buffers *browser*)
-                        prompt-buffer
-                        :test #'prompter=)
-          (push prompt-buffer (old-prompt-buffers *browser*)))
-        (ffi-buffer-delete prompt-buffer))
+    (ffi-buffer-delete prompt-buffer)
     (if (active-prompt-buffers window)
         (let ((next-prompt-buffer (first (active-prompt-buffers window))))
           (show-prompt-buffer next-prompt-buffer))
@@ -732,23 +714,7 @@ See the documentation of `prompt-buffer' to know more about the options."
     (declare #.(cons 'ignorable %prompt-args))
     (first (apply #'prompt args))))
 
-(define-class resume-prompt-source (prompter:source)
-  ((prompter:name "Resume prompters")
-   (prompter:constructor (old-prompt-buffers *browser*))
-   ;; TODO: Remove duplicates.
-   ;; TODO: History?
-   ))
-
 (defmethod prompter:object-attributes ((prompt-buffer prompt-buffer) (source prompter:source))
   (declare (ignore source))
   `(("Prompt" ,(prompter:prompt prompt-buffer))
     ("Input" ,(prompter:input prompt-buffer))))
-
-(define-command resume-prompt ()
-  "Query an older prompt and resume it."
-  (let ((old-prompt (prompt1 :prompt "Resume prompt session"
-                             :resumable-p nil
-                             :sources 'resume-prompt-source)))
-    (when old-prompt
-      (prompter:resume old-prompt)
-      (wait-on-prompt-buffer old-prompt))))

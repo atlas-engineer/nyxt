@@ -132,8 +132,27 @@ major versions."
   (conservative-history-movement-p)
   (:p "Deprecated in favor of " (:nxref :slot 'global-history-p :class-name 'buffer) ".")
 
-  nyxt/mode/no-procrastinate
-  (:p "Deprecated mode."))
+  (nyxt/mode/no-procrastinate
+   nyxt/mode/preview
+   nyxt/mode/record-input-field
+   nyxt/mode/tts)
+  (:p "Deprecated modes.")
+
+  (copy-placeholder
+   #:clean-configuration
+   dashboard
+   duplicate-buffer
+   duplicate-buffer-with-current-modes
+   follow-hint-with-current-modes-new-buffer
+   go-next
+   go-previous
+   go-to-homepage
+   go-up
+   print-bindings
+   reload-buffer
+   reload-with-modes
+   resume-prompt)
+  (:p "Deprecated commands."))
 
 (define-migration "3"
   (%slot-default)
@@ -368,7 +387,7 @@ major versions."
       (:code "nyxt/\([a-z-]*\)-mode") " with " (:code "nyxt/mode/\\1") ".")
 
   nyxt/preview-mode
-  (:p "Renamed to " (:nxref :class-name 'nyxt/mode/preview) "."
+  (:p "Renamed to " (:code "nyxt/mode/preview") "."
       " Query replace the regexp "
       (:code "nyxt/\([a-z-]*\)-mode") " with " (:code "nyxt/mode/\\1") ".")
 
@@ -393,7 +412,7 @@ major versions."
       (:code "nyxt/\([a-z-]*\)-mode") " with " (:code "nyxt/mode/\\1") ".")
 
   nyxt/record-input-field-mode
-  (:p "Renamed to " (:nxref :class-name 'nyxt/mode/record-input-field) "."
+  (:p "Renamed to " (:code 'nyxt/mode/record-input-field) "."
       " Query replace the regexp "
       (:code "nyxt/\([a-z-]*\)-mode") " with " (:code "nyxt/mode/\\1") ".")
 
@@ -408,7 +427,7 @@ major versions."
       (:code "nyxt/\([a-z-]*\)-mode") " with " (:code "nyxt/mode/\\1") ".")
 
   nyxt/remembrance-mode
-  (:p "Renamed to " (:nxref :class-name 'nyxt/mode/remembrance) "."
+  (:p "Renamed to " (:code "nyxt/mode/remembrance") "."
       " Query replace the regexp "
       (:code "nyxt/\([a-z-]*\)-mode") " with " (:code "nyxt/mode/\\1") ".")
 
@@ -443,7 +462,7 @@ major versions."
       (:code "nyxt/\([a-z-]*\)-mode") " with " (:code "nyxt/mode/\\1") ".")
 
   nyxt/tts-mode
-  (:p "Renamed to " (:nxref :class-name 'nyxt/mode/tts) "."
+  (:p "Renamed to " (:code 'nyxt/mode/tts) "."
       " Query replace the regexp "
       (:code "nyxt/\([a-z-]*\)-mode") " with " (:code "nyxt/mode/\\1") ".")
 
