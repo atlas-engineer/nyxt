@@ -35,7 +35,6 @@
                cl-qrencode
                cl-tld
                closer-mop
-               cl-containers
                dissect
                moptilities
                dexador
