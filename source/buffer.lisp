@@ -1945,15 +1945,10 @@ specified for their contents."
      :sources (url-sources (current-buffer) actions-on-return))
     (current-buffer)))
 
-(define-command reload-buffer
-    (&optional (buffer
-                (prompt
-                 :prompt "Reload buffer(s)"
-                 :sources (make-instance 'buffer-source))))
-  "Reload BUFFER.
-Return it."
-  (when buffer
-    (buffer-load (url buffer) :buffer buffer)))
+(export-always 'reload-buffer)
+(defun reload-buffer (buffer)
+  "Reload BUFFER and return it."
+  (buffer-load (url buffer) :buffer buffer))
 
 (define-command reload-current-buffer ()
   "Reload current buffer.
