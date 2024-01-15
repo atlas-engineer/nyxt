@@ -536,7 +536,7 @@
                (:file "password")
                (:file "password-keepassxc")
                (:file "password-security")
-               ;; Keep password-store last so that it has higher priority.
+               ;; Keep password-pass as to ensure higher priority.
                (:file "password-pass")))
 
 (defsystem "nyxt/theme"
