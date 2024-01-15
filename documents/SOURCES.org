@@ -19,7 +19,6 @@ Experimental support.
 - alexandria
 - bordeaux-threads
 - calispel
-- cl-containers
 - cl-custom-hash-table
 - cl-html-diff
 - cl-json
