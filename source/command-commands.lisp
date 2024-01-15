@@ -301,12 +301,12 @@ User input is evaluated Lisp."
 
 (define-class hook-source (prompter:source)
   ((prompter:name "Hooks")
-   (prompter:constructor (get-hooks))))
+   (prompter:constructor (get-hooks))
+   (prompter:actions-on-return (lambda-mapped-command value))))
 
 (defmethod prompter:object-attributes ((hook-description hook-description) (source hook-source))
   (declare (ignore source))
-  `(("Name" ,(name hook-description))
-    ("Value" ,(value hook-description))))
+  `(("Name" ,(name hook-description))))
 
 (define-class handler-source (prompter:source)
   ((prompter:name "Handlers")
