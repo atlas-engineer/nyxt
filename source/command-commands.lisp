@@ -12,17 +12,17 @@
     :documentation "The hook value.")))
 
 (defun command-attributes (command &optional (buffer (active-buffer (current-window :no-rescan))))
-  (let* ((bindings (keymaps:pretty-binding-keys
-                    (name command)
-                    (current-keymaps buffer)
-                    :print-style (keymaps:name (keyscheme buffer)))))
-    `(("Name" ,(string-downcase (closer-mop:generic-function-name command)))
-      ("Bindings" ,(format nil "~{~a~^, ~}" bindings))
+  (let ((command-name (name command)))
+    `(("Name" ,(string-downcase command-name))
+      ("Bindings" ,(format nil "~{~a~^, ~}"
+                           (keymaps:pretty-binding-keys command-name
+                                                        (current-keymaps buffer)
+                                                        :print-style (keymaps:name (keyscheme buffer)))))
       ("Docstring" ,(documentation-line command 'function "") nil 4)
-      ("Mode" ,(let ((package-name (str:downcase (uiop:symbol-package-name (closer-mop:generic-function-name command)))))
-                 (if (sera:in package-name "nyxt" "nyxt-user")
-                     ""
-                     (str:replace-first "nyxt/" "" package-name)))))))
+      ("Mode" ,(let ((package-name (uiop:symbol-package-name command-name)))
+                 (if (str:starts-with-p "NYXT/MODE/" package-name)
+                     (string-downcase (str:replace-first "NYXT/MODE/" "" package-name))
+                     ""))))))
 
 (define-class command-source (prompter:source)
   ((prompter:name "Commands")
