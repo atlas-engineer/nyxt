@@ -60,14 +60,6 @@ definition:
 
   :around-compile \"NASDF:FAIL-ON-WARNINGS\"
 
-To report unbound exported symbols:
-
-(defsystem my-system
-  :defsystem-depends-on (\"nasdf\")
-  :class :nasdf-compilation-test-system
-  :depends-on (foo bar)
-  :packages (:foo))
-
 A system that installs files:
 
 (defsystem \"my-project/install\"

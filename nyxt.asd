@@ -224,7 +224,6 @@
                  (:file "watch"))))
   :around-compile "NASDF:FAIL-ON-WARNINGS"
   :in-order-to ((test-op (test-op "nyxt/tests")
-                         (test-op "nyxt/tests/compilation")
                          ;; We test if manual dumping works, since it may catch
                          ;; some subtle mistakes:
                          (compile-op "nyxt/documentation")
@@ -236,18 +235,11 @@
   :defsystem-depends-on ("nasdf")
   :class :nasdf-submodule-system)
 
-(defsystem "nyxt/tests/compilation"
-  :defsystem-depends-on ("nasdf")
-  :class :nasdf-compilation-test-system
-  :depends-on (nyxt)
-  :packages (:nyxt)
-  :undocumented-symbols-to-ignore (:external-editor-program))
-
 ;; TODO: Test that Nyxt starts and that --help, --version work.
 (defsystem "nyxt/tests"
   :defsystem-depends-on ("nasdf")
   :class :nasdf-test-system
-  :depends-on (nyxt nyxt/tests/compilation)
+  :depends-on (nyxt)
   :targets (:package :nyxt/tests)
   :serial t
   :components ((:file "tests/package")
@@ -367,7 +359,6 @@
   :components ((:file "renderer/gi-gtk"))
   :in-order-to ((test-op (test-op "nyxt/gi-gtk/tests")
                          (test-op "nyxt/tests")
-                         (test-op "nyxt/tests/compilation")
                          ;; We test if manual dumping works, since it may catch
                          ;; some subtle mistakes:
                          (compile-op "nyxt/documentation")
