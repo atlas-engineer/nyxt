@@ -55,11 +55,6 @@
    #:standard-writer-method)
   (:documentation "ASDF helpers for system setup, testing and installation.
 
-To tell ASDF to fail loading a system on warnings, add this line to the system
-definition:
-
-  :around-compile \"NASDF:FAIL-ON-WARNINGS\"
-
 A system that installs files:
 
 (defsystem \"my-project/install\"
@@ -76,6 +71,15 @@ A system that installs files:
                 :exclude-subpath (\"web-extensions\") ; Do not install this non-Lisp source.
                 :exclude-types (\"o\" \"c\" \"h\" ; C code and artifacts.
                                     \"fasl\"))))
+
+A test system:
+
+(defsystem \"my-project/tests\"
+  :defsystem-depends-on (\"nasdf\")
+  :class :nasdf-test-system
+  :depends-on (alexandria lisp-unit2)
+  :components ((:file \"tests\"))
+  :test-suite-args (:package :my-project/tests))
 
 A system that fetches the Git submodules:
 

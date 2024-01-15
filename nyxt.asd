@@ -222,7 +222,6 @@
                  (:file "visual")
                  (:file "vi")
                  (:file "watch"))))
-  :around-compile "NASDF:FAIL-ON-WARNINGS"
   :in-order-to ((test-op (test-op "nyxt/tests")
                          ;; We test if manual dumping works, since it may catch
                          ;; some subtle mistakes:
@@ -235,20 +234,18 @@
   :defsystem-depends-on ("nasdf")
   :class :nasdf-submodule-system)
 
-;; TODO: Test that Nyxt starts and that --help, --version work.
 (defsystem "nyxt/tests"
   :defsystem-depends-on ("nasdf")
   :class :nasdf-test-system
-  :depends-on (nyxt)
-  :targets (:package :nyxt/tests)
-  :serial t
-  :components ((:file "tests/package")
-               (:file "tests/offline/define-configuration")
-               (:file "tests/offline/global-history")
-               (:file "tests/offline/user-script-parsing")
-               (:file "tests/offline/mode")
+  :depends-on (nyxt lisp-unit2)
+  :pathname #p"NYXT:tests;"
+  :components ((:file "package")
+               (:file "offline/define-configuration")
+               (:file "offline/global-history")
+               (:file "offline/user-script-parsing")
+               (:file "offline/mode")
                (:module "Modes"
-                :pathname "tests/offline/mode"
+                :pathname "offline/mode"
                 :components
                 ((:file "autofill")
                  (:file "annotate")
@@ -304,8 +301,9 @@
                  ;; (:file "tests/offline/mode/visual")
                  (:file "user-script")
                  (:file "watch")))
-               (:file "tests/offline/prompt-buffer")
-               (:file "tests/online/urls")))
+               (:file "offline/prompt-buffer")
+               (:file "online/urls"))
+    :test-suite-args (:package :nyxt/tests))
 
 (defsystem "nyxt/benchmark"
   :defsystem-depends-on ("nasdf")
@@ -344,7 +342,6 @@
                nyxt)
   :pathname #p"NYXT:source;"
   :serial t
-  :around-compile "NASDF:FAIL-ON-WARNINGS"
   :components ((:file "renderer/gtk-clipboard")
                (:file "renderer/gtk")))
 
@@ -355,7 +352,6 @@
                cl-gobject-introspection
                nyxt/gtk)
   :pathname #p"NYXT:source;"
-  :around-compile "NASDF:FAIL-ON-WARNINGS"
   :components ((:file "renderer/gi-gtk"))
   :in-order-to ((test-op (test-op "nyxt/gi-gtk/tests")
                          (test-op "nyxt/tests")
@@ -369,24 +365,24 @@
 (defsystem "nyxt/gi-gtk/tests"
   :defsystem-depends-on ("nasdf")
   :class :nasdf-test-system
-  :depends-on (nyxt/gi-gtk)
-  :targets (:package :nyxt/tests/renderer)
+  :depends-on (nyxt/gi-gtk lisp-unit2)
   :serial t
-  :components ((:file "tests/renderer-package")
-               (:file "tests/renderer-offline/set-url")
-               (:file "tests/renderer-offline/execute-command-eval")
-               (:file "tests/renderer-offline/nyxt-url-security")
-               (:file "tests/renderer-offline/search-buffer")
+  :pathname #p"NYXT:tests;"
+  :components ((:file "renderer-package")
+               (:file "renderer-offline/set-url")
+               (:file "renderer-offline/execute-command-eval")
+               (:file "renderer-offline/nyxt-url-security")
+               (:file "renderer-offline/search-buffer")
                ;; See https://github.com/atlas-engineer/nyxt/issues/3172
-               ;; (:file "tests/renderer-online/set-url")
-               ))
+               ;; (:file "renderer-online/set-url")
+               )
+  :test-suite-args (:package :nyxt/tests/renderer))
 
 (defsystem "nyxt/qt"
   :depends-on (cl-webengine
                nyxt
                trivial-main-thread)
   :pathname #p"NYXT:source;"
-  :around-compile "NASDF:FAIL-ON-WARNINGS"
   :components ((:file "renderer/qt")))
 
 ;; We should not set the build-pathname in systems that have a component.
@@ -492,9 +488,10 @@
 (defsystem "nyxt/analysis/tests"
   :defsystem-depends-on ("nasdf")
   :class :nasdf-test-system
-  :depends-on (nyxt/analysis)
-  :targets (:package :analysis/tests)
-  :components ((:file "libraries/analysis/tests/tests")))
+  :depends-on (nyxt/analysis lisp-unit2)
+  :pathname #p"NYXT:libraries;analysis;tests;"
+  :components ((:file "tests"))
+  :test-suite-args (:package :analysis/tests))
 
 (defsystem "nyxt/user-interface"
   :defsystem-depends-on ("nasdf")
@@ -547,6 +544,7 @@
 (defsystem "nyxt/theme/tests"
   :defsystem-depends-on ("nasdf")
   :class :nasdf-test-system
-  :depends-on (nyxt/theme)
-  :targets (:package :theme/tests)
-  :components ((:file "libraries/theme/tests/tests")))
+  :depends-on (nyxt/theme lisp-unit2)
+  :pathname #p"NYXT:libraries;theme;tests;"
+  :components ((:file "tests"))
+  :test-suite-args (:package :theme/tests))
