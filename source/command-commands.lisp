@@ -315,7 +315,7 @@ User input is evaluated Lisp."
     :documentation "The hook for which to retrieve handlers for.")
    (prompter:constructor (lambda (source) (hooks:handlers (hook source))))))
 
-(defmethod prompter:object-attributes ((handler hooks:handler) (source handler-source))
+(defmethod prompter:object-attributes ((handler symbol) (source handler-source))
   (declare (ignore source))
   `(("Name" ,(str:downcase (hooks:name handler)))))
 
