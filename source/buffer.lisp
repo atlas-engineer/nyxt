@@ -66,6 +66,7 @@ See also the `profile' slot in the `browser' class.")
             `(:font-face :font-family "public sans" :font-style "italic" :font-weight "800" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-ExtraBoldItalic.woff") "format('woff')")
             `(:font-face :font-family "public sans" :font-style "normal" :font-weight "900" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Black.woff") "format('woff')")
             `(:font-face :font-family "public sans" :font-style "italic" :font-weight "900" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-BlackItalic.woff") "format('woff')")
+            `(:font-face :font-family "dejavu sans mono" :src ,(format nil "url('nyxt-resource:~a')" "DejaVuSansMono.ttf") "format('ttf')")
             `(*
               :font-family ,theme:font-family
               :box-sizing border-box)
@@ -132,6 +133,9 @@ See also the `profile' slot in the `browser' class.")
               :appearance auto
               :background-color ,theme:primary
               :color ,(theme:contrasting-text-color theme:theme "white") !important)
+            `(code
+              :font-size "14px"
+              :font-family ,theme:monospace-font-family)
             `(.code-select
               :position "absolute"
               :top "0"
@@ -198,6 +202,8 @@ See also the `profile' slot in the `browser' class.")
             `("a:hover"
               :opacity 0.8)
             `(pre
+              :font-size "14px"
+              :font-family ,theme:monospace-font-family
               :border-radius "3px"
               :overflow "auto"
               :padding "5px")
