@@ -30,6 +30,7 @@
   - [[#adding-a-new-lisp-dependency][Adding a new Lisp dependency]]
   - [[#programming-conventions][Programming conventions]]
 :END:
+
 * Development environment guide
 
 If you are new to developing Nyxt, you may want a straightforward way to
@@ -75,16 +76,13 @@ With Nyxt started in this way, you can hack on Nyxt without recompiling the
 whole codebase or even restarting the browser. You can make your changes,
 recompile only the relevant file/expression with SLY and it's done.
 
-You can also run the tests locally with:
+You can also run the full test suite locally with:
 
 #+begin_src lisp
-(asdf:test-system :nyxt)
-; and
 (asdf:test-system :nyxt/gi-gtk)
 #+end_src
 
-Keep in mind that it is recommended to restart the SLY session before and
-after running the tests.
+It is recommended to restart the SLY session before and after running the tests.
 
 * Developer's installation guide
 
@@ -110,21 +108,13 @@ found here: [[http://www.sbcl.org/getting.html]].
 
 ** Lisp dependencies
 
+All Lisp dependencies are included as Git submodules of this repository, so
+there's no extra setup.
+
+In case you'd like to manage them manually, set the environment variable
+~NYXT_SUBMODULES=false~ and place them at a location that [[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][ASDF honors]].  Note the
 Nyxt requires some Lisp libraries and, since some are pinned at specific
 versions, relying on Quicklisp is discouraged.
-
-All Lisp dependencies are included as a submodule of this repository, so unless
-the submodules are disabled (i.e. ~NYXT_SUBMODULES=false~), there is nothing
-more to be done.
-
-Otherwise clone the required repositories listed in =.gitmodules= into
-=~/common-lisp= (or [[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][another directory where ASDF will find it]]).  For instance,
-to get the latest version of =cl-webkit=, you would typically run the following:
-
-#+begin_src sh
-mkdir -p ~/common-lisp
-git clone https://github.com/joachifm/cl-webkit ~/common-lisp/cl-webkit
-#+end_src
 
 ** GTK dependencies
 
