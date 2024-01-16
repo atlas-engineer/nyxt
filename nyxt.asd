@@ -418,19 +418,6 @@
   :build-pathname "nyxt-qt"
   :entry-point "nyxt:entry-point")
 
-(defsystem "nyxt/application/tests"
-  :defsystem-depends-on ("nasdf")
-  :class :nasdf-test-system
-  :depends-on (nyxt)
-  :targets (:package :nyxt/tests/executable)
-  :components ((:file "tests/package")
-               (:file "tests/executable/config")
-               (:file "tests/executable/scripts"))
-  :perform (test-op :around (op c)
-                    (if (file-exists-p (system-relative-pathname :nyxt "nyxt"))
-                        (call-next-method)
-                        (warn "`nyxt' executable missing, skipping tests."))))
-
 (defsystem "nyxt/install"
   :defsystem-depends-on ("nasdf")
   :class :nyxt-renderer-system
