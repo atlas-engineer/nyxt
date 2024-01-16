@@ -119,7 +119,11 @@
    (font-family
     "Public Sans"
     :type string
-    :documentation "The font family to use by default."))
+    :documentation "The font family to use by default.")
+   (monospace-font-family
+    "DejaVu Sans Mono"
+    :type string
+    :documentation "The monospace font family to use by default."))
   (:automatic-types-p t)
   (:export-class-name-p t)
   (:export-accessor-names-p t)
@@ -371,6 +375,7 @@ Return two values, where the first corresponds to the sequence that meets PRED."
 (def codeblock- codeblock-color-)
 (def on-codeblock on-codeblock-color)
 (def font-family font-family)
+(def monospace-font-family monospace-font-family)
 (def text text-color)
 (def text+ text-color+)
 (def text- text-color-)
@@ -429,7 +434,8 @@ Return two values, where the first corresponds to the sequence that meets PRED."
                     (theme:text+ theme:text-color+)
                     (theme:text- theme:text-color-)
                     (theme:contrast-text theme:contrast-text-color)
-                    (theme:font-family theme:font-family))
+                    (theme:font-family theme:font-family)
+                    (theme:monospace-font-family theme:monospace-font-family))
                   collect `(,alias (,accessor theme:theme))))
      ,@body))
 
