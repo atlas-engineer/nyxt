@@ -833,6 +833,12 @@ store them somewhere and `ffi-buffer-delete' them once done."))
               :display "inline-block")
             '("details[open] > summary::before"
               :content "−")
+            `(pre
+              :font-size "14px"
+              :font-family ,theme:monospace-font-family)
+            `(code
+              :font-size "14px"
+              :font-family ,theme:monospace-font-family)
             `(dt
               :font-weight bold)
             `(dd
