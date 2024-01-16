@@ -1,7 +1,7 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package nyxt/benchmark)
+(in-package nyxt/benchmarks)
 
 (define-benchmark measure-score-suggestion-docstring ()
   "Measure the time needed to match against all Nyxt command docstrings.

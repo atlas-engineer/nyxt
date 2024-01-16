@@ -305,21 +305,19 @@
                (:file "online/urls"))
     :test-suite-args (:package :nyxt/tests))
 
-(defsystem "nyxt/benchmark"
+(defsystem "nyxt/benchmarks"
   :defsystem-depends-on ("nasdf")
-  :depends-on (alexandria
-               nyxt
-               trivial-benchmark)
-  :pathname "tests/benchmarks"
-  :components ((:file "../benchmark-package")
+  :class :nasdf-system
+  :depends-on (nyxt alexandria trivial-benchmark)
+  :pathname #p"NYXT:tests;benchmarks;"
+  :components ((:file "package")
                (:file "prompter"))
   :perform (test-op (op c)
-                    (let ((results
-                            (funcall (read-from-string "alexandria:hash-table-alist")
-                                     (funcall (read-from-string "benchmark:run-package-benchmarks")
-                                              :package :nyxt/benchmark
-                                              :verbose t))))
-                      (symbol-call :nasdf :print-benchmark results))))
+                    (eval-input
+                     "(nasdf:print-benchmark
+                       (alexandria:hash-table-alist
+                        (benchmark:run-package-benchmarks :package :nyxt/benchmarks
+                                                          :verbose t)))")))
 
 (defsystem "nyxt/documentation"         ; TODO: Only rebuild if input changed.
   :depends-on (nyxt)

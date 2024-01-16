@@ -33,11 +33,15 @@ If the NASDF_TESTS_NO_NETWORK environment variable is set, tests with the
            (print-times (entry)
              (let ((title (first entry))
                    (attr (rest entry)))
-               (unless (or (member (symbol-name title) '("RUN-TIME" "SYSTEM-RUN-TIME")) ; Not so interesting.
-                           (and (member (symbol-name title) '("PAGE-FAULTS" "EVAL-CALLS")
+               (unless (or (member (symbol-name title)
+                                   '("RUN-TIME" "SYSTEM-RUN-TIME"))
+                           (and (member (symbol-name title)
+                                        '("PAGE-FAULTS" "EVAL-CALLS")
                                         :test #'string=)
                                 (zerop (getf attr :average))))
-                 (format t " ~a: ~,9t~a" (string-downcase title) (rat->float (getf attr :average)))
+                 (format t " ~a: ~,9t~a"
+                         (string-downcase title)
+                         (rat->float (getf attr :average)))
                  (format t "~32,8t[~a, ~a]"
                          (rat->float (getf attr :minimum))
                          (rat->float (getf attr :maximum)))
