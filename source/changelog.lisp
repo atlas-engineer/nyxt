@@ -959,6 +959,8 @@ allows access to common functions that are defined within the mode."))))
 (define-version "3.X.Y"
   (:nsection :title "UI/UX"
     (:ul
+     (:li "Add DejaVu monospace fonts to code blocks. Now code blocks throghout Nyxt will
+be readable in monospace.")
      (:li "Improve user experience of "
           (:nxref :class-name 'nyxt/mode/macro-edit:macro-edit-mode) ".")
      (:li "Improve UI of the interfaces bound to "
