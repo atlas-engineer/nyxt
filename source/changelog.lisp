@@ -968,6 +968,10 @@ allows access to common functions that are defined within the mode."))))
      (:li "Review the appearance of all help system pages such as"
           (:nxref :command 'describe-class) ".")
      (:li "Review font sizes.")
+     (:li "Add possibility to specify a monospace font via "
+          (:nxref :class-name 'theme:theme :slot 'theme:monospace-font-family) "."
+          "By default, it is set to DejaVu.")
+     (:li "Review usage of proportional and monospace fonts.")
      (:li "Use monospace fonts in "
           (:nxref :class-name 'nyxt/mode/editor:plaintext-editor-mode) ".")
      (:li "Replace source heading buttons in the "
