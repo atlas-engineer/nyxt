@@ -7,7 +7,6 @@
   (sb-ext:assert-version->= 2 0 0)
   (require 'sb-bsd-sockets))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; WARNING: We _must_ declare the translation host or else ASDF won't recognize
 ;; the pathnames as logical-pathnames, thus returning the system directory
 ;; instead.
@@ -106,8 +105,8 @@
                  (:file "user-interface")))
                (:module "Core"
                 :pathname ""
-                :serial t
                 :depends-on ("Utilities")
+                :serial t
                 :components
                 ((:file "renderer")
                  (:file "global")
@@ -153,7 +152,7 @@
                  (:file "list-history")
                  (:file "document" :depends-on ("passthrough"))
                  (:file "hint" :depends-on ("document"))
-                 (:file "search-buffer" :depends-on ("hint"))
+                 (:file "search-buffer")
                  (:file "spell-check" :depends-on ("document"))
                  (:file "help" :depends-on ("document" "search-buffer"))
                  (:file "history" :depends-on ("history-tree" "list-history"))
@@ -223,8 +222,7 @@
                  (:file "vi")
                  (:file "watch"))))
   :in-order-to ((test-op (test-op "nyxt/tests")
-                         ;; We test if manual dumping works, since it may catch
-                         ;; some subtle mistakes:
+                         ;; Dumping the manual may catch errors.
                          (compile-op "nyxt/documentation")
                          ;; Subsystems:
                          (test-op "nyxt/analysis")
@@ -351,8 +349,7 @@
   :components ((:file "gi-gtk"))
   :in-order-to ((test-op (test-op "nyxt/gi-gtk/tests")
                          (test-op "nyxt/tests")
-                         ;; We test if manual dumping works, since it may catch
-                         ;; some subtle mistakes:
+                         ;; Dumping the manual may catch errors.
                          (compile-op "nyxt/documentation")
                          ;; Subsystems:
                          (test-op "nyxt/analysis")
@@ -362,8 +359,8 @@
   :defsystem-depends-on ("nasdf")
   :class :nasdf-test-system
   :depends-on (nyxt/gi-gtk lisp-unit2)
-  :serial t
   :pathname #p"NYXT:tests;"
+  :serial t
   :components ((:file "renderer-package")
                (:file "renderer-offline/set-url")
                (:file "renderer-offline/execute-command-eval")
@@ -429,7 +426,6 @@
                 :exclude-types ("o" "c" "h" ; C code and artifacts.
                                     "fasl"))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Library subsystems:
 
 (defsystem "nyxt/download-manager"
