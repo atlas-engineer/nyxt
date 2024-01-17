@@ -319,18 +319,22 @@
                         (benchmark:run-package-benchmarks :package :nyxt/benchmarks
                                                           :verbose t)))")))
 
-(defsystem "nyxt/documentation"         ; TODO: Only rebuild if input changed.
+(defsystem "nyxt/documentation"
   :depends-on (nyxt)
   :output-files (compile-op (o c)
                             (values (list (system-relative-pathname c "manual.html"))
                                     t))
   :perform (compile-op (o c)
-                       (with-open-file (out (output-file o c)
-                                            :direction :output
-                                            :if-exists :supersede)
-                         (write-string (symbol-call :nyxt :manual-content)
-                                       out))
-                       (format *error-output* "Manual dumped to ~s.~&" (output-file o c))))
+                       (let ((man-source (component-pathname (find-component (find-system "nyxt")
+                                                                             "manual")))
+                             (man-dump (output-file o c)))
+                         (if (or (not (file-exists-p man-dump))
+                                 (> (symbol-call :nyxt/mode/file-manager :mtime man-source)
+                                    (symbol-call :nyxt/mode/file-manager :mtime man-dump)))
+                             (with-open-file (out man-dump :direction :output :if-exists :supersede)
+                               (write-string (symbol-call :nyxt :manual-content) out)
+                               (format *error-output* "Manual dumped to ~s.~&" man-dump))
+                             (format *error-output* "Manual at ~s is up-to-date.~&" man-dump)))))
 
 (defsystem "nyxt/gtk"
   :defsystem-depends-on ("nasdf")
