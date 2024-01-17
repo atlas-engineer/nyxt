@@ -536,6 +536,7 @@
                (:file "password")
                (:file "password-keepassxc")
                (:file "password-security")
+               (:file "password-secret-service")
                ;; Keep password-store last so that it has higher priority.
                (:file "password-pass")))
 
