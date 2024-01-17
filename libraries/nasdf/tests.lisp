@@ -17,14 +17,14 @@ If the NASDF_TESTS_NO_NETWORK environment variable is set, tests with the
 `:online' tags are excluded."))
 (import 'nasdf-test-system  :asdf-user)
 
-(defmethod asdf:perform ((op test-op) (c nasdf-test-system))
+(defmethod perform ((op test-op) (c nasdf-test-system))
   (destructuring-bind (&key package tags exclude-tags &allow-other-keys) (test-suite-args c)
     (symbol-call :lisp-unit2 :run-tests
                  :package package
                  :tags tags
                  :exclude-tags (append (when (env-true-p "NASDF_TESTS_NO_NETWORK") '(:online))
                                        exclude-tags)
-                 :run-contexts (uiop:find-symbol* :with-summary-context :lisp-unit2))))
+                 :run-contexts (find-symbol* :with-summary-context :lisp-unit2))))
 
 (export-always 'print-benchmark)
 (defun print-benchmark (benchmark-results)

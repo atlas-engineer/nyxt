@@ -7,52 +7,7 @@
     (sb-ext:unlock-package :nasdf)))
 
 (uiop:define-package :nasdf
-  (:use :cl)
-  (:import-from :uiop
-                #:absolute-pathname-p
-                #:collect-sub*directories
-                #:copy-file
-                #:directory-files
-                #:ensure-all-directories-exist
-                #:ensure-directory-pathname
-                #:ensure-pathname
-                #:file-exists-p
-                #:getenv
-                #:inter-directory-separator
-                #:merge-pathnames*
-                #:native-namestring
-                #:quit
-                #:relativize-pathname-directory
-                #:run-program
-                #:split-string
-                #:strcat
-                #:string-prefix-p
-                #:string-suffix-p
-                #:subpathp
-                #:symbol-call
-                #:with-current-directory)
-  (:import-from :asdf
-                #:clear-configuration
-                #:perform
-                #:system-relative-pathname
-                #:system-source-directory)
-  (:import-from
-   #+abcl      #:mop
-   #+allegro   #:mop
-   #+clisp     #:clos
-   #+clozure   #:ccl
-   #+cmu       #:clos-mop
-   #+ecl       #:clos
-   #+clasp     #:clos
-   #+lispworks #:clos
-   #+mcl       #:ccl
-   #+sbcl      #:sb-mop
-   #+scl       #:clos
-   #+mezzano   #:mezzano.clos
-   #+sicl      #:sicl-clos
-   #:standard-accessor-method
-   #:standard-reader-method
-   #:standard-writer-method)
+  (:use #:cl #:uiop #:asdf)
   (:documentation "ASDF helpers for system setup, testing and installation.
 
 A system that installs files:

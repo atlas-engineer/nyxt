@@ -23,11 +23,11 @@ A naive benchmark on a 16 Mbps bandwidth gives us
     8 jobs: 2m21s")
 
 (export-always 'nasdf-submodule-system)
-(defclass nasdf-submodule-system (asdf:system) ()
+(defclass nasdf-submodule-system (system) ()
   (:documentation "This system sole purpose is to fetch the Git submodules found in '.gitmodules' next to the system definition file."))
 (import 'nasdf-submodule-system  :asdf-user)
 
-(defmethod asdf:perform ((o asdf:compile-op) (c nasdf-submodule-system))
+(defmethod perform ((o compile-op) (c nasdf-submodule-system))
   (fetch-submodules c))
 
 (defun register-submodules (component)
@@ -61,7 +61,7 @@ A naive benchmark on a 16 Mbps bandwidth gives us
   (format t "; CL_SOURCE_REGISTRY: ~s~%" (getenv "CL_SOURCE_REGISTRY")))
 
 (export-always 'fetch-submodules)
-(defmethod fetch-submodules ((component asdf:component))
+(defmethod fetch-submodules ((component component))
   (let ((cmd (list *git-program*
                    "-C" (namestring (system-source-directory component))
                    "submodule" "update" "--init" "--force"

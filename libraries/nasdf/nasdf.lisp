@@ -9,7 +9,7 @@
      (export ,symbols ,@(and package-supplied? (list package)))))
 
 (defun env-true-p (env-variable)
-  (let ((value (uiop:getenv env-variable)))
+  (let ((value (getenv env-variable)))
     (or (string-equal "true" value)
         (string-equal "yes" value)
         (string-equal "on" value)

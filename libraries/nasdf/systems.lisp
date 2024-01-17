@@ -4,7 +4,7 @@
 (in-package :nasdf)
 
 (export-always 'nasdf-system)
-(defclass nasdf-system (asdf:system) ()
+(defclass nasdf-system (system) ()
   (:documentation "Extended ASDF system.
 It enables features such as:
 - Togglable logical-pathnames depending on NASDF_USE_LOGICAL_PATHS.
@@ -13,51 +13,51 @@ It enables features such as:
 (import 'nasdf-system :asdf-user)
 
 #+sb-core-compression
-(defmethod asdf:perform ((o asdf:image-op) (c nasdf-system))
-  (uiop:dump-image (asdf:output-file o c)
-                   :executable t
-                   :compression (when (getenv "NASDF_COMPRESS")
-                                  (or (parse-integer (getenv "NASDF_COMPRESS")
-                                                     :junk-allowed t)
-                                      (string-equal "T" (getenv "NASDF_COMPRESS"))))))
+(defmethod perform ((o image-op) (c nasdf-system))
+  (dump-image (output-file o c)
+              :executable t
+              :compression (when (getenv "NASDF_COMPRESS")
+                             (or (parse-integer (getenv "NASDF_COMPRESS")
+                                                :junk-allowed t)
+                                 (string-equal "T" (getenv "NASDF_COMPRESS"))))))
 
-(defmethod asdf:perform :before ((o asdf:image-op) (c nasdf-system))
+(defmethod perform :before ((o image-op) (c nasdf-system))
   "Perform some last minute tweaks to the final image.
 
 - Register immutable systems to prevent compiled images from
 trying to recompile the application and its dependencies.
-See `asdf::*immutable-systems*'.
+See `:*immutable-systems*'.
 
 - If on SBCL, include `sb-sprof', the statistical profiler, since it's one of
 the few modules that's not automatically included in the image."
   #+sbcl
   (require :sb-sprof)
-  (map () 'asdf:register-immutable-system (asdf:already-loaded-systems)))
+  (map () 'register-immutable-system (already-loaded-systems)))
 
 (defun set-new-translation (host logical-directory
                             root-directory
                             &optional (translated-directory (string-downcase (substitute #\/ #\; logical-directory))))
   "Add default translations for LOGICAL-DIRECTORY (e.g. \"foo;bar;\") in HOST.
 Default translations:
-- FASL files are expanded as usual with `asdf:apply-output-translations' (should default to the ASDF cache).
+- FASL files are expanded as usual with `apply-output-translations' (should default to the ASDF cache).
 - Other files are expanded to their absolute location.
 
 This effectively makes the logical pathname behave as if it had been a physical
 pathname."
-  (let* ((logical-directory (if (uiop:string-suffix-p logical-directory ";")
+  (let* ((logical-directory (if (string-suffix-p logical-directory ";")
                                 logical-directory
-                                (uiop:strcat logical-directory ";")))
-         (logical-path (uiop:strcat host ":" logical-directory "**;*.*.*"))
-         (logical-fasl-path (uiop:strcat host ":" logical-directory "**;*.fasl.*"))
-         (path-translation (uiop:ensure-pathname
-                            (uiop:subpathname* root-directory
-                                               translated-directory)
+                                (strcat logical-directory ";")))
+         (logical-path (strcat host ":" logical-directory "**;*.*.*"))
+         (logical-fasl-path (strcat host ":" logical-directory "**;*.fasl.*"))
+         (path-translation (ensure-pathname
+                            (subpathname* root-directory
+                                          translated-directory)
                             :ensure-directory t
                             :wilden t))
-         (fasl-translation (uiop:ensure-pathname
-                            (asdf:apply-output-translations
-                             (uiop:subpathname* root-directory
-                                                translated-directory))
+         (fasl-translation (ensure-pathname
+                            (apply-output-translations
+                             (subpathname* root-directory
+                                           translated-directory))
                             :wilden t)))
     (if (ignore-errors (logical-pathname-translations host))
         (flet ((set-alist (key value)
@@ -78,7 +78,7 @@ pathname."
               (list (list logical-fasl-path fasl-translation)
                     (list logical-path path-translation))))))
 
-(defun logical-word-or-lose (word) ; From  `sb-impl::logical-word-or-lose'.
+(defun logical-word-or-lose (word)      ; From  `sb-impl::logical-word-or-lose'.
   (declare (string word))
   (when (string= word "")
     (error 'namestring-parse-error
@@ -110,10 +110,7 @@ pathname."
           (values host
                   (subseq name (1+ (position #\: name)))))))))
 
-;; Both `nasdf:component-pathname' and `asdf:component-pathname' work, but it
-;; seems more semantically correct to specialize `asdf:component-pathname' for
-;; this.
-(defmethod asdf:component-pathname ((system nasdf-system))
+(defmethod component-pathname ((system nasdf-system))
   "If NASDF_USE_LOGICAL_PATHS environment variable is set, use logical path source
 location, otherwise use the translated path.
 
@@ -126,7 +123,7 @@ to go to the compilation error location."
                               (progn
                                 (set-new-translation host
                                                      (subseq (namestring path) (1+ (length host)))
-                                                     (asdf:system-source-directory system))
+                                                     (system-source-directory system))
                                 ;; The #p reader macro expands to logical pathnames only if
                                 ;; the host is already defined, which may not be the case at
                                 ;; this point, so we remake the pathname.
@@ -136,15 +133,15 @@ to go to the compilation error location."
             final-path
             (translate-logical-pathname final-path))))))
 
-(defclass nyxt-renderer-system (asdf:system) ()
+(defclass nyxt-renderer-system (system) ()
   (:documentation "Specialized systems for Nyxt with renderer dependency.
 The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
 (import 'nyxt-renderer-system :asdf-user)
 
 (export '*nyxt-renderer*)
-(defvar *nyxt-renderer* (or (uiop:getenv "NYXT_RENDERER")
+(defvar *nyxt-renderer* (or (getenv "NYXT_RENDERER")
                             "gi-gtk"))
 
-(defmethod asdf:component-depends-on ((o asdf:prepare-op) (c nyxt-renderer-system))
-  `((asdf:load-op ,(format nil "nyxt/~a-application" *nyxt-renderer*))
+(defmethod component-depends-on ((o prepare-op) (c nyxt-renderer-system))
+  `((load-op ,(format nil "nyxt/~a-application" *nyxt-renderer*))
     ,@(call-next-method)))
