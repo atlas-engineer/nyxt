@@ -346,11 +346,9 @@
 (defsystem "nyxt/gi-gtk"
   :defsystem-depends-on ("nasdf")
   :class :nasdf-system
-  :depends-on (bordeaux-threads
-               cl-gobject-introspection
-               nyxt/gtk)
-  :pathname #p"NYXT:source;"
-  :components ((:file "renderer/gi-gtk"))
+  :depends-on (nyxt/gtk cl-gobject-introspection)
+  :pathname #p"NYXT:source;renderer;"
+  :components ((:file "gi-gtk"))
   :in-order-to ((test-op (test-op "nyxt/gi-gtk/tests")
                          (test-op "nyxt/tests")
                          ;; We test if manual dumping works, since it may catch
