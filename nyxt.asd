@@ -417,8 +417,6 @@
 (defsystem "nyxt/install"
   :defsystem-depends-on ("nasdf")
   :class :nyxt-renderer-system
-  :depends-on (alexandria
-               str)
   :components ((:nasdf-desktop-file "assets/nyxt.desktop")
                (:nasdf-appdata-file "assets/nyxt.metainfo.xml")
                (:nasdf-icon-scalable-file "assets/glyphs/nyxt.svg")
