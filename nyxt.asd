@@ -339,13 +339,9 @@
 (defsystem "nyxt/gtk"
   :defsystem-depends-on ("nasdf")
   :class :nasdf-system
-  :depends-on (cl-cffi-gtk
-               cl-webkit2
-               nyxt)
-  :pathname #p"NYXT:source;"
-  :serial t
-  :components ((:file "renderer/gtk-clipboard")
-               (:file "renderer/gtk")))
+  :depends-on (nyxt cl-webkit2)
+  :pathname #p"NYXT:source;renderer;"
+  :components ((:file "gtk")))
 
 (defsystem "nyxt/gi-gtk"
   :defsystem-depends-on ("nasdf")
