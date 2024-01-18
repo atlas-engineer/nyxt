@@ -198,7 +198,6 @@ See `nyxt::attribute-widths'.")
           :margin-bottom "2px"
           :height "5px")
         '("#previous-source"
-          :margin-left "-6px"
           :padding 0)
         '("#next-source"
           :padding 0)
