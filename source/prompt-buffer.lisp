@@ -89,10 +89,10 @@ See `nyxt::attribute-widths'.")
         `(:font-face :font-family "public sans" :font-style "italic" :font-weight "900" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-BlackItalic.woff") "format('woff')")
         `(:font-face :font-family "dejavu sans mono" :src ,(format nil "url('nyxt-resource:~a')" "DejaVuSansMono.ttf") "format('ttf')")
         `(*
-          :font-family ,theme:monospace-font-family
           :font-size "14px"
           :line-height "18px")
         `(body
+          :font-family ,theme:font-family
           :border-right "2px solid"
           :border-color ,theme:primary
           :overflow "hidden"
@@ -117,6 +117,7 @@ See `nyxt::attribute-widths'.")
           :margin-right "-10px"
           :line-height "28px")
         `("#prompt-extra"
+          :font-family ,theme:monospace-font-family
           :z-index "1"
           :min-width "12px"
           :padding-right 14px !important
@@ -208,6 +209,8 @@ See `nyxt::attribute-widths'.")
           :overflow-x "hidden"
           :height "100%"
           :margin-right "3px")
+        `(".suggestion-and-mark-count"
+          :font-family ,theme:monospace-font-family)
         `(".source-content"
           :margin-left "16px"
           :width "100%"
@@ -217,6 +220,8 @@ See `nyxt::attribute-widths'.")
            :height "20px"
            :padding-left "4px"
            :overflow "auto")
+          ("tr:not(:first-child)"
+           :font-family ,theme:monospace-font-family)
           ("tr:hover"
            :background-color ,theme:action-
            :color ,theme:on-action
@@ -558,10 +563,11 @@ This does not redraw the whole prompt buffer, use `prompt-render' for that."
                   (prompter:name source)
                   (if (prompter:hide-suggestion-count-p source)
                       ""
-                      (suggestion-and-mark-count prompt-buffer
-                                                 (prompter:suggestions source)
-                                                 (prompter:marks source)
-                                                 :enable-marks-p (prompter:enable-marks-p source)))
+                      (:span :class "suggestion-and-mark-count"
+                             (suggestion-and-mark-count prompt-buffer
+                                                        (prompter:suggestions source)
+                                                        (prompter:marks source)
+                                                        :enable-marks-p (prompter:enable-marks-p source))))
                   (if (prompter:ready-p source) "" "(In progress...)"))
                  (:div
                   (:nbutton
