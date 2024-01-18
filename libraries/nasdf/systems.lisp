@@ -10,9 +10,7 @@ It enables features such as:
 - Togglable logical-pathnames depending on NASDF_USE_LOGICAL_PATHS.
 - Togglable executable compression with NASDF_COMPRESS.
 - Executable dependencies are made immutable for ASDF to prevent accidental reloads."))
-;; TODO: This is how `prove' does it, not very clean.
-;; Alternatively, we could switch package in the .asd, but this seems cumbersome too.
-(import 'nasdf-system  :asdf-user)
+(import 'nasdf-system :asdf-user)
 
 #+sb-core-compression
 (defmethod asdf:perform ((o asdf:image-op) (c nasdf-system))
