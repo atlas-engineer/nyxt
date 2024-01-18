@@ -16,11 +16,6 @@ Set NYXT_RENDERER to the renderer of your choice, for instance "gtk".
 Set NYXT_VERSION to force the version number instead of deriving it from Git.
 This is useful for build systems without access to the .git metadata.
 
-Set NASDF_COMPRESS to a compression level (1-19 for Zstd, -1-9 for Zip, or T for
-the default level) to generate a compressed executable.  This greatly reduces
-the file size at the expense of a slightly increased startup time.  It's
-recommended to leave this off on file systems with compression.
-
 Set NASDF_TESTS_NO_NETWORK to disable tests that require networking.
 
 If NYXT_SUBMODULES is "true" (the default), all Lisp

@@ -25,9 +25,6 @@ NASDF exposes the following environment variables for convenience:
   Disable it if your tooling (e.g. SLIME) encounters issues to find the
   definition of symbols.
   See =asdf:nasdf-file=.
-- =NASDF_COMPRESS= :: Compress the application executable.
-  Only works with some compilers like SBCL.  May increase startup time.
-  See =asdf:nasdf-file=.
 - =NASDF_TESTS_NO_NETWORK= :: Do no run tests that have the =:online= tag.
   See =nasdf:nasdf-test-system=.
 
