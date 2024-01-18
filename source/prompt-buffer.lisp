@@ -140,7 +140,7 @@ See `nyxt::attribute-widths'.")
           :cursor "pointer"
           :color ,theme:action)
         `(".button:hover svg path"
-           :stroke ,theme:action-)
+          :stroke ,theme:action-)
         `((:and .button (:or :visited :active))
           :color ,theme:background)
         `("#input"
