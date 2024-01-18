@@ -209,8 +209,6 @@ See `nyxt::attribute-widths'.")
           :height "100%"
           :margin-right "3px")
         `(".source-content"
-          :background-color ,theme:background
-          :color ,theme:on-background
           :margin-left "16px"
           :width "100%"
           :table-layout "fixed"
