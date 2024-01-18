@@ -158,28 +158,28 @@ See also the `profile' slot in the `browser' class.")
               :opacity 0.8)
             `(.action
               :color ,theme:action)
-	    `(.button.action
+            `(.button.action
               :background-color ,theme:action
               :color ,theme:on-action
               :border-color ,theme:action+)
             `(.warning
               :color ,theme:warning)
-	    `(.button.warning
-	      :background-color ,theme:warning
-	      :color ,theme:on-warning
-	      :border-color ,theme:warning+)
+            `(.button.warning
+              :background-color ,theme:warning
+              :color ,theme:on-warning
+              :border-color ,theme:warning+)
             `(.success
               :color ,theme:success)
-	    `(.button.success
-               :background-color ,theme:success
-               :color ,theme:on-success
-               :border-color ,theme:success+)
+            `(.button.success
+              :background-color ,theme:success
+              :color ,theme:on-success
+              :border-color ,theme:success+)
             `(.highlight
               :color ,theme:highlight)
-	    `(.button.highlight
-	      :background-color ,theme:highlight
-	      :color ,theme:on-highlight
-	      :border-color ,theme:highlight+)
+            `(.button.highlight
+              :background-color ,theme:highlight
+              :color ,theme:on-highlight
+              :border-color ,theme:highlight+)
             `(.plain
               :color ,theme:on-background
               :background-color ,theme:background)
