@@ -667,13 +667,6 @@ A command is a special kind of function that can be called with
 (defun system-information ()            ; TODO: Rename report-system-information?
   "Return a system information report as a string."
   (labels ((->string (obj) (princ-to-string obj))
-           #+quicklisp
-           (quicklisp-information ()
-             (str:concat
-              "Quicklisp dist version: " (getf +quicklisp-build-information+ :dist-version) +newline+
-              "Quicklisp client version: " (getf +quicklisp-build-information+ :client-version) +newline+
-              "Local project directories: " (->string (getf +quicklisp-build-information+ :local-project-directories)) +newline+
-              "Critical dependencies" (->string (getf +quicklisp-build-information+ :critical-dependencies)) +newline+))
            (asdf-information ()
              (str:concat
               "ASDF version: " (getf +asdf-build-information+ :version) +newline+
@@ -694,10 +687,6 @@ A command is a special kind of function that can be called with
      +newline+
 
      (asdf-information) +newline+
-
-     #+quicklisp
-     (str:concat
-      (quicklisp-information) +newline+)
 
      (when (sera:resolve-executable "guix")
        (str:concat "Guix version: " (guix-information) +newline+)))))

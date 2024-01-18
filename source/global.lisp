@@ -99,17 +99,6 @@ Don't set this, it would lose its meaning.")
   "Build-time Guix information.
 Don't set this, it would lose its meaning.")
 
-(defvar +quicklisp-build-information+
-  #+quicklisp
-  `(:dist-version ,(ql:dist-version "quicklisp")
-    :client-version ,(ql:client-version)
-    :local-project-directories ,ql:*local-project-directories*
-    :critical-dependencies ,(mapcar #'ql-dist:find-system +nyxt-critical-dependencies+))
-  #-quicklisp
-  nil
-  "Build-time Quicklisp information.
-Don't set this, it would lose its meaning.")
-
 (export-always '+version+)
 (alex:define-constant +version+
     (or (uiop:getenv "NYXT_VERSION")
