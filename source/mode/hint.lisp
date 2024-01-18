@@ -26,7 +26,7 @@ in viewport only and they're followed when user input matches the hint string.")
       `(".nyxt-hint"
         :background-color ,(cl-colors2:print-hex theme:background- :alpha 0.925)
         :color ,theme:on-background
-        :font-family "monospace,monospace"
+        :font-family ,theme:monospace-font-family
         :font-size ".85rem"
         :padding "0px 0.3em"
         :border-color ,(cl-colors2:print-hex theme:primary- :alpha 0.80)

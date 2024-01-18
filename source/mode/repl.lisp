@@ -429,7 +429,7 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
        "J" 'move-cell-down)))
    (style (theme:themed-css (theme *browser*)
             `(*
-              :font-family "monospace,monospace")
+              :font-family ,theme:monospace-font-family)
             `(body
               :margin "0")
             `("#container"

@@ -90,7 +90,7 @@ See `nyxt::attribute-widths'.")
         `(:font-face :font-family "public sans" :font-style "italic" :font-weight "900" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-BlackItalic.woff") "format('woff')")
         `(:font-face :font-family "dejavu sans mono" :src ,(format nil "url('nyxt-resource:~a')" "DejaVuSansMono.ttf") "format('ttf')")
         `(*
-          :font-family "monospace,monospace"
+          :font-family ,theme:monospace-font-family
           :font-size "14px"
           :line-height "18px")
         `(body
