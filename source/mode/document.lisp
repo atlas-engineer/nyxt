@@ -301,10 +301,7 @@ Otherwise, create a dummy buffer with URL to get its source."
                         (plump:parse (ffi-buffer-get-document buffer)))))
            (loop for e across (clss:select "[nyxt-identifier]" dom)
                  do (plump:remove-attribute e "nyxt-identifier"))
-           (map nil #'plump:remove-child
-                ;; FIXME: This selector hardcodes the set of identifiers/classes
-                ;; we use. Update whenever we change it?
-                (reverse (clss:select ".nyxt-hint, .nyxt-select-hint" dom)))
+           (map nil #'plump:remove-child (reverse (clss:select ".nyxt-hint" dom)))
            (plump:serialize dom nil))
       (when (background-buffer-p buffer)
         (ffi-buffer-delete buffer)))))
