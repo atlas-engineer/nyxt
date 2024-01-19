@@ -237,7 +237,6 @@ A positive value shifts to the bottom.")
 
 (export-always 'highlight-selected-hint)
 (define-parenscript highlight-selected-hint (&key element scroll)
-  ;; TODO: Also change border or something else to augment color change.
   "Accent the hint for the ELEMENT to be distinguishable from other hints.
 If SCROLL (default to NIL), scroll the hint into view."
   (let ((%element (nyxt/ps:qs document (ps:lisp (format nil "#nyxt-hint-~a"
