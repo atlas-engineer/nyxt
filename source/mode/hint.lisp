@@ -108,7 +108,7 @@ A positive value shifts to the bottom.")
       :background-color ,theme:secondary
       :color ,theme:on-secondary
       :font-weight "bold")
-    `(".nyxt-hint.nyxt-select-hint"
+    `(".nyxt-hint.nyxt-current-hint"
       :background-color ,theme:action
       :color ,theme:on-action)
     `(".nyxt-hint.nyxt-match-hint"
@@ -243,14 +243,14 @@ If SCROLL (default to NIL), scroll the hint into view."
   (let ((%element (nyxt/ps:qs document (ps:lisp (format nil "#nyxt-hint-~a"
                                                         (identifier element))))))
     (when %element
-      (unless (ps:chain %element class-list (contains "nyxt-select-hint"))
+      (unless (ps:chain %element class-list (contains "nyxt-current-hint"))
         ;; There should be, at most, a unique element with the
-        ;; "nyxt-select-hint" class.
+        ;; "nyxt-current-hint" class.
         ;; querySelectAll, unlike querySelect, handles the case when none are
         ;; found.
-        (ps:dolist (selected-hint (nyxt/ps:qsa document ".nyxt-select-hint"))
-          (ps:chain selected-hint class-list (remove "nyxt-select-hint"))))
-      (ps:chain %element class-list (add "nyxt-select-hint"))
+        (ps:dolist (selected-hint (nyxt/ps:qsa document ".nyxt-current-hint"))
+          (ps:chain selected-hint class-list (remove "nyxt-current-hint"))))
+      (ps:chain %element class-list (add "nyxt-current-hint"))
       (when (ps:lisp scroll)
         (ps:chain %element (scroll-into-view (ps:create block "center")))))))
 
