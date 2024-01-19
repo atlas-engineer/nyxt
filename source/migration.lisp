@@ -117,6 +117,14 @@ major versions."
                               result)))))
 
 (define-migration "4"
+  (hints-offset-x)
+  (:p "Deprecated in favor of "
+      (:nxref :slot 'nyxt/mode/hint:x-translation :class-name 'nyxt/mode/hint:hint-mode) ".")
+
+  (hints-offset-y)
+  (:p "Deprecated in favor of "
+      (:nxref :slot 'nyxt/mode/hint:y-translation :class-name 'nyxt/mode/hint:hint-mode) ".")
+
   (message-buffer-height)
   (:p "Deprecated in favor of " (:nxref :slot 'height :class-name 'message-buffer) ".")
 
