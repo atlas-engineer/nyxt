@@ -21,33 +21,6 @@ In :emacs, hints are computed for the whole page, and the usual `prompt-buffer'
 facilities are available.
 In :vi, the `prompt-buffer' is collapsed to the input area, hints are computed
 in viewport only and they're followed when user input matches the hint string.")
-   (style
-    (theme:themed-css (theme *browser*)
-      `(".nyxt-hint"
-        :background-color ,(cl-colors2:print-hex theme:background- :alpha 0.925)
-        :color ,theme:on-background
-        :font-family ,theme:monospace-font-family
-        :font-size ".85rem"
-        :padding "0px 0.3em"
-        :border-color ,(cl-colors2:print-hex theme:primary- :alpha 0.80)
-        :border-radius "3px"
-        :border-width "2px"
-        :border-style "solid"
-        :z-index #.(1- (expt 2 31)))
-      `(".nyxt-hint.nyxt-mark-hint"
-        :background-color ,theme:secondary
-        :color ,theme:on-secondary
-        :font-weight "bold")
-      `(".nyxt-hint.nyxt-select-hint"
-        :background-color ,theme:action
-        :color ,theme:on-action)
-      `(".nyxt-hint.nyxt-match-hint"
-        :padding "0px"
-        :border-style "none"
-        :opacity "0.5")
-      `(".nyxt-element-hint"
-        :background-color ,theme:action))
-    :documentation "The style of the hint overlays.")
    (show-hint-scope-p
     nil
     :type boolean
@@ -70,16 +43,20 @@ define which elements are picked up by element hinting.
 For instance, to include images:
 
     a, button, input, textarea, details, select, img:not([alt=\"\"])")
-   (hints-offset-x
+   (x-translation
     0
     :type integer
-    :documentation "The number of pixels that hint overlays are horizontally shifted by.
+    :documentation "The horizontal translation as a percentage of the hint's size.
 A positive value shifts to the right.")
-   (hints-offset-y
+   (y-translation
     0
     :type integer
-    :documentation "The number of pixels that hint overlays are vertically shifted by.
+    :documentation "The vertical translation as a percentage of the hint's size.
 A positive value shifts to the bottom.")
+   (x-placement
+    :left
+    :type keyword
+    :documentation "The horizontal placement of the hints: either `:left' or `:right'.")
    (keyscheme-map
     (define-keyscheme-map "hint-mode" ()
       keyscheme:cua
@@ -108,41 +85,79 @@ A positive value shifts to the bottom.")
        "g f" 'follow-hint-nosave-buffer
        "g F" 'follow-hint-nosave-buffer-focus)))))
 
+(defmethod style ((mode hint-mode))
+  "The style of the hint overlays."
+  (theme:themed-css (theme *browser*)
+    `(".nyxt-hint"
+      :background-color ,(cl-colors2:print-hex theme:background- :alpha 0.925)
+      :color ,theme:on-background
+      :font-family ,theme:monospace-font-family
+      :font-size ".85rem"
+      :position "absolute"
+      :transform ,(format nil "translate(~a%,~a%)"
+                          (+ (x-translation mode)
+                             (if (eq (x-placement mode) :right) -100 0))
+                          (y-translation mode))
+      :padding "0px 0.3em"
+      :border-color ,(cl-colors2:print-hex theme:primary- :alpha 0.80)
+      :border-radius "3px"
+      :border-width "2px"
+      :border-style "solid"
+      :z-index #.(1- (expt 2 31)))
+    `(".nyxt-hint.nyxt-mark-hint"
+      :background-color ,theme:secondary
+      :color ,theme:on-secondary
+      :font-weight "bold")
+    `(".nyxt-hint.nyxt-current-hint"
+      :background-color ,theme:action
+      :color ,theme:on-action)
+    `(".nyxt-hint.nyxt-match-hint"
+      :padding "0px"
+      :border-style "none"
+      :opacity "0.5")
+    `(".nyxt-element-hint"
+      :background-color ,theme:action)))
+
 (define-configuration document-buffer
   ((default-modes (cons 'hint-mode %slot-value%))))
 
 (define-parenscript-async hint-elements (hints)
-  (defun create-hint-overlay (original-element hint)
+  (defun create-hint-element (hint)
+    (let ((hint-element (ps:chain document (create-element "span"))))
+      (setf (ps:@ hint-element class-name) "nyxt-hint"
+            (ps:@ hint-element id) (+ "nyxt-hint-" hint)
+            (ps:@ hint-element text-content) hint)
+      hint-element))
+
+  (defun set-hint-element-style (hint-element hinted-element)
+    (let ((right-x-alignment-p (eq (ps:lisp (x-placement (find-submode 'hint-mode)))
+                                   :right))
+          (rect (ps:chain hinted-element (get-bounding-client-rect)))
+          (hinted-element-font-size (ps:@ (ps:chain window (get-computed-style hinted-element))
+                                          font-size))
+          (hint-font-size-lower-bound 5))
+      (setf (ps:@ hint-element style top) (+ (ps:@ window scroll-y) (ps:@ rect top) "px")
+            (ps:@ hint-element style left) (+ (ps:@ window scroll-x) (ps:@ rect left)
+                                              (when right-x-alignment-p (ps:@ rect width)) "px"))
+      (when (> (parse-float hinted-element-font-size)
+               hint-font-size-lower-bound)
+        (setf (ps:@ hint-element style font-size) hinted-element-font-size))))
+
+  (defun create-hint-overlay (hinted-element hint)
     "Create a DOM element to be used as a hint."
-    (ps:let ((user-x-offset (ps:lisp (hints-offset-x (find-submode 'hint-mode))))
-             (user-y-offset (ps:lisp (hints-offset-y (find-submode 'hint-mode))))
-             (rect (ps:chain original-element (get-bounding-client-rect)))
-             (element (ps:chain document (create-element "span"))))
-      (setf (ps:@ element class-name) "nyxt-hint"
-            (ps:@ element style position) "absolute"
-            (ps:@ element style left) (+ (ps:max (+ (ps:@ window page-x-offset)
-                                                    (ps:@ rect left)
-                                                    user-x-offset)
-                                                 0)
-                                         "px")
-            (ps:@ element style top) (+ (ps:max (+ (ps:@ window page-y-offset)
-                                                   (ps:@ rect top)
-                                                   user-y-offset)
-                                                0)
-                                        "px")
-            (ps:@ element id) (+ "nyxt-hint-" hint)
-            (ps:@ element text-content) hint)
-      element))
+    (let ((hint-element (create-hint-element hint)))
+      (set-hint-element-style hint-element hinted-element))
+    hint-element)
 
   (let ((hints-parent (ps:chain document (create-element "div")))
         (hints (ps:lisp (list 'quote hints)))
         (i 0))
-    (dolist (element (nyxt/ps:qsa document "[nyxt-hintable]"))
+    (dolist (hinted-element (nyxt/ps:qsa document "[nyxt-hintable]"))
       (let ((hint (aref hints i)))
-        (ps:chain element (set-attribute "nyxt-hint" hint))
-        (ps:chain hints-parent (append-child (create-hint-overlay element hint)))
+        (ps:chain hinted-element (set-attribute "nyxt-hint" hint))
+        (ps:chain hints-parent (append-child (create-hint-overlay hinted-element hint)))
         (when (ps:lisp (show-hint-scope-p (find-submode 'hint-mode)))
-          (ps:chain element class-list (add "nyxt-element-hint")))
+          (ps:chain hinted-element class-list (add "nyxt-element-hint")))
         (setf i (1+ i))))
     (setf (ps:@ hints-parent id) "nyxt-hints"
           (ps:@ hints-parent style) "all: unset !important;")
@@ -222,20 +237,19 @@ A positive value shifts to the bottom.")
 
 (export-always 'highlight-selected-hint)
 (define-parenscript highlight-selected-hint (&key element scroll)
-  ;; TODO: Also change border or something else to augment color change.
   "Accent the hint for the ELEMENT to be distinguishable from other hints.
 If SCROLL (default to NIL), scroll the hint into view."
   (let ((%element (nyxt/ps:qs document (ps:lisp (format nil "#nyxt-hint-~a"
                                                         (identifier element))))))
     (when %element
-      (unless (ps:chain %element class-list (contains "nyxt-select-hint"))
+      (unless (ps:chain %element class-list (contains "nyxt-current-hint"))
         ;; There should be, at most, a unique element with the
-        ;; "nyxt-select-hint" class.
+        ;; "nyxt-current-hint" class.
         ;; querySelectAll, unlike querySelect, handles the case when none are
         ;; found.
-        (ps:dolist (selected-hint (nyxt/ps:qsa document ".nyxt-select-hint"))
-          (ps:chain selected-hint class-list (remove "nyxt-select-hint"))))
-      (ps:chain %element class-list (add "nyxt-select-hint"))
+        (ps:dolist (selected-hint (nyxt/ps:qsa document ".nyxt-current-hint"))
+          (ps:chain selected-hint class-list (remove "nyxt-current-hint"))))
+      (ps:chain %element class-list (add "nyxt-current-hint"))
       (when (ps:lisp scroll)
         (ps:chain %element (scroll-into-view (ps:create block "center")))))))
 
