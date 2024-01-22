@@ -4,54 +4,22 @@ Usage:
     make install             # Install Nyxt.
     make doc                 # Generate Nyxt documentation (as a fallback).
 
-Set DESTDIR to change the target destination.  It should be
-an absolute path.
+DESTDIR and PREFIX set the target destination.  Both must be absolute paths.
 
-Set NASDF_SOURCE_PATH to where the source files will be installed.
+NASDF_SOURCE_PATH sets where the source files will be installed.
 
-Set LISP and LISP_FLAGS to accommodate to your Lisp compiler.
+NASDF_TESTS_NO_NETWORK disables tests that require networking.
 
-Set NYXT_RENDERER to the renderer of your choice, for instance "gtk".
+When NYXT_SUBMODULES is "true" (the default), all Lisp dependencies are fetched
+as git submodules to the directory set by NASDF_SUBMODULES_DIR.  Otherwise, they
+need to be made visible to ASDF by other means.  In case you have received an
+archive that includes the source of these Lisp dependencies, then it all should
+work out of the box.
 
-Set NYXT_VERSION to force the version number instead of deriving it from Git.
-This is useful for build systems without access to the .git metadata.
+NYXT_RENDERER sets the renderer, by default "gi-gtk".
 
-Set NASDF_COMPRESS to a compression level (1-19 for Zstd, -1-9 for Zip, or T for
-the default level) to generate a compressed executable.  This greatly reduces
-the file size at the expense of a slightly increased startup time.  It's
-recommended to leave this off on file systems with compression.
+NYXT_VERSION forces the version number, in the rare eventuality that it can't be
+fetched in another way.
 
-Set NASDF_TESTS_NO_NETWORK to disable tests that require networking.
-
-Set NASDF_TESTS_QUIT_ON_FAIL to error out when a test fails.  This is useful for
-continuous integration and build systems.
-
-If NYXT_SUBMODULES is "true" (the default), all Lisp
-dependencies will be fetched with `git submodules' into the
-NASDF_SUBMODULES_DIR directory.
-
-Otherwise, the dependencies will have to be locally installed
-on your system.  You may have to accommodate the LISP_FLAGS
-to use your local install of Quicklisp.  For example:
-
-    make all NYXT_SUBMODULES=false LISP_FLAGS=
-
-But in this case, you don't have to use `make' at all.  Instead, you could build
-Nyxt with an invocation along these lines:
-
-    export NASDF_USE_LOGICAL_PATHS=true # Dynamic relocation of the source code
-    sbcl --non-interactive --no-userinit --eval '(require "asdf")' --eval '(asdf:make :nyxt/gi-gtk-application)' --quit
-
-(Assuming Nyxt is checked out in a directory traversed by ASDF, like
-~/common-lisp.)
-
-WARNING: Make sure your Quicklisp distribution is up-to-date when using
-NYXT_SUBMODULES=false.  Also check the .gitmodules file for Common Lisp
-libraries pinned to a version that may not be the same as the one in the latest
-Quickdist.
-
-The documentation generation is mostly useful if you cannot consult the
-documentation in Nyxt itself.  Since the manual is normally dynamically
-generated at runtime (for instance the paths and the bindings are printed
-according to the user configuration), the static doc generation can only display
-the default values.
+The static documentation is particularly useful when it can't be consulted from
+Nyxt itself (where it is dynamically generated at runtime).

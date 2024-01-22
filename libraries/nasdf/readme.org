@@ -1,24 +1,20 @@
 #+TITLE: NASDF
 
-NASDF is an ASDF extension providing utilities to ease system setup, testing
-and installation.
+NASDF is an ASDF extension providing utilities to ease system setup, testing and
+installation.
 
-** Features
+* Features
 
-- Simple way to fetch Git submodules and "do the right thing" for setup.  This
-  may effectively supersede Quicklisp.  A benefit of using Git submodules over
-  the default Quicklisp distribution is improved reproducibility.
-- Test helpers, like distinction between offline and online tests, or continuous
-  integration options, and warning reports.
-- Installation helpers, for instance to install libraries, icons and desktop
-  files to the right directories.
+- Manage CL dependencies as Git submodules, ensuring fine control over their
+  versions.
+- Test suite helpers.
+- Installation helpers such as handling of icons or desktop files.
 
 See [[file:package.lisp]] for more details.
 
-** Environment variables
+* Environment variables
 
-NASDF exposes some environment variables which can be convenient in some cases
-(say for continuous integration) to tweak some options.
+NASDF exposes the following environment variables for convenience:
 
 - =NASDF_SOURCE_PATH= :: See =nasdf:*dest-source-dir*=.
 - =NASDF_SUBMODULES_DIR= :: See =nasdf:*submodules-directory*=.
@@ -29,25 +25,8 @@ NASDF exposes some environment variables which can be convenient in some cases
   Disable it if your tooling (e.g. SLIME) encounters issues to find the
   definition of symbols.
   See =asdf:nasdf-file=.
-- =NASDF_COMPRESS= :: Compress the application executable.
-  Only works with some compilers like SBCL.  May increase startup time.
-  See =asdf:nasdf-file=.
 - =NASDF_TESTS_NO_NETWORK= :: Do no run tests that have the =:online= tag.
   See =nasdf:nasdf-test-system=.
-- =NASDF_TESTS_QUIT_ON_FAIL= :: Quit the Lisp on test failure.  This is useful
-  to tell the continuous integration environment that tests failed, otherwise
-  they silently fail.
 
 All boolean environment variables try to be smart enough to understand what you
 mean; for instance both =on= and =true= are valid values to enable the feature.
-
-** History
-
-NASDF was originally developed for [[https://nyxt.atlas.engineer][Nyxt]].
-
-** Change log
-
-*** 0.1.1
-
-- Fix compilation-tests.
-- Fix =env-true-p= to accept =yes= as =T=.

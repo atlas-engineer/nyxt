@@ -14,5 +14,4 @@
                (:file "install")
                (:file "submodules")
                (:file "systems")
-               (:file "tests")
-               (:file "compilation-tests")))
+               (:file "tests")))

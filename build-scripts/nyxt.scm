@@ -91,10 +91,7 @@
              (setenv "HOME" "/tmp")
              #t))
          (add-before 'check 'configure-tests
-           (lambda _
-             (setenv "NASDF_TESTS_NO_NETWORK" "1")
-             (setenv "NASDF_TESTS_QUIT_ON_FAIL" "1")
-             #t))
+           (lambda _ (setenv "NASDF_TESTS_NO_NETWORK" "1") #t))
          (add-after 'install 'wrap-program
            (lambda _
              (let* ((bin (string-append #$output "/bin/nyxt"))

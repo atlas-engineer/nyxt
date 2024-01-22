@@ -84,6 +84,13 @@ otherwise (default) only include files."
   #-sbcl
   (osicat-posix:stat-gid (osicat-posix:lstat file)))
 
+(export-always 'mtime)
+(defun mtime (path)
+  #+sbcl
+  (sb-posix:stat-mtime (sb-posix:stat path))
+  #-sbcl
+  (osicat-posix:stat-mtime (osicat-posix:stat path)))
+
 (-> executable-p ((or types:pathname-designator) &key (:user string)) boolean)
 (defun executable-p (file &key (user (current-user)))
   "Return non-nil if FILE is executable for USER name.

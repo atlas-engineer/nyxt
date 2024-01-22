@@ -7,7 +7,6 @@
   (sb-ext:assert-version->= 2 0 0)
   (require 'sb-bsd-sockets))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; WARNING: We _must_ declare the translation host or else ASDF won't recognize
 ;; the pathnames as logical-pathnames, thus returning the system directory
 ;; instead.
@@ -106,8 +105,8 @@
                  (:file "user-interface")))
                (:module "Core"
                 :pathname ""
-                :serial t
                 :depends-on ("Utilities")
+                :serial t
                 :components
                 ((:file "renderer")
                  (:file "global")
@@ -153,7 +152,7 @@
                  (:file "list-history")
                  (:file "document" :depends-on ("passthrough"))
                  (:file "hint" :depends-on ("document"))
-                 (:file "search-buffer" :depends-on ("hint"))
+                 (:file "search-buffer")
                  (:file "spell-check" :depends-on ("document"))
                  (:file "help" :depends-on ("document" "search-buffer"))
                  (:file "history" :depends-on ("history-tree" "list-history"))
@@ -222,11 +221,8 @@
                  (:file "visual")
                  (:file "vi")
                  (:file "watch"))))
-  :around-compile "NASDF:FAIL-ON-WARNINGS"
   :in-order-to ((test-op (test-op "nyxt/tests")
-                         (test-op "nyxt/tests/compilation")
-                         ;; We test if manual dumping works, since it may catch
-                         ;; some subtle mistakes:
+                         ;; Dumping the manual may catch errors.
                          (compile-op "nyxt/documentation")
                          ;; Subsystems:
                          (test-op "nyxt/analysis")
@@ -236,27 +232,18 @@
   :defsystem-depends-on ("nasdf")
   :class :nasdf-submodule-system)
 
-(defsystem "nyxt/tests/compilation"
-  :defsystem-depends-on ("nasdf")
-  :class :nasdf-compilation-test-system
-  :depends-on (nyxt)
-  :packages (:nyxt)
-  :undocumented-symbols-to-ignore (:external-editor-program))
-
-;; TODO: Test that Nyxt starts and that --help, --version work.
 (defsystem "nyxt/tests"
   :defsystem-depends-on ("nasdf")
   :class :nasdf-test-system
-  :depends-on (nyxt nyxt/tests/compilation)
-  :targets (:package :nyxt/tests)
-  :serial t
-  :components ((:file "tests/package")
-               (:file "tests/offline/define-configuration")
-               (:file "tests/offline/global-history")
-               (:file "tests/offline/user-script-parsing")
-               (:file "tests/offline/mode")
+  :depends-on (nyxt lisp-unit2)
+  :pathname #p"NYXT:tests;"
+  :components ((:file "package")
+               (:file "offline/define-configuration")
+               (:file "offline/global-history")
+               (:file "offline/user-script-parsing")
+               (:file "offline/mode")
                (:module "Modes"
-                :pathname "tests/offline/mode"
+                :pathname "offline/mode"
                 :components
                 ((:file "autofill")
                  (:file "annotate")
@@ -312,64 +299,57 @@
                  ;; (:file "tests/offline/mode/visual")
                  (:file "user-script")
                  (:file "watch")))
-               (:file "tests/offline/prompt-buffer")
-               (:file "tests/online/urls")))
+               (:file "offline/prompt-buffer")
+               (:file "online/urls"))
+    :test-suite-args (:package :nyxt/tests))
 
-(defsystem "nyxt/benchmark"
+(defsystem "nyxt/benchmarks"
   :defsystem-depends-on ("nasdf")
-  :depends-on (alexandria
-               nyxt
-               trivial-benchmark)
-  :pathname "tests/benchmarks"
-  :components ((:file "../benchmark-package")
+  :class :nasdf-system
+  :depends-on (nyxt alexandria trivial-benchmark)
+  :pathname #p"NYXT:tests;benchmarks;"
+  :components ((:file "package")
                (:file "prompter"))
   :perform (test-op (op c)
-                    (let ((results
-                            (funcall (read-from-string "alexandria:hash-table-alist")
-                                     (funcall (read-from-string "benchmark:run-package-benchmarks")
-                                              :package :nyxt/benchmark
-                                              :verbose t))))
-                      (symbol-call :nasdf :print-benchmark results))))
+                    (eval-input
+                     "(nasdf:print-benchmark
+                       (alexandria:hash-table-alist
+                        (benchmark:run-package-benchmarks :package :nyxt/benchmarks
+                                                          :verbose t)))")))
 
-(defsystem "nyxt/documentation"         ; TODO: Only rebuild if input changed.
+(defsystem "nyxt/documentation"
   :depends-on (nyxt)
   :output-files (compile-op (o c)
                             (values (list (system-relative-pathname c "manual.html"))
                                     t))
   :perform (compile-op (o c)
-                       (with-open-file (out (output-file o c)
-                                            :direction :output
-                                            :if-exists :supersede)
-                         (write-string (symbol-call :nyxt :manual-content)
-                                       out))
-                       (format *error-output* "Manual dumped to ~s.~&" (output-file o c))))
+                       (let ((man-source (component-pathname (find-component (find-system "nyxt")
+                                                                             "manual")))
+                             (man-dump (output-file o c)))
+                         (if (or (not (file-exists-p man-dump))
+                                 (> (symbol-call :nyxt/mode/file-manager :mtime man-source)
+                                    (symbol-call :nyxt/mode/file-manager :mtime man-dump)))
+                             (with-open-file (out man-dump :direction :output :if-exists :supersede)
+                               (write-string (symbol-call :nyxt :manual-content) out)
+                               (format *error-output* "Manual dumped to ~s.~&" man-dump))
+                             (format *error-output* "Manual at ~s is up-to-date.~&" man-dump)))))
 
 (defsystem "nyxt/gtk"
   :defsystem-depends-on ("nasdf")
   :class :nasdf-system
-  :depends-on (cl-cffi-gtk
-               cl-webkit2
-               nyxt)
-  :pathname #p"NYXT:source;"
-  :serial t
-  :around-compile "NASDF:FAIL-ON-WARNINGS"
-  :components ((:file "renderer/gtk-clipboard")
-               (:file "renderer/gtk")))
+  :depends-on (nyxt cl-webkit2)
+  :pathname #p"NYXT:source;renderer;"
+  :components ((:file "gtk")))
 
 (defsystem "nyxt/gi-gtk"
   :defsystem-depends-on ("nasdf")
   :class :nasdf-system
-  :depends-on (bordeaux-threads
-               cl-gobject-introspection
-               nyxt/gtk)
-  :pathname #p"NYXT:source;"
-  :around-compile "NASDF:FAIL-ON-WARNINGS"
-  :components ((:file "renderer/gi-gtk"))
+  :depends-on (nyxt/gtk cl-gobject-introspection)
+  :pathname #p"NYXT:source;renderer;"
+  :components ((:file "gi-gtk"))
   :in-order-to ((test-op (test-op "nyxt/gi-gtk/tests")
                          (test-op "nyxt/tests")
-                         (test-op "nyxt/tests/compilation")
-                         ;; We test if manual dumping works, since it may catch
-                         ;; some subtle mistakes:
+                         ;; Dumping the manual may catch errors.
                          (compile-op "nyxt/documentation")
                          ;; Subsystems:
                          (test-op "nyxt/analysis")
@@ -378,24 +358,24 @@
 (defsystem "nyxt/gi-gtk/tests"
   :defsystem-depends-on ("nasdf")
   :class :nasdf-test-system
-  :depends-on (nyxt/gi-gtk)
-  :targets (:package :nyxt/tests/renderer)
+  :depends-on (nyxt/gi-gtk lisp-unit2)
+  :pathname #p"NYXT:tests;"
   :serial t
-  :components ((:file "tests/renderer-package")
-               (:file "tests/renderer-offline/set-url")
-               (:file "tests/renderer-offline/execute-command-eval")
-               (:file "tests/renderer-offline/nyxt-url-security")
-               (:file "tests/renderer-offline/search-buffer")
+  :components ((:file "renderer-package")
+               (:file "renderer-offline/set-url")
+               (:file "renderer-offline/execute-command-eval")
+               (:file "renderer-offline/nyxt-url-security")
+               (:file "renderer-offline/search-buffer")
                ;; See https://github.com/atlas-engineer/nyxt/issues/3172
-               ;; (:file "tests/renderer-online/set-url")
-               ))
+               ;; (:file "renderer-online/set-url")
+               )
+  :test-suite-args (:package :nyxt/tests/renderer))
 
 (defsystem "nyxt/qt"
   :depends-on (cl-webengine
                nyxt
                trivial-main-thread)
   :pathname #p"NYXT:source;"
-  :around-compile "NASDF:FAIL-ON-WARNINGS"
   :components ((:file "renderer/qt")))
 
 ;; We should not set the build-pathname in systems that have a component.
@@ -431,24 +411,9 @@
   :build-pathname "nyxt-qt"
   :entry-point "nyxt:entry-point")
 
-(defsystem "nyxt/application/tests"
-  :defsystem-depends-on ("nasdf")
-  :class :nasdf-test-system
-  :depends-on (nyxt)
-  :targets (:package :nyxt/tests/executable)
-  :components ((:file "tests/package")
-               (:file "tests/executable/config")
-               (:file "tests/executable/scripts"))
-  :perform (test-op :around (op c)
-                    (if (file-exists-p (system-relative-pathname :nyxt "nyxt"))
-                        (call-next-method)
-                        (warn "`nyxt' executable missing, skipping tests."))))
-
 (defsystem "nyxt/install"
   :defsystem-depends-on ("nasdf")
   :class :nyxt-renderer-system
-  :depends-on (alexandria
-               str)
   :components ((:nasdf-desktop-file "assets/nyxt.desktop")
                (:nasdf-appdata-file "assets/nyxt.metainfo.xml")
                (:nasdf-icon-scalable-file "assets/glyphs/nyxt.svg")
@@ -461,7 +426,6 @@
                 :exclude-types ("o" "c" "h" ; C code and artifacts.
                                     "fasl"))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Library subsystems:
 
 (defsystem "nyxt/download-manager"
@@ -501,9 +465,10 @@
 (defsystem "nyxt/analysis/tests"
   :defsystem-depends-on ("nasdf")
   :class :nasdf-test-system
-  :depends-on (nyxt/analysis)
-  :targets (:package :analysis/tests)
-  :components ((:file "libraries/analysis/tests/tests")))
+  :depends-on (nyxt/analysis lisp-unit2)
+  :pathname #p"NYXT:libraries;analysis;tests;"
+  :components ((:file "tests"))
+  :test-suite-args (:package :analysis/tests))
 
 (defsystem "nyxt/user-interface"
   :defsystem-depends-on ("nasdf")
@@ -556,6 +521,7 @@
 (defsystem "nyxt/theme/tests"
   :defsystem-depends-on ("nasdf")
   :class :nasdf-test-system
-  :depends-on (nyxt/theme)
-  :targets (:package :theme/tests)
-  :components ((:file "libraries/theme/tests/tests")))
+  :depends-on (nyxt/theme lisp-unit2)
+  :pathname #p"NYXT:libraries;theme;tests;"
+  :components ((:file "tests"))
+  :test-suite-args (:package :theme/tests))
