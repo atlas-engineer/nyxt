@@ -69,11 +69,30 @@ in `prompter:object-attributes').
 See `nyxt::attribute-widths'.")
      (style
       (theme:themed-css (theme *browser*)
+        `(:font-face :font-family "public sans" :font-style "normal" :font-weight "400" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Regular.woff") "format('woff')")
+        `(:font-face :font-family "public sans" :font-style "italic" :font-weight "400" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Italic.woff") "format('woff')")
+        `(:font-face :font-family "public sans" :font-style "normal" :font-weight "100" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Thin.woff") "format('woff')")
+        `(:font-face :font-family "public sans" :font-style "italic" :font-weight "100" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-ThinItalic.woff") "format('woff')")
+        `(:font-face :font-family "public sans" :font-style "normal" :font-weight "200" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-ExtraLight.woff") "format('woff')")
+        `(:font-face :font-family "public sans" :font-style "italic" :font-weight "200" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-ExtraLightItalic.woff") "format('woff')")
+        `(:font-face :font-family "public sans" :font-style "normal" :font-weight "300" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Light.woff") "format('woff')")
+        `(:font-face :font-family "public sans" :font-style "italic" :font-weight "300" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-LightItalic.woff") "format('woff')")
+        `(:font-face :font-family "public sans" :font-style "normal" :font-weight "500" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Medium.woff") "format('woff')")
+        `(:font-face :font-family "public sans" :font-style "italic" :font-weight "500" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-MediumItalic.woff") "format('woff')")
+        `(:font-face :font-family "public sans" :font-style "normal" :font-weight "600" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-SemiBold.woff") "format('woff')")
+        `(:font-face :font-family "public sans" :font-style "italic" :font-weight "600" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-SemiBoldItalic.woff") "format('woff')")
+        `(:font-face :font-family "public sans" :font-style "normal" :font-weight "700" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Bold.woff") "format('woff')")
+        `(:font-face :font-family "public sans" :font-style "italic" :font-weight "700" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-BoldItalic.woff") "format('woff')")
+        `(:font-face :font-family "public sans" :font-style "normal" :font-weight "800" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-ExtraBold.woff") "format('woff')")
+        `(:font-face :font-family "public sans" :font-style "italic" :font-weight "800" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-ExtraBoldItalic.woff") "format('woff')")
+        `(:font-face :font-family "public sans" :font-style "normal" :font-weight "900" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Black.woff") "format('woff')")
+        `(:font-face :font-family "public sans" :font-style "italic" :font-weight "900" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-BlackItalic.woff") "format('woff')")
+        `(:font-face :font-family "dejavu sans mono" :src ,(format nil "url('nyxt-resource:~a')" "DejaVuSansMono.ttf") "format('ttf')")
         `(*
-          :font-family "monospace,monospace"
           :font-size "14px"
           :line-height "18px")
         `(body
+          :font-family ,theme:font-family
           :border-right "2px solid"
           :border-color ,theme:primary
           :overflow "hidden"
@@ -98,6 +117,7 @@ See `nyxt::attribute-widths'.")
           :margin-right "-10px"
           :line-height "28px")
         `("#prompt-extra"
+          :font-family ,theme:monospace-font-family
           :z-index "1"
           :min-width "12px"
           :padding-right 14px !important
@@ -178,7 +198,6 @@ See `nyxt::attribute-widths'.")
           :margin-bottom "2px"
           :height "5px")
         '("#previous-source"
-          :margin-left "-6px"
           :padding 0)
         '("#next-source"
           :padding 0)
@@ -189,9 +208,9 @@ See `nyxt::attribute-widths'.")
           :overflow-x "hidden"
           :height "100%"
           :margin-right "3px")
+        `(".suggestion-and-mark-count"
+          :font-family ,theme:monospace-font-family)
         `(".source-content"
-          :background-color ,theme:background
-          :color ,theme:on-background
           :margin-left "16px"
           :width "100%"
           :table-layout "fixed"
@@ -200,6 +219,8 @@ See `nyxt::attribute-widths'.")
            :height "20px"
            :padding-left "4px"
            :overflow "auto")
+          ("tr:not(:first-child)"
+           :font-family ,theme:monospace-font-family)
           ("tr:hover"
            :background-color ,theme:action-
            :color ,theme:on-action
@@ -541,10 +562,11 @@ This does not redraw the whole prompt buffer, use `prompt-render' for that."
                   (prompter:name source)
                   (if (prompter:hide-suggestion-count-p source)
                       ""
-                      (suggestion-and-mark-count prompt-buffer
-                                                 (prompter:suggestions source)
-                                                 (prompter:marks source)
-                                                 :enable-marks-p (prompter:enable-marks-p source)))
+                      (:span :class "suggestion-and-mark-count"
+                             (suggestion-and-mark-count prompt-buffer
+                                                        (prompter:suggestions source)
+                                                        (prompter:marks source)
+                                                        :enable-marks-p (prompter:enable-marks-p source))))
                   (if (prompter:ready-p source) "" "(In progress...)"))
                  (:div
                   (:nbutton
