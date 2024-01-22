@@ -956,7 +956,7 @@ invoked via " (:code "flatpak-spawn --host <command> <command-args>") "."))))
      (:li "Built-in modes and special pages have a dedicated menu area now. This menu
 allows access to common functions that are defined within the mode."))))
 
-(define-version "3.X.Y"
+(define-version "3.11.1"
   (:nsection :title "UI/UX"
     (:ul
      (:li "Improve user experience of "
