@@ -1008,6 +1008,10 @@ enabling its customization.")
         (:nxref :class-name 'status-buffer) " can be dynamically set and its UI
 elements are scaled accordingly.")
    (:li "Remove experimental support for WebExtensions via " (:code "libnyxt") ".")
+   (:li "The following environment variables can no longer be set:"
+        (:ul
+         (:li (:code "NASDF_TESTS_QUIT_ON_FAIL"))
+         (:li (:code "NASDF_COMPRESS"))))
    (:li "Delete commands:"
         (:ul
          (:li (:code "clean-configuration"))
