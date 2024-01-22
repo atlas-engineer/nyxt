@@ -164,6 +164,8 @@ See `nyxt::attribute-widths'.")
           :stroke ,theme:action-)
         `((:and .button (:or :visited :active))
           :color ,theme:background)
+        `(input
+          :font-family ,theme:monospace-font-family)
         `("#input"
           :height "28px"
           :margin-top "0"
