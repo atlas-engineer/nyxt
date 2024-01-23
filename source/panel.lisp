@@ -3,6 +3,151 @@
 
 (in-package :nyxt)
 
+(define-class panel-buffer (input-buffer modable-buffer document-buffer network-buffer)
+  ((width 256 :documentation "The width in pixels.")
+   (style (theme:themed-css (theme *browser*)
+            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "400" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Regular.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "400" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Italic.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "100" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Thin.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "100" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-ThinItalic.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "200" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-ExtraLight.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "200" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-ExtraLightItalic.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "300" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Light.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "300" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-LightItalic.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "500" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Medium.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "500" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-MediumItalic.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "600" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-SemiBold.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "600" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-SemiBoldItalic.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "700" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Bold.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "700" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-BoldItalic.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "800" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-ExtraBold.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "800" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-ExtraBoldItalic.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "900" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Black.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "900" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-BlackItalic.woff") "format('woff')")
+            `(:font-face :font-family "dejavu sans mono" :src ,(format nil "url('nyxt-resource:~a')" "DejaVuSansMono.ttf") "format('ttf')")
+            `(body
+              :background-color ,theme:background-alt
+              :color ,theme:on-background-alt
+              :font-family ,theme:font-family
+              :margin "0"
+              :padding "10px"
+              :padding-top "24px"
+              :border-style "solid"
+              :border-width "0px 1px"
+              :border-color ,theme:secondary)
+            `("h1,h2,h3,h4,h5,h6"
+              :font-family ,theme:font-family
+              :font-weight 500)
+            `(a
+              :color ,theme:primary)
+            `("details summary"
+              :margin-left "inherit"
+              :margin-bottom "8px"
+              :cursor "pointer")
+            `("summary::-webkit-details-marker"
+              :padding-bottom "4px")
+            '("details > summary"
+              :list-style-type "none")
+            '("details > summary::-webkit-details-marker"
+              :display "none")
+            '("details > summary::before"
+              :font-weight "bold"
+              :content "+"
+              :margin-right "5px"
+              :display "inline-block")
+            '("details[open] > summary::before"
+              :content "−")
+            `(pre
+              :font-family ,theme:monospace-font-family
+              :font-size "0.9rem")
+            `(code
+              :font-family ,theme:monospace-font-family
+              :font-size "0.9rem")
+            `(dt
+              :font-weight bold)
+            `(dd
+              :margin-inline-start 1em
+              :font-size xx-small)
+            `((:and a :hover)
+              :cursor "pointer"
+              :text-decoration "underline")
+            `((:and a :active)
+              :opacity 0.6)
+            `("#close"
+              :position "fixed"
+              :top "4px"
+              :right "4px"
+              :line-height "12px")
+            `(button
+              :background "transparent"
+              :max-width "100%"
+              :color "inherit"
+              :border "none"
+              :padding 0
+              :font "inherit"
+              :outline "inherit")
+            `(.button
+              :background-color ,theme:primary
+              :color ,theme:on-primary
+              :display "inline-block"
+              :text-decoration "none"
+              :border-radius "2px"
+              :padding "6px"
+              :margin "2px")
+	        `(.action
+              :color ,theme:action)
+	        `(.button.action
+              :background-color ,theme:action
+              :color ,theme:on-action
+              :border-color ,theme:action+)
+            `(.warning
+              :color ,theme:warning)
+	        `(.button.warning
+	          :background-color ,theme:warning
+	          :color ,theme:on-warning
+	          :border-color ,theme:warning+)
+            `(.success
+              :color ,theme:success)
+	        `(.button.success
+              :background-color ,theme:success
+              :color ,theme:on-success
+              :border-color ,theme:success+)
+            `(.highlight
+              :color ,theme:highlight)
+	        `(.button.highlight
+	          :background-color ,theme:highlight
+	          :color ,theme:on-highlight
+	          :border-color ,theme:highlight+)
+            `((:and .button :hover)
+              :cursor "pointer"
+              :opacity 0.8)
+            `((:and .button (:or :visited :active))
+              :color ,theme:background)
+            `("a:visited"
+              :color ,theme:secondary)
+            `(".progress-bar-container"
+              :border-radius "3px"
+              :height "20px"
+              :width "100%")
+            `(".progress-bar-base"
+              :border-radius "3px"
+              :background-color ,theme:secondary
+              :height "100%")
+            `(".progress-bar-fill"
+              :border-radius "3px"
+              :background-color ,theme:primary
+              :height "100%"))))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:export-predicate-name-p t)
+  (:metaclass user-class)
+  (:documentation "Panel buffer (also known as sidebar): small view on the side of the screen.
+
+Panels (pages openable in panel buffer with respective commands) are defined
+with `define-panel-command' and `define-panel-command-global'.
+
+Also see `panel-page'."))
+
 ;; TODO: Quite some code could be factored with `internal-page'.
 
 (define-class panel-buffer-source (prompter:source)
