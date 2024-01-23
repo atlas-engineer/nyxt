@@ -66,10 +66,6 @@ The channel is popped when a prompt buffer is hidden.")
 To modify the status buffer appearance and behavior, subclass it and specialize
 the generic functions on `status-buffer'.  Finally set the `window'
 `status-buffer' slot to an instance of this subclass.")
-   (status-buffer-position
-    :bottom
-    :type (member :top :bottom)
-    :documentation "The position where to place the status buffer in the GTK window.")
    (message-buffer
     (make-instance 'message-buffer)
     :type message-buffer

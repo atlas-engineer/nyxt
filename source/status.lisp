@@ -15,6 +15,10 @@
     :reader height
     :export t
     :documentation "The height of the status buffer in pixels.")
+   (placement
+    :bottom
+    :type (member :top :bottom)
+    :documentation "The position of the status buffer in the corresponding `window'.")
    (glyph-mode-presentation-p
     nil
     :documentation "Display the modes as a list of glyphs.")
