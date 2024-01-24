@@ -235,30 +235,16 @@ A subpackage has a name that starts with that of PACKAGE followed by a '/' separ
   "Return non-nil if PACKAGE is a sub-package of `nyxt' or `nyxt-user'."
   (subpackage-p package :nyxt-user))
 
-(defvar *nyxt-extra-packages* (mapcar #'find-package
-                                      '(analysis
-                                        class-star
-                                        download-manager
-                                        history-tree
-                                        password
-                                        prompter
-                                        text-buffer
-                                        theme
-                                        user-interface))
-  "Packages to append to the result of `nyxt-packages'.")
-
 (defun nyxt-packages ()
-  "Return the Nyxt package, all its subpackages plus what's in `*nyxt-extra-packages*'.
-See also `nyxt-user-packages'."
+  "Return all Nyxt packages.
+See also `nyxt-user-packages', `nyxt-extension-packages' and `non-nyxt-packages'."
   (cons
    (find-package :nyxt)
    (sera:filter #'nyxt-subpackage-p
                 (list-all-packages))))
 
 (defun nyxt-user-packages ()
-  "Return the Nyxt package, the `:nyxt-user', all their subpackages plus what's
-in `*nyxt-extra-packages*'.
-See also `nyxt-packages'."
+  "Return all Nyxt user packages."
   (cons
    (find-package :nyxt-user)
    (sera:filter #'nyxt-user-subpackage-p
