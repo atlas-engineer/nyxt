@@ -55,7 +55,7 @@ A positive value shifts to the right.")
 A positive value shifts to the bottom.")
    (x-placement
     :left
-    :type keyword
+    :type (member :left :right)
     :documentation "The horizontal placement of the hints: either `:left' or `:right'.")
    (keyscheme-map
     (define-keyscheme-map "hint-mode" ()
