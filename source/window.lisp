@@ -90,14 +90,6 @@ the generic functions on `status-buffer'.  Finally set the `window'
         :padding 0
         :padding-left "4px"
         :margin 0)))
-   (prompt-buffer-open-height
-    ;; Ensures that 10 suggestions are vertically shown, while the last entry
-    ;; appears truncated thus making it clear that more follow. It's also set
-    ;; exactly to a third of Nyxt window height.
-    :unbound
-    :reader nil
-    :writer t
-    :documentation "The height of the prompt buffer when open.")
    (input-dispatcher
     'dispatch-input-event
     :type (or sym:function-symbol function)
@@ -137,12 +129,6 @@ The handlers take the window as argument."))
     (setf (id window) (new-id))
     (setf (slot-value browser 'last-active-window) window))
   window)
-
-(defmethod prompt-buffer-open-height ((window window))
-  (if (slot-boundp window 'prompt-buffer-open-height)
-      (slot-value window 'prompt-buffer-open-height)
-      (setf (slot-value window 'prompt-buffer-open-height)
-            (round (/ (ffi-height window) 3)))))
 
 (defmethod print-object ((window window) stream)
   (print-unreadable-object (window stream :type t :identity t)

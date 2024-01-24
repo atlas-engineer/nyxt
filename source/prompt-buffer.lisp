@@ -17,7 +17,7 @@
       :reader height
       :documentation "The height occupied by the prompt buffer.
 The options are:
-- `:default', which sets it to the value of `prompt-buffer-open-height';
+- `:default', which sets it to a third of the window's height;
 - `:fit-to-prompt', which shrinks the height to fit the input area;
 - an integer, which corresponds to the height in pixels.")
      (resumable-p t
@@ -284,8 +284,7 @@ See `prompt' for how to invoke prompts.")
 (defmethod (setf height) (value (prompt-buffer prompt-buffer))
   (setf (ffi-height prompt-buffer)
         (case value
-          (:default
-           (prompt-buffer-open-height (window prompt-buffer)))
+          (:default (round (/ (ffi-height (window prompt-buffer)) 3)))
           (:fit-to-prompt
            (ps-eval :buffer prompt-buffer
              (+ (ps:chain (nyxt/ps:qs document "#prompt-area") offset-height)
