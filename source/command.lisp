@@ -238,17 +238,11 @@ A subpackage has a name that starts with that of PACKAGE followed by a '/' separ
 (defun nyxt-packages ()
   "Return all Nyxt packages.
 See also `nyxt-user-packages', `nyxt-extension-packages' and `non-nyxt-packages'."
-  (cons
-   (find-package :nyxt)
-   (sera:filter #'nyxt-subpackage-p
-                (list-all-packages))))
+  (sera:filter #'nyxt-subpackage-p (list-all-packages)))
 
 (defun nyxt-user-packages ()
   "Return all Nyxt user packages."
-  (cons
-   (find-package :nyxt-user)
-   (sera:filter #'nyxt-user-subpackage-p
-                (list-all-packages))))
+  (sera:filter #'nyxt-user-subpackage-p (list-all-packages)))
 
 (defun nyxt-extension-packages ()
   "Return all the Nyxt extension packages.
