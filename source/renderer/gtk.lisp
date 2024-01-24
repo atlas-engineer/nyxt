@@ -719,8 +719,7 @@ See `gtk-browser's `modifier-translator' slot."
          (buffer (or (current-prompt-buffer)
                      (nyxt::active-buffer sender))))
     (log:debug key-string keycode character keyval-name modifiers)
-    (when (nyxt::prompt-buffer-p buffer)
-      (update-prompt buffer))
+    (when (prompt-buffer-p buffer) (update-prompt buffer))
     (if key-string
         (flet ((key ()
                  (keymaps:make-key :code keycode
@@ -771,8 +770,7 @@ See `gtk-browser's `modifier-translator' slot."
                                :status :pressed)))
       (run-thread "on-signal-button-press"
         (on-signal-button-press buffer (key)))
-      (when (prompt-buffer-p buffer)
-        (update-prompt buffer))
+      (when (prompt-buffer-p buffer) (update-prompt buffer))
       (when key-string
         (alex:appendf (key-stack window)
                       (list (key)))
