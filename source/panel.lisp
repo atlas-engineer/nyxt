@@ -4,7 +4,9 @@
 (in-package :nyxt)
 
 (define-class panel-buffer (input-buffer modable-buffer document-buffer network-buffer)
-  ((width 256 :documentation "The width in pixels.")
+  ((width
+    256
+    :documentation "The width in pixels.")
    (style (theme:themed-css (theme *browser*)
             `(:font-face :font-family "public sans" :font-style "normal" :font-weight "400" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Regular.woff") "format('woff')")
             `(:font-face :font-family "public sans" :font-style "italic" :font-weight "400" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Italic.woff") "format('woff')")
@@ -148,15 +150,12 @@ with `define-panel-command' and `define-panel-command-global'.
 
 Also see `panel-page'."))
 
-;; TODO: Quite some code could be factored with `internal-page'.
-
 (define-class panel-buffer-source (prompter:source)
   ((prompter:name "Panel buffers")
-   (window :accessor window :initarg :window)
+   (window nil)
    (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:enable-marks-p t)
-   (prompter:constructor (lambda (source)
-                           (panel-buffers (window source))))))
+   (prompter:constructor (lambda (source) (panel-buffers (window source))))))
 
 (define-command-global delete-panel-buffer (&key (window (current-window))
                                             (panels (prompt
@@ -207,7 +206,6 @@ panel."))
                           :buffer (make-instance 'panel-buffer))
              (side ,page))))))))
 
-;; FIXME: Better way to compose HTML wrappers?
 (defmethod (setf form) :after (lambda-expression (page panel-page))
   (declare (ignore lambda-expression))
   (let ((original-form (slot-value page 'form)))
@@ -231,8 +229,6 @@ panel."))
                                              (current-window) buffer)))
                            "×")))))
               (values contents type status headers reason))))))
-
-;; TODO: Add define-panel?
 
 (export-always 'define-panel-command)
 (defmacro define-panel-command (name (&rest arglist)
