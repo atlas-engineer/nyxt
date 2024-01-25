@@ -111,7 +111,6 @@
                 ((:file "renderer")
                  (:file "global")
                  (:file "concurrency")
-                 (:file "gpg")
                  (:file "user-files")
                  (:file "user-classes")
                  (:file "configuration")
