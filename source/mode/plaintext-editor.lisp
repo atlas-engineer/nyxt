@@ -41,12 +41,9 @@ To enable it, add this to your configuration file:
      (:textarea :id "editor" :name "editor" :autofocus t))))
 
 (defmethod set-content ((editor plaintext-editor-mode) content)
-  (ps-labels :async t :buffer (buffer editor)
-    ((set-content
-      (content)
-      (setf (ps:@ (nyxt/ps:qs document "#editor") value)
-            (ps:lisp content))))
-    (set-content content)))
+  (ps-eval :async t :buffer (buffer editor)
+    (setf (ps:@ (nyxt/ps:qs document "#editor") value)
+          (ps:lisp content))))
 
 (defmethod get-content ((editor plaintext-editor-mode))
   (ps-eval :buffer (buffer editor)
