@@ -989,6 +989,11 @@ allows access to common functions that are defined within the mode."))))
            (:li (:nxref :command 'nyxt/mode/buffer-listing:buffers-panel))
            (:li (:nxref :command 'nyxt/mode/bookmark:bookmarks-panel)))))))
 
+(define-version "3.X.Y"
+  (:nsection :title "New features"
+    (:ul
+     (:li "When reloading a buffer, restore the scroll position."))))
+
 (define-version "4-pre-release-1"
   (:li "When on pre-release, push " (:code "X-pre-release")
        " feature in addition to " (:code "X-pre-release-N") "one."))
