@@ -139,7 +139,7 @@ to the next."
       (case section
         (keybindings
          (:div.section
-          (:h3 "Keybinding mode")
+          (:h3 "Keybindings")
           (:div.row
            (:div.left
             (:nradio
@@ -170,8 +170,10 @@ to the next."
                  :form '(define-configuration (input-buffer)
                          ((default-modes (pushnew 'nyxt/mode/vi:vi-normal-mode %slot-value%))))))))
            (:div.right
-            (:p "For individual buffers - keyschemes can be toggled with the (toggle-modes) command.")
-            (:p "For a persistent keyscheme each time you start Nyxt - make a selection here.")))))
+            (:p "Make a selection to set the default keybindings for every new
+Nyxt session (after restart).")
+            (:p "Keybindings can also be enabled on a per-buffer basis by
+invoking the " (:nxref :command 'toggle-modes) "command.")))))
         (theme-and-style
          (:div.section
           (:h3 "Browser interface")
