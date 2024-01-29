@@ -145,11 +145,13 @@ to the next."
             (:nradio
               :name "keyscheme"
               :vertical t
-              :checked (cond
-                         ((find 'nyxt/mode/emacs:emacs-mode (default-modes (current-buffer))) 'emacs)
-                         ((find 'nyxt/mode/vi:vi-normal-mode (default-modes (current-buffer))) 'vi)
-                         ((find 'nyxt/mode/vi:vi-insert-mode (default-modes (current-buffer))) 'vi)
-                         (t 'cua))
+              :checked (cond ((find "nyxt/mode/vi" (default-modes (current-buffer))
+                                    :key #'uiop:symbol-package-name :test #'string-equal)
+                              'vi)
+                             ((find "nyxt/mode/emacs" (default-modes (current-buffer))
+                                    :key #'uiop:symbol-package-name :test #'string-equal)
+                              'emacs)
+                             (t 'cua))
               :buffer buffer
               '(cua "CUA (default)"
                 (nyxt::auto-configure
