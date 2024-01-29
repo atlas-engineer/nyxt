@@ -480,7 +480,7 @@ response.  The BODY is wrapped with `with-protect'."
          ;; receive input, for instance to create a new buffer.
          (setf nyxt::active-buffer (make-instance 'input-buffer))
 
-         (when (eq (status-buffer-position window) :top)
+         (when (eq (placement status-buffer) :top)
            (gtk:gtk-box-pack-start root-box-layout status-container :expand nil))
 
          ;; Add the views to the box layout and to the window
@@ -496,7 +496,7 @@ response.  The BODY is wrapped with `with-protect'."
          (setf (gtk:gtk-widget-size-request message-container)
                (list -1 (height message-buffer)))
 
-         (when (eq (status-buffer-position window) :bottom)
+         (when (eq (placement status-buffer) :bottom)
            (gtk:gtk-box-pack-end root-box-layout status-container :expand nil))
 
          (gtk:gtk-box-pack-start status-container (gtk-object status-buffer) :expand t)

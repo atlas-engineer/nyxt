@@ -345,8 +345,8 @@ auto-configuration (which probably wouldn't work anyways).")
     (:li "Prompt buffer updated for intuitive matching with new algorithms and settings.")
     (:li "Revamp status buffer design for increased readability and aesthetics. Make it
 fully customizable with " (:nxref :function 'format-status) " framework.")
-    (:li "Status buffer placement can be changed with "
-         (:nxref :slot 'status-buffer-position :class-name 'window) " (thanks to @mianmoreno)")
+    (:li "Status buffer placement can be changed with " (:code "status-buffer-position")
+         " (thanks to @mianmoreno)")
     (:li "Most help pages, including " (:a :href (nyxt-url 'manual) "the manual")
          " are more readable and interactive.")
     (:li "Add support for the Gopher and Gemini protocols.")
@@ -995,6 +995,10 @@ allows access to common functions that are defined within the mode."))))
 
 (define-version "4.0.0"
   (:ul
+   (:li "Deprecate slot " (:code "status-buffer-position") "in favour of"
+        (:nxref :slot 'placement :class-name 'status-buffer) ".")
+   (:li "Deprecate slot " (:code "prompt-buffer-open-height") " since "
+        (:nxref :slot 'height :class-name 'prompt-buffer) "suffices.")
    (:li "Add slot "
         (:nxref :slot 'nyxt/mode/hint:x-placement :class-name 'nyxt/mode/hint:hint-mode)
         " to draw hints on the right of the hinted element.  By default, they

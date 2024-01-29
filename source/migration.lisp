@@ -117,6 +117,12 @@ major versions."
                               result)))))
 
 (define-migration "4"
+  (prompt-buffer-open-height)
+  (:p "Deprecated since " (:nxref :slot 'height :class-name 'prompt-buffer) " suffices.")
+
+  (status-buffer-position)
+  (:p "Deprecated in favor of " (:nxref :slot 'placement :class-name 'status-buffer) ".")
+
   (hints-offset-x)
   (:p "Deprecated in favor of "
       (:nxref :slot 'nyxt/mode/hint:x-translation :class-name 'nyxt/mode/hint:hint-mode) ".")

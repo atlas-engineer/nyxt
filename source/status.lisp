@@ -3,6 +3,184 @@
 
 (in-package :nyxt)
 
+(define-class status-buffer (input-buffer)
+  ((window
+    nil
+    :type (maybe window)
+    :documentation "The `window' to which the status buffer is attached.")
+   (height
+    24
+    :type integer
+    :writer nil
+    :reader height
+    :export t
+    :documentation "The height of the status buffer in pixels.")
+   (placement
+    :bottom
+    :type (member :top :bottom)
+    :documentation "The position of the status buffer in the corresponding `window'.")
+   (glyph-mode-presentation-p
+    nil
+    :documentation "Display the modes as a list of glyphs.")
+   (display-tabs-by-last-access-p
+    nil
+    :documentation "Whether tabs are dynamically ordered by last access time.")
+   (glyph-left (gethash "left.svg" *static-data*))
+   (glyph-right (gethash "right.svg" *static-data*))
+   (glyph-reload (gethash "reload.svg" *static-data*))
+   (glyph-lambda (gethash "lambda.svg" *static-data*))
+   (style (theme:themed-css (theme *browser*)
+            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "400" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Regular.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "400" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Italic.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "100" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Thin.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "100" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-ThinItalic.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "200" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-ExtraLight.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "200" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-ExtraLightItalic.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "300" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Light.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "300" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-LightItalic.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "500" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Medium.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "500" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-MediumItalic.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "600" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-SemiBold.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "600" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-SemiBoldItalic.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "700" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Bold.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "700" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-BoldItalic.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "800" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-ExtraBold.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "800" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-ExtraBoldItalic.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "900" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Black.woff") "format('woff')")
+            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "900" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-BlackItalic.woff") "format('woff')")
+            `(:font-face :font-family "dejavu sans mono" :src ,(format nil "url('nyxt-resource:~a')" "DejaVuSansMono.ttf") "format('ttf')")
+            `(body
+              :font-family ,theme:font-family
+              :line-height "100vh"
+              :font-size "14px"
+              :padding 0
+              :margin 0)
+            `(.loader
+              :border-width "2px"
+              :border-style "solid"
+              :border-color "transparent"
+              :border-top-color ,theme:action
+              :border-left-color ,theme:action
+              :border-radius "50%"
+              :display "inline-block"
+              :width "7px"
+              :height "7px"
+              :animation "spin 1s linear infinite")
+            `("@keyframes spin"
+              ("0%" :transform "rotate(0deg)")
+              ("100%" :transform "rotate(360deg)"))
+            `(".arrow-right"
+              :clip-path "polygon(0 0, calc(100% - 7px) 0, 100% calc(50% - 1px), 100% 50%, 100% calc(50% + 1px), calc(100% - 7px) 100%, 0 100%)"
+              :margin-right "-7px")
+            `(".arrow-left"
+              :clip-path "polygon(7px 0, 100% 0, 100% 100%, 7px 100%, 0px calc(50% + 1px), 0% 50%, 0px calc(50% - 1px))"
+              :margin-left "-7px")
+            `("#container"
+              :display "flex"
+              :justify-content "space-between"
+              :overflow-y "hidden")
+            `("#controls"
+              :background-color ,theme:secondary
+              :color ,theme:on-secondary
+              :overflow "hidden"
+              :white-space "nowrap"
+              :z-index "3"
+              :flex-basis "78px"
+              :display "flex")
+            `("#controls > button"
+              :margin-right "-3px"
+              :max-width "20px"
+              :height "100%"
+              :aspect-ratio "1/1")
+            `("#url"
+              :background-color ,theme:primary
+              :color ,theme:on-primary
+              :font-size "60vh"
+              :min-width "100px"
+              :text-overflow "ellipsis"
+              :overflow-x "hidden"
+              :white-space "nowrap"
+              :padding-right "7px"
+              :padding-left "15px"
+              :z-index "2"
+              :flex-grow "3"
+              :flex-shrink "2"
+              :flex-basis "144px")
+            `("#url button"
+              :text-align "left"
+              :width "100%")
+            `("#tabs"
+              :background-color ,theme:secondary
+              :color ,theme:on-secondary
+              :line-height "95vh"
+              :font-size "60vh"
+              :min-width "100px"
+              :white-space "nowrap"
+              :overflow-x "scroll"
+              :text-align "left"
+              :padding-left "3px"
+              :padding-right "20px"
+              :z-index "1"
+              :flex-grow "10"
+              :flex-shrink "4"
+              :flex-basis "144px")
+            `("#tabs::-webkit-scrollbar"
+              :display "none")
+            `(".tab"
+              :background-color ,theme:background-
+              :color ,theme:on-background
+              :display "inline-block"
+              :margin-top "1px"
+              :padding-left "18px"
+              :padding-right "18px"
+              :margin-right "-1px"
+              :margin-left "-4px"
+              :text-decoration "transparent"
+              :border "transparent"
+              :border-radius "1px"
+              :font "inherit"
+              :outline "inherit"
+              :clip-path "polygon(calc(100% - 7px) 0, 100% calc(50% - 1px), 100% 50%, 100% calc(50% + 1px), calc(100% - 7px) 100%, 0% 100%, 7px calc(50% + 1px), 7px 50%, 7px calc(50% - 1px),  0% 0%)")
+            `("#modes"
+              :background-color ,theme:primary
+              :color ,theme:on-primary
+              :font-size "60vh"
+              :text-align "right"
+              :padding-left "7px"
+              :padding-right "5px"
+              :overflow-x "scroll"
+              :white-space "nowrap"
+              :z-index "2")
+            `("#modes::-webkit-scrollbar"
+              :display "none")
+            `(button
+              :background "transparent"
+              :color "inherit"
+              :text-decoration "transparent"
+              :border "transparent"
+              :border-radius "0.2em"
+              :padding 0
+              :font "inherit"
+              :outline "inherit")
+            `((:and (:or .button .tab "#url") :hover)
+              :cursor "pointer"
+              :background-color ,theme:action
+              :color ,theme:on-action)
+            `((:and (:or .button .tab) :active)
+              :background-color ,theme:action-
+              :color ,theme:on-action)
+            `(.selected-tab
+              :background-color ,theme:background+
+              :color ,theme:on-background))))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:export-predicate-name-p t)
+  (:metaclass user-class))
+
+(defmethod (setf height) (value (status-buffer status-buffer))
+  (setf (ffi-height status-buffer) value)
+  (setf (slot-value status-buffer 'height) value))
+
 (export-always 'mode-status)
 (defgeneric mode-status (status mode)
   (:method ((status status-buffer) (mode mode))
