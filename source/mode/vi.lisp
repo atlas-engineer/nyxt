@@ -126,18 +126,3 @@ See also `vi-normal-mode' and `vi-insert-mode'."
 
 (defmethod nyxt/dom:focus-select-element :after ((element plump:element))
   (vi-insert-on-input-fields (current-buffer)))
-
-(defmethod nyxt:mode-status ((status status-buffer) (vi-normal vi-normal-mode))
-  (spinneret:with-html-string
-    (:button :type "button"
-             :title "vi-normal-mode"
-             :onclick (ps:ps (nyxt/ps:lisp-eval (:title "vi-insert-mode") (nyxt/mode/vi:vi-insert-mode)))
-             (:code "N"))))
-
-(defmethod nyxt:mode-status ((status status-buffer) (vi-normal vi-insert-mode))
-  (spinneret:with-html-string
-    (:button :type "button"
-             :title "vi-insert-mode"
-             :onclick (ps:ps (nyxt/ps:lisp-eval (:title "vi-normal-mode") (nyxt/mode/vi:vi-normal-mode)))
-             ;; Note: We use :code to make it monospaced, so that it's more clickable.
-             (:code "I"))))
