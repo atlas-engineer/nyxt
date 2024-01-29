@@ -153,8 +153,7 @@ to the next."
               :buffer buffer
               '(cua "CUA (default)"
                 (nyxt::auto-configure
-                 :form '(define-configuration (web-buffer prompt-buffer
-                                               panel-buffer nyxt/mode/editor:editor-buffer)
+                 :form '(define-configuration (input-buffer)
                          ((default-modes (remove-if (lambda (m)
                                                       (find (symbol-name m)
                                                             '("EMACS-MODE" "VI-NORMAL-MODE" "VI-INSERT-MODE")
@@ -162,13 +161,11 @@ to the next."
                                           %slot-value%))))))
               '(emacs "Emacs"
                 (nyxt::auto-configure
-                 :form '(define-configuration (web-buffer prompt-buffer
-                                               panel-buffer nyxt/mode/editor:editor-buffer)
+                 :form '(define-configuration (input-buffer)
                          ((default-modes (pushnew 'nyxt/mode/emacs:emacs-mode %slot-value%))))))
               '(vi "vi"
                 (nyxt::auto-configure
-                 :form '(define-configuration (web-buffer prompt-buffer
-                                               panel-buffer nyxt/mode/editor:editor-buffer)
+                 :form '(define-configuration (input-buffer)
                          ((default-modes (pushnew 'nyxt/mode/vi:vi-normal-mode %slot-value%))))))))
            (:div.right
             (:p "For individual buffers - keyschemes can be toggled with the (toggle-modes) command.")
