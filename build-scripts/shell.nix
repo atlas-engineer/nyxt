@@ -19,6 +19,7 @@ stdenv.mkDerivation {
   ];
 
   buildInputs = [
+    pkgs.sqlite
     pkgs.gobject-introspection
     pkgs.pkg-config
     pkgs.enchant.out
@@ -42,6 +43,7 @@ stdenv.mkDerivation {
 
   LD_LIBRARY_PATH = with lib; "${makeLibraryPath [ pkgs.gsettings-desktop-schemas.out
                                                    pkgs.enchant.out
+                                                   pkgs.sqlite.out
                                                    pkgs.glib-networking.out
                                                    pkgs.webkitgtk
                                                    pkgs.gobject-introspection
