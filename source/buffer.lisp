@@ -1646,14 +1646,21 @@ specified for their contents."
     (current-buffer)))
 
 (export-always 'reload-buffer)
-(defun reload-buffer (buffer)
-  "Reload BUFFER and return it."
+(defun reload-buffer (buffer &key retain-scroll-position)
+  "Reload BUFFER and return it.
+
+If retain-scroll-position is t, calculate the position of the scroll, and
+attempt to restore it upon reload."
+  (when retain-scroll-position
+    (let ((scroll-position (ps-eval :buffer buffer (ps:chain window page-y-offset))))
+      (hooks:once-on (buffer-loaded-hook buffer) (buffer)
+        (ps-eval :buffer buffer (ps:chain window (scroll-to 0 (ps:lisp scroll-position)))))))
   (buffer-load (url buffer) :buffer buffer))
 
-(define-command reload-current-buffer ()
+(define-command reload-current-buffer (&key (retain-scroll-position t))
   "Reload current buffer.
 Return it."
-  (reload-buffer (current-buffer)))
+  (reload-buffer (current-buffer) :retain-scroll-position retain-scroll-position))
 
 (define-command reload-buffers
     (&optional (buffers
