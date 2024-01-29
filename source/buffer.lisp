@@ -1149,13 +1149,10 @@ proceeding."
   (first (sort-by-time (buffer-list))))
 
 (defun get-inactive-buffers ()
-  "Return inactive buffers sorted by last-access timestamp, or NIL if none."
-  (let ((active-buffers
-          (mapcar #'active-buffer (window-list)))
-        (buffers (buffer-list)))
-    (alex:when-let ((diff (set-difference buffers active-buffers)))
-      ;; Display the most recent inactive buffer.
-      (sort-by-time diff))))
+  "Return inactive buffers sorted by `last-access', when applicable."
+  (alex:when-let ((inactive (set-difference (buffer-list)
+                                            (mapcar #'active-buffer (window-list)))))
+    (sort-by-time inactive)))
 
 (define-command copy-url ()
   "Save current URL to clipboard."
