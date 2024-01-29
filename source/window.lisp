@@ -23,7 +23,11 @@ Should be redefined by the renderer."))
     :type (or function sym:function-symbol)
     :documentation "Return the title of the window.
 It's a function of the window argument that returns the title as a string.")
-   (active-buffer :accessor nil :reader active-buffer :export nil)
+   (active-buffer
+    :reader active-buffer
+    :export nil
+    :documentation "The current buffer of the window.
+Not to be confused with `current-buffer'.")
    (active-prompt-buffers
     '()
     :export nil
