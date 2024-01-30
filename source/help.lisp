@@ -139,22 +139,23 @@ to the next."
       (case section
         (keybindings
          (:div.section
-          (:h3 "Keybinding mode")
+          (:h3 "Keybindings")
           (:div.row
            (:div.left
             (:nradio
               :name "keyscheme"
               :vertical t
-              :checked (cond
-                         ((find 'nyxt/mode/emacs:emacs-mode (default-modes (current-buffer))) 'emacs)
-                         ((find 'nyxt/mode/vi:vi-normal-mode (default-modes (current-buffer))) 'vi)
-                         ((find 'nyxt/mode/vi:vi-insert-mode (default-modes (current-buffer))) 'vi)
-                         (t 'cua))
+              :checked (cond ((find "nyxt/mode/vi" (default-modes (current-buffer))
+                                    :key #'uiop:symbol-package-name :test #'string-equal)
+                              'vi)
+                             ((find "nyxt/mode/emacs" (default-modes (current-buffer))
+                                    :key #'uiop:symbol-package-name :test #'string-equal)
+                              'emacs)
+                             (t 'cua))
               :buffer buffer
               '(cua "CUA (default)"
                 (nyxt::auto-configure
-                 :form '(define-configuration (web-buffer prompt-buffer
-                                               panel-buffer nyxt/mode/editor:editor-buffer)
+                 :form '(define-configuration (input-buffer)
                          ((default-modes (remove-if (lambda (m)
                                                       (find (symbol-name m)
                                                             '("EMACS-MODE" "VI-NORMAL-MODE" "VI-INSERT-MODE")
@@ -162,17 +163,17 @@ to the next."
                                           %slot-value%))))))
               '(emacs "Emacs"
                 (nyxt::auto-configure
-                 :form '(define-configuration (web-buffer prompt-buffer
-                                               panel-buffer nyxt/mode/editor:editor-buffer)
+                 :form '(define-configuration (input-buffer)
                          ((default-modes (pushnew 'nyxt/mode/emacs:emacs-mode %slot-value%))))))
               '(vi "vi"
                 (nyxt::auto-configure
-                 :form '(define-configuration (web-buffer prompt-buffer
-                                               panel-buffer nyxt/mode/editor:editor-buffer)
+                 :form '(define-configuration (input-buffer)
                          ((default-modes (pushnew 'nyxt/mode/vi:vi-normal-mode %slot-value%))))))))
            (:div.right
-            (:p "For individual buffers - keyschemes can be toggled with the (toggle-modes) command.")
-            (:p "For a persistent keyscheme each time you start Nyxt - make a selection here.")))))
+            (:p "Make a selection to set the default keybindings for every new
+Nyxt session (after restart).")
+            (:p "Keybindings can also be enabled on a per-buffer basis by
+invoking the " (:nxref :command 'toggle-modes) "command.")))))
         (theme-and-style
          (:div.section
           (:h3 "Browser interface")
