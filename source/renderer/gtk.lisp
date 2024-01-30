@@ -730,9 +730,7 @@ See `gtk-browser's `modifier-translator' slot."
                         (list (key)))
           (run-thread "on-signal-key-press"
             (on-signal-key-press buffer (key)))
-          (funcall (input-dispatcher sender) event
-                   buffer
-                   sender printable-value))
+          (funcall (input-dispatcher sender) event buffer sender))
         ;; Do not forward modifier-only to renderer.
         t)))
 
@@ -774,7 +772,7 @@ See `gtk-browser's `modifier-translator' slot."
       (when key-string
         (alex:appendf (key-stack window)
                       (list (key)))
-        (funcall (input-dispatcher window) event sender window nil)))))
+        (funcall (input-dispatcher window) event sender window)))))
 
 (define-ffi-method on-signal-scroll-event ((sender gtk-buffer) event)
   (let* ((button (match (gdk:gdk-event-scroll-direction event)
@@ -802,7 +800,7 @@ See `gtk-browser's `modifier-translator' slot."
                     (list (keymaps:make-key :value key-string
                                             :modifiers modifiers
                                             :status :pressed)))
-      (funcall (input-dispatcher window) event sender window nil))))
+      (funcall (input-dispatcher window) event sender window))))
 
 (define-class gtk-scheme ()
   ()
