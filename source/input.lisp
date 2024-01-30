@@ -113,10 +113,9 @@ KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
   (log:debug "Skipping input event key ~s" keyspecs))
 
 (export-always 'dispatch-input-event)
-(defun dispatch-input-event (event buffer window printable-p)
+(defun dispatch-input-event (event buffer window)
   "Dispatch keys in WINDOW `key-stack'.
 Return nil to forward to renderer or non-nil otherwise."
-  (declare (ignore printable-p))
   (with-accessors ((key-stack key-stack)) window
     (labels ((keyspecs (key &optional translated-key)
                (if translated-key
