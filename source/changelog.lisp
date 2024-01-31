@@ -989,6 +989,14 @@ allows access to common functions that are defined within the mode."))))
            (:li (:nxref :command 'nyxt/mode/buffer-listing:buffers-panel))
            (:li (:nxref :command 'nyxt/mode/bookmark:bookmarks-panel)))))))
 
+(define-version "3.X.Y"
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "When enabling " (:code "vi") " keybindings via"
+          (:a :href (nyxt-url 'common-settings) "common settings")
+          ", start the prompt buffer with "
+          (:nxref :mode 'nyxt/mode/vi:vi-insert-mode) "enabled."))))
+
 (define-version "4-pre-release-1"
   (:li "When on pre-release, push " (:code "X-pre-release")
        " feature in addition to " (:code "X-pre-release-N") "one."))
