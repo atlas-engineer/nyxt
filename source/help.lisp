@@ -166,9 +166,13 @@ to the next."
                  :form '(define-configuration (input-buffer)
                          ((default-modes (pushnew 'nyxt/mode/emacs:emacs-mode %slot-value%))))))
               '(vi "vi"
-                (nyxt::auto-configure
-                 :form '(define-configuration (input-buffer)
-                         ((default-modes (pushnew 'nyxt/mode/vi:vi-normal-mode %slot-value%))))))))
+                (progn
+                  (nyxt::auto-configure
+                   :form '(define-configuration (input-buffer)
+                           ((default-modes (pushnew 'nyxt/mode/vi:vi-normal-mode %slot-value%)))))
+                  (nyxt::auto-configure
+                   :form '(define-configuration (prompt-buffer)
+                           ((default-modes (pushnew 'nyxt/mode/vi:vi-insert-mode %slot-value%)))))))))
            (:div.right
             (:p "Make a selection to set the default keybindings for every new
 Nyxt session (after restart).")
