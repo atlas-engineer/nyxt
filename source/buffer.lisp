@@ -1982,8 +1982,7 @@ specified for their contents."
                  :sources (make-instance 'buffer-source))))
   "Reload BUFFER.
 Return it."
-  (when buffer
-    (buffer-load (url buffer) :buffer buffer)))
+  (when buffer (ffi-buffer-reload buffer)))
 
 (define-command reload-current-buffer ()
   "Reload current buffer.
