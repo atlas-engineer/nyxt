@@ -166,9 +166,8 @@ BUFFER is of type `editor-buffer'."
 
 (define-command-global edit-file (&optional (file (prompt-for-editor-file)))
   "Open a new editor and query a FILE to edit in it."
-  (let ((buffer (make-instance 'editor-buffer
-                               :url (quri:make-uri :scheme "editor" :path file))))
-    (set-current-buffer buffer)))
+  (set-current-buffer (make-instance 'editor-buffer
+                                     :url (quri:make-uri :scheme "editor" :path file))))
 
 (defun prompt-for-editor-user-file ()
   (uiop:native-namestring
@@ -177,6 +176,5 @@ BUFFER is of type `editor-buffer'."
              :sources 'nyxt::user-file-source))))
 
 (define-command-global edit-user-file (&optional (file (prompt-for-editor-user-file)))
-  (let ((buffer (make-instance 'editor-buffer
-                               :url (quri:make-uri :scheme "editor" :path file))))
-    (set-current-buffer buffer)))
+  (set-current-buffer (make-instance 'editor-buffer
+                                     :url (quri:make-uri :scheme "editor" :path file))))
