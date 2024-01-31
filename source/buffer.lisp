@@ -1643,7 +1643,7 @@ specified for their contents."
 (export-always 'reload-buffer)
 (defun reload-buffer (buffer)
   "Reload BUFFER and return it."
-  (buffer-load (url buffer) :buffer buffer))
+  (ffi-buffer-reload buffer))
 
 (define-command reload-current-buffer ()
   "Reload current buffer.
