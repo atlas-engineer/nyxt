@@ -126,6 +126,9 @@ Setf-able."
 (define-ffi-generic ffi-buffer-load (buffer url)
   "Load URL into BUFFER through the renderer.")
 
+(define-ffi-generic ffi-buffer-reload (buffer)
+  "Reload BUFFER via the renderer.")
+
 (define-ffi-generic ffi-buffer-load-html (buffer html-content url)
   "Load HTML-CONTENT into BUFFER through the renderer.
 If URL is not nil, relative URLs are resolved against it.")
