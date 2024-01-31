@@ -995,7 +995,9 @@ allows access to common functions that are defined within the mode."))))
      (:li "When enabling " (:code "vi") " keybindings via"
           (:a :href (nyxt-url 'common-settings) "common settings")
           ", start the prompt buffer with "
-          (:nxref :mode 'nyxt/mode/vi:vi-insert-mode) "enabled."))))
+          (:nxref :mode 'nyxt/mode/vi:vi-insert-mode) "enabled.")
+     (:li "The scroll position is remembered when issuing buffer reloading commands, such as"
+      (:nxref :command 'reload-current-buffer) "."))))
 
 (define-version "4-pre-release-1"
   (:li "When on pre-release, push " (:code "X-pre-release")
