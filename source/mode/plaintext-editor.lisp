@@ -31,14 +31,14 @@ To enable it, add this to your configuration file:
               :color ,theme:on-background))))
   (:toggler-command-p nil))
 
-(defmethod markup ((editor plaintext-editor-mode))
+(defmethod markup ((editor plaintext-editor-mode) content)
   (spinneret:with-html-string
     (:head
      (:nstyle (style editor))
-     (:nstyle (style (nyxt::current-buffer))))
+     (:nstyle (style (buffer editor))))
     (:body
      (render-menu 'nyxt/mode/editor:editor-mode)
-     (:textarea :id "editor" :name "editor" :autofocus t))))
+     (:textarea :id "editor" :name "editor" :autofocus t content))))
 
 (defmethod set-content ((editor plaintext-editor-mode) content)
   (ps-eval :async t :buffer (buffer editor)
