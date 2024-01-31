@@ -1330,10 +1330,6 @@ URL-DESIGNATOR is then transformed by BUFFER's `buffer-load-hook'."
     (when new-url
       (check-type new-url quri:uri)
       (setf url new-url)
-      ;; TODO: This condition can be a source of inefficiency.  Besides, it
-      ;; partly duplicates the code in `preprocess-request'.  Can we factor this
-      ;; out?
-
       ;; We could have `on-url-load' and `on-url-unload' methods instead.
       ;; `on-url-unload' could be used to perform some clean up, while
       ;; `on-url-load' would perform the actual loading.
