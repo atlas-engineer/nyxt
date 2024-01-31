@@ -72,8 +72,9 @@ See `describe-class editor-mode' for details."))
 
 ;; IMPORTANT: Implement this method specializing on your class extending editor-mode.
 (export-always 'markup)
-(defgeneric markup (editor-submode)
-  (:method ((editor editor-mode))
+(defgeneric markup (editor-submode content)
+  (:method ((editor editor-mode) content)
+    (declare (ignore content))
     (spinneret:with-html-string
       (:head
        (:nstyle (style (buffer editor))))
@@ -110,13 +111,8 @@ contains an `nyxt/mode/editor:editor-mode' instance (or a subclass thereof)."))
 
 (define-internal-scheme "editor"
     (lambda (url buffer)
-      (let ((mode (find-submode 'editor-mode buffer))
-            (file (quri:uri-path (quri:uri url))))
-        (uiop:chdir (uiop:pathname-directory-pathname file))
-        (run-thread "editor content setting"
-          (sleep 2)
-          (set-content mode (uiop:read-file-string file)))
-        (markup mode))))
+      (markup (find-submode 'editor-mode buffer)
+              (uiop:read-file-string (quri:uri-path (quri:uri url))))))
 
 (defmethod editor ((editor-buffer editor-buffer))
   (let ((mode (find-submode 'editor-mode editor-buffer)))
