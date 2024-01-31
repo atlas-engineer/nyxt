@@ -1698,6 +1698,12 @@ local anyways, and it's better to refresh it if a load was queried."
           (load-webkit-history-entry buffer entry))
         (webkit:webkit-web-view-load-uri (gtk-object buffer) (quri:render-uri url)))))
 
+(define-ffi-method ffi-buffer-reload ((buffer gtk-buffer))
+  "Reload BUFFER."
+  (when (web-buffer-p buffer)
+    (setf (nyxt::status buffer) :loading))
+  (webkit:webkit-web-view-reload (gtk-object buffer)))
+
 (define-ffi-method ffi-buffer-load-html ((buffer gtk-buffer) html-content url)
   (declare (type quri:uri url))
   (webkit:webkit-web-view-load-html (gtk-object buffer)
