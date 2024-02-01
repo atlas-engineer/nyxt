@@ -158,6 +158,7 @@ major versions."
    duplicate-buffer
    duplicate-buffer-with-current-modes
    follow-hint-with-current-modes-new-buffer
+   force-reload-buffers
    go-next
    go-previous
    go-to-homepage
