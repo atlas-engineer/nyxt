@@ -1070,19 +1070,22 @@ This is a low-level function.  See `buffer-delete' for the high-level version."
   (gethash id (slot-value *browser* 'buffers)))
 
 (defun buffers-set (id buffer)
-  "Set the BUFFER as the one corresponding to ID in `browser'."
+  "Ensure that entry ID->BUFFER belongs to `buffers' hash table."
   (when *browser*
+    ;; Mutate state of the hash table.
     (setf (gethash id (slot-value *browser* 'buffers)) buffer)
-    ;; Force setf call so that slot is seen as changed, e.g. by status buffer watcher.
+    ;; Notify `buffers' of the new hash table state. Useful, for example, to
+    ;; update the status buffer.
     (setf (buffers *browser*) (buffers *browser*))))
 
 (defun buffers-delete (id)
-  "Remove the buffer with respective ID from the browser.
+  "Remove `buffers' hash table entry matching key ID.
 
-Low-level function, use `buffer-delete' to properly close the buffer, or
-`delete-buffer' command from inside Nyxt."
+This is a low-level function.  See `buffer-delete' and `delete-buffer'."
+  ;; Mutate state of the hash table.
   (remhash id (slot-value *browser* 'buffers))
-  ;; Force setf call so that slot is seen as changed, e.g. by status buffer watcher.
+  ;; Notify `buffers' of the new hash table state. Useful, for example, to
+  ;; update the status buffer.
   (setf (buffers *browser*) (buffers *browser*)))
 
 (export-always 'window-list)
