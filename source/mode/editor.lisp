@@ -2,30 +2,21 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/editor
-    (:documentation "Package for `editor-mode', mode for implementation of Nyxt-resident editors.
+  (:documentation "Package for `editor-mode', mode to implement Nyxt text editors.
 
-The new editor mode should subclass `editor-mode'. It is also required to
-implement the methods `get-content', `set-content', and `markup'. This will
-allow the subclassed mode to get/set content from/to the file (which is
-necessary for its operation)."))
+Editors should subclass `editor-mode' and specialize methods `markup',
+`get-content' and `set-content'."))
 (in-package :nyxt/mode/editor)
 
 (define-mode editor-mode ()
-  "Mode for editor modes to extend.
+  "General-purpose editor mode, meant to be subclassed.
 
-Commands portable across all the `editor-mode' editors:
-- `edit-file': Open a file in the new `editor-buffer'.
-- `editor-open-file': Open a new file in the existing editor.
-- `editor-write-file': Save the file to disk.
+To enable a mode that inherits from `editor-mode', add this snippet to your
+config:
+(define-configuration nyxt/mode/editor:editor-buffer
+  ((default-modes (cons 'custom-editor-mode %slot-value%))))
 
-To install the mode implementing the following, add this snippet to your config
-(define-configuration nyxt/mode/editor::editor-buffer
-  ((default-modes (cons 'your-editor-mode %slot-value%))))
-
-See `nyxt/mode/editor' package documentation for implementation details and
-internal programming APIs, including the methods for custom editors'
-implementation. Also see `plaintext-editor-mode' for an example
-implementation."
+See `plaintext-editor-mode' for an example of inheritance."
   ((keyscheme-map
     (define-keyscheme-map "editor-mode" ()
       keyscheme:default
@@ -53,7 +44,6 @@ implementation."
        "D" 'delete-current-buffer))))
   (:toggler-command-p nil))
 
-;; IMPORTANT: Implement this method specializing on your class extending editor-mode.
 (export-always 'get-content)
 (defgeneric get-content (editor-submode)
   (:method ((editor editor-mode))
@@ -61,19 +51,18 @@ implementation."
     (echo-warning "Editor buffer cannot edit files without configured editor mode."))
   (:documentation "Get the content of the EDITOR-SUBMODE as a string."))
 
-;; IMPORTANT: Implement this method specializing on your class extending editor-mode.
 (export-always 'set-content)
 (defgeneric set-content (editor-submode content)
   (:method ((editor editor-mode) (content t))
     (declare (ignore editor))
     (echo-warning "Editor buffer cannot edit files without configured editor mode.
 See `describe-class editor-mode' for details."))
-  (:documentation "Set the content of the EDITOR-SUBMODE to a new string/other CONTENT."))
+  (:documentation "Set the content of EDITOR-SUBMODE to the string CONTENT."))
 
-;; IMPORTANT: Implement this method specializing on your class extending editor-mode.
 (export-always 'markup)
-(defgeneric markup (editor-submode)
-  (:method ((editor editor-mode))
+(defgeneric markup (editor-submode content)
+  (:method ((editor editor-mode) content)
+    (declare (ignore content))
     (spinneret:with-html-string
       (:head
        (:nstyle (style (buffer editor))))
@@ -81,10 +70,7 @@ See `describe-class editor-mode' for details."))
        (:p "Please configure an editor mode to use an editor buffer. See "
            (:code "describe-class") " for " (:code "editor-buffer")
            " to see the list of functions to implement."))))
-  (:documentation "Produce at least a string/byte-array of the initial buffer contents.
-
-See the `scheme' documentation for the format and the number of values that
-`markup' specializations could/should return."))
+  (:documentation "Return an HTML string representation of the file to be edited."))
 
 (define-class editor-buffer (network-buffer ; Questionable, but needed for `buffer-load'.
                              context-buffer modable-buffer document-buffer input-buffer)
@@ -93,16 +79,13 @@ See the `scheme' documentation for the format and the number of values that
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
   (:metaclass user-class)
-  (:documentation "Each editor buffer matches a file. Each editor buffer
-contains an `nyxt/mode/editor:editor-mode' instance (or a subclass thereof)."))
+  (:documentation "Buffer to edit files. See `nyxt/mode/editor:editor-mode'."))
 
 (defmethod nyxt:default-modes append ((buffer editor-buffer))
   "Add `editor-mode' and `plaintext-editor-mode' to `editor-buffer' by default."
   (list 'editor-mode 'plaintext-editor-mode))
 
 (defmethod nyxt:default-modes :around ((buffer editor-buffer))
-  ;; REVIEW: Really remove document-mode from editor-buffer?
-  ;; FIXME: How to disable the annoying base-mode bindings in the editor!?
   (set-difference (call-next-method) '(document-mode base-mode)))
 
 (defmethod file ((buffer editor-buffer))
@@ -110,13 +93,8 @@ contains an `nyxt/mode/editor:editor-mode' instance (or a subclass thereof)."))
 
 (define-internal-scheme "editor"
     (lambda (url buffer)
-      (let ((mode (find-submode 'editor-mode buffer))
-            (file (quri:uri-path (quri:uri url))))
-        (uiop:chdir (uiop:pathname-directory-pathname file))
-        (run-thread "editor content setting"
-          (sleep 2)
-          (set-content mode (uiop:read-file-string file)))
-        (markup mode))))
+      (markup (find-submode 'editor-mode buffer)
+              (uiop:read-file-string (quri:uri-path (quri:uri url))))))
 
 (defmethod editor ((editor-buffer editor-buffer))
   (let ((mode (find-submode 'editor-mode editor-buffer)))
@@ -170,9 +148,8 @@ BUFFER is of type `editor-buffer'."
 
 (define-command-global edit-file (&optional (file (prompt-for-editor-file)))
   "Open a new editor and query a FILE to edit in it."
-  (let ((buffer (make-instance 'editor-buffer
-                               :url (quri:make-uri :scheme "editor" :path file))))
-    (set-current-buffer buffer)))
+  (set-current-buffer (make-instance 'editor-buffer
+                                     :url (quri:make-uri :scheme "editor" :path file))))
 
 (defun prompt-for-editor-user-file ()
   (uiop:native-namestring
@@ -181,6 +158,5 @@ BUFFER is of type `editor-buffer'."
              :sources 'nyxt::user-file-source))))
 
 (define-command-global edit-user-file (&optional (file (prompt-for-editor-user-file)))
-  (let ((buffer (make-instance 'editor-buffer
-                               :url (quri:make-uri :scheme "editor" :path file))))
-    (set-current-buffer buffer)))
+  (set-current-buffer (make-instance 'editor-buffer
+                                     :url (quri:make-uri :scheme "editor" :path file))))

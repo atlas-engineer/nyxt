@@ -6,12 +6,8 @@
 (define-mode plaintext-editor-mode (editor-mode)
   "Mode for basic plaintext editing.
 
-It renders the file in a single textarea HTML element.
-
-To enable it, add this to your configuration file:
-
-\(define-configuration nyxt/mode/editor::editor-buffer
-  ((default-modes (cons 'nyxt/mode/editor::plaintext-editor-mode %slot-value%))))"
+It renders the file in a single textarea HTML element.  Enabled by default for
+`editor-buffer's."
   ((visible-in-status-p nil)
    (rememberable-p nil)
    (style (theme:themed-css (theme *browser*)
@@ -31,14 +27,14 @@ To enable it, add this to your configuration file:
               :color ,theme:on-background))))
   (:toggler-command-p nil))
 
-(defmethod markup ((editor plaintext-editor-mode))
+(defmethod markup ((editor plaintext-editor-mode) content)
   (spinneret:with-html-string
     (:head
      (:nstyle (style editor))
-     (:nstyle (style (nyxt::current-buffer))))
+     (:nstyle (style (buffer editor))))
     (:body
      (render-menu 'nyxt/mode/editor:editor-mode)
-     (:textarea :id "editor" :name "editor" :autofocus t))))
+     (:textarea :id "editor" :name "editor" :autofocus t content))))
 
 (defmethod set-content ((editor plaintext-editor-mode) content)
   (ps-eval :async t :buffer (buffer editor)
