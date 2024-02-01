@@ -1080,11 +1080,10 @@ See `finalize-buffer'."
                              (let ((headers (webkit:webkit-uri-response-get-http-headers response)))
                                (unless (cffi:null-pointer-p headers)
                                  (webkit:soup-message-headers-get-headers headers)))))
-    (setf toplevel-p (quri:uri=
-                      url (quri:uri (webkit:webkit-web-view-uri
-                                     (gtk-object buffer)))))
-    (when toplevel-p
-      (apply-auto-rules url buffer))
+    (setf toplevel-p
+          (quri:uri= url
+                     (quri:uri (webkit:webkit-web-view-uri (gtk-object buffer)))))
+    (when toplevel-p (apply-auto-rules url buffer))
     (let* ((request-data
             (hooks:run-hook
              (request-resource-hook buffer)
