@@ -1190,8 +1190,7 @@ identifiers."
 (-> resurrect-buffer (buffer) (values &optional buffer))
 (defun resurrect-buffer (dead-buffer)
   ;; (setf (id dead-buffer) (new-id))      ; TODO: Shall we reset the ID?
-  (ffi-buffer-make dead-buffer)
-  dead-buffer)
+  (ffi-buffer-make dead-buffer))
 
 (define-generic document-model ((buffer buffer))
   "A wraparound accessor to BUFFER's `document-model'.
