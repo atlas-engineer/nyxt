@@ -65,12 +65,6 @@ If URL contains non-ascii chars in domain part (IDN), return two values:
                                                                      "")
                                                            :defaults uri))))))))
 
-(export-always 'render-host-and-scheme)
-(defun render-host-and-scheme (url)
-  "Return decoded URL without path, if existent."
-  (format nil "~a://~a" (quri:uri-scheme url)
-          (quri:uri-host url)))
-
 (export-always 'fetch-url-title)
 (defun fetch-url-title (url)
   "Return URL's title.
