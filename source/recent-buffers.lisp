@@ -3,14 +3,6 @@
 
 (in-package :nyxt)
 
-(export-always 'buffer-match-predicate)
-(define-generic buffer-match-predicate ((buffer buffer))
-  "Return predicate for if the buffer it's called with is the same as BUFFER."
-  (lambda (other-buffer)
-    (when other-buffer
-      (and (quri:uri= (url buffer) (url other-buffer))
-           (string= (title buffer) (title other-buffer))))))
-
 (defun reopen-dead-buffer (buffer)
   (cond ((dead-buffer-p buffer)
          ;; For renderer side effects.
