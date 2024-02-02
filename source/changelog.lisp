@@ -998,7 +998,9 @@ allows access to common functions that are defined within the mode."))))
           (:nxref :mode 'nyxt/mode/vi:vi-insert-mode) "enabled.")
      (:li "The scroll position is remembered when issuing buffer reloading commands, such as"
           (:nxref :command 'reload-current-buffer) ".")
-     (:li "Improve performance of " (:nxref :command 'nyxt/mode/editor:edit-file) "."))))
+     (:li "Improve performance of " (:nxref :command 'nyxt/mode/editor:edit-file) ".")
+     (:li "Fix bug that prevented listing buffers recovered via command "
+          (:nxref :command 'reopen-buffer) "."))))
 
 (define-version "4-pre-release-1"
   (:li "When on pre-release, push " (:code "X-pre-release")

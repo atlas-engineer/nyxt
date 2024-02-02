@@ -3,19 +3,16 @@
 
 (in-package :nyxt)
 
-(export-always 'buffer-match-predicate)
-(define-generic buffer-match-predicate ((buffer buffer))
-  "Return predicate for if the buffer it's called with is the same as BUFFER."
-  (lambda (other-buffer)
-    (when other-buffer
-      (and (quri:uri= (url buffer) (url other-buffer))
-           (string= (title buffer) (title other-buffer))))))
-
 (defun reopen-dead-buffer (buffer)
-  (containers:delete-item-if (recent-buffers *browser*)
-                             (buffer-match-predicate buffer))
-  (reload-buffer (resurrect-buffer buffer))
-  buffer)
+  (cond ((dead-buffer-p buffer)
+         ;; For renderer side effects.
+         (resurrect-buffer buffer)
+         ;; Re-positions buffer in `recent-buffers'.
+         (add-to-recent-buffers buffer)
+         ;; Ensure buffer is seen by the `buffers' hash table.
+         (buffers-set (id buffer) buffer)
+         (buffer-load (url buffer) :buffer buffer))
+        (t (log:info "~a isn't a recently deleted buffer" buffer))))
 
 (define-class recent-buffer-source (prompter:source)
   ((prompter:name "Deleted buffers")

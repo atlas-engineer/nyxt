@@ -872,8 +872,7 @@ identifiers."
 (-> resurrect-buffer (buffer) (values &optional buffer))
 (defun resurrect-buffer (dead-buffer)
   ;; (setf (id dead-buffer) (new-id))      ; TODO: Shall we reset the ID?
-  (ffi-buffer-make dead-buffer)
-  dead-buffer)
+  (ffi-buffer-make dead-buffer))
 
 (define-generic document-model ((buffer buffer))
   "A wraparound accessor to BUFFER's `document-model'.
@@ -1021,9 +1020,10 @@ See `make-buffer' for a description of the arguments."
 
 (-> add-to-recent-buffers (buffer) *)
 (defun add-to-recent-buffers (buffer)
-  "Create a recent-buffer from given buffer and add it to `recent-buffers'."
+  "Push BUFFER to the front of `recent-buffers'.
+The notion of first element is dictated by `containers:first-item'."
   (when (web-buffer-p buffer)
-    (containers:delete-item-if (recent-buffers *browser*) (buffer-match-predicate buffer))
+    (containers:delete-item (recent-buffers *browser*) buffer)
     (containers:insert-item (recent-buffers *browser*) buffer)))
 
 (export-always 'buffer-delete)
