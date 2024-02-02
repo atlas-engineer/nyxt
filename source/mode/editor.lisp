@@ -151,12 +151,9 @@ BUFFER is of type `editor-buffer'."
   (set-current-buffer (make-instance 'editor-buffer
                                      :url (quri:make-uri :scheme "editor" :path file-path))))
 
-(defun prompt-for-editor-user-file ()
-  (uiop:native-namestring
-   (files:expand
-    (prompt1 :prompt "Edit user file"
-             :sources 'nyxt::user-file-source))))
-
-(define-command-global edit-user-file (&optional (file (prompt-for-editor-user-file)))
-  (set-current-buffer (make-instance 'editor-buffer
-                                     :url (quri:make-uri :scheme "editor" :path file))))
+(define-command-global edit-user-file
+    (&optional (file-path (uiop:native-namestring
+                           (files:expand
+                            (prompt1 :prompt "Edit user file"
+                                     :sources 'nyxt::user-file-source)))))
+  (edit-file file-path))
