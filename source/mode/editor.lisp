@@ -129,11 +129,11 @@ See `describe-class editor-mode' for details."))
            (make-instance 'prompter:raw-source
                           :name "Create new file"))))))
 
-(define-command editor-open-file (&key (buffer (current-buffer)) (file (prompt-for-editor-file)))
+(define-command editor-open-file (&key (buffer (current-buffer)) (file-path (prompt-for-editor-file)))
   "Open a file.
 
 BUFFER is of type `editor-buffer'."
-  (buffer-load (quri:make-uri :scheme "editor" :path file) :buffer buffer))
+  (buffer-load (quri:make-uri :scheme "editor" :path file-path) :buffer buffer))
 
 (define-command editor-write-file (&key (buffer (current-buffer)))
   "Write a file to storage.
@@ -146,10 +146,10 @@ BUFFER is of type `editor-buffer'."
                 (file buffer) (write-file-with-editor buffer :if-exists :overwrite)))
       (echo "File ~s ~:[not ~;~]saved." (file buffer) (write-file-with-editor buffer))))
 
-(define-command-global edit-file (&optional (file (prompt-for-editor-file)))
+(define-command-global edit-file (&optional (file-path (prompt-for-editor-file)))
   "Open a new editor and query a FILE to edit in it."
   (set-current-buffer (make-instance 'editor-buffer
-                                     :url (quri:make-uri :scheme "editor" :path file))))
+                                     :url (quri:make-uri :scheme "editor" :path file-path))))
 
 (defun prompt-for-editor-user-file ()
   (uiop:native-namestring
