@@ -2215,13 +2215,6 @@ As a second value, return the current buffer index starting from 0."
         (gtk-object gtk-buffer) webkit2:+webkit-editing-command-redo+)))
    (lambda (e) (echo-warning "Cannot redo: ~a" e))))
 
-(define-command-global force-reload-buffers (&optional (buffer (prompt
-                                                                :prompt "Reload buffer(s)"
-                                                                :sources (make-instance 'buffer-source))))
-  "Reload the BUFFER(s) bypassing renderer CSS cache.
-WebKit-specific."
-  (webkit:webkit-web-view-reload-bypass-cache (gtk-object buffer)))
-
 (defun list-existing-contexts ()
   (loop for dir in (uiop:subdirectories
                     (files:expand (make-instance 'nyxt:nyxt-data-directory)))
