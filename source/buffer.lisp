@@ -640,15 +640,12 @@ which is not necessarily the same."))
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
   (:metaclass user-class)
-  (:documentation "A buffer which focus sets the current context, that is, the
-buffer-specific values of various settings like the various file paths, prompt
-options, download options, etc.
+  (:documentation "A buffer that holds buffer-specific settings (see its slots).
 
-Every setting that can be buffer-specific should be stored here; settings that
-only make sense globally should be stored in `browser' instead.
+Global settings should be stored in `browser' instead.
 
-It's similar to the \"private window\" in popular browser, but the scope here is
-the buffer (which gives us more flexibility)."))
+Conceptually, it's similar to \"private windows\" in popular browsers but the
+scope is that of buffers."))
 
 (defmethod print-object ((buffer buffer) stream)
   (print-unreadable-object (buffer stream :type t :identity t)
