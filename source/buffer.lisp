@@ -686,10 +686,7 @@ Nsymbols will find the proper symbol, unless duplicate."
 (define-class network-buffer (buffer)
   ((status
     :unloaded
-    :type (member :loading
-                  :finished
-                  :unloaded
-                  :failed)
+    :type (member :loading :finished :unloaded :failed)
     :export nil ; TODO: Need to decide if we want progress / errors before exposing to the user.
     :documentation "The status of the buffer.
 - `:loading' when loading a web resource.
