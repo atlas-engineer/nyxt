@@ -1478,7 +1478,7 @@ proceeding."
     (setf (last-access buffer) (time:now)))
   (when (and (network-buffer-p buffer)
              (eq (slot-value buffer 'status) :unloaded))
-    (reload-buffer buffer)))
+    (buffer-load (url buffer) :buffer buffer)))
 
 (defun last-active-buffer ()
   "Return buffer with most recent `last-access'."
