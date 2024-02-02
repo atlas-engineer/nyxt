@@ -1290,7 +1290,8 @@ To load nothing, set it to 'about:blank'.
 PARENT-BUFFER is useful when we want to record buffer- and history relationships.
 LOAD-URL-P controls whether to load URL right at buffer creation."
   (let* ((url (url url))
-         (buffer (apply #'make-instance buffer-class
+         (buffer (apply #'make-instance
+                        buffer-class
                         :title title
                         :extra-modes modes
                         :parent-buffer parent-buffer
