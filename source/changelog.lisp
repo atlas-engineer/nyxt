@@ -22,309 +22,367 @@
      (:li "MINOR when we add functionality in a backwards-compatible manner.")
      (:li "PATCH when we make backwards-compatible bug fixes."))
     (:p "See also the " (:code "migration-guide") ".")
-    (loop for version in (alex:hash-table-values +changelog+)
+    (loop for version being the hash-value of +changelog+
           collect (:raw version))))
 
-(define-version "2.0.0"
+(define-version "4.0.0"
   (:ul
-   (:li "Search engine autocompletion. See the search engine suggestions in
-        the prompt buffer as you type. By default, support for DuckDuckGo and
-        Wikipedia is included.")
-   (:li (:code "set-url") " and related commands now allow for multiple selection.")
-   (:li "On downloads, display the number of downloaded bytes.")
-   (:li "Buffer default modes can now be customized via
-        the " (:code "default-modes") " generic function. This function uses
-        the " (:code "append") " method
-        combination." (:code "define-configuration") " now supports customizing
-        these methods just as for slots.")
-   (:li "Commands defined with " (:code "define-command") " are no longer
-        listed in " (:code "execute-command") "
-        use " (:code "define-command-global") " to define global commands that
-        are always listed.")
-   (:li "New " (:code "define-command-global") "function. Use this to
-        define globally visible commands.")
-   (:li "Removed the " (:code "notify") " function, also removing the
-        dependency on notify-osd. This function was not generic enough and only
-        used in one place. Notifications will be reintroduced with a more generic
-        interface.")
-   (:li "Remove " (:code "set-url-from-bookmark-new-buffer") " It is
-        redundant with set-url and set-url-from-bookmark.")
-   (:li "New system-information command line option.")
-   (:li "Removed Common Lisp file-attributes dependency."))
-  (:h3 "Bug fixes")
-  (:ul
-   (:li "Fixed crash when right-clicking on some elements, like the Slack
-        composition area.")
-   (:li "Fixed crashes on click and scroll in prompt buffer.")
-   (:li "Removed duplicates from prompt buffer history.")
-   (:li "Fixed some commands, like " (:code "describe-variable") "
-        and " (:code "history-tree."))
-   (:li "Fixed " (:code "url-dispatching-handler") " when handler returns NIL.")
-   (:li "Fixed loading of local HTML files when passed as command line argument.")))
-
-(define-version "2.1.0"
-  (:ul
-   (:li (:code "expedition-mode") ". Expedition mode stores a set of links
-        that you can then traverse forwards and backwards as if you are on an
-        expedition through the Internet!")
-   (:li (:code "select-frame") ". Select frame allows the user to
-        drag-select multiple elements on screen. For example, the user can
-        drag-select to open up all of the links of a search result.")
-   (:li (:code "process-mode") ". Process mode enables you to automate the
-        repetition of tedious tasks. For example, you can have process mode
-        refresh a page whenever you save a file. This could be useful for
-        previewing LaTeX documents, or working on websites!")
-   (:li (:code "cruise-control-mode") ".  Cruise control mode allows you to
-        scroll down the page at a fixed speed. This mode is particularly well
-        suited for reading long articles.")
-   (:li "Replace 'loading' text with animated spinner.")
-   (:li "vi mode automatically switches to vi-insert-mode when logical.")
-   (:li "The prompt buffer is used to interface with the user instead of
-        GTK dialogs. This behavior can be controlled via
-        the " (:code "native-dialogs") (:code "browser") "slot.")
-   (:li "add raw-source
-        to " (:code "add-domain-to-certificate-exceptions") " to allow for
-        arbitrary URLs."))
-  (:h3 "Bug fixes")
-  (:ul
-   (:li "Fix broken status buffer button to list-buffers.")
-   (:li "Make bookmarklets callable from " (:code "execute-command") ".")
-   (:li "Quit gracefully when " (:code "C-c") " is pressed in the parent shell.")
-   (:li "Fix search engine queries with " (:code "&") " and " (:code "%") " characters.")
-   (:li "Make " (:code "search-buffer-source") " customizable
-        with " (:code "define-configuration") ". Thanks to @mariari.")
-   (:li "Support command-line arguments in " (:code "external-editor-program") ".")
-   (:li "Fix " (:code "proxy-mode") " configuration. Thanks to @Zwo1in.")
-   (:li "Fix history corruptions when an error occurred while saving the history to disk.")
-   (:li "Fix " (:code "history-all-query") ". Thanks to @franburstall.")
-   (:li "Fix " (:code "search-buffer") "when input contains regexp-special characters.")))
-
-(define-version "2.1.1"
-  (:ul
-   (:li (:code "reopen-buffer") " restores the scroll position.")
-   (:li "New " (:code "copy-username") " command for password managers."))
-  (:h3 "Bug fixes")
-  (:ul
-   (:li "Fix history double-restore which led to many crashes.")
-   (:li "Create file and parent directories of configuration files if they
-        don't exist.")
-   (:li "Fix " (:code "set-url-from-bookmark") " with marks.")
-   (:li "Fix " (:code "process-mode") " to not run an action when it is nil.")))
-
-(define-version "2.2.0"
-  (:ul
-   (:li "New " (:code "changelog") " command.")
-   (:li "New " (:code "show-qrcode-of-current-url") " command.  (Thanks to @ag91!)")
-   (:li "New " (:code "view-source") " command.")
-   (:li "New " (:code "edit-user-file-with-external-editor") " command.")
-   (:li "New " (:code "summarize-buffer") " command.")
-   (:li "Macro editor: interactively record command macros with " (:code "edit-macro") "."
-        " Macros can be saved to the " (:code "auto-config.lisp") " file.")
-   (:li "New action for the " (:code "switch-buffer") " command to delete selected buffers.")
-   (:li "Support for GTK clipboard.  (Thanks to @shamazmazum!)")
-   (:li "Deprecated commands no longer show in the "
-        (:code "execute-command") " list.")
-   (:li "New " (:code "titler") " window slot to allow customizing the window title.") (:li (:code "jump-to-heading") " now also lists content keywords.")
-   (:li "Various manual and tutorial improvements and fixes.  (Thanks to @pdelfino!)")
-   (:li "Deprecate " (:code "paste-or-set-url") ".")
-   (:li "Replace " (:code "copy-system-information") " with " (:code "show-system-information") ".")
-   (:li (:p "Don't forward printable characters in vi-normal-mode.")
-        (:p "Concretely, pressing an unbound letter won't insert it in an HTML input."))
-   (:li (:p "New VI status and prompt buffer indicator.  (Thanks to @edgar-vincent!)")
-        (:p "Both the status buffer and the prompt buffer now display a colored  indicator for "
-            (:code "vi-normal-mode") " and " (:code "vi-insert-mode") "."))
-   (:li "New navigation commands: "
-        (:code "go-previous") ", "
-        (:code "go-next") ", "
-        (:code "go-up") ", "
-        (:code "go-to-homepage") ".")
-   (:li "Password commands set the default input to the current host.")
-   (:li "Anonymous commands are now allowed in keybindings (e.g. with "
-        (:code "make-command") ").")
-   (:li (:code "describe-variable")
-        " can now describe compound values recursively, such as lists of variables.")
-   (:li (:code "execute-extended-command") " performs type checking and
-        prefills default values."))
-
-  (:h3 "Backward-incompatible changes")
-  (:ul
-   (:li (:p "Updated " (:code "cl-webkit") " to version 3.0.0.")
-        (:p (:code "webkit2:webkit-web-view-evaluate-javascript")
-            " lambda list changed."))
-   (:li (:p "We've introduced an API-breaking change to the " (:code "nyxt/history-tree")
-            " library: now all its call points take an owner as parameter."
-            "This has allowed us to fix the constant history corruptions.")))
-  (:h3 "Element hinting overhaul")
-  (:p "It should be now faster, better integrated and more exhaustive (such as drop-down buttons).")
-  (:p
-   "A new DOM parser has been developed.  As a result, much of the
-       former Parenscript code has been replaced by pure Lisp code.")
-  (:h3 "New 'panel' buffers.")
-  (:p "Panel buffers can be used to display arbitrary information on the
-       side of a window.  A few new commands are thus introduced:")
-  (:ul
-   (:li (:code "show-bookmarks-panel"))
-   (:li (:code "show-buffers-panel"))
-   (:li (:code "delete-panel-buffer")))
-  (:h3 "Prompt buffer")
-  (:ul
-   (:li "Input area no longer stutters when updating the display.")
-   (:li "Key press responsiveness has been dramatically improved.")
-   (:li "The prompt is properly refreshed when pasting to it.")
-   (:li (:p "Bind " (:code "M-space") " to " (:code "resume-prompt") " to make it more useful.")
-        (:p "It's particularly useful to resume a search."))
-   (:li (:p "Bind " (:code "C-M-space") " to " (:code "execute-extended-command") ".")
-        (:p "It makes it easier for users to execute commands and supply parameters.")))
-
-  (:h3 "Status buffer")
-  (:ul
-   (:li "Clicking on modes now describes them.")
-   (:li "New '+' button to toggles modes.")
-   (:li "Arbitrary HTML is now allowed for mode glyphs."))
-  (:h3 "Support for buffer tree relationships")
-  (:ul
-   (:li (:code "switch-buffer-previous") " and " (:code "switch-buffer-next")
-        " browse the buffer tree in a depth-first fashion.")
-   (:li "New " (:code "switch-buffer-last")
-        " command to easily switch back and forth between the 2 most recent buffers.")
-   (:li (:code "list-buffers") " can now display the the buffers as a tree."))
-  (:h3 "Platform support")
-  (:ul
-   (:li "Fix slow buffer and prompt buffer creation on FreeBSD.  (Thanks to
-        @shamazmazum!)"))
-  (:h3 "Bug fixes")
-  (:ul
-   (:li "Various fixes with the password manager commands.")
-   (:li "Don't crash when an error occurs in a GTK signal.")
-   (:li "Start up errors due to flawed user init files now lead to a restart
-    of Nyxt without init file.")
-   (:li (:p "Fix endless compilation of =tutorial.lisp= when SBCL dynamic space
-    size to low.")
-        (:p (:code "cl-markup") " was replaced by " (:code "spinneret") "."))
-   (:li "Fix potential dead-lock in " (:code "restore-history-buffers") ".")
-   (:li "Fix " (:code "buffer-history-tree") " that showed a truncated tree.")))
-
-(define-version "2.2.1"
-  (:ul
-   (:li "Re-added the inferred-keyword source to the bookmark prompt buffer.")
-   (:li "Numerous documentation fixes and updates.")
-   (:li (:code "define-scheme") "syntax has been extended to allow importing
-   other schemes.  See the manual for an example.")
-   (:li "Arbitrary HTML is now allowed in mode formatting.")
-   (:li "*Bookmarks* buffer is automatically updated when deleting entries.  (Thanks to @shamazmazum!)")
-   (:li "Processes can now be stopped in process-mode.")
-   (:li "New " (:code "repeat-times") " command.")
-   (:li "List methods in class descriptions."))
-  (:h3 "Build and compilation changes")
-  (:ul
-   (:li "Quicklisp is no longer used to fetch dependencies.  Instead, all Lisp
-   dependencies are pinned and fetched via Git submodules into the "
-        (:code "_build") " subdirectory.  This should improve reproducibility.
-   The " (:code "NYXT_QUICKLISP") " environment variable has been replaced by "
-        (:code "NYXT_SUBMODULES") "."))
-  (:h3 "Platform support")
-  (:ul
-   (:li "Quicklisp can now be properly loaded when Nyxt was installed via the .deb file."))
-  (:h3 "Bug fixes")
-  (:ul
-   (:li "Properly handle cancellation in yes/no prompt buffers.")
-   (:li "Fix sandboxing.  (Thanks to @tiberious726!)")
-   (:li "Fix toggle-mark in visual-mode.  (Thanks to @hendursaga!)")
-   (:li "Report load-after-system warnings.  (Thanks to @hendursaga!)")
-   (:li "Properly scroll into view when in visual-mode.  (Thanks to @aaron-tan!)")
-   (:li "Fix upload of files with wildcard characters in their name.  (Thanks to @shamazmazum!)")))
-
-(define-version "2.2.2"
-  (:ul
-   (:li "HTTP redirects are no longer stored to history.")
-   (:li "Selecting hints in prompt buffer no longer scrolls the page automatically, press "
-        (:code "C-l") " instead."))
-  (:h3 "Build and compilation changes")
-  (:ul
-   (:li "The source tarball now embeds the Git submodules and thus fixes build errors about missing dependencies."))
-  (:h3 "Platform support")
-  (:ul
-   (:li "Fix type errors when building with some unusual compiler. (Thanks to @lpaviets!)"))
-  (:h3 "Bug fixes")
-  (:ul
-   (:li "Fix prompt buffer paging.")
-   (:li (:code "switch-buffer") " is no longer triggered when there is no buffer to restore.")
-   (:li "On various occasions, KeepassXC entries could be missing from the prompt, this is now fixed.")
-   (:li (:code "lisp-repl") " now prints all results properly.")
-   (:li "Onion URLs are now supported.  (Thanks to @hendursaga!)")))
-
-(define-version "2.2.3"
-  (:ul
-   (:li "Speed up most network queries.  This may also prevent some hangs that
-used to happen when loading resource-intensive pages.")
-   (:li "Speed up " (:code "set-url") " and friends.  (Thanks to @shamazmazum!)"
-        (:br)
-        "The user input suggestion should now be instantaneously updated in the
-        suggestion list.  Search engine completions no longer hold back the
-        listing of other suggestions.")
-   (:li "Nyxt now prompts for confirmation before deleting a buffer that has
-   edited contents.")
-   (:li "New common text editing bindings (select-all, undo, redo, cut, etc.).")
-   (:li "Display source code in " (:code "describe-function") " whenever possible.")
-   (:li "Allow for arbitrary HTML in the prompt buffer (both attributes and the prompt).")
-   (:li "Permission requests are now handled (such as geolocation access).")
-   (:li "Intelligent Tracking Prevention is no longer systematically enabled. "
-        "This should fix some website incompatibilities. "
-        "ITP can be selectively enabled with " (:code "reduce-tracking-mode") ".")
-   (:li (:code "reduce-tracking-mode") " has a new options, "
-        (:code "preferred-user-agent") " which is set to a generic value by default.")
-   (:li "The Lisp REPL now highlights the input, displays the input package and
-       displays the current package at the prompt.")
-   (:li "New " (:code "m l") " VI binding to " (:code "list-bookmarks") "."))
-
-  (:h3 "Bug fixes")
-  (:ul
-   (:li "Fix crash and hangs with WebKitGTK 2.34."
-        (:br) (:b "Warning: ") "Sandboxing is no longer enforced.")
-   (:li "Fix hangs in some cases when " (:code "blocker-mode") " hostlists were
-out-of-date.")
-   (:li "Work around load failures when going backward or forward in history.")
-   (:li "Catch more errors in search completion.")))
-
-(define-version "2.2.4"
-  (:ul
-   (:li "New " (:code "forward-to-renderer") " command.  When a key is bound to
-   it, the last keypress is forwarded to the renderer.")
-   (:li "New " (:code "reset-asdf-registries") " helper function.  "
-        "Call it in your initialization file to re-enable the default ASDF
-search paths, "
-        "e.g. to find your Common Lisp libraries in ~/common-lisp or your Emacs
-SLY install.")
-   (:li "Prompt buffer attributes can now be computed asynchronously."
-        "This is used for instance to speed up " (:code "switch-buffer") ".")
-   (:li "Non-prefixed completion is now enabled for the default search engine."
-        "You can turn off this behavior it with the "
-        (:code "search-always-auto-complete-p") " slot option.")
-   (:li "New " (:code "delete-command") " command.  (Thanks to @BlueFlo0d!)")
-   (:li "More bindings and some minor improvements to " (:code "visual-mode") ".  (Thanks to @hendursaga!)"))
-
-  (:h3 "Platform support")
-  (:p "Nyxt is compiled with SBCL set to use a dynamic-space-size of at least 3GiB."
-      "This should mitigate memory errors since Nyxt is very memory intensive."
-      "You can override this by setting the " (:code "LISP_FLAGS") " variable as
-      per the installation instructions.")
-
-  (:h3 "Bug fixes")
-  (:ul
-   (:li "Fix the frequent dead locks on multi-buffer deletion.")
-   (:li "Fix some rare dead locks on page load.")
-   (:li "Fix crash on unhandled condition in a prompt buffer thread.")
-   (:li "Fix iframe support on redirects (for instance with "
-        (:code "blocker-mode") ").")
-   (:li "Keymap fixes:"
+   (:li "Deprecate slot " (:code "status-buffer-position") "in favour of"
+        (:nxref :slot 'placement :class-name 'status-buffer) ".")
+   (:li "Deprecate slot " (:code "prompt-buffer-open-height") " since "
+        (:nxref :slot 'height :class-name 'prompt-buffer) "suffices.")
+   (:li "Add slot "
+        (:nxref :slot 'nyxt/mode/hint:x-placement :class-name 'nyxt/mode/hint:hint-mode)
+        " to draw hints on the right of the hinted element.  By default, they
+are drawn on the left.")
+    (:li "The size of the hints is dynamically set by taking into account the
+size of the hinted element.")
+   (:li "Fix bug that made Nyxt display an out of date version in several places.")
+   (:li "Add " (:nxref :class-name 'message-buffer) " as a user class, thus
+enabling its customization.")
+   (:li "The height of the " (:nxref :class-name 'message-buffer) " and "
+        (:nxref :class-name 'status-buffer) " can be dynamically set and its UI
+elements are scaled accordingly.")
+   (:li "Remove experimental support for WebExtensions via " (:code "libnyxt") ".")
+   (:li "The following environment variables can no longer be set:"
         (:ul
-         (:li "Prefix keymaps can no longer be shadowed.")
-         (:li "Remove shadowed bindings from the binding listing.")
-         (:li "Don't list shadowed parent keymap bindings.")))
-   (:li "Fix " (:code "resume-prompt") " to hide the resumed prompt buffer when done.")
-   (:li "Fix freeze due to errors in " (:code "blocker-mode") ".")
-   (:li "Fix formatting of web process crash report.")
-   (:li "Fix some " (:code "auto-mode") " issues.  (Thanks to @efimerspan!)")))
+         (:li (:code "NASDF_TESTS_QUIT_ON_FAIL"))
+         (:li (:code "NASDF_COMPRESS"))))
+   (:li "Delete commands:"
+        (:ul
+         (:li (:code "clean-configuration"))
+         (:li (:code "copy-placeholder"))
+         (:li (:code "dashboard"))
+         (:li (:code "duplicate-buffer"))
+         (:li (:code "duplicate-buffer-with-current-modes"))
+         (:li (:code "follow-hint-with-current-modes-new-buffer"))
+         (:li (:code "force-reload-buffers"))
+         (:li (:code "go-next"))
+         (:li (:code "go-previous"))
+         (:li (:code "go-to-homepage"))
+         (:li (:code "go-up"))
+         (:li (:code "print-bindings"))
+         (:li (:code "reload-buffer"))
+         (:li (:code "reload-with-modes"))
+         (:li (:code "resume-prompt"))))
+   (:li "Delete modes:"
+        (:ul
+         (:li (:code "nyxt/mode/no-procrastinate"))
+         (:li (:code "nyxt/mode/preview"))
+         (:li (:code "nyxt/mode/record-input-field"))
+         (:li (:code "nyxt/mode/tts"))))))
+
+(define-version "4-pre-release-1"
+  (:li "When on pre-release, push " (:code "X-pre-release")
+       " feature in addition to " (:code "X-pre-release-N") "one."))
+
+(define-version "3.11.2"
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "When enabling " (:code "vi") " keybindings via "
+          (:a :href (nyxt-url 'common-settings) "common settings")
+          ", start the prompt buffer with "
+          (:nxref :mode 'nyxt/mode/vi:vi-insert-mode) "enabled.")
+     (:li "The scroll position is remembered when issuing buffer reloading commands, such as "
+          (:nxref :command 'reload-current-buffer) ".")
+     (:li "Improve performance of " (:nxref :command 'nyxt/mode/editor:edit-file) ".")
+     (:li "Fix bug that prevented listing buffers recovered via command "
+          (:nxref :command 'reopen-buffer) "."))))
+
+(define-version "3.11.1"
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "Improve user experience of "
+          (:nxref :class-name 'nyxt/mode/macro-edit:macro-edit-mode) ".")
+     (:li "Improve UI of the interfaces bound to "
+          (:nxref :class-name 'nyxt/mode/annotate:annotate-mode)
+          " commands, such as "
+          (:nxref :command 'nyxt/mode/annotate:show-annotations-for-current-url) ".")
+     (:li "Review the appearance of all help system pages such as"
+          (:nxref :command 'describe-class) ".")
+     (:li "Review font sizes.")
+     (:li "Add possibility to specify a monospace font via "
+          (:nxref :class-name 'theme:theme :slot 'theme:monospace-font-family) "."
+          "By default, it is set to DejaVu.")
+     (:li "Review usage of proportional and monospace fonts.")
+     (:li "Use monospace fonts in "
+          (:nxref :class-name 'nyxt/mode/editor:plaintext-editor-mode) ".")
+     (:li "Replace source heading buttons in the "
+          (:nxref :class-name 'prompt-buffer) ".")
+     (:li "Review styling of the " (:nxref :class-name 'status-buffer) ", "
+          (:nxref :command 'nyxt/mode/repl:repl) " and " (:code "migration-guide") ".")
+     (:li "Replace glyph that collapses sections, for instance in the "
+          (:a :href (nyxt-url 'manual) "manual") ".")
+     (:li "Improve UI of the interfaces bound to commands:"
+          (:ul
+           (:li (:nxref :command 'nyxt/mode/download:list-downloads))
+           (:li (:nxref :command 'nyxt/mode/history:list-history))
+           (:li (:nxref :command 'nyxt/mode/buffer-listing:list-buffers))
+           (:li (:nxref :command 'nyxt/mode/bookmark:list-bookmarks))
+           (:li (:nxref :command 'nyxt/mode/buffer-listing:buffers-panel))
+           (:li (:nxref :command 'nyxt/mode/bookmark:bookmarks-panel)))))))
+
+(define-version "3.11.0"
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix commands "
+          (:nxref :command 'reopen-last-buffer) " and "
+          (:nxref :command 'reopen-buffer) ".")
+     (:li "Fix performance issues related to "
+          (:nxref :class-name 'nyxt/mode/hint:hint-mode) ".")
+     (:li "Fix logic behind "
+          (:nxref :class-name 'prompter:source :slot 'prompter:actions-on-marks)
+          ".")))
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "Built-in modes and special pages have a dedicated menu area now. This menu
+allows access to common functions that are defined within the mode."))))
+
+(define-version "3.10.0"
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "Improve source heading buttons, layout and interactions in the "
+          (:nxref :class-name 'prompt-buffer) ".")
+     (:li "Add checkboxes for suggestions within the "
+          (:nxref :class-name 'prompt-buffer) ".")))
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix command "
+          (:nxref :command 'nyxt/mode/annotate:show-annotations-for-current-url) ".")
+     (:li "Command " (:code "nyxt/renderer/gtk:make-buffer-with-context")
+          " now lists previously defined contexts.")
+     (:li "Improve architecture of " (:nxref :class-name 'nyxt/mode/hint:hint-mode)
+          " as to ensure that hints are shown for arbitrary URLs." ))))
+
+(define-version "3.9.2"
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "Review of the status buffer UI.  The URL area is now clickable.")))
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li (:nxref :mode 'nyxt/mode/blocker:blocker-mode)
+          " ensures that hostlist files are loaded when missing.")
+     (:li "Fix connection to Nyxt via commands "
+          (:code "start-swank") " and " (:code "start-slynk") ".")))
+  (:nsection :title "Programming interface"
+    (:ul
+     (:li "When running Nyxt as a Flatpak, programs available on the host can be
+invoked via " (:code "flatpak-spawn --host <command> <command-args>") "."))))
+
+(define-version "3.9.1"
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "UI improvement of interfaces bound to commands "
+          (:nxref :command 'nyxt/mode/bookmark:bookmarks-panel) ", "
+          (:nxref :command 'nyxt/mode/bookmark:list-bookmarks) " and "
+          (:nxref :command 'nyxt/mode/buffer-listing:buffers-panel) ".")))
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix command " (:nxref :command 'nyxt/mode/bookmark:bookmark-url) ".")
+     (:li "Fix commands that rely on "
+          (:nxref :class-name 'browser :slot 'external-editor-program)
+          ".")
+     (:li "Fix command "
+          (:nxref :command 'nyxt/mode/prompt-buffer:toggle-attributes-display)
+          " and behavior of UI elements relying on it."))))
+
+(define-version "3.9.0"
+  (:nsection :title "Features"
+    (:ul
+     (:li "Complete refactor of the "
+          (:a :href (nyxt-url 'common-settings) "Common Settings Menu") ".")
+     (:li "Refactor the " (:nxref :package :theme)
+	  " API to allow for more nuanced themes and richer interfaces.")))
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix the functionality of the download cancellation button.")
+     (:li "Fix duplicated suggestions when issuing command "
+          (:nxref :command 'describe-slot) ".")
+     (:li "Fix accepted values of "
+          (:nxref :class-name 'browser :slot 'external-editor-program)
+          "."))))
+
+(define-version "3.8.0"
+  (:nsection :title "Features"
+    (:ul
+     (:li "Add new slots "
+          (:code "nyxt/mode/hint:hints-offset-x")
+          " and "
+          (:code "nyxt/mode/hint:hints-offset-y")
+          ", to change the position of hint overlays.")))
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix bug with subsequent invocations of "
+          (:nxref :macro 'define-configuration) " on the same class and slot
+being overwritten by the first.")))
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "Keybindings are shown in a more user-friendly way, when using the CUA
+keyscheme.")
+     (:li "Modes in the status area are shown vertically in their tooltip to
+improve readability.")
+     (:li "Stylistic review of the help system pages to improve readability.")))
+  (:nsection :title "Programming interface"
+    (:ul
+     (:li "Fix Nyxt connection via commands " (:code "start-slynk") "
+and " (:code "start-swank") " on the Flatpak distribution.")
+     (:li "Fix warning signaling when a mismatch between the history file and the current
+Nyxt version exists.  It is only raised when the major version differs.")
+     (:li "Buffers of type " (:nxref :class-name 'nyxt/mode/editor:editor-buffer) " have  "
+          (:nxref :class-name 'nyxt/mode/editor:plaintext-editor-mode)
+          "enabled by default."))))
+
+(define-version "3.7.0"
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "Minor UI improvements on the status and prompt buffer.")
+     (:li "Stylistic review of the manual to improve readability.")))
+  (:nsection :title "Features"
+    (:ul
+     (:li "Add possibility to open PDF files via command "
+          (:nxref :command 'nyxt/mode/file-manager:open-file) ".")
+     (:li "The installation process now takes into account the Appdata file and
+a scalable icon."))))
+
+(define-version "3.6.1"
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix clipboard facilities on X11 and Wayland.")
+     (:li "Fix source code location on Flatpak.")
+     (:li "Fix " (:nxref :mode 'nyxt/mode/style:dark-mode)
+        " and the " (:nxref :command 'nyxt/mode/bookmarklets:darken)
+        " bookmarklet command."))))
+
+(define-version "3.6.0"
+  (:nsection :title "Features"
+    (:ul
+     (:li "Add commands for importing history from Firefox, Google Chrome,
+Chromium, Brave and Vivaldi. For instance, "
+          (:nxref :command 'nyxt/mode/history-migration:import-history-from-firefox) ".")))
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix keyscheme configuration via "
+          (:a :href (nyxt-url 'common-settings) "Common Settings Menu") ".")))
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "Add Public Sans font and set it as the default.")
+     (:li "Redesign status buffer buttons.")
+     (:li "Minor review of " (:a :href (nyxt-url 'new) "start page") "."))))
+
+(define-version "3.5.0"
+  (:nsection :title "Features"
+    (:ul
+     (:li "Add new quick start tutorial, accesible via command "
+            (:nxref :command 'nyxt:quick-start) ".")
+     (:li "Add hinting support for pages using Shadow DOMs.")
+     (:li "Add keybinding for command " (:nxref :command 'describe-any) ".")))
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix status buffer history buttons.")
+     (:li "Fix bug in command " (:nxref :command 'nyxt/mode/repeat:repeat-key) ".")))
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "Redesign " (:a :href (nyxt-url 'new) "start page") ".")
+     (:li "Fix styling of progress bar.")
+     (:li "Fix styling of prompt buffer's input area."))))
+
+(define-version "3.4.0"
+  (:nsection :title "Features"
+    (:ul
+     (:li "Enable native spell-checking from WebKitGTK. The language can be set via
+command "
+          (:code "set-spell-check-languages")
+          ". The list of dictionaries is provided by Enchant.")
+     (:li "Add prompt buffer keybindings for commands "
+          (:nxref :command 'nyxt/mode/prompt-buffer:previous-page) " and "
+          (:nxref :command 'nyxt/mode/prompt-buffer:next-page) ".")))
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix theme configuration via "
+          (:a :href (nyxt-url 'common-settings) "Common Settings Menu") ".")
+     (:li "Honor the value of environment variables "
+          (:code "$XDG_DATA_HOME") ", "
+          (:code "$XDG_CONFIG_HOME") "and "
+          (:code "$XDG_CACHE_HOME") "for the Flatpak.")))
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "Add cursor change on hover for buttons and links in internal pages and panel
+buffers.")
+     (:li "Improve user experience of " (:nxref :command 'nyxt:pick-color) "."))))
+
+(define-version "3.3.0"
+  (:nsection :title "Features"
+    (:ul
+     (:li "Change default search engine to "
+          (:a :href "https://search.atlas.engineer/searxng"
+              "Atlas' own SearXNG instance") ".")
+     (:li "Add command " (:nxref :command 'nyxt:pick-color)
+          ", to pick a color and copy its HEX, RGB or HSL code to clipboard.")
+     (:li "Add keybindings for commands "
+          (:nxref :command 'nyxt:delete-panel-buffer) " and "
+          (:nxref :command 'nyxt:delete-all-panel-buffers) ".")
+     (:li "Improve " (:nxref :command 'nyxt/mode/prompt-buffer:describe-prompt-buffer) ":")
+     (:ul
+      (:li "List available keybindings for enabled prompt buffer modes.")
+      (:li "Reference current prompt buffer sources."))))
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Honor the value of "
+          (:nxref :slot 'zoom-ratio-default :class-name 'document-buffer) ".")
+     (:li "Honor the value of the panel buffer's "
+          (:nxref :slot 'style :class-name 'panel-buffer) ".")
+     (:li "Fix bugs in the "
+          (:a :href (nyxt-url 'common-settings) "common settings interface") ".")
+     (:li "Fix clipboard support for the Flatpak on Wayland.")
+     (:li "Fix behavior of "
+          (:nxref :class-name 'nyxt/mode/hint:hint-mode) "when slots "
+          (:nxref :class-name 'nyxt/mode/hint:hint-mode
+            :slot 'nyxt/mode/hint:hinting-type)
+          " and "
+          (:nxref :class-name 'nyxt/mode/hint:hint-mode
+            :slot 'nyxt/mode/hint:show-hint-scope-p)
+          "are set to " (:code ":vi") " and " (:code "t") ", respectively.")))
+  (:nsection :title "UI"
+    (:ul
+     (:li "Add border between panel buffer and main content area.")
+     (:li "Apply nuanced background color to panel buffers.")))
+  (:nsection :title "Programming interface"
+    (:ul
+
+     (:li (:nxref :class-name 'browser :slot 'external-editor-program)
+          " no longer signals when the program is a string containing spaces.")
+     (:li (:nxref :class-name 'browser :slot 'external-editor-program)
+          " returns its value rather than returning a string value in a list."))))
+
+(define-version "3.2.1"
+  (:ul
+   (:li "Fix clipboard support for the Flatpak.")))
+
+(define-version "3.2.0"
+  (:ul
+   (:li "Add support for PDF.js.")
+   (:li "Add command "
+        (:nxref :command 'nyxt/mode/prompt-buffer:toggle-suggestions-display)
+        ", that allows collapsing the prompt buffer to its input area.")
+   (:li "Improve the UI of the REPL.")
+   (:li "Output multiple values when evaluating Lisp expressions from "
+        (:nxref :command 'nyxt:execute-command) ".")
+   (:li "Bug fixes.")))
+
+(define-version "3.1.0"
+  (:ul
+   (:li "The REPL provides symbol suggestions by issuing "
+        (:nxref :command 'nyxt/mode/repl:suggest-into-cell) ", bound to "
+        (:code "TAB (↹)") ".")
+   (:li (:nxref :slot 'global-history-p :class-name 'buffer)
+        " is enabled by default.  The old behavior can be recovered by setting
+        it to " (:code "nil") ".")
+   (:li "Bind " (:nxref :command 'nyxt:delete-current-buffer) " uniformly for
+        all modes, when using the CUA keyscheme."))
+  (:h3 "Programming interfaces")
+  (:ul
+   (:li (:code "conservative-history-movement-p") " is deprecated in favor of "
+        (:nxref :slot 'global-history-p :class-name 'buffer) ".")))
 
 (define-version "3.0.0"
   (:nsection
@@ -690,361 +748,304 @@ JavaScript calls.")
 color-picker support as an example application for this feature.")
      (:li "New " (:nxref :function 'match-port) " URL designator predicate for auto-rules."))))
 
-(define-version "3.1.0"
+(define-version "2.2.4"
   (:ul
-   (:li "The REPL provides symbol suggestions by issuing "
-        (:nxref :command 'nyxt/mode/repl:suggest-into-cell) ", bound to "
-        (:code "TAB (↹)") ".")
-   (:li (:nxref :slot 'global-history-p :class-name 'buffer)
-        " is enabled by default.  The old behavior can be recovered by setting
-        it to " (:code "nil") ".")
-   (:li "Bind " (:nxref :command 'nyxt:delete-current-buffer) " uniformly for
-        all modes, when using the CUA keyscheme."))
-  (:h3 "Programming interfaces")
+   (:li "New " (:code "forward-to-renderer") " command.  When a key is bound to
+   it, the last keypress is forwarded to the renderer.")
+   (:li "New " (:code "reset-asdf-registries") " helper function.  "
+        "Call it in your initialization file to re-enable the default ASDF
+search paths, "
+        "e.g. to find your Common Lisp libraries in ~/common-lisp or your Emacs
+SLY install.")
+   (:li "Prompt buffer attributes can now be computed asynchronously."
+        "This is used for instance to speed up " (:code "switch-buffer") ".")
+   (:li "Non-prefixed completion is now enabled for the default search engine."
+        "You can turn off this behavior it with the "
+        (:code "search-always-auto-complete-p") " slot option.")
+   (:li "New " (:code "delete-command") " command.  (Thanks to @BlueFlo0d!)")
+   (:li "More bindings and some minor improvements to " (:code "visual-mode") ".  (Thanks to @hendursaga!)"))
+
+  (:h3 "Platform support")
+  (:p "Nyxt is compiled with SBCL set to use a dynamic-space-size of at least 3GiB."
+      "This should mitigate memory errors since Nyxt is very memory intensive."
+      "You can override this by setting the " (:code "LISP_FLAGS") " variable as
+      per the installation instructions.")
+
+  (:h3 "Bug fixes")
   (:ul
-   (:li (:code "conservative-history-movement-p") " is deprecated in favor of "
-        (:nxref :slot 'global-history-p :class-name 'buffer) ".")))
-
-(define-version "3.2.0"
-  (:ul
-   (:li "Add support for PDF.js.")
-   (:li "Add command "
-        (:nxref :command 'nyxt/mode/prompt-buffer:toggle-suggestions-display)
-        ", that allows collapsing the prompt buffer to its input area.")
-   (:li "Improve the UI of the REPL.")
-   (:li "Output multiple values when evaluating Lisp expressions from "
-        (:nxref :command 'nyxt:execute-command) ".")
-   (:li "Bug fixes.")))
-
-(define-version "3.2.1"
-  (:ul
-   (:li "Fix clipboard support for the Flatpak.")))
-
-(define-version "3.3.0"
-  (:nsection :title "Features"
-    (:ul
-     (:li "Change default search engine to "
-          (:a :href "https://search.atlas.engineer/searxng"
-              "Atlas' own SearXNG instance") ".")
-     (:li "Add command " (:nxref :command 'nyxt:pick-color)
-          ", to pick a color and copy its HEX, RGB or HSL code to clipboard.")
-     (:li "Add keybindings for commands "
-          (:nxref :command 'nyxt:delete-panel-buffer) " and "
-          (:nxref :command 'nyxt:delete-all-panel-buffers) ".")
-     (:li "Improve " (:nxref :command 'nyxt/mode/prompt-buffer:describe-prompt-buffer) ":")
-     (:ul
-      (:li "List available keybindings for enabled prompt buffer modes.")
-      (:li "Reference current prompt buffer sources."))))
-  (:nsection :title "Bug fixes"
-    (:ul
-     (:li "Honor the value of "
-          (:nxref :slot 'zoom-ratio-default :class-name 'document-buffer) ".")
-     (:li "Honor the value of the panel buffer's "
-          (:nxref :slot 'style :class-name 'panel-buffer) ".")
-     (:li "Fix bugs in the "
-          (:a :href (nyxt-url 'common-settings) "common settings interface") ".")
-     (:li "Fix clipboard support for the Flatpak on Wayland.")
-     (:li "Fix behavior of "
-          (:nxref :class-name 'nyxt/mode/hint:hint-mode) "when slots "
-          (:nxref :class-name 'nyxt/mode/hint:hint-mode
-            :slot 'nyxt/mode/hint:hinting-type)
-          " and "
-          (:nxref :class-name 'nyxt/mode/hint:hint-mode
-            :slot 'nyxt/mode/hint:show-hint-scope-p)
-          "are set to " (:code ":vi") " and " (:code "t") ", respectively.")))
-  (:nsection :title "UI"
-    (:ul
-     (:li "Add border between panel buffer and main content area.")
-     (:li "Apply nuanced background color to panel buffers.")))
-  (:nsection :title "Programming interface"
-    (:ul
-
-     (:li (:nxref :class-name 'browser :slot 'external-editor-program)
-          " no longer signals when the program is a string containing spaces.")
-     (:li (:nxref :class-name 'browser :slot 'external-editor-program)
-          " returns its value rather than returning a string value in a list."))))
-
-(define-version "3.4.0"
-  (:nsection :title "Features"
-    (:ul
-     (:li "Enable native spell-checking from WebKitGTK. The language can be set via
-command "
-          (:code "set-spell-check-languages")
-          ". The list of dictionaries is provided by Enchant.")
-     (:li "Add prompt buffer keybindings for commands "
-          (:nxref :command 'nyxt/mode/prompt-buffer:previous-page) " and "
-          (:nxref :command 'nyxt/mode/prompt-buffer:next-page) ".")))
-  (:nsection :title "Bug fixes"
-    (:ul
-     (:li "Fix theme configuration via "
-          (:a :href (nyxt-url 'common-settings) "Common Settings Menu") ".")
-     (:li "Honor the value of environment variables "
-          (:code "$XDG_DATA_HOME") ", "
-          (:code "$XDG_CONFIG_HOME") "and "
-          (:code "$XDG_CACHE_HOME") "for the Flatpak.")))
-  (:nsection :title "UI/UX"
-    (:ul
-     (:li "Add cursor change on hover for buttons and links in internal pages and panel
-buffers.")
-     (:li "Improve user experience of " (:nxref :command 'nyxt:pick-color) "."))))
-
-(define-version "3.5.0"
-  (:nsection :title "Features"
-    (:ul
-     (:li "Add new quick start tutorial, accesible via command "
-            (:nxref :command 'nyxt:quick-start) ".")
-     (:li "Add hinting support for pages using Shadow DOMs.")
-     (:li "Add keybinding for command " (:nxref :command 'describe-any) ".")))
-  (:nsection :title "Bug fixes"
-    (:ul
-     (:li "Fix status buffer history buttons.")
-     (:li "Fix bug in command " (:nxref :command 'nyxt/mode/repeat:repeat-key) ".")))
-  (:nsection :title "UI/UX"
-    (:ul
-     (:li "Redesign " (:a :href (nyxt-url 'new) "start page") ".")
-     (:li "Fix styling of progress bar.")
-     (:li "Fix styling of prompt buffer's input area."))))
-
-(define-version "3.6.0"
-  (:nsection :title "Features"
-    (:ul
-     (:li "Add commands for importing history from Firefox, Google Chrome,
-Chromium, Brave and Vivaldi. For instance, "
-          (:nxref :command 'nyxt/mode/history-migration:import-history-from-firefox) ".")))
-  (:nsection :title "Bug fixes"
-    (:ul
-     (:li "Fix keyscheme configuration via "
-          (:a :href (nyxt-url 'common-settings) "Common Settings Menu") ".")))
-  (:nsection :title "UI/UX"
-    (:ul
-     (:li "Add Public Sans font and set it as the default.")
-     (:li "Redesign status buffer buttons.")
-     (:li "Minor review of " (:a :href (nyxt-url 'new) "start page") "."))))
-
-(define-version "3.6.1"
-  (:nsection :title "Bug fixes"
-    (:ul
-     (:li "Fix clipboard facilities on X11 and Wayland.")
-     (:li "Fix source code location on Flatpak.")
-     (:li "Fix " (:nxref :mode 'nyxt/mode/style:dark-mode)
-        " and the " (:nxref :command 'nyxt/mode/bookmarklets:darken)
-        " bookmarklet command."))))
-
-(define-version "3.7.0"
-  (:nsection :title "UI/UX"
-    (:ul
-     (:li "Minor UI improvements on the status and prompt buffer.")
-     (:li "Stylistic review of the manual to improve readability.")))
-  (:nsection :title "Features"
-    (:ul
-     (:li "Add possibility to open PDF files via command "
-          (:nxref :command 'nyxt/mode/file-manager:open-file) ".")
-     (:li "The installation process now takes into account the Appdata file and
-a scalable icon."))))
-
-(define-version "3.8.0"
-  (:nsection :title "Features"
-    (:ul
-     (:li "Add new slots "
-          (:code "nyxt/mode/hint:hints-offset-x")
-          " and "
-          (:code "nyxt/mode/hint:hints-offset-y")
-          ", to change the position of hint overlays.")))
-  (:nsection :title "Bug fixes"
-    (:ul
-     (:li "Fix bug with subsequent invocations of "
-          (:nxref :macro 'define-configuration) " on the same class and slot
-being overwritten by the first.")))
-  (:nsection :title "UI/UX"
-    (:ul
-     (:li "Keybindings are shown in a more user-friendly way, when using the CUA
-keyscheme.")
-     (:li "Modes in the status area are shown vertically in their tooltip to
-improve readability.")
-     (:li "Stylistic review of the help system pages to improve readability.")))
-  (:nsection :title "Programming interface"
-    (:ul
-     (:li "Fix Nyxt connection via commands " (:code "start-slynk") "
-and " (:code "start-swank") " on the Flatpak distribution.")
-     (:li "Fix warning signaling when a mismatch between the history file and the current
-Nyxt version exists.  It is only raised when the major version differs.")
-     (:li "Buffers of type " (:nxref :class-name 'nyxt/mode/editor:editor-buffer) " have  "
-          (:nxref :class-name 'nyxt/mode/editor:plaintext-editor-mode)
-          "enabled by default."))))
-
-(define-version "3.9.0"
-  (:nsection :title "Features"
-    (:ul
-     (:li "Complete refactor of the "
-          (:a :href (nyxt-url 'common-settings) "Common Settings Menu") ".")
-     (:li "Refactor the " (:nxref :package :theme)
-	  " API to allow for more nuanced themes and richer interfaces.")))
-  (:nsection :title "Bug fixes"
-    (:ul
-     (:li "Fix the functionality of the download cancellation button.")
-     (:li "Fix duplicated suggestions when issuing command "
-          (:nxref :command 'describe-slot) ".")
-     (:li "Fix accepted values of "
-          (:nxref :class-name 'browser :slot 'external-editor-program)
-          "."))))
-
-(define-version "3.9.1"
-  (:nsection :title "UI/UX"
-    (:ul
-     (:li "UI improvement of interfaces bound to commands "
-          (:nxref :command 'nyxt/mode/bookmark:bookmarks-panel) ", "
-          (:nxref :command 'nyxt/mode/bookmark:list-bookmarks) " and "
-          (:nxref :command 'nyxt/mode/buffer-listing:buffers-panel) ".")))
-  (:nsection :title "Bug fixes"
-    (:ul
-     (:li "Fix command " (:nxref :command 'nyxt/mode/bookmark:bookmark-url) ".")
-     (:li "Fix commands that rely on "
-          (:nxref :class-name 'browser :slot 'external-editor-program)
-          ".")
-     (:li "Fix command "
-          (:nxref :command 'nyxt/mode/prompt-buffer:toggle-attributes-display)
-          " and behavior of UI elements relying on it."))))
-
-(define-version "3.9.2"
-  (:nsection :title "UI/UX"
-    (:ul
-     (:li "Review of the status buffer UI.  The URL area is now clickable.")))
-  (:nsection :title "Bug fixes"
-    (:ul
-     (:li (:nxref :mode 'nyxt/mode/blocker:blocker-mode)
-          " ensures that hostlist files are loaded when missing.")
-     (:li "Fix connection to Nyxt via commands "
-          (:code "start-swank") " and " (:code "start-slynk") ".")))
-  (:nsection :title "Programming interface"
-    (:ul
-     (:li "When running Nyxt as a Flatpak, programs available on the host can be
-invoked via " (:code "flatpak-spawn --host <command> <command-args>") "."))))
-
-(define-version "3.10.0"
-  (:nsection :title "UI/UX"
-    (:ul
-     (:li "Improve source heading buttons, layout and interactions in the "
-          (:nxref :class-name 'prompt-buffer) ".")
-     (:li "Add checkboxes for suggestions within the "
-          (:nxref :class-name 'prompt-buffer) ".")))
-  (:nsection :title "Bug fixes"
-    (:ul
-     (:li "Fix command "
-          (:nxref :command 'nyxt/mode/annotate:show-annotations-for-current-url) ".")
-     (:li "Command " (:code "nyxt/renderer/gtk:make-buffer-with-context")
-          " now lists previously defined contexts.")
-     (:li "Improve architecture of " (:nxref :class-name 'nyxt/mode/hint:hint-mode)
-          " as to ensure that hints are shown for arbitrary URLs." ))))
-
-(define-version "3.11.0"
-  (:nsection :title "Bug fixes"
-    (:ul
-     (:li "Fix commands "
-          (:nxref :command 'reopen-last-buffer) " and "
-          (:nxref :command 'reopen-buffer) ".")
-     (:li "Fix performance issues related to "
-          (:nxref :class-name 'nyxt/mode/hint:hint-mode) ".")
-     (:li "Fix logic behind "
-          (:nxref :class-name 'prompter:source :slot 'prompter:actions-on-marks)
-          ".")))
-  (:nsection :title "UI/UX"
-    (:ul
-     (:li "Built-in modes and special pages have a dedicated menu area now. This menu
-allows access to common functions that are defined within the mode."))))
-
-(define-version "3.11.1"
-  (:nsection :title "UI/UX"
-    (:ul
-     (:li "Improve user experience of "
-          (:nxref :class-name 'nyxt/mode/macro-edit:macro-edit-mode) ".")
-     (:li "Improve UI of the interfaces bound to "
-          (:nxref :class-name 'nyxt/mode/annotate:annotate-mode)
-          " commands, such as "
-          (:nxref :command 'nyxt/mode/annotate:show-annotations-for-current-url) ".")
-     (:li "Review the appearance of all help system pages such as"
-          (:nxref :command 'describe-class) ".")
-     (:li "Review font sizes.")
-     (:li "Add possibility to specify a monospace font via "
-          (:nxref :class-name 'theme:theme :slot 'theme:monospace-font-family) "."
-          "By default, it is set to DejaVu.")
-     (:li "Review usage of proportional and monospace fonts.")
-     (:li "Use monospace fonts in "
-          (:nxref :class-name 'nyxt/mode/editor:plaintext-editor-mode) ".")
-     (:li "Replace source heading buttons in the "
-          (:nxref :class-name 'prompt-buffer) ".")
-     (:li "Review styling of the " (:nxref :class-name 'status-buffer) ", "
-          (:nxref :command 'nyxt/mode/repl:repl) " and " (:code "migration-guide") ".")
-     (:li "Replace glyph that collapses sections, for instance in the "
-          (:a :href (nyxt-url 'manual) "manual") ".")
-     (:li "Improve UI of the interfaces bound to commands:"
-          (:ul
-           (:li (:nxref :command 'nyxt/mode/download:list-downloads))
-           (:li (:nxref :command 'nyxt/mode/history:list-history))
-           (:li (:nxref :command 'nyxt/mode/buffer-listing:list-buffers))
-           (:li (:nxref :command 'nyxt/mode/bookmark:list-bookmarks))
-           (:li (:nxref :command 'nyxt/mode/buffer-listing:buffers-panel))
-           (:li (:nxref :command 'nyxt/mode/bookmark:bookmarks-panel)))))))
-
-(define-version "3.11.2"
-  (:nsection :title "Bug fixes"
-    (:ul
-     (:li "When enabling " (:code "vi") " keybindings via "
-          (:a :href (nyxt-url 'common-settings) "common settings")
-          ", start the prompt buffer with "
-          (:nxref :mode 'nyxt/mode/vi:vi-insert-mode) "enabled.")
-     (:li "The scroll position is remembered when issuing buffer reloading commands, such as "
-          (:nxref :command 'reload-current-buffer) ".")
-     (:li "Improve performance of " (:nxref :command 'nyxt/mode/editor:edit-file) ".")
-     (:li "Fix bug that prevented listing buffers recovered via command "
-          (:nxref :command 'reopen-buffer) "."))))
-
-(define-version "4-pre-release-1"
-  (:li "When on pre-release, push " (:code "X-pre-release")
-       " feature in addition to " (:code "X-pre-release-N") "one."))
-
-(define-version "4.0.0"
-  (:ul
-   (:li "Deprecate slot " (:code "status-buffer-position") "in favour of"
-        (:nxref :slot 'placement :class-name 'status-buffer) ".")
-   (:li "Deprecate slot " (:code "prompt-buffer-open-height") " since "
-        (:nxref :slot 'height :class-name 'prompt-buffer) "suffices.")
-   (:li "Add slot "
-        (:nxref :slot 'nyxt/mode/hint:x-placement :class-name 'nyxt/mode/hint:hint-mode)
-        " to draw hints on the right of the hinted element.  By default, they
-are drawn on the left.")
-    (:li "The size of the hints is dynamically set by taking into account the
-size of the hinted element.")
-   (:li "Fix bug that made Nyxt display an out of date version in several places.")
-   (:li "Add " (:nxref :class-name 'message-buffer) " as a user class, thus
-enabling its customization.")
-   (:li "The height of the " (:nxref :class-name 'message-buffer) " and "
-        (:nxref :class-name 'status-buffer) " can be dynamically set and its UI
-elements are scaled accordingly.")
-   (:li "Remove experimental support for WebExtensions via " (:code "libnyxt") ".")
-   (:li "The following environment variables can no longer be set:"
+   (:li "Fix the frequent dead locks on multi-buffer deletion.")
+   (:li "Fix some rare dead locks on page load.")
+   (:li "Fix crash on unhandled condition in a prompt buffer thread.")
+   (:li "Fix iframe support on redirects (for instance with "
+        (:code "blocker-mode") ").")
+   (:li "Keymap fixes:"
         (:ul
-         (:li (:code "NASDF_TESTS_QUIT_ON_FAIL"))
-         (:li (:code "NASDF_COMPRESS"))))
-   (:li "Delete commands:"
-        (:ul
-         (:li (:code "clean-configuration"))
-         (:li (:code "copy-placeholder"))
-         (:li (:code "dashboard"))
-         (:li (:code "duplicate-buffer"))
-         (:li (:code "duplicate-buffer-with-current-modes"))
-         (:li (:code "follow-hint-with-current-modes-new-buffer"))
-         (:li (:code "force-reload-buffers"))
-         (:li (:code "go-next"))
-         (:li (:code "go-previous"))
-         (:li (:code "go-to-homepage"))
-         (:li (:code "go-up"))
-         (:li (:code "print-bindings"))
-         (:li (:code "reload-buffer"))
-         (:li (:code "reload-with-modes"))
-         (:li (:code "resume-prompt"))))
-   (:li "Delete modes:"
-        (:ul
-         (:li (:code "nyxt/mode/no-procrastinate"))
-         (:li (:code "nyxt/mode/preview"))
-         (:li (:code "nyxt/mode/record-input-field"))
-         (:li (:code "nyxt/mode/tts"))))))
+         (:li "Prefix keymaps can no longer be shadowed.")
+         (:li "Remove shadowed bindings from the binding listing.")
+         (:li "Don't list shadowed parent keymap bindings.")))
+   (:li "Fix " (:code "resume-prompt") " to hide the resumed prompt buffer when done.")
+   (:li "Fix freeze due to errors in " (:code "blocker-mode") ".")
+   (:li "Fix formatting of web process crash report.")
+   (:li "Fix some " (:code "auto-mode") " issues.  (Thanks to @efimerspan!)")))
+
+(define-version "2.2.3"
+  (:ul
+   (:li "Speed up most network queries.  This may also prevent some hangs that
+used to happen when loading resource-intensive pages.")
+   (:li "Speed up " (:code "set-url") " and friends.  (Thanks to @shamazmazum!)"
+        (:br)
+        "The user input suggestion should now be instantaneously updated in the
+        suggestion list.  Search engine completions no longer hold back the
+        listing of other suggestions.")
+   (:li "Nyxt now prompts for confirmation before deleting a buffer that has
+   edited contents.")
+   (:li "New common text editing bindings (select-all, undo, redo, cut, etc.).")
+   (:li "Display source code in " (:code "describe-function") " whenever possible.")
+   (:li "Allow for arbitrary HTML in the prompt buffer (both attributes and the prompt).")
+   (:li "Permission requests are now handled (such as geolocation access).")
+   (:li "Intelligent Tracking Prevention is no longer systematically enabled. "
+        "This should fix some website incompatibilities. "
+        "ITP can be selectively enabled with " (:code "reduce-tracking-mode") ".")
+   (:li (:code "reduce-tracking-mode") " has a new options, "
+        (:code "preferred-user-agent") " which is set to a generic value by default.")
+   (:li "The Lisp REPL now highlights the input, displays the input package and
+       displays the current package at the prompt.")
+   (:li "New " (:code "m l") " VI binding to " (:code "list-bookmarks") "."))
+
+  (:h3 "Bug fixes")
+  (:ul
+   (:li "Fix crash and hangs with WebKitGTK 2.34."
+        (:br) (:b "Warning: ") "Sandboxing is no longer enforced.")
+   (:li "Fix hangs in some cases when " (:code "blocker-mode") " hostlists were
+out-of-date.")
+   (:li "Work around load failures when going backward or forward in history.")
+   (:li "Catch more errors in search completion.")))
+
+(define-version "2.2.2"
+  (:ul
+   (:li "HTTP redirects are no longer stored to history.")
+   (:li "Selecting hints in prompt buffer no longer scrolls the page automatically, press "
+        (:code "C-l") " instead."))
+  (:h3 "Build and compilation changes")
+  (:ul
+   (:li "The source tarball now embeds the Git submodules and thus fixes build errors about missing dependencies."))
+  (:h3 "Platform support")
+  (:ul
+   (:li "Fix type errors when building with some unusual compiler. (Thanks to @lpaviets!)"))
+  (:h3 "Bug fixes")
+  (:ul
+   (:li "Fix prompt buffer paging.")
+   (:li (:code "switch-buffer") " is no longer triggered when there is no buffer to restore.")
+   (:li "On various occasions, KeepassXC entries could be missing from the prompt, this is now fixed.")
+   (:li (:code "lisp-repl") " now prints all results properly.")
+   (:li "Onion URLs are now supported.  (Thanks to @hendursaga!)")))
+
+(define-version "2.2.1"
+  (:ul
+   (:li "Re-added the inferred-keyword source to the bookmark prompt buffer.")
+   (:li "Numerous documentation fixes and updates.")
+   (:li (:code "define-scheme") "syntax has been extended to allow importing
+   other schemes.  See the manual for an example.")
+   (:li "Arbitrary HTML is now allowed in mode formatting.")
+   (:li "*Bookmarks* buffer is automatically updated when deleting entries.  (Thanks to @shamazmazum!)")
+   (:li "Processes can now be stopped in process-mode.")
+   (:li "New " (:code "repeat-times") " command.")
+   (:li "List methods in class descriptions."))
+  (:h3 "Build and compilation changes")
+  (:ul
+   (:li "Quicklisp is no longer used to fetch dependencies.  Instead, all Lisp
+   dependencies are pinned and fetched via Git submodules into the "
+        (:code "_build") " subdirectory.  This should improve reproducibility.
+   The " (:code "NYXT_QUICKLISP") " environment variable has been replaced by "
+        (:code "NYXT_SUBMODULES") "."))
+  (:h3 "Platform support")
+  (:ul
+   (:li "Quicklisp can now be properly loaded when Nyxt was installed via the .deb file."))
+  (:h3 "Bug fixes")
+  (:ul
+   (:li "Properly handle cancellation in yes/no prompt buffers.")
+   (:li "Fix sandboxing.  (Thanks to @tiberious726!)")
+   (:li "Fix toggle-mark in visual-mode.  (Thanks to @hendursaga!)")
+   (:li "Report load-after-system warnings.  (Thanks to @hendursaga!)")
+   (:li "Properly scroll into view when in visual-mode.  (Thanks to @aaron-tan!)")
+   (:li "Fix upload of files with wildcard characters in their name.  (Thanks to @shamazmazum!)")))
+
+(define-version "2.2.0"
+  (:ul
+   (:li "New " (:code "changelog") " command.")
+   (:li "New " (:code "show-qrcode-of-current-url") " command.  (Thanks to @ag91!)")
+   (:li "New " (:code "view-source") " command.")
+   (:li "New " (:code "edit-user-file-with-external-editor") " command.")
+   (:li "New " (:code "summarize-buffer") " command.")
+   (:li "Macro editor: interactively record command macros with " (:code "edit-macro") "."
+        " Macros can be saved to the " (:code "auto-config.lisp") " file.")
+   (:li "New action for the " (:code "switch-buffer") " command to delete selected buffers.")
+   (:li "Support for GTK clipboard.  (Thanks to @shamazmazum!)")
+   (:li "Deprecated commands no longer show in the "
+        (:code "execute-command") " list.")
+   (:li "New " (:code "titler") " window slot to allow customizing the window title.") (:li (:code "jump-to-heading") " now also lists content keywords.")
+   (:li "Various manual and tutorial improvements and fixes.  (Thanks to @pdelfino!)")
+   (:li "Deprecate " (:code "paste-or-set-url") ".")
+   (:li "Replace " (:code "copy-system-information") " with " (:code "show-system-information") ".")
+   (:li (:p "Don't forward printable characters in vi-normal-mode.")
+        (:p "Concretely, pressing an unbound letter won't insert it in an HTML input."))
+   (:li (:p "New VI status and prompt buffer indicator.  (Thanks to @edgar-vincent!)")
+        (:p "Both the status buffer and the prompt buffer now display a colored  indicator for "
+            (:code "vi-normal-mode") " and " (:code "vi-insert-mode") "."))
+   (:li "New navigation commands: "
+        (:code "go-previous") ", "
+        (:code "go-next") ", "
+        (:code "go-up") ", "
+        (:code "go-to-homepage") ".")
+   (:li "Password commands set the default input to the current host.")
+   (:li "Anonymous commands are now allowed in keybindings (e.g. with "
+        (:code "make-command") ").")
+   (:li (:code "describe-variable")
+        " can now describe compound values recursively, such as lists of variables.")
+   (:li (:code "execute-extended-command") " performs type checking and
+        prefills default values."))
+
+  (:h3 "Backward-incompatible changes")
+  (:ul
+   (:li (:p "Updated " (:code "cl-webkit") " to version 3.0.0.")
+        (:p (:code "webkit2:webkit-web-view-evaluate-javascript")
+            " lambda list changed."))
+   (:li (:p "We've introduced an API-breaking change to the " (:code "nyxt/history-tree")
+            " library: now all its call points take an owner as parameter."
+            "This has allowed us to fix the constant history corruptions.")))
+  (:h3 "Element hinting overhaul")
+  (:p "It should be now faster, better integrated and more exhaustive (such as drop-down buttons).")
+  (:p
+   "A new DOM parser has been developed.  As a result, much of the
+       former Parenscript code has been replaced by pure Lisp code.")
+  (:h3 "New 'panel' buffers.")
+  (:p "Panel buffers can be used to display arbitrary information on the
+       side of a window.  A few new commands are thus introduced:")
+  (:ul
+   (:li (:code "show-bookmarks-panel"))
+   (:li (:code "show-buffers-panel"))
+   (:li (:code "delete-panel-buffer")))
+  (:h3 "Prompt buffer")
+  (:ul
+   (:li "Input area no longer stutters when updating the display.")
+   (:li "Key press responsiveness has been dramatically improved.")
+   (:li "The prompt is properly refreshed when pasting to it.")
+   (:li (:p "Bind " (:code "M-space") " to " (:code "resume-prompt") " to make it more useful.")
+        (:p "It's particularly useful to resume a search."))
+   (:li (:p "Bind " (:code "C-M-space") " to " (:code "execute-extended-command") ".")
+        (:p "It makes it easier for users to execute commands and supply parameters.")))
+
+  (:h3 "Status buffer")
+  (:ul
+   (:li "Clicking on modes now describes them.")
+   (:li "New '+' button to toggles modes.")
+   (:li "Arbitrary HTML is now allowed for mode glyphs."))
+  (:h3 "Support for buffer tree relationships")
+  (:ul
+   (:li (:code "switch-buffer-previous") " and " (:code "switch-buffer-next")
+        " browse the buffer tree in a depth-first fashion.")
+   (:li "New " (:code "switch-buffer-last")
+        " command to easily switch back and forth between the 2 most recent buffers.")
+   (:li (:code "list-buffers") " can now display the the buffers as a tree."))
+  (:h3 "Platform support")
+  (:ul
+   (:li "Fix slow buffer and prompt buffer creation on FreeBSD.  (Thanks to
+        @shamazmazum!)"))
+  (:h3 "Bug fixes")
+  (:ul
+   (:li "Various fixes with the password manager commands.")
+   (:li "Don't crash when an error occurs in a GTK signal.")
+   (:li "Start up errors due to flawed user init files now lead to a restart
+    of Nyxt without init file.")
+   (:li (:p "Fix endless compilation of =tutorial.lisp= when SBCL dynamic space
+    size to low.")
+        (:p (:code "cl-markup") " was replaced by " (:code "spinneret") "."))
+   (:li "Fix potential dead-lock in " (:code "restore-history-buffers") ".")
+   (:li "Fix " (:code "buffer-history-tree") " that showed a truncated tree.")))
+
+(define-version "2.1.1"
+  (:ul
+   (:li (:code "reopen-buffer") " restores the scroll position.")
+   (:li "New " (:code "copy-username") " command for password managers."))
+  (:h3 "Bug fixes")
+  (:ul
+   (:li "Fix history double-restore which led to many crashes.")
+   (:li "Create file and parent directories of configuration files if they
+        don't exist.")
+   (:li "Fix " (:code "set-url-from-bookmark") " with marks.")
+   (:li "Fix " (:code "process-mode") " to not run an action when it is nil.")))
+
+(define-version "2.1.0"
+  (:ul
+   (:li (:code "expedition-mode") ". Expedition mode stores a set of links
+        that you can then traverse forwards and backwards as if you are on an
+        expedition through the Internet!")
+   (:li (:code "select-frame") ". Select frame allows the user to
+        drag-select multiple elements on screen. For example, the user can
+        drag-select to open up all of the links of a search result.")
+   (:li (:code "process-mode") ". Process mode enables you to automate the
+        repetition of tedious tasks. For example, you can have process mode
+        refresh a page whenever you save a file. This could be useful for
+        previewing LaTeX documents, or working on websites!")
+   (:li (:code "cruise-control-mode") ".  Cruise control mode allows you to
+        scroll down the page at a fixed speed. This mode is particularly well
+        suited for reading long articles.")
+   (:li "Replace 'loading' text with animated spinner.")
+   (:li "vi mode automatically switches to vi-insert-mode when logical.")
+   (:li "The prompt buffer is used to interface with the user instead of
+        GTK dialogs. This behavior can be controlled via
+        the " (:code "native-dialogs") (:code "browser") "slot.")
+   (:li "add raw-source
+        to " (:code "add-domain-to-certificate-exceptions") " to allow for
+        arbitrary URLs."))
+  (:h3 "Bug fixes")
+  (:ul
+   (:li "Fix broken status buffer button to list-buffers.")
+   (:li "Make bookmarklets callable from " (:code "execute-command") ".")
+   (:li "Quit gracefully when " (:code "C-c") " is pressed in the parent shell.")
+   (:li "Fix search engine queries with " (:code "&") " and " (:code "%") " characters.")
+   (:li "Make " (:code "search-buffer-source") " customizable
+        with " (:code "define-configuration") ". Thanks to @mariari.")
+   (:li "Support command-line arguments in " (:code "external-editor-program") ".")
+   (:li "Fix " (:code "proxy-mode") " configuration. Thanks to @Zwo1in.")
+   (:li "Fix history corruptions when an error occurred while saving the history to disk.")
+   (:li "Fix " (:code "history-all-query") ". Thanks to @franburstall.")
+   (:li "Fix " (:code "search-buffer") "when input contains regexp-special characters.")))
+
+
+(define-version "2.0.0"
+  (:ul
+   (:li "Search engine autocompletion. See the search engine suggestions in
+        the prompt buffer as you type. By default, support for DuckDuckGo and
+        Wikipedia is included.")
+   (:li (:code "set-url") " and related commands now allow for multiple selection.")
+   (:li "On downloads, display the number of downloaded bytes.")
+   (:li "Buffer default modes can now be customized via
+        the " (:code "default-modes") " generic function. This function uses
+        the " (:code "append") " method
+        combination." (:code "define-configuration") " now supports customizing
+        these methods just as for slots.")
+   (:li "Commands defined with " (:code "define-command") " are no longer
+        listed in " (:code "execute-command") "
+        use " (:code "define-command-global") " to define global commands that
+        are always listed.")
+   (:li "New " (:code "define-command-global") "function. Use this to
+        define globally visible commands.")
+   (:li "Removed the " (:code "notify") " function, also removing the
+        dependency on notify-osd. This function was not generic enough and only
+        used in one place. Notifications will be reintroduced with a more generic
+        interface.")
+   (:li "Remove " (:code "set-url-from-bookmark-new-buffer") " It is
+        redundant with set-url and set-url-from-bookmark.")
+   (:li "New system-information command line option.")
+   (:li "Removed Common Lisp file-attributes dependency."))
+  (:h3 "Bug fixes")
+  (:ul
+   (:li "Fixed crash when right-clicking on some elements, like the Slack
+        composition area.")
+   (:li "Fixed crashes on click and scroll in prompt buffer.")
+   (:li "Removed duplicates from prompt buffer history.")
+   (:li "Fixed some commands, like " (:code "describe-variable") "
+        and " (:code "history-tree."))
+   (:li "Fixed " (:code "url-dispatching-handler") " when handler returns NIL.")
+   (:li "Fixed loading of local HTML files when passed as command line argument.")))
