@@ -7,7 +7,12 @@ which external dependencies we are directly relying on.
 
 ** Renderer
 *** WebKitGTK
-- WebKitGTK https://webkitgtk.org (version 4.0.1 or higher)
+Using the latest WebKitGTK version is advised for security concerns.  The oldest
+version that should support all features is 2.36.
+
+Targets shared libraries libwebkit2gtk-4.1.so or libwebkit2gtk-4.0.so (GTK3).
+
+- WebKitGTK https://webkitgtk.org
 - GObject Introspection https://wiki.gnome.org/Projects/GObjectIntrospection
 
 *** QtWebEngine
@@ -16,47 +21,62 @@ which external dependencies we are directly relying on.
 Experimental support.
 
 * Lisp Dependencies
+The direct CL dependencies are listed below.  The list of all CL recursive
+dependencies can be found at =.gitmodules=.
+
 - alexandria
+- base64
 - bordeaux-threads
 - calispel
-- cl-custom-hash-table
-- cl-json
-- cl-ppcre
-- cl-ppcre-unicode
-- cl-prevalence
-- cl-qrencode
-- cl-sqlite
-- cl-tld
+- cffi-gtk (WebKitGTK)
 - closer-mop
+- clss
 - cluffer
+- colors2
+- containers
+- custom-hash-table
 - dexador
+- dissect
 - enchant
-- fset
+- flexi-streams
+- gobject-introspection (WebKitGTK)
+- gopher
+- history-tree
 - iolib
+- json
 - lass
 - local-time
 - log4cl
 - lparallel
-- mk-string-metrics
 - moptilities
-- named-readtables
+- nclasses
+- ndebug
+- nfiles
+- nhooks
+- njson
+- nkeymaps
+- nsymbols
 - parenscript
+- phos
 - plump
+- ppcre
+- prevalence
+- prompter
+- py-configparser
+- qrencode
 - quri
 - serapeum
-- spinneret
-- str
 - swank
+- slynk
+- spinneret
+- sqlite
+- str
+- tld
 - trivia
 - trivial-clipboard
 - trivial-features
 - trivial-package-local-nicknames
 - trivial-types
 - unix-opts
-
-Renderer-specific dependencies:
-- cl-cffi-gtk
-- cl-gobject-introspection
-- cl-webkit
-- cl-webengine
-- trivial-main-thread
+- webengine (QtWebEngine)
+- webkit (WebKitGTK)
