@@ -4,15 +4,11 @@
 (in-package :nyxt)
 
 (defparameter +changelog+ (make-hash-table :test #'equal)
-  "A hash table of Key = version, and Value = the information about that
-particular revision.")
+  "A hash table mapping versions to release information.")
 
 (defmacro define-version (version-string &body body)
   `(setf (gethash ,version-string +changelog+)
-         (spinneret:with-html-string
-           (:nsection
-             :title ,version-string
-             ,@body))))
+         (spinneret:with-html-string (:nsection :title ,version-string ,@body))))
 
 (define-internal-page-command-global changelog ()
     (buffer "*Changelog*")
