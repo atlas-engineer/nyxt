@@ -30,23 +30,23 @@
   </provides>
   <screenshots>
     <screenshot type="default">
-      <image>https://nyxt-browser.com/static/image/switch-buffer.png</image>
+      <image type="source" width="1108" height="881">https://nyxt-browser.com/static/image/switch-buffer.png</image>
       <caption>Fast tab switching</caption>
     </screenshot>
     <screenshot>
-      <image>https://nyxt-browser.com/static/image/multi-select.png</image>
+      <image type="source" width="1108" height="881">https://nyxt-browser.com/static/image/multi-select.png</image>
       <caption>Multiple marking</caption>
     </screenshot>
     <screenshot>
-      <image>https://nyxt-browser.com/static/image/bookmark.png</image>
+      <image type="source" width="1108" height="881">https://nyxt-browser.com/static/image/bookmark.png</image>
       <caption>Powerful bookmarks</caption>
     </screenshot>
     <screenshot>
-      <image>https://nyxt-browser.com/static/image/multi-search.png</image>
+      <image type="source" width="1108" height="881">https://nyxt-browser.com/static/image/multi-search.png</image>
       <caption>Multi tab search</caption>
     </screenshot>
     <screenshot>
-      <image>https://nyxt-browser.com/static/image/history.png</image>
+      <image type="source" width="1108" height="881">https://nyxt-browser.com/static/image/history.png</image>
       <caption>History as a tree</caption>
     </screenshot>
 </screenshots>
