@@ -3,218 +3,110 @@
 
 ;;; Commentary:
 ;;
-;; GNU Guix development package.  To build and install, clone this repository,
-;; switch directory to here and run:
+;; GNU Guix development package.
 ;;
-;;   guix package --install-from-file=build-scripts/nyxt.scm
+;; To install:
 ;;
-;; To use as the basis for a development environment, run:
+;;   guix package --install-from-file=path/to/build-scripts/nyxt.scm
 ;;
-;;   guix shell --container --network -D -f build-scripts/nyxt.scm glib glib-networking gsettings-desktop-schemas git nss-certs
+;; To start the REPL:
 ;;
-;; Replace --container by --pure if you still want ASDF to see external
-;; libraries in ~/common-lisp, etc.
-;; To build a local executable and then run it:
+;;   guix shell -D -f build-scripts/nyxt.scm -- sbcl
 ;;
-;;   guix shell --container -D -f build-scripts/nyxt.scm -- make all NYXT_SUBMODULES=false
-;;   guix shell --pure -D -f build-scripts/nyxt.scm -- ./nyxt
-;;
-;; To start in a container, run:
-;;
-;;   guix shell -f build-scripts/nyxt.scm --container --network --share=/PATH/TO/YOUR/NYXT/CHECKOUT=/nyxt --preserve='^DISPLAY$' --expose=/etc/ssl/certs nss-certs glib glib-networking gsettings-desktop-schemas
-;;
-;; Replace '/PATH/TO/YOUR/NYXT/CHECKOUT' as appropriate.
-;; Then in the container environment:
-;;
-;;   cd /nyxt
-;;   make all NYXT_SUBMODULES=false
-;;   ./nyxt
+;; See documents/README.org on how to setup the development environment.
 ;;
 ;;; Code:
 
-(define-module (nyxt)
-  #:use-module (ice-9 match)
-  #:use-module (ice-9 popen)
-  #:use-module (ice-9 rdelim)
-  #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-26)
-  #:use-module ((guix build utils) #:select (with-directory-excursion))
-  #:use-module (guix gexp)
-  #:use-module (guix packages)
-  #:use-module ((guix licenses) #:prefix license:)
-  #:use-module (guix licenses)
-  #:use-module (guix git-download)
-  #:use-module (guix build-system gnu)
-  #:use-module (guix build-system glib-or-gtk)
-  #:use-module (gnu packages)
-  #:use-module (gnu packages aspell)
-  #:use-module (gnu packages base)
-  #:use-module (gnu packages commencement)
-  #:use-module (gnu packages glib)
-  #:use-module (gnu packages lisp)
-  #:use-module (gnu packages lisp-check)
-  #:use-module (gnu packages lisp-xyz)
-  #:use-module (gnu packages gnome)
-  #:use-module (gnu packages gnupg)
-  #:use-module (gnu packages gstreamer)
-  #:use-module (gnu packages gtk)
-  #:use-module (gnu packages pkg-config)
-  #:use-module (gnu packages version-control)
-  #:use-module (gnu packages webkit))
+(use-modules (guix packages)
+             (guix gexp)
+             (gnu packages gstreamer)
+             (gnu packages web-browsers)
+             (gnu packages glib)
+             (gnu packages gtk)
+             (gnu packages webkit)
+             (gnu packages gnome)
+             (gnu packages pkg-config)
+             (gnu packages lisp)
+             (gnu packages lisp-xyz)
+             (gnu packages lisp-check))
 
-(define %source-dir (dirname (dirname (current-filename))))
-
-(define (nyxt-git-version)              ; Like Nyxt's `+version+'.
-  (let* ((pipe (with-directory-excursion %source-dir
-                 (open-pipe* OPEN_READ "git" "describe" "--always" "--tags")))
-         (version (read-line pipe)))
-    (close-pipe pipe)
-    version))
-
-(define-public nyxt
-  (package
-   (name "nyxt")
-   (version (nyxt-git-version))
-   (source (local-file %source-dir #:recursive? #t))
-   (build-system gnu-build-system) ; TODO: Use glib-or-gtk-build-system instead?
-   (arguments
-    (list
-     #:make-flags #~(list "nyxt" "NYXT_SUBMODULES=false"
-                          (string-append "DESTDIR=" #$output)
-                          "PREFIX=")
-     #:strip-binaries? #f            ; Stripping breaks SBCL binaries.
-     #:phases
-     #~(modify-phases %standard-phases
-         (delete 'configure)
-         (add-before 'build 'fix-common-lisp-cache-folder
-           (lambda _
-             (setenv "HOME" "/tmp")
-             #t))
-         (add-before 'check 'configure-tests
-           (lambda _ (setenv "NASDF_TESTS_NO_NETWORK" "1") #t))
-         (add-after 'install 'wrap-program
-           (lambda _
-             (let* ((bin (string-append #$output "/bin/nyxt"))
-                    (libs (list #$(this-package-input "gsettings-desktop-schemas")))
-                    (path (string-join
-                           (map (lambda (lib)
-                                  (string-append lib "/lib"))
-                                libs)
-                           ":"))
-                    (gi-path (getenv "GI_TYPELIB_PATH"))
-                    (xdg-path (string-join
-                               (map (lambda (lib)
-                                      (string-append lib "/share"))
-                                    libs)
-                               ":")))
-               (wrap-program bin
-                 `("GIO_EXTRA_MODULES" prefix
-                   (,(string-append #$(this-package-input "glib-networking") "/lib/gio/modules")))
-                 `("GI_TYPELIB_PATH" prefix (,gi-path))
-                 `("LD_LIBRARY_PATH" ":" prefix (,path))
-                 `("XDG_DATA_DIRS" ":" prefix (,xdg-path)))
-               #t))))))
-   ;; We use `cl-*' inputs and not `sbcl-*' ones so that CCL users can also use
-   ;; this Guix manifests.
-   ;;
-   ;; Another reason is to not fail when an input dependency is found in
-   ;; ~/common-lisp, which would trigger a rebuild of the SBCL input in the
-   ;; store, which is read-only and would thus fail.
-   ;;
-   ;; The official Guix package should use `sbcl-*' inputs though.
-   (native-inputs
-    (list cl-lisp-unit2
-          sbcl
-          ;; Useful for testing, unneeded for the upstream Guix package
-          ccl
-          ;; Only for development, unneeded for the upstream Guix package:
-          cl-trivial-benchmark))
-   (inputs
-    (list cl-alexandria
-          cl-bordeaux-threads
-          cl-base64
-          cl-calispel
-          cl-colors2
-          cl-closer-mop
-          cl-clss
-          cl-cluffer
-          cl-custom-hash-table
-          cl-dexador
-          cl-dissect
-          cl-trivial-custom-debugger
-          cl-enchant
-          cl-flexi-streams
-          cl-fset
-          cl-gopher
-          cl-history-tree
-          cl-iolib
-          cl-json
-          cl-lass
-          cl-local-time
-          cl-lparallel
-          cl-log4cl
-          cl-mk-string-metrics
-          cl-moptilities
-          cl-named-readtables
-          cl-nclasses
-          cl-ndebug
-          cl-nfiles
-          cl-njson
-          cl-nhooks
-          cl-nkeymaps
-          cl-nsymbols
-          cl-osicat ; Not needed for SBCL, remove it in Guix upstream package.
-          cl-parenscript
-          cl-phos
-          cl-plump
-          cl-ppcre
-          cl-prevalence
-          cl-prompter
-          cl-py-configparser
-          cl-qrencode
-          cl-quri
-          cl-serapeum
-          cl-spinneret
-          cl-str
-          cl-slime-swank
-          cl-slynk
-          cl-sqlite
-          cl-tld
-          cl-trivia
-          cl-trivial-clipboard
-          cl-trivial-features
-          cl-trivial-garbage
-          cl-trivial-package-local-nicknames
-          cl-trivial-types
-          cl-unix-opts
-          ;; System deps
-          gcc-toolchain                 ; Needed for cl-iolib
-          cl-cffi-gtk
-          cl-webkit
-          glib-networking
-          gsettings-desktop-schemas
-          cl-gobject-introspection
-          gtk+                      ; For the main loop
-          webkitgtk                 ; Required when we use its typelib
-          gobject-introspection
-          pkg-config))
-   (propagated-inputs
-    (list
-     ;; Useful for video playback in all-inclusive Guix profiles.
-     ;; For now upstream Guix does not include the GST plugins.
-     gst-libav
-     gst-plugins-bad
-     gst-plugins-base
-     gst-plugins-good
-     gst-plugins-ugly
-     ;; For spell-checking.  Same, upstream Guix does not include it in the package.
-     aspell
-     aspell-dict-en))
-   (synopsis "Extensible web browser in Common Lisp")
-   (home-page "https://nyxt-browser.com")
-   (description "Nyxt is a keyboard-oriented, extensible web browser
-designed for power users.  The application has familiar Emacs and VI
-keybindings and is fully configurable and extensible in Common Lisp.")
-   (license license:bsd-3)))
-
-nyxt
+(package
+  (inherit nyxt)
+  (version "dev")
+  (source (local-file (dirname (dirname (current-filename))) #:recursive? #t))
+  (native-inputs
+   (list sbcl
+         cl-lisp-unit2
+         ;; Useful for development, not needed upstream.
+         ccl
+         cl-trivial-benchmark))
+  ;; `cl-*' inputs instead of `sbcl-*', since it defines a development
+  ;; environment for any CL implementation.  Upstream uses `sbcl-*' to define
+  ;; the Nyxt program.
+  (inputs (list cl-alexandria
+                cl-base64
+                cl-bordeaux-threads
+                cl-calispel
+                cl-cffi-gtk             ; WebKitGTK
+                cl-closer-mop
+                cl-clss
+                cl-cluffer
+                cl-colors2
+                cl-containers
+                cl-custom-hash-table
+                cl-dexador
+                cl-dissect
+                cl-enchant
+                cl-flexi-streams
+                cl-gobject-introspection ; WebKitGTK
+                cl-gopher
+                cl-history-tree
+                cl-iolib
+                cl-json
+                cl-lass
+                cl-local-time
+                cl-log4cl
+                cl-lparallel
+                cl-moptilities
+                cl-nclasses
+                cl-ndebug
+                cl-nfiles
+                cl-nhooks
+                cl-njson
+                cl-nkeymaps
+                cl-nsymbols
+                cl-parenscript
+                cl-phos
+                cl-plump
+                cl-ppcre
+                cl-prevalence
+                cl-prompter
+                cl-py-configparser
+                cl-qrencode
+                cl-quri
+                cl-serapeum
+                cl-slime-swank
+                cl-slynk
+                cl-spinneret
+                cl-sqlite
+                cl-str
+                cl-tld
+                cl-trivia
+                cl-trivial-clipboard
+                cl-trivial-features
+                cl-trivial-package-local-nicknames
+                cl-trivial-types
+                cl-unix-opts
+                cl-webkit               ; WebKitGTK
+                glib-networking
+                gobject-introspection
+                gsettings-desktop-schemas
+                gst-libav
+                gst-plugins-bad
+                gst-plugins-base
+                gst-plugins-good
+                gst-plugins-ugly
+                gtk+                    ; For the main loop
+                pkg-config
+                webkitgtk-for-gtk3      ; Required when we use its typelib
+                )))
