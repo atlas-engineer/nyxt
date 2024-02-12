@@ -356,16 +356,12 @@ Splits bookmarks into groups by tags."
                 :id (or tag "unsorted")
                 :open-p nil
                 (dolist (bookmark bookmarks)
-                  (let ((url-href (render-url (url bookmark))))
-                    (lisp-url-flet bookmarks-buffer
-                        ((delbkm (&key href)
-                           (delete-bookmark href)))
-                      (:div :class "bookmark-entry"
-                            (:dl
-                             (:dt
-                              (:a :href url-href (title bookmark)))
-                             (when (tags bookmark)
-                               (:dd (:pre (format nil "Tags: ~{~a~^, ~}" (tags bookmark))))))))))))
+                  (:div
+                   :class "bookmark-entry"
+                   (:dl
+                    (:dt (:a :href (render-url (url bookmark)) (title bookmark)))
+                    (when (tags bookmark)
+                      (:dd (:pre (format nil "Tags: ~{~a~^, ~}" (tags bookmark))))))))))
             bookmarks))))))
 
 (defmethod serialize-object ((entry bookmark-entry) stream)

@@ -491,43 +491,6 @@ The ARGS are used as a keyword arglist for the function bound to the defined URL
           (ps:create :mode "no-cors")))
 (export-always 'nyxt/ps::lisp-call :nyxt/ps)
 
-(export-always 'lisp-url-flet)
-(defmacro lisp-url-flet (buffer ((name (&rest args) &body binding-body) &rest other-bindings)
-                         &body body)
-  "Bind the NAMEs of bindings to both
-- the `nyxt/ps:lisp-call'-able IDs, and
-- macros expanding to the Parenscript form calling them.
-
-Bindings are only available in local scope, and are only defined for BUFFER.
-
-Example:
-\(nyxt::lisp-url-flet (nyxt:current-buffer)
-    ((hello (&key name) (nyxt:echo \"Hello, ~a!\" name)))
-  (nyxt:ffi-buffer-evaluate-javascript (nyxt:current-buffer) (hello :name \"Stranger\"))
-  ;; or equivalent
-  (nyxt:ffi-buffer-evaluate-javascript
-   (nyxt:current-buffer)
-   (ps:ps (nyxt/ps:lisp-call hello :buffer (nyxt:current-buffer) :args '(:name \"Stranger\"))))))"
-  (alex:with-gensyms (id)
-    `(let* ((,id (princ-to-string (new-id)))
-            (,name (progn
-                     (lisp-url :id ,id
-                               :buffer ,buffer
-                               :callback (lambda (,@args) ,@binding-body))
-                     ,id)))
-       (macrolet ((,name (&rest args)
-                    ;; Everything that uses commas comes from the outside,
-                    ;; everything with list/cons/quote belongs to this
-                    ;; macro. Otherwise it's really hard to keep track of.
-                    (list (quote ps:ps)
-                          (list (quote nyxt/ps:lisp-call) (quote ,name)
-                                :title ,(str:concat "lisp-url-flet " (string name))
-                                :buffer (quote ,buffer) :args args))))
-         ,@(if other-bindings
-               `((lisp-url-flet ,buffer (,@other-bindings)
-                   ,@body))
-               body)))))
-
 (ps:defpsmacro nyxt/ps::lisp-eval ((&key (buffer '(nyxt:current-buffer))
                                          title callback args)
                                    &body body)
