@@ -453,111 +453,61 @@ guarantee of the same result."
       (nth-value 0 (gethash (quri:uri-path (url url)) *static-data*)))
   :secure-p t)
 
-(-> lisp-url (&rest t &key
-                    (:id string)
-                    (:buffer t) ;; `document-buffer', actually.
-                    (:title (maybe string))
-                    (:callback (or function symbol)))
-    string)
-(defun lisp-url (&key title (id (princ-to-string (nyxt:new-id))) (buffer (current-buffer))
-                   (callback (unless (gethash id (nyxt::lisp-url-callbacks buffer))
-                               (alex:required-argument 'callback))))
-  (unless buffer
-    (error "Cannot make a `lisp-url' without BUFFER or current-buffer."))
+(-> lisp-url (&rest t &key (:id string)
+              (:buffer t)
+              (:callback (or function symbol))
+              (:title (maybe string)))
+    (values quri:uri &optional))
+(defun lisp-url (&key (id (princ-to-string (nyxt:new-id)))
+                   (buffer (alex:required-argument 'buffer))
+                   (callback (alex:required-argument 'callback))
+                   title)
   (sera:synchronized ((nyxt::lisp-url-callbacks buffer))
-    (unless (gethash id (nyxt::lisp-url-callbacks buffer))
-      (log:debug "Registering callback ~a for buffer ~a" id buffer)
-      (setf (gethash id (nyxt::lisp-url-callbacks buffer)) callback)))
-  (format nil "lisp://~a?~:[~*~;title=~a&~]" id
-          title (when title
-                  (quri:url-encode title))))
+    (log:debug "Registering callback ~a in buffer ~a" id buffer)
+    (setf (gethash id (nyxt::lisp-url-callbacks buffer)) callback))
+  (quri:make-uri :scheme "lisp"
+                 :path id
+                 :query `(("title" . ,title) ("buffer" . ,(id buffer)))))
 
-
-(ps:defpsmacro nyxt/ps::lisp-call (id &key title (buffer '(current-buffer)) args)
-  "Call the ID-bound function on the Lisp side.
-
-Return a JS Promise fulfilled after the code runs on the Lisp side.
-
-ID should be an identifier of an already defined `lisp-url'.
-
-The ARGS are used as a keyword arglist for the function bound to the defined URL callback."
-  `(fetch (ps:lisp (str:concat
-                    (lisp-url :id ,id :buffer ,buffer :title ,title)
-                    (quri:url-encode-params
-                     (list ,@(loop for (name value) on args by #'cddr
-                                   collect `(cons (symbol->param-name ,name)
-                                                  (value->param-value ,value))))
-                     :space-to-plus t)))
-          (ps:create :mode "no-cors")))
-(export-always 'nyxt/ps::lisp-call :nyxt/ps)
-
-(ps:defpsmacro nyxt/ps::lisp-eval ((&key (buffer '(nyxt:current-buffer))
-                                         title callback args)
-                                   &body body)
-  "Request the lisp: URL and invoke CALLBACK when there's a successful result.
-
-TITLE is purely informative.
-
-BUFFER must be a `document-buffer'.
-
-The ARGS are used as a keyword arglist for the CALLBACK."
-  ;; We define it here and not in parenscript-macro because we need
-  ;; `nyxt::lisp-url-callbacks' while parenscript-macro is Nyxt-independent.
-  `(let ((promise (nyxt/ps:lisp-call
-                   (ps:lisp
-                    ;; FIXME: We define a URL, but don't use it anywhere, we only use its
-                    ;; ID. Quirky idiom. Maybe somehow only define an ID without string
-                    ;; generation?
-                    (sera:lret ((id (princ-to-string (nyxt:new-id))))
-                      (lisp-url
-                       :id id
-                       :buffer ,buffer
-                       :callback ,(if (and (sera:single body)
-                                           (member (first (first body)) '(lambda function)))
-                                      (first body)
-                                      `(lambda () ,@body)))))
-                   :buffer ,buffer :title ,title ,@args)))
-     ,@(when callback
-         `((ps:chain promise
-                     (then (lambda (response)
-                             (when (@ response ok)
-                               (chain response (json)))))
-                     (then ,callback))))))
 (export-always 'nyxt/ps::lisp-eval :nyxt/ps)
+(ps:defpsmacro nyxt/ps::lisp-eval ((&key (buffer '(nyxt:current-buffer)) title) &body body)
+  "Request a URL that evaluates BODY in BUFFER.
+TITLE is purely informative."
+  `(let ((promise
+           (fetch (ps:lisp
+                   (quri:render-uri
+                    (lisp-url :buffer ,buffer
+                              :title ,title
+                              :callback ,(if (and (sera:single body)
+                                                  (member (first (first body)) '(lambda function)))
+                                             (first body)
+                                             `(lambda () ,@body)))))
+                  (ps:create :mode "no-cors"))))))
 
 (define-internal-scheme "lisp"
     (lambda (url buffer)
-      (let ((url (quri:uri url)))
-        ;; TODO: Replace this condition with `(not (network-buffer-p buffer))`?
-        (if (or (status-buffer-p buffer)
-                (panel-buffer-p buffer)
-                (prompt-buffer-p buffer)
-                (internal-url-p (url buffer)))
-            (let* ((request-id (quri:uri-host url))
-                   (params (and url (quri:uri-query-params url)))
-                   (title (when params
-                            (alex:assoc-value params "title")))
-                   (args (alexandria:remove-from-plist (query-params->arglist params) :title)))
-              (log:debug "Evaluate Lisp callback ~a from internal page ~a: ~a" request-id buffer (or title "UNTITLED"))
-              (values (let ((result (with-current-buffer buffer
-                                      (let ((callback (sera:synchronized ((lisp-url-callbacks buffer))
-                                                        (gethash request-id (lisp-url-callbacks buffer)))))
-                                        (if callback
-                                            (run callback args)
-                                            (log:warn "Request ~a is bound to no callback for buffer ~a"
-                                                      url buffer))))))
-                        ;; Objects and other complex structures make cl-json choke.
-                        ;; TODO: Maybe encode it to the format that `cl-json'
-                        ;; supports, then we can override the encoding and
-                        ;; decoding methods and allow arbitrary objects (like
-                        ;; buffers) in the nyxt:// URL arguments..
-                        (j:encode
-                         (when (or (scalar-p result)
-                                   (and (sequence-p result)
-                                        (every #'scalar-p result)))
-                           result)))
-                      "application/json"))
-            (values "undefined" "application/json;charset=utf8"))))
+      (declare (ignore buffer))
+      (alex:when-let* ((%url (quri:uri url))
+                       (request-id (quri:uri-path %url))
+                       (query (quri:uri-query-params %url))
+                       (title (alex:assoc-value query "title" :test 'equal))
+                       (buffer-id (alex:assoc-value query "buffer" :test 'equal))
+                       (buffer (find (read-from-string buffer-id) (internal-buffers) :key 'id)))
+        (log:debug "Evaluate Lisp callback ~a in buffer ~a: ~a" request-id buffer title)
+        (values
+         (alex:if-let ((callback (sera:synchronized ((lisp-url-callbacks buffer))
+                                   (gethash request-id (lisp-url-callbacks buffer)))))
+           (let ((callback-output (with-current-buffer buffer (run callback))))
+             ;; Objects and other complex structures make cl-json choke.
+             ;; TODO: Maybe encode it to the format that `cl-json' supports,
+             ;; then we can override the encoding and decoding methods and allow
+             ;; arbitrary objects (like buffers) in the nyxt:// URL arguments..
+             (when (or (scalar-p callback-output)
+                       (and (sequence-p callback-output)
+                            (every #'scalar-p callback-output)))
+               (j:encode callback-output)))
+           (log:warn "Request ~a isn't bound to a callback in buffer ~a" %url buffer))
+         "application/json")))
   :cors-enabled-p t
   :error-callback (lambda (c) (log:debug "Error when evaluating lisp URL: ~a" c)))
 
