@@ -1053,6 +1053,16 @@ This is a low-level function.  See `buffer-delete' for the high-level version."
     (buffers-delete (id buffer))
     (add-to-recent-buffers buffer)))
 
+(export-always 'internal-buffers)
+(defun internal-buffers ()
+  ;; Note that the `buffers' slot only keeps track of "main" buffers.
+  (append (sera:filter #'internal-url-p (buffer-list))
+          (alex:flatten (loop for window in (window-list)
+                              collect (active-prompt-buffers window)
+                              collect (panel-buffers window)
+                              collect (status-buffer window)
+                              collect (message-buffer window)))))
+
 (export-always 'buffer-list)
 (defun buffer-list ()
   "Order is stable."
