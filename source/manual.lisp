@@ -465,7 +465,7 @@ internal schemes do.")
 way, including simply writing it by hand ;)")
            (:li (:code "nyxt/ps:lisp-eval")
                 " is a Parenscript macro to request Nyxt to run arbitrary code. The signature is: "
-                (:code "((&key (buffer '(nyxt:current-buffer)) title callback) &body form)")
+                (:code "((&key (buffer '(nyxt:current-buffer)) title) &body body)")
                 ". You can bind it to a " (:code "<button>") "'s " (:code "onClick")
                 " event, for example."))
           (:p "If you're making an extension, you might find other macros more useful. "

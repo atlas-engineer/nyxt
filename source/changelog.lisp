@@ -27,6 +27,7 @@
 
 (define-version "4.0.0"
   (:ul
+   (:li "Refactor lisp schemes URLs API.")
    (:li "Deprecate slot " (:code "status-buffer-position") "in favour of"
         (:nxref :slot 'placement :class-name 'status-buffer) ".")
    (:li "Deprecate slot " (:code "prompt-buffer-open-height") " since "
