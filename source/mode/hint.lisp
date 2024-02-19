@@ -134,20 +134,25 @@ A positive value shifts to the bottom.")
             (ps:@ element text-content) hint)
       element))
 
-  (let ((hints-parent (ps:chain document (create-element "div")))
-        (hints (ps:lisp (list 'quote hints)))
-        (i 0))
-    (dolist (element (nyxt/ps:qsa document "[nyxt-hintable]"))
+  (let* ((hints-parent (ps:chain document (create-element "div")))
+         (shadow (ps:chain hints-parent (attach-shadow (ps:create mode "open"))))
+         (style (ps:new (|CSSStyleSheet|)))
+         (hints (ps:lisp (list 'quote hints)))
+         (i 0))
+    (dolist (hinted-element (nyxt/ps:qsa document "[nyxt-hintable]"))
       (let ((hint (aref hints i)))
-        (ps:chain element (set-attribute "nyxt-hint" hint))
-        (ps:chain hints-parent (append-child (create-hint-overlay element hint)))
+        (ps:chain hinted-element (set-attribute "nyxt-hint" hint))
+        (ps:chain shadow (append-child (create-hint-overlay hinted-element hint)))
         (when (ps:lisp (show-hint-scope-p (find-submode 'hint-mode)))
           (ps:chain element class-list (add "nyxt-element-hint")))
         (setf i (1+ i))))
+    (ps:chain style (replace-sync (ps:lisp (style (find-submode 'hint-mode)))))
+    (setf (ps:chain shadow adopted-style-sheets) (array style))
     (setf (ps:@ hints-parent id) "nyxt-hints"
           (ps:@ hints-parent style) "all: unset !important;")
-    (ps:chain document body parent-node (insert-before hints-parent
-                                                       (ps:@ document body next-sibling)))
+    ;; Unless the hints root is a child of body, zooming the page breaks the
+    ;; hint positioning.
+    (ps:chain document body (append-child hints-parent))
     ;; Don't return a value.  Only the side-effects are of importance.
     nil))
 
@@ -187,9 +192,6 @@ A positive value shifts to the bottom.")
     (ps:chain element (remove-attribute "nyxt-hintable"))))
 
 (defun add-hints (&key selector (buffer (current-buffer)))
-  (add-stylesheet "nyxt-hint-stylesheet"
-                  (style (find-submode 'hint-mode))
-                  buffer)
   (set-hintable-attribute selector)
   (update-document-model :buffer buffer)
   (loop with hintable-elements = (sera:filter
@@ -225,15 +227,16 @@ A positive value shifts to the bottom.")
   ;; TODO: Also change border or something else to augment color change.
   "Accent the hint for the ELEMENT to be distinguishable from other hints.
 If SCROLL (default to NIL), scroll the hint into view."
-  (let ((%element (nyxt/ps:qs document (ps:lisp (format nil "#nyxt-hint-~a"
-                                                        (identifier element))))))
+  (let* ((shadow (ps:@ (nyxt/ps:qs document "#nyxt-hints") shadow-root))
+         (%element (nyxt/ps:qs shadow
+                               (ps:lisp (str:concat "#nyxt-hint-" (identifier element))))))
     (when %element
       (unless (ps:chain %element class-list (contains "nyxt-select-hint"))
         ;; There should be, at most, a unique element with the
         ;; "nyxt-select-hint" class.
         ;; querySelectAll, unlike querySelect, handles the case when none are
         ;; found.
-        (ps:dolist (selected-hint (nyxt/ps:qsa document ".nyxt-select-hint"))
+        (ps:dolist (selected-hint (nyxt/ps:qsa shadow ".nyxt-select-hint"))
           (ps:chain selected-hint class-list (remove "nyxt-select-hint"))))
       (ps:chain %element class-list (add "nyxt-select-hint"))
       (when (ps:lisp scroll)
@@ -243,20 +246,20 @@ If SCROLL (default to NIL), scroll the hint into view."
   "Set visibility STATE of HINT element.
 
 Consult https://developer.mozilla.org/en-US/docs/Web/CSS/visibility."
-  (let ((element (nyxt/ps:qs document (ps:lisp (format nil "#nyxt-hint-~a"
-                                                       (identifier hint))))))
-    (when element (setf (ps:@ element style "visibility") (ps:lisp state)))))
+  (let* ((shadow (ps:@ (nyxt/ps:qs document "#nyxt-hints") shadow-root))
+         (el (nyxt/ps:qs shadow (ps:lisp (str:concat "#nyxt-hint-" (identifier hint))))))
+    (when el (setf (ps:@ el style "visibility") (ps:lisp state)))))
 
 (define-parenscript-async dim-hint-prefix (hint prefix-length)
   "Dim the first PREFIX-LENGTH characters of HINT element."
-  (let ((element (nyxt/ps:qs document (ps:lisp (format nil "#nyxt-hint-~a"
-                                                       (identifier hint))))))
-    (when element
+  (let* ((shadow (ps:@ (nyxt/ps:qs document "#nyxt-hints") shadow-root))
+         (el (nyxt/ps:qs shadow (ps:lisp (str:concat "#nyxt-hint-" (identifier hint))))))
+    (when el
       (let ((span-element (ps:chain document (create-element "span"))))
         (setf (ps:@ span-element class-name) "nyxt-hint nyxt-match-hint")
         (setf (ps:@ span-element text-content)
               (ps:lisp (subseq (identifier hint) 0 prefix-length)))
-        (setf (ps:chain element inner-h-t-m-l)
+        (setf (ps:chain el inner-h-t-m-l)
               (+ (ps:@ span-element outer-h-t-m-l)
                  (ps:lisp (subseq (identifier hint) prefix-length))))))))
 
@@ -316,10 +319,11 @@ Consult https://developer.mozilla.org/en-US/docs/Web/CSS/visibility."
       (let ((%marks (mapcar (lambda (mark) (str:concat "#nyxt-hint-" (identifier mark)))
                             marks)))
         (ps-eval
-          (dolist (marked-overlay (nyxt/ps:qsa document ".nyxt-mark-hint"))
-            (ps:chain marked-overlay class-list (remove "nyxt-mark-hint")))
-          (dolist (mark (ps:lisp (list 'quote %marks)))
-            (ps:chain (nyxt/ps:qs document mark) class-list (add "nyxt-mark-hint")))))))
+          (let ((shadow (ps:@ (nyxt/ps:qs document "#nyxt-hints") shadow-root)))
+            (dolist (marked (nyxt/ps:qsa shadow ".nyxt-mark-hint"))
+              (ps:chain marked class-list (remove "nyxt-mark-hint")))
+            (dolist (mark (ps:lisp (list 'quote %marks)))
+              (ps:chain (nyxt/ps:qs shadow mark) class-list (add "nyxt-mark-hint"))))))))
    (prompter:actions-on-return
     (list 'identity
           (lambda-command click* (elements)
