@@ -25,6 +25,11 @@
     (loop for version being the hash-value of +changelog+
           collect (:raw version))))
 
+(define-version "3.11.3"
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix prompt buffer freezes when invoking command " (:nxref :command 'set-url) "."))))
+
 (define-version "3.11.2"
   (:nsection :title "Bug fixes"
     (:ul
