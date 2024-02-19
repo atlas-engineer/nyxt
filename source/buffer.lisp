@@ -1523,20 +1523,9 @@ Otherwise, set `engine' to `default-search-engine'."))
    (prompter:filter nil)
    (prompter:actions-on-return #'buffer-load*))
   (:export-class-name-p t)
-  (:documentation "This prompter source tries to \"do the right thing\" to
-generate a new URL query from user input.
-- If the query is a URL, open it directly.
-- If it's a file, prefix the query with 'file://'.
-- If it's a search engine shortcut, include it in the suggestions.
-- If it's none of the above, use the `default-search-engine'.
-
-It runs in two passes.  The first pass does not check the DNS for domain
-validity, nor does it return any search engine suggestions.  This guarantees
-that a good-enough default suggestion is showed instantaneously.
-(We really want this prompter source to be fast!)  The second pass checks the
-DNS to precisely validate domains and returns the search engines suggestions, if
-any.")
-  (:metaclass user-class))
+  (:metaclass user-class)
+  (:documentation "Source listing URL queries from user input in a DWIM fashion.  See
+`new-url-query'."))
 
 (defmethod prompter:object-attributes ((query new-url-query) (source new-url-or-search-source))
   (declare (ignore source))
