@@ -1789,8 +1789,7 @@ Otherwise, set `engine' to `default-search-engine'."))
                          :query (second completion)
                          :label (first completion)))))
 
-(defun input->queries (input &key (check-dns-p t)
-                               (engine-completion-p))
+(defun input->queries (input &key (check-dns-p t) (engine-completion-p))
   (let* ((terms (sera:tokens input))
          (engines (let ((all-prefixed-engines
                           (remove-if
