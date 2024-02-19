@@ -1376,24 +1376,28 @@ URL-DESIGNATOR is then transformed by BUFFER's `buffer-load-hook'."
 Loads the entry with default `prompter:actions-on-return'."))
 
 (define-class new-url-query ()
-  ((query ""
-          :documentation "Either a URL or a string query passed to `engine'.")
-   (label nil
-          :type (or null string)
-          :documentation "The meaningful text for the query, if query is a URL.")
-   (engine nil
-           :type (or null search-engine)))
+  ((query
+    ""
+    :type (maybe string)
+    :documentation "Either a URL or a string query passed to `engine'.")
+   (label
+    nil
+    :type (maybe string)
+    :documentation "The meaningful text for the query, if query is a URL.")
+   (engine
+    nil
+    :type (maybe search-engine)
+    :documentation "See `search-engine'."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:documentation "Structure holding the new URL query generated from a user
- string input.
-If `engine' is set, `query' is passed to it.  See the `url' method.
+string input.
+
+If `engine' is set, `query' is passed to it (see the `url' method).
 If `query' is a valid URL, use it as is.
-If it points to an existing file, 'file://' is automatically prepended to it on
-instantiation.
-If prefixing with 'https://' results in a valid URL, set `query' to this result
-on instantiation.
-Finally, if nothing else, set the `engine' to the `default-search-engine'."))
+If it points to an existing file, 'file://' is prepended to it.
+If prefixing with 'https://' results in a valid URL, set `query' to it.
+Otherwise, set `engine' to `default-search-engine'."))
 
 (defmethod initialize-instance :after ((query new-url-query)
                                        &key check-dns-p &allow-other-keys)
