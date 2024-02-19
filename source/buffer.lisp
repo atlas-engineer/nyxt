@@ -1844,16 +1844,8 @@ Otherwise, set `engine' to `default-search-engine'."))
    (prompter:filter-preprocessor
     (lambda (suggestions source input)
       (declare (ignore suggestions source))
-      (input->queries input
-                      :check-dns-p nil
-                      :engine-completion-p nil)))
+      (input->queries input :check-dns-p nil :engine-completion-p t)))
    (prompter:filter nil)
-   (prompter:filter-postprocessor
-    (lambda (suggestions source input)
-      (declare (ignore suggestions source))
-      (input->queries input
-                      :check-dns-p t
-                      :engine-completion-p t)))
    (prompter:actions-on-return #'buffer-load*))
   (:export-class-name-p t)
   (:documentation "This prompter source tries to \"do the right thing\" to
