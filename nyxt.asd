@@ -239,6 +239,8 @@
   :components ((:file "package")
                (:file "offline/define-configuration")
                (:file "offline/global-history")
+               (:file "offline/prompt-buffer")
+               (:file "offline/urls")
                (:file "offline/user-script-parsing")
                (:file "offline/mode")
                (:module "Modes"
@@ -297,9 +299,7 @@
                  ;; more information.
                  ;; (:file "tests/offline/mode/visual")
                  (:file "user-script")
-                 (:file "watch")))
-               (:file "offline/prompt-buffer")
-               (:file "online/urls"))
+                 (:file "watch"))))
     :test-suite-args (:package :nyxt/tests))
 
 (defsystem "nyxt/benchmarks"

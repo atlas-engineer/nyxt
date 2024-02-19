@@ -1376,24 +1376,28 @@ URL-DESIGNATOR is then transformed by BUFFER's `buffer-load-hook'."
 Loads the entry with default `prompter:actions-on-return'."))
 
 (define-class new-url-query ()
-  ((query ""
-          :documentation "Either a URL or a string query passed to `engine'.")
-   (label nil
-          :type (or null string)
-          :documentation "The meaningful text for the query, if query is a URL.")
-   (engine nil
-           :type (or null search-engine)))
+  ((query
+    ""
+    :type (maybe string)
+    :documentation "Either a URL or a string query passed to `engine'.")
+   (label
+    nil
+    :type (maybe string)
+    :documentation "The meaningful text for the query, if query is a URL.")
+   (engine
+    nil
+    :type (maybe search-engine)
+    :documentation "See `search-engine'."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:documentation "Structure holding the new URL query generated from a user
- string input.
-If `engine' is set, `query' is passed to it.  See the `url' method.
+string input.
+
+If `engine' is set, `query' is passed to it (see the `url' method).
 If `query' is a valid URL, use it as is.
-If it points to an existing file, 'file://' is automatically prepended to it on
-instantiation.
-If prefixing with 'https://' results in a valid URL, set `query' to this result
-on instantiation.
-Finally, if nothing else, set the `engine' to the `default-search-engine'."))
+If it points to an existing file, 'file://' is prepended to it.
+If prefixing with 'https://' results in a valid URL, set `query' to it.
+Otherwise, set `engine' to `default-search-engine'."))
 
 (defmethod initialize-instance :after ((query new-url-query)
                                        &key check-dns-p &allow-other-keys)
@@ -1460,8 +1464,7 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
                          :query (second completion)
                          :label (first completion)))))
 
-(defun input->queries (input &key (check-dns-p t)
-                               (engine-completion-p))
+(defun input->queries (input &key (check-dns-p t) (engine-completion-p))
   (let* ((terms (sera:tokens input))
          (engines (let ((all-prefixed-engines
                           (remove-if
@@ -1516,32 +1519,13 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
    (prompter:filter-preprocessor
     (lambda (suggestions source input)
       (declare (ignore suggestions source))
-      (input->queries input
-                      :check-dns-p nil
-                      :engine-completion-p nil)))
+      (input->queries input :check-dns-p nil :engine-completion-p t)))
    (prompter:filter nil)
-   (prompter:filter-postprocessor
-    (lambda (suggestions source input)
-      (declare (ignore suggestions source))
-      (input->queries input
-                      :check-dns-p t
-                      :engine-completion-p t)))
    (prompter:actions-on-return #'buffer-load*))
   (:export-class-name-p t)
-  (:documentation "This prompter source tries to \"do the right thing\" to
-generate a new URL query from user input.
-- If the query is a URL, open it directly.
-- If it's a file, prefix the query with 'file://'.
-- If it's a search engine shortcut, include it in the suggestions.
-- If it's none of the above, use the `default-search-engine'.
-
-It runs in two passes.  The first pass does not check the DNS for domain
-validity, nor does it return any search engine suggestions.  This guarantees
-that a good-enough default suggestion is showed instantaneously.
-(We really want this prompter source to be fast!)  The second pass checks the
-DNS to precisely validate domains and returns the search engines suggestions, if
-any.")
-  (:metaclass user-class))
+  (:metaclass user-class)
+  (:documentation "Source listing URL queries from user input in a DWIM fashion.  See
+`new-url-query'."))
 
 (defmethod prompter:object-attributes ((query new-url-query) (source new-url-or-search-source))
   (declare (ignore source))
