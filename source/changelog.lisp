@@ -77,6 +77,11 @@ elements are scaled accordingly.")
   (:li "When on pre-release, push " (:code "X-pre-release")
        " feature in addition to " (:code "X-pre-release-N") "one."))
 
+(define-version "3.11.3"
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix prompt buffer freezes when invoking command " (:nxref :command 'set-url) "."))))
+
 (define-version "3.11.2"
   (:nsection :title "Bug fixes"
     (:ul
