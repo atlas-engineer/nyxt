@@ -49,12 +49,11 @@
    (prompter:constructor *css-colors*)
    (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:filter-postprocessor
-    (lambda (suggestions source input)
-      (let ((input-color input))
-        (cons (make-instance 'prompter:suggestion
-                             :value input-color
-                             :attributes (prompter:object-attributes input-color source))
-              suggestions))))
+    (lambda (suggestions source input-color)
+      (cons (make-instance 'prompter:suggestion
+                           :value input-color
+                           :attributes (prompter:object-attributes input-color source))
+            suggestions)))
    (prompter:actions-on-current-suggestion-enabled-p t)
    (prompter:actions-on-current-suggestion
     (lambda (color)
