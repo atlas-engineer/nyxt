@@ -140,13 +140,10 @@ Right now default search engine is the last one."
 
 (define-command query-selection-in-search-engine (&key (query-in-new-buffer-p t))
   "Search selected text using the queried search engine.
-QUERY-IN-NEW-BUFFER creates a new buffer with the search results."
-  (let* ((selection (ffi-buffer-copy (current-buffer)))
-         (engine (prompt1 :prompt "Search engine"
-                          :sources 'search-engine-source))
-         (target-buffer (if query-in-new-buffer-p
-                            (make-buffer-focus)
-                            (current-buffer))))
-    (when engine
-      (buffer-load (make-instance 'new-url-query :query selection :engine engine)
-                   :buffer target-buffer))))
+When QUERY-IN-NEW-BUFFER-P is non-nil, open the results in a new buffer."
+  (alex:when-let ((engine (prompt1 :prompt "Search engine"
+                                   :sources 'search-engine-source)))
+    (buffer-load (make-instance 'new-url-query
+                                :query (ffi-buffer-copy (current-buffer))
+                                :engine engine)
+                 :buffer (if query-in-new-buffer-p (make-buffer-focus) (current-buffer)))))
