@@ -55,11 +55,6 @@
                            :attributes (prompter:object-attributes input-color source))
             suggestions)))
    (prompter:actions-on-current-suggestion-enabled-p t)
-   (prompter:actions-on-current-suggestion
-    (lambda (color)
-      (ps-eval :buffer (current-prompt-buffer)
-        (setf (ps:@ (nyxt/ps:qs document "#input") style background-color) (ps:lisp color)
-              (ps:@ (nyxt/ps:qs document "#input") style color) (ps:lisp (theme:contrasting-color color))))))
    (prompter:actions-on-return
     (cons #'identity copy-actions)))
   (:documentation "A source for color search and copying.
