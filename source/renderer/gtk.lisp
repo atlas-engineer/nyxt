@@ -40,8 +40,8 @@ behaviour of modifiers, for instance swap 'control' and 'meta':
                  :lock-mask nil)))
     (delete nil (mapcar (lambda (mod) (getf plist mod)) modifier-state))))
 
-\(define-configuration browser
-  ((modifier-translator #'my-translate-modifiers)))")
+\(define-configuration nyxt/renderer/gtk:gtk-browser
+  ((nyxt/renderer/gtk:modifier-translator #'my-translate-modifiers)))")
    (web-contexts
     (make-hash-table :test 'equal)
     :export nil
