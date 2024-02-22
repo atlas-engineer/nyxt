@@ -15,16 +15,17 @@
 
 (define-class gtk-browser ()
   (#+darwin
-   (modifiers '()
-              :documentation "On macOS some modifiers like Super and Meta are
-seen like regular keys.
+   (modifiers
+    '()
+    :documentation "On macOS some modifiers like Super and Meta are seen like
+regular keys.
 To work around this issue, we store them in this list while they are pressed.
 See `push-modifiers', `pop-modifiers' and `key-event-modifiers'.")
-   (modifier-translator #'translate-modifiers
-                        :documentation "Function that returns a list of
-modifiers understood by `keymaps:make-key'.  You can customize this slot if you
-want to change the behaviour of modifiers, for instance swap 'control' and
-'meta':
+   (modifier-translator
+    #'translate-modifiers
+    :documentation "Function that returns a list of modifiers understood by
+`keymaps:make-key'.  You can customize this slot if you want to change the
+behaviour of modifiers, for instance swap 'control' and 'meta':
 
 \(defun my-translate-modifiers (modifier-state &optional event)
   \"Swap control and meta.\"
@@ -41,22 +42,23 @@ want to change the behaviour of modifiers, for instance swap 'control' and
 
 \(define-configuration browser
   ((modifier-translator #'my-translate-modifiers)))")
-   (web-contexts (make-hash-table :test 'equal)
-                 :export nil
-                 :documentation "Persistent `nyxt::webkit-web-context's
-Keyed by strings as they must be backed to unique folders
-See also the `ephemeral-web-contexts' slot.")
-   (ephemeral-web-contexts (make-hash-table :test 'equal)
-                           :export nil
-                           :documentation "Ephemeral `nyxt::webkit-web-context's.
-See also the `web-contexts' slot."))
+   (web-contexts
+    (make-hash-table :test 'equal)
+    :export nil
+    :documentation "A table mapping strings to `webkit-web-context' objects.")
+   (ephemeral-web-contexts
+    (make-hash-table :test 'equal)
+    :export nil
+    :documentation "Analogous to `web-contexts'."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:metaclass user-class)
   (:documentation "WebKit browser class."))
 
-(alex:define-constant +internal+ "internal" :test 'equal)
-(alex:define-constant +default+ "default" :test 'equal)
+(alex:define-constant +default+ "default" :test 'equal
+  :documentation "Name of the default WebKit.")
+(alex:define-constant +internal+ "internal" :test 'equal
+  :documentation "Name of a WebKit context is not persisted to disk.")
 
 (defmethod get-context ((browser gtk-browser) name &key ephemeral-p)
   (alexandria:ensure-gethash name
@@ -98,17 +100,18 @@ When given the same context, multiple buffers share their internal browsing data
 `+internal+' is a context that's not persisted to disk.")
    (handler-ids
     :export nil
-    :documentation "Store all GObject signal handler IDs so that we can disconnect the signal handler when the object is finalised.
+    :documentation "Store all GObject signal handler IDs so that we can
+disconnect the signal handler when the object is finalized.
 See https://developer.gnome.org/gobject/stable/gobject-Signals.html#signal-memory-management.")
    (gtk-proxy-url (quri:uri ""))
    (proxy-ignored-hosts '())
-   (loading-webkit-history-p nil
-                             :type boolean
-                             :export nil
-                             :documentation "Internal hack, do not use me!
-WebKitGTK may trigger 'load-failed' when loading a page from the WebKit-history
-cache.  Upstream bug?  We use this slot to know when to ignore these load
-failures."))
+   (loading-webkit-history-p
+    nil
+    :type boolean
+    :export nil
+    :documentation "Internal hack, do not use me!  WebKitGTK may trigger
+'load-failed' when loading a page from the WebKit-history cache.  Upstream bug?
+We use this slot to know when to ignore these load failures."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:documentation "WebKit buffer class."))
@@ -128,19 +131,22 @@ failures."))
 
 (defmethod data-directory ((web-context webkit-web-context))
   "Directly returns the CFFI object's `base-data-directory'"
-  (webkit:webkit-website-data-manager-base-data-directory (webkit:webkit-web-context-website-data-manager web-context)))
+  (webkit:webkit-website-data-manager-base-data-directory
+   (webkit:webkit-web-context-website-data-manager web-context)))
 
 (defmethod cache-directory ((web-context webkit-web-context))
   "Directly returns the CFFI object's `base-cache-directory'"
-  (webkit:webkit-website-data-manager-base-cache-directory (webkit:webkit-web-context-website-data-manager web-context)))
+  (webkit:webkit-website-data-manager-base-cache-directory
+   (webkit:webkit-web-context-website-data-manager web-context)))
 
 (defclass webkit-web-context-ephemeral (webkit-web-context) ()
   (:metaclass gobject:gobject-class))
 
 (defmethod initialize-instance :after ((web-context webkit-web-context-ephemeral) &key)
   (unless (webkit:webkit-web-context-is-ephemeral web-context)
-    (error 'web-context-error :context web-context
-                                       :message "Web Contexts of class webkit-web-context-ephemeral must be ephemeral")))
+    (error 'web-context-error
+           :context web-context
+           :message "Web Contexts of class webkit-web-context-ephemeral must be ephemeral.")))
 
 (defclass webkit-website-data-manager (webkit:webkit-website-data-manager) ()
   (:metaclass gobject:gobject-class))
@@ -150,8 +156,9 @@ failures."))
 
 (defmethod initialize-instance :after ((data-manager webkit-website-data-manager-ephemeral) &key)
   (unless (webkit:webkit-website-data-manager-is-ephemeral data-manager)
-    (error 'web-context-error :context data-manager
-                                       :message "Data Managers of class webkit-website-data-manager-ephemeral must be ephemeral")))
+    (error 'web-context-error
+           :context data-manager
+           :message "Data Managers of class webkit-website-data-manager-ephemeral must be ephemeral.")))
 
 (defvar gtk-running-p nil
   "Non-nil if the GTK main loop is running.
@@ -338,8 +345,9 @@ the renderer thread, use `defmethod' instead."
 
 (defmethod initialize-instance :after ((web-view webkit-web-view-ephemeral) &key web-context)
   (unless (webkit:webkit-web-view-is-ephemeral web-view)
-    (error 'web-context-error :context web-context
-                                       :message "Tried to make an ephemeral web-view in a non-ephemeral context")))
+    (error 'web-context-error
+           :context web-context
+           :message "Tried to make an ephemeral web-view in a non-ephemeral context.")))
 
 (defmethod make-web-view ((profile nyxt-profile) (buffer t))
   "Return an ephemeral web view instance for basic buffers."
@@ -404,7 +412,6 @@ the renderer thread, use `defmethod' instead."
           (ignore-policy-decision ()
             (webkit:webkit-policy-decision-ignore response-policy-decision)))))
     t))
-
 
 (defmacro connect-signal-function (object signal fn)
   "Connect SIGNAL to OBJECT with a function FN.
@@ -1806,9 +1813,6 @@ local anyways, and it's better to refresh it if a load was queried."
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:documentation "Related to WebKitUserScript."))
-
-
-
 
 (define-ffi-method ffi-buffer-add-user-script ((buffer gtk-buffer) (script gtk-user-script))
   (alex:if-let ((code (nyxt/mode/user-script:code script)))
