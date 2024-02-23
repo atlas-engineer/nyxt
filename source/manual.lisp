@@ -382,39 +382,18 @@ Nyxt provides. For example, one can use the "
             "Bookmark Link")))
 
       (:nsection :title "Custom URL schemes"
-        (:p "If there's a scheme that Nyxt doesn't support, but you want it to, you can
-always define the handler for this scheme so that it's Nyxt-openable.")
-        (:p "As a totally hypothetical example, you can define a nonsense scheme "
-            (:code "bleep") " to generate a page with random text:")
+        (:p "Nyxt can register custom schemes that run a handler on URL load.")
+        (:p "The example below defines a scheme " (:code "hello") " that replies
+            accordingly when loading URLs " (:code "hello:world") " and "
+            (:code "hello:mars") ".")
         (:ncode
-          '(define-internal-scheme "bleep"
-            (lambda (url buffer)
-              (values
-               (spinneret:with-html-string
-                 (:h1 "Bleep bloop?")
-                 (:p (loop repeat (parse-integer (quri:uri-path (url url)) :junk-allowed t)
-                           collect (:li (elt '("bleep" "bloop") (random 2))))))
-               "text/html;charset=utf8"))
-            :local-p t))
-        (:p "What this piece of code does is")
-        (:ul
-         (:li "Define a new scheme.")
-         (:li "Make a handler for it that takes the URL (as a string) and a buffer it's being
-opened in.")
-         (:li "Read the path (the part after the bleep:) of the URL and interpret it as a number.")
-         (:ul
-          (:li "(Note that you need to wrap the URL into a " (:nxref :function 'url)
-               " call so that it turns into a " (:nxref :class-name 'quri:uri)
-               " for the convenience of path (and other elements) fetching.)"))
-         (:li "Generate a random list of \"bleep\" and \"bloop\".")
-         (:li "Return it as a " (:code "text/html") " content."))
-        (:p "The next time you run Nyxt and open " (:code "bleep:20")
-            ", you'll see a list of twenty bleeps and bloops.")
-        (:p "Internal schemes can return any type of content (both strings and arrays of
-bytes are recognized), and they are capable of being "
-            (:nxref :class-name 'scheme :slot 'cors-enabled-p "CORS-enabled")
-            ", " (:nxref :class-name 'scheme :slot 'local-p "protected")
-            ", and are in general capable of whatever the renderer-provided schemes do.")
+          '(define-internal-scheme "hello"
+            (lambda (url)
+              (if (string= (quri:uri-path (url url)) "world")
+                  (spinneret:with-html-string (:p "Hello, World!"))
+                  (spinneret:with-html-string (:p "Please instruct me on how to greet you!"))))))
+        (:p "Note that scheme privileges, such as enabling the Fetch API or
+enabling CORS requests are renderer-specific.")
 
         (:nsection :title "nyxt: URLs and internal pages"
           (:p "You can create pages out of Lisp commands, and make arbitrary computations for
