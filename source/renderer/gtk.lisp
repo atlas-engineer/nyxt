@@ -2263,7 +2263,7 @@ See `make-buffer' for a description of the other arguments."
                                (renderer-window gtk-window)
                                (renderer-buffer gtk-buffer)
                                (nyxt/mode/download:renderer-download gtk-download)
-                               (renderer-request-data gtk-request-data )
+                               (renderer-request-data gtk-request-data)
                                (renderer-scheme gtk-scheme)
                                (nyxt/mode/user-script:renderer-user-style gtk-user-style)
                                (nyxt/mode/user-script:renderer-user-script gtk-user-script)))))
