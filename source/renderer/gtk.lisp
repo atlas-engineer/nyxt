@@ -810,10 +810,97 @@ See `gtk-browser's `modifier-translator' slot."
       (funcall (input-dispatcher window) event sender window))))
 
 (define-class gtk-scheme ()
-  ()
+  ((context
+    nil
+    :writer nil
+    :reader t
+    :documentation "See `webkit-web-context'.")
+   (local-p
+    nil
+    :writer nil
+    :reader t
+    :documentation "Whether pages of other URI schemes cannot access URIs of
+this scheme.")
+   (no-access-p
+    nil
+    :writer nil
+    :reader t
+    :documentation "Whether pages of this URI scheme cannot access other URI schemes.")
+   (secure-p
+    nil
+    :writer nil
+    :reader t
+    :documentation "Whether mixed content warnings aren't generated for this
+scheme when included by an HTTPS page.
+
+See https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content.")
+   (cors-enabled-p
+    nil
+    :writer nil
+    :reader t
+    :documentation "Whether CORS requests are allowed.")
+   (display-isolated-p
+    nil
+    :writer nil
+    :reader t
+    :documentation "Whether pages cannot display URIs unless they are from the
+same scheme.
+For example, pages in another origin cannot create iframes or hyperlinks to URIs
+with this scheme.")
+   (empty-document-p
+    nil
+    :writer nil
+    :reader t
+    :documentation "Whether pages are allowed to be loaded synchronously."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:documentation "Related to WebKit's custom schemes."))
+
+(defmethod manager ((scheme gtk-scheme))
+  (webkit:webkit-web-context-get-security-manager (context scheme)))
+
+(defmethod (setf local-p) (value (scheme gtk-scheme))
+  (when value
+    (webkit:webkit-security-manager-register-uri-scheme-as-local (manager scheme)
+                                                                 (name scheme)))
+  (setf (slot-value scheme 'local-p) value))
+
+(defmethod (setf no-access-p) (value (scheme gtk-scheme))
+  (when value
+    (webkit:webkit-security-manager-register-uri-scheme-as-no-access (manager scheme)
+                                                                     (name scheme)))
+  (setf (slot-value scheme 'no-access-p) value))
+
+(defmethod (setf secure-p) (value (scheme gtk-scheme))
+  (when value
+    (webkit:webkit-security-manager-register-uri-scheme-as-secure (manager scheme)
+                                                                  (name scheme)))
+  (setf (slot-value scheme 'secure-p) value))
+
+(defmethod (setf cors-enabled-p) (value (scheme gtk-scheme))
+  (when value
+    (webkit:webkit-security-manager-register-uri-scheme-as-cors-enabled (manager scheme)
+                                                                        (name scheme)))
+  (setf (slot-value scheme 'cors-enabled-p) value))
+
+(defmethod (setf display-isolated-p) (value (scheme gtk-scheme))
+  (when value
+    (webkit:webkit-security-manager-register-uri-scheme-as-display-isolated (manager scheme)
+                                                                            (name scheme)))
+  (setf (slot-value scheme 'display-isolated-p) value))
+
+(defmethod (setf empty-document-p) (value (scheme gtk-scheme))
+  (when value
+    (webkit:webkit-security-manager-register-uri-scheme-as-empty-document (manager scheme)
+                                                                          (name scheme)))
+  (setf (slot-value scheme 'empty-document-p) value))
+
+(defmethod initialize-instance :after ((scheme gtk-scheme) &key)
+  (match (name scheme)
+    ("nyxt-resource" (setf (secure-p scheme) t))
+    ("lisp" (setf (cors-enabled-p scheme) t))
+    ("view-source" (setf (no-access-p scheme) t))
+    (_ t)))
 
 ;; From https://github.com/umpirsky/language-list/tree/master/data directory
 ;; listing $(ls /data) and processed with:
@@ -884,6 +971,17 @@ See `gtk-browser's `modifier-translator' slot."
      pointer)
     (cffi:foreign-free pointer)))
 
+(defmethod ffi-register-custom-scheme ((scheme gtk-scheme))
+  ;; FIXME If a define-internal-scheme is updated at runtime, it is not honored.
+  (webkit:webkit-web-context-register-uri-scheme-callback
+   (context scheme)
+   (name scheme)
+   (lambda (request)
+     (funcall* (callback scheme)
+               (webkit:webkit-uri-scheme-request-get-uri request)))
+   (or (error-callback scheme)
+       (lambda (c) (echo-warning "Error while routing ~s resource: ~a" scheme c)))))
+
 (defun make-context (name &key ephemeral-p)
   (let* ((context
            (if ephemeral-p
@@ -932,52 +1030,13 @@ See `gtk-browser's `modifier-translator' slot."
        (declare (ignore context))
        (with-protect ("Error in \"download-started\" signal thread: ~a" :condition)
          (wrap-download download))))
-    (maphash
-     (lambda (scheme scheme-object)
-       (webkit:webkit-web-context-register-uri-scheme-callback
-        context scheme
-        (lambda (request)
-          (let ((nyxt::*interactive-p* t)
-                ;; Look up the scheme-object again so that we can live-update
-                ;; the callback without having to create a new view with a new
-                ;; context.
-                (scheme-object (gethash scheme nyxt::*schemes*)))
-            (funcall* (callback scheme-object)
-                      (webkit:webkit-uri-scheme-request-get-uri request)
-                      (find (webkit:webkit-uri-scheme-request-get-web-view request)
-                            (delete nil
-                                    (append (list (status-buffer (current-window))
-                                                  (message-buffer (current-window)))
-                                            (nyxt::active-prompt-buffers (current-window))
-                                            (nyxt::panel-buffers (current-window))
-                                            (buffer-list)))
-                            :key #'gtk-object))))
-        (or (error-callback scheme-object)
-            (lambda (condition)
-              (echo-warning "Error while routing ~s resource: ~a" scheme condition))))
-       ;; We err on the side of caution, assigning the most restrictive policy
-       ;; out of those provided. Should it be the other way around?
-       (let ((manager (webkit:webkit-web-context-get-security-manager context)))
-         (cond
-           ((local-p scheme-object)
-            (webkit:webkit-security-manager-register-uri-scheme-as-local
-             manager scheme))
-           ((no-access-p scheme-object)
-            (webkit:webkit-security-manager-register-uri-scheme-as-no-access
-             manager scheme))
-           ((display-isolated-p scheme-object)
-            (webkit:webkit-security-manager-register-uri-scheme-as-display-isolated
-             manager scheme))
-           ((secure-p scheme-object)
-            (webkit:webkit-security-manager-register-uri-scheme-as-secure
-             manager scheme))
-           ((cors-enabled-p scheme-object)
-            (webkit:webkit-security-manager-register-uri-scheme-as-cors-enabled
-             manager scheme))
-           ((empty-document-p scheme-object)
-            (webkit:webkit-security-manager-register-uri-scheme-as-empty-document
-             manager scheme)))))
-     nyxt::*schemes*)
+    (maphash (lambda (scheme-name callbacks)
+               (ffi-register-custom-scheme (make-instance 'scheme
+                                                          :name scheme-name
+                                                          :context context
+                                                          :callback (first callbacks)
+                                                          :error-callback (second callbacks))))
+             nyxt::*schemes*)
     (unless (or ephemeral-p
                 (internal-context-p name))
       (let ((cookies-path (files:expand (make-instance 'cookies-file :context-name name))))
