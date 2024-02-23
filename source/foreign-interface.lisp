@@ -123,6 +123,10 @@ When URL is non-nil, relative URLs are resolved against it.")
 Like `ffi-buffer-load-html', except that it doesn't influence the BUFFER history
 or CSS/HTML cache.")
 
+(define-ffi-generic ffi-register-custom-scheme (scheme)
+  "Register internal custom SCHEME.
+See `scheme'.")
+
 (define-ffi-generic ffi-buffer-evaluate-javascript (buffer javascript &optional world-name)
   "Evaluate JAVASCRIPT, encoded as a string, in BUFFER.")
 (define-ffi-generic ffi-buffer-evaluate-javascript-async (buffer javascript &optional world-name)
