@@ -896,6 +896,17 @@ with this scheme.")
   (setf (slot-value scheme 'empty-document-p) value))
 
 (defmethod initialize-instance :after ((scheme gtk-scheme) &key)
+  ;; NOTE: No security settings for the nyxt scheme since:
+  ;; - :local-p makes it inaccessible from other schemes.
+  ;; - :display-isolated-p does not allow embedding a nyxt scheme page inside a
+  ;;   page of the same scheme.
+  ;; - :secure-p and :cors-enabled-p are too permissive for a scheme that allows
+  ;;   evaluating Lisp code.
+  ;; Therefore, no settings provide the best configuration so that:
+  ;; - <iframe> embedding and exploitation are impossible.
+  ;; - Redirection—both as window.location.(href|assign|replace) and
+  ;;   HTTP status code 301—works.
+  ;; - nyxt scheme pages are linkable from pages of other schemes.
   (match (name scheme)
     ("nyxt-resource" (setf (secure-p scheme) t))
     ("lisp" (setf (cors-enabled-p scheme) t))

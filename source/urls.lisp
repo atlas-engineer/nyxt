@@ -380,20 +380,6 @@ guarantee of the same result."
         (error "There's no nyxt:~a internal-page defined" symbol))))
 
 (define-internal-scheme "nyxt"
-    ;; NOTE: We don't set any security settings (such as :local-p, :secure-p
-    ;; etc.)  because:
-    ;; - :local-p makes nyxt:// scheme completely inaccessible from other schemes.
-    ;; - :display-isolated-p does not allow embedding a nyxt:// page even inside
-    ;;   the page of the same scheme. Self-embedding might be a use-case in the
-    ;;   future, thus :display-isolated-p is unusable.
-    ;; - :secure-p and :cors-enabled-p are both dangerously permissive for a
-    ;;   scheme that allows evaluating Lisp code.
-    ;; Not setting any security settings gives the best security/flexibility for
-    ;; our use-case:
-    ;; - <iframe> embedding and exploitation are impossible.
-    ;; - Redirection—both as window.location.(href|assign|replace) and
-    ;;   HTTP status code 301—works.
-    ;; - nyxt:// pages are linkable from outside Nyxt!
     (lambda (url buffer)
       (with-protect ("Error while processing the \"nyxt:\" URL: ~a" :condition)
         (let ((url (quri:uri (str:replace-first "://" ":" url))))
