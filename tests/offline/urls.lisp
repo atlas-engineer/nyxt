@@ -3,7 +3,7 @@
 
 (in-package :nyxt/tests)
 
-(define-test parse-url (:tags :online)
+(define-test parse-url ()
   ;; "full URL"
   (assert-equality #'quri:uri=
                    (quri:uri "https://nyxt-browser.com")
@@ -57,7 +57,7 @@
                    (quri:uri "https://search.atlas.engineer/searxng/search?q=foo:blank")
                    (url (first (nyxt::input->queries "foo:blank")))))
 
-(define-test url-processing (:tags :online)
+(define-test url-processing ()
   ;; "Invalid URL (empty host)"
   (assert-false (valid-url-p "http://foo"))
   ;; "Invalid URL (TLD == host)"
