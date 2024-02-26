@@ -334,13 +334,10 @@ Authority is compared case-insensitively (RFC 3986)."
 
 (-> value->param-value (t) (values string &optional))
 (defun value->param-value (value)
-  "Turns the VALUE into a `query-params->arglist'-readable representation.
-- If VALUE is a string, return it as-is.
-- Otherwise, print it so string and prepend `+escape+' in front of it to notify
-  the `query-params->arglist' that it should be READ by CL reader."
+  "Turn VALUE into a representation readable by `query-params->arglist'."
   (if (stringp value)
       value
-      ;; This is to safely parse the args afterwards
+      ;; As to notify query-params->arglist.
       (str:concat +escape+ (let ((*package* (find-package :nyxt)))
                              (prin1-to-string value)))))
 
