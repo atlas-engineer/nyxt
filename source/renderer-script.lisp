@@ -433,4 +433,3 @@ Only keyword and rest arguments are accepted."
 Only keyword arguments are accepted."
   `(prog1 (define-internal-page-command ,name (,@arglist) (,buffer-var ,title ,mode) ,@body)
      (setf (slot-value #',name 'visibility) :global)))
-
