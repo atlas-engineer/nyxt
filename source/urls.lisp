@@ -92,48 +92,27 @@ The URL is fetched, which explains possible bottlenecks."
 Should be redefined by the renderer."))
 
 (define-class scheme (renderer-scheme)
-  ((name (error "Scheme must have a name/scheme")
-         :documentation "Scheme/name of the internal scheme.
-For instance, \"gopher\", \"irc\".")
+  ((name
+    (alex:required-argument 'name)
+    :documentation "The custom scheme name to handle.
+HTTPS or FILE are examples of schemes.")
    (callback
     nil
     :type (or null function)
-    :documentation "Callback to get the page contents when accessing resource with this scheme.
+    :documentation "A function called on URL load that returns the page contents.
 
-Takes two arguments: the URL with scheme and the buffer it was requested in.
-
-Returns up to five values:
-- The data for page contents (either as string or as a unsigned byte array).
-- The MIME type for the contents.
-- The status code for the request.
-- An alist of headers for the request.
-- A status reason phrase.")
+It takes the URL as an argument and returns up to 5 values:
+- The data for page contents (either as string or as a unsigned byte array)
+- The MIME type for the contents
+- The status code for the request
+- An alist of headers for the request
+- A status reason phrase")
    (error-callback
     nil
     :type (or null function)
     :documentation "Callback to use when a condition is signaled.
 
-Accepts only one argument: the signaled condition.")
-   (local-p
-    nil
-    :documentation "Local schemes are not accessible to the pages of other schemes.")
-   (no-access-p
-    nil
-    :documentation "No-access schemes cannot access pages with any other scheme.")
-   (secure-p
-    nil
-    :documentation "Secure schemes can access the Web, Web can access them too.
-
-Requires encryption or other means of security.")
-   (cors-enabled-p
-    nil
-    :documentation "Whether other pages can do requests to the resources with this scheme.")
-   (display-isolated-p
-    nil
-    :documentation "Display-isolated schemes cannot be displayed (in iframes, for example) by other schemes.")
-   (empty-document-p
-    nil
-    :documentation "Empty document schemes can be loaded synchronously by websites referring to them."))
+Accepts only one argument: the signaled condition."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:documentation "Representation of Nyxt-specific internal schemes.
@@ -147,30 +126,16 @@ content. In case something goes wrong, runs `error-callback'.")
 
 (defvar *schemes* (sera:dict)
   "A table of internal schemes registered in Nyxt.
-Keys are scheme strings, values are `scheme' objects.")
+It maps scheme names as strings to `scheme' objects.")
 
 (export-always 'define-internal-scheme)
-(defun define-internal-scheme (scheme-name callback
-                               &rest keys
-                               &key local-p
-                                 no-access-p
-                                 secure-p
-                                 cors-enabled-p
-                               &allow-other-keys)
-  "Define a handler (running CALLBACK) for SCHEME-NAME `scheme'.
+(defun define-internal-scheme (scheme-name callback &optional error-callback)
+  "Define handler CALLBACK for SCHEME-NAME `scheme'.
 
-CALLBACK is called with two arguments:
-- the URL that was requested with this scheme, and
-- buffer that it was requested in.
-
-For keyword arguments' meaning, see the corresponding `scheme' slot
-documentation."
-  (declare (ignorable local-p no-access-p secure-p cors-enabled-p))
+See the `callback' and `error-callback' slot documentation for their type
+signatures."
   (setf (gethash scheme-name *schemes*)
-        (apply #'make-instance 'scheme
-               :name scheme-name
-               :callback callback
-               keys)))
+        (list callback error-callback)))
 
 (defmemo lookup-hostname (name)
   "Resolve hostname NAME and memoize the result."
