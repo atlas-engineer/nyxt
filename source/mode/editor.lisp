@@ -157,3 +157,6 @@ BUFFER is of type `editor-buffer'."
                             (prompt1 :prompt "Edit user file"
                                      :sources 'nyxt::user-file-source)))))
   (edit-file file-path))
+
+(define-auto-rule '(match-scheme "editor")
+  :included '(nyxt/mode/editor:editor-mode))
