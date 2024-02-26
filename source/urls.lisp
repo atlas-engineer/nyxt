@@ -356,19 +356,16 @@ ARGS is an arbitrary keyword arguments list that is translated to a URL query."
            params))
 
 (define-internal-scheme "nyxt"
-    (lambda (url buffer)
-      (with-protect ("Error while processing the \"nyxt:\" URL: ~a" :condition)
-        (let ((url (quri:uri (str:replace-first "://" ":" url))))
-          (log:debug "Internal page ~a requested." url)
-          (multiple-value-bind (internal-page-name args)
-              (parse-nyxt-url url)
-            (when (and internal-page-name)
-              (alex:when-let ((internal-page (gethash internal-page-name *nyxt-url-commands*)))
-                (setf (title buffer) (apply #'dynamic-title internal-page args))
-                ;; FIXME: This allows `find-internal-page-buffer' to find the
-                ;; buffer and `form' to have this buffer as the buffer-var.
-                (setf (url buffer) (quri:uri url))
-                (apply (form internal-page) args))))))))
+    (lambda (url)
+      (let* ((%url (url url))
+             (internal-page (find-url-internal-page %url)))
+        (if internal-page
+            (progn
+              ;; Allow `find-internal-page-buffer' to find it.
+              (setf (url (current-buffer)) (quri:uri %url))
+              (apply (form internal-page)
+                     (query-params->arglist (quri:uri-query-params %url))))
+            (warn "No internal page corresponds to URL ~a" url)))))
 
 (define-internal-scheme "nyxt-resource"
     (lambda (url buffer)
