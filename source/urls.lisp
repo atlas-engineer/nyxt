@@ -403,8 +403,7 @@ TITLE is purely informative."
                   (ps:create :mode "no-cors"))))))
 
 (define-internal-scheme "lisp"
-    (lambda (url buffer)
-      (declare (ignore buffer))
+    (lambda (url)
       (alex:when-let* ((%url (quri:uri url))
                        (request-id (quri:uri-path %url))
                        (query (quri:uri-query-params %url))
@@ -426,8 +425,7 @@ TITLE is purely informative."
                (j:encode callback-output)))
            (log:warn "Request ~a isn't bound to a callback in buffer ~a" %url buffer))
          "application/json")))
-  :cors-enabled-p t
-  :error-callback (lambda (c) (log:debug "Error when evaluating lisp URL: ~a" c)))
+  (lambda (c) (log:debug "Error when evaluating lisp URL: ~a" c)))
 
 (-> path= (quri:uri quri:uri) boolean)
 (defun path= (url1 url2)
