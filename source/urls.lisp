@@ -368,10 +368,8 @@ ARGS is an arbitrary keyword arguments list that is translated to a URL query."
             (warn "No internal page corresponds to URL ~a" url)))))
 
 (define-internal-scheme "nyxt-resource"
-    (lambda (url buffer)
-      (declare (ignore buffer))
-      (nth-value 0 (gethash (quri:uri-path (url url)) *static-data*)))
-  :secure-p t)
+    (lambda (url)
+      (nth-value 0 (gethash (quri:uri-path (url url)) *static-data*))))
 
 (-> lisp-url (&rest t &key (:id string)
               (:buffer t)
