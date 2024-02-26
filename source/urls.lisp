@@ -307,37 +307,34 @@ Authority is compared case-insensitively (RFC 3986)."
 
 (export-always 'nyxt-url)
 (-> nyxt-url (t &rest t &key &allow-other-keys) string)
-(defun nyxt-url (function-name &rest args &key &allow-other-keys)
-  "Generate a nyxt: URL from the given FUNCTION-NAME applied to ARGS.
- This is useful to generate internal pages.
+(defun nyxt-url (fn &rest args &key &allow-other-keys)
+  "Return a nyxt scheme URL encoding a call to FN with ARGS.
+It is useful to request `internal-page's.
 
-ARGS is an arbitrary keyword (!) arguments list that will be translated to
-URL parameters.
+ARGS is an arbitrary keyword arguments list that is translated to a URL query."
+  (let* ((query (quri:url-encode-params (mapcar (lambda (pair)
+                                                  (cons (symbol->param-name (first pair))
+                                                        (value->param-value (rest pair))))
+                                                (alexandria:plist-alist args))
+                                        :space-to-plus t))
+         (url (quri:render-uri
+               (quri:make-uri
+                :scheme "nyxt"
+                :path (symbol->param-name fn)
+                :query (unless (uiop:emptyp query) query)))))
+    (if (internal-page-symbol-p fn)
+        url
+        (error "URL ~a is undefined." url))))
 
-The resulting URL should be perfectly parseable back to the initial form with
-`parse-nyxt-url'.
-
-Example:
-\(nyxt-url 'nyxt:describe-function :value 'nyxt:describe-value)
-=> \"nyxt:describe-function?value=NYXT%3ADESCRIBE-VALUE\"
-
-\(parse-nyxt-url (nyxt-url 'nyxt:describe-value :id \"1000\"))
-=> NYXT:DESCRIBE-VALUE
-=> (:ID \"1000\")"
-  (let ((*print-case* :downcase))
-    (if (gethash function-name *nyxt-url-commands*)
-        (let ((params (quri:url-encode-params
-                       (mapcar (lambda (pair)
-                                 (cons (symbol->param-name (first pair))
-                                       (value->param-value (rest pair))))
-                               (alexandria:plist-alist args))
-                       :space-to-plus t)))
-          (the (values string &optional)
-               (format nil "nyxt:~a~@[~*?~a~]"
-                       (symbol->param-name function-name)
-                       (not (uiop:emptyp params))
-                       params)))
-        (error "There's no nyxt:~a page defined" (symbol->param-name function-name)))))
+(export-always 'internal-page-name)
+(-> internal-page-name ((or string quri:uri)) t)
+(defun internal-page-name (url)
+  (alex:when-let* ((%url (quri:uri url))
+                   (_ (string= "nyxt" (quri:uri-scheme %url))))
+    ;; As to account for nyxt:foo and nyxt://foo.
+    (uiop:safe-read-from-string (str:upcase (or (quri:uri-path %url)
+                                                (quri:uri-host %url)))
+                                :package :nyxt)))
 
 (export-always 'internal-url-p)
 (defun internal-url-p (url)
@@ -357,27 +354,6 @@ Example:
                                (rest pair))))
                (list key value)))
            params))
-
-(export-always 'parse-nyxt-url)
-(-> parse-nyxt-url ((or string quri:uri)) (values symbol list &optional))
-(defun parse-nyxt-url (url)
-  "Return two values parsed from the nyxt: URL:
-- the name of the `internal-page',
-- the arguments to it.
-
-Error out if some of the params are not constants. Thanks to this,
-`parse-nyxt-url' can be repeatedly called on the same nyxt: URL, with the
-guarantee of the same result."
-  (let* ((url (url url))
-         (symbol (quri:uri-path url))
-         ;; FIXME: While we ourselves guarantee the correctness of nyxt:// URLs,
-         ;; it would be nice to ensure it processes even the malformed URLs.
-         (params (quri:uri-query-params url))
-         (internal-page-name (uiop:safe-read-from-string (str:upcase symbol)
-                                                         :package (find-package :nyxt))))
-    (if (gethash internal-page-name *nyxt-url-commands*)
-        (values internal-page-name (query-params->arglist params))
-        (error "There's no nyxt:~a internal-page defined" symbol))))
 
 (define-internal-scheme "nyxt"
     (lambda (url buffer)
