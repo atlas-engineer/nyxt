@@ -57,6 +57,16 @@
                    (quri:uri "https://search.atlas.engineer/searxng/search?q=foo:blank")
                    (url (first (nyxt::input->queries "foo:blank")))))
 
+(define-test nyxt-urls ()
+  (assert-error 'simple-error
+                (nyxt-url 'undefined-nyxt-command :param1 "foo" :param2 "bar"))
+  (assert-false (internal-page-name "foo:new"))
+  (assert-false (internal-page-name "foo://new"))
+  (assert-equal 'new
+                (internal-page-name "nyxt:new"))
+  (assert-equal 'new
+                (internal-page-name "nyxt://new")))
+
 (define-test url-processing ()
   ;; "Invalid URL (empty host)"
   (assert-false (valid-url-p "http://foo"))
