@@ -326,8 +326,8 @@ Authority is compared case-insensitively (RFC 3986)."
 (-> symbol->param-name (symbol) string)
 (defun symbol->param-name (symbol)
   "Turn the provided SYMBOL into a reasonable query URL parameter name."
-  (let* ((*package* (find-package :nyxt))
-         (*print-case* :downcase))
+  (let ((*package* (find-package :nyxt))
+        (*print-case* :downcase))
     (if (keywordp symbol)
         (format nil "~(~a~)" symbol)
         (format nil "~s" symbol))))
