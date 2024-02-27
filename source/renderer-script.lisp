@@ -158,15 +158,13 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
     (ps:chain result (slice 0 (ps:lisp limit)))))
 
 (export-always 'add-stylesheet)
-(defun add-stylesheet (stylesheet-name style &optional (buffer (current-buffer)))
-  "Find/create a STYLESHEET-NAMEd element and set the STYLE as it's content."
+(defun add-stylesheet (id style &optional (buffer (current-buffer)))
+  "Set STYLE of element featuring ID."
   (ps-eval :async t :buffer buffer
-    (unless (nyxt/ps:qs document (ps:lisp
-                                  (concatenate
-                                   'string '(#\#) stylesheet-name)))
+    (unless (nyxt/ps:qs document (ps:lisp (str:concat "#" id)))
       (ps:try
        (ps:let ((style-element (ps:chain document (create-element "style"))))
-         (setf (ps:@ style-element id) (ps:lisp stylesheet-name))
+         (setf (ps:@ style-element id) (ps:lisp id))
          (ps:chain document head (append-child style-element))
          (setf (ps:chain style-element inner-text) (ps:lisp style)))
        (:catch (error))))))
