@@ -129,54 +129,47 @@ Return nil to forward to renderer or non-nil otherwise."
                    (keyspecs-with-optional-keycode key))))
       (when (input-buffer-p buffer)
         (setf (last-event buffer) event))
-      (cond
-        ((ffi-generated-input-event-p window event)
-         (log:debug "Forward generated event ~a" (keyspecs key-stack))
-         (setf key-stack nil)
-         nil)
+      (multiple-value-bind (bound-function matching-keymap translated-key)
+          (the keyscheme:nyxt-keymap-value
+               (keymaps:lookup-key key-stack (current-keymaps)))
+        (declare (ignore matching-keymap))
+        (cond
+          ((keymaps:keymap-p bound-function)
+           (echo "Pressed keys: ~a" (keyspecs-without-keycode key-stack))
+           (log:debug "Prefix binding ~a" (keyspecs key-stack translated-key))
+           t)
 
-        (t
-         (multiple-value-bind (bound-function matching-keymap translated-key)
-             (the keyscheme:nyxt-keymap-value
-                  (keymaps:lookup-key key-stack (current-keymaps)))
-           (declare (ignore matching-keymap))
-           (cond
-             ((keymaps:keymap-p bound-function)
-              (echo "Pressed keys: ~a" (keyspecs-without-keycode key-stack))
-              (log:debug "Prefix binding ~a" (keyspecs key-stack translated-key))
-              t)
+          ((typep bound-function '(and (not null) (or symbol command)))
+           (let ((command (typecase bound-function
+                            (symbol (symbol-function (resolve-user-symbol bound-function :command)))
+                            (command bound-function))))
+             (check-type command command)
+             (log:debug "Found key binding ~a to ~a" (keyspecs key-stack translated-key) bound-function)
+             ;; We save the last key separately to keep it available to the
+             ;; command even after key-stack has been reset in the other
+             ;; thread.
+             (setf (last-key window) (first key-stack))
+             (unwind-protect
+                  (funcall (command-dispatcher window) command)
+               ;; We must reset the key-stack on errors or else all subsequent
+               ;; keypresses will keep triggering the same erroring command.
+               (setf key-stack nil))
+             t))
 
-             ((typep bound-function '(and (not null) (or symbol command)))
-              (let ((command (typecase bound-function
-                               (symbol (symbol-function (resolve-user-symbol bound-function :command)))
-                               (command bound-function))))
-                (check-type command command)
-                (log:debug "Found key binding ~a to ~a" (keyspecs key-stack translated-key) bound-function)
-                ;; We save the last key separately to keep it available to the
-                ;; command even after key-stack has been reset in the other
-                ;; thread.
-                (setf (last-key window) (first key-stack))
-                (unwind-protect
-                     (funcall (command-dispatcher window) command)
-                  ;; We must reset the key-stack on errors or else all subsequent
-                  ;; keypresses will keep triggering the same erroring command.
-                  (setf key-stack nil))
-                t))
+          ((or (and (input-buffer-p buffer) (forward-input-events-p buffer))
+               (pointer-event-p (first (last key-stack))))
+           (log:debug "Forward key ~s" (keyspecs key-stack))
+           (setf key-stack nil)
+           nil)
 
-             ((or (and (input-buffer-p buffer) (forward-input-events-p buffer))
-                  (pointer-event-p (first (last key-stack))))
-              (log:debug "Forward key ~s" (keyspecs key-stack))
-              (setf key-stack nil)
-              nil)
+          ((and (input-buffer-p buffer) (not (forward-input-events-p buffer)))
+           ;; After checking `pointer-event-p', otherwise pointer events
+           ;; might not be forwarded.
+           (funcall (input-skip-dispatcher window) (keyspecs key-stack))
+           (setf key-stack nil)
+           t)
 
-             ((and (input-buffer-p buffer) (not (forward-input-events-p buffer)))
-              ;; After checking `pointer-event-p', otherwise pointer events
-              ;; might not be forwarded.
-              (funcall (input-skip-dispatcher window) (keyspecs key-stack))
-              (setf key-stack nil)
-              t)
-
-             (t
-              (log:debug "Fallback forward key ~s" (keyspecs key-stack))
-              (setf key-stack nil)
-              nil))))))))
+          (t
+           (log:debug "Fallback forward key ~s" (keyspecs key-stack))
+           (setf key-stack nil)
+           nil))))))
