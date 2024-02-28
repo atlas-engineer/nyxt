@@ -356,12 +356,6 @@ result."
   (run-thread "run-async command"
     (run-command command args)))
 
-(define-command forward-to-renderer (&key (window (current-window))
-                                     (buffer (current-buffer)))
-  "A command that forwards the last key press to the renderer.
-This is useful to override bindings to be forwarded to the renderer."
-  (ffi-generate-input-event window (last-event buffer)))
-
 (define-command nothing ()                 ; TODO: Replace with ESCAPE special command that allows dispatched to cancel current key stack.
   "A command that does nothing.
 This is useful to override bindings to do nothing."
