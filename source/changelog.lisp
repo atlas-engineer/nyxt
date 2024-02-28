@@ -27,7 +27,11 @@
 
 (define-version "4.0.0"
   (:ul
+   (:li "Refactor renderer interface input handling.")
    (:li "Refactor custom schemes URLs API.")
+   (:li "Deprecate slot " (:code "input-dispatcher")
+        ", if the user wishes to change the " (:code "input-dispatcher")", they can redefine "
+        (:nxref :function 'dispatch-input-event) ".")
    (:li "Deprecate slot " (:code "status-buffer-position") "in favour of"
         (:nxref :slot 'placement :class-name 'status-buffer) ".")
    (:li "Deprecate slot " (:code "prompt-buffer-open-height") " since "
@@ -51,6 +55,9 @@ elements are scaled accordingly.")
          (:li (:code "NASDF_COMPRESS"))))
    (:li "Delete commands:"
         (:ul
+         (:li (:code "forward-to-renderer"))
+         (:li (:code "maybe-scroll-to-bottom"))
+         (:li (:code "maybe-scroll-to-top"))
          (:li (:code "clean-configuration"))
          (:li (:code "copy-placeholder"))
          (:li (:code "dashboard"))
