@@ -74,16 +74,10 @@ the generic functions on `status-buffer'.  Finally set the `window'
     (make-instance 'message-buffer)
     :type message-buffer
     :documentation "The `message-buffer' instance for this window.")
-   (input-dispatcher
-    'dispatch-input-event
-    :type (or sym:function-symbol function)
-    :documentation "Function to process input events.
-It takes EVENT, BUFFER, WINDOW and PRINTABLE-P parameters.
-Cannot be null.")
    (command-dispatcher
     #'dispatch-command
     :type (or sym:function-symbol function)
-    :documentation "Function to process the command processed in `input-dispatcher'.
+    :documentation "Function to process the command processed in `dispatch-input-event'.
 Takes the function/command as the only argument.")
    (input-skip-dispatcher
     #'dispatch-input-skip
