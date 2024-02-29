@@ -117,7 +117,7 @@ This history is used if no history is specified for a given prompt buffer.")
     :documentation "The URL set to a new blank buffer opened by Nyxt.")
    (set-url-history
     (make-ring)
-    :documentation "The history of all URLs set via set-url")
+    :documentation "A ring that keeps track of all URLs set by `set-url'.")
    (recent-buffers
     (make-ring :size 50)
     :export nil
