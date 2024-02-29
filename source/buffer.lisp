@@ -1733,9 +1733,12 @@ Otherwise, set `engine' to `default-search-engine'."))
      ;; First check engine: if set, no need to change anything.
      nil)
     ((valid-url-p (query query)
-                  :check-dns-p check-dns-p)
+                  :check-dns-p nil)
      ;; Valid URLs should be passed forward.
      nil)
+    ((and check-dns-p
+          (valid-tld-p (query query)))
+     (setf (query query) (str:concat "https://" (query query))))
     ;; Rest is for invalid URLs:
     ((uiop:file-exists-p (query query))
      (setf (query query)
@@ -1744,11 +1747,6 @@ Otherwise, set `engine' to `default-search-engine'."))
             (uiop:native-namestring
              (uiop:ensure-absolute-pathname
               (query query) *default-pathname-defaults*)))))
-    ((and check-dns-p
-          (valid-url-p (str:concat "https://" (query query))
-                       :check-dns-p check-dns-p))
-     (setf (query query)
-           (str:concat "https://" (query query))))
     (t
      (setf (engine query)
            (or (engine query)
@@ -1844,7 +1842,14 @@ Otherwise, set `engine' to `default-search-engine'."))
    (prompter:filter-preprocessor
     (lambda (suggestions source input)
       (declare (ignore suggestions source))
-      (input->queries input :check-dns-p nil :engine-completion-p t)))
+      (input->queries input :check-dns-p t :engine-completion-p nil)))
+   (prompter:filter-postprocessor
+    (lambda (suggestions source input)
+      (declare (ignore source))
+      ;; Avoid long computations until the user has finished the query.
+      (sleep 0.15)
+      (append suggestions
+              (input->queries input :check-dns-p nil :engine-completion-p t))))
    (prompter:filter nil)
    (prompter:actions-on-return #'buffer-load*))
   (:export-class-name-p t)
