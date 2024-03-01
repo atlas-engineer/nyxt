@@ -1390,14 +1390,8 @@ Loads the entry with default `prompter:actions-on-return'."))
     :documentation "See `search-engine'."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:documentation "Structure holding the new URL query generated from a user
-string input.
-
-If `engine' is set, `query' is passed to it (see the `url' method).
-If `query' is a valid URL, use it as is.
-If it points to an existing file, 'file://' is prepended to it.
-If prefixing with 'https://' results in a valid URL, set `query' to it.
-Otherwise, set `engine' to `default-search-engine'."))
+  (:documentation "Structure that processes a new URL query from user input.
+Checks whether a valid https or local file URL is requested, in a DWIM fashion."))
 
 (defmethod initialize-instance :after ((query new-url-query)
                                        &key check-dns-p &allow-other-keys)
@@ -1408,9 +1402,12 @@ Otherwise, set `engine' to `default-search-engine'."))
      ;; First check engine: if set, no need to change anything.
      nil)
     ((valid-url-p (query query)
-                  :check-dns-p check-dns-p)
+                  :check-dns-p nil)
      ;; Valid URLs should be passed forward.
      nil)
+    ((and check-dns-p
+          (valid-tld-p (query query)))
+     (setf (query query) (str:concat "https://" (query query))))
     ;; Rest is for invalid URLs:
     ((uiop:file-exists-p (query query))
      (setf (query query)
@@ -1419,11 +1416,6 @@ Otherwise, set `engine' to `default-search-engine'."))
             (uiop:native-namestring
              (uiop:ensure-absolute-pathname
               (query query) *default-pathname-defaults*)))))
-    ((and check-dns-p
-          (valid-url-p (str:concat "https://" (query query))
-                       :check-dns-p check-dns-p))
-     (setf (query query)
-           (str:concat "https://" (query query))))
     (t
      (setf (engine query)
            (or (engine query)
@@ -1519,7 +1511,14 @@ Otherwise, set `engine' to `default-search-engine'."))
    (prompter:filter-preprocessor
     (lambda (suggestions source input)
       (declare (ignore suggestions source))
-      (input->queries input :check-dns-p nil :engine-completion-p t)))
+      (input->queries input :check-dns-p t :engine-completion-p nil)))
+   (prompter:filter-postprocessor
+    (lambda (suggestions source input)
+      (declare (ignore source))
+      ;; Avoid long computations until the user has finished the query.
+      (sleep 0.15)
+      (append suggestions
+              (input->queries input :check-dns-p nil :engine-completion-p t))))
    (prompter:filter nil)
    (prompter:actions-on-return #'buffer-load*))
   (:export-class-name-p t)
