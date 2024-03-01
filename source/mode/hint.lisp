@@ -93,7 +93,6 @@ A positive value shifts to the bottom.")
       :color ,theme:on-background
       :font-family ,theme:monospace-font-family
       :font-size ".85rem"
-      :position "absolute"
       :transform ,(format nil "translate(~a%,~a%)"
                           (+ (x-translation mode)
                              (if (eq (x-placement mode) :right) -100 0))
@@ -136,7 +135,8 @@ A positive value shifts to the bottom.")
           (hinted-element-font-size (ps:@ (ps:chain window (get-computed-style hinted-element))
                                           font-size))
           (hint-font-size-lower-bound 5))
-      (setf (ps:@ hint-element style top) (+ (ps:@ window scroll-y) (ps:@ rect top) "px")
+      (setf (ps:@ hint-element style position) "absolute"
+            (ps:@ hint-element style top) (+ (ps:@ window scroll-y) (ps:@ rect top) "px")
             (ps:@ hint-element style left) (+ (ps:@ window scroll-x) (ps:@ rect left)
                                               (when right-x-alignment-p (ps:@ rect width)) "px"))
       (when (> (parse-float hinted-element-font-size)
