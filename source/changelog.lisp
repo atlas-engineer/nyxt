@@ -25,6 +25,11 @@
     (loop for version being the hash-value of +changelog+
           collect (:raw version))))
 
+(define-version "3.11.4"
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix " (:nxref :class-name 'nyxt/mode/hint:hint-mode) " on zoomed pages."))))
+
 (define-version "3.11.3"
   (:nsection :title "Bug fixes"
     (:ul
