@@ -1715,14 +1715,8 @@ Loads the entry with default `prompter:actions-on-return'."))
     :documentation "See `search-engine'."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:documentation "Structure holding the new URL query generated from a user
-string input.
-
-If `engine' is set, `query' is passed to it (see the `url' method).
-If `query' is a valid URL, use it as is.
-If it points to an existing file, 'file://' is prepended to it.
-If prefixing with 'https://' results in a valid URL, set `query' to it.
-Otherwise, set `engine' to `default-search-engine'."))
+  (:documentation "Structure that processes a new URL query from user input.
+Checks whether a valid https or local file URL is requested, in a DWIM fashion."))
 
 (defmethod initialize-instance :after ((query new-url-query)
                                        &key check-dns-p &allow-other-keys)
