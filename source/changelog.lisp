@@ -80,7 +80,10 @@ elements are scaled accordingly.")
 (define-version "3.11.4"
   (:nsection :title "Bug fixes"
     (:ul
-     (:li "Fix " (:nxref :class-name 'nyxt/mode/hint:hint-mode) " on zoomed pages."))))
+     (:li "Fix " (:nxref :class-name 'nyxt/mode/hint:hint-mode) " on zoomed pages.")))
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "Improve user experience when invoking command " (:nxref :command 'set-url) "."))))
 
 (define-version "3.11.3"
   (:nsection :title "Bug fixes"
