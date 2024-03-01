@@ -171,7 +171,7 @@ A positive value shifts to the bottom.")
     ;; Don't return a value.  Only the side-effects are of importance.
     nil))
 
-(-> select-from-alphabet (t alex:positive-integer string) (values string &optional))
+(-> select-from-alphabet (t alex:non-negative-integer string) (values string &optional))
 (defun select-from-alphabet (code subsequence-length alphabet)
   (let ((exponents (nreverse (loop for pow below subsequence-length
                                    collect (expt (length alphabet) pow)))))
@@ -181,7 +181,7 @@ A positive value shifts to the bottom.")
                   do (decf code (* quotient exp)))
             'string)))
 
-(-> generate-hints (alex:positive-integer) (list-of string))
+(-> generate-hints (alex:non-negative-integer) (list-of string))
 (defun generate-hints (length)
   (let ((alphabet (hints-alphabet (find-submode 'hint-mode))))
     (cond
