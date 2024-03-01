@@ -311,9 +311,8 @@ Consult https://developer.mozilla.org/en-US/docs/Web/CSS/visibility."
     (when (eq :emacs (hinting-type (find-submode 'hint-mode)))
       (lambda-command highlight-selected-hint* (suggestion)
         "Highlight hint."
-        (highlight-selected-hint
-         :element suggestion
-         :scroll nil))))
+        (highlight-selected-hint :element suggestion
+                                 :scroll nil))))
    (prompter:actions-on-marks
     (lambda (marks)
       (let ((%marks (mapcar (lambda (mark) (str:concat "#nyxt-hint-" (identifier mark)))
