@@ -267,12 +267,14 @@ Consult https://developer.mozilla.org/en-US/docs/Web/CSS/visibility."
          (el (nyxt/ps:qs shadow (ps:lisp (str:concat "#nyxt-hint-" (identifier hint))))))
     (when el
       (let ((span-element (ps:chain document (create-element "span"))))
-        (setf (ps:@ span-element class-name) "nyxt-hint nyxt-match-hint")
-        (setf (ps:@ span-element text-content)
-              (ps:lisp (subseq (identifier hint) 0 prefix-length)))
-        (setf (ps:chain el inner-h-t-m-l)
-              (+ (ps:@ span-element outer-h-t-m-l)
-                 (ps:lisp (subseq (identifier hint) prefix-length))))))))
+        (setf (ps:@ span-element class-name) "nyxt-hint nyxt-match-hint"
+              (ps:@ span-element style font-size) "inherit"
+              (ps:@ span-element text-content) (ps:lisp (subseq (identifier hint)
+                                                                0
+                                                                prefix-length))
+              (ps:chain el inner-h-t-m-l) (+ (ps:@ span-element outer-h-t-m-l)
+                                             (ps:lisp (subseq (identifier hint)
+                                                              prefix-length))))))))
 
 (define-class hint-source (prompter:source)
   ((prompter:name "Hints")
