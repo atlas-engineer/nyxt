@@ -1572,57 +1572,53 @@ specified for their contents."
           (list #'buffer-load*
                 (lambda-command new-buffer-load* (suggestion-values)
                   "Load URL(s) in new buffer(s)."
-                  (mapc (lambda (suggestion) (make-buffer :url (url suggestion))) (rest suggestion-values))
+                  (mapc (lambda (suggestion) (make-buffer :url (url suggestion)))
+                        (rest suggestion-values))
                   (make-buffer-focus :url (url (first suggestion-values))))
                 (lambda-command new-nosave-buffer-load* (suggestion-values)
                   "Load URL(s) in new buffer(s)."
-                  (mapc (lambda (suggestion) (make-nosave-buffer :url (url suggestion))) (rest suggestion-values))
+                  (mapc (lambda (suggestion) (make-nosave-buffer :url (url suggestion)))
+                        (rest suggestion-values))
                   (set-current-buffer
-                   (make-nosave-buffer :url (url (first suggestion-values))) :focus t))
+                   (make-nosave-buffer :url (url (first suggestion-values)))
+                   :focus t))
                 (lambda-command copy-url* (suggestions)
                   "Copy the URL of the chosen suggestion."
                   (trivial-clipboard:text (render-url (url (first suggestions))))))))
     (pushnew-url-history history (url (current-buffer)))
-    (prompt
-     :prompt "Open URL"
-     :input (if prefill-current-url-p
-                (render-url (url (current-buffer))) "")
-     :history history
-     :sources (url-sources (current-buffer) actions-on-return))
+    (prompt :prompt "Open URL"
+            :input (if prefill-current-url-p (render-url (url (current-buffer))) "")
+            :history history
+            :sources (url-sources (current-buffer) actions-on-return))
     (current-buffer)))
 
 (define-command set-url-new-buffer (&key (prefill-current-url-p t))
   "Prompt for a URL and set it in a new focused buffer."
-  (let ((history (set-url-history *browser*))
-        (actions-on-return (lambda-command new-buffer-load (suggestion-values)
-                             "Load URL(s) in new buffer(s)"
-                             (mapc (lambda (suggestion) (make-buffer :url (url suggestion)))
-                                   (rest suggestion-values))
-                             (make-buffer-focus :url (url (first suggestion-values))))))
+  (let ((history (set-url-history *browser*)))
     (pushnew-url-history history (url (current-buffer)))
-    (prompt
-     :prompt "Open URL in new buffer"
-     :input (if prefill-current-url-p
-                (render-url (url (current-buffer))) "")
-     :history history
-     :sources (url-sources (current-buffer) actions-on-return))
+    (prompt :prompt "Open URL in new buffer"
+            :input (if prefill-current-url-p (render-url (url (current-buffer))) "")
+            :history history
+            :sources (url-sources (current-buffer)
+                                  (lambda-command new-buffer-load (suggestion-values)
+                                    "Load URL(s) in new buffer(s)"
+                                    (mapc (lambda (suggestion) (make-buffer :url (url suggestion)))
+                                          (rest suggestion-values))
+                                    (make-buffer-focus :url (url (first suggestion-values))))))
     (current-buffer)))
 
 (define-command set-url-new-nosave-buffer (&key (prefill-current-url-p t))
   "Prompt for a URL and set it in a new focused nosave buffer."
-  (let ((actions-on-return
-          (lambda-command new-nosave-buffer-load (suggestion-values)
-            "Load URL(s) in new nosave buffer(s)"
-            (mapc (lambda (suggestion) (make-nosave-buffer :url (url suggestion)))
-                  (rest suggestion-values))
-            (make-buffer-focus :url (url (first suggestion-values))
-                               :nosave-buffer-p t))))
-    (prompt
-     :prompt "Open URL in new nosave buffer"
-     :input (if prefill-current-url-p
-                (render-url (url (current-buffer))) "")
-     :sources (url-sources (current-buffer) actions-on-return))
-    (current-buffer)))
+  (prompt :prompt "Open URL in new nosave buffer"
+          :input (if prefill-current-url-p (render-url (url (current-buffer))) "")
+          :sources (url-sources (current-buffer)
+                                (lambda-command new-nosave-buffer-load (suggestion-values)
+                                  "Load URL(s) in new nosave buffer(s)"
+                                  (mapc (lambda (suggestion) (make-nosave-buffer :url (url suggestion)))
+                                        (rest suggestion-values))
+                                  (make-buffer-focus :url (url (first suggestion-values))
+                                                     :nosave-buffer-p t))))
+  (current-buffer))
 
 (export-always 'reload-buffer)
 (defun reload-buffer (buffer)
