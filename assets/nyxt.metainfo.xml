@@ -52,6 +52,9 @@
 </screenshots>
   <!-- Only those published on Flathub are listed -->
   <releases>
+    <release version="3.11.4" date="2024-03-04">
+      <url>https://nyxt-browser.com/article/release-3.11.4.org</url>
+    </release>
     <release version="3.11.3" date="2024-02-20">
       <url>https://nyxt-browser.com/article/release-3.11.3.org</url>
     </release>
