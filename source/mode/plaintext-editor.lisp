@@ -9,7 +9,6 @@
 It renders the file in a single textarea HTML element.  Enabled by default for
 `editor-buffer's."
   ((visible-in-status-p nil)
-   (rememberable-p nil)
    (style (theme:themed-css (theme *browser*)
             `("body"
               :margin 0)
@@ -44,3 +43,6 @@ It renders the file in a single textarea HTML element.  Enabled by default for
 (defmethod get-content ((editor plaintext-editor-mode))
   (ps-eval :buffer (buffer editor)
     (ps:chain (nyxt/ps:qs document "#editor") value)))
+
+(define-auto-rule '(match-scheme "editor")
+  :included '(nyxt/mode/editor:plaintext-editor-mode))

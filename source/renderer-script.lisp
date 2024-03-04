@@ -203,10 +203,7 @@ Overwrites the whole HTML document (head and body elements included)."
 (export-always 'match-internal-page)
 (defun match-internal-page (symbol)
   "Return a predicate for URL designators matching the page of SYMBOL name."
-  #'(lambda (url)
-      (and (str:starts-with-p "nyxt:" (render-url url))
-           (eq (parse-nyxt-url url)
-               symbol))))
+  #'(lambda (url) (eq (internal-page-name url) symbol)))
 
 (define-class internal-page (command)
   ((dynamic-title ; Not `title' so that it does not clash with other `title' methods.
@@ -333,11 +330,6 @@ See `find-internal-page-buffer'."))
       (t
        (format nil "*~a*" (string-downcase (name page)))))))
 
-(defun internal-page-name (url)
-  (when (string= "nyxt" (quri:uri-scheme url))
-    (uiop:safe-read-from-string
-     (str:upcase (quri:uri-path url)) :package :nyxt)))
-
 ;; (-> find-internal-page-buffer (internal-page-symbol) (maybe buffer))
 (defun find-internal-page-buffer (name) ; TODO: Test if CCL can catch bad calls at compile-time.
   "Return first buffer which URL is a NAME `internal-page'."
@@ -345,10 +337,7 @@ See `find-internal-page-buffer'."))
 
 (defun find-url-internal-page (url)
   "Return the `internal-page' to which URL corresponds."
-  (and (equal "nyxt" (quri:uri-scheme url))
-       (gethash
-        (internal-page-name url)
-        *nyxt-url-commands*)))
+  (gethash (internal-page-name url) *nyxt-url-commands*))
 
 (export-always 'buffer-load-internal-page-focus)
 (defun buffer-load-internal-page-focus (name &rest args)

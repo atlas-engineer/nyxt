@@ -267,12 +267,9 @@ Otherwise, create a dummy buffer with URL to get its source."
         (ffi-buffer-delete buffer)))))
 
 (define-internal-scheme "view-source"
-  (lambda (url buffer)
-    (declare (ignore buffer))
-    (values
-     (get-url-source (quri:url-decode (quri:uri-path (quri:uri url))))
-     "text/plain"))
-  :no-access-p t)
+    (lambda (url)
+      (values (get-url-source (quri:url-decode (quri:uri-path (quri:uri url))))
+              "text/plain")))
 
 (define-command-global view-source (&key (url (url (current-buffer))))
   "View source of the URL (by default current page) in a separate buffer."

@@ -92,8 +92,8 @@ See `describe-class editor-mode' for details."))
   (uiop:parse-native-namestring (quri:uri-path (url buffer))))
 
 (define-internal-scheme "editor"
-    (lambda (url buffer)
-      (markup (find-submode 'editor-mode buffer)
+    (lambda (url)
+      (markup (find-submode 'editor-mode)
               (uiop:read-file-string (quri:uri-path (quri:uri url))))))
 
 (defmethod editor ((editor-buffer editor-buffer))
@@ -157,3 +157,6 @@ BUFFER is of type `editor-buffer'."
                             (prompt1 :prompt "Edit user file"
                                      :sources 'nyxt::user-file-source)))))
   (edit-file file-path))
+
+(define-auto-rule '(match-scheme "editor")
+  :included '(nyxt/mode/editor:editor-mode))

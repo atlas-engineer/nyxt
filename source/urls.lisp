@@ -92,48 +92,27 @@ The URL is fetched, which explains possible bottlenecks."
 Should be redefined by the renderer."))
 
 (define-class scheme (renderer-scheme)
-  ((name (error "Scheme must have a name/scheme")
-         :documentation "Scheme/name of the internal scheme.
-For instance, \"gopher\", \"irc\".")
+  ((name
+    (alex:required-argument 'name)
+    :documentation "The custom scheme name to handle.
+HTTPS or FILE are examples of schemes.")
    (callback
     nil
     :type (or null function)
-    :documentation "Callback to get the page contents when accessing resource with this scheme.
+    :documentation "A function called on URL load that returns the page contents.
 
-Takes two arguments: the URL with scheme and the buffer it was requested in.
-
-Returns up to five values:
-- The data for page contents (either as string or as a unsigned byte array).
-- The MIME type for the contents.
-- The status code for the request.
-- An alist of headers for the request.
-- A status reason phrase.")
+It takes the URL as an argument and returns up to 5 values:
+- The data for page contents (either as string or as a unsigned byte array)
+- The MIME type for the contents
+- The status code for the request
+- An alist of headers for the request
+- A status reason phrase")
    (error-callback
     nil
     :type (or null function)
     :documentation "Callback to use when a condition is signaled.
 
-Accepts only one argument: the signaled condition.")
-   (local-p
-    nil
-    :documentation "Local schemes are not accessible to the pages of other schemes.")
-   (no-access-p
-    nil
-    :documentation "No-access schemes cannot access pages with any other scheme.")
-   (secure-p
-    nil
-    :documentation "Secure schemes can access the Web, Web can access them too.
-
-Requires encryption or other means of security.")
-   (cors-enabled-p
-    nil
-    :documentation "Whether other pages can do requests to the resources with this scheme.")
-   (display-isolated-p
-    nil
-    :documentation "Display-isolated schemes cannot be displayed (in iframes, for example) by other schemes.")
-   (empty-document-p
-    nil
-    :documentation "Empty document schemes can be loaded synchronously by websites referring to them."))
+Accepts only one argument: the signaled condition."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:documentation "Representation of Nyxt-specific internal schemes.
@@ -147,30 +126,16 @@ content. In case something goes wrong, runs `error-callback'.")
 
 (defvar *schemes* (sera:dict)
   "A table of internal schemes registered in Nyxt.
-Keys are scheme strings, values are `scheme' objects.")
+It maps scheme names as strings to `scheme' objects.")
 
 (export-always 'define-internal-scheme)
-(defun define-internal-scheme (scheme-name callback
-                               &rest keys
-                               &key local-p
-                                 no-access-p
-                                 secure-p
-                                 cors-enabled-p
-                               &allow-other-keys)
-  "Define a handler (running CALLBACK) for SCHEME-NAME `scheme'.
+(defun define-internal-scheme (scheme-name callback &optional error-callback)
+  "Define handler CALLBACK for SCHEME-NAME `scheme'.
 
-CALLBACK is called with two arguments:
-- the URL that was requested with this scheme, and
-- buffer that it was requested in.
-
-For keyword arguments' meaning, see the corresponding `scheme' slot
-documentation."
-  (declare (ignorable local-p no-access-p secure-p cors-enabled-p))
+See the `callback' and `error-callback' slot documentation for their type
+signatures."
   (setf (gethash scheme-name *schemes*)
-        (apply #'make-instance 'scheme
-               :name scheme-name
-               :callback callback
-               keys)))
+        (list callback error-callback)))
 
 (defmemo lookup-hostname (name)
   "Resolve hostname NAME and memoize the result."
@@ -342,37 +307,34 @@ Authority is compared case-insensitively (RFC 3986)."
 
 (export-always 'nyxt-url)
 (-> nyxt-url (t &rest t &key &allow-other-keys) string)
-(defun nyxt-url (function-name &rest args &key &allow-other-keys)
-  "Generate a nyxt: URL from the given FUNCTION-NAME applied to ARGS.
- This is useful to generate internal pages.
+(defun nyxt-url (fn &rest args &key &allow-other-keys)
+  "Return a nyxt scheme URL encoding a call to FN with ARGS.
+It is useful to request `internal-page's.
 
-ARGS is an arbitrary keyword (!) arguments list that will be translated to
-URL parameters.
+ARGS is an arbitrary keyword arguments list that is translated to a URL query."
+  (let* ((query (quri:url-encode-params (mapcar (lambda (pair)
+                                                  (cons (symbol->param-name (first pair))
+                                                        (value->param-value (rest pair))))
+                                                (alexandria:plist-alist args))
+                                        :space-to-plus t))
+         (url (quri:render-uri
+               (quri:make-uri
+                :scheme "nyxt"
+                :path (symbol->param-name fn)
+                :query (unless (uiop:emptyp query) query)))))
+    (if (internal-page-symbol-p fn)
+        url
+        (error "URL ~a is undefined." url))))
 
-The resulting URL should be perfectly parseable back to the initial form with
-`parse-nyxt-url'.
-
-Example:
-\(nyxt-url 'nyxt:describe-function :value 'nyxt:describe-value)
-=> \"nyxt:describe-function?value=NYXT%3ADESCRIBE-VALUE\"
-
-\(parse-nyxt-url (nyxt-url 'nyxt:describe-value :id \"1000\"))
-=> NYXT:DESCRIBE-VALUE
-=> (:ID \"1000\")"
-  (let ((*print-case* :downcase))
-    (if (gethash function-name *nyxt-url-commands*)
-        (let ((params (quri:url-encode-params
-                       (mapcar (lambda (pair)
-                                 (cons (symbol->param-name (first pair))
-                                       (value->param-value (rest pair))))
-                               (alexandria:plist-alist args))
-                       :space-to-plus t)))
-          (the (values string &optional)
-               (format nil "nyxt:~a~@[~*?~a~]"
-                       (symbol->param-name function-name)
-                       (not (uiop:emptyp params))
-                       params)))
-        (error "There's no nyxt:~a page defined" (symbol->param-name function-name)))))
+(export-always 'internal-page-name)
+(-> internal-page-name ((or string quri:uri)) t)
+(defun internal-page-name (url)
+  (alex:when-let* ((%url (quri:uri url))
+                   (_ (string= "nyxt" (quri:uri-scheme %url))))
+    ;; As to account for nyxt:foo and nyxt://foo.
+    (uiop:safe-read-from-string (str:upcase (or (quri:uri-path %url)
+                                                (quri:uri-host %url)))
+                                :package :nyxt)))
 
 (export-always 'internal-url-p)
 (defun internal-url-p (url)
@@ -393,61 +355,21 @@ Example:
                (list key value)))
            params))
 
-(export-always 'parse-nyxt-url)
-(-> parse-nyxt-url ((or string quri:uri)) (values symbol list &optional))
-(defun parse-nyxt-url (url)
-  "Return two values parsed from the nyxt: URL:
-- the name of the `internal-page',
-- the arguments to it.
-
-Error out if some of the params are not constants. Thanks to this,
-`parse-nyxt-url' can be repeatedly called on the same nyxt: URL, with the
-guarantee of the same result."
-  (let* ((url (url url))
-         (symbol (quri:uri-path url))
-         ;; FIXME: While we ourselves guarantee the correctness of nyxt:// URLs,
-         ;; it would be nice to ensure it processes even the malformed URLs.
-         (params (quri:uri-query-params url))
-         (internal-page-name (uiop:safe-read-from-string (str:upcase symbol)
-                                                         :package (find-package :nyxt))))
-    (if (gethash internal-page-name *nyxt-url-commands*)
-        (values internal-page-name (query-params->arglist params))
-        (error "There's no nyxt:~a internal-page defined" symbol))))
-
 (define-internal-scheme "nyxt"
-    ;; NOTE: We don't set any security settings (such as :local-p, :secure-p
-    ;; etc.)  because:
-    ;; - :local-p makes nyxt:// scheme completely inaccessible from other schemes.
-    ;; - :display-isolated-p does not allow embedding a nyxt:// page even inside
-    ;;   the page of the same scheme. Self-embedding might be a use-case in the
-    ;;   future, thus :display-isolated-p is unusable.
-    ;; - :secure-p and :cors-enabled-p are both dangerously permissive for a
-    ;;   scheme that allows evaluating Lisp code.
-    ;; Not setting any security settings gives the best security/flexibility for
-    ;; our use-case:
-    ;; - <iframe> embedding and exploitation are impossible.
-    ;; - Redirection—both as window.location.(href|assign|replace) and
-    ;;   HTTP status code 301—works.
-    ;; - nyxt:// pages are linkable from outside Nyxt!
-    (lambda (url buffer)
-      (with-protect ("Error while processing the \"nyxt:\" URL: ~a" :condition)
-        (let ((url (quri:uri (str:replace-first "://" ":" url))))
-          (log:debug "Internal page ~a requested." url)
-          (multiple-value-bind (internal-page-name args)
-              (parse-nyxt-url url)
-            (when (and internal-page-name)
-              (alex:when-let ((internal-page (gethash internal-page-name *nyxt-url-commands*)))
-                (setf (title buffer) (apply #'dynamic-title internal-page args))
-                ;; FIXME: This allows `find-internal-page-buffer' to find the
-                ;; buffer and `form' to have this buffer as the buffer-var.
-                (setf (url buffer) (quri:uri url))
-                (apply (form internal-page) args))))))))
+    (lambda (url)
+      (let* ((%url (url url))
+             (internal-page (find-url-internal-page %url)))
+        (if internal-page
+            (progn
+              ;; Allow `find-internal-page-buffer' to find it.
+              (setf (url (current-buffer)) (quri:uri %url))
+              (apply (form internal-page)
+                     (query-params->arglist (quri:uri-query-params %url))))
+            (warn "No internal page corresponds to URL ~a" url)))))
 
 (define-internal-scheme "nyxt-resource"
-    (lambda (url buffer)
-      (declare (ignore buffer))
-      (nth-value 0 (gethash (quri:uri-path (url url)) *static-data*)))
-  :secure-p t)
+    (lambda (url)
+      (nth-value 0 (gethash (quri:uri-path (url url)) *static-data*))))
 
 (-> lisp-url (&rest t &key (:id string)
               (:buffer t)
@@ -481,8 +403,7 @@ TITLE is purely informative."
                   (ps:create :mode "no-cors"))))))
 
 (define-internal-scheme "lisp"
-    (lambda (url buffer)
-      (declare (ignore buffer))
+    (lambda (url)
       (alex:when-let* ((%url (quri:uri url))
                        (request-id (quri:uri-path %url))
                        (query (quri:uri-query-params %url))
@@ -504,8 +425,7 @@ TITLE is purely informative."
                (j:encode callback-output)))
            (log:warn "Request ~a isn't bound to a callback in buffer ~a" %url buffer))
          "application/json")))
-  :cors-enabled-p t
-  :error-callback (lambda (c) (log:debug "Error when evaluating lisp URL: ~a" c)))
+  (lambda (c) (log:debug "Error when evaluating lisp URL: ~a" c)))
 
 (-> path= (quri:uri quri:uri) boolean)
 (defun path= (url1 url2)
