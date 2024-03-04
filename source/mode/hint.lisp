@@ -197,7 +197,10 @@ A positive value shifts to the bottom.")
 
 (define-parenscript set-hintable-attribute (selector)
   (ps:dolist (element (nyxt/ps:qsa document (ps:lisp selector)))
-    (ps:chain element (set-attribute "nyxt-hintable" ""))))
+    (if (ps:lisp (eq :vi (hinting-type (find-submode 'hint-mode))))
+        (when (nyxt/ps:element-in-view-port-p element)
+          (ps:chain element (set-attribute "nyxt-hintable" "")))
+        (ps:chain element (set-attribute "nyxt-hintable" "")))))
 
 (define-parenscript remove-hintable-attribute ()
   (ps:dolist (element (nyxt/ps:qsa document "[nyxt-hintable]"))
