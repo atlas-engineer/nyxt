@@ -6,7 +6,6 @@
   (:documentation "Package for `document-mode', mode to interact with structured documents.
 
 The APIs that it includes/uses internally are:
-- Page scrolling: `call-non-input-command-or-forward'.
 - Copy-pasting: `ffi-buffer-copy', `ffi-buffer-paste', `ffi-buffer-cut',
   `ffi-buffer-select-all', `ffi-buffer-undo', `ffi-buffer-redo'.
 - Heading management: `heading' class, `get-headings', `current-heading',
@@ -68,9 +67,7 @@ Important pieces of functionality are:
        "C-0" 'reset-page-zoom
        "C-down" 'scroll-to-bottom
        "C-up" 'scroll-to-top
-       ;; Leave SPACE and arrow keys unbound so that the renderer decides whether to
-       ;; navigate textboxes (arrows), insert or scroll (space).
-       ;; keypad, gtk:
+       ;; Leave SPACE, END, HOME and arrow keys unbound for the renderer
        "keypadleft" 'scroll-left
        "keypadright" 'scroll-right
        "keypadup" 'scroll-up
@@ -80,8 +77,6 @@ Important pieces of functionality are:
        "keypadpageup" 'scroll-page-up
        "keypadprior" 'scroll-page-up
        "keypadnext" 'scroll-page-down
-       "end" 'maybe-scroll-to-bottom
-       "home" 'maybe-scroll-to-top
        "C-u C-o" 'edit-with-external-editor)
       keyscheme:emacs
       (list
@@ -152,21 +147,6 @@ Important pieces of functionality are:
   "Whether TAG is inputtable."
   (or (string= tag "INPUT")
       (string= tag "TEXTAREA")))
-
-(defun call-non-input-command-or-forward (command &key (buffer (current-buffer))
-                                                       (window (current-window)))
-  (let ((tag (active-element-tag)))
-    (if (input-tag-p tag)
-        (forward-to-renderer :window window :buffer buffer)
-        (funcall command))))
-
-(define-command maybe-scroll-to-bottom (&optional (buffer (current-buffer)))
-  "Scroll to bottom if no input element is active, forward event otherwise."
-  (call-non-input-command-or-forward #'scroll-to-bottom :buffer buffer))
-
-(define-command maybe-scroll-to-top (&optional (buffer (current-buffer)))
-  "Scroll to top if no input element is active, forward event otherwise."
-  (call-non-input-command-or-forward #'scroll-to-top :buffer buffer))
 
 (define-command paste (&optional (buffer (current-buffer)))
   "Paste from clipboard into active element."

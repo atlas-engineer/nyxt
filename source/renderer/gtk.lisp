@@ -737,7 +737,7 @@ See `gtk-browser's `modifier-translator' slot."
                         (list (key)))
           (run-thread "on-signal-key-press"
             (on-signal-key-press buffer (key)))
-          (funcall (input-dispatcher sender) event buffer sender))
+          (dispatch-input-event event buffer sender))
         ;; Do not forward modifier-only to renderer.
         t)))
 
@@ -779,7 +779,7 @@ See `gtk-browser's `modifier-translator' slot."
       (when key-string
         (alex:appendf (key-stack window)
                       (list (key)))
-        (funcall (input-dispatcher window) event sender window)))))
+        (dispatch-input-event event sender window)))))
 
 (define-ffi-method on-signal-scroll-event ((sender gtk-buffer) event)
   (let* ((button (match (gdk:gdk-event-scroll-direction event)
@@ -807,7 +807,7 @@ See `gtk-browser's `modifier-translator' slot."
                     (list (keymaps:make-key :value key-string
                                             :modifiers modifiers
                                             :status :pressed)))
-      (funcall (input-dispatcher window) event sender window))))
+      (dispatch-input-event event sender window))))
 
 (define-class gtk-scheme ()
   ((context
@@ -2071,22 +2071,6 @@ custom (the specified proxy) and none."
 (define-ffi-method (setf ffi-buffer-zoom-level) (value (buffer gtk-buffer))
   (when (and (floatp value) (>= value 0))
     (setf (webkit:webkit-web-view-zoom-level (gtk-object buffer)) value)))
-
-(define-ffi-method ffi-generate-input-event ((window gtk-window) event)
-  (when event
-    ;; The "send_event" field is used to mark the event as an "unconsumed"
-    ;; keypress.  The distinction allows us to avoid looping indefinitely.
-    (etypecase event
-      (gdk:gdk-event-button
-       (setf (gdk:gdk-event-button-send-event event) t))
-      (gdk:gdk-event-key
-       (setf (gdk:gdk-event-key-send-event event) t))
-      (gdk:gdk-event-scroll
-       (setf (gdk:gdk-event-scroll-send-event event) t)))
-    (gtk:gtk-main-do-event event)))
-
-(define-ffi-method ffi-generated-input-event-p ((window gtk-window) event)
-  (gdk:gdk-event-send-event event))
 
 (define-ffi-method ffi-inspector-show ((buffer gtk-buffer))
   (webkit:webkit-web-inspector-show
