@@ -182,7 +182,8 @@ together with the arglists and documentations of the functions typed in."
                             ;; pages (including `describe-value') reuse pages
                             ;; with the same command.
                             (buffer-load-internal-page-focus
-                             'describe-value :id (ensure-inspected-id (eval (first exprs)))))))))
+                             'describe-value
+                             :id (ensure-inspected-id (eval (first exprs)))))))))
                     (make-instance
                      'predicted-command-source
                      :actions-on-return
