@@ -264,23 +264,23 @@ See `find-internal-page-buffer'."))
       (setf (slot-value page 'form)
             (lambda (&rest args)
               (declare (ignorable args))
-              (let ((*print-pretty* nil))
-                (destructuring-bind (contents &optional (type "text/html;charset=utf8") (status 200)
-                                                headers reason)
-                    (multiple-value-list (apply (compile nil lambda-expression) args))
-                  (when (str:starts-with-p "text/html" type)
-                    (when (or (null contents)
-                              (< (length (clss:select "head, body" (plump:parse contents))) 2))
-                      (setf contents
-                            (spinneret:with-html-string
-                              (:head
-                               (:title (apply #'dynamic-title
-                                              (gethash (name page) *nyxt-url-commands*)
-                                              args))
-                               (:style (:raw (style (or (find-panel-buffer (name page))
-                                                        (find-internal-page-buffer (name page)))))))
-                              (:body (:raw contents))))))
-                  (values contents type status headers reason))))))))
+              (destructuring-bind (contents &optional (type "text/html;charset=utf8") (status 200)
+                                              headers reason)
+                  (multiple-value-list (apply (compile nil lambda-expression) args))
+                (when (and (str:starts-with-p "text/html" type)
+                           (or (null contents)
+                               (< (length (clss:select "head, body" (plump:parse contents)))
+                                  2)))
+                  (setf contents
+                        (spinneret:with-html-string
+                          (:head
+                           (:title (apply #'dynamic-title
+                                          (gethash (name page) *nyxt-url-commands*)
+                                          args))
+                           (:style (:raw (style (or (find-panel-buffer (name page))
+                                                    (find-internal-page-buffer (name page)))))))
+                          (:body (:raw contents)))))
+                (values contents type status headers reason)))))))
 
 (defmethod (setf page-mode) (new-value (page internal-page))
   (when (and new-value (rememberable-p new-value))
