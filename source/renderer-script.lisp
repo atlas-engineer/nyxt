@@ -343,19 +343,11 @@ See `find-internal-page-buffer'."))
 
 (export-always 'buffer-load-internal-page-focus)
 (defun buffer-load-internal-page-focus (name &rest args)
-  "Make internal-page for NAME (a symbol) and switch to it.
-If it already exists, reload it.
-ARGS are passed to the internal page parameters.
-
-Return internal-page buffer."
-  (flet ((ensure-internal-page-buffer (name)
-           "Return first buffer which URL is a NAME internal page, or create it if it does
-not exist."
-           (or (find-internal-page-buffer name)
-               (make-instance 'web-buffer))))
-    (set-current-buffer
-     (buffer-load (apply #'nyxt-url name args)
-                  :buffer (ensure-internal-page-buffer name)))))
+  "Return internal page with name NAME and focus it.
+ARGS are passed as internal page parameters."
+  (set-current-buffer (buffer-load (apply #'nyxt-url name args)
+                                   :buffer (or (find-internal-page-buffer name)
+                                               (make-instance 'web-buffer)))))
 
 (export-always 'define-internal-page)
 (defmacro define-internal-page (name (&rest form-args) (&rest initargs) &body body)
