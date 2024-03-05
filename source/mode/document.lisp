@@ -350,7 +350,9 @@ ID is a buffer `id'."
 (define-command-global summarize-buffer (&key (summary-length 5) (buffer (current-buffer)))
   "Summarize the current buffer by creating a new summary buffer.
 SUMMARY-LENGTH allows to list more/less summary items."
-  (buffer-load-internal-page-focus 'summarize-buffer :summary-length summary-length :id (id buffer)))
+  (buffer-load-internal-page-focus 'summarize-buffer
+                                   :summary-length summary-length
+                                   :id (id buffer)))
 
 (define-class heading ()
   ((inner-text "" :documentation "The inner text of the heading within the document.")
