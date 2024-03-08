@@ -19,6 +19,7 @@
 
 (use-modules (guix packages)
              (guix gexp)
+             (nongnu packages lisp)
              (gnu packages gstreamer)
              (gnu packages web-browsers)
              (gnu packages glib)
@@ -56,6 +57,7 @@
                 cl-custom-hash-table
                 cl-dexador
                 cl-dissect
+                cl-electron
                 cl-enchant
                 cl-flexi-streams
                 cl-gobject-introspection ; WebKitGTK
