@@ -370,12 +370,10 @@
                )
   :test-suite-args (:package :nyxt/tests/renderer))
 
-(defsystem "nyxt/qt"
-  :depends-on (cl-webengine
-               nyxt
-               trivial-main-thread)
-  :pathname #p"NYXT:source;"
-  :components ((:file "renderer/qt")))
+(defsystem "nyxt/electron"
+  :depends-on (nyxt cl-electron)
+  :pathname #p"NYXT:source;renderer;"
+  :components ((:file "electron")))
 
 ;; We should not set the build-pathname in systems that have a component.
 ;; Indeed, when an external program (like Guix) builds components, it needs to
@@ -402,12 +400,12 @@
   :build-pathname "nyxt"
   :entry-point "nyxt:entry-point")
 
-(defsystem "nyxt/qt-application"
+(defsystem "nyxt/electron-application"
   :defsystem-depends-on ("nasdf")
   :class :nasdf-system
-  :depends-on (nyxt/qt)
+  :depends-on (nyxt/electron)
   :build-operation "program-op"
-  :build-pathname "nyxt-qt"
+  :build-pathname "nyxt-electron"
   :entry-point "nyxt:entry-point")
 
 (defsystem "nyxt/install"
