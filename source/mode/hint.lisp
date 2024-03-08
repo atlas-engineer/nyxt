@@ -99,7 +99,7 @@ A positive value shifts to the bottom.")
                           (y-translation mode))
       :padding "0px 0.3em"
       :border-color ,(cl-colors2:print-hex theme:primary- :alpha 0.80)
-      :border-radius "3px"
+      :border-radius "2px"
       :border-width "2px"
       :border-style "solid"
       :z-index #.(1- (expt 2 31)))

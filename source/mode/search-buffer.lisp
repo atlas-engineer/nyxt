@@ -14,7 +14,7 @@
       `("span[nyxt-search-mark]"
         :background-color ,theme:secondary !important
         :color ,theme:on-secondary !important
-        :border-radius 3px
+        :border-radius 2px
         :z-index #.(1- (expt 2 31)))
       `("span[nyxt-search-mark].nyxt-current-search-mark"
         :background-color ,theme:highlight !important)

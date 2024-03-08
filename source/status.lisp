@@ -137,7 +137,7 @@
               :margin-left "-4px"
               :text-decoration "transparent"
               :border "transparent"
-              :border-radius "1px"
+              :border-radius "2px"
               :font "inherit"
               :outline "inherit"
               :clip-path "polygon(calc(100% - 7px) 0, 100% calc(50% - 1px), 100% 50%, 100% calc(50% + 1px), calc(100% - 7px) 100%, 0% 100%, 7px calc(50% + 1px), 7px 50%, 7px calc(50% - 1px),  0% 0%)")
@@ -146,11 +146,17 @@
               :color ,theme:on-primary
               :font-size "60vh"
               :text-align "right"
-              :padding-left "7px"
-              :padding-right "5px"
+              :padding-left "6px"
+              :padding-right "3px"
               :overflow-x "scroll"
               :white-space "nowrap"
               :z-index "2")
+            `("#modes > button"
+              :border-radius "0"
+              :padding-left "3px"
+              :padding-right "3px")
+            `("#reload"
+              :margin-top "1px")
             `("#modes::-webkit-scrollbar"
               :display "none")
             `(button
@@ -158,7 +164,7 @@
               :color "inherit"
               :text-decoration "transparent"
               :border "transparent"
-              :border-radius "0.2em"
+              :border-radius "2px"
               :padding 0
               :font "inherit"
               :outline "inherit")
@@ -212,7 +218,7 @@ Augment this with `style' of STATUS, if necessary."
             (when (nosave-buffer-p buffer) (:span "⚠ nosave"))
             (:nbutton
               :buffer status
-              :text "✚"
+              :text "±"
               :title (modes-string buffer)
               '(nyxt:toggle-modes))
             (loop for mode in sorted-modes

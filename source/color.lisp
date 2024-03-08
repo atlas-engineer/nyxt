@@ -65,7 +65,7 @@ rgb()/hsl() CSS functions representing them."))
   (flet ((display (string)
            (let ((spinneret:*html-style* :tree))
              (spinneret:with-html-string
-               (:span :style (format nil "background-color: ~a; color: ~a; border: 0.1em solid ~a; border-radius: 0.1em"
+               (:span :style (format nil "background-color: ~a; color: ~a; border: 0.1em solid ~a; border-radius: 2px"
                                      color (theme:contrasting-color color) (theme:contrasting-color color))
                       string)))))
     (let ((rgb (cl-colors2:print-css-rgb/a color))

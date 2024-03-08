@@ -190,11 +190,11 @@ See `nyxt::attribute-widths'.")
           :display "flex"
           :justify-content "space-between"
           :align-items "stretch"
-          :border-radius "2px 0 0 0")
+          :border-radius "2px")
         '(".source-name > div"
           :line-height "22px")
         `(".source-name > div > button"
-          :padding "5px 4px 5px 4px"
+          :padding "5px 5px 5px 0px"
           :min-height "100%")
         `("#next-source > svg, #previous-source > svg"
           :margin-bottom "2px"
@@ -213,10 +213,13 @@ See `nyxt::attribute-widths'.")
         `(".suggestion-and-mark-count"
           :font-family ,theme:monospace-font-family)
         `(".source-content"
-          :margin-left "16px"
+          :box-sizing "border-box"
+          :padding-left "16px"
+          :margin-left "2px"
           :width "100%"
           :table-layout "fixed"
           (td
+           :border-radius "2px"
            :white-space "nowrap"
            :height "20px"
            :padding-left "4px"
@@ -232,6 +235,7 @@ See `nyxt::attribute-widths'.")
            :color ,theme:on-primary
            :font-weight "normal"
            :padding-left "4px"
+           :border-radius "2px"
            :text-align "left")
           ("td::-webkit-scrollbar"
            :display "none"))

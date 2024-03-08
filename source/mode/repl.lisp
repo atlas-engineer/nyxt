@@ -439,7 +439,7 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
               :width "97vw"
               :margin "1em")
             `(.input-area
-              :border-radius "3px"
+              :border-radius "2px"
               :background-color ,theme:secondary
               :width "99%"
               :padding "0.5rem")

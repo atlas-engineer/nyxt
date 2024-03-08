@@ -458,7 +458,7 @@ The value is saved to clipboard."
         :background-color ,theme:action
         :border "none"
         :border-width "2px"
-        :border-radius "3px"
+        :border-radius "2px"
         :margin-bottom "17px")
       `(.execute-command
         :min-width "180px"

@@ -128,15 +128,15 @@
             `("a:visited"
               :color ,theme:secondary)
             `(".progress-bar-container"
-              :border-radius "3px"
+              :border-radius "2px"
               :height "20px"
               :width "100%")
             `(".progress-bar-base"
-              :border-radius "3px"
+              :border-radius "2px"
               :background-color ,theme:secondary
               :height "100%")
             `(".progress-bar-fill"
-              :border-radius "3px"
+              :border-radius "2px"
               :background-color ,theme:primary
               :height "100%"))))
   (:export-class-name-p t)
