@@ -25,6 +25,11 @@
     (loop for version being the hash-value of +changelog+
           collect (:raw version))))
 
+(define-version "3.X.Y"
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "Improve UI stylesheets."))))
+
 (define-version "3.11.4"
   (:nsection :title "Bug fixes"
     (:ul
