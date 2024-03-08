@@ -41,7 +41,7 @@ other tools, refer to the rest of the manual below.
 
 To proceed, make sure that you have the following installed:
 - [[https://www.sbcl.org/][SBCL]]
-- [[https://guix.gnu.org][The GUIX package manager]]
+- [[https://guix.gnu.org][The GUIX package manager]] (setup the [[https://gitlab.com/nonguix/nonguix][nonguix channel]])
 - [[https://www.gnu.org/software/emacs/][Emacs]]
 - [[https://github.com/joaotavora/sly][SLY]]
 
