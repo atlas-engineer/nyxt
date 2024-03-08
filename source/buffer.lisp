@@ -203,11 +203,11 @@ See also the `profile' slot in the `browser' class.")
             `(pre
               :font-family ,theme:monospace-font-family
               :font-size "0.9rem"
-              :border-radius "3px"
+              :border-radius "2px"
               :overflow "auto"
               :padding "5px")
             `("table"
-              :border-radius "3px"
+              :border-radius "2px"
               :border-spacing "0"
               :width "100%")
             `("pre, p code"
@@ -231,13 +231,13 @@ See also the `profile' slot in the `browser' class.")
               :color ,theme:on-primary
               :text-align "left")
             `("th:first-of-type"
-              :border-top-left-radius "3px")
+              :border-top-left-radius "1px")
             `("th:last-of-type"
-              :border-top-right-radius "3px")
+              :border-top-right-radius "1px")
             `("tr:last-of-type td:first-of-type"
-              :border-bottom-left-radius "3px")
+              :border-bottom-left-radius "2px")
             `("tr:last-of-type td:last-of-type"
-              :border-bottom-right-radius "3px")
+              :border-bottom-right-radius "2px")
             `("table.resizable-table th"
               :resize "horizontal"
               :overflow "auto")
@@ -275,7 +275,7 @@ See also the `profile' slot in the `browser' class.")
               :padding "4px"
               :padding-left "8px"
               :padding-right "8px"
-              :border-radius "3px"
+              :border-radius "2px"
               :font-weight "bold"
               :background-color ,theme:background-alt)
             `("dd"
@@ -919,7 +919,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
             `("a:visited"
               :color ,theme:secondary)
             `(".progress-bar-container"
-              :border-radius "3px"
+              :border-radius "2px"
               :height "20px"
               :width "100%")
             `(".progress-bar-base"

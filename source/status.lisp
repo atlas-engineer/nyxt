@@ -34,7 +34,7 @@ Augment this with `style' of STATUS, if necessary."
             (when (nosave-buffer-p buffer) (:span "⚠ nosave"))
             (:nbutton
               :buffer status
-              :text "✚"
+              :text "±"
               :title (modes-string buffer)
               '(nyxt:toggle-modes))
             (loop for mode in sorted-modes

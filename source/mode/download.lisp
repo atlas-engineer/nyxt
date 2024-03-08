@@ -176,7 +176,7 @@ appearance in the buffer when they are setf'd."
         :margin-top "10px"
         :padding-left "5px"
         :brightness "80%"
-        :border-radius "3px")
+        :border-radius "2px")
       `(".download-url"
         :overflow "auto"
         :white-space "nowrap")
