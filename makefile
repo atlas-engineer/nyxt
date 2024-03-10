@@ -5,6 +5,10 @@
 SHELL = /bin/sh
 UNAME := $(shell uname)
 
+DESTDIR ?= /usr/local/bin/
+PREFIX ?= /usr/local/bin/
+NASDF_SOURCE_PATH ?= /usr/local/lib/
+
 LISP ?= sbcl
 SBCL_FLAGS =
 ifeq ($(LISP), sbcl)
