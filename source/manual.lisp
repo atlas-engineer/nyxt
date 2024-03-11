@@ -724,7 +724,7 @@ variables like " (:code "theme:on-primary") ".)")
       (:nsection :title "Scripting"
         (:p "You can evaluate code from the command line with "
             (:code "--eval") " and " (:code "--load") ".  From a shell:")
-        (:ncode :repl-p nil :config-p nil
+        (:ncode
           "$ nyxt --no-config --eval '+version+' \
   --load my-lib.lisp --eval '(format t \"Hello ~a!~&\" (my-lib:my-world))'")
         (:p "You can evaluate multiple --eval and --load in a row, they are
@@ -734,8 +734,6 @@ the " (:nxref :command 'load-file) " command.  For
 convenience, " (:nxref :command 'load-config-file) " (re)loads your initialization file.")
         (:p "You can even make scripts.  Here is an example foo.lisp:")
         (:ncode
-          :repl-p nil
-          :config-p nil
           "#!/bin/sh
 #|
 exec nyxt --script \"$0\"
@@ -752,7 +750,7 @@ existing instance instead of a separate instance that exits immediately.")
             ((remote-execution-p t))))
         (:p "To let know a private instance of Nyxt to load a foo.lisp script and run its"
             (:code "foo") "function:")
-        (:ncode :repl-p nil :config-p nil
+        (:ncode
           "nyxt --profile nosave --remote --load foo.lisp --eval '(foo)' --quit")
         (:p "Note that " (:code "--quit")
             "at the end of each Nyxt CLI call here. If you don't provide " (:code "--quit")
@@ -829,7 +827,7 @@ automations and web page analysis.")
         (:p "To enable headless mode, simply start Nyxt with the "
             (:code "--headless")
             " CLI flag and provide a script file to serve as the configuration file:")
-        (:ncode :repl-p nil :config-p nil
+        (:ncode
           "nyxt --headless --config /path/to/your/headless-config.lisp")
         (:p "Note that you pass it a " (:i "configuration file")
             "—headless mode is only different from the regular Nyxt functions in that it has
@@ -837,7 +835,7 @@ no GUI, and is all the same otherwise, contrary to all the seeming similarities
 to the " (:code "--script") " flag usage.")
         (:p "The example below showcases frequent idioms that are found in the
 mode's configuration file:")
-        (:ncode :repl-p nil :config-p nil
+        (:ncode
           "#!/bin/sh
 #|
 exec nyxt --headless --no-auto-config --profile nosave --config \"$0\"
@@ -1076,7 +1074,7 @@ GStreamer plugins as mentioned in the 'Playing videos' section."))
         (:nsection :title "Input method support (CJK, etc.)"
           (:p "Depending on your setup, you might have to set some environment variables
 or run some commands before starting Nyxt, for instance")
-          (:ncode :repl-p nil :config-p nil
+          (:ncode
             "GTK_IM_MODULE=xim
 XMODIFIERS=@im=ibus
 ibus --daemonize --replace --xim")
@@ -1111,6 +1109,6 @@ nyxt
           (:p "If you are having issues with the cursor not changing when
 hovering over buttons or links, it might be because Nyxt can't locate your cursor theme.
 To fix that, try adding the following to your" (:code ".bash_profile") " or similar:")
-          (:ncode :repl-p nil :config-p nil
+          (:ncode
             "export XCURSOR_PATH=${XCURSOR_PATH}:/usr/share/icons
 export XCURSOR_PATH=${XCURSOR_PATH}:~/.local/share/icons"))))))
