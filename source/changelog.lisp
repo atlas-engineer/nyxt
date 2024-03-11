@@ -78,6 +78,7 @@ elements are scaled accordingly.")
          (:li (:code "nyxt/mode/no-procrastinate"))
          (:li (:code "nyxt/mode/preview"))
          (:li (:code "nyxt/mode/record-input-field"))
+         (:li (:code "nyxt/mode/remembrance"))
          (:li (:code "nyxt/mode/tts"))))))
 
 (define-version "4-pre-release-1"
