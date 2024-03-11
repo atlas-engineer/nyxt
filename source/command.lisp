@@ -21,13 +21,6 @@ packages.
 - `:mode' lists it when the corresponding mode is active.
 
 - `:anonymous' never lists it.")
-   (deprecated-p
-    nil
-    :type boolean
-    :reader t
-    :writer nil
-    :documentation "Whether a warning before executing a deprecated command is
-signaled.")
    (last-access
     (time:now)
     :type time:timestamp
@@ -58,14 +51,6 @@ These specializations are reserved to the user."))
   "A useful shortcut."
   (closer-mop:generic-function-name command))
 
-(defmethod closer-mop:compute-effective-method :around ((command command) combin applicable)
-  (declare (ignorable applicable combin))
-  ;; TODO: Should `define-deprecated-command' report the version
-  ;; number of deprecation?  Maybe OK to just remove all deprecated
-  ;; commands on major releases.
-  `(echo-warning "~a is deprecated." ,(name command))
-  (call-next-method))
-
 (defun initialize-command (command lambda-expression)
   (when (uiop:emptyp (closer-mop:generic-function-name command))
     (alex:required-argument 'name))
@@ -80,8 +65,7 @@ These specializations are reserved to the user."))
                  (not (eq :anonymous (visibility command))))
             (error "Command ~a requires documentation." (name command))
             (setf (documentation command 'function) doc)))))
-  (unless (or (eq :anonymous (visibility command))
-              (deprecated-p command))
+  (unless (eq :anonymous (visibility command))
     ;; Overwrite previous command:
     (setf *command-list* (delete (closer-mop:generic-function-name command) *command-list*
                                  :key #'closer-mop:generic-function-name))
@@ -194,14 +178,6 @@ Any function or macro definition of NAME is also removed,
 regardless of whether NAME is defined as a command."
   (setf *command-list* (delete name *command-list* :key #'name))
   (fmakunbound name))
-
-(defmacro define-deprecated-command (name (&rest arglist) &body body) ; TODO: Do we even need this?
-  "Define NAME, a deprecated command.
-This is just like a command.  It's recommended to explain why the function is
-deprecated and by what in the docstring."
-  `(prog1 (define-command ,name (,@arglist) ,@body)
-     (setf (slot-value #',name 'visibility) :mode
-           (slot-value #'name 'deprecated-p) t)))
 
 (-> list-all-maybe-subpackages () (list-of types:package-designator))
 (defun list-all-maybe-subpackages ()
