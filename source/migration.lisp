@@ -149,6 +149,7 @@ major versions."
   (nyxt/mode/no-procrastinate
    nyxt/mode/preview
    nyxt/mode/record-input-field
+   nyxt/mode/remembrance
    nyxt/mode/tts)
   (:p "Deprecated modes.")
 
