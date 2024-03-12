@@ -13,12 +13,6 @@ endif
 
 LISP_FLAGS ?= $(SBCL_FLAGS) --no-userinit --non-interactive
 
-FLATPAK_COMMAND = flatpak
-FLATPAK_BUILDER = flatpak-builder
-FLATPAK_APP_ID = engineer.atlas.Nyxt
-FLATPAK_MANIFEST := build-scripts/$(FLATPAK_APP_ID).yaml
-FLATPAK_EXPORT_REPOSITORY = _build/nyxt-flatpak-repository
-
 NYXT_SUBMODULES ?= true
 NYXT_RENDERER ?= gi-gtk
 NASDF_USE_LOGICAL_PATHS ?= true
@@ -39,6 +33,7 @@ lisp_eval:=$(LISP) $(LISP_FLAGS) \
 	--eval '(asdf:load-asd "$(makefile_dir)/libraries/nasdf/nasdf.asd")' \
 	--eval '(asdf:load-asd "$(makefile_dir)/nyxt.asd")' \
 	--eval
+
 lisp_quit:=--eval '(uiop:quit)'
 
 ## asdf:load-system is a bit slow on :nyxt/$(NYXT_RENDERER)-application, so we
@@ -77,6 +72,14 @@ clean-submodules:
 .PHONY: clean
 clean: clean-submodules
 	rm -rf build
+
+# Flatpak
+
+FLATPAK_COMMAND = flatpak
+FLATPAK_BUILDER = flatpak-builder
+FLATPAK_APP_ID = engineer.atlas.Nyxt
+FLATPAK_MANIFEST := build-scripts/$(FLATPAK_APP_ID).yaml
+FLATPAK_EXPORT_REPOSITORY = _build/nyxt-flatpak-repository
 
 .PHONY: flatpak-build
 flatpak-build:
