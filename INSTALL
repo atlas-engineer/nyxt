@@ -1,12 +1,14 @@
 Usage:
 
-    make all                 # Create Nyxt.
+    make all                 # Generate Nyxt binary at $PWD.
     make install             # Install Nyxt.
-    make doc                 # Generate Nyxt documentation (as a fallback).
+    make doc                 # Generate Nyxt static documentation.
 
 DESTDIR and PREFIX set the target destination.  Both must be absolute paths.
+When unbound, DESTDIR is set to / and PREFIX is set to $DESTDIR/usr/local/.
 
-NASDF_SOURCE_PATH sets where the source files will be installed.
+NASDF_SOURCE_PATH sets where the source files will be installed.  When unbound,
+it is set to $PREFIX/share/.
 
 NASDF_TESTS_NO_NETWORK disables tests that require networking.
 
