@@ -9,6 +9,10 @@
 ;;
 ;;   guix package --install-from-file=path/to/build-scripts/nyxt.scm
 ;;
+;; To build a local executable:
+;;
+;;   guix shell -D -f build-scripts/nyxt.scm -- make all NYXT_SUBMODULES=false
+;;
 ;; To start the REPL:
 ;;
 ;;   guix shell -D -f build-scripts/nyxt.scm -- sbcl
