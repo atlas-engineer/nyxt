@@ -913,7 +913,7 @@ out-of-date.")
         " browse the buffer tree in a depth-first fashion.")
    (:li "New " (:code "switch-buffer-last")
         " command to easily switch back and forth between the 2 most recent buffers.")
-   (:li (:code "list-buffers") " can now display the the buffers as a tree."))
+   (:li (:code "list-buffers") " can now display the buffers as a tree."))
   (:h3 "Platform support")
   (:ul
    (:li "Fix slow buffer and prompt buffer creation on FreeBSD.  (Thanks to

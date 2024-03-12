@@ -1,6 +1,6 @@
 #+TITLE: Nyxt Developer's Manual
 
-# Please install org-make-toc so the the TOC below will be automatically
+# Please install org-make-toc so the TOC below will be automatically
 # generated.
 # https://github.com/alphapapa/org-make-toc
 * Table of contents                                                     :TOC:
@@ -183,7 +183,7 @@ A note of caution about installing WebKit via your package manager: Your
 distribution supplied version of WebKit may not provide up-to-date versions of
 WebKit including the latest security patches.  WebKitGTK+ tries to do the best
 job possible with maintaining security patches upstream, but it is also up to
-the the distribution provider to update their packages to take advantage of
+the distribution provider to update their packages to take advantage of
 these fixes.
 #+end_quote
 
