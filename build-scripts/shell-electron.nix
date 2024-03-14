@@ -17,6 +17,7 @@ stdenv.mkDerivation {
     pkgs.libfixposix.out
     pkgs.sbcl
     pkgs.sqlite.out
+    pkgs.pkg-config.out
   ];
 
   buildInputs = [
