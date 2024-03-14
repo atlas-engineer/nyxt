@@ -478,6 +478,7 @@ Call this function from your initialization file to re-enable the default ASDF r
                                         (uiop:xdg-data-home "applications/mimeapps.list"))))
   "Return the modified MIME apps list.
 Return the persisted file as second value."
+  (declare (ignorable name targets))
   #+(and unix (not darwin))
   (let* ((target (or (first (sera:filter #'uiop:file-exists-p targets))
                      (first targets)))
@@ -505,9 +506,7 @@ Return the persisted file as second value."
 
     (values config target))
   #-(and unix (not darwin))
-  (progn
-    (declare (ignore name targets))
-    (log:warn "Only supported on GNU / BSD systems running XDG-compatible desktop environments.")))
+  (log:warn "Only supported on GNU / BSD systems running XDG-compatible desktop environments."))
 
 
 ;; TODO: Report compilation errors.
