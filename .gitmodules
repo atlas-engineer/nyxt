@@ -604,3 +604,7 @@
 	path = _build/cl-sqlite
 	url = https://github.com/TeMPOraL/cl-sqlite
 	shallow = true
+[submodule "_build/cl-symbol-munger"]
+	path = _build/cl-symbol-munger
+	url = https://github.com/AccelerationNet/symbol-munger
+	shallow = true
