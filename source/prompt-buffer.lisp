@@ -219,6 +219,7 @@ See `nyxt::attribute-widths'.")
           :width "100%"
           :table-layout "fixed"
           (td
+           :color ,theme:on-background
            :border-radius "2px"
            :white-space "nowrap"
            :height "20px"
