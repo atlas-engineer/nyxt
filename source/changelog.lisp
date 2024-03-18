@@ -25,7 +25,10 @@
     (loop for version being the hash-value of +changelog+
           collect (:raw version))))
 
-(define-version "3.X.Y"
+(define-version "3.11.5"
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix compilation error when compiling on SBCL 2.4.2.")))
   (:nsection :title "UI/UX"
     (:ul
      (:li "Improve UI stylesheets."))))
