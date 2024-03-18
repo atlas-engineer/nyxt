@@ -59,8 +59,7 @@ doc:
 
 .PHONY: check
 check:
-	$(lisp_eval) '(asdf:load-system :nyxt)' \
-		--eval '(asdf:test-system :nyxt)' $(lisp_quit)
+	$(lisp_eval) '(asdf:test-system :nyxt)'
 
 .PHONY: clean-submodules
 clean-submodules:
