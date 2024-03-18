@@ -173,13 +173,13 @@ See `nyxt::attribute-widths'.")
           :background-color ,theme:background
           :color ,theme:on-background
           :opacity 0.9
-          :border "none"
+          :border 2px solid ,theme:secondary
           :outline "none"
           :padding "3px"
           :width "100%"
           :autofocus "true")
         `("#input:focus"
-          :box-shadow inset 0 0 0 3px ,(cl-colors2:print-hex theme:action- :alpha 0.40))
+          :border-color ,(cl-colors2:print-hex theme:action- :alpha 0.40))
         `(".source"
           :margin-left "10px"
           :margin-top "15px")
