@@ -27,6 +27,8 @@ NASDF exposes the following environment variables for convenience:
   See =asdf:nasdf-file=.
 - =NASDF_TESTS_NO_NETWORK= :: Do no run tests that have the =:online= tag.
   See =nasdf:nasdf-test-system=.
+- =NASDF_NON_INTERACTIVE_TESTS= :: Emit exit code 1 on test suite failure.
+  See =nasdf:nasdf-test-system=.
 
 All boolean environment variables try to be smart enough to understand what you
 mean; for instance both =on= and =true= are valid values to enable the feature.

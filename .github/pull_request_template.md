@@ -10,6 +10,6 @@ Fixes # (issue)
 - [ ] Changelog is up to date (via a separate commit).
 - [ ] New dependencies are accounted for.
 - [ ] Documentation is up to date.
-- [ ] Compilation and tests (`(asdf:test-system :nyxt/gi-gtk)`)
+- [ ] Compilation and tests (`(asdf:test-system :nyxt/<renderer>)`)
   - No new compilation warnings.
   - Tests are sufficient.

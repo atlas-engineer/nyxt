@@ -20,11 +20,7 @@ stdenv.mkDerivation {
     pkgs.pkg-config.out
   ];
 
-  buildInputs = [
-    nodejs
-    electron
-    nodePackages.npm
-  ];
+  buildInputs = [ electron ];
 
   LD_LIBRARY_PATH = with lib; "${makeLibraryPath [ pkgs.libfixposix.out
                                                    pkgs.sqlite.out

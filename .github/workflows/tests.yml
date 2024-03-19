@@ -9,42 +9,39 @@ on:
 
 jobs:
   test:
-    name: ${{matrix.lisp}} on ${{matrix.os}}
+    name: ${{matrix.renderer}} on ${{matrix.os}}
     strategy:
       matrix:
-        lisp: [sbcl-bin]
-        lisp-flags: [dynamic-space-size=3072]
-        renderer: [gi-gtk]
-        os: [ubuntu-latest]
+        renderer: [gi-gtk,electron]
+        os: [ubuntu-latest,macos-latest]
+        exclude:
+          - os: macos-latest
+            renderer: gi-gtk
     runs-on: ${{matrix.os}}
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Cache git folder
+      uses: actions/cache@v4
+      with:
+        path: .git
+        key: git-folder
+
+    - name: Checkout
+      uses: actions/checkout@v4
       with:
         show-progress: 'false'
         submodules: 'true'
 
-    - name: Register submodules in ASDF
-      run: |
-        mkdir -p ~/.config/common-lisp/source-registry.conf.d/
-        echo "(:tree \"$PWD\")" > ~/.config/common-lisp/source-registry.conf.d/asdf.conf
-        echo "(:tree \"$PWD/_build\")" >> ~/.config/common-lisp/source-registry.conf.d/asdf.conf
+    - name: Install nix
+      uses: cachix/install-nix-action@v22
+      with:
+        nix_path: nixpkgs=channel:nixos-unstable
 
-    - name: Install Roswell
+    - name: Compile ${{matrix.renderer}} port on ${{matrix.os}}
+      run: nix-shell build-scripts/shell-${{matrix.renderer}}.nix --run 'make all NYXT_RENDERER=${{matrix.renderer}}'
+
+    - name: Test ${{matrix.renderer}} port on ${{matrix.os}}
       env:
-       LISP: ${{matrix.lisp}}
-      run: curl -L https://raw.githubusercontent.com/roswell/roswell/master/scripts/install-for-ci.sh | sh -x
-
-    - name: Install dependencies
-      run: |
-        sudo apt-get update -qq
-        sudo apt-get install -y libfixposix-dev libwebkit2gtk-4.1-0 glib-networking gsettings-desktop-schemas
-
-    - name: Load renderer Nyxt system
-      run: |
-        ros ${{matrix.lisp-flags}} -e '(handler-case (asdf:load-system :nyxt/${{matrix.renderer}}-application) (error (c) (format t "Error: ~s~%~a~%" c c) (uiop:quit 1)))'
-
-    - name: Run tests
-      run: |
-        ros ${{matrix.lisp-flags}} -e '(handler-case (asdf:load-system :nyxt/tests) (error (c) (format t "Error: ~s~%~a~%" c c) (uiop:quit 1)))' \
-            -e '(let ((output (lisp-unit2:run-tests :package :nyxt/tests))) (lisp-unit2:print-summary output) (when (or (lisp-unit2:failed output) (lisp-unit2:errors output)) (uiop:quit 1)))'
+        NASDF_NON_INTERACTIVE_TESTS: true
+      # It runs the tests for system nyxt, not nyxt/${{matrix.renderer}}.
+      run: nix-shell build-scripts/shell-${{matrix.renderer}}.nix --run 'make check'
