@@ -122,16 +122,8 @@ repeating it like a regular `repeat-mode' does."
                            :function (lambda (mode)
                                        (declare (ignore mode))
                                        (nyxt::run command)))
-          (setf (command-dispatcher (current-window)) #'dispatch-command
-                (input-skip-dispatcher (current-window)) #'dispatch-input-skip
+          (setf (command-dispatcher *browser*) #'dispatch-command
                 *repeat-times-stack* 0)))))
-
-(defun skip-repeat-dispatch (keyspec)
-  "A stub copy of `dispatch-input-skip' customized for `repeat-mode'."
-  (declare (ignore keyspec))
-  (echo "Canceled repeat-key.")
-  (setf (command-dispatcher (current-window)) #'dispatch-command
-        (input-skip-dispatcher (current-window)) #'dispatch-input-skip))
 
 (define-command-global repeat-key
     (&key (times (let ((nyxt::*interactive-p* t))
@@ -147,6 +139,5 @@ repeating it like a regular `repeat-mode' does."
                                :sources 'prompter:raw-source)))))))
   "Repeat the command bound to the user-pressed keybinding TIMES times."
   (setf *repeat-times-stack* (+ times (* 10 *repeat-times-stack*))
-        (command-dispatcher (current-window)) (make-repeat-command-dispatcher *repeat-times-stack*)
-        (input-skip-dispatcher (current-window)) #'skip-repeat-dispatch)
+        (command-dispatcher *browser*) (make-repeat-command-dispatcher *repeat-times-stack*))
   (echo "Press a key sequence for command to repeat ~R times:" *repeat-times-stack*))

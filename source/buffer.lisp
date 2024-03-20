@@ -36,7 +36,14 @@ inherited from the superclasses.")
     (new-id)
     :type unsigned-byte
     :documentation "Unique identifier for a buffer.")
-   ;; TODO: Or maybe a dead-buffer should just be a buffer history?
+   (key-stack
+    '()
+    :documentation "A stack of the key chords a user has pressed.")
+   (last-key
+    nil
+    :export nil
+    :type (or null keymaps:key)
+    :documentation "Last pressed key.  Useful for `self-insert'.")
    (profile
     (global-profile)
     :type nyxt-profile
