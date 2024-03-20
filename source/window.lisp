@@ -156,8 +156,8 @@ not try to quit the browser."
 
 (defmethod prompter:object-attributes ((window window) (source window-source))
   (declare (ignore source))
-  `(("ID" ,(id window))
-    ("Active buffer" ,(title (active-buffer window)) nil 3)))
+  `(("ID" ,(id window) (:width 1))
+    ("Active buffer" ,(title (active-buffer window)) (:width 3))))
 
 (define-command delete-window ()
   "Delete the queried window(s)."

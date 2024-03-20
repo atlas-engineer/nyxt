@@ -55,15 +55,15 @@ The total number of visit for a given URL is (+ explicit-visits implicit-visits)
 
 (defmethod prompter:object-attributes ((entry history-entry) (source prompter:source))
   (declare (ignore source))
-  `(("URL" ,(spinneret::escape-string
+  `(("Title" ,(title entry) (:width 3))
+    ("URL" ,(spinneret::escape-string
              (multiple-value-bind (aesthetic safe)
                  (render-url (url entry))
                (if safe
                    (format nil "~a (~a)" safe aesthetic)
                    aesthetic)))
-           3)
-    ("Title" ,(title entry) nil 2)
-    ("Visits" ,(+ (implicit-visits entry) (explicit-visits entry)))))
+           (:width 2))
+    ("Visits" ,(+ (implicit-visits entry) (explicit-visits entry)) (:width 1))))
 
 (export-always 'equals)
 (defmethod equals ((e1 history-entry) (e2 history-entry))
@@ -182,11 +182,6 @@ lot."
                             (> (score-history-entry x)
                                (score-history-entry y))))))))
         owner-less-history-entries)))))
-
-(defmethod prompter:object-attributes ((entry history-entry) (source history-disowned-source))
-  (declare (ignore source))
-  `(("URL" ,(render-url (url entry)))
-    ("Title" ,(title entry))))
 
 (defun history-html-list (&key (limit 100))
   (let* ((history (buffer-history))
