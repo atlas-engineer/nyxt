@@ -50,9 +50,11 @@
    (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:filter-postprocessor
     (lambda (suggestions source input-color)
-      (cons (make-instance 'prompter:suggestion
-                           :value input-color
-                           :attributes (prompter:object-attributes input-color source))
+      (unless (str:empty? input-color) (sleep 0.2))
+      (append (when (ignore-errors (cl-colors2:as-rgb input-color))
+                (list (make-instance 'prompter:suggestion
+                                     :value input-color
+                                     :attributes (prompter:object-attributes input-color source))))
             suggestions)))
    (prompter:actions-on-current-suggestion-enabled-p t)
    (prompter:actions-on-return
