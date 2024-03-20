@@ -491,7 +491,7 @@ an integer."
                                             prompt-buffer
                                             (- cursor-index suggestion-index))
                                            (prompt-render-suggestions prompt-buffer))))))
-                          (loop for (nil attribute attribute-display)
+                          (loop for (nil attribute)
                                   in (prompter:active-attributes suggestion :source source)
                                 collect (:td
                                          :title attribute
@@ -530,9 +530,7 @@ an integer."
                                                            (- suggestion-index cursor-index))
                                                           (prompter:run-action-on-return
                                                            (nyxt::current-prompt-buffer)))))))
-                                         (if attribute-display
-                                             (:raw attribute-display)
-                                             attribute))))))))))
+                                         (:raw attribute))))))))))
 
 (export 'prompt-render-suggestions)
 (define-generic prompt-render-suggestions ((prompt-buffer prompt-buffer))
