@@ -384,19 +384,20 @@ FUNCTION is the action to perform on the selected elements."
 
 (defmethod prompter:object-attributes :around ((element plump:element) (source hint-source))
   `(,@(when (plump:attribute element "nyxt-hint")
-        `(("Hint" ,(plump:attribute element "nyxt-hint"))))
+        `(("Hint" ,(plump:attribute element "nyxt-hint") (:width 1))))
     ;; Ensure that all of Body and URL are there, even if empty.
     ,@(loop with attributes = (call-next-method)
             for attr in '("Body" "URL")
             for (same-attr val) = (assoc attr attributes :test 'string=)
             if same-attr
-              collect (list same-attr val nil 3)
-            else collect (list attr "" nil 3))
+              collect `(,same-attr ,val (:width 3))
+            else collect `(,attr "" (:width 3)))
     ("Type" ,(str:capitalize (str:string-case
                                  (plump:tag-name element)
                                ("a" "link")
                                ("img" "image")
-                               (otherwise (plump:tag-name element)))))))
+                               (otherwise (plump:tag-name element))))
+            (:width 1))))
 
 (defmethod prompter:object-attributes ((input nyxt/dom:input-element) (source prompter:source))
   (declare (ignore source))

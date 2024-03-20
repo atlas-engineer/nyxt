@@ -89,30 +89,32 @@ See `sym:package-functions' for an example of LISTER."
 
 (defmethod prompter:object-attributes ((symbol symbol) (source prompter:source))
   (declare (ignore source))
-  `(("Name" ,(prini-to-string symbol))
-    ("Visibility" ,(prini-to-string (sym:symbol-visibility symbol)))
-    ("Documentation"
-     ,(or (cond
-           ((fboundp symbol)
-            (first-line (documentation symbol 'function)))
-           ((and (find-class symbol nil)
-                 (mopu:subclassp (find-class symbol) (find-class 'standard-object)))
-            (first-line (documentation symbol 'type)))
-           ((find-package symbol)
-            (first-line (documentation (find-package symbol) t)))
-           (t
-            (first-line (documentation symbol 'variable))))
-          "")
-     nil 4)))
+  `(("Name" ,(prini-to-string symbol) (:width 1))
+    ("Documentation" ,(or (cond
+                            ((fboundp symbol)
+                             (first-line (documentation symbol 'function)))
+                            ((and (find-class symbol nil)
+                                  (mopu:subclassp (find-class symbol)
+                                                  (find-class 'standard-object)))
+                             (first-line (documentation symbol 'type)))
+                            ((find-package symbol)
+                             (first-line (documentation (find-package symbol) t)))
+                            (t
+                             (first-line (documentation symbol 'variable))))
+                          "")
+                     (:width 4))
+    ("Visibility" ,(prini-to-string (sym:symbol-visibility symbol)) (:width 1))))
 
+;; Note that `package-source' is populated by symbols, not packages.
 (defmethod prompter:object-attributes ((package package) (source prompter:source))
   (declare (ignore source))
-  `(("Name" ,(package-name package))
+  `(("Name" ,(package-name package) (:width 1))
+    ("Documentation" ,(or (first-line (documentation package t)) "") (:width 4))
     ("Nicknames" ,(append (package-nicknames package)
                           ;; Old ASDF/UIOP don't know about package-local-nicknames.
                           (ignore-errors (uiop:symbol-call
-                                          :uiop :package-local-nicknames package))))
-    ("Documentation" ,(or (first-line (documentation package t)) "") nil 4)))
+                                          :uiop :package-local-nicknames package)))
+                 (:width 1))))
 
 (define-class class-source (describe-nyxt-source)
   ((prompter:name "Classes")

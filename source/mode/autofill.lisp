@@ -93,13 +93,12 @@ it will be in conflict with common-lisp:fill."))
 
 (defmethod prompter:object-attributes ((autofill autofill) (source prompter:source))
   (declare (ignore source))
-  `(("Name" ,(autofill-name autofill))
-    ("Fill"
-     ,(let ((f (autofill-fill autofill)))
-        (typecase f
-          (string (write-to-string f))
-          (t "function")))
-     nil 3)))
+  `(("Name" ,(autofill-name autofill) (:width 1))
+    ("Fill" ,(let ((f (autofill-fill autofill)))
+               (typecase f
+                 (string (write-to-string f))
+                 (t "function")))
+            (:width 3))))
 
 (define-command autofill ()
   "Fill in a field with a value from a saved list."
