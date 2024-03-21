@@ -652,11 +652,8 @@ A command is a special kind of function that can be called with
   (setf (command-dispatcher *browser*) #'describe-key-dispatch)
   (echo "Press a key sequence to describe:"))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; TODO: Move rest somewhere else?  Maybe too low-level for help.lisp.
-
 (export-always 'system-information)
-(defun system-information ()            ; TODO: Rename report-system-information?
+(defun system-information ()
   "Return a system information report as a string."
   (labels ((->string (obj) (princ-to-string obj))
            (asdf-information ()
