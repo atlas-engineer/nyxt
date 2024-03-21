@@ -35,14 +35,9 @@ For now it is also partly based on `nyxt/renderer/gtk'."))
 (defmethod nyxt/renderer/gtk::renderer-thread-p ((renderer gi-gtk-renderer)
                                                  &optional (thread (bt:current-thread)))
   (string= (bt:thread-name thread)
-           #+darwin
-           "thread"
-           #-darwin
            renderer-thread-name))
 
 (defmethod ffi-initialize ((browser gi-gtk-browser) urls startup-timestamp)
-  "On GNU/Linux we can create a separate thread to launch the GTK
-interface. On Darwin, we must run the GTK thread on the main thread."
   (declare (ignore urls startup-timestamp))
   (log:debug "Initializing GI-GTK Interface")
   (if nyxt/renderer/gtk::gtk-running-p
@@ -56,14 +51,11 @@ interface. On Darwin, we must run the GTK thread on the main thread."
                  (gir:invoke ((gir:ffi "Gtk" "3.0") 'main)))))
         (setf nyxt/renderer/gtk::gtk-running-p t)
         (call-next-method)
-        #-darwin
         (let ((main-thread (bt:make-thread #'main-func :name renderer-thread-name)))
           (unless nyxt::*run-from-repl-p*
             (bt:join-thread main-thread)
             ;; See comment about FreeBSD in gtk.lisp
-            (uiop:quit (slot-value browser 'nyxt::exit-code) #+freebsd nil)))
-        #+darwin
-        (main-func))))
+            (uiop:quit (slot-value browser 'nyxt::exit-code) #+freebsd nil))))))
 
 (nyxt/renderer/gtk:define-ffi-method ffi-kill-browser ((browser gi-gtk-browser))
   (unless nyxt::*run-from-repl-p*
