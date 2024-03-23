@@ -206,13 +206,15 @@ at least one."
   "Recursive version of context.querySelectorAll() which goes through
 Shadow DOMs if there's at least one."
   `(flet ((recursive-query-selector-all (context selector)
-            (ps:let ((nodes (ps:chain *array (from (nyxt/ps:qsa context selector))))
-                     (node-iterator (ps:chain document (create-node-iterator context (ps:@ *node #:|ELEMENT_NODE|))))
-                     current-node)
-              (ps:loop while (ps:setf current-node (ps:chain node-iterator (next-node)))
-                 do (ps:when (ps:@ current-node shadow-root)
-                      (ps:chain *array prototype push (apply nodes (recursive-query-selector-all (ps:@ current-node shadow-root) selector)))))
-              nodes)))
+            (ps:let ((tree-walker (ps:chain document (create-tree-walker context (ps:@ *Node +element_node+))))
+                     (results (array)))
+              (ps:loop while (ps:chain tree-walker (next-node))
+                 do (when (ps:chain tree-walker current-node (matches selector))
+                      (ps:chain results (push (ps:@ tree-walker current-node))))
+                    (let ((shadow-root (ps:@ tree-walker current-node shadow-root)))
+                      (when shadow-root
+                        (ps:chain *array prototype push (apply results (recursive-query-selector-all shadow-root selector))))))
+              results)))
      (if (chain ,context (query-selector "[nyxt-shadow-root]"))
          (recursive-query-selector-all ,context ,selector)
          (qsa ,context ,selector))))
