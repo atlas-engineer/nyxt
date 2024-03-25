@@ -27,6 +27,14 @@
 
 (define-version "4.0.0"
   (:ul
+   (:li "Refactor input to be handled on the buffer level rather than the window
+level.")
+   (:li "Deprecate " (:code "input-skip-dispatcher") ".")
+   (:li "Move slot " (:nxref :slot 'command-dispatcher :class-name 'browser)
+        " from window to the browser class.")
+   (:li "Move slots " (:nxref :slot 'last-key :class-name 'buffer)
+        " and " (:nxref :slot 'key-stack :class-name 'buffer)
+        " from window to the buffer class.")
    (:li "Refactor renderer interface input handling.")
    (:li "Refactor custom schemes URLs API.")
    (:li "Deprecate slot " (:code "input-dispatcher")
