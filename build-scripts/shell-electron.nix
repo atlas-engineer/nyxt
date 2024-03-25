@@ -20,7 +20,7 @@ stdenv.mkDerivation {
     pkgs.pkg-config.out
   ];
 
-  buildInputs = [ electron ];
+  buildInputs = [ electron_29-bin ];
 
   LD_LIBRARY_PATH = with lib; "${makeLibraryPath [ pkgs.libfixposix.out
                                                    pkgs.sqlite.out
