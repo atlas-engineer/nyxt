@@ -85,6 +85,11 @@ elements are scaled accordingly.")
   (:li "When on pre-release, push " (:code "X-pre-release")
        " feature in addition to " (:code "X-pre-release-N") "one."))
 
+(define-version "3.11.6"
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix warnings raised by " (:nxref :command 'pick-color) "."))))
+
 (define-version "3.11.5"
   (:nsection :title "Bug fixes"
     (:ul
