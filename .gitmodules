@@ -134,10 +134,6 @@
 	path = _build/cl-ansi-text
 	url = https://github.com/pnathan/cl-ansi-text
 	shallow = true
-[submodule "_build/cl-colors"]
-	path = _build/cl-colors
-	url = https://github.com/tpapp/cl-colors
-	shallow = true
 [submodule "_build/let-plus"]
 	path = _build/let-plus
 	url = https://github.com/sharplispers/let-plus
@@ -561,6 +557,7 @@
 [submodule "_build/LASS"]
 	path = _build/LASS
 	url = https://github.com/Shinmera/LASS
+	shallow = true
 [submodule "_build/njson"]
 	path = _build/njson
 	url = https://github.com/atlas-engineer/njson
@@ -577,13 +574,10 @@
 	path = _build/prompter
 	url = https://github.com/atlas-engineer/prompter
 	shallow = true
-[submodule "_build/cl-colors2_fixed"]
-	path = _build/cl-colors2
-	url = https://codeberg.org/cage/cl-colors2
-	shallow = false # Notabug does not advertize commits.
 [submodule "_build/chipz"]
 	path = _build/chipz
 	url = https://github.com/sharplispers/chipz
+	shallow = true
 [submodule "_build/cl-cffi-gtk"]
 	path = _build/cl-cffi-gtk
 	url = https://github.com/sharplispers/cl-cffi-gtk
@@ -603,4 +597,8 @@
 [submodule "_build/cl-electron"]
 	path = _build/cl-electron
 	url = https://github.com/atlas-engineer/cl-electron/
+	shallow = true
+[submodule "_build/cl-colors2"]
+	path = _build/cl-colors2
+	url = https://codeberg.org/cage/cl-colors2.git
 	shallow = true
