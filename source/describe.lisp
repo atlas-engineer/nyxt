@@ -87,10 +87,6 @@ See `sym:package-functions' for an example of LISTER."
   "Return first non-empty line in STRING."
   (find-if (complement #'uiop:emptyp) (sera:lines string)))
 
-(defun has-attributes-method-p (object) ; TODO: Unused?
-  "Return non-nil if OBJECT has `prompter:object-attributes' specialization."
-  (has-method-p object #'prompter:object-attributes))
-
 (defmethod prompter:object-attributes ((symbol symbol) (source prompter:source))
   (declare (ignore source))
   `(("Name" ,(prini-to-string symbol))
