@@ -138,10 +138,6 @@
 	path = _build/cl-ansi-text
 	url = https://github.com/pnathan/cl-ansi-text
 	shallow = true
-[submodule "_build/cl-colors"]
-	path = _build/cl-colors
-	url = https://github.com/tpapp/cl-colors
-	shallow = true
 [submodule "_build/let-plus"]
 	path = _build/let-plus
 	url = https://github.com/sharplispers/let-plus
