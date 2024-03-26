@@ -561,6 +561,7 @@
 [submodule "_build/LASS"]
 	path = _build/LASS
 	url = https://github.com/Shinmera/LASS
+	shallow = true
 [submodule "_build/njson"]
 	path = _build/njson
 	url = https://github.com/atlas-engineer/njson
@@ -584,6 +585,7 @@
 [submodule "_build/chipz"]
 	path = _build/chipz
 	url = https://github.com/sharplispers/chipz
+	shallow = true
 [submodule "_build/cl-cffi-gtk"]
 	path = _build/cl-cffi-gtk
 	url = https://github.com/sharplispers/cl-cffi-gtk
