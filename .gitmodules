@@ -582,10 +582,6 @@
 	path = _build/prompter
 	url = https://github.com/atlas-engineer/prompter
 	shallow = true
-[submodule "_build/cl-colors2_fixed"]
-	path = _build/cl-colors2
-	url = https://codeberg.org/cage/cl-colors2
-	shallow = false # Notabug does not advertize commits.
 [submodule "_build/chipz"]
 	path = _build/chipz
 	url = https://github.com/sharplispers/chipz
@@ -605,4 +601,8 @@
 [submodule "_build/cl-symbol-munger"]
 	path = _build/cl-symbol-munger
 	url = https://github.com/AccelerationNet/symbol-munger
+	shallow = true
+[submodule "_build/cl-colors2"]
+	path = _build/cl-colors2
+	url = https://codeberg.org/cage/cl-colors2.git
 	shallow = true
