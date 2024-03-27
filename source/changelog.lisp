@@ -27,6 +27,9 @@
 
 (define-version "4.0.0"
   (:ul
+   (:li "Refactor API of " (:nxref :function 'prompter:object-attributes)
+        " with respect to width allocation.")
+   (:li "Deprecate slot " (:code "dynamic-attribute-width-p") ".")
    (:li "Refactor renderer interface input handling.")
    (:li "Refactor custom schemes URLs API.")
    (:li "Deprecate slot " (:code "input-dispatcher")

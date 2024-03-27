@@ -13,16 +13,19 @@
 
 (defun command-attributes (command &optional (buffer (active-buffer (current-window :no-rescan))))
   (let ((command-name (name command)))
-    `(("Name" ,(string-downcase command-name))
+    `(("Name" ,(string-downcase command-name) (:width 1))
       ("Bindings" ,(format nil "~{~a~^, ~}"
-                           (keymaps:pretty-binding-keys command-name
-                                                        (current-keymaps buffer)
-                                                        :print-style (keymaps:name (keyscheme buffer)))))
-      ("Docstring" ,(documentation-line command 'function "") nil 4)
+                              (keymaps:pretty-binding-keys
+                               command-name
+                               (current-keymaps buffer)
+                               :print-style (keymaps:name (keyscheme buffer))))
+                     (:width 1))
+      ("Docstring" ,(documentation-line command 'function "") (:width 4))
       ("Mode" ,(let ((package-name (uiop:symbol-package-name command-name)))
                  (if (str:starts-with-p "NYXT/MODE/" package-name)
                      (string-downcase (str:replace-first "NYXT/MODE/" "" package-name))
-                     ""))))))
+                     ""))
+              (:width 1)))))
 
 (define-class command-source (prompter:source)
   ((prompter:name "Commands")
@@ -129,21 +132,23 @@ Includes all commands and modes, and adds arbitrary Lisp functions on top of tha
   (declare (ignore source))
   (let ((function (symbol-function (first extended-command)))
         (*print-case* :downcase))
-    `(("Expression" ,(format nil "~s" extended-command))
-      ("Arguments" ,(remove #\newline (format nil "~{~a~^ ~}" (arglist function))))
-      ("Documentation" ,(documentation-line function 'function "") nil 4))))
+    `(("Expression" ,(format nil "~s" extended-command) (:width 1))
+      ("Arguments" ,(remove #\newline (format nil "~{~a~^ ~}" (arglist function))) (:width 1))
+      ("Documentation" ,(documentation-line function 'function "") (:width 4)))))
 
 (defmethod prompter:object-attributes ((extended-command symbol) (source extended-command-source))
   (declare (ignore source))
   (let ((*print-case* :downcase))
     (if (fboundp extended-command)
         (let ((function (symbol-function extended-command)))
-          `(("Expression" ,(format nil "~s" extended-command))
-            ("Arguments" ,(remove #\newline (format nil "~{~a~^ ~}" (arglist function))))
-            ("Documentation" ,(documentation-line function 'function "") nil 4)))
-        `(("Expression" ,(prini-to-string extended-command))
-          ("Arguments" "")
-          ("Documentation" ,(or (documentation extended-command 'variable) "") nil 4)))))
+          `(("Expression" ,(format nil "~s" extended-command) (:width 1))
+            ("Arguments" ,(remove #\newline
+                                  (format nil "~{~a~^ ~}" (arglist function)))
+                         (:width 1))
+            ("Documentation" ,(documentation-line function 'function "") (:width 4))))
+        `(("Expression" ,(prini-to-string extended-command) (:width 1))
+          ("Arguments" "" (:width 1))
+          ("Documentation" ,(or (documentation extended-command 'variable) "") (:width 4))))))
 
 (define-command execute-command ()
   "Execute a command by name.

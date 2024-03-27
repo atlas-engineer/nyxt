@@ -115,10 +115,13 @@ internal programming APIs."
 
 (defmethod prompter:object-attributes ((entry bookmark-entry) (source prompter:source))
   (declare (ignore source))
-  `(("URL" ,(render-url (url entry)) nil 3)
-    ("Title" ,(title entry) nil 2)
-    ("Tags" ,(format nil "~{~a ~}" (tags entry)))
-    ("Date" ,(local-time:format-timestring nil (date entry) :format local-time:+asctime-format+))))
+  `(("Title" ,(title entry) (:width 3))
+    ("URL" ,(render-url (url entry)) (:width 2))
+    ("Tags" ,(format nil "~{~a ~}" (tags entry)) (:width 1))
+    ("Date" ,(local-time:format-timestring nil
+                                           (date entry)
+                                           :format local-time:+asctime-format+)
+            (:width 1))))
 
 ;; FIXME: Move somewhere else, where Nyxt-global function declarations belong?
 (define-generic equals (object1 object2)

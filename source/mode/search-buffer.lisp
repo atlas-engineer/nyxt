@@ -241,7 +241,7 @@ truncated string, and ELLIPSIS is added at the boundary when needed."
                          (when end-omitted-p ellipsis)))))))
 
 (defmethod prompter:object-attributes ((match search-match) (source prompter:source))
-  `(("Match ID" ,(id match) nil 1)
+  `(("Match ID" ,(id match) (:width 1))
     ("Text" ,(centered-ellipsize (body match)
                                  (text-index-beg match)
                                  (if (sera:single (nodes match))
@@ -250,7 +250,7 @@ truncated string, and ELLIPSIS is added at the boundary when needed."
                                                 (butlast (nodes match))
                                                 :key (compose #'length #'plump:text))
                                         (text-index-end match))))
-            nil 12)))
+            (:width 12))))
 
 (defun search-contiguous (pattern str &key (found-pattern nil)
                                         (full-match-p nil)

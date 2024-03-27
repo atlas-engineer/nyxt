@@ -106,8 +106,8 @@ Example (Tor-proxied completion function for Wikipedia):
 
 (defmethod prompter:object-attributes ((engine search-engine) (source prompter:source))
   (declare (ignore source))
-  `(("Name" ,(or (name engine) (shortcut engine)))
-    ("Search URL" ,(search-url engine) nil 3)))
+  `(("Name" ,(or (name engine) (shortcut engine)) (:width 1))
+    ("Search URL" ,(search-url engine) (:width 3))))
 
 (defun all-search-engines ()
   "Return the `search-engine's from the `current-buffer'.
