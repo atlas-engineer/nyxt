@@ -43,14 +43,6 @@ Not to be confused with `current-buffer'.")
 for the prompt buffer to be available.
 You should not rely on the value of this channel.
 The channel is popped when a prompt buffer is hidden.")
-   (key-stack
-    '()
-    :documentation "A stack of the key chords a user has pressed.")
-   (last-key
-    nil
-    :export nil
-    :type (or null keymaps:key)
-    :documentation "Last pressed key.  Useful for `self-insert'.")
    (fullscreen-p
     nil
     :export nil
@@ -74,17 +66,6 @@ the generic functions on `status-buffer'.  Finally set the `window'
     (make-instance 'message-buffer)
     :type message-buffer
     :documentation "The `message-buffer' instance for this window.")
-   (command-dispatcher
-    #'dispatch-command
-    :type (or sym:function-symbol function)
-    :documentation "Function to process the command processed in `dispatch-input-event'.
-Takes the function/command as the only argument.")
-   (input-skip-dispatcher
-    #'dispatch-input-skip
-    :type function
-    :documentation "Function to process the skipped input event.
-It runs when the pressed keybinding has no associated command.
-The only argument is a string representation of the pressed key.")
    (window-set-buffer-hook
     (make-instance 'hook-window-buffer)
     :type hook-window-buffer

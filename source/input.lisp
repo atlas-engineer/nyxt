@@ -86,7 +86,7 @@ KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
 (-> dispatch-command ((or sym:function-symbol function)) *)
 (export-always 'dispatch-command)
 (defun dispatch-command (function)
-  "Default `command-dispatcher'. Runs FUNCTION asynchronously."
+  "Runs FUNCTION asynchronously."
   (echo-dismiss)                        ; Clean up message-view on command.
   ;; TODO: Instead of hard-coding these ignored-commands, we could add a boolean
   ;; slot to the `command' class.
@@ -113,10 +113,10 @@ KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
   (log:debug "Skipping input event key ~s" keyspecs))
 
 (export-always 'dispatch-input-event)
-(defun dispatch-input-event (event buffer window)
-  "Dispatch keys in WINDOW `key-stack'.
+(defun dispatch-input-event (event buffer)
+  "Dispatch keys in BUFFER `key-stack'.
 Return nil to forward to renderer or non-nil otherwise."
-  (with-accessors ((key-stack key-stack)) window
+  (with-accessors ((key-stack key-stack)) buffer
     (labels ((keyspecs (key &optional translated-key)
                (if translated-key
                    (let ((specs (keyspecs key))
@@ -129,9 +129,15 @@ Return nil to forward to renderer or non-nil otherwise."
                    (keyspecs-with-optional-keycode key))))
       (when (input-buffer-p buffer)
         (setf (last-event buffer) event))
+      (when (prompt-buffer-p buffer)
+        ;; Prompt buffer updating must happen on a separate thread.
+        (run-thread "update-prompt-buffer"
+          (update-prompt-input buffer
+                               (ps-eval :buffer buffer
+                                 (ps:chain (nyxt/ps:qs document "#input") value)))))
       (multiple-value-bind (bound-function matching-keymap translated-key)
           (the keyscheme:nyxt-keymap-value
-               (keymaps:lookup-key key-stack (current-keymaps)))
+               (keymaps:lookup-key key-stack (current-keymaps buffer)))
         (declare (ignore matching-keymap))
         (cond
           ((keymaps:keymap-p bound-function)
@@ -148,9 +154,9 @@ Return nil to forward to renderer or non-nil otherwise."
              ;; We save the last key separately to keep it available to the
              ;; command even after key-stack has been reset in the other
              ;; thread.
-             (setf (last-key window) (first key-stack))
+             (setf (last-key buffer) (first key-stack))
              (unwind-protect
-                  (funcall (command-dispatcher window) command)
+                  (funcall (command-dispatcher *browser*) command)
                ;; We must reset the key-stack on errors or else all subsequent
                ;; keypresses will keep triggering the same erroring command.
                (setf key-stack nil))
@@ -161,13 +167,6 @@ Return nil to forward to renderer or non-nil otherwise."
            (log:debug "Forward key ~s" (keyspecs key-stack))
            (setf key-stack nil)
            nil)
-
-          ((and (input-buffer-p buffer) (not (forward-input-events-p buffer)))
-           ;; After checking `pointer-event-p', otherwise pointer events
-           ;; might not be forwarded.
-           (funcall (input-skip-dispatcher window) (keyspecs key-stack))
-           (setf key-stack nil)
-           t)
 
           (t
            (log:debug "Fallback forward key ~s" (keyspecs key-stack))

@@ -14,14 +14,7 @@
   (:documentation "WebKit renderer class."))
 
 (define-class gtk-browser ()
-  (#+darwin
-   (modifiers
-    '()
-    :documentation "On macOS some modifiers like Super and Meta are seen like
-regular keys.
-To work around this issue, we store them in this list while they are pressed.
-See `push-modifiers', `pop-modifiers' and `key-event-modifiers'.")
-   (modifier-translator
+  ((modifier-translator
     #'translate-modifiers
     :documentation "Function that returns a list of modifiers understood by
 `keymaps:make-key'.  You can customize this slot if you want to change the
@@ -170,9 +163,6 @@ As a workaround, we never leave the GTK main loop when running from a REPL.
 See https://github.com/atlas-engineer/nyxt/issues/740")
 
 (defmethod renderer-thread-p ((renderer gtk-renderer) &optional (thread (bt:current-thread)))
-  #+darwin
-  (string= "main thread" (bt:thread-name thread))
-  #-darwin
   (string= "cl-cffi-gtk main thread" (bt:thread-name thread)))
 
 (defmacro within-gtk-thread (&body body)
@@ -243,18 +233,12 @@ the renderer thread, use `defmethod' instead."
                   (error condition)))))))))
 
 (defmethod ffi-initialize ((browser gtk-browser) urls startup-timestamp)
-  "gtk:within-main-loop handles all the GTK initialization. On
-   GNU/Linux, Nyxt could hang after 10 minutes if it's not
-   used. Conversely, on Darwin, if gtk:within-main-loop is used, no
-   drawing happens. Drawing operations on Darwin MUST originate from
-   the main thread, which the GTK main loop is not guaranteed to be
-   on."
+  "gtk:within-main-loop handles all the GTK initialization."
   (declare (ignore urls startup-timestamp))
   (log:debug "Initializing GTK Interface")
   (if gtk-running-p
       (within-gtk-thread
         (call-next-method))
-      #-darwin
       (progn
         (setf gtk-running-p t)
         (glib:g-set-prgname "nyxt")
@@ -272,14 +256,7 @@ the renderer thread, use `defmethod' instead."
           ;; UIOP:QUIT with FINISH-OUTPUT = NIL in the first place.
           ;;
           ;; FIXME: This also can be true for other BSD systems.
-          (uiop:quit (slot-value browser 'nyxt::exit-code) #+freebsd nil)))
-      #+darwin
-      (progn
-        (setf gtk-running-p t)
-        (glib:g-set-prgname "nyxt")
-        (gdk:gdk-set-program-class "Nyxt")
-        (call-next-method)
-        (gtk:gtk-main))))
+          (uiop:quit (slot-value browser 'nyxt::exit-code) #+freebsd nil)))))
 
 (define-ffi-method ffi-kill-browser ((browser gtk-browser))
   ;; TODO: Terminating the GTK thread from the REPL seems to prevent Nyxt from
@@ -518,16 +495,6 @@ response.  The BODY is wrapped with `with-protect'."
 
          (gtk:gtk-container-add gtk-object root-box-layout)
 
-         (connect-signal window "key_press_event" nil (widget event)
-           (declare (ignore widget))
-           #+darwin
-           (push-modifier *browser* event)
-           (on-signal-key-press-event window event))
-         (connect-signal window "key_release_event" nil (widget event)
-           (declare (ignore widget))
-           #+darwin
-           (pop-modifier *browser* event)
-           (on-signal-key-release-event window event))
          (connect-signal window "destroy" nil (widget)
            (declare (ignore widget))
            (on-signal-destroy window))
@@ -600,41 +567,6 @@ Return nil when key must be discarded, e.g. for modifiers."
         (str:replace-all "_" "" (string-downcase result))
         result)))
 
-#+darwin
-(defmethod push-modifier ((browser gtk-browser) event)
-  (let* ((modifier-state (gdk:gdk-event-key-state event))
-         (key-value (gdk:gdk-event-key-keyval event))
-         (key-value-name (gdk:gdk-keyval-name key-value)))
-    (when (member :control-mask modifier-state)
-      (push :control-mask (modifiers browser)))
-    (when (member :shift-mask modifier-state)
-      (push :shift-mask (modifiers browser)))
-    (when (or (string= key-value-name "Arabic_switch")
-              (string= key-value-name "Alt_L")
-              (string= key-value-name "Alt_R"))
-      (push :mod1-mask (modifiers browser)))
-    (when (and (member :mod2-mask modifier-state)
-               (member :meta-mask modifier-state))
-      (push :super-mask (modifiers browser))))
-  (setf (modifiers browser) (delete-duplicates (modifiers browser))))
-
-#+darwin
-(defmethod pop-modifier ((browser gtk-browser) event)
-  (let* ((modifier-state (gdk:gdk-event-key-state event))
-         (key-value (gdk:gdk-event-key-keyval event))
-         (key-value-name (gdk:gdk-keyval-name key-value)))
-    (when (member :control-mask modifier-state)
-      (alex:deletef (modifiers browser) :control-mask))
-    (when (member :shift-mask modifier-state)
-      (alex:deletef (modifiers browser) :shift-mask))
-    (when (or (string= key-value-name "Arabic_switch")
-              (string= key-value-name "Alt_L")
-              (string= key-value-name "Alt_R"))
-      (alex:deletef (modifiers browser) :mod1-mask))
-    (when (and (member :mod2-mask modifier-state)
-               (member :meta-mask modifier-state))
-      (alex:deletef (modifiers browser) :super-mask))))
-
 (-> translate-modifiers (list &optional gdk:gdk-event) list)
 (defun translate-modifiers (modifier-state &optional event)
   "Return list of modifiers fit for `keymaps:make-key'.
@@ -650,12 +582,6 @@ See `gtk-browser's `modifier-translator' slot."
                  :lock-mask nil)))
     (delete nil (mapcar (lambda (mod) (getf plist mod)) modifier-state))))
 
-#+darwin
-(defun key-event-modifiers (key-event)
-  (declare (ignore key-event))
-  (modifiers *browser*))
-
-#-darwin
 (defun key-event-modifiers (key-event)
   (gdk:gdk-event-key-state key-event))
 
@@ -670,21 +596,9 @@ See `gtk-browser's `modifier-translator' slot."
           (setf (cffi:mem-ref modifiers 'gdk:gdk-modifier-type) state)
           (cffi:mem-ref modifiers 'gdk:gdk-modifier-type)))))
 
-#+darwin
-(defun button-event-modifiers (button-event)
-  (declare (ignore button-event))
-  (modifiers *browser*))
-
-#-darwin
 (defun button-event-modifiers (button-event)
   (gdk-event-button-state button-event))
 
-#+darwin
-(defun scroll-event-modifiers (scroll-event)
-  (declare (ignore scroll-event))
-  (modifiers *browser*))
-
-#-darwin
 (defun scroll-event-modifiers (scroll-event)
   (gdk:gdk-event-scroll-state scroll-event))
 
@@ -705,28 +619,19 @@ See `gtk-browser's `modifier-translator' slot."
           (character character))
       (setf (gtk:gtk-entry-text (key-string-buffer window)) ""))))
 
-(defun update-prompt (buffer)
-  (run-thread "Prompt updater"
-    ;; Rebind prompt-buffer to ensure the watcher does not mix up the
-    ;; different prompt-buffers.
-    (let ((prompt-buffer buffer))
-      (nyxt::update-prompt-input prompt-buffer))))
-
-(define-ffi-method on-signal-key-press-event ((sender gtk-window) event)
+(define-ffi-method on-signal-key-press-event ((sender gtk-buffer) event)
   (let* ((keycode (gdk:gdk-event-key-hardware-keycode event))
          (keyval (gdk:gdk-event-key-keyval event))
          (keyval-name (gdk:gdk-keyval-name keyval))
          (character (gdk:gdk-keyval-to-unicode keyval))
-         (printable-value (printable-p sender event))
+         (printable-value (printable-p (current-window) event))
          (key-string (or printable-value
                          (derive-key-string keyval-name character)))
          (modifiers (funcall (modifier-translator *browser*)
                              (key-event-modifiers event)
-                             event))
-         (buffer (or (current-prompt-buffer)
-                     (nyxt::active-buffer sender))))
-    (log:debug key-string keycode character keyval-name modifiers)
-    (when (prompt-buffer-p buffer) (update-prompt buffer))
+                             event)))
+    (log:debug sender key-string keycode character keyval-name modifiers)
+    ;; Do not forward modifier-only presses to the renderer.
     (if key-string
         (flet ((key ()
                  (keymaps:make-key :code keycode
@@ -736,30 +641,15 @@ See `gtk-browser's `modifier-translator' slot."
           (alex:appendf (key-stack sender)
                         (list (key)))
           (run-thread "on-signal-key-press"
-            (on-signal-key-press buffer (key)))
-          (dispatch-input-event event buffer sender))
-        ;; Do not forward modifier-only to renderer.
+            (on-signal-key-press sender (key)))
+          (dispatch-input-event event sender))
         t)))
 
 (defmethod gtk-object ((prompt-buffer prompt-buffer))
   (prompt-buffer-view (window prompt-buffer)))
 
-(define-ffi-method on-signal-key-release-event ((sender gtk-window) event)
-  (declare (ignore sender event))
-  ;; REVIEW: Is there any use for handling release events?
-  nil)
-
-(defun sender-window (sender)
-  (or (find sender (window-list) :key #'nyxt::active-prompt-buffers)
-      (find sender (window-list) :key #'nyxt::active-buffer)
-      (current-window)))
-
 (define-ffi-method on-signal-button-press-event ((sender gtk-buffer) event)
   (let* ((button (gdk:gdk-event-button-button event))
-         ;; REVIEW: No need to store X and Y?
-         ;; (x (gdk:gdk-event-button-x event))
-         ;; (y (gdk:gdk-event-button-y event))
-         (window (sender-window sender))
          (key-string (format nil "button~s" button))
          (modifiers (funcall (modifier-translator *browser*)
                              (button-event-modifiers event)
@@ -775,11 +665,10 @@ See `gtk-browser's `modifier-translator' slot."
                                :status :pressed)))
       (run-thread "on-signal-button-press"
         (on-signal-button-press buffer (key)))
-      (when (prompt-buffer-p buffer) (update-prompt buffer))
       (when key-string
-        (alex:appendf (key-stack window)
+        (alex:appendf (key-stack buffer)
                       (list (key)))
-        (dispatch-input-event event sender window)))))
+        (dispatch-input-event event sender)))))
 
 (define-ffi-method on-signal-scroll-event ((sender gtk-buffer) event)
   (let* ((button (match (gdk:gdk-event-scroll-direction event)
@@ -797,17 +686,16 @@ See `gtk-browser's `modifier-translator' slot."
                        6)
                       ((< 0 (gdk:gdk-event-scroll-delta-x event))
                        7)))))
-         (window (sender-window sender))
          (key-string (format nil "button~s" button))
          (modifiers (funcall (modifier-translator *browser*)
                              (scroll-event-modifiers event)
                              event)))
     (when key-string
-      (alex:appendf (key-stack window)
+      (alex:appendf (key-stack sender)
                     (list (keymaps:make-key :value key-string
                                             :modifiers modifiers
                                             :status :pressed)))
-      (dispatch-input-event event sender window))))
+      (dispatch-input-event event sender))))
 
 (define-class gtk-scheme ()
   ((context
@@ -1584,6 +1472,9 @@ the `active-buffer'."
   (connect-signal buffer "button-press-event" nil (web-view event)
     (declare (ignore web-view))
     (on-signal-button-press-event buffer event))
+  (connect-signal buffer "key_press_event" nil (widget event)
+    (declare (ignore widget))
+    (on-signal-key-press-event buffer event))
   (connect-signal buffer "scroll-event" nil (web-view event)
     (declare (ignore web-view))
     (on-signal-scroll-event buffer event))
@@ -1733,6 +1624,9 @@ the `active-buffer'."
 (define-ffi-method ffi-buffer-delete ((buffer gtk-buffer))
   (cond
    ((not (slot-value buffer 'gtk-object))
+    (mapc (lambda (handler-id)
+            (gobject:g-signal-handler-disconnect (gtk-object buffer) handler-id))
+          (handler-ids buffer))
     (nyxt::buffer-hide buffer))
    ((webkit:webkit-web-view-is-web-process-responsive (gtk-object buffer))
     (webkit:webkit-web-view-try-close (gtk-object buffer)))

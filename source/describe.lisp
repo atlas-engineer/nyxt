@@ -645,26 +645,15 @@ A command is a special kind of function that can be called with
         :command (typecase command
                    (symbol command)
                    (command (name command))))
-    (setf (command-dispatcher (current-window)) #'dispatch-command
-          (input-skip-dispatcher (current-window)) #'dispatch-input-skip)))
-
-(defun skip-describe-dispatch (keyspec)
-  (declare (ignore keyspec))
-  (echo "Canceled describe-key.")
-  (setf (command-dispatcher (current-window)) #'dispatch-command
-        (input-skip-dispatcher (current-window)) #'dispatch-input-skip))
+    (setf (command-dispatcher *browser*) #'dispatch-command)))
 
 (define-command describe-key ()
   "Display binding of user-inputted keys."
-  (setf (command-dispatcher (current-window)) #'describe-key-dispatch
-        (input-skip-dispatcher (current-window)) #'skip-describe-dispatch)
+  (setf (command-dispatcher *browser*) #'describe-key-dispatch)
   (echo "Press a key sequence to describe:"))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; TODO: Move rest somewhere else?  Maybe too low-level for help.lisp.
-
 (export-always 'system-information)
-(defun system-information ()            ; TODO: Rename report-system-information?
+(defun system-information ()
   "Return a system information report as a string."
   (labels ((->string (obj) (princ-to-string obj))
            (asdf-information ()

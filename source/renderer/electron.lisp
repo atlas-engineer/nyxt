@@ -113,6 +113,9 @@
   (:documentation "Electron buffer class."))
 
 (defmethod initialize-instance :after ((buffer electron-buffer) &key extra-modes no-hook-p)
+  (electron:register-before-input-event buffer
+                                        (lambda (buffer event)
+                                          (on-signal-key-press-event buffer event)))
   (finalize-buffer buffer :extra-modes extra-modes :no-hook-p no-hook-p))
 
 ;; TODO Needed for resurrect-buffer.
@@ -327,12 +330,7 @@
                 :width-p t)
     (electron:load-url status-buffer "about:blank")
     ;; KLUDGE Without it, the window won't intercept input events.
-    (electron:load-url window "about:blank")
-    ;; Each window listens to input events.  Another approach would be to listen
-    ;; the each buffer.
-    (electron:register-before-input-event window
-                                          (lambda (win event)
-                                            (on-signal-key-press-event win event)))))
+    (electron:load-url window "about:blank")))
 
 (defmethod add-buffer ((window electron-window) (buffer electron-buffer)
                        &key (x 0) (y 0) (width 1000) (height 1000)
@@ -454,17 +452,16 @@ Return nil when key must be discarded, e.g. for modifiers."
     ("F12" "f12")
     (_ key-string)))
 
-(defmethod on-signal-key-press-event ((sender electron-window) event)
-  (let ((key-string (translate-key-string (rest (assoc :key event))))
-        (buffer (or (current-prompt-buffer) (nyxt::active-buffer sender))))
+(defmethod on-signal-key-press-event ((sender electron-buffer) event)
+  (let ((key-string (translate-key-string (rest (assoc :key event)))))
     (flet ((key () (keymaps:make-key :value key-string
                                      :modifiers (translate-modifiers event)
                                      :status :pressed)))
       (when key-string
         (alex:appendf (key-stack sender)
                       (list (key)))
-        (run-thread "on-signal-key-press" (on-signal-key-press buffer (key)))
-        (dispatch-input-event event buffer sender)))))
+        (run-thread "on-signal-key-press" (on-signal-key-press sender (key)))
+        (dispatch-input-event event sender)))))
 
 (defmethod on-signal-key-release-event ((sender electron-window) event)
   (declare (ignore sender event)))
