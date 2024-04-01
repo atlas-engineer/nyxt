@@ -12,11 +12,10 @@ it is set to $PREFIX/share/.
 
 NASDF_TESTS_NO_NETWORK disables tests that require networking.
 
-When NYXT_SUBMODULES is "true" (the default), all Lisp dependencies are fetched
-as git submodules to the directory set by NASDF_SUBMODULES_DIR.  Otherwise, they
-need to be made visible to ASDF by other means.  In case you have received an
-archive that includes the source of these Lisp dependencies, then it all should
-work out of the box.
+When NYXT_SUBMODULES is "true" (the default), all Lisp dependencies are searched
+at ./_build.  Otherwise, they need to be made visible to ASDF by other means.
+In case you have received an archive that includes the source of these Lisp
+dependencies, then it all should work out of the box.
 
 NYXT_RENDERER sets the renderer, by default "gi-gtk".
 

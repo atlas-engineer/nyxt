@@ -27,9 +27,13 @@ help:
 
 makefile_dir := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
+ifeq ($(NYXT_SUBMODULES),true)
+	CL_SOURCE_REGISTRY = $(makefile_dir)_build//
+	export CL_SOURCE_REGISTRY
+endif
+
 lisp_eval:=$(LISP) $(LISP_FLAGS) \
 	--eval '(require "asdf")' \
-	--eval '(when (string= "$(NYXT_SUBMODULES)" "true") (setf asdf:*default-source-registries* (list (quote asdf/source-registry:environment-source-registry))) (asdf:clear-configuration) (asdf:load-asd "$(makefile_dir)/libraries/nasdf/nasdf.asd") (asdf:load-asd "$(makefile_dir)/nyxt.asd") (asdf:load-system :nyxt/submodules))' \
 	--eval '(asdf:load-asd "$(makefile_dir)/libraries/nasdf/nasdf.asd")' \
 	--eval '(asdf:load-asd "$(makefile_dir)/nyxt.asd")' \
 	--eval

@@ -5,8 +5,6 @@ installation.
 
 * Features
 
-- Manage CL dependencies as Git submodules, ensuring fine control over their
-  versions.
 - Test suite helpers.
 - Installation helpers such as handling of icons or desktop files.
 
@@ -17,8 +15,6 @@ See [[file:package.lisp]] for more details.
 NASDF exposes the following environment variables for convenience:
 
 - =NASDF_SOURCE_PATH= :: See =nasdf:*dest-source-dir*=.
-- =NASDF_SUBMODULES_DIR= :: See =nasdf:*submodules-directory*=.
-- =NASDF_SUBMODULES_JOBS= :: See =nasdf:*submodules-jobs*=.
 - =NASDF_USE_LOGICAL_PATHS= :: Allow non-expanded logical pathnames in system
   pathnames.
   This is particularly useful when shipping the source.

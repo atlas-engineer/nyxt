@@ -227,10 +227,6 @@
                          (test-op "nyxt/analysis")
                          (test-op "nyxt/theme"))))
 
-(defsystem "nyxt/submodules"
-  :defsystem-depends-on ("nasdf")
-  :class :nasdf-submodule-system)
-
 (defsystem "nyxt/tests"
   :defsystem-depends-on ("nasdf")
   :class :nasdf-test-system
