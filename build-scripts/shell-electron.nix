@@ -26,5 +26,10 @@ stdenv.mkDerivation {
                                                    pkgs.sqlite.out
                                                    pkgs.libressl.out ]};";
 
+  shellHook =
+    ''
+    NYXT_ROOT=`dirname ${toString ../README.org}`;
+    export CL_SOURCE_REGISTRY=$HOME/common-lisp//:$NYXT_ROOT/_build//:$CL_SOURCE_REGISTRY;
+    '';
 
 }

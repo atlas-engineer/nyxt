@@ -58,4 +58,11 @@ stdenv.mkDerivation {
 
   GIO_MODULE_DIR = "${pkgs.glib-networking.out}/lib/gio/modules/";
   GIO_EXTRA_MODULES = "${pkgs.glib-networking.out}/lib/gio/modules/";
+
+  shellHook =
+    ''
+    NYXT_ROOT=`dirname ${toString ../README.org}`;
+    export CL_SOURCE_REGISTRY=$HOME/common-lisp//:$NYXT_ROOT/_build//:$CL_SOURCE_REGISTRY;
+    '';
+
 }
