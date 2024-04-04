@@ -28,6 +28,7 @@
 (define-version "3.11.6"
   (:nsection :title "Bug fixes"
     (:ul
+     (:li "Fix crash on " (:a :href (nyxt-url 'common-settings) "."))
      (:li "Fix warnings raised by " (:nxref :command 'pick-color) "."))))
 
 (define-version "3.11.5"
