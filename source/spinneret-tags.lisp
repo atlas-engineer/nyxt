@@ -65,11 +65,12 @@ forms in BUFFER."
 (defun %nselect-options (clauses)
   "Produces a set of options for :nselect based on CLAUSES list."
   (spinneret:with-html-string
-    (loop for (value display title) in (mapcar (alexandria:compose #'uiop:ensure-list #'first) clauses)
+    (loop for (value display title) in (mapcar (alexandria:compose #'uiop:ensure-list
+                                                                   #'first)
+                                               clauses)
           collect (:option
                    :value (nyxt:prini-to-string value)
-                   (when title
-                     (list :title title))
+                   (when title (list :title title))
                    (string-capitalize (or display (nyxt:prini-to-string value)))))))
 
 (deftag :nselect (body attrs &rest keys &key default (id (alexandria:required-argument 'id)) buffer &allow-other-keys)
