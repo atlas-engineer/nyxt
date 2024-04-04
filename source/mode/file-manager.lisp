@@ -128,12 +128,13 @@ When the user is unspecified, take the current one."
 
 (defmethod prompter:object-attributes ((path pathname) (source prompter:source))
   (declare (ignore source))
-  `(("Path" ,(uiop:native-namestring path) nil 2)
+  `(("Path" ,(uiop:native-namestring path) (:width 2))
     ("Name" ,(if (uiop:directory-pathname-p path)
                  (enough-namestring path (files:parent path))
-                 (pathname-name path)))
-    ("Extension" ,(or (files:pathname-type* path) ""))
-    ("Directory" ,(uiop:native-namestring (files:parent path)) nil 3)))
+                 (pathname-name path))
+            (:width 1))
+    ("Extension" ,(or (files:pathname-type* path) "") (:width 1))
+    ("Directory" ,(uiop:native-namestring (files:parent path)) (:width 3))))
 
 (defun match-extension (ext)
   (lambda (pathname)

@@ -59,14 +59,6 @@ The following mouse keybindings are available:
 - C-button1: `toggle-mark-forwards'
 - s-button1: `toggle-mark-forwards'
 - M-button1: `set-action-on-return'.")
-     (dynamic-attribute-width-p
-      nil
-      :type boolean
-      :documentation "Whether to adjust the column widths to their content.
-Columns with more content get more space, at the expense of smaller ones.
-The default behavior is to use static widths (either uniform across attributes or provided
-in `prompter:object-attributes').
-See `nyxt::attribute-widths'.")
      (style
       (theme:themed-css (theme *browser*)
         `(:font-face :font-family "public sans" :font-style "normal" :font-weight "400" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Regular.woff") "format('woff')")
@@ -378,67 +370,19 @@ See also `show-prompt-buffer'."
                                (mapcar (curry #'mode-status status-buffer)
                                        (sort-modes-for-status (modes prompt-buffer)))))))))
 
-(defun average-attribute-width (attribute-values)
-  (let* ((values (remove-if #'str:blankp attribute-values))
-         (total (reduce #'+ values :key #'length)))
-    (if (zerop (length values))
-        0
-        (/ total (length values)))))
-
-(define-generic attribute-widths (source &key (width-function #'average-attribute-width) dynamic-p)
-  "Compute the widths of SOURCE attribute columns (as percent).
-
-If DYNAMIC-P, compute widths based on content length. Otherwise, rely on the
-fourth value of `prompter:object-attributes' for the given source.
-
-Returns a list of ratios that sum up to one.
-Uses the WIDTH-FUNCTION (by default computing average length of non-blank
-attribute values) to derive the width of the list of attribute
-values. WIDTH-FUNCTION is a function accepting a list of strings and returning
-an integer."
-  (labels ((clip-extremes (widths)
-             (let* ((length (length widths))
-                    (minimal-size (/ 1 length 2)))
-               (cond
-                 ((= 1 length)
-                  (list 1))
-                 ((some (rcurry #'< minimal-size) widths)
-                  (let* ((lacking (remove-if-not #'plusp
-                                                 (mapcar (curry #'- minimal-size) widths)))
-                         (abundant (set-difference widths lacking))
-                         (lack (reduce #'+ lacking)))
-                    (loop for width in widths
-                          when (< width minimal-size)
-                            collect minimal-size into new-widths
-                          else
-                            collect (- width
-                                       (* lack
-                                          (/ width
-                                             (reduce #'+ abundant))))
-                              into new-widths
-                          finally (return new-widths))))
-                 (t widths))))
-           (width-normalization (widths)
-             (let ((total (reduce #'+ widths)))
-               (mapcar (lambda (w) (if (zerop total) 0 (/ w total))) widths))))
-    ;; FIXME: This loop ignores attribute names in the attribute width
-    ;; computation. Because of this, attribute names could theoretically get
-    ;; cropped if the values are short enough. This is bad, but not exactly
-    ;; critical.
-    (if dynamic-p
-        (loop with suggestions = (prompter:suggestions source)
-              with attributes = (mapcar (rcurry #'prompter:active-attributes :source source) suggestions)
-              for key in (prompter:active-attributes-keys source)
-              for width
-                = (funcall width-function (mapcar (compose #'first (rcurry #'str:s-assoc-value key))
-                                                  attributes))
-              collect width into widths
-              finally (return (clip-extremes (width-normalization widths))))
-        (sera:and-let* ((suggestions (prompter:suggestions source))
-                        (fourth-attributes
-                         (mapcar #'fourth (prompter:active-attributes (first suggestions) :source source)))
-                        (coefficients (substitute 1 nil fourth-attributes)))
-          (width-normalization coefficients)))))
+(defmethod attribute-widths ((source prompter:source))
+  "Return the widths of SOURCE's attribute columns (as ratios)."
+  ;; In a proportion a:b, a is the "mean" and b is the "extreme".
+  (let* ((means (mapcar (lambda (attr) (getf (third attr) ':width))
+                        (prompter:active-attributes (first (prompter:suggestions source))
+                                                    :source source)))
+         (extreme (ignore-errors (reduce #'+ means))))
+    (if extreme
+        (mapcar (lambda (ratio) (/ ratio extreme)) means)
+        (let ((len (length means)))
+          (log:debug "Fallback on uniform width distribution for lack of allocation on ~a."
+                     source)
+          (make-list len :initial-element (/ 1 len))))))
 
 (defun render-attributes (source prompt-buffer)
   (spinneret:with-html-string
@@ -447,8 +391,7 @@ an integer."
               (:colgroup
                (when (prompter:enable-marks-p source)
                  (:col :style "width: 25px"))
-               (dolist (width (attribute-widths
-                               source :dynamic-p (dynamic-attribute-width-p prompt-buffer)))
+               (dolist (width (attribute-widths source))
                  (:col :style (format nil "width: ~,2f%" (* 100 width)))))
               (:tr :style (if (or (eq (prompter:hide-attribute-header-p source) :always)
                                   (and (eq (prompter:hide-attribute-header-p source) :single)
@@ -491,7 +434,7 @@ an integer."
                                             prompt-buffer
                                             (- cursor-index suggestion-index))
                                            (prompt-render-suggestions prompt-buffer))))))
-                          (loop for (nil attribute attribute-display)
+                          (loop for (nil attribute)
                                   in (prompter:active-attributes suggestion :source source)
                                 collect (:td
                                          :title attribute
@@ -530,9 +473,7 @@ an integer."
                                                            (- suggestion-index cursor-index))
                                                           (prompter:run-action-on-return
                                                            (nyxt::current-prompt-buffer)))))))
-                                         (if attribute-display
-                                             (:raw attribute-display)
-                                             attribute))))))))))
+                                         (:raw attribute))))))))))
 
 (export 'prompt-render-suggestions)
 (define-generic prompt-render-suggestions ((prompt-buffer prompt-buffer))

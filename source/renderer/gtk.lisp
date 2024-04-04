@@ -112,7 +112,7 @@ We use this slot to know when to ignore these load failures."))
 (defmethod prompter:object-attributes :around ((buffer gtk-buffer) (source nyxt:buffer-source))
   (declare (ignore source))
   (append (call-next-method)
-          `(("Context" ,(context-name buffer)))))
+          `(("Context" ,(context-name buffer) (:width 1)))))
 
 (defclass webkit-web-context (webkit:webkit-web-context) ()
   (:metaclass gobject:gobject-class))

@@ -65,18 +65,15 @@ rgb()/hsl() CSS functions representing them."))
 
 (defmethod prompter:object-attributes ((color string) (source color-source))
   (flet ((display (string)
-           (let ((spinneret:*html-style* :tree))
-             (spinneret:with-html-string
-               (:span :style (format nil "background-color: ~a; color: ~a; border: 0.1em solid ~a; border-radius: 2px"
-                                     color (theme:contrasting-color color) (theme:contrasting-color color))
-                      string)))))
-    (let ((rgb (cl-colors2:print-css-rgb/a color))
-          (hsl (cl-colors2:print-css-hsl color))
-          (hex (cl-colors2:print-hex color)))
-      `(("Color" ,color ,(display color))
-        ("HEX" ,hex ,(display hex))
-        ("RGB" ,rgb ,(display rgb))
-        ("HSL" ,hsl ,(display hsl))))))
+           (spinneret:with-html-string
+             (:span
+              :style (format nil "background-color: ~a; color: ~a; border: 0.1em solid ~a; border-radius: 2px;"
+                             color (theme:contrasting-color color) (theme:contrasting-color color))
+              string))))
+    `(("Color" ,(display color))
+      ("HEX" ,(display (cl-colors2:print-hex color)))
+      ("RGB" ,(display (cl-colors2:print-css-rgb/a color)))
+      ("HSL" ,(display (cl-colors2:print-css-hsl color))))))
 
 (define-command-global pick-color ()
   "Pick a color and copy it to clipboard.

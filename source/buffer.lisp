@@ -1204,7 +1204,10 @@ proceeding."
                             (declare (ignore source))
                             (unless (or (prompter:returned-p prompter)
                                         (eq buffer (current-buffer)))
-                              (set-current-buffer buffer))))))
+                              (set-current-buffer buffer)))))
+   (prompter:active-attributes-keys
+    '("Title" "URL" "Keywords" "Context")
+    :accessor nil))
   (:export-class-name-p t)
   (:metaclass user-class)
   (:documentation "Source for choosing one (or several) of the open buffers.
@@ -1214,16 +1217,11 @@ buffer currently chosen as suggestion."))
 
 (defmethod prompter:object-attributes ((buffer buffer) (source prompter:source))
   (declare (ignore source))
-  `(("URL" ,(render-url (url buffer)) nil 3)
-    ("Title" ,(title buffer) nil 2)
-    ("ID" ,(id buffer))))
-
-(defmethod prompter:object-attributes ((buffer web-buffer) (source buffer-source))
-  (declare (ignore source))
-  `(("URL" ,(render-url (url buffer)) nil 3)
-    ("Title" ,(title buffer) nil 2)
-    ("ID" ,(id buffer))
-    ("Keywords" ,(lambda (buffer) (format nil "~:{~a~^ ~}" (keywords buffer))) nil 2)))
+  `(("Title" ,(title buffer) (:width 3))
+    ("URL" ,(render-url (url buffer)) (:width 2))
+    ,(when (web-buffer-p buffer)
+       `("Keywords" ,(format nil "~:{~a~^ ~}" (keywords buffer)) (:width 2)))
+    ("ID" ,(id buffer) (:width 1))))
 
 (define-command switch-buffer (&key buffer (current-is-last-p nil))
   "Switch buffer using fuzzy completion.
@@ -1514,7 +1512,7 @@ Checks whether a valid https or local file URL is requested, in a DWIM fashion."
                             (funcall (completion-function engine) all-terms))))))))
 
 (define-class new-url-or-search-source (prompter:source)
-  ((prompter:name "New URL or search query")
+  ((prompter:name "URL or search query")
    (prompter:filter-preprocessor
     (lambda (suggestions source input)
       (declare (ignore suggestions source))
@@ -1535,8 +1533,8 @@ Checks whether a valid https or local file URL is requested, in a DWIM fashion."
 
 (defmethod prompter:object-attributes ((query new-url-query) (source new-url-or-search-source))
   (declare (ignore source))
-  `(("URL or new query" ,(or (label query) (query query)) nil 5)
-    ("Search engine" ,(if (engine query) (shortcut (engine query)) ""))))
+  `(("Input" ,(or (label query) (query query)) (:width 5))
+    ("Search engine" ,(if (engine query) (shortcut (engine query)) "") (:width 1))))
 
 (defun pushnew-url-history (history url)
   "URL is not pushed if empty."
