@@ -36,15 +36,16 @@
   "Recursive version of `qs-nyxt-id` which goes through Shadow DOMs if there's
 at least one."
   `(flet ((recursive-query-selector (context selector)
-            (let ((node (qs context selector)))
-              (if node
-                  node
-                  (let ((node-iterator (chain document (create-node-iterator context (@ *node #:|ELEMENT_NODE|))))
-                        current-node)
-                    (loop while (and (setf current-node (chain node-iterator (next-node))) (not node))
-                          do (when (@ current-node shadow-root)
-                               (setf node (recursive-query-selector (@ current-node shadow-root) selector))))
-                    node)))))
+            (let ((node (qs context selector))
+                  (shadow-roots (chain *array (from (qsa context "[nyxt-shadow-root]"))))
+                  shadow-root)
+              (do ((i 0 (1+ i)))
+                  ((or node
+                       (>= i (chain shadow-roots length))))
+                (setf shadow-root (chain (elt shadow-roots i) shadow-root))
+                (chain shadow-roots push (apply shadow-roots (chain *array (from (qsa shadow-root "[nyxt-shadow-root]")))))
+                (setf node (qs shadow-root selector)))
+              node)))
      (if (chain ,context (query-selector "[nyxt-shadow-root]"))
          (recursive-query-selector ,context (stringify "[nyxt-identifier=\"" ,id "\"]"))
          (qs-nyxt-id ,context ,id))))
@@ -205,13 +206,15 @@ at least one."
   "Recursive version of context.querySelectorAll() which goes through
 Shadow DOMs if there's at least one."
   `(flet ((recursive-query-selector-all (context selector)
-            (ps:let ((nodes (ps:chain *array (from (nyxt/ps:qsa context selector))))
-                     (node-iterator (ps:chain document (create-node-iterator context (ps:@ *node #:|ELEMENT_NODE|))))
-                     current-node)
-              (ps:loop while (ps:setf current-node (ps:chain node-iterator (next-node)))
-                 do (ps:when (ps:@ current-node shadow-root)
-                      (ps:chain *array prototype push (apply nodes (recursive-query-selector-all (ps:@ current-node shadow-root) selector)))))
-              nodes)))
+            (ps:let ((tree-walker (ps:chain document (create-tree-walker context (ps:@ *Node +element_node+))))
+                     (results (array)))
+              (ps:loop while (ps:chain tree-walker (next-node))
+                 do (when (ps:chain tree-walker current-node (matches selector))
+                      (ps:chain results (push (ps:@ tree-walker current-node))))
+                    (let ((shadow-root (ps:@ tree-walker current-node shadow-root)))
+                      (when shadow-root
+                        (ps:chain *array prototype push (apply results (recursive-query-selector-all shadow-root selector))))))
+              results)))
      (if (chain ,context (query-selector "[nyxt-shadow-root]"))
          (recursive-query-selector-all ,context ,selector)
          (qsa ,context ,selector))))
