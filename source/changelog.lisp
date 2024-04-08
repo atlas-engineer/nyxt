@@ -100,7 +100,9 @@ elements are scaled accordingly.")
   (:nsection :title "Bug fixes"
     (:ul
      (:li "Fix crash on " (:a :href (nyxt-url 'common-settings) "."))
-     (:li "Fix warnings raised by " (:nxref :command 'pick-color) "."))))
+     (:li "Fix warnings raised by " (:nxref :command 'pick-color) ".")
+     (:li "Fix " (:nxref :class-name 'nyxt/mode/hint:hint-mode)
+          " performance issues caused by " (:code "Shadow DOMs") " hinting algorithm."))))
 
 (define-version "3.11.5"
   (:nsection :title "Bug fixes"
