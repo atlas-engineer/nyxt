@@ -1398,33 +1398,33 @@ Loads the entry with default `prompter:actions-on-return'."))
   (:documentation "Structure that processes a new URL query from user input.
 Checks whether a valid https or local file URL is requested, in a DWIM fashion."))
 
+;; TODO: Remove CHECK-DNS-P from everywhere in this file and url.lisp
 (defmethod initialize-instance :after ((query new-url-query)
                                        &key check-dns-p &allow-other-keys)
-  ;; Trim whitespace, in particular to detect URL properly.
-  (setf (query query) (str:trim (query query)))
-  (cond
-    ((engine query)
-     ;; First check engine: if set, no need to change anything.
-     nil)
-    ((valid-url-p (query query)
-                  :check-dns-p nil)
-     ;; Valid URLs should be passed forward.
-     nil)
-    ((and check-dns-p
-          (valid-tld-p (query query)))
-     (setf (query query) (str:concat "https://" (query query))))
-    ;; Rest is for invalid URLs:
-    ((uiop:file-exists-p (query query))
-     (setf (query query)
-           (str:concat
-            "file://"
-            (uiop:native-namestring
-             (uiop:ensure-absolute-pathname
-              (query query) *default-pathname-defaults*)))))
-    (t
-     (setf (engine query)
-           (or (engine query)
-               (default-search-engine))))))
+  (declare (ignore check-dns-p))
+  (with-slots (query engine)
+      query
+    ;; Trim whitespace, in particular to detect URL properly.
+    (setf query (str:trim query))
+    (cond
+      (engine
+       ;; First check engine: if set, no need to change anything.
+       nil)
+      ((valid-url-p query :check-dns-p nil :check-tld-p nil)
+       ;; Valid URLs should be passed forward.
+       nil)
+      ((valid-url-p (str:concat "https://" query) :check-dns-p nil :check-tld-p t)
+       (setf query (str:concat "https://" query)))
+      ;; Rest is for invalid URLs:
+      ((uiop:file-exists-p query)
+       (setf query
+             (str:concat
+              "file://"
+              (uiop:native-namestring
+               (uiop:ensure-absolute-pathname
+                query *default-pathname-defaults*)))))
+      (t
+       (setf engine (or engine (default-search-engine)))))))
 
 (defun encode-url-char (c)
   (if (find c '("+" "&" "%") :test #'string=)
