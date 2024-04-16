@@ -137,17 +137,6 @@ signatures."
   (setf (gethash scheme-name *schemes*)
         (list callback error-callback)))
 
-(defmemo lookup-hostname (name)
-  "Resolve hostname NAME and memoize the result."
-  ;; `sb-bsd-sockets:get-host-by-name' may signal a `ns-try-again-condition' which is
-  ;; not an error, so we can't use `ignore-errors' here.
-  (handler-case
-      #+sbcl
-    (sb-bsd-sockets:get-host-by-name name)
-    #-sbcl
-    (iolib/sockets:lookup-hostname name)
-    (t () nil)))
-
 (export-always 'valid-tld-p)
 (defun valid-tld-p (hostname)
   "Return NIL if HOSTNAME does not include a valid TLD as determined by the
@@ -190,12 +179,9 @@ Usually means that either:
   (sera:true (find scheme (browser-schemes *browser*) :test #'string=)))
 
 (export-always 'valid-url-p)
-(defun valid-url-p (url &key (check-dns-p t) (check-tld-p t))
-  "Return non-nil when URL is a valid URL.  The domain name existence
-is verified only if CHECK-DNS-P is T. Domain name validation may take
-significant time since it looks up the DNS. CHECK-TLD-P also checks if
+(defun valid-url-p (url &key (check-tld-p t))
+  "Return non-nil when URL is a valid URL. CHECK-TLD-P also checks if
 the host has a known TLD."
-  (declare (ignore check-dns-p))
   (let ((%url (ignore-errors (quri:uri url))))
     (and %url
          (valid-scheme-p (quri:uri-scheme %url))
