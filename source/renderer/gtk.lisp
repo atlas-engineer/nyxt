@@ -613,7 +613,6 @@ See `gtk-browser's `modifier-translator' slot."
     (prog1
         (match (gtk:gtk-entry-text (key-string-buffer window))
           ;; Special cases: these characters are not supported as is for keyspecs.
-          ;; See `self-insert' for the reverse translation.
           (" " "space")
           ("-" "hyphen")
           (character character))

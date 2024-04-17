@@ -43,7 +43,7 @@ inherited from the superclasses.")
     nil
     :export nil
     :type (or null keymaps:key)
-    :documentation "Last pressed key.  Useful for `self-insert'.")
+    :documentation "Last pressed key.")
    (profile
     (global-profile)
     :type nyxt-profile
