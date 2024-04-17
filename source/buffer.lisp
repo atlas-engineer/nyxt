@@ -1718,33 +1718,29 @@ Loads the entry with default `prompter:actions-on-return'."))
   (:documentation "Structure that processes a new URL query from user input.
 Checks whether a valid https or local file URL is requested, in a DWIM fashion."))
 
-(defmethod initialize-instance :after ((query new-url-query)
-                                       &key check-dns-p &allow-other-keys)
-  ;; Trim whitespace, in particular to detect URL properly.
-  (setf (query query) (str:trim (query query)))
-  (cond
-    ((engine query)
-     ;; First check engine: if set, no need to change anything.
-     nil)
-    ((valid-url-p (query query)
-                  :check-dns-p nil)
-     ;; Valid URLs should be passed forward.
-     nil)
-    ((and check-dns-p
-          (valid-tld-p (query query)))
-     (setf (query query) (str:concat "https://" (query query))))
-    ;; Rest is for invalid URLs:
-    ((uiop:file-exists-p (query query))
-     (setf (query query)
-           (str:concat
-            "file://"
-            (uiop:native-namestring
-             (uiop:ensure-absolute-pathname
-              (query query) *default-pathname-defaults*)))))
-    (t
-     (setf (engine query)
-           (or (engine query)
-               (default-search-engine))))))
+(defmethod initialize-instance :after ((query new-url-query) &key &allow-other-keys)
+  (with-slots (query engine) query
+    ;; Trim whitespace, in particular to detect URL properly.
+    (setf query (str:trim query))
+    (cond
+      (engine
+       ;; First check engine: if set, no need to change anything.
+       nil)
+      ((valid-url-p query :check-tld-p nil)
+       ;; Valid URLs should be passed forward.
+       nil)
+      ((valid-url-p (str:concat "https://" query) :check-tld-p t)
+       (setf query (str:concat "https://" query)))
+      ;; Rest is for invalid URLs:
+      ((uiop:file-exists-p query)
+       (setf query
+             (str:concat
+              "file://"
+              (uiop:native-namestring
+               (uiop:ensure-absolute-pathname
+                query *default-pathname-defaults*)))))
+      (t
+       (setf engine (or engine (default-search-engine)))))))
 
 (defun encode-url-char (c)
   (if (find c '("+" "&" "%") :test #'string=)
@@ -1769,19 +1765,17 @@ Checks whether a valid https or local file URL is requested, in a DWIM fashion."
       (fallback-url (engine query)))
      (t (query query)))))
 
-(defun make-completion-query (completion &key engine (check-dns-p t))
+(defun make-completion-query (completion &key engine)
   (typecase completion
     (string (make-instance 'new-url-query
-                           :engine      engine
-                           :check-dns-p check-dns-p
-                           :query completion))
+                           :engine engine
+                           :query  completion))
     (list (make-instance 'new-url-query
                          :engine engine
-                         :check-dns-p check-dns-p
                          :query (second completion)
                          :label (first completion)))))
 
-(defun input->queries (input &key (check-dns-p t) (engine-completion-p))
+(defun input->queries (input &key (engine-completion-p))
   (let* ((terms (sera:tokens input))
          (engines (let ((all-prefixed-engines
                           (remove-if
@@ -1797,14 +1791,12 @@ Checks whether a valid https or local file URL is requested, in a DWIM fashion."
                                          (mapcar #'shortcut engines)
                                          :test #'string=))
               (list (make-instance 'new-url-query
-                                   :query       input
-                                   :check-dns-p check-dns-p)))
+                                   :query input)))
             (or (mappend (lambda (engine)
                            (append
                             (list (make-instance 'new-url-query
-                                                 :query       (str:join " " (rest terms))
-                                                 :engine      engine
-                                                 :check-dns-p check-dns-p))
+                                                 :query  (str:join " " (rest terms))
+                                                 :engine engine))
                             ;; Some engines (I'm looking at you, Wikipedia!)
                             ;; return garbage in response to an empty request.
                             (when (and engine-completion-p
@@ -1812,8 +1804,7 @@ Checks whether a valid https or local file URL is requested, in a DWIM fashion."
                                        (completion-function engine)
                                        (rest terms))
                               (mapcar (rcurry #'make-completion-query
-                                              :engine      engine
-                                              :check-dns-p check-dns-p)
+                                              :engine engine)
                                       (with-protect ("Error while completing search: ~a" :condition)
                                         (funcall (completion-function engine)
                                                  (str:join " " (rest terms))))))))
@@ -1826,8 +1817,7 @@ Checks whether a valid https or local file URL is requested, in a DWIM fashion."
                                 (completion (completion-function engine))
                                 (all-terms (str:join " " terms)))
                   (mapcar (rcurry #'make-completion-query
-                                  :engine      engine
-                                  :check-dns-p check-dns-p)
+                                  :engine engine)
                           (with-protect ("Error while completing default search: ~a" :condition)
                             (funcall (completion-function engine) all-terms))))))))
 
@@ -1836,14 +1826,14 @@ Checks whether a valid https or local file URL is requested, in a DWIM fashion."
    (prompter:filter-preprocessor
     (lambda (suggestions source input)
       (declare (ignore suggestions source))
-      (input->queries input :check-dns-p t :engine-completion-p nil)))
+      (input->queries input :engine-completion-p nil)))
    (prompter:filter-postprocessor
     (lambda (suggestions source input)
       (declare (ignore source))
       ;; Avoid long computations until the user has finished the query.
       (sleep 0.15)
       (append suggestions
-              (input->queries input :check-dns-p nil :engine-completion-p t))))
+              (input->queries input :engine-completion-p t))))
    (prompter:filter nil)
    (prompter:actions-on-return #'buffer-load*))
   (:export-class-name-p t)
