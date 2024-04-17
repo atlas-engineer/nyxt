@@ -55,7 +55,15 @@
   ;; "valid syntax but unknown scheme"
   (assert-equality #'quri:uri=
                    (quri:uri "https://search.atlas.engineer/searxng/search?q=foo:blank")
-                   (url (first (nyxt::input->queries "foo:blank")))))
+                   (url (first (nyxt::input->queries "foo:blank"))))
+  ;; "'Partial' URLs without scheme but with path"
+  (assert-equality #'quri:uri=
+                   (quri:uri "https://github.com/atlas-engineer")
+                   (url (first (nyxt::input->queries "github.com/atlas-engineer"))))
+  ;; IP address without scheme
+  (assert-equality #'quri:uri=
+                   (quri:uri "https://127.0.0.1")
+                   (url (first (nyxt::input->queries "127.0.0.1")))))
 
 (define-test nyxt-urls ()
   (assert-error 'simple-error
