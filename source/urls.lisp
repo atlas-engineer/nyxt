@@ -178,17 +178,6 @@ documentation."
                :callback callback
                keys)))
 
-(defmemo lookup-hostname (name)
-  "Resolve hostname NAME and memoize the result."
-  ;; `sb-bsd-sockets:get-host-by-name' may signal a `ns-try-again-condition' which is
-  ;; not an error, so we can't use `ignore-errors' here.
-  (handler-case
-      #+sbcl
-    (sb-bsd-sockets:get-host-by-name name)
-    #-sbcl
-    (iolib/sockets:lookup-hostname name)
-    (t () nil)))
-
 (export-always 'valid-tld-p)
 (defun valid-tld-p (hostname)
   "Return NIL if HOSTNAME does not include a valid TLD as determined by the
