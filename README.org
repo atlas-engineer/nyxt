@@ -1,6 +1,5 @@
-#+html: <img src="https://nyxt-browser.com/static/image/nyxt_256x256.png" align="right"/>
-
 * Nyxt browser
+#+html: <img src="https://nyxt-browser.com/static/image/nyxt_256x256.png" align="right"/>
 
 *Nyxt* [nýkst] is a keyboard-driven web browser designed for hackers.  Inspired by
 Emacs and Vim, it has familiar keybindings ([[https://en.wikipedia.org/wiki/Emacs][Emacs]], [[https://en.wikipedia.org/wiki/Vim_(text_editor)][vi]], [[https://en.wikipedia.org/wiki/IBM_Common_User_Access][CUA]]), and is infinitely
