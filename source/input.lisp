@@ -155,11 +155,11 @@ Return nil to forward to renderer or non-nil otherwise."
              ;; command even after key-stack has been reset in the other
              ;; thread.
              (setf (last-key buffer) (first key-stack))
-             (unwind-protect
-                  (funcall (command-dispatcher *browser*) command)
-               ;; We must reset the key-stack on errors or else all subsequent
-               ;; keypresses will keep triggering the same erroring command.
-               (setf key-stack nil))
+             (run-thread "run-command"
+               (unwind-protect (funcall (command-dispatcher *browser*) command)
+                 ;; We must reset the key-stack on errors or else all subsequent
+                 ;; keypresses will keep triggering the same erroring command.
+                 (setf key-stack nil)))
              t))
 
           ((or (and (input-buffer-p buffer) (forward-input-events-p buffer))
