@@ -38,10 +38,10 @@ jobs:
         nix_path: nixpkgs=channel:nixos-unstable
 
     - name: Compile ${{matrix.renderer}} port on ${{matrix.os}}
-      run: nix-shell build-scripts/shell-${{matrix.renderer}}.nix --run 'make all NYXT_RENDERER=${{matrix.renderer}}'
+      run: nix-shell build-scripts/shell.nix --run 'make all NYXT_RENDERER=${{matrix.renderer}}'
 
     - name: Test ${{matrix.renderer}} port on ${{matrix.os}}
       env:
         NASDF_NON_INTERACTIVE_TESTS: true
       # It runs the tests for system nyxt, not nyxt/${{matrix.renderer}}.
-      run: nix-shell build-scripts/shell-${{matrix.renderer}}.nix --run 'make check'
+      run: nix-shell build-scripts/shell.nix --run 'make check'

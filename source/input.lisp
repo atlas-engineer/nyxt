@@ -130,7 +130,6 @@ Return nil to forward to renderer or non-nil otherwise."
       (when (input-buffer-p buffer)
         (setf (last-event buffer) event))
       (when (prompt-buffer-p buffer)
-        ;; Prompt buffer updating must happen on a separate thread.
         (run-thread "update-prompt-buffer"
           (update-prompt-input buffer
                                (ps-eval :buffer buffer
@@ -141,34 +140,24 @@ Return nil to forward to renderer or non-nil otherwise."
         (declare (ignore matching-keymap))
         (cond
           ((keymaps:keymap-p bound-function)
-           (echo "Pressed keys: ~a" (keyspecs-without-keycode key-stack))
-           (log:debug "Prefix binding ~a" (keyspecs key-stack translated-key))
+           (log:debug "Prefix binding ~a." (keyspecs key-stack translated-key))
            t)
-
           ((typep bound-function '(and (not null) (or symbol command)))
            (let ((command (typecase bound-function
                             (symbol (symbol-function (resolve-user-symbol bound-function :command)))
                             (command bound-function))))
-             (check-type command command)
-             (log:debug "Found key binding ~a to ~a" (keyspecs key-stack translated-key) bound-function)
-             ;; We save the last key separately to keep it available to the
-             ;; command even after key-stack has been reset in the other
-             ;; thread.
+             (log:debug "Found key binding ~a to ~a." (keyspecs key-stack translated-key) bound-function)
              (setf (last-key buffer) (first key-stack))
-             (unwind-protect
-                  (funcall (command-dispatcher *browser*) command)
-               ;; We must reset the key-stack on errors or else all subsequent
-               ;; keypresses will keep triggering the same erroring command.
-               (setf key-stack nil))
+             (run-thread "run-command"
+               (unwind-protect (funcall (command-dispatcher *browser*) command)
+                 (setf key-stack nil)))
              t))
-
           ((or (and (input-buffer-p buffer) (forward-input-events-p buffer))
                (pointer-event-p (first (last key-stack))))
-           (log:debug "Forward key ~s" (keyspecs key-stack))
+           (log:debug "Forward key ~s." (keyspecs key-stack))
            (setf key-stack nil)
            nil)
-
           (t
-           (log:debug "Fallback forward key ~s" (keyspecs key-stack))
+           (log:debug "Fallback forward key ~s." (keyspecs key-stack))
            (setf key-stack nil)
            nil))))))
