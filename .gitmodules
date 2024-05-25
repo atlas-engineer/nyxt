@@ -302,9 +302,9 @@
 	path = _build/fset
 	url = https://github.com/slburson/fset
 	shallow = true
-[submodule "_build/devel"]
-	path = _build/devel
-	url = https://gitlab.common-lisp.net/misc-extensions/devel.git
+[submodule "_build/misc-extensions"]
+	path = _build/misc-extensions
+	url = https://gitlab.common-lisp.net/misc-extensions/misc-extensions.git
 	shallow = true
 [submodule "_build/iolib"]
 	path = _build/iolib
