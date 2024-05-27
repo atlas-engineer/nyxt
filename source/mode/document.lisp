@@ -49,7 +49,13 @@ Important pieces of functionality are:
        "M-{" 'previous-heading
        "M-}" 'next-heading
        "C-p" 'print-buffer
-       "C-R" 'reload-with-modes)
+       "C-R" 'reload-with-modes
+       "C-+" 'zoom-page
+       "C-=" 'zoom-page              ; Because + shifted = on QWERTY.
+       "C-button4" 'zoom-page
+       "C-hyphen" 'unzoom-page
+       "C-button5" 'unzoom-page
+       "C-0" 'reset-page-zoom)
       keyscheme:cua
       (list
        "C-h" 'jump-to-heading
@@ -61,12 +67,6 @@ Important pieces of functionality are:
        "C-a" 'select-all
        "C-z" 'undo
        "C-Z" 'redo
-       "C-+" 'zoom-page
-       "C-=" 'zoom-page              ; Because + shifted = on QWERTY.
-       "C-button4" 'zoom-page
-       "C-hyphen" 'unzoom-page
-       "C-button5" 'unzoom-page
-       "C-0" 'reset-page-zoom
        "C-down" 'scroll-to-bottom
        "C-up" 'scroll-to-top
        ;; Leave SPACE and arrow keys unbound so that the renderer decides whether to
