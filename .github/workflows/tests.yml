@@ -20,12 +20,6 @@ jobs:
     runs-on: ${{matrix.os}}
 
     steps:
-    - name: Cache git folder
-      uses: actions/cache@v4
-      with:
-        path: .git
-        key: git-folder
-
     - name: Checkout
       uses: actions/checkout@v4
       with:
