@@ -27,9 +27,9 @@ jobs:
         submodules: 'true'
 
     - name: Install nix
-      uses: cachix/install-nix-action@v22
+      uses: cachix/install-nix-action@v27
       with:
-        nix_path: nixpkgs=channel:nixos-unstable
+        nix_path: nixpkgs=channel:nixos-23.11
 
     - name: Compile ${{matrix.renderer}} port on ${{matrix.os}}
       run: nix-shell build-scripts/shell.nix --run 'make all NYXT_RENDERER=${{matrix.renderer}}'
