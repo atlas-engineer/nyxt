@@ -47,7 +47,13 @@ Important pieces of functionality are:
        "M-." 'headings-panel
        "M-{" 'previous-heading
        "M-}" 'next-heading
-       "C-p" 'print-buffer)
+       "C-p" 'print-buffer
+       "C-+" 'zoom-page
+       "C-=" 'zoom-page              ; Because + shifted = on QWERTY.
+       "C-button4" 'zoom-page
+       "C-hyphen" 'unzoom-page
+       "C-button5" 'unzoom-page
+       "C-0" 'reset-page-zoom)
       keyscheme:cua
       (list
        "C-h" 'jump-to-heading
@@ -59,12 +65,6 @@ Important pieces of functionality are:
        "C-a" 'select-all
        "C-z" 'undo
        "C-Z" 'redo
-       "C-+" 'zoom-page
-       "C-=" 'zoom-page              ; Because + shifted = on QWERTY.
-       "C-button4" 'zoom-page
-       "C-hyphen" 'unzoom-page
-       "C-button5" 'unzoom-page
-       "C-0" 'reset-page-zoom
        "C-down" 'scroll-to-bottom
        "C-up" 'scroll-to-top
        ;; Leave SPACE, END, HOME and arrow keys unbound for the renderer
