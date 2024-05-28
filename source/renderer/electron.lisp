@@ -106,7 +106,13 @@
 ;; (defmethod ffi-display-url ((browser electron-browser) text))
 
 (define-class electron-buffer (electron:browser-view)
-  ()
+  ((electron:options
+    ""
+    :export t
+    :reader t
+    :writer nil
+    :type string
+    :documentation "A string that specifies the buffer's behavior."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:metaclass user-class)
@@ -277,7 +283,13 @@
 ;; (defmethod ffi-preferred-languages ((buffer electron-buffer)))
 
 (define-class electron-window (electron:browser-window)
-  ()
+  ((electron:options
+    "{autoHideMenuBar: true}"
+    :export t
+    :reader t
+    :writer nil
+    :type string
+    :documentation "A string that specifies the window's behavior."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:metaclass user-class)
