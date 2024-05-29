@@ -28,8 +28,6 @@ The options are:
                        :export nil
                        :documentation "By default the prompter library creates a
 new history for each new prompt buffer.  Here we set the history to be shared globally.")
-     ;; TODO: Need a changed-callback?  Probably not, see `search-buffer'.  But
-     ;; can we run the postprocessor without running the filter?
      (invisible-input-p
       nil
       :documentation "Whether to replace input by a placeholder character.  This
