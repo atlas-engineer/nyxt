@@ -43,10 +43,6 @@ brackets.")
       :export nil
       :documentation "Maximum number of total suggestions that were listed at
 some point.")
-     ;; TODO: Need max-lines?
-     ;; (max-lines 10
-     ;;               :documentation "Max number of suggestion lines to show.
-     ;; You will want edit this to match the changes done to `style'.")
      (hide-single-source-header-p
       nil
       :documentation "Hide source header when there is only one.")
