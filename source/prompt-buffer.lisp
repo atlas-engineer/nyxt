@@ -21,13 +21,12 @@ The options are:
 - `:default', which sets it to a third of the window's height;
 - `:fit-to-prompt', which shrinks the height to fit the input area;
 - an integer, which corresponds to the height in pixels.")
-     (prompter:history (prompt-buffer-generic-history *browser*)
-                       ;; No need to export or define the accessor since this is
-                       ;; an override of the prompter slot.
-                       :accessor nil
-                       :export nil
-                       :documentation "By default the prompter library creates a
-new history for each new prompt buffer.  Here we set the history to be shared globally.")
+     (prompter:history
+      (prompt-buffer-generic-history *browser*)
+      ;; Both set to nil since it overrides the default value.
+      :accessor nil
+      :export nil
+      :documentation "Override `prompter:history' to share input history globally.")
      (invisible-input-p
       nil
       :documentation "Whether to replace input by a placeholder character.  This
