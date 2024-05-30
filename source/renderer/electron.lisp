@@ -156,13 +156,12 @@
                                            &optional world-name)
   ;; TODO world-name is used in user-script mode.
   (declare (ignore world-name))
-  (electron:execute-javascript (electron:web-contents buffer) javascript))
+  (electron:execute-javascript-synchronous (electron:web-contents buffer) javascript))
 
 (defmethod ffi-buffer-evaluate-javascript-async ((buffer electron-buffer) javascript
                                                  &optional world-name)
   (declare (ignore world-name))
-  ;; Temporary fallback.
-  (ffi-buffer-evaluate-javascript buffer javascript))
+  (electron:execute-javascript (electron:web-contents buffer) javascript))
 
 (defmethod ffi-inspector-show ((buffer electron-buffer))
   (electron:open-dev-tools buffer))
