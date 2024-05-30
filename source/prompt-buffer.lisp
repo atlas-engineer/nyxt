@@ -272,7 +272,7 @@ See `prompt' for how to invoke prompts.")
            (round (/ (ffi-height (window prompt-buffer))
                      3)))
           (:fit-to-prompt
-           (ps-eval :buffer prompt-buffer
+           (ps-eval :async t :buffer prompt-buffer
              (+ (ps:chain (nyxt/ps:qs document "#prompt-area") offset-height)
                 ;; Buffer whitespace between the prompt buffer's input area and
                 ;; the status buffer.  Not clear how to the derive the value
@@ -522,7 +522,7 @@ This does not redraw the whole prompt buffer, use `prompt-render' for that."
                     `(funcall (sym:resolve-symbol :toggle-attributes-display :command)
                               :source ,source))))
                 (:raw (render-attributes source prompt-buffer))))))
-      (ps-eval :buffer prompt-buffer
+      (ps-eval :async t :buffer prompt-buffer
         (setf (ps:@ (nyxt/ps:qs document "#suggestions") |innerHTML|)
               (ps:lisp
                (sera:string-join (loop for i from current-source-index to last-source-index
@@ -610,7 +610,7 @@ If you want to set the input, see `set-prompt-buffer-input'."
 (defun set-prompt-buffer-input (input &optional (prompt-buffer (current-prompt-buffer)))
   "Set HTML INPUT in PROMPT-BUFFER.
 See `update-prompt-input' to update the changes visually."
-  (ps-eval :buffer prompt-buffer
+  (ps-eval :async t :buffer prompt-buffer
     (setf (ps:@ (nyxt/ps:qs document "#input") value)
           (ps:lisp input)))
   (update-prompt-input prompt-buffer input))
