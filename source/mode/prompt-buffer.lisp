@@ -495,14 +495,14 @@ Only available if `prompter:enable-marks-p' is non-nil."
 
 (define-command-prompt move-start-of-input (prompt-buffer)
   "Move to the beginning of PROMPT-BUFFER input."
-  (ps-eval :buffer prompt-buffer
+  (ps-eval :async t :buffer prompt-buffer
     (let ((input (nyxt/ps:qs document "#input")))
       (setf (ps:@ input selection-start) 0
             (ps:@ input selection-end) 0))))
 
 (define-command-prompt move-end-of-input (prompt-buffer)
   "Move to the end of PROMPT-BUFFER input."
-  (ps-eval :buffer prompt-buffer
+  (ps-eval :async t :buffer prompt-buffer
     (let ((input (nyxt/ps:qs document "#input")))
       (setf (ps:@ input selection-start) (ps:@ input value length)
             (ps:@ input selection-end) (ps:@ input value length)))))
@@ -518,25 +518,25 @@ Only available if `prompter:enable-marks-p' is non-nil."
                                                &key (scroll-distance
                                                      (scroll-distance (current-buffer))))
   "Scroll up the buffer behind the prompt."
-  (ps-eval :buffer (current-buffer)
+  (ps-eval :async t :buffer (current-buffer)
     (ps:chain window (scroll-by 0 (ps:lisp (- scroll-distance))))))
 
 (define-command-prompt scroll-other-buffer-down (prompt-buffer
                                                  &key (scroll-distance
                                                        (scroll-distance (current-buffer))))
   "Scroll down the buffer behind the prompt."
-  (ps-eval :buffer (current-buffer)
+  (ps-eval :async t :buffer (current-buffer)
     (ps:chain window (scroll-by 0 (ps:lisp scroll-distance)))))
 
 (define-command-prompt scroll-page-up-other-buffer (prompt-buffer)
   "Scroll up the buffer behind the prompt by one page."
-  (ps-eval :buffer (current-buffer)
+  (ps-eval :async t :buffer (current-buffer)
     (ps:chain window (scroll-by 0 (- (* (ps:lisp (page-scroll-ratio (current-buffer)))
                                         (ps:@ window inner-height)))))))
 
 (define-command-prompt scroll-page-down-other-buffer (prompt-buffer)
   "Scroll down the buffer behind the prompt by one page."
-  (ps-eval :buffer (current-buffer)
+  (ps-eval :async t :buffer (current-buffer)
     (ps:chain window (scroll-by 0 (* (ps:lisp (page-scroll-ratio (current-buffer)))
                                      (ps:@ window inner-height))))))
 
