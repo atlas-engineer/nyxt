@@ -65,8 +65,9 @@ still being less noticeable in the crowd.")
       ;; The URL in `redirect` part must not be percent encoded.
       ;; For this purpose we do not alter percent encoding here.
       (setf (quri:uri-query-params (url request-data) :percent-encode nil)
-            (remove-if (rcurry #'member (query-tracking-parameters mode)
-                                          :test #'string-equal)
+            (remove-if (rcurry #'member
+                               (query-tracking-parameters mode)
+                               :test #'string-equal)
                        (quri:url-decode-params (quri:uri-query (url request-data))
                                                :lenient t
                                                :percent-decode nil)
