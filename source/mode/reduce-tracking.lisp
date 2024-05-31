@@ -59,12 +59,19 @@ still being less noticeable in the crowd.")
 (defun strip-tracking-parameters (request-data)
   (let ((mode (find-submode 'reduce-tracking-mode)))
     (when (and mode (not (uiop:emptyp (quri:uri-query (url request-data)))))
-      (setf (quri:uri-query-params (url request-data))
+      ;; Some symbols like : or / are only percent-encoded when they
+      ;; have a special meaning. It is not uncommon to have a link like
+      ;; https://example.com/foo?query=bar&redirect=https://foobar.com
+      ;; The URL in `redirect` part must not be percent encoded.
+      ;; For this purpose we do not alter percent encoding here.
+      (setf (quri:uri-query-params (url request-data) :percent-encode nil)
             (remove-if (rcurry #'member (query-tracking-parameters mode)
                                           :test #'string-equal)
-                       (quri:url-decode-params (quri:uri-query (url request-data)) :lenient t)
-                       :key #'first)))
-    request-data))
+                       (quri:url-decode-params (quri:uri-query (url request-data))
+                                               :lenient t
+                                               :percent-decode nil)
+                       :key #'first))))
+  request-data)
 
 (defmethod enable ((mode reduce-tracking-mode) &key)
   (setf (old-timezone mode) (uiop:getenv "TZ")
