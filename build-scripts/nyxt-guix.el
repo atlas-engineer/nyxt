@@ -90,7 +90,10 @@ already exists and CONTAINER is nil, after sourcing \"etc/profile\"."
                (format "source %s && %s" (shell-quote-argument root-env)
                        (mapconcat #'shell-quote-argument command-args " "))))
       (append
-       '("guix" "shell" "--fallback")
+       '("guix" "shell" "--fallback"
+         ;; Set to the value of %default-substitute-urls, since other
+         ;; substitute URLS may be too slow to fetch them.
+         "--substitute-urls='https://ci.guix.gnu.org https://bordeaux.guix.gnu.org'")
        `(,@(when no-grafts '("--no-grafts"))
          ,@(if container
                `("--container"
