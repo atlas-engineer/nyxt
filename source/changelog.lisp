@@ -99,7 +99,10 @@ elements are scaled accordingly.")
 (define-version "3.11.7"
   (:nsection :title "Bug fixes"
     (:ul
-     (:li "Fix query handling when invoking command" (:nxref :command 'set-url) "."))))
+     (:li "Fix query handling when invoking command" (:nxref :command 'set-url) ".")
+     (:li "Fix redirect while "
+          (:nxref :class-name 'nyxt/mode/reduce-tracking:reduce-tracking-mode)
+          " is active"))))
 
 (define-version "3.11.6"
   (:nsection :title "Bug fixes"
