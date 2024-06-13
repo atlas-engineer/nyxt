@@ -207,7 +207,7 @@
     (case height
       (0
        (ffi-buffer-delete prompt-buffer)
-       (electron:focus (nyxt::active-buffer window)))
+       (when (current-window) (electron:focus (nyxt::active-buffer window))))
       (t
        (electron:on window "resize"
          (format nil "~a.setBounds({x:      0,
