@@ -174,7 +174,7 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
 Overwrites the whole HTML document (head and body elements included)."
   ;; Don't use document.write().
   ;; See https://developer.mozilla.org/en-US/docs/Web/API/Document/write.
-  (ps-eval :buffer buffer
+  (ps-eval :async t :buffer buffer
     (setf (ps:chain document (get-elements-by-tag-name "html") 0 |innerHTML|)
           (ps:lisp html-document))))
 
