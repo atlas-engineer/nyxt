@@ -532,38 +532,32 @@ This does not redraw the whole prompt buffer, use `prompt-render' for that."
                                  +newline+)))))
     (prompt-render-prompt prompt-buffer)))
 
-(defun erase-document (prompt-buffer)
-  (ps-eval :async t :buffer prompt-buffer
-    (ps:chain document (open))
-    (ps:chain document (close))))
-
 (defun prompt-render-skeleton (prompt-buffer)
-  (erase-document prompt-buffer)
-  (html-set (spinneret:with-html-string
-              (:head
-               (:nstyle (style prompt-buffer)))
-              (:body
-               (:div :id "prompt-area"
-                     (:div :id "prompt" (prompter:prompt prompt-buffer))
-                     (:div :id "prompt-extra" :class "arrow-right" "[?/?]")
-                     (:div :id "prompt-input"
-                           (:input :type (if (invisible-input-p prompt-buffer)
-                                             "password"
-                                             "text")
-                                   :id "input"
-                                   :value (prompter:input prompt-buffer)))
-                     (:div :id "prompt-modes" :class "arrow-left" "")
-                     (:div :id "close-button" :class "arrow-left"
-                           (:nbutton
-                             :text "×"
-                             :title "Close prompt"
-                             :buffer prompt-buffer
-                             '(funcall (sym:resolve-symbol :quit-prompt-buffer :command)))))
-               (:div :id "suggestions"
-                     :style (if (invisible-input-p prompt-buffer)
-                                "visibility:hidden;"
-                                "visibility:visible;"))))
-            prompt-buffer))
+  (html-write (spinneret:with-html-string
+                (:head (:nstyle (style prompt-buffer)))
+                (:body
+                 (:div
+                  :id "prompt-area"
+                  (:div :id "prompt" (prompter:prompt prompt-buffer))
+                  (:div :id "prompt-extra" :class "arrow-right" "[?/?]")
+                  (:div :id "prompt-input"
+                        (:input :type (if (invisible-input-p prompt-buffer)
+                                          "password"
+                                          "text")
+                                :id "input"
+                                :value (prompter:input prompt-buffer)))
+                  (:div :id "prompt-modes" :class "arrow-left" "")
+                  (:div :id "close-button" :class "arrow-left"
+                        (:nbutton
+                          :text "×"
+                          :title "Close prompt"
+                          :buffer prompt-buffer
+                          '(funcall (sym:resolve-symbol :quit-prompt-buffer :command)))))
+                 (:div :id "suggestions"
+                       :style (if (invisible-input-p prompt-buffer)
+                                  "visibility:hidden;"
+                                  "visibility:visible;"))))
+              prompt-buffer))
 
 (defun prompt-render-focus (prompt-buffer)
   (ps-eval :async t :buffer prompt-buffer
