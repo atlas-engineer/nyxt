@@ -502,6 +502,7 @@ This does not redraw the whole prompt buffer, use `prompt-render' for that."
                                    (sera:single sources))
                           "display:none")
                  (:div
+                  #-darwin
                   (:nbutton
                     :id "next-source"
                     :text (:raw (gethash "down.svg" *static-data*))
@@ -511,6 +512,7 @@ This does not redraw the whole prompt buffer, use `prompt-render' for that."
                                                  :modes (modes prompt-buffer)))
                     :buffer prompt-buffer
                     '(funcall (sym:resolve-symbol :next-source :command)))
+                  #-darwin
                   (:nbutton
                     :id "previous-source"
                     :text (:raw (gethash "up.svg" *static-data*))
@@ -530,6 +532,7 @@ This does not redraw the whole prompt buffer, use `prompt-render' for that."
                                                         :enable-marks-p (prompter:enable-marks-p source))))
                   (if (prompter:ready-p source) "" "(In progress...)"))
                  (:div
+                  #-darwin
                   (:nbutton
                     :id "toggle-attributes"
                     :text (:raw (gethash "plus-minus.svg" *static-data*))
