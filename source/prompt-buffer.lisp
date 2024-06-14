@@ -450,7 +450,8 @@ See also `show-prompt-buffer'."
                                   in (prompter:active-attributes suggestion :source source)
                                 collect (:td
                                          :title attribute
-                                         :onclick (when (mouse-support-p prompt-buffer)
+                                         :onclick (when (and (mouse-support-p prompt-buffer)
+                                                             (not (find :darwin *features*)))
                                                     (ps:ps
                                                       (cond
                                                         ((or (ps:chain window event ctrl-key)
