@@ -283,7 +283,10 @@
 
 (define-class electron-window (electron:browser-window)
   ((electron:options
+    #-darwin
     "{autoHideMenuBar: true}"
+    #+darwin
+    "{autoHideMenuBar: true, frame: false}"
     :export t
     :reader t
     :writer nil
