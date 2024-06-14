@@ -1098,10 +1098,9 @@ nyxt
                "StumpWM FAQ")
               " for a fix."))
 
-        (:nsection :title "Blank WebKit web-views"
-          (:p "If you are experiencing problems with blank web-views on some sites you
-    can try to disable compositing. To disable compositing from your
-    initialization file, you can do the following: ")
+        (:nsection :title "Blank WebKitGTK views"
+          (:p "When experiencing rendering issues, try to disable compositing as
+below: ")
           (:ncode
             '(setf (uiop:getenv "WEBKIT_DISABLE_COMPOSITING_MODE") "1")))
 
