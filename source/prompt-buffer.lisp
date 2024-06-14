@@ -21,15 +21,12 @@ The options are:
 - `:default', which sets it to a third of the window's height;
 - `:fit-to-prompt', which shrinks the height to fit the input area;
 - an integer, which corresponds to the height in pixels.")
-     (prompter:history (prompt-buffer-generic-history *browser*)
-                       ;; No need to export or define the accessor since this is
-                       ;; an override of the prompter slot.
-                       :accessor nil
-                       :export nil
-                       :documentation "By default the prompter library creates a
-new history for each new prompt buffer.  Here we set the history to be shared globally.")
-     ;; TODO: Need a changed-callback?  Probably not, see `search-buffer'.  But
-     ;; can we run the postprocessor without running the filter?
+     (prompter:history
+      (prompt-buffer-generic-history *browser*)
+      ;; Both set to nil since it overrides the default value.
+      :accessor nil
+      :export nil
+      :documentation "Override `prompter:history' to share input history globally.")
      (invisible-input-p
       nil
       :documentation "Whether to replace input by a placeholder character.  This
@@ -43,10 +40,6 @@ brackets.")
       :export nil
       :documentation "Maximum number of total suggestions that were listed at
 some point.")
-     ;; TODO: Need max-lines?
-     ;; (max-lines 10
-     ;;               :documentation "Max number of suggestion lines to show.
-     ;; You will want edit this to match the changes done to `style'.")
      (hide-single-source-header-p
       nil
       :documentation "Hide source header when there is only one.")
@@ -279,7 +272,7 @@ See `prompt' for how to invoke prompts.")
            (round (/ (ffi-height (window prompt-buffer))
                      3)))
           (:fit-to-prompt
-           (ps-eval :buffer prompt-buffer
+           (ps-eval :async t :buffer prompt-buffer
              (+ (ps:chain (nyxt/ps:qs document "#prompt-area") offset-height)
                 ;; Buffer whitespace between the prompt buffer's input area and
                 ;; the status buffer.  Not clear how to the derive the value
@@ -529,7 +522,7 @@ This does not redraw the whole prompt buffer, use `prompt-render' for that."
                     `(funcall (sym:resolve-symbol :toggle-attributes-display :command)
                               :source ,source))))
                 (:raw (render-attributes source prompt-buffer))))))
-      (ps-eval :buffer prompt-buffer
+      (ps-eval :async t :buffer prompt-buffer
         (setf (ps:@ (nyxt/ps:qs document "#suggestions") |innerHTML|)
               (ps:lisp
                (sera:string-join (loop for i from current-source-index to last-source-index
@@ -539,38 +532,32 @@ This does not redraw the whole prompt buffer, use `prompt-render' for that."
                                  +newline+)))))
     (prompt-render-prompt prompt-buffer)))
 
-(defun erase-document (prompt-buffer)
-  (ps-eval :async t :buffer prompt-buffer
-    (ps:chain document (open))
-    (ps:chain document (close))))
-
 (defun prompt-render-skeleton (prompt-buffer)
-  (erase-document prompt-buffer)
-  (html-set (spinneret:with-html-string
-              (:head
-               (:nstyle (style prompt-buffer)))
-              (:body
-               (:div :id "prompt-area"
-                     (:div :id "prompt" (prompter:prompt prompt-buffer))
-                     (:div :id "prompt-extra" :class "arrow-right" "[?/?]")
-                     (:div :id "prompt-input"
-                           (:input :type (if (invisible-input-p prompt-buffer)
-                                             "password"
-                                             "text")
-                                   :id "input"
-                                   :value (prompter:input prompt-buffer)))
-                     (:div :id "prompt-modes" :class "arrow-left" "")
-                     (:div :id "close-button" :class "arrow-left"
-                           (:nbutton
-                             :text "×"
-                             :title "Close prompt"
-                             :buffer prompt-buffer
-                             '(funcall (sym:resolve-symbol :quit-prompt-buffer :command)))))
-               (:div :id "suggestions"
-                     :style (if (invisible-input-p prompt-buffer)
-                                "visibility:hidden;"
-                                "visibility:visible;"))))
-            prompt-buffer))
+  (html-write (spinneret:with-html-string
+                (:head (:nstyle (style prompt-buffer)))
+                (:body
+                 (:div
+                  :id "prompt-area"
+                  (:div :id "prompt" (prompter:prompt prompt-buffer))
+                  (:div :id "prompt-extra" :class "arrow-right" "[?/?]")
+                  (:div :id "prompt-input"
+                        (:input :type (if (invisible-input-p prompt-buffer)
+                                          "password"
+                                          "text")
+                                :id "input"
+                                :value (prompter:input prompt-buffer)))
+                  (:div :id "prompt-modes" :class "arrow-left" "")
+                  (:div :id "close-button" :class "arrow-left"
+                        (:nbutton
+                          :text "×"
+                          :title "Close prompt"
+                          :buffer prompt-buffer
+                          '(funcall (sym:resolve-symbol :quit-prompt-buffer :command)))))
+                 (:div :id "suggestions"
+                       :style (if (invisible-input-p prompt-buffer)
+                                  "visibility:hidden;"
+                                  "visibility:visible;"))))
+              prompt-buffer))
 
 (defun prompt-render-focus (prompt-buffer)
   (ps-eval :async t :buffer prompt-buffer
@@ -617,7 +604,7 @@ If you want to set the input, see `set-prompt-buffer-input'."
 (defun set-prompt-buffer-input (input &optional (prompt-buffer (current-prompt-buffer)))
   "Set HTML INPUT in PROMPT-BUFFER.
 See `update-prompt-input' to update the changes visually."
-  (ps-eval :buffer prompt-buffer
+  (ps-eval :async t :buffer prompt-buffer
     (setf (ps:@ (nyxt/ps:qs document "#input") value)
           (ps:lisp input)))
   (update-prompt-input prompt-buffer input))
