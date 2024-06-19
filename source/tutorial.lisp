@@ -439,20 +439,28 @@ example, mouse clicks trigger commands.")
 shortcuts).")
          (:p "Commands can be called by name from the "
              (:b "Execute-Command Menu") ":")
-         (:li (:nxref :command 'nyxt:execute-command) " to open;")
-         (:li (:nxref :command 'nyxt/mode/prompt-buffer:quit-prompt-buffer) " to close.")
+         (:li (:nxref :command 'nyxt:execute-command :target "_blank") " to open;")
+         (:li (:nxref :command 'nyxt/mode/prompt-buffer:quit-prompt-buffer
+                :target "_blank")
+              " to close.")
          (:p "This menu is called the prompt buffer and most of the interaction
 between you and Nyxt goes through it.")
          (:hr)
          (:p "Some other commands to try:")
-         (:li (:nxref :command 'nyxt:reload-current-buffer) " reloads the main buffer;")
-         (:li (:nxref :command 'nyxt:make-buffer-focus) " opens a new one."))
+         (:li (:nxref :command 'nyxt:reload-current-buffer :target "_blank")
+              " reloads the main buffer;")
+         (:li (:nxref :command 'nyxt:make-buffer-focus :target "_blank")
+              " opens a new one."))
         (3
          (:h2 (nth page titles))
-         (:p (:nxref :command 'nyxt:set-url) " invokes the address bar.")
-         (:p (:nxref :command 'nyxt:set-url-new-buffer) " as above, but creates a new buffer.")
-         (:p (:nxref :command 'nyxt:switch-buffer) " to show a list of buffers.")
-         (:p (:nxref :command 'nyxt:delete-current-buffer) " to close a buffer.")
+         (:p (:nxref :command 'nyxt:set-url :target "_blank")
+             " invokes the address bar.")
+         (:p (:nxref :command 'nyxt:set-url-new-buffer :target "_blank")
+             " as above, but creates a new buffer.")
+         (:p (:nxref :command 'nyxt:switch-buffer :target "_blank")
+             " to show a list of buffers.")
+         (:p (:nxref :command 'nyxt:delete-current-buffer :target "_blank")
+             " to close a buffer.")
          (:hr)
          (:p "Notice that most of these commands invoke the prompt
 buffer. Every time that a command request input from the user, this menu will
@@ -467,14 +475,14 @@ shortcut."))
          (:hr)
          (:p "Example:")
          (:p "To enjoy the image-less Web, you can enable "
-             (:nxref :mode 'nyxt/mode/no-image:no-image-mode)
+             (:nxref :mode 'nyxt/mode/no-image:no-image-mode :target "_blank")
              " by invoking the command "
-             (:nxref :command 'nyxt/mode/no-image:no-image-mode) ".")
+             (:nxref :command 'nyxt/mode/no-image:no-image-mode :target "_blank") ".")
          (:p "Again, you can access this command, and all others via "
-             (:nxref :command 'nyxt:execute-command) ".")
+             (:nxref :command 'nyxt:execute-command :target "_blank") ".")
          (:hr)
          (:small "A list of all modes (including those currently enabled) is
-available by invoking the " (:nxref :command 'nyxt:toggle-modes)
+available by invoking the " (:nxref :command 'nyxt:toggle-modes :target "_blank")
 " command."))
         (5
          (:h2 (nth page titles))
@@ -493,8 +501,8 @@ go from here is up to you.")
          (:hr)
          (:small "Find further information by issuing commands that start with
 describe, such as "
-                 (:nxref :command 'describe-bindings) " or "
-                 (:nxref :command 'describe-any) ".")))
+                 (:nxref :command 'describe-bindings :target "_blank") " or "
+                 (:nxref :command 'describe-any :target "_blank") ".")))
       (:hr)
       (:div :style "position: absolute; bottom: 10px; right: 10px; left: 10px"
             (:div :style "display: grid; grid-template-columns: 20px 1fr 20px; grid-gap: 10px"
