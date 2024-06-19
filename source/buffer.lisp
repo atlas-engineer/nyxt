@@ -860,9 +860,9 @@ Return the created buffer."
                                        (id parent-buffer))))))
   buffer)
 
-(define-command update-document-model (&key (buffer (current-buffer)))
-  "Update BUFFER's `document-model' with the page source augmented with Nyxt
-identifiers."
+(export-always 'update-document-model)
+(defun update-document-model (&key (buffer (current-buffer)))
+  "Update BUFFER's `document-model' as to include Nyxt identifiers."
   (ps-eval :buffer buffer
     (defvar nyxt-identifier-counter 0)
     (defun add-nyxt-identifiers (node)
