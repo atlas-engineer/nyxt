@@ -236,11 +236,11 @@ CLASS-NAME is specific to :slot type."
     (t (nyxt:nyxt-url (read-from-string "nyxt:describe-any")
                       :input symbol))))
 
-(deftag :nxref (body attrs &rest keys &key slot mode class-name function macro command (command-key-p t) variable package &allow-other-keys)
+(deftag :nxref (body attrs &rest keys &key slot mode class-name function macro command (command-key-p t) variable package (target "_self") &allow-other-keys)
   "Create a link to a respective describe-* page for BODY symbol.
 
 Relies on the type keywords (SLOT, MODE, CLASS-NAME, FUNCTION, MACRO, COMMAND,
-VARIABLE, PACKAGE) to guess the right page, always provide those.
+VARIABLE, PACKAGE, TARGET) to guess the right page, always provide those.
 
 CLASS-NAME, if present, should be the symbol designating a class. It's not
 called CLASS because Spinneret has special behavior for CLASS pre-defined and
@@ -267,7 +267,7 @@ non-overridable."
                    (every #'null (list slot class-name mode function macro command variable package))))
       (error ":class attribute used ambiguously in :nxref tag. Use :class-name instead."))
     `(:a.link
-      :target "_blank"
+      :target ,target
       ,@attrs
       :href (%nxref-link ,type ,symbol
                          ,@(when (and slot class-name)
