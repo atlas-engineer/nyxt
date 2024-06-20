@@ -38,9 +38,10 @@ include implicit visits.")
     :type integer
     :documentation "Number of times the URL was visited by following a link on a page.
 This does not include explicit visits.")
-   (scroll-position '()
-                    :type (list-of number)
-                    :documentation "The scroll position user was at when last visiting the page.
+   (scroll-position
+    '()
+    :type (list-of number)
+    :documentation "The scroll position user was at when last visiting the page.
 It's a list of a form (Y &OPTIONAL X)."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
