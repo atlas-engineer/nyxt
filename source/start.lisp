@@ -202,8 +202,7 @@ Without --remote, it also disables socket use."))))
   (quit))
 
 (define-command start-swank (&optional (swank-port *swank-port*))
-  "Start a Swank server that can be connected to, for instance, in
-Emacs via SLIME.
+  "Start a Swank server enabling connecting to Emacs via SLIME.
 
 Warning: This allows Nyxt to be controlled remotely, that is, to
 execute arbitrary code with the privileges of the user running Nyxt.
@@ -213,8 +212,7 @@ before running this command."
   (echo "Swank server started at port ~a" swank-port))
 
 (define-command start-slynk (&optional (slynk-port *slynk-port*))
-  "Start a Slynk server that can be connected to, for instance, in
-Emacs via Sly.
+  "Start a Slynk server enabling connecting to Emacs via SLY.
 
 Warning: This allows Nyxt to be controlled remotely, that is, to
 execute arbitrary code with the privileges of the user running Nyxt.
