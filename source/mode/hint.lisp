@@ -510,44 +510,38 @@ FUNCTION is the action to perform on the selected elements."
         (plump:tag-name element)))
 
 (define-command follow-hint ()
-  "Prompt for element hints and open them in the current buffer.
-Uses `%follow-hint' internally."
-  (let ((buffer (current-buffer)))
-    (query-hints "Interact with element"
-                 (lambda (results)
-                   (%follow-hint (first results))
-                   (mapcar (rcurry #'%follow-hint-new-buffer buffer)
-                           (rest results))))))
+  "Follow the top element hint selection in the current buffer."
+  (query-hints "Select elements"
+               (lambda (results)
+                 (%follow-hint (first results))
+                 (mapcar (rcurry #'%follow-hint-new-buffer (current-buffer))
+                         (rest results)))))
 
 (define-command follow-hint-new-buffer ()
-  "Like `follow-hint', but open the selected hints in new buffers (no focus).
-Uses `%follow-hint-new-buffer' internally."
-  (let ((buffer (current-buffer)))
-    (query-hints "Open element in new buffer"
-                 (lambda (result) (mapcar (rcurry #'%follow-hint-new-buffer buffer)
-                                     result)))))
+  "Like `follow-hint', but selection is handled in background buffers."
+  (query-hints "Select elements"
+               (lambda (result)
+                 (mapcar (rcurry #'%follow-hint-new-buffer (current-buffer))
+                         result))))
 
+;; Consider renaming to follow-hint-new-foreground-buffer.
 (define-command follow-hint-new-buffer-focus ()
-  "Like `follow-hint-new-buffer', but with focus.
-Uses `%follow-hint-new-buffer-focus' internally."
+  "Like `follow-hint-new-buffer', but switch to the top background buffer."
   (let ((buffer (current-buffer)))
-    (query-hints "Open element in new buffer"
+    (query-hints "Select elements"
                  (lambda (result)
                    (%follow-hint-new-buffer-focus (first result) buffer)
                    (mapcar (rcurry #'%follow-hint-new-buffer buffer)
                            (rest result))))))
 
 (define-command follow-hint-nosave-buffer ()
-  "Like `follow-hint', but open the selected hints in new `nosave-buffer's (no
-focus).
-Uses `%follow-hint-nosave-buffer' internally."
-  (query-hints "Open element in new buffer"
+  "Like `follow-hint-new-buffer', but use `nosave-buffer's."
+  (query-hints "Select elements"
                (lambda (result) (mapcar #'%follow-hint-nosave-buffer result))))
 
 (define-command follow-hint-nosave-buffer-focus ()
-  "Like `follow-hint-nosave-buffer', but with focus.
-Uses `%follow-hint-nosave-buffer-focus' internally."
-  (query-hints "Open element in new buffer"
+  "Like `follow-hint-new-buffer-focus', but use `nosave-buffer's."
+  (query-hints "Select elements"
                (lambda (result)
                  (%follow-hint-nosave-buffer-focus (first result))
                  (mapcar #'%follow-hint-nosave-buffer (rest result)))))
@@ -562,9 +556,8 @@ Uses `%follow-hint-with-current-modes-new-buffer' internally."
                            result)))))
 
 (define-command copy-hint-url ()
-  "Prompt for element hints and save its corresponding URLs to clipboard.
-Uses `%copy-hint-url' internally."
-  (query-hints "Copy element URL"
+  "Save the element hint's URL to the clipboard."
+  (query-hints "Select element"
                (lambda (result) (%copy-hint-url (first result)))
                :enable-marks-p nil
                :selector "a"))
