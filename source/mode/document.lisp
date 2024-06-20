@@ -501,8 +501,7 @@ The inner-text must not be modified, so that we can jump to the anchor of the sa
           :sources (make-instance 'heading-source :buffer buffer)))
 
 (define-command jump-to-heading-buffers ()
-  "Jump to a particular heading, of type h1, h2, h3, h4, h5, or h6 across a set
-of buffers."
+  "Jump to a heading (H1 to H6) among a set of buffers."
   (let ((buffers (prompt
                   :prompt "Select headings from buffers"
                   :sources (make-instance 'buffer-source
