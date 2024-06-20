@@ -51,8 +51,7 @@ Commands:
     (ps:chain (nyxt/ps:qs document "#reading-line-cursor") (scroll-into-view-if-needed))))
 
 (define-command reading-line-cursor-up (&key (step-size 20) (buffer (current-buffer)))
-  "Move the reading line cursor up. If scrolling off screen, move the
-screen as well."
+  "Move the reading line cursor up."
   (ps-eval :buffer buffer
     (let ((original-position
             (ps:chain (parse-int
@@ -62,7 +61,7 @@ screen as well."
   (jump-to-reading-line-cursor :buffer buffer))
 
 (define-command reading-line-cursor-down (&key (step-size 20) (buffer (current-buffer)))
-  "Move the reading line cursor down. If scrolling off screen, move the screen as well."
+  "Move the reading line cursor down."
   (ps-eval :buffer buffer
     (let ((original-position
             (ps:chain (parse-int
