@@ -336,12 +336,12 @@ ARGS is an arbitrary keyword arguments list that is translated to a URL query."
     (lambda (url)
       (let* ((%url (quri:uri url))
              (internal-page (find-url-internal-page %url)))
+        ;; So that `find-internal-page-buffer' returns a non-nil value.
+        (when (not (panel-page-p internal-page))
+          (setf (slot-value (current-buffer) 'url) %url))
         (if internal-page
-            (let ((buffer (current-buffer)))
-              ;; Allow `find-internal-page-buffer' to find it.
-              (when buffer (setf (slot-value buffer 'url) %url))
-              (apply (form internal-page)
-                     (query-params->arglist (quri:uri-query-params %url))))
+            (apply (form internal-page)
+                   (query-params->arglist (quri:uri-query-params %url)))
             (warn "No internal page corresponds to URL ~a" %url)))))
 
 (define-internal-scheme "nyxt-resource"
