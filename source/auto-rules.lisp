@@ -303,10 +303,9 @@ Implies that the request is a top-level one."
     (setf (previous-url buffer) url)))
 
 (define-command-global save-non-default-modes-for-future-visits ()
-  "Save the modes present in `default-modes' and not present in current modes as
-:excluded, and modes that are present in mode list but not in `default-modes' as
-:included, to one of the auto-rules. Apply the resulting rule for all the future
-visits to this URL, inferring the matching condition with `url-infer-match'.
+  "Save the enabled non-default modes for future visits.
+
+The matching URL logic is dictacted by `url-infer-match'.
 
 This command does not save non-rememberable modes. If you want auto-rules to
 remember a particular mode, configure it to be `rememberable-p' in your
@@ -333,10 +332,9 @@ For the storage format see the comment in the header of your `auto-rules-file'."
                               :test #'mode=))))
 
 (define-command-global save-exact-modes-for-future-visits ()
-  "Store the exact list of enabled modes to auto-rules for all the future visits
-of this domain/host/URL/group of websites inferring the suitable matching
-condition by user input.
-Uses `url-infer-match', see its documentation for matching rules.
+  "Save the enabled modes for future visits.
+
+The matching URL logic is dictacted by `url-infer-match'.
 
 This command does not save non-rememberable modes. If you want auto-rules to
 save a particular mode, configure it to be `rememberable-p' in your
