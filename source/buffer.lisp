@@ -1635,8 +1635,8 @@ BUFFERS should be a list of `buffer's."
         (mapcar #'buffer-delete (buffer-list)))))
 
 (define-command delete-current-buffer (&optional (buffer (current-buffer)))
-  "Delete the current buffer, and make the next buffer the current one. If no
-other buffers exist, set the url of the current buffer to the start page."
+  "Delete the current buffer and switch to the last visited one.
+If no other buffers exist, load the start page."
   (buffer-delete buffer))
 
 (define-command delete-other-buffers (&optional (buffer (current-buffer)))
