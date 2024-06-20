@@ -476,17 +476,22 @@ The value is saved to clipboard."
      :class "container"
      (:main
       (:nav
-       (:nbutton :text "Quick-Start"
+       (:nbutton
+         :text "Quick-Start"
+         :title "Display a short tutorial on a side panel."
          '(quick-start))
-       (:a :class "button" :href (nyxt-url 'describe-bindings)
-           :title "List all bindings for the current buffer."
-           "Describe-Bindings")
-       (:a :class "button" :href (nyxt-url 'manual)
-           :title "Full documentation about Nyxt, how it works and how to configure it."
-           "Manual")
-       (:a :class "button" :href (nyxt-url 'common-settings)
-           :title "Switch between Emacs/vi/CUA key bindings, set home page URL, and zoom level."
-           "Settings"))
+       (:nbutton
+         :text "Describe-Bindings"
+         :title "List all keyboard shortcuts for the current buffer."
+         '(make-buffer-focus :url (nyxt-url 'describe-bindings)))
+       (:nbutton
+         :text "Manual"
+         :title "Detailed Nyxt documentation including configuration guides."
+         '(make-buffer-focus :url (nyxt-url 'manual)))
+       (:nbutton
+         :text "Settings"
+         :title "Set keyboard shortcuts (CUA/Emacs/vi), homepage URL or zoom."
+         '(make-buffer-focus :url (nyxt-url 'common-settings))))
       (:div :class "main"
             (:div :class "logo" (:raw (glyph-logo *browser*)))
             (:div

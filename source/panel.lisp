@@ -203,8 +203,7 @@ panel."))
 
 (defun find-panel-buffer (name)
   "Return first panel buffer which URL is a NAME `panel-page'."
-  (find name (panel-buffers (current-window))
-        :key (alex:compose #'internal-page-name #'url)))
+  (find name (panel-buffers (current-window)) :key (compose #'internal-page-name #'url)))
 
 (defmethod set-internal-page-method ((page panel-page) form)
   (when form

@@ -338,8 +338,9 @@ See `find-internal-page-buffer'."))
   "Return first buffer which URL is a NAME `internal-page'."
   (find name (buffer-list) :key (compose #'internal-page-name #'url)))
 
+(-> find-url-internal-page ((or quri:uri string null)) internal-page)
 (defun find-url-internal-page (url)
-  "Return the `internal-page' to which URL corresponds."
+  "Return the `internal-page' corresponding to URL."
   (gethash (internal-page-name url) *nyxt-url-commands*))
 
 (export-always 'buffer-load-internal-page-focus)
