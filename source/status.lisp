@@ -224,7 +224,7 @@ first."
     (append keyscheme-mode other-modes)))
 
 (export-always 'format-status-modes)
-(define-generic format-status-modes ((status status-buffer))
+(defmethod format-status-modes ((status status-buffer))
   "Render the enabled modes to HTML string.
 Any `nyxt/mode/keyscheme:keyscheme-mode' is placed first.
 
@@ -257,7 +257,7 @@ Augment this with `style' of STATUS, if necessary."
                                      (mapcar #'princ-to-string (modes buffer))))))
 
 (export-always 'format-status-buttons)
-(define-generic format-status-buttons ((status status-buffer))
+(defmethod format-status-buttons ((status status-buffer))
   "Render interactive buttons to HTML string.
 Augment this with `style' of STATUS, if necessary."
   (spinneret:with-html-string
@@ -284,7 +284,7 @@ Augment this with `style' of STATUS, if necessary."
       '(nyxt:execute-command))))
 
 (export-always 'format-status-load-status)
-(define-generic format-status-load-status ((status status-buffer))
+(defmethod format-status-load-status ((status status-buffer))
   "Render the load status to HTML string.
 By default, renders a spinning loading ring when loading a URL.
 Augment this with `style' of STATUS, if necessary."
@@ -295,7 +295,7 @@ Augment this with `style' of STATUS, if necessary."
                        "loader" "")))))
 
 (export-always 'format-status-url)
-(define-generic format-status-url ((status status-buffer))
+(defmethod format-status-url ((status status-buffer))
   "Formats the currently open URL for the STATUS buffer.
 
 MODIFY AT YOUR OWN RISK! The current implementation goes a great way to make the
@@ -310,58 +310,40 @@ Augment this with `style' of STATUS, if necessary."
   ;;   subdomain takeover attacks.
   ;; - Retain a clear display of which protocol/scheme is used to discourage
   ;;   e.g. trusting HTTP websites.
-  (or
-   (sera:and-let* ((buffer (current-buffer (window status)))
-                   (content (multiple-value-bind (aesthetic safe)
-                                (render-url (url buffer))
-                              (uiop:strcat
-                               (if safe
-                                   (format nil "~a (~a)" safe aesthetic)
-                                   aesthetic)
-                               (when (title buffer)
-                                 (str:concat " — " (title buffer)))
-                               (when (find (url buffer) (remove buffer (buffer-list))
-                                           :test #'url-equal :key #'url)
-                                 (format nil " (buffer ~a)" (id buffer)))))))
-     (spinneret:with-html-string
-       (:nbutton
-         :buffer status
-         :text content
-         :title content
-         '(nyxt:set-url))))
-   ""))
+  (let* ((buffer (current-buffer (window status)))
+         (content (multiple-value-bind (aesthetic safe) (render-url (url buffer))
+                    (uiop:strcat (if safe
+                                     (format nil "~a (~a)" safe aesthetic)
+                                     aesthetic)
+                                 (when (title buffer) (str:concat " — " (title buffer)))
+                                 (when (find (url buffer)
+                                             (remove buffer (buffer-list))
+                                             :test #'url-equal :key #'url)
+                                   (format nil " (buffer ~a)" (id buffer)))))))
+    (spinneret:with-html-string
+      (:nbutton :buffer status :text content :title content '(nyxt:set-url)))))
 
 (export-always 'format-status-tabs)
-(define-generic format-status-tabs ((status status-buffer))
+(defmethod format-status-tabs ((status status-buffer))
   "Render the open buffers to HTML string suitable for STATUS.
 Augment this with `style' of STATUS, if necessary."
-  ;; FIXME: remove nil here because early on startup some buffers can be NIL
-  ;; (why?)  and we have to clean them out. Debug the startup sequence (in
-  ;; particular the (setf buffers) :after handler) and remove this.
-  (let* ((buffers (remove
-                   nil (if (display-tabs-by-last-access-p status)
-                           (sort-by-time (buffer-list))
-                           (reverse (buffer-list)))))
-         (domain-deduplicated-urls (remove-duplicates
-                                    (mapcar #'url buffers)
-                                    :test #'string=
-                                    :key #'quri:uri-domain)))
+  (let* ((buffers (if (display-tabs-by-last-access-p status)
+                      (sort-by-time (buffer-list))
+                      (reverse (buffer-list))))
+         (domain-deduplicated-urls (remove-duplicates (mapcar #'url buffers)
+                                                      :test #'string=
+                                                      :key #'quri:uri-domain)))
     (spinneret:with-html-string
       (loop for url in domain-deduplicated-urls
             collect
-            ;; FIXME: Removing NIL buffers here too, the same reason as above.
             (let* ((internal-buffers (internal-buffer-list))
                    (domain (quri:uri-domain url))
-                   (tab-display-text (if (internal-url-p url)
-                                         "internal"
-                                         domain))
+                   (tab-display-text (if (internal-url-p url) "internal" domain))
                    (url url)
-                   ;; Current buffer might be NIL too.
-                   (current (current-buffer (window status))))
+                   (current-buffer (current-buffer (window status))))
               (:span
-               :class (if (and current
-                               (string= (quri:uri-domain (url current))
-                                        (quri:uri-domain url)))
+               :class (if (string= (quri:uri-domain (url current-buffer))
+                                   (quri:uri-domain url))
                           "selected-tab tab"
                           "tab")
                :onclick (ps:ps
@@ -388,11 +370,11 @@ Augment this with `style' of STATUS, if necessary."
                                     :prompt "Switch to buffer with internal page"
                                     :sources (make-instance 'buffer-source
                                                             :constructor internal-buffers))
-                                   (nyxt::switch-buffer-or-query-domain domain)))))
+                                   (switch-buffer-or-query-domain domain)))))
                tab-display-text))))))
 
 (export-always 'format-status)
-(define-generic format-status ((status status-buffer))
+(defmethod format-status ((status status-buffer))
   "Return a string corresponding to the body of the HTML document of STATUS.
 
 To override all that is displayed on STATUS, redefine this method.  To partially
