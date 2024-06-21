@@ -310,58 +310,40 @@ Augment this with `style' of STATUS, if necessary."
   ;;   subdomain takeover attacks.
   ;; - Retain a clear display of which protocol/scheme is used to discourage
   ;;   e.g. trusting HTTP websites.
-  (or
-   (sera:and-let* ((buffer (current-buffer (window status)))
-                   (content (multiple-value-bind (aesthetic safe)
-                                (render-url (url buffer))
-                              (uiop:strcat
-                               (if safe
-                                   (format nil "~a (~a)" safe aesthetic)
-                                   aesthetic)
-                               (when (title buffer)
-                                 (str:concat " — " (title buffer)))
-                               (when (find (url buffer) (remove buffer (buffer-list))
-                                           :test #'url-equal :key #'url)
-                                 (format nil " (buffer ~a)" (id buffer)))))))
-     (spinneret:with-html-string
-       (:nbutton
-         :buffer status
-         :text content
-         :title content
-         '(nyxt:set-url))))
-   ""))
+  (let* ((buffer (current-buffer (window status)))
+         (content (multiple-value-bind (aesthetic safe) (render-url (url buffer))
+                    (uiop:strcat (if safe
+                                     (format nil "~a (~a)" safe aesthetic)
+                                     aesthetic)
+                                 (when (title buffer) (str:concat " — " (title buffer)))
+                                 (when (find (url buffer)
+                                             (remove buffer (buffer-list))
+                                             :test #'url-equal :key #'url)
+                                   (format nil " (buffer ~a)" (id buffer)))))))
+    (spinneret:with-html-string
+      (:nbutton :buffer status :text content :title content '(nyxt:set-url)))))
 
 (export-always 'format-status-tabs)
 (defmethod format-status-tabs ((status status-buffer))
   "Render the open buffers to HTML string suitable for STATUS.
 Augment this with `style' of STATUS, if necessary."
-  ;; FIXME: remove nil here because early on startup some buffers can be NIL
-  ;; (why?)  and we have to clean them out. Debug the startup sequence (in
-  ;; particular the (setf buffers) :after handler) and remove this.
-  (let* ((buffers (remove
-                   nil (if (display-tabs-by-last-access-p status)
-                           (sort-by-time (buffer-list))
-                           (reverse (buffer-list)))))
-         (domain-deduplicated-urls (remove-duplicates
-                                    (mapcar #'url buffers)
-                                    :test #'string=
-                                    :key #'quri:uri-domain)))
+  (let* ((buffers (if (display-tabs-by-last-access-p status)
+                      (sort-by-time (buffer-list))
+                      (reverse (buffer-list))))
+         (domain-deduplicated-urls (remove-duplicates (mapcar #'url buffers)
+                                                      :test #'string=
+                                                      :key #'quri:uri-domain)))
     (spinneret:with-html-string
       (loop for url in domain-deduplicated-urls
             collect
-            ;; FIXME: Removing NIL buffers here too, the same reason as above.
             (let* ((internal-buffers (internal-buffer-list))
                    (domain (quri:uri-domain url))
-                   (tab-display-text (if (internal-url-p url)
-                                         "internal"
-                                         domain))
+                   (tab-display-text (if (internal-url-p url) "internal" domain))
                    (url url)
-                   ;; Current buffer might be NIL too.
-                   (current (current-buffer (window status))))
+                   (current-buffer (current-buffer (window status))))
               (:span
-               :class (if (and current
-                               (string= (quri:uri-domain (url current))
-                                        (quri:uri-domain url)))
+               :class (if (string= (quri:uri-domain (url current-buffer))
+                                   (quri:uri-domain url))
                           "selected-tab tab"
                           "tab")
                :onclick (ps:ps
