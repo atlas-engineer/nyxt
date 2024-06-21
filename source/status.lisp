@@ -350,7 +350,7 @@ Augment this with `style' of STATUS, if necessary."
       (loop for url in domain-deduplicated-urls
             collect
             ;; FIXME: Removing NIL buffers here too, the same reason as above.
-            (let* ((internal-buffers (remove-if-not #'internal-url-p buffers :key #'url))
+            (let* ((internal-buffers (internal-buffer-list))
                    (domain (quri:uri-domain url))
                    (tab-display-text (if (internal-url-p url)
                                          "internal"

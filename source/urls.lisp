@@ -386,7 +386,9 @@ TITLE is purely informative."
                        (query (quri:uri-query-params %url))
                        (title (alex:assoc-value query "title" :test 'equal))
                        (buffer-id (alex:assoc-value query "buffer" :test 'equal))
-                       (buffer (find (read-from-string buffer-id) (internal-buffers) :key 'id)))
+                       (buffer (find (read-from-string buffer-id)
+                                     (internal-buffer-list :all t)
+                                     :key 'id)))
         (log:debug "Evaluate Lisp callback ~a in buffer ~a: ~a" request-id buffer title)
         (values
          (alex:if-let ((callback (sera:synchronized ((lisp-url-callbacks buffer))
