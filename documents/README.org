@@ -33,39 +33,38 @@
 
 * Development environment guide
 
-If you are new to developing Nyxt, you may want a straightforward way to
-set up the environment so that you can hack on Nyxt with minimal friction.
-This is one way to achieve that goal. Keep in mind that this part of the
-manual is highly opinionated in it's choice of tools. If you wish to use
-other tools, refer to the rest of the manual below.
+If you are new to hacking on Nyxt, you may be looking for a straightforward way
+to set up the development environment.  While there are several ways to go about
+it, we describe the approach the Nyxt team uses.
 
-To proceed, make sure that you have the following installed:
-- [[https://www.sbcl.org/][SBCL]]
-- [[https://guix.gnu.org][The GUIX package manager]] (setup the [[https://gitlab.com/nonguix/nonguix][nonguix channel]])
-- [[https://www.gnu.org/software/emacs/][Emacs]]
-- [[https://github.com/joaotavora/sly][SLY]]
+Firstly, install:
+1. [[https://guix.gnu.org][The GUIX package manager]]
+2. [[https://www.sbcl.org/][SBCL]]
+3. [[https://www.gnu.org/software/emacs/][Emacs]]
+4. [[https://github.com/joaotavora/sly][SLY]]
 
-Now that you have those working on your system, clone the Nyxt repository into
-=~/common-lisp=. Then, in your Emacs configuration file, add the following and
-restart Emacs:
+With these working on your system, clone the Nyxt repository at
+=~/common-lisp=. Then add the snippet below to your Emacs configuration file and
+reload it.
 
-#+begin_src lisp
+#+begin_src emacs-lisp
 (load "~/common-lisp/nyxt/build-scripts/nyxt-guix.el" :noerror)
 
 (setq sly-lisp-implementations
-        '((nyxt-sbcl
-           (lambda () (nyxt-make-guix-cl-for-nyxt
-                  "~/common-lisp/nyxt"
-                  :force t
-                  :cl-implementation "sbcl"
-                  :cl-system "nyxt/gi-gtk"
-                  :no-grafts t
-                  :ad-hoc '("emacs" "xdg-utils" "git"))))))
+      '((nyxt-sbcl
+         (lambda () (nyxt-make-guix-cl-for-nyxt
+                "~/common-lisp/nyxt"
+                ;; You may set it to t, if you experience odd behavior.
+                :force nil
+                :cl-implementation "sbcl"
+                :cl-system "nyxt/gi-gtk"
+                :no-grafts t
+                :ad-hoc '("emacs" "xdg-utils" "git"))))))
 #+end_src
 
-Next, in Emacs, run ~M-- M-x sly RET nyxt-sbcl RET~ to start the SLY REPL.
-Wait for it to finish and the REPL will open. At this point you are almost ready
-to start hacking. In the SLY REPL, write the following:
+Then, to start the SLY REPL, ~M-- M-x sly RET nyxt-sbcl RET~.  Wait for it to
+finish and the REPL will open. At this point you are almost ready to start
+hacking. In the SLY REPL, evaluate as follows:
 
 #+begin_src lisp
 (asdf:load-system :nyxt/gi-gtk)
