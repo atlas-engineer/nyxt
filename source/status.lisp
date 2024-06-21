@@ -388,7 +388,7 @@ Augment this with `style' of STATUS, if necessary."
                                     :prompt "Switch to buffer with internal page"
                                     :sources (make-instance 'buffer-source
                                                             :constructor internal-buffers))
-                                   (nyxt::switch-buffer-or-query-domain domain)))))
+                                   (switch-buffer-or-query-domain domain)))))
                tab-display-text))))))
 
 (export-always 'format-status)
