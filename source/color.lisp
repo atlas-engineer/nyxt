@@ -31,7 +31,7 @@
           "Copy the color as hex #XXXXXX string."
           (let ((hex (cl-colors2:print-hex (first colors))))
             (ffi-buffer-copy (current-buffer) hex)
-            (echo "Copied ~a to clipboard!" hex)))
+            (echo "~s copied to clipboard." hex)))
         (lambda-command copy-as-rgb* (colors)
           "Copy the color as CSS rgb() function string."
           (let ((rgb (cl-colors2:print-css-rgb/a (first colors))))

@@ -1488,7 +1488,7 @@ proceeding."
 (define-command copy-url ()
   "Save current URL to clipboard."
   (copy-to-clipboard (render-url (url (current-buffer))))
-  (echo "~a copied to clipboard." (render-url (url (current-buffer)))))
+  (echo "~s copied to clipboard." (render-url (url (current-buffer)))))
 
 (define-command copy-title ()
   "Save current page title to clipboard."

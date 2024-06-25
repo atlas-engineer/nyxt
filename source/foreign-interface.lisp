@@ -313,7 +313,7 @@ Should return the copied text or NIL, if something goes wrong."
 
       (sera:lret ((input (if text-provided-p text (copy))))
         (copy-to-clipboard input)
-        (echo "Text copied: ~s" input)))))
+        (echo "~s copied to clipboard." input)))))
 
 (define-ffi-generic ffi-buffer-paste (buffer &optional text)
   "Paste the last clipboard entry into BUFFER.
