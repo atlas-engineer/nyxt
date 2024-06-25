@@ -643,7 +643,8 @@ A command is a special kind of function that can be called with
         :command (typecase command
                    (symbol command)
                    (command (name command))))
-    (setf (command-dispatcher *browser*) #'dispatch-command)))
+    (setf (command-dispatcher *browser*) #'dispatch-command)
+    (echo-dismiss)))
 
 (define-command describe-key ()
   "Display binding of user-inputted keys."
