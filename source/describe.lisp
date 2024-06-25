@@ -638,11 +638,9 @@ A command is a special kind of function that can be called with
   (buffer-load-internal-page-focus 'describe-bindings :buffer-id (id buffer)))
 
 (defun describe-key-dispatch (command)
-  (unwind-protect
-       (describe-command
-        :command (typecase command
-                   (symbol command)
-                   (command (name command))))
+  (unwind-protect (describe-command :command (typecase command
+                                               (symbol command)
+                                               (command (name command))))
     (setf (command-dispatcher *browser*) #'dispatch-command)
     (echo-dismiss)))
 
