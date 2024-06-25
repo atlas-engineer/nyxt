@@ -2097,9 +2097,10 @@ As a second value, return the current buffer index starting from 0."
                (progn
                  (webkit:webkit-web-view-execute-editing-command
                   (gtk-object gtk-buffer) webkit2:+webkit-editing-command-copy+)
-                 (calispel:! channel t))
+                 (calispel:! channel t)
+                 (echo "~s copied to clipboard." text))
                (calispel:! channel nil)))
-         (lambda (e) (echo-warning "Cannot copy: ~a" e)))
+         (lambda (e) (echo-warning "~s failed to copy to clipboard." e)))
         (if (calispel:? channel)
             (trivial-clipboard:text)
             nil))))
@@ -2113,7 +2114,7 @@ As a second value, return the current buffer index starting from 0."
          (trivial-clipboard:text text))
        (webkit:webkit-web-view-execute-editing-command
         (gtk-object gtk-buffer) webkit2:+webkit-editing-command-paste+)))
-   (lambda (e) (echo-warning "Cannot paste: ~a" e))))
+   (lambda (e) (echo-warning "~s failed to paste to clipboard." e))))
 
 (defmethod ffi-buffer-cut ((gtk-buffer gtk-buffer))
   (let ((channel (nyxt::make-channel 1)))

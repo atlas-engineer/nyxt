@@ -456,7 +456,7 @@ Only available if `prompter:enable-marks-p' is non-nil."
          (text (str:join +newline+ (reverse props))))
     (unless (str:emptyp text)
       (trivial-clipboard:text text)
-      (echo "Copied ~s to clipboard." text))))
+      (echo "~s copied to clipboard." text))))
 
 (define-command-prompt paste (prompt-buffer)
   "Paste clipboard text to input."
