@@ -645,7 +645,8 @@ A command is a special kind of function that can be called with
                    (symbol command)
                    (command (name command))))
     (setf (command-dispatcher (current-window)) #'dispatch-command
-          (input-skip-dispatcher (current-window)) #'dispatch-input-skip)))
+          (input-skip-dispatcher (current-window)) #'dispatch-input-skip)
+    (echo-dismiss)))
 
 (defun skip-describe-dispatch (keyspec)
   (declare (ignore keyspec))
