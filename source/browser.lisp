@@ -381,7 +381,7 @@ errors correctly from then on."
   "Startup finalization: Restore history, open URLs, display startup errors."
   (macrolet ((with-protected-history (&body body)
                `(with-protect ("Error restoring history ~a: ~a"
-                               (files:expand (history-file *browser*))
+                               (files:expand (history-file browser))
                                :condition)
                   ,@body)))
     (labels ((clear-history-owners ()
@@ -389,18 +389,18 @@ errors correctly from then on."
 After this, buffers from a previous session are permanently lost, they cannot be
 restored."
                (with-protected-history
-                   (files:with-file-content (history (history-file *browser*))
+                   (files:with-file-content (history (history-file browser))
                      (when history
                        (clrhash (htree:owners history)))))))
       ;; Must catch all history-related errors, otherwise subsequent code would
       ;; not be run.
       (handler-case
           (let ((init-buffer (current-buffer)))
-            (if (restore-session-on-startup-p *browser*)
+            (if (restore-session-on-startup-p browser)
                 (if (with-protected-history
                         (restore-history-buffers
-                         (files:content (history-file *browser*))
-                         (history-file *browser*)))
+                         (files:content (history-file browser))
+                         (history-file browser)))
                     (open-urls urls)
                     (open-urls (or urls (list (default-new-buffer-url browser)))))
                 (progn
