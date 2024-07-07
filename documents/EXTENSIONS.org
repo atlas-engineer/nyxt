@@ -37,3 +37,9 @@
 
 - [[https://github.com/aartaka/nx-dark-reader][nx-dark-reader]] ::
   nx-dark-reader is Nyxt (3.0+ only) integration with Dark Reader.
+
+- [[https://gist.github.com/chaorace/98417a693ca73c51a8688ac09e61d2b0][nx-passt]] ::
+  nx-passt is a =password-mode= interface that supports filename-based username.
+
+- [[https://git.sr.ht/~ehrt74/nyxt-bitwarden][nx-bitwarden]] ::
+  nx-bitwarden adds Bitwarden support for =password-mode=.
