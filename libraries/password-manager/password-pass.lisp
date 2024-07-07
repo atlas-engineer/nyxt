@@ -6,10 +6,20 @@
 (define-class password-store-interface (password-interface)
   ((executable (pathname->string (sera:resolve-executable "pass")))
    (sleep-timer (or (uiop:getenv "PASSWORD_STORE_CLIP_TIME") 45))
-   (password-directory (or (uiop:getenv "PASSWORD_STORE_DIR")
-                           (format nil "~a/.password-store" (uiop:getenv "HOME")))
-                       :type string
-                       :reader password-directory))
+   (password-directory
+    (or (uiop:getenv "PASSWORD_STORE_DIR")
+        (format nil "~a/.password-store" (uiop:getenv "HOME")))
+    :type string
+    :reader password-directory)
+   (scan-for-username-entries
+    t
+    :type boolean
+    :documentation "When non-nil, a two-step process determines the username:
+1. Scan credential content for an entry with a key matching `*username-keys*'.
+2. If no match could be found, use the credential filename as a fallback.
+
+When nil, Nyxt always immediately uses the fallback strategy.
+If your store doesn't utilize username keys, this skips credential decryption."))
   (:export-class-name-p t)
   (:export-accessor-names-p t))
 
@@ -69,22 +79,46 @@ The first line (the password) is skipped."
 (defvar *username-keys* '("login" "user" "username")
   "A list of string keys used to find the `pass' username in `clip-username'.")
 
-(defmethod clip-username ((password-interface password-store-interface) &key password-name service)
-  "Save the multiline entry that's prefixed with on of the `*username-keys*' to clipboard.
+(defun username-from-name (password-name)
+  "Select a username using the path of the credential file.
+The strategy for deriving the username is context-dependent:
+- If credential exists in a subdirectory (e.g.: x.example/me@y.example),
+  username is taken as-is from the filename (me@y.example)
+- Otherwise, if no subdirectory is used (e.g.: me@x.example@y.example),
+  username is taken from the first half of the filename (me@x.example)"
+  (multiple-value-bind (_ parent-dirs credential-name)
+      (uiop/pathname:split-unix-namestring-directory-components password-name)
+    (declare (ignore _))
+    (if parent-dirs
+        credential-name
+        (subseq credential-name 0 (position #\@ credential-name :from-end t)))))
+
+(defun username-from-content (password-interface password-name)
+  "Select username from first entry in credential matching `*username-keys*'"
+  (let* ((content (execute password-interface (list "show" password-name)
+                           :output '(:string :stripped t)))
+         (entries (parse-multiline content))
+         (username-entry (when entries
+                           (some (lambda (key)
+                                   (find key entries :test #'string-equal :key #'first))
+                                 *username-keys*))))
+    (when username-entry (second username-entry))))
+
+(defmethod clip-username ((password-interface password-store-interface)
+                          &key password-name service)
+  "Save username of the `password-name' credential to clipboard.
+See the `scan-for-usename-entries' slot for details.
 Case is ignored.
-The prefix is discarded from the result and returned."
+The resulting username is also returned."
   (declare (ignore service))
   (when password-name
-    (let* ((content (execute password-interface (list "show" password-name)
-                      :output '(:string :stripped t)))
-           (entries (parse-multiline content))
-           (username-entry (when entries
-                             (some (lambda (key)
-                                     (find key entries :test #'string-equal :key #'first))
-                                   *username-keys*))))
-      (when username-entry
-        (trivial-clipboard:text (second username-entry))
-        (second username-entry)))))
+    (let ((username
+           (or (when (scan-for-username-entries password-interface)
+                 (username-from-content password-interface password-name))
+               (username-from-name password-name))))
+      (when username
+        (trivial-clipboard:text username)
+        username))))
 
 (defmethod save-password ((password-interface password-store-interface)
                           &key password-name username password service)
