@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/password
-  (:documentation "Package for `password-mode', mode to  interface with password managers.
+  (:documentation "Package for `password-mode', mode to interface with password managers.
 
 Relies on the `password' library for most package manager interactions. In
 particular:
