@@ -120,10 +120,8 @@ The `downloads' slot is populated by a list of these objects."))
 
 (-> cancel-download (nyxt::url-designator) t)
 (defun cancel-download (url)
-  "This function is called by the cancel-button with an argument of the URL.
-
-It will search the URLs of all the existing downloads, if it finds it, it will
-invoke its cancel-function."
+  "Call `cancel-function' with URL as argument."
+  ;; FIXME Two downloads can share the same URL.
   (alex:when-let ((download (find url (downloads *browser*) :key #'url :test #'string=)))
     (funcall (cancel-function download))
     (echo "Download canceled: ~a." url)))
