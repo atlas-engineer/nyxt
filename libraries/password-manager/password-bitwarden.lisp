@@ -1,5 +1,29 @@
 (in-package :password)
 
+;; bitwarden password integration for nyxt
+
+;; this (really quite naive) code works for me, and it might work for you too if you jump through some hoops.
+
+;; 1. download the bitwarden command line client from https://bitwarden.com/download/#downloads-command-line-interface
+
+;; 2. start the command line client and login to it (see https://bitwarden.com/help/cli/#using-email-and-password). i did it like this:
+
+;;         bw login <email> <password> --method 0 --code <code>
+
+;; 3. start the command line client in server mode:
+
+;;         bw serve --port <number> --hostname <hostname> # note i needed to use 127.0.0.1 as the hostname
+
+;;    the default value for `--port` at time of writing is `8087`.
+
+;; now you can move `password-bitwarden.lisp` somewhere where nyxt will find it when it starts. i have this in `.config/nyxt/config.lisp`
+
+;;     (define-nyxt-user-system-and-load nyxt-user/basic-config
+;;         :components ("password"))
+
+;; there's one parameter you can set: `*bitwarden-host*`. default value is `http://localhost:8087`. 
+
+
 (define-class bitwarden-interface (password-interface)
   ((password :accessor password :type string :initform "")
    (sessionid :accessor sessionid :type string :initform ""))
