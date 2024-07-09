@@ -29,8 +29,7 @@ function."))
 (define-parenscript active-input-area-cursor ()
   (ps:chain (nyxt/ps:active-element document) selection-start))
 
-(define-parenscript set-active-input-area-cursor (selection-start
-                                                  selection-end)
+(define-parenscript set-active-input-area-cursor (selection-start selection-end)
   (ps:chain (nyxt/ps:active-element document)
             (set-selection-range
              (ps:lisp selection-start)
