@@ -70,7 +70,8 @@ See `vi-normal-mode'."
   (setf (forward-input-events-p (buffer mode)) t))
 
 (define-command switch-to-vi-normal-mode (&optional (mode (find-submode 'vi-insert-mode
-                                                                        (or (current-prompt-buffer) (current-buffer)))))
+                                                                        (or (current-prompt-buffer)
+                                                                            (current-buffer)))))
   "Switch to the mode remembered to be the matching VI-normal one for this MODE.
 See also `vi-normal-mode' and `vi-insert-mode'."
   (when mode
