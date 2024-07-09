@@ -489,7 +489,7 @@ See also `show-prompt-buffer'."
                                          (:raw attribute))))))))))
 
 (export 'prompt-render-suggestions)
-(define-generic prompt-render-suggestions ((prompt-buffer prompt-buffer))
+(defmethod prompt-render-suggestions ((prompt-buffer prompt-buffer))
   "Refresh the rendering of the suggestion list in PROMPT-BUFFER.
 This does not redraw the whole prompt buffer, use `prompt-render' for that."
   (let* ((sources (prompter:sources prompt-buffer))

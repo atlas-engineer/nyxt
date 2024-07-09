@@ -389,7 +389,7 @@ Return two values:
     (plump:attribute img "alt")))
 
 (export-always 'get-nyxt-id)
-(define-generic get-nyxt-id ((element plump:element))
+(defmethod get-nyxt-id ((element plump:element))
   "Get the nyxt-identifier of the page element matching ELEMENT."
   (plump:attribute element "nyxt-identifier"))
 

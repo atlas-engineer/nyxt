@@ -343,7 +343,7 @@ Useful in FFI functions where we usually specialize things against
   buffer)
 
 (export-always 'finalize-buffer)
-(define-generic finalize-buffer ((buffer buffer) &key (browser *browser*) &allow-other-keys)
+(defmethod finalize-buffer ((buffer buffer) &key (browser *browser*) &allow-other-keys)
   "Finalize instantiation of BUFFER."
   (declare (ignore browser))
   t)
@@ -437,7 +437,7 @@ of BUFFER."
   (unless no-hook-p
     (hooks:run-hook (buffer-after-make-hook browser) buffer)))
 
-(define-generic modes ((buffer buffer))
+(defmethod modes ((buffer buffer))
   "Return the modes active in BUFFER.
 
 Non-`modable-buffer's never have modes.
@@ -687,9 +687,7 @@ scope is that of buffers."))
   (set-window-title))
 
 (export-always 'default-modes)
-(define-generic default-modes (buffer)
-  "BUFFER's default modes.
-`append's all the methods applicable to BUFFER to get the full list of modes."
+(defgeneric default-modes (buffer)
   (:method-combination append)
   ;; TODO: Add a warning method when passing NIL to guard the current buffer not
   ;; bound errors?
@@ -704,7 +702,9 @@ Nsymbols will find the proper symbol, unless duplicate."
     (mapcar (alex:rcurry #'resolve-user-symbol :mode (list-all-packages))
             (remove-duplicates (call-next-method)
                                ;; Modes at the beginning of the list have higher priority.
-                               :from-end t))))
+                               :from-end t)))
+  (:documentation "BUFFER's default modes. `append's all the methods applicable
+to BUFFER to get the full list of modes."))
 
 (define-class network-buffer (buffer)
   ((status
@@ -894,7 +894,7 @@ Return the created buffer."
   ;; (setf (id dead-buffer) (new-id))      ; TODO: Shall we reset the ID?
   (ffi-buffer-make dead-buffer))
 
-(define-generic document-model ((buffer buffer))
+(defmethod document-model ((buffer buffer))
   "A wraparound accessor to BUFFER's `document-model'.
 
 In case the page changed more than `document-model-delta-threshold', runs
@@ -1552,7 +1552,7 @@ Checks whether a valid https or local file URL is requested, in a DWIM fashion."
     (prompter::history-pushnew history (render-url url))))
 
 (export-always 'url-sources)
-(define-generic url-sources ((buffer buffer) actions-on-return)
+(defmethod url-sources ((buffer buffer) actions-on-return)
   "Return list of `set-url' sources.
 The returned sources should have `url' or `prompter:actions-on-return' methods
 specified for their contents."

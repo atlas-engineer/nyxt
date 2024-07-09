@@ -233,7 +233,7 @@ A positive value shifts to the bottom.")
   (update-document-model :buffer buffer))
 
 (export-always 'identifier)
-(define-generic identifier ((element plump:element))
+(defmethod identifier ((element plump:element))
   "ELEMENT's on-page identifier (constructed from `hint-alphabet' characters.)"
   (plump:attribute element "nyxt-hint"))
 

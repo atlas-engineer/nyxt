@@ -120,7 +120,7 @@ If there's no buffer, create a dummy one and get search engines from there."
       (unless current-buffer
         (buffer-delete buffer)))))
 
-(define-generic default-search-engine (&optional (search-engines (all-search-engines)))
+(defun default-search-engine (&optional (search-engines (all-search-engines)))
   "Return the default search engine out of the SEARCH-ENGINES.
 Right now default search engine is the last one."
   (first (last search-engines)))

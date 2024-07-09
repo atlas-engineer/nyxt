@@ -23,11 +23,11 @@
   (typep object '(or symbol character string real)))
 
 (export-always 'inspected-value)
-(define-generic inspected-value (id)
+(defmethod inspected-value (id)
   "Get the inspected value corresponding to ID."
   (gethash id *inspected-values*))
 
-(define-generic (setf inspected-value) (new-value id)
+(defmethod (setf inspected-value) (new-value id)
   "Set the ID-indexed inspected value."
   (setf (gethash id *inspected-values*) new-value))
 

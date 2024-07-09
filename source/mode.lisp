@@ -539,7 +539,7 @@ If it's a single buffer, return it directly (not as a list)."
            (buffer-list)))
 
 (export-always 'keymap)
-(define-generic keymap ((mode mode))
+(defmethod keymap ((mode mode))
   "Return the `nkeymaps:keymap' of MODE according to its buffer `nyxt/mode/keyscheme::keyscheme'.
 If there is no corresponding keymap, return NIL."
   (keymaps:get-keymap (if (buffer mode)

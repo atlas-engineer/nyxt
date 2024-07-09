@@ -133,12 +133,11 @@
   "Boilerplate to generate old names accessors and return the new values."
   `(progn
      (export-always (quote ,deprecated-name))
-     (nclasses:define-generic ,deprecated-name ((theme theme))
+     (defmethod ,deprecated-name ((theme theme))
        ,(format nil "Auto-generated accessor for deprecated `~a' slot.
 Returns the value of `~a' slot instead of the deprecated one."
                 deprecated-name name)
        (slot-value theme (quote ,name)))
-     ;; Use define-generic too?
      (defmethod (setf ,deprecated-name) (value (theme theme))
        (setf (slot-value theme (quote ,name)) value))))
 

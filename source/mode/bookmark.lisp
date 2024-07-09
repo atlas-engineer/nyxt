@@ -123,14 +123,11 @@ internal programming APIs."
                                            :format local-time:+asctime-format+)
             (:width 1))))
 
-;; FIXME: Move somewhere else, where Nyxt-global function declarations belong?
-(define-generic equals (object1 object2)
-  "Nyxt-specific equality function."
-  (:method ((e1 bookmark-entry) (e2 bookmark-entry))
-    "Entries are equal if the hosts and the paths are equal.
+(export-always 'equals)
+(defmethod equals ((e1 bookmark-entry) (e2 bookmark-entry))
+  "Entries are equal if the hosts and the paths are equal.
 In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
-    (url-equal (url e1) (url e2)))
-  (:export-generic-name-p t))
+  (url-equal (url e1) (url e2)))
 
 (-> bookmark-add
     (quri:uri &key (:title string) (:date (or time:timestamp null)) (:tags t))

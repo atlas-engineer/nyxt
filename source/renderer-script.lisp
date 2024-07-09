@@ -39,26 +39,30 @@ Examples:
 
 (export-always 'define-parenscript)
 (defmacro define-parenscript (script-name args &body script-body)
-  "Define parenscript function SCRIPT-NAME.
-SCRIPT-BODY must be a valid parenscript and will be wrapped in (PS:PS ...).
-Any Lisp expression must be wrapped in (PS:LISP ...).
+  "Define parenscript method SCRIPT-NAME with arguments ARGS.
+SCRIPT-BODY must be a valid parenscript and will be wrapped in `ps:ps'.
+Any Lisp expression must be wrapped in `ps:lisp'.
 
-The returned function sends the compiled Javascript to the current buffer webview.
-The function can be passed Lisp ARGS."
-  (let ((doc (when (and (> (length script-body) 1)
-                        (stringp (first script-body)))
-               (first script-body))))
-    `(define-generic ,script-name ,args
-       ,@(when doc (list doc))
-       (ps-eval :buffer (current-buffer)
-         ,@(if doc
-               (rest script-body)
-               script-body)))))
+The compiled Javascript runs in the current buffer.
+
+Since it is defined via `defmethod', it is extensible via method
+qualifiers (`:before', `:after', `:around')."
+  (multiple-value-bind (body declarations documentation)
+      (alex:parse-body script-body :documentation t)
+    (declare (ignore declarations))
+    `(defmethod ,script-name ,args
+       ,documentation
+       (ps-eval :buffer (current-buffer) ,@body))))
 
 (export-always 'define-parenscript-async)
 (defmacro define-parenscript-async (script-name args &body script-body)
   "Like `define-parenscript', but Javascript runs asynchronously."
-  `(defmethod ,script-name ,args (ps-eval :async t :buffer (current-buffer) ,@script-body)))
+  (multiple-value-bind (body declarations documentation)
+      (alex:parse-body script-body :documentation t)
+    (declare (ignore declarations))
+    `(defmethod ,script-name ,args
+       ,documentation
+       (ps-eval :async t :buffer (current-buffer) ,@body))))
 
 (export-always 'ps-labels)
 (defmacro ps-labels (&body args)
@@ -130,7 +134,7 @@ Example:
               (ps:chain window page-x-offset)))))
 
 (export-always 'document-scroll-position)
-(define-generic document-scroll-position (&optional (buffer (current-buffer)))
+(defmethod document-scroll-position (&optional (buffer (current-buffer)))
   "Get current scroll position or set it.
 If passed no arguments, return a list of two elements: vertical (Y) and
 horizontal (X) offset.
@@ -141,7 +145,7 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
       (when (listp position)
         position))))
 
-(define-generic (setf document-scroll-position) (value &optional (buffer (current-buffer)))
+(defmethod (setf document-scroll-position) (value &optional (buffer (current-buffer)))
   (when value
     (with-current-buffer buffer
       (destructuring-bind (y &optional x)
