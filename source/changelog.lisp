@@ -96,6 +96,20 @@ elements are scaled accordingly.")
   (:li "When on pre-release, push " (:code "X-pre-release")
        " feature in addition to " (:code "X-pre-release-N") "one."))
 
+(define-version "3.12.0"
+  (:nsection :title "Features"
+    (:ul
+     (:li "Added new filename-based fallback strategy to "
+          (:nxref :command 'nyxt/mode/password:copy-username)
+          " when using the default password-store password interface."
+     (:li "Allow skipping the primary key-based username strategy utilized by "
+          (:nxref :command 'nyxt/mode/password:copy-username)
+          " via the new slot "
+          (:nxref :class-name 'password:password-store-interface
+            :slot 'scan-for-username-entries)
+          ". By default, it is set to "
+          (:code "t") " (do not skip).")))))
+
 (define-version "3.11.7"
   (:nsection :title "Bug fixes"
     (:ul
