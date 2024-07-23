@@ -233,66 +233,47 @@ not try to quit the browser."
     (window-set-buffer window buffer)
     (values window buffer)))
 
-(define-command toggle-fullscreen (&key (window (current-window))
-                                   skip-renderer-resize)
-  "Fullscreen WINDOW, or the current window, when omitted.
-When `skip-renderer-resize' is non-nil, don't ask the renderer to fullscreen the window."
-  (let ((fullscreen (fullscreen-p window)))
-    (unless skip-renderer-resize
-      (if fullscreen
-          (ffi-window-unfullscreen window)
-          (ffi-window-fullscreen window)))
-    (toggle-status-buffer :show-p (not fullscreen))
-    (toggle-message-buffer :show-p (not fullscreen))))
+(define-command toggle-fullscreen (&optional (window (current-window)))
+  "Toggle fullscreen state of window."
+  (if (fullscreen-p window)
+      (ffi-window-unfullscreen window)
+      (ffi-window-fullscreen window)))
 
-(define-command toggle-maximize (&key (window (current-window)))
-  "Maximize WINDOW, or the current window, when omitted."
-  (let ((maximized (maximized-p window)))
-    (if maximized
-        (ffi-window-unmaximize window)
-        (ffi-window-maximize window))))
+(define-command toggle-maximize (&optional (window (current-window)))
+  "Toggle maximized state of window."
+  (if (maximized-p window)
+      (ffi-window-unmaximize window)
+      (ffi-window-maximize window)))
 
+(export-always 'enable-status-buffer)
 (defun enable-status-buffer (&optional (window (current-window)))
   (setf (ffi-height (status-buffer window)) (height (status-buffer window))))
 
+(export-always 'disable-status-buffer)
 (defun disable-status-buffer (&optional (window (current-window)))
   (setf (ffi-height (status-buffer window)) 0))
 
+(export-always 'enable-message-buffer)
 (defun enable-message-buffer (&optional (window (current-window)))
   (setf (ffi-window-message-buffer-height window) (message-buffer-height window)))
 
+(export-always 'disable-message-buffer)
 (defun disable-message-buffer (&optional (window (current-window)))
   (setf (ffi-window-message-buffer-height window) 0))
 
 (define-command toggle-toolbars (&optional (window (current-window)))
-  "Toggle the visibility of the message and status buffer areas."
-  (toggle-status-buffer :window window)
-  (toggle-message-buffer :window window))
+  "Toggle the visibility of the message and status buffers."
+  (toggle-status-buffer window)
+  (toggle-message-buffer window))
 
-(define-command toggle-status-buffer (&key (window (current-window))
-                                      (show-p nil show-provided-p))
-  "Toggle the visibility of the status buffer.
+(define-command toggle-status-buffer (&optional (window (current-window)))
+  "Toggle the visibility of the status buffer."
+  (if (zerop (ffi-height (status-buffer window)))
+      (enable-status-buffer window)
+      (disable-status-buffer window)))
 
-If SHOW-P is provided:
-- If SHOW-P is T, then `status-buffer' is always enabled;
-- Otherwise, it is always disabled."
-  (cond ((and show-provided-p show-p)
-         (enable-status-buffer window))
-        ((and (not show-provided-p)
-              (zerop (ffi-height (status-buffer window))))
-         (enable-status-buffer window))
-        (t (disable-status-buffer window))))
-
-(define-command toggle-message-buffer (&key (window (current-window))
-                                       (show-p nil show-provided-p))
-  "Toggle the visibility of the message buffer.
-
-If SHOW-P is provided:
-- If SHOW-P is T, then `message-buffer' is always enabled;
-- Otherwise, it is always disabled."
-  (cond ((and show-provided-p show-p)
-         (enable-message-buffer window))
-        ((and (not show-provided-p)
-              (zerop (ffi-window-message-buffer-height window)))
-         (enable-message-buffer window))
-        (t (disable-message-buffer window))))
+(define-command toggle-message-buffer (&optional (window (current-window)))
+  "Toggle the visibility of the message buffer."
+  (if (zerop (ffi-window-message-buffer-height window))
+      (enable-message-buffer window)
+      (disable-message-buffer window)))

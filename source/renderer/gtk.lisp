@@ -526,12 +526,18 @@ response.  The BODY is wrapped with `with-protect'."
            (on-signal-destroy window))
          (connect-signal window "window-state-event" nil (widget event)
            (declare (ignore widget))
-           (setf (nyxt::fullscreen-p window)
-                 (find :fullscreen
-                       (gdk:gdk-event-window-state-new-window-state event)))
-           (setf (nyxt::maximized-p window)
-                 (find :maximized
-                       (gdk:gdk-event-window-state-new-window-state event)))
+           (let ((fullscreen-p)
+                 (maximized-p))
+             (dolist (state (gdk:gdk-event-window-state-new-window-state event))
+               (case state
+                 (:fullscreen
+                  (setq fullscreen-p t)
+                  (ffi-window-fullscreen window :user-event-p nil))
+                 (:maximized
+                  (setq maximized-p t)
+                  (ffi-window-maximize window :user-event-p nil))))
+             (unless fullscreen-p (ffi-window-unfullscreen window :user-event-p nil))
+             (unless maximized-p (ffi-window-unmaximize window :user-event-p nil)))
            nil))
 
        (unless nyxt::*headless-p*
@@ -549,16 +555,16 @@ response.  The BODY is wrapped with `with-protect'."
 (define-ffi-method ffi-window-delete ((window gtk-window))
   (gtk:gtk-widget-destroy (gtk-object window)))
 
-(define-ffi-method ffi-window-fullscreen ((window gtk-window))
+(define-ffi-method ffi-window-fullscreen ((window gtk-window) &key &allow-other-keys)
   (gtk:gtk-window-fullscreen (gtk-object window)))
 
-(define-ffi-method ffi-window-unfullscreen ((window gtk-window))
+(define-ffi-method ffi-window-unfullscreen ((window gtk-window) &key &allow-other-keys)
   (gtk:gtk-window-unfullscreen (gtk-object window)))
 
-(define-ffi-method ffi-window-maximize ((window gtk-window))
+(define-ffi-method ffi-window-maximize ((window gtk-window) &key &allow-other-keys)
   (gtk:gtk-window-maximize (gtk-object window)))
 
-(define-ffi-method ffi-window-unmaximize ((window gtk-window))
+(define-ffi-method ffi-window-unmaximize ((window gtk-window) &key &allow-other-keys)
   (gtk:gtk-window-unmaximize (gtk-object window)))
 
 (defun derive-key-string (keyval character)
@@ -1682,13 +1688,17 @@ the `active-buffer'."
     nil)
   (connect-signal buffer "enter-fullscreen" nil (web-view)
     (declare (ignore web-view))
-    (setf (nyxt::fullscreen-p (current-window)) t)
-    (toggle-fullscreen :skip-renderer-resize t)
+    (ffi-window-fullscreen (current-window) :user-event-p nil)
+    ;; As to account for JS's Fullscreen API.
+    (disable-message-buffer (current-window))
+    (disable-status-buffer (current-window))
     nil)
   (connect-signal buffer "leave-fullscreen" nil (web-view)
     (declare (ignore web-view))
-    (setf (nyxt::fullscreen-p (current-window)) nil)
-    (toggle-fullscreen :skip-renderer-resize t)
+    (ffi-window-unfullscreen (current-window) :user-event-p nil)
+    ;; Ideally, the UI state prior to fullscreen must be recovered.
+    (enable-message-buffer (current-window))
+    (enable-status-buffer (current-window))
     nil)
   (when (context-buffer-p buffer)
     (connect-signal buffer "user-message-received" nil (view message)

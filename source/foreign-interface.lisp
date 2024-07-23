@@ -36,19 +36,32 @@ If the `:setter-p' option is non-nil, then a dummy setf method is defined."
   "Delete WINDOW, possibly freeing the associated widgets.
 After this call, the window should not be displayed.")
 
-(define-ffi-generic ffi-window-fullscreen (window)
-  "Make WINDOW fullscreen.
-Removes all the Nyxt interface element and leaves the open page as the only
-thing on the screen.")
-(define-ffi-generic ffi-window-unfullscreen (window)
-  "Un-fullscreen the WINDOW.")
+(define-ffi-generic ffi-window-fullscreen (window &key &allow-other-keys)
+  (:method :around ((window window) &key (user-event-p t) &allow-other-keys)
+    (setf (slot-value window 'fullscreen-p) t)
+    (when user-event-p (call-next-method)))
+  (:documentation "Set fullscreen WINDOW state on.
+USER-EVENT-P helps to distinguish events requested by the user or
+renderer (e.g. fullscreen a video stream)."))
+(define-ffi-generic ffi-window-unfullscreen (window &key &allow-other-keys)
+  (:method :around ((window window) &key (user-event-p t) &allow-other-keys)
+    (setf (slot-value window 'fullscreen-p) nil)
+    (when user-event-p (call-next-method)))
+  (:documentation "Set fullscreen WINDOW state off.
+See `ffi-window-fullscreen'."))
 
-(define-ffi-generic ffi-window-maximize (window)
-  "Make the WINDOW to fill the screen.
-Usually possible via desktop environment interface too.")
-(define-ffi-generic ffi-window-unmaximize (window)
-  "Switch the WINDOW to \"windowed\" display.
-May or may not fill the screen.")
+(define-ffi-generic ffi-window-maximize (window &key &allow-other-keys)
+  (:method :around ((window window) &key (user-event-p t) &allow-other-keys)
+    (setf (slot-value window 'maximized-p) t)
+    (when user-event-p (call-next-method)))
+  (:documentation "Set WINDOW to a maximized state.
+USER-EVENT-P helps to distinguish events requested by the user or renderer."))
+(define-ffi-generic ffi-window-unmaximize (window &key &allow-other-keys)
+  (:method :around ((window window) &key (user-event-p t) &allow-other-keys)
+    (setf (slot-value window 'maximized-p) nil)
+    (when user-event-p (call-next-method)))
+  (:documentation "Set WINDOW to an unmaximized state.
+See `ffi-window-maximize'."))
 
 (define-ffi-generic ffi-buffer-url (buffer)
   "Return the `quri:uri' associated with the BUFFER.
