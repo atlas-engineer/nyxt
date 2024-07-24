@@ -43,3 +43,6 @@
 
 - [[https://git.sr.ht/~ehrt74/nyxt-bitwarden][nx-bitwarden]] ::
   nx-bitwarden adds Bitwarden support for =password-mode=.
+
+- [[ https://codeberg.org/ablatedsprocket/nx-rbw][nx-rbw]] ::
+  nx-rbw adds RBW (unofficial Bitwarden client) support for =password-mode=.
