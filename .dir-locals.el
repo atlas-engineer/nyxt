@@ -1,4 +1,4 @@
-((nil . ((fill-column . 100)
+((nil . ((fill-column . 80)
          (project-vc-ignores . ("./_build"))))
  (org-mode . ((org-edit-src-content-indentation 0)))
  (lisp-mode
