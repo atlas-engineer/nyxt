@@ -1066,6 +1066,10 @@ corrupt data file like the history.")
 thus are not visible to the Nyxt-native debugger and fixable on the side of
 Nyxt. See below."))
 
+        (:nsection :title "Bwrap error on initialization (Ubuntu)"
+          (:p "If Nyxt crashes on start due to " (:code "bwrap")
+              ", then disable or configure the " (:code "apparmor") " service."))
+
         (:nsection :title "Playing videos"
           (:p "Nyxt delegates video support to third-party plugins.")
           (:p "When using the WebKitGTK backends, GStreamer and its plugins are
