@@ -27,6 +27,7 @@
 
 (define-version "4.0.0"
   (:ul
+   (:li "Fix fullscreen and maximized window logic.")
    (:li "Refactor input to be handled on the buffer level rather than the window
 level.")
    (:li "Deprecate " (:code "input-skip-dispatcher") ".")

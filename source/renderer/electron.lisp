@@ -403,16 +403,16 @@
 (defmethod ffi-width ((window electron-window))
   (electron:get-bounds window 'width))
 
-(defmethod ffi-window-fullscreen ((window electron-window))
+(defmethod ffi-window-fullscreen ((window electron-window) &key &allow-other-keys)
   (electron:fullscreen window))
 
-(defmethod ffi-window-unfullscreen ((window electron-window))
+(defmethod ffi-window-unfullscreen ((window electron-window) &key &allow-other-keys)
   (electron:unfullscreen window))
 
-(defmethod ffi-window-maximize ((window electron-window))
+(defmethod ffi-window-maximize ((window electron-window) &key &allow-other-keys)
   (electron:maximize window))
 
-(defmethod ffi-window-unmaximize ((window electron-window))
+(defmethod ffi-window-unmaximize ((window electron-window) &key &allow-other-keys)
   (electron:unmaximize window))
 
 ;; Input handling
