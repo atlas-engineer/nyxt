@@ -28,6 +28,7 @@
 (define-version "3.11.8"
   (:nsection :title "UI/UX"
     (:ul
+     (:li "Review UI of " (:nxref :command 'nyxt/mode/bookmark:bookmarks-panel) ".")
      (:li "Fix mode menu bar."))))
 
 (define-version "3.11.7"
