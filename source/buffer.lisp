@@ -274,8 +274,10 @@ See also the `profile' slot in the `browser' class.")
               :overflow-x "scroll"
               :white-space "nowrap"
               :background-color ,theme:background-alt
-              :margin-left "-20px"
+              :position "sticky"
               :margin-top "-20px"
+              :top 0
+              :width "100%"
               :height "32px")
             `(".mode-menu > button"
               :color ,theme:on-secondary
