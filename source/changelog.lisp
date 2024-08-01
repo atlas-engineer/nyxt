@@ -26,10 +26,15 @@
           collect (:raw version))))
 
 (define-version "3.11.8"
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix fullscreen and maximized window logic.")))
   (:nsection :title "UI/UX"
     (:ul
      (:li "Review UI of " (:nxref :command 'nyxt/mode/bookmark:bookmarks-panel) ".")
-     (:li "Fix mode menu bar."))))
+     (:li "Fix mode menu bar.")
+     (:li "Fix echo message when invoking command " (:nxref :command 'describe-key) ".")
+     (:li "Review docstrings."))))
 
 (define-version "3.11.7"
   (:nsection :title "Bug fixes"
