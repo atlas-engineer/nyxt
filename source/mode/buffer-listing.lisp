@@ -120,28 +120,26 @@ shown linearly instead."
          :class "success"
          `(reload-panel-buffer ,panel-buffer))))))
 
-(defun reload-panel-buffer (panel-buffer)
+(defun reload-panel-buffer (panel-buffer &optional (window (current-window)))
   (reload-buffer (find (render-url (url panel-buffer))
-                       (nyxt::panel-buffers (current-window))
+                       (nyxt::panel-buffers window)
                        :test #'string=
                        :key (compose #'render-url #'url))))
 
-(defun buffers-panel-handler-set-buffer (window buffer)
-  (declare (ignore buffer))
-  (alex:when-let ((panel-buffer (first (nyxt::panel-buffers window))))
-    (reload-panel-buffer panel-buffer)))
+;; Doesn't take into account the multi-window case.  That would require a
+;; refactor of the `panel-buffer' class and how panel buffers are found in (setf
+;; form) of `internal-page'.
+(defun reload-buffers-panel-handler (window buffer)
+  (declare (ignore window buffer))
+  (alex:when-let ((buffers-panel (find-panel-buffer 'buffers-panel)))
+      (reload-panel-buffer buffers-panel)))
 
 (define-configuration window
   ((window-set-buffer-hook
-    (hooks:add-hook %slot-default% 'buffers-panel-handler-set-buffer))))
-
-(defun buffers-panel-reload-handler (buffer)
-  (declare (ignore buffer))
-  (alex:when-let ((panel-buffer (first (nyxt::panel-buffers (current-window)))))
-    (reload-panel-buffer panel-buffer)))
+    (hooks:add-hook %slot-default% 'reload-buffers-panel-handler))))
 
 (define-configuration network-buffer
   ((buffer-loaded-hook
-    (hooks:add-hook %slot-default% 'buffers-panel-reload-handler))
+    (hooks:add-hook %slot-default% (curry #'reload-buffers-panel-handler nil)))
    (buffer-delete-hook
-    (hooks:add-hook %slot-default% 'buffers-panel-reload-handler))))
+    (hooks:add-hook %slot-default% (curry #'reload-buffers-panel-handler nil)))))
