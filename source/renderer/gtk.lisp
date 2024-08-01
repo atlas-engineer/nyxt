@@ -2124,7 +2124,7 @@ As a second value, return the current buffer index starting from 0."
          (trivial-clipboard:text text))
        (webkit:webkit-web-view-execute-editing-command
         (gtk-object gtk-buffer) webkit2:+webkit-editing-command-paste+)))
-   (lambda (e) (echo-warning "~s failed to paste to clipboard." e))))
+   (lambda (e) (echo-warning "~s failed to paste." e))))
 
 (defmethod ffi-buffer-cut ((gtk-buffer gtk-buffer))
   (let ((channel (nyxt::make-channel 1)))
