@@ -110,10 +110,10 @@ elements are scaled accordingly.")
      (:li "Fix incorrect redirection when "
           (:nxref :class-name 'nyxt/mode/reduce-tracking:reduce-tracking-mode)
           " is enabled.")
-     (:li "Improve clipboard facilities detection on X11 and Wayland."))
-    (:nsection :title "UI/UX"
-      (:ul
-       (:li "Bind common zoom keybindings for all keyschemes.")))))
+     (:li "Improve clipboard facilities detection on X11 and Wayland.")))
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "Bind common zoom keybindings for all keyschemes."))))
 
 (define-version "3.11.6"
   (:nsection :title "Bug fixes"
