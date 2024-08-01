@@ -201,6 +201,7 @@ When provided, PANELS are deleted instead."
 The main difference from `internal-page' is that panel command toggles the
 panel."))
 
+(export-always 'find-panel-buffer)
 (defun find-panel-buffer (name)
   "Return first panel buffer which URL is a NAME `panel-page'."
   (find name (panel-buffers (current-window)) :key (compose #'internal-page-name #'url)))
