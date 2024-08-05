@@ -301,11 +301,11 @@ Can be used as a `open-file-function'."
   (handler-case
       (cond
         (supported-p
-         (let ((file-url (quri::make-uri-file :path filename)))
+         (let ((file-url (quri:make-uri-file :path filename)))
            (if new-buffer-p
                (make-buffer-focus :url file-url)
                (buffer-load file-url))))
-        ((not (null *open-program*))
+        (*open-program*
          (let ((process (uiop:launch-program
                          (list *open-program* (uiop:native-namestring filename))
                          :error-output :stream)))
