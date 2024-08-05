@@ -1589,9 +1589,9 @@ the `active-buffer'."
                                             (sera:filter #'enabled-p (modes buffer)))))))
       (maphash (lambda (label function)
                  (flet ((make-item (label function)
-                          ;; Using stock actions here, because cl-cffi-gtk has a terrible API
-                          ;; for GActions, requiring an exact type to be passed and disallowing
-                          ;; NULL as a type :/
+                          ;; Using stock actions here, because cl-cffi-gtk has a
+                          ;; terrible API for GActions, requiring an exact type
+                          ;; to be passed and disallowing NULL as a type.
                           (sera:lret ((item (webkit:webkit-context-menu-item-new-from-stock-action-with-label
                                              :webkit-context-menu-action-action-custom label)))
                             (gobject:g-signal-connect
