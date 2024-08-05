@@ -141,12 +141,12 @@ signatures."
 (defun valid-tld-p (hostname)
   "Return NIL if HOSTNAME does not include a valid TLD as determined by the
 Public Suffix list, T otherwise."
-  (sera:true (cl:ignore-errors (cl-tld:get-tld hostname))))
+  (ignore-errors (cl-tld:get-tld hostname)))
 
 (export-always 'browser-schemes)
 (defgeneric browser-schemes (browser)
   (:method-combination append)
-  (:documentation "Return a list of schemes supported by a browser"))
+  (:documentation "Return a list of schemes supported by BROWSER."))
 
 ;; Set specifier to T because *BROWSER* can be bound to NIL
 (defmethod browser-schemes append ((browser t))
@@ -172,11 +172,8 @@ Public Suffix list, T otherwise."
 
 (export-always 'valid-scheme-p)
 (defun valid-scheme-p (scheme)
-  "Whether the scheme is supported by Nyxt.
-Usually means that either:
-- SCHEME is IANA-approved,
-- or SCHEME is a Nyxt-specific `scheme'."
-  (sera:true (find scheme (browser-schemes *browser*) :test #'string=)))
+  "Whether SCHEME is supported."
+  (find scheme (browser-schemes *browser*) :test #'string=))
 
 (export-always 'valid-url-p)
 (defun valid-url-p (url &key (check-tld-p t))
