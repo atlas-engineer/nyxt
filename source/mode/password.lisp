@@ -79,7 +79,6 @@ for which the `executable' slot is non-nil."
   ((prompter:name "Passwords")
    (buffer :accessor buffer :initarg :buffer)
    (password-instance :accessor password-instance :initarg :password-instance)
-   (prompter:hide-attribute-header-p :single)
    (prompter:constructor
     (lambda (source)
       (password:list-passwords (password-instance source))))

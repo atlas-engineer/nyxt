@@ -389,8 +389,7 @@ Uses `histories-directory' of the BUFFER to get files."
 
 (define-class history-name-source (prompter:source)
   ((prompter:name "Histories")
-   (prompter:constructor (mapcar #'pathname-name (histories-list)))
-   (prompter:hide-attribute-header-p :single)))
+   (prompter:constructor (mapcar #'pathname-name (histories-list)))))
 
 (define-command store-history-by-name (&key (name (prompt1
                                                    :prompt "The name to store history with"

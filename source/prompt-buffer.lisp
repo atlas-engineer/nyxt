@@ -405,15 +405,13 @@ See also `show-prompt-buffer'."
                  (:col :style "width: 25px"))
                (dolist (width (attribute-widths source))
                  (:col :style (format nil "width: ~,2f%" (* 100 width)))))
-              (:tr :style (if (or (eq (prompter:hide-attribute-header-p source) :always)
-                                  (and (eq (prompter:hide-attribute-header-p source) :single)
-                                       (sera:single (prompter:active-attributes-keys source))))
-                              "display:none;"
-                              "display:revert;")
-                   (when (prompter:enable-marks-p source)
-                     (:th " "))
-                   (loop for attribute-key in (prompter:active-attributes-keys source)
-                         collect (:th (spinneret::escape-string attribute-key))))
+              (:tr
+               :style (if (sera:single (prompter:active-attributes-keys source))
+                          "display:none;"
+                          "display:revert;")
+               (when (prompter:enable-marks-p source) (:th " "))
+               (loop for attribute-key in (prompter:active-attributes-keys source)
+                     collect (:th (spinneret::escape-string attribute-key))))
               (loop
                 ;; TODO: calculate how many lines fit in the prompt buffer
                 with max-suggestion-count = 8
