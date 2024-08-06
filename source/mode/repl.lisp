@@ -26,7 +26,7 @@ Features:
     :type string
     :documentation "The name of the cell type.")
    (id
-    (nyxt::new-id)
+    (new-id)
     :type alex:non-negative-integer
     :documentation "Unique evaluation identifier.")
    (mode-instance

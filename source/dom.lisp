@@ -325,7 +325,7 @@ Return two values:
 
 (defmethod url :around ((element plump:element))
   (alex:when-let* ((result (call-next-method))
-                   (url (nyxt::ensure-url result)))
+                   (url (ensure-url result)))
     (if (valid-url-p url)
         url
         (quri:merge-uris url (url (current-buffer))))))

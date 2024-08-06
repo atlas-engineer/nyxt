@@ -349,13 +349,13 @@ ARGS is an arbitrary keyword arguments list that is translated to a URL query."
               (:callback (or function symbol))
               (:title (maybe string)))
     (values quri:uri &optional))
-(defun lisp-url (&key (id (princ-to-string (nyxt:new-id)))
+(defun lisp-url (&key (id (princ-to-string (new-id)))
                    (buffer (alex:required-argument 'buffer))
                    (callback (alex:required-argument 'callback))
                    title)
-  (sera:synchronized ((nyxt::lisp-url-callbacks buffer))
+  (sera:synchronized ((lisp-url-callbacks buffer))
     (log:debug "Registering callback ~a in buffer ~a" id buffer)
-    (setf (gethash id (nyxt::lisp-url-callbacks buffer)) callback))
+    (setf (gethash id (lisp-url-callbacks buffer)) callback))
   (quri:make-uri :scheme "lisp"
                  :path id
                  :query `(("title" . ,title) ("buffer" . ,(id buffer)))))
