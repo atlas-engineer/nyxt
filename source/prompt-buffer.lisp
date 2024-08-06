@@ -522,7 +522,6 @@ This does not redraw the whole prompt buffer, use `prompt-render' for that."
                     :buffer prompt-buffer
                     '(funcall (sym:resolve-symbol :previous-source :command)))
                   (prompter:name source)
-                  (if (prompter:ready-p source) "" "(In progress...)"))
                   (:span
                    :class "suggestion-and-mark-count"
                    ;; To hide the suggestion count for the source, subclass
@@ -533,6 +532,7 @@ This does not redraw the whole prompt buffer, use `prompt-render' for that."
                                               (prompter:suggestions source)
                                               (prompter:marks source)
                                               :enable-marks-p (prompter:enable-marks-p source)))
+                  (when (not (prompter:ready-p source)) "(In progress...)"))
                  (:div
                   #-darwin
                   (:nbutton
