@@ -237,8 +237,8 @@ A positive value shifts to the bottom.")
   "ELEMENT's on-page identifier (constructed from `hint-alphabet' characters.)"
   (plump:attribute element "nyxt-hint"))
 
-(export-always 'highlight-selected-hint)
-(define-parenscript highlight-selected-hint (&key element scroll)
+(export-always 'highlight-current-hint)
+(define-parenscript highlight-current-hint (&key element scroll)
   "Accent the hint for the ELEMENT to be distinguishable from other hints.
 If SCROLL (default to NIL), scroll the hint into view."
   (let* ((shadow (ps:@ (nyxt/ps:qs document "#nyxt-hints") shadow-root))
@@ -250,8 +250,8 @@ If SCROLL (default to NIL), scroll the hint into view."
         ;; "nyxt-current-hint" class.
         ;; querySelectAll, unlike querySelect, handles the case when none are
         ;; found.
-        (ps:dolist (selected-hint (nyxt/ps:qsa shadow ".nyxt-current-hint"))
-          (ps:chain selected-hint class-list (remove "nyxt-current-hint"))))
+        (ps:dolist (current-hint (nyxt/ps:qsa shadow ".nyxt-current-hint"))
+          (ps:chain current-hint class-list (remove "nyxt-current-hint"))))
       (ps:chain %element class-list (add "nyxt-current-hint"))
       (when (ps:lisp scroll)
         (ps:chain %element (scroll-into-view (ps:create block "center")))))))
@@ -325,10 +325,10 @@ Consult https://developer.mozilla.org/en-US/docs/Web/CSS/visibility."
         (append matching-hints other-hints))))
    (prompter:actions-on-current-suggestion
     (when (eq :emacs (hinting-type (find-submode 'hint-mode)))
-      (lambda-command highlight-selected-hint* (suggestion)
+      (lambda-command highlight-current-hint* (suggestion)
         "Highlight hint."
-        (highlight-selected-hint :element suggestion
-                                 :scroll nil))))
+        (highlight-current-hint :element suggestion
+                                :scroll nil))))
    (prompter:actions-on-marks
     (lambda (marks)
       (let ((%marks (mapcar (lambda (mark) (str:concat "#nyxt-hint-" (identifier mark)))
