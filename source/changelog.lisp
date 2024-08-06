@@ -27,6 +27,7 @@
 
 (define-version "4.0.0"
   (:ul
+   (:li "Deprecate slot " (:code "hide-single-source-header-p") ".")
    (:li "Refactor input to be handled on the buffer level rather than the window
 level.")
    (:li "Deprecate " (:code "input-skip-dispatcher") ".")
