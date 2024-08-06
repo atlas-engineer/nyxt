@@ -117,6 +117,9 @@ major versions."
                               result)))))
 
 (define-migration "4"
+  (hide-single-source-header-p)
+  (:p "Deprecated.")
+
   (prompt-buffer-open-height)
   (:p "Deprecated since " (:nxref :slot 'height :class-name 'prompt-buffer) " suffices.")
 

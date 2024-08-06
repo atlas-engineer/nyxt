@@ -33,16 +33,13 @@ The options are:
 is useful to conceal passwords.")
      (hide-suggestion-count-p
       nil
-      :documentation "Whether to hide the number of chosen suggestions inside
-brackets.")
+      :documentation "Whether to hide the number of suggestions.
+Affects both the prompt and its sources.")
      (max-suggestions
       0
       :export nil
       :documentation "Maximum number of total suggestions that were listed at
 some point.")
-     (hide-single-source-header-p
-      nil
-      :documentation "Hide source header when there is only one.")
      (mouse-support-p
       t
       :type boolean
@@ -350,18 +347,17 @@ See also `show-prompt-buffer'."
   (alex:maxf (max-suggestions prompt-buffer)
              (length suggestions))
   (flet ((digits-count (n) (1+ (floor (log (abs n) 10)))))
-    (if (or (not suggestions)
-            (hide-suggestion-count-p prompt-buffer))
-        ""
-        (let ((padding (if pad-p
-                           (prin1-to-string (digits-count (max-suggestions prompt-buffer)))
-                           "0")))
-          (format nil
-                  (str:concat "[~a~" padding ",,,' @a]")
-                  (if (or marks enable-marks-p)
-                      (format nil (str:concat "~" padding ",,,' @a/") (length marks))
-                      "")
-                  (length suggestions))))))
+    (unless (or (not suggestions)
+                (hide-suggestion-count-p prompt-buffer))
+      (let ((padding (if pad-p
+                         (prin1-to-string (digits-count (max-suggestions prompt-buffer)))
+                         "0")))
+        (format nil
+                (str:concat "[~a~" padding ",,,' @a]")
+                (if (or marks enable-marks-p)
+                    (format nil (str:concat "~" padding ",,,' @a/") (length marks))
+                    "")
+                (length suggestions))))))
 
 (defun prompt-render-prompt (prompt-buffer)
   (let* ((suggestions (prompter:all-suggestions prompt-buffer))
@@ -405,15 +401,13 @@ See also `show-prompt-buffer'."
                  (:col :style "width: 25px"))
                (dolist (width (attribute-widths source))
                  (:col :style (format nil "width: ~,2f%" (* 100 width)))))
-              (:tr :style (if (or (eq (prompter:hide-attribute-header-p source) :always)
-                                  (and (eq (prompter:hide-attribute-header-p source) :single)
-                                       (sera:single (prompter:active-attributes-keys source))))
-                              "display:none;"
-                              "display:revert;")
-                   (when (prompter:enable-marks-p source)
-                     (:th " "))
-                   (loop for attribute-key in (prompter:active-attributes-keys source)
-                         collect (:th (spinneret::escape-string attribute-key))))
+              (:tr
+               :style (if (sera:single (prompter:active-attributes-keys source))
+                          "display:none;"
+                          "display:revert;")
+               (when (prompter:enable-marks-p source) (:th " "))
+               (loop for attribute-key in (prompter:active-attributes-keys source)
+                     collect (:th (spinneret::escape-string attribute-key))))
               (loop
                 ;; TODO: calculate how many lines fit in the prompt buffer
                 with max-suggestion-count = 8
@@ -499,9 +493,6 @@ This does not redraw the whole prompt buffer, use `prompt-render' for that."
              (spinneret:with-html-string
                (:div.source
                 (:div.source-name
-                 :style (when (and (hide-single-source-header-p prompt-buffer)
-                                   (sera:single sources))
-                          "display:none")
                  (:div
                   #-darwin
                   (:nbutton
@@ -524,14 +515,17 @@ This does not redraw the whole prompt buffer, use `prompt-render' for that."
                     :buffer prompt-buffer
                     '(funcall (sym:resolve-symbol :previous-source :command)))
                   (prompter:name source)
-                  (if (prompter:hide-suggestion-count-p source)
-                      ""
-                      (:span :class "suggestion-and-mark-count"
-                             (suggestion-and-mark-count prompt-buffer
-                                                        (prompter:suggestions source)
-                                                        (prompter:marks source)
-                                                        :enable-marks-p (prompter:enable-marks-p source))))
-                  (if (prompter:ready-p source) "" "(In progress...)"))
+                  (:span
+                   :class "suggestion-and-mark-count"
+                   ;; To hide the suggestion count for the source, subclass
+                   ;; `prompter:source' and handle the condition.  Note that
+                   ;; `suggestion-and-mark-count' relies on the global prompt
+                   ;; value `hide-suggestion-count-p'.
+                   (suggestion-and-mark-count prompt-buffer
+                                              (prompter:suggestions source)
+                                              (prompter:marks source)
+                                              :enable-marks-p (prompter:enable-marks-p source)))
+                  (when (not (prompter:ready-p source)) "(In progress...)"))
                  (:div
                   #-darwin
                   (:nbutton
