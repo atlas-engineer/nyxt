@@ -40,9 +40,6 @@ Affects both the prompt and its sources.")
       :export nil
       :documentation "Maximum number of total suggestions that were listed at
 some point.")
-     (hide-single-source-header-p
-      nil
-      :documentation "Hide source header when there is only one.")
      (mouse-support-p
       t
       :type boolean
@@ -496,9 +493,6 @@ This does not redraw the whole prompt buffer, use `prompt-render' for that."
              (spinneret:with-html-string
                (:div.source
                 (:div.source-name
-                 :style (when (and (hide-single-source-header-p prompt-buffer)
-                                   (sera:single sources))
-                          "display:none")
                  (:div
                   #-darwin
                   (:nbutton
