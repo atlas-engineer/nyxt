@@ -33,8 +33,8 @@ The options are:
 is useful to conceal passwords.")
      (hide-suggestion-count-p
       nil
-      :documentation "Whether to hide the number of chosen suggestions inside
-brackets.")
+      :documentation "Whether to hide the number of suggestions.
+Affects both the prompt and its sources.")
      (max-suggestions
       0
       :export nil
@@ -522,14 +522,17 @@ This does not redraw the whole prompt buffer, use `prompt-render' for that."
                     :buffer prompt-buffer
                     '(funcall (sym:resolve-symbol :previous-source :command)))
                   (prompter:name source)
-                  (if (prompter:hide-suggestion-count-p source)
-                      ""
-                      (:span :class "suggestion-and-mark-count"
-                             (suggestion-and-mark-count prompt-buffer
-                                                        (prompter:suggestions source)
-                                                        (prompter:marks source)
-                                                        :enable-marks-p (prompter:enable-marks-p source))))
                   (if (prompter:ready-p source) "" "(In progress...)"))
+                  (:span
+                   :class "suggestion-and-mark-count"
+                   ;; To hide the suggestion count for the source, subclass
+                   ;; `prompter:source' and handle the condition.  Note that
+                   ;; `suggestion-and-mark-count' relies on the global prompt
+                   ;; value `hide-suggestion-count-p'.
+                   (suggestion-and-mark-count prompt-buffer
+                                              (prompter:suggestions source)
+                                              (prompter:marks source)
+                                              :enable-marks-p (prompter:enable-marks-p source)))
                  (:div
                   #-darwin
                   (:nbutton
