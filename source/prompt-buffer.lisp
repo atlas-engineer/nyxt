@@ -350,18 +350,17 @@ See also `show-prompt-buffer'."
   (alex:maxf (max-suggestions prompt-buffer)
              (length suggestions))
   (flet ((digits-count (n) (1+ (floor (log (abs n) 10)))))
-    (if (or (not suggestions)
-            (hide-suggestion-count-p prompt-buffer))
-        ""
-        (let ((padding (if pad-p
-                           (prin1-to-string (digits-count (max-suggestions prompt-buffer)))
-                           "0")))
-          (format nil
-                  (str:concat "[~a~" padding ",,,' @a]")
-                  (if (or marks enable-marks-p)
-                      (format nil (str:concat "~" padding ",,,' @a/") (length marks))
-                      "")
-                  (length suggestions))))))
+    (unless (or (not suggestions)
+                (hide-suggestion-count-p prompt-buffer))
+      (let ((padding (if pad-p
+                         (prin1-to-string (digits-count (max-suggestions prompt-buffer)))
+                         "0")))
+        (format nil
+                (str:concat "[~a~" padding ",,,' @a]")
+                (if (or marks enable-marks-p)
+                    (format nil (str:concat "~" padding ",,,' @a/") (length marks))
+                    "")
+                (length suggestions))))))
 
 (defun prompt-render-prompt (prompt-buffer)
   (let* ((suggestions (prompter:all-suggestions prompt-buffer))
