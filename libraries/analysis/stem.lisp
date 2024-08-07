@@ -34,7 +34,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; This is the Porter stemming algorithm, coded up in ANSI C by the
-;; author. It may be be regarded as cononical, in that it follows the
+;; author. It may be regarded as canonical, in that it follows the
 ;; algorithm presented in
 
 ;; Porter, 1980, An algorithm for suffix stripping, Program, Vol. 14,
