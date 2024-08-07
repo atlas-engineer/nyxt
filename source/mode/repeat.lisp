@@ -73,9 +73,8 @@ It takes a `repeat-mode' instance as argument.")
 (defmethod enable ((mode repeat-mode) &key)
   ;; TODO: Remember prompt input now that we have prompt-buffer hooks.
   (unless (repeat-action mode)
-    (let* ((nyxt::*interactive-p* t)
-           (prompted-action (prompt1 :prompt "Command to repeat"
-                                     :sources 'nyxt:command-source)))
+    (let ((prompted-action (prompt1 :prompt "Command to repeat"
+                                    :sources 'nyxt:command-source)))
       (setf (repeat-action mode)
             #'(lambda (mode)
                 (declare (ignore mode))
@@ -126,17 +125,16 @@ repeating it like a regular `repeat-mode' does."
                 *repeat-times-stack* 0)))))
 
 (define-command-global repeat-key
-    (&key (times (let ((nyxt::*interactive-p* t))
-                   (or
-                    (ignore-errors
-                     (parse-integer
-                      (keymaps:key-value (nyxt::last-key (current-window)))))
-                    (ignore-errors
-                     (parse-integer
-                      (prompt1 :prompt "Repeat for X times"
-                               :input "4"
-                               :hide-suggestion-count-p t
-                               :sources 'prompter:raw-source)))))))
+    (&key (times (or
+                  (ignore-errors
+                   (parse-integer
+                    (keymaps:key-value (nyxt::last-key (current-window)))))
+                  (ignore-errors
+                   (parse-integer
+                    (prompt1 :prompt "Repeat for X times"
+                             :input "4"
+                             :hide-suggestion-count-p t
+                             :sources 'prompter:raw-source))))))
   "Repeat the command bound to the user-pressed keybinding TIMES times."
   (setf *repeat-times-stack* (+ times (* 10 *repeat-times-stack*))
         (command-dispatcher *browser*) (make-repeat-command-dispatcher *repeat-times-stack*))

@@ -18,8 +18,7 @@
       (calispel:! channel (nyxt:current-suggestion-value prompt-buffer))
       (nyxt/mode/prompt-buffer:quit-prompt-buffer prompt-buffer))
     (nyxt:run-thread "run execute-command"
-      (let ((nyxt::*interactive-p* t))
-        (nyxt:execute-command)))
+      (nyxt:execute-command))
     (let ((result (calispel:? channel)))
       (assert-eq '1+ (first result))
       (assert-eq 3 (second result))))

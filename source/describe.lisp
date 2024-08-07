@@ -208,67 +208,66 @@ Otherwise prompt for matches."
     ((and input-provided-p (symbolp input))
      (call-next-method))
     (t
-     (let* ((*interactive-p* t)
-            (sources
-              (list (make-instance
-                     'command-source
-                     :actions-on-return (lambda-command describe-command* (commands)
-                                          (describe-command :command (name (first commands)))))
-                    (make-instance
-                     'mode-source
-                     :actions-on-return (lambda-command describe-command* (modes)
-                                          (describe-mode :mode (first modes))))
-                    (make-instance
-                     'variable-source
-                     :actions-on-return (lambda-command describe-variable* (variables)
-                                          (describe-variable :variable (first variables))))
-                    (make-instance
-                     'function-source
-                     :actions-on-return (lambda-command describe-function* (functions)
-                                          (describe-function :fn (first functions))))
-                    (make-instance
-                     'class-source
-                     :actions-on-return (lambda-command describe-class* (classes)
-                                          (describe-class :class (first classes))))
-                    (make-instance
-                     'slot-source
-                     :actions-on-return (lambda-command describe-slot** (slots)
-                                          (describe-slot :class (class-sym (first slots))
-                                                         :name (name (first slots)))))
-                    (make-instance
-                     'variable-non-nyxt-source
-                     :actions-on-return (lambda-command describe-variable* (variables)
-                                          (describe-variable :variable (first variables))))
-                    (make-instance
-                     'function-non-nyxt-source
-                     :actions-on-return (lambda-command describe-function* (functions)
-                                          (describe-function :fn (first functions))))
-                    (make-instance
-                     'class-non-nyxt-source
-                     :actions-on-return (lambda-command describe-class* (classes)
-                                          (describe-class :class (first classes))))
-                    (make-instance
-                     'slot-non-nyxt-source
-                     :actions-on-return (lambda-command describe-slot** (slots)
-                                          (describe-slot :class (class-sym (first slots))
-                                                         :name (name (first slots)))))
-                    (make-instance
-                     'variable-internal-source
-                     :actions-on-return (lambda-command describe-variable* (variables)
-                                          (describe-variable :variable (first variables))))
-                    (make-instance
-                     'function-internal-source
-                     :actions-on-return (lambda-command describe-function* (functions)
-                                          (describe-function :fn (first functions))))
-                    (make-instance
-                     'class-internal-source
-                     :actions-on-return (lambda-command describe-class* (classes)
-                                          (describe-class :class (first classes))))
-                    (make-instance
-                     'slot-internal-source
-                     :actions-on-return (lambda-command describe-slot** (slots)
-                                          (describe-slot :class (class-sym (first slots))
-                                                         :name (name (first slots))))))))
+     (let ((sources
+             (list (make-instance
+                    'command-source
+                    :actions-on-return (lambda-command describe-command* (commands)
+                                         (describe-command :command (name (first commands)))))
+                   (make-instance
+                    'mode-source
+                    :actions-on-return (lambda-command describe-command* (modes)
+                                         (describe-mode :mode (first modes))))
+                   (make-instance
+                    'variable-source
+                    :actions-on-return (lambda-command describe-variable* (variables)
+                                         (describe-variable :variable (first variables))))
+                   (make-instance
+                    'function-source
+                    :actions-on-return (lambda-command describe-function* (functions)
+                                         (describe-function :fn (first functions))))
+                   (make-instance
+                    'class-source
+                    :actions-on-return (lambda-command describe-class* (classes)
+                                         (describe-class :class (first classes))))
+                   (make-instance
+                    'slot-source
+                    :actions-on-return (lambda-command describe-slot** (slots)
+                                         (describe-slot :class (class-sym (first slots))
+                                                        :name (name (first slots)))))
+                   (make-instance
+                    'variable-non-nyxt-source
+                    :actions-on-return (lambda-command describe-variable* (variables)
+                                         (describe-variable :variable (first variables))))
+                   (make-instance
+                    'function-non-nyxt-source
+                    :actions-on-return (lambda-command describe-function* (functions)
+                                         (describe-function :fn (first functions))))
+                   (make-instance
+                    'class-non-nyxt-source
+                    :actions-on-return (lambda-command describe-class* (classes)
+                                         (describe-class :class (first classes))))
+                   (make-instance
+                    'slot-non-nyxt-source
+                    :actions-on-return (lambda-command describe-slot** (slots)
+                                         (describe-slot :class (class-sym (first slots))
+                                                        :name (name (first slots)))))
+                   (make-instance
+                    'variable-internal-source
+                    :actions-on-return (lambda-command describe-variable* (variables)
+                                         (describe-variable :variable (first variables))))
+                   (make-instance
+                    'function-internal-source
+                    :actions-on-return (lambda-command describe-function* (functions)
+                                         (describe-function :fn (first functions))))
+                   (make-instance
+                    'class-internal-source
+                    :actions-on-return (lambda-command describe-class* (classes)
+                                         (describe-class :class (first classes))))
+                   (make-instance
+                    'slot-internal-source
+                    :actions-on-return (lambda-command describe-slot** (slots)
+                                         (describe-slot :class (class-sym (first slots))
+                                                        :name (name (first slots))))))))
        (prompt
         :prompt "Describe"
         :input input
@@ -324,11 +323,10 @@ Otherwise prompt for matches."
 
 (define-internal-page-command-global describe-variable
     (&key
-     (variable (let ((*interactive-p* t))
-                 (prompt1 :prompt "Describe variable"
-                          :sources '(variable-source
-                                     variable-non-nyxt-source
-                                     variable-internal-source)))))
+     (variable (prompt1 :prompt "Describe variable"
+                        :sources '(variable-source
+                                   variable-non-nyxt-source
+                                   variable-internal-source))))
     (buffer (str:concat "*Help-" (symbol-name variable) "*") 'nyxt/mode/help:help-mode)
   "Inspect a variable and show it in a help buffer."
   (let ((*print-case* :downcase))

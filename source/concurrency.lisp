@@ -86,21 +86,19 @@ what you are doing!"
   `(lparallel.thread-util:with-thread (:name ,(str:concat "Nyxt " name)
                                        :bindings (append '((*run-from-repl-p* . *run-from-repl-p*)
                                                            (*headless-p* . *headless-p*)
-                                                           (*debug-on-error* . *debug-on-error*)
-                                                           (*interactive-p* . *interactive-p*))
+                                                           (*debug-on-error* . *debug-on-error*))
                                                          bt:*default-special-bindings*))
      (with-protect ("Error on separate thread: ~a" :condition)
        ,@body)))
 
-(defun evaluate (string &key interactive-p)
+(defun evaluate (string)
   "Evaluate all expressions in STRING and return the last result as a list of values.
 The list of values is useful when the last result is multi-valued, e.g. (values 'a 'b).
 You need not wrap multiple values in a PROGN, all top-level expressions are
 evaluated in order."
   (let ((channel (make-channel 2)))
     (run-thread "evaluator"
-      (let ((interactive-p interactive-p)
-            (*standard-output* (make-string-output-stream)))
+      (let ((*standard-output* (make-string-output-stream)))
         (calispel:!
          channel
          (with-input-from-string (input string)
@@ -108,9 +106,8 @@ evaluated in order."
             (last
              (mapcar (lambda (s-exp)
                        (multiple-value-list
-                        (let ((*interactive-p* interactive-p))
-                          (with-protect ("Error in s-exp evaluation: ~a" :condition)
-                            (eval s-exp)))))
+                        (with-protect ("Error in s-exp evaluation: ~a" :condition)
+                          (eval s-exp))))
                      (safe-slurp-stream-forms input))))))
         (calispel:! channel (get-output-stream-string *standard-output*))))
     (values (calispel:? channel) (calispel:? channel))))

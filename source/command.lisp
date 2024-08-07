@@ -303,11 +303,10 @@ context of a mode are listed."
   ;; but before command termination, `current-buffer' will
   ;; return the buffer from which the command was invoked.
   (with-current-buffer (current-buffer)
-    (let ((*interactive-p* t))
-      (handler-case (apply #'funcall command args)
-        (prompt-buffer-canceled ()
-          (log:debug "Prompt buffer interrupted")
-          nil)))))
+    (handler-case (apply #'funcall command args)
+      (prompt-buffer-canceled ()
+        (log:debug "Prompt buffer interrupted")
+        nil))))
 
 (defun run (command &optional args)
   "Run COMMAND over ARGS and return its result.

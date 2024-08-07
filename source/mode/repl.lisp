@@ -238,8 +238,7 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
     (setf (slot-value self 'name)
           (format nil "Lisp expression (in ~a)" (package-name eval-package))))
   (:method evaluate (self)
-    (let* ((nyxt::*interactive-p* t)
-           (*standard-output* (make-string-output-stream))
+    (let* ((*standard-output* (make-string-output-stream))
            (*error-output* *standard-output*)
            (*trace-output* *standard-output*)
            (*package* eval-package))
@@ -508,9 +507,8 @@ Relies on `suggest' of the CELL class."
   (ffi-buffer-paste (buffer (mode-instance cell)) (suggest cell)))
 
 (define-command add-cell (&optional (cell (current-cell (find-submode 'repl-mode)))
-                          (class (let ((nyxt::*interactive-p* t))
-                                   (prompt1 :prompt "Cell type"
-                                            :sources 'cell-source))))
+                          (class (prompt1 :prompt "Cell type"
+                                          :sources 'cell-source)))
   "Add a new CLASS cell below CELL.
 If CELL is not provided, add the new cell below all the cells in REPL."
   (let* ((repl (mode-instance cell))

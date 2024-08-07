@@ -33,9 +33,8 @@ See `ndebug:condition-wrapper' for documentation."))
   (buffer-delete (buffer wrapper)))
 
 (defmethod ndebug:query-read ((wrapper debug-wrapper))
-  (let ((*interactive-p* t))
-    (prompt1 :prompt (prompt-text wrapper)
-             :sources (list (make-instance 'prompter:raw-source)))))
+  (prompt1 :prompt (prompt-text wrapper)
+           :sources (list (make-instance 'prompter:raw-source))))
 
 (defmethod ndebug:query-write ((wrapper debug-wrapper) (string string))
   (setf (prompt-text wrapper) string))

@@ -45,13 +45,6 @@ It can be initialized with
 It's possible to run multiple interfaces of Nyxt at the same time.  You can
 let-bind *browser* to temporarily switch interface.")
 
-(defvar *interactive-p* nil
-  "When non-nil, allow `prompt'-ing.
-Otherwise error with `prompt-buffer-non-interactive'.
-
-This is useful to spot potential blocks when non-interactive code (for instance
-scripts) tries to invoke the prompt buffer.")
-
 (export-always '*swank-port*)
 (defvar *swank-port* 4006
   "The port that Swank will open a new server on (default Emacs SLIME port

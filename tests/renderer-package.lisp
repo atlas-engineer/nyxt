@@ -47,7 +47,6 @@
       (nyxt/mode/prompt-buffer:run-action-on-return prompt-buffer))
     (nyxt:run-thread "run set-url"
       ;; TODO: Test if thread returns.
-      (let ((nyxt::*interactive-p* t))
-        (nyxt:set-url)))
+      (nyxt:set-url))
     (assert-string= url (calispel:? url-channel 5))
     (nyxt:quit)))

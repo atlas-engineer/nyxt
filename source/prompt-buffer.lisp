@@ -660,11 +660,6 @@ Example use:
 
 See the documentation of `prompt-buffer' to know more about the options."
     (declare #.(cons 'ignorable %prompt-args))
-    (unless *interactive-p*
-      (restart-case
-          (error 'prompt-buffer-non-interactive :name prompter:prompt)
-        (prompt-anyway () nil)
-        (cancel () (error 'prompt-buffer-canceled))))
     (alex:when-let ((prompt-text (getf args :prompt)))
       (when (str:ends-with-p ":" prompt-text)
         (log:warn "Prompt text ~s should not end with a ':'." prompt-text)

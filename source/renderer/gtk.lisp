@@ -1262,8 +1262,7 @@ the `active-buffer'."
     (when (native-dialogs *browser*)
       (gobject:g-object-ref (gobject:pointer file-chooser-request))
       (run-thread "file chooser"
-                  (let* ((nyxt::*interactive-p* t)
-                         (multiple (webkit:webkit-file-chooser-request-select-multiple
+                  (let* ((multiple (webkit:webkit-file-chooser-request-select-multiple
                                     file-chooser-request))
                          (files (mapcar
                                  #'uiop:native-namestring
@@ -1319,7 +1318,6 @@ the `active-buffer'."
                  (rgba (progn (webkit:webkit-color-chooser-request-get-rgba
                                color-chooser-request rgba)
                               rgba))
-                 (nyxt::*interactive-p* t)
                  (color-name (prompt1 :prompt "Color"
                                       :input (format nil "rgba(~d, ~d, ~d, ~d)"
                                                      (round (* 255 (gdk:gdk-rgba-red rgba)))
@@ -1347,28 +1345,27 @@ the `active-buffer'."
       (let ((dialog (gobject:pointer dialog)))
         (webkit:webkit-script-dialog-ref dialog)
         (run-thread "script dialog"
-          (let ((nyxt::*interactive-p* t))
-            (case (webkit:webkit-script-dialog-get-dialog-type dialog)
-              (:webkit-script-dialog-alert (echo (webkit:webkit-script-dialog-get-message dialog)))
-              (:webkit-script-dialog-prompt
-               (let ((text (first (handler-case
-                                      (prompt
-                                       :prompt (webkit:webkit-script-dialog-get-message dialog)
-                                       :input (webkit:webkit-script-dialog-prompt-get-default-text dialog)
-                                       :sources 'prompter:raw-source)
-                                    (prompt-buffer-canceled () nil)))))
-                 (if text
-                     (webkit:webkit-script-dialog-prompt-set-text dialog text)
-                     (progn
-                       (webkit:webkit-script-dialog-prompt-set-text dialog (cffi:null-pointer))
-                       (webkit:webkit-script-dialog-close dialog)))))
-              (:webkit-script-dialog-confirm
-               (webkit:webkit-script-dialog-confirm-set-confirmed
-                dialog (if-confirm ((webkit:webkit-script-dialog-get-message dialog)))))
-              (:webkit-script-dialog-before-unload-confirm
-               (webkit:webkit-script-dialog-confirm-set-confirmed
-                dialog (if-confirm ((webkit:webkit-script-dialog-get-message dialog)
-                                    :yes "leave" :no "stay"))))))
+          (case (webkit:webkit-script-dialog-get-dialog-type dialog)
+            (:webkit-script-dialog-alert (echo (webkit:webkit-script-dialog-get-message dialog)))
+            (:webkit-script-dialog-prompt
+             (let ((text (first (handler-case
+                                    (prompt
+                                     :prompt (webkit:webkit-script-dialog-get-message dialog)
+                                     :input (webkit:webkit-script-dialog-prompt-get-default-text dialog)
+                                     :sources 'prompter:raw-source)
+                                  (prompt-buffer-canceled () nil)))))
+               (if text
+                   (webkit:webkit-script-dialog-prompt-set-text dialog text)
+                   (progn
+                     (webkit:webkit-script-dialog-prompt-set-text dialog (cffi:null-pointer))
+                     (webkit:webkit-script-dialog-close dialog)))))
+            (:webkit-script-dialog-confirm
+             (webkit:webkit-script-dialog-confirm-set-confirmed
+              dialog (if-confirm ((webkit:webkit-script-dialog-get-message dialog)))))
+            (:webkit-script-dialog-before-unload-confirm
+             (webkit:webkit-script-dialog-confirm-set-confirmed
+              dialog (if-confirm ((webkit:webkit-script-dialog-get-message dialog)
+                                  :yes "leave" :no "stay")))))
           (webkit:webkit-script-dialog-close dialog)
           (webkit:webkit-script-dialog-unref dialog))
         t))))
@@ -1376,39 +1373,38 @@ the `active-buffer'."
 (defun process-permission-request (web-view request)
   (g:g-object-ref (g:pointer request))
   (run-thread "permission requester"
-    (let ((nyxt::*interactive-p* t))
-      (if-confirm ((format
-                    nil "[~a] ~a"
-                    (webkit:webkit-web-view-uri web-view)
-                    (etypecase request
-                      (webkit:webkit-geolocation-permission-request
-                       "Grant this website geolocation access?")
-                      (webkit:webkit-notification-permission-request
-                       "Grant this website notifications access?")
-                      (webkit:webkit-pointer-lock-permission-request
-                       "Grant this website pointer access?")
-                      (webkit:webkit-device-info-permission-request
-                       "Grant this website device info access?")
-                      (webkit:webkit-install-missing-media-plugins-permission-request
-                       (format nil "Grant this website a media install permission for ~s?"
-                               (webkit:webkit-install-missing-media-plugins-permission-request-get-description
-                                request)))
-                      (webkit:webkit-media-key-system-permission-request
-                       (format nil "Grant this website an EME ~a key access?"
-                               (webkit:webkit-media-key-system-permission-get-name request)))
-                      (webkit:webkit-user-media-permission-request
-                       (format nil "Grant this website a~@[~*n audio~]~@[~* video~] access?"
-                               (webkit:webkit-user-media-permission-is-for-audio-device request)
-                               (webkit:webkit-user-media-permission-is-for-video-device request)))
-                      (webkit:webkit-website-data-access-permission-request
-                       (format nil "Grant ~a an access to ~a data?"
-                               (webkit:webkit-website-data-access-permission-request-get-requesting-domain
-                                request)
-                               (webkit:webkit-website-data-access-permission-request-get-current-domain
-                                request)))))
-                   :yes "grant" :no "deny")
-                  (webkit:webkit-permission-request-allow request)
-                  (webkit:webkit-permission-request-deny request)))))
+    (if-confirm ((format
+                  nil "[~a] ~a"
+                  (webkit:webkit-web-view-uri web-view)
+                  (etypecase request
+                    (webkit:webkit-geolocation-permission-request
+                     "Grant this website geolocation access?")
+                    (webkit:webkit-notification-permission-request
+                     "Grant this website notifications access?")
+                    (webkit:webkit-pointer-lock-permission-request
+                     "Grant this website pointer access?")
+                    (webkit:webkit-device-info-permission-request
+                     "Grant this website device info access?")
+                    (webkit:webkit-install-missing-media-plugins-permission-request
+                     (format nil "Grant this website a media install permission for ~s?"
+                             (webkit:webkit-install-missing-media-plugins-permission-request-get-description
+                              request)))
+                    (webkit:webkit-media-key-system-permission-request
+                     (format nil "Grant this website an EME ~a key access?"
+                             (webkit:webkit-media-key-system-permission-get-name request)))
+                    (webkit:webkit-user-media-permission-request
+                     (format nil "Grant this website a~@[~*n audio~]~@[~* video~] access?"
+                             (webkit:webkit-user-media-permission-is-for-audio-device request)
+                             (webkit:webkit-user-media-permission-is-for-video-device request)))
+                    (webkit:webkit-website-data-access-permission-request
+                     (format nil "Grant ~a an access to ~a data?"
+                             (webkit:webkit-website-data-access-permission-request-get-requesting-domain
+                              request)
+                             (webkit:webkit-website-data-access-permission-request-get-current-domain
+                              request)))))
+                 :yes "grant" :no "deny")
+        (webkit:webkit-permission-request-allow request)
+        (webkit:webkit-permission-request-deny request))))
 
 (defun process-notification (web-view notification)
   (when (native-dialogs *browser*)
