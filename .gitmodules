@@ -2,17 +2,9 @@
 	path = _build/alexandria
 	url = https://gitlab.common-lisp.net/alexandria/alexandria.git
 	shallow = true
-[submodule "_build/rt"]
-	path = _build/rt
-	url = https://gitlab.common-lisp.net/nyxt/rt.git
-	shallow = true
 [submodule "_build/bordeaux-threads"]
 	path = _build/bordeaux-threads
 	url = https://github.com/sionescu/bordeaux-threads
-	shallow = true
-[submodule "_build/fiveam"]
-	path = _build/fiveam
-	url = https://github.com/sionescu/fiveam
 	shallow = true
 [submodule "_build/asdf-flv"]
 	path = _build/asdf-flv
@@ -21,10 +13,6 @@
 [submodule "_build/trivial-backtrace"]
 	path = _build/trivial-backtrace
 	url = https://github.com/gwkkwg/trivial-backtrace
-	shallow = true
-[submodule "_build/lift"]
-	path = _build/lift
-	url = https://github.com/gwkkwg/lift
 	shallow = true
 [submodule "_build/calispel"]
 	path = _build/calispel
@@ -114,10 +102,6 @@
 	path = _build/trivial-features
 	url = https://github.com/trivial-features/trivial-features
 	shallow = true
-[submodule "_build/hu.dwim.stefil"]
-	path = _build/hu.dwim.stefil
-	url = https://github.com/hu-dwim/hu.dwim.stefil
-	shallow = true
 [submodule "_build/hu.dwim.asdf"]
 	path = _build/hu.dwim.asdf
 	url = https://github.com/hu-dwim/hu.dwim.asdf
@@ -190,10 +174,6 @@
 	path = _build/cffi
 	url = https://github.com/cffi/cffi
 	shallow = true
-[submodule "_build/CheckL"]
-	path = _build/CheckL
-	url = https://github.com/rpav/CheckL
-	shallow = true
 [submodule "_build/cl-marshal"]
 	path = _build/cl-marshal
 	url = https://github.com/wlbr/cl-marshal
@@ -221,10 +201,6 @@
 [submodule "_build/cl-base64"]
 	path = _build/cl-base64
 	url = https://gitlab.common-lisp.net/nyxt/cl-base64.git
-	shallow = true
-[submodule "_build/ptester"]
-	path = _build/ptester
-	url = https://gitlab.common-lisp.net/nyxt/ptester.git
 	shallow = true
 [submodule "_build/kmrcl"]
 	path = _build/kmrcl
@@ -318,10 +294,6 @@
 	path = _build/log4cl
 	url = https://github.com/sharplispers/log4cl
 	shallow = true
-[submodule "_build/stefil"]
-	path = _build/stefil
-	url = https://gitlab.common-lisp.net/stefil/stefil.git
-	shallow = true
 [submodule "_build/metabang-bind"]
 	path = _build/metabang-bind
 	url = https://github.com/gwkkwg/metabang-bind
@@ -354,10 +326,6 @@
 	path = _build/trivial-indent
 	url = https://github.com/Shinmera/trivial-indent
 	shallow = true
-[submodule "_build/parachute"]
-	path = _build/parachute
-	url = https://github.com/Shinmera/parachute
-	shallow = true
 [submodule "_build/form-fiddle"]
 	path = _build/form-fiddle
 	url = https://github.com/Shinmera/form-fiddle
@@ -385,10 +353,6 @@
 [submodule "_build/optima"]
 	path = _build/optima
 	url = https://github.com/m2ym/optima
-	shallow = true
-[submodule "_build/Eos"]
-	path = _build/Eos
-	url = https://github.com/adlai/Eos
 	shallow = true
 [submodule "_build/lisp-namespace"]
 	path = _build/lisp-namespace
