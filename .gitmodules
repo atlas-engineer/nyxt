@@ -6,10 +6,6 @@
 	path = _build/bordeaux-threads
 	url = https://github.com/sionescu/bordeaux-threads
 	shallow = true
-[submodule "_build/asdf-flv"]
-	path = _build/asdf-flv
-	url = https://github.com/didierverna/asdf-flv
-	shallow = true
 [submodule "_build/trivial-backtrace"]
 	path = _build/trivial-backtrace
 	url = https://github.com/gwkkwg/trivial-backtrace
@@ -41,10 +37,6 @@
 [submodule "_build/cl-custom-hash-table"]
 	path = _build/cl-custom-hash-table
 	url = https://github.com/metawilm/cl-custom-hash-table
-	shallow = true
-[submodule "_build/cl-difflib"]
-	path = _build/cl-difflib
-	url = https://github.com/wiseman/cl-difflib
 	shallow = true
 [submodule "_build/cl-ppcre"]
 	path = _build/cl-ppcre
@@ -101,10 +93,6 @@
 [submodule "_build/trivial-features"]
 	path = _build/trivial-features
 	url = https://github.com/trivial-features/trivial-features
-	shallow = true
-[submodule "_build/hu.dwim.asdf"]
-	path = _build/hu.dwim.asdf
-	url = https://github.com/hu-dwim/hu.dwim.asdf
 	shallow = true
 [submodule "_build/fast-http"]
 	path = _build/fast-http
@@ -174,10 +162,6 @@
 	path = _build/cffi
 	url = https://github.com/cffi/cffi
 	shallow = true
-[submodule "_build/cl-marshal"]
-	path = _build/cl-marshal
-	url = https://github.com/wlbr/cl-marshal
-	shallow = true
 [submodule "_build/chunga"]
 	path = _build/chunga
 	url = https://github.com/edicl/chunga
@@ -205,10 +189,6 @@
 [submodule "_build/kmrcl"]
 	path = _build/kmrcl
 	url = https://gitlab.common-lisp.net/nyxt/kmrcl.git
-	shallow = true
-[submodule "_build/cl-reexport"]
-	path = _build/cl-reexport
-	url = https://github.com/takagi/cl-reexport
 	shallow = true
 [submodule "_build/cl-plus-ssl"]
 	path = _build/cl-plus-ssl
