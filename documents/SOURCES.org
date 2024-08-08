@@ -15,68 +15,11 @@ Targets shared libraries libwebkit2gtk-4.1.so or libwebkit2gtk-4.0.so (GTK3).
 - WebKitGTK https://webkitgtk.org
 - GObject Introspection https://wiki.gnome.org/Projects/GObjectIntrospection
 
-*** QtWebEngine
-- QtWebEngine https://wiki.qt.io/QtWebEngine
+*** Electron
+- Electron https://www.electronjs.org/
 
 Experimental support.
 
 * Lisp Dependencies
-The direct CL dependencies are listed below.  The list of all CL recursive
-dependencies can be found at =.gitmodules=.
-
-- alexandria
-- base64
-- bordeaux-threads
-- calispel
-- cffi-gtk (WebKitGTK)
-- closer-mop
-- clss
-- cluffer
-- colors2
-- containers
-- custom-hash-table
-- dexador
-- dissect
-- enchant
-- flexi-streams
-- gobject-introspection (WebKitGTK)
-- gopher
-- history-tree
-- iolib
-- json
-- lass
-- local-time
-- log4cl
-- lparallel
-- moptilities
-- nclasses
-- ndebug
-- nfiles
-- nhooks
-- njson
-- nkeymaps
-- nsymbols
-- parenscript
-- phos
-- plump
-- ppcre
-- prevalence
-- prompter
-- py-configparser
-- qrencode
-- quri
-- serapeum
-- swank
-- slynk
-- spinneret
-- sqlite
-- str
-- tld
-- trivia
-- trivial-clipboard
-- trivial-features
-- trivial-package-local-nicknames
-- trivial-types
-- unix-opts
-- webengine (QtWebEngine)
-- webkit (WebKitGTK)
+See [[file:../nyxt.asd][nyxt.asd]] for a list for CL dependencies.
+See [[file:../.gitmodules][.gitmodules]] for a list of all CL recursive dependencies.
