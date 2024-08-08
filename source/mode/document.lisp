@@ -364,9 +364,9 @@ The inner-text must not be modified, so that we can jump to the anchor of the sa
          (clss:ordered-select "h1, h2, h3, h4, h5, h6" (document-model buffer)))))
 
 (defun current-heading (&optional (buffer (current-buffer)))
-  (alex:when-let* ((scroll-position (document-scroll-position buffer))
-                   (vertical-scroll-position (second scroll-position))
-                   (headings (get-headings :buffer buffer)))
+  (when-let* ((scroll-position (document-scroll-position buffer))
+              (vertical-scroll-position (second scroll-position))
+              (headings (get-headings :buffer buffer)))
     (first (sort headings
                  (lambda (h1 h2)
                    (< (abs (- (scroll-position h1) vertical-scroll-position))
@@ -379,13 +379,13 @@ The inner-text must not be modified, so that we can jump to the anchor of the sa
 
 (defun scroll-page-to-n-headings (n &optional (buffer (current-buffer)))
   "Scroll to the N adjacent heading of the BUFFER."
-  (sera:and-let* ((headings (get-headings :buffer buffer))
-                  (new-position (+ n
-                                   (position (nyxt/dom:body (element (current-heading buffer)))
-                                             headings
-                                             :key (compose #'nyxt/dom:body #'element)
-                                             :test #'equal)))
-                  (_ (<= 0 new-position (1- (length headings)))))
+  (and-let* ((headings (get-headings :buffer buffer))
+             (new-position (+ n
+                              (position (nyxt/dom:body (element (current-heading buffer)))
+                                        headings
+                                        :key (compose #'nyxt/dom:body #'element)
+                                        :test #'equal)))
+             (_ (<= 0 new-position (1- (length headings)))))
     (scroll-page-to-heading (elt headings new-position))))
 
 (define-command next-heading (&optional (buffer (current-buffer)))

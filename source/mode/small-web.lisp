@@ -152,9 +152,9 @@ Implies that `small-web-mode' is enabled."))
 (defmethod line->html ((line cl-gopher:unknown)) (file-link->html line))
 
 (defmethod gopher-render ((line cl-gopher:gopher-line))
-  (alex:when-let ((contents (cl-gopher:get-line-contents line))
-                  (spinneret:*html-style* :tree)
-                  (mode (find-submode 'small-web-mode)))
+  (when-let ((contents (cl-gopher:get-line-contents line))
+             (spinneret:*html-style* :tree)
+             (mode (find-submode 'small-web-mode)))
     (setf (model mode) contents)
     (values (spinneret:with-html-string
               (:nstyle (style (current-buffer)))

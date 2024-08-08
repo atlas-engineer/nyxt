@@ -243,7 +243,7 @@ Augment this with `style' of STATUS, if necessary."
             (loop for mode in sorted-modes
                   collect
                   (let ((mode mode))
-                    (alex:when-let ((formatted-mode (mode-status status mode)))
+                    (when-let ((formatted-mode (mode-status status mode)))
                       (:nbutton
                         :buffer status
                         :text formatted-mode

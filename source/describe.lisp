@@ -277,8 +277,8 @@ Otherwise prompt for matches."
     (&key id)
     (:title "*Help-value*" :page-mode 'nyxt/mode/help:help-mode)
   "Inspect value under ID and show it in a help buffer."
-  (sera:and-let* ((id id)
-                  (value (inspected-value id)))
+  (and-let* ((id id)
+             (value (inspected-value id)))
     (spinneret:with-html-string
       (:h1 (:raw (escaped-literal-print value)))
       (:dl
@@ -396,9 +396,9 @@ For generic functions, describe all the methods."
                      (:nsection
                        :title "Type"
                        (:p (:pre (format-function-type (sb-introspect:function-type input))))))
-                   (alex:when-let* ((definition (swank:find-definition-for-thing (symbol-function input)))
-                                    (not-error-p (null (getf definition :error)))
-                                    (file (first (rest (getf definition :location)))))
+                   (when-let* ((definition (swank:find-definition-for-thing (symbol-function input)))
+                               (not-error-p (null (getf definition :error)))
+                               (file (first (rest (getf definition :location)))))
                      (:nsection
                        :title "Source"
                        :id "source"
@@ -409,7 +409,7 @@ For generic functions, describe all the methods."
                            (or form listing)))))
                    (:nsection
                      :title "Describe"
-                    (:pre (:code (with-output-to-string (s) (describe (symbol-function input) s)))))))
+                     (:pre (:code (with-output-to-string (s) (describe (symbol-function input) s)))))))
                (method-desc (method)
                  (spinneret:with-html-string
                    (:details
@@ -571,10 +571,10 @@ A command is a special kind of function that can be called with
                 (source-for-thing (find-class class))
               (declare (ignore source))
               (:ncode :file file s-expr)))
-          (alex:when-let ((methods (safe-sort
-                                    (remove-if
-                                     #'listp (mapcar #'mopu:generic-function-name
-                                                     (mopu:generic-functions class))))))
+          (when-let ((methods (safe-sort
+                               (remove-if
+                                #'listp (mapcar #'mopu:generic-function-name
+                                                (mopu:generic-functions class))))))
             (:nsection
               :title "Methods"
               (:ul (loop for method in methods
@@ -608,7 +608,7 @@ A command is a special kind of function that can be called with
 (define-internal-page describe-bindings (&key (buffer-id (id (current-buffer))))
     (:title "*Help-bindings*" :page-mode 'nyxt/mode/help:help-mode)
   "Show a list of all available keybindings for buffer corresponding to BUFFER-ID."
-  (alex:if-let ((buffer (nyxt::buffers-get buffer-id)))
+  (if-let ((buffer (nyxt::buffers-get buffer-id)))
     (spinneret:with-html-string
       (:h1 "Bindings")
       (:p (loop for keymap in (current-keymaps buffer)

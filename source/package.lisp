@@ -23,10 +23,11 @@ modes, commands, etc."))
 (sb-ext:lock-package :nyxt)
 
 (in-package :nyxt)
-(defvar *imports* '((:alexandria #:compose #:curry #:mappend #:rcurry)
+(defvar *imports* '((:alexandria #:compose #:curry #:mappend #:rcurry
+                     #:if-let #:when-let #:when-let*)
                     (:trivia #:match #:multiple-value-match #:lambda-match #:guard)
                     (:nkeymaps #:define-key #:define-keyscheme-map)
-                    (:serapeum #:export-always #:->))
+                    (:serapeum #:export-always #:-> #:and-let*))
   "Default list of symbol imports used by `nyxt:define-package'.")
 
 (loop :for (package . symbols) in *imports*

@@ -601,9 +601,9 @@ down."))
                             :base-url "https://en.wikipedia.org/w/api.php?action=opensearch&format=json&search=~a"
                             :processing-function
                             #'(lambda (results)
-                                (alex:when-let* ((results results)
-                                                 (results (j:decode results)))
-                                                (map 'list #'list (j:get 1 results) (j:get 3 results))))))
+                                (when-let* ((results results)
+                                            (results (j:decode results)))
+                                  (map 'list #'list (j:get 1 results) (j:get 3 results))))))
             (make-instance 'search-engine
                            :name "DuckDuckGo"
                            :shortcut "ddg"
@@ -882,8 +882,8 @@ Return the created buffer."
         (ps:chain node (set-attribute "nyxt-shadow-root" "")))
       nyxt-identifier-counter)
     (setf nyxt-identifier-counter (add-nyxt-identifiers (ps:chain document body))))
-  (alex:when-let ((body-json (with-current-buffer buffer
-                               (nyxt/dom::get-document-body-json))))
+  (when-let ((body-json (with-current-buffer buffer
+                          (nyxt/dom::get-document-body-json))))
     (let ((dom (nyxt/dom::named-json-parse body-json)))
       (unless (uiop:emptyp (plump:text dom))
         (setf (document-model buffer) dom)))))
@@ -1058,7 +1058,7 @@ The notion of first element is dictated by `containers:first-item'."
 (defmethod buffer-delete ((buffer context-buffer))
   (files:with-file-content (history (history-file buffer))
     (when history
-      (sera:and-let* ((owner (htree:owner history (id buffer)))
+      (and-let* ((owner (htree:owner history (id buffer)))
                       (current (htree:current owner))
                       (data (htree:data current)))
         (setf (nyxt::scroll-position data) (nyxt:document-scroll-position buffer))
@@ -1184,8 +1184,8 @@ proceeding."
 
 (defun get-inactive-buffers ()
   "Return inactive buffers sorted by `last-access', when applicable."
-  (alex:when-let ((inactive (set-difference (buffer-list)
-                                            (mapcar #'active-buffer (window-list)))))
+  (when-let ((inactive (set-difference (buffer-list)
+                                       (mapcar #'active-buffer (window-list)))))
     (sort-by-time inactive)))
 
 (define-command copy-url ()
@@ -1509,13 +1509,13 @@ Checks whether a valid https or local file URL is requested, in a DWIM fashion."
                                         (funcall (completion-function engine)
                                                  (str:join " " (rest terms))))))))
                          engines)
-                (sera:and-let* ((completion engine-completion-p)
-                                (buffer (current-buffer))
-                                (complete (search-auto-complete-p buffer))
-                                (always-complete (search-always-auto-complete-p buffer))
-                                (engine (default-search-engine))
-                                (completion (completion-function engine))
-                                (all-terms (str:join " " terms)))
+                (and-let* ((completion engine-completion-p)
+                           (buffer (current-buffer))
+                           (complete (search-auto-complete-p buffer))
+                           (always-complete (search-always-auto-complete-p buffer))
+                           (engine (default-search-engine))
+                           (completion (completion-function engine))
+                           (all-terms (str:join " " terms)))
                   (mapcar (rcurry #'make-completion-query
                                   :engine engine)
                           (with-protect ("Error while completing default search: ~a" :condition)
@@ -1657,8 +1657,8 @@ Return BUFFERS."
 
 (defun buffer-parent (&optional (buffer (current-buffer)))
   (let ((history (buffer-history buffer)))
-    (sera:and-let* ((owner (htree:owner history (id buffer)))
-                    (parent-id (htree:creator-id owner)))
+    (and-let* ((owner (htree:owner history (id buffer)))
+               (parent-id (htree:creator-id owner)))
       (gethash parent-id (buffers *browser*)))))
 
 (defun buffers-with-history (history)
@@ -1674,7 +1674,7 @@ HISTORY may be NIL for buffers without history."
     (sort (sera:filter
            (sera:eqs (id buffer))
            buffers
-           :key (lambda (b) (alex:when-let ((owner (htree:owner history (id b))))
+           :key (lambda (b) (when-let ((owner (htree:owner history (id b))))
                               (htree:creator-id owner))))
           #'< :key #'id)))
 
@@ -1694,7 +1694,7 @@ HISTORY may be NIL for buffers without history."
                 (sera:equals current-parent-id)
                 buffers
                 :key (lambda (b)
-                       (alex:when-let ((owner (htree:owner history (id b))))
+                       (when-let ((owner (htree:owner history (id b))))
                          (existing-creator-id owner)))))
              (common-parent-buffers
                (sort common-parent-buffers #'< :key #'id)))
@@ -1709,20 +1709,20 @@ Return it.
 The tree is browsed in a depth-first fashion.
 When there is no previous buffer, go to the last one so as to cycle."
   (labels ((buffer-last-child (&optional (buffer (current-buffer)))
-             (alex:if-let ((next-siblings (second (buffer-siblings buffer))))
+             (if-let ((next-siblings (second (buffer-siblings buffer))))
                (buffer-last-child (alex:last-elt next-siblings))
-               (alex:if-let ((children (buffer-children buffer)))
+               (if-let ((children (buffer-children buffer)))
                  (buffer-last-child (alex:last-elt children))
                  buffer)))
            (buffer-sibling-previous (&optional (buffer (current-buffer)))
-             (alex:when-let ((previous-siblings (first (buffer-siblings buffer))))
+             (when-let ((previous-siblings (first (buffer-siblings buffer))))
                (alex:last-elt previous-siblings))))
-    (alex:when-let ((previous (or (alex:when-let ((previous-sibling (buffer-sibling-previous buffer)))
-                                    (alex:if-let ((children (buffer-children previous-sibling)))
-                                      (buffer-last-child (first children))
-                                      previous-sibling))
-                                  (buffer-parent buffer)
-                                  (buffer-last-child buffer))))
+    (when-let ((previous (or (when-let ((previous-sibling (buffer-sibling-previous buffer)))
+                               (if-let ((children (buffer-children previous-sibling)))
+                                 (buffer-last-child (first children))
+                                 previous-sibling))
+                             (buffer-parent buffer)
+                             (buffer-last-child buffer))))
       (set-current-buffer previous))))
 
 (define-command switch-buffer-next (&optional (buffer (current-buffer)))
@@ -1732,27 +1732,27 @@ Return it.
 The tree is browsed in a depth-first fashion.
 When there is no next buffer, go to the first one so as to cycle."
   (labels ((buffer-first-root (buffer)
-             (alex:if-let ((parent (buffer-parent buffer)))
+             (if-let ((parent (buffer-parent buffer)))
                (buffer-first-root parent)
                (first (first (buffer-siblings buffer)))))
            (buffer-next-parent-sibling (buffer)
-             (alex:when-let ((parent (buffer-parent buffer)))
-               (alex:if-let ((next-siblings (second (buffer-siblings parent))))
+             (when-let ((parent (buffer-parent buffer)))
+               (if-let ((next-siblings (second (buffer-siblings parent))))
                  (first next-siblings)
                  (buffer-next-parent-sibling parent))))
            (buffer-sibling-next (&optional (buffer (current-buffer)))
              (first (second (buffer-siblings buffer)))))
-    (alex:when-let ((next (or (first (buffer-children buffer))
-                              (buffer-sibling-next buffer)
-                              (buffer-next-parent-sibling buffer)
-                              (buffer-first-root buffer))))
+    (when-let ((next (or (first (buffer-children buffer))
+                         (buffer-sibling-next buffer)
+                         (buffer-next-parent-sibling buffer)
+                         (buffer-first-root buffer))))
       (set-current-buffer next))))
 
 (define-command switch-buffer-last ()
   "Switch to the last visited buffer.
 
 The buffer with the most recent access time is returned."
-  (alex:when-let ((buffer (second (sort-by-time (buffer-list)))))
+  (when-let ((buffer (second (sort-by-time (buffer-list)))))
     (set-current-buffer buffer)))
 
 (define-command open-inspector ()

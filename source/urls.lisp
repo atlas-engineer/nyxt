@@ -15,8 +15,8 @@
 If URL-STRING is a path to an existing file, return a `quri:uri-file' object.
 If the conversion fails, a `quri:uri' object is always returned."
   (or (ignore-errors
-       (sera:and-let* ((path (uiop:merge-pathnames* url-string (uiop:getcwd)))
-                       (exist-p (uiop:file-exists-p path)))
+       (and-let* ((path (uiop:merge-pathnames* url-string (uiop:getcwd)))
+                  (exist-p (uiop:file-exists-p path)))
          (quri.uri.file:make-uri-file :path path)))
       (quri:uri url-string)
       (quri:uri "")))
@@ -302,8 +302,8 @@ ARGS is an arbitrary keyword arguments list that is translated to a URL query."
 (export-always 'internal-page-name)
 (-> internal-page-name ((or string quri:uri)) t)
 (defun internal-page-name (url)
-  (alex:when-let* ((%url (quri:uri url))
-                   (_ (string= "nyxt" (quri:uri-scheme %url))))
+  (when-let* ((%url (quri:uri url))
+              (_ (string= "nyxt" (quri:uri-scheme %url))))
     ;; As to account for nyxt:foo and nyxt://foo.
     (uiop:safe-read-from-string (str:upcase (or (quri:uri-path %url)
                                                 (quri:uri-host %url)))
@@ -377,18 +377,18 @@ TITLE is purely informative."
 
 (define-internal-scheme "lisp"
     (lambda (url)
-      (alex:when-let* ((%url (quri:uri url))
-                       (request-id (quri:uri-path %url))
-                       (query (quri:uri-query-params %url))
-                       (title (alex:assoc-value query "title" :test 'equal))
-                       (buffer-id (alex:assoc-value query "buffer" :test 'equal))
-                       (buffer (find (read-from-string buffer-id)
-                                     (internal-buffer-list :all t)
-                                     :key 'id)))
+      (when-let* ((%url (quri:uri url))
+                  (request-id (quri:uri-path %url))
+                  (query (quri:uri-query-params %url))
+                  (title (alex:assoc-value query "title" :test 'equal))
+                  (buffer-id (alex:assoc-value query "buffer" :test 'equal))
+                  (buffer (find (read-from-string buffer-id)
+                                (internal-buffer-list :all t)
+                                :key 'id)))
         (log:debug "Evaluate Lisp callback ~a in buffer ~a: ~a" request-id buffer title)
         (values
-         (alex:if-let ((callback (sera:synchronized ((lisp-url-callbacks buffer))
-                                   (gethash request-id (lisp-url-callbacks buffer)))))
+         (if-let ((callback (sera:synchronized ((lisp-url-callbacks buffer))
+                              (gethash request-id (lisp-url-callbacks buffer)))))
            (let ((callback-output (with-current-buffer buffer (run callback))))
              ;; Objects and other complex structures make cl-json choke.
              ;; TODO: Maybe encode it to the format that `cl-json' supports,

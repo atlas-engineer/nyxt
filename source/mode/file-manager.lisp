@@ -232,8 +232,8 @@ Takes the name of the file as the first argument and accepts two keyword argumen
 See `supported-media-types' of `file-mode'."
   (or (and (uiop:directory-pathname-p filename)
            (uiop:directory-exists-p filename))
-      (sera:and-let* ((extension (pathname-type filename))
-                      (extensions (supported-media-types file-source)))
+      (and-let* ((extension (pathname-type filename))
+                 (extensions (supported-media-types file-source)))
         (find extension extensions :test #'string-equal))))
 
 (define-command-global edit-file-with-external-editor

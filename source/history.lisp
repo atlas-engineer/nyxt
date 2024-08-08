@@ -344,10 +344,10 @@ Return non-NIL of history was restored, NIL otherwise."
                        (gethash (htree:creator-id owner) old-id->new-id)))
                (htree:owners history))
       (setf (htree:owners history) new-owners))
-    (alex:when-let ((latest-id (first
-                                (first
-                                 (sort-by-time (alex:hash-table-alist (htree:owners history))
-                                               :key (compose #'htree:last-access #'rest))))))
+    (when-let ((latest-id (first
+                           (first
+                            (sort-by-time (alex:hash-table-alist (htree:owners history))
+                                          :key (compose #'htree:last-access #'rest))))))
       (switch-buffer :buffer (buffers-get latest-id)))))
 
 (defmethod files:deserialize ((profile nyxt-profile) (file history-file) raw-content &key)
@@ -377,7 +377,7 @@ Return non-NIL of history was restored, NIL otherwise."
 (defun histories-list (&optional (buffer (current-buffer)))
   "List all the files with persisted history.
 Uses `histories-directory' of the BUFFER to get files."
-  (alex:when-let ((dir (histories-directory buffer)))
+  (when-let ((dir (histories-directory buffer)))
     (sera:keep "lisp" (uiop:directory-files dir)
                :test 'string-equal
                :key #'files:pathname-type*)))
@@ -393,11 +393,11 @@ Uses `histories-directory' of the BUFFER to get files."
   "Store the history data in the file with NAME.
 Useful for session snapshots, as `restore-history-by-name' will restore opened
 buffers alongside history contents."
-  (sera:and-let* ((name name)
-                  (new-file (make-instance 'history-file
-                                           :base-path (make-pathname
-                                                       :name name
-                                                       :directory (pathname-directory (histories-directory))))))
+  (and-let* ((name name)
+             (new-file (make-instance 'history-file
+                                      :base-path (make-pathname
+                                                  :name name
+                                                  :directory (pathname-directory (histories-directory))))))
     (when (or (not (uiop:file-exists-p (files:expand new-file)))
               (if-confirm ((format nil "Overwrite ~s?" (files:expand new-file)))))
       (setf (files:content new-file) (buffer-history))
@@ -410,11 +410,11 @@ The imported history file is untouched while the current one is overwritten.
 If you want to save the current history file beforehand, call
 `store-history-by-name' to save it under a new name."
   ;; TODO: backup current history?
-  (sera:and-let* ((name name)
-                  (new-file (make-instance 'history-file
-                                           :base-path (make-pathname
-                                                       :name name
-                                                       :directory (pathname-directory (histories-directory))))))
+  (and-let* ((name name)
+             (new-file (make-instance 'history-file
+                                      :base-path (make-pathname
+                                                  :name name
+                                                  :directory (pathname-directory (histories-directory))))))
     (let ((old-buffers (buffer-list))
           (new-history (files:content new-file)))
       (restore-history-buffers new-history (history-file (current-buffer)))

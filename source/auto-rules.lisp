@@ -145,7 +145,7 @@ ARGS as in make-instance of `auto-rule'."
 
 (-> enable-matching-modes (quri:uri modable-buffer) *)
 (defun enable-matching-modes (url buffer)
-  (alex:when-let ((rules (matching-auto-rules url buffer)))
+  (when-let ((rules (matching-auto-rules url buffer)))
     (dolist (rule rules)
       (dolist (mode (set-difference
                      (included rule)
@@ -153,13 +153,12 @@ ARGS as in make-instance of `auto-rule'."
                      :test #'mode=))
         (check-type mode rememberable-mode-invocation)
         (apply #'enable-modes* (first mode) buffer (rest mode)))
-      (alex:when-let ((modes (mapcar #'first
-                                     (if (exact-p rule)
-                                         (set-difference
-                                          (rememberable-of (modes buffer))
-                                          (included rule)
-                                          :test #'mode=)
-                                         (excluded rule)))))
+      (when-let ((modes (mapcar #'first
+                                (if (exact-p rule)
+                                    (set-difference (rememberable-of (modes buffer))
+                                                    (included rule)
+                                                    :test #'mode=)
+                                    (excluded rule)))))
         (disable-modes* modes buffer)))))
 
 (defun can-save-last-active-modes-p (buffer url)
@@ -174,15 +173,15 @@ ARGS as in make-instance of `auto-rule'."
           (last-active-modes-url buffer) url)))
 
 (defun reapply-last-active-modes (buffer)
-  (alex:when-let ((modes (mapcar #'first
-                                 (set-difference (normalize-modes (modes buffer))
-                                                 (last-active-modes buffer)
-                                                 :test #'mode=))))
+  (when-let ((modes (mapcar #'first
+                            (set-difference (normalize-modes (modes buffer))
+                                            (last-active-modes buffer)
+                                            :test #'mode=))))
     (disable-modes* modes buffer))
-  (alex:when-let ((modes (mapcar #'first
-                                 (set-difference (last-active-modes buffer)
-                                                 (normalize-modes (modes buffer))
-                                                 :test #'mode=))))
+  (when-let ((modes (mapcar #'first
+                            (set-difference (last-active-modes buffer)
+                                            (normalize-modes (modes buffer))
+                                            :test #'mode=))))
     (enable-modes* modes buffer)))
 
 (-> url-infer-match (url-designator) list)
@@ -211,7 +210,7 @@ The rules are:
 (defun remember-on-mode-toggle (modes buffers &key (enabled-p t))
   (dolist (buffer (uiop:ensure-list buffers))
     (if (prompt-on-mode-toggle-p buffer)
-        (sera:and-let* ((invocations (mapcar #'normalize-mode (uiop:ensure-list modes)))
+        (and-let* ((invocations (mapcar #'normalize-mode (uiop:ensure-list modes)))
                         (invocations (remove-if (rcurry #'mode-covered-by-auto-rules-p buffer enabled-p) invocations)))
           (if-confirm ((format nil
                                "Permanently ~:[disable~;enable~] ~{~a~^, ~} for ~a?"
@@ -269,7 +268,7 @@ Mode is covered if:
   (flet ((invocation-member (list)
            (member mode list :test #'mode=)))
     (or (not (rememberable-p mode))
-        (alex:when-let ((matching-rules (matching-auto-rules (url buffer) buffer)))
+        (when-let ((matching-rules (matching-auto-rules (url buffer) buffer)))
           (or (and enable-p (invocation-member (alex:mappend #'included matching-rules)))
               (and (not enable-p) (invocation-member (alex:mappend #'excluded matching-rules)))))
         ;; Mode is covered by auto-rules only if it is both in
@@ -278,8 +277,8 @@ Mode is covered if:
         (and enable-p (invocation-member (last-active-modes buffer)))
         (and (not enable-p)
              (invocation-member
-              (alex:when-let* ((previous-url (previous-url buffer))
-                               (matching-rules (matching-auto-rules previous-url buffer)))
+              (when-let* ((previous-url (previous-url buffer))
+                          (matching-rules (matching-auto-rules previous-url buffer)))
                 (alex:mappend #'included matching-rules)))))))
 
 (-> apply-auto-rules (quri:uri buffer) *)

@@ -257,16 +257,16 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
                            output (get-output-stream-string *standard-output*)))
                    (safe-slurp-stream-forms in)))))))
   (:method suggest (self)
-    (alex:when-let ((sugestion (prompt1 :prompt "Symbol to insert"
-                                        :sources '(nyxt::function-source
-                                                   nyxt::variable-source
-                                                   nyxt::class-source
-                                                   nyxt::function-non-nyxt-source
-                                                   nyxt::variable-non-nyxt-source
-                                                   nyxt::class-non-nyxt-source
-                                                   nyxt::function-internal-source
-                                                   nyxt::variable-internal-source
-                                                   nyxt::class-internal-source))))
+    (when-let ((sugestion (prompt1 :prompt "Symbol to insert"
+                                   :sources '(nyxt::function-source
+                                              nyxt::variable-source
+                                              nyxt::class-source
+                                              nyxt::function-non-nyxt-source
+                                              nyxt::variable-non-nyxt-source
+                                              nyxt::class-non-nyxt-source
+                                              nyxt::function-internal-source
+                                              nyxt::variable-internal-source
+                                              nyxt::class-internal-source))))
       (prini-to-string sugestion :package (eval-package self))))
   (:method render-results (self)
     (spinneret:with-html-string

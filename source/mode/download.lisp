@@ -122,7 +122,7 @@ The `downloads' slot is populated by a list of these objects."))
 (defun cancel-download (url)
   "Call `cancel-function' with URL as argument."
   ;; FIXME Two downloads can share the same URL.
-  (alex:when-let ((download (find url (downloads *browser*) :key #'url :test #'string=)))
+  (when-let ((download (find url (downloads *browser*) :key #'url :test #'string=)))
     (funcall (cancel-function download))
     (echo "Download canceled: ~a." url)))
 
@@ -262,8 +262,8 @@ Return the `download' object matching the download."
   (prog1
       (match (download-engine buffer)
         (:lisp
-         (alex:when-let* ((path (download-directory buffer))
-                          (download-dir (files:expand path)))
+         (when-let* ((path (download-directory buffer))
+                     (download-dir (files:expand path)))
            (when (eq proxy-url :auto)
              (setf proxy-url (nyxt::proxy-url buffer :downloads-only t)))
            (let* ((download nil))
@@ -282,8 +282,7 @@ Return the `download' object matching the download."
                          (uiop:ensure-pathname
                           (download-manager:filename download)))
                    (push download-render (downloads *browser*))
-                   (run-thread
-                     "download watcher"
+                   (run-thread "download watcher"
                      (download-watch download-render download)))
                  download)))))
         (:renderer

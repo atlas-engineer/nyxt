@@ -900,12 +900,12 @@ with this scheme.")
                                 :website-data-manager
                                 (make-instance
                                  'webkit-website-data-manager
-                                 :base-data-directory (or (sera:and-let* ((path (files:expand data-manager-data-directory))
-                                                                          (_ (not (nfiles:nil-pathname-p path))))
+                                 :base-data-directory (or (and-let* ((path (files:expand data-manager-data-directory))
+                                                                     (_ (not (nfiles:nil-pathname-p path))))
                                                             (uiop:native-namestring path))
                                                           (cffi:null-pointer))
-                                 :base-cache-directory (or (sera:and-let* ((path (files:expand data-manager-cache-directory))
-                                                                           (_ (not (nfiles:nil-pathname-p path))))
+                                 :base-cache-directory (or (and-let* ((path (files:expand data-manager-cache-directory))
+                                                                      (_ (not (nfiles:nil-pathname-p path))))
                                                              (uiop:native-namestring path))
                                                            (cffi:null-pointer)))))))
          (gtk-extensions-path (files:expand (make-instance 'gtk-extensions-directory)))
@@ -1146,7 +1146,7 @@ See `finalize-buffer'."
 
 (define-ffi-method on-signal-mouse-target-changed ((buffer gtk-buffer) hit-test-result modifiers)
   (declare (ignore modifiers))
-  (alex:if-let ((url (or (webkit:webkit-hit-test-result-link-uri hit-test-result)
+  (if-let ((url (or (webkit:webkit-hit-test-result-link-uri hit-test-result)
                          (webkit:webkit-hit-test-result-image-uri hit-test-result)
                          (webkit:webkit-hit-test-result-media-uri hit-test-result))))
     (progn
@@ -1776,7 +1776,7 @@ local anyways, and it's better to refresh it if a load was queried."
   (:documentation "Related to WebKitUserScript."))
 
 (define-ffi-method ffi-buffer-add-user-script ((buffer gtk-buffer) (script gtk-user-script))
-  (alex:if-let ((code (nyxt/mode/user-script:code script)))
+  (if-let ((code (nyxt/mode/user-script:code script)))
     (let* ((content-manager
              (webkit:webkit-web-view-get-user-content-manager
               (gtk-object buffer)))
@@ -1875,18 +1875,18 @@ local anyways, and it's better to refresh it if a load was queried."
       (setf (nyxt/mode/download:completion-percentage download)
             (* 100 (webkit:webkit-download-estimated-progress webkit-download))))
     (connect-signal download "decide-destination" nil (webkit-download suggested-file-name)
-      (alex:when-let* ((suggested-file-name (maybe-fix-pdfjs-filename suggested-file-name original-url))
-                       (download-dir (or (ignore-errors
-                                          (download-directory
-                                           (find (webkit:webkit-download-get-web-view webkit-download)
-                                                 (buffer-list) :key #'gtk-object)))
-                                         (make-instance 'download-directory)))
-                       (download-directory (files:expand download-dir))
-                       (native-download-directory (unless (files:nil-pathname-p download-directory)
-                                                    (uiop:native-namestring download-directory)))
-                       (path (str:concat native-download-directory suggested-file-name))
-                       (unique-path (download-manager::ensure-unique-file path))
-                       (file-path (format nil "file://~a" unique-path)))
+      (when-let* ((suggested-file-name (maybe-fix-pdfjs-filename suggested-file-name original-url))
+                  (download-dir (or (ignore-errors
+                                     (download-directory
+                                      (find (webkit:webkit-download-get-web-view webkit-download)
+                                            (buffer-list) :key #'gtk-object)))
+                                    (make-instance 'download-directory)))
+                  (download-directory (files:expand download-dir))
+                  (native-download-directory (unless (files:nil-pathname-p download-directory)
+                                               (uiop:native-namestring download-directory)))
+                  (path (str:concat native-download-directory suggested-file-name))
+                  (unique-path (download-manager::ensure-unique-file path))
+                  (file-path (format nil "file://~a" unique-path)))
         (if (string= path unique-path)
             (log:debug "Downloading file to ~s." unique-path)
             (echo "Destination ~s exists, saving as ~s." path unique-path))
@@ -1921,11 +1921,11 @@ local anyways, and it's better to refresh it if a load was queried."
     download))
 
 (define-ffi-method ffi-buffer-user-agent ((buffer gtk-buffer))
-  (alex:when-let ((settings (webkit:webkit-web-view-get-settings (gtk-object buffer))))
+  (when-let ((settings (webkit:webkit-web-view-get-settings (gtk-object buffer))))
     (webkit:webkit-settings-user-agent settings)))
 
 (define-ffi-method (setf ffi-buffer-user-agent) (value (buffer gtk-buffer))
-  (alex:when-let ((settings (webkit:webkit-web-view-get-settings (gtk-object buffer))))
+  (when-let ((settings (webkit:webkit-web-view-get-settings (gtk-object buffer))))
     (setf (webkit:webkit-settings-user-agent settings) value)))
 
 (define-ffi-method ffi-buffer-proxy ((buffer gtk-buffer))

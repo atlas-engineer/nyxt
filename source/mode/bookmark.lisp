@@ -233,7 +233,7 @@ against date, given `prompter:active-attributes-keys' configuration."))
 (defun url-bookmark-tags (url)
   "Return the list of tags of the bookmark corresponding to URL."
   (let ((bookmarks (files:content (bookmarks-file (current-buffer)))))
-    (alex:when-let ((existing (find url bookmarks :key #'url :test #'url-equal)))
+    (when-let ((existing (find url bookmarks :key #'url :test #'url-equal)))
       (tags existing))))
 
 (define-command bookmark-current-url (&optional (buffer (current-buffer)))

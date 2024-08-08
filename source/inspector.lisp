@@ -276,8 +276,8 @@ values in help buffers, REPL and elsewhere."))
   (if compact-p
       (link-to value)
       (spinneret:with-html-string
-        (alex:if-let ((slot-names (mapcar #'closer-mop:slot-definition-name
-                                          (closer-mop:class-slots (class-of value)))))
+        (if-let ((slot-names (mapcar #'closer-mop:slot-definition-name
+                                     (closer-mop:class-slots (class-of value)))))
           (:dl
            (dolist (slot-name slot-names)
              (:dt (prini-to-string slot-name))

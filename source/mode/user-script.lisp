@@ -118,14 +118,14 @@ Return:
                   (files:content script)
                   (code script))))
     (or
-     (sera:and-let* ((start-position (search "// ==UserScript==" code))
-                     (end-position (search "// ==/UserScript==" code))
-                     (meta (subseq code
-                                   (+ (1+ (length "// ==UserScript==")) start-position)
-                                   end-position)))
+     (and-let* ((start-position (search "// ==UserScript==" code))
+                (end-position (search "// ==/UserScript==" code))
+                (meta (subseq code
+                              (+ (1+ (length "// ==UserScript==")) start-position)
+                              end-position)))
        (flet ((getprop (prop)
-                (alex:when-let* ((regex (str:concat "// @" prop "\\s*(.*)"))
-                                 (raw-props (ppcre:all-matches-as-strings regex meta)))
+                (when-let* ((regex (str:concat "// @" prop "\\s*(.*)"))
+                            (raw-props (ppcre:all-matches-as-strings regex meta)))
                   (mapcar (lambda (raw-prop)
                             (multiple-value-bind (begin end reg-starts reg-ends)
                                 (ppcre:scan regex raw-prop)

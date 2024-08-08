@@ -394,8 +394,8 @@ definition and documentation.")
 (defun quick-start-exit (panel-buffer)
   "Close tutorial panel buffer and set the main buffer to `default-new-buffer-url'"
   (delete-panel-buffer :panels panel-buffer)
-  (alex:if-let ((default-new (find (default-new-buffer-url *browser*) (buffer-list)
-                                   :test #'quri:uri= :key #'url)))
+  (if-let ((default-new (find (default-new-buffer-url *browser*) (buffer-list)
+                              :test #'quri:uri= :key #'url)))
     (set-current-buffer default-new)
     (make-buffer-focus)))
 

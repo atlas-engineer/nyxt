@@ -106,8 +106,8 @@ Example (Tor-proxied completion function for Wikipedia):
 
 (defmethod prompter:object-attributes ((engine search-engine) (source prompter:source))
   (declare (ignore source))
-  `(("Name" ,(or (name engine) (shortcut engine)) (:width 1))
-    ("Search URL" ,(search-url engine) (:width 3))))
+  `(("Name" ,(or (name engine) (shortcut engine)))
+    ("Search URL" ,(search-url engine) nil 3)))
 
 (defun all-search-engines ()
   "Return the `search-engine's from the `current-buffer'.
@@ -141,8 +141,8 @@ Right now default search engine is the last one."
 (define-command query-selection-in-search-engine (&key (query-in-new-buffer-p t))
   "Search selected text using the queried search engine.
 When QUERY-IN-NEW-BUFFER-P is non-nil, open the results in a new buffer."
-  (alex:when-let ((engine (prompt1 :prompt "Search engine"
-                                   :sources 'search-engine-source)))
+  (when-let ((engine (prompt1 :prompt "Search engine"
+                              :sources 'search-engine-source)))
     (buffer-load (make-instance 'new-url-query
                                 :query (ffi-buffer-copy (current-buffer))
                                 :engine engine)

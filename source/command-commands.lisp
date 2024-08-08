@@ -56,8 +56,8 @@ from a key binding.")
   (:metaclass user-class))
 
 (defmethod predict-next-command ((browser browser))
-  (alex:when-let ((prediction (analysis:predict (command-model browser)
-                                                (list (last-command browser)))))
+  (when-let ((prediction (analysis:predict (command-model browser)
+                                           (list (last-command browser)))))
     (analysis:element prediction)))
 
 (define-class predicted-command-source (prompter:source)
@@ -192,7 +192,7 @@ together with the arglists and documentations of the functions typed in."
                      :actions-on-return
                      (lambda-command run-command* (commands)
                        "Run the chosen command."
-                       (alex:when-let ((command (first commands)))
+                       (when-let ((command (first commands)))
                          (setf (last-access command) (time:now))
                          (run-async command)))))
      :hide-suggestion-count-p t)))
@@ -240,7 +240,7 @@ together with the arglists and documentations of the functions typed in."
   #-ccl
   (swank-backend:arglist fn)
   #+ccl
-  (let ((package (alex:if-let ((name (swank-backend:function-name fn)))
+  (let ((package (if-let ((name (swank-backend:function-name fn)))
                    (symbol-package (if (listp name)
                                        ;; Closures are named '(:internal NAME)
                                        (second name)

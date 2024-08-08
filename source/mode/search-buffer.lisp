@@ -283,9 +283,9 @@ Note that only contiguous matches are considered.  For example:
              do (return (values (subseq delta 0 i) (list beg (+ beg i))))
              and do (loop-finish)))
     (t
-     (alex:when-let* ((delta (sera:string-replace found-pattern pattern ""))
-                      (len-delta (min (length delta) (length str)))
-                      (beg (search delta str :end1 len-delta :end2 len-delta :test test)))
+     (when-let* ((delta (sera:string-replace found-pattern pattern ""))
+                 (len-delta (min (length delta) (length str)))
+                 (beg (search delta str :end1 len-delta :end2 len-delta :test test)))
        (values (str:concat found-pattern (subseq delta 0 len-delta))
                (list beg (+ beg len-delta)))))))
 

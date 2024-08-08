@@ -213,9 +213,9 @@ Return NIL if not a slot setting."
 - the class name
 - the list of forms, either `slot-form' or a raw s-exp.
 Return NIL if not a class form."
-  (alex:when-let ((class-name (when (and (eq (first form) 'defmethod)
-                                         (eq (second form) 'customize-instance))
-                                (second (first (find-if #'consp form))))))
+  (when-let ((class-name (when (and (eq (first form) 'defmethod)
+                                    (eq (second form) 'customize-instance))
+                           (second (first (find-if #'consp form))))))
     (let ((body (alex:parse-body (sera:nlet lp ((sexp form))
                                    (if (consp (first sexp))
                                        (rest sexp)
@@ -391,7 +391,7 @@ To discover the default value of a slot or all slots of a class, use the
 (defun current-buffer (&optional window)
   "Get the active buffer for WINDOW, or the active window otherwise."
   (or %buffer
-      (alex:if-let ((w (or window (current-window))))
+      (if-let ((w (or window (current-window))))
         (active-buffer w)
         (when *browser*
           (log:debug "No active window, picking last active buffer.")

@@ -17,7 +17,7 @@ standard locations."))
   "The profile to use in the absence of buffers and on browser-less variables."
   (or
    (when *browser* (profile *browser*))
-   (alex:when-let ((profile-class (find-profile-class (getf *options* :profile))))
+   (when-let ((profile-class (find-profile-class (getf *options* :profile))))
      (make-instance profile-class))
    (make-instance 'nyxt-profile)))
 
@@ -151,9 +151,9 @@ Example: when passed command line option --with-file foo=bar,
     :accessor nil)
    (prompter:constructor (let ((path-map (make-hash-table :test 'equal)))
                            (dolist (file (files:all-files))
-                             (sera:and-let* ((nyxt-file-p file)
-                                             (editable? (editable-p file))
-                                             (full-path (files:expand file)))
+                             (and-let* ((nyxt-file-p file)
+                                        (editable? (editable-p file))
+                                        (full-path (files:expand file)))
                                (when (and (funcall (alex:disjoin #'nyxt-subpackage-p #'nyxt-user-subpackage-p)
                                                    (symbol-package (sera:class-name-of file)))
                                           (not (uiop:directory-pathname-p full-path)))

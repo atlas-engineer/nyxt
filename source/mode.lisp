@@ -119,9 +119,9 @@ See also `disable'."))
   ;; FIXME: An easier way to initialize slots given initargs?
   (loop with slot-defs = (closer-mop:class-direct-slots (class-of mode))
         for (key value) on keys by #'cddr
-        do (alex:when-let ((slot-name (loop for slot-def in slot-defs
-                                            when (member key (c2mop:slot-definition-initargs slot-def))
-                                              do (return (c2cl:slot-definition-name slot-def)))))
+        do (when-let ((slot-name (loop for slot-def in slot-defs
+                                       when (member key (c2mop:slot-definition-initargs slot-def))
+                                         do (return (c2cl:slot-definition-name slot-def)))))
              ;; TODO: Maybe use writer methods, if present? It implies a risk of
              ;; runtime actions on not-yet-fully-initialized mode instances
              ;; (because enable is a kind of initialization too).
@@ -231,7 +231,7 @@ When unset, it corresponds to the mode name."
                                  :start (- (length name ) (length suffix)))))))
 
 (sym:define-symbol-type mode (class)
-  (alex:when-let ((class (find-class sym:%symbol% nil)))
+  (when-let ((class (find-class sym:%symbol% nil)))
     (mopu:subclassp class (find-class 'mode))))
 
 (defun mode-class (symbol)
@@ -303,7 +303,7 @@ turned into <a> links to their respective description page."
 As a second value, return all matching submode instances.
 Return nil if mode is not found."
   (when (modable-buffer-p buffer)
-    (alex:if-let ((class (mode-class mode-symbol)))
+    (if-let ((class (mode-class mode-symbol)))
       (let ((results (sera:filter
                       (rcurry #'closer-mop:subclassp class)
                       (modes buffer)

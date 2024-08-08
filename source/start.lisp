@@ -315,7 +315,7 @@ It takes URL-STRINGS so that the URL argument can be `cl-read' in case
         (loop as connection = (iolib:accept-connection s)
               while connection
               do (progn
-                   (alex:when-let ((expr (alex:read-stream-content-into-string connection)))
+                   (when-let ((expr (alex:read-stream-content-into-string connection)))
                      (unless (uiop:emptyp expr)
                        (if (remote-execution-p *browser*)
                            (progn
@@ -557,7 +557,7 @@ Finally, run the browser, load URL-STRINGS if any, then run
         (install *renderer*)
 
         (when (getf *options* :profile)
-          (alex:if-let ((profile-class (find-profile-class (getf *options* :profile))))
+          (if-let ((profile-class (find-profile-class (getf *options* :profile))))
             (log:info "Profile: ~s" (profile-name profile-class))
             (log:warn "Profile not found: ~s" (getf *options* :profile))))
         (let* ((urls (strings->urls url-strings))

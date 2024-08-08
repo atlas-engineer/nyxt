@@ -136,19 +136,19 @@ history modification operations are:
 
 (define-command history-backwards (&key (buffer (current-buffer)))
   "Go to parent URL of BUFFER in history."
-  (alex:when-let ((new-node
-                   (with-history-access (history buffer)
-                     (cond
-                       ;; Skip going backwards if the current URL is not in history. If
-                       ;; it's not in history, then going backwards means canceling the
-                       ;; current load operation.
-                       ((and (htree:owner-node history (id buffer))
-                             (not (quri:uri= (url buffer)
-                                             (url (htree:data (htree:owner-node history (id buffer)))))))
-                        nil)
-                       (t
-                        (htree:backward history (id buffer))))
-                     (htree:owner-node history (id buffer)))))
+  (when-let ((new-node
+              (with-history-access (history buffer)
+                (cond
+                  ;; Skip going backwards if the current URL is not in history. If
+                  ;; it's not in history, then going backwards means canceling the
+                  ;; current load operation.
+                  ((and (htree:owner-node history (id buffer))
+                        (not (quri:uri= (url buffer)
+                                        (url (htree:data (htree:owner-node history (id buffer)))))))
+                   nil)
+                  (t
+                   (htree:backward history (id buffer))))
+                (htree:owner-node history (id buffer)))))
     (load-history-url new-node
                       :message "No backward history.")))
 
@@ -319,7 +319,7 @@ Otherwise go forward to the only child."
                         :sources (make-instance 'history-all-source :buffer buffer))))
     (when input
       (with-history (history buffer)
-        (alex:when-let ((matching-node
+        (when-let ((matching-node
                          (find input
                                (htree:all-owner-nodes
                                 history

@@ -260,9 +260,9 @@ If N is negative, go to previous pages instead."
                 (find-first-element-out-of-view (nyxt/ps:qs document "#selection"))
                 row-index)
                (ps:chain (nyxt/ps:qs document "#selection") row-index)))))
-      (sera:and-let* ((index-diff step-page-index))
+      (and-let* ((index-diff step-page-index))
         (prompter:next-suggestion prompt-buffer
-                              index-diff)))
+                                  index-diff)))
     ;; TODO: Update display?  The library should probably decide when to update
     ;; it.  Drawback is that it maybe result in too many draws.  If the caller
     ;; decides when redraw, it has more control.
@@ -345,14 +345,14 @@ current unmarked suggestion."
     (funcall* command)))
 
 (defun prompt-buffer-actions-on-return (&optional (window (current-window)))
-  (or (sera:and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
+  (or (and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
         (prompter:actions-on-return first-prompt-buffer))
       (progn
         (echo-warning "No actions to choose from.")
         (error 'prompt-buffer-canceled))))
 
 (defun prompt-buffer-actions-on-current-suggestion (&optional (window (current-window)))
-  (sera:and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
+  (and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
     (prompter:actions-on-current-suggestion (prompter:current-source first-prompt-buffer))))
 
 ;; TODO: Should actions-on-return be commands?  For now, they can be either
@@ -387,8 +387,8 @@ current unmarked suggestion."
   (if (equal (mapcar #'type-of (prompter:sources (current-prompt-buffer)))
              '(action-on-return-source))
       (echo "Already displaying actions-on-return of previous prompt buffer.")
-      (alex:when-let ((action (prompt1 :prompt "Set return action to run over marks"
-                                       :sources 'action-on-return-source)))
+      (when-let ((action (prompt1 :prompt "Set return action to run over marks"
+                                  :sources 'action-on-return-source)))
         (prompter:run-action-on-return prompt-buffer action))))
 
 (define-command-prompt run-action-on-current-suggestion (prompt-buffer)
@@ -397,7 +397,7 @@ current unmarked suggestion."
 
 (define-command-prompt set-action-on-current-suggestion (prompt-buffer)
   "Set `prompter:actions-on-current-suggestion' without closing PROMPT-BUFFER."
-  (alex:when-let ((action (prompt1 :prompt "Set current suggestion action"
+  (when-let ((action (prompt1 :prompt "Set current suggestion action"
                                    :sources 'action-on-current-suggestion-source)))
     (prompter:set-action-on-current-suggestion action prompt-buffer)))
 
@@ -469,7 +469,7 @@ Only available if `prompter:enable-marks-p' is non-nil."
   (nyxt::update-prompt-input prompt-buffer))
 
 (defun history-entries (&optional (window (current-window)))
-  (sera:and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
+  (and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
     (containers:container->list
      (prompter:history first-prompt-buffer))))
 
@@ -489,8 +489,8 @@ Only available if `prompter:enable-marks-p' is non-nil."
 
 (define-command-prompt insert-current-suggestion (prompt-buffer)
   "Insert current suggestion default property in the PROMPT-BUFFER input."
-  (alex:when-let ((selection (prompter:attributes-default
-                              (prompter:%current-suggestion prompt-buffer))))
+  (when-let ((selection (prompter:attributes-default
+                         (prompter:%current-suggestion prompt-buffer))))
     (nyxt:set-prompt-buffer-input selection)))
 
 (define-command-prompt move-start-of-input (prompt-buffer)

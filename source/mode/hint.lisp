@@ -360,7 +360,7 @@ Consult https://developer.mozilla.org/en-US/docs/Web/CSS/visibility."
 ENABLE-MARKS-P defines whether several elements can be chosen.
 PROMPT is the text to show while prompting for hinted elements.
 FUNCTION is the action to perform on the selected elements."
-  (alex:when-let*
+  (when-let*
       ((buffer (current-buffer))
        (result (prompt
                 :prompt prompt
@@ -412,7 +412,7 @@ FUNCTION is the action to perform on the selected elements."
 (defmethod prompter:object-attributes ((a nyxt/dom:a-element) (source prompter:source))
   (declare (ignore source))
   (append
-   (sera:and-let* ((has-href? (plump:has-attribute a "href"))
+   (and-let* ((has-href? (plump:has-attribute a "href"))
                    (url-string (plump:attribute a "href")))
      `(("URL" ,url-string)))
    (when (nyxt/dom:body a)
@@ -438,8 +438,8 @@ FUNCTION is the action to perform on the selected elements."
 
 (defmethod prompter:object-attributes ((img nyxt/dom:img-element) (source hint-source))
   (append
-   (sera:and-let* ((has-href? (plump:has-attribute img "href"))
-                   (url-string (plump:attribute img "href")))
+   (and-let* ((has-href? (plump:has-attribute img "href"))
+              (url-string (plump:attribute img "href")))
      `(("URL" ,url-string)))
    (when (nyxt/dom:body img)
      `(("Body" ,(str:shorten 80 (nyxt/dom:body img)))))))
@@ -470,12 +470,12 @@ FUNCTION is the action to perform on the selected elements."
   (:documentation "Prompt source for select tag options."))
 
 (defmethod %follow-hint ((select nyxt/dom:select-element))
-  (sera:and-let* ((options (coerce (clss:select "option" select) 'list))
-                  (values (prompt :prompt "Value to select"
-                                  :sources (make-instance 'options-source
-                                                          :constructor options
-                                                          :enable-marks-p
-                                                          (plump:attribute select "multiple")))))
+  (and-let* ((options (coerce (clss:select "option" select) 'list))
+             (values (prompt :prompt "Value to select"
+                             :sources (make-instance 'options-source
+                                                     :constructor options
+                                                     :enable-marks-p
+                                                     (plump:attribute select "multiple")))))
     (dolist (option (mapcar (rcurry #'find options :test #'equalp) values))
       (nyxt/dom:select-option-element option select))))
 

@@ -17,8 +17,8 @@
            (:h1 title)
            (:h2 "Condition")
            (:pre condition-string)
-           (alex:when-let ((suggestions (alex:mappend #'nyxt/migration:find-suggestions
-                                                      (sera:tokens condition-string))))
+           (when-let ((suggestions (alex:mappend #'nyxt/migration:find-suggestions
+                                                 (sera:tokens condition-string))))
              (:h2 "Suggestions")
              (:ul (dolist (suggestion suggestions)
                     (:li (:raw (nyxt/migration:tip suggestion))))))

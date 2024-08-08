@@ -32,18 +32,17 @@ bookmarks. If this is the case, prompt the user about bookmarking it."
                      (mapcar #'(lambda (e) (render-url (url e)))
                              (files:content (nyxt/mode/bookmark:bookmarks-file (current-buffer))))))
                (find url-address bookmark-url-strings :test #'string=))))
-    (sera:and-let* ((history-entries (let ((history (buffer-history)))
-                                       (mapcar #'htree:data (alex:hash-table-keys (htree:entries history)))))
-                    (current-url-history
-                     (find (url (current-buffer)) history-entries :test #'equalp :key #'url))
-                    (implicit-visits-value
-                     (nyxt::implicit-visits current-url-history))
-                    (current-url-string
-                     (render-url (url current-url-history))))
+    (and-let* ((history-entries (mapcar #'htree:data
+                                        (alex:hash-table-keys (htree:entries (buffer-history)))))
+               (current-url-history (find (url (current-buffer))
+                                          history-entries
+                                          :test #'equalp :key #'url))
+               (implicit-visits-value (nyxt::implicit-visits current-url-history))
+               (current-url-string (render-url (url current-url-history))))
       (when (and (> implicit-visits-value threshold)
                  (not (bookmarked-url-p current-url-string)))
         (if-confirm ((format nil "Bookmark ~a?" current-url-string))
-                    (nyxt/mode/bookmark:bookmark-url :url current-url-string))))))
+            (nyxt/mode/bookmark:bookmark-url :url current-url-string))))))
 
 (defmethod nyxt:on-signal-load-finished ((mode bookmark-frequent-visits-mode) url)
   (bookmark-frequent-visit (threshold mode))

@@ -217,7 +217,7 @@ panel."))
        `(lambda (,@arglist)
           ,@(when documentation (list documentation))
           (declare (ignorable ,@(mappend #'cdar keywords)))
-          (alex:if-let ((panel-buffer (find-panel-buffer (name ,page))))
+          (if-let ((panel-buffer (find-panel-buffer (name ,page))))
             (window-delete-panel-buffer (current-window) panel-buffer)
             (window-add-panel-buffer
              (current-window)

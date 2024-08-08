@@ -100,8 +100,8 @@ The most useful functions are:
   (wbr-element text-element))
 
 (defmethod name-dom-elements ((node plump:node))
-  (alex:when-let* ((tag-p (plump:element-p node))
-                   (class (gethash (plump:tag-name node) *nyxt-dom-classes*)))
+  (when-let* ((tag-p (plump:element-p node))
+              (class (gethash (plump:tag-name node) *nyxt-dom-classes*)))
     (change-class node class))
   (when (plump:nesting-node-p node)
     (loop for child across (plump:children node)
@@ -324,8 +324,8 @@ Return two values:
       (error "There's no unique selector for ~a, the best guess is ~s" element selector))))
 
 (defmethod url :around ((element plump:element))
-  (alex:when-let* ((result (call-next-method))
-                   (url (ensure-url result)))
+  (when-let* ((result (call-next-method))
+              (url (ensure-url result)))
     (if (valid-url-p url)
         url
         (quri:merge-uris url (url (current-buffer))))))
@@ -364,8 +364,8 @@ Return two values:
       (t nil))))
 
 (defun fallback-body (element)
-  (alex:when-let ((body (or (plump:get-attribute element "value")
-                            (plump:get-attribute element "placeholder"))))
+  (when-let ((body (or (plump:get-attribute element "value")
+                       (plump:get-attribute element "placeholder"))))
     body))
 
 (defmethod body ((input input-element))

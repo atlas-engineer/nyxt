@@ -85,7 +85,7 @@ for which the `executable' slot is non-nil."
    (prompter:actions-on-return password-source-actions)))
 
 (defun password-debug-info ()
-  (alex:when-let ((interface (password-interface (current-buffer))))
+  (when-let ((interface (password-interface (current-buffer))))
     (log:debug "Password interface ~a uses executable ~s."
                (class-name (class-of interface))
                (password:executable interface))))

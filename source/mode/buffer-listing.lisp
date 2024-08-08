@@ -131,8 +131,8 @@ shown linearly instead."
 ;; form) of `internal-page'.
 (defun reload-buffers-panel-handler (window buffer)
   (declare (ignore window buffer))
-  (alex:when-let ((buffers-panel (find-panel-buffer 'buffers-panel)))
-      (reload-panel-buffer buffers-panel)))
+  (when-let ((buffers-panel (find-panel-buffer 'buffers-panel)))
+    (reload-panel-buffer buffers-panel)))
 
 (define-configuration window
   ((window-set-buffer-hook

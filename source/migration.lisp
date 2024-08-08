@@ -100,8 +100,8 @@ major versions."
 (export-always 'find-suggestions)
 (defun find-suggestions (string)
   "Find the migration suggestions that match the symbol from STRING."
-  (alex:when-let ((sym (ignore-errors (uiop:safe-read-from-string
-                                       string :package (find-package :nyxt)))))
+  (when-let ((sym (ignore-errors (uiop:safe-read-from-string string
+                                                             :package (find-package :nyxt)))))
     (gethash (symbol-name sym) +migration-suggestions+)))
 
 (defmacro define-migration (major-version-string &body body)
