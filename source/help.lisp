@@ -545,58 +545,28 @@ clipboard."
       (echo "System information saved to clipboard."))))
 
 (define-internal-page-command-global list-extensions ()
-    (buffer "*Nyxt extensions*" 'nyxt/mode/help:help-mode)
-  "List Nyxt extensions."
-  (spinneret:with-html-string
-    (:h1 "Nyxt Extensions")
-    (:h2 (:a :href "https://github.com/atlas-engineer/nx-fruit"
-             "nx-fruit"))
-    (:p "Discover the fruit of the day!  A simple extension that can be used to
-test a Nyxt installation and its ability to load extensions.")
-
-    (:h2 (:a :href "https://github.com/kssytsrk/nx-freestance-handler"
-             "nx-freestance-handler"))
-    (:p "Redirects from mainstream websites to their privacy-supporting mirrors.
-It is currently able to redirect from Youtube to Invidious, from Reddit to
-Teddit, from Instagram to Bibliogram, and from Twitter to Nitter.")
-
-    (:h2 (:a :href "https://github.com/aartaka/nx-search-engines"
-         "nx-search-engines"))
-    (:p "The aim is to get rid of the black box world of search bookmarklets and
-search cookies by moving to the pretty land of lispy syntax and small helper
-functions generating search URIs.")
-
-    (:h2 (:a :href "https://github.com/atlas-engineer/nx-ace"
-         "nx-ace"))
-    (:p "Adds support for to the Ace text editor.")
-
-    (:h2 (:a :href "https://github.com/aartaka/nx-kaomoji"
-         "nx-kaomoji"))
-    (:p "Allows pasting Kaomojis to any input field with a dedicated command.")
-
-    (:h2 (:a :href "https://git.migalmoreno.com/nx-router"
-         "nx-router"))
-    (:p "A declarative URL routing extension that abstracts Nyxt's request
-resource handlers.")
-
-    (:h2 (:a :href "https://git.migalmoreno.com/nx-tailor"
-         "nx-tailor"))
-    (:p "Allows handling multiple themes inside a single browser session and to
-streamline theme selection on startup based on user configuration.")
-
-    (:h2 (:a :href "https://github.com/rolling-robot/nx-zotero"
-         "nx-zotero"))
-    (:p "Adds support for Zotero (reference manager software).")
-
-    (:h2 (:a :href "https://github.com/aartaka/nx-dark-reader"
-         "nx-dark-reader"))
-    (:p "Integrates the famous Dark Reader web extension.")
-
-    (:h2 (:a :href "https://git.sr.ht/~ehrt74/nyxt-bitwarden"
-         "nx-bitwarden"))
-    (:p "Adds Bitwarden support for " (:code "password-mode") ".")
-
-    (:h2 (:a :href " https://codeberg.org/ablatedsprocket/nx-rbw"
-             "nx-rbw"))
-    (:p "Adds RBW (unofficial Bitwarden client) support for "
-        (:code "password-mode") ".")))
+    (buffer "*Extensions*")
+  "List the currently available extensions for Nyxt. The 'download-link'
+is overloaded as a reference URL for external extensions as they are not served
+on the Nyxt website.
+"
+  (let* ((*print-length* nil)
+         (extensions (cl-json:decode-json-from-string (dex:get "https://nyxt-browser.com/api/extensions"))))
+    (flet ((render (extension)
+             (spinneret:with-html-string
+               (:dl
+                (:dt "Name")
+                (:dd (cdr (assoc :name extension)))
+                (:dt "Description")
+                (:dd (cdr (assoc :description extension)))
+                (:dt "Link")
+                (if (cdr (assoc :internal-p extension))
+                    (:dd (:a :href (format nil "https://nyxt-browser.com~a" (cdr (assoc :link extension)))
+                             (format nil "https://nyxt-browser.com~a" (cdr (assoc :link extension)))))
+                    (:dd (:a :href (cdr (assoc :download-link extension))
+                             (cdr (assoc :download-link extension)))))))))
+      (spinneret:with-html-string
+        (:h1 "Extensions")
+        (loop for extension in extensions
+              collect (:div (:raw (render extension))
+                            (:hr)))))))
