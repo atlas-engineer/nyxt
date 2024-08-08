@@ -25,6 +25,11 @@
     (loop for version being the hash-value of +changelog+
           collect (:raw version))))
 
+(define-version "3.12.0"
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "Add " (:nxref :command 'list-extensions) " command."))))
+
 (define-version "3.11.8"
   (:nsection :title "Bug fixes"
     (:ul
