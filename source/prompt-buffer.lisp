@@ -288,7 +288,7 @@ See `prompt' for how to invoke prompts.")
            (round (/ (ffi-height (window prompt-buffer))
                      3)))
           (:fit-to-prompt
-           (ps-eval :async t :buffer prompt-buffer
+           (ps-eval :buffer prompt-buffer
              (+ (ps:chain (nyxt/ps:qs document "#prompt-area") offset-height)
                 ;; Buffer whitespace between the prompt buffer's input area and
                 ;; the status buffer.  Not clear how to the derive the value
