@@ -117,9 +117,10 @@ to go to the compilation error location."
                                 (set-new-translation host
                                                      (subseq (namestring path) (1+ (length host)))
                                                      (system-source-directory system))
-                                ;; The #p reader macro expands to logical pathnames only if
-                                ;; the host is already defined, which may not be the case at
-                                ;; this point, so we remake the pathname.
+                                ;; The #p reader macro expands to logical
+                                ;; pathnames only if the host is already
+                                ;; defined, which may not be the case at this
+                                ;; point, so we remake the pathname.
                                 (make-pathname :defaults path))
                               path))))
         (if (env-true-p "NASDF_USE_LOGICAL_PATHS")
