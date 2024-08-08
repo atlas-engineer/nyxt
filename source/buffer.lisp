@@ -1030,11 +1030,10 @@ See `make-buffer'."
     (set-current-buffer buffer)
     buffer))
 
-(declaim (ftype (function (&key (:title string)
-                                (:modes (or null (cons symbol *)))
-                                (:url quri:uri)))
-                make-background-buffer))
 (export-always 'make-background-buffer)
+(-> make-background-buffer
+    (&key (:title string) (:modes (or null (cons symbol *))) (:url quri:uri))
+    *)
 (defun make-background-buffer (&rest args &key title modes url)
   "Create a new web-aware buffer that won't be registered by the `browser'.
 See `make-buffer' for a description of the arguments."
@@ -1351,8 +1350,7 @@ When BUFFER is omitted, it defaults to the current one."
                 (mapcar #'buffer-delete buffers-to-delete))))
 
 (export-always 'buffer-load)
-(declaim (ftype (function (url-designator &key (:buffer buffer)))
-                buffer-load))
+(-> buffer-load (url-designator &key (:buffer buffer)) *)
 (defun buffer-load (url-designator &key (buffer (current-buffer)))
   "Load URL-DESIGNATOR in BUFFER.
 URL-DESIGNATOR is then transformed by BUFFER's `buffer-load-hook'."
