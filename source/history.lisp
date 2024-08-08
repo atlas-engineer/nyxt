@@ -20,11 +20,6 @@ Not modifiable."
     :writer nil
     :type (or quri:uri string))
    (title "")
-   (last-access "" ; TODO: Remove with Nyxt 2.0?
-                :type (or string time:timestamp)
-                :export nil
-                :documentation "This slot is only kept for backward
-compatibility to import the old flat history.")
    ;; TODO: For now we never increment the explicit-visits count.  Maybe we
    ;; could use a new buffer slot to signal that the last load came from an
    ;; explicit request?
