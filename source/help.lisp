@@ -543,3 +543,30 @@ clipboard."
       (copy-to-clipboard nyxt-information)
       (log:info nyxt-information)
       (echo "System information saved to clipboard."))))
+
+(define-internal-page-command-global list-extensions ()
+    (buffer "*Extensions*")
+  "List the currently available extensions for Nyxt. The 'download-link'
+is overloaded as a reference URL for external extensions as they are not served
+on the Nyxt website.
+"
+  (let* ((*print-length* nil)
+         (extensions (cl-json:decode-json-from-string (dex:get "https://nyxt-browser.com/api/extensions"))))
+    (flet ((render (extension)
+             (spinneret:with-html-string
+               (:dl
+                (:dt "Name")
+                (:dd (cdr (assoc :name extension)))
+                (:dt "Description")
+                (:dd (cdr (assoc :description extension)))
+                (:dt "Link")
+                (if (cdr (assoc :internal-p extension))
+                    (:dd (:a :href (format nil "https://nyxt-browser.com~a" (cdr (assoc :link extension)))
+                             (format nil "https://nyxt-browser.com~a" (cdr (assoc :link extension)))))
+                    (:dd (:a :href (cdr (assoc :download-link extension))
+                             (cdr (assoc :download-link extension)))))))))
+      (spinneret:with-html-string
+        (:h1 "Extensions")
+        (loop for extension in extensions
+              collect (:div (:raw (render extension))
+                            (:hr)))))))
