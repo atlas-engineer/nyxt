@@ -1027,8 +1027,8 @@ core to finalize the instance."))
             (:nxref :variable '*extensions-directory*) " (default to "
             (:code "~/.local/share/nyxt/extensions")").")
         (:p "Extensions are regular Common Lisp systems.")
-        (:p "A catalog of extensions is available in the "
-            (:code "document/EXTENSIONS.org") " file in the source repository."))
+        (:p "Please find a catalog of Nyxt extensions "
+            (:a :href (nyxt-url 'nyxt-extensions) "here") "."))
 
       (:nsection :title "Troubleshooting"
 
