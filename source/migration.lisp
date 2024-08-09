@@ -117,6 +117,10 @@ major versions."
                               result)))))
 
 (define-migration "4"
+  (select-all)
+  (:p "Deprecated in favor of "
+      (:nxref :command 'nyxt/mode/prompt-buffer:select-input-text) ".")
+
   (toggle-actions-on-current-suggestion-enabled)
   (:p "Deprecated in favor of "
       (:nxref :command 'nyxt/mode/prompt-buffer:toggle-actions-on-current-suggestion)
