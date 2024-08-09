@@ -428,7 +428,7 @@ Only available if `prompter:enable-marks-p' is non-nil."
                         :direction :backward))
 
 (define-command-prompt mark-all (prompt-buffer)
-  "Mark all visible suggestions in current source.
+  "Mark all suggestions in the current source.
 Only available if `prompter:enable-marks-p' is non-nil."
   (prompter:mark-all prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
