@@ -312,36 +312,32 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
       (prompter:%current-suggestion prompt-buffer)
     (values (when suggestion (prompter:value suggestion)) source)))
 
-(defun show-prompt-buffer (prompt-buffer &key (height (height prompt-buffer)))
+(defmethod show-prompt-buffer ((prompt-buffer prompt-buffer))
   "Show the last active PROMPT-BUFFER, if any.
 This is a low-level display function.
 See also `hide-prompt-buffer'."
   ;; TODO: Add method that returns if there is only 1 source with no filter.
-  (when prompt-buffer
-    (push prompt-buffer (active-prompt-buffers (window prompt-buffer)))
-    (calispel:! (prompt-buffer-channel (window prompt-buffer)) prompt-buffer)
+  (with-slots (window) prompt-buffer
+    (push prompt-buffer (active-prompt-buffers window))
+    (calispel:! (prompt-buffer-channel window) prompt-buffer)
     (prompt-render prompt-buffer)
-    (setf (height prompt-buffer) height)
-    (run-thread "Show prompt watcher"
-      (let ((prompt-buffer prompt-buffer))
-        (update-prompt-input prompt-buffer)
-        (hooks:run-hook (prompt-buffer-ready-hook *browser*) prompt-buffer)))))
+    (setf (height prompt-buffer) (height prompt-buffer)))
+  (run-thread "Show prompt watcher"
+    (update-prompt-input prompt-buffer)
+    (hooks:run-hook (prompt-buffer-ready-hook *browser*) prompt-buffer)))
 
-(defun hide-prompt-buffer (prompt-buffer)
+(defmethod hide-prompt-buffer ((prompt-buffer prompt-buffer))
   "Hide PROMPT-BUFFER, display next active one.
 This is a low-level display function.
 See also `show-prompt-buffer'."
-  (let ((window (window prompt-buffer)))
-    ;; Note that PROMPT-BUFFER is not necessarily first in the list, e.g. a new
-    ;; prompt-buffer was invoked before the old one reaches here.
+  (with-slots (window) prompt-buffer
     (alex:deletef (active-prompt-buffers window) prompt-buffer)
     ;; The channel values are irrelevant, so is the element order:
-    (calispel:? (prompt-buffer-channel (window prompt-buffer)) 0)
+    (calispel:? (prompt-buffer-channel window) 0)
     (ffi-buffer-delete prompt-buffer)
     (if (active-prompt-buffers window)
-        (let ((next-prompt-buffer (first (active-prompt-buffers window))))
-          (show-prompt-buffer next-prompt-buffer))
-        (setf (ffi-height prompt-buffer) 0))))
+        (show-prompt-buffer (first (active-prompt-buffers window)))
+        (setf (height prompt-buffer) 0))))
 
 (defun suggestion-and-mark-count (prompt-buffer suggestions marks &key enable-marks-p pad-p)
   (alex:maxf (max-suggestions prompt-buffer)
@@ -360,23 +356,20 @@ See also `show-prompt-buffer'."
                 (length suggestions))))))
 
 (defun prompt-render-prompt (prompt-buffer)
-  (let* ((suggestions (prompter:all-suggestions prompt-buffer))
-         (marks (prompter:all-marks prompt-buffer))
-         ;; TODO: Should prompt-buffer be a status-buffer?
-         ;; Then no need to depend on the current status buffer.
-         (status-buffer (status-buffer (current-window))))
-    (ps-eval :async t :buffer prompt-buffer
-      (setf (ps:@ (nyxt/ps:qs document "#prompt-extra") |innerHTML|)
-            (ps:lisp
-             (suggestion-and-mark-count
-              prompt-buffer suggestions marks
-              :pad-p t
-              :enable-marks-p (some #'prompter:enable-marks-p
-                                    (prompter:sources prompt-buffer)))))
-      (setf (ps:@ (nyxt/ps:qs document "#prompt-modes") |innerHTML|)
-            (ps:lisp (str:join " "
-                               (mapcar (curry #'mode-status status-buffer)
-                                       (sort-modes-for-status (modes prompt-buffer)))))))))
+  (ps-eval :async t :buffer prompt-buffer
+    (setf (ps:@ (nyxt/ps:qs document "#prompt-extra") |innerHTML|)
+          (ps:lisp
+           (suggestion-and-mark-count prompt-buffer
+                                      (prompter:all-suggestions prompt-buffer)
+                                      (prompter:all-marks prompt-buffer)
+                                      :pad-p t
+                                      :enable-marks-p (some #'prompter:enable-marks-p
+                                                            (prompter:sources prompt-buffer)))))
+    (setf (ps:@ (nyxt/ps:qs document "#prompt-modes") |innerHTML|)
+          (ps:lisp (str:join " "
+                             (mapcar (curry #'mode-status
+                                            (status-buffer (current-window)))
+                                     (sort-modes-for-status (modes prompt-buffer))))))))
 
 (defmethod attribute-widths ((source prompter:source))
   "Return the widths of SOURCE's attribute columns (as ratios)."
