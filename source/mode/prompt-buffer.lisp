@@ -62,7 +62,7 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "C-c C-j" 'set-action-on-current-suggestion
        "tab" 'insert-current-suggestion
        ; TODO: This is the Emacs Helm binding.  Better?
-       "C-c C-f" 'toggle-actions-on-current-suggestion-enabled
+       "C-c C-f" 'toggle-actions-on-current-suggestion
        ; TODO: This is the Emacs Helm binding.  Better?
        "C-]" 'toggle-attributes-display
        "M-shift-up" 'toggle-suggestions-display)
@@ -141,7 +141,7 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "x" 'nyxt/mode/input-edit:delete-forwards
        "d b" 'nyxt/mode/input-edit:delete-backwards-word
        "d w" 'nyxt/mode/input-edit:delete-forwards-word
-       "z f" 'toggle-actions-on-current-suggestion-enabled
+       "z f" 'toggle-actions-on-current-suggestion
        "z a" 'toggle-attributes-display
        "y" 'copy-selection
        "p" 'paste
@@ -405,9 +405,9 @@ current unmarked suggestion."
   "Close the PROMPT-BUFFER without further action."
   (prompter:destroy prompt-buffer))
 
-(define-command-prompt toggle-actions-on-current-suggestion-enabled (prompt-buffer)
+(define-command-prompt toggle-actions-on-current-suggestion (prompt-buffer)
   "Toggle whether `prompter:actions-on-current-suggestion' are enabled for PROMPT-BUFFER."
-  (prompter:toggle-actions-on-current-suggestion-enabled prompt-buffer)
+  (prompter:toggle-actions-on-current-suggestion prompt-buffer)
   (echo "Current suggestion actions: ~:[dis~;en~]abled."
         (prompter:actions-on-current-suggestion-enabled-p (current-source prompt-buffer))))
 

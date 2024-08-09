@@ -542,7 +542,7 @@ for a better overview of lengthy attributes.")
          " slot (thanks to @efimerspan!)")
     (:li "Add " (:nxref :class-name 'prompt-buffer :slot 'height) " slot.")
     (:li "Add "
-         (:nxref :command 'nyxt/mode/prompt-buffer:toggle-actions-on-current-suggestion-enabled)
+         (:nxref :command 'nyxt/mode/prompt-buffer:toggle-actions-on-current-suggestion)
          ", bound to " (:code "C-c C-j") "by default.")
     (:li (:code "return-selection-over-action") " renamed to "
          (:nxref :command 'nyxt/mode/prompt-buffer:run-action-on-return)
@@ -742,7 +742,7 @@ a dummy buffer. " (:nxref :class-name 'web-buffer)
      (:li (:code "nyxt/mode/prompt-buffer:run-selection-action") " renamed to "
           (:nxref :command 'nyxt/mode/prompt-buffer:run-action-on-current-suggestion) ".")
      (:li (:code "nyxt/mode/prompt-buffer:toggle-selection-actions-enabled") " renamed to "
-          (:nxref :command 'nyxt/mode/prompt-buffer:toggle-actions-on-current-suggestion-enabled) ".")
+          (:nxref :command 'nyxt/mode/prompt-buffer:toggle-actions-on-current-suggestion) ".")
      (:li (:code "nyxt/mode/prompt-buffer:insert-selection") " renamed to "
           (:nxref :command 'nyxt/mode/prompt-buffer:insert-current-suggestion) ".")))
 
