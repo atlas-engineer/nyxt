@@ -73,7 +73,8 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "C-down" 'last-suggestion
        "C-shift-down" 'last-suggestion-within-source
        "C-v" 'paste
-       "C-x" 'cut)
+       "C-x" 'cut
+       "C-a" 'select-input-text)
       keyscheme:emacs
       (list
        "C-p" 'previous-suggestion
@@ -104,7 +105,7 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "C-backspace" 'nyxt/mode/input-edit:delete-backwards-word
        "M-backspace" 'nyxt/mode/input-edit:delete-backwards-word
        "M-d" 'nyxt/mode/input-edit:delete-forwards-word
-       "C-x h" 'select-all
+       "C-x h" 'select-input-text
        "M-w" 'copy-selection
        "C-y" 'paste
        "C-w" 'cut
@@ -507,8 +508,8 @@ Only available if `prompter:enable-marks-p' is non-nil."
       (setf (ps:@ input selection-start) (ps:@ input value length)
             (ps:@ input selection-end) (ps:@ input value length)))))
 
-(define-command-prompt select-all (prompt-buffer)
-  "Select all the text in the prompt input."
+(define-command-prompt select-input-text (prompt-buffer)
+  "Select the prompt buffer's input text."
   (ffi-buffer-select-all prompt-buffer))
 
 ;; FIXME: Move scroll.lisp from document-mode so that prompt-buffer.lisp can reach
