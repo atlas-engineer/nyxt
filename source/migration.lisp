@@ -117,6 +117,11 @@ major versions."
                               result)))))
 
 (define-migration "4"
+  (toggle-actions-on-current-suggestion-enabled)
+  (:p "Deprecated in favor of "
+      (:nxref :command 'nyxt/mode/prompt-buffer:toggle-actions-on-current-suggestion)
+      ".")
+
   (hide-single-source-header-p)
   (:p "Deprecated.")
 
