@@ -97,6 +97,11 @@ elements are scaled accordingly.")
   (:li "When on pre-release, push " (:code "X-pre-release")
        " feature in addition to " (:code "X-pre-release-N") "one."))
 
+(define-version "3.12.0"
+  (:nsection :title "UI/UX"
+    (:ul
+     (:li "Add " (:nxref :command 'list-extensions) " command."))))
+
 (define-version "3.11.8"
   (:nsection :title "Bug fixes"
     (:ul
