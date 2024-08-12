@@ -470,5 +470,7 @@ Splits bookmarks into groups by tags."
                                              :enable-marks-p t)
                               (make-instance 'tag-source
                                              :marks (nyxt/mode/bookmark:url-bookmark-tags url))))))
-         (nyxt/mode/bookmark:bookmark-add url :tags tags :title (fetch-url-title url)))))
+         (nyxt/mode/bookmark:bookmark-add url
+                                          :tags tags
+                                          :title (fetch-url-title url)))))
    :selector "a"))
