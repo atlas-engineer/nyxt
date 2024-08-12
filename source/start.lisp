@@ -415,8 +415,6 @@ Examples:
               :verbose t
               :with-file '(\"history\" \"/tmp/nyxt/history.lisp\"))"
             (with-output-to-string (s) (opts:describe :stream s)))
-  ;; Extensions should be made accessible straight from the beginning,
-  ;; e.g. before a script is run.
   (declare #.(cons 'ignorable %start-args))
   (unless *renderer*
     (log:warn "No renderer set, Nyxt will not be able to render pages.  Try:
@@ -425,6 +423,8 @@ Examples:
  (asdf:load-system :nyxt/gi-gtk)
  (nyxt:ffi-initialize nyxt:*browser* '() (time:now)))
 "))
+  ;; Nyxt extensions should be made accessible straight from the beginning,
+  ;; e.g. before a script is run.
   (pushnew 'nyxt-source-registry asdf:*default-source-registries*)
   (asdf:clear-configuration)
   (let ((source-directory (files:expand *source-directory*)))
