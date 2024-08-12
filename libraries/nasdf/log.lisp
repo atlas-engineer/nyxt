@@ -11,7 +11,7 @@
 (defun logger (control-string &rest format-arguments)
   "Like `format' but assumes `*error-output*' as a stream and ensures fresh lines."
   (let ((*standard-output* *error-output*))
-    (fresh-line )
+    (fresh-line)
     (princ *log-prefix*)
     (apply #'format t control-string format-arguments)
     (fresh-line)))
