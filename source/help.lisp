@@ -601,3 +601,28 @@ clipboard."
         (:ul (:raw (history-html-list :limit 50)))
         (:h3 (:b "Recent bookmarks"))
         (:ul (:raw (list-bookmarks :limit 50)))))))
+
+(define-internal-page-command-global list-extensions
+    (&key (endpoint "https://nyxt-browser.com/api/extensions"))
+    (buffer "*Nyxt extensions*" 'nyxt/mode/help:help-mode)
+  "List available extensions for Nyxt.
+The `:download-link' is overloaded as a reference URL for external extensions as
+they are not served on the Nyxt website."
+  (flet ((extension->html (extension)
+           (spinneret:with-html-string
+             (:dl
+              (:dt "Name")
+              (:dd (alex:assoc-value extension :name))
+              (:dt "Description")
+              (:dd (alex:assoc-value extension :description))
+              (:dt "Link")
+              (let ((link (if (alex:assoc-value extension :internal-p)
+                              (format nil "https://nyxt-browser.com~a"
+                                      (alex:assoc-value extension :link))
+                              (alex:assoc-value extension :download-link))))
+                (:dd (:a :href link link)))))))
+    (spinneret:with-html-string
+      (:h1 "Nyxt extensions")
+      (loop for extension in (cl-json:decode-json-from-string (dex:get endpoint))
+            collect (:div (:raw (extension->html extension))
+                          (:hr))))))
