@@ -106,9 +106,16 @@ See https://developer.gnome.org/gobject/stable/gobject-Signals.html#signal-memor
                              :documentation "Internal hack, do not use me!
 WebKitGTK may trigger 'load-failed' when loading a page from the WebKit-history
 cache.  Upstream bug?  We use this slot to know when to ignore these load
-failures."))
+failures.")
+   (handle-permission-requests-p
+    nil
+    :documentation "Whether permission requests are handled.
+When non-nil, they are handled by `process-permission-request'.  Otherwise, all
+requests are denied."))
   (:export-class-name-p t)
-  (:export-accessor-names-p t))
+  (:export-accessor-names-p t)
+  (:metaclass user-class)
+  (:documentation "WebKit buffer class."))
 
 (defmethod prompter:object-attributes :around ((buffer gtk-buffer) (source nyxt:buffer-source))
   (declare (ignore source))
@@ -1554,7 +1561,8 @@ the `active-buffer'."
   (connect-signal-function buffer "script-dialog" #'process-script-dialog)
   (connect-signal-function buffer "run-file-chooser" #'process-file-chooser-request)
   (connect-signal-function buffer "run-color-chooser" #'process-color-chooser-request)
-  (connect-signal-function buffer "permission-request" #'process-permission-request)
+  (when (handle-permission-requests-p buffer)
+    (connect-signal-function buffer "permission-request" #'process-permission-request))
   (connect-signal-function buffer "show-notification" #'process-notification)
   ;; TLS certificate handling
   (connect-signal buffer "load-failed-with-tls-errors" nil (web-view failing-url certificate errors)
