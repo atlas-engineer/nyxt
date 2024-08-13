@@ -118,7 +118,7 @@ to the next."
       (:a.tab-button
        :class (when (equal section 'keybindings) "active")
        :href (nyxt-url 'common-settings :section 'keybindings)
-       "Keybindings")
+       "Keyboard shortcuts")
       (:a.tab-button
        :class (when (equal section 'theme-and-style) "active")
        :href (nyxt-url 'common-settings :section 'theme-and-style)
@@ -174,8 +174,7 @@ to the next."
                    :form '(define-configuration (prompt-buffer)
                            ((default-modes (pushnew 'nyxt/mode/vi:vi-insert-mode %slot-value%)))))))))
            (:div.right
-            (:p "Make a selection to set the default keybindings for every new
-Nyxt session (after restart).")
+            (:p "Set the default keybindings (requires restarting Nyxt).")
             (:p "Keybindings can also be enabled on a per-buffer basis by
 invoking the " (:nxref :command 'toggle-modes) "command.")))))
         (theme-and-style
@@ -198,7 +197,7 @@ invoking the " (:nxref :command 'toggle-modes) "command.")))))
                 (nyxt::auto-configure :form '(define-configuration browser
                                               ((theme theme::+dark-theme+)))))))
            (:div.right
-            (:p "Themes for the browser interface, panel buffers, and internal Nyxt pages like manual, bindings, and common settings."))))
+            (:p "Themes for Nyxt's UI."))))
          (:div.section
           (:h3 "Webpage theme")
           (:div.row
@@ -210,21 +209,20 @@ invoking the " (:nxref :command 'toggle-modes) "command.")))))
                            'auto)
               :vertical t
               :buffer buffer
-              '(auto "Default Web"
+              '(auto "Default"
                 (nyxt::auto-configure
                  :form '(define-configuration (web-buffer)
                          ((default-modes (remove-if (lambda (m)
                                                       (string= (symbol-name m) "DARK-MODE"))
                                           %slot-value%))))))
-              '(dark "Darkened Web"
+              '(dark "Darkened"
                 (nyxt::auto-configure
                  :form '(define-configuration (web-buffer)
                          ((default-modes (pushnew 'nyxt/mode/style:dark-mode %slot-value%))))))))
            (:div.right
-            (:p "Select Default Web to view webpages as they are designed.")
-            (:p "Select Dark Web to have Nyxt darken any webpage you visit."))))
+            (:p "Select Darkened to style webpages with a dark background."))))
          (:div.section
-          (:h3 "Default zoom ratio")
+          (:h3 "Default zoom")
           (:div.row
            (:div.left
             (:nselect
@@ -237,15 +235,13 @@ invoking the " (:nxref :command 'toggle-modes) "command.")))))
                               (nyxt::auto-configure
                                :class-name 'document-buffer
                                :slot 'zoom-ratio-default
-                               :slot-value ,(/ number 100.0))))))
-           (:div.right
-            (:p "Incremental changes advised.")))))
+                               :slot-value ,(/ number 100.0)))))))))
         (buffer-defaults
          (:div.section
           (:h3 "Homepage")
           (:div.row
            (:div.left
-            (:nbutton :text "Set default new buffer URL"
+            (:nbutton :text "Set default URL"
               '(nyxt::configure-slot 'default-new-buffer-url 'browser
                 :sources (list
                           (make-instance
@@ -259,7 +255,7 @@ invoking the " (:nxref :command 'toggle-modes) "command.")))))
                 :postprocess (lambda (url-or-history-entry)
                                (render-url (url url-or-history-entry))))))
            (:div.right
-            (:p "Choose your homepage. By default your homepage is set to the internal Nyxt page (nyxt:new)."))))
+            (:p "By default, it is set to Nyxt's home screen."))))
          (:div.section
           (:h3 "Session")
           (:div.row
@@ -278,7 +274,7 @@ invoking the " (:nxref :command 'toggle-modes) "command.")))))
                  :slot 'restore-session-on-startup-p
                  :slot-value nil))))
            (:div.right
-            (:p "Choose whether to restore buffers from previous sessions."))))
+            (:p "Restore buffers from previous sessions."))))
          (:div.section
           (:h3 "Modes")
           (:div.row
@@ -292,8 +288,11 @@ invoking the " (:nxref :command 'toggle-modes) "command.")))))
                                `(quote ,modes))
                 :type 'cons)))
            (:div.right
-            (:p "Specify default modes for all new buffers.")
-            (:p "To set modes for individual buffers, use the (toggle-modes) command, or a specific command like (toggle-no-script-mode).")))))
+            (:p "Specify default modes for new buffers.")
+            (:p "Modes can also be set interactively by command "
+                (:nxref :command 'toggle-modes)
+                " ,or by specific mode togglers such as "
+                (:nxref :command 'nyxt/mode/no-script:no-script-mode) ".")))))
         (privacy-and-security
          (:div.section
           (:h3 "Privacy & Security Modes")
@@ -339,7 +338,7 @@ invoking the " (:nxref :command 'toggle-modes) "command.")))))
                                                       (string= (symbol-name m) "REDUCE-TRACKING-MODE"))
                                           %slot-value%))))))))
            (:div.right
-            (:p "Select commonly used security modes here to add them to your default modes for new buffers."))))
+            (:p "Select security modes to be enabled by default on web buffers."))))
          (:div.section
           (:h3 "Cookie policy")
           (:div.row
@@ -363,23 +362,19 @@ invoking the " (:nxref :command 'toggle-modes) "command.")))))
                 (nyxt::auto-configure
                  :class-name 'browser
                  :slot 'default-cookie-policy
-                 :slot-value :never))))
-           (:div.right
-            (:p "To accept cookies for current website only, choose \"No third party\".")
-            (:p "To always accept cookies, choose \"Always accept\".")
-            (:p "To never accept cookies, choose \"Never accept\".")))))
+                 :slot-value :never)))))))
         (text-and-code
          (:div.section
           (:h3 "Edit user files")
           (:div.row
            (:div.left
-            (:nbutton :text "Use internal editor"
+            (:nbutton :text "Use Nyxt's editor"
               '(nyxt/mode/editor::edit-user-file))
             (:nbutton :text "Use external editor"
               '(nyxt::edit-user-file-with-external-editor)))
            (:div.right
-            (:p "To use the external editor, you need to set the VISUAL or EDITOR environment variables on your system.")
-            (:p "Otherwise, you can use the basic internal text editor."))))))))))
+            (:p "To use the external editor, please set the " (:code "VISUAL") " or "
+                (:code "EDITOR") "environment variables."))))))))))
 
 (defun tls-help (buffer url)
   "Helper function invoked upon TLS certificate errors."
