@@ -28,7 +28,12 @@
 (define-version "3.12.0"
   (:nsection :title "UI/UX"
     (:ul
-     (:li "Add " (:nxref :command 'list-extensions) " command."))))
+     (:li "Add " (:nxref :command 'list-extensions) " command.")))
+  (:nsection :title "Programming interface"
+    (:ul
+     (:li "Deny all permission requests by default on the WebKitGTK port (see "
+          (:code "nyxt/renderer/gtk:handle-permission-requests-p")
+          ")."))))
 
 (define-version "3.11.8"
   (:nsection :title "Bug fixes"
