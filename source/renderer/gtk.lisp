@@ -1032,22 +1032,27 @@ See `finalize-buffer'."
             (_ :other)))
     ;; Get Navigation Parameters from WebKitNavigationAction object
     (when navigation-type
-      (setf navigation-action (webkit:webkit-navigation-policy-decision-get-navigation-action
-                               response-policy-decision))
-      (setf request (webkit:webkit-navigation-action-get-request navigation-action))
-      (setf mouse-button (format nil "button~d"
-                                 (webkit:webkit-navigation-action-get-mouse-button
-                                  navigation-action)))
-      (setf modifiers (funcall (modifier-translator *browser*)
-                               (webkit:webkit-navigation-action-get-modifiers navigation-action))))
+      (setf navigation-action
+            (webkit:webkit-navigation-policy-decision-get-navigation-action
+             response-policy-decision))
+      (setf request
+            (webkit:webkit-navigation-action-get-request navigation-action))
+      (setf mouse-button
+            (format nil "button~d"
+                    (webkit:webkit-navigation-action-get-mouse-button navigation-action)))
+      (setf modifiers
+            (funcall (modifier-translator *browser*)
+                     (webkit:webkit-navigation-action-get-modifiers navigation-action))))
     (setf url (quri:uri (webkit:webkit-uri-request-uri request)))
-    (setf request-headers (let ((headers (webkit:webkit-uri-request-get-http-headers request)))
-                            (unless (cffi:null-pointer-p headers)
-                              (webkit:soup-message-headers-get-headers headers))))
-    (setf response-headers (when response
-                             (let ((headers (webkit:webkit-uri-response-get-http-headers response)))
-                               (unless (cffi:null-pointer-p headers)
-                                 (webkit:soup-message-headers-get-headers headers)))))
+    (setf request-headers
+          (let ((headers (webkit:webkit-uri-request-get-http-headers request)))
+            (unless (cffi:null-pointer-p headers)
+              (webkit:soup-message-headers-get-headers headers))))
+    (setf response-headers
+          (when response
+            (let ((headers (webkit:webkit-uri-response-get-http-headers response)))
+              (unless (cffi:null-pointer-p headers)
+                (webkit:soup-message-headers-get-headers headers)))))
     (setf toplevel-p
           (quri:uri= url
                      (quri:uri (webkit:webkit-web-view-uri (gtk-object buffer)))))
@@ -1055,21 +1060,22 @@ See `finalize-buffer'."
     (let* ((request-data
             (hooks:run-hook
              (request-resource-hook buffer)
-             (sera:lret ((data (make-instance 'request-data
-                                              :buffer buffer
-                                              :url (quri:copy-uri url)
-                                              :keys (unless (uiop:emptyp mouse-button)
-                                                      (list (keymaps:make-key :value mouse-button
-                                                                              :modifiers modifiers)))
-                                              :event-type event-type
-                                              :new-window-p is-new-window
-                                              :http-method method
-                                              :request-headers request-headers
-                                              :response-headers response-headers
-                                              :toplevel-p toplevel-p
-                                              :mime-type mime-type
-                                              :known-type-p is-known-type
-                                              :file-name file-name)))
+             (sera:lret ((data (make-instance
+                                'request-data
+                                :buffer buffer
+                                :url (quri:copy-uri url)
+                                :keys (unless (uiop:emptyp mouse-button)
+                                        (list (keymaps:make-key :value mouse-button
+                                                                :modifiers modifiers)))
+                                :event-type event-type
+                                :new-window-p is-new-window
+                                :http-method method
+                                :request-headers request-headers
+                                :response-headers response-headers
+                                :toplevel-p toplevel-p
+                                :mime-type mime-type
+                                :known-type-p is-known-type
+                                :file-name file-name)))
                         (setf (gtk-request data) request
                               (gtk-response data) response))))
            (keymap (when request-data
@@ -1446,24 +1452,25 @@ the `active-buffer'."
   (connect-signal buffer "resource-load-started" nil (web-view resource request)
     (declare (ignore web-view))
     (let* ((response (webkit:webkit-web-resource-response resource))
-           (request-data (make-instance 'request-data
-                                        :buffer buffer
-                                        :url (quri:uri (webkit:webkit-uri-request-get-uri request))
-                                        :event-type :other
-                                        :new-window-p nil
-                                        :resource-p t
-                                        :http-method (webkit:webkit-uri-request-get-http-method request)
-                                        :response-headers (when response
-                                                            (let ((headers (webkit:webkit-uri-response-get-http-headers request)))
-                                                              (unless (cffi:null-pointer-p headers)
-                                                                (webkit:soup-message-headers-get-headers headers))))
-                                        :request-headers (let ((headers (webkit:webkit-uri-request-get-http-headers request)))
-                                                           (unless (cffi:null-pointer-p headers)
-                                                             (webkit:soup-message-headers-get-headers headers)))
-                                        :toplevel-p nil
-                                        :mime-type (when response
-                                                     (webkit:webkit-uri-response-mime-type response))
-                                        :known-type-p t)))
+           (request-data (make-instance
+                          'request-data
+                          :buffer buffer
+                          :url (quri:uri (webkit:webkit-uri-request-get-uri request))
+                          :event-type :other
+                          :new-window-p nil
+                          :resource-p t
+                          :http-method (webkit:webkit-uri-request-get-http-method request)
+                          :response-headers (when response
+                                              (let ((headers (webkit:webkit-uri-response-get-http-headers request)))
+                                                (unless (cffi:null-pointer-p headers)
+                                                  (webkit:soup-message-headers-get-headers headers))))
+                          :request-headers (let ((headers (webkit:webkit-uri-request-get-http-headers request)))
+                                             (unless (cffi:null-pointer-p headers)
+                                               (webkit:soup-message-headers-get-headers headers)))
+                          :toplevel-p nil
+                          :mime-type (when response
+                                       (webkit:webkit-uri-response-mime-type response))
+                          :known-type-p t)))
       (setf (gtk-response request-data) response
             (gtk-request request-data) request
             (gtk-resource request-data) resource)
