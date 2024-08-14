@@ -278,13 +278,15 @@ See `find-internal-page-buffer'."))
                                     2)))
                     (setf contents
                           (spinneret:with-html-string
-                            (:head
-                             (:title (apply #'dynamic-title
-                                            (gethash (name page) *nyxt-url-commands*)
-                                            args))
-                             (:style (:raw (style (or (find-panel-buffer (name page))
-                                                      (find-internal-page-buffer (name page)))))))
-                            (:body (:raw contents)))))
+                            (:doctype)
+                            (:html
+                             (:head
+                              (:title (apply #'dynamic-title
+                                             (gethash (name page) *nyxt-url-commands*)
+                                             args))
+                              (:style (:raw (style (or (find-panel-buffer (name page))
+                                                       (find-internal-page-buffer (name page)))))))
+                             (:body (:raw contents))))))
                   (values contents type status headers reason))))))))
 
 (defmethod (setf page-mode) (new-value (page internal-page))
