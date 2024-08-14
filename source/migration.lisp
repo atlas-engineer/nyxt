@@ -121,55 +121,55 @@ major versions."
   (:p "Deleted.")
 
   (override-map)
-  (:p "Deprecated.")
+  (:p "Deleted.")
 
   (select-all)
-  (:p "Deprecated in favor of "
+  (:p "Deleted in favor of "
       (:nxref :command 'nyxt/mode/prompt-buffer:select-input-text) ".")
 
   (toggle-actions-on-current-suggestion-enabled)
-  (:p "Deprecated in favor of "
+  (:p "Deleted in favor of "
       (:nxref :command 'nyxt/mode/prompt-buffer:toggle-actions-on-current-suggestion)
       ".")
 
   (hide-single-source-header-p)
-  (:p "Deprecated.")
+  (:p "Deleted.")
 
   (prompt-buffer-open-height)
-  (:p "Deprecated since " (:nxref :slot 'height :class-name 'prompt-buffer) " suffices.")
+  (:p "Deleted since " (:nxref :slot 'height :class-name 'prompt-buffer) " suffices.")
 
   (status-buffer-position)
-  (:p "Deprecated in favor of " (:nxref :slot 'placement :class-name 'status-buffer) ".")
+  (:p "Deleted in favor of " (:nxref :slot 'placement :class-name 'status-buffer) ".")
 
   (hints-offset-x)
-  (:p "Deprecated in favor of "
+  (:p "Deleted in favor of "
       (:nxref :slot 'nyxt/mode/hint:x-translation :class-name 'nyxt/mode/hint:hint-mode) ".")
 
   (hints-offset-y)
-  (:p "Deprecated in favor of "
+  (:p "Deleted in favor of "
       (:nxref :slot 'nyxt/mode/hint:y-translation :class-name 'nyxt/mode/hint:hint-mode) ".")
 
   (message-buffer-height)
-  (:p "Deprecated in favor of " (:nxref :slot 'height :class-name 'message-buffer) ".")
+  (:p "Deleted in favor of " (:nxref :slot 'height :class-name 'message-buffer) ".")
 
   (message-buffer-style)
-  (:p "Deprecated in favor of " (:nxref :slot 'style :class-name 'message-buffer) ".")
+  (:p "Deleted in favor of " (:nxref :slot 'style :class-name 'message-buffer) ".")
 
   (ffi-window-message-buffer-height)
-  (:p "Deprecated since it is now handled by " (:nxref :function 'ffi-height) ".")
+  (:p "Deleted since it is now handled by " (:nxref :function 'ffi-height) ".")
 
   (external-editor-program)
-  (:p "Deprecated support for lists as a value.  Strings are the only valid values.")
+  (:p "No support for lists as a value.  Strings are the only valid values.")
 
   (conservative-history-movement-p)
-  (:p "Deprecated in favor of " (:nxref :slot 'global-history-p :class-name 'buffer) ".")
+  (:p "Deleted in favor of " (:nxref :slot 'global-history-p :class-name 'buffer) ".")
 
   (nyxt/mode/no-procrastinate
    nyxt/mode/preview
    nyxt/mode/record-input-field
    nyxt/mode/remembrance
    nyxt/mode/tts)
-  (:p "Deprecated modes.")
+  (:p "Deleted modes.")
 
   (copy-placeholder
    #:clean-configuration
@@ -186,7 +186,7 @@ major versions."
    reload-buffer
    reload-with-modes
    resume-prompt)
-  (:p "Deprecated commands."))
+  (:p "Deleted commands."))
 
 (define-migration "3"
   (%slot-default)
@@ -251,7 +251,7 @@ major versions."
       (:nxref :slot 'after-startup-hook :class-name 'browser) " now.")
 
   (auto-follow-hints-p compute-hints-in-view-port-p fit-to-prompt-p)
-  (:p "Deprecated in favor of "
+  (:p "Deleted in favor of "
       (:nxref :slot 'nyxt/mode/hint:hinting-type :class-name 'nyxt/mode/hint:hint-mode)
       ".")
 

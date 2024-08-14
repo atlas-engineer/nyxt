@@ -28,11 +28,11 @@
 (define-version "4.0.0"
   (:ul
    (:li "Delete " (:code "ffi-buffer-load-html") ".")
-   (:li "Deprecate slot " (:code "override-map") ".")
-   (:li "Deprecate slot " (:code "hide-single-source-header-p") ".")
+   (:li "Delete slot " (:code "override-map") ".")
+   (:li "Delete slot " (:code "hide-single-source-header-p") ".")
    (:li "Refactor input to be handled on the buffer level rather than the window
 level.")
-   (:li "Deprecate " (:code "input-skip-dispatcher") ".")
+   (:li "Delete " (:code "input-skip-dispatcher") ".")
    (:li "Move slot " (:nxref :slot 'command-dispatcher :class-name 'browser)
         " from window to the browser class.")
    (:li "Move slots " (:nxref :slot 'last-key :class-name 'buffer)
@@ -40,15 +40,15 @@ level.")
         " from window to the buffer class.")
    (:li "Refactor API of " (:nxref :function 'prompter:object-attributes)
         " with respect to width allocation.")
-   (:li "Deprecate slot " (:code "dynamic-attribute-width-p") ".")
+   (:li "Delete slot " (:code "dynamic-attribute-width-p") ".")
    (:li "Refactor renderer interface input handling.")
    (:li "Refactor custom schemes URLs API.")
-   (:li "Deprecate slot " (:code "input-dispatcher")
+   (:li "Delete slot " (:code "input-dispatcher")
         ", if the user wishes to change the " (:code "input-dispatcher")", they can redefine "
         (:nxref :function 'dispatch-input-event) ".")
-   (:li "Deprecate slot " (:code "status-buffer-position") "in favour of"
+   (:li "Delete slot " (:code "status-buffer-position") "in favour of"
         (:nxref :slot 'placement :class-name 'status-buffer) ".")
-   (:li "Deprecate slot " (:code "prompt-buffer-open-height") " since "
+   (:li "Delete slot " (:code "prompt-buffer-open-height") " since "
         (:nxref :slot 'height :class-name 'prompt-buffer) "suffices.")
    (:li "Add slot "
         (:nxref :slot 'nyxt/mode/hint:x-placement :class-name 'nyxt/mode/hint:hint-mode)
@@ -466,7 +466,7 @@ buffers.")
         all modes, when using the CUA keyscheme."))
   (:h3 "Programming interfaces")
   (:ul
-   (:li (:code "conservative-history-movement-p") " is deprecated in favor of "
+   (:li (:code "conservative-history-movement-p") " is deleted in favor of "
         (:nxref :slot 'global-history-p :class-name 'buffer) ".")))
 
 (define-version "3.0.0"
@@ -719,7 +719,7 @@ a dummy buffer. " (:nxref :class-name 'web-buffer)
           " and " (:nxref :macro 'define-nyxt-user-system-and-load) ".")
      (:li "Rename " (:code "nyxt/mode/hint:box-style") " to "
           (:nxref :class-name 'nyxt/mode/hint:hint-mode :slot 'style) ".")
-     (:li "Deprecate " (:code "nyxt/mode/hint:highlighted-box-style") " and merge into "
+     (:li "Delete " (:code "nyxt/mode/hint:highlighted-box-style") " and merge into "
           (:nxref :class-name 'nyxt/mode/hint:hint-mode :slot 'style) ".")
      (:li "New " (:nxref :function 'describe-mode) " command (an alias for "
           (:nxref :function 'describe-class) ").")
