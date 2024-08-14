@@ -328,15 +328,7 @@ CUA and Emacs-like keybindings out of the box, too). Activate it with the "
         (:p "A note for " (:code "emacs-mode") " users: unlike in Emacs, in Nyxt the command "
             (:nxref :command 'nyxt/mode/visual:toggle-mark
               :mode 'nyxt/mode/visual:visual-mode)
-            " is bound to Shift-space, as C-space is bound to 'execute-command,
-overriding any mode keybinding. If you want to toggle mark with C-space,
-you'll need to set your own override-map such that C-space is not bound.
-An example:")
-        (:ncode
-          '(define-configuration input-buffer
-            ((override-map (let ((map (make-keymap "override-map")))
-                             (define-key map
-                               "M-x" 'execute-command)))))))
+            " is bound to Shift-space, as C-space is bound to 'execute-command."))
 
       (:nsection :title "Automation"
         (:p "Nyxt has many facilities for automation. For instance, it is possible to

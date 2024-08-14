@@ -15,8 +15,7 @@
   (let* ((current-buffer (current-buffer))
          (buffer (or (current-buffer)
                      (make-instance 'input-buffer)))
-         (keymaps (cons (override-map buffer)
-                        (delete nil (mapcar #'keymap modes)))))
+         (keymaps (delete nil (mapcar #'keymap modes))))
     (unwind-protect
          (or (first (keymaps:pretty-binding-keys fn keymaps :print-style (keymaps:name (keyscheme buffer))))
              "unbound")
@@ -46,8 +45,7 @@ Example:
 If non-empty, return the result of BUFFER's `current-keymaps-hook' instead."
   (let ((keymaps
           (when (input-buffer-p buffer)
-            (cons (override-map buffer)
-                  (delete nil (mapcar #'keymap (modes buffer)))))))
+            (delete nil (mapcar #'keymap (modes buffer))))))
     (if (and (input-buffer-p buffer) (current-keymaps-hook buffer))
         (hooks:run-hook (current-keymaps-hook buffer) keymaps buffer)
         keymaps)))
@@ -57,7 +55,7 @@ If non-empty, return the result of BUFFER's `current-keymaps-hook' instead."
 prompt buffer keymaps."
   (let ((buffer (active-buffer window)))
     (when buffer
-      (apply #'append (list (override-map buffer))
+      (apply #'append
              (mapcar
               (lambda (buffer-or-prompt-buffer)
                 (delete nil (mapcar #'keymap (modes buffer-or-prompt-buffer))))
