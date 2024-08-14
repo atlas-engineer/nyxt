@@ -2,8 +2,6 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (in-package :nyxt)
-;; TODO: which-key: List all bindings with some prefix.
-;; TODO: Make sure it's easy enough to set global bindings.
 
 (-> binding-keys (sym:function-symbol &key (:modes list)) *)
 (defun binding-keys (fn &key (modes (if (current-buffer)
@@ -47,7 +45,7 @@ prompt buffer keymaps."
 
 (-> pointer-event-p (keymaps:key) boolean)
 (defun pointer-event-p (key)
-  "Return non-nil if key-chord is a pointer event, e.g. a mouton button click."
+  "Return non-nil if KEY is a pointer event."
   (coerce (str:starts-with? "button" (keymaps:key-value key))
           'boolean))
 
@@ -68,10 +66,8 @@ KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
 (-> dispatch-command ((or sym:function-symbol function)) *)
 (export-always 'dispatch-command)
 (defun dispatch-command (function)
-  "Runs FUNCTION asynchronously."
-  (echo-dismiss)                        ; Clean up message-view on command.
-  ;; TODO: Instead of hard-coding these ignored-commands, we could add a boolean
-  ;; slot to the `command' class.
+  "Run FUNCTION asynchronously."
+  (echo-dismiss)
   (let ((ignored-commands '(execute-command
                             execute-predicted-command
                             next-suggestion
