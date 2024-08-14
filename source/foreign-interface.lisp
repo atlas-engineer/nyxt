@@ -123,13 +123,9 @@ Usually setf-able."))
 (define-ffi-generic ffi-buffer-reload (buffer)
   (:documentation "Reload BUFFER via the renderer."))
 
-(define-ffi-generic ffi-buffer-load-html (buffer html-content url)
-  (:documentation "Load HTML-CONTENT into BUFFER through the renderer.
-When URL is non-nil, relative URLs are resolved against it."))
 (define-ffi-generic ffi-buffer-load-alternate-html (buffer html-content content-url url)
   (:documentation "Load HTML-CONTENT for CONTENT-URL into BUFFER through the renderer.
-Like `ffi-buffer-load-html', except that it doesn't influence the BUFFER history
-or CSS/HTML cache."))
+Meant to display page-loading errors."))
 
 (define-ffi-generic ffi-register-custom-scheme (scheme)
   (:documentation "Register internal custom SCHEME.

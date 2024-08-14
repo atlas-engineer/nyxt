@@ -169,9 +169,6 @@
 (defmethod ffi-focused-p ((buffer electron-buffer))
   (electron:is-focused buffer))
 
-;; Not used anywhere, deprecate?
-;; (defmethod ffi-buffer-load-html ((buffer electron-buffer) html-content url))
-
 ;; ffi-buffer-load-alternate-html handles bogus URLs (https://bogusfoo.com/).
 ;; (defmethod ffi-buffer-load-alternate-html ((buffer electron-buffer) html-content content-url url))
 
