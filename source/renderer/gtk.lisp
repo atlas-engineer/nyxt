@@ -1085,7 +1085,7 @@ See `finalize-buffer'."
         (webkit:webkit-policy-decision-ignore response-policy-decision))
        ;; FIXME: Do we ever use it? Do we actually need it?
        (bound-function
-        (log:debug "Resource request key sequence ~a" (keyspecs-with-optional-keycode (keys request-data)))
+        (log:debug "Resource request key sequence ~a" (keyspecs-with-keycode (keys request-data)))
         (funcall bound-function :url url :buffer buffer)
         (webkit:webkit-policy-decision-ignore response-policy-decision))
        ((new-window-p request-data)

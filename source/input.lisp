@@ -56,8 +56,8 @@ prompt buffer keymaps."
    (mapcar (lambda (key) (keymaps:copy-key key :code 0))
            keys)))
 
-(export-always 'keyspecs-with-optional-keycode)
-(defun keyspecs-with-optional-keycode (keys) ; TODO: Remove "optional" from name.
+(export-always 'keyspecs-with-keycode)
+(defun keyspecs-with-keycode (keys)
   "Like `keymaps:keyspecs' but displays keys with keycodes like this:
 KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
   (let ((no-code-specs (keyspecs-without-keycode keys)))
@@ -103,7 +103,7 @@ Return nil to forward to renderer or non-nil otherwise."
                          (format nil "~a (translated from ~a)"
                                  translated-specs
                                  specs)))
-                   (keyspecs-with-optional-keycode key))))
+                   (keyspecs-with-keycode key))))
       (when (input-buffer-p buffer)
         (setf (last-event buffer) event))
       (when (prompt-buffer-p buffer)
