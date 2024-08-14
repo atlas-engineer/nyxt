@@ -117,6 +117,9 @@ major versions."
                               result)))))
 
 (define-migration "4"
+  (ffi-buffer-load-html)
+  (:p "Deleted.")
+
   (override-map)
   (:p "Deprecated.")
 
