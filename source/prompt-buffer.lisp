@@ -251,12 +251,7 @@ The following mouse keybindings are available:
         `(.selected
           :background-color ,theme:primary
           :color ,theme:on-primary))
-      :documentation "The CSS applied to prompt buffer.")
-     (override-map
-      (make-keymap "override-map")
-      :type keymaps:keymap
-      :documentation "Keymap that takes precedence over all modes' keymaps.
-See `buffer's `override-map' for more details."))
+      :documentation "The CSS applied to prompt buffer."))
     (:export-class-name-p t)
     (:export-accessor-names-p t)
     (:export-predicate-name-p t)

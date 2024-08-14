@@ -90,10 +90,7 @@ For instance " (:nxref :class-name 'web-buffer) " and " (:nxref :class-name 'pro
             " both inherit from" (:nxref :class-name 'input-buffer) ".")
         (:p "You can configure one of the parent " (:nxref :class-name 'buffer) " classes slots and the new
 values will automatically cascade down as a new default for all child classes-
-unless this slot is specialized by these child classes.
-For instance if you configure the " (:nxref :slot 'override-map :class-name 'input-buffer)
-" slot in " (:nxref :class-name 'input-buffer) ", both " (:nxref :class-name 'panel-buffer) " and "
-(:nxref :class-name 'web-buffer) " classes will inherit from the new value."))
+unless this slot is specialized by these child classes."))
 
       (:nsection :title "Keybinding configuration"
         (:p "Nyxt supports multiple " (:i "bindings schemes") " such as CUA (the
@@ -128,15 +125,6 @@ the configuration) and merely adds/modifies it."
                keyscheme:vi-normal
                (list "g b" (lambda-command switch-buffer* ()
                              (switch-buffer :current-is-last-p t))))))))
-        (:p "The " (:nxref :slot 'override-map :class-name 'input-buffer) " is a keymap that has priority over
-all other keymaps.  By default, it has few bindings like the one
-for " (:nxref :command 'execute-command) ".  You can use it to set keys globally:")
-        (:ncode
-          '(define-configuration input-buffer
-            ((override-map (let ((map (make-keymap "override-map")))
-                             (define-key map
-                               "M-x" 'execute-command
-                               "C-space" 'nothing))))))
         (:p "The " (:nxref  :command 'nothing) " command is useful to override bindings to do
 nothing. Note that it's possible to bind any command, including those of
 disabled modes that are not listed in " (:nxref :command 'execute-command)

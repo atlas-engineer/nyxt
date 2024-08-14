@@ -466,27 +466,6 @@ To access all modes, including disabled ones, use `slot-value'."
     :documentation "If non-nil, the cursor moves to the end
 (resp. beginning) of the word when `move-forward-word'
 (resp. `move-backward-word') is called.")
-   (override-map
-    (let ((map (make-keymap "override-map")))
-      (define-key map
-        "C-space" 'execute-command))
-    :documentation "Keymap that overrides all other bindings.
-
-`override-map' takes priority over everything, including text insertion, and is
-therefore better used with modifier-prefixed bindings.
-
-No libraries should ever touch the override-map, this is left for the user to
-customize to their needs.
-
-Example:
-
-\(defmethod customize-instance ((buffer buffer) &key)
-  (setf (override-map buffer)
-        (let ((map (make-keymap \"override-map\")))
-          (define-key map
-            \"M-x\" 'execute-command
-            \"C-q\" 'quit)
-          map)))")
    (forward-input-events-p
     t
     :documentation "When non-nil, keyboard events are
