@@ -117,6 +117,9 @@ major versions."
                               result)))))
 
 (define-migration "4"
+  (override-map)
+  (:p "Deprecated.")
+
   (select-all)
   (:p "Deprecated in favor of "
       (:nxref :command 'nyxt/mode/prompt-buffer:select-input-text) ".")
