@@ -46,14 +46,15 @@ Only used to mandate whether the mode needs a toggler command:
   ((buffer
     nil
     :type (maybe null buffer))
+   (visible-in-status-p
+    t
+    :documentation "Whether the mode is visible in the `status-buffer'.")
    (glyph
     nil
     :type (maybe string)
     :accessor nil
-    :documentation "A glyph used to represent this mode when `glyph-mode-presentation-p'.")
-   (visible-in-status-p
-    t
-    :documentation "Whether the mode is visible in the status line.")
+    :documentation "A `status-buffer' indicator that mode is enabled, when
+`glyph-mode-presentation-p' is non-nil.")
    (rememberable-p
     t
     :documentation "Whether this mode is visible to auto-rules.")
