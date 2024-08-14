@@ -1678,14 +1678,6 @@ local anyways, and it's better to refresh it if a load was queried."
     (setf (nyxt::status buffer) :loading))
   (webkit:webkit-web-view-reload (gtk-object buffer)))
 
-(define-ffi-method ffi-buffer-load-html ((buffer gtk-buffer) html-content url)
-  (declare (type quri:uri url))
-  (webkit:webkit-web-view-load-html (gtk-object buffer)
-                                    html-content
-                                    (if (url-empty-p url)
-                                        "about:blank"
-                                        (render-url url))))
-
 (define-ffi-method ffi-buffer-load-alternate-html ((buffer gtk-buffer) html-content content-url url)
   (webkit:webkit-web-view-load-alternate-html (gtk-object buffer)
                                               html-content

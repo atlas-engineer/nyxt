@@ -27,6 +27,7 @@
 
 (define-version "4.0.0"
   (:ul
+   (:li "Delete " (:code "ffi-buffer-load-html") ".")
    (:li "Deprecate slot " (:code "override-map") ".")
    (:li "Deprecate slot " (:code "hide-single-source-header-p") ".")
    (:li "Refactor input to be handled on the buffer level rather than the window
