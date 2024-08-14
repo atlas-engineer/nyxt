@@ -53,13 +53,11 @@ If non-empty, return the result of BUFFER's `current-keymaps-hook' instead."
 (defun all-keymaps (&optional (window (current-window)))
   "Return all keymaps for WINDOW, including the buffer keymaps and the
 prompt buffer keymaps."
-  (let ((buffer (active-buffer window)))
-    (when buffer
-      (apply #'append
-             (mapcar
-              (lambda (buffer-or-prompt-buffer)
-                (delete nil (mapcar #'keymap (modes buffer-or-prompt-buffer))))
-              (delete nil (list buffer (current-prompt-buffer))))))))
+  (when-let ((buffer (active-buffer window)))
+    (delete nil
+            (mapcar #'keymap
+                    (append (modes buffer)
+                            (ignore-errors (modes (current-prompt-buffer))))))))
 
 (-> pointer-event-p (keymaps:key) boolean)
 (defun pointer-event-p (key)
