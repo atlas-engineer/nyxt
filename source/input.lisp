@@ -105,11 +105,6 @@ KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
       (setf (last-command *browser*) function-function))
     (run-async function)))
 
-(export-always 'dispatch-input-skip)
-(defun dispatch-input-skip (keyspecs)
-  "Default `input-scrip-dispatcher'. Logs the skipped key."
-  (log:debug "Skipping input event key ~s" keyspecs))
-
 (export-always 'dispatch-input-event)
 (defun dispatch-input-event (event buffer)
   "Dispatch keys in BUFFER `key-stack'.
