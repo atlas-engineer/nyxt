@@ -22,20 +22,6 @@
       (unless current-buffer
         (buffer-delete buffer)))))
 
-(-> make-keymap (string &rest keymaps:keymap) keymaps:keymap)
-(export-always 'make-keymap)
-(defun make-keymap (name &rest parents)
-  "Like `keymaps:make-keymap' but only allow binding function symbols, commands
-or keymaps.
-
-Example:
-
-\(defvar *my-keymap* (make-keymap \"my-map\")
-  \"My keymap.\")"
-  (let ((keymap (apply #'keymaps:make-keymap name parents)))
-    (setf (keymaps:bound-type keymap) 'keyscheme:nyxt-keymap-value)
-    keymap))
-
 (export-always 'current-keymaps)
 (defun current-keymaps (&optional (buffer (let ((prompt-buffer (current-prompt-buffer)))
                                             (if (and prompt-buffer (ffi-focused-p prompt-buffer))

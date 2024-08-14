@@ -149,7 +149,7 @@ Note that this kind of global keymaps also have priority over regular character
 insertion, so you should probably not bind anything without modifiers in such a
 keymap.")
         (:ncode
-          '(defvar *my-keymap* (make-keymap "my-map"))
+          '(defvar *my-keymap* (keymaps:make-keymap "my-map"))
           '(define-key *my-keymap*
             "C-f" 'nyxt/mode/history:history-forwards
             "C-b" 'nyxt/mode/history:history-backwards)
