@@ -436,7 +436,9 @@ case."
       (let* ((mode (find-submode 'history-mode))
              (parent-position (when mode
                                 (and (backtrack-to-hubs-p mode)
-                                     (position url (htree:all-parents history :owner (id buffer))
+                                     (position url
+                                               (htree:all-parents history
+                                                                  :owner (id buffer))
                                                :test #'quri:uri-equal
                                                :key (compose #'url #'htree:data))))))
         (if parent-position
@@ -446,7 +448,7 @@ case."
                                             :title title)
                              history
                              (id buffer))))
-      (let* ((entry (htree:data (htree:current (htree:owner history (id buffer))))))
+      (let ((entry (htree:data (htree:current (htree:owner history (id buffer))))))
         (setf (title entry) title)
         (incf (nyxt::implicit-visits entry))))))
 
