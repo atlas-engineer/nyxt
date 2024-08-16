@@ -262,7 +262,11 @@ The `style' of the `message-buffer' is honored."))
 
 (define-ffi-generic ffi-display-url (browser url)
   (:documentation "Return URL as a human-readable string.
-In particular, this should understand Punycode."))
+URLs may contain percent-encoded characters or Punycode, which are not generally
+suitable to display to users.
+
+It must provide protection against IDN homograph attacks, so in some cases the
+host part of the returned URI may be in Punycode if the safety check fails."))
 
 (define-ffi-generic ffi-buffer-cookie-policy (buffer)
   (:setter-p t)

@@ -35,7 +35,6 @@
                enchant
                flexi-streams
                history-tree
-               idna
                iolib
                iolib/os
                lass

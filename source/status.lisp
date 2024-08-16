@@ -296,32 +296,11 @@ Augment this with `style' of STATUS, if necessary."
 
 (export-always 'format-status-url)
 (defmethod format-status-url ((status status-buffer))
-  "Formats the currently open URL for the STATUS buffer.
-
-MODIFY AT YOUR OWN RISK! The current implementation goes a great way to make the
-display safe, in particular to prevent IDN-spoofing by showing the Unicode
-domains as punicode (the Unicode aesthetic domain is shown in parentheses after
-the URL.)
-
-Augment this with `style' of STATUS, if necessary."
-  ;; However this function changes, it should always:
-  ;; - Prevent IDN/Unicode-spoofing.
-  ;; - Clearly show subdomains (except maybe "trivial" ones) to prevent
-  ;;   subdomain takeover attacks.
-  ;; - Retain a clear display of which protocol/scheme is used to discourage
-  ;;   e.g. trusting HTTP websites.
-  (let* ((buffer (current-buffer (window status)))
-         (content (multiple-value-bind (aesthetic safe) (render-url (url buffer))
-                    (uiop:strcat (if safe
-                                     (format nil "~a (~a)" safe aesthetic)
-                                     aesthetic)
-                                 (when (title buffer) (str:concat " — " (title buffer)))
-                                 (when (find (url buffer)
-                                             (remove buffer (buffer-list))
-                                             :test #'url-equal :key #'url)
-                                   (format nil " (buffer ~a)" (id buffer)))))))
+  "Format the current URL for the STATUS buffer."
+  (let ((buffer (current-buffer (window status))))
     (spinneret:with-html-string
-      (:nbutton :buffer status :text content :title content '(nyxt:set-url)))))
+      (:nbutton :buffer status :text (render-url (url buffer)) :title (title buffer)
+        '(nyxt:set-url)))))
 
 (export-always 'format-status-tabs)
 (defmethod format-status-tabs ((status status-buffer))

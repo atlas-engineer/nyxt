@@ -37,33 +37,9 @@ Means that `url' can be applied to it to get `quri:uri'."
   `(satisfies has-url-method-p))
 
 (export-always 'render-url)
-(-> render-url (url-designator) t)
 (defun render-url (url)
-  "Return the aesthetic decoded URL.
-
-If the URL contains hexadecimal-encoded characters, return their Unicode
-counterpart, unless there are unprintable characters.
-
-If URL contains non-ascii chars in domain part (IDN), return two values:
-- The aesthetic decoded URL, and
-- The safe punicode-encoded one."
-  (let* ((initial-url (url url))        ; Ensure `quri:uri'.
-         (url (quri:render-uri
-               (quri:copy-uri initial-url :query (ignore-errors (quri:url-decode (quri:uri-query initial-url))))))
-         (displayed (or (ignore-errors (ffi-display-url *browser* url))
-                        url)))
-    (cond
-      ((every (alex:conjoin #'graphic-char-p #'sera:ascii-char-p) displayed)
-       displayed)
-      ((and (every #'sera:ascii-char-p displayed)
-            (notevery #'graphic-char-p displayed))
-       (quri:render-uri initial-url))
-      (t
-       (values displayed (let ((uri (quri:uri displayed)))
-                           (quri:render-uri (quri:make-uri :host (if (quri:uri-host uri)
-                                                                     (idna:to-ascii (quri:uri-host uri))
-                                                                     "")
-                                                           :defaults uri))))))))
+  "See `ffi-display-url'."
+  (ffi-display-url *browser* (if (stringp url) url (quri:render-uri url))))
 
 (export-always 'fetch-url-title)
 (defun fetch-url-title (url)

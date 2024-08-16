@@ -52,13 +52,7 @@ The total number of visit for a given URL is (+ explicit-visits implicit-visits)
 (defmethod prompter:object-attributes ((entry history-entry) (source prompter:source))
   (declare (ignore source))
   `(("Title" ,(title entry) (:width 3))
-    ("URL" ,(spinneret::escape-string
-             (multiple-value-bind (aesthetic safe)
-                 (render-url (url entry))
-               (if safe
-                   (format nil "~a (~a)" safe aesthetic)
-                   aesthetic)))
-           (:width 2))
+    ("URL" ,(render-url (url entry)) (:width 2))
     ("Visits" ,(+ (implicit-visits entry) (explicit-visits entry)) (:width 1))))
 
 (export-always 'equals)
