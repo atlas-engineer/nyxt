@@ -83,8 +83,7 @@ class."
                                                      serialization-state)
   "Serialize `history-entry' by turning the URL and last access into strings."
   (declare (ignore serialization-state))
-  (prin1 (time:format-timestring nil timestamp
-                                       :timezone time:+utc-zone+)
+  (prin1 (time:format-timestring nil timestamp :timezone time:+utc-zone+)
          stream))
 
 (defun history-tree-key (history-entry)
