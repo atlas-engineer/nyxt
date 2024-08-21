@@ -88,7 +88,7 @@ class."
          stream))
 
 (defun history-tree-key (history-entry)
-  (render-url (url history-entry)))
+  (url history-entry))
 
 (defun make-history-tree (&optional (buffer (current-buffer)))
   "Return a new global history tree for `history-entry' data."
