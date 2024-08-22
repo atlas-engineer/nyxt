@@ -300,9 +300,9 @@ Can be used as a `open-file-function'."
                (make-buffer-focus :url file-url)
                (buffer-load file-url))))
         (*open-program*
-         (let ((process (uiop:launch-program
-                         (list *open-program* (uiop:native-namestring filename))
-                         :error-output :stream)))
+         (let ((process (uiop:launch-program (list *open-program*
+                                                   (uiop:native-namestring filename))
+                                             :error-output :stream)))
            (nyxt:echo "Opening ~s with ~s." filename *open-program*)
            (run-thread "file opener"
              (let ((status (uiop:wait-process process)))
