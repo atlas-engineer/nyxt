@@ -52,7 +52,7 @@ Can cause a renderer to choke when set to a high value. Use with caution!")
 (defun escaped-literal-print (value)
   "Print the constant/literal/`scalar-p' VALUE to HTML-escaped string."
   (spinneret:with-html-string
-    (:code (:raw (spinneret::escape-string
+    (:code (:raw (spinneret:escape-string
                   (let ((*print-lines* 2)
                         (*print-length* *inspector-print-length*))
                     (prini-to-string value)))))))

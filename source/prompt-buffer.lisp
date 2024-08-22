@@ -395,7 +395,7 @@ See also `show-prompt-buffer'."
                           "display:revert;")
                (when (prompter:enable-marks-p source) (:th " "))
                (loop for attribute-key in (prompter:active-attributes-keys source)
-                     collect (:th (spinneret::escape-string attribute-key))))
+                     collect (:th (spinneret:escape-string attribute-key))))
               (loop
                 ;; TODO: calculate how many lines fit in the prompt buffer
                 with max-suggestion-count = 8
