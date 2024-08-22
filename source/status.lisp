@@ -228,8 +228,7 @@ first."
   "Render the enabled modes to HTML string.
 Any `nyxt/mode/keyscheme:keyscheme-mode' is placed first.
 
-This leverages `mode-status' which can be specialized for individual modes.
-Augment this with `style' of STATUS, if necessary."
+This leverages `mode-status' which can be specialized for individual modes."
   (let ((buffer (current-buffer (window status))))
     (if (modable-buffer-p buffer)
         (let ((sorted-modes (sort-modes-for-status (modes buffer))))
@@ -258,8 +257,7 @@ Augment this with `style' of STATUS, if necessary."
 
 (export-always 'format-status-buttons)
 (defmethod format-status-buttons ((status status-buffer))
-  "Render interactive buttons to HTML string.
-Augment this with `style' of STATUS, if necessary."
+  "Render interactive buttons to HTML string."
   (spinneret:with-html-string
     (:nbutton
       :buffer status
@@ -286,8 +284,7 @@ Augment this with `style' of STATUS, if necessary."
 (export-always 'format-status-load-status)
 (defmethod format-status-load-status ((status status-buffer))
   "Render the load status to HTML string.
-By default, renders a spinning loading ring when loading a URL.
-Augment this with `style' of STATUS, if necessary."
+By default, renders a spinning loading ring when loading a URL."
   (let ((buffer (current-buffer (window status))))
     (spinneret:with-html-string
       (:div :class (if (and (web-buffer-p buffer)
@@ -304,8 +301,7 @@ Augment this with `style' of STATUS, if necessary."
 
 (export-always 'format-status-tabs)
 (defmethod format-status-tabs ((status status-buffer))
-  "Render the open buffers to HTML string suitable for STATUS.
-Augment this with `style' of STATUS, if necessary."
+  "Render the open buffers to HTML string suitable for STATUS."
   (let* ((buffers (if (display-tabs-by-last-access-p status)
                       (sort-by-time (buffer-list))
                       (reverse (buffer-list))))
