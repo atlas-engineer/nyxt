@@ -245,40 +245,43 @@ If FILES are not provided, prompt for them."
 (defmethod initialize-instance :after ((source open-file-source) &key)
   (setf (slot-value source 'prompter:actions-on-return)
         (append
-         (list (lambda-command open-file* (files)
-                 "Open files with `open-file-function' (a sensible default)."
-                 (let* ((new-buffer-p (open-file-in-new-buffer-p source)))
-                   ;; Open first file according to `open-file-in-new-buffer-p'
-                   (funcall (open-file-function source) (first files)
-                            :new-buffer-p new-buffer-p
-                            :supported-p (supported-media-or-directory (first files) source))
-                   ;; Open the rest of the files in new buffers unconditionally.
-                   (dolist (file (rest files))
-                     (funcall (open-file-function source) file
-                              :new-buffer-p t
-                              :supported-p (supported-media-or-directory file source)))))
-               (lambda-command delete-file* (files)
-                 "Deletes the chosen files."
-                 (mapcar #'delete-file files))
-               (lambda-command rename-file* (files)
-                 "Rename the first chosen file."
-                 (let* ((file (first files))
-                        (name (files:basename file)))
-                   (rename-file file (prompt1 :prompt (format nil "New name for ~a" name)
-                                              :sources 'prompter:raw-source
-                                              :input name))))
-               (lambda-command edit-file-with-external-editor* (files)
-                 "Edit files in external editor."
-                 (edit-file-with-external-editor files))
-               ;; TODO: Edit files in Nyxt-internal editor.
-               ;; TODO: File/directory copying.
-               (lambda-command open-with* (files)
-                 "Open files with the selected program."
-                 (let* ((program (prompt1
-                                  :prompt "The program to open the selected files with"
-                                  :sources 'program-source)))
-                   (uiop:launch-program (cons (uiop:native-namestring program) (mapcar #'uiop:native-namestring files))))))
-         (slot-value source 'prompter:actions-on-return))))
+         (list
+          (lambda-command open-file* (files)
+            "Open files with `open-file-function'."
+            ;; Open first file according to `open-file-in-new-buffer-p'
+            (let ((file (first files)))
+              (funcall (open-file-function source)
+                       file
+                       :new-buffer-p (open-file-in-new-buffer-p source)
+                       :supported-p (supported-media-or-directory file source)))
+            ;; Open the rest of the files in new buffers unconditionally.
+            (dolist (file (rest files))
+              (funcall (open-file-function source)
+                       file
+                       :new-buffer-p t
+                       :supported-p (supported-media-or-directory file source))))
+          (lambda-command delete-file* (files)
+            "Delete files."
+            (mapcar #'delete-file files))
+          (lambda-command rename-file* (files)
+            "Rename the first chosen file."
+            (let* ((file (first files))
+                   (name (files:basename file)))
+              (rename-file file
+                           (prompt1 :prompt (format nil "New name for ~a" name)
+                                    :sources 'prompter:raw-source
+                                    :input name))))
+          (lambda-command edit-file-with-external-editor* (files)
+            "Edit files in external editor."
+            (edit-file-with-external-editor files))
+          ;; TODO: Edit files in Nyxt-internal editor.
+          ;; TODO: File/directory copying.
+          (lambda-command open-with* (files)
+            "Open files with the selected program."
+            (let ((program (prompt1 :prompt "Choose program"
+                                    :sources 'program-source)))
+              (uiop:launch-program (cons (uiop:native-namestring program)
+                                         (mapcar #'uiop:native-namestring files)))))))))
 
 (export-always 'default-open-file-function)
 (defun default-open-file-function (filename &key supported-p new-buffer-p)
