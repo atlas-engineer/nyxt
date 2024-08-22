@@ -3,13 +3,7 @@
 
 (nyxt:define-package :nyxt/mode/file-manager
   (:documentation "Package for `file-manager-mode', mode for file management
-from the prompt buffer.
-
-Exposes the following `prompter:source's: `program-source', `file-source' and
-`open-file-source'.
-
-Uses CL `delete-file' and `rename-file', together with `open-file-function', to
-act of files."))
+from the prompt buffer."))
 (in-package :nyxt/mode/file-manager)
 
 (nyxt/mode/prompt-buffer::define-command-prompt directory-up (prompt-buffer)
