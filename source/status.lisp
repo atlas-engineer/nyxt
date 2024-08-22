@@ -406,45 +406,20 @@ When BOUND-OBJECT is garbage-collected, the corresponding handler is automatical
                  (funcall* handler ,class-name)))))))))
 
 (defmethod customize-instance :after ((status-buffer status-buffer) &key)
-  "Add setf-handlers calling `print-status' on:
-- `buffer' `modes',
-- `document-buffer' `url',
-- `document-buffer' `title',
-- `window' `active-buffer'.
-
-See also `define-setf-handler'."
-  ;; We need to watch both the buffer `modes' slot and the status of modes,
-  ;; since the mode list does not change when a mode gets disabled.
-  (define-setf-handler modable-buffer modes status-buffer
-    (lambda (buffer)
-      (when (window status-buffer)
-        (when (eq buffer (active-buffer (window status-buffer)))
-          (print-status (window status-buffer))))))
-  (define-setf-handler mode enabled-p status-buffer
-    (lambda (mode)
-      (when (window status-buffer)
-        (when (eq (buffer mode) (active-buffer (window status-buffer)))
-          (print-status (window status-buffer))))))
-  (define-setf-handler document-buffer url status-buffer
-    (lambda (buffer)
-      (when (window status-buffer)
-        (when (eq buffer (active-buffer (window status-buffer)))
-          (print-status (window status-buffer))))))
-  (define-setf-handler document-buffer title status-buffer
-    (lambda (buffer)
-      (when (window status-buffer)
-        (when (eq buffer (active-buffer (window status-buffer)))
-          (print-status (window status-buffer))))))
-  (define-setf-handler window active-buffer status-buffer
-    (lambda (window)
-      (when (eq window (window status-buffer))
-        (print-status (window status-buffer)))))
-  (define-setf-handler network-buffer status status-buffer
-    (lambda (buffer)
-      (when (window status-buffer)
-        (when (eq buffer (active-buffer (window status-buffer)))
-          (print-status (window status-buffer))))))
-  (define-setf-handler browser buffers status-buffer
-    (lambda (browser)
-      (declare (ignore browser))
-      (mapc #'print-status (window-list)))))
+  "Add handlers to redraw STATUS-BUFFER.
+See `define-setf-handler'."
+  (with-slots (window) status-buffer
+    ;; Watching slots `modes' and `enabled-p' since the former isn't mutated
+    ;; when a mode is disabled.
+    (define-setf-handler modable-buffer modes status-buffer
+      (lambda (buffer) (when (eq buffer (active-buffer window)) (print-status window))))
+    (define-setf-handler mode enabled-p status-buffer
+      (lambda (mode) (when (eq (buffer mode) (active-buffer window)) (print-status window))))
+    (define-setf-handler document-buffer url status-buffer
+      (lambda (buffer) (when (eq buffer (active-buffer window)) (print-status window))))
+    (define-setf-handler window active-buffer status-buffer
+      (lambda (win) (when (eq win window) (print-status window))))
+    (define-setf-handler network-buffer status status-buffer
+      (lambda (buffer) (when (eq buffer (active-buffer window)) (print-status window))))
+    (define-setf-handler browser buffers status-buffer
+      (lambda (_) (declare (ignore _)) (mapc #'print-status (window-list))))))
