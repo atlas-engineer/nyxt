@@ -427,11 +427,9 @@ response.  The BODY is wrapped with `with-protect'."
   (%within-renderer-thread-async
    (lambda ()
      (with-slots (gtk-object root-box-layout horizontal-box-layout
-                  panel-buffer-container-left
-                  panel-buffer-container-right
-                  main-buffer-container
-                  nyxt::active-buffer prompt-buffer-container
-                  prompt-buffer-view
+                  panel-buffer-container-left panel-buffer-container-right
+                  main-buffer-container nyxt::active-buffer
+                  prompt-buffer-container prompt-buffer-view
                   status-buffer status-container
                   message-buffer message-container
                   key-string-buffer)
@@ -469,38 +467,57 @@ response.  The BODY is wrapped with `with-protect'."
          ;; Dummy buffer is an `input-buffer' so that an empty window can still
          ;; receive input, for instance to create a new buffer.
          (setf nyxt::active-buffer (make-instance 'input-buffer))
-
          (when (eq (placement status-buffer) :top)
-           (gtk:gtk-box-pack-start root-box-layout status-container :expand nil))
-
+           (gtk:gtk-box-pack-start root-box-layout
+                                   status-container
+                                   :expand nil))
          ;; Add the views to the box layout and to the window
-         (gtk:gtk-box-pack-start main-buffer-container (gtk-object nyxt::active-buffer) :expand t :fill t)
-         (gtk:gtk-box-pack-start horizontal-box-layout panel-buffer-container-left :expand nil)
-         (gtk:gtk-box-pack-start horizontal-box-layout main-buffer-container :expand t :fill t)
-         (gtk:gtk-box-pack-start horizontal-box-layout panel-buffer-container-right :expand nil)
-         (gtk:gtk-box-pack-start root-box-layout horizontal-box-layout :expand t :fill t)
-
-         (gtk:gtk-box-pack-end root-box-layout message-container :expand nil)
-         (gtk:gtk-box-pack-start root-box-layout message-container :expand nil)
-         (gtk:gtk-box-pack-start message-container (gtk-object message-buffer) :expand t)
+         (gtk:gtk-box-pack-start main-buffer-container
+                                 (gtk-object nyxt::active-buffer)
+                                 :expand t :fill t)
+         (gtk:gtk-box-pack-start horizontal-box-layout
+                                 panel-buffer-container-left
+                                 :expand nil)
+         (gtk:gtk-box-pack-start horizontal-box-layout
+                                 main-buffer-container
+                                 :expand t :fill t)
+         (gtk:gtk-box-pack-start horizontal-box-layout
+                                 panel-buffer-container-right
+                                 :expand nil)
+         (gtk:gtk-box-pack-start root-box-layout
+                                 horizontal-box-layout
+                                 :expand t :fill t)
+         (gtk:gtk-box-pack-end root-box-layout
+                               message-container
+                               :expand nil)
+         (gtk:gtk-box-pack-start root-box-layout
+                                 message-container
+                                 :expand nil)
+         (gtk:gtk-box-pack-start message-container
+                                 (gtk-object message-buffer)
+                                 :expand t)
          (setf (gtk:gtk-widget-size-request message-container)
                (list -1 (height message-buffer)))
 
          (when (eq (placement status-buffer) :bottom)
-           (gtk:gtk-box-pack-end root-box-layout status-container :expand nil))
-
-         (gtk:gtk-box-pack-start status-container (gtk-object status-buffer) :expand t)
+           (gtk:gtk-box-pack-end root-box-layout
+                                 status-container
+                                 :expand nil))
+         (gtk:gtk-box-pack-start status-container
+                                 (gtk-object status-buffer)
+                                 :expand t)
          (setf (gtk:gtk-widget-size-request status-container)
                (list -1 (height status-buffer)))
-
          (setf prompt-buffer-view (make-web-view (global-profile) nil))
-         (gtk:gtk-box-pack-end root-box-layout prompt-buffer-container :expand nil)
-         (gtk:gtk-box-pack-start prompt-buffer-container prompt-buffer-view :expand t)
+         (gtk:gtk-box-pack-end root-box-layout
+                               prompt-buffer-container
+                               :expand nil)
+         (gtk:gtk-box-pack-start prompt-buffer-container
+                                 prompt-buffer-view
+                                 :expand t)
          (setf (gtk:gtk-widget-size-request prompt-buffer-container)
                (list -1 0))
-
          (gtk:gtk-container-add gtk-object root-box-layout)
-
          (connect-signal window "destroy" nil (widget)
            (declare (ignore widget))
            (on-signal-destroy window))
@@ -519,7 +536,6 @@ response.  The BODY is wrapped with `with-protect'."
              (unless fullscreen-p (ffi-window-unfullscreen window :user-event-p nil))
              (unless maximized-p (ffi-window-unmaximize window :user-event-p nil)))
            nil))
-
        (unless nyxt::*headless-p*
          (gtk:gtk-widget-show-all gtk-object))))))
 
@@ -529,7 +545,8 @@ response.  The BODY is wrapped with `with-protect'."
 
 (define-ffi-method on-signal-destroy ((window gtk-window))
   ;; Then remove buffer from window container to avoid corruption of buffer.
-  (gtk:gtk-container-remove (main-buffer-container window) (gtk-object (nyxt::active-buffer window)))
+  (gtk:gtk-container-remove (main-buffer-container window)
+                            (gtk-object (nyxt::active-buffer window)))
   (window-delete window))
 
 (define-ffi-method ffi-window-delete ((window gtk-window))
@@ -900,8 +917,10 @@ with this scheme.")
                               :website-data-manager
                               (make-instance 'webkit-website-data-manager-ephemeral
                                              :is-ephemeral t))
-               (let ((data-manager-data-directory (make-instance 'data-manager-data-directory :context-name name))
-                     (data-manager-cache-directory (make-instance 'data-manager-cache-directory :context-name name)))
+               (let ((data-manager-data-directory (make-instance 'data-manager-data-directory
+                                                                 :context-name name))
+                     (data-manager-cache-directory (make-instance 'data-manager-cache-directory
+                                                                  :context-name name)))
                  (make-instance 'webkit-web-context
                                 :website-data-manager
                                 (make-instance
@@ -949,7 +968,8 @@ with this scheme.")
              nyxt::*schemes*)
     (unless (or ephemeral-p
                 (internal-context-p name))
-      (let ((cookies-path (files:expand (make-instance 'cookies-file :context-name name))))
+      (let ((cookies-path (files:expand (make-instance 'cookies-file
+                                                       :context-name name))))
         (webkit:webkit-cookie-manager-set-persistent-storage
          cookie-manager
          (uiop:native-namestring cookies-path)
@@ -974,8 +994,7 @@ See `finalize-buffer'."
         (with-slots (gtk-object) buffer
           (unless gtk-object
             (setf gtk-object (make-web-view (profile buffer) buffer))
-            (connect-signal-function
-             buffer "decide-policy"
+            (connect-signal-function buffer "decide-policy"
              (make-decide-policy-handler buffer)))))))))
 
 (define-ffi-method ffi-buffer-url ((buffer gtk-buffer))
@@ -1008,19 +1027,26 @@ See `finalize-buffer'."
         file-name toplevel-p response)
     (match policy-decision-type-response
       (:webkit-policy-decision-type-navigation-action
-       (setf navigation-type (webkit:webkit-navigation-policy-decision-navigation-type response-policy-decision)))
+       (setf navigation-type
+             (webkit:webkit-navigation-policy-decision-navigation-type response-policy-decision)))
       (:webkit-policy-decision-type-new-window-action
-       (setf navigation-type (webkit:webkit-navigation-policy-decision-navigation-type response-policy-decision))
+       (setf navigation-type
+             (webkit:webkit-navigation-policy-decision-navigation-type response-policy-decision))
        (setf is-new-window t))
       (:webkit-policy-decision-type-response
-       (setf request (webkit:webkit-response-policy-decision-request response-policy-decision))
+       (setf request
+             (webkit:webkit-response-policy-decision-request response-policy-decision))
        (setf is-known-type
              (webkit:webkit-response-policy-decision-is-mime-type-supported
               response-policy-decision))
-       (setf response (webkit:webkit-response-policy-decision-response response-policy-decision))
-       (setf mime-type (webkit:webkit-uri-response-mime-type response))
-       (setf method (webkit:webkit-uri-request-get-http-method request))
-       (setf file-name (webkit:webkit-uri-response-suggested-filename response))))
+       (setf response
+             (webkit:webkit-response-policy-decision-response response-policy-decision))
+       (setf mime-type
+             (webkit:webkit-uri-response-mime-type response))
+       (setf method
+             (webkit:webkit-uri-request-get-http-method request))
+       (setf file-name
+             (webkit:webkit-uri-response-suggested-filename response))))
     ;; Set Event-Type
     (setf event-type
           (match navigation-type
@@ -1192,7 +1218,9 @@ See `finalize-buffer'."
     (when (gtk-object old-buffer)
       (g:g-object-ref (g:pointer (gtk-object old-buffer)))
       (gtk:gtk-container-remove (main-buffer-container window) (gtk-object old-buffer))
-      (gtk:gtk-box-pack-start (main-buffer-container window) (gtk-object buffer) :expand t :fill t)
+      (gtk:gtk-box-pack-start (main-buffer-container window)
+                              (gtk-object buffer)
+                              :expand t :fill t)
       (unless nyxt::*headless-p*
         (gtk:gtk-widget-show (gtk-object buffer)))
       (when focus
@@ -1202,7 +1230,8 @@ See `finalize-buffer'."
 (define-ffi-method ffi-window-add-panel-buffer ((window gtk-window) (buffer panel-buffer) side)
   "Add a panel buffer to a window."
   (match side
-    (:left (gtk:gtk-box-pack-start (panel-buffer-container-left window) (gtk-object buffer))
+    (:left (gtk:gtk-box-pack-start (panel-buffer-container-left window)
+                                   (gtk-object buffer))
            (push buffer (panel-buffers-left window)))
     (:right (gtk:gtk-box-pack-end (panel-buffer-container-right window) (gtk-object buffer))
             (push buffer (panel-buffers-right window))))
@@ -1964,12 +1993,12 @@ custom (the specified proxy) and none."
       (unless (url-empty-p proxy-url)
         (setf mode :webkit-network-proxy-mode-custom)
         (setf settings
-              (webkit:webkit-network-proxy-settings-new
-               (render-url proxy-url)
-               ignore-hosts)))
+              (webkit:webkit-network-proxy-settings-new (render-url proxy-url)
+                                                        ignore-hosts)))
       (cffi:foreign-free ignore-hosts)
-      (webkit:webkit-web-context-set-network-proxy-settings
-       context mode settings))))
+      (webkit:webkit-web-context-set-network-proxy-settings context
+                                                            mode
+                                                            settings))))
 
 (define-ffi-method ffi-buffer-zoom-level ((buffer gtk-buffer))
   (webkit:webkit-web-view-zoom-level (gtk-object buffer)))
