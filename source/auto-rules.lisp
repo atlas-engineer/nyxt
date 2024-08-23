@@ -215,10 +215,9 @@ The rules are:
           (if-confirm ((format nil
                                "Permanently ~:[disable~;enable~] ~{~a~^, ~} for ~a?"
                                enabled-p (mapcar #'first invocations) (url buffer)))
-              (let ((url (prompt1
-                          :prompt "URL"
-                          :input (render-url (url buffer))
-                          :sources 'prompter:raw-source)))
+              (let ((url (prompt1 :prompt "URL"
+                                  :input (render-url (url buffer))
+                                  :sources 'prompter:raw-source)))
                 (add-modes-to-auto-rules (url-infer-match url)
                                          :append-p t
                                          :include (when enabled-p invocations)
