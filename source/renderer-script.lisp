@@ -331,13 +331,9 @@ See `find-internal-page-buffer'."))
 
 (defmethod dynamic-title ((page internal-page) &rest args)
   (with-slots ((title dynamic-title)) page
-    (cond
-      ((stringp title)
-       title)
-      ((functionp title)
-       (apply title args))
-      (t
-       (format nil "*~a*" (string-downcase (name page)))))))
+    (cond ((stringp title) title)
+          ((functionp title) (apply title args))
+          (t (format nil "*~a*" (string-downcase (name page)))))))
 
 ;; (-> find-internal-page-buffer (internal-page-symbol) (maybe buffer))
 (defun find-internal-page-buffer (name) ; TODO: Test if CCL can catch bad calls at compile-time.
