@@ -374,9 +374,9 @@ override it, redefine methods such as `format-status-url' or
                    (format-status-modes status)))))))
 
 (defvar *setf-handlers* (sera:dict)
-  "A hash-table mapping (CLASS SLOT) pairs to hash-tables mapping OBJECT to HANDLER.
-OBJECT may be any value.
-HANDLER is a function of argument the CLASS instance.
+  "A hash-table mapping (CLASS SLOT) pairs to (OBJECT HANDLER) pairs.
+OBJECT is an instance of CLASS.
+HANDLER is a function that takes a CLASS instance as argument.
 
 See `define-setf-handler'.")
 
