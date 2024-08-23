@@ -289,7 +289,8 @@ By default, renders a spinning loading ring when loading a URL."
     (spinneret:with-html-string
       (:div :class (if (and (web-buffer-p buffer)
                             (eq (slot-value buffer 'status) :loading))
-                       "loader" "")))))
+                       "loader"
+                       "")))))
 
 (export-always 'format-status-url)
 (defmethod format-status-url ((status status-buffer))
