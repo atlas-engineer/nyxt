@@ -139,7 +139,7 @@ major versions."
   (:p "Deleted since " (:nxref :slot 'height :class-name 'prompt-buffer) " suffices.")
 
   (status-buffer-position)
-  (:p "Deleted in favor of " (:nxref :slot 'placement :class-name 'status-buffer) ".")
+  (:p "Deleted.")
 
   (hints-offset-x)
   (:p "Deleted in favor of "

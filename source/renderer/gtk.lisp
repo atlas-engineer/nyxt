@@ -467,10 +467,6 @@ response.  The BODY is wrapped with `with-protect'."
          ;; Dummy buffer is an `input-buffer' so that an empty window can still
          ;; receive input, for instance to create a new buffer.
          (setf nyxt::active-buffer (make-instance 'input-buffer))
-         (when (eq (placement status-buffer) :top)
-           (gtk:gtk-box-pack-start root-box-layout
-                                   status-container
-                                   :expand nil))
          ;; Add the views to the box layout and to the window
          (gtk:gtk-box-pack-start main-buffer-container
                                  (gtk-object nyxt::active-buffer)
@@ -499,10 +495,9 @@ response.  The BODY is wrapped with `with-protect'."
          (setf (gtk:gtk-widget-size-request message-container)
                (list -1 (height message-buffer)))
 
-         (when (eq (placement status-buffer) :bottom)
-           (gtk:gtk-box-pack-end root-box-layout
-                                 status-container
-                                 :expand nil))
+         (gtk:gtk-box-pack-end root-box-layout
+                               status-container
+                               :expand nil)
          (gtk:gtk-box-pack-start status-container
                                  (gtk-object status-buffer)
                                  :expand t)

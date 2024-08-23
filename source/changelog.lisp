@@ -46,8 +46,7 @@ level.")
    (:li "Delete slot " (:code "input-dispatcher")
         ", if the user wishes to change the " (:code "input-dispatcher")", they can redefine "
         (:nxref :function 'dispatch-input-event) ".")
-   (:li "Delete slot " (:code "status-buffer-position") "in favour of"
-        (:nxref :slot 'placement :class-name 'status-buffer) ".")
+   (:li "Delete slot " (:code "status-buffer-position") ".")
    (:li "Delete slot " (:code "prompt-buffer-open-height") " since "
         (:nxref :slot 'height :class-name 'prompt-buffer) "suffices.")
    (:li "Add slot "
