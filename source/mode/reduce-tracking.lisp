@@ -81,19 +81,15 @@ still being less noticeable in the crowd.")
         (ffi-buffer-user-agent (buffer mode)) (preferred-user-agent mode))
   (setf (ffi-preferred-languages (buffer mode)) (preferred-languages mode))
   (setf (ffi-tracking-prevention (buffer mode)) t)
-  (hooks:add-hook
-   (request-resource-hook (buffer mode))
-   #'strip-tracking-parameters))
+  (hooks:add-hook (request-resource-hook (buffer mode))
+                  #'strip-tracking-parameters))
 
 (defmethod disable ((mode reduce-tracking-mode) &key)
   (when (old-timezone mode)
     (setf (uiop:getenv "TZ") (old-timezone mode)))
   (setf (ffi-buffer-user-agent (buffer mode)) (old-user-agent mode))
   (setf (ffi-preferred-languages (buffer mode))
-        (list (first
-               (str:split
-                "."
-                (or (uiop:getenv "LANG") "")))))
+        (list (first (str:split "." (or (uiop:getenv "LANG") "")))))
   (setf (ffi-tracking-prevention (buffer mode)) nil)
   (hooks:remove-hook (request-resource-hook (buffer mode))
                      #'strip-tracking-parameters))
