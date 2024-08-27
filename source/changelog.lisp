@@ -134,7 +134,7 @@ elements are scaled accordingly.")
 (define-version "3.11.6"
   (:nsection :title "Bug fixes"
     (:ul
-     (:li "Fix crash on " (:a :href (nyxt-url 'common-settings) "."))
+     (:li "Fix crash on " (:a :href (nyxt-url 'common-settings) "common settings") ".")
      (:li "Fix warnings raised by " (:nxref :command 'pick-color) ".")
      (:li "Fix " (:nxref :class-name 'nyxt/mode/hint:hint-mode)
           " performance issues caused by " (:code "Shadow DOMs") " hinting algorithm."))))
@@ -186,8 +186,8 @@ elements are scaled accordingly.")
           (:nxref :command 'describe-class) ".")
      (:li "Review font sizes.")
      (:li "Add possibility to specify a monospace font via "
-          (:nxref :class-name 'theme:theme :slot 'theme:monospace-font-family) "."
-          "By default, it is set to DejaVu.")
+          (:nxref :class-name 'theme:theme :slot 'theme:monospace-font-family)
+          ". By default, it is set to DejaVu.")
      (:li "Review usage of proportional and monospace fonts.")
      (:li "Use monospace fonts in "
           (:nxref :class-name 'nyxt/mode/editor:plaintext-editor-mode) ".")
@@ -308,8 +308,8 @@ improve readability.")
      (:li "Stylistic review of the help system pages to improve readability.")))
   (:nsection :title "Programming interface"
     (:ul
-     (:li "Fix Nyxt connection via commands " (:code "start-slynk") "
-and " (:code "start-swank") " on the Flatpak distribution.")
+     (:li "Fix Nyxt connection via commands " (:code "start-slynk") " and "
+          (:code "start-swank") " on the Flatpak distribution.")
      (:li "Fix warning signaling when a mismatch between the history file and the current
 Nyxt version exists.  It is only raised when the major version differs.")
      (:li "Buffers of type " (:nxref :class-name 'nyxt/mode/editor:editor-buffer) " have  "
@@ -386,8 +386,8 @@ command "
           (:a :href (nyxt-url 'common-settings) "Common Settings Menu") ".")
      (:li "Honor the value of environment variables "
           (:code "$XDG_DATA_HOME") ", "
-          (:code "$XDG_CONFIG_HOME") "and "
-          (:code "$XDG_CACHE_HOME") "for the Flatpak.")))
+          (:code "$XDG_CONFIG_HOME") " and "
+          (:code "$XDG_CACHE_HOME") " for the Flatpak.")))
   (:nsection :title "UI/UX"
     (:ul
      (:li "Add cursor change on hover for buttons and links in internal pages and panel
@@ -419,13 +419,13 @@ buffers.")
           (:a :href (nyxt-url 'common-settings) "common settings interface") ".")
      (:li "Fix clipboard support for the Flatpak on Wayland.")
      (:li "Fix behavior of "
-          (:nxref :class-name 'nyxt/mode/hint:hint-mode) "when slots "
+          (:nxref :class-name 'nyxt/mode/hint:hint-mode) " when slots "
           (:nxref :class-name 'nyxt/mode/hint:hint-mode
             :slot 'nyxt/mode/hint:hinting-type)
           " and "
           (:nxref :class-name 'nyxt/mode/hint:hint-mode
             :slot 'nyxt/mode/hint:show-hint-scope-p)
-          "are set to " (:code ":vi") " and " (:code "t") ", respectively.")))
+          " are set to " (:code ":vi") " and " (:code "t") ", respectively.")))
   (:nsection :title "UI"
     (:ul
      (:li "Add border between panel buffer and main content area.")
@@ -775,8 +775,8 @@ a dummy buffer. " (:nxref :class-name 'web-buffer)
      (:li "Better Lisp values inspection in " (:code "describe-*")
           " commands and " (:nxref :command 'nyxt/mode/repl:repl) ", extensible through "
           (:nxref :function 'value->html) " methods.")
-     (:li "Universal" (:code "describe-*")
-          " commands describing things in any Nyxt-accessible package."
+     (:li "Universal " (:code "describe-*")
+          " commands describing things in any Nyxt-accessible package. "
           "Available via " (:code "C-h u") " key prefix.")
      (:li (:nxref :slot 'after-startup-hook :class-name 'browser)
           " to attach headless mode actions or configuration to.")
@@ -1079,9 +1079,8 @@ out-of-date.")
    (:li "The prompt buffer is used to interface with the user instead of
         GTK dialogs. This behavior can be controlled via
         the " (:code "native-dialogs") (:code "browser") "slot.")
-   (:li "add raw-source
-        to " (:code "add-domain-to-certificate-exceptions") " to allow for
-        arbitrary URLs."))
+   (:li "Add raw-source to " (:code "add-domain-to-certificate-exceptions")
+        " to allow for arbitrary URLs."))
   (:h3 "Bug fixes")
   (:ul
    (:li "Fix broken status buffer button to list-buffers.")
@@ -1107,7 +1106,7 @@ out-of-date.")
    (:li "Buffer default modes can now be customized via
         the " (:code "default-modes") " generic function. This function uses
         the " (:code "append") " method
-        combination." (:code "define-configuration") " now supports customizing
+        combination. " (:code "define-configuration") " now supports customizing
         these methods just as for slots.")
    (:li "Commands defined with " (:code "define-command") " are no longer
         listed in " (:code "execute-command") "
@@ -1119,7 +1118,7 @@ out-of-date.")
         dependency on notify-osd. This function was not generic enough and only
         used in one place. Notifications will be reintroduced with a more generic
         interface.")
-   (:li "Remove " (:code "set-url-from-bookmark-new-buffer") " It is
+   (:li "Remove " (:code "set-url-from-bookmark-new-buffer") " since it is
         redundant with set-url and set-url-from-bookmark.")
    (:li "New system-information command line option.")
    (:li "Removed Common Lisp file-attributes dependency."))
