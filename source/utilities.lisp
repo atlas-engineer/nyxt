@@ -254,3 +254,5 @@ package set to current package."
 If the string is all lowercase, then the search is likely case-insensitive.
 If there's any uppercase character, then it's case-sensitive."
   (if (str:downcasep string) #'string-equal #'string=))
+
+(setf spinneret:*suppress-inserted-spaces* t)
