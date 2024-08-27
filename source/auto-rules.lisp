@@ -211,9 +211,11 @@ The rules are:
   (dolist (buffer (uiop:ensure-list buffers))
     (if (prompt-on-mode-toggle-p buffer)
         (and-let* ((invocations (mapcar #'normalize-mode (uiop:ensure-list modes)))
-                        (invocations (remove-if (rcurry #'mode-covered-by-auto-rules-p buffer enabled-p) invocations)))
-          (if-confirm ((format nil
-                               "Permanently ~:[disable~;enable~] ~{~a~^, ~} for ~a?"
+                   (invocations (remove-if (rcurry #'mode-covered-by-auto-rules-p
+                                                   buffer
+                                                   enabled-p)
+                                           invocations)))
+          (if-confirm ((format nil "Permanently ~:[disable~;enable~] ~{~a~^, ~} for ~a?"
                                enabled-p (mapcar #'first invocations) (url buffer)))
               (let ((url (prompt1 :prompt "URL"
                                   :input (render-url (url buffer))
@@ -310,18 +312,15 @@ remember a particular mode, configure it to be `rememberable-p' in your
 configuration file.
 
 For the storage format see the comment in the header of your `auto-rules-file'."
-  (let ((url (prompt1
-              :prompt "URL"
-              :input (render-url (url (current-buffer)))
-              :sources (list
-                        (make-instance 'prompter:raw-source
-                                       :name "New URL")
-                        (make-instance 'global-history-source
-                                       :actions-on-return #'identity)))))
+  (let ((url (prompt1 :prompt "URL"
+                      :input (render-url (url (current-buffer)))
+                      :sources (list (make-instance 'prompter:raw-source
+                                                    :name "New URL")
+                                     (make-instance 'global-history-source
+                                                    :actions-on-return #'identity)))))
     (when (typep url 'nyxt::history-entry)
       (setf url (url url)))
-    (add-modes-to-auto-rules
-     (url-infer-match url)
+    (add-modes-to-auto-rules (url-infer-match url)
      :include (set-difference (normalize-modes (modes (current-buffer)))
                               (normalize-modes (default-modes (current-buffer)))
                               :test #'mode=)
@@ -341,14 +340,12 @@ configuration file.
 For the storage format see the comment in the header of your `auto-rules-file'."
   ;; TODO: Should it prompt for modes to save?
   ;; One may want to adjust the modes before persisting them as :exact-p rule.
-  (let ((url (prompt1
-              :prompt "URL"
-              :input (render-url (url (current-buffer)))
-              :sources (list
-                        (make-instance 'prompter:raw-source
-                                       :name "New URL")
-                        (make-instance 'global-history-source
-                                       :actions-on-return #'identity)))))
+  (let ((url (prompt1 :prompt "URL"
+                      :input (render-url (url (current-buffer)))
+                      :sources (list (make-instance 'prompter:raw-source
+                                                    :name "New URL")
+                                     (make-instance 'global-history-source
+                                                    :actions-on-return #'identity)))))
     (setf url (url url))
     (add-modes-to-auto-rules (url-infer-match url)
                              :include (rememberable-of (modes (current-buffer)))
