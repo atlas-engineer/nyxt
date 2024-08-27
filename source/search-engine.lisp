@@ -4,9 +4,10 @@
 (in-package :nyxt)
 
 (define-class search-engine ()
-  ((name nil
-         :type (maybe string)
-         :documentation "Human-readable name of the search engine, like \"Wikipedia\" or \"Searx\".
+  ((name
+    nil
+    :type (maybe string)
+    :documentation "Human-readable name of the search engine, like \"Wikipedia\" or \"Searx\".
 In case no name is defined, `shortcut' is used as the engine name.")
    (shortcut
     (alex:required-argument 'shortcut)
