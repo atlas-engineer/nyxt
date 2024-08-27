@@ -21,7 +21,7 @@
 
 (defmethod files:resolve ((profile nyxt-user::test-profile) (file files:file))
   "Store all files in a temporary `+test-root+' directory."
-  (files:join +test-root+  (call-next-method)))
+  (files:join +test-root+ (call-next-method)))
 
 (defmacro with-prompt-buffer-test (command &body body)
   (alexandria:with-gensyms (thread)
