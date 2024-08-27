@@ -418,62 +418,55 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
 (export-always 'match-scheme)
 (defun match-scheme (scheme &rest other-schemes)
   "Return a predicate for URL designators matching one of SCHEME or OTHER-SCHEMES."
-  #'(lambda (url-designator)
-      (when url-designator
-        (some (curry #'string= (quri:uri-scheme (url url-designator)))
-              (cons scheme other-schemes)))))
+  (lambda (url-designator)
+    (some (curry #'string= (quri:uri-scheme (url url-designator)))
+          (cons scheme other-schemes))))
 
 (-> match-host (string &rest string) (function (quri:uri) boolean))
 (export-always 'match-host)
 (defun match-host (host &rest other-hosts)
   "Return a predicate for URL designators matching one of HOST or OTHER-HOSTS."
-  #'(lambda (url-designator)
-      (when url-designator
-        (some (curry #'string= (quri:uri-host (url url-designator)))
-              (cons host other-hosts)))))
+  (lambda (url-designator)
+    (some (curry #'string= (quri:uri-host (url url-designator)))
+          (cons host other-hosts))))
 
 (-> match-domain (string &rest string) (function (quri:uri) boolean))
 (export-always 'match-domain)
 (defun match-domain (domain &rest other-domains)
   "Return a predicate for URL designators matching one of DOMAIN or OTHER-DOMAINS."
-  #'(lambda (url-designator)
-      (when url-designator
-        (some (curry #'string= (quri:uri-domain (url url-designator)))
-              (cons domain other-domains)))))
+  (lambda (url-designator)
+    (some (curry #'string= (quri:uri-domain (url url-designator)))
+          (cons domain other-domains))))
 
 (-> match-port (integer &rest integer) (function (quri:uri) boolean))
 (export-always 'match-port)
 (defun match-port (port &rest other-ports)
   "Return a predicate for URL designators matching one of PORT or OTHER-PORTS."
-  #'(lambda (url-designator)
-      (when url-designator
-        (some (curry #'eq (quri:uri-port (url url-designator)))
-              (cons port other-ports)))))
+  (lambda (url-designator)
+    (some (curry #'eq (quri:uri-port (url url-designator)))
+          (cons port other-ports))))
 
 (-> match-file-extension (string &rest string) (function (quri:uri) boolean))
 (export-always 'match-file-extension)
 (defun match-file-extension (extension &rest other-extensions)
   "Return a predicate for URL designators matching one of EXTENSION or OTHER-EXTENSIONS."
-  #'(lambda (url-designator)
-      (when url-designator
-        (some (curry #'string= (pathname-type (or (quri:uri-path (url url-designator)) "")))
-              (cons extension other-extensions)))))
+  (lambda (url-designator)
+    (some (curry #'string= (pathname-type (or (quri:uri-path (url url-designator)) "")))
+          (cons extension other-extensions))))
 
 (-> match-regex (string &rest string) (function (quri:uri) boolean))
 (export-always 'match-regex)
 (defun match-regex (regex &rest other-regex)
   "Return a predicate for URL designators matching one of REGEX or OTHER-REGEX."
-  #'(lambda (url-designator)
-      (when url-designator
-        (some (rcurry #'cl-ppcre:scan (render-url (url url-designator)))
-              (cons regex other-regex)))))
+  (lambda (url-designator)
+    (some (rcurry #'cl-ppcre:scan (render-url (url url-designator)))
+          (cons regex other-regex))))
 
 (-> match-url (string &rest string) (function (quri:uri) boolean))
 (export-always 'match-url)
 (defun match-url (one-url &rest other-urls)
   "Return a predicate for URLs exactly matching ONE-URL or OTHER-URLS."
-  #'(lambda (url-designator)
-      (when url-designator
-        (some (rcurry #'string= (render-url (url url-designator)))
-              (mapcar (lambda (u) (quri:url-decode u :lenient t))
-                      (cons one-url other-urls))))))
+  (lambda (url-designator)
+    (some (rcurry #'string= (render-url (url url-designator)))
+          (mapcar (lambda (u) (quri:url-decode u :lenient t))
+                  (cons one-url other-urls)))))
