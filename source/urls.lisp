@@ -10,23 +10,6 @@
 (defmethod url ((url-string string))
   (quri:uri url-string))
 
-(defun string->url (url-string)
-  "Convert URL-STRING to its corresponding `quri:uri' object.
-If URL-STRING is a path to an existing file, return a `quri:uri-file' object.
-If the conversion fails, a `quri:uri' object is always returned."
-  (or (ignore-errors
-       (and-let* ((path (uiop:merge-pathnames* url-string (uiop:getcwd)))
-                  (exist-p (uiop:file-exists-p path)))
-         (quri.uri.file:make-uri-file :path path)))
-      (quri:uri url-string)
-      (quri:uri "")))
-
-(defun strings->urls (url-strings)
-  "Convert URL-STRINGS to a list of its corresponding `quri:uri' objects.
-Members of URL-STRINGS corresponding to the empty URL are discarded."
-  ;; how to define the empty URL?
-  (remove-if #'url-empty-p (mapcar #'string->url url-strings)))
-
 (defun has-url-method-p (object)
   "Return non-nil if OBJECT has `url' specialization."
   (has-method-p object #'url))

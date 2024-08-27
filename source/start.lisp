@@ -289,7 +289,7 @@ This is a convenience wrapper to make remote code execution to open URLs as
 short as possible.
 It takes URL-STRINGS so that the URL argument can be `cl-read' in case
 `remote-execution-p' is nil."
-  (let ((urls (strings->urls url-strings)))
+  (let ((urls (remove-if #'url-empty-p (mapcar #'url url-strings))))
     (if urls
         (log:info "Externally requested URL(s): ~{~a~^, ~}" urls)
         (log:info "Externally pinged."))
@@ -560,7 +560,7 @@ Finally, run the browser, load URL-STRINGS if any, then run
           (if-let ((profile-class (find-profile-class (getf *options* :profile))))
             (log:info "Profile: ~s" (profile-name profile-class))
             (log:warn "Profile not found: ~s" (getf *options* :profile))))
-        (let* ((urls (strings->urls url-strings))
+        (let* ((urls (remove-if #'url-empty-p (mapcar #'url url-strings)))
                (startup-timestamp (time:now))
                (startup-error-reporter nil)
                (socket-path (files:expand *socket-file*)))
