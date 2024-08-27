@@ -66,7 +66,7 @@ values of respective arguments."
   (make-instance 'search-engine
                  :shortcut shortcut
                  :search-url search-url
-                 :fallback-url (ensure-url fallback-url)))
+                 :fallback-url (url fallback-url)))
 
 (export-always 'make-search-completion-function)
 (-> make-search-completion-function

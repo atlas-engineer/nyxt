@@ -145,17 +145,6 @@ When CHECK-TLD-P is non-nil, check if the host is a known TLD."
                  (valid-tld-p (quri:uri-domain %url)))
              t))))
 
-(-> ensure-url (t) quri:uri)
-(export-always 'ensure-url)
-(defun ensure-url (thing)
-  "Return `quri:uri' derived from THING.
-If it cannot be derived, return an empty `quri:uri'."
-  (the (values quri:uri &optional)
-       (if (quri:uri-p thing)
-           thing
-           (or (ignore-errors (quri:uri thing))
-               (quri:uri "")))))
-
 (-> url-empty-p ((or quri:uri string null)) boolean)
 (export-always 'url-empty-p)
 (defun url-empty-p (url)

@@ -68,7 +68,7 @@ We can't use `initialize-instance :after' to convert the URL because
 `s-serialization:deserialize-sexp' sets the slots manually after making the
 class."
   (unless (quri:uri-p (slot-value he 'url))
-    (setf (slot-value he 'url) (ensure-url (slot-value he 'url))))
+    (setf (slot-value he 'url) (url (slot-value he 'url))))
   (slot-value he 'url))
 
 (defmethod s-serialization::serialize-sexp-internal ((uri quri:uri)

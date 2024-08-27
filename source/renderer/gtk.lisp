@@ -1709,14 +1709,14 @@ local anyways, and it's better to refresh it if a load was queried."
     (setf (nyxt::status buffer) :loading))
   (webkit:webkit-web-view-reload (gtk-object buffer)))
 
-(define-ffi-method ffi-buffer-load-alternate-html ((buffer gtk-buffer) html-content content-url url)
+(define-ffi-method ffi-buffer-load-alternate-html ((buffer gtk-buffer)
+                                                   html-content
+                                                   content-url
+                                                   url)
   (webkit:webkit-web-view-load-alternate-html (gtk-object buffer)
                                               html-content
-                                              (quri:render-uri (ensure-url content-url))
-                                              (let ((url (ensure-url url)))
-                                                (if (url-empty-p url)
-                                                    "about:blank"
-                                                    (quri:render-uri url)))))
+                                              (quri:render-uri (url content-url))
+                                              (if (uiop:emptyp url) "about:blank" url)))
 
 (defmethod ffi-buffer-evaluate-javascript ((buffer gtk-buffer) javascript &optional world-name)
   (%within-renderer-thread
