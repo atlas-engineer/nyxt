@@ -2110,17 +2110,24 @@ As a second value, return the current buffer index starting from 0."
 (define-ffi-method ffi-focused-p ((buffer gtk-buffer))
   (gtk:gtk-widget-is-focus (gtk-object buffer)))
 
-(define-ffi-method ffi-tracking-prevention ((buffer gtk-buffer))
+(defmethod itp-enabled-p ((buffer gtk-buffer))
+  "Return non-nil when Intelligent Tracking Prevention is enabled."
   #+webkit2-tracking
   (webkit:webkit-website-data-manager-get-itp-enabled
    (webkit:webkit-web-context-website-data-manager
     (webkit:webkit-web-view-web-context (gtk-object buffer)))))
-(define-ffi-method (setf ffi-tracking-prevention) (value (buffer gtk-buffer))
+(defmethod (setf itp-enabled-p) (value (buffer gtk-buffer))
   #+webkit2-tracking
   (webkit:webkit-website-data-manager-set-itp-enabled
    (webkit:webkit-web-context-website-data-manager
     (webkit:webkit-web-view-web-context (gtk-object buffer)))
    value))
+
+(defmethod enable :after ((mode nyxt/mode/reduce-tracking:reduce-tracking-mode) &key)
+  (setf (itp-enabled-p (buffer mode)) t))
+
+(defmethod disable :after ((mode nyxt/mode/reduce-tracking:reduce-tracking-mode) &key)
+  (setf (itp-enabled-p (buffer mode)) nil))
 
 (defmethod ffi-buffer-copy ((gtk-buffer gtk-buffer) &optional (text nil text-provided-p))
   (if text-provided-p

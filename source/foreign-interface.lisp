@@ -282,11 +282,6 @@ Setf-able, where the languages value is a list of strings like '(\"en_US\"
 (define-ffi-generic ffi-focused-p (buffer)
   (:documentation "Return non-nil when BUFFER is focused."))
 
-(define-ffi-generic ffi-tracking-prevention (buffer)
-  (:setter-p t)
-  (:documentation "Return if WebKit-specific Intelligent Tracking Prevention (ITP) is enabled.
-Setf-able."))
-
 (define-ffi-generic ffi-buffer-copy (buffer &optional text)
   (:method :around ((buffer t) &optional text)
     (declare (ignore text))
