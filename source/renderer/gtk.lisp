@@ -531,8 +531,7 @@ response.  The BODY is wrapped with `with-protect'."
              (unless fullscreen-p (ffi-window-unfullscreen window :user-event-p nil))
              (unless maximized-p (ffi-window-unmaximize window :user-event-p nil)))
            nil))
-       (unless nyxt::*headless-p*
-         (gtk:gtk-widget-show-all gtk-object))))))
+       (unless *headless-p* (gtk:gtk-widget-show-all gtk-object))))))
 
 (defmethod update-instance-for-redefined-class :after ((window window) added deleted plist &key)
   (declare (ignore added deleted plist))
@@ -1191,8 +1190,7 @@ See `finalize-buffer'."
 
 (define-ffi-method ffi-window-to-foreground ((window gtk-window))
   "Show window in foreground."
-  (unless nyxt::*headless-p*
-    (gtk:gtk-window-present (gtk-object window)))
+  (unless *headless-p* (gtk:gtk-window-present (gtk-object window)))
   (call-next-method))
 
 (define-ffi-method ffi-window-title ((window gtk-window))
@@ -1216,8 +1214,7 @@ See `finalize-buffer'."
       (gtk:gtk-box-pack-start (main-buffer-container window)
                               (gtk-object buffer)
                               :expand t :fill t)
-      (unless nyxt::*headless-p*
-        (gtk:gtk-widget-show (gtk-object buffer)))
+      (unless *headless-p* (gtk:gtk-widget-show (gtk-object buffer)))
       (when focus
         (gtk:gtk-widget-grab-focus (gtk-object buffer))))
     buffer))
@@ -1232,8 +1229,7 @@ See `finalize-buffer'."
             (push buffer (panel-buffers-right window))))
   (setf (gtk:gtk-widget-size-request (gtk-object buffer))
         (list (width buffer) -1))
-  (unless nyxt::*headless-p*
-    (gtk:gtk-widget-show (gtk-object buffer))))
+  (unless *headless-p* (gtk:gtk-widget-show (gtk-object buffer))))
 
 (define-ffi-method ffi-width ((buffer panel-buffer))
   (nth-value 1 (gtk:gtk-widget-size-request (gtk-object buffer))))
