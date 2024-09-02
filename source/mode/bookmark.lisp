@@ -179,11 +179,9 @@ against date, given `prompter:active-attributes-keys' configuration."))
     ;; Warning: `sort' is destructive and `append' does not copy the last list,
     ;; so if we used `delete-duplicates' here it would have modified the last
     ;; list.
-    (let ((tags (sort (remove-duplicates
-                       (mappend #'tags bookmarks)
-                       :test #'string-equal)
-                      #'string-lessp)))
-      tags)))
+    (sort (remove-duplicates (mappend #'tags bookmarks)
+                             :test #'string-equal)
+          #'string-lessp)))
 
 (define-class tag-source (prompter:source)
   ((prompter:name "Tags")
