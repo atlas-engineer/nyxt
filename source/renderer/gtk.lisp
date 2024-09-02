@@ -1176,11 +1176,13 @@ See `finalize-buffer'."
              (unless (internal-url-p url)
                (echo "Finished loading ~s." (render-url url))))))))
 
-(define-ffi-method on-signal-mouse-target-changed ((buffer gtk-buffer) hit-test-result modifiers)
+(define-ffi-method on-signal-mouse-target-changed ((buffer gtk-buffer)
+                                                   hit-test-result
+                                                   modifiers)
   (declare (ignore modifiers))
   (if-let ((url (or (webkit:webkit-hit-test-result-link-uri hit-test-result)
-                         (webkit:webkit-hit-test-result-image-uri hit-test-result)
-                         (webkit:webkit-hit-test-result-media-uri hit-test-result))))
+                    (webkit:webkit-hit-test-result-image-uri hit-test-result)
+                    (webkit:webkit-hit-test-result-media-uri hit-test-result))))
     (progn
       (nyxt::print-message (str:concat "→ " (ffi-display-url *browser* url)))
       (setf (url-at-point buffer) (quri:uri url)))
