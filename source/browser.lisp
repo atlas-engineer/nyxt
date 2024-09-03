@@ -336,6 +336,9 @@ A list of strings is returned, as to comply with `uiop:launch-program' or
         (progn (echo-warning "Invalid value of `external-editor-program' browser slot.") nil)
         (str:split " " cmd))))
 
+(defmethod default-search-engine ((browser browser))
+  (first (search-engines browser)))
+
 (defmethod get-containing-window-for-buffer ((buffer buffer) (browser browser))
   "Get the window containing a buffer."
   (find buffer (alex:hash-table-values (windows browser)) :key #'active-buffer))
