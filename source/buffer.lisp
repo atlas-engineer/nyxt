@@ -1459,8 +1459,7 @@ specified for their contents."
                                                "Delete chosen history entries (not belonging to open buffers)."
                                                (files:with-file-content (history (history-file buffer))
                                                  (dolist (entry suggestion-values)
-                                                   (htree:delete-data history entry)))))))
-           (make-instance 'search-engine-url-source :actions-on-return actions-on-return))
+                                                   (htree:delete-data history entry))))))))
      (mappend (rcurry #'url-sources (uiop:ensure-list actions-on-return)) (modes buffer)))))
 
 (define-command set-url (&key (prefill-current-url-p t))
