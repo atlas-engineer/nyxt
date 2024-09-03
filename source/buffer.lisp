@@ -1326,151 +1326,109 @@ URL-DESIGNATOR is then transformed by BUFFER's `buffer-load-hook'."
   (:documentation "Source listing all the entries in history.
 Loads the entry with default `prompter:actions-on-return'."))
 
-(define-class new-url-query ()
-  ((query
+(define-class url-or-query ()
+  ((data
     ""
-    :type (maybe string)
-    :documentation "Either a URL or a string query passed to `engine'.")
-   (label
-    nil
-    :type (maybe string)
-    :documentation "The meaningful text for the query, if query is a URL.")
-   (engine
-    nil
+    :type string
+    :documentation "A string to be resolved to a URL via `url'.")
+   (kind
+    :initarg nil
+    :type (maybe keyword)
+    :documentation "A keyword that classifies `data' based on its content.
+One of `:url' or `:search-query'.")
+   (search-engine
     :type (maybe search-engine)
-    :documentation "See `search-engine'."))
+    :documentation "Applicable when `kind' is `:search-query'.")
+   (search-query
+    :initarg nil
+    :type (maybe string)
+    :documentation "Applicable when `kind' is `:search-query'."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:documentation "Structure that processes a new URL query from user input.
-Checks whether a valid https or local file URL is requested, in a DWIM fashion."))
+  (:documentation "Helper structure that resolves user input to a URL.
 
-(defmethod initialize-instance :after ((query new-url-query) &key &allow-other-keys)
-  (with-slots (query engine) query
-    ;; Trim whitespace, in particular to detect URL properly.
-    (setf query (str:trim query))
-    (cond
-      (engine
-       ;; First check engine: if set, no need to change anything.
-       nil)
-      ((valid-url-p query :check-tld-p nil)
-       ;; Valid URLs should be passed forward.
-       nil)
-      ((valid-url-p (str:concat "https://" query) :check-tld-p t)
-       (setf query (str:concat "https://" query)))
-      ;; Rest is for invalid URLs:
-      ((uiop:file-exists-p query)
-       (setf query
-             (str:concat
-              "file://"
-              (uiop:native-namestring
-               (uiop:ensure-absolute-pathname
-                query *default-pathname-defaults*)))))
-      (t
-       (setf engine (or engine (default-search-engine)))))))
+Determine whether a valid https URL, local file or a search engine query is
+requested.  When the first word of `data' matches the `shortcut' of a
+`search-engine', then it is interpreted as a search engine query."))
 
-(defun encode-url-char (c)
-  (if (find c '("+" "&" "%") :test #'string=)
-      (quri:url-encode c)
-      c))
+(defmethod print-object ((query url-or-query) stream)
+  (print-unreadable-object (query stream :type t)
+    (format stream "~a" (data query))))
 
-(defmethod url ((query new-url-query))
-  (quri:uri
-   (cond
-     ((and (engine query)
-           (not (uiop:emptyp (query query)))
-           (not (uiop:emptyp (label query))))
-      (query query))
-     ((and (engine query)
-           (not (uiop:emptyp (query query)))
-           (uiop:emptyp (label query)))
-      (format nil (search-url (engine query))
-              (str:join ""
-                        (mapcar #'encode-url-char
-                                (map 'list #'string (query query))))))
-     ((engine query)
-      (fallback-url (engine query)))
-     (t (query query)))))
+(defmethod initialize-instance :after ((query url-or-query) &key &allow-other-keys)
+  (with-slots (data kind search-engine search-query) query
+    (setf data (str:trim data))
+    (cond ((str:blankp data) t)
+          ((valid-url-p data :check-tld-p nil) (setf kind :url))
+          ((ignore-errors (valid-url-p (str:concat "https://" data) :check-tld-p t))
+           (setf kind :url
+                 data (str:concat "https://" data)))
+          ((uiop:file-exists-p data)
+           (setf kind :url
+                 data (str:concat "file://" (uiop:native-namestring data))))
+          (t
+           (let* ((terms (sera:tokens data))
+                  (explicit-engine (find (first terms) (search-engines *browser*)
+                                         :key #'shortcut :test #'string-equal))
+                  (engine (or explicit-engine (default-search-engine *browser*))))
+             (setf kind :search-query
+                   search-engine engine)
+             (if explicit-engine
+                 (setf search-query (str:join " " (rest terms)))
+                 (setf search-query data
+                       data (format-query data engine))))))))
 
-(defun make-completion-query (completion &key engine)
-  (typecase completion
-    (string (make-instance 'new-url-query
-                           :engine engine
-                           :query  completion))
-    (list (make-instance 'new-url-query
-                         :engine engine
-                         :query (second completion)
-                         :label (first completion)))))
+(export-always 'search-suggestions)
+(defmethod search-suggestions ((query url-or-query))
+  (with-slots (search-engine search-query) query
+    (when search-engine
+      (let ((suggestions (suggestions search-query search-engine)))
+        (mapcar (lambda (suggestion)
+                  (make-instance 'url-or-query
+                                 :data (format-query suggestion search-engine)))
+                ;; Ensure that search-query is the first suggestion.
+                (if (string-equal search-query (first suggestions))
+                    suggestions
+                    (append (list search-query) suggestions)))))))
 
-(defun input->queries (input &key (engine-completion-p))
-  (let* ((terms (sera:tokens input))
-         (engines (let ((all-prefixed-engines
-                          (remove-if
-                           (sera:partial (complement #'str:starts-with-p) (first terms))
-                           (all-search-engines)
-                           :key #'shortcut)))
-                    (multiple-value-bind (matches non-matches)
-                        (sera:partition (lambda (e)
-                                          (string= (first terms) e))
-                                        all-prefixed-engines :key #'shortcut)
-                      (append matches non-matches)))))
-    (append (unless (and engines (member (first terms)
-                                         (mapcar #'shortcut engines)
-                                         :test #'string=))
-              (list (make-instance 'new-url-query
-                                   :query input)))
-            (or (mappend (lambda (engine)
-                           (append
-                            (list (make-instance 'new-url-query
-                                                 :query  (str:join " " (rest terms))
-                                                 :engine engine))
-                            ;; Some engines (I'm looking at you, Wikipedia!)
-                            ;; return garbage in response to an empty request.
-                            (when (and engine-completion-p
-                                       (search-auto-complete-p (current-buffer))
-                                       (completion-function engine)
-                                       (rest terms))
-                              (mapcar (rcurry #'make-completion-query
-                                              :engine engine)
-                                      (with-protect ("Error while completing search: ~a" :condition)
-                                        (funcall (completion-function engine)
-                                                 (str:join " " (rest terms))))))))
-                         engines)
-                (and-let* ((completion engine-completion-p)
-                           (buffer (current-buffer))
-                           (complete (search-auto-complete-p buffer))
-                           (always-complete (search-always-auto-complete-p buffer))
-                           (engine (default-search-engine))
-                           (completion (completion-function engine))
-                           (all-terms (str:join " " terms)))
-                  (mapcar (rcurry #'make-completion-query
-                                  :engine engine)
-                          (with-protect ("Error while completing default search: ~a" :condition)
-                            (funcall (completion-function engine) all-terms))))))))
+(defmethod url ((query url-or-query))
+  (with-slots (data kind search-engine search-query) query
+    (quri:uri (if (eq :search-query kind)
+                  (format-url search-query search-engine)
+                  data))))
 
-(define-class new-url-or-search-source (prompter:source)
+(define-class url-or-query-source (prompter:source)
   ((prompter:name "URL or search query")
    (prompter:filter-preprocessor
     (lambda (suggestions source input)
       (declare (ignore suggestions source))
-      (input->queries input :engine-completion-p nil)))
+      ;; Ideally, the source should be hidden when input in nil, but that would
+      ;; change the current buffer due to the default
+      ;; `prompter:actions-on-current-suggestion' for `buffer-source'.
+      (list (make-instance 'url-or-query :data input))))
    (prompter:filter-postprocessor
-    (lambda (suggestions source input)
-      (declare (ignore source))
-      ;; Avoid long computations until the user has finished the query.
-      (sleep 0.15)
-      (append suggestions
-              (input->queries input :engine-completion-p t))))
+    (lambda (prompt-suggestions source input)
+      (declare (ignore source input))
+      (sleep 0.15) ; Delay search suggestions while typing.
+      (if-let ((_ (search-engine-suggestions-p *browser*))
+               (completion (search-suggestions (prompter:value (first prompt-suggestions)))))
+        completion
+        prompt-suggestions)))
    (prompter:filter nil)
    (prompter:actions-on-return #'buffer-load*))
   (:export-class-name-p t)
   (:metaclass user-class)
   (:documentation "Source listing URL queries from user input in a DWIM fashion.  See
-`new-url-query'."))
+`url-or-query'."))
 
-(defmethod prompter:object-attributes ((query new-url-query) (source new-url-or-search-source))
+(defmethod prompter:object-attributes ((query url-or-query) (source url-or-query-source))
   (declare (ignore source))
-  `(("Input" ,(or (label query) (query query)) (:width 5))
-    ("Search engine" ,(if (engine query) (shortcut (engine query)) "") (:width 1))))
+  (with-slots (data kind search-engine search-query) query
+    `(("Input" ,(or search-query data) (:width 5))
+      ("Type" ,(cond ((null kind) "")
+                     ((eq kind :search-query) (name search-engine))
+                     (t kind))
+              (:width 2)))))
 
 (defun pushnew-url-history (history url)
   "URL is not pushed if empty."
@@ -1484,7 +1442,7 @@ The returned sources should have `url' or `prompter:actions-on-return' methods
 specified for their contents."
   (let ((actions-on-return (uiop:ensure-list actions-on-return)))
     (append
-     (list (make-instance 'new-url-or-search-source :actions-on-return actions-on-return)
+     (list (make-instance 'url-or-query-source :actions-on-return actions-on-return)
            (make-instance
             'buffer-source
             :filter-preprocessor #'prompter:filter-exact-matches
