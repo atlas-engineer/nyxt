@@ -117,6 +117,16 @@ major versions."
                               result)))))
 
 (define-migration "4"
+  (search-engines)
+  (:p "Moved to " (:nxref :slot 'search-engines :class-name 'browser) ".")
+
+  (search-auto-complete-p)
+  (:p "Renamed and moved to "
+      (:nxref :slot 'search-engine-suggestions-p :class-name 'browser) ".")
+
+  (search-always-auto-complete-p)
+  (:p "Deleted.")
+
   (ffi-buffer-load-html)
   (:p "Deleted.")
 
