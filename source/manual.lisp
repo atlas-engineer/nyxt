@@ -174,62 +174,38 @@ shifts.  For instance if " (:code "C-x C-F") " fails to match anything " (:code 
          translation."))
 
       (:nsection :title "Search engines"
-        (:p "See the " (:nxref :slot 'search-engines :class-name 'context-buffer) " buffer slot
-documentation.  Bookmarks can also be used as search engines, see the
-corresponding section.")
-        (:p "Nyxt comes with default search engines for "
-            (:code
-             (format nil "~{~a~^, ~}"
-                     (mapcar (lambda (engine) (quri:uri-host (quri:uri (getf engine
-                                                                        :search-url))))
-                             (rest (third (getf (mopu:slot-properties 'context-buffer
-                                                                      'search-engines)
-                                                :initform))))))
-            ". "
-            "The following example shows one way to add new search engines.")
+        (:p "The following search engines are defined, where the default one is
+        the first: " (:ncode (getf (mopu:slot-properties 'browser 'search-engines)
+                                   :initform)))
+        (:p "The " (:code ":shortcut") " parameter above impacts the behavior of
+        commands such as " (:nxref :command 'set-url) ". For example, typing "
+        (:code "foo") " or " (:code "ddg foo") " both results in querying
+        DuckDuckGo for " (:code "foo") " (meaning that the shortcut may be
+        omitted when using the default search engine). As you might have
+        guessed, " (:code "wiki foo") " queries Wikipedia instead.")
+
+        (:p "The example below exemplifies how to define additional search engines:")
         (:ncode
           '(defvar *my-search-engines*
-            (list
-             '("google" "https://google.com/search?q=~a" "https://google.com")
-             '("python3" "https://docs.python.org/3/search.html?q=~a" "https://docs.python.org/3")
-             '("doi" "https://dx.doi.org/~a" "https://dx.doi.org/"))
-            "List of search engines.")
+            (list (make-instance 'search-engine
+                   :name "Google"
+                   :shortcut "goo"
+                   :control-url "https://duckduckgo.com/?q=~a")
+             (make-instance 'search-engine
+              :name "MDN"
+              :shortcut "mdn"
+              :control-url "https://developer.mozilla.org/en-US/search?q=~a")))
 
-          '(define-configuration context-buffer
-            "Go through the search engines above and `make-search-engine' out of them."
-            ((search-engines
-              (append (mapcar (lambda (engine) (apply 'make-search-engine engine))
-                       *my-search-engines*)
-               %slot-default%)))))
-        (:p "Note that the last search engine is the default one. For example, in
-order to make python3 the default, the above code can be slightly modified as
-follows.")
-        (:ncode
-          '(defvar *my-search-engines*
-            (list
-             '("google" "https://google.com/search?q=~a" "https://google.com")
-             '("doi" "https://dx.doi.org/~a" "https://dx.doi.org/")
-             '("python3" "https://docs.python.org/3/search.html?q=~a" "https://docs.python.org/3"))
-            "List of search engines.")
-
-          '(define-configuration context-buffer
-            "Go through the search engines above and `make-search-engine' out of them."
-            ((search-engines (append %slot-default%
-                              (mapcar (lambda (engine) (apply 'make-search-engine engine))
-                               *my-search-engines*))))))
-        (:p "If you don't want to use " (:nxref :function 'make-search-engine)
-            " and want to try building the engines yourself, you can always make new "
-            (:nxref :class-name 'search-engine) " and add it to "
-            (:nxref :class-name 'context-buffer :slot 'search-engines) " list:")
-        (:ncode
-          '(define-configuration context-buffer
-            "Add a single search engine manually."
-            ((search-engines (pushnew (make-instance 'search-engine
-                                       :name "Reddit"
-                                       :shortcut "r"
-                                       :search-url "https://reddit.com/search/?q=~a"
-                                       :fallback-url "https://reddit.com")
-                              %slot-value%))))))
+          '(define-configuration browser
+            ((search-engines (append %slot-default% *my-search-engines*)))))
+        (:p "Note that the default search engine is determined by "
+            (:nxref :function 'default-search-engine)
+            " (by default, the first element of "
+            (:nxref :slot 'search-engines :class-name 'browser)
+            ").  Therefore, the order of arguments passed to "
+            (:code "append") " in the code snippet above is key.")
+        (:p "For more information on the topic see "
+            (:nxref :class-name 'search-engine) "."))
 
       (:nsection :title "History"
         (:p "Nyxt history model is a tree whose nodes are URLs. It branches out through all

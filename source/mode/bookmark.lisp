@@ -272,7 +272,7 @@ against date, given `prompter:active-attributes-keys' configuration."))
     (&key (url (prompt1
                 :prompt "Bookmark URL"
                 :sources (list
-                          (make-instance 'new-url-or-search-source
+                          (make-instance 'url-or-query-source
                                          :actions-on-return (lambda-mapped-command url))
                           (make-instance 'buffer-source
                                          :actions-on-return (lambda-mapped-command url))

@@ -27,6 +27,7 @@
 
 (define-version "4.0.0"
   (:ul
+   (:li "New implementation of the search engine logic.")
    (:li "Delete " (:code "ffi-buffer-load-html") ".")
    (:li "Delete slot " (:code "override-map") ".")
    (:li "Delete slot " (:code "hide-single-source-header-p") ".")
@@ -48,7 +49,7 @@ level.")
         (:nxref :function 'dispatch-input-event) ".")
    (:li "Delete slot " (:code "status-buffer-position") ".")
    (:li "Delete slot " (:code "prompt-buffer-open-height") " since "
-        (:nxref :slot 'height :class-name 'prompt-buffer) "suffices.")
+        (:nxref :slot 'height :class-name 'prompt-buffer) " suffices.")
    (:li "Add slot "
         (:nxref :slot 'nyxt/mode/hint:x-placement :class-name 'nyxt/mode/hint:hint-mode)
         " to draw hints on the right of the hinted element.  By default, they

@@ -3,67 +3,51 @@
 
 (in-package :nyxt/tests)
 
-(define-test parse-url ()
-  ;; "full URL"
-  (assert-equality #'quri:uri=
-                   (quri:uri "https://nyxt-browser.com")
-                   (url (make-instance 'nyxt:new-url-query :query "https://nyxt-browser.com")))
-  ;; "URL without protocol"
-  (assert-equality #'quri:uri=
-                   (quri:uri "https://nyxt-browser.com")
-                   (url (first (nyxt::input->queries "nyxt-browser.com"))))
-  ;; "search engine"
-  (assert-equality #'quri:uri=
-                   (quri:uri "https://en.wikipedia.org/w/index.php?search=wikipedia")
-                   (url (first (nyxt::input->queries "wiki wikipedia"))))
-  ;; "search engine with special characters"
-  (assert-equality #'quri:uri=
-                   (quri:uri "https://en.wikipedia.org/w/index.php?search=wiki%2Bpédia")
-                   (url (first (nyxt::input->queries "wiki wiki+pédia"))))
-  ;; "default search engine"
-  (assert-equality #'quri:uri=
-                   (quri:uri "https://search.atlas.engineer/searxng/search?q=nyxt browser")
-                   (url (first (nyxt::input->queries "nyxt browser"))))
-  ;; "wiki search engine"
-  (assert-equality #'quri:uri=
-                   (quri:uri "https://en.wikipedia.org/w/index.php?search=wikipedia")
-                   (url (first (nyxt::input->queries "wiki wikipedia"))))
-  ;; "local file"
-  (assert-equality #'quri:uri=
-                   (quri:uri "file:///readme.org")
-                   (url (first (nyxt::input->queries "file:///readme.org"))))
-  ;; "empty domain"
-  (assert-equality #'quri:uri=
-                   (quri:uri "https://search.atlas.engineer/searxng/search?q=foo")
-                   (url (first (nyxt::input->queries "foo"))))
-  ;; "same domain and TLD"
-  (assert-equality #'quri:uri=
-                   (quri:uri "https://search.atlas.engineer/searxng/search?q=algo")
-                   (url (first (nyxt::input->queries "algo"))))
-  ;; "localhost"
-  (assert-equality #'quri:uri=
-                   (quri:uri "http://localhost:8080")
-                   (url (first (nyxt::input->queries "http://localhost:8080"))))
-  ;; "ignore wildcards"
-  (assert-equality #'quri:uri=
-                   (quri:uri "https://search.atlas.engineer/searxng/search?q=*spurious*")
-                   (url (first (nyxt::input->queries "*spurious*"))))
-  ;; "about:blank"
-  (assert-equality #'quri:uri=
-                   (quri:uri "about:blank")
-                   (url (first (nyxt::input->queries "about:blank"))))
-  ;; "valid syntax but unknown scheme"
-  (assert-equality #'quri:uri=
-                   (quri:uri "https://search.atlas.engineer/searxng/search?q=foo:blank")
-                   (url (first (nyxt::input->queries "foo:blank"))))
-  ;; "'Partial' URLs without scheme but with path"
-  (assert-equality #'quri:uri=
-                   (quri:uri "https://github.com/atlas-engineer")
-                   (url (first (nyxt::input->queries "github.com/atlas-engineer"))))
-  ;; IP address without scheme
-  (assert-equality #'quri:uri=
-                   (quri:uri "https://127.0.0.1")
-                   (url (first (nyxt::input->queries "127.0.0.1")))))
+(define-test parse-set-url-input ()
+  (let ((*browser* (make-instance 'browser)))
+    (flet ((make-data (data) (make-instance 'nyxt:url-or-query :data data)))
+      (assert-equality #'quri:uri=
+                       (quri:uri "https://github.com/atlas-engineer")
+                       (url (make-data "github.com/atlas-engineer")))
+      ;; Fails when omitting http://, acceptable?
+      (assert-equality #'quri:uri=
+                       (quri:uri "http://localhost:8080")
+                       (url (make-data "http://localhost:8080")))
+      (assert-equality #'quri:uri=
+                       (quri:uri "https://127.0.0.1")
+                       (url (make-data "127.0.0.1")))
+      (assert-equality #'quri:uri=
+                       (quri:uri "about:blank")
+                       (url (make-data "about:blank")))
+      (assert-equality #'quri:uri=
+                       (quri:uri "nyxt:new")
+                       (url (make-data "nyxt:new")))
+      (assert-eq :search-query
+                 (kind (make-data "foo:blank")))
+      (assert-equality #'quri:uri=
+                       (quri:uri "file:///readme.org")
+                       (url (make-data "file:///readme.org")))
+      (assert-eq :url
+                 (kind (make-data (namestring
+                                   (asdf:system-relative-pathname :nyxt
+                                                                  "source/browser.lisp")))))
+      (assert-equality #'quri:uri=
+                       (quri:uri "https://en.wikipedia.org/w/index.php?search=foo")
+                       (url (make-data "wiki foo")))
+      (let ((data1 (make-data "ddg foo"))
+            (data2 (make-data "foo")))
+        (with-slots ((d1 data) (k1 kind) (e1 search-engine) (q1 search-query)) data1
+          (with-slots ((d2 data) (k2 kind) (e2 search-engine) (q2 search-query)) data2
+            (assert-equal d1 d2)
+            (assert-equal k1 k2)
+            (assert-equal e1 e2)
+            (assert-equal q1 q2)
+            (assert-equality #'quri:uri= (url data1) (url data2)))))
+      ;; When engine doesn't compute suggestions, return the identity query.
+      (let* ((data-query (make-data "searx foo"))
+             (suggestions (search-suggestions data-query)))
+        (assert-equal 1 (length suggestions))
+        (assert-equal (data data-query) (data (first suggestions)))))))
 
 (define-test nyxt-urls ()
   (assert-error 'simple-error
