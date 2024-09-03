@@ -56,7 +56,31 @@ This is an acceptable `hooks:combination' for `hooks:hook'."
 Should be redefined by the renderer."))
 
 (define-class browser (renderer-browser)
-  ((profile
+  ((search-engines
+    (list
+     (make-instance 'search-engine
+                    :name "DuckDuckGo"
+                    :shortcut "ddg"
+                    :control-url "https://duckduckgo.com/?q=~a"
+                    :control-completion-url "https://duckduckgo.com/ac/?q=~a")
+     (make-instance 'search-engine
+                    :name "Wikipedia"
+                    :shortcut "wiki"
+                    :control-url "https://en.wikipedia.org/w/index.php?search=~a"
+                    :control-completion-url "https://en.wikipedia.org/w/api.php?action=opensearch&format=json&search=~a")
+     (make-instance 'search-engine
+                    :name "Atlas SearXNG"
+                    :shortcut "searx"
+                    :control-url "https://search.atlas.engineer/searxng/search?q=~a"
+                    :control-completion-url nil))
+    :type (cons search-engine *)
+    :documentation "A list of `search-engine' objects.
+The first one is the default, as per `default-search-engine'.")
+   (search-engine-suggestions-p
+    t
+    :type boolean
+    :documentation "Whether search suggestions are displayed.")
+   (profile
     (global-profile)
     :type nyxt-profile
     :documentation "Global profile used to specialize the behavior of
