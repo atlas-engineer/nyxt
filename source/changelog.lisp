@@ -33,7 +33,10 @@
     (:ul
      (:li "Deny all permission requests by default on the WebKitGTK port (see "
           (:code "nyxt/renderer/gtk:handle-permission-requests-p")
-          ")."))))
+          ").")))
+  (:nsection :title "Bug fixes"
+    (:ul
+     (:li "Fix prompt buffer's empty input bug."))))
 
 (define-version "3.11.8"
   (:nsection :title "Bug fixes"
