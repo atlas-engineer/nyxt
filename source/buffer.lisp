@@ -1725,6 +1725,7 @@ Checks whether a valid https or local file URL is requested, in a DWIM fashion."
     ;; Trim whitespace, in particular to detect URL properly.
     (setf query (str:trim query))
     (cond
+      ((str:blankp query) t)
       (engine
        ;; First check engine: if set, no need to change anything.
        nil)
