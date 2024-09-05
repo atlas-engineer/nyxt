@@ -1663,15 +1663,14 @@ the `active-buffer'."
   buffer)
 
 (define-ffi-method ffi-buffer-delete ((buffer gtk-buffer))
-  (cond
-   ((not (slot-value buffer 'gtk-object))
-    (mapc (lambda (handler-id)
-            (gobject:g-signal-handler-disconnect (gtk-object buffer) handler-id))
-          (handler-ids buffer))
-    (nyxt::buffer-hide buffer))
-   ((webkit:webkit-web-view-is-web-process-responsive (gtk-object buffer))
-    (webkit:webkit-web-view-try-close (gtk-object buffer)))
-   (t (buffer-destroy buffer))))
+  (cond ((not (slot-value buffer 'gtk-object))
+         (mapc (lambda (handler-id)
+                 (gobject:g-signal-handler-disconnect (gtk-object buffer) handler-id))
+               (handler-ids buffer))
+         (nyxt::buffer-hide buffer))
+        ((webkit:webkit-web-view-is-web-process-responsive (gtk-object buffer))
+         (webkit:webkit-web-view-try-close (gtk-object buffer)))
+        (t (buffer-destroy buffer))))
 
 (define-ffi-method ffi-buffer-load ((buffer gtk-buffer) url)
   "Load URL in BUFFER.
