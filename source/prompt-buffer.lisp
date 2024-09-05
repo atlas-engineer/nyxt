@@ -279,9 +279,7 @@ See `prompt' for how to invoke prompts.")
 (defmethod (setf height) (value (prompt-buffer prompt-buffer))
   (setf (ffi-height prompt-buffer)
         (case value
-          (:default
-           (round (/ (ffi-height (window prompt-buffer))
-                     3)))
+          (:default (round (/ (ffi-height (window prompt-buffer)) 3)))
           (:fit-to-prompt
            (ps-eval :buffer prompt-buffer
              (+ (ps:chain (nyxt/ps:qs document "#prompt-area") offset-height)
