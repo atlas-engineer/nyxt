@@ -301,9 +301,11 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
 (defmethod show-prompt-buffer ((prompt-buffer prompt-buffer))
   (with-slots (window) prompt-buffer
     (push prompt-buffer (active-prompt-buffers window))
-    (calispel:! (prompt-buffer-channel window) prompt-buffer)
-    (prompt-render prompt-buffer)
-    (setf (height prompt-buffer) (height prompt-buffer)))
+    (calispel:! (prompt-buffer-channel window) prompt-buffer))
+  (prompt-render-skeleton prompt-buffer)
+  (prompt-render-focus prompt-buffer)
+  (prompt-render-suggestions prompt-buffer)
+  (setf (height prompt-buffer) (slot-value prompt-buffer 'height))
   (run-thread "Show prompt watcher"
     (update-prompt-input prompt-buffer)
     (hooks:run-hook (prompt-buffer-ready-hook *browser*) prompt-buffer)))
@@ -551,11 +553,6 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
 (defun prompt-render-focus (prompt-buffer)
   (ps-eval :async t :buffer prompt-buffer
     (ps:chain (nyxt/ps:qs document "#input") (focus))))
-
-(defmethod prompt-render ((prompt-buffer prompt-buffer)) ; TODO: Merge into `show-prompt-buffer'?
-  (prompt-render-skeleton prompt-buffer)
-  (prompt-render-focus prompt-buffer)
-  (prompt-render-suggestions prompt-buffer))
 
 (defun update-prompt-input (prompt-buffer &optional input)
   "This blocks and updates the view.
