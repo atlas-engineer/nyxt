@@ -267,14 +267,7 @@ See `prompt' for how to invoke prompts.")
   (hooks:run-hook (prompt-buffer-make-hook *browser*) prompt-buffer)
   (enable-modes* (append (reverse (default-modes prompt-buffer))
                          (uiop:ensure-list extra-modes))
-                 prompt-buffer)
-  (when (or (invisible-input-p prompt-buffer)
-            (and (sera:single (prompter:sources prompt-buffer))
-                 ;; Using eq here because we don't want to trigger it for
-                 ;; raw-source subclasses, don't we?
-                 (eq 'prompter:raw-source
-                     (sera:class-name-of (first (prompter:sources prompt-buffer))))))
-    (setf (height prompt-buffer) :fit-to-prompt)))
+                 prompt-buffer))
 
 (defmethod (setf height) (value (prompt-buffer prompt-buffer))
   (setf (ffi-height prompt-buffer)

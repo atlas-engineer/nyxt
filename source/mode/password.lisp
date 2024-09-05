@@ -103,6 +103,7 @@ for which the `executable' slot is non-nil."
                                     :sources 'prompter:raw-source))
             (new-password (prompt1 :prompt "New password (leave empty to generate)"
                                    :sources 'prompter:raw-source
+                                   :height :fit-to-prompt
                                    :invisible-input-p t))
             (username (prompt1 :prompt "Username (can be empty)"
                                :sources 'prompter:raw-source)))
@@ -151,6 +152,7 @@ for which the `executable' slot is non-nil."
                  (prompt1 :prompt (format nil "Database password for ~a (leave empty if none)"
                                           (password::password-file password-interface))
                           :sources 'prompter:raw-source
+                          :height :fit-to-prompt
                           :invisible-input-p t))))
 
 (defmacro with-password (password-interface &body body)

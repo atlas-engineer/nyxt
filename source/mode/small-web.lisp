@@ -291,6 +291,7 @@ Implies that `small-web-mode' is enabled."
                               (handler-case
                                   (prompt1 :prompt meta
                                            :sources 'prompter:raw-source
+                                           :height :fit-to-prompt
                                            :invisible-input-p (eq status :sensitive-input))
                                 (prompt-buffer-canceled () "")))))
                    (buffer-load (str:concat url "?" text))
