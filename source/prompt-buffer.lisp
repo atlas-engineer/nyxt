@@ -299,10 +299,6 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
     (values (when suggestion (prompter:value suggestion)) source)))
 
 (defmethod show-prompt-buffer ((prompt-buffer prompt-buffer))
-  "Show the last active PROMPT-BUFFER, if any.
-This is a low-level display function.
-See also `hide-prompt-buffer'."
-  ;; TODO: Add method that returns if there is only 1 source with no filter.
   (with-slots (window) prompt-buffer
     (push prompt-buffer (active-prompt-buffers window))
     (calispel:! (prompt-buffer-channel window) prompt-buffer)
@@ -313,9 +309,7 @@ See also `hide-prompt-buffer'."
     (hooks:run-hook (prompt-buffer-ready-hook *browser*) prompt-buffer)))
 
 (defmethod hide-prompt-buffer ((prompt-buffer prompt-buffer))
-  "Hide PROMPT-BUFFER, display next active one.
-This is a low-level display function.
-See also `show-prompt-buffer'."
+  "Hide PROMPT-BUFFER and display the next active one, if any."
   (with-slots (window) prompt-buffer
     (alex:deletef (active-prompt-buffers window) prompt-buffer)
     ;; The channel values are irrelevant, so is the element order:
@@ -463,8 +457,7 @@ See also `show-prompt-buffer'."
 
 (export 'prompt-render-suggestions)
 (defmethod prompt-render-suggestions ((prompt-buffer prompt-buffer))
-  "Refresh the rendering of the suggestion list in PROMPT-BUFFER.
-This does not redraw the whole prompt buffer, use `prompt-render' for that."
+  "Refresh the rendering of the suggestion list in PROMPT-BUFFER."
   (let* ((sources (prompter:sources prompt-buffer))
          (current-source-index (position (current-source prompt-buffer) sources))
          (last-source-index (1- (length sources))))
