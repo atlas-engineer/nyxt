@@ -167,7 +167,6 @@ requests are denied."))
   (:metaclass gobject:gobject-class))
 
 (defmethod initialize-instance :after ((web-context webkit-web-context) &key)
-  #+webkit2-sandboxing
   (webkit:webkit-web-context-set-sandbox-enabled web-context t)
   web-context)
 
@@ -1893,15 +1892,12 @@ local anyways, and it's better to refresh it if a load was queried."
 (define-ffi-settings-accessor javascript-enabled-p webkit:webkit-settings-enable-javascript)
 (define-ffi-settings-accessor javascript-markup-enabled-p webkit:webkit-settings-enable-javascript-markup)
 (define-ffi-settings-accessor smooth-scrolling-enabled-p webkit:webkit-settings-enable-smooth-scrolling)
-#+webkit2-media
 (define-ffi-settings-accessor media-enabled-p webkit:webkit-settings-enable-media)
 (define-ffi-settings-accessor webgl-enabled-p webkit:webkit-settings-enable-webgl)
 (define-ffi-settings-accessor auto-load-image-enabled-p webkit:webkit-settings-auto-load-images)
 
-#+webkit2-mute
 (defmethod ffi-buffer-sound-enabled-p ((buffer gtk-buffer))
   (not (webkit:webkit-web-view-get-is-muted (gtk-object buffer))))
-#+webkit2-mute
 (defmethod (setf ffi-buffer-sound-enabled-p) (value (buffer gtk-buffer))
   (webkit:webkit-web-view-set-is-muted (gtk-object buffer) (not value)))
 
@@ -2143,12 +2139,10 @@ As a second value, return the current buffer index starting from 0."
 
 (defmethod itp-enabled-p ((buffer gtk-buffer))
   "Return non-nil when Intelligent Tracking Prevention is enabled."
-  #+webkit2-tracking
   (webkit:webkit-website-data-manager-get-itp-enabled
    (webkit:webkit-web-context-website-data-manager
     (webkit:webkit-web-view-web-context (gtk-object buffer)))))
 (defmethod (setf itp-enabled-p) (value (buffer gtk-buffer))
-  #+webkit2-tracking
   (webkit:webkit-website-data-manager-set-itp-enabled
    (webkit:webkit-web-context-website-data-manager
     (webkit:webkit-web-view-web-context (gtk-object buffer)))
