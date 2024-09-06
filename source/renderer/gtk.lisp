@@ -325,9 +325,8 @@ the renderer thread, use `defmethod' instead."
   (:documentation "Related to WebKitWebsiteDataManager objects."))
 
 (defmethod files:resolve ((profile nyxt-profile) (file data-manager-data-directory))
-  (sera:path-join
-   (call-next-method)
-   (pathname (str:concat (context-name file) "-web-context/"))))
+  (sera:path-join (call-next-method)
+                  (pathname (str:concat (context-name file) "-web-context/"))))
 
 (define-class data-manager-cache-directory (files:cache-file data-manager-file)
   ()
@@ -335,9 +334,8 @@ the renderer thread, use `defmethod' instead."
   (:documentation "Related to WebKit's cache."))
 
 (defmethod files:resolve ((profile nyxt-profile) (file data-manager-cache-directory))
-  (sera:path-join
-   (call-next-method)
-   (pathname (str:concat (context-name file) "-web-context/"))))
+  (sera:path-join (call-next-method)
+                  (pathname (str:concat (context-name file) "-web-context/"))))
 
 (define-class gtk-extensions-directory (nyxt-file)
   ((files:name "gtk-extensions")
@@ -351,9 +349,8 @@ the renderer thread, use `defmethod' instead."
   (:documentation "Related to WebKitCookieManager."))
 
 (defmethod files:resolve ((profile nyxt-profile) (file cookies-file))
-  (sera:path-join
-   (call-next-method)
-   (pathname (str:concat (context-name file) "-cookies"))))
+  (sera:path-join (call-next-method)
+                  (pathname (str:concat (context-name file) "-cookies"))))
 
 (define-class gtk-download ()
   ((gtk-object)
