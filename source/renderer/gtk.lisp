@@ -5,6 +5,11 @@
     (:documentation "GTK renderer using direct CFFI bindings."))
 (in-package :nyxt/renderer/gtk)
 
+(alex:define-constant +default+ "default" :test 'equal
+  :documentation "Name of the default WebKit context.")
+(alex:define-constant +internal+ "internal" :test 'equal
+  :documentation "Name of a WebKit context is not persisted to disk.")
+
 (push :nyxt-gtk *features*)
 
 (define-class gtk-renderer (renderer)
@@ -12,6 +17,41 @@
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:documentation "WebKit renderer class."))
+
+(defmethod renderer-thread-p ((renderer gtk-renderer) &optional (thread (bt:current-thread)))
+  (string= "cl-cffi-gtk main thread" (bt:thread-name thread)))
+
+(defmethod install ((renderer gtk-renderer))
+  (flet ((set-superclasses (renderer-class-sym+superclasses)
+           (closer-mop:ensure-finalized
+            (closer-mop:ensure-class (first renderer-class-sym+superclasses)
+                                     :direct-superclasses (rest renderer-class-sym+superclasses)
+                                     :metaclass 'interface-class))))
+    (mapc #'set-superclasses '((renderer-browser gtk-browser)
+                               (renderer-window gtk-window)
+                               (renderer-buffer gtk-buffer)
+                               (nyxt/mode/download:renderer-download gtk-download)
+                               (renderer-request-data gtk-request-data)
+                               (renderer-scheme gtk-scheme)
+                               (nyxt/mode/user-script:renderer-user-style gtk-user-style)
+                               (nyxt/mode/user-script:renderer-user-script gtk-user-script)))))
+
+(defmethod uninstall ((renderer gtk-renderer))
+  (flet ((remove-superclasses (renderer-class-sym)
+           (closer-mop:ensure-finalized
+            (closer-mop:ensure-class renderer-class-sym
+                                     :direct-superclasses '()
+                                     :metaclass 'interface-class))))
+    (mapc #'remove-superclasses '(renderer-browser
+                                  renderer-window
+                                  renderer-buffer
+                                  nyxt/mode/download:renderer-download
+                                  renderer-request-data
+                                  renderer-scheme
+                                  nyxt/mode/user-script:renderer-user-style
+                                  nyxt/mode/user-script:renderer-user-script))))
+
+(setf nyxt::*renderer* (make-instance 'gtk-renderer))
 
 (define-class gtk-browser ()
   ((modifier-translator
@@ -48,17 +88,20 @@ behaviour of modifiers, for instance swap 'control' and 'meta':
   (:metaclass user-class)
   (:documentation "WebKit browser class."))
 
-(alex:define-constant +default+ "default" :test 'equal
-  :documentation "Name of the default WebKit.")
-(alex:define-constant +internal+ "internal" :test 'equal
-  :documentation "Name of a WebKit context is not persisted to disk.")
-
 (defmethod get-context ((browser gtk-browser) name &key ephemeral-p)
   (alexandria:ensure-gethash name
                              (if ephemeral-p
                                  (ephemeral-web-contexts browser)
                                  (web-contexts browser))
                              (make-context name :ephemeral-p ephemeral-p)))
+(defmethod browser-schemes append ((browser gtk-browser))
+  '("webkit" "webkit-pdfjs-viewer"))
+
+;; This method does not need a renderer, so no need to use `define-ffi-method'
+;; which is prone to race conditions.
+(defmethod ffi-display-url ((browser gtk-browser) text)
+  (declare (ignore browser))
+  (webkit:webkit-uri-for-display text))
 
 (define-class gtk-window ()
   ((gtk-object
@@ -167,9 +210,6 @@ Restarting GTK within the same Lisp image breaks WebKitGTK.
 As a workaround, we never leave the GTK main loop when running from a REPL.
 
 See https://github.com/atlas-engineer/nyxt/issues/740")
-
-(defmethod renderer-thread-p ((renderer gtk-renderer) &optional (thread (bt:current-thread)))
-  (string= "cl-cffi-gtk main thread" (bt:thread-name thread)))
 
 (defmacro within-gtk-thread (&body body)
   "Protected `gtk:within-gtk-thread'."
@@ -2002,12 +2042,6 @@ custom (the specified proxy) and none."
   (webkit:webkit-web-inspector-show
    (webkit:webkit-web-view-get-inspector (gtk-object buffer))))
 
-;; This method does not need a renderer, so no need to use `define-ffi-method'
-;; which is prone to race conditions.
-(defmethod ffi-display-url ((browser gtk-browser) text)
-  (declare (ignore browser))
-  (webkit:webkit-uri-for-display text))
-
 (defmethod ffi-buffer-cookie-policy ((buffer gtk-buffer))
   (if (renderer-thread-p nyxt::*renderer*)
       (progn
@@ -2232,38 +2266,3 @@ See `make-buffer' for a description of the other arguments."
              :sources (list (make-instance 'prompter:raw-source :name "New context")
                             'context-source))))
   (apply #'make-buffer args))
-
-(defmethod install ((renderer gtk-renderer))
-  (flet ((set-superclasses (renderer-class-sym+superclasses)
-           (closer-mop:ensure-finalized
-            (closer-mop:ensure-class (first renderer-class-sym+superclasses)
-                                     :direct-superclasses (rest renderer-class-sym+superclasses)
-                                     :metaclass 'interface-class))))
-    (mapc #'set-superclasses '((renderer-browser gtk-browser)
-                               (renderer-window gtk-window)
-                               (renderer-buffer gtk-buffer)
-                               (nyxt/mode/download:renderer-download gtk-download)
-                               (renderer-request-data gtk-request-data)
-                               (renderer-scheme gtk-scheme)
-                               (nyxt/mode/user-script:renderer-user-style gtk-user-style)
-                               (nyxt/mode/user-script:renderer-user-script gtk-user-script)))))
-
-(defmethod uninstall ((renderer gtk-renderer))
-  (flet ((remove-superclasses (renderer-class-sym)
-           (closer-mop:ensure-finalized
-            (closer-mop:ensure-class renderer-class-sym
-                                     :direct-superclasses '()
-                                     :metaclass 'interface-class))))
-    (mapc #'remove-superclasses '(renderer-browser
-                                  renderer-window
-                                  renderer-buffer
-                                  nyxt/mode/download:renderer-download
-                                  renderer-request-data
-                                  renderer-scheme
-                                  nyxt/mode/user-script:renderer-user-style
-                                  nyxt/mode/user-script:renderer-user-script))))
-
-(setf nyxt::*renderer* (make-instance 'gtk-renderer))
-
-(defmethod browser-schemes append ((browser gtk-browser))
-  '("webkit" "webkit-pdfjs-viewer"))
