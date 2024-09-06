@@ -41,8 +41,7 @@ For now it is also partly based on `nyxt/renderer/gtk'."))
   (declare (ignore urls startup-timestamp))
   (log:debug "Initializing GI-GTK Interface")
   (if nyxt/renderer/gtk::gtk-running-p
-      (nyxt/renderer/gtk::within-gtk-thread
-        (call-next-method))
+      (nyxt/renderer/gtk::within-gtk-thread (call-next-method))
       (flet ((main-func ()
                (with-protect ("Error on GI-GTK thread: ~a" :condition)
                  (glib:g-set-prgname "nyxt")
