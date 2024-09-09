@@ -95,7 +95,8 @@ Example: when passed command line option --with-file foo=bar,
 
 (defmethod files:resolve ((profile files:profile) (file nyxt-file))
   (or (find-file-name-path (files:name file))
-      (sera:path-join (uiop:ensure-directory-pathname (files:name profile)) (call-next-method))))
+      (sera:path-join (uiop:ensure-directory-pathname (files:name profile))
+                      (call-next-method))))
 
 (defmethod files:read-file :around ((profile nyxt-profile) (file nyxt-file) &key)
   (unless (typep file 'files:virtual-file)
