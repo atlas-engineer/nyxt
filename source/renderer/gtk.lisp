@@ -1032,8 +1032,8 @@ See `finalize-buffer'."
 
 (define-ffi-method on-signal-load-failed-with-tls-errors ((buffer gtk-buffer) certificate url)
   "Return nil to propagate further (i.e. raise load-failed signal), T otherwise."
-  (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
-         (host (quri:uri-host url)))
+  (let ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
+        (host (quri:uri-host url)))
     (if (and (certificate-exceptions buffer)
              (member host (certificate-exceptions buffer) :test #'string=))
         (progn
