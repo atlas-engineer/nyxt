@@ -398,13 +398,10 @@ the renderer thread, use `defmethod' instead."
 
 (define-class gtk-request-data ()
   ((gtk-request
-    nil
     :type (maybe webkit:webkit-uri-request))
    (gtk-response
-    nil
     :type (maybe webkit:webkit-uri-response))
    (gtk-resource
-    nil
     :type (maybe webkit:webkit-web-resource)))
   (:export-class-name-p t)
   ;; We export these accessors because it can be useful to inspect the guts of a
