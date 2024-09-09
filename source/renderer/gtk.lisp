@@ -1823,11 +1823,9 @@ local anyways, and it's better to refresh it if a load was queried."
     style))
 
 (define-ffi-method ffi-buffer-remove-user-style ((buffer gtk-buffer) (style gtk-user-style))
-  (let ((content-manager
-          (webkit:webkit-web-view-get-user-content-manager
-           (gtk-object buffer))))
-    (webkit:webkit-user-content-manager-remove-style-sheet
-     content-manager (gtk-object style))))
+  (webkit:webkit-user-content-manager-remove-style-sheet
+   (webkit:webkit-web-view-get-user-content-manager (gtk-object buffer))
+   (gtk-object style)))
 
 (define-class gtk-user-script ()
   ((gtk-object))
