@@ -1988,8 +1988,7 @@ local anyways, and it's better to refresh it if a load was queried."
   (the (values (or quri:uri null) (list-of string))
        (values (gtk-proxy-url buffer)
                (proxy-ignored-hosts buffer))))
-(define-ffi-method (setf ffi-buffer-proxy) (proxy-specifier
-                                            (buffer gtk-buffer))
+(define-ffi-method (setf ffi-buffer-proxy) (proxy-specifier (buffer gtk-buffer))
   "Redirect network connections of BUFFER to proxy server PROXY-URL.
 Hosts in IGNORE-HOSTS (a list of strings) ignore the proxy.
 For the user-level interface, see `proxy-mode'.
