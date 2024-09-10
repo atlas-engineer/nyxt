@@ -293,15 +293,7 @@ the renderer thread, use `defmethod' instead."
             (call-next-method)))
         (unless nyxt::*run-from-repl-p*
           (gtk:join-gtk-main)
-          ;; KLUDGE: On FreeBSD nyxt is stuck inside some blocking
-          ;; syscall if FINISH-OUTPUT is T. In this case the
-          ;; "force-quitter" thread created by QUIT command will not
-          ;; help and nyxt can only be killed with SIGKILL,
-          ;; e.g. executing "killall -9 nyxt". A workaround is to call
-          ;; UIOP:QUIT with FINISH-OUTPUT = NIL in the first place.
-          ;;
-          ;; FIXME: This also can be true for other BSD systems.
-          (uiop:quit (slot-value browser 'nyxt::exit-code) #+freebsd nil)))))
+          (uiop:quit (slot-value browser 'nyxt::exit-code) #+bsd nil)))))
 
 (define-ffi-method ffi-kill-browser ((browser gtk-browser))
   ;; TODO: Terminating the GTK thread from the REPL seems to prevent Nyxt from
