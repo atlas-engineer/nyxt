@@ -1005,16 +1005,7 @@ with this scheme.")
   "Make BUFFER with EXTRA-MODES.
 See `finalize-buffer'."
   (ffi-buffer-make buffer)
-  (finalize-buffer buffer :extra-modes extra-modes :no-hook-p no-hook-p)
-  (typecase buffer
-    (status-buffer
-     (%within-renderer-thread-async
-      (lambda ()
-        (with-slots (gtk-object) buffer
-          (unless gtk-object
-            (setf gtk-object (make-web-view (profile buffer) buffer))
-            (connect-signal-function buffer "decide-policy"
-             (make-decide-policy-handler buffer)))))))))
+  (finalize-buffer buffer :extra-modes extra-modes :no-hook-p no-hook-p))
 
 (define-ffi-method ffi-buffer-url ((buffer gtk-buffer))
   (quri:uri (webkit:webkit-web-view-uri (gtk-object buffer))))
