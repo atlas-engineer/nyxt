@@ -698,16 +698,10 @@ Return nil when key must be discarded, e.g. for modifiers."
                    (:down 5)
                    (:left 6)
                    (:right 7)
-                   (:smooth
-                    (cond
-                      ((>= 0 (gdk:gdk-event-scroll-delta-y event))
-                       4)
-                      ((< 0 (gdk:gdk-event-scroll-delta-y event))
-                       5)
-                      ((>= 0 (gdk:gdk-event-scroll-delta-x event))
-                       6)
-                      ((< 0 (gdk:gdk-event-scroll-delta-x event))
-                       7)))))
+                   (:smooth (cond ((>= 0 (gdk:gdk-event-scroll-delta-y event)) 4)
+                                  ((< 0 (gdk:gdk-event-scroll-delta-y event)) 5)
+                                  ((>= 0 (gdk:gdk-event-scroll-delta-x event)) 6)
+                                  ((< 0 (gdk:gdk-event-scroll-delta-x event)) 7)))))
          (key-string (format nil "button~s" button))
          (modifiers (input-modifier-translator sender (scroll-event-modifiers event))))
     (when key-string
