@@ -18,11 +18,9 @@
             (and option-found?
                  (uiop:emptyp path))))
       #p""
-      (uiop:ensure-pathname
-       (or (getf *options* :socket)
-           (uiop:getenv "NYXT_SOCKET")
-           (call-next-method))
-       :truenamize t)))
+      (uiop:ensure-pathname (or (getf *options* :socket)
+                                (call-next-method))
+                            :truenamize t)))
 
 (export-always '*socket-file*)
 (defvar *socket-file* (make-instance 'socket-file)
@@ -35,8 +33,7 @@ prompting the first instance.
 
 This path cannot be set from the configuration file because we want to be able
 to set and use the socket without parsing any file.  Instead, the socket can be
-set from the corresponding command line option or the NYXT_SOCKET environment
-variable.")
+set from the corresponding command line option.")
 
 (defun handle-malformed-cli-arg (condition)
   (format t "Error parsing argument ~a: ~a.~&" (opts:option condition) condition)
@@ -88,8 +85,7 @@ Default: ~s" (files:expand *auto-config-file*)))
        :long "socket"
        :arg-parser #'identity
        :description "Set path to socket.
-Unless evaluating remotely (see --remote), Nyxt starts in single-instance mode when a socket is set.
-The socket can also be set from the NYXT_SOCKET environment variable.")
+Unless evaluating remotely (see --remote), Nyxt starts in single-instance mode when a socket is set.")
       (:name :no-socket
        :short #\S
        :long "no-socket"
