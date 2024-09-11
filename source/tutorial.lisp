@@ -22,8 +22,7 @@ Multiple key presses can be chained: in 'C-x C-s', you would have to press
          (:li (:code "super") " (" (:code "S") "): Windows key, Command key")
          (:li (:code "meta") " (" (:code "M") "): Alt key, Option key")
          (:li (:code "shift") " (" (:code "s") "): Shift key"))
-        (:p "Modifiers can be remapped, see the " (:code "modifier-translator")
-            " slot of the " (:code "gtk-browser") " class."))
+        (:p "Modifiers can be remapped, see slot " (:code "modifier-plist") "."))
 
       (:nsection :title "Quickstart keys"
         (:ul
