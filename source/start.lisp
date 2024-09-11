@@ -292,18 +292,12 @@ It takes URL-STRINGS so that the URL argument can be `cl-read' in case
 (defun listen-socket ()
   (files:with-paths ((socket-path *socket-file*))
     (let ((native-socket-path (uiop:native-namestring socket-path)))
-      (ensure-directories-exist socket-path)
+      (ensure-directories-exist socket-path :mode #o700)
       ;; TODO: Catch error against race conditions?
       (iolib:with-open-socket (s :address-family :local
                                  :connect :passive
                                  :local-filename native-socket-path)
-        ;; We don't want group members or others to flood the socket or, worse,
-        ;; execute code.
-        (setf (iolib/os:file-permissions native-socket-path)
-              (set-difference (iolib/os:file-permissions native-socket-path)
-                              '(:group-read :group-write :group-exec
-                                :other-read :other-write :other-exec)))
-
+        (isys:chmod native-socket-path #o600)
         (log:info "Listening to socket: ~s" socket-path)
         (loop as connection = (iolib:accept-connection s)
               while connection
