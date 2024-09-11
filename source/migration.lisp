@@ -117,6 +117,9 @@ major versions."
                               result)))))
 
 (define-migration "4"
+  (modifier-translator)
+  (:p "See slot " (:code "modifier-plist") ".")
+
   (search-engines)
   (:p "Moved to " (:nxref :slot 'search-engines :class-name 'browser) ".")
 
