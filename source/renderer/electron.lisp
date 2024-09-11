@@ -112,7 +112,15 @@
     :reader t
     :writer nil
     :type string
-    :documentation "A string that specifies the buffer's behavior."))
+    :documentation "A string that specifies the buffer's behavior.")
+   (modifier-plist
+    '(:shift "shift"
+      :control "control"
+      :alt "meta"
+      :meta "super")
+    :type list
+    :documentation "A map between Electron's and Nyxt's terminology for modifier keys.
+Note that by changing the default value, modifier keys can be remapped."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:metaclass user-class)
@@ -414,18 +422,10 @@
 
 ;; Input handling
 
-(defun translate-modifiers (event)
-  "Return list of modifiers fit for `keymaps:make-key'."
-  (let ((modifiers (list)))
-    (when (cdr (assoc :shift event))
-      (push "shift" modifiers))
-    (when (cdr (assoc :control event))
-      (push "control" modifiers))
-    (when (cdr (assoc :alt event))
-      (push "meta" modifiers))
-    (when (cdr (assoc :meta event))
-      (push "super" modifiers))
-    modifiers))
+(defmethod input-modifier-translator ((buffer electron-buffer) input-event-modifier-state)
+  "Return a list of modifier keys understood by `keymaps:make-key'."
+  (when-let ((state input-event-modifier-state))
+    (mapcar (lambda (modifier) (getf (modifier-plist buffer) modifier)) state)))
 
 (defun translate-key-string (key-string)
   "Return string representation of a keyval.
@@ -464,9 +464,13 @@ Return nil when key must be discarded, e.g. for modifiers."
     (_ key-string)))
 
 (defmethod on-signal-key-press-event ((sender electron-buffer) event)
-  (let ((key-string (translate-key-string (rest (assoc :key event)))))
+  (let ((modifiers (delete nil (list (when (alex:assoc-value event :shift) :shift)
+                                     (when (alex:assoc-value event :control) :control)
+                                     (when (alex:assoc-value event :alt) :alt)
+                                     (when (alex:assoc-value event :meta) :meta))))
+        (key-string (translate-key-string (alex:assoc-value event :key))))
     (flet ((key () (keymaps:make-key :value key-string
-                                     :modifiers (translate-modifiers event)
+                                     :modifiers (input-modifier-translator sender modifiers)
                                      :status :pressed)))
       (when key-string
         (alex:appendf (key-stack sender)
