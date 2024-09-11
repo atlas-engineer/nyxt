@@ -13,13 +13,10 @@
 (defmethod files:resolve ((profile nyxt-profile) (socket socket-file))
   "Return finalized path for socket files."
   (if (or (getf *options* :no-socket)
-          (multiple-value-bind (option-found? path)
-              (get-properties *options* '(:socket))
-            (and option-found?
-                 (uiop:emptyp path))))
+          (multiple-value-bind (option-found? path) (get-properties *options* '(:socket))
+            (and option-found? (uiop:emptyp path))))
       #p""
-      (uiop:ensure-pathname (or (getf *options* :socket)
-                                (call-next-method))
+      (uiop:ensure-pathname (or (getf *options* :socket) (call-next-method))
                             :truenamize t)))
 
 (export-always '*socket-file*)
