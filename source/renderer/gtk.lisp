@@ -54,28 +54,7 @@
 (setf nyxt::*renderer* (make-instance 'gtk-renderer))
 
 (define-class gtk-browser ()
-  ((modifier-translator
-    #'translate-modifiers
-    :documentation "Function that returns a list of modifiers understood by
-`keymaps:make-key'.  You can customize this slot if you want to change the
-behaviour of modifiers, for instance swap 'control' and 'meta':
-
-\(defun my-translate-modifiers (modifier-state &optional event)
-  \"Swap control and meta.\"
-  (declare (ignore event))
-  (let ((plist '(:control-mask \"meta\"
-                 :mod1-mask \"control\" ;; Usually it is Alt.
-                 :mod5-mask nil         ;; See your config for what mod1-5 mean.
-                 :shift-mask \"shift\"
-                 :super-mask \"super\"
-                 :hyper-mask \"hyper\"
-                 :meta-mask nil         ;; Meta.
-                 :lock-mask nil)))
-    (delete nil (mapcar (lambda (mod) (getf plist mod)) modifier-state))))
-
-\(define-configuration nyxt/renderer/gtk:gtk-browser
-  ((nyxt/renderer/gtk:modifier-translator #'my-translate-modifiers)))")
-   (web-contexts
+  ((web-contexts
     (make-hash-table :test 'equal)
     :export nil
     :documentation "A table mapping strings to `webkit-web-context' objects.")
@@ -127,6 +106,18 @@ behaviour of modifiers, for instance swap 'control' and 'meta':
 
 (define-class gtk-buffer ()
   ((gtk-object)
+   (modifier-plist
+    '(:control-mask "control"
+      :mod1-mask "meta"
+      :mod5-mask nil
+      :shift-mask "shift"
+      :super-mask "super"
+      :hyper-mask "hyper"
+      :meta-mask nil
+      :lock-mask nil)
+    :type list
+    :documentation "A map between GTK's and Nyxt's terminology for modifier keys.
+Note that by changing the default value, modifier keys can be remapped.")
    (context-name
     +default+
     :type string
@@ -157,6 +148,11 @@ requests are denied."))
   (:export-accessor-names-p t)
   (:metaclass user-class)
   (:documentation "WebKit buffer class."))
+
+(defmethod input-modifier-translator ((buffer gtk-buffer) input-event-modifier-state)
+  "Return a list of modifier keys understood by `keymaps:make-key'."
+  (when-let ((state input-event-modifier-state))
+    (mapcar (lambda (modifier) (getf (modifier-plist buffer) modifier)) state)))
 
 (defmethod prompter:object-attributes :around ((buffer gtk-buffer) (source nyxt:buffer-source))
   (declare (ignore source))
@@ -615,21 +611,6 @@ Return nil when key must be discarded, e.g. for modifiers."
         (str:replace-all "_" "" (string-downcase result))
         result)))
 
-(-> translate-modifiers (list &optional gdk:gdk-event) list)
-(defun translate-modifiers (modifier-state &optional event)
-  "Return list of modifiers fit for `keymaps:make-key'.
-See `gtk-browser's `modifier-translator' slot."
-  (declare (ignore event))
-  (let ((plist '(:control-mask "control"
-                 :mod1-mask "meta"
-                 :mod5-mask nil
-                 :shift-mask "shift"
-                 :super-mask "super"
-                 :hyper-mask "hyper"
-                 :meta-mask nil
-                 :lock-mask nil)))
-    (delete nil (mapcar (lambda (mod) (getf plist mod)) modifier-state))))
-
 (defun key-event-modifiers (key-event)
   (gdk:gdk-event-key-state key-event))
 
@@ -674,9 +655,7 @@ See `gtk-browser's `modifier-translator' slot."
          (printable-value (printable-p (current-window) event))
          (key-string (or printable-value
                          (derive-key-string keyval-name character)))
-         (modifiers (funcall (modifier-translator *browser*)
-                             (key-event-modifiers event)
-                             event)))
+         (modifiers (input-modifier-translator sender (key-event-modifiers event))))
     (log:debug sender key-string keycode character keyval-name modifiers)
     ;; Do not forward modifier-only presses to the renderer.
     (if key-string
@@ -696,13 +675,9 @@ See `gtk-browser's `modifier-translator' slot."
   (prompt-buffer-view (window prompt-buffer)))
 
 (define-ffi-method on-signal-button-press-event ((sender gtk-buffer) event)
-  (let* ((button (gdk:gdk-event-button-button event))
-         (key-string (format nil "button~s" button))
-         (modifiers (funcall (modifier-translator *browser*)
-                             (button-event-modifiers event)
-                             event))
-         (buffer (or (current-prompt-buffer)
-                     sender)))
+  (let ((key-string (format nil "button~s" (gdk:gdk-event-button-button event)))
+        (modifiers (input-modifier-translator sender (button-event-modifiers event)))
+        (buffer (or (current-prompt-buffer) sender)))
     ;; Handle mode-specific logic here (e.g. VI switch to insertion) to not
     ;; interfere with regular keybinding logic.
     (flet ((key ()
@@ -734,9 +709,7 @@ See `gtk-browser's `modifier-translator' slot."
                       ((< 0 (gdk:gdk-event-scroll-delta-x event))
                        7)))))
          (key-string (format nil "button~s" button))
-         (modifiers (funcall (modifier-translator *browser*)
-                             (scroll-event-modifiers event)
-                             event)))
+         (modifiers (input-modifier-translator sender (scroll-event-modifiers event))))
     (when key-string
       (alex:appendf (key-stack sender)
                     (list (keymaps:make-key :value key-string
@@ -1077,8 +1050,8 @@ See `finalize-buffer'."
             (format nil "button~d"
                     (webkit:webkit-navigation-action-get-mouse-button navigation-action)))
       (setf modifiers
-            (funcall (modifier-translator *browser*)
-                     (webkit:webkit-navigation-action-get-modifiers navigation-action))))
+            (input-modifier-translator buffer
+                                 (webkit:webkit-navigation-action-get-modifiers navigation-action))))
     (setf url (quri:uri (webkit:webkit-uri-request-uri request)))
     (setf request-headers
           (let ((headers (webkit:webkit-uri-request-get-http-headers request)))
