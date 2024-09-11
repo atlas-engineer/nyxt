@@ -389,18 +389,7 @@ This function focuses on OPTIONS parsing.  For the actual startup procedure, see
 
 The OPTIONS are the same as the command line options.
 
-~a
-
-Examples:
-
-- Display version and return immediately:
-  (nyxt:start :version t)
-
-- Start the browser with increased verbosity, a different history file and
-  open the given URLs.
-  (nyxt:start :urls '(\"https://nyxt-browser.com\" \"https://en.wikipedia.org\")
-              :verbose t
-              :with-file '(\"history\" \"/tmp/nyxt/history.lisp\"))"
+~a"
             (with-output-to-string (s) (opts:describe :stream s)))
   (declare #.(cons 'ignorable %start-args))
   (unless *renderer*
