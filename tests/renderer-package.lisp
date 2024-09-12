@@ -17,8 +17,6 @@
   "Don't use any history."
   #p"")
 
-(defvar +test-root+ #p"/tmp/nyxt-tests/")
-
 (defmethod files:resolve ((profile nyxt-user::test-profile) (file files:file))
   "Store all files in a temporary `+test-root+' directory."
   (files:join +test-root+ (call-next-method)))
