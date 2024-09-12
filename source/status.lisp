@@ -227,22 +227,21 @@ Any `nyxt/mode/keyscheme:keyscheme-mode' is placed first.
 This leverages `mode-status' which can be specialized for individual modes."
   (let ((buffer (current-buffer (window status))))
     (if (modable-buffer-p buffer)
-        (let ((sorted-modes (sort-modes-for-status (modes buffer))))
-          (spinneret:with-html-string
-            (:nbutton
-              :buffer status
-              :text "±"
-              :title (modes-string buffer)
-              '(nyxt:toggle-modes))
-            (loop for mode in sorted-modes
-                  collect
-                  (let ((mode mode))
-                    (when-let ((formatted-mode (mode-status status mode)))
-                      (:nbutton
-                        :buffer status
-                        :text formatted-mode
-                        :title (format nil "Describe ~a" mode)
-                        `(describe-class :class (quote ,(name mode)))))))))
+        (spinneret:with-html-string
+          (:nbutton
+            :buffer status
+            :text "±"
+            :title (modes-string buffer)
+            '(nyxt:toggle-modes))
+          (loop for mode in (sort-modes-for-status (modes buffer))
+                collect
+                (let ((mode mode))
+                  (when-let ((formatted-mode (mode-status status mode)))
+                    (:nbutton
+                      :buffer status
+                      :text formatted-mode
+                      :title (format nil "Describe ~a" mode)
+                      `(describe-class :class (quote ,(name mode))))))))
         "")))
 
 (defun modes-string (buffer)
