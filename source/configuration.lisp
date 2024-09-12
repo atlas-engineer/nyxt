@@ -53,23 +53,6 @@ Unlike `config-file', it can both loaded with `cl:load' and read with
               (log:warn "File ~s does not exist." path))
             path)))))
 
-(defparameter %report-existing-nyxt-2-config
-  (sera:once
-   (lambda (path)
-     (when (not (uiop:file-exists-p path))
-       (let ((nyxt-2-path (files:expand (make-instance 'config-file
-                                                       :base-path #p"init"))))
-         (when (uiop:file-exists-p nyxt-2-path)
-           (log:warn "Found ~a, possibly a Nyxt 2 configuration.
-Consider porting your configuration to ~a."
-                     nyxt-2-path path))))
-     nil)))
-
-(defmethod files:resolve ((profile nyxt-profile) (config-file config-file))
-  (let ((path (call-next-method)))
-    (funcall %report-existing-nyxt-2-config path)
-    path))
-
 (export-always '*auto-config-file*)
 (defvar *auto-config-file* (make-instance 'auto-config-file)
   "The generated configuration file.")
