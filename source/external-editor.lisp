@@ -8,9 +8,9 @@
 Create a temporary file and return its content.  The editor runs synchronously
 so invoke on a separate thread when possible."
   (with-accessors ((cmd external-editor-program)) *browser*
-    (uiop:with-temporary-file (:directory (files:expand (make-instance 'nyxt-data-directory))
+    (uiop:with-temporary-file (:directory (files:expand (make-instance 'nyxt-temporary-directory))
                                :pathname p)
-      (with-open-file (f p :direction :io :if-exists :supersede) (write-sequence content f))
+      (str:to-file p content :if-exists :supersede)
       (log:debug "External editor ~s opens ~s" cmd p)
       (with-protect ("Failed editing: ~a. See `external-editor-program' slot." :condition)
         (uiop:run-program `(,@cmd ,(uiop:native-namestring p))))
