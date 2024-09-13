@@ -5,10 +5,10 @@
 
 (define-test execute-command-1+ ()
   (let ((channel (nyxt::make-channel 1)))
-    (nyxt:start :no-config t :no-auto-config t
+    (nyxt:start :no-config t
+                :no-auto-config t
                 :headless t
-                :socket "/tmp/nyxt-test.socket"
-                :profile "test")
+                :socket "/tmp/nyxt-test.socket")
     (hooks:once-on (nyxt:prompt-buffer-ready-hook nyxt:*browser*)
         (prompt-buffer)
       (prompter:all-ready-p prompt-buffer)

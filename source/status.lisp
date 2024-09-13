@@ -229,7 +229,6 @@ This leverages `mode-status' which can be specialized for individual modes."
     (if (modable-buffer-p buffer)
         (let ((sorted-modes (sort-modes-for-status (modes buffer))))
           (spinneret:with-html-string
-            (when (nosave-buffer-p buffer) (:span "⚠ nosave"))
             (:nbutton
               :buffer status
               :text "±"

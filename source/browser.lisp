@@ -80,13 +80,6 @@ The first one is the default, as per `default-search-engine'.")
     t
     :type boolean
     :documentation "Whether search suggestions are displayed.")
-   (profile
-    (global-profile)
-    :type nyxt-profile
-    :documentation "Global profile used to specialize the behavior of
-various parts, such as the path of all data files.
-This profile is used when there is no context buffer.
-See also the `profile' slot in the `buffer' class.")
    (remote-execution-p
     nil
     :type boolean
@@ -316,12 +309,6 @@ A typical Nyxt session encompasses a single instance of this class, but nothing
 prevents otherwise.")
   (:metaclass user-class))
 
-(defmethod initialize-instance :after ((browser browser)
-                                       &key (history-file (make-instance 'history-file :profile (profile browser)))
-                                       &allow-other-keys)
-  "Ensure `history-file' uses the browser profile."
-  (setf (history-file browser) history-file))
-
 (defmethod theme ((ignored (eql nil)))
   "Fallback theme in case `*browser*' is NIL."
   (declare (ignore ignored))
@@ -398,7 +385,7 @@ errors correctly from then on."
 
 (defmethod finalize-first-buffer ((browser browser) urls)
   "Startup finalization: Set up initial buffer."
-  (switch-buffer :buffer (make-buffer :url (quri:uri (nyxt-url 'new)) :no-history-p t))
+  (switch-buffer :buffer (make-buffer :url (quri:uri (nyxt-url 'new))))
   (on-renderer-ready "finalize-history"
     ;; If we've reached here browser should be functional, no need to restart on error.
     (setf *restart-on-error* nil)

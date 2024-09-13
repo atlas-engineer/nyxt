@@ -64,8 +64,6 @@ A positive value shifts to the bottom.")
        "C-j" 'follow-hint
        "C-J" 'follow-hint-new-buffer
        "C-u C-j" 'follow-hint-new-buffer-focus
-       "C-u C-M-j" 'follow-hint-nosave-buffer
-       "C-M-j" 'follow-hint-nosave-buffer-focus
        "M-c h" 'copy-hint-url)
       keyscheme:emacs
       (list
@@ -73,17 +71,13 @@ A positive value shifts to the bottom.")
        "C-u M-g M-g" 'follow-hint-new-buffer
        "C-u M-g g" 'follow-hint-new-buffer
        "M-g g" 'follow-hint-new-buffer-focus
-       "C-M-g g" 'follow-hint-nosave-buffer
-       "C-M-g C-M-g" 'follow-hint-nosave-buffer-focus
        "C-x C-w" 'copy-hint-url)
       keyscheme:vi-normal
       (list
        ;; TODO bind copy-hint-url!
        "f" 'follow-hint
        "; f" 'follow-hint-new-buffer
-       "F" 'follow-hint-new-buffer-focus
-       "g f" 'follow-hint-nosave-buffer
-       "g F" 'follow-hint-nosave-buffer-focus)))))
+       "F" 'follow-hint-new-buffer-focus)))))
 
 (defmethod style ((mode hint-mode))
   "The style of the hint overlays."
@@ -481,8 +475,7 @@ FUNCTION is the action to perform on the selected elements."
 
 (defmethod %follow-hint-new-buffer-focus ((a nyxt/dom:a-element) &optional parent-buffer)
   (make-buffer-focus :url (url a)
-                     :parent-buffer parent-buffer
-                     :nosave-buffer-p (nosave-buffer-p parent-buffer)))
+                     :parent-buffer parent-buffer))
 
 (defmethod %follow-hint-new-buffer-focus ((element plump:element) &optional parent-buffer)
   (declare (ignore parent-buffer))
@@ -493,18 +486,6 @@ FUNCTION is the action to perform on the selected elements."
 
 (defmethod %follow-hint-new-buffer ((element plump:element) &optional parent-buffer)
   (declare (ignore parent-buffer))
-  (%follow-hint element))
-
-(defmethod %follow-hint-nosave-buffer-focus ((a nyxt/dom:a-element))
-  (make-buffer-focus :url (url a) :nosave-buffer-p t))
-
-(defmethod %follow-hint-nosave-buffer-focus ((element plump:element))
-  (%follow-hint element))
-
-(defmethod %follow-hint-nosave-buffer ((a nyxt/dom:a-element))
-  (make-nosave-buffer :url (url a)))
-
-(defmethod %follow-hint-nosave-buffer ((element plump:element))
   (%follow-hint element))
 
 (defmethod %copy-hint-url ((a nyxt/dom:a-element))
@@ -541,18 +522,6 @@ FUNCTION is the action to perform on the selected elements."
                    (%follow-hint-new-buffer-focus (first result) buffer)
                    (mapcar (rcurry #'%follow-hint-new-buffer buffer)
                            (rest result))))))
-
-(define-command follow-hint-nosave-buffer ()
-  "Like `follow-hint-new-buffer', but use `nosave-buffer's."
-  (query-hints "Select elements"
-               (lambda (result) (mapcar #'%follow-hint-nosave-buffer result))))
-
-(define-command follow-hint-nosave-buffer-focus ()
-  "Like `follow-hint-new-buffer-focus', but use `nosave-buffer's."
-  (query-hints "Select elements"
-               (lambda (result)
-                 (%follow-hint-nosave-buffer-focus (first result))
-                 (mapcar #'%follow-hint-nosave-buffer (rest result)))))
 
 (define-command copy-hint-url ()
   "Save the element hint's URL to the clipboard."

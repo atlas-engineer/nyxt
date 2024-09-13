@@ -3,8 +3,6 @@
 
 (in-package :nyxt)
 
-;; We define our own 'default profile' (instead of using `files:profile'
-;; directly) so that we can specialize the methods
 (define-class nyxt-profile (files:profile)
   ((files:name "nyxt"))
   (:export-class-name-p t)
@@ -12,17 +10,10 @@
   (:documentation "With the default profile all data is persisted to the
 standard locations."))
 
-(export-always 'global-profile)
-(defun global-profile ()
-  "The profile to use in the absence of buffers and on browser-less variables."
-  (or
-   (when *browser* (profile *browser*))
-   (when-let ((profile-class (find-profile-class (getf *options* :profile))))
-     (make-instance profile-class))
-   (make-instance 'nyxt-profile)))
+(defvar *nyxt-profile* (make-instance 'nyxt-profile))
 
 (define-class nyxt-file (files:gpg-file)
-  ((files:profile (global-profile))
+  ((files:profile *nyxt-profile*)
    (files:on-external-modification 'files:reload)
    (editable-p
     t
@@ -65,38 +56,9 @@ If the file is modified externally, Nyxt automatically reloads it."))
   (:export-accessor-names-p t)
   (:documentation "Nyxt Lisp files."))
 
-(define-class nosave-profile (files:read-only-profile nyxt-profile)
-  ()
-  (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:documentation "With the nosave profile no data should be persisted to disk.
-No data should be shared with other nosave buffers either."))
-
-(define-class nofile-profile (files:virtual-profile nyxt-profile)
-  ()
-  (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:documentation "Data is neither read nor persisted to disk."))
-
-(defun find-file-name-path (ref)
-  "Return the value of the REF found in `*options*'s `:with-file'.
-An empty path can be used to disable file persistence for the referenced `nyxt-file'.
-
-Example: when passed command line option --with-file foo=bar,
-\(find-file-name-path \"foo\") returns \"bar\"."
-  (unless (uiop:emptyp ref)
-    (uiop:ensure-pathname
-     (second
-      (assoc ref
-             (loop for (opt value . nil) on *options*
-                   when (eq opt :with-file)
-                     collect value)
-             :test #'string=)))))
-
 (defmethod files:resolve ((profile files:profile) (file nyxt-file))
-  (or (find-file-name-path (files:name file))
-      (sera:path-join (uiop:ensure-directory-pathname (files:name profile))
-                      (call-next-method))))
+  (sera:path-join (uiop:ensure-directory-pathname (files:name profile))
+                  (call-next-method)))
 
 (defmethod files:read-file :around ((profile nyxt-profile) (file nyxt-file) &key)
   (unless (typep file 'files:virtual-file)
@@ -178,23 +140,3 @@ Tries hard to find the XDG directory or at least ~/Downloads one."
   ((files:base-path (xdg-download-dir))
    (files:name "downloads"))
   (:export-class-name-p t))
-
-(export-always 'profile-name)
-(defun profile-name (profile-class)
-  "Get the displayable name of the PROFILE-CLASS."
-  (string-downcase
-   (sera:drop-suffix "-PROFILE" (symbol-name (class-name profile-class)))))
-
-(export-always 'list-profile-classes)
-(defun list-profile-classes ()
-  "List all the `nyxt-profile's available."
-  (cons (find-class 'nyxt:nyxt-profile)
-        (mopu:subclasses 'nyxt:nyxt-profile)))
-
-(export-always 'find-profile-class)
-(defun find-profile-class (name)
-  "Return the `nyxt-profile' subclass whose name is NAME-profile."
-  (find (string-downcase name)
-        (list-profile-classes)
-        :test 'string=
-        :key 'profile-name))

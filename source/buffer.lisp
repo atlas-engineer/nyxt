@@ -44,12 +44,6 @@ inherited from the superclasses.")
     :export nil
     :type (or null keymaps:key)
     :documentation "Last pressed key.")
-   (profile
-    (global-profile)
-    :type nyxt-profile
-    :documentation "Buffer profiles are used to specialize the behavior of
-various parts, such as the path of all data files.
-See also the `profile' slot in the `browser' class.")
    (url (quri:uri ""))
    (url-at-point (quri:uri ""))
    (title "")
@@ -736,14 +730,6 @@ Examples of the processes to run in background buffers are:
 These buffers are not referenced by `browser', so the only way to control these is to
 store them somewhere and `ffi-buffer-delete' them once done."))
 
-(define-class nosave-buffer (web-buffer)
-  ((profile (make-instance 'nosave-profile)))
-  (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:export-predicate-name-p t)
-  (:metaclass user-class)
-  (:documentation "Like `web-buffer', but don't persist data to disk."))
-
 (defmethod customize-instance :after ((buffer buffer)
                                       &key (browser *browser*)
                                         no-hook-p
@@ -751,21 +737,13 @@ store them somewhere and `ffi-buffer-delete' them once done."))
   "Finalize buffer.
 When NO-HOOK-P is nil, run `*browser*'s `buffer-before-make-hook'.
 Return the created buffer."
-  (let ((file-slot-names (remove-if (lambda (slot-name)
-                                      (not (typep (slot-value buffer slot-name)
-                                                  'nyxt-file)))
-                                    (mopu:slot-names 'buffer))))
-    (dolist (file-slot-name file-slot-names)
-      (setf (slot-value (slot-value buffer file-slot-name) 'files:profile)
-            (profile buffer))))
   (unless (or no-hook-p
               (not browser))
     (hooks:run-hook (buffer-before-make-hook browser) buffer))
   ;; Background buffers are invisible to the browser.
   buffer)
 
-(defmethod customize-instance :after ((buffer context-buffer)
-                                      &key parent-buffer no-history-p
+(defmethod customize-instance :after ((buffer context-buffer) &key parent-buffer
                                       &allow-other-keys)
   "Finalize buffer.
 PARENT-BUFFER can we used to specify the parent in the history.
@@ -773,19 +751,16 @@ Return the created buffer."
   ;; Background buffers are invisible to the browser.
   (unless (background-buffer-p buffer)
     (buffers-set (id buffer) buffer))
-  (unless no-history-p
-    ;; Register buffer in global history:
-    (files:with-file-content (history (history-file buffer)
-                              :default (make-history-tree buffer))
-      ;; Owner may already exist if history was just created with the above
-      ;; default value.
-      (unless (htree:owner history (id buffer))
-        (htree:add-owner history (id buffer)
-                         :creator-id (when (and parent-buffer
-                                                (global-history-p buffer)
-                                                (not (nosave-buffer-p buffer))
-                                                (not (nosave-buffer-p parent-buffer)))
-                                       (id parent-buffer))))))
+  ;; Register buffer in global history:
+  (files:with-file-content (history (history-file buffer)
+                            :default (make-history-tree buffer))
+    ;; Owner may already exist if history was just created with the above
+    ;; default value.
+    (unless (htree:owner history (id buffer))
+      (htree:add-owner history (id buffer)
+                       :creator-id (when (and parent-buffer
+                                              (global-history-p buffer))
+                                     (id parent-buffer)))))
   buffer)
 
 (export-always 'update-document-model)
@@ -911,7 +886,7 @@ when `proxied-downloads-p' is true."
                                       (default-new-buffer-url *browser*)
                                       (quri:uri (nyxt-url 'new))))
                              parent-buffer
-                             no-history-p (load-url-p t) (buffer-class 'web-buffer)
+                             (load-url-p t) (buffer-class 'web-buffer)
                              &allow-other-keys)
   "Create a new buffer.
 MODES is a list of mode symbols.
@@ -925,34 +900,18 @@ LOAD-URL-P controls whether to load URL right at buffer creation."
                         :title title
                         :extra-modes modes
                         :parent-buffer parent-buffer
-                        :no-history-p no-history-p
-                        (append
-                         (when no-history-p
-                           (list :history-file
-                                 (make-instance 'history-file
-                                                :profile (make-instance 'nofile-profile))))
-                         (unless (url-empty-p url)
-                           (list :url url))
-                         (uiop:remove-plist-keys '(:title :modes :url :parent-buffer
-                                                   :no-history-p :load-url-p)
-                                                 args)))))
+                        (append (unless (url-empty-p url) (list :url url))
+                                (uiop:remove-plist-keys '(:title :modes :url
+                                                          :parent-buffer :load-url-p)
+                                                        args)))))
     (when load-url-p
       (buffer-load url :buffer buffer))
     buffer))
 
-(define-command make-nosave-buffer (&rest args
-                                    &key title modes url load-url-p)
-  "Create a new buffer that won't save anything to the filesystem.
-See `make-buffer' for a description of the arguments."
-  (declare (ignorable title modes url load-url-p))
-  (apply #'make-buffer (append (list :buffer-class 'nosave-buffer) args)))
-
-(define-command make-buffer-focus (&key (url (default-new-buffer-url *browser*)) parent-buffer nosave-buffer-p)
+(define-command make-buffer-focus (&key (url (default-new-buffer-url *browser*)) parent-buffer)
   "Switch to a new buffer.
 See `make-buffer'."
-  (let ((buffer (if nosave-buffer-p
-                    (make-nosave-buffer :url url)
-                    (make-buffer :url url :parent-buffer parent-buffer))))
+  (let ((buffer (make-buffer :url url :parent-buffer parent-buffer)))
     (set-current-buffer buffer)
     buffer))
 
@@ -964,7 +923,7 @@ See `make-buffer'."
   "Create a new web-aware buffer that won't be registered by the `browser'.
 See `make-buffer' for a description of the arguments."
   (declare (ignorable title modes url))
-  (apply #'make-buffer (append (list :buffer-class 'background-buffer :no-history-p t) args)))
+  (apply #'make-buffer (append (list :buffer-class 'background-buffer) args)))
 
 (-> add-to-recent-buffers (buffer) *)
 (defun add-to-recent-buffers (buffer)
@@ -1472,13 +1431,6 @@ specified for their contents."
                   (mapc (lambda (suggestion) (make-buffer :url (url suggestion)))
                         (rest suggestion-values))
                   (make-buffer-focus :url (url (first suggestion-values))))
-                (lambda-command new-nosave-buffer-load* (suggestion-values)
-                  "Load URL(s) in new buffer(s)."
-                  (mapc (lambda (suggestion) (make-nosave-buffer :url (url suggestion)))
-                        (rest suggestion-values))
-                  (set-current-buffer
-                   (make-nosave-buffer :url (url (first suggestion-values)))
-                   :focus t))
                 (lambda-command copy-url* (suggestions)
                   "Copy the URL of the chosen suggestion."
                   (trivial-clipboard:text (render-url (url (first suggestions))))))))
@@ -1503,19 +1455,6 @@ specified for their contents."
                                           (rest suggestion-values))
                                     (make-buffer-focus :url (url (first suggestion-values))))))
     (current-buffer)))
-
-(define-command set-url-new-nosave-buffer (&key (prefill-current-url-p t))
-  "Prompt for a URL and set it in a new focused nosave buffer."
-  (prompt :prompt "Open URL in new nosave buffer"
-          :input (if prefill-current-url-p (render-url (url (current-buffer))) "")
-          :sources (url-sources (current-buffer)
-                                (lambda-command new-nosave-buffer-load (suggestion-values)
-                                  "Load URL(s) in new nosave buffer(s)"
-                                  (mapc (lambda (suggestion) (make-nosave-buffer :url (url suggestion)))
-                                        (rest suggestion-values))
-                                  (make-buffer-focus :url (url (first suggestion-values))
-                                                     :nosave-buffer-p t))))
-  (current-buffer))
 
 (export-always 'reload-buffer)
 (defun reload-buffer (buffer)

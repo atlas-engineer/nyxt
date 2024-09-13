@@ -517,49 +517,6 @@ can set a hook like the following in your configuration file:")
 important to make sure we return " (:nxref :class-name 'request-data) " here.  See the
 documentation of the respective hooks for more details."))
 
-      (:nsection :title "Data paths and data profiles"
-        (:p "Nyxt provides a uniform configuration interface for all data files
-persisted to disk (bookmarks, cookies, etc.).  To each file corresponds
-a " (:nxref :class-name 'nyxt-file) " object. An " (:nxref :class-name 'nyxt-profile) " is a
-customizable object that helps define general rules for data storage.  Both
-nyxt-file and nyxt-profile compose, so it's possible to define general rules
-for all files (even for those not known in advance) while it's also
-possible to specialize some data given an nyxt-profile.")
-        (:p "The profile can be set from command line and from the
-configuration file."
-            "You can list all known profiles (including the user-defined
-profiles) with the " (:code "--list-profiles") " command-line option.")
-        (:p "The nyxt-files can be passed a hint from the "
-            (:code "--with-file") " command line option, but each nyxt-file and
-profile rules are free to ignore it.")
-        (:p "When a path ends with the " (:code ".gpg") " extension, by default your
-GnuPG key is used to decrypt and encrypt the file transparently.  Refer to the
-GnuPG documentation for how to set it up.")
-        (:p "Note that the socket and the initialization nyxt-paths cannot be set in
-your configuration (the socket is used before the initialization file is
-loaded).  Instead you can specify these paths from their respective command-line
-option.  You can instantiate a unique, separate Nyxt instance when you provide a
-new socket path.  This is particularly useful in combination with profiles,
-say to develop Nyxt or extensions.")
-        (:p "Example to create a development profile that stores all data in "
-            (:code "/tmp/nyxt") " and stores bookmark in an encrypted file:")
-        (:ncode
-          '(define-class dev-profile (nyxt-profile)
-            ((files:name :initform "nyxt-dev"))
-            (:documentation "Development profile."))
-          '(defmethod files:resolve ((profile dev-profile) (path nyxt-file))
-            "Expand all data paths inside a temporary directory."
-            (serapeum:path-join (files:expand (make-instance 'nyxt-temporary-directory))
-             (uiop:relativize-pathname-directory (call-next-method))))
-          '(defmethod files:resolve ((profile dev-profile) (file history-file))
-            "Persist history to default location."
-            (files:resolve (global-profile) file))
-          '(define-configuration web-buffer
-            "Make new profile the default."
-            ((profile (make-instance (or (find-profile-class (getf *options* :profile)) 'dev-profile))))))
-        (:p "Then you can start a separate instance of Nyxt using this profile
-with " (:code "nyxt --profile dev --socket /tmp/nyxt.socket") "."))
-
       (:nsection :title "Password management"
         (:p "Nyxt provides a uniform interface to some password managers including "
             (:a :href "https://keepassxc.org/" "KeepassXC")

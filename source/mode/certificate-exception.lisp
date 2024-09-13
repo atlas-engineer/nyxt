@@ -59,6 +59,3 @@ To make this change permanent, you can customize
 
 (defmethod nyxt:default-modes append ((buffer web-buffer))
   '(certificate-exception-mode))
-
-(defmethod nyxt:default-modes append ((buffer nosave-buffer))
-  '(certificate-exception-mode))

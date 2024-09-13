@@ -5,11 +5,6 @@
     (:documentation "GTK renderer using direct CFFI bindings."))
 (in-package :nyxt/renderer/gtk)
 
-(alex:define-constant +default+ "default" :test 'equal
-  :documentation "Name of the default WebKit context.")
-(alex:define-constant +internal+ "internal" :test 'equal
-  :documentation "Name of a WebKit context is not persisted to disk.")
-
 (push :nyxt-gtk *features*)
 
 (define-class gtk-renderer (renderer)
@@ -54,25 +49,12 @@
 (setf nyxt::*renderer* (make-instance 'gtk-renderer))
 
 (define-class gtk-browser ()
-  ((web-contexts
-    (make-hash-table :test 'equal)
-    :export nil
-    :documentation "A table mapping strings to `webkit-web-context' objects.")
-   (ephemeral-web-contexts
-    (make-hash-table :test 'equal)
-    :export nil
-    :documentation "Analogous to `web-contexts'."))
+  ()
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:metaclass user-class)
   (:documentation "WebKit browser class."))
 
-(defmethod get-context ((browser gtk-browser) name &key ephemeral-p)
-  (alexandria:ensure-gethash name
-                             (if ephemeral-p
-                                 (ephemeral-web-contexts browser)
-                                 (web-contexts browser))
-                             (make-context name :ephemeral-p ephemeral-p)))
 (defmethod browser-schemes append ((browser gtk-browser))
   '("webkit" "webkit-pdfjs-viewer"))
 
@@ -118,13 +100,6 @@
     :type list
     :documentation "A map between GTK's and Nyxt's terminology for modifier keys.
 Note that by changing the default value, modifier keys can be remapped.")
-   (context-name
-    +default+
-    :type string
-    :documentation "Name of the WebKit context.
-When given the same context, multiple buffers share their internal browsing data.
-`+default+' is the default context.
-`+internal+' is a context that's not persisted to disk.")
    (handler-ids
     :export nil
     :documentation "Store all GObject signal handler IDs so that we can
@@ -154,48 +129,8 @@ requests are denied."))
   (when-let ((state input-event-modifier-state))
     (mapcar (lambda (modifier) (getf (modifier-plist buffer) modifier)) state)))
 
-(defmethod prompter:object-attributes :around ((buffer gtk-buffer) (source nyxt:buffer-source))
-  (declare (ignore source))
-  (append (call-next-method)
-          `(("Context" ,(context-name buffer) (:width 1)))))
-
-(defclass webkit-web-context (webkit:webkit-web-context) ()
-  (:metaclass gobject:gobject-class))
-
-(defmethod initialize-instance :after ((web-context webkit-web-context) &key)
-  (webkit:webkit-web-context-set-sandbox-enabled web-context t)
-  web-context)
-
-(defmethod data-directory ((web-context webkit-web-context))
-  "Directly returns the CFFI object's `base-data-directory'"
-  (webkit:webkit-website-data-manager-base-data-directory
-   (webkit:webkit-web-context-website-data-manager web-context)))
-
-(defmethod cache-directory ((web-context webkit-web-context))
-  "Directly returns the CFFI object's `base-cache-directory'"
-  (webkit:webkit-website-data-manager-base-cache-directory
-   (webkit:webkit-web-context-website-data-manager web-context)))
-
-(defclass webkit-web-context-ephemeral (webkit-web-context) ()
-  (:metaclass gobject:gobject-class))
-
-(defmethod initialize-instance :after ((web-context webkit-web-context-ephemeral) &key)
-  (unless (webkit:webkit-web-context-is-ephemeral web-context)
-    (error 'web-context-error
-           :context web-context
-           :message "Web Contexts of class webkit-web-context-ephemeral must be ephemeral.")))
-
 (defclass webkit-website-data-manager (webkit:webkit-website-data-manager) ()
   (:metaclass gobject:gobject-class))
-
-(defclass webkit-website-data-manager-ephemeral (webkit-website-data-manager) ()
-  (:metaclass gobject:gobject-class))
-
-(defmethod initialize-instance :after ((data-manager webkit-website-data-manager-ephemeral) &key)
-  (unless (webkit:webkit-website-data-manager-is-ephemeral data-manager)
-    (error 'web-context-error
-           :context data-manager
-           :message "Data Managers of class webkit-website-data-manager-ephemeral must be ephemeral.")))
 
 (defvar gtk-running-p nil
   "Non-nil if the GTK main loop is running.
@@ -294,51 +229,13 @@ the renderer thread, use `defmethod' instead."
 (define-ffi-method ffi-kill-browser ((browser gtk-browser))
   ;; TODO: Terminating the GTK thread from the REPL seems to prevent Nyxt from
   ;; starting again.
-  (unless nyxt::*run-from-repl-p*
-    (gtk:leave-gtk-main)))
-
-(define-class data-manager-file (nyxt-file)
-  ((context-name (error "Context name required."))
-   (files:name "web-context"))
-  (:export-class-name-p t)
-  (:documentation "Related to WebKitWebsiteDataManager objects."))
-
-(defmethod files:resolve :around ((profile nosave-profile) (file data-manager-file))
-  "We shouldn't store any `data-manager' data for `nosave-profile'."
-  #p"")
-
-(define-class data-manager-data-directory (files:data-file data-manager-file)
-  ()
-  (:export-class-name-p t)
-  (:documentation "Related to WebKitWebsiteDataManager objects."))
-
-(defmethod files:resolve ((profile nyxt-profile) (file data-manager-data-directory))
-  (sera:path-join (call-next-method)
-                  (pathname (str:concat (context-name file) "-web-context/"))))
-
-(define-class data-manager-cache-directory (files:cache-file data-manager-file)
-  ()
-  (:export-class-name-p t)
-  (:documentation "Related to WebKit's cache."))
-
-(defmethod files:resolve ((profile nyxt-profile) (file data-manager-cache-directory))
-  (sera:path-join (call-next-method)
-                  (pathname (str:concat (context-name file) "-web-context/"))))
+  (unless nyxt::*run-from-repl-p* (gtk:leave-gtk-main)))
 
 (define-class gtk-extensions-directory (nyxt-file)
   ((files:name "gtk-extensions")
    (files:base-path (uiop:merge-pathnames* "nyxt/" nasdf:*libdir*)))
   (:export-class-name-p t)
   (:documentation "Directory to load WebKitWebExtensions from."))
-
-(define-class cookies-file (files:data-file data-manager-file)
-  ((files:name "cookies"))
-  (:export-class-name-p t)
-  (:documentation "Related to WebKitCookieManager."))
-
-(defmethod files:resolve ((profile nyxt-profile) (file cookies-file))
-  (sera:path-join (call-next-method)
-                  (pathname (str:concat (context-name file) "-cookies"))))
 
 (define-class gtk-download ()
   ((gtk-object)
@@ -347,42 +244,41 @@ the renderer thread, use `defmethod' instead."
     :documentation "See `gtk-buffer' slot of the same name."))
   (:documentation "WebKit download class."))
 
-(defclass webkit-web-view-ephemeral (webkit:webkit-web-view) ()
-  (:metaclass gobject:gobject-class))
-
-(defmethod initialize-instance :after ((web-view webkit-web-view-ephemeral) &key web-context)
-  (unless (webkit:webkit-web-view-is-ephemeral web-view)
-    (error 'web-context-error
-           :context web-context
-           :message "Tried to make an ephemeral web-view in a non-ephemeral context.")))
-
-(defmethod make-web-view ((profile nyxt-profile) (buffer t))
-  "Return an ephemeral web view instance for basic buffers."
-  (declare (ignorable profile buffer))
-  (make-instance 'webkit-web-view-ephemeral
-                 :web-context (get-context *browser* +internal+
-                                           :ephemeral-p t)))
-
-(defmethod make-web-view ((profile nyxt-profile) (buffer context-buffer))
-  "Return a regular web view instance for buffers with context."
-  (declare (ignorable profile))
-  (make-instance 'webkit:webkit-web-view
-                 :web-context (get-context *browser* (context-name buffer)
-                                           :ephemeral-p nil)))
-
-(defmethod make-web-view ((profile nyxt-profile) (buffer nosave-buffer))
-  "Return an ephemeral web view instance for nosave buffers."
-  (declare (ignorable profile))
-  (make-instance 'webkit-web-view-ephemeral
-                 :web-context (get-context *browser* (context-name buffer)
-                                           :ephemeral-p t)))
-
-(defmethod make-web-view ((profile nosave-profile) (buffer buffer))
-  "Return an ephemeral web view instance for nosave profiles."
-  (declare (ignorable profile))
-  (make-instance 'webkit-web-view-ephemeral
-                 :web-context (get-context *browser* (context-name buffer)
-                                           :ephemeral-p t)))
+(defun make-context ()
+  (let ((context (make-instance 'webkit:webkit-web-context))
+        (gtk-extensions-path (files:expand (make-instance 'gtk-extensions-directory))))
+    (webkit:webkit-web-context-set-spell-checking-enabled context t)
+    ;; Need to set the initial language list.
+    (let ((pointer (cffi:foreign-alloc :string
+                                       :initial-contents (list (or (uiop:getenv "LANG")
+                                                                   (uiop:getenv "LANGUAGE")
+                                                                   (uiop:getenv "LC_CTYPE")
+                                                                   "en_US"))
+                                       :null-terminated-p t)))
+      (webkit:webkit-web-context-set-spell-checking-languages context pointer)
+      (cffi:foreign-free pointer))
+    (when (and (not (nfiles:nil-pathname-p gtk-extensions-path))
+               ;; Either the directory exists.
+               (or (uiop:directory-exists-p gtk-extensions-path)
+                   ;; Or try to create it.
+                   (handler-case
+                       (nth-value 1 (ensure-directories-exist gtk-extensions-path))
+                     (file-error ()))))
+      (log:info "GTK extensions directory: ~s" gtk-extensions-path))
+    (gobject:g-signal-connect
+     context "download-started"
+     (lambda (context download)
+       (declare (ignore context))
+       (with-protect ("Error in \"download-started\" signal thread: ~a" :condition)
+         (wrap-download download))))
+    (maphash (lambda (scheme-name callbacks)
+               (ffi-register-custom-scheme (make-instance 'scheme
+                                                          :name scheme-name
+                                                          :context context
+                                                          :callback (first callbacks)
+                                                          :error-callback (second callbacks))))
+             nyxt::*schemes*)
+    context))
 
 (define-class gtk-request-data ()
   ((gtk-request
@@ -524,7 +420,7 @@ response.  The BODY is wrapped with `with-protect'."
                                  :expand t)
          (setf (gtk:gtk-widget-size-request status-container)
                (list -1 (height status-buffer)))
-         (setf prompt-buffer-view (make-web-view (global-profile) nil))
+         (setf prompt-buffer-view (make-instance 'webkit:webkit-web-view))
          (gtk:gtk-box-pack-end root-box-layout
                                prompt-buffer-container
                                :expand nil)
@@ -894,77 +790,6 @@ with this scheme.")
                (webkit:webkit-uri-scheme-request-get-uri request)))
    (or (error-callback scheme)
        (lambda (c) (echo-warning "Error while routing ~s resource: ~a" scheme c)))))
-
-(defun make-context (name &key ephemeral-p)
-  (let* ((context
-           (if ephemeral-p
-               ;; An ephemeral data-manager cannot be given any directories, even if they are set to nil.
-               (make-instance 'webkit-web-context-ephemeral
-                              :website-data-manager
-                              (make-instance 'webkit-website-data-manager-ephemeral
-                                             :is-ephemeral t))
-               (let ((data-manager-data-directory (make-instance 'data-manager-data-directory
-                                                                 :context-name name))
-                     (data-manager-cache-directory (make-instance 'data-manager-cache-directory
-                                                                  :context-name name)))
-                 (make-instance 'webkit-web-context
-                                :website-data-manager
-                                (make-instance
-                                 'webkit-website-data-manager
-                                 :base-data-directory (or (and-let* ((path (files:expand data-manager-data-directory))
-                                                                     (_ (not (nfiles:nil-pathname-p path))))
-                                                            (uiop:native-namestring path))
-                                                          (cffi:null-pointer))
-                                 :base-cache-directory (or (and-let* ((path (files:expand data-manager-cache-directory))
-                                                                      (_ (not (nfiles:nil-pathname-p path))))
-                                                             (uiop:native-namestring path))
-                                                           (cffi:null-pointer)))))))
-         (gtk-extensions-path (files:expand (make-instance 'gtk-extensions-directory)))
-         (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
-    (webkit:webkit-web-context-set-spell-checking-enabled context t)
-    ;; Need to set the initial language list.
-    (let ((pointer (cffi:foreign-alloc :string
-                                       :initial-contents (list (or (uiop:getenv "LANG")
-                                                                   (uiop:getenv "LANGUAGE")
-                                                                   (uiop:getenv "LC_CTYPE")
-                                                                   "en_US"))
-                                       :null-terminated-p t)))
-      (webkit:webkit-web-context-set-spell-checking-languages context pointer)
-      (cffi:foreign-free pointer))
-    (when (and (not (nfiles:nil-pathname-p gtk-extensions-path))
-               ;; Either the directory exists.
-               (or (uiop:directory-exists-p gtk-extensions-path)
-                   ;; Or try to create it.
-                   (handler-case
-                       (nth-value 1 (ensure-directories-exist gtk-extensions-path))
-                     (file-error ()))))
-      (log:info "GTK extensions directory: ~s" gtk-extensions-path))
-    (gobject:g-signal-connect
-     context "download-started"
-     (lambda (context download)
-       (declare (ignore context))
-       (with-protect ("Error in \"download-started\" signal thread: ~a" :condition)
-         (wrap-download download))))
-    (maphash (lambda (scheme-name callbacks)
-               (ffi-register-custom-scheme (make-instance 'scheme
-                                                          :name scheme-name
-                                                          :context context
-                                                          :callback (first callbacks)
-                                                          :error-callback (second callbacks))))
-             nyxt::*schemes*)
-    (unless (or ephemeral-p
-                (internal-context-p name))
-      (let ((cookies-path (files:expand (make-instance 'cookies-file
-                                                       :context-name name))))
-        (webkit:webkit-cookie-manager-set-persistent-storage
-         cookie-manager
-         (uiop:native-namestring cookies-path)
-         :webkit-cookie-persistent-storage-text))
-      (setf (ffi-buffer-cookie-policy cookie-manager) (default-cookie-policy *browser*)))
-    context))
-
-(defun internal-context-p (name)
-  (equal name +internal+))
 
 (defmethod customize-instance :after ((buffer gtk-buffer) &key extra-modes
                                                             no-hook-p
@@ -1441,7 +1266,8 @@ the `active-buffer'."
 (define-ffi-method ffi-buffer-make ((buffer gtk-buffer))
   "Initialize BUFFER's GTK web view."
   (unless (gtk-object buffer) ; Buffer may already have a view, e.g. the prompt-buffer.
-    (setf (gtk-object buffer) (make-web-view (profile buffer) buffer)))
+    (setf (gtk-object buffer)
+          (make-instance 'webkit:webkit-web-view :web-context (make-context))))
   (when (document-buffer-p buffer)
     (setf (ffi-buffer-smooth-scrolling-enabled-p buffer) (smooth-scrolling buffer)))
   ;; TODO: Maybe define an FFI method?
@@ -2167,37 +1993,3 @@ As a second value, return the current buffer index starting from 0."
        (webkit:webkit-web-view-execute-editing-command
         (gtk-object gtk-buffer) webkit2:+webkit-editing-command-redo+)))
    (lambda (e) (echo-warning "Cannot redo: ~a" e))))
-
-(defun list-existing-contexts ()
-  (loop for dir in (uiop:subdirectories
-                    (files:expand (make-instance 'nyxt:nyxt-data-directory)))
-        for dirname = (files:basename dir)
-        when (uiop:string-suffix-p dirname "web-context")
-          collect (sera:drop (- (length "-web-context")) dirname)))
-
-(define-class context-source (prompter:source)
-  ((prompter:name "Context list")
-   (prompter:constructor (sort (delete-duplicates
-                                (append
-                                 (mapcar #'context-name (buffer-list))
-                                 (list +internal+ +default+)
-                                 (list-existing-contexts))
-                                :test 'equal)
-                               'string<)))
-  (:export-class-name-p t)
-  (:documentation "Source listing WebKit contexts."))
-
-(define-command-global make-buffer-with-context (&rest args
-                                                 &key title modes url load-url-p
-                                                 context-name)
-  "Create a new buffer with a given context (separate cookies and data).
-See the `context-name' documentation.
-See `make-buffer' for a description of the other arguments."
-  (declare (ignorable title modes url load-url-p))
-  (setf (getf args :context-name)
-        (or context-name
-            (prompt1
-             :prompt "Choose context"
-             :sources (list (make-instance 'prompter:raw-source :name "New context")
-                            'context-source))))
-  (apply #'make-buffer args))

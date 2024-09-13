@@ -28,8 +28,10 @@
                                  (:p "m" (:b "" (:i "" (:b "atch"))))))))
 
 (define-test search-buffer ()
-  (nyxt:start :no-config t :no-auto-config t :headless t
-              :socket "/tmp/nyxt-test.socket" :profile "test")
+  (nyxt:start :no-config t
+              :no-auto-config t
+              :headless t
+              :socket "/tmp/nyxt-test.socket" )
   (labels ((body (&optional (buffer (current-buffer)))
              ;; The following would be easier, but it's not the same since the
              ;; renderer inserts a CSS zoom rule in the DOM.

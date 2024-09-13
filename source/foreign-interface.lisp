@@ -414,12 +414,6 @@ label, and all of those are available under LABEL-named submenu.
 Example:
 
 \(ffi-add-context-menu-command
- (lambda ()
-   (when (url-at-point (current-buffer))
-     (make-nosave-buffer :url (url-at-point (current-buffer)))))
- \"Open Link in New Nosave Buffer\")
-
-\(ffi-add-context-menu-command
  (list (list 'reload-current-buffer \"Reload it\")
        (list #'(lambda () (delete-buffer :buffers (current-buffer))) \"Delete it\"))
  \"Buffer actions\")"))

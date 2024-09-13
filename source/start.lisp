@@ -121,22 +121,6 @@ and have the `remote-execution-p' browser slot to non-nil.")
        :long "headless"
        :description "Start Nyxt without showing any graphical element.
 This is useful to run scripts for instance.")
-      (:name :profile
-       :short #\p
-       :long "profile"
-       :arg-parser #'identity
-       :description "Use the given profile.")
-      (:name :list-profiles
-       :long "list-profiles"
-       :description "List the known profiles and exit.
-Known profiles are found among subclasses of `nyxt-profile'.")
-      (:name :with-file
-       :long "with-file"
-       :arg-parser (lambda (arg) (str:split "=" arg :limit 2))
-       :description "Set path reference to the given path.
-Can be specified multiple times.  An empty path means it won't be used.
-Example: --with-file bookmarks=/path/to/bookmarks
-         --with-file session=")
       (:name :failsafe
        :long "failsafe"
        :description "Ensure Nyxt starts in a vanilla environment.
@@ -364,16 +348,6 @@ Otherwise bind socket and return the listening thread."
         (log:info "No instance running.")
         (uiop:quit))))
 
-(defun indent (s space-count)
-  "Return S with all lines but the first indented by SPACE-COUNT."
-  (let* ((lines (sera:lines s))
-         (indent (make-string space-count :initial-element #\space)))
-    (str:join +newline+
-              (cons (first lines)
-                    (mapcar (lambda (s)
-                              (str:concat indent s))
-                            (rest lines))))))
-
 (sera:eval-always
   (defvar %start-args (mapcar (compose #'intern
                                        #'symbol-name
@@ -413,12 +387,9 @@ The OPTIONS are the same as the command line options.
 
   ;; Options should be accessible anytime, even when run from the REPL.
   (setf *options* options)
-  (destructuring-bind (&key (headless *headless-p*) verbose
-                         help version system-information
-                         list-profiles script
-                         failsafe
-                         load eval quit remote
-                       &allow-other-keys)
+  (destructuring-bind (&key (headless *headless-p*) verbose help version
+                         system-information script failsafe load eval quit
+                         remote &allow-other-keys)
       options
     (setf *headless-p* headless)
 
@@ -426,8 +397,7 @@ The OPTIONS are the same as the command line options.
       (setf
        (getf *options* :verbose) t
        (getf *options* :no-config) t
-       (getf *options* :no-auto-config) t
-       (getf *options* :profile) (profile-name (find-class 'nofile-profile)))
+       (getf *options* :no-auto-config) t)
       (unless remote
         (setf
          (getf *options* :no-socket) t)))
@@ -447,14 +417,6 @@ The OPTIONS are the same as the command line options.
 
       (system-information
        (princ (system-information)))
-
-      (list-profiles
-       (load-lisp (files:expand *config-file*) :package (find-package :nyxt-user))
-       (mapcar (lambda (profile-class)
-                 (format t "~a~10t~a~&"
-                         (profile-name profile-class)
-                         (indent (documentation profile-class t) 10)))
-               (list-profile-classes)))
 
       (script
        (setf *run-from-repl-p* t)       ; To report errors.
@@ -532,10 +494,6 @@ Finally, run the browser, load URL-STRINGS if any, then run
 
         (install *renderer*)
 
-        (when (getf *options* :profile)
-          (if-let ((profile-class (find-profile-class (getf *options* :profile))))
-            (log:info "Profile: ~s" (profile-name profile-class))
-            (log:warn "Profile not found: ~s" (getf *options* :profile))))
         (let* ((urls (remove-if #'url-empty-p (mapcar #'url url-strings)))
                (startup-timestamp (time:now))
                (startup-error-reporter nil)

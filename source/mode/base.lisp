@@ -14,7 +14,6 @@ This mode is a good candidate to be passed to `make-buffer'."
       (list
        "C-l" 'set-url
        "M-l" 'set-url-new-buffer
-       "C-M-l" 'set-url-new-nosave-buffer
        "C-r" 'reload-current-buffer
        "M-r" 'reload-buffers
        "C-shift-tab" 'switch-buffer-previous
@@ -106,7 +105,6 @@ This mode is a good candidate to be passed to `make-buffer'."
       (list
        "o" 'set-url
        "O" 'set-url-new-buffer
-       "g o" 'set-url-new-nosave-buffer
        "R" 'reload-current-buffer
        "r" 'reload-buffers
        "u" 'reopen-buffer

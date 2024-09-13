@@ -3,18 +3,8 @@
 
 (in-package :nyxt/tests)
 
-(define-class test-profile (nosave-profile)
-  ((files:name :initform "test"))
-  (:documentation "Test profile that does not read nor write to disk."))
-
-(defmethod files:read-file ((profile test-profile) (file nyxt-file) &key &allow-other-keys)
-  "This method guarantees FILE will not be loaded from disk in PROFILE."
-  nil)
-
 (define-test global-history ()
-  ;; Set profile to nosave to inhibit serialization / deserialization.
-  ;; TODO: We should still test serialization and deserialization.
-  (let* ((*browser* (make-instance 'browser :profile (make-instance 'test-profile)))
+  (let* ((*browser* (make-instance 'browser))
          (buffer (nyxt::make-buffer)))
     (nyxt:with-current-buffer buffer
       (enable-modes* 'nyxt/mode/history:history-mode buffer)
@@ -65,10 +55,10 @@
         (uiop:delete-file-if-exists (files:expand (history-file buffer)))))))
 
 (define-test history-restoration ()
-  (let* ((history-path (make-instance 'history-file
-                                      :base-path (asdf:system-relative-pathname
-                                                  :nyxt "tests/test-data/broken-history.lisp")))
-         (history (files:read-file (global-profile) history-path)))
+  (let* ((path (asdf:system-relative-pathname :nyxt
+                                              "tests/test-data/broken-history.lisp"))
+         (history (files:read-file nyxt::*nyxt-profile*
+                                   (make-instance 'history-file :base-path path))))
     (assert-eq 2
                (hash-table-count (htree:owners history)))
     (assert-eq 3
