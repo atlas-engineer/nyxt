@@ -461,6 +461,11 @@ To access all modes, including disabled ones, use `slot-value'."
                    :combination #'hooks:combine-composed-hook)
     :type hook-keymaps-buffer
     :documentation "Hook run as a return value of `current-keymaps'.")
+   (command-dispatcher
+    #'dispatch-command
+    :type (or sym:function-symbol function)
+    :documentation "Function to process the command processed in `dispatch-input-event'.
+Takes the function/command as the only argument.")
    (conservative-word-move
     nil
     :documentation "If non-nil, the cursor moves to the end
