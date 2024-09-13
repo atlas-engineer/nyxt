@@ -36,7 +36,8 @@
           ").")))
   (:nsection :title "Bug fixes"
     (:ul
-     (:li "Fix prompt buffer's empty input bug."))))
+     (:li "Fix prompt buffer's empty input bug.")
+     (:li "Fix prompt buffer's height logic."))))
 
 (define-version "3.11.8"
   (:nsection :title "Bug fixes"
