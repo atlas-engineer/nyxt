@@ -104,6 +104,7 @@ The handlers take the window as argument."))
   "Remove a panel buffer from a window."
   (setf (panel-buffers window)
         (remove buffer (panel-buffers window)))
+  (hooks:run-hook (buffer-delete-hook buffer) buffer)
   (ffi-window-delete-panel-buffer window buffer))
 
 (defmethod (setf active-buffer) (buffer (window window))
