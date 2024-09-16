@@ -131,11 +131,6 @@ Which commands will they invoke next?")
     nil
     :type (maybe function)
     :documentation "The last command invoked by the user.")
-   (command-dispatcher
-    #'dispatch-command
-    :type (or sym:function-symbol function)
-    :documentation "Function to process the command processed in `dispatch-input-event'.
-Takes the function/command as the only argument.")
    (prompt-buffer-generic-history
     (make-ring)
     :documentation "The default history of all prompt buffer entries.

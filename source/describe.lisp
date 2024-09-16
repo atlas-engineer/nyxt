@@ -636,15 +636,16 @@ A command is a special kind of function that can be called with
   (buffer-load-internal-page-focus 'describe-bindings :buffer-id (id buffer)))
 
 (defun describe-key-dispatch (command)
+  (hooks:remove-hook (dispatch-command-hook (current-buffer)) 'describe-key-dispatch)
   (unwind-protect (describe-command :command (typecase command
                                                (symbol command)
                                                (command (name command))))
-    (setf (command-dispatcher *browser*) #'dispatch-command)
-    (echo-dismiss)))
+    (echo-dismiss)
+    t))
 
 (define-command describe-key ()
   "Display binding of user-inputted keys."
-  (setf (command-dispatcher *browser*) #'describe-key-dispatch)
+  (hooks:add-hook (dispatch-command-hook (current-buffer)) 'describe-key-dispatch)
   (echo "Press a key sequence to describe:"))
 
 (export-always 'system-information)

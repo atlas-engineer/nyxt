@@ -113,22 +113,28 @@ It takes a `repeat-mode' instance as argument.")
   "Create a command dispatcher that counts the M-digit keys and adds them together.
 Once a non-number key is pressed, it dispatches this key to a command and starts
 repeating it like a regular `repeat-mode' does."
-  (lambda (command)
-    (if (eq 'repeat-key command)
-        (dispatch-command command)
-        (unwind-protect
-             (repeat-times :times times
-                           :function (lambda (mode)
-                                       (declare (ignore mode))
-                                       (nyxt::run command)))
-          (setf (command-dispatcher *browser*) #'dispatch-command
-                *repeat-times-stack* 0)))))
+  (make-instance
+   'hooks:handler
+   :name 'repeat-command-dispatcher
+   :fn
+   (lambda (command)
+     (if (eq 'repeat-key (name command))
+         (dispatch-command command)
+         (unwind-protect
+              (repeat-times :times times
+                            :function (lambda (mode)
+                                        (declare (ignore mode))
+                                        (nyxt::run command)))
+           (setf *repeat-times-stack* 0)
+           (hooks:remove-hook (dispatch-command-hook (current-buffer))
+                              'repeat-command-dispatcher)
+           t)))))
 
 (define-command-global repeat-key
     (&key (times (or
                   (ignore-errors
                    (parse-integer
-                    (keymaps:key-value (nyxt::last-key (current-window)))))
+                    (keymaps:key-value (nyxt::last-key (current-buffer)))))
                   (ignore-errors
                    (parse-integer
                     (prompt1 :prompt "Repeat for X times"
@@ -136,6 +142,9 @@ repeating it like a regular `repeat-mode' does."
                              :hide-suggestion-count-p t
                              :sources 'prompter:raw-source))))))
   "Repeat the command bound to the user-pressed keybinding TIMES times."
-  (setf *repeat-times-stack* (+ times (* 10 *repeat-times-stack*))
-        (command-dispatcher *browser*) (make-repeat-command-dispatcher *repeat-times-stack*))
+  (setf *repeat-times-stack* (+ times (* 10 *repeat-times-stack*)))
+  (hooks:remove-hook (dispatch-command-hook (current-buffer))
+                     'repeat-command-dispatcher)
+  (hooks:add-hook (dispatch-command-hook (current-buffer))
+                  (make-repeat-command-dispatcher *repeat-times-stack*))
   (echo "Press a key sequence for command to repeat ~R times:" *repeat-times-stack*))
