@@ -256,14 +256,6 @@ File must contain a number in their path."
              (input-files op c))
      t)))
 
-(defun git-ls-files (root dir)
-  (split-string
-   (run-program (append (list *git-program*
-                              "-C" (native-namestring root)
-                              "ls-files" (native-namestring dir)))
-                :output '(:string :stripped t))
-   :separator '(#\newline #\return #\linefeed)))
-
 (defun file-excluded-type (file exclude-types)
   (member (pathname-type file) exclude-types :test 'equalp))
 
@@ -300,30 +292,11 @@ File must contain a number in their path."
 
 
 (defmethod input-files ((op compile-op) (component nasdf-source-directory))
-  "Return all files of NASDF-SOURCE-DIRECTORY.
-They are either listed with 'git ls-files' or directly if Git is not found."
-  (let ((source (component-pathname component))
-        (root (system-source-directory (component-system component))))
-    (handler-case
-        (with-current-directory (root)
-          (let ((absolute-exclusions (mapcar (lambda (exclusion)
-                                               (namestring
-                                                (merge-pathnames*
-                                                 (ensure-directory-pathname exclusion)
-                                                 (ensure-directory-pathname source))))
-                                             (exclude-subpath component))))
-            (remove-if (lambda (file) (or (file-excluded-type file (exclude-types component))
-                                     (let ((file-string (namestring file)))
-                                       (some (lambda (exclusion) (string-prefix-p exclusion
-                                                                             file-string))
-                                             absolute-exclusions))))
-                       (mapcar (lambda (path) (ensure-pathname path :truenamize t))
-                               (git-ls-files root source)))))
-      (error (c)
-        (warn "~a~&Git error, falling back to direct listing." c)
-        (with-current-directory (root)
-          (list-directory source :exclude-subpath (exclude-subpath component)
-                                 :exclude-types (exclude-types component)))))))
+  "Return all files of NASDF-SOURCE-DIRECTORY."
+  (with-current-directory ((system-source-directory (component-system component)))
+    (list-directory (component-pathname component)
+                    :exclude-subpath (exclude-subpath component)
+                    :exclude-types (exclude-types component))))
 
 (defmethod output-files ((op compile-op) (component nasdf-source-directory))
   (let ((root (system-source-directory (component-system component))))

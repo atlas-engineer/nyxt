@@ -14,6 +14,3 @@
         (string-equal "yes" value)
         (string-equal "on" value)
         (string-equal "1" value))))
-
-(export-always '*git-program*)
-(defvar *git-program* "git")
