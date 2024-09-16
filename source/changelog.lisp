@@ -34,8 +34,8 @@
    (:li "Refactor input to be handled on the buffer level rather than the window
 level.")
    (:li "Delete " (:code "input-skip-dispatcher") ".")
-   (:li "Move slot " (:nxref :slot 'command-dispatcher :class-name 'browser)
-        " from window to the browser class.")
+   (:li "Change slot " (:code "command-dispatcher")
+        " in window class to the " (:nxref :slot 'dispatch-command-hook :class-name 'buffer) ".")
    (:li "Move slots " (:nxref :slot 'last-key :class-name 'buffer)
         " and " (:nxref :slot 'key-stack :class-name 'buffer)
         " from window to the buffer class.")
