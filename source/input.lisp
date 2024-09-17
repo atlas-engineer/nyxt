@@ -122,7 +122,8 @@ Return nil to forward to renderer or non-nil otherwise."
              (log:debug "Found key binding ~a to ~a." (keyspecs key-stack translated-key) bound-function)
              (setf (last-key buffer) (first key-stack))
              (run-thread "run-command"
-               (unwind-protect (hooks:run-hook (dispatch-command-hook buffer) command)
+               (unwind-protect (or (hooks:run-hook (dispatch-command-hook buffer) command)
+                                   (dispatch-command command))
                  (setf key-stack nil)))
              t))
           ((or (and (input-buffer-p buffer) (forward-input-events-p buffer))

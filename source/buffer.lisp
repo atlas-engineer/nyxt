@@ -468,13 +468,13 @@ To access all modes, including disabled ones, use `slot-value'."
     :documentation "Hook run as a return value of `current-keymaps'.")
    (dispatch-command-hook
     (make-instance 'hook-command
-                   :handlers (list #'dispatch-command)
                    :combination #'hooks:combine-hook-until-success)
     :type (or sym:function-symbol function)
     :documentation "Hook to process the command processed in `dispatch-input-event'.
 Takes the function/command as the only argument.  Each handler should return a
 boolean indicating whether it dispatched the command successfully.  Handlers are
-tried in successsion until the first handler which returns T.")
+tried in successsion until the first handler which returns T.  If no handlers in
+this hook dispatched the command, `dispatch-command' is used as fallback.")
    (conservative-word-move
     nil
     :documentation "If non-nil, the cursor moves to the end
