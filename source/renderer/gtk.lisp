@@ -274,7 +274,7 @@ the renderer thread, use `defmethod' instead."
     (maphash (lambda (scheme-name callbacks)
                (ffi-register-custom-scheme (make-instance 'scheme
                                                           :name scheme-name
-                                                          :context context
+                                                          :web-context context
                                                           :callback (first callbacks)
                                                           :error-callback (second callbacks))))
              nyxt::*schemes*)
@@ -608,7 +608,7 @@ Return nil when key must be discarded, e.g. for modifiers."
       (dispatch-input-event event sender))))
 
 (define-class gtk-scheme ()
-  ((context
+  ((web-context
     nil
     :writer nil
     :reader t
@@ -655,7 +655,7 @@ with this scheme.")
   (:documentation "Related to WebKit's custom schemes."))
 
 (defmethod manager ((scheme gtk-scheme))
-  (webkit:webkit-web-context-get-security-manager (context scheme)))
+  (webkit:webkit-web-context-get-security-manager (web-context scheme)))
 
 (defmethod (setf local-p) (value (scheme gtk-scheme))
   (when value
@@ -783,7 +783,7 @@ with this scheme.")
 (defmethod ffi-register-custom-scheme ((scheme gtk-scheme))
   ;; FIXME If a define-internal-scheme is updated at runtime, it is not honored.
   (webkit:webkit-web-context-register-uri-scheme-callback
-   (context scheme)
+   (web-context scheme)
    (name scheme)
    (lambda (request)
      (funcall* (callback scheme)
