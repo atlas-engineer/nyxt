@@ -345,7 +345,7 @@ response.  The BODY is wrapped with `with-protect'."
    (lambda ()
      (with-slots (gtk-object root-box-layout horizontal-box-layout
                   panel-buffer-container-left panel-buffer-container-right
-                  main-buffer-container nyxt::active-buffer
+                  main-buffer-container
                   prompt-buffer-container prompt-buffer-view
                   status-buffer status-container
                   message-buffer message-container
@@ -381,13 +381,7 @@ response.  The BODY is wrapped with `with-protect'."
                                                :orientation :vertical
                                                :spacing 0))
          (setf key-string-buffer (make-instance 'gtk:gtk-entry))
-         ;; Dummy buffer is an `input-buffer' so that an empty window can still
-         ;; receive input, for instance to create a new buffer.
-         (setf nyxt::active-buffer (make-instance 'input-buffer))
          ;; Add the views to the box layout and to the window
-         (gtk:gtk-box-pack-start main-buffer-container
-                                 (gtk-object nyxt::active-buffer)
-                                 :expand t :fill t)
          (gtk:gtk-box-pack-start horizontal-box-layout
                                  panel-buffer-container-left
                                  :expand nil)

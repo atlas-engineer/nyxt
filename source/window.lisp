@@ -19,6 +19,7 @@ Should be redefined by the renderer."))
     :type unsigned-byte
     :documentation "Unique identifier for a window.")
    (active-buffer
+    (make-instance 'buffer)
     :reader active-buffer
     :export nil
     :documentation "The current buffer of the window.
