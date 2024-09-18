@@ -18,11 +18,6 @@ Should be redefined by the renderer."))
     (new-id)
     :type unsigned-byte
     :documentation "Unique identifier for a window.")
-   (titler
-    'window-default-title
-    :type (or function sym:function-symbol)
-    :documentation "Return the title of the window.
-It's a function of the window argument that returns the title as a string.")
    (active-buffer
     :reader active-buffer
     :export nil
@@ -93,6 +88,10 @@ The handlers take the window as argument."))
 (defmethod print-object ((window window) stream)
   (print-unreadable-object (window stream :type t :identity t)
     (format stream "~a" (id window))))
+
+(defmethod titler ((window window))
+  "Return the title of WINDOW."
+  (str:concat (title (active-buffer window)) " － Nyxt"))
 
 (defmethod window-add-panel-buffer ((window window) (buffer panel-buffer) side)
   "Add a panel buffer to a window. Side can either be :right or :left."

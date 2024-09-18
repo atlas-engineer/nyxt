@@ -437,24 +437,8 @@ restored."
 (-> set-window-title (&optional window) *)
 (export-always 'set-window-title)
 (defun set-window-title (&optional (window (current-window)))
-  "Set current window title to the return value of (titler window). "
-  (setf (ffi-window-title window) (funcall (titler window) window)))
-
-(-> window-default-title (window) string)
-(export-always 'window-default-title)
-(defun window-default-title (window)
-  "Return a window title in the form 'Nyxt - URL'.
-If Nyxt was started from a REPL, use 'Nyxt REPL - URL' instead.
-This is useful to tell REPL instances from binary ones."
-  (let* ((buffer (active-buffer window))
-         (url (url buffer))
-         (title (title buffer)))
-    (setf title (if (str:emptyp title) "" title))
-    (setf url (if (url-empty-p url) "<no url/name>" (render-url url)))
-    (the (values string &optional)
-         (str:concat "Nyxt" (when *run-from-repl-p* " REPL") " - "
-                     title (unless (str:emptyp title) " - ")
-                     url))))
+  "Set WINDOW title."
+  (setf (ffi-window-title window) (titler window)))
 
 (-> open-urls ((maybe (cons quri:uri *))) *)
 (defun open-urls (urls)
