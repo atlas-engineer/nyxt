@@ -23,7 +23,7 @@ Should be redefined by the renderer."))
     :reader active-buffer
     :export nil
     :documentation "The current buffer of the window.
-Not to be confused with `current-buffer'.")
+Not to be confused with `current-buffer' or `focused-buffer'.")
    (active-prompt-buffers
     '()
     :export nil
