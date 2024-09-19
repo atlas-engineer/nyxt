@@ -127,7 +127,8 @@ requests are denied."))
 (defmethod input-modifier-translator ((buffer gtk-buffer) input-event-modifier-state)
   "Return a list of modifier keys understood by `keymaps:make-key'."
   (when-let ((state input-event-modifier-state))
-    (mapcar (lambda (modifier) (getf (modifier-plist buffer) modifier)) state)))
+    (delete nil
+            (mapcar (lambda (modifier) (getf (modifier-plist buffer) modifier)) state))))
 
 (defclass webkit-website-data-manager (webkit:webkit-website-data-manager) ()
   (:metaclass gobject:gobject-class))
