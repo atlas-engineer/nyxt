@@ -1010,19 +1010,15 @@ See `finalize-buffer'."
 
 (define-ffi-method ffi-window-set-buffer ((window gtk-window) (buffer gtk-buffer) &key (focus t))
   "Set BROWSER's WINDOW buffer to BUFFER."
-  (let ((old-buffer (nyxt::active-buffer window)))
+  (when-let ((buried-buffer (gtk-object (nyxt::active-buffer window))))
     ;; Just a precaution for the buffer to not be destroyed until we say so.
-    ;; FIXME: Prompt buffer or something else seems to have no gtk-object.
-    (when (gtk-object old-buffer)
-      (g:g-object-ref (g:pointer (gtk-object old-buffer)))
-      (gtk:gtk-container-remove (main-buffer-container window) (gtk-object old-buffer))
-      (gtk:gtk-box-pack-start (main-buffer-container window)
-                              (gtk-object buffer)
-                              :expand t :fill t)
-      (unless *headless-p* (gtk:gtk-widget-show (gtk-object buffer)))
-      (when focus
-        (gtk:gtk-widget-grab-focus (gtk-object buffer))))
-    buffer))
+    (g:g-object-ref (g:pointer buried-buffer))
+    (gtk:gtk-container-remove (main-buffer-container window) buried-buffer))
+  (gtk:gtk-box-pack-start (main-buffer-container window)
+                          (gtk-object buffer)
+                          :expand t :fill t)
+  (unless *headless-p* (gtk:gtk-widget-show (gtk-object buffer)))
+  (when focus (gtk:gtk-widget-grab-focus (gtk-object buffer))))
 
 (define-ffi-method ffi-window-add-panel-buffer ((window gtk-window) (buffer panel-buffer) side)
   "Add a panel buffer to a window."
@@ -1491,9 +1487,9 @@ local anyways, and it's better to refresh it if a load was queried."
   (let* ((history (renderer-history buffer))
          (entry (or (find url history :test #'quri:uri= :key #'renderer-history-entry-url)
                     (find url history :test #'quri:uri= :key #'renderer-history-entry-original-url))))
-    ;; Mark buffer as :loading right away so functions like `window-set-buffer'
-    ;; don't try to reload if they are called before the "load-changed" signal
-    ;; is emitted.
+    ;; Mark buffer as :loading right away so functions like
+    ;; `ffi-window-set-buffer' don't try to reload if they are called before the
+    ;; "load-changed" signal is emitted.
     (when (web-buffer-p buffer)
       (setf (nyxt::status buffer) :loading))
     (if (and entry

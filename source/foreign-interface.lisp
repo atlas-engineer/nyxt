@@ -90,7 +90,28 @@ for the case when the renderer reports that none of the windows are focused.
 The `:around' method ensures that `last-active-window' is set."))
 
 (define-ffi-generic ffi-window-set-buffer (window buffer &key focus)
-  (:documentation "Return BUFFER and display it in WINDOW as a side effect."))
+  (:method :around ((window window) (buffer buffer) &key focus &allow-other-keys)
+    (hooks:run-hook (window-set-buffer-hook window) window buffer)
+    ;; As to ensure `current-buffer' returns the right value if
+    ;; `ffi-window-set-buffer' is called inside `with-current-buffer'.
+    (setf %buffer nil)
+    (when focus
+      (let ((buried-buffer (active-buffer window))
+            (now (time:now)))
+        (when (slot-exists-p buried-buffer 'last-access)
+          (setf (last-access buried-buffer) now))
+        (when (slot-exists-p buffer 'last-access)
+          (setf (last-access buffer) now))))
+    (when (and (slot-exists-p buffer 'status)
+               (eq (slot-value buffer 'status) :unloaded))
+      (buffer-load (url buffer) :buffer buffer))
+    (call-next-method)
+    buffer)
+  (:method :after ((window window) (buffer buffer) &key focus &allow-other-keys)
+    (declare (ignore focus))
+    (setf (nyxt::active-buffer window) buffer))
+  (:documentation "Return BUFFER and display it in WINDOW as a side effect.
+Run `window-set-buffer-hook' over WINDOW and BUFFER before proceeding."))
 
 (define-ffi-generic ffi-focus-prompt-buffer (prompt-buffer)
   (:documentation "Return PROMPT-BUFFER and focus it as a side effect."))

@@ -449,7 +449,7 @@ The buffer corresponding to the first URL is focused."
                                        urls))))
       (when first-buffer
         (if (open-external-link-in-new-window-p *browser*)
-            (window-set-buffer (window-make *browser*) first-buffer)
+            (ffi-window-set-buffer (window-make *browser*) first-buffer)
             (set-current-buffer first-buffer))))))
 
 (defun get-keymap (buffer buffer-keyscheme-map)
@@ -645,7 +645,7 @@ sometimes yields the wrong result."
 Return BUFFER."
   (unless (eq 'prompt-buffer (sera:class-name-of buffer))
     (if (current-window)
-        (window-set-buffer (current-window) buffer :focus focus)
+        (ffi-window-set-buffer (current-window) buffer :focus focus)
         (make-window buffer))
     (set-window-title)
     buffer))

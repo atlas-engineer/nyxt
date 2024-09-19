@@ -151,9 +151,9 @@ Note that by changing the default value, modifier keys can be remapped."))
   ;; Hack until on-signal-* methods are handled.
   (setf (slot-value buffer 'url) url)
   ;; Taken from the GTK port, although it shows bad design:
-  ;; Mark buffer as :loading right away so functions like `window-set-buffer'
-  ;; don't try to reload if they are called before the "load-changed" signal
-  ;; is emitted.
+  ;; Mark buffer as :loading right away so functions like
+  ;; `ffi-window-set-buffer' don't try to reload if they are called before the
+  ;; "load-changed" signal is emitted.
   (when (web-buffer-p buffer) (setf (nyxt::status buffer) :loading))
   (electron:load-url buffer url)
   ;; Hack until on-signal-* methods are handled.

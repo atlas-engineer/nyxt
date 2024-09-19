@@ -26,7 +26,7 @@
            (:pre backtrace)))
         "text/html;charset=utf8")
        error-buffer))
-    (window-set-buffer window error-buffer)))
+    (ffi-window-set-buffer window error-buffer)))
 
 (-> load-lisp
     ((or null types:pathname-designator) &key (:package (or null package)))

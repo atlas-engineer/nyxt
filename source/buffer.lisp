@@ -961,7 +961,7 @@ This is a low-level function.  See `buffer-delete' for the high-level version."
       (let ((replacement-buffer (or (first (get-inactive-buffers))
                                     (make-buffer :load-url-p nil
                                                  :url (default-new-buffer-url *browser*)))))
-        (window-set-buffer parent-window replacement-buffer)))
+        (ffi-window-set-buffer parent-window replacement-buffer)))
     (buffers-delete (id buffer))
     (add-to-recent-buffers buffer)))
 
@@ -1011,57 +1011,6 @@ This is a low-level function.  See `buffer-delete' and `delete-buffer'."
   "Return a list of all the open `windows'."
   (when *browser*
     (alex:hash-table-values (windows *browser*))))
-
-(defun dummy-buffer-p (buffer)
-  (eq 'buffer (type-of buffer)))
-
-(export-always 'window-set-buffer)
-(defun window-set-buffer (window buffer &key (focus t))
-  "Set BROWSER's WINDOW buffer to BUFFER.
-Run WINDOW's `window-set-buffer-hook' over WINDOW and BUFFER before
-proceeding."
-  (hooks:run-hook (window-set-buffer-hook window) window buffer)
-  ;; When not focusing, that is, when previewing we don't update the
-  ;; `last-access' so as to not disturb the ordering.
-  (when (and focus
-             (context-buffer-p (active-buffer window)))
-    ;; The current buffer last-access time is set to now to ensure it becomes the
-    ;; second newest buffer.  If we didn't update the access time, the buffer
-    ;; last-access time could be older than, say, buffers opened in the
-    ;; background.
-    (setf (last-access (active-buffer window)) (time:now)))
-  ;; So that `current-buffer' returns the new value if buffer was
-  ;; switched inside a `with-current-buffer':
-  (setf %buffer nil)
-  (if (dummy-buffer-p (active-buffer window))
-      (let ((dummy (active-buffer window)))
-        (ffi-window-set-buffer window buffer :focus focus)
-        (setf (active-buffer window) buffer)
-        (ffi-buffer-delete dummy))
-
-      (let ((window-with-same-buffer (find buffer (delete window (window-list))
-                                           :key #'active-buffer)))
-        (if window-with-same-buffer ;; if visible on screen perform swap, otherwise just show
-            (let ((temp-buffer (make-instance 'buffer))
-                  (old-buffer (active-buffer window)))
-              (log:debug "Swapping old buffer ~a with other window ~a to switch to ~a"
-                         (render-url (url old-buffer))
-                         (render-url (url (active-buffer window-with-same-buffer)))
-                         (render-url (url buffer)))
-              (ffi-window-set-buffer window-with-same-buffer temp-buffer)
-              (ffi-window-set-buffer window buffer :focus focus)
-              (setf (active-buffer window) buffer)
-              (window-set-buffer window-with-same-buffer old-buffer)
-              (ffi-buffer-delete temp-buffer))
-            (progn
-              (ffi-window-set-buffer window buffer :focus focus)
-              (setf (active-buffer window) buffer)))))
-  (when (and focus
-             (context-buffer-p buffer))
-    (setf (last-access buffer) (time:now)))
-  (when (and (network-buffer-p buffer)
-             (eq (slot-value buffer 'status) :unloaded))
-    (buffer-load (url buffer) :buffer buffer)))
 
 (defun last-active-buffer ()
   "Return buffer with most recent `last-access'."

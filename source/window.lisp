@@ -65,7 +65,7 @@ the generic functions on `status-buffer'.  Finally set the `window'
    (window-set-buffer-hook
     (make-instance 'hook-window-buffer)
     :type hook-window-buffer
-    :documentation "Hook run before `window-set-buffer' takes effect.
+    :documentation "Hook run before `ffi-window-set-buffer' takes effect.
 The handlers take the window and the buffer as argument.")
    (window-delete-hook
     (make-instance 'hook-window)
@@ -175,7 +175,7 @@ not try to quit the browser."
   "Create a new window."
   (let ((window (window-make *browser*))
         (buffer (or buffer (make-buffer))))
-    (window-set-buffer window buffer)
+    (ffi-window-set-buffer window buffer)
     (values window buffer)))
 
 (define-command toggle-fullscreen (&optional (window (current-window)))
