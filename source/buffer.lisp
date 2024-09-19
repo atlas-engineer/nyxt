@@ -1012,6 +1012,9 @@ This is a low-level function.  See `buffer-delete' and `delete-buffer'."
   (when *browser*
     (alex:hash-table-values (windows *browser*))))
 
+(defun dummy-buffer-p (buffer)
+  (eq 'buffer (type-of buffer)))
+
 (export-always 'window-set-buffer)
 (defun window-set-buffer (window buffer &key (focus t))
   "Set BROWSER's WINDOW buffer to BUFFER.
@@ -1030,7 +1033,7 @@ proceeding."
   ;; So that `current-buffer' returns the new value if buffer was
   ;; switched inside a `with-current-buffer':
   (setf %buffer nil)
-  (if (active-buffer window)
+  (if (dummy-buffer-p (active-buffer window))
       (let ((dummy (active-buffer window)))
         (ffi-window-set-buffer window buffer :focus focus)
         (setf (active-buffer window) buffer)
