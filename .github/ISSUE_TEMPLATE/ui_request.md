@@ -7,26 +7,16 @@ assignees: ''
 
 ---
 
-**Purpose of request:**
+**Please describe the UI issue:**
 
 
-**Describe your proposed change:**
+**Describe the solution you'd like**
 
 
-**Why do you believe this to be an improvement?**
+**Describe alternatives you've considered**
 
 
-
-**Additional context/User story:**
+**Additional context:**
 
 
 **Screenshots/Mock ups:**
-
-
----
-
-### Pre-Build Checklist:
-- [ ] Discussion has occurred.
-- [ ] One or more developers have signed off on this change.
-- [ ] One or more user researchers have signed off on this change.
-
