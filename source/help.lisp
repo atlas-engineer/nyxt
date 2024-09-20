@@ -473,7 +473,7 @@ The value is saved to clipboard."
       (:nav
        (:nbutton
          :text "Quick-Start"
-         :title "Display a short tutorial on a side panel."
+         :title "Display a short tutorial."
          '(quick-start))
        (:nbutton
          :text "Describe-Bindings"

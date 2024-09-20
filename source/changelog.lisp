@@ -115,7 +115,7 @@ elements are scaled accordingly.")
      (:li "Fix fullscreen and maximized window logic.")))
   (:nsection :title "UI/UX"
     (:ul
-     (:li "Review UI of " (:nxref :command 'nyxt/mode/bookmark:bookmarks-panel) ".")
+     (:li "Review UI of " (:code "nyxt/mode/bookmark:bookmarks-panel") ".")
      (:li "Fix mode menu bar.")
      (:li "Fix echo message when invoking command " (:nxref :command 'describe-key) ".")
      (:li "Review docstrings."))))
@@ -204,8 +204,8 @@ elements are scaled accordingly.")
            (:li (:nxref :command 'nyxt/mode/history:list-history))
            (:li (:nxref :command 'nyxt/mode/buffer-listing:list-buffers))
            (:li (:nxref :command 'nyxt/mode/bookmark:list-bookmarks))
-           (:li (:nxref :command 'nyxt/mode/buffer-listing:buffers-panel))
-           (:li (:nxref :command 'nyxt/mode/bookmark:bookmarks-panel)))))))
+           (:li (:code "nyxt/mode/buffer-listing:buffers-panel"))
+           (:li (:code "nyxt/mode/bookmark:bookmarks-panel")))))))
 
 (define-version "3.11.0"
   (:nsection :title "Bug fixes"
@@ -258,9 +258,9 @@ invoked via " (:code "flatpak-spawn --host <command> <command-args>") "."))))
   (:nsection :title "UI/UX"
     (:ul
      (:li "UI improvement of interfaces bound to commands "
-          (:nxref :command 'nyxt/mode/bookmark:bookmarks-panel) ", "
+          (:code "nyxt/mode/bookmark:bookmarks-panel") ", "
           (:nxref :command 'nyxt/mode/bookmark:list-bookmarks) " and "
-          (:nxref :command 'nyxt/mode/buffer-listing:buffers-panel) ".")))
+          (:code "nyxt/mode/buffer-listing:buffers-panel") ".")))
   (:nsection :title "Bug fixes"
     (:ul
      (:li "Fix command " (:nxref :command 'nyxt/mode/bookmark:bookmark-url) ".")
@@ -404,8 +404,8 @@ buffers.")
      (:li "Add command " (:nxref :command 'nyxt:pick-color)
           ", to pick a color and copy its HEX, RGB or HSL code to clipboard.")
      (:li "Add keybindings for commands "
-          (:nxref :command 'nyxt:delete-panel-buffer) " and "
-          (:nxref :command 'nyxt:delete-all-panel-buffers) ".")
+          (:code "nyxt:delete-panel-buffer") " and "
+          (:code "nyxt:delete-all-panel-buffers") ".")
      (:li "Improve " (:nxref :command 'nyxt/mode/prompt-buffer:describe-prompt-buffer) ":")
      (:ul
       (:li "List available keybindings for enabled prompt buffer modes.")
@@ -415,7 +415,7 @@ buffers.")
      (:li "Honor the value of "
           (:nxref :slot 'zoom-ratio-default :class-name 'document-buffer) ".")
      (:li "Honor the value of the panel buffer's "
-          (:nxref :slot 'style :class-name 'panel-buffer) ".")
+          (:code "style") ".")
      (:li "Fix bugs in the "
           (:a :href (nyxt-url 'common-settings) "common settings interface") ".")
      (:li "Fix clipboard support for the Flatpak on Wayland.")
@@ -766,8 +766,8 @@ a dummy buffer. " (:nxref :class-name 'web-buffer)
           "Internal pages also have a URL now, which means they have history support.")
      (:li "New " (:nxref :macro 'define-internal-page-command) "and"
           (:nxref :macro 'define-internal-page-command-global) " helpers to define internal pages.")
-     (:li (:nxref :macro 'define-panel-command) " and "
-          (:nxref :macro 'define-panel-command-global)
+     (:li (:code "define-panel-command") " and "
+          (:code "define-panel-command-global")
           " helpers to define new panels.")
      (:li "New " (:nxref :macro 'define-internal-scheme) " helper to define custom schemes.")
      (:li "Nyxt-native debugger available via "

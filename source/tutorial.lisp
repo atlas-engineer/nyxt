@@ -382,19 +382,9 @@ definition and documentation.")
           (:code "browser") ", " (:code "window") ", " (:code "buffer") " and "
           (:code "prompt-buffer") "."))))
 
-(defun quick-start-exit (panel-buffer)
-  "Close tutorial panel buffer and set the main buffer to `default-new-buffer-url'"
-  (delete-panel-buffer :panels panel-buffer)
-  (if-let ((default-new (find (default-new-buffer-url *browser*) (buffer-list)
-                              :test #'quri:uri= :key #'url)))
-    (set-current-buffer default-new)
-    (make-buffer-focus)))
-
-(define-panel-command-global quick-start (&key (page 0))
-    (panel "*Quick Start*" :left)
+(define-internal-page-command-global quick-start (&key (page 0))
+    (buffer "*Quick Start*" 'nyxt/mode/help:help-mode)
   "Display Nyxt quick start tutorial."
-  ;; FIXME Maybe add a width parameter to `define-panel-*'?
-  (setf (ffi-width panel) 350)
   (spinneret:with-html-string
     (let* ((titles '("Quick Start" "Buffers" "Commands"
                      "Basic Navigation" "Modes" "Well Done"))
@@ -403,7 +393,7 @@ definition and documentation.")
         (0
          (:h2 (nth page titles))
          (:p "This " (:b "quick start")
-             "presents you the key concepts to be effective at extracting
+             " presents you the key concepts to be effective at extracting
 information from the Internet with Nyxt.")
          (:div :style "height: 20px;")
          (:hr)
@@ -416,9 +406,9 @@ information from the Internet with Nyxt.")
         (1
          (:h2 (nth page titles))
          (:p "The " (:b "buffer")
-             "is the fundamental unit of information in Nyxt.")
+             " is the fundamental unit of information in Nyxt.")
          (:p "While " (:b "buffers")
-             "are similar to browser tabs, they can be navigated and organized
+             " are similar to browser tabs, they can be navigated and organized
 in more complex ways such as filtering, or grouping by URLs, titles, contexts,
 tags, keywords, and bookmarks."))
         (2
@@ -444,14 +434,14 @@ between you and Nyxt goes through it.")
               " opens a new one."))
         (3
          (:h2 (nth page titles))
-         (:p (:nxref :command 'nyxt:set-url :target "_blank")
-             " invokes the address bar.")
-         (:p (:nxref :command 'nyxt:set-url-new-buffer :target "_blank")
-             " as above, but creates a new buffer.")
-         (:p (:nxref :command 'nyxt:switch-buffer :target "_blank")
-             " to show a list of buffers.")
-         (:p (:nxref :command 'nyxt:delete-current-buffer :target "_blank")
-             " to close a buffer.")
+         (:li (:nxref :command 'nyxt:set-url :target "_blank")
+              " invokes the address bar.")
+         (:li (:nxref :command 'nyxt:set-url-new-buffer :target "_blank")
+              " as above, but creates a new buffer.")
+         (:li (:nxref :command 'nyxt:switch-buffer :target "_blank")
+              " to show a list of buffers.")
+         (:li (:nxref :command 'nyxt:delete-current-buffer :target "_blank")
+              " to close a buffer.")
          (:hr)
          (:p "Notice that most of these commands invoke the prompt
 buffer. Every time that a command request input from the user, this menu will
@@ -484,8 +474,12 @@ go from here is up to you.")
                (:nbutton
                  :title "Visit default new buffer"
                  :text "Start using Nyxt"
-                 :buffer panel
-                 `(quick-start-exit ,panel))
+                 :buffer buffer
+                 '(if-let ((default-new (find (default-new-buffer-url *browser*)
+                                              (buffer-list)
+                                              :test #'quri:uri= :key #'url)))
+                   (set-current-buffer default-new)
+                   (make-buffer-focus)))
                (:div :style "height: 20px;")
                (:p (:i "Happy Hacking!"))
                (:div :style "height: 20px;"))

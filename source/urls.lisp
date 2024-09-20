@@ -281,8 +281,7 @@ ARGS is an arbitrary keyword arguments list that is translated to a URL query."
       (let* ((%url (quri:uri url))
              (internal-page (find-url-internal-page %url)))
         ;; So that `find-internal-page-buffer' returns a non-nil value.
-        (when (not (panel-page-p internal-page))
-          (setf (slot-value (current-buffer) 'url) %url))
+        (setf (slot-value (current-buffer) 'url) %url)
         (if internal-page
             (apply (form internal-page)
                    (query-params->arglist (quri:uri-query-params %url)))

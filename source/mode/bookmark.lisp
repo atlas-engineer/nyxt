@@ -197,36 +197,6 @@ against date, given `prompter:active-attributes-keys' configuration."))
    (prompter:enable-marks-p t)
    (prompter:constructor (tag-suggestions))))
 
-(define-panel-command-global bookmarks-panel ()
-    (panel-buffer "*Bookmarks panel*")
-  "Shows all the bookmarks in a compact panel-buffer layout."
-  (let ((bookmarks (group-bookmarks (current-buffer))))
-    ;; Simplified version of list-bookmarks
-    (spinneret:with-html-string
-      (:nstyle
-        '(.bookmark-link
-          :margin-bottom "12px"
-          :overflow-x "scroll"
-          :white-space "nowrap"
-          :display "block"))
-      (:body
-       (:h1 "Bookmarks")
-       (if (zerop (hash-table-count bookmarks))
-           (:p (format nil "No bookmarks in ~s."
-                       (files:expand (files:content (bookmarks-file (current-buffer))))))
-           (maphash (lambda (tag bookmarks)
-                      (:nsection
-                        :title (or tag "Unsorted")
-                        :id (or tag "unsorted")
-                        :open-p nil
-                        :anchor-p nil
-                        (dolist (bookmark bookmarks)
-                          (:a :href (render-url (url bookmark))
-                              :class "bookmark-link"
-                              :target "_blank"
-                              (title bookmark)))))
-                    bookmarks))))))
-
 (export-always 'url-bookmark-tags)
 (defun url-bookmark-tags (url)
   "Return the list of tags of the bookmark corresponding to URL."

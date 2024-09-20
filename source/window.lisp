@@ -28,10 +28,6 @@ Not to be confused with `current-buffer' or `focused-buffer'.")
     '()
     :export nil
     :documentation "The stack of current prompt buffers.")
-   (panel-buffers
-    (list)
-    :export nil
-    :documentation "A list of panel buffers appearing on the window.")
    (prompt-buffer-channel
     (make-channel)                 ; TODO: Rename `prompt-buffer-ready-channel'?
     :export nil
@@ -93,18 +89,6 @@ The handlers take the window as argument."))
 (defmethod titler ((window window))
   "Return the title of WINDOW."
   (str:concat (title (active-buffer window)) " － Nyxt"))
-
-(defmethod window-add-panel-buffer ((window window) (buffer panel-buffer) side)
-  "Add a panel buffer to a window. Side can either be :right or :left."
-  (pushnew buffer (panel-buffers window))
-  (ffi-window-add-panel-buffer window buffer side)
-  buffer)
-
-(defmethod window-delete-panel-buffer ((window window) (buffer panel-buffer))
-  "Remove a panel buffer from a window."
-  (setf (panel-buffers window)
-        (remove buffer (panel-buffers window)))
-  (ffi-window-delete-panel-buffer window buffer))
 
 (defmethod (setf active-buffer) (buffer (window window))
   (setf (slot-value window 'active-buffer) buffer))

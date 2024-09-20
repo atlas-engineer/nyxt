@@ -979,7 +979,6 @@ This is a low-level function.  See `buffer-delete' for the high-level version."
           (when all
             (alex:flatten (loop for window in (window-list)
                                 collect (active-prompt-buffers window)
-                                collect (panel-buffers window)
                                 collect (status-buffer window)
                                 collect (message-buffer window))))))
 

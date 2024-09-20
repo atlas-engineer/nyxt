@@ -21,6 +21,5 @@ provide convenient navigation keybindings.  For instance, \"s\" becomes bound
        "p" 'nyxt/mode/document:previous-heading
        "m" 'nyxt/mode/document:jump-to-heading
        "s" 'nyxt/mode/search-buffer:search-buffer
-       "t" 'nyxt/mode/document:headings-panel
        "?" (sym:resolve-symbol :describe-bindings :command)))))
   (:toggler-command-p nil))

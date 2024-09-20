@@ -116,12 +116,6 @@ Run `window-set-buffer-hook' over WINDOW and BUFFER before proceeding."))
 (define-ffi-generic ffi-focus-prompt-buffer (prompt-buffer)
   (:documentation "Return PROMPT-BUFFER and focus it as a side effect."))
 
-(define-ffi-generic ffi-window-add-panel-buffer (window buffer side)
-  (:documentation "Add panel BUFFER to WINDOW.
-SIDE is one of `:left' or `:right'."))
-(define-ffi-generic ffi-window-delete-panel-buffer (window buffer)
-  (:documentation "Delete the panel BUFFER from WINDOW."))
-
 (define-ffi-generic ffi-height (object)
   (:setter-p t)
   (:documentation "Return the OBJECT's height in pixels.

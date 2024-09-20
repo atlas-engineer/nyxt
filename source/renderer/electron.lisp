@@ -389,19 +389,6 @@ Note that by changing the default value, modifier keys can be remapped."))
   (when focus (electron:focus buffer))
   buffer)
 
-;; Setting the html for panel and internal pages should use the same logic.
-;; See issue #3239.
-;; (defmethod ffi-window-add-panel-buffer ((window electron-window)
-;;                                         (panel-buffer panel-buffer)
-;;                                         side)
-;;   (match side
-;;     (:left (push panel-buffer (panel-buffers-left window)))
-;;     (:right (push panel-buffer (panel-buffers-right window)))))
-
-;; (defmethod ffi-window-delete-panel-buffer ((window electron-window)
-;;                                            (panel-buffer panel-buffer))
-;;   (delete panel-buffer (panel-buffers window)))
-
 (defmethod ffi-height ((window electron-window))
   (electron:get-bounds window 'height))
 

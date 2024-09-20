@@ -71,10 +71,6 @@
     :documentation "See `gtk-buffer' slot of the same name.")
    (root-box-layout)
    (horizontal-box-layout)
-   (panel-buffer-container-left)
-   (panel-buffer-container-right)
-   (panel-buffers-left)
-   (panel-buffers-right)
    (main-buffer-container)
    (prompt-buffer-container)
    (prompt-buffer-view
@@ -345,7 +341,6 @@ response.  The BODY is wrapped with `with-protect'."
   (%within-renderer-thread-async
    (lambda ()
      (with-slots (gtk-object root-box-layout horizontal-box-layout
-                  panel-buffer-container-left panel-buffer-container-right
                   main-buffer-container
                   prompt-buffer-container prompt-buffer-view
                   status-buffer status-container
@@ -363,12 +358,6 @@ response.  The BODY is wrapped with `with-protect'."
          (setf horizontal-box-layout (make-instance 'gtk:gtk-box
                                                     :orientation :horizontal
                                                     :spacing 0))
-         (setf panel-buffer-container-left (make-instance 'gtk:gtk-box
-                                                          :orientation :horizontal
-                                                          :spacing 0))
-         (setf panel-buffer-container-right (make-instance 'gtk:gtk-box
-                                                           :orientation :horizontal
-                                                           :spacing 0))
          (setf main-buffer-container (make-instance 'gtk:gtk-box
                                                     :orientation :vertical
                                                     :spacing 0))
@@ -382,16 +371,9 @@ response.  The BODY is wrapped with `with-protect'."
                                                :orientation :vertical
                                                :spacing 0))
          (setf key-string-buffer (make-instance 'gtk:gtk-entry))
-         ;; Add the views to the box layout and to the window
-         (gtk:gtk-box-pack-start horizontal-box-layout
-                                 panel-buffer-container-left
-                                 :expand nil)
          (gtk:gtk-box-pack-start horizontal-box-layout
                                  main-buffer-container
                                  :expand t :fill t)
-         (gtk:gtk-box-pack-start horizontal-box-layout
-                                 panel-buffer-container-right
-                                 :expand nil)
          (gtk:gtk-box-pack-start root-box-layout
                                  horizontal-box-layout
                                  :expand t :fill t)
@@ -1019,33 +1001,6 @@ See `finalize-buffer'."
                           :expand t :fill t)
   (unless *headless-p* (gtk:gtk-widget-show (gtk-object buffer)))
   (when focus (gtk:gtk-widget-grab-focus (gtk-object buffer))))
-
-(define-ffi-method ffi-window-add-panel-buffer ((window gtk-window) (buffer panel-buffer) side)
-  "Add a panel buffer to a window."
-  (match side
-    (:left (gtk:gtk-box-pack-start (panel-buffer-container-left window)
-                                   (gtk-object buffer))
-           (push buffer (panel-buffers-left window)))
-    (:right (gtk:gtk-box-pack-end (panel-buffer-container-right window) (gtk-object buffer))
-            (push buffer (panel-buffers-right window))))
-  (setf (gtk:gtk-widget-size-request (gtk-object buffer))
-        (list (width buffer) -1))
-  (unless *headless-p* (gtk:gtk-widget-show (gtk-object buffer))))
-
-(define-ffi-method ffi-width ((buffer panel-buffer))
-  (nth-value 1 (gtk:gtk-widget-size-request (gtk-object buffer))))
-(define-ffi-method (setf ffi-width) (width (buffer panel-buffer))
-  (setf (gtk:gtk-widget-size-request (gtk-object buffer))
-        (list width -1)))
-
-(define-ffi-method ffi-window-delete-panel-buffer ((window gtk-window) (buffer panel-buffer))
-  "Remove a panel buffer from a window."
-  (cond ((find buffer (panel-buffers-left window))
-         (setf (panel-buffers-left window) (remove buffer (panel-buffers-left window)))
-         (gtk:gtk-container-remove (panel-buffer-container-left window) (gtk-object buffer)))
-        ((find buffer (panel-buffers-right window))
-         (setf (panel-buffers-right window) (remove buffer (panel-buffers-right window)))
-         (gtk:gtk-container-remove (panel-buffer-container-right window) (gtk-object buffer)))))
 
 (define-ffi-method ffi-height ((buffer prompt-buffer))
   (nth-value 1 (gtk:gtk-widget-size-request (prompt-buffer-container (window buffer)))))

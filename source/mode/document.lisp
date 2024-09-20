@@ -44,7 +44,6 @@ Important pieces of functionality are:
        "M-i" 'focus-first-input-field
        "C-M-c" 'open-inspector
        "C-S-c" 'open-inspector
-       "M-." 'headings-panel
        "M-{" 'previous-heading
        "M-}" 'next-heading
        "C-p" 'print-buffer
@@ -443,40 +442,6 @@ The inner-text must not be modified, so that we can jump to the anchor of the sa
                              'heading-source
                              :name (format nil "Headings: ~a" (title buffer))
                              :buffer buffer)))))
-
-(define-panel-command-global headings-panel ()
-    (panel-buffer "*Headings panel*")
-  "Display a list of heading for jumping."
-  (labels ((get-level (heading)
-             (ignore-errors (parse-integer (plump:tag-name (element heading)) :start 1)))
-           (group-headings (headings)
-             (loop with min-level = (when headings
-                                      (reduce #'min headings :key #'get-level))
-                   with current = (list)
-                   for heading in headings
-                   if (= (get-level heading) min-level)
-                     collect (nreverse current) into total
-                     and do (setf current (list heading))
-                   else
-                     do (push heading current)
-                   finally (return (delete nil (append total (list (nreverse current)))))))
-           (headings->html (groups)
-             (spinneret:with-html-string
-               (:ul
-                (dolist (group groups)
-                  (let ((heading (first group)))
-                    (:li (:a :onclick
-                             (ps:ps (nyxt/ps:lisp-eval
-                                     (:title "switch-buffer-scroll" :buffer panel-buffer)
-                                     (switch-buffer :buffer (buffer heading))
-                                     (nyxt/dom:scroll-to-element (element heading))))
-                             (title heading)))
-                    (when (rest group)
-                      (:raw (sera:mapconcat #'headings->html (list (group-headings (rest group))) "")))))))))
-    (setf (ffi-width panel-buffer) 400)
-    (spinneret:with-html-string
-      (:h1 "Headings")
-      (:raw (headings->html (group-headings (get-headings)))))))
 
 (export-always 'print-buffer)
 (define-command print-buffer ()

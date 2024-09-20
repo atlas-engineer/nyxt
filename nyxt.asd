@@ -119,7 +119,6 @@
                  (:file "dom")
                  (:file "search-engine")
                  (:file "buffer")
-                 (:file "panel")
                  (:file "window")
                  (:file "mode")
                  (:file "history")
