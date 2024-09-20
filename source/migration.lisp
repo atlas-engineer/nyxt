@@ -35,8 +35,8 @@ This is useful to delay the evaluation of the tip until it's rendered."))
 `symbols' are the offending ones deprecated in `version'."))
 
 (defmethod print-object ((object suggestion) stream)
-  (print-unreadable-object (object stream :type t :identity t)
-    (format stream "~a" (symbols  object))))
+  (print-unreadable-object (object stream :type t)
+    (format stream "~a" (symbols object))))
 
 (defun suggestion= (suggestion1 suggestion2)
   (and (string= (version suggestion1)

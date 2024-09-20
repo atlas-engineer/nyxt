@@ -81,7 +81,7 @@
   all the other modes disabled."))
 
 (defmethod print-object ((rule auto-rule) stream)
-  (print-unreadable-object (rule stream :type t :identity t)
+  (print-unreadable-object (rule stream :type t)
     (princ (sera:ellipsize (format nil "~a" (test rule)) 40) stream)))
 
 (defvar *default-auto-rules* '()

@@ -80,7 +80,7 @@ content. In case something goes wrong, runs `error-callback'.")
   (:metaclass user-class))
 
 (defmethod print-object ((scheme scheme) stream)
-  (print-unreadable-object (scheme stream :type t :identity t)
+  (print-unreadable-object (scheme stream :type t)
     (format stream "~a" (name scheme))))
 
 (defvar *schemes* (sera:dict)

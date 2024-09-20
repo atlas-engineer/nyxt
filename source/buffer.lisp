@@ -596,8 +596,8 @@ Conceptually, it's similar to \"private windows\" in popular browsers but the
 scope is that of buffers."))
 
 (defmethod print-object ((buffer buffer) stream)
-  (print-unreadable-object (buffer stream :type t :identity t)
-    (format stream "~a" (id buffer))))
+  (print-unreadable-object (buffer stream :type t)
+    (format stream "~a ~a" (id buffer) (url buffer))))
 
 (defmethod (setf url) :around (value (buffer document-buffer))
   (declare (ignore value))

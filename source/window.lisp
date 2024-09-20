@@ -87,8 +87,8 @@ The handlers take the window as argument."))
   window)
 
 (defmethod print-object ((window window) stream)
-  (print-unreadable-object (window stream :type t :identity t)
-    (format stream "~a" (id window))))
+  (print-unreadable-object (window stream :type t)
+    (format stream "~a ~a" (id window) (titler window))))
 
 (defmethod titler ((window window))
   "Return the title of WINDOW."

@@ -223,13 +223,7 @@ When unset, it corresponds to the mode name."
   (setf (slot-value mode 'glyph) glyph))
 
 (defmethod print-object ((mode mode) stream)
-  (if *print-escape*
-      (print-unreadable-object (mode stream :type t :identity t))
-      (let ((name (symbol-name (sera:class-name-of mode)))
-            (suffix "-MODE"))
-        (format stream "~(~a~)" (sera:string-replace
-                                 suffix name ""
-                                 :start (- (length name ) (length suffix)))))))
+  (print-unreadable-object (mode stream :type t)))
 
 (sym:define-symbol-type mode (class)
   (when-let ((class (find-class sym:%symbol% nil)))
