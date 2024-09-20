@@ -27,6 +27,8 @@
 
 (define-version "4.0.0"
   (:ul
+   (:li "Delete support for panel buffers and all related logic.")
+   (:li "Refactor " (:nxref :command 'quick-start) " as an internal page.")
    (:li "New implementation of the search engine logic.")
    (:li "Delete " (:code "ffi-buffer-load-html") ".")
    (:li "Delete slot " (:code "override-map") ".")
@@ -69,6 +71,11 @@ elements are scaled accordingly.")
          (:li (:code "NASDF_COMPRESS"))))
    (:li "Delete commands:"
         (:ul
+         (:li (:code "delete-panel-buffer"))
+         (:li (:code "delete-all-panel-buffers"))
+         (:li (:code "bookmarks-panel"))
+         (:li (:code "buffers-panel"))
+         (:li (:code "headings-panel"))
          (:li (:code "forward-to-renderer"))
          (:li (:code "maybe-scroll-to-bottom"))
          (:li (:code "maybe-scroll-to-top"))
