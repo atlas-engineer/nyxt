@@ -70,20 +70,6 @@
               :font-size "14px"
               :padding 0
               :margin 0)
-            `(.loader
-              :border-width "2px"
-              :border-style "solid"
-              :border-color "transparent"
-              :border-top-color ,theme:action
-              :border-left-color ,theme:action
-              :border-radius "50%"
-              :display "inline-block"
-              :width "7px"
-              :height "7px"
-              :animation "spin 1s linear infinite")
-            `("@keyframes spin"
-              ("0%" :transform "rotate(0deg)")
-              ("100%" :transform "rotate(360deg)"))
             `(".arrow-right"
               :clip-path "polygon(0 0, calc(100% - 7px) 0, 100% calc(50% - 1px), 100% 50%, 100% calc(50% + 1px), calc(100% - 7px) 100%, 0 100%)"
               :margin-right "-7px")
@@ -278,13 +264,12 @@ This leverages `mode-status' which can be specialized for individual modes."
 (export-always 'format-status-load-status)
 (defmethod format-status-load-status ((status status-buffer))
   "Render the load status to HTML string.
-By default, renders a spinning loading ring when loading a URL."
+By default, renders a hourglass when loading a URL."
   (let ((buffer (current-buffer (window status))))
-    (spinneret:with-html-string
-      (:div :class (if (and (web-buffer-p buffer)
-                            (eq (slot-value buffer 'status) :loading))
-                       "loader"
-                       "")))))
+    (if (and (web-buffer-p buffer)
+             (eq (slot-value buffer 'status) :loading))
+        "⧖ "
+        "")))
 
 (export-always 'format-status-url)
 (defmethod format-status-url ((status status-buffer))
