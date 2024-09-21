@@ -67,7 +67,8 @@
             `(body
               :font-family ,theme:font-family
               :line-height "100vh"
-              :font-size "14px"
+              :font-size "60vh"
+              :white-space "nowrap"
               :padding 0
               :margin 0)
             `(".arrow-right"
@@ -83,8 +84,6 @@
             `("#controls"
               :background-color ,theme:secondary
               :color ,theme:on-secondary
-              :overflow "hidden"
-              :white-space "nowrap"
               :z-index "3"
               :flex-basis "78px"
               :display "flex")
@@ -96,11 +95,7 @@
             `("#url"
               :background-color ,theme:primary
               :color ,theme:on-primary
-              :font-size "60vh"
               :min-width "100px"
-              :text-overflow "ellipsis"
-              :overflow-x "hidden"
-              :white-space "nowrap"
               :padding-right "7px"
               :padding-left "15px"
               :z-index "2"
@@ -114,10 +109,7 @@
               :background-color ,theme:secondary
               :color ,theme:on-secondary
               :line-height "95vh"
-              :font-size "60vh"
               :min-width "100px"
-              :white-space "nowrap"
-              :overflow-x "scroll"
               :text-align "left"
               :padding-left "3px"
               :padding-right "20px"
@@ -145,12 +137,9 @@
             `("#modes"
               :background-color ,theme:primary
               :color ,theme:on-primary
-              :font-size "60vh"
               :text-align "right"
               :padding-left "6px"
               :padding-right "3px"
-              :overflow-x "scroll"
-              :white-space "nowrap"
               :z-index "2")
             `("#modes > button"
               :border-radius "0"
