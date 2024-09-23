@@ -308,11 +308,6 @@ It takes URL-STRINGS so that the URL argument can be `cl-read' in case
                                                 (files:expand *socket-file*)))
      (iolib:socket-connected-p s))))
 
-(defun existing-non-socket-p (path)
-  (and (or (uiop:file-exists-p path)
-           (uiop:directory-exists-p path))
-       (not (socket-p path))))
-
 (-> listen-or-query-socket ((or null (cons quri:uri *))) *)
 (defun listen-or-query-socket (urls)
   "If another Nyxt is listening on the socket, tell it to open URLS.
@@ -328,9 +323,6 @@ Otherwise bind socket and return the listening thread."
                ;; Can't use `render-url' at this point because the GTK loop is not running.
                (format s "~s" `(open-external-urls ,@(mapcar #'quri:render-uri urls)))))
            (log:info "Nyxt already started."))
-       nil)
-      ((existing-non-socket-p socket-path)
-       (log:error "Could not bind socket ~a, non-socket file exists." socket-path)
        nil)
       (t
        (uiop:delete-file-if-exists socket-path) ; Safe since socket-path is a :socket at this point.
@@ -496,13 +488,10 @@ Finally, run the browser, load URL-STRINGS if any, then run
 
         (let* ((urls (remove-if #'url-empty-p (mapcar #'url url-strings)))
                (startup-timestamp (time:now))
-               (startup-error-reporter nil)
-               (socket-path (files:expand *socket-file*)))
+               (startup-error-reporter nil))
           (if (or (getf *options* :no-socket)
-                  (null socket-path)
-                  (and                  ; See `listen-or-query-socket'.
-                   (not (listening-socket-p))
-                   (not (existing-non-socket-p socket-path))))
+                  (null (files:expand *socket-file*))
+                  (not (listening-socket-p)))
               (progn
                 (load-lisp (files:expand *auto-config-file*) :package (find-package :nyxt-user))
                 (multiple-value-bind (condition backtrace)

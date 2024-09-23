@@ -221,24 +221,6 @@ package set to current package."
     (uiop:with-safe-io-syntax (:package package)
       (uiop:slurp-stream-forms stream))))
 
-(export-always 'socket-p)
-(defun socket-p (path)
-  "Return non-nil if a PATH is a socket."
-  (and (uiop:file-exists-p path)
-       #+darwin
-       (equal "=" (uiop:run-program (list "stat" "-f" "%T" path)
-                                    :output '(:string :stripped t)))
-       #+(and (not darwin) (not sbcl))
-       (eq :socket (osicat:file-kind path))
-       #+(and (not darwin) sbcl)
-       (flet ((socket-p (path)
-                (let ((socket-mask 49152)
-                      (mode-mask 61440))
-                  (= socket-mask
-                     (logand mode-mask
-                             (sb-posix:stat-mode (sb-posix:stat path)))))))
-         (socket-p path))))
-
 (export-always 'has-method-p)
 (defun has-method-p (object generic-function)
   "Return non-nil if OBJECT has GENERIC-FUNCTION specialization."
