@@ -79,77 +79,6 @@ from a key binding.")
   (declare (ignore source))
   (command-attributes command))
 
-(define-class extended-command-source (prompter:source)
-  ((prompter:name "Lisp expression")
-   (prompter:filter-preprocessor
-    (lambda (suggestions source input)
-      (declare (ignore suggestions))
-      (unless (uiop:emptyp input)
-        (remove-duplicates
-         (append
-          (ignore-errors
-           (let* ((proper-input (if (and (str:starts-with-p "(" input)
-                                         (str:ends-with-p ")" input))
-                                    input
-                                    (str:concat "(" input ")")))
-                  (expression (uiop:safe-read-from-string proper-input))
-                  (symbol (symbol-name (first expression)))
-                  (symbols (append (nth-value 1 (sym:resolve-symbol symbol :command (list-all-packages)))
-                                   (nth-value 1 (sym:resolve-symbol symbol :function (list-all-packages)))
-                                   (nth-value 1 (sym:resolve-symbol symbol :variable (list-all-packages))))))
-             (delete
-              nil (mapcar (lambda (sym)
-                            (funcall (prompter:suggestion-maker source)
-                                     (cond
-                                       ((fboundp sym)
-                                        (cons sym (rest expression)))
-                                       ((boundp sym)
-                                        sym))
-                                     source input))
-                          symbols))))
-          (ignore-errors
-           (delete
-            nil (mapcar (lambda (s)
-                          (funcall (prompter:suggestion-maker source)
-                                   (cond
-                                     ((fboundp s)
-                                      (list s))
-                                     ((boundp s)
-                                      s))
-                                   source input))
-                        (mapcar (alex:rcurry #'uiop:safe-read-from-string
-                                             :package (find-package :nyxt))
-                                (first (swank:simple-completions input *package*)))))))
-         :test #'equal))))
-   (buffer (current-buffer)
-           :type buffer))
-  (:export-class-name-p t)
-  (:documentation "Prompter source to execute commands with arguments.
-Includes all commands and modes, and adds arbitrary Lisp functions on top of that.")
-  (:metaclass user-class))
-
-(defmethod prompter:object-attributes ((extended-command list) (source extended-command-source))
-  (declare (ignore source))
-  (let ((function (symbol-function (first extended-command)))
-        (*print-case* :downcase))
-    `(("Expression" ,(format nil "~s" extended-command) (:width 1))
-      ("Arguments" ,(remove #\newline (format nil "~{~a~^ ~}" (arglist function))) (:width 1))
-      ("Documentation" ,(documentation-line function 'function "") (:width 4)))))
-
-(defmethod prompter:object-attributes ((extended-command symbol) (source extended-command-source))
-  (declare (ignore source))
-  (let ((*print-case* :downcase))
-    (if (fboundp extended-command)
-        (let ((function (symbol-function extended-command)))
-          `(("Expression" ,(format nil "~s" extended-command) (:width 1))
-            ("Arguments" ,(remove #\newline
-                                  (format nil "~{~a~^ ~}" (arglist function)))
-                         (:width 1))
-            ("Documentation" ,(documentation-line function 'function "") (:width 4))))
-        `(("Expression" ,(prini-to-string extended-command) (:width 1))
-          ("Arguments" "" (:width 1))
-          ("Documentation" ,(or (documentation extended-command 'variable) "") (:width 4))))))
-
 (define-command execute-command ()
   "Execute a command by name.
 
@@ -170,23 +99,6 @@ together with the arglists and documentations of the functions typed in."
                            (lambda-command describe-command* (commands)
                              "Show the documentation and other properties of this command."
                              (describe-command :command (name (first commands))))))
-                    (make-instance
-                     'extended-command-source
-                     :actions-on-return
-                     (list
-                      (lambda-command evaluate-lisp-expression* (exprs)
-                        "Evaluate the Lisp expression and print the result to message buffer."
-                        (run-thread "evaluator"
-                          (echo "~{~s~^, ~}" (multiple-value-list (eval (first exprs))))))
-                      (lambda-command evaluate-lisp-expression-and-describe* (exprs)
-                        "Evaluate the Lisp expression and `describe-value' the result."
-                        (run-thread "evaluator"
-                          ;; FIXME: Only supports one value, because internal
-                          ;; pages (including `describe-value') reuse pages
-                          ;; with the same command.
-                          (buffer-load-internal-page-focus
-                           'describe-value
-                           :id (ensure-inspected-id (eval (first exprs))))))))
                     (make-instance
                      'predicted-command-source
                      :actions-on-return
