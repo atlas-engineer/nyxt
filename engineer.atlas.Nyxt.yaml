@@ -71,6 +71,6 @@ modules:
     buildsystem: simple
     sources:
       - type: dir
-        path: ..
+        path: .
     build-commands:
       - make install DESTDIR=${FLATPAK_DEST} PREFIX=
