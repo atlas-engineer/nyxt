@@ -75,7 +75,7 @@ stdenv.mkDerivation {
 
   shellHook =
     ''
-    NYXT_ROOT=`dirname ${toString ../README.org}`;
+    NYXT_ROOT=`dirname ${toString ./README.org}`;
     export CL_SOURCE_REGISTRY=$HOME/common-lisp//:$NYXT_ROOT/_build//:$CL_SOURCE_REGISTRY;
     '';
 

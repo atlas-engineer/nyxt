@@ -32,55 +32,55 @@ jobs:
         nix_path: nixpkgs=channel:nixos-unstable
 
     - name: Compile ${{matrix.renderer}} port on ${{matrix.os}}
-      run: nix-shell build-scripts/shell.nix --run 'make all NYXT_RENDERER=${{matrix.renderer}}'
+      run: nix-shell shell.nix --run 'make all NYXT_RENDERER=${{matrix.renderer}}'
 
     - name: Test ${{matrix.renderer}} port on ${{matrix.os}}
       env:
         NASDF_NON_INTERACTIVE_TESTS: true
       # It runs the tests for system nyxt, not nyxt/${{matrix.renderer}}.
-      run: nix-shell build-scripts/shell.nix --run 'make check'
+      run: nix-shell shell.nix --run 'make check'
 
     - name: Test history-tree
       env:
         NASDF_NON_INTERACTIVE_TESTS: true
-      run: nix-shell build-scripts/shell.nix --run "sbcl --eval '(require \"asdf\")' --eval '(asdf:test-system :history-tree)'"
+      run: nix-shell shell.nix --run "sbcl --eval '(require \"asdf\")' --eval '(asdf:test-system :history-tree)'"
 
     - name: Test nhooks
       env:
         NASDF_NON_INTERACTIVE_TESTS: true
-      run: nix-shell build-scripts/shell.nix --run "sbcl --eval '(require \"asdf\")' --eval '(asdf:test-system :nhooks)'"
+      run: nix-shell shell.nix --run "sbcl --eval '(require \"asdf\")' --eval '(asdf:test-system :nhooks)'"
 
     - name: Test nfiles
       env:
         NASDF_NON_INTERACTIVE_TESTS: true
-      run: nix-shell build-scripts/shell.nix --run "sbcl --eval '(require \"asdf\")' --eval '(asdf:test-system :nfiles)'"
+      run: nix-shell shell.nix --run "sbcl --eval '(require \"asdf\")' --eval '(asdf:test-system :nfiles)'"
 
     - name: Test nclasses
       env:
         NASDF_NON_INTERACTIVE_TESTS: true
-      run: nix-shell build-scripts/shell.nix --run "sbcl --eval '(require \"asdf\")' --eval '(asdf:test-system :nclasses)'"
+      run: nix-shell shell.nix --run "sbcl --eval '(require \"asdf\")' --eval '(asdf:test-system :nclasses)'"
 
     - name: Test prompter
       env:
         NASDF_NON_INTERACTIVE_TESTS: true
-      run: nix-shell build-scripts/shell.nix --run "sbcl --eval '(require \"asdf\")' --eval '(asdf:test-system :prompter)'"
+      run: nix-shell shell.nix --run "sbcl --eval '(require \"asdf\")' --eval '(asdf:test-system :prompter)'"
 
     - name: Test nkeymaps
       env:
         NASDF_NON_INTERACTIVE_TESTS: true
-      run: nix-shell build-scripts/shell.nix --run "sbcl --eval '(require \"asdf\")' --eval '(asdf:test-system :nkeymaps)'"
+      run: nix-shell shell.nix --run "sbcl --eval '(require \"asdf\")' --eval '(asdf:test-system :nkeymaps)'"
 
     - name: Test njson
       env:
         NASDF_NON_INTERACTIVE_TESTS: true
-      run: nix-shell build-scripts/shell.nix --run "sbcl --eval '(require \"asdf\")' --eval '(asdf:load-system :njson/cl-json)' --eval '(asdf:test-system :njson)'"
+      run: nix-shell shell.nix --run "sbcl --eval '(require \"asdf\")' --eval '(asdf:load-system :njson/cl-json)' --eval '(asdf:test-system :njson)'"
 
     - name: Test nsymbols
       env:
         NASDF_NON_INTERACTIVE_TESTS: true
-      run: nix-shell build-scripts/shell.nix --run "sbcl --eval '(require \"asdf\")' --eval '(asdf:test-system :nsymbols)'"
+      run: nix-shell shell.nix --run "sbcl --eval '(require \"asdf\")' --eval '(asdf:test-system :nsymbols)'"
 
     - name: Test ndebug
       env:
         NASDF_NON_INTERACTIVE_TESTS: true
-      run: nix-shell build-scripts/shell.nix --run "sbcl --eval '(require \"asdf\")' --eval '(asdf:test-system :ndebug)'"
+      run: nix-shell shell.nix --run "sbcl --eval '(require \"asdf\")' --eval '(asdf:test-system :ndebug)'"
