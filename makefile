@@ -78,7 +78,7 @@ clean: clean-submodules
 FLATPAK_COMMAND = flatpak
 FLATPAK_BUILDER = flatpak-builder
 FLATPAK_APP_ID = engineer.atlas.Nyxt
-FLATPAK_MANIFEST := build-scripts/$(FLATPAK_APP_ID).yaml
+FLATPAK_MANIFEST := $(FLATPAK_APP_ID).yaml
 FLATPAK_EXPORT_REPOSITORY = _build/nyxt-flatpak-repository
 
 .PHONY: flatpak-build
