@@ -1,0 +1,320 @@
+#+TITLE: Nyxt Developer's Manual
+
+# Install org-make-toc so the TOC below will be automatically generated.
+# https://github.com/alphapapa/org-make-toc
+* Table of contents                                                     :TOC:
+:PROPERTIES:
+:TOC:      :include all :ignore this
+:END:
+:CONTENTS:
+- [[#bill-of-materials][Bill of Materials]]
+  - [[#source][Source]]
+  - [[#common-lisp][Common Lisp]]
+  - [[#web-renderers][Web renderers]]
+    - [[#webkitgtk][WebKitGTK]]
+    - [[#electron][Electron]]
+  - [[#other][Other]]
+- [[#development-environment][Development environment]]
+  - [[#tests][Tests]]
+  - [[#functional-package-managers][Functional package managers]]
+    - [[#guix][Guix]]
+    - [[#nix][Nix]]
+- [[#installation][Installation]]
+- [[#interact-with-a-running-nyxt-binary][Interact with a running Nyxt binary]]
+- [[#contributing][Contributing]]
+  - [[#help][Help]]
+  - [[#commit-style][Commit style]]
+  - [[#branch-management][Branch management]]
+  - [[#programming-conventions][Programming conventions]]
+:END:
+
+* Bill of Materials
+** Source
+
+Either get a tarball (=nyxt-<version>-source-with-submodules.tar.xz=) from a
+[[https://github.com/atlas-engineer/nyxt/releases][tagged release]], or clone as a git repository:
+
+#+begin_src sh
+mkdir -p ~/common-lisp
+git clone --recurse-submodules https://github.com/atlas-engineer/nyxt ~/common-lisp/nyxt
+#+end_src
+
+** Common Lisp
+
+Nyxt is written in Common Lisp.  Currently, we only target one of its
+implementations - [[http://www.sbcl.org/][SBCL]].
+
+Nyxt also depends on Common Lisp libraries.  These are bundled in the tarball
+mentioned above or fetched as git submodules (under =./_build=).
+
+Note for advanced users: the single source of truth for CL libraries is dictated
+by the git submodules.  Any Nyxt build that deviates from it is considered
+unofficial.  See environment variable =NYXT_SUBMODULES= defined in the makefile
+to override the default behavior.
+
+** Web renderers
+
+Nyxt is designed to be web engine agnostic so its dependencies vary.
+
+*** WebKitGTK
+
+Using the latest [[https://webkitgtk.org][WebKitGTK]] version is advised for security concerns.  The oldest
+version that supports all features is 2.36.
+
+The packages that provide the following shared objects are required:
+
+- libwebkit2gtk-4.1.so
+- libgobject-2.0.so
+- libgirepository-1.0.so
+- libglib-2.0.so
+- libgthread-2.0.so
+- libgio-2.0.so
+- libcairo.so
+- libpango-1.0.so
+- libpangocairo-1.0.so
+- libgdk_pixbuf-2.0.so
+- libgdk-3.so
+- libgtk-3.so
+
+To improve media stream it is recommended to install =gst-libav= and the
+following plugins:
+
+- gst-plugins-bad
+- gst-plugins-base
+- gst-plugins-good
+- gst-plugins-ugly
+
+*** Electron
+
+Experimental support for [[https://www.electronjs.org/][Electron]].  Further documentation soon.
+
+** Other
+
+The packages that provide the following shared objects are required:
+
+- libssl.so.3
+- libcrypto.so.3
+- libfixposix.so.3
+- libsqlite3.so
+
+Additionally, the following packages:
+
+- xclip :: when using X system;
+- wl-clipboard :: when using Wayland;
+- enchant :: spellchecking (optional).
+
+* Development environment
+
+Lisp favors incremental program development meaning that you make some changes
+and compile them.  In other words, there's no need to compile the whole codebase
+or even restart the program.
+
+The typical Common Lisp IDE is [[https://github.com/slime/slime][SLIME]] (or its fork [[https://github.com/joaotavora/sly][SLY]]), which requires being
+comfortable with Emacs.  Add the snippet below to Emacs' init file.
+
+#+begin_src emacs-lisp
+(setq slime-lisp-implementations
+      '((nyxt ("sbcl" "--dynamic-space-size 3072")
+              :env ("CL_SOURCE_REGISTRY=~/common-lisp//:~/common-lisp/nyxt/_build//"))))
+#+end_src
+
+Start the REPL by issuing =M-- M-x sly RET nyxt RET= and evaluate:
+
+#+begin_src lisp
+(asdf:load-system :nyxt/gi-gtk)
+(nyxt:start)
+#+end_src
+
+Note that:
+
+- [[https://asdf.common-lisp.dev/asdf/Configuring-ASDF-to-find-your-systems.html][ASDF must be configured to find the required systems]];
+- =cffi= must be configured to find the required shared objects by setting env
+  var =LD_LIBRARY_PATH= or =cffi:*foreign-library-directories*=.
+
+** Tests
+
+It is recommended to restart the Lisp image before and after running the tests
+since some of them are stateful:
+
+#+begin_src lisp
+(asdf:test-system :nyxt/gi-gtk)
+#+end_src
+
+** Functional package managers
+
+If you're a user of the Guix or Nix package managers, see the sections below.
+
+*** Guix
+
+See [[file:~/common-lisp/nyxt/guix.scm][guix.scm]].
+
+#+begin_src emacs-lisp
+(setq slime-lisp-implementations
+      '((nyxt-guix
+         ("guix" "shell" "-D" "-f" "guix.scm"
+          "--" "bash" "-c" "env LD_LIBRARY_PATH=\"$GUIX_ENVIRONMENT/lib\" sbcl")
+         :env ("CL_SOURCE_REGISTRY=~/common-lisp//:~/common-lisp/nyxt/_build//")
+         :directory "~/common-lisp/nyxt/")))
+#+end_src
+
+*** Nix
+
+See [[file:~/common-lisp/nyxt/shell.nix][shell.nix]].
+
+#+begin_src emacs-lisp
+(setq slime-lisp-implementations
+      '((nyxt-nix
+         ("nix-shell" "shell.nix" "--run" "sbcl --dynamic-space-size 3072")
+         :env ("CL_SOURCE_REGISTRY=~/common-lisp//:~/common-lisp/nyxt/_build//")
+         :directory "~/common-lisp/nyxt/")))
+#+end_src
+
+* Installation
+
+Nyxt uses the =Make= build system.  Run =make= to display the documentation or
+see the [[../makefile][Makefile]] for more details.
+
+* Interact with a running Nyxt binary
+
+At Nyxt's runtime, it is possible to attach a REPL via SLIME (resp. SLY).
+
+1. From Nyxt, run the command =start-swank= (resp. =start-slynk=).  Note the
+   port number in the message buffer (by default, 4006).
+2. From Emacs, run =M-x slime-connect RET 127.0.0.1 RET 4006=
+   (resp. =sly-connect=).
+
+* Contributing
+
+Nyxt is a joint effort and we welcome contributors!  You can find tasks [[https://github.com/atlas-engineer/nyxt/issues?q=is%3Aissue+is%3Aopen+label%3Agood-first-issue][on our
+issue tracker]] to suit your interests and skills.  Please fork the project and
+open a pull request (PR) on GitHub to undergo the reviewing process.  Refer to
+the [[*Branch management][branch management section]] for more detailed information.
+
+Please resist the temptation of discussing changes without drafting its
+implementation.  Currently, we value pragmatism over creativity.
+
+** Help
+
+Feel free to contact us at any point if you need guidance.
+
+- To learn Common Lisp, see [[https://nyxt-browser.com/learn-lisp]];
+- [[https://github.com/atlas-engineer/nyxt/issues][Open up an issue on GitHub]];
+- Find Nyxt on Libera IRC: [[https://kiwiirc.com/nextclient/irc.libera.chat/nyxt][#nyxt]];
+- [[https://discord.com/channels/1178074327309099069/1178074327309099072][Nyxt's discord]];
+- [[https://discourse.atlas.engineer/][Nyxt's discourse]].
+
+** Commit style
+
+Ensure to isolate commits containing whitespace changes (including indentation)
+or code movements as to avoid noise in the diffs.
+
+Regarding commit messages, we follow the convention of prefixing the title with
+the basename when there's a single modified file.  For instance, for changes in
+=source/mode/blocker.lisp= the commit message would look as per below:
+
+#+begin_example
+mode/blocker: Short description of the change.
+
+Further explanation.
+#+end_example
+
+** Branch management
+
+Nyxt uses the following branches:
+
+- =master= for development;
+- =<feature-branches>= for working on particular features;
+- =<integer>-series= to backport commits corresponding to specific major
+  versions.
+
+Branch off from the target branch and rebase onto it right before merging as to
+avoid merge conflicts.
+
+A commit is said to be atomic when it builds and starts Nyxt successfully.  At
+times, for the sake of readability, it is wise to break the changes down to
+smaller non-atomic commits.  In that case, a merge commit is required (use merge
+option =no-ff=).  This guarantees that running =git bisect= with option
+=--first-parent= only picks atomic commits, which streamlines the process.
+
+Those with commit access may push trivial changes directly to the target branch.
+
+** Programming conventions
+
+The usual style guides by [[https://www.cs.umd.edu/~nau/cmsc421/norvig-lisp-style.pdf][Norvig & Pitman's Tutorial on Good Lisp Programming
+Style]] and [[https://google.github.io/styleguide/lispguide.xml][Google Common Lisp Style Guide]] are advised.
+
+For symbol naming conventions, see https://www.cliki.net/Naming+conventions.
+
+Some of our conventions include:
+
+- Prefer =first= and =rest= over =car= and =cdr=, respectively.
+- Use =define-class= instead of =defclass=.
+- Use =nyxt:define-package= for Nyxt-related pacakges.  Notice that it features
+  default imports (e.g. =export-always=) and package nicknames (e.g. =alex=,
+  =sera=, etc.).  Prefer =uiop:define-package= for general purpose packages.
+- Export using =export-always= next to the symbol definition.  This helps
+  prevent exports to go out-of-sync, or catch typos.  Unlike =export=,
+  =export-always= saves you from surprises upon recompilation.
+- When sensible, declaim the function types using =->=.  Note that there is then
+  no need to mention the type of the arguments and the return value in the
+  docstring.
+- Use the =maybe= and =maybe*= types instead of =(or null ...)= and =(or null
+  (array * (0)) ...)=, respectively.
+- Use the =list-of= type for typed lists.
+- Use =funcall*= to not error when function does not exist.
+- Prefer classes over structs.
+- Classes should be usable with just a =make-instance=.
+- Slots classes should be formatted in the following way:
+#+begin_src lisp
+(slot-name
+ slot-value
+ ...
+ :documentation "Foo.")
+#+end_src
+
+When =slot-value= is the only parameter specified then:
+#+begin_src lisp
+(slot-name slot-value)
+#+end_src
+- =customize-instance= is reserved for end users.  Use
+  =initialize-instance :after= or =slot-unbound= to initialize the slots.
+  Set up the rest of the class in =customize-instance :after=.  Bear in mind
+  that anything in this last method won't be customizable for the end user.
+- Almost all files should be handled via the =nfiles= library.
+- =(setf SLOT-WRITER) :after= is reserved for "watchers",
+  i.e. handlers that are run whenever the slot is set.  The =:around= method is
+  not used by watchers, and thus the watcher may be overridden.
+- We use the =%foo%= naming convention for special local variables.
+- We suffix predicates with =-p=.  Unlike the usual convention, we always use a
+  dash (i.e. =foo-p= over =foop=).
+- Prefer the term =url= over =uri=.
+- URLs should be of type =quri:uri=.  If you need to manipulate a URL string, call
+  it =url-string=. In case the value contains a URL, but is not =quri:url=, use
+  =url-designator= and its =url= method to normalize into =quri:uri=.
+- Paths should be of type =cl:pathname=.
+  Use =uiop:native-namestring= to "send" to OS-facing functions,
+  =uiop:ensure-pathname= to "receive" from OS-facing functions or to "trunamize".
+- Prefer =handler-bind= over =handler-case=: when running from the REPL, this
+  triggers the debugger with a full stacktrace; when running the Nyxt binary,
+  all conditions are caught anyway.
+- Do not handle the =T= condition, this may break everything.  Handle =error=,
+  =serious-condition=, or exceptionally =condition= (for instance if you do not
+  control the called code, and some libraries subclass =condition= instead of
+  =error=).
+- Dummy variables are called =_=.
+- Prefer American spelling.
+- Construct =define-command= requires a short one-line docstring without newlines.
+
+# - Conversion functions =FROM->TO= or =->TO= for generic functions.  The
+#   only one that comes to mind is =url= which does not follow this convention...
+
+# - Blocking function should be prefixed with =wait-on-=.
+
+# Local Variables:
+# eval: (add-hook 'before-save-hook
+#                 (lambda nil (if (fboundp 'org-make-toc)
+#                                 (org-make-toc)
+#                                 (message-box "Please install org-make-toc.")))
+#                 nil
+#                 t)
+# End:

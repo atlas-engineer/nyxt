@@ -23,7 +23,7 @@
   <url type="donation">https://nyxt-browser.com/purchase</url>
   <!-- <url type="translate"></url> -->
   <url type="contact">https://atlas.engineer/contact</url>
-  <url type="contribute">https://github.com/atlas-engineer/nyxt/blob/master/documents/README.org</url>
+  <url type="contribute">https://github.com/atlas-engineer/nyxt/blob/master/developer-manual.org</url>
   <launchable type="desktop-id">nyxt.desktop</launchable>
   <provides>
     <binary>nyxt</binary>

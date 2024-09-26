@@ -17,7 +17,7 @@
 ;;
 ;;   guix shell -D -f guix.scm -- bash -c 'env LD_LIBRARY_PATH="$GUIX_ENVIRONMENT/lib" sbcl'
 ;;
-;; See documents/README.org on how to setup the development environment.
+;; See developer-manual.org on how to setup the development environment.
 ;;
 ;;; Code:
 
