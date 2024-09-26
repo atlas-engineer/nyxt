@@ -10,7 +10,7 @@ instabilities or feature wishes.
 
 -----
 
-#+html: <div align="center"> <a href="https://nyxt-browser.com/">Homepage</a> | <a href="https://nyxt-browser.com/purchase">Download</a> | <a href="https://nyxt-browser.com/articles">Articles</a> | <a href="https://github.com/atlas-engineer/nyxt/blob/master/documents/README.org">Developer's Manual</a> | <a href="https://discourse.atlas.engineer/">Forum</a> | <a href="https://kiwiirc.com/nextclient/irc.libera.chat/nyxt">Chat</a> </div>
+#+html: <div align="center"> <a href="https://nyxt-browser.com/">Homepage</a> | <a href="https://nyxt-browser.com/purchase">Download</a> | <a href="https://nyxt-browser.com/articles">Articles</a> | <a href="https://github.com/atlas-engineer/nyxt/blob/master/developer-manual.org">Developer's Manual</a> | <a href="https://discourse.atlas.engineer/">Forum</a> | <a href="https://kiwiirc.com/nextclient/irc.libera.chat/nyxt">Chat</a> </div>
 
 -----
 
@@ -78,4 +78,4 @@ maintainers of those packaging efforts.
 
 * Contributing
 
-Please refer to the developer's documentation at [[file:documents/README.org][documents/README.org]].
+Please refer to the [[file:developer-manual.org][developer's documentation]].
