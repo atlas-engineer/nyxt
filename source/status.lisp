@@ -182,7 +182,7 @@
   (:method ((status status-buffer) (mode mode))
     (if (glyph-mode-presentation-p status)
         (glyph mode)
-        (princ-to-string mode)))
+        (str:downcase (name mode))))
   (:documentation "Return a MODE `mode' string description for the STATUS `status-buffer'.
 Upon returning NIL, the mode is not displayed."))
 
