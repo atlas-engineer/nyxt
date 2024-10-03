@@ -301,7 +301,7 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
 (defmethod show-prompt-buffer ((prompt-buffer prompt-buffer))
   (with-slots (window) prompt-buffer
     (push prompt-buffer (active-prompt-buffers window))
-    (calispel:! (prompt-buffer-channel window) prompt-buffer))
+    (calispel:! (prompt-buffer-ready-channel window) prompt-buffer))
   (prompt-render-skeleton prompt-buffer)
   (prompt-render-focus prompt-buffer)
   (prompt-render-suggestions prompt-buffer)
@@ -315,7 +315,7 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
   (with-slots (window) prompt-buffer
     (alex:deletef (active-prompt-buffers window) prompt-buffer)
     ;; The channel values are irrelevant, so is the element order:
-    (calispel:? (prompt-buffer-channel window) 0)
+    (calispel:? (prompt-buffer-ready-channel window) 0)
     (ffi-buffer-delete prompt-buffer)
     (if (active-prompt-buffers window)
         (show-prompt-buffer (first (active-prompt-buffers window)))
