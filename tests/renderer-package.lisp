@@ -16,7 +16,7 @@
 (defmacro with-prompt-buffer-test (command &body body)
   (alexandria:with-gensyms (thread)
     `(let ((,thread (bt:make-thread (lambda () ,command))))
-       (calispel:? (prompt-buffer-channel (current-window)))
+       (calispel:? (prompt-buffer-ready-channel (current-window)))
        ,@body
        (run-action-on-return)
        (bt:join-thread ,thread))))

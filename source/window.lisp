@@ -28,8 +28,8 @@ Not to be confused with `current-buffer' or `focused-buffer'.")
     '()
     :export nil
     :documentation "The stack of current prompt buffers.")
-   (prompt-buffer-channel
-    (make-channel)                 ; TODO: Rename `prompt-buffer-ready-channel'?
+   (prompt-buffer-ready-channel
+    (make-channel)
     :export nil
     :documentation "A channel one may listen to if waiting
 for the prompt buffer to be available.
