@@ -655,9 +655,7 @@ A command is a special kind of function that can be called with
              (str:concat
               "ASDF version: " (getf +asdf-build-information+ :version) +newline+
               "ASDF registries: " (->string asdf:*default-source-registries*) +newline+
-              "Critical dependencies: " (->string (getf +asdf-build-information+ :critical-dependencies)) +newline+))
-           (guix-information ()       ; TODO: Test in Live Nyxt.
-             (getf +guix-build-information+ :version)))
+              "Critical dependencies: " (->string (getf +asdf-build-information+ :critical-dependencies)) +newline+)))
     (str:concat
      "Nyxt version: " +version+ +newline+
      "Renderer: " (name *renderer*) +newline+
@@ -670,10 +668,7 @@ A command is a special kind of function that can be called with
      "Features: " (prin1-to-string *features*) +newline+
      +newline+
 
-     (asdf-information) +newline+
-
-     (when (sera:resolve-executable "guix")
-       (str:concat "Guix version: " (guix-information) +newline+)))))
+     (asdf-information) +newline+)))
 
 (defun dump-command-descriptions (file)
   "Dump the command descriptions as an HTML file."

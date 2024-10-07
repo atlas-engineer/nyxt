@@ -83,16 +83,6 @@ Example:
   "Build-time ASDF information.
 Don't set this, it would lose its meaning.")
 
-(defvar +guix-build-information+
-  (when (sera:resolve-executable "guix")
-    `(:version
-      ;; `guix describe' is not reliable within `guix shell'.
-      ,(fourth (sera:tokens
-                (first (sera:lines
-                        (uiop:run-program '("guix" "--version") :output :string)))))))
-  "Build-time Guix information.
-Don't set this, it would lose its meaning.")
-
 (export-always '+version+)
 (alex:define-constant +version+
     (or (uiop:getenv "NYXT_VERSION")
