@@ -129,7 +129,7 @@ Can you reproduce this issue with Epiphany / GNOME Web (https://wiki.gnome.org/A
 
 ```
 - Desktop environment / Window manager name+version:
-- How you installed Nyxt (Guix pack, package manager, build from source):
+- How you installed Nyxt (Flatpak, Guix, package manager, build from source):
 - Information from `show-system-information`:
 ```
 ~a
