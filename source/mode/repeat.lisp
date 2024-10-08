@@ -128,7 +128,7 @@ repeating it like a regular `repeat-mode' does."
     (&key (times (or
                   (ignore-errors
                    (parse-integer
-                    (keymaps:key-value (nyxt::last-key (current-window)))))
+                    (keymaps:key-value (nyxt::last-key (current-buffer)))))
                   (ignore-errors
                    (parse-integer
                     (prompt1 :prompt "Repeat for X times"
