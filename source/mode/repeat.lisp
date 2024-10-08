@@ -122,9 +122,20 @@ repeating it like a regular `repeat-mode' does."
                            :function (lambda (mode)
                                        (declare (ignore mode))
                                        (nyxt::run command)))
-          (setf (command-dispatcher (current-window)) #'dispatch-command
-                (input-skip-dispatcher (current-window)) #'dispatch-input-skip
-                *repeat-times-stack* 0)))))
+          (let ((command-name (name command))
+                (current-buffer (current-buffer)))
+            (echo "Press a key sequence for command to repeat ~R times: ~a (~a)"
+                  *repeat-times-stack*
+                  (first (keymaps:pretty-binding-keys
+                          command-name
+                          (current-keymaps current-buffer)
+                          :print-style (keymaps:name (keyscheme current-buffer))))
+                  (string-downcase command-name)))
+          (setf (command-dispatcher *browser*) #'dispatch-command
+                *repeat-times-stack* 0)
+          ;; Benign since each command runs in its own thread (see `nyxt::run').
+          (sleep 2)
+          (echo-dismiss)))))
 
 (defun skip-repeat-dispatch (keyspec)
   "A stub copy of `dispatch-input-skip' customized for `repeat-mode'."
