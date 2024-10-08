@@ -8,6 +8,11 @@
   "Hook to modify keymaps.
 Get a list of `nkeymaps:keymap's and `buffer' and return a new list and buffer.")
 (export-always '(hook-keymaps-buffer))
+(hooks:define-hook-type command (function ((or sym:function-symbol function))
+                                          boolean)
+  "Hook to dispatch command.
+Get a command and return a boolean indicating whether the command is handled.")
+(export-always '(hook-command))
 (hooks:define-hook-type url->url (function (quri:uri) quri:uri)
   "Hook getting a `quri:uri' and returning same/another one. ")
 
@@ -455,6 +460,15 @@ To access all modes, including disabled ones, use `slot-value'."
                    :combination #'hooks:combine-composed-hook)
     :type hook-keymaps-buffer
     :documentation "Hook run as a return value of `current-keymaps'.")
+   (dispatch-command-hook
+    (make-instance 'hook-command
+                   :combination #'hooks:combine-hook-until-success)
+    :type (or sym:function-symbol function)
+    :documentation "Hook to process the command processed in `dispatch-input-event'.
+Takes the function/command as the only argument.  Each handler should return a
+boolean indicating whether it dispatched the command successfully.  Handlers are
+tried in successsion until the first handler which returns T.  If no handlers in
+this hook dispatched the command, `dispatch-command' is used as fallback.")
    (conservative-word-move
     nil
     :documentation "If non-nil, the cursor moves to the end
