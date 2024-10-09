@@ -34,6 +34,7 @@
              (gnu packages sqlite)
              (gnu packages tls)
              (gnu packages webkit)
+             (gnu packages xdisorg)
              ((guix licenses) #:prefix license:))
 
 (package
@@ -100,6 +101,15 @@
            (substitute* "_build/cl-cffi-gtk/gdk/gdk.package.lisp"
              (("libgtk-[0-9]\\.so" all)
               (search-input-file inputs (string-append "/lib/" all))))))
+       (add-after 'unpack 'fix-clipboard-paths
+         (lambda* (#:key inputs #:allow-other-keys)
+           (substitute* "_build/trivial-clipboard/src/text.lisp"
+             (("\"xsel\"")
+              (string-append "\"" (assoc-ref inputs "xsel") "/bin/xsel\""))
+             (("\"wl-copy\"")
+              (string-append "\"" (assoc-ref inputs "wl-clipboard") "/bin/wl-copy\""))
+             (("\"wl-paste\"")
+              (string-append "\"" (assoc-ref inputs "wl-clipboard") "/bin/wl-paste\"")))))
        (add-before 'build 'fix-common-lisp-cache-folder
          (lambda _ (setenv "HOME" "/tmp")))
        (add-before 'check 'configure-tests
@@ -132,7 +142,9 @@
                 pango
                 pkg-config
                 sqlite
-                webkitgtk-for-gtk3))
+                webkitgtk-for-gtk3
+                wl-clipboard
+                xsel))
   (synopsis "Extensible web-browser in Common Lisp")
   (home-page "https://nyxt-browser.com/")
   (description "Nyxt is a keyboard-oriented, extensible web-browser designed
