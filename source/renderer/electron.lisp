@@ -212,7 +212,7 @@ Note that by changing the default value, modifier keys can be remapped."))
     (case height
       (0
        (ffi-buffer-delete prompt-buffer)
-       (when (current-window) (electron:focus (nyxt::active-buffer window))))
+       (when (current-window) (electron:focus (active-buffer window))))
       (t
        (electron:on window "resize"
          (format nil "~a.setBounds({x:      0,

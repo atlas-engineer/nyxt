@@ -434,7 +434,7 @@ response.  The BODY is wrapped with `with-protect'."
 (define-ffi-method on-signal-destroy ((window gtk-window))
   ;; Then remove buffer from window container to avoid corruption of buffer.
   (gtk:gtk-container-remove (main-buffer-container window)
-                            (gtk-object (nyxt::active-buffer window)))
+                            (gtk-object (active-buffer window)))
   (window-delete window))
 
 (define-ffi-method ffi-window-delete ((window gtk-window))
@@ -992,7 +992,7 @@ See `finalize-buffer'."
 
 (define-ffi-method ffi-window-set-buffer ((window gtk-window) (buffer gtk-buffer) &key (focus t))
   "Set BROWSER's WINDOW buffer to BUFFER."
-  (when-let ((buried-buffer (gtk-object (nyxt::active-buffer window))))
+  (when-let ((buried-buffer (gtk-object (active-buffer window))))
     ;; Just a precaution for the buffer to not be destroyed until we say so.
     (g:g-object-ref (g:pointer buried-buffer))
     (gtk:gtk-container-remove (main-buffer-container window) buried-buffer))
@@ -1011,7 +1011,7 @@ the `active-buffer'."
   (setf (gtk:gtk-widget-size-request (prompt-buffer-container (window buffer)))
         (list -1 height))
   (if (eql 0 height)
-      (gtk:gtk-widget-grab-focus (gtk-object (nyxt::active-buffer (window buffer))))
+      (gtk:gtk-widget-grab-focus (gtk-object (active-buffer (window buffer))))
       (ffi-focus-prompt-buffer buffer)))
 
 (define-ffi-method ffi-focus-prompt-buffer ((prompt-buffer prompt-buffer))

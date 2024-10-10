@@ -109,7 +109,7 @@ The `:around' method ensures that `last-active-window' is set."))
     buffer)
   (:method :after ((window window) (buffer buffer) &key focus &allow-other-keys)
     (declare (ignore focus))
-    (setf (nyxt::active-buffer window) buffer))
+    (setf (active-buffer window) buffer))
   (:documentation "Return BUFFER and display it in WINDOW as a side effect.
 Run `window-set-buffer-hook' over WINDOW and BUFFER before proceeding."))
 

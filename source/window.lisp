@@ -21,7 +21,6 @@ Should be redefined by the renderer."))
    (active-buffer
     (make-instance 'buffer)
     :reader active-buffer
-    :export nil
     :documentation "The current buffer of the window.
 Not to be confused with `current-buffer' or `focused-buffer'.")
    (active-prompt-buffers
