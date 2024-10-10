@@ -20,7 +20,6 @@ Should be redefined by the renderer."))
     :documentation "Unique identifier for a window.")
    (active-buffer
     (make-instance 'buffer)
-    :reader active-buffer
     :documentation "The current buffer of the window.
 Not to be confused with `current-buffer' or `focused-buffer'.")
    (active-prompt-buffers
@@ -88,9 +87,6 @@ The handlers take the window as argument."))
 (defmethod titler ((window window))
   "Return the title of WINDOW."
   (str:concat (title (active-buffer window)) " － Nyxt"))
-
-(defmethod (setf active-buffer) (buffer (window window))
-  (setf (slot-value window 'active-buffer) buffer))
 
 (defun print-status (&optional (window (current-window)))
   (with-slots (status-buffer) window
