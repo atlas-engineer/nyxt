@@ -305,7 +305,6 @@ Note that by changing the default value, modifier keys can be remapped."))
 (defmethod initialize-instance :after ((window electron-window) &key)
   (let ((message-buffer (message-buffer window))
         (status-buffer (status-buffer window)))
-    (setf (slot-value window 'nyxt::active-buffer) (make-instance 'input-buffer))
     (electron:on window "resize"
       (format nil "~a.setBounds({x:      0,
                                  y:      ~a.getBounds().height - ~a,
