@@ -306,6 +306,7 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
   (prompt-render-focus prompt-buffer)
   (prompt-render-suggestions prompt-buffer)
   (setf (height prompt-buffer) (slot-value prompt-buffer 'height))
+  (ffi-focus-prompt-buffer prompt-buffer)
   (run-thread "Show prompt watcher"
     (update-prompt-input prompt-buffer)
     (hooks:run-hook (prompt-buffer-ready-hook *browser*) prompt-buffer)))
@@ -319,7 +320,7 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
     (ffi-buffer-delete prompt-buffer)
     (if (active-prompt-buffers window)
         (show-prompt-buffer (first (active-prompt-buffers window)))
-        (setf (height prompt-buffer) 0))))
+        (ffi-window-set-buffer window (active-buffer window) :focus t))))
 
 (defun suggestion-and-mark-count (prompt-buffer suggestions marks &key enable-marks-p pad-p)
   (alex:maxf (max-suggestions prompt-buffer)
