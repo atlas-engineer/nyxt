@@ -73,8 +73,6 @@
    (horizontal-box-layout)
    (main-buffer-container)
    (prompt-buffer-container)
-   (prompt-buffer-view
-    :documentation "Shared web view between all prompt buffers of this window.")
    (status-container)
    (message-container)
    (key-string-buffer))
@@ -342,7 +340,7 @@ response.  The BODY is wrapped with `with-protect'."
    (lambda ()
      (with-slots (gtk-object root-box-layout horizontal-box-layout
                   main-buffer-container
-                  prompt-buffer-container prompt-buffer-view
+                  prompt-buffer-container
                   status-buffer status-container
                   message-buffer message-container
                   key-string-buffer)
@@ -397,13 +395,9 @@ response.  The BODY is wrapped with `with-protect'."
                                  :expand t)
          (setf (gtk:gtk-widget-size-request status-container)
                (list -1 (height status-buffer)))
-         (setf prompt-buffer-view (make-instance 'webkit:webkit-web-view))
          (gtk:gtk-box-pack-end root-box-layout
                                prompt-buffer-container
                                :expand nil)
-         (gtk:gtk-box-pack-start prompt-buffer-container
-                                 prompt-buffer-view
-                                 :expand t)
          (setf (gtk:gtk-widget-size-request prompt-buffer-container)
                (list -1 0))
          (gtk:gtk-container-add gtk-object root-box-layout)
@@ -543,9 +537,6 @@ Return nil when key must be discarded, e.g. for modifiers."
             (on-signal-key-press sender (key)))
           (dispatch-input-event event sender))
         t)))
-
-(defmethod gtk-object ((prompt-buffer prompt-buffer))
-  (prompt-buffer-view (window prompt-buffer)))
 
 (define-ffi-method on-signal-button-press-event ((sender gtk-buffer) event)
   (let ((key-string (format nil "button~s" (gdk:gdk-event-button-button event)))
@@ -1005,18 +996,20 @@ See `finalize-buffer'."
 (define-ffi-method ffi-height ((buffer prompt-buffer))
   (nth-value 1 (gtk:gtk-widget-size-request (prompt-buffer-container (window buffer)))))
 (define-ffi-method (setf ffi-height) ((height integer) (buffer prompt-buffer))
-  "Sets the prompt height.
-As a special case, setting height to 0 means hiding prompt buffer and focusing
-the `active-buffer'."
-  (setf (gtk:gtk-widget-size-request (prompt-buffer-container (window buffer)))
-        (list -1 height))
-  (if (eql 0 height)
-      (gtk:gtk-widget-grab-focus (gtk-object (active-buffer (window buffer))))
-      (ffi-focus-prompt-buffer buffer)))
+  (with-slots (window gtk-object) buffer
+    (with-slots (prompt-buffer-container active-buffer) window
+      (setf (gtk:gtk-widget-size-request (prompt-buffer-container window))
+            (list -1 height))
+      (case height
+        (0 (gtk:gtk-widget-grab-focus (gtk-object (active-buffer window))))
+        (t
+         (gtk:gtk-box-pack-start (prompt-buffer-container window) gtk-object :expand t)
+         (setf (gtk:gtk-widget-visible gtk-object) t)
+         (ffi-focus-prompt-buffer buffer))))))
 
 (define-ffi-method ffi-focus-prompt-buffer ((prompt-buffer prompt-buffer))
   "Focus PROMPT-BUFFER in WINDOW."
-  (gtk:gtk-widget-grab-focus (prompt-buffer-view (window prompt-buffer)))
+  (gtk:gtk-widget-grab-focus (gtk-object prompt-buffer))
   prompt-buffer)
 
 (define-ffi-method ffi-height ((buffer status-buffer))
@@ -1201,19 +1194,11 @@ the `active-buffer'."
       (echo "[~a] ~a: ~a" (webkit:webkit-web-view-uri web-view) title body)
       t)))
 
-(defun buffer-destroy (buffer)
-  (mapc (lambda (handler-id)
-          (gobject:g-signal-handler-disconnect (gtk-object buffer) handler-id))
-        (handler-ids buffer))
-  (nyxt::buffer-hide buffer)
-  (gtk:gtk-widget-destroy (gtk-object buffer))
-  (setf (gtk-object buffer) nil))
-
 (define-ffi-method ffi-buffer-make ((buffer gtk-buffer))
   "Initialize BUFFER's GTK web view."
-  (unless (gtk-object buffer) ; Buffer may already have a view, e.g. the prompt-buffer.
-    (setf (gtk-object buffer)
-          (make-instance 'webkit:webkit-web-view :web-context (make-context))))
+  (setf (gtk-object buffer)
+        (make-instance 'webkit:webkit-web-view
+                       :web-context (unless (prompt-buffer-p buffer) (make-context))))
   (when (document-buffer-p buffer)
     (setf (ffi-buffer-smooth-scrolling-enabled-p buffer) (smooth-scrolling buffer)))
   ;; TODO: Maybe define an FFI method?
@@ -1300,7 +1285,7 @@ the `active-buffer'."
     (buffer-delete buffer))
   (connect-signal buffer "close" nil (web-view)
     (declare (ignore web-view))
-    (buffer-destroy buffer))
+    (log:debug "Closed ~a" buffer))
   (connect-signal buffer "load-failed" nil (web-view load-event failing-url error)
     (declare (ignore load-event web-view))
     ;; TODO: WebKitGTK sometimes (when?) triggers "load-failed" when loading a
@@ -1418,14 +1403,13 @@ the `active-buffer'."
   buffer)
 
 (define-ffi-method ffi-buffer-delete ((buffer gtk-buffer))
-  (cond ((not (slot-value buffer 'gtk-object))
-         (mapc (lambda (handler-id)
-                 (gobject:g-signal-handler-disconnect (gtk-object buffer) handler-id))
-               (handler-ids buffer))
-         (nyxt::buffer-hide buffer))
-        ((webkit:webkit-web-view-is-web-process-responsive (gtk-object buffer))
-         (webkit:webkit-web-view-try-close (gtk-object buffer)))
-        (t (buffer-destroy buffer))))
+  (webkit:webkit-web-view-try-close (gtk-object buffer))
+  (mapc (lambda (handler-id)
+          (gobject:g-signal-handler-disconnect (gtk-object buffer) handler-id))
+        (handler-ids buffer))
+  (nyxt::buffer-hide buffer)
+  (gtk:gtk-widget-destroy (gtk-object buffer))
+  (setf (gtk-object buffer) nil))
 
 (define-ffi-method ffi-buffer-load ((buffer gtk-buffer) url)
   "Load URL in BUFFER.
