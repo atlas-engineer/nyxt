@@ -944,8 +944,8 @@ The notion of first element is dictated by `containers:first-item'."
   (files:with-file-content (history (history-file buffer))
     (when history
       (and-let* ((owner (htree:owner history (id buffer)))
-                      (current (htree:current owner))
-                      (data (htree:data current)))
+                 (current (htree:current owner))
+                 (data (htree:data current)))
         (setf (nyxt::scroll-position data) (nyxt:document-scroll-position buffer))
         (htree:delete-owner history (id buffer)))))
   (call-next-method))
