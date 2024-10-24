@@ -792,11 +792,6 @@ Return the created buffer."
 (defun dead-buffer-p (buffer)           ; TODO: Use this wherever needed.
   (not (buffers-get (id buffer))))
 
-(-> resurrect-buffer (buffer))
-(defun resurrect-buffer (dead-buffer)
-  ;; (setf (id dead-buffer) (new-id))      ; TODO: Shall we reset the ID?
-  (ffi-buffer-make dead-buffer))
-
 (defmethod document-model ((buffer buffer))
   "A wraparound accessor to BUFFER's `document-model'.
 

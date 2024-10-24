@@ -132,7 +132,7 @@ Note that by changing the default value, modifier keys can be remapped."))
                                           (on-signal-key-press-event buffer event)))
   (finalize-buffer buffer :extra-modes extra-modes :no-hook-p no-hook-p))
 
-;; TODO Needed for resurrect-buffer.
+;; TODO Needed for reopen-dead-buffer.
 ;; (defmethod ffi-buffer-make ((buffer electron-buffer))
 ;;   (make-instance 'electron-buffer))
 

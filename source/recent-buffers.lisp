@@ -5,8 +5,7 @@
 
 (defun reopen-dead-buffer (buffer)
   (cond ((dead-buffer-p buffer)
-         ;; For renderer side effects.
-         (resurrect-buffer buffer)
+         (ffi-buffer-make buffer)
          ;; Re-positions buffer in `recent-buffers'.
          (add-to-recent-buffers buffer)
          ;; Ensure buffer is seen by the `buffers' hash table.
