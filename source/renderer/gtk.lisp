@@ -58,12 +58,6 @@
 (defmethod browser-schemes append ((browser gtk-browser))
   '("webkit" "webkit-pdfjs-viewer"))
 
-;; This method does not need a renderer, so no need to use `define-ffi-method'
-;; which is prone to race conditions.
-(defmethod ffi-display-url ((browser gtk-browser) text)
-  (declare (ignore browser))
-  (webkit:webkit-uri-for-display text))
-
 (define-class gtk-window ()
   ((gtk-object
     :export t)                          ; TODO: Unexport?
@@ -958,7 +952,7 @@ See `finalize-buffer'."
                     (webkit:webkit-hit-test-result-image-uri hit-test-result)
                     (webkit:webkit-hit-test-result-media-uri hit-test-result))))
     (progn
-      (nyxt::print-message (str:concat "→ " (ffi-display-url *browser* url)))
+      (nyxt::print-message (str:concat "→ " (render-url url)))
       (setf (url-at-point buffer) (quri:uri url)))
     (progn
       (nyxt::print-message "")

@@ -101,10 +101,6 @@
   (declare (ignore browser))
   (electron:terminate))
 
-;; Find analog of
-;; https://webkitgtk.org/reference/webkit2gtk/stable/func.uri_for_display.html
-;; (defmethod ffi-display-url ((browser electron-browser) text))
-
 (define-class electron-buffer (electron:browser-view)
   ((electron:options
     ""

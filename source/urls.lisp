@@ -21,8 +21,11 @@ Means that `url' can be applied to it to get `quri:uri'."
 
 (export-always 'render-url)
 (defun render-url (url)
-  "See `ffi-display-url'."
-  (ffi-display-url *browser* (if (stringp url) url (quri:render-uri url))))
+  "Return URL as a human-readable string.
+
+Provide protection against IDN homograph attacks, so in some cases the host part
+may be in Punycode."
+  (quri:render-uri (quri:uri url)))
 
 (export-always 'fetch-url-title)
 (defun fetch-url-title (url)
