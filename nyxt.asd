@@ -353,7 +353,6 @@
   :serial t
   :components ((:file "renderer-package")
                (:file "renderer-offline/set-url")
-               (:file "renderer-offline/execute-command-eval")
                (:file "renderer-offline/custom-schemes")
                (:file "renderer-offline/search-buffer")
                ;; See https://github.com/atlas-engineer/nyxt/issues/3172
