@@ -812,7 +812,8 @@ In case the page changed more than `document-model-delta-threshold', runs
         (slot-value buffer 'document-model)
         (let ((value (slot-value buffer 'document-model))
               (element-count (%count-dom-elements)))
-          (if (and value element-count
+          (if (and value
+                   element-count
                    ;; Check whether the difference in element count is significant.
                    (< (abs (- (length (clss:select "*" value)) (truncate element-count)))
                       (document-model-delta-threshold buffer)))
