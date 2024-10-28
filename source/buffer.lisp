@@ -704,12 +704,9 @@ Example:
 (define-class web-buffer (context-buffer network-buffer modable-buffer document-buffer input-buffer)
   ((keywords
     nil
-    :accessor nil
-    :documentation "The keywords parsed from the current web buffer.")
-   (keywords-document-model
-    nil
-    :export nil
-    :documentation "The document model used to calculate the keywords."))
+    :reader nil
+    :writer t
+    :documentation "The keywords parsed from the current web buffer."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
@@ -787,6 +784,7 @@ Return the created buffer."
                           (nyxt/dom::get-document-body-json))))
     (let ((dom (nyxt/dom::named-json-parse body-json)))
       (unless (uiop:emptyp (plump:text dom))
+        (when (slot-boundp buffer 'keywords) (setf (keywords buffer) nil))
         (setf (document-model buffer) dom)))))
 
 (defun dead-buffer-p (buffer)           ; TODO: Use this wherever needed.
@@ -835,17 +833,13 @@ In case the page changed more than `document-model-delta-threshold', runs
             (quri:uri ""))))
 
 (defmethod keywords ((buffer web-buffer))
-  "Calculate the keywords for a given buffer."
-  (if (not (eq (document-model buffer)
-               (keywords-document-model buffer)))
-      (let ((contents (serapeum:string-join
-                       (map 'list (lambda (e) (plump:text e))
-                            (clss:select "p" (document-model buffer))) " ")))
-        (setf (keywords-document-model buffer)
-              (document-model buffer)
-              (slot-value buffer 'keywords)
-              (ignore-errors (analysis:extract-keywords contents))))
-      (slot-value buffer 'keywords)))
+  "Return the terms that best describe the contents of BUFFER."
+  (or (slot-value buffer 'keywords)
+      (when-let ((document (document-model buffer)))
+        (setf (slot-value buffer 'keywords)
+              (analysis:extract-keywords (str:join " "
+                                                   (map 'list #'plump:text
+                                                        (clss:select "p" document))))))))
 
 (define-class keyword-source (prompter:source)
   ((prompter:name "Keywords")
