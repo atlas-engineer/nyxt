@@ -76,6 +76,12 @@ The Nyxt team maintains the following distribution means:
 not accountable for their quality, so we kindly ask to report issues to the
 maintainers of those packaging efforts.
 
+#+BEGIN_HTML
+<a href="https://repology.org/project/nyxt/versions">
+    <img src="https://repology.org/badge/vertical-allrepos/nyxt.svg" alt="Packaging status">
+</a>
+#+END_HTML
+
 * Contributing
 
 Please refer to the [[file:developer-manual.org][developer's documentation]].
