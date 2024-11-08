@@ -101,7 +101,7 @@
   (declare (ignore browser))
   (electron:terminate))
 
-(define-class electron-buffer (electron:browser-view)
+(define-class electron-buffer (electron:view)
   ((electron:options
     ""
     :export t
@@ -133,7 +133,8 @@ Note that by changing the default value, modifier keys can be remapped."))
 ;;   (make-instance 'electron-buffer))
 
 (defmethod ffi-buffer-delete ((buffer electron-buffer))
-  (electron:kill buffer))
+  ;; TODO support multi-window setup.
+  (electron:remove-view (current-window) buffer))
 
 (defmethod ffi-buffer-url ((buffer electron-buffer))
   (quri:uri (electron:get-url buffer)))
@@ -190,14 +191,15 @@ Note that by changing the default value, modifier keys can be remapped."))
 ;; (defmethod ffi-buffer-cookie-policy ((buffer electron-buffer)))
 
 (defmethod ffi-height ((buffer electron-buffer))
-  (electron:get-bounds buffer 'height))
+  (alex:assoc-value (electron:get-bounds buffer) :height))
 
 (defmethod (setf ffi-height) (height (buffer electron-buffer))
-  (electron:set-bounds buffer
-                       (electron:get-bounds buffer 'x)
-                       (electron:get-bounds buffer 'y)
-                       (electron:get-bounds buffer 'width)
-                       height))
+  (let ((bounds (electron:get-bounds buffer)))
+    (electron:set-bounds buffer
+                         :x (alex:assoc-value bounds :x)
+                         :y (alex:assoc-value bounds :y)
+                         :width (alex:assoc-value bounds :width)
+                         :height height)))
 
 (defmethod ffi-focus-prompt-buffer ((prompt-buffer prompt-buffer))
   (electron:focus prompt-buffer)
@@ -205,49 +207,28 @@ Note that by changing the default value, modifier keys can be remapped."))
 
 (defmethod (setf ffi-height) ((height integer) (prompt-buffer prompt-buffer))
   (with-slots (window) prompt-buffer
-    (case height
-      (0
-       (when (current-window) (electron:focus (active-buffer window))))
-      (t
-       (electron:on window "resize"
-         (format nil "~a.setBounds({x:      0,
-                                    y:      ~a.getBounds().height -
-                                            (~a +
-                                             ~a.getBounds().height +
-                                             ~a.getBounds().height),
-                                    width:  ~a.getBounds().width,
-                                    height: ~a})"
-                 (electron:remote-symbol prompt-buffer)
-                 (electron:remote-symbol window)
-                 height
-                 (electron:remote-symbol (status-buffer window))
-                 (electron:remote-symbol (message-buffer window))
-                 (electron:remote-symbol window)
-                 height))
-       (add-buffer window
-                   prompt-buffer
-                   :x 0
-                   :y (- (electron:get-bounds window 'height)
-                         (+ height
-                            (height (status-buffer window))
-                            (height (message-buffer window))))
-                   :width (electron:get-bounds window 'width)
-                   :height height
-                   :horizontal-p t
-                   :width-p t)
-       (electron:load-url prompt-buffer "about:blank")
-       (electron:set-top-browser-view window prompt-buffer)
-       (ffi-focus-prompt-buffer prompt-buffer)))))
+    (electron:add-bounded-view window
+                               prompt-buffer
+                               :window-bounds-alist-var bounds
+                               :x 0
+                               :y (- (alex:assoc-value bounds :height)
+                                     (+ height
+                                        (height (status-buffer window))
+                                        (height (message-buffer window))))
+                               :width (alex:assoc-value bounds :width)
+                               :height height)
+    (electron:load-url prompt-buffer "about:blank")))
 
 (defmethod ffi-width ((buffer electron-buffer))
-  (electron:get-bounds buffer 'width))
+  (alex:assoc-value (electron:get-bounds buffer) :height))
 
 (defmethod (setf ffi-width) (width (buffer electron-buffer))
-  (electron:set-bounds buffer
-                       (electron:get-bounds buffer 'x)
-                       (electron:get-bounds buffer 'y)
-                       width
-                       (electron:get-bounds buffer 'height)))
+  (let ((bounds (electron:get-bounds buffer)))
+    (electron:set-bounds buffer
+                         :x (alex:assoc-value bounds :x)
+                         :y (alex:assoc-value bounds :y)
+                         :width width
+                         :height (alex:assoc-value bounds :height))))
 
 (defmethod ffi-buffer-sound-enabled-p ((buffer electron-buffer))
   (not (electron:muted-p (electron:web-contents buffer))))
@@ -281,7 +262,7 @@ Note that by changing the default value, modifier keys can be remapped."))
 ;; See https://www.electronjs.org/docs/latest/api/session#sessetuseragentuseragent-acceptlanguages.
 ;; (defmethod ffi-preferred-languages ((buffer electron-buffer)))
 
-(define-class electron-window (electron:browser-window)
+(define-class electron-window (electron:window)
   ((electron:options
     #-darwin
     "{autoHideMenuBar: true}"
@@ -300,58 +281,27 @@ Note that by changing the default value, modifier keys can be remapped."))
 (defmethod initialize-instance :after ((window electron-window) &key)
   (let ((message-buffer (message-buffer window))
         (status-buffer (status-buffer window)))
-    (electron:on window "resize"
-      (format nil "~a.setBounds({x:      0,
-                                 y:      ~a.getBounds().height - ~a,
-                                 width:  ~a.getBounds().width,
-                                 height: ~a})"
-              (electron:remote-symbol message-buffer)
-              (electron:remote-symbol window)
-              (height message-buffer)
-              (electron:remote-symbol window)
-              (height message-buffer)))
-    (add-buffer window
-                message-buffer
-                :x 0
-                :y (- (electron:get-bounds window 'height)
-                      (height message-buffer))
-                :width (electron:get-bounds window 'width)
-                :height (height message-buffer)
-                :horizontal-p t
-                :width-p t)
+    (electron:add-bounded-view window
+                               message-buffer
+                               :window-bounds-alist-var bounds
+                               :x 0
+                               :y (- (alex:assoc-value bounds :height)
+                                     (height message-buffer))
+                               :width (alex:assoc-value bounds :width)
+                               :height (height message-buffer))
     (electron:load-url message-buffer "about:blank")
-    (electron:on window "resize"
-      (format nil "~a.setBounds({x:      0,
-                                 y:      ~a.getBounds().height - (~a + ~a),
-                                 width:  ~a.getBounds().width,
-                                 height: ~a})"
-              (electron:remote-symbol status-buffer)
-              (electron:remote-symbol window)
-              (height status-buffer)
-              (height message-buffer)
-              (electron:remote-symbol window)
-              (height status-buffer)))
-    (add-buffer window
-                status-buffer
-                :x 0
-                :y (- (electron:get-bounds window 'height)
-                      (+ (height status-buffer)
-                         (height message-buffer)))
-                :width (electron:get-bounds window 'width)
-                :height (height status-buffer)
-                :horizontal-p t
-                :width-p t)
+    (electron:add-bounded-view window
+                               status-buffer
+                               :window-bounds-alist-var bounds
+                               :x 0
+                               :y (- (alex:assoc-value bounds :height)
+                                     (+ (height status-buffer)
+                                        (height message-buffer)))
+                               :width (alex:assoc-value bounds :width)
+                               :height (height status-buffer))
     (electron:load-url status-buffer "about:blank")
     ;; KLUDGE Without it, the window won't intercept input events.
     (electron:load-url window "about:blank")))
-
-(defmethod add-buffer ((window electron-window) (buffer electron-buffer)
-                       &key (x 0) (y 0) (width 1000) (height 1000)
-                         (width-p nil) (height-p nil) (horizontal-p nil) (vertical-p nil))
-  (electron:add-browser-view window buffer)
-  (electron:set-auto-resize buffer width-p height-p horizontal-p vertical-p)
-  (electron:set-bounds buffer x y width height)
-  buffer)
 
 (defmethod ffi-window-delete ((window electron-window))
   (electron:kill window))
@@ -367,27 +317,23 @@ Note that by changing the default value, modifier keys can be remapped."))
   ;; In GTK, when the prompt buffer is up and a new main buffer is created, the
   ;; prompt buffer remains open.  As per below, the prompt buffer would be
   ;; closed.
-  (add-buffer window
-              buffer
-              :x 0
-              :y 0
-              :width (electron:get-bounds window 'width)
-              :height (- (electron:get-bounds window 'height)
-                         (+ (height (status-buffer window))
-                            (height (message-buffer window))))
-              :width-p t
-              :height-p t
-              :horizontal-p t
-              :vertical-p nil)
-  (electron:set-top-browser-view window buffer)
+  (electron:add-bounded-view window
+                             buffer
+                             :window-bounds-alist-var bounds
+                             :x 0
+                             :y 0
+                             :width (alex:assoc-value bounds :width)
+                             :height (- (alex:assoc-value bounds :height)
+                                        (+ (height (status-buffer window))
+                                           (height (message-buffer window)))))
   (when focus (electron:focus buffer))
   buffer)
 
 (defmethod ffi-height ((window electron-window))
-  (electron:get-bounds window 'height))
+  (alex:assoc-value (electron:get-bounds window) :height))
 
 (defmethod ffi-width ((window electron-window))
-  (electron:get-bounds window 'width))
+  (alex:assoc-value (electron:get-bounds window) :width))
 
 (defmethod ffi-window-fullscreen ((window electron-window) &key &allow-other-keys)
   (electron:fullscreen window))
