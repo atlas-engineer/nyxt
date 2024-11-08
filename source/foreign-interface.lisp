@@ -7,9 +7,9 @@
   "Like `defgeneric' but export NAME and define default dummy method if none is provided.
 If the `:setter-p' option is non-nil, then a dummy setf method is defined."
   (let* ((methods (sera:filter (sera:eqs :method) options :key #'first))
-         (setter? (alex:assoc-value options :setter-p))
+         (setter? (assoc-value options :setter-p))
          (normalized-options (set-difference options methods :key #'first))
-         (normalized-options (setf (alex:assoc-value normalized-options :setter-p) nil)))
+         (normalized-options (setf (assoc-value normalized-options :setter-p) nil)))
     `(progn
        (export-always ',name)
        (prog1

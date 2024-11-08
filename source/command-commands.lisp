@@ -124,9 +124,9 @@ together with the arglists and documentations of the functions typed in."
          (keyword-type-pairs (pairlis keywords (rest type-batches))))
     (alex:nreversef keywords)
     (values (first type-batches)
-            (alex:assoc-value keyword-type-pairs '&optional)
-            (alex:assoc-value keyword-type-pairs '&rest)
-            (alex:assoc-value keyword-type-pairs '&key))))
+            (assoc-value keyword-type-pairs '&optional)
+            (assoc-value keyword-type-pairs '&rest)
+            (assoc-value keyword-type-pairs '&key))))
 
 (defun prompt-argument (prompt &optional type input)
   (let ((value

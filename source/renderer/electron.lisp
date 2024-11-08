@@ -191,14 +191,14 @@ Note that by changing the default value, modifier keys can be remapped."))
 ;; (defmethod ffi-buffer-cookie-policy ((buffer electron-buffer)))
 
 (defmethod ffi-height ((buffer electron-buffer))
-  (alex:assoc-value (electron:get-bounds buffer) :height))
+  (assoc-value (electron:get-bounds buffer) :height))
 
 (defmethod (setf ffi-height) (height (buffer electron-buffer))
   (let ((bounds (electron:get-bounds buffer)))
     (electron:set-bounds buffer
-                         :x (alex:assoc-value bounds :x)
-                         :y (alex:assoc-value bounds :y)
-                         :width (alex:assoc-value bounds :width)
+                         :x (assoc-value bounds :x)
+                         :y (assoc-value bounds :y)
+                         :width (assoc-value bounds :width)
                          :height height)))
 
 (defmethod ffi-focus-prompt-buffer ((prompt-buffer prompt-buffer))
@@ -211,24 +211,24 @@ Note that by changing the default value, modifier keys can be remapped."))
                                prompt-buffer
                                :window-bounds-alist-var bounds
                                :x 0
-                               :y (- (alex:assoc-value bounds :height)
+                               :y (- (assoc-value bounds :height)
                                      (+ height
                                         (height (status-buffer window))
                                         (height (message-buffer window))))
-                               :width (alex:assoc-value bounds :width)
+                               :width (assoc-value bounds :width)
                                :height height)
     (electron:load-url prompt-buffer "about:blank")))
 
 (defmethod ffi-width ((buffer electron-buffer))
-  (alex:assoc-value (electron:get-bounds buffer) :height))
+  (assoc-value (electron:get-bounds buffer) :height))
 
 (defmethod (setf ffi-width) (width (buffer electron-buffer))
   (let ((bounds (electron:get-bounds buffer)))
     (electron:set-bounds buffer
-                         :x (alex:assoc-value bounds :x)
-                         :y (alex:assoc-value bounds :y)
+                         :x (assoc-value bounds :x)
+                         :y (assoc-value bounds :y)
                          :width width
-                         :height (alex:assoc-value bounds :height))))
+                         :height (assoc-value bounds :height))))
 
 (defmethod ffi-buffer-sound-enabled-p ((buffer electron-buffer))
   (not (electron:muted-p (electron:web-contents buffer))))
@@ -285,19 +285,19 @@ Note that by changing the default value, modifier keys can be remapped."))
                                message-buffer
                                :window-bounds-alist-var bounds
                                :x 0
-                               :y (- (alex:assoc-value bounds :height)
+                               :y (- (assoc-value bounds :height)
                                      (height message-buffer))
-                               :width (alex:assoc-value bounds :width)
+                               :width (assoc-value bounds :width)
                                :height (height message-buffer))
     (electron:load-url message-buffer "about:blank")
     (electron:add-bounded-view window
                                status-buffer
                                :window-bounds-alist-var bounds
                                :x 0
-                               :y (- (alex:assoc-value bounds :height)
+                               :y (- (assoc-value bounds :height)
                                      (+ (height status-buffer)
                                         (height message-buffer)))
-                               :width (alex:assoc-value bounds :width)
+                               :width (assoc-value bounds :width)
                                :height (height status-buffer))
     (electron:load-url status-buffer "about:blank")
     ;; KLUDGE Without it, the window won't intercept input events.
@@ -322,18 +322,18 @@ Note that by changing the default value, modifier keys can be remapped."))
                              :window-bounds-alist-var bounds
                              :x 0
                              :y 0
-                             :width (alex:assoc-value bounds :width)
-                             :height (- (alex:assoc-value bounds :height)
+                             :width (assoc-value bounds :width)
+                             :height (- (assoc-value bounds :height)
                                         (+ (height (status-buffer window))
                                            (height (message-buffer window)))))
   (when focus (electron:focus buffer))
   buffer)
 
 (defmethod ffi-height ((window electron-window))
-  (alex:assoc-value (electron:get-bounds window) :height))
+  (assoc-value (electron:get-bounds window) :height))
 
 (defmethod ffi-width ((window electron-window))
-  (alex:assoc-value (electron:get-bounds window) :width))
+  (assoc-value (electron:get-bounds window) :width))
 
 (defmethod ffi-window-fullscreen ((window electron-window) &key &allow-other-keys)
   (electron:fullscreen window))
@@ -391,11 +391,11 @@ Return nil when key must be discarded, e.g. for modifiers."
     (_ key-string)))
 
 (defmethod on-signal-key-press-event ((sender electron-buffer) event)
-  (let ((modifiers (delete nil (list (when (alex:assoc-value event :shift) :shift)
-                                     (when (alex:assoc-value event :control) :control)
-                                     (when (alex:assoc-value event :alt) :alt)
-                                     (when (alex:assoc-value event :meta) :meta))))
-        (key-string (translate-key-string (alex:assoc-value event :key))))
+  (let ((modifiers (delete nil (list (when (assoc-value event :shift) :shift)
+                                     (when (assoc-value event :control) :control)
+                                     (when (assoc-value event :alt) :alt)
+                                     (when (assoc-value event :meta) :meta))))
+        (key-string (translate-key-string (assoc-value event :key))))
     (flet ((key () (keymaps:make-key :value key-string
                                      :modifiers (input-modifier-translator sender modifiers)
                                      :status :pressed)))

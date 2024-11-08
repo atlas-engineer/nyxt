@@ -70,7 +70,7 @@ otherwise (default) only include files."
   #+sbcl
   (sb-posix:passwd-gid (sb-posix:getpwnam user))
   #-sbcl
-  (alex:assoc-value (osicat:user-info user) :group-id))
+  (assoc-value (osicat:user-info user) :group-id))
 
 (defun file-group-id (file)
   #+sbcl

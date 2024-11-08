@@ -549,14 +549,14 @@ they are not served on the Nyxt website."
            (spinneret:with-html-string
              (:dl
               (:dt "Name")
-              (:dd (alex:assoc-value extension :name))
+              (:dd (assoc-value extension :name))
               (:dt "Description")
-              (:dd (alex:assoc-value extension :description))
+              (:dd (assoc-value extension :description))
               (:dt "Link")
-              (let ((link (if (alex:assoc-value extension :internal-p)
+              (let ((link (if (assoc-value extension :internal-p)
                               (format nil "https://nyxt-browser.com~a"
-                                      (alex:assoc-value extension :link))
-                              (alex:assoc-value extension :download-link))))
+                                      (assoc-value extension :link))
+                              (assoc-value extension :download-link))))
                 (:dd (:a :href link link)))))))
     (spinneret:with-html-string
       (:h1 "Nyxt extensions")

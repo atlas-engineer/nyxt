@@ -24,7 +24,8 @@ modes, commands, etc."))
 
 (in-package :nyxt)
 (defvar *imports* '((:alexandria #:compose #:curry #:mappend #:rcurry
-                     #:if-let #:when-let #:when-let*)
+                     #:if-let #:when-let #:when-let*
+                     #:assoc-value)
                     (:trivia #:match #:multiple-value-match #:lambda-match #:guard)
                     (:nkeymaps #:define-key #:define-keyscheme-map)
                     (:serapeum #:export-always #:-> #:and-let*))
