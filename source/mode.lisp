@@ -26,11 +26,11 @@ Only used to mandate whether the mode needs a toggler command:
                               name
                               `(lambda (&rest args
                                         &key (buffer (or (current-prompt-buffer) (current-buffer)))
-                                          (activate t explicit?)
+                                          (activate t activate-supplied-p)
                                         &allow-other-keys)
                                  ,(let ((*print-case* :downcase))
                                     (format nil "Toggle `~a'." name))
-                                 (declare (ignorable buffer activate explicit?))
+                                 (declare (ignorable buffer activate activate-supplied-p))
                                  (apply #'toggle-mode ',name args))
                               :global)))
           (setf (fdefinition name) command))
@@ -412,8 +412,8 @@ ARGS are the keyword arguments for `make-instance'/`enable' on MODES.
 If REMEMBER-P is true, save active modes so that auto-rules don't override those."))
 
 (define-command enable-modes (&key
-                              (modes nil explicit-modes-p)
-                              (buffers (current-buffer) explicit-buffers-p))
+                              (modes nil modes-supplied-p)
+                              (buffers (current-buffer) buffers-supplied-p))
   "Enable MODES for BUFFERS prompting for either or both.
 MODES should be a list of mode symbols or a mode symbol.
 BUFFERS and MODES are automatically coerced into a list.
@@ -424,14 +424,14 @@ If it's a single buffer, return it directly (not as a list)."
   ;; case it's handy that this function does not error, it simply does nothing.
   ;; REVIEW: But we wrap commands into `with-protect' for this, don't we?
   (let* ((buffers (or buffers
-                      (unless explicit-buffers-p
+                      (unless buffers-supplied-p
                         (prompt
                          :prompt "Enable mode(s) for buffer(s)"
                          :sources (make-instance 'buffer-source
                                                  :enable-marks-p t
                                                  :actions-on-return '())))))
          (modes (or modes
-                    (unless explicit-modes-p
+                    (unless modes-supplied-p
                       (prompt
                        :prompt "Enable mode(s)"
                        :sources (make-instance 'inactive-mode-source
@@ -459,8 +459,8 @@ If it's a single buffer, return it directly (not as a list)."
   (:documentation "Disable MODES in BUFFERS.
 If REMEMBER-P is true, save active modes so that auto-rules don't override those."))
 
-(define-command disable-modes (&key (modes nil explicit-modes-p)
-                               (buffers (current-buffer) explicit-buffers-p))
+(define-command disable-modes (&key (modes nil modes-supplied-p)
+                               (buffers (current-buffer) buffers-supplied-p))
   "Disable MODES for BUFFERS.
 MODES should be a list of mode symbols.
 BUFFERS and MODES are automatically coerced into a list.
@@ -468,14 +468,14 @@ BUFFERS and MODES are automatically coerced into a list.
 If BUFFERS is a list, return it.
 If it's a single buffer, return it directly (not as a list)."
   (let* ((buffers (or buffers
-                      (unless explicit-buffers-p
+                      (unless buffers-supplied-p
                         (prompt
                          :prompt "Enable mode(s) for buffer(s)"
                          :sources (make-instance 'buffer-source
                                                  :enable-marks-p t
                                                  :actions-on-return '())))))
          (modes (or modes
-                    (unless explicit-modes-p
+                    (unless modes-supplied-p
                       (prompt
                        :prompt "Disable mode(s)"
                        :sources (make-instance 'active-mode-source
@@ -507,12 +507,12 @@ If it's a single buffer, return it directly (not as a list)."
 (defun toggle-mode (mode-sym
                     &rest args
                     &key (buffer (or (current-prompt-buffer) (current-buffer)))
-                      (activate t explicit?)
+                      (activate t activate-supplied-p)
                     &allow-other-keys)
   "Enable MODE-SYM if not already enabled, disable it otherwise."
   (when (modable-buffer-p buffer)
     (let ((existing-instance (find mode-sym (slot-value buffer 'modes) :key #'sera:class-name-of)))
-      (unless explicit?
+      (unless activate-supplied-p
         (setf activate (or (not existing-instance)
                            (not (enabled-p existing-instance)))))
       (if activate

@@ -253,7 +253,7 @@ Return NIL if not a class form."
     (log:info "Writing auto configuration to ~s." (files:expand file))
     (call-next-method)))
 
-(defun auto-configure (&key form class-name slot (slot-value nil slot-value-p))
+(defun auto-configure (&key form class-name slot (slot-value nil slot-value-supplied-p))
   (files:with-file-content (config *auto-config-file*)
     (if class-name
         (flet ((ensure-class-form (class-name)
@@ -269,7 +269,7 @@ Return NIL if not a class form."
                  (delete-if (sera:eqs slot) (sera:filter #'slot-form-p (forms class-form)) :key #'name)))
           (let ((class-form (ensure-class-form class-name)))
             (if slot
-                (if slot-value-p
+                (if slot-value-supplied-p
                     (sera:lret ((slot-form (ensure-slot-form class-form slot)))
                       (setf (value slot-form) slot-value))
                     (setf (forms class-form) (delete-slot-form class-form slot)))
@@ -401,7 +401,7 @@ To discover the default value of a slot or all slots of a class, use the
 ;; - Or simply leaving the interpretation of this clause to the user.
 ;; But maybe that's beyond if-confirm.
 (export-always 'if-confirm)
-(defmacro if-confirm ((prompt &key (yes "yes" explicit-yes-p) (no "no" explicit-no-p))
+(defmacro if-confirm ((prompt &key (yes "yes" yes-supplied-p) (no "no" no-supplied-p))
                       &optional (yes-form t) no-form)
   "Ask the user for confirmation before executing either YES-FORM or NO-FORM.
 YES-FORM is executed on YES answer, NO-FORM -- otherwise (including NO and
@@ -424,9 +424,9 @@ Examples:
                      (prompt1
                       :prompt ,prompt
                       :sources (make-instance 'prompter:yes-no-source
-                                              ,@(when explicit-yes-p
+                                              ,@(when yes-supplied-p
                                                   (list :yes yes))
-                                              ,@(when explicit-no-p
+                                              ,@(when no-supplied-p
                                                   (list :no no)))
                       :hide-suggestion-count-p t)
                    (prompt-buffer-canceled () nil))))

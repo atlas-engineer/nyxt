@@ -1143,11 +1143,11 @@ is listed first."
                                          (lambda (buffer)
                                            (member (url buffer) buffers
                                                    :key #'url :test #'quri:uri-equal)))))))
-                     explicit-buffers-p))
+                     buffers-supplied-p))
     "Query the buffer(s) to delete.
 
 BUFFERS should be a list of `buffer's."
-    (when explicit-buffers-p
+    (when buffers-supplied-p
       (delete-all (uiop:ensure-list buffers)))))
 
 (define-command delete-all-buffers (&key (confirmation-p t))
