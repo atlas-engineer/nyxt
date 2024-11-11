@@ -79,7 +79,7 @@ Particularly useful to avoid errors on already terminated threads."
       :default))
 
 (export-always 'prini)
-(defun prini (value stream &rest keys &key (case :downcase) (pretty t)  (circle nil)
+(defun prini (value stream &rest keys &key (case :downcase) (pretty t) (circle nil)
                                         (readably nil) (package *package*) &allow-other-keys)
   "PRINt for Interface: a printing primitive with the best aesthetics for Nyxt interfaces.
 `write'-s the VALUE to STREAM with CASE, PRETTY, CIRCLE, and READABLY set to the
