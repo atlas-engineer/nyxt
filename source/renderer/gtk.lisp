@@ -470,26 +470,6 @@ Return nil when key must be discarded, e.g. for modifiers."
         (str:replace-all "_" "" (string-downcase result))
         result)))
 
-(defun key-event-modifiers (key-event)
-  (gdk:gdk-event-key-state key-event))
-
-;; REVIEW: Remove after upstream fix is merged in Quicklisp, see https://github.com/crategus/cl-cffi-gtk/issues/74.
-;; Wait for https://github.com/Ferada/cl-cffi-gtk/issues/new.
-(defun gdk-event-button-state (button-event)
-  "Return BUTTON-EVENT modifiers as a `gdk-modifier-type', i.e. a list of keywords."
-  (let ((state (gdk:gdk-event-button-state button-event)))
-    (if (listp state)
-        state
-        (cffi:with-foreign-objects ((modifiers 'gdk:gdk-modifier-type))
-          (setf (cffi:mem-ref modifiers 'gdk:gdk-modifier-type) state)
-          (cffi:mem-ref modifiers 'gdk:gdk-modifier-type)))))
-
-(defun button-event-modifiers (button-event)
-  (gdk-event-button-state button-event))
-
-(defun scroll-event-modifiers (scroll-event)
-  (gdk:gdk-event-scroll-state scroll-event))
-
 (defmethod printable-p ((window gtk-window) event)
   "Return the printable value of EVENT."
   ;; Generate the result of the current keypress into the dummy
@@ -514,7 +494,7 @@ Return nil when key must be discarded, e.g. for modifiers."
          (printable-value (printable-p (current-window) event))
          (key-string (or printable-value
                          (derive-key-string keyval-name character)))
-         (modifiers (input-modifier-translator sender (key-event-modifiers event))))
+         (modifiers (input-modifier-translator sender (gdk:gdk-event-key-state event))))
     (log:debug sender key-string keycode character keyval-name modifiers)
     ;; Do not forward modifier-only presses to the renderer.
     (if key-string
@@ -532,7 +512,7 @@ Return nil when key must be discarded, e.g. for modifiers."
 
 (define-ffi-method on-signal-button-press-event ((sender gtk-buffer) event)
   (let ((key-string (format nil "button~s" (gdk:gdk-event-button-button event)))
-        (modifiers (input-modifier-translator sender (button-event-modifiers event)))
+        (modifiers (input-modifier-translator sender (gdk:gdk-event-button-state event)))
         (buffer (or (current-prompt-buffer) sender)))
     ;; Handle mode-specific logic here (e.g. VI switch to insertion) to not
     ;; interfere with regular keybinding logic.
@@ -559,7 +539,7 @@ Return nil when key must be discarded, e.g. for modifiers."
                                   ((>= 0 (gdk:gdk-event-scroll-delta-x event)) 6)
                                   ((< 0 (gdk:gdk-event-scroll-delta-x event)) 7)))))
          (key-string (format nil "button~s" button))
-         (modifiers (input-modifier-translator sender (scroll-event-modifiers event))))
+         (modifiers (input-modifier-translator sender (gdk:gdk-event-scroll-state event))))
     (when key-string
       (alex:appendf (key-stack sender)
                     (list (keymaps:make-key :value key-string
