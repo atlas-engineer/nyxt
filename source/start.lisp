@@ -120,12 +120,7 @@ and have the `remote-execution-p' browser slot to non-nil.")
       (:name :headless
        :long "headless"
        :description "Start Nyxt without showing any graphical element.
-This is useful to run scripts for instance.")
-      (:name :failsafe
-       :long "failsafe"
-       :description "Ensure Nyxt starts in a vanilla environment.
-It skips configuration files and other data files like the history.
-Without --remote, it also disables socket use."))))
+This is useful to run scripts for instance."))))
 ;; Also define command line options at read-time because we parse
 ;; `opts::*options*' in `start'.
 (sera:eval-always (define-opts))
@@ -380,19 +375,10 @@ The OPTIONS are the same as the command line options.
   ;; Options should be accessible anytime, even when run from the REPL.
   (setf *options* options)
   (destructuring-bind (&key (headless *headless-p*) verbose help version
-                         system-information script failsafe load eval quit
-                         remote &allow-other-keys)
+                         system-information script load eval quit remote
+                       &allow-other-keys)
       options
     (setf *headless-p* headless)
-
-    (when failsafe
-      (setf
-       (getf *options* :verbose) t
-       (getf *options* :no-config) t
-       (getf *options* :no-auto-config) t)
-      (unless remote
-        (setf
-         (getf *options* :no-socket) t)))
 
     (if verbose
         (progn
@@ -549,9 +535,11 @@ Finally, run the browser, load URL-STRINGS if any, then run
                                                           ,backtrace))))
                  :name 'error-reporter))))))
     (log:warn "Restarting with ~s."
-              (append (uiop:raw-command-line-arguments) '("--failsafe")))
+              (append (uiop:raw-command-line-arguments) '("--no-config"
+                                                          "--no-auto-config")))
     (uiop:launch-program (append (uiop:raw-command-line-arguments)
-                                 `("--failsafe"
+                                 `("--no-config"
+                                   "--no-auto-config"
                                    "--eval"
                                    ,(set-error-message condition backtrace))))
     (quit 1)))
