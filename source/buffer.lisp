@@ -333,8 +333,7 @@ Useful in FFI functions where we usually specialize things against
 `renderer-buffer', not knowing the exact class of those."
   nil)
 
-(defmethod initialize-instance :after ((buffer buffer) &key
-                                       &allow-other-keys)
+(defmethod initialize-instance :after ((buffer buffer) &key &allow-other-keys)
   "Dummy method to allow forwarding other key arguments."
   buffer)
 
