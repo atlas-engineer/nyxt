@@ -123,6 +123,9 @@ Note that by changing the default value, modifier keys can be remapped."))
   (:documentation "Electron buffer class."))
 
 (defmethod initialize-instance :after ((buffer electron-buffer) &key extra-modes no-hook-p)
+  ;; Needed for buffers whose HTML document is set via JS
+  ;; (e.g. `status-buffer').
+  (electron:load-url buffer "about:blank")
   (electron:register-before-input-event buffer
                                         (lambda (buffer event)
                                           (on-signal-key-press-event buffer event)))
@@ -216,8 +219,7 @@ Note that by changing the default value, modifier keys can be remapped."))
                                         (height (status-buffer window))
                                         (height (message-buffer window))))
                                :width (assoc-value bounds :width)
-                               :height height)
-    (electron:load-url prompt-buffer "about:blank")))
+                               :height height)))
 
 (defmethod ffi-width ((buffer electron-buffer))
   (assoc-value (electron:get-bounds buffer) :height))
@@ -289,7 +291,6 @@ Note that by changing the default value, modifier keys can be remapped."))
                                      (height message-buffer))
                                :width (assoc-value bounds :width)
                                :height (height message-buffer))
-    (electron:load-url message-buffer "about:blank")
     (electron:add-bounded-view window
                                status-buffer
                                :window-bounds-alist-var bounds
@@ -298,10 +299,7 @@ Note that by changing the default value, modifier keys can be remapped."))
                                      (+ (height status-buffer)
                                         (height message-buffer)))
                                :width (assoc-value bounds :width)
-                               :height (height status-buffer))
-    (electron:load-url status-buffer "about:blank")
-    ;; KLUDGE Without it, the window won't intercept input events.
-    (electron:load-url window "about:blank")))
+                               :height (height status-buffer))))
 
 (defmethod ffi-window-delete ((window electron-window))
   (electron:kill window))
