@@ -210,6 +210,15 @@ Note that by changing the default value, modifier keys can be remapped."))
 
 (defmethod (setf ffi-height) ((height integer) (prompt-buffer prompt-buffer))
   (with-slots (window) prompt-buffer
+    (let ((window-bounds (electron:get-bounds window)))
+      (electron:set-bounds (active-buffer window)
+                           :x 0
+                           :y 0
+                           :width (assoc-value window-bounds :width)
+                           :height (- (assoc-value window-bounds :height)
+                                      (+ height
+                                         (height (status-buffer window))
+                                         (height (message-buffer window))))))
     (electron:add-bounded-view window
                                prompt-buffer
                                :window-bounds-alist-var bounds
@@ -312,9 +321,6 @@ Note that by changing the default value, modifier keys can be remapped."))
 (defmethod ffi-window-set-buffer ((window electron-window)
                                   (buffer electron-buffer)
                                   &key (focus t))
-  ;; In GTK, when the prompt buffer is up and a new main buffer is created, the
-  ;; prompt buffer remains open.  As per below, the prompt buffer would be
-  ;; closed.
   (electron:add-bounded-view window
                              buffer
                              :window-bounds-alist-var bounds
@@ -323,7 +329,10 @@ Note that by changing the default value, modifier keys can be remapped."))
                              :width (assoc-value bounds :width)
                              :height (- (assoc-value bounds :height)
                                         (+ (height (status-buffer window))
-                                           (height (message-buffer window)))))
+                                           (height (message-buffer window))
+                                           (if-let ((prompt (current-prompt-buffer)))
+                                             (ffi-height prompt)
+                                             0))))
   (when focus (electron:focus buffer))
   buffer)
 
