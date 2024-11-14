@@ -91,12 +91,12 @@ The following mouse keybindings are available:
         `(:font-face :font-family "dejavu sans mono" :src ,(format nil "url('nyxt-resource:~a')" "DejaVuSansMono.ttf") "format('ttf')")
         `(*
           :font-size "14px"
-          :line-height "18px")
+          :line-height "18px"
+          :overflow "hidden")
         `(body
           :font-family ,theme:font-family
           :border-right "2px solid"
           :border-color ,theme:primary
-          :overflow "hidden"
           :margin "0"
           :padding "0")
         `("#prompt-area"
@@ -207,8 +207,6 @@ The following mouse keybindings are available:
         `("#suggestions"
           :background-color ,theme:background
           :color ,theme:on-background
-          :overflow-y "hidden"
-          :overflow-x "hidden"
           :height "100%"
           :margin-right "3px")
         `(".suggestion-and-mark-count"
@@ -224,8 +222,7 @@ The following mouse keybindings are available:
            :border-radius "2px"
            :white-space "nowrap"
            :height "20px"
-           :padding-left "4px"
-           :overflow "auto")
+           :padding-left "4px")
           ("tr:not(:first-child)"
            :font-family ,theme:monospace-font-family)
           ("tr:hover"
@@ -238,9 +235,7 @@ The following mouse keybindings are available:
            :font-weight "normal"
            :padding-left "4px"
            :border-radius "2px"
-           :text-align "left")
-          ("td::-webkit-scrollbar"
-           :display "none"))
+           :text-align "left"))
         `("#selection"
           :background-color ,theme:action
           :color ,theme:on-action)
