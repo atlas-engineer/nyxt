@@ -266,7 +266,17 @@ the renderer thread, use `defmethod' instead."
                    (handler-case
                        (nth-value 1 (ensure-directories-exist gtk-extensions-path))
                      (file-error ()))))
-      (log:info "GTK extensions directory: ~s" gtk-extensions-path))
+      (log:info "GTK extensions directory: ~s" gtk-extensions-path)
+      (gobject:g-signal-connect
+       context "initialize-web-extensions"
+       (lambda (context)
+         (with-protect ("Error in \"initialize-web-extensions\" signal thread: ~a" :condition)
+           ;; The following calls
+           ;; `webkit:webkit-web-context-add-path-to-sandbox' for us, so no need
+           ;; to add `gtk-extensions-path' to the sandbox manually.
+           (webkit:webkit-web-context-set-web-extensions-directory
+            context
+            (uiop:native-namestring gtk-extensions-path))))))
     (gobject:g-signal-connect
      context "download-started"
      (lambda (context download)
