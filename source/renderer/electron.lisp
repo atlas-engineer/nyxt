@@ -196,7 +196,7 @@ Note that by changing the default value, modifier keys can be remapped."))
 (defmethod ffi-height ((buffer electron-buffer))
   (assoc-value (electron:get-bounds buffer) :height))
 
-(defmethod (setf ffi-height) (height (buffer electron-buffer))
+(defmethod (setf ffi-height) ((height integer) (buffer electron-buffer))
   (let ((bounds (electron:get-bounds buffer)))
     (electron:set-bounds buffer
                          :x (assoc-value bounds :x)
