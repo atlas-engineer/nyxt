@@ -12,12 +12,12 @@
    (style
     (theme:themed-css (theme *browser*)
       `("span[nyxt-search-mark]"
-        :background-color ,theme:secondary !important
-        :color ,theme:on-secondary !important
+        :background-color ,theme:secondary-color !important
+        :color ,theme:on-secondary-color !important
         :border-radius 2px
         :z-index #.(1- (expt 2 31)))
       `("span[nyxt-search-mark].nyxt-current-search-mark"
-        :background-color ,theme:highlight !important)
+        :background-color ,theme:highlight-color !important)
       '(:keyframes "mark"
                    (0% :background-position 0 0%)
                    (100% :background-position 0 100%)))

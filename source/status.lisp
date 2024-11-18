@@ -82,8 +82,8 @@
               :justify-content "space-between"
               :overflow-y "hidden")
             `("#controls"
-              :background-color ,theme:secondary
-              :color ,theme:on-secondary
+              :background-color ,theme:secondary-color
+              :color ,theme:on-secondary-color
               :z-index "3"
               :flex-basis "78px"
               :display "flex")
@@ -93,8 +93,8 @@
               :height "100%"
               :aspect-ratio "1/1")
             `("#url"
-              :background-color ,theme:primary
-              :color ,theme:on-primary
+              :background-color ,theme:primary-color
+              :color ,theme:on-primary-color
               :min-width "100px"
               :padding-right "7px"
               :padding-left "15px"
@@ -106,8 +106,8 @@
               :text-align "left"
               :width "100%")
             `("#tabs"
-              :background-color ,theme:secondary
-              :color ,theme:on-secondary
+              :background-color ,theme:secondary-color
+              :color ,theme:on-secondary-color
               :line-height "95vh"
               :min-width "100px"
               :text-align "left"
@@ -120,8 +120,8 @@
             '("#tabs::-webkit-scrollbar"
               :display "none")
             `(".tab"
-              :background-color ,theme:background-
-              :color ,theme:on-background
+              :background-color ,theme:background-color-
+              :color ,theme:on-background-color
               :display "inline-block"
               :margin-top "1px"
               :padding-left "18px"
@@ -135,8 +135,8 @@
               :outline "inherit"
               :clip-path "polygon(calc(100% - 7px) 0, 100% calc(50% - 1px), 100% 50%, 100% calc(50% + 1px), calc(100% - 7px) 100%, 0% 100%, 7px calc(50% + 1px), 7px 50%, 7px calc(50% - 1px),  0% 0%)")
             `("#modes"
-              :background-color ,theme:primary
-              :color ,theme:on-primary
+              :background-color ,theme:primary-color
+              :color ,theme:on-primary-color
               :text-align "right"
               :padding-left "6px"
               :padding-right "3px"
@@ -160,14 +160,14 @@
               :outline "inherit")
             `((:and (:or .button .tab "#url") :hover)
               :cursor "pointer"
-              :background-color ,theme:action
-              :color ,theme:on-action)
+              :background-color ,theme:action-color
+              :color ,theme:on-action-color)
             `((:and (:or .button .tab) :active)
-              :background-color ,theme:action-
-              :color ,theme:on-action)
+              :background-color ,theme:action-color-
+              :color ,theme:on-action-color)
             `(.selected-tab
-              :background-color ,theme:background+
-              :color ,theme:on-background))))
+              :background-color ,theme:background-color+
+              :color ,theme:on-background-color))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)

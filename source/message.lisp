@@ -55,8 +55,8 @@
             #-darwin
             '(:font-face :font-family "dejavu sans mono" :src "url('nyxt-resource:DejaVuSansMono.ttf')" "format('ttf')")
             `(body
-              :background-color ,theme:background-alt
-              :color ,theme:on-background-alt
+              :background-color ,theme:background-color-
+              :color ,theme:on-background-color
               :font-family ,theme:font-family
               :font-size "75vh"
               :line-height "100vh"

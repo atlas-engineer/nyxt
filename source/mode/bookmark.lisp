@@ -68,8 +68,8 @@ internal programming APIs."
               :margin-left "8px")
             ;; Taken from buffer.lisp to save space for big bookmark lists.
             `(button
-              :background-color ,theme:secondary
-              :color ,theme:on-secondary
+              :background-color ,theme:secondary-color
+              :color ,theme:on-secondary-color
               :display "inline-block"
               :text-decoration "none"
               :border-radius "2px"

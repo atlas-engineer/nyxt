@@ -169,8 +169,8 @@ appearance in the buffer when they are setf'd."
   ((style
     (theme:themed-css (theme *browser*)
       `(".download"
-        :background-color ,theme:background
-        :color ,theme:on-background
+        :background-color ,theme:background-color
+        :color ,theme:on-background-color
         :margin-top "10px"
         :padding-left "5px"
         :brightness "80%"
@@ -179,7 +179,7 @@ appearance in the buffer when they are setf'd."
         :overflow "auto"
         :white-space "nowrap")
       `(".download-url a"
-        :color ,theme:on-background
+        :color ,theme:on-background-color
         :font-size "small")
       '(".status p"
         :display "inline-block"
@@ -188,10 +188,10 @@ appearance in the buffer when they are setf'd."
         :height "20px"
         :width "100%")
       `(".progress-bar-base"
-        :background-color ,theme:secondary
+        :background-color ,theme:secondary-color
         :height "100%")
       `(".progress-bar-fill"
-        :background-color ,theme:success
+        :background-color ,theme:success-color
         :height "100%"))))
   (:toggler-command-p nil))
 

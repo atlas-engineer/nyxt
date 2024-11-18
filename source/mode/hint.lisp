@@ -83,8 +83,8 @@ A positive value shifts to the bottom.")
   "The style of the hint overlays."
   (theme:themed-css (theme *browser*)
     `(".nyxt-hint"
-      :background-color ,(cl-colors2:print-hex theme:background- :alpha 0.925)
-      :color ,theme:on-background
+      :background-color ,(cl-colors2:print-hex theme:background-color- :alpha 0.925)
+      :color ,theme:on-background-color
       :font-family ,theme:monospace-font-family
       :font-size ".85rem"
       :transform ,(format nil "translate(~a%,~a%)"
@@ -92,24 +92,24 @@ A positive value shifts to the bottom.")
                              (if (eq (x-placement mode) :right) -100 0))
                           (y-translation mode))
       :padding "0px 0.3em"
-      :border-color ,(cl-colors2:print-hex theme:primary- :alpha 0.80)
+      :border-color ,(cl-colors2:print-hex theme:primary-color- :alpha 0.80)
       :border-radius "2px"
       :border-width "2px"
       :border-style "solid"
       :z-index #.(1- (expt 2 31)))
     `(".nyxt-hint.nyxt-mark-hint"
-      :background-color ,theme:secondary
-      :color ,theme:on-secondary
+      :background-color ,theme:secondary-color
+      :color ,theme:on-secondary-color
       :font-weight "bold")
     `(".nyxt-hint.nyxt-current-hint"
-      :background-color ,theme:action
-      :color ,theme:on-action)
+      :background-color ,theme:action-color
+      :color ,theme:on-action-color)
     '(".nyxt-hint.nyxt-match-hint"
       :padding "0px"
       :border-style "none"
       :opacity "0.5")
     `(".nyxt-element-hint"
-      :background-color ,theme:action)))
+      :background-color ,theme:action-color)))
 
 (define-configuration document-buffer
   ((default-modes (cons 'hint-mode %slot-value%))))

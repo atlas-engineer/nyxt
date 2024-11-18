@@ -82,14 +82,14 @@ to the next."
           :margin-top "1em")
         `(.tabs
           :flex "0 0 180px"
-          :background-color ,theme:background+)
+          :background-color ,theme:background-color+)
         `(.content
           :flex "85%"
-          :background-color ,theme:background-)
+          :background-color ,theme:background-color-)
         '(.left
           :flex "0 0 256px")
         `(.right
-          :color ,theme:primary
+          :color ,theme:primary-color
           :padding-top "1em"
           :padding-left "4em"
           :max-width "50ch")
@@ -99,8 +99,8 @@ to the next."
         `(.tab-button
           :display "block"
           :text-decoration "none"
-          :background-color ,theme:background+
-          :color ,theme:action-
+          :background-color ,theme:background-color+
+          :color ,theme:action-color-
           :padding "1.5em 1em"
           :width "100%"
           :border "none"
@@ -108,10 +108,10 @@ to the next."
           :text-align "left"
           :cursor "pointer")
         `((:and .tab-button :hover)
-          :background-color ,theme:background-)
+          :background-color ,theme:background-color-)
         `(.tab-button.active
-          :background-color ,theme:background-
-          :color ,theme:text-)))
+          :background-color ,theme:background-color-
+          :color ,theme:on-background-color)))
     (:div.row
      :style "min-height: 100%; margin: 0"
      (:div.tabs
@@ -184,18 +184,17 @@ invoking the " (:nxref :command 'toggle-modes) "command.")))))
            (:div.left
             (:nradio
               :name "theme"
-              :checked (if (equal (theme:background-color (theme *browser*))
-                                  (theme:background-color theme::+light-theme+))
-                           'theme::+light-theme+
-                           'theme::+dark-theme+)
+              :checked (if (eq (theme *browser*) theme:+light-theme+)
+                           'theme:+light-theme+
+                           'theme:+dark-theme+)
               :vertical t
               :buffer buffer
-              '(theme::+light-theme+ "Light theme"
+              '(theme:+light-theme+ "Light theme"
                 (nyxt::auto-configure :form '(define-configuration browser
-                                              ((theme theme::+light-theme+)))))
-              '(theme::+dark-theme+ "Dark theme"
+                                              ((theme theme:+light-theme+)))))
+              '(theme:+dark-theme+ "Dark theme"
                 (nyxt::auto-configure :form '(define-configuration browser
-                                              ((theme theme::+dark-theme+)))))))
+                                              ((theme theme:+dark-theme+)))))))
            (:div.right
             (:p "Themes for Nyxt's UI."))))
          (:div.section
@@ -423,16 +422,16 @@ The value is saved to clipboard."
         :flex-direction "row"
         :justify-content "center")
       `(.button
-        :background-color ,theme:secondary
-        :border-color ,theme:secondary
-        :color ,theme:on-secondary
+        :background-color ,theme:secondary-color
+        :border-color ,theme:secondary-color
+        :color ,theme:on-secondary-color
         :min-width "144px")
       `(.copyright
         :position "absolute"
         :bottom "12px"
         :right "48px")
       `(.program-name
-        :color ,theme:action
+        :color ,theme:action-color
         :font-size "24px"
         :font-weight "bold")
       `(.main
@@ -440,7 +439,9 @@ The value is saved to clipboard."
         :display "flex"
         :flex-direction "row")
       `(.logo
-        :color ,(if (theme:dark-p theme:theme) theme:action theme:on-background)
+        :color ,(if (theme:dark-p theme:theme)
+                    theme:action-color
+                    theme:on-background-color)
         :width "100px"
         :height "100px"
         :padding-top "3px"
@@ -449,8 +450,8 @@ The value is saved to clipboard."
         :min-width "180px"
         :height "40px"
         :line-height "30px"
-        :color ,theme:on-action
-        :background-color ,theme:action
+        :color ,theme:on-action-color
+        :background-color ,theme:action-color
         :border "none"
         :border-width "2px"
         :border-radius "2px"
@@ -460,13 +461,13 @@ The value is saved to clipboard."
         :line-height "12px"
         :height "40px"
         :border "none"
-        :background-color ,theme:primary
-        :border-color ,theme:primary
-        :color ,theme:on-primary)
+        :background-color ,theme:primary-color
+        :border-color ,theme:primary-color
+        :color ,theme:on-primary-color)
       `(.binding
         :margin-left "12px"
         :font-weight "bold"
-        :color ,theme:secondary))
+        :color ,theme:secondary-color))
     (:div
      :class "container"
      (:main

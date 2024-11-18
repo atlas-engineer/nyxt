@@ -22,8 +22,8 @@ It renders the file in a single textarea HTML element.  Enabled by default for
               :padding "5px"
               :padding-top "18px"
               :autofocus "true"
-              :background-color ,theme:background
-              :color ,theme:on-background))))
+              :background-color ,theme:background-color
+              :color ,theme:on-background-color))))
   (:toggler-command-p nil))
 
 (defmethod markup ((editor plaintext-editor-mode) content)

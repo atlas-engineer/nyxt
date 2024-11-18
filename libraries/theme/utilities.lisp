@@ -4,10 +4,10 @@
 (in-package :theme)
 
 (serapeum:-> relative-luminance ((or string integer cl-colors2:rgb cl-colors2:hsv))
-             real) ;; What's the range?
+             real)
 (defun relative-luminance (color)
   "Compute relative luminance of COLOR."
-  ;; See https://developer.mozilla.org/en-US/docs/Web/Accessibility/Understanding_Colors_and_Luminance#modeling_light_color_and_vision
+  ;; See https://www.w3.org/WAI/GL/wiki/Relative_luminance
   (loop for const in '(0.2126 0.7152 0.0722)
         for rgb-component in (list (cl-colors2:rgb-red (cl-colors2:as-rgb color))
                                    (cl-colors2:rgb-green (cl-colors2:as-rgb color))
@@ -18,11 +18,11 @@
 
 (serapeum:-> contrast-ratio ((or string integer cl-colors2:rgb cl-colors2:hsv)
                              (or string integer cl-colors2:rgb cl-colors2:hsv))
-             ;; 21 is the ratio between black and white.
-             (real 0 21))
+             (real 0 21)) ; Ratio between black and white.
 (export-always 'contrast-ratio)
 (defun contrast-ratio (color1 color2)
   "Compute contrast ratio between COLOR1 and COLOR2."
+  ;; See https://www.w3.org/WAI/GL/wiki/Contrast_ratio
   (let ((ratio (/ (+ (relative-luminance color1) 0.05)
                   (+ (relative-luminance color2) 0.05))))
     (max ratio (/ ratio))))

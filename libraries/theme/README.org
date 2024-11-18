@@ -11,213 +11,139 @@ Owing to its flexibility, it can be used to theme other projects.
 
 ** Palette's rationale
 
-8 conceptual/semantic color groups are defined:
+The following semantic color groups are defined:
 
 - ~background~ :: large surfaces.
 - ~primary~ :: primary interface elements.
-- ~secondary~ ::  secondary or decorative interface elements.
+- ~secondary~ :: secondary or decorative interface elements.
 - ~action~ :: focus or call to action.
 - ~success~ :: successful completion, download, or evaluation.
 - ~warning~ :: errors, invalid operations, or consequential actions.
 - ~highlight~ :: eye-catching text highlighting.
-- ~codeblock~ :: code and citations background.
 
-On top of that, every color has a plus (stronger contrast) and minus (weaker
-contrast) variation. These are intended for a surface variety and cases of
-complex overlapping interfaces.
+For each group, 2 variation colors with more and less contrast are defined.
+These are intended for cases of complex and overlapping
+interfaces. E.g. ~background+~ and ~background-~.
 
-As a ninth-ish conceptual group, there are text colors:
-- ~text~ :: the regular foreground color used on most surfaces and guaranteed to
-  work on ~background~ colors.
-- ~contrasting-text~ :: color for elements that need a different contrasting
-  foreground color.
-- ~text-~ and ~text+~ :: less and more contrasting variations of ~text~.
-
-Based on these text colors, each surface color group gets an on-colors
-(e.g. ~on-background~), a foreground color for all the colors in the group. This
-on-color is either ~text~ or ~contrast-text~, depending on which has a higher
-contrast with the surface color.
-
-~text-~ and ~text+~ are not used as on-colors and are intended for typography
-and text document variety.
-
-As a total amount of colors, there are:
-- 8 conceptual/semantic groups of colors.
-  - Three surface color per group, e.g.
-    - ~background-~
-    - ~background~
-    - ~background+~
-  - One on-color (~on-background~) per group.
-- And four text colors that on-colors are picked from.
-
-Which totals to
-#+begin_src lisp
-  (+ (* (+ 3 1) 8) 4)
-#+end_src
+Additionally, a foreground color is defined. E.g. ~on-background~.
 
 This rationale is loosely based on [[https://m2.material.io/design/material-theming/implementing-your-theme.html][Google Material Design Guidelines]].
-
-** Fonts
-
-~font-family~ is the only configurable option at the moment.
-
-# TODO Define both a title font and text font.
 
 ** Example
 
 #+begin_src lisp
-;; When you omit the values for on-colors, they're automatically set
-;; to either `theme:text-color' or `theme:contrast-text-color',
-;; according to what achieves a better contrast.
-(defvar my-theme (make-instance
-                  'theme:theme
-                  :text-color "#1e1e1e"
-                  :contrast-text-color "white"
-                  :background-color "#f0f0f0"
-                  :background-color+ "white"
-                  :success-color- "#d8f8e1"
-                  :success-color "#aee5be"
-                  :success-color+ "#8cca8c"
-                  :warning-color- "#ffe9e9"
-                  :warning-color "#f3b5af"
-                  :warning-color+ "#d84a4f"
-                  :highlight-color- "#ffefbf"
-                  :highlight-color "#fac090"
-                  :highlight-color+ "#d7c20a"
-                  :action-color "#5fcfff"
-                  :primary-color "#595959"
-                  :secondary-color "#e6e6e6"
-                  :codeblock-color- "#354fcf"
-                  :codeblock-color "#003497"
-                  :codeblock-color+ "#0000b0"
-                  :font-family "Iosevka")
-  "A theme roughly inspired by Modus Operandi Emacs theme.
-Some (primary, secondary) +/- colors are auto-generated from the main color.")
-;; =>
-;; ACTION-COLOR        = "#5fcfff"
-;; ACTION-COLOR+       = "#72cdfe"
-;; ACTION-COLOR-       = "#178dcc"
-;; BACKGROUND-COLOR    = "#f0f0f0"
-;; BACKGROUND-COLOR+   = "white"
-;; BACKGROUND-COLOR-   = "#ececec"
-;; CODEBLOCK-COLOR     = "#003497"
-;; CODEBLOCK-COLOR+    = "#0000b0"
-;; CODEBLOCK-COLOR-    = "#354fcf"
-;; CONTRAST-TEXT-COLOR = "white"
-;; FONT-FAMILY         = "Iosevka"
-;; HIGHLIGHT-COLOR     = "#fac090"
-;; HIGHLIGHT-COLOR+    = "#d7c20a"
-;; HIGHLIGHT-COLOR-    = "#ffefbf"
-;; ON-ACTION-COLOR     = "#1e1e1e"
-;; ON-BACKGROUND-COLOR = "#1e1e1e"
-;; ON-CODEBLOCK-COLOR  = "white"
-;; ON-HIGHLIGHT-COLOR  = "#1e1e1e"
-;; ON-PRIMARY-COLOR    = "white"
-;; ON-SECONDARY-COLOR  = "#1e1e1e"
-;; ON-SUCCESS-COLOR    = "#1e1e1e"
-;; ON-WARNING-COLOR    = "#1e1e1e"
-;; PRIMARY-COLOR       = "#595959"
-;; PRIMARY-COLOR+      = "#474747"
-;; PRIMARY-COLOR-      = "#686868"
-;; SECONDARY-COLOR     = "#e6e6e6"
-;; SECONDARY-COLOR+    = "#bfbfbf"
-;; SECONDARY-COLOR-    = "#909090"
-;; SUCCESS-COLOR       = "#aee5be"
-;; SUCCESS-COLOR+      = "#8cca8c"
-;; SUCCESS-COLOR-      = "#d8f8e1"
-;; TEXT-COLOR          = "#1e1e1e"
-;; TEXT-COLOR+         = "#000000"
-;; TEXT-COLOR-         = "#19191a"
-;; WARNING-COLOR       = "#f3b5af"
-;; WARNING-COLOR+      = "#d84a4f"
-;; WARNING-COLOR-      = "#ffe9e9"
+(defvar my-theme
+  (make-instance 'theme:theme
+                 :background-color "#F0F0F0"
+                 :primary-color "#595959"
+                 :secondary-color "#E6E6E6"
+                 :action-color "#5FCFFF"
+                 :highlight-color "#FAC090"
+                 :success-color "#AEE5BE"
+                 :warning-color "#F3B5AF"
+                 :font-family "Iosevka"
+                 :monospace-font-family "Iosevka")
+  "Example theme.
+
+When the values for on-colors are omitted, they're automatically set to either
+black or white, according to what achieves a better contrast.
+
+When the values for color+ and color- are omitted, they fallback on regular
+color values.
+
+Note that not all semantic color groups need to be defined.")
 
 ;; Set the theme in Nyxt's config file
 (define-configuration browser ((theme my-theme)))
 #+end_src
 
-And here's how it looks in Nyxt manual:
-[[./custom-modus-theme.png]]
-
 * Defaults
-
-** Colors
 
 We suggest following the WCAG (Web Content Accessibility Guidelines) with
 respect to contrast ratios.  The lowest standard (Level AA) requires a ratio of
-4.5:1, while a higher standard requires 7:1.
+4.5:1, while a higher standard (Level AAA) requires 7:1.
 
-The distribution of contrast in groups is:
-- Minus color (~background-~) :: at least 4.5 contrast ratio against the
-  on-color.
-- Regular color (~background~) :: at least 6.5.
-- Plus color (~background+~) :: at least 8.5.
+The target contrast ratios for the default palette are summarized below.
 
-*** Light theme
+- Minus colors (e.g. ~background-~) :: >= 4.5:1
+- Regular colors (e.g. ~background~) :: >= 6.5:1
+- Plus colors (e.g. ~background+~) :: >= 8.5:1
 
-The scheme below gives a taste of the default light palette.
+** Light theme
 
-[[./light-theme.svg]]
-
-**** COMMENT Contrast ratios for light theme (outdated!)
-Find the contrast ratio of each pair of colors in the table below.
-
-| Color Name       | Value   | ~on-*~ Value | Contrast |
-|------------------+---------+--------------+----------|
-| ~background~     | #FFFFFF | #000000      |    21.00 |
-| ~background-alt~ | #EEEEEE | #000000      |    18.10 |
-|------------------+---------+--------------+----------|
-| ~primary~        | #555555 | #FFFFFF      |     7.46 |
-| ~primary-alt~    | #686868 | #FFFFFF      |     5.57 |
-|------------------+---------+--------------+----------|
-| ~secondary~      | #A6A6A6 | #000000      |     8.63 |
-| ~secondary-alt~  | #909090 | #000000      |     6.58 |
-|------------------+---------+--------------+----------|
-| ~accent~         | #37A8E4 | #000000      |     7.88 |
-| ~accent-alt~     | #178DCC | #000000      |     5.72 |
-|------------------+---------+--------------+----------|
-| ~warning~        | #AF1923 | #FFFFFF      |     7.03 |
-| ~warning-alt~    | #D2232E | #FFFFFF      |     5.22 |
+| Color Name    | Value   | ~on-*~ Value | Contrast |
+|---------------+---------+--------------+----------|
+| ~background+~ | #FFFFFF | #000000      |    21.00 |
+| ~background~  | #F8F8F8 | #000000      |    19.77 |
+| ~background-~ | #ECECEC | #000000      |    17.78 |
+|---------------+---------+--------------+----------|
+| ~primary+~    | #474747 | #FFFFFF      |     9.29 |
+| ~primary~     | #555555 | #FFFFFF      |     7.46 |
+| ~primary-~    | #686868 | #FFFFFF      |     5.57 |
+|---------------+---------+--------------+----------|
+| ~secondary+~  | #BFBFBF | #000000      |    11.42 |
+| ~secondary~   | #A6A6A6 | #000000      |     8.63 |
+| ~secondary-~  | #909090 | #000000      |     6.58 |
+|---------------+---------+--------------+----------|
+| ~action+~     | #72CDFE | #000000      |    11.88 |
+| ~action~      | #37A8E4 | #000000      |     7.88 |
+| ~action-~     | #178DCC | #000000      |     5.72 |
+|---------------+---------+--------------+----------|
+| ~highlight+~  | #FFFA66 | #000000      |    19.12 |
+| ~highlight~   | #FCE304 | #000000      |    16.13 |
+| ~highlight-~  | #FCBA04 | #000000      |    12.16 |
+|---------------+---------+--------------+----------|
+| ~success+~    | #71FE7D | #000000      |    16.18 |
+| ~success~     | #8AEA92 | #000000      |    14.26 |
+| ~success-~    | #86D58E | #000000      |    11.92 |
+|---------------+---------+--------------+----------|
+| ~warning+~    | #88040D | #FFFFFF      |    10.14 |
+| ~warning~     | #AF1923 | #FFFFFF      |     7.03 |
+| ~warning-~    | #D2232E | #FFFFFF      |     5.22 |
+|---------------+---------+--------------+----------|
 #+TBLFM: $4='(contrast $2 $3);%.2f
 
-*** Dark theme
+** Dark theme
 
-The scheme below gives a taste of the default dark palette.
-
-[[./dark-theme.svg]]
-
-**** COMMENT Contrast ratios for dark theme (outdated!)
-
-Find the contrast ratio of each pair of colors in the table below.
-
-| Color Name       | Value   | ~on-*~ Value | Contrast |
-|------------------+---------+--------------+----------|
-| ~background~     | #000000 | #FFFFFF      |    21.00 |
-| ~background-alt~ | #333333 | #FFFFFF      |    12.63 |
-|------------------+---------+--------------+----------|
-| ~primary~        | #E48D4E | #000000      |     8.22 |
-| ~primary-alt~    | #D7752F | #000000      |     6.47 |
-|------------------+---------+--------------+----------|
-| ~secondary~      | #874215 | #FFFFFF      |     7.45 |
-| ~secondary-alt~  | #A55D2F | #FFFFFF      |     4.99 |
-|------------------+---------+--------------+----------|
-| ~accent~         | #571FD2 | #FFFFFF      |     8.29 |
-| ~accent-alt~     | #763DF2 | #FFFFFF      |     5.65 |
-|------------------+---------+--------------+----------|
-| ~warning~        | #FCBA04 | #000000      |    12.16 |
-| ~warning-alt~    | #FCA904 | #000000      |    10.82 |
+| Color Name    | Value   | ~on-*~ Value | Contrast |
+|---------------+---------+--------------+----------|
+| ~background+~ | #000000 | #FFFFFF      |    21.00 |
+| ~background~  | #121212 | #FFFFFF      |    18.73 |
+| ~background-~ | #333333 | #FFFFFF      |    12.63 |
+|---------------+---------+--------------+----------|
+| ~primary+~    | #EFA671 | #000000      |    10.36 |
+| ~primary~     | #E48D4E | #000000      |     8.22 |
+| ~primary-~    | #D7752F | #000000      |     6.47 |
+|---------------+---------+--------------+----------|
+| ~secondary+~  | #683008 | #FFFFFF      |    10.42 |
+| ~secondary~   | #844115 | #FFFFFF      |     7.64 |
+| ~secondary-~  | #9F592D | #FFFFFF      |     5.33 |
+|---------------+---------+--------------+----------|
+| ~action+~     | #481FA2 | #FFFFFF      |    10.54 |
+| ~action~      | #571FD2 | #FFFFFF      |     8.29 |
+| ~action-~     | #763DF2 | #FFFFFF      |     5.65 |
+|---------------+---------+--------------+----------|
+| ~highlight+~  | #FC83F2 | #000000      |     9.67 |
+| ~highlight~   | #F46DE8 | #000000      |     8.20 |
+| ~highlight-~  | #EA43DD | #000000      |     6.35 |
+|---------------+---------+--------------+----------|
+| ~success+~    | #87FCDF | #000000      |    17.02 |
+| ~success~     | #4CFBCF | #000000      |    16.01 |
+| ~success-~    | #05F4CD | #000000      |    14.83 |
+|---------------+---------+--------------+----------|
+| ~warning+~    | #FFD152 | #000000      |    14.49 |
+| ~warning~     | #FCBA04 | #000000      |    12.16 |
+| ~warning-~    | #FCA904 | #000000      |    10.82 |
+|---------------+---------+--------------+----------|
 #+TBLFM: $4='(contrast $2 $3);%.2f
-
-** Fonts
-
-The font family defaults to Public Sans and is used for headings in the built-in
-help system.
 
 ** Remarks
 
-~on-colors~, when omitted, are set to either ~text~ or ~contrast-text~,
-depending on which results in a higher contrast ratio with its corresponding
-~color~.
+The minus and plus colors, when omitted, are set to the corresponding regular
+color.
+
+~on-colors~, when omitted, are set to either black or white, depending on which
+results in a higher contrast ratio with its corresponding ~color~.
 
 One might be tempted to think that ~on-colors~ are meant to be used solely for
 text, but the principle holds more generality, when placing tiny elements over

@@ -17,17 +17,17 @@ Used by pages like `nyxt/mode/history:buffer-history-tree' and
               :padding 0
               :list-style "none")
             `(body
-              :background ,theme:background
-              :color ,theme:on-background
+              :background ,theme:background-color
+              :color ,theme:on-background-color
               :line-height "initial")
             '("h1"
               :margin-top "inherit")
             `(".current-buffer a"
-              :color ,theme:on-background)
+              :color ,theme:on-background-color)
             '(".current-buffer a:hover"
               :opacity 0.5)
             `(".other-buffer a"
-              :color ,theme:primary)
+              :color ,theme:primary-color)
             '(".other-buffer a:hover"
               :opacity 0.5)
             '(li
@@ -40,8 +40,8 @@ Used by pages like `nyxt/mode/history:buffer-history-tree' and
               :content "' '"
               :position "absolute"
               :width "1px"
-              :background-color ,theme:on-background ; FIXME: Is this right?
-              :color ,theme:background
+              :background-color ,theme:on-background-color ; FIXME: Is this right?
+              :color ,theme:background-color
               :top "5px"
               :bottom "-12px"
               :left "-10px")
@@ -54,8 +54,8 @@ Used by pages like `nyxt/mode/history:buffer-history-tree' and
               :content "' '"
               :position "absolute"
               :width "1px"
-              :background-color ,theme:on-background ; FIXME: Is this right?
-              :color ,theme:background
+              :background-color ,theme:on-background-color ; FIXME: Is this right?
+              :color ,theme:background-color
               :top "5px"
               :bottom "7px"
               :height "7px"
@@ -66,7 +66,7 @@ Used by pages like `nyxt/mode/history:buffer-history-tree' and
               :left "-10px"
               :width "10px"
               :height "1px"
-              :background-color ,theme:on-background ; FIXME: Is this right?
-              :color ,theme:background
+              :background-color ,theme:on-background-color ; FIXME: Is this right?
+              :color ,theme:background-color
               :top "12px"))))
   (:toggler-command-p nil))

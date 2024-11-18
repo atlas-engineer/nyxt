@@ -199,7 +199,7 @@ buffers, load data files, open prompt buffer, etc).")
     :documentation "Whether to replace renderer specific dialog boxes with the
 prompt buffer.")
    (theme
-    (make-instance 'theme:theme)
+    theme:+light-theme+
     :type theme:theme
     :documentation "The theme to use for all the browser interface elements.")
    (glyph-logo
@@ -312,7 +312,7 @@ prevents otherwise.")
 (defmethod theme ((ignored (eql nil)))
   "Fallback theme in case `*browser*' is NIL."
   (declare (ignore ignored))
-  (make-instance 'theme:theme))
+  theme:+light-theme+)
 
 (defmethod external-editor-program ((browser browser))
   "Specialized reader for `external-editor-program' slot.

@@ -439,7 +439,7 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
               :margin "1em")
             `(.input-area
               :border-radius "2px"
-              :background-color ,theme:secondary
+              :background-color ,theme:secondary-color
               :width "99%"
               :padding "0.5rem")
             '(.evaluation-result
@@ -447,7 +447,7 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
             '(.button
               :display "inline")
             `("textarea,input"
-              :color ,theme:on-action
+              :color ,theme:on-action-color
               :opacity "0.9"
               :border "none"
               :outline "none"
