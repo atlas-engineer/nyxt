@@ -12,9 +12,10 @@ Used by pages like `nyxt/mode/history:buffer-history-tree' and
 `nyxt/mode/history:history-tree'."
   ((visible-in-status-p nil)
    (style (theme:themed-css (theme *browser*)
-            `(* :margin 0
-                :padding 0
-                :list-style "none")
+            '(*
+              :margin 0
+              :padding 0
+              :list-style "none")
             `(body
               :background ,theme:background
               :color ,theme:on-background
@@ -23,15 +24,15 @@ Used by pages like `nyxt/mode/history:buffer-history-tree' and
               :margin-top "inherit")
             `(".current-buffer a"
               :color ,theme:on-background)
-            `(".current-buffer a:hover"
+            '(".current-buffer a:hover"
               :opacity 0.5)
             `(".other-buffer a"
               :color ,theme:primary)
-            `(".other-buffer a:hover"
+            '(".other-buffer a:hover"
               :opacity 0.5)
-            `(li
+            '(li
               :white-space "nowrap")
-            `("ul li"
+            '("ul li"
               :margin-left "15px"
               :position "relative"
               :padding-left "5px")
@@ -44,9 +45,9 @@ Used by pages like `nyxt/mode/history:buffer-history-tree' and
               :top "5px"
               :bottom "-12px"
               :left "-10px")
-            `("body > ul > li:first-child::before"
+            '("body > ul > li:first-child::before"
               :top "12px")
-            `("ul li:not(:first-child):last-child::before"
+            '("ul li:not(:first-child):last-child::before"
               :display "none")
             `("ul li:only-child::before"
               :display "list-item"

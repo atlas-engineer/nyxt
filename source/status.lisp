@@ -27,43 +27,43 @@
    (glyph-lambda (gethash "lambda.svg" *static-data*))
    (style (theme:themed-css (theme *browser*)
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "400" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Regular.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "400" :src "url('nyxt-resource:PublicSans-Regular.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "400" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Italic.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "400" :src "url('nyxt-resource:PublicSans-Italic.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "100" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Thin.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "100" :src "url('nyxt-resource:PublicSans-Thin.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "100" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-ThinItalic.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "100" :src "url('nyxt-resource:PublicSans-ThinItalic.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "200" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-ExtraLight.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "200" :src "url('nyxt-resource:PublicSans-ExtraLight.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "200" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-ExtraLightItalic.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "200" :src "url('nyxt-resource:PublicSans-ExtraLightItalic.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "300" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Light.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "300" :src "url('nyxt-resource:PublicSans-Light.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "300" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-LightItalic.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "300" :src "url('nyxt-resource:PublicSans-LightItalic.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "500" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Medium.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "500" :src "url('nyxt-resource:PublicSans-Medium.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "500" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-MediumItalic.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "500" :src "url('nyxt-resource:PublicSans-MediumItalic.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "600" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-SemiBold.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "600" :src "url('nyxt-resource:PublicSans-SemiBold.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "600" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-SemiBoldItalic.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "600" :src "url('nyxt-resource:PublicSans-SemiBoldItalic.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "700" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Bold.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "700" :src "url('nyxt-resource:PublicSans-Bold.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "700" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-BoldItalic.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "700" :src "url('nyxt-resource:PublicSans-BoldItalic.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "800" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-ExtraBold.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "800" :src "url('nyxt-resource:PublicSans-ExtraBold.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "800" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-ExtraBoldItalic.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "800" :src "url('nyxt-resource:PublicSans-ExtraBoldItalic.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "900" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Black.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "900" :src "url('nyxt-resource:PublicSans-Black.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "900" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-BlackItalic.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "900" :src "url('nyxt-resource:PublicSans-BlackItalic.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "dejavu sans mono" :src ,(format nil "url('nyxt-resource:~a')" "DejaVuSansMono.ttf") "format('ttf')")
+            '(:font-face :font-family "dejavu sans mono" :src "url('nyxt-resource:DejaVuSansMono.ttf')" "format('ttf')")
             `(body
               :font-family ,theme:font-family
               :line-height "100vh"
@@ -71,13 +71,13 @@
               :white-space "nowrap"
               :padding 0
               :margin 0)
-            `(".arrow-right"
+            '(".arrow-right"
               :clip-path "polygon(0 0, calc(100% - 7px) 0, 100% calc(50% - 1px), 100% 50%, 100% calc(50% + 1px), calc(100% - 7px) 100%, 0 100%)"
               :margin-right "-7px")
-            `(".arrow-left"
+            '(".arrow-left"
               :clip-path "polygon(7px 0, 100% 0, 100% 100%, 7px 100%, 0px calc(50% + 1px), 0% 50%, 0px calc(50% - 1px))"
               :margin-left "-7px")
-            `("#container"
+            '("#container"
               :display "flex"
               :justify-content "space-between"
               :overflow-y "hidden")
@@ -87,7 +87,7 @@
               :z-index "3"
               :flex-basis "78px"
               :display "flex")
-            `("#controls > button"
+            '("#controls > button"
               :margin-right "-3px"
               :max-width "20px"
               :height "100%"
@@ -102,7 +102,7 @@
               :flex-grow "3"
               :flex-shrink "2"
               :flex-basis "144px")
-            `("#url button"
+            '("#url button"
               :text-align "left"
               :width "100%")
             `("#tabs"
@@ -117,7 +117,7 @@
               :flex-grow "10"
               :flex-shrink "4"
               :flex-basis "144px")
-            `("#tabs::-webkit-scrollbar"
+            '("#tabs::-webkit-scrollbar"
               :display "none")
             `(".tab"
               :background-color ,theme:background-
@@ -141,15 +141,15 @@
               :padding-left "6px"
               :padding-right "3px"
               :z-index "2")
-            `("#modes > button"
+            '("#modes > button"
               :border-radius "0"
               :padding-left "3px"
               :padding-right "3px")
-            `("#reload"
+            '("#reload"
               :margin-top "1px")
-            `("#modes::-webkit-scrollbar"
+            '("#modes::-webkit-scrollbar"
               :display "none")
-            `(button
+            '(button
               :background "transparent"
               :color "inherit"
               :text-decoration "transparent"

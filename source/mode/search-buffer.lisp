@@ -18,7 +18,7 @@
         :z-index #.(1- (expt 2 31)))
       `("span[nyxt-search-mark].nyxt-current-search-mark"
         :background-color ,theme:highlight !important)
-      `(:keyframes "mark"
+      '(:keyframes "mark"
                    (0% :background-position 0 0%)
                    (100% :background-position 0 100%)))
     :documentation "The style of the search overlays.")

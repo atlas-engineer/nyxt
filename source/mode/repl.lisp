@@ -429,9 +429,9 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
    (style (theme:themed-css (theme *browser*)
             `(*
               :font-family ,theme:monospace-font-family)
-            `(body
+            '(body
               :margin "0")
-            `("#container"
+            '("#container"
               :display "flex"
               :flex-flow "column"
               :height "95vh"
@@ -442,9 +442,9 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
               :background-color ,theme:secondary
               :width "99%"
               :padding "0.5rem")
-            `(.evaluation-result
+            '(.evaluation-result
               :margin "1rem")
-            `(.button
+            '(.button
               :display "inline")
             `("textarea,input"
               :color ,theme:on-action
@@ -455,21 +455,21 @@ The `input' should be a valid Lisp code `read'-able in the `eval-package'.
               :margin 0
               :autofocus "true"
               :width "99%")
-            `("#cells"
+            '("#cells"
               :font-size "12px"
               :flex-grow "1"
               :overflow-y "auto"
               :overflow-x "auto")
-            `(.controls
+            '(.controls
               :font-size "14px"
               :position "absolute"
               :bottom "1em"
               :right "1em")
-            `(".controls button"
+            '(".controls button"
               :height "2rem")
-            `(.cell-actions
+            '(.cell-actions
               :display none)
-            `(":focus-within ~ .cell-actions,
+            '(":focus-within ~ .cell-actions,
 .cell:hover .cell-actions"
               :display block))
           :documentation "The CSS applied to a REPL when it is set-up.")

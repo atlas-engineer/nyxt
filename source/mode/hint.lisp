@@ -104,7 +104,7 @@ A positive value shifts to the bottom.")
     `(".nyxt-hint.nyxt-current-hint"
       :background-color ,theme:action
       :color ,theme:on-action)
-    `(".nyxt-hint.nyxt-match-hint"
+    '(".nyxt-hint.nyxt-match-hint"
       :padding "0px"
       :border-style "none"
       :opacity "0.5")

@@ -12,6 +12,6 @@ Used by `nyxt/mode/history:list-history'."
    (style (theme:themed-css (theme *browser*)
             `(a
               :color ,theme:on-background)
-            `("a:hover"
+            '("a:hover"
               :opacity 0.5))))
   (:toggler-command-p nil))

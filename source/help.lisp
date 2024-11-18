@@ -60,24 +60,24 @@ to the next."
   (spinneret:with-html-string
     (:nstyle
       (theme:themed-css (theme *browser*)
-        `("body,h3"
+        '("body,h3"
           :margin 0)
-        `(".radio-div,.checkbox-div"
+        '(".radio-div,.checkbox-div"
           :margin-top "1em")
-        `(".radio-label,.checkbox-input"
+        '(".radio-label,.checkbox-input"
           :display block
           :padding-bottom "0.5em")
-        `(".radio-input,.checkbox-input"
+        '(".radio-input,.checkbox-input"
           :display inline-block
           :margin-right "0.5em"
           :margin-left "3em")
-        `("select.button,.button"
+        '("select.button,.button"
           :display block
           :margin "1em 0 0.5em 2.5em")
-        `(.section
+        '(.section
           :margin 0
           :padding "2em 0 0.5em 1.5em")
-        `(.row
+        '(.row
           :display "flex"
           :margin-top "1em")
         `(.tabs
@@ -86,14 +86,14 @@ to the next."
         `(.content
           :flex "85%"
           :background-color ,theme:background-)
-        `(.left
+        '(.left
           :flex "0 0 256px")
         `(.right
           :color ,theme:primary
           :padding-top "1em"
           :padding-left "4em"
           :max-width "50ch")
-        `(p
+        '(p
           :margin 0
           :padding-bottom "0.5em")
         `(.tab-button

@@ -440,17 +440,11 @@ Return two values, where the first corresponds to the sequence that meets PRED."
 
 (export-always 'themed-css)
 (defmacro themed-css (theme &body blocks)
-  "Generate CSS BLOCKS styled according to THEME.
+  "Generate CSS styled according to THEME.
 
-BLOCKS is a list of LASS blocks.
+BLOCKS is a list of LASS blocks, where the THEME slots are let-bound.
 
-Any LASS-friendly syntax (including quasi-quotes) works, so you can evaluate
-arbitrary code before the blocks are compiled to CSS. For the convenience of
-quasi-quoted forms, this macro let-binds the set of symbols/slots for THEME
-around the BLOCKS.
-
-Example: if the theme is dark, color all paragraphs' text in accent color, or in
-secondary color otherwise; color the borders of all headings in secondary color.
+Example:
 
 \(themed-css (make-instance 'theme :accent-color \"blue\")
            `(|h1,h2,h3,h4,h5,h6|
@@ -459,21 +453,4 @@ secondary color otherwise; color the borders of all headings in secondary color.
              :border-color ,theme:secondary)
            `(p
              :color ,(if (theme:dark-p theme:theme) theme:accent theme:secondary)))"
-  `(with-theme ,theme
-     (lass:compile-and-write
-      ;; NOTE: This loop allows to omit quotes for most trivial rules,
-      ;; mostly preserving backwards-compatibility.
-      ,@(loop for block in blocks
-              for first = (first block)
-              ;; FIXME: This is not perfect, but it's good enough for
-              ;; 99% of cases. Maybe somehow parse selectors with LASS?
-              if (or (stringp first)
-                     (keywordp first)
-                     (eq '* first)
-                     (and (symbolp first)
-                          (eq :internal (nth-value 1 (find-symbol (symbol-name first)
-                                                                  (symbol-package first)))))
-                     (and (listp first)
-                          (keywordp (first first))))
-                collect (cons 'quote (list block))
-              else collect block))))
+  `(with-theme ,theme (lass:compile-and-write ,@blocks)))

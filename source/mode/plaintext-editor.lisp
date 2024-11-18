@@ -10,7 +10,7 @@ It renders the file in a single textarea HTML element.  Enabled by default for
 `editor-buffer's."
   ((visible-in-status-p nil)
    (style (theme:themed-css (theme *browser*)
-            `("body"
+            '("body"
               :margin 0)
             `("#editor"
               :font-family ,theme:monospace-font-family
