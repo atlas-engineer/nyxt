@@ -122,7 +122,7 @@ the configuration) and merely adds/modifies it."
             ((keyscheme-map
               (define-keyscheme-map
                "my-base" (list :import %slot-value%)
-               keyscheme:vi-normal
+               nyxt/keyscheme:vi-normal
                (list "g b" (lambda-command switch-buffer* ()
                              (switch-buffer :current-is-last-p t))))))))
         (:p "The " (:nxref  :command 'nothing) " command is useful to override bindings to do
