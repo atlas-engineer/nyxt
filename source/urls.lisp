@@ -314,16 +314,15 @@ ARGS is an arbitrary keyword arguments list that is translated to a URL query."
 (ps:defpsmacro nyxt/ps::lisp-eval ((&key (buffer '(nyxt:current-buffer)) title) &body body)
   "Request a URL that evaluates BODY in BUFFER.
 TITLE is purely informative."
-  `(let ((promise
-           (fetch (ps:lisp
-                   (quri:render-uri
-                    (lisp-url :buffer ,buffer
-                              :title ,title
-                              :callback ,(if (and (sera:single body)
-                                                  (member (first (first body)) '(lambda function)))
-                                             (first body)
-                                             `(lambda () ,@body)))))
-                  (ps:create :mode "no-cors"))))))
+  `(fetch
+    (ps:lisp (quri:render-uri (lisp-url :buffer ,buffer
+                                        :title ,title
+                                        :callback ,(if (and (sera:single body)
+                                                            (member (first (first body))
+                                                                    '(lambda function)))
+                                                       (first body)
+                                                       `(lambda () ,@body)))))
+    (ps:create :mode "no-cors")))
 
 (define-internal-scheme "lisp"
     (lambda (url)
