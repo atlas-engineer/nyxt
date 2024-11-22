@@ -27,6 +27,7 @@
 
 (define-version "4.0.0"
   (:ul
+   (:li "Refactor the " (:nxref :package :theme) " API.")
    (:li "Delete support for panel buffers and all related logic.")
    (:li "Refactor " (:nxref :command 'quick-start) " as an internal page.")
    (:li "New implementation of the search engine logic.")
