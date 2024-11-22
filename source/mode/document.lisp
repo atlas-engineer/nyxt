@@ -472,7 +472,7 @@ The inner-text must not be modified, so that we can jump to the anchor of the sa
                            :right "0"
                            :bottom "0"
                            :opacity 0.00
-                           :background ,theme:on-background
+                           :background ,theme:on-background-color
                            :z-index #.(1- (expt 2 31)))))
         (selection-rectangle-style (theme:themed-css (theme *browser*)
                                      `("#nyxt-rectangle-selection"
@@ -481,8 +481,8 @@ The inner-text must not be modified, so that we can jump to the anchor of the sa
                                        :left "0"
                                        :border-style "dotted"
                                        :border-width "4px"
-                                       :border-color ,theme:background
-                                       :background-color ,theme:on-background
+                                       :border-color ,theme:background-color
+                                       :background-color ,theme:on-background-color
                                        :opacity 0.10
                                        :z-index ,(1- (expt 2 30))))))
     (ps-labels :async t

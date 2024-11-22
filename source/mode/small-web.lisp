@@ -40,21 +40,21 @@ Gemini support is a bit more brittle, but you can override `line->html' for
     :documentation "The maximum number of times a redirection is attempted.")
    (style (theme:themed-css (nyxt::theme *browser*)
             `(body
-              :background-color ,theme:background)
+              :background-color ,theme:background-color)
             `(pre
-              :background-color ,theme:secondary
+              :background-color ,theme:secondary-color
               :padding "2px"
               :margin "0"
               :border-radius 0)
-            `(.button
+            '(.button
               :margin "0 3px 3px 0"
               :font-size "15px")
             `(.search
-              :background-color ,theme:action
-              :color ,theme:on-action)
+              :background-color ,theme:action-color
+              :color ,theme:on-action-color)
             `(.error
-              :background-color ,theme:warning
-              :color ,theme:on-warning
+              :background-color ,theme:warning-color
+              :color ,theme:on-warning-color
               :padding "1em 0"))))
   (:toggler-command-p nil))
 

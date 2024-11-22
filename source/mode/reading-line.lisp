@@ -39,7 +39,7 @@ Commands:
               :top "10px"
               :left "0"
               :width "100%"
-              :background-color ,theme:primary
+              :background-color ,theme:primary-color
               :z-index ,(1- (expt 2 31)) ; 32 bit signed integer max
               :opacity "15%"
               :height "20px"))

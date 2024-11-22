@@ -10,7 +10,7 @@ It renders the file in a single textarea HTML element.  Enabled by default for
 `editor-buffer's."
   ((visible-in-status-p nil)
    (style (theme:themed-css (theme *browser*)
-            `("body"
+            '("body"
               :margin 0)
             `("#editor"
               :font-family ,theme:monospace-font-family
@@ -22,8 +22,8 @@ It renders the file in a single textarea HTML element.  Enabled by default for
               :padding "5px"
               :padding-top "18px"
               :autofocus "true"
-              :background-color ,theme:background
-              :color ,theme:on-background))))
+              :background-color ,theme:background-color
+              :color ,theme:on-background-color))))
   (:toggler-command-p nil))
 
 (defmethod markup ((editor plaintext-editor-mode) content)

@@ -52,69 +52,69 @@ The following mouse keybindings are available:
      (style
       (theme:themed-css (theme *browser*)
         #-darwin
-        `(:font-face :font-family "public sans" :font-style "normal" :font-weight "400" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Regular.woff") "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "normal" :font-weight "400" :src "url('nyxt-resource:PublicSans-Regular.woff')" "format('woff')")
         #-darwin
-        `(:font-face :font-family "public sans" :font-style "italic" :font-weight "400" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Italic.woff") "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "italic" :font-weight "400" :src "url('nyxt-resource:PublicSans-Italic.woff')" "format('woff')")
         #-darwin
-        `(:font-face :font-family "public sans" :font-style "normal" :font-weight "100" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Thin.woff") "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "normal" :font-weight "100" :src "url('nyxt-resource:PublicSans-Thin.woff')" "format('woff')")
         #-darwin
-        `(:font-face :font-family "public sans" :font-style "italic" :font-weight "100" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-ThinItalic.woff") "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "italic" :font-weight "100" :src "url('nyxt-resource:PublicSans-ThinItalic.woff')" "format('woff')")
         #-darwin
-        `(:font-face :font-family "public sans" :font-style "normal" :font-weight "200" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-ExtraLight.woff") "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "normal" :font-weight "200" :src "url('nyxt-resource:PublicSans-ExtraLight.woff')" "format('woff')")
         #-darwin
-        `(:font-face :font-family "public sans" :font-style "italic" :font-weight "200" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-ExtraLightItalic.woff") "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "italic" :font-weight "200" :src "url('nyxt-resource:PublicSans-ExtraLightItalic.woff')" "format('woff')")
         #-darwin
-        `(:font-face :font-family "public sans" :font-style "normal" :font-weight "300" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Light.woff") "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "normal" :font-weight "300" :src "url('nyxt-resource:PublicSans-Light.woff')" "format('woff')")
         #-darwin
-        `(:font-face :font-family "public sans" :font-style "italic" :font-weight "300" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-LightItalic.woff") "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "italic" :font-weight "300" :src "url('nyxt-resource:PublicSans-LightItalic.woff')" "format('woff')")
         #-darwin
-        `(:font-face :font-family "public sans" :font-style "normal" :font-weight "500" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Medium.woff") "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "normal" :font-weight "500" :src "url('nyxt-resource:PublicSans-Medium.woff')" "format('woff')")
         #-darwin
-        `(:font-face :font-family "public sans" :font-style "italic" :font-weight "500" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-MediumItalic.woff") "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "italic" :font-weight "500" :src "url('nyxt-resource:PublicSans-MediumItalic.woff')" "format('woff')")
         #-darwin
-        `(:font-face :font-family "public sans" :font-style "normal" :font-weight "600" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-SemiBold.woff") "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "normal" :font-weight "600" :src "url('nyxt-resource:PublicSans-SemiBold.woff')" "format('woff')")
         #-darwin
-        `(:font-face :font-family "public sans" :font-style "italic" :font-weight "600" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-SemiBoldItalic.woff") "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "italic" :font-weight "600" :src "url('nyxt-resource:PublicSans-SemiBoldItalic.woff')" "format('woff')")
         #-darwin
-        `(:font-face :font-family "public sans" :font-style "normal" :font-weight "700" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Bold.woff") "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "normal" :font-weight "700" :src "url('nyxt-resource:PublicSans-Bold.woff')" "format('woff')")
         #-darwin
-        `(:font-face :font-family "public sans" :font-style "italic" :font-weight "700" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-BoldItalic.woff") "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "italic" :font-weight "700" :src "url('nyxt-resource:PublicSans-BoldItalic.woff')" "format('woff')")
         #-darwin
-        `(:font-face :font-family "public sans" :font-style "normal" :font-weight "800" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-ExtraBold.woff") "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "normal" :font-weight "800" :src "url('nyxt-resource:PublicSans-ExtraBold.woff')" "format('woff')")
         #-darwin
-        `(:font-face :font-family "public sans" :font-style "italic" :font-weight "800" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-ExtraBoldItalic.woff") "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "italic" :font-weight "800" :src "url('nyxt-resource:PublicSans-ExtraBoldItalic.woff')" "format('woff')")
         #-darwin
-        `(:font-face :font-family "public sans" :font-style "normal" :font-weight "900" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Black.woff") "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "normal" :font-weight "900" :src "url('nyxt-resource:PublicSans-Black.woff')" "format('woff')")
         #-darwin
-        `(:font-face :font-family "public sans" :font-style "italic" :font-weight "900" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-BlackItalic.woff") "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "italic" :font-weight "900" :src "url('nyxt-resource:PublicSans-BlackItalic.woff')" "format('woff')")
         #-darwin
-        `(:font-face :font-family "dejavu sans mono" :src ,(format nil "url('nyxt-resource:~a')" "DejaVuSansMono.ttf") "format('ttf')")
-        `(*
+        '(:font-face :font-family "dejavu sans mono" :src "url('nyxt-resource:DejaVuSansMono.ttf')" "format('ttf')")
+        '(*
           :font-size "14px"
           :line-height "18px"
           :overflow "hidden")
         `(body
           :font-family ,theme:font-family
           :border-right "2px solid"
-          :border-color ,theme:primary
+          :border-color ,theme:primary-color
           :margin "0"
           :padding "0")
         `("#prompt-area"
-          :background-color ,theme:primary
-          :color ,theme:on-primary
+          :background-color ,theme:primary-color
+          :color ,theme:on-primary-color
           :border-top "2px solid"
           :border-bottom "2px solid"
-          :border-color ,theme:primary
+          :border-color ,theme:primary-color
           :display "grid"
           :grid-template-columns "auto auto 1fr auto auto"
           :width "100%")
         `("#prompt"
-          :background-color ,theme:primary
-          :color ,theme:on-primary
+          :background-color ,theme:primary-color
+          :color ,theme:on-primary-color
           :padding-left "10px"
           :padding-right "8px"
           :line-height "28px")
-        `("#prompt-input"
+        '("#prompt-input"
           :margin-right "-10px"
           :line-height "28px")
         `("#prompt-extra"
@@ -122,12 +122,12 @@ The following mouse keybindings are available:
           :z-index "1"
           :min-width "12px"
           :padding-right 14px !important
-          :background-color ,theme:primary
-          :color ,theme:on-primary
+          :background-color ,theme:primary-color
+          :color ,theme:on-primary-color
           :line-height "28px"
           :padding-right "7px")
         `("#prompt-modes"
-          :background-color ,theme:secondary
+          :background-color ,theme:secondary-color
           :padding-left "10px !important"
           :padding-right "14px !important"
           :line-height "28px"
@@ -135,18 +135,18 @@ The following mouse keybindings are available:
           :padding-right "3px")
         `("#close-button"
           :text-align "right"
-          :background-color ,theme:primary
+          :background-color ,theme:primary-color
           :min-width "24px"
           :line-height "28px"
           :font-weight "bold"
           :font-size "20px")
-        `(".arrow-right"
+        '(".arrow-right"
           :clip-path "polygon(0 0, calc(100% - 10px) 0, 100% calc(50% - 1px), 100% 50%, 100% calc(50% + 1px), calc(100% - 10px) 100%, 0 100%)"
           :margin-right "-10px")
-        `(".arrow-left"
+        '(".arrow-left"
           :clip-path "polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0px calc(50% + 1px), 0% 50%, 0px calc(50% - 1px))"
           :margin-left "-10px")
-        `(button
+        '(button
           :background "transparent"
           :color "inherit"
           :text-decoration "none"
@@ -155,15 +155,15 @@ The following mouse keybindings are available:
           :font "inherit"
           :outline "inherit")
         `(.button.action
-          :background-color ,theme:action
-          :color ,theme:on-action)
+          :background-color ,theme:action-color
+          :color ,theme:on-action-color)
         `((:and .button :hover)
           :cursor "pointer"
-          :color ,theme:action)
+          :color ,theme:action-color)
         `(".button:hover svg path"
-          :stroke ,theme:action-)
+          :stroke ,theme:action-color-)
         `((:and .button (:or :visited :active))
-          :color ,theme:background)
+          :color ,theme:background-color)
         `(input
           :font-family ,theme:monospace-font-family)
         `("#input"
@@ -171,33 +171,33 @@ The following mouse keybindings are available:
           :margin-top "0"
           :margin-bottom "0"
           :padding-left "16px !important"
-          :background-color ,theme:background
-          :color ,theme:on-background
+          :background-color ,theme:background-color
+          :color ,theme:on-background-color
           :opacity 0.9
-          :border 2px solid ,theme:secondary
+          :border 2px solid ,theme:secondary-color
           :outline "none"
           :padding "3px"
           :width "100%"
           :autofocus "true")
         `("#input:focus"
-          :border-color ,(cl-colors2:print-hex theme:action- :alpha 0.40))
-        `(".source"
+          :border-color ,(cl-colors2:print-hex theme:action-color- :alpha 0.40))
+        '(".source"
           :margin-left "10px"
           :margin-top "15px")
         `(".source-name"
           :padding-left "4px"
-          :background-color ,theme:secondary
-          :color ,theme:on-secondary
+          :background-color ,theme:secondary-color
+          :color ,theme:on-secondary-color
           :display "flex"
           :justify-content "space-between"
           :align-items "stretch"
           :border-radius "2px")
         '(".source-name > div"
           :line-height "22px")
-        `(".source-name > div > button"
+        '(".source-name > div > button"
           :padding "5px 5px 5px 0px"
           :min-height "100%")
-        `("#next-source > svg, #previous-source > svg"
+        '("#next-source > svg, #previous-source > svg"
           :margin-bottom "2px"
           :height "5px")
         '("#previous-source"
@@ -205,8 +205,8 @@ The following mouse keybindings are available:
         '("#next-source"
           :padding 0)
         `("#suggestions"
-          :background-color ,theme:background
-          :color ,theme:on-background
+          :background-color ,theme:background-color
+          :color ,theme:on-background-color
           :height "100%"
           :margin-right "3px")
         `(".suggestion-and-mark-count"
@@ -218,7 +218,7 @@ The following mouse keybindings are available:
           :width "100%"
           :table-layout "fixed"
           (td
-           :color ,theme:on-background
+           :color ,theme:on-background-color
            :border-radius "2px"
            :white-space "nowrap"
            :height "20px"
@@ -226,26 +226,26 @@ The following mouse keybindings are available:
           ("tr:not(:first-child)"
            :font-family ,theme:monospace-font-family)
           ("tr:hover"
-           :background-color ,theme:action-
-           :color ,theme:on-action
+           :background-color ,theme:action-color-
+           :color ,theme:on-action-color
            :cursor "pointer")
           (th
-           :background-color ,theme:primary
-           :color ,theme:on-primary
+           :background-color ,theme:primary-color
+           :color ,theme:on-primary-color
            :font-weight "normal"
            :padding-left "4px"
            :border-radius "2px"
            :text-align "left"))
         `("#selection"
-          :background-color ,theme:action
-          :color ,theme:on-action)
+          :background-color ,theme:action-color
+          :color ,theme:on-action-color)
         `(.marked
-          :background-color ,theme:secondary
-          :color ,theme:on-secondary
+          :background-color ,theme:secondary-color
+          :color ,theme:on-secondary-color
           :font-weight "bold")
         `(.selected
-          :background-color ,theme:primary
-          :color ,theme:on-primary))
+          :background-color ,theme:primary-color
+          :color ,theme:on-primary-color))
       :documentation "The CSS applied to prompt buffer."))
     (:export-class-name-p t)
     (:export-accessor-names-p t)

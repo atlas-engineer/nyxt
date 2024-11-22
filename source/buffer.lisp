@@ -50,63 +50,63 @@ inherited from the superclasses.")
 
    (style (theme:themed-css (theme *browser*)
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "400" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Regular.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "400" :src "url('nyxt-resource:PublicSans-Regular.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "400" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Italic.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "400" :src "url('nyxt-resource:PublicSans-Italic.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "100" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Thin.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "100" :src "url('nyxt-resource:PublicSans-Thin.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "100" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-ThinItalic.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "100" :src "url('nyxt-resource:PublicSans-ThinItalic.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "200" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-ExtraLight.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "200" :src "url('nyxt-resource:PublicSans-ExtraLight.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "200" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-ExtraLightItalic.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "200" :src "url('nyxt-resource:PublicSans-ExtraLightItalic.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "300" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Light.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "300" :src "url('nyxt-resource:PublicSans-Light.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "300" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-LightItalic.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "300" :src "url('nyxt-resource:PublicSans-LightItalic.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "500" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Medium.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "500" :src "url('nyxt-resource:PublicSans-Medium.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "500" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-MediumItalic.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "500" :src "url('nyxt-resource:PublicSans-MediumItalic.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "600" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-SemiBold.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "600" :src "url('nyxt-resource:PublicSans-SemiBold.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "600" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-SemiBoldItalic.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "600" :src "url('nyxt-resource:PublicSans-SemiBoldItalic.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "700" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Bold.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "700" :src "url('nyxt-resource:PublicSans-Bold.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "700" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-BoldItalic.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "700" :src "url('nyxt-resource:PublicSans-BoldItalic.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "800" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-ExtraBold.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "800" :src "url('nyxt-resource:PublicSans-ExtraBold.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "800" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-ExtraBoldItalic.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "800" :src "url('nyxt-resource:PublicSans-ExtraBoldItalic.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "normal" :font-weight "900" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-Black.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "900" :src "url('nyxt-resource:PublicSans-Black.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "public sans" :font-style "italic" :font-weight "900" :src ,(format nil "url('nyxt-resource:~a')" "PublicSans-BlackItalic.woff") "format('woff')")
+            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "900" :src "url('nyxt-resource:PublicSans-BlackItalic.woff')" "format('woff')")
             #-darwin
-            `(:font-face :font-family "dejavu sans mono" :src ,(format nil "url('nyxt-resource:~a')" "DejaVuSansMono.ttf") "format('ttf')")
-            `(*
+            '(:font-face :font-family "dejavu sans mono" :src "url('nyxt-resource:DejaVuSansMono.ttf')" "format('ttf')")
+            '(*
               :box-sizing border-box)
             `(body
-              :background-color ,theme:background
-              :color ,theme:on-background
+              :background-color ,theme:background-color
+              :color ,theme:on-background-color
               :font-family ,theme:font-family
               :margin-left "20px"
               :margin-top "20px")
-            `(ul
+            '(ul
               :margin-top "0"
               :margin-bottom "0")
-            `("details > *"
+            '("details > *"
               :margin-left "18px")
-            `("details > ul"
+            '("details > ul"
               :margin-left "inherit")
-            `("details summary"
+            '("details summary"
               :margin-left "inherit"
               :margin-bottom "8px"
               :cursor "pointer")
-            `("summary::-webkit-details-marker"
+            '("summary::-webkit-details-marker"
               :padding-bottom "4px")
             '("details > summary"
               :list-style-type "none")
@@ -119,17 +119,17 @@ inherited from the superclasses.")
               :display "inline-block")
             '("details[open] > summary::before"
               :content "−")
-            `(.section
+            '(.section
               :margin-top "2em")
             `("h1,h2,h3,h4,h5,h6"
-              :color ,theme:primary)
+              :color ,theme:primary-color)
             `(hr
-              :background-color ,theme:secondary
-              :color ,theme:on-secondary
+              :background-color ,theme:secondary-color
+              :color ,theme:on-secondary-color
               :height "2px"
               :border-radius "2px"
               :border-width "0")
-            `(button
+            '(button
               :background "transparent"
               :color "inherit"
               :border "none"
@@ -138,20 +138,20 @@ inherited from the superclasses.")
               :outline "inherit")
             `(.button
               :appearance "menulist-button"
-              :background-color ,theme:primary
-              :color ,theme:on-primary
+              :background-color ,theme:primary-color
+              :color ,theme:on-primary-color
               :display "inline-block"
               :text-decoration "none"
               :border-radius "2px"
-              :border-color ,theme:primary
+              :border-color ,theme:primary-color
               :border-style "solid"
               :border-width "0.2em"
               :padding "0.2em"
               :margin "0.2em")
             `(select.button
               :appearance auto
-              :background-color ,theme:primary
-              :color ,(theme:contrasting-text-color theme:theme "white") !important)
+              :background-color ,theme:primary-color
+              :color "black !important")
             `(code
               :font-family ,theme:monospace-font-family
               :font-size "0.9rem")
@@ -164,60 +164,60 @@ inherited from the superclasses.")
               :appearance "none !important"
               :border "none"
               :background-color "transparent !important"
-              :color ,(theme:contrasting-text-color theme:theme "white") !important)
+              :color "black !important")
             `(".code-select:hover"
-              :color ,theme:accent !important)
-            `((:and .button :hover)
+              :color ,theme:action-color !important)
+            '((:and .button :hover)
               :cursor "pointer"
               :opacity 0.8)
             `((:and .button (:or :visited :active))
-              :color ,theme:background)
+              :color ,theme:background-color)
             `(.link
               :appearance none
               :text-decoration "underline"
               :display "inline"
-              :color ,theme:primary)
-            `(".link:hover"
+              :color ,theme:primary-color)
+            '(".link:hover"
               :opacity 0.8)
             `(.action
-              :color ,theme:action)
+              :color ,theme:action-color)
             `(.button.action
-              :background-color ,theme:action
-              :color ,theme:on-action
-              :border-color ,theme:action+)
+              :background-color ,theme:action-color
+              :color ,theme:on-action-color
+              :border-color ,theme:action-color+)
             `(.warning
-              :color ,theme:warning)
+              :color ,theme:warning-color)
             `(.button.warning
-              :background-color ,theme:warning
-              :color ,theme:on-warning
-              :border-color ,theme:warning+)
+              :background-color ,theme:warning-color
+              :color ,theme:on-warning-color
+              :border-color ,theme:warning-color+)
             `(.success
-              :color ,theme:success)
+              :color ,theme:success-color)
             `(.button.success
-              :background-color ,theme:success
-              :color ,theme:on-success
-              :border-color ,theme:success+)
+              :background-color ,theme:success-color
+              :color ,theme:on-success-color
+              :border-color ,theme:success-color+)
             `(.highlight
-              :color ,theme:highlight)
+              :color ,theme:highlight-color)
             `(.button.highlight
-              :background-color ,theme:highlight
-              :color ,theme:on-highlight
-              :border-color ,theme:highlight+)
+              :background-color ,theme:highlight-color
+              :color ,theme:on-highlight-color
+              :border-color ,theme:highlight-color+)
             `(.plain
-              :color ,theme:on-background
-              :background-color ,theme:background)
+              :color ,theme:on-background-color
+              :background-color ,theme:background-color)
             `(.input
               :appearance "textfield"
               :display "inline-block"
               :color "black"
               :background-color "white"
-              :border "0.2em" solid ,theme:secondary
+              :border "0.2em" solid ,theme:secondary-color
               :border-radius "4px"
               :outline "none"
               :padding "0.2em"
               :margin "0.2em")
             `(a
-              :color ,theme:primary)
+              :color ,theme:primary-color)
             `("a:hover"
               :opacity 0.8)
             `(pre
@@ -226,55 +226,55 @@ inherited from the superclasses.")
               :border-radius "2px"
               :overflow "auto"
               :padding "5px")
-            `("table"
+            '("table"
               :border-radius "2px"
               :border-spacing "0"
               :width "100%")
             `("pre, p code"
-              :color ,theme:on-codeblock
-              :background-color ,theme:codeblock)
+              :color ,theme:on-secondary-color
+              :background-color ,theme:secondary-color+)
             ;; FIXME: CSS4 has a :has() selector that would be perfect here:
             ;; a:has(code) { color: theme:on-codeblock;} Unfortunately, LASS
             ;; doesn't (yet?) support it. Thus the hack:
-            `("a code"
+            '("a code"
               :text-decoration underline)
             `("table, th, td"
-              :border-color ,theme:primary
+              :border-color ,theme:primary-color
               :border-width "1px"
               :border-style "solid"
-              :background-color ,theme:background
-              :color ,theme:on-background)
-            `("td, th"
+              :background-color ,theme:background-color
+              :color ,theme:on-background-color)
+            '("td, th"
               :padding "6px")
             `(th
-              :background-color ,theme:primary
-              :color ,theme:on-primary
+              :background-color ,theme:primary-color
+              :color ,theme:on-primary-color
               :text-align "left")
-            `("th:first-of-type"
+            '("th:first-of-type"
               :border-top-left-radius "1px")
-            `("th:last-of-type"
+            '("th:last-of-type"
               :border-top-right-radius "1px")
-            `("tr:last-of-type td:first-of-type"
+            '("tr:last-of-type td:first-of-type"
               :border-bottom-left-radius "2px")
-            `("tr:last-of-type td:last-of-type"
+            '("tr:last-of-type td:last-of-type"
               :border-bottom-right-radius "2px")
-            `("table.resizable-table th"
+            '("table.resizable-table th"
               :resize "horizontal"
               :overflow "auto")
             `("::selection"
-              :color ,theme:on-action
-              :background-color ,theme:action)
+              :color ,theme:on-action-color
+              :background-color ,theme:action-color)
             `(".mode-menu"
               :overflow-x "scroll"
               :white-space "nowrap"
-              :background-color ,theme:background-alt
+              :background-color ,theme:background-color-
               :position "sticky"
               :margin-top "-20px"
               :top 0
               :width "100%"
               :height "32px")
             `(".mode-menu > button"
-              :color ,theme:on-secondary
+              :color ,theme:on-secondary-color
               :padding-left "8px"
               :padding-right "8px"
               :font-size "14px"
@@ -284,10 +284,10 @@ inherited from the superclasses.")
               :border "none"
               :height "32px")
             `(".mode-menu > .binding"
-              :background-color ,theme:secondary)
+              :background-color ,theme:secondary-color)
             `(".mode-menu > .command"
-              :background-color ,theme:background-alt)
-            `("dl"
+              :background-color ,theme:background-color-)
+            '("dl"
               :display "grid"
               :grid-template-columns "max-content auto"
               :row-gap "10px"
@@ -299,8 +299,8 @@ inherited from the superclasses.")
               :padding-right "8px"
               :border-radius "2px"
               :font-weight "bold"
-              :background-color ,theme:background-alt)
-            `("dd"
+              :background-color ,theme:background-color-)
+            '("dd"
               :margin-inline-start "0"
               :grid-column-start 2)
             '("dd pre"

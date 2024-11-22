@@ -575,9 +575,7 @@ to your configuration file:")
 		     :background-color "black"
 		     :action-color "#37a8e4"
 		     :primary-color "#808080"
-		     :secondary-color "darkgray"
-		     :text-color "lightgray"
-		     :contrast-text-color "black")
+		     :secondary-color "darkgray")
               :doc "You can omit the colors you like in default theme, and they will stay as they were."))))
         (:p "This, on the next restart of Nyxt, will repaint all the interface elements into
 a dark-ish theme.")
@@ -593,10 +591,7 @@ semantic colors Nyxt uses to be compliant with Solarized Light theme:")
 		     :secondary-color "#586e75"
 		     :success-color "#2aa198"
 		     :warning-color "#dc322f"
-		     :highlight-color "#d33682"
-		     :codeblock-color "#6c71c4"
-		     :text-color "#002b36"
-		     :contrast-text-color "#fdf6e3")
+		     :highlight-color "#d33682")
               :doc "Covers all the semantic groups (`warning-color', `codeblock-color' etc.)
 Note that you can also define more nuanced colors, like `warning-color+', so
 that the interface gets even nicer. Otherwise Nyxt generates the missing colors
@@ -610,11 +605,11 @@ every individual class controlling Nyxt interface elements. All such classes hav
             ((style
               (theme:themed-css (theme *browser*)
                 `(*
-                  :background-color ,theme:background "!important"
+                  :background-color ,theme:background-color "!important"
                   :background-image none "!important"
                   :color "red" "!important")
                 `(a
-                  :background-color ,theme:background "!important"
+                  :background-color ,theme:background-color "!important"
                   :background-image none "!important"
                   :color "#AAAAAA" "!important"))))
 	    :doc "Notice the use of `theme:themed-css' for convenient theme color injection."))
@@ -622,7 +617,7 @@ every individual class controlling Nyxt interface elements. All such classes hav
             " of Nyxt dark mode to have a more theme-compliant colors, using the "
             (:code "theme:themed-css")
             " macro (making all the theme colors you've configured earlier available as
-variables like " (:code "theme:on-primary") ".)")
+variables like " (:code "theme:on-primary-color") ".)")
 
         (:nsection :title "Status buffer appearance"
           (:p "You can customize the layout and styling of " (:nxref :class-name 'status-buffer)
