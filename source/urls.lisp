@@ -239,7 +239,7 @@ ARGS is an arbitrary keyword arguments list that is translated to a URL query."
   (let* ((query (quri:url-encode-params (mapcar (lambda (pair)
                                                   (cons (symbol->param-name (first pair))
                                                         (value->param-value (rest pair))))
-                                                (alexandria:plist-alist args))
+                                                (alex:plist-alist args))
                                         :space-to-plus t))
          (url (quri:render-uri
                (quri:make-uri

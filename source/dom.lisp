@@ -196,7 +196,7 @@ JSON should have the format like what `get-document-body-json' produces:
     (serapeum:lret ((copy (make-instance
                            'plump:element
                            :parent parent
-                           :attributes (alexandria:copy-hash-table (plump:attributes element))
+                           :attributes (alex:copy-hash-table (plump:attributes element))
                            :tag-name (plump:tag-name element))))
       (map nil (lambda (c) (plump:append-child copy (copy c copy))) (plump:children element))))
   (:method ((element plump:text-node) &optional parent)
@@ -214,7 +214,7 @@ JSON should have the format like what `get-document-body-json' produces:
   (:method ((element plump:xml-header) &optional parent)
     (make-instance 'plump:xml-header
                    :parent parent
-                   :attributes (alexandria:copy-hash-table (plump:attributes element))))
+                   :attributes (alex:copy-hash-table (plump:attributes element))))
   (:method ((element plump:cdata) &optional parent)
     (make-instance 'plump:cdata
                    :parent parent

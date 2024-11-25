@@ -169,5 +169,5 @@ See `parse-version' for details on the returned values."
                   (funcall read-function i)))
           (uiop:directory-files (asdf:system-relative-pathname :nyxt (format nil "assets/~a/" subdirectory)))))
 
-(load-assets "fonts" #'alexandria:read-file-into-byte-vector)
-(load-assets "glyphs" #'alexandria:read-file-into-string)
+(load-assets "fonts" #'alex:read-file-into-byte-vector)
+(load-assets "glyphs" #'alex:read-file-into-string)

@@ -105,9 +105,9 @@ See `describe-class editor-mode' for details."))
   (cond
     ((editor buffer)
      (handler-case
-         (alexandria:write-string-into-file (get-content (editor buffer))
-                                            (file buffer)
-                                            :if-exists if-exists)
+         (alex:write-string-into-file (get-content (editor buffer))
+                                      (file buffer)
+                                      :if-exists if-exists)
        (file-error (e)
          (echo-warning "Cannot write ~a: ~a" (file buffer) e)
          nil)))

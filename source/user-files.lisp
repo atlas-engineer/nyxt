@@ -121,7 +121,7 @@ If the file is modified externally, Nyxt automatically reloads it."))
                                                    (symbol-package (sera:class-name-of file)))
                                           (not (uiop:directory-pathname-p full-path)))
                                  (setf (gethash full-path path-map) file))))
-                           (alexandria:hash-table-values path-map)))))
+                           (alex:hash-table-values path-map)))))
 
 ;; TODO: Contribute to UIOP?
 (export-always 'xdg-download-dir)

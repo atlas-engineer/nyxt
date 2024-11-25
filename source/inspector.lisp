@@ -165,8 +165,8 @@ values in help buffers, REPL and elsewhere."))
            (loop for val in (rest value) by #'cddr
                  collect (:td (:raw (value->html val t))))))))
        ((and (types:proper-list-p value)
-             (not (alexandria:circular-list-p value))
-             (not (alexandria:circular-tree-p value)))
+             (not (alex:circular-list-p value))
+             (not (alex:circular-tree-p value)))
         (:ul
          (dotimes (i (length value))
            (:li (:raw (value->html (elt value i) t))))))
