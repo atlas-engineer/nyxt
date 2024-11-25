@@ -1038,7 +1038,6 @@ This is a low-level function.  See `buffer-delete' and `delete-buffer'."
                                      (lambda-mapped-command buffer-delete)
                                      'reload-buffers))
    (prompter:actions-on-current-suggestion-enabled-p t)
-   (prompter:actions-on-current-suggestion-delay 0.1)
    (prompter:actions-on-current-suggestion (lambda-command set-current-buffer* (buffer)
                                              "Set current BUFFER for the active window."
                                              (set-current-buffer buffer :focus nil)))
