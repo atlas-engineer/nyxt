@@ -24,6 +24,15 @@ If the `:setter-p' option is non-nil, then a dummy setf method is defined."
                (declare (ignore value ,@arguments))))))))
 
 (define-ffi-generic ffi-window-delete (window)
+  (:method :around ((window window))
+    (with-slots (windows) *browser*
+      (cond ((or *quitting-nyxt-p*
+                 (> (hash-table-count windows) 1))
+             (hooks:run-hook (window-delete-hook window) window)
+             (remhash (id window) windows)
+             (call-next-method))
+            (t
+             (echo "Can't delete sole window.")))))
   (:documentation "Delete WINDOW."))
 
 (define-ffi-generic ffi-window-fullscreen (window &key &allow-other-keys)

@@ -36,6 +36,10 @@ For user-facing controls, see `*run-from-repl-p*' and `*debug-on-error*'.")
   "If non-nil, don't display anything.
 This is convenient for testing purposes or to drive Nyxt programmatically.")
 
+(export-always '*quitting-nyxt-p*)
+(defvar *quitting-nyxt-p* nil
+  "When non-nil, Nyxt is quitting.")
+
 (export-always '*browser*)
 (defvar *browser* nil
   "The entry-point object to a complete instance of Nyxt.

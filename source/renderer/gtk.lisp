@@ -420,8 +420,7 @@ response.  The BODY is wrapped with `with-protect'."
 (define-ffi-method on-signal-destroy ((window gtk-window))
   ;; Then remove buffer from window container to avoid corruption of buffer.
   (gtk:gtk-container-remove (main-buffer-container window)
-                            (gtk-object (active-buffer window)))
-  (window-delete window))
+                            (gtk-object (active-buffer window))))
 
 (define-ffi-method ffi-window-delete ((window gtk-window))
   (gtk:gtk-widget-destroy (gtk-object window)))

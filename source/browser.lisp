@@ -369,13 +369,6 @@ idle, so it should do the job."
   "Startup finalization: Set up initial window.
 This step is crucial to get Nyxt to reach a usable step and be able to handle
 errors correctly from then on."
-  ;; Remove existing windows.  This may happen if we invoked this function,
-  ;; possibly with a different renderer.  To avoid mixing windows with
-  ;; different renderers.  REVIEW: A better option would be to have
-  ;; `update-instance-for-redefined-class' call `customize-instance', but this
-  ;; is tricky to get right, in particular `ffi-buffer-make' seems to hang on
-  ;; `web-buffer's.
-  (mapcar #'window-delete (window-list))
   (window-make browser)
   ;; History restoration and subsequent tasks are error-prone, thus they should
   ;; be done once the browser is ready to handle errors ,that is ,once the

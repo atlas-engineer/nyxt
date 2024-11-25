@@ -106,32 +106,11 @@ The handlers take the window as argument."))
     (hooks:run-hook (window-make-hook browser) window)
     window))
 
-(export-always 'window-delete)
-(-> window-delete (window &key (:force-p boolean)) *)
-(defun window-delete (window &key force-p)
-  "Remove WINDOW from list of known windows.
-Quit the browser if it's the last window.
-
-This function must be called by the renderer when a window is deleted.
-
-With FORCE-P, only destroy the WINDOW widget and remove from known windows; do
-not try to quit the browser."
-  (when (gethash (id window) (windows *browser*)) ;; To avoid nested `window-delete' calls.
-    (unless force-p
-      (hooks:run-hook (window-delete-hook window) window))
-    ;; Remove window from list after the hook, so that the window remains
-    ;; enlisted on hook error.
-    (remhash (id window) (windows *browser*))
-    (ffi-window-delete window)
-    (when (and (not force-p)
-               (zerop (hash-table-count (windows *browser*))))
-      (quit))))
-
 (define-class window-source (prompter:source)
   ((prompter:name "Windows")
    (prompter:enable-marks-p t)
    (prompter:constructor (window-list))
-   (prompter:actions-on-return (lambda-mapped-command window-delete))))
+   (prompter:actions-on-return (lambda-mapped-command ffi-window-delete))))
 
 (defmethod prompter:object-attributes ((window window) (source window-source))
   (declare (ignore source))
@@ -144,11 +123,7 @@ not try to quit the browser."
 
 (define-command delete-current-window (&optional (window (current-window)))
   "Delete WINDOW, or the current window, when omitted."
-  (let ((window-count (hash-table-count (windows *browser*))))
-    (cond ((and window (> window-count 1))
-           (ffi-window-delete window))
-          (window
-           (echo "Can't delete sole window.")))))
+  (ffi-window-delete window))
 
 (define-command make-window (&optional buffer)
   "Create a new window."
