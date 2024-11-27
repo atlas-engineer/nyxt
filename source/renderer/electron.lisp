@@ -126,9 +126,9 @@ Note that by changing the default value, modifier keys can be remapped."))
   ;; Needed for buffers whose HTML document is set via JS
   ;; (e.g. `status-buffer').
   (electron:load-url buffer "about:blank")
-  (electron:register-before-input-event buffer
-                                        (lambda (buffer event)
-                                          (on-signal-key-press-event buffer event)))
+  (electron:add-listener buffer :before-input-event
+                         (lambda (buffer event)
+                           (on-signal-key-press-event buffer event)))
   (finalize-buffer buffer :extra-modes extra-modes :no-hook-p no-hook-p))
 
 ;; TODO Needed for reopen-dead-buffer.
@@ -156,9 +156,13 @@ Note that by changing the default value, modifier keys can be remapped."))
   ;; "load-changed" signal is emitted.
   (when (web-buffer-p buffer) (setf (nyxt::status buffer) :loading))
   (electron:load-url buffer url)
-  ;; Hack until on-signal-* methods are handled.
-  (electron:on-event (electron:web-contents buffer) "did-finish-load"
-                     (lambda (_) (declare (ignore _)) (setf (nyxt::status buffer) :finished))))
+  (electron:add-listener (electron:web-contents buffer) :did-finish-load
+                          (lambda (_) (declare (ignore _))
+                            (setf (nyxt::status buffer) :finished)
+                            (on-signal-load-finished buffer url)
+                            (unless (internal-url-p url)
+                              (echo "Finished loading ~s." (render-url url))))
+                          :once-p t))
 
 (defmethod ffi-buffer-evaluate-javascript ((buffer electron-buffer) javascript
                                            &optional world-name)
