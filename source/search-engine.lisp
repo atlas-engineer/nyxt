@@ -43,21 +43,10 @@ See configuration slots `search-engines' and `search-engine-suggestions-p'."))
 (defmethod format-query (query (search-engine search-engine))
   (format nil "~a ~a" (shortcut search-engine) query))
 
-(defmethod suggestions (query (search-engine search-engine))
-  "Return a list of search suggestions based on QUERY."
-  (unless (str:blankp query)
-    (flet ((request (url) (j:decode (dex:get url))))
-      (alex:switch ((control-completion-url search-engine) :test 'string=)
-        ("https://duckduckgo.com/ac/?q=~a"
-         (map 'list
-              (lambda (hash-table) (first (alex:hash-table-values hash-table)))
-              (request (format-completion-url query search-engine))))
-        ("https://en.wikipedia.org/w/api.php?action=opensearch&format=json&search=~a"
-           (coerce (j:get 1 (request (format-completion-url query search-engine)))
-                 'list))
-        (t
-         (log:debug "Search suggestions aren't supported for ~a." (name search-engine))
-         nil)))))
+(defgeneric suggestions (query search-engine)
+  (:method (query (search-engine search-engine))
+    (log:debug "Search suggestions aren't supported for ~a." (name search-engine)))
+  (:documentation "Return a list of search suggestions based on QUERY."))
 
 (defmethod prompter:object-attributes ((engine search-engine) (source prompter:source))
   (declare (ignore source))
@@ -77,3 +66,42 @@ When QUERY-IN-NEW-BUFFER-P is non-nil, open the results in a new buffer."
                            (prompt1 :prompt "Search engine"
                                     :sources 'search-engine-source))
                :buffer (if query-in-new-buffer-p (make-buffer-focus) (current-buffer))))
+
+(define-class ddg-search-engine (search-engine)
+  ((name "DuckDuckGo")
+   (shortcut "ddg")
+   (control-url "https://duckduckgo.com/?q=~a")
+   (control-completion-url "https://duckduckgo.com/ac/?q=~a"))
+  (:export-class-name-p t)
+  (:documentation "A representation of the DuckDuckGo search engine."))
+
+(defun request (url) (j:decode (dex:get url)))
+
+(defmethod suggestions (query (ddg ddg-search-engine))
+  "Return a list of search suggestions based on QUERY."
+  (unless (str:blankp query)
+    (map 'list
+         (lambda (hash-table) (first (alex:hash-table-values hash-table)))
+         (request (format-completion-url query ddg)))))
+
+(define-class wikipedia-search-engine (search-engine)
+  ((name "Wikipedia")
+   (shortcut "wiki")
+   (control-url "https://en.wikipedia.org/w/index.php?search=~a")
+   (control-completion-url "https://en.wikipedia.org/w/api.php?action=opensearch&format=json&search=~a"))
+  (:export-class-name-p t)
+  (:documentation "A representation of the Wikipedia search engine."))
+
+(defmethod suggestions (query (wikipedia wikipedia-search-engine))
+  "Return a list of search suggestions based on QUERY."
+  (unless (str:blankp query)
+    (coerce (j:get 1 (request (format-completion-url query wikipedia)))
+            'list)))
+
+(define-class atlas-searx-search-engine (search-engine)
+  ((name "Atlas SearXNG")
+   (shortcut "searx")
+   (control-url "https://search.atlas.engineer/searxng/search?q=~a")
+   (control-completion-url nil))
+  (:export-class-name-p t)
+  (:documentation "A representation of the Atlas SearXNG search engine."))
