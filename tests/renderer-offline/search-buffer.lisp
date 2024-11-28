@@ -63,7 +63,7 @@
              (assert-string= expected-dom-body (body buffer))))
     (buffer-load-internal-page-focus 'test-search-buffer)
     ;; Allow enough time to load the internal page.
-    (sleep 0.5)
+    (sleep 1)
     (let ((initial-dom-body (body)))
       (assert-match-count "h" 12)
       (assert-dom-immutability initial-dom-body)
