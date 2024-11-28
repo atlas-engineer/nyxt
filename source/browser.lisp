@@ -88,11 +88,6 @@ Non-zero means failure.")
     :documentation "Thread that listens on socket.
 See `*socket-file*'.
 This slot is mostly meant to clean up the thread if necessary.")
-   (non-terminating-threads
-    '()
-    :type (list-of bt:thread)
-    :documentation "List of threads that don't terminate
-and that ought to be killed when quitting.")
    (messages-content
     '()
     :export t

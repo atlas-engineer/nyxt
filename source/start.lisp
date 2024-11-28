@@ -144,7 +144,6 @@ This is useful to run scripts for instance."))))
           (when (uiop:file-exists-p socket)
             (log:info "Deleting socket ~s." socket)
             (uiop:delete-file-if-exists socket))))
-      (mapc #'destroy-thread* (non-terminating-threads *browser*))
       (ffi-kill-browser *browser*)
       ;; Reset global state.
       (setf *browser* nil
