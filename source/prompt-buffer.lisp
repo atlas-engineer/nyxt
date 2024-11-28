@@ -604,12 +604,11 @@ See `update-prompt-input' to update the changes visually."
        (error 'prompt-buffer-canceled)))))
 
 (sera:eval-always
-  (defvar %prompt-args (delete-duplicates
-                        (append
-                         (public-initargs 'prompt-buffer)
-                         (public-initargs 'prompter:prompter)
-                         ;; `customize-instance' `:after' arguments:
-                         '(extra-modes)))))
+  (defvar %prompt-args (delete-duplicates (append
+                                           (mopu:direct-slot-names 'prompt-buffer)
+                                           (mopu:direct-slot-names 'prompter:prompter)
+                                           ;; `customize-instance' `:after' arguments:
+                                           '(extra-modes)))))
 (export-always 'prompt)
 (sera:eval-always
   (defun prompt #.(append '(&rest args) `(&key ,@%prompt-args))

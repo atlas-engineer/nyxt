@@ -187,14 +187,6 @@ If there's no documentation, return DEFAULT."
   "Return a new ring buffer."
   (containers:make-ring-buffer size :last-in-first-out))
 
-(export-always 'public-initargs)
-(defun public-initargs (class-specifier)
-  "Return the list of initargs for CLASS-SPECIFIER direct slots."
-  (remove-if (lambda (name)
-               (eq :internal
-                   (nth-value 1 (find-symbol (string name) (symbol-package name)))))
-             (mopu:direct-slot-names class-specifier)))
-
 (export-always 'safe-read)
 (defun safe-read (&optional
                     (input-stream *standard-input*)
