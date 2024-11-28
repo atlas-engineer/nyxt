@@ -10,8 +10,6 @@
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria-2 :nyxt/utilities)
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
 
-;; Ensure the top-level exported forms are alphabetically sorted.
-
 (export-always '+newline+)
 (alex:define-constant +newline+ (string #\newline)
   :test #'equal
