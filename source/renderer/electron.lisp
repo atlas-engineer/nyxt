@@ -184,11 +184,24 @@ Note that by changing the default value, modifier keys can be remapped."))
 ;; ffi-buffer-load-alternate-html handles bogus URLs (https://bogusfoo.com/).
 ;; (defmethod ffi-buffer-load-alternate-html ((buffer electron-buffer) html-content content-url url))
 
-;; TODO Specialize as not to use the general JS solution from foreign-interface.
-;; (defmethod ffi-buffer-copy ((buffer electron-buffer) &optional (text nil text-provided-p)))
-;; (defmethod ffi-buffer-paste ((buffer electron-buffer) &optional (text nil text-provided-p)))
-;; (defmethod ffi-buffer-cut ((buffer electron-buffer)))
-;; (defmethod ffi-buffer-select-all ((buffer electron-buffer)))
+(defmethod ffi-buffer-copy ((buffer electron-buffer) &optional (text nil text-provided-p))
+  (if text-provided-p
+      (trivial-clipboard:text text)
+      (progn
+        (electron:copy (electron:web-contents buffer))
+        (trivial-clipboard:content))))
+
+(defmethod ffi-buffer-paste ((buffer electron-buffer) &optional (text nil text-provided-p))
+  (if text-provided-p
+      (electron:insert-text (electron:web-contents buffer) text)
+      (electron:paste (electron:web-contents buffer))))
+
+(defmethod ffi-buffer-cut ((buffer electron-buffer))
+  (electron:cut (electron:web-contents buffer))
+  (trivial-clipboard:text))
+
+(defmethod ffi-buffer-select-all ((buffer electron-buffer))
+  (electron:select-all (electron:web-contents buffer)))
 
 (defmethod ffi-buffer-undo ((buffer electron-buffer))
   ;; There is no way to check if an undo operation is possible. There exists a
