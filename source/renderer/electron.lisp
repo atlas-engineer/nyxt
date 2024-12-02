@@ -190,9 +190,19 @@ Note that by changing the default value, modifier keys can be remapped."))
 ;; (defmethod ffi-buffer-cut ((buffer electron-buffer)))
 ;; (defmethod ffi-buffer-select-all ((buffer electron-buffer)))
 
-;; TODO
-;; (defmethod ffi-buffer-undo ((buffer electron-buffer)))
-;; (defmethod ffi-buffer-redo ((buffer electron-buffer)))
+(defmethod ffi-buffer-undo ((buffer electron-buffer))
+  ;; There is no way to check if an undo operation is possible. There exists a
+  ;; `context-menu' event that when invoked can check whether `canUndo' exists
+  ;; within the `editFLags' of the renderer, but we cannot manually trigger this
+  ;; event.
+  (electron:undo (electron:web-contents buffer)))
+
+(defmethod ffi-buffer-redo ((buffer electron-buffer))
+  ;; There is no way to check if a redo operation is possible. There exists a
+  ;; `context-menu' event that when invoked can check whether `canRedo' exists
+  ;; within the `editFLags' of the renderer, but we cannot manually trigger this
+  ;; event.
+  (electron:redo (electron:web-contents buffer)))
 
 ;; TODO
 ;; (defmethod ffi-buffer-cookie-policy ((buffer electron-buffer)))
