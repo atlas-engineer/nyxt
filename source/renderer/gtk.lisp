@@ -223,12 +223,6 @@ the renderer thread, use `defmethod' instead."
   ;; starting again.
   (unless nyxt::*run-from-repl-p* (gtk:leave-gtk-main)))
 
-(define-class gtk-extensions-directory (nyxt-file)
-  ((files:name "gtk-extensions")
-   (files:base-path (uiop:merge-pathnames* "nyxt/" nasdf:*libdir*)))
-  (:export-class-name-p t)
-  (:documentation "Directory to load WebKitWebExtensions from."))
-
 (define-class gtk-download ()
   ((gtk-object)
    (handler-ids
@@ -237,8 +231,7 @@ the renderer thread, use `defmethod' instead."
   (:documentation "WebKit download class."))
 
 (defun make-context ()
-  (let ((context (make-instance 'webkit:webkit-web-context))
-        (gtk-extensions-path (files:expand (make-instance 'gtk-extensions-directory))))
+  (let ((context (make-instance 'webkit:webkit-web-context)))
     (webkit:webkit-web-context-set-spell-checking-enabled context t)
     ;; Need to set the initial language list.
     (let ((pointer (cffi:foreign-alloc :string
@@ -249,14 +242,6 @@ the renderer thread, use `defmethod' instead."
                                        :null-terminated-p t)))
       (webkit:webkit-web-context-set-spell-checking-languages context pointer)
       (cffi:foreign-free pointer))
-    (when (and (not (nfiles:nil-pathname-p gtk-extensions-path))
-               ;; Either the directory exists.
-               (or (uiop:directory-exists-p gtk-extensions-path)
-                   ;; Or try to create it.
-                   (handler-case
-                       (nth-value 1 (ensure-directories-exist gtk-extensions-path))
-                     (file-error ()))))
-      (log:info "GTK extensions directory: ~s" gtk-extensions-path))
     (gobject:g-signal-connect
      context "download-started"
      (lambda (context download)

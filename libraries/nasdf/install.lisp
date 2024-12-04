@@ -20,11 +20,6 @@
   (:documentation "Component type for executables to install."))
 (import 'nasdf-binary-file :asdf-user)
 
-(export-always 'nasdf-library-file)
-(defclass nasdf-library-file (nasdf-binary-file) ()
-  (:documentation "Component type for libraries (shared objects) to install."))
-(import 'nasdf-library-file :asdf-user)
-
 (export-always 'nasdf-desktop-file)
 (defclass nasdf-desktop-file (nasdf-file) ()
   (:documentation "Component type for XDG .desktop files to install."))
@@ -123,13 +118,6 @@ Destination directory is given by the `dest-source-dir' generic function."))
 (defparameter *datadir* (path-from-env "DATADIR" (merge-pathnames* "share/" *prefix*)))
 (export-always '*bindir*)
 (defparameter *bindir* (path-from-env "BINDIR" (merge-pathnames* "bin/" *prefix*)))
-(export-always '*libdir*)
-(defparameter *libdir* (path-from-env "LIBDIR" (merge-pathnames* "lib/" *prefix*)))
-
-(export-always 'libdir)
-(defmethod libdir ((component nasdf-library-file))
-  (let ((name (primary-system-name (component-system component))))
-    (ensure-directory-pathname (merge-pathnames* name *libdir*))))
 
 (export-always '*dest-source-dir*)
 (defvar *dest-source-dir* (path-from-env "NASDF_SOURCE_PATH" *datadir*)
@@ -187,10 +175,6 @@ Final path is resolved in `dest-source-dir'.")
   (call-next-method)
   (mapc #'make-executable (output-files op c))
   nil)
-
-(defmethod output-files ((op compile-op) (c nasdf-library-file))
-  (values (list (merge-pathnames* (basename (component-name c)) (libdir c)))
-          t))
 
 (defmethod output-files ((op compile-op) (c nasdf-desktop-file))
   (values (list (merge-pathnames* (merge-pathnames*
