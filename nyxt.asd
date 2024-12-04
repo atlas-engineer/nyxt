@@ -395,7 +395,7 @@
   :class :nasdf-system
   :depends-on (nyxt/electron)
   :build-operation "program-op"
-  :build-pathname "nyxt-electron"
+  :build-pathname "nyxt"
   :entry-point "nyxt:entry-point")
 
 (defsystem "nyxt/install"
