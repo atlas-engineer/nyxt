@@ -326,13 +326,6 @@ representation of HTML documents.
 Rendered URLs or the Nyxt's manual qualify as examples.  Buffers are fully
 separated from one another, so that each has its own behavior and settings."))
 
-(defmethod request-resource-hook ((buffer buffer))
-  "A method to not error out if the buffer has no `request-resource-hook'.
-
-Useful in FFI functions where we usually specialize things against
-`renderer-buffer', not knowing the exact class of those."
-  nil)
-
 (defmethod initialize-instance :after ((buffer buffer) &key &allow-other-keys)
   "Dummy method to allow forwarding other key arguments."
   buffer)
@@ -652,39 +645,6 @@ The handlers take the URL going to be loaded as argument and must return a
     :type hook-buffer
     :documentation "Hook run on `on-signal-load-finished'.
 The handlers take the buffer as argument.")
-   (request-resource-keyscheme-map
-    (define-keyscheme-map "request-resource" ()
-      keyscheme:default
-      (list
-       "C-button1" 'request-resource-open-url
-       "button2" 'request-resource-open-url
-       "C-shift-button1" 'request-resource-open-url-focus
-       "shift-button2" 'request-resource-open-url-focus))
-    :documentation "Looked up when `request-resource-hook' handlers run.  The
-keymap takes functions whose key arguments are `:url' and `:buffer'.")
-   (request-resource-hook
-    (make-instance 'hook-resource
-                   :combination #'combine-composed-hook-until-nil)
-    :type hook-resource
-    :documentation "Hook run on every resource load.
-The handlers are composed, passing a `request-data'
-until one of them returns nil or all handlers apply successfully.
-
-Newest hook is run first.
-If a `request-data' object is returned, it gets passed to other handlers
-or right to the renderer if there are no more handlers.
-If nil is returned, stop the hook and cancel the resource load.
-
-The current buffer URL should not be relied upon.  With WebKitGTK, it is the same
-as (url REQUEST-DATA).
-If you need to access the URL before this request, inspect the document-mode history.
-
-Example:
-
-\(defmethod configure-instance ((buffer buffer))
-  (reduce #'hooks:add-hook
-          '(old-reddit-handler auto-proxy-handler)
-          :initial-value (request-resource-hook buffer)))")
    (proxy
     nil
     :accessor nil

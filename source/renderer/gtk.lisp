@@ -26,7 +26,6 @@
                                (renderer-window gtk-window)
                                (renderer-buffer gtk-buffer)
                                (nyxt/mode/download:renderer-download gtk-download)
-                               (renderer-request-data gtk-request-data)
                                (renderer-scheme gtk-scheme)
                                (nyxt/mode/user-script:renderer-user-style gtk-user-style)
                                (nyxt/mode/user-script:renderer-user-script gtk-user-script)))))
@@ -41,7 +40,6 @@
                                   renderer-window
                                   renderer-buffer
                                   nyxt/mode/download:renderer-download
-                                  renderer-request-data
                                   renderer-scheme
                                   nyxt/mode/user-script:renderer-user-style
                                   nyxt/mode/user-script:renderer-user-script))))
@@ -256,20 +254,6 @@ the renderer thread, use `defmethod' instead."
                                                           :error-callback (second callbacks))))
              nyxt::*schemes*)
     context))
-
-(define-class gtk-request-data ()
-  ((gtk-request
-    :type (maybe webkit:webkit-uri-request))
-   (gtk-response
-    :type (maybe webkit:webkit-uri-response))
-   (gtk-resource
-    :type (maybe webkit:webkit-web-resource)))
-  (:export-class-name-p t)
-  ;; We export these accessors because it can be useful to inspect the guts of a
-  ;; request, plus the upstream WebKit API is stable enough.
-  (:export-accessor-names-p t)
-  (:metaclass user-class)
-  (:documentation "Related to WebKit's request objects."))
 
 (defun make-decide-policy-handler (buffer)
   (lambda (web-view response-policy-decision policy-decision-type-response)
@@ -809,28 +793,7 @@ See `finalize-buffer'."
           (quri:uri= url
                      (quri:uri (webkit:webkit-web-view-uri (gtk-object buffer)))))
     (when toplevel-p (apply-auto-rules url buffer))
-    (let* ((request-data
-            (hooks:run-hook
-             (request-resource-hook buffer)
-             (sera:lret ((data (make-instance
-                                'request-data
-                                :buffer buffer
-                                :url (quri:copy-uri url)
-                                :keys (unless (uiop:emptyp mouse-button)
-                                        (list (keymaps:make-key :value mouse-button
-                                                                :modifiers modifiers)))
-                                :event-type event-type
-                                :new-window-p is-new-window
-                                :http-method method
-                                :request-headers request-headers
-                                :response-headers response-headers
-                                :toplevel-p toplevel-p
-                                :mime-type mime-type
-                                :known-type-p is-known-type
-                                :file-name file-name)))
-                        (setf (gtk-request data) request
-                              (gtk-response data) response))))
-           (keymap (when request-data
+    (let* ((keymap (when request-data
                      (nyxt::get-keymap (buffer request-data)
                                        (request-resource-keyscheme-map (buffer request-data)))))
            (bound-function (when request-data
@@ -1182,12 +1145,7 @@ See `finalize-buffer'."
                           :toplevel-p nil
                           :mime-type (when response
                                        (webkit:webkit-uri-response-mime-type response))
-                          :known-type-p t)))
-      (setf (gtk-response request-data) response
-            (gtk-request request-data) request
-            (gtk-resource request-data) resource)
-      (when (request-resource-hook buffer)
-        (hooks:run-hook (request-resource-hook buffer) request-data))))
+                          :known-type-p t)))))
   (connect-signal buffer "load-changed" t (web-view load-event)
     (declare (ignore web-view))
     (on-signal-load-changed buffer load-event))
