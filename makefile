@@ -83,6 +83,7 @@ FLATPAK_EXPORT_REPOSITORY = _build/nyxt-flatpak-repository
 
 .PHONY: flatpak-build
 flatpak-build:
+# To start a shell before building add --build-shell=nyxt.
 	@$(FLATPAK_BUILDER) --force-clean --user --install --default-branch=local build $(FLATPAK_MANIFEST)
 
 .PHONY: flatpak-run
@@ -98,3 +99,25 @@ flatpak-repository:
 .PHONY: flatpak-bundle
 flatpak-bundle:
 	@$(FLATPAK_COMMAND) build-bundle $(FLATPAK_EXPORT_REPOSITORY) nyxt.flatpak $(FLATPAK_APP_ID)
+
+FLATPAK_APP_ID_ELECTRON = engineer.atlas.Nyxt-Electron
+FLATPAK_MANIFEST_ELECTRON := $(FLATPAK_APP_ID_ELECTRON).yaml
+
+.PHONY: flatpak-electron-build
+flatpak-electron-build:
+# To start a shell before building add --build-shell=nyxt.
+	@$(FLATPAK_BUILDER) --force-clean --user --install --default-branch=local build $(FLATPAK_MANIFEST_ELECTRON)
+
+.PHONY: flatpak-electron-run
+flatpak-electron-run:
+	@$(FLATPAK_COMMAND) update -y $(FLATPAK_APP_ID_ELECTRON)
+	@$(FLATPAK_COMMAND) run --branch=local $(FLATPAK_APP_ID_ELECTRON)
+
+.PHONY: flatpak-electron-repository
+flatpak-electron-repository:
+	mkdir -p $(FLATPAK_EXPORT_REPOSITORY)
+	@$(FLATPAK_BUILDER) --force-clean --repo=$(FLATPAK_EXPORT_REPOSITORY) build $(FLATPAK_MANIFEST_ELECTRON)
+
+.PHONY: flatpak-electron-bundle
+flatpak-electron-bundle:
+	@$(FLATPAK_COMMAND) build-bundle $(FLATPAK_EXPORT_REPOSITORY) nyxt.flatpak $(FLATPAK_APP_ID_ELECTRON)
