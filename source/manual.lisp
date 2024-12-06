@@ -28,12 +28,6 @@ it's running!")
             (:a :href "https://nyxt-browser.com/learn-lisp" "Learn Lisp")
             ". It contains numerous pointers to other resources, including
         free books both for beginners and seasoned programmers.")
-        (:p "Nyxt provides a mechanism for new users unfamiliar with Lisp to
-customize Nyxt. Start by invoking the commands " (:nxref :command 'describe-class) "
-or " (:nxref :command 'describe-slot) ".  You can press the button marked 'Configure' to
-change the value of a setting. The settings will be applied immediately and
-saved for future sessions. Please note that these settings will not alter
-existing object instances.")
         (unless (str:empty? auto-config-file)
           (:p "Settings created by Nyxt are stored in " (:code auto-config-file) "."))
         (unless (str:empty? config-file)
@@ -60,25 +54,9 @@ similar programming language.")
         (:p "The above turns on the 'no-script-mode' (disables JavaScript) by default for
 every buffer.")
         (:p "The " (:nxref :macro 'define-configuration) " macro can be used to customize
-the slots of classes like the browser, buffers, windows, etc.  Refer to the
-class and slot documentation for the individual details.")
+the slots of classes like the browser, buffers, windows, etc.")
         (:p "To find out about all modes known to Nyxt,
 run " (:nxref :command 'describe-command) " and type 'mode'."))
-
-      (:nsection :title "Slot configuration"
-        (:p "Slot values can be queried and tweaked, enabling many customization
-possibilities.  For instance, slot "
-            (:nxref :slot 'zoom-ratio-default :class-name 'document-buffer)
-            " has the default value of " (:code "1.0") ". Follow the steps
-            below to tweak it:")
-        (:ol
-         (:li "Execute command " (:nxref :command 'describe-slot) ";")
-         (:li "Type " (:code "zoom-ratio-default") " to select the one from " (:code "document-buffer") ";")
-         (:li "Press the " (:code "Configure") " button;")
-         (:li "Type the desired value, for instance, " (:code "1.3") ".")
-         (:li "After restarting Nyxt, every page will be zoomed accordingly."))
-        (:p "There are plenty of customizable slots and these can be discovered
-by inspecting classes via " (:nxref :command 'describe-class) "."))
 
       (:nsection :title "Different types of buffers"
         (:p "There are multiple buffer classes, such as "
