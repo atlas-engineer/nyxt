@@ -447,9 +447,6 @@ specify which input and output values are expected.")
           (:li (:nxref :slot 'buffer-loaded-hook :class-name 'network-buffer)
                " for when this page is mostly done loading (some scripts/image/styles may not
 be fully loaded yet, so you may need to wait a bit after it fires.)")
-          (:li (:nxref :slot 'request-resource-hook :class-name 'network-buffer)
-               " for when a new request happens. Allows redirecting and blocking requests, and
-is a good place to do something conditioned on the links being loaded.")
           (:li (:nxref :slot 'prompt-buffer-ready-hook :class-name 'prompt-buffer)
                " fires when the prompt buffer is ready for user input. You may need to call "
                (:nxref :function 'prompter:all-ready-p)
