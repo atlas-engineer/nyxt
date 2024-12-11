@@ -478,7 +478,8 @@ Finally, run the browser, load URL-STRINGS if any, then run
                   (null (files:expand *socket-file*))
                   (not (listening-socket-p)))
               (progn
-                (load-lisp (files:expand *auto-config-file*) :package (find-package :nyxt-user))
+                (load-lisp (files:expand *auto-config-file*)
+                           :package (find-package :nyxt-user))
                 (multiple-value-bind (condition backtrace)
                     (load-lisp (files:expand *config-file*)
                                :package (find-package :nyxt-user))
