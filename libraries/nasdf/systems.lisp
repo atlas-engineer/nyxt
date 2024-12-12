@@ -11,9 +11,6 @@ It enables features such as:
 - Executable dependencies are made immutable for ASDF to prevent accidental reloads."))
 (import 'nasdf-system :asdf-user)
 
-(defmethod perform ((o image-op) (c nasdf-system))
-  (dump-image (output-file o c) :executable t))
-
 (defmethod perform :before ((o image-op) (c nasdf-system))
   "Perform some last minute tweaks to the final image.
 
