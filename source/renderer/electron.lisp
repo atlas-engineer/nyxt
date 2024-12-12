@@ -95,7 +95,10 @@
                                                         :callback (first callbacks)
                                                         :error-callback (second callbacks))))
            nyxt::*schemes*)
-  (call-next-method))
+  (call-next-method)
+  (unless nyxt::*run-from-repl-p*
+    (uiop:wait-process (electron:process electron:*interface*))
+    (uiop:quit)))
 
 (defmethod ffi-kill-browser ((browser electron-browser))
   (declare (ignore browser))
