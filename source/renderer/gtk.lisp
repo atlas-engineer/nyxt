@@ -205,8 +205,7 @@ the renderer thread, use `defmethod' instead."
   (declare (ignore urls startup-timestamp))
   (log:debug "Initializing GTK Interface")
   (if gtk-running-p
-      (within-gtk-thread
-        (call-next-method))
+      (within-gtk-thread (call-next-method))
       (progn
         (setf gtk-running-p t)
         (glib:g-set-prgname "nyxt")
