@@ -29,7 +29,7 @@ If the NASDF_TESTS_NO_NETWORK environment variable is set, tests with the
       (when (and (env-true-p "NASDF_NON_INTERACTIVE_TESTS")
                  (or (symbol-call :lisp-unit2 :failed output)
                      (symbol-call :lisp-unit2 :errors output)))
-          (uiop:quit 1)))))
+          (uiop:quit 1 #+bsd nil)))))
 
 (export-always 'print-benchmark)
 (defun print-benchmark (benchmark-results)

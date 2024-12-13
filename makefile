@@ -38,7 +38,7 @@ lisp_eval:=$(LISP) $(LISP_FLAGS) \
 	--eval '(asdf:load-asd "$(makefile_dir)/nyxt.asd")' \
 	--eval
 
-lisp_quit:=--eval '(uiop:quit)'
+lisp_quit:=--eval '(uiop:quit 0 \#+bsd nil)'
 
 ## asdf:load-system is a bit slow on :nyxt/$(NYXT_RENDERER)-application, so we
 ## keep a Make dependency on the Lisp files.

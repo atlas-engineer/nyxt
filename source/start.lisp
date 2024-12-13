@@ -35,7 +35,7 @@ set from the corresponding command line option.")
 (defun handle-malformed-cli-arg (condition)
   (format t "Error parsing argument ~a: ~a.~&" (opts:option condition) condition)
   (opts:describe)
-  (uiop:quit))
+  (uiop:quit 0 #+bsd nil))
 
 (sera:eval-always
   (defun define-opts ()
@@ -149,16 +149,13 @@ This is useful to run scripts for instance."))))
       (setf *browser* nil
             *options* nil)
       (uninstall *renderer*)
-      ;; On FreeBSD this may cause freeze. Also we have to pass
-      ;; FINISH-OUTPUT = NIL in FFI-INITIALIZE.
-      #-freebsd
       (unless *run-from-repl-p*
         (run-thread "force-quitter"
           ;; Force-quit in case `ffi-kill-browser' hangs.  Must be run in a
           ;; separate thread because the renderer loop is waiting for this
           ;; function to finish.
           (sleep 1)
-          (uiop:quit code nil))))))
+          (uiop:quit code #+bsd nil))))))
 
 (define-command quit-after-clearing-session (&key confirmation-p) ; TODO: Rename?
   "Close all buffers then quit Nyxt."
@@ -332,7 +329,7 @@ Otherwise bind socket and return the listening thread."
         (write-string expr s))
       (progn
         (log:info "No instance running.")
-        (uiop:quit))))
+        (uiop:quit 0 #+bsd nil))))
 
 (sera:eval-always
   (defvar %start-args (mapcar (compose #'intern
@@ -411,7 +408,7 @@ The OPTIONS are the same as the command line options.
       (t
        (with-protect ("Error: ~a" :condition)
          (start-browser urls))))
-    (unless *run-from-repl-p* (uiop:quit))))
+    (unless *run-from-repl-p* (uiop:quit 0 #+bsd nil))))
 
 (defun load-or-eval (&key remote)
   (when remote
@@ -438,7 +435,7 @@ The OPTIONS are the same as the command line options.
       (end-of-file ()
         (log:info "Quitting interpreter."))))
   (when remote
-    (uiop:quit)))
+    (uiop:quit 0 #+bsd nil)))
 
 (defun start-load-or-eval ()
   "Evaluate Lisp.

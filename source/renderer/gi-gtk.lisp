@@ -53,8 +53,7 @@ For now it is also partly based on `nyxt/renderer/gtk'."))
         (let ((main-thread (bt:make-thread #'main-func :name renderer-thread-name)))
           (unless nyxt::*run-from-repl-p*
             (bt:join-thread main-thread)
-            ;; See comment about FreeBSD in gtk.lisp
-            (uiop:quit (slot-value browser 'nyxt::exit-code) #+freebsd nil))))))
+            (uiop:quit (nyxt:exit-code browser) #+bsd nil))))))
 
 (nyxt/renderer/gtk:define-ffi-method ffi-kill-browser ((browser gi-gtk-browser))
   (unless nyxt::*run-from-repl-p*

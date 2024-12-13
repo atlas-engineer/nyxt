@@ -98,7 +98,7 @@
   (call-next-method)
   (unless nyxt::*run-from-repl-p*
     (uiop:wait-process (electron:process electron:*interface*))
-    (uiop:quit)))
+    (uiop:quit (nyxt:exit-code browser) #+bsd nil)))
 
 (defmethod ffi-kill-browser ((browser electron-browser))
   (declare (ignore browser))

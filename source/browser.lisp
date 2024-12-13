@@ -77,8 +77,8 @@ your user profile.")
    (exit-code
     0
     :type alex:non-negative-integer
-    :export nil
-    :accessor nil
+    :reader t
+    :export t
     :documentation "The exit code return to the operating system.
 0 means success.
 Non-zero means failure.")
