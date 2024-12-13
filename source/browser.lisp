@@ -59,7 +59,7 @@ Should be redefined by the renderer."))
   ((search-engines
     (mapcar #'make-instance '(ddg-search-engine
                               wikipedia-search-engine
-                              atlas-searx-search-engine ))
+                              atlas-searx-search-engine))
     :type (cons search-engine *)
     :documentation "A list of `search-engine' objects.
 The first one is the default, as per `default-search-engine'.")
