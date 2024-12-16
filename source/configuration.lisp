@@ -434,22 +434,6 @@ Examples:
          ,yes-form
          ,no-form)))
 
-(export-always 'reset-asdf-registries)
-(defun reset-asdf-registries ()
-  "Nyxt sets the ASDF registries to its own location.
-Call this function from your initialization file to re-enable the default ASDF registries."
-  (setf asdf:*default-source-registries*
-        '(nyxt-source-registry
-          ;; Default value:
-          asdf/source-registry:environment-source-registry
-          asdf/source-registry:user-source-registry
-          asdf/source-registry:user-source-registry-directory
-          asdf/source-registry:default-user-source-registry
-          asdf/source-registry:system-source-registry
-          asdf/source-registry:system-source-registry-directory
-          asdf/source-registry:default-system-source-registry))
-  (asdf:clear-configuration))
-
 (defun set-as-default-browser (&key (name "nyxt")
                                  (targets
                                   (list (uiop:xdg-config-home "mimeapps.list")
