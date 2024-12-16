@@ -16,10 +16,12 @@ LISP_FLAGS ?= $(SBCL_FLAGS) --no-userinit --non-interactive
 NYXT_SUBMODULES ?= true
 NYXT_RENDERER ?= gi-gtk
 NASDF_USE_LOGICAL_PATHS ?= true
+NODE_SETUP ?= true
 
 export NYXT_SUBMODULES
 export NYXT_RENDERER
 export NASDF_USE_LOGICAL_PATHS
+export NODE_SETUP
 
 .PHONY: help
 help:
@@ -44,6 +46,11 @@ lisp_quit:=--eval '(uiop:quit 0 \#+bsd nil)'
 ## keep a Make dependency on the Lisp files.
 lisp_files := nyxt.asd $(shell find . -type f -name '*.lisp')
 nyxt: $(lisp_files)
+	if [ "$(NYXT_RENDERER)" = "electron" ] && \
+	   [ "$(NODE_SETUP)" = "true" ] && \
+	   [ "$(NYXT_SUBMODULES)" = "true" ]; then \
+		npm install --verbose $(makefile_dir)_build/cl-electron; \
+	fi
 	$(lisp_eval) '(asdf:load-system :nyxt/$(NYXT_RENDERER)-application)' \
 		--eval '(asdf:make :nyxt/$(NYXT_RENDERER)-application)' \
 		$(lisp_quit) || (printf "\n%s\n%s\n" "Compilation failed, see the above stacktrace." && exit 1)
