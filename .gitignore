@@ -1,15 +1,12 @@
 # Ignore build artifacts
+nyxt
+.flatpak-builder/
+nyxt-flatpak-repository/
+*.flatpak
 build/
-version
-nyxt*
-Nyxt.app
-
-# Ignore PNG and XCF
-*.xcf
-*.png
-# Except for these folders
-!libraries/prompter/*.png
-!libraries/theme/*.png
+node_modules/
+package.json
+package-lock.json
 
 # Ignore compiled lisp files
 *.FASL
@@ -31,7 +28,11 @@ Nyxt.app
 *.wx64fsl
 *.wx32fsl
 
-# Generated doc
+# Ignore PNG and XCF
+*.xcf
+*.png
+
+# Generated documentation
 manual.html
 
 # Ignore flake lockfile
@@ -43,9 +44,3 @@ TAGS
 # Ignore C object files and libraries
 *.o
 *.so
-
-# Ignore flatpak build files
-.flatpak-builder/
-/build
-nyxt-flatpak-repository/
-*.flatpak
