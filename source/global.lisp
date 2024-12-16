@@ -75,78 +75,41 @@ Example:
 (export-always '+version+)
 (alex:define-constant +version+
     (or (uiop:getenv "NYXT_VERSION")
-        (let ((version-from-git-tag
-                (ignore-errors
-                 (uiop:with-current-directory ((asdf:system-source-directory :nyxt))
-                   (uiop:run-program (list "git" "describe" "--always" "--tags")
-                                     :output '(:string :stripped t)))))
-              (version-from-asdf
-                (asdf/component:component-version (asdf:find-system :nyxt))))
-          (if (uiop:version< (first (str:split "-" version-from-git-tag))
-                             version-from-asdf)
-              version-from-asdf
-              version-from-git-tag)))
+        (asdf/component:component-version (asdf:find-system :nyxt)))
   :test #'equal
   :documentation "Nyxt version.
-Fetched from ASDF (higher priority) or Git tag.
-
-Can be overridden with NYXT_VERSION environment variable on build systems
-relying on neither ASDF nor Git.
-
-`version' and Nyxt-related feature expressions all rely on `+version+'.")
+Can be overridden via NYXT_VERSION environment variable.")
 
 (defun parse-version (version)
-  "Helper for `version' to parse any version string, not only `+version+'.
+  "Helper to parse VERSION as a string.
 
-Return 5 values:
-- MAJOR version as integer,
-- MINOR version as integer,
-- PATCH version as integer,
-- current COMMIT as string.
-- and COMMITS as number of commits from the last release,
-
-Return NIL on error."
+Return NIL on error.
+Return major version as an integer on pre-releases.
+Otherwise, return 3 values:
+- major version as an integer,
+- minor version as an integer,
+- patch version as an integer."
   (ignore-errors
-   ;; Pre-releases are falling outside the conventional version values.
    (if (search "pre-release" version)
-       (parse-integer (first (str:split "-" version)))
-       (destructuring-bind (version &optional commits commit)
-           (str:split "-" version)
-         (let* ((integer-commits-p (and commits (every #'digit-char-p commits)))
-                (commits-number (if integer-commits-p
-                                    (parse-integer commits)
-                                    0))
-                (commit (if integer-commits-p
-                            commit
-                            commits)))
-           (destructuring-bind (&optional major minor patch)
-               (uiop:parse-version version)
-             (values major minor patch commit commits-number)))))))
+       (first (sera:words version))
+       (destructuring-bind (&optional major minor patch) (uiop:parse-version version)
+         (values major minor patch)))))
 
 (defun version ()
   "Get the version of Nyxt parsed as multiple values.
 See `parse-version' for details on the returned values."
   (parse-version +version+))
 
-(multiple-value-bind (major minor patch commit commits)
-    (version)
+(multiple-value-bind (major minor patch) (version)
   (flet ((push-feature (string)
-           (pushnew (intern (uiop:strcat "NYXT-" (string-upcase (princ-to-string string))) "KEYWORD") *features*)))
-    (when +version+
-      (push-feature +version+))
-    (when (search "pre-release" +version+)
-      (push-feature (format nil "~a-pre-release" major))
-      (push-feature (str:join "-" (subseq (str:split "-" +version+) 0 4))))
-    (when major
-      (push-feature major))
-    (when minor
-      (push-feature (format nil "~a.~a" major minor)))
-    (when patch
-      (push-feature (format nil "~a.~a.~a" major minor patch)))
-    (when commit
-      (push-feature (string-upcase commit)))
-    (when (and commits (not (zerop commits)))
-      (push-feature "UNSTABLE"))))
+           (pushnew (intern (uiop:strcat "NYXT-"
+                                         (string-upcase (princ-to-string string)))
+                            "KEYWORD")
+                    *features*)))
+    (when +version+ (push-feature +version+))
+    (when major (push-feature major))
+    (when minor (push-feature (format nil "~a.~a" major minor)))
+    (when patch (push-feature (format nil "~a.~a.~a" major minor patch)))))
 
 (export-always '*static-data*)
 (defvar *static-data* (make-hash-table :test 'equal)
