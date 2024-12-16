@@ -649,24 +649,12 @@ A command is a special kind of function that can be called with
 
 (export-always 'system-information)
 (defun system-information ()
-  "Return a system information report as a string."
-  (labels ((->string (obj) (princ-to-string obj))
-           (asdf-information ()
-             (str:concat
-              "ASDF version: " (getf +asdf-build-information+ :version) +newline+
-              "ASDF registries: " (->string asdf:*default-source-registries*) +newline+
-              "Critical dependencies: " (->string (getf +asdf-build-information+ :critical-dependencies)) +newline+)))
-    (str:concat
-     "Nyxt version: " +version+ +newline+
-     "Renderer: " (name *renderer*) +newline+
-     "Operating system kernel: " (software-type) " " (software-version) +newline+
-     "Lisp implementation: " (lisp-implementation-type) " " (lisp-implementation-version)
-     #+sbcl
-     (format nil " (Dynamic space size: ~a)" (sb-ext:dynamic-space-size))
-     +newline+
-
-     "Features: " (prin1-to-string *features*) +newline+
-     +newline+
-
-     (asdf-information) +newline+)))
-
+  (str:concat
+   "Nyxt version: " +version+ +newline+
+   "Web Renderer: " (name *renderer*) +newline+
+   "OS: " (software-type) " " (software-version) +newline+
+   "Lisp implementation: " (lisp-implementation-type) " " (lisp-implementation-version)
+   #+sbcl
+   (format nil " (Dynamic space: ~aMB)~%" (/ (sb-ext:dynamic-space-size) 1024 1024))
+   "ASDF version: " (asdf:asdf-version) +newline+
+   "Features: " (prin1-to-string *features*)))
