@@ -103,10 +103,6 @@ elements are scaled accordingly.")
          (:li (:code "nyxt/mode/remembrance"))
          (:li (:code "nyxt/mode/tts"))))))
 
-(define-version "4-pre-release-1"
-  (:li "When on pre-release, push " (:code "X-pre-release")
-       " feature in addition to " (:code "X-pre-release-N") "one."))
-
 (define-version "3.12.0"
   (:nsection :title "UI/UX"
     (:ul
