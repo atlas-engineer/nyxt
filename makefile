@@ -95,7 +95,6 @@ flatpak-build:
 
 .PHONY: flatpak-run
 flatpak-run:
-	@$(FLATPAK_COMMAND) update -y $(FLATPAK_APP_ID)
 	@$(FLATPAK_COMMAND) run --branch=local $(FLATPAK_APP_ID)
 
 .PHONY: flatpak-repository
@@ -117,7 +116,6 @@ flatpak-electron-build:
 
 .PHONY: flatpak-electron-run
 flatpak-electron-run:
-	@$(FLATPAK_COMMAND) update -y $(FLATPAK_APP_ID_ELECTRON)
 	@$(FLATPAK_COMMAND) run --branch=local $(FLATPAK_APP_ID_ELECTRON)
 
 .PHONY: flatpak-electron-repository
