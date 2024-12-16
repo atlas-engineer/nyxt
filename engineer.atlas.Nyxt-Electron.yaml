@@ -18,8 +18,7 @@ finish-args:
   - --device=dri
   - --share=network
   - --share=ipc
-  - --socket=wayland
-  - --socket=fallback-x11
+  - --socket=x11
   - --socket=pulseaudio
   - --socket=cups
   - --filesystem=host
