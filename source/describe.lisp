@@ -670,20 +670,3 @@ A command is a special kind of function that can be called with
 
      (asdf-information) +newline+)))
 
-(defun dump-command-descriptions (file)
-  "Dump the command descriptions as an HTML file."
-  (with-open-file (f file :direction :output :if-exists :supersede)
-    (format f "~a" (spinneret:with-html-string
-                     (:p "Listed below are the current commands, their
-                         documentation, and their source. Non-command
-                         based features are currently unlisted.")
-                     (:h1 "Commands")))
-    (format f "~a" (spinneret:with-html-string
-                     (:nstyle '(.nyxt-source :overflow auto))))
-    (format f "~{~a ~%~}"
-            (loop for command in (list-commands)
-                  collect (spinneret:with-html-string
-                            (:details
-                             (:summary (format nil "~(~a~)" (symbol-name (name command))))
-                             (:p (:pre (documentation command t)))
-                             (:pre :class "nyxt-source" (:code (function-lambda-string command)))))))))
