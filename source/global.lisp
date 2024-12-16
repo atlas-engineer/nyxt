@@ -72,21 +72,6 @@ Example:
   (setf nyxt::*renderer* (make-instance 'nyxt/renderer/gtk:gtk-renderer))
   (nyxt:start)")
 
-(alex:define-constant +nyxt-critical-dependencies+
-    '(:cl-cffi-gtk
-      :cl-gobject-introspection
-      :cl-webkit2)
-  :test #'equal
-  :documentation "Dependencies without which Nyxt won't be able to display content and work.")
-
-(defvar +asdf-build-information+
-  `(:version ,(asdf:asdf-version)
-    :critical-dependencies ,(mapcar (lambda (s)
-                                      (nth-value 2 (asdf:locate-system s)))
-                                    +nyxt-critical-dependencies+))
-  "Build-time ASDF information.
-Don't set this, it would lose its meaning.")
-
 (export-always '+version+)
 (alex:define-constant +version+
     (or (uiop:getenv "NYXT_VERSION")
