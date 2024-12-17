@@ -2,9 +2,7 @@ name: Releases
 
 on:
   push:
-    tags: '*'
-    ## To test, uncomment the line below with branch name used for review.
-    # branches: [ my-work-branch ]
+    tags: '3*'
 
 jobs:
   build-binaries:
@@ -12,17 +10,11 @@ jobs:
     strategy:
       matrix:
         lisp: [sbcl]
-        # See https://github.com/actions/virtual-environments for the list of
-        # official distributions.
-        os: [ubuntu-latest]
-        # fail-fast: false
+        os: [ubuntu-24.04]
 
     runs-on: ${{ matrix.os }}
 
     steps:
-
-    # Checks out Nyxt's repository under $GITHUB_WORKSPACE, so other jobs can
-    # access it
     - name: Checkout
       uses: actions/checkout@v3
       with:
@@ -42,11 +34,12 @@ jobs:
       shell: bash
       run: |
         sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-        sudo flatpak install --noninteractive org.gnome.Platform/x86_64/45
-        sudo flatpak install --noninteractive org.gnome.Sdk/x86_64/45
+
+        sudo flatpak install --noninteractive org.gnome.Platform/x86_64/46
+        sudo flatpak install --noninteractive org.gnome.Sdk/x86_64/46
         make flatpak-repository
         make flatpak-bundle
-        mv nyxt.flatpak nyxt-$(cat version).flatpak
+        mv nyxt.flatpak nyxt-$(cat version)-webkitgtk.flatpak
 
     - name: Generate release notes
       shell: bash
