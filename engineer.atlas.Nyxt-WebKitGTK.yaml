@@ -1,5 +1,5 @@
 # Keep in sync with https://github.com/flathub/engineer.atlas.Nyxt/.
-app-id: engineer.atlas.Nyxt
+app-id: engineer.atlas.Nyxt-WebKitGTK
 runtime: org.gnome.Platform
 runtime-version: '46'
 sdk: org.gnome.Sdk
@@ -27,8 +27,8 @@ modules:
     buildsystem: simple
     sources:
       - type: archive
-        url: http://prdownloads.sourceforge.net/sbcl/sbcl-2.4.7-x86-64-linux-binary.tar.bz2
-        sha256: 1f900cf99f2617f613fe0a6d3490d3e00aa5e9740c88a8c88022a0ac766b0457
+        url: http://prdownloads.sourceforge.net/sbcl/sbcl-2.4.10-x86-64-linux-binary.tar.bz2
+        sha256: 99cc019120172bb4317f3c79cfc3afffe51e314091e07e8c0ba1d94759767777
         only-arches: [x86_64]
     build-commands:
       - INSTALL_ROOT=${FLATPAK_DEST} sh install.sh
