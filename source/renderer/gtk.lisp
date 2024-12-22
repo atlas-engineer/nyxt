@@ -1917,3 +1917,7 @@ As a second value, return the current buffer index starting from 0."
        (webkit:webkit-web-view-execute-editing-command
         (gtk-object gtk-buffer) webkit2:+webkit-editing-command-redo+)))
    (lambda (e) (echo-warning "Cannot redo: ~a" e))))
+
+(defmethod ffi-clear-browser-cache ((browser gtk-browser))
+  (let ((context (get-web-context browser "default")))
+    (webkit:webkit-web-context-clear-cache context)))
