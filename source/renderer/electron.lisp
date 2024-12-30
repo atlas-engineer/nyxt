@@ -386,12 +386,20 @@ Note that by changing the default value, modifier keys can be remapped."))
   "Return string representation of a keyval.
 Return nil when key must be discarded, e.g. for modifiers."
   (match key-string
-    ((or "Alt" "Shift" "Control" "Meta") nil)
     ;; Compatibility layer between GDK keycode names and those of Browsers.
     ;; https://gitlab.gnome.org/GNOME/gtk/-/blob/main/gdk/gdkkeysyms.h
     ;; https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
-    ("-" "hyphen")
-    (" " "space")
+    ("ControlLeft" nil)
+    ("ControlRight" nil)
+    ("ShiftLeft" nil)
+    ("ShiftRight" nil)
+    ("MetaLeft" nil)
+    ("MetaRight" nil)
+    ("AltLeft" nil)
+    ("AltRight" nil)
+    ("Minus" "hyphen")
+    ("Equal" "=")
+    ("Space" "space")
     ("Enter" "return")
     ("Escape" "escape")
     ("Tab" "tab")
@@ -416,22 +424,24 @@ Return nil when key must be discarded, e.g. for modifiers."
     ("F10" "f10")
     ("F11" "f11")
     ("F12" "f12")
+    ((simple-string #\K #\e #\y value) (string-downcase (string value)))
     (_ key-string)))
 
 (defmethod on-signal-key-press-event ((sender electron-buffer) event)
-  (let ((modifiers (delete nil (list (when (assoc-value event :shift) :shift)
-                                     (when (assoc-value event :control) :control)
-                                     (when (assoc-value event :alt) :alt)
-                                     (when (assoc-value event :meta) :meta))))
-        (key-string (translate-key-string (assoc-value event :key))))
-    (flet ((key () (keymaps:make-key :value key-string
-                                     :modifiers (input-modifier-translator sender modifiers)
-                                     :status :pressed)))
-      (when key-string
-        (alex:appendf (key-stack sender)
-                      (list (key)))
-        (run-thread "on-signal-key-press" (on-signal-key-press sender (key)))
-        (dispatch-input-event event sender)))))
+  (when (string= "keyDown" (assoc-value event :type))
+    (let ((modifiers (delete nil (list (when (assoc-value event :shift) :shift)
+                                       (when (assoc-value event :control) :control)
+                                       (when (assoc-value event :alt) :alt)
+                                       (when (assoc-value event :meta) :meta))))
+          (key-string (translate-key-string (assoc-value event :code))))
+      (flet ((key () (keymaps:make-key :value key-string
+                                       :modifiers (input-modifier-translator sender modifiers)
+                                       :status :pressed)))
+        (when key-string
+          (alex:appendf (key-stack sender)
+                        (list (key)))
+          (run-thread "on-signal-key-press" (on-signal-key-press sender (key)))
+          (dispatch-input-event event sender))))))
 
 (defmethod on-signal-key-release-event ((sender electron-window) event)
   (declare (ignore sender event)))
