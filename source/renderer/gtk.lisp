@@ -230,7 +230,10 @@ the renderer thread, use `defmethod' instead."
   (:documentation "WebKit download class."))
 
 (defun make-context ()
-  (let ((context (make-instance 'webkit:webkit-web-context)))
+  (let* ((context (make-instance 'webkit:webkit-web-context
+                                 :website-data-manager
+                                 (make-instance 'webkit-website-data-manager)))
+         (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
     (webkit:webkit-web-context-set-spell-checking-enabled context t)
     ;; Need to set the initial language list.
     (let ((pointer (cffi:foreign-alloc :string
@@ -254,6 +257,12 @@ the renderer thread, use `defmethod' instead."
                                                           :callback (first callbacks)
                                                           :error-callback (second callbacks))))
              nyxt::*schemes*)
+    (webkit:webkit-cookie-manager-set-persistent-storage
+     cookie-manager
+     (uiop:native-namestring (files:expand (make-instance 'nyxt-data-directory
+                                                          :base-path "cookies")))
+     :webkit-cookie-persistent-storage-text)
+    (setf (ffi-buffer-cookie-policy cookie-manager) (default-cookie-policy *browser*))
     context))
 
 (define-class gtk-request-data ()
