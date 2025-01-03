@@ -443,7 +443,4 @@ Return nil when key must be discarded, e.g. for modifiers."
           (run-thread "on-signal-key-press" (on-signal-key-press sender (key)))
           (dispatch-input-event event sender))))))
 
-(defmethod on-signal-key-release-event ((sender electron-window) event)
-  (declare (ignore sender event)))
-
 ;; TODO on-signal-* methods
