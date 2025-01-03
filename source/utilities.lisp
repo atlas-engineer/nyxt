@@ -61,11 +61,6 @@ any expensive computation only takes place once."
 Particularly useful to avoid errors on already terminated threads."
   (ignore-errors (bt:destroy-thread thread)))
 
-(export-always 'ensure-file-exists)
-(defun ensure-file-exists (pathname)
-  "Create file PATHNAME unless it exists."
-  (open pathname :direction :probe :if-does-not-exist :create))
-
 (export-always 'funcall*)
 (defun funcall* (f &rest args)
   "Like `funcall' but does nothing when F is nil."

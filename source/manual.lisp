@@ -44,7 +44,7 @@ similar programming language.")
                                      (nyxt/ps:lisp-eval
                                       (:title "create-config-file")
                                       (ensure-directories-exist config-file)
-                                      (ensure-file-exists config-file)
+                                      (files:ensure-file-exists config-file)
                                       (echo "Configuration file created at ~s." config-file)))
                           "Create configuration file")))))
         (:p "Example:")

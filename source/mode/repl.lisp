@@ -562,7 +562,7 @@ Follows what the compiler finds aesthetically pleasing."
 (define-command add-cell-to-auto-config (&optional (cell (current-cell (find-submode 'repl-mode))))
   "Add cell contents to auto-config for further loading."
   (let ((auto-config (files:expand nyxt::*auto-config-file*)))
-    (ensure-file-exists auto-config)
+    (files:ensure-file-exists auto-config)
     (alex:write-string-into-file +newline+ auto-config :if-exists :append)
     (alex:write-string-into-file
      (format-form (uiop:safe-read-from-string (input cell) :package (eval-package cell))
