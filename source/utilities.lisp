@@ -27,34 +27,6 @@ Useful when concatenating escaped strings, like in nyxt: URLs.")
   "Generate a new unique numeric ID."
   (parse-integer (symbol-name (gensym ""))))
 
-(export-always 'defmemo)
-(defmacro defmemo (name params &body body) ; TODO: Replace with https://github.com/AccelerationNet/function-cache?
-  "Define a new memoized function named NAME in the global environment.
-
-Functionally equivalent to `defun' but the function stores its
-computations, and remembers its passed parameters when invoked so that
-any expensive computation only takes place once."
-  ;; Parse the functions' arguments and store the parameters in a hash table
-  (multiple-value-bind (required optional rest keyword)
-      (alex:parse-ordinary-lambda-list params)
-    (alex:with-gensyms (memo-table args)
-      `(let ((,memo-table (make-hash-table :test 'equal)))
-         (defun ,name (,@params)
-           (let ((,args (append (list ,@required)
-                                (list ,@(mapcar #'first optional))
-                                ,rest
-                                (list ,@(alex:mappend #'first keyword)))))
-             (alex:ensure-gethash
-              ,args ,memo-table
-              (apply (lambda ,params
-                       ;; This block is here to catch the return-from
-                       ;; NAME and cache it too.
-                       ;;
-                       ;; TODO: Better way? Maybe use methods and
-                       ;; :around qualifiers?
-                       (block ,name ,@body))
-                     ,args))))))))
-
 (export-always 'destroy-thread*)
 (defun destroy-thread* (thread)
   "Like `bt:destroy-thread' but does not raise an error.
