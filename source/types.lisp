@@ -47,25 +47,6 @@ Unlike `(cons TYPE *)', it checks all the elements.
   "The type of cookie policy to apply."
   `(member :accept :never :no-third-party))
 
-;; The following types represent the positional arguments documented at
-;; https://developer.mozilla.org/en-US/docs/Web/API/Selection/modify#parameters
-
-(export-always 'selection-action)
-(deftype selection-action ()
-  "The type of change to apply."
-  '(member :move :extend))
-
-(export-always 'selection-direction)
-(deftype selection-direction ()
-  "The direction in which to adjust the current selection."
-  '(member :forward :backward))
-
-(export-always 'selection-scale)
-(deftype selection-scale ()
-  "The distance to adjust the current selection or cursor position."
-  '(member :character :word :sentence :line :paragraph :lineboundary
-    :sentenceboundary :paragraphboundary :documentboundary))
-
 (export-always 'maybe)
 (deftype maybe (&rest types)
   "An optional/maybe type for a value that is either one of TYPES, or NIL."

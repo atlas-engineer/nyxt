@@ -168,6 +168,7 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
     (setf (mark-set mode) nil)
     (echo "Mark deactivated")))
 
+;; See https://developer.mozilla.org/en-US/docs/Web/API/Selection/modify#parameters
 (define-parenscript caret-move (&key action direction scale (n 1))
   (let ((sel (ps:chain window (get-selection)))
         (parent-el (ps:chain window (get-selection) focus-node parent-element)))
