@@ -16,9 +16,6 @@ It should abort the ongoing command, but not the whole process."))
   ()
   (:documentation "An existing instance of Nyxt is already running."))
 
-(define-condition web-context-error (nyxt-error)
-  ((context :initarg :context :reader context)))
-
 (export-always 'prompt-buffer-canceled)
 (define-condition prompt-buffer-canceled (error)
   ()
