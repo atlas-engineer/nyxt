@@ -9,7 +9,7 @@
     :type (maybe window)
     :documentation "The `window' to which the status buffer is attached.")
    (height
-    24
+    36
     :type integer
     :writer nil
     :reader height
@@ -46,54 +46,48 @@
             '(:font-face :font-family "public sans" :font-style "italic" :font-weight "900" :src "url('nyxt-resource:PublicSans-BlackItalic.woff')" "format('woff')")
             '(:font-face :font-family "dejavu sans mono" :src "url('nyxt-resource:DejaVuSansMono.ttf')" "format('ttf')")
             `(body
+              :background-color ,theme:secondary-color+
+              :color ,theme:on-secondary-color
               :font-family ,theme:font-family
               :line-height "100vh"
-              :font-size "60vh"
+              :font-size "40vh"
               :white-space "nowrap"
               :padding 0
               :margin 0)
-            '(".arrow-right"
-              :clip-path "polygon(0 0, calc(100% - 7px) 0, 100% calc(50% - 1px), 100% 50%, 100% calc(50% + 1px), calc(100% - 7px) 100%, 0 100%)"
-              :margin-right "-7px")
-            '(".arrow-left"
-              :clip-path "polygon(7px 0, 100% 0, 100% 100%, 7px 100%, 0px calc(50% + 1px), 0% 50%, 0px calc(50% - 1px))"
-              :margin-left "-7px")
             '("#container"
               :display "flex"
               :justify-content "space-between"
               :overflow-y "hidden")
             `("#controls"
-              :background-color ,theme:secondary-color
-              :color ,theme:on-secondary-color
               :z-index "3"
-              :flex-basis "78px"
+              :flex-basis "90px"
               :display "flex")
             '("#controls > button"
               :margin-right "-3px"
-              :max-width "20px"
+              :max-width "24px"
               :height "100%"
               :aspect-ratio "1/1")
             `("#url"
-              :background-color ,theme:primary-color
-              :color ,theme:on-primary-color
+              :background-color ,theme:background-color-
+              :color ,theme:on-background-color
               :min-width "100px"
-              :padding-right "7px"
-              :padding-left "15px"
+              :line-height "80vh"
+              :margin "4px"
+              :padding-left "8px"
+              :border-radius "4px"
               :z-index "2"
               :flex-grow "3"
               :flex-shrink "2"
+              :overflow "hidden"
               :flex-basis "144px")
             '("#url button"
               :text-align "left"
               :width "100%")
             `("#tabs"
-              :background-color ,theme:secondary-color
-              :color ,theme:on-secondary-color
-              :line-height "95vh"
+              :line-height "80vh"
               :min-width "100px"
               :text-align "left"
               :padding-left "3px"
-              :padding-right "20px"
               :z-index "1"
               :flex-grow "10"
               :flex-shrink "4"
@@ -101,27 +95,23 @@
             '("#tabs::-webkit-scrollbar"
               :display "none")
             `(".tab"
-              :background-color ,theme:background-color-
-              :color ,theme:on-background-color
+              :border-radius "4px"
+              :color ,theme:on-secondary-color
               :display "inline-block"
-              :margin-top "1px"
               :padding-left "18px"
               :padding-right "18px"
-              :margin-right "-1px"
-              :margin-left "-4px"
+              :margin "4px"
               :text-decoration "transparent"
-              :border "transparent"
-              :border-radius "2px"
               :font "inherit"
-              :outline "inherit"
-              :clip-path "polygon(calc(100% - 7px) 0, 100% calc(50% - 1px), 100% 50%, 100% calc(50% + 1px), calc(100% - 7px) 100%, 0% 100%, 7px calc(50% + 1px), 7px 50%, 7px calc(50% - 1px),  0% 0%)")
+              :outline "inherit")
             `("#modes"
-              :background-color ,theme:primary-color
-              :color ,theme:on-primary-color
+              :border-radius "4px"
+              :background-color ,theme:secondary-color
+              :color ,theme:on-background-color
+              :padding-left "4px"
               :text-align "right"
-              :padding-left "6px"
-              :padding-right "3px"
-              :z-index "2")
+              :z-index "2"
+              :padding-right "3px")
             '("#modes > button"
               :border-radius "0"
               :padding-left "3px"
@@ -309,16 +299,16 @@ override it, redefine methods such as `format-status-url' or
     (spinneret:with-html-string
       (:div :id "container"
             #-darwin
-            (:div :id "controls" :class "arrow-right"
+            (:div :id "controls"
                   (:raw (format-status-buttons status)))
-            (:div :id "url" :class "arrow-right"
+            (:div :id "url"
                   (:raw
                    (format-status-load-status status)
                    (format-status-url status)))
             (:div :id "tabs"
                   (:raw
                    (format-status-tabs status)))
-            (:div :id "modes" :class "arrow-left"
+            (:div :id "modes"
                   :title (modes-string buffer)
                   (:raw
                    (format-status-modes status)))))))
