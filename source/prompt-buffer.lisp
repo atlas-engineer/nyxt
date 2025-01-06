@@ -94,12 +94,12 @@ The following mouse keybindings are available:
           :line-height "18px"
           :overflow "hidden")
         `(body
+          :background-color ,theme:background-color-
           :font-family ,theme:font-family
-          :border-right "2px solid"
-          :border-color ,theme:primary-color
           :margin "0"
-          :padding "0")
+          :padding "4px")
         `("#prompt-area"
+          :border-radius "3px"
           :background-color ,theme:primary-color
           :color ,theme:on-primary-color
           :border-top "2px solid"
@@ -112,40 +112,30 @@ The following mouse keybindings are available:
           :background-color ,theme:primary-color
           :color ,theme:on-primary-color
           :padding-left "10px"
-          :padding-right "8px"
           :line-height "28px")
         '("#prompt-input"
-          :margin-right "-10px"
-          :line-height "28px")
+          :line-height "28px"
+          :padding-right "10px")
         `("#prompt-extra"
           :font-family ,theme:monospace-font-family
           :z-index "1"
           :min-width "12px"
-          :padding-right 14px !important
           :background-color ,theme:primary-color
           :color ,theme:on-primary-color
           :line-height "28px"
           :padding-right "7px")
         `("#prompt-modes"
-          :background-color ,theme:secondary-color
-          :padding-left "10px !important"
-          :padding-right "14px !important"
           :line-height "28px"
           :padding-left "3px"
           :padding-right "3px")
         `("#close-button"
           :text-align "right"
+          :padding-right "8px"
           :background-color ,theme:primary-color
           :min-width "24px"
           :line-height "28px"
           :font-weight "bold"
           :font-size "20px")
-        '(".arrow-right"
-          :clip-path "polygon(0 0, calc(100% - 10px) 0, 100% calc(50% - 1px), 100% 50%, 100% calc(50% + 1px), calc(100% - 10px) 100%, 0 100%)"
-          :margin-right "-10px")
-        '(".arrow-left"
-          :clip-path "polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0px calc(50% + 1px), 0% 50%, 0px calc(50% - 1px))"
-          :margin-left "-10px")
         '(button
           :background "transparent"
           :color "inherit"
@@ -167,16 +157,12 @@ The following mouse keybindings are available:
         `(input
           :font-family ,theme:monospace-font-family)
         `("#input"
+          :border-radius "4px"
           :height "28px"
-          :margin-top "0"
-          :margin-bottom "0"
-          :padding-left "16px !important"
           :background-color ,theme:background-color
           :color ,theme:on-background-color
-          :opacity 0.9
           :border 2px solid ,theme:secondary-color
           :outline "none"
-          :padding "3px"
           :width "100%"
           :autofocus "true")
         `("#input:focus"
@@ -191,9 +177,9 @@ The following mouse keybindings are available:
           :display "flex"
           :justify-content "space-between"
           :align-items "stretch"
-          :border-radius "2px")
+          :border-radius "3px")
         '(".source-name > div"
-          :line-height "22px")
+          :line-height "26px")
         '(".source-name > div > button"
           :padding "5px 5px 5px 0px"
           :min-height "100%")
@@ -205,7 +191,6 @@ The following mouse keybindings are available:
         '("#next-source"
           :padding 0)
         `("#suggestions"
-          :background-color ,theme:background-color
           :color ,theme:on-background-color
           :height "100%"
           :margin-right "3px")
@@ -230,8 +215,8 @@ The following mouse keybindings are available:
            :color ,theme:on-action-color
            :cursor "pointer")
           (th
-           :background-color ,theme:primary-color
-           :color ,theme:on-primary-color
+           :background-color ,theme:secondary-color+
+           :color ,theme:on-secondary-color
            :font-weight "normal"
            :padding-left "4px"
            :border-radius "2px"
