@@ -140,7 +140,8 @@ Note that by changing the default value, modifier keys can be remapped."))
 
 (defmethod ffi-buffer-delete ((buffer electron-buffer))
   ;; TODO support multi-window setup.
-  (electron:remove-view (current-window) buffer))
+  (nyxt::buffer-hide buffer)
+  (electron:kill (electron:web-contents buffer)))
 
 (defmethod ffi-buffer-url ((buffer electron-buffer))
   (quri:uri (electron:get-url buffer)))
