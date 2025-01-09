@@ -312,6 +312,7 @@ Note that by changing the default value, modifier keys can be remapped."))
   (:documentation "Electron window class."))
 
 (defmethod initialize-instance :after ((window electron-window) &key)
+  (electron:remove-menu window)
   (let ((message-buffer (message-buffer window))
         (status-buffer (status-buffer window)))
     (electron:add-bounded-view window
