@@ -71,7 +71,7 @@
               :background-color ,theme:background-color-
               :color ,theme:on-background-color
               :min-width "100px"
-              :line-height "80vh"
+              :line-height "75vh"
               :margin "4px"
               :padding-left "8px"
               :border-radius "4px"
@@ -84,7 +84,7 @@
               :text-align "left"
               :width "100%")
             `("#tabs"
-              :line-height "80vh"
+              :line-height "75vh"
               :min-width "100px"
               :text-align "left"
               :padding-left "3px"
