@@ -49,11 +49,19 @@
 (setf nyxt::*renderer* (make-instance 'gtk-renderer))
 
 (define-class gtk-browser ()
-  ()
+  ((web-contexts
+    (make-hash-table :test 'equal)
+    :export nil
+    :documentation "A table mapping strings to `webkit-web-context' objects."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:metaclass user-class)
   (:documentation "WebKit browser class."))
+
+(defmethod get-web-context ((browser gtk-browser) name)
+  (alexandria:ensure-gethash name
+                             (web-contexts browser)
+                             (make-web-context)))
 
 (defmethod browser-schemes append ((browser gtk-browser))
   '("webkit" "webkit-pdfjs-viewer"))
@@ -229,7 +237,7 @@ the renderer thread, use `defmethod' instead."
     :documentation "See `gtk-buffer' slot of the same name."))
   (:documentation "WebKit download class."))
 
-(defun make-context ()
+(defun make-web-context ()
   (let* ((context (make-instance 'webkit:webkit-web-context
                                  :website-data-manager
                                  (make-instance 'webkit-website-data-manager)))
@@ -1156,7 +1164,8 @@ See `finalize-buffer'."
         (if (prompt-buffer-p buffer)
             ;; A single web view is shared by all prompt buffers of a window.
             (prompt-buffer-view (window buffer))
-            (make-instance 'webkit:webkit-web-view :web-context (make-context))))
+            (make-instance 'webkit:webkit-web-view
+                           :web-context (get-web-context *browser* "default"))))
   (when (document-buffer-p buffer)
     (setf (ffi-buffer-smooth-scrolling-enabled-p buffer) (smooth-scrolling buffer)))
   ;; TODO: Maybe define an FFI method?
