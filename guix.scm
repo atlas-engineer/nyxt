@@ -3,7 +3,7 @@
 
 ;;; Commentary:
 ;;
-;; GNU Guix development package.
+;; GNU Guix development package for Nyxt browser.
 ;;
 ;; To install:
 ;;
@@ -17,7 +17,7 @@
 ;;
 ;;   guix shell -D -f guix.scm -- bash -c 'env LD_LIBRARY_PATH="$GUIX_ENVIRONMENT/lib" sbcl'
 ;;
-;; See developer-manual.org on how to setup the development environment.
+;; See developer-manual.org for setting up the development environment.
 ;;
 ;;; Code:
 
@@ -58,7 +58,7 @@
              (("libcrypto.so" all)
               (string-append (assoc-ref inputs "openssl") "/lib/" all)))
            (substitute* "_build/iolib/src/syscalls/ffi-functions-unix.lisp"
-             (("\\(:default \"libfixposix\"\\)")
+             (("\(:default \"libfixposix\"\)")
               (string-append "(:default \""
                              (assoc-ref inputs "libfixposix")
                              "/lib/libfixposix\")")))
