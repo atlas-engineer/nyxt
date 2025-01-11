@@ -118,6 +118,8 @@ Destination directory is given by the `dest-source-dir' generic function."))
 (defparameter *datadir* (path-from-env "DATADIR" (merge-pathnames* "share/" *prefix*)))
 (export-always '*bindir*)
 (defparameter *bindir* (path-from-env "BINDIR" (merge-pathnames* "bin/" *prefix*)))
+(export-always '*libdir*)
+(defparameter *libdir* (path-from-env "LIBDIR" (merge-pathnames* "lib/" *prefix*)))
 
 (export-always '*dest-source-dir*)
 (defvar *dest-source-dir* (path-from-env "NASDF_SOURCE_PATH" *datadir*)
