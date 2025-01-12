@@ -91,14 +91,14 @@ The following mouse keybindings are available:
         '(:font-face :font-family "dejavu sans mono" :src "url('nyxt-resource:DejaVuSansMono.ttf')" "format('ttf')")
         '(*
           :font-size "14px"
-          :line-height "18px"
-          :overflow "hidden")
+          :line-height "18px")
         `(body
           :background-color ,theme:background-color-
           :font-family ,theme:font-family
           :margin "0"
-          :padding "4px")
+          :overflow "hidden")
         `("#prompt-area"
+          :margin "4px"
           :border-radius "3px"
           :background-color ,theme:primary-color
           :color ,theme:on-primary-color
@@ -106,8 +106,7 @@ The following mouse keybindings are available:
           :border-bottom "2px solid"
           :border-color ,theme:primary-color
           :display "grid"
-          :grid-template-columns "auto auto 1fr auto auto"
-          :width "100%")
+          :grid-template-columns "auto auto 1fr auto auto")
         `("#prompt"
           :background-color ,theme:primary-color
           :color ,theme:on-primary-color
@@ -118,19 +117,18 @@ The following mouse keybindings are available:
           :padding-right "10px")
         `("#prompt-extra"
           :font-family ,theme:monospace-font-family
-          :z-index "1"
           :min-width "12px"
           :background-color ,theme:primary-color
           :color ,theme:on-primary-color
           :line-height "28px"
-          :padding-right "7px")
+          :padding-right "5px")
         `("#prompt-modes"
           :line-height "28px"
           :padding-left "3px"
           :padding-right "3px")
         `("#close-button"
           :text-align "right"
-          :padding-right "8px"
+          :padding-right "7px"
           :background-color ,theme:primary-color
           :min-width "24px"
           :line-height "28px"
@@ -192,7 +190,6 @@ The following mouse keybindings are available:
           :padding 0)
         `("#suggestions"
           :color ,theme:on-background-color
-          :height "100%"
           :margin-right "3px")
         `(".suggestion-and-mark-count"
           :font-family ,theme:monospace-font-family)
@@ -204,6 +201,8 @@ The following mouse keybindings are available:
           :table-layout "fixed"
           (td
            :color ,theme:on-background-color
+           :overflow "hidden"
+           :text-overflow "ellipsis"
            :border-radius "2px"
            :white-space "nowrap"
            :height "20px"
