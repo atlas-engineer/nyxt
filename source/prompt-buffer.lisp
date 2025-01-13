@@ -95,8 +95,11 @@ The following mouse keybindings are available:
         `(body
           :background-color ,theme:background-color-
           :font-family ,theme:font-family
-          :margin "0"
-          :overflow "hidden")
+          :margin "0")
+        '("#root"
+          :height "100%"
+          :display "grid"
+          :grid-template-rows "auto 1fr")
         `("#prompt-area"
           :margin "4px"
           :border-radius "3px"
@@ -190,7 +193,8 @@ The following mouse keybindings are available:
           :padding 0)
         `("#suggestions"
           :color ,theme:on-background-color
-          :margin-right "3px")
+          :margin-right "3px"
+          :overflow "hidden")
         `(".suggestion-and-mark-count"
           :font-family ,theme:monospace-font-family)
         `(".source-content"
@@ -508,26 +512,28 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
                 (:head (:nstyle (style prompt-buffer)))
                 (:body
                  (:div
-                  :id "prompt-area"
-                  (:div :id "prompt" (prompter:prompt prompt-buffer))
-                  (:div :id "prompt-extra" :class "arrow-right" "[?/?]")
-                  (:div :id "prompt-input"
-                        (:input :type (if (invisible-input-p prompt-buffer)
-                                          "password"
-                                          "text")
-                                :id "input"
-                                :value (prompter:input prompt-buffer)))
-                  (:div :id "prompt-modes" :class "arrow-left" "")
-                  (:div :id "close-button" :class "arrow-left"
-                        (:nbutton
-                          :text "×"
-                          :title "Close prompt"
-                          :buffer prompt-buffer
-                          '(funcall (sym:resolve-symbol :quit-prompt-buffer :command)))))
-                 (:div :id "suggestions"
-                       :style (if (invisible-input-p prompt-buffer)
-                                  "visibility:hidden;"
-                                  "visibility:visible;"))))
+                  :id "root"
+                  (:div
+                   :id "prompt-area"
+                   (:div :id "prompt" (prompter:prompt prompt-buffer))
+                   (:div :id "prompt-extra" :class "arrow-right" "[?/?]")
+                   (:div :id "prompt-input"
+                         (:input :type (if (invisible-input-p prompt-buffer)
+                                           "password"
+                                           "text")
+                                 :id "input"
+                                 :value (prompter:input prompt-buffer)))
+                   (:div :id "prompt-modes" :class "arrow-left" "")
+                   (:div :id "close-button" :class "arrow-left"
+                         (:nbutton
+                           :text "×"
+                           :title "Close prompt"
+                           :buffer prompt-buffer
+                           '(funcall (sym:resolve-symbol :quit-prompt-buffer :command)))))
+                  (:div :id "suggestions"
+                        :style (if (invisible-input-p prompt-buffer)
+                                   "visibility:hidden;"
+                                   "visibility:visible;")))))
               prompt-buffer))
 
 (defun prompt-render-focus (prompt-buffer)
