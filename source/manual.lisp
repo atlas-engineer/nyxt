@@ -65,7 +65,7 @@ run " (:nxref :command 'describe-command) " and type 'mode'."))
             (:nxref :class-name 'web-buffer) " class is used for web pages, " (:nxref :class-name 'prompt-buffer)
             " for, well, the prompt buffer.  Some buffer classes may inherit from multiple other classes.
 For instance " (:nxref :class-name 'web-buffer) " and " (:nxref :class-name 'prompt-buffer)
-            " both inherit from" (:nxref :class-name 'input-buffer) ".")
+            " both inherit from " (:nxref :class-name 'input-buffer) ".")
         (:p "You can configure one of the parent " (:nxref :class-name 'buffer) " classes slots and the new
 values will automatically cascade down as a new default for all child classes-
 unless this slot is specialized by these child classes."))
@@ -637,17 +637,17 @@ exec nyxt --script \"$0\"
 \(format t \"~a~&\" +version+)")
         (:p "--eval and --load can be commanded to operate over an
 existing instance instead of a separate instance that exits immediately.")
-        (:p "The" (:nxref :slot 'remote-execution-p :class-name 'browser)
+        (:p "The " (:nxref :slot 'remote-execution-p :class-name 'browser)
             " of the remote instance must be non-nil:")
         (:ncode
           '(define-configuration browser
             ((remote-execution-p t))))
-        (:p "To let know a private instance of Nyxt to load a foo.lisp script and run its"
-            (:code "foo") "function:")
+        (:p "To let know a private instance of Nyxt to load a foo.lisp script and run its "
+            (:code "foo") " function:")
         (:ncode
           "nyxt --profile nosave --remote --load foo.lisp --eval '(foo)' --quit")
         (:p "Note that " (:code "--quit")
-            "at the end of each Nyxt CLI call here. If you don't provide " (:code "--quit")
+            " at the end of each Nyxt CLI call here. If you don't provide " (:code "--quit")
             " when dealing with a remote instance, it will go into a REPL mode, allowing an
 immediate communication with an instance:")
         (:pre (:code "nyxt --remote
@@ -888,7 +888,7 @@ input. No need to tweak it in this case.")
               " and " (:nxref :function 'nyxt/mode/repl:output)
               " of the cell. The REPL infrastructure sets "
               (:nxref :function 'nyxt/mode/repl:ready-p)
-              "to T when the evaluation ends, which enables the <pre> rendering. Given that
+              " to T when the evaluation ends, which enables the <pre> rendering. Given that
 comment cells produce no result "
               (:nxref :function 'nyxt/mode/repl:evaluate) " can stay empty:")
           (:ncode
