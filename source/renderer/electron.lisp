@@ -132,6 +132,16 @@ Note that by changing the default value, modifier keys can be remapped."))
   (electron:add-listener buffer :before-input-event
                          (lambda (buffer event)
                            (on-signal-key-press-event buffer event)))
+  (when (web-buffer-p buffer)
+    (electron:add-listener (electron:web-contents buffer) :did-finish-load
+                           (lambda (_) (declare (ignore _))
+                             (setf (nyxt::status buffer) :finished)
+                             (let ((url (ffi-buffer-url buffer)))
+                               (setf (url buffer) url)
+                               (on-signal-load-finished buffer url))))
+    (electron:add-listener (electron:web-contents buffer) :page-title-updated
+                           (lambda (_) (declare (ignore _))
+                             (on-signal-notify-title buffer (ffi-buffer-title buffer)))))
   (finalize-buffer buffer :extra-modes extra-modes :no-hook-p no-hook-p))
 
 ;; TODO Needed for reopen-dead-buffer.
@@ -159,14 +169,7 @@ Note that by changing the default value, modifier keys can be remapped."))
   ;; `ffi-window-set-buffer' don't try to reload if they are called before the
   ;; "load-changed" signal is emitted.
   (when (web-buffer-p buffer) (setf (nyxt::status buffer) :loading))
-  (electron:load-url buffer url)
-  (electron:add-listener (electron:web-contents buffer) :did-finish-load
-                          (lambda (_) (declare (ignore _))
-                            (setf (nyxt::status buffer) :finished)
-                            (on-signal-load-finished buffer url)
-                            (unless (internal-url-p url)
-                              (echo "Finished loading ~s." (render-url url))))
-                          :once-p t))
+  (electron:load-url buffer url))
 
 (defmethod ffi-buffer-evaluate-javascript ((buffer electron-buffer) javascript
                                            &optional world-name)
