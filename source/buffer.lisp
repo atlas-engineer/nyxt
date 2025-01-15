@@ -47,7 +47,6 @@ inherited from the superclasses.")
    (url (quri:uri ""))
    (url-at-point (quri:uri ""))
    (title "")
-
    (style (theme:themed-css (theme *browser*)
             '(:font-face :font-family "public sans" :font-style "normal" :font-weight "400" :src "url('nyxt-resource:PublicSans-Regular.woff')" "format('woff')")
             '(:font-face :font-family "public sans" :font-style "italic" :font-weight "400" :src "url('nyxt-resource:PublicSans-Italic.woff')" "format('woff')")
