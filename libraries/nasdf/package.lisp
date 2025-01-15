@@ -18,6 +18,8 @@ A system that installs files:
   :components ((:nasdf-desktop-file \"assets/my-project.desktop\")
                (:nasdf-icon-directory \"assets/\")
                (:nasdf-binary-file \"my-project\")
+               (:nasdf-library-file \"libraries/web-extensions/libmy.so\"
+                                   :if-does-not-exist nil)
                (:nasdf-source-directory \"source\")
                (:nasdf-source-directory \"nasdf\")
                (:nasdf-source-directory \"libraries\"
