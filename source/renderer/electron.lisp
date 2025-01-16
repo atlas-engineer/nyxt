@@ -133,6 +133,15 @@ Note that by changing the default value, modifier keys can be remapped."))
                          (lambda (buffer event)
                            (on-signal-key-press-event buffer event)))
   (when (web-buffer-p buffer)
+    (electron:add-listener (electron:web-contents buffer) :did-start-loading
+                           (lambda (_) (declare (ignore _))
+                             (setf (nyxt::status buffer) :loading)
+                             (on-signal-load-started buffer (ffi-buffer-url buffer))))
+    (electron:add-listener (electron:web-contents buffer) :did-redirect-navigation
+                           (lambda (_) (declare (ignore _))
+                             (let ((url (ffi-buffer-url buffer)))
+                               (setf (slot-value buffer 'url) url)
+                               (on-signal-load-redirected buffer url))))
     (electron:add-listener (electron:web-contents buffer) :did-finish-load
                            (lambda (_) (declare (ignore _))
                              (setf (nyxt::status buffer) :finished)
@@ -162,8 +171,6 @@ Note that by changing the default value, modifier keys can be remapped."))
 (defmethod ffi-buffer-load ((buffer electron-buffer) url)
   ;; Primitive way to introduce the auto-rules logic.
   (apply-auto-rules url buffer)
-  ;; Hack until on-signal-* methods are handled.
-  (setf (slot-value buffer 'url) url)
   ;; Taken from the GTK port, although it shows bad design:
   ;; Mark buffer as :loading right away so functions like
   ;; `ffi-window-set-buffer' don't try to reload if they are called before the
