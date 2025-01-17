@@ -70,7 +70,8 @@
   ((gtk-object
     :export nil)
    (handler-ids
-    :documentation "See `gtk-buffer' slot of the same name.")
+    :documentation "Store all GObject signal handler IDs so that we can
+disconnect the signal handler when the object is finalized.")
    (root-box-layout)
    (horizontal-box-layout)
    (main-buffer-container)
@@ -102,8 +103,7 @@ Note that by changing the default value, modifier keys can be remapped.")
    (handler-ids
     :export nil
     :documentation "Store all GObject signal handler IDs so that we can
-disconnect the signal handler when the object is finalized.
-See https://developer.gnome.org/gobject/stable/gobject-Signals.html#signal-memory-management.")
+disconnect the signal handler when the object is finalized.")
    (gtk-proxy-url (quri:uri ""))
    (proxy-ignored-hosts '())
    (loading-renderer-history-p
