@@ -68,7 +68,7 @@
 
 (define-class gtk-window ()
   ((gtk-object
-    :export t)                          ; TODO: Unexport?
+    :export nil)
    (handler-ids
     :documentation "See `gtk-buffer' slot of the same name.")
    (root-box-layout)
