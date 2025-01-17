@@ -33,17 +33,17 @@
 (defvar copy-actions
   (list (lambda-command copy-as-hex* (colors)
           "Copy the color as hex #XXXXXX string."
-          (let ((hex (cl-colors2:print-hex (first colors))))
+          (let ((hex (cl-colors-ng:print-hex (first colors))))
             (ffi-buffer-copy (current-buffer) hex)
             (echo "~s copied to clipboard." hex)))
         (lambda-command copy-as-rgb* (colors)
           "Copy the color as CSS rgb() function string."
-          (let ((rgb (cl-colors2:print-css-rgb/a (first colors))))
+          (let ((rgb (cl-colors-ng:print-css-rgb/a (first colors))))
             (ffi-buffer-copy (current-buffer) rgb)
             (echo "Copied ~a to clipboard!" rgb)))
         (lambda-command copy-as-hsl* (colors)
           "Copy the color as CSS hsl() function string."
-          (let ((hsl (cl-colors2:print-css-hsl (first colors))))
+          (let ((hsl (cl-colors-ng:print-css-hsl (first colors))))
             (ffi-buffer-copy (current-buffer) hsl)
             (echo "Copied ~a to clipboard!" hsl)))))
 
@@ -55,7 +55,7 @@
    (prompter:filter-postprocessor
     (lambda (suggestions source input-color)
       (unless (str:empty? input-color) (sleep 0.2))
-      (append (when (ignore-errors (cl-colors2:as-rgb input-color))
+      (append (when (ignore-errors (cl-colors-ng:as-rgb input-color))
                 (list (make-instance 'prompter:suggestion
                                      :value input-color
                                      :attributes (prompter:object-attributes input-color source))))
@@ -75,9 +75,9 @@ rgb()/hsl() CSS functions representing them."))
                              color (theme:contrasting-color color) (theme:contrasting-color color))
               string))))
     `(("Color" ,(display color))
-      ("HEX" ,(display (cl-colors2:print-hex color)))
-      ("RGB" ,(display (cl-colors2:print-css-rgb/a color)))
-      ("HSL" ,(display (cl-colors2:print-css-hsl color))))))
+      ("HEX" ,(display (cl-colors-ng:print-hex color)))
+      ("RGB" ,(display (cl-colors-ng:print-css-rgb/a color)))
+      ("HSL" ,(display (cl-colors-ng:print-css-hsl color))))))
 
 (define-command-global pick-color ()
   "Pick a color and copy it to clipboard.

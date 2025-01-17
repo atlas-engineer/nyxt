@@ -20,7 +20,7 @@
                bordeaux-threads
                calispel
                cl-base64
-               cl-colors2
+               cl-colors-ng
                cl-gopher
                cl-json
                cl-ppcre
@@ -495,7 +495,7 @@
   :defsystem-depends-on ("nasdf")
   :class :nasdf-system
   :depends-on (alexandria
-               cl-colors2
+               cl-colors-ng
                lass
                nclasses
                serapeum)

@@ -167,7 +167,7 @@ The following mouse keybindings are available:
           :width "100%"
           :autofocus "true")
         `("#input:focus"
-          :border-color ,(cl-colors2:print-hex theme:action-color- :alpha 0.40))
+          :border-color ,(cl-colors-ng:print-hex theme:action-color- :print-alpha 0.40))
         '(".source"
           :margin-left "10px"
           :margin-top "15px")

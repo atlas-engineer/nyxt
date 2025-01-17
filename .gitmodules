@@ -542,7 +542,7 @@
 	path = _build/cl-electron
 	url = https://github.com/atlas-engineer/cl-electron/
 	shallow = true
-[submodule "_build/cl-colors2"]
-	path = _build/cl-colors2
-	url = https://codeberg.org/cage/cl-colors2.git
+[submodule "_build/cl-colors-ng"]
+	path = _build/cl-colors-ng
+	url = https://codeberg.org/cage/cl-colors-ng.git
 	shallow = true
