@@ -123,7 +123,6 @@ If the file is modified externally, Nyxt automatically reloads it."))
                                  (setf (gethash full-path path-map) file))))
                            (alex:hash-table-values path-map)))))
 
-;; TODO: Contribute to UIOP?
 (export-always 'xdg-download-dir)
 (defun xdg-download-dir ()
   "Get the directory for user downloads.
