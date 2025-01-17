@@ -18,7 +18,8 @@ of Nyxt.")
   (spinneret:with-html-string
     (let ((auto-config-file (namestring (files:expand *auto-config-file*)))
           (config-file (namestring (files:expand *config-file*)))
-          (rules-file (namestring (files:expand (make-instance 'auto-rules-file)))))
+          (rules-file (namestring (files:expand (make-instance 'auto-rules-file))))
+          (gtk-extensions-directory (namestring (uiop:merge-pathnames* "nyxt/" nasdf:*libdir*))))
       (:nsection :title "Configuration"
         (:p "Nyxt is written in the Common Lisp programming language which offers a
 great perk: everything in the browser can be customized by the user, even while
@@ -923,6 +924,17 @@ core to finalize the instance."))
         (:p "Extensions are regular Common Lisp systems.")
         (:p "Please find a catalog of Nyxt extensions "
             (:a :href (nyxt-url 'list-extensions) "here") "."))
+
+      (:nsection :title "Blocking ads using AdBlock rules"
+        (:p "With WebkitGTK backend you can use "
+            (:a :href "https://github.com/dudik/blockit" "BlocKit")
+            " extension to block ads.")
+        (:p "In short, you have to install "
+            (:a :href "https://crates.io/crates/adblock-rust-server" "adblock-rust-server")
+            " to a directory visible in " (:code "PATH")
+            " environment variable and the shared library ("
+            (:code "blockit.so") ") to " (:code gtk-extensions-directory)
+            ". After that, follow instructions on BlocKit github page."))
 
       (:nsection :title "Troubleshooting"
 

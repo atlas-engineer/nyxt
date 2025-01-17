@@ -230,6 +230,12 @@ the renderer thread, use `defmethod' instead."
   ;; starting again.
   (unless nyxt::*run-from-repl-p* (gtk:leave-gtk-main)))
 
+(define-class gtk-extensions-directory (nyxt-file)
+  ((files:name "gtk-extensions")
+   (files:base-path (uiop:merge-pathnames* "nyxt/" nasdf:*libdir*)))
+  (:export-class-name-p t)
+  (:documentation "Directory to load WebKitWebExtensions from."))
+
 (define-class gtk-download ()
   ((gtk-object)
    (handler-ids
@@ -241,7 +247,8 @@ the renderer thread, use `defmethod' instead."
   (let* ((context (make-instance 'webkit:webkit-web-context
                                  :website-data-manager
                                  (make-instance 'webkit-website-data-manager)))
-         (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
+         (cookie-manager (webkit:webkit-web-context-get-cookie-manager context))
+         (gtk-extensions-path (files:expand (make-instance 'gtk-extensions-directory))))
     (webkit:webkit-web-context-set-spell-checking-enabled context t)
     ;; Need to set the initial language list.
     (let ((pointer (cffi:foreign-alloc :string
@@ -252,6 +259,24 @@ the renderer thread, use `defmethod' instead."
                                        :null-terminated-p t)))
       (webkit:webkit-web-context-set-spell-checking-languages context pointer)
       (cffi:foreign-free pointer))
+    (when (and (not (nfiles:nil-pathname-p gtk-extensions-path))
+               ;; Either the directory exists.
+               (or (uiop:directory-exists-p gtk-extensions-path)
+                   ;; Or try to create it.
+                   (handler-case
+                       (nth-value 1 (ensure-directories-exist gtk-extensions-path))
+                     (file-error ()))))
+      (log:info "GTK extensions directory: ~s" gtk-extensions-path)
+      (gobject:g-signal-connect
+       context "initialize-web-extensions"
+       (lambda (context)
+         (with-protect ("Error in \"initialize-web-extensions\" signal thread: ~a" :condition)
+           ;; The following calls
+           ;; `webkit:webkit-web-context-add-path-to-sandbox' for us, so no need
+           ;; to add `gtk-extensions-path' to the sandbox manually.
+           (webkit:webkit-web-context-set-web-extensions-directory
+            context
+            (uiop:native-namestring gtk-extensions-path))))))
     (gobject:g-signal-connect
      context "download-started"
      (lambda (context download)
