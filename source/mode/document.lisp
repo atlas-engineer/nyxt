@@ -206,7 +206,8 @@ Only includes the strings that were pasted/copied inside Nyxt."))
           and do (return input)))
 
 (defmethod nyxt:on-signal-load-finished ((mode document-mode) url)
-  (reset-page-zoom :buffer (buffer mode))
+  (when (force-zoom-ratio-default (buffer mode))
+    (reset-page-zoom :buffer (buffer mode)))
   url)
 
 (define-internal-page show-url-qrcode (&key url)

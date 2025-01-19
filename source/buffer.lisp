@@ -506,6 +506,10 @@ buffer.")
     1.0
     :type float
     :documentation "The default zoom ratio.")
+   (force-zoom-ratio-default
+    nil
+    :type boolean
+    :documentation "Set the zoom ratio to the default value on document load.")
    (page-scroll-ratio
     0.90
     :type float
