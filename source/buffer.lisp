@@ -499,7 +499,7 @@ buffer.")
     :type integer
     :documentation "The distance in pixels for `scroll-left' or `scroll-right'.")
    (zoom-ratio-step
-    0.2
+    0.1
     :type float
     :documentation "The step size for zooming in and out.")
    (zoom-ratio-default
