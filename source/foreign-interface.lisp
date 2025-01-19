@@ -229,7 +229,7 @@ PROXY-URL is a `quri:uri' and IGNORE-HOSTS a list of strings."))
   (:setter-p t)
   (:documentation "Return the zoom level of the document.
 Setf-able."))
-(defmethod (setf ffi-buffer-zoom-level) (value (buffer buffer))
+(defmethod (setf ffi-buffer-zoom-level) (value (buffer t))
   "Use JavaScript, if the renderer does not allow zooming natively."
   (ps-eval :buffer buffer
     (ps:let ((style (ps:chain document body style)))
