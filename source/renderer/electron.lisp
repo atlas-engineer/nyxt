@@ -188,6 +188,9 @@ Note that by changing the default value, modifier keys can be remapped."))
   (when (web-buffer-p buffer) (setf (nyxt::status buffer) :loading))
   (electron:load-url buffer url))
 
+(defmethod ffi-buffer-reload ((buffer electron-buffer))
+  (electron:reload (electron:web-contents buffer)))
+
 (defmethod ffi-buffer-evaluate-javascript ((buffer electron-buffer) javascript
                                            &optional world-name)
   ;; TODO world-name is used in user-script mode.
