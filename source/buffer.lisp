@@ -507,7 +507,7 @@ buffer.")
 It is an implementation detail and must not be set by the user. For the
 user-facing slot, see `zoom-ratio-default'.")
    (zoom-ratio-step
-    0.2
+    0.1
     :type float
     :documentation "The step size for zooming in and out.")
    (zoom-ratio-default
