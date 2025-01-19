@@ -524,7 +524,7 @@ down."))
   (:metaclass user-class)
   (:documentation "Buffers holding structured documents."))
 
-(defmethod (setf current-zoom-ratio) (value (buffer document-buffer))
+(defmethod (setf current-zoom-ratio) (value (buffer buffer))
   (when (plusp value)
     (setf (slot-value buffer 'current-zoom-ratio) value
           (ffi-buffer-zoom-level buffer) value)))
