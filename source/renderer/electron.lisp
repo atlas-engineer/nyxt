@@ -143,7 +143,9 @@ Note that by changing the default value, modifier keys can be remapped."))
     (electron:add-listener (electron:web-contents buffer) :did-start-loading
                            (lambda (_) (declare (ignore _))
                              (setf (nyxt::status buffer) :loading)
-                             (on-signal-load-started buffer (ffi-buffer-url buffer))))
+                             (let ((url (ffi-buffer-url buffer)))
+                               (on-signal-load-started buffer (ffi-buffer-url buffer))
+                               (apply-auto-rules url buffer))))
     (electron:add-listener (electron:web-contents buffer) :did-redirect-navigation
                            (lambda (_) (declare (ignore _))
                              (let ((url (ffi-buffer-url buffer)))
@@ -179,13 +181,6 @@ Note that by changing the default value, modifier keys can be remapped."))
   (electron:get-title buffer))
 
 (defmethod ffi-buffer-load ((buffer electron-buffer) url)
-  ;; Primitive way to introduce the auto-rules logic.
-  (apply-auto-rules url buffer)
-  ;; Taken from the GTK port, although it shows bad design:
-  ;; Mark buffer as :loading right away so functions like
-  ;; `ffi-window-set-buffer' don't try to reload if they are called before the
-  ;; "load-changed" signal is emitted.
-  (when (web-buffer-p buffer) (setf (nyxt::status buffer) :loading))
   (electron:load-url buffer url))
 
 (defmethod ffi-buffer-reload ((buffer electron-buffer))
