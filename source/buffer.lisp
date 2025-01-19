@@ -498,12 +498,6 @@ buffer.")
     50
     :type integer
     :documentation "The distance in pixels for `scroll-left' or `scroll-right'.")
-   (current-zoom-ratio
-    1.0
-    :type float
-    :reader t
-    :export t
-    :documentation "The current zoom ratio.")
    (zoom-ratio-step
     0.2
     :type float
@@ -526,8 +520,11 @@ down."))
 
 (defmethod (setf current-zoom-ratio) (value (buffer buffer))
   (when (plusp value)
-    (setf (slot-value buffer 'current-zoom-ratio) value
-          (ffi-buffer-zoom-level buffer) value)))
+    (setf (ffi-buffer-zoom-level buffer) value)))
+
+(export-always 'current-zoom-ratio)
+(defmethod current-zoom-ratio ((buffer buffer))
+  (ffi-buffer-zoom-level buffer))
 
 (define-class context-buffer (buffer)
   ((last-access
