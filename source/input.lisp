@@ -56,8 +56,7 @@ prompt buffer keymaps."
 
 (export-always 'keyspecs-with-keycode)
 (defun keyspecs-with-keycode (keys)
-  "Like `keymaps:keyspecs' but displays keys with keycodes like this:
-KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
+  "Like `keymaps:keys->keyspecs' but display keycodes as well."
   (let ((no-code-specs (keyspecs-without-keycode keys)))
     (if (find-if (complement #'zerop) keys :key #'keymaps:key-code)
         (format nil "~s [~a]" no-code-specs (keymaps:keys->keyspecs keys))
