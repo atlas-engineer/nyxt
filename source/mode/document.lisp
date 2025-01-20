@@ -43,7 +43,7 @@ Important pieces of functionality are:
        "C-M-Z" 'nyxt/mode/passthrough:passthrough-mode
        "M-i" 'focus-first-input-field
        "C-M-c" 'open-inspector
-       "C-S-c" 'open-inspector
+       "C-C" 'open-inspector
        "M-{" 'previous-heading
        "M-}" 'next-heading
        "C-p" 'print-buffer
