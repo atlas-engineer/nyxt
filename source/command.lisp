@@ -99,7 +99,7 @@ Example:
     \"Open files in some way.\"
     ;; Note that `source' is captured in the closure.
     (mapc (opener source) files)))"
-  (let ((doc (nth-value 2 (alex:parse-body body :documentation t))) )
+  (let ((doc (nth-value 2 (alex:parse-body body :documentation t))))
     (alex:with-gensyms (closed-over-body)
       ;; Warning: `make-command' takes a lambda-expression as an unevaluated list,
       ;; thus the BODY environment is not that of the lexical environment
