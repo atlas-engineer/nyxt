@@ -94,7 +94,8 @@ elements are scaled accordingly.")
          (:li (:code "print-bindings"))
          (:li (:code "reload-buffer"))
          (:li (:code "reload-with-modes"))
-         (:li (:code "resume-prompt"))))
+         (:li (:code "resume-prompt"))
+         (:li (:code "execute-extended-command"))))
    (:li "Delete modes:"
         (:ul
          (:li (:code "nyxt/mode/no-procrastinate"))
