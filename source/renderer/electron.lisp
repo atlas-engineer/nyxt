@@ -126,9 +126,9 @@ Note that by changing the default value, modifier keys can be remapped."))
   (:documentation "Electron buffer class."))
 
 (defmethod initialize-instance :after ((buffer electron-buffer) &key extra-modes no-hook-p)
-  ;; Needed for buffers whose HTML document is set via JS
-  ;; (e.g. `status-buffer').
-  (electron:load-url buffer "about:blank")
+  ;; Otherwise the HTML document won't be set via JS.
+   (when (member (type-of buffer) '(status-buffer message-buffer prompt-buffer))
+    (electron:load-url buffer "about:blank"))
   (initialize-listeners buffer)
   (finalize-buffer buffer :extra-modes extra-modes :no-hook-p no-hook-p))
 
@@ -161,7 +161,6 @@ Note that by changing the default value, modifier keys can be remapped."))
    buffer
    (format nil "~a = new WebContentsView(~a)"
            (electron:remote-symbol buffer) (electron:options buffer)))
-  (electron:load-url buffer "about:blank")
   (initialize-listeners buffer)
   buffer)
 
