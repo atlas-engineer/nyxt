@@ -90,6 +90,13 @@ for which the `executable' slot is non-nil."
                (class-name (class-of interface))
                (password:executable interface))))
 
+(defmacro with-password (password-interface &body body)
+  `(if (password:password-correct-p ,password-interface)
+       ,@body
+       (progn
+         (password:complete-interface ,password-interface)
+         ,@body)))
+
 (define-command save-new-password (&optional (buffer (current-buffer)))
   "Save password to password interface."
   (password-debug-info)
@@ -155,13 +162,6 @@ for which the `executable' slot is non-nil."
                           :sources 'prompter:raw-source
                           :height :fit-to-prompt
                           :invisible-input-p t))))
-
-(defmacro with-password (password-interface &body body)
-  `(if (password:password-correct-p ,password-interface)
-       ,@body
-       (progn
-         (password:complete-interface ,password-interface)
-         ,@body)))
 
 (define-command copy-password-prompt-details (&optional (buffer (current-buffer)))
   "Copy password prompting for all the details without suggestions."
