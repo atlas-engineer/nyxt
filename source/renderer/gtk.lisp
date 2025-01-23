@@ -11,6 +11,7 @@
   ((name "GTK"))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
+  (:export-predicate-name-p t)
   (:documentation "WebKit renderer class."))
 
 (defmethod renderer-thread-p ((renderer gtk-renderer) &optional (thread (bt:current-thread)))

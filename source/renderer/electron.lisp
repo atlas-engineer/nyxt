@@ -13,6 +13,7 @@
   ((name "Electron"))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
+  (:export-predicate-name-p t)
   (:metaclass user-class)
   (:documentation "Electron renderer class."))
 
