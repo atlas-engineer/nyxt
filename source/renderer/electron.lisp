@@ -70,7 +70,7 @@
         (list (make-instance 'electron:protocol
                              :scheme-name "nyxt"
                              :privileges "{}")
-             (make-instance 'electron:protocol
+              (make-instance 'electron:protocol
                              :scheme-name "nyxt-resource"
                              :privileges "{secure:true}")
               (make-instance 'electron:protocol
