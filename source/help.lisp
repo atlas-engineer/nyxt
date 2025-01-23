@@ -422,8 +422,9 @@ The value is saved to clipboard."
         :flex-direction "row"
         :justify-content "center")
       `(.button
-        :background-color ,theme:secondary-color
-        :border-color ,theme:secondary-color
+        :background-color ,theme:secondary-color+
+        :padding "7px"
+        :border "none"
         :color ,theme:on-secondary-color
         :min-width "144px")
       `(.copyright
