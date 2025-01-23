@@ -267,6 +267,8 @@ inherited from the superclasses.")
               :background-color ,theme:secondary-color)
             `(".mode-menu > .command"
               :background-color ,theme:background-color-)
+            '(".mode-menu::-webkit-scrollbar"
+              :display "none")
             '("dl"
               :display "grid"
               :grid-template-columns "max-content auto"
