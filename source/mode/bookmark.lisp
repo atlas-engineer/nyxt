@@ -324,12 +324,26 @@ Splits bookmarks into groups by tags."
                 :id (or tag "unsorted")
                 :open-p nil
                 (dolist (bookmark bookmarks)
-                  (:div
-                   :class "bookmark-entry"
-                   (:dl
-                    (:dt (:a :href (render-url (url bookmark)) (title bookmark)))
-                    (when (tags bookmark)
-                      (:dd (:pre (format nil "Tags: ~{~a~^, ~}" (tags bookmark))))))))))
+                  (let ((url (render-url (url bookmark)))
+                        (title (title bookmark))
+                        (tags  (tags bookmark)))
+                    (:div
+                     :class "bookmark-entry"
+                     (:dl
+                      (:dt
+                       (:button
+                        :onclick
+                        (ps:ps
+                          (let ((section (ps:chain (nyxt/ps:active-element document)
+                                                   (closest ".bookmark-entry"))))
+                            (ps:chain section parent-node (remove-child section)))
+                          (nyxt/ps:lisp-eval (:title "Delete"
+                                              :buffer bookmarks-buffer)
+                                             (delete-bookmark url)))
+                        "×")
+                       (:a :href url title))
+                      (when tags
+                        (:dd (:pre (format nil "Tags: ~{~a~^, ~}" tags))))))))))
             bookmarks))))))
 
 (defmethod serialize-object ((entry bookmark-entry) stream)
