@@ -7,6 +7,8 @@
 
 (push :nyxt-electron *features*)
 
+#+sbcl (pushnew 'electron:terminate sb-ext:*exit-hooks*)
+
 (define-class electron-renderer (renderer)
   ((name "Electron"))
   (:export-class-name-p t)
