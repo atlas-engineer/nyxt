@@ -102,7 +102,9 @@ elements are scaled accordingly.")
          (:li (:code "nyxt/mode/preview"))
          (:li (:code "nyxt/mode/record-input-field"))
          (:li (:code "nyxt/mode/remembrance"))
-         (:li (:code "nyxt/mode/tts"))))))
+         (:li (:code "nyxt/mode/tts"))))
+   (:li "Add a command which cleans browser cache, "
+        (:nxref :command 'clear-cache))))
 
 (define-version "3.12.0"
   (:nsection :title "UI/UX"
