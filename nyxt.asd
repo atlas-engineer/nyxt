@@ -29,7 +29,6 @@
                cl-qrencode
                cl-tld
                closer-mop
-               dissect
                moptilities
                dexador
                enchant
@@ -41,7 +40,6 @@
                local-time
                lparallel
                log4cl
-               ndebug
                nclasses
                nfiles
                njson/cl-json
@@ -131,7 +129,6 @@
                  (:file "input")
                  (:file "prompt-buffer")
                  (:file "command-commands")
-                 (:file "debugger")
                  (:file "recent-buffers")
                  (:file "external-editor")))
                (:module "Core modes"
@@ -209,7 +206,6 @@
                  (:file "reduce-bandwidth")
                  (:file "reduce-tracking")
                  (:file "repeat")
-                 (:file "repl")
                  (:file "small-web")
                  (:file "style" :depends-on ("bookmarklets"))
                  (:file "visual")
@@ -280,7 +276,6 @@
                  ;; TODO Fix repeat-mode architecture.  Visit the file below for
                  ;; more information.
                  ;; (:file "repeat")
-                 (:file "repl")
                  (:file "search-buffer")
                  (:file "small-web")
                  (:file "spell-check")

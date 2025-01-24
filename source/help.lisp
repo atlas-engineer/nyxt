@@ -541,6 +541,10 @@ clipboard."
       (log:info nyxt-information)
       (echo "System information saved to clipboard."))))
 
+(define-command-global report-bug ()
+  "Report a bug on Nyxt's issue tracker."
+  (make-buffer-focus :url (quri:uri "https://github.com/atlas-engineer/nyxt/issues/new?&template=bug_report.md")))
+
 (define-internal-page-command-global list-extensions
     (&key (endpoint "https://nyxt-browser.com/api/extensions"))
     (buffer "*Nyxt extensions*" 'nyxt/mode/help:help-mode)

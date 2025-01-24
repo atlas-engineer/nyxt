@@ -200,7 +200,7 @@ elements are scaled accordingly.")
      (:li "Replace source heading buttons in the "
           (:nxref :class-name 'prompt-buffer) ".")
      (:li "Review styling of the " (:nxref :class-name 'status-buffer) ", "
-          (:nxref :command 'nyxt/mode/repl:repl) " and " (:code "migration-guide") ".")
+          (:code "nyxt/mode/repl:repl") " and " (:code "migration-guide") ".")
      (:li "Replace glyph that collapses sections, for instance in the "
           (:a :href (nyxt-url 'manual) "manual") ".")
      (:li "Improve UI of the interfaces bound to commands:"
@@ -462,7 +462,7 @@ buffers.")
 (define-version "3.1.0"
   (:ul
    (:li "The REPL provides symbol suggestions by issuing "
-        (:nxref :command 'nyxt/mode/repl:suggest-into-cell) ", bound to "
+        (:code "nyxt/mode/repl:suggest-into-cell") ", bound to "
         (:code "TAB (↹)") ".")
    (:li (:nxref :slot 'global-history-p :class-name 'buffer)
         " is enabled by default.  The old behavior can be recovered by setting
@@ -573,10 +573,10 @@ for a better overview of lengthy attributes.")
    (:ul
     (:li "New " (:code "nyxt/mode/record-input-field:record-input-field-mode")
          " to record and restore input fields.")
-    (:li (:nxref :command 'nyxt/mode/repl:repl "Lisp REPL")
+    (:li (:code "nyxt/mode/repl:repl" "Lisp REPL")
          " is fully redesigned into a multiple-pane environment with debugging, value
 inspection, convenient editing bindings, and full extensibility via "
-         (:nxref :class-name 'nyxt/mode/repl:cell) " and " (:nxref :function 'value->html) ".")
+         (:code "nyxt/mode/repl:cell") " and " (:nxref :function 'value->html) ".")
     (:li "New " (:code "nyxt/mode/remembrance:remembrance-mode")
          " to automatically cache the visited page content. The cache can be looked up
 and the page textual content can be displayed even offline. See "
@@ -684,7 +684,7 @@ to open a file, save it, switch buffer or delete current buffer.")
           (:nxref :class-name 'nyxt/mode/document:document-mode) ".")
      (:li "Add Emacs/VI text editing bindings in "
           (:nxref :mode 'nyxt/mode/prompt-buffer:prompt-buffer-mode)
-          " and " (:nxref :command 'nyxt/mode/repl:repl) ".")
+          " and " (:code "nyxt/mode/repl:repl") ".")
      (:li "Rebind " (:nxref :command 'nyxt/mode/history:history-forwards) " to "
           (:nxref :command 'nyxt/mode/history:history-forwards-maybe-query)
           " in the Emacs and VI schemes.")
@@ -776,10 +776,10 @@ a dummy buffer. " (:nxref :class-name 'web-buffer)
           " helpers to define new panels.")
      (:li "New " (:nxref :macro 'define-internal-scheme) " helper to define custom schemes.")
      (:li "Nyxt-native debugger available via "
-          (:nxref :command 'toggle-debug-on-error) ".")
+          (:code "toggle-debug-on-error") ".")
 
      (:li "Better Lisp values inspection in " (:code "describe-*")
-          " commands and " (:nxref :command 'nyxt/mode/repl:repl) ", extensible through "
+          " commands and " (:code "nyxt/mode/repl:repl") ", extensible through "
           (:nxref :function 'value->html) " methods.")
      (:li "Universal " (:code "describe-*")
           " commands describing things in any Nyxt-accessible package. "

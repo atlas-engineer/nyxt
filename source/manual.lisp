@@ -811,98 +811,6 @@ handle. Useful to parallelize computations.")
          (:li (:code "--profile nosave")
               " to not pollute your history and cache with the script-accessed pages.")))
 
-      (:nsection :title "Built-in REPL"
-        (:p "Nyxt has a built-in REPL, available with "
-            (:nxref :command 'nyxt/mode/repl:repl) " command."
-            "The REPL can be used to try out some code snippets for automation or quickly
-make some Lisp calculations. All the packages Nyxt depends on are available in
-REPL with convenient nicknames, and all the code is evaluated in "
-            (:nxref :package :nyxt-user) " package.")
-        (:p "Once the REPL is open, there's only one input cell visible. This cell, always
-present at the bottom of the screen, adds new cells to the multi-pane interface
-of Nyxt REPL. You can type in " (:code "(print \"Hello, Nyxt!\")")
-" and press C-return to evaluate the cell. A new cell will appear at the top of the buffer, with
-input area containing familiar code, with some " (:code "v332 = \"Hello, Nyxt!\"")
-" variable assignment, and with a verbatim text outputted by your code:")
-        (:pre (:code "Hello, Nyxt!"))
-        (:p "This cell-based code evaluation is the basis of the Nyxt REPL. For more features, see "
-            (:nxref :package :nyxt/mode/repl "REPL mode documentation") ".")
-        (:nsection :title "Extending the REPL"
-          (:p "Nyxt REPL is made to be extensible and allow to make custom cell types with
-their own display and functionality. The two cell types provided by default are:")
-          (:ul
-           (:li (:nxref :class-name 'nyxt/mode/repl:lisp-cell))
-           (:li "and " (:nxref :class-name 'nyxt/mode/repl:shell-cell)))
-          (:p "Both of these serve as examples of cell extension, but it may be more
-illuminating to create one of a different type from the default ones. A
-commentary cell, for example—the type of cell one can use as an annotation to
-other cells.")
-          (:p "First, define a new " (:nxref :class-name 'nyxt/mode/repl:cell) " type:")
-          (:ncode
-            '(define-class comment-cell (nyxt/mode/repl:cell)
-              ((name "Commentary"))
-              (:export-class-name-p t)
-              (:export-accessor-names-p t)))
-          (:p "There are methods of " (:nxref :class-name 'nyxt/mode/repl:cell)
-              " that can be redefined for a better display:")
-          (:ul
-           (:li (:nxref :function 'nyxt/mode/repl:evaluate)
-                " as a function to get results from the cell.")
-           (:li (:nxref :function 'nyxt/mode/repl:suggest)
-                " for choosing the most intuitive content to paste into the cell.")
-           (:li (:nxref :function 'nyxt/mode/repl:render-input)
-                " as the one rendering the input area for the cell.")
-           (:li (:nxref :function 'nyxt/mode/repl:render-actions)
-                ", allowing to render a custom set of actions.")
-           (:li "And " (:nxref :function 'nyxt/mode/repl:render-results)
-                " to show cell results (the immediate values "
-                (:nxref :function 'nyxt/mode/repl:evaluate "evaluation")
-                " returns) and output (the text printed out while "
-                (:nxref :function 'nyxt/mode/repl:evaluate "evaluating")
-                " the cell).")
-           (:li "And, in case none of those fits well, "
-                (:nxref :function 'nyxt/mode/repl:render-cell)
-                " to override all the rendering code."))
-          (:p "The easiest thing is " (:nxref :function 'nyxt/mode/repl:render-input)
-              ": it's already defined as an input field updating the cell "
-              (:nxref :function 'nyxt/mode/repl:input)
-              " at every keypress. The only change to it that is needed for the commentary
-cell is to render as a <pre> tag when marked " (:nxref :function 'nyxt/mode/repl:ready-p) ":")
-          (:ncode
-            '(defmethod nyxt/mode/repl:render-input ((cell comment-cell))
-              "Render as a pre tag when ready, render as default input otherwise."
-              (if (nyxt/mode/repl:ready-p cell)
-                  (spinneret:with-html-string
-                    (:pre (input cell)))
-                  (call-next-method))))
-          (:p (:nxref :function 'nyxt/mode/repl:render-results)
-              " is another method useless for comment cell. It can safely return the empty
-string:")
-          (:ncode
-            '(defmethod nyxt/mode/repl:render-results ((cell comment-cell))
-              (declare (ignore cell))
-              ""))
-          (:p (:nxref :function 'nyxt/mode/repl:render-actions)
-              " should stay as it is, because it produces an aesthetic set of buttons near the
-input. No need to tweak it in this case.")
-          (:p "Last but not least, " (:nxref :function 'nyxt/mode/repl:evaluate)
-              ". This method should produce the " (:nxref :function 'nyxt/mode/repl:results)
-              " and " (:nxref :function 'nyxt/mode/repl:output)
-              " of the cell. The REPL infrastructure sets "
-              (:nxref :function 'nyxt/mode/repl:ready-p)
-              " to T when the evaluation ends, which enables the <pre> rendering. Given that
-comment cells produce no result "
-              (:nxref :function 'nyxt/mode/repl:evaluate) " can stay empty:")
-          (:ncode
-            '(defmethod nyxt/mode/repl:evaluate ((cell comment-cell))
-              (declare (ignore cell))))
-          (:p "After all of these methods are defined in the configuration file and Nyxt restarted,
-invoking "
-              (:nxref :command 'nyxt/mode/repl:repl) " and pressing the " (:code "Add a cell")
-              " button will allow to create a new comment cell.")
-          (:p "Note that the display of the comment cell is not exactly concise. But making it
-better is left as an exercise to the reader.")))
-
       (:nsection :title "Advanced configuration"
         (:p "While " (:nxref :macro 'define-configuration) " is convenient, it is mostly
 restricted to class slot configuration.  If you want to do anything else on
@@ -940,13 +848,7 @@ core to finalize the instance."))
       (:nsection :title "Troubleshooting"
 
         (:nsection :title "Debugging and reporting errors"
-          (:p "If you experience hangs or errors you can reproduce, you can use the "
-              (:nxref :command 'nyxt:toggle-debug-on-error)
-              " command to enable Nyxt-native debugger and see the reasons of these. Based on
-this information, you can report a bug using " (:nxref :command 'nyxt:report-bug) ".")
-          (:p "Note that often errors, hangs, and crashes happen on the side of renderer and
-thus are not visible to the Nyxt-native debugger and fixable on the side of
-Nyxt. See below."))
+          (:p "Report bugs using " (:nxref :command 'nyxt:report-bug) "."))
 
         (:nsection :title "Bwrap error on initialization (Ubuntu)"
           (:p "If Nyxt crashes on start due to " (:code "bwrap")
