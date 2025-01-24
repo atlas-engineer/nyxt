@@ -13,15 +13,10 @@
 This is useful when the browser is run from a REPL so that quitting does not
 close the connection.")
 
-(export-always '*debug-on-error*)
-(defvar *debug-on-error* nil
-  "Whether the Nyxt-internal debugger pops up when an error happens.
-Allows the user to fix immediate errors in runtime, given enough understanding.")
-
 (defvar *restart-on-error* nil
   "Control variable to enable accurate error reporting during startup.
 Implementation detail.
-For user-facing controls, see `*run-from-repl-p*' and `*debug-on-error*'.")
+For user-facing controls, see `*run-from-repl-p*'.")
 
 (export-always '*open-program*)
 (declaim (type (or string null) *open-program*))

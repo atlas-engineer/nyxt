@@ -95,7 +95,6 @@
                 ((:file "time")
                  (:file "keyscheme")
                  (:file "conditions")
-                 (:file "debug")
                  (:file "user-interface")))
                (:module "Core"
                 :pathname ""

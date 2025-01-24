@@ -24,7 +24,7 @@ FORMAT-STRING and ARGS.
 As a special case, the first `:condition' keyword in ARGS is replaced with the
 raised condition."
   (alex:with-gensyms (c sub-c)
-    `(if (or *run-from-repl-p* *debug-on-error*)
+    `(if (or *run-from-repl-p*)
          (handler-case (progn ,@body)
            (prompt-buffer-canceled ()
              (log:debug "Prompt buffer interrupted")))
@@ -85,8 +85,7 @@ This supersedes `bt:make-thread' in Nyxt.  Don't use the latter unless you know
 what you are doing!"
   `(lparallel.thread-util:with-thread (:name ,(str:concat "Nyxt " name)
                                        :bindings (append '((*run-from-repl-p* . *run-from-repl-p*)
-                                                           (*headless-p* . *headless-p*)
-                                                           (*debug-on-error* . *debug-on-error*))
+                                                           (*headless-p* . *headless-p*))
                                                          bt:*default-special-bindings*))
      (with-protect ("Error on separate thread: ~a" :condition)
        ,@body)))

@@ -188,8 +188,6 @@ the renderer thread, use `defmethod' instead."
            (let ((channel (nyxt::make-channel 1))
                  (error-channel (nyxt::make-channel 1)))
              (within-gtk-thread
-               ;; We do not include `*debug-on-error*' for now, since we need to
-               ;; first improve the debugger to properly handle the GTK thread.
                ;; TODO: Abstract this into `with-protect-from-thread'?
                (if (or nyxt::*run-from-repl-p* nyxt::*restart-on-error*)
                    (let ((current-condition nil))

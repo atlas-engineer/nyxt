@@ -195,3 +195,37 @@ If there's any uppercase character, then it's case-sensitive."
   (if (str:downcasep string) #'string-equal #'string=))
 
 (setf spinneret:*suppress-inserted-spaces* t)
+
+(-> system-depends-on-all ((or string asdf:system)) (cons string *))
+(defun system-depends-on-all (system)
+  "List SYSTEM dependencies recursively, even if SYSTEM is an inferred system.
+Inspired by https://gitlab.common-lisp.net/asdf/asdf/issues/10#note_5018."
+  (let (depends)
+    (labels ((deps (system)
+               "Return the list of system dependencies as strings."
+               (mapcar (trivia:lambda-match
+                         ((list _ s _)  ; e.g. (:VERSION "asdf" "3.1.2")
+                          (princ-to-string s))
+                         (s s))
+                       (ignore-errors
+                        (asdf:system-depends-on (asdf:find-system system nil)))))
+             (subsystem? (system parent-system)
+               "Whether PARENT-SYSTEM is a parent of SYSTEM following the naming convention.
+For instance FOO is a parent of FOO/BAR."
+               (alexandria:when-let ((match? (search system parent-system)))
+                 (zerop match?)))
+             (iter (systems)
+               (cond
+                 ((null systems)
+                  depends)
+                 ((subsystem? (first systems) system)
+                  (iter (append (deps (first systems)) (rest systems))))
+                 ((find (first systems) depends :test 'equalp)
+                  (iter (rest systems)))
+                 (t
+                  (when (asdf:find-system (first systems) nil)
+                    (push (first systems) depends))
+                  (iter (union (rest systems) (deps (first systems))))))))
+      (iter (list (if (typep system 'asdf:system)
+                      (asdf:coerce-name system)
+                      system))))))
