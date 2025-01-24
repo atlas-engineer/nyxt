@@ -6,10 +6,6 @@
 	path = _build/bordeaux-threads
 	url = https://github.com/sionescu/bordeaux-threads
 	shallow = true
-[submodule "_build/trivial-backtrace"]
-	path = _build/trivial-backtrace
-	url = https://github.com/gwkkwg/trivial-backtrace
-	shallow = true
 [submodule "_build/calispel"]
 	path = _build/calispel
 	url = https://github.com/hawkir/calispel
@@ -17,10 +13,6 @@
 [submodule "_build/cl-jpl-util"]
 	path = _build/cl-jpl-util
 	url = https://github.com/hawkir/cl-jpl-util
-	shallow = true
-[submodule "_build/eager-future2"]
-	path = _build/eager-future2
-	url = https://gitlab.common-lisp.net/vsedach/eager-future2.git
 	shallow = true
 [submodule "_build/trivial-garbage"]
 	path = _build/trivial-garbage
@@ -102,14 +94,6 @@
 	path = _build/proc-parse
 	url = https://github.com/fukamachi/proc-parse
 	shallow = true
-[submodule "_build/cl-ansi-text"]
-	path = _build/cl-ansi-text
-	url = https://github.com/pnathan/cl-ansi-text
-	shallow = true
-[submodule "_build/let-plus"]
-	path = _build/let-plus
-	url = https://github.com/sharplispers/let-plus
-	shallow = true
 [submodule "_build/anaphora"]
 	path = _build/anaphora
 	url = https://github.com/tokenrove/anaphora
@@ -121,18 +105,6 @@
 [submodule "_build/smart-buffer"]
 	path = _build/smart-buffer
 	url = https://github.com/fukamachi/smart-buffer
-	shallow = true
-[submodule "_build/cl-syntax"]
-	path = _build/cl-syntax
-	url = https://github.com/m2ym/cl-syntax
-	shallow = true
-[submodule "_build/cl-annot"]
-	path = _build/cl-annot
-	url = https://github.com/m2ym/cl-annot
-	shallow = true
-[submodule "_build/cl-interpol"]
-	path = _build/cl-interpol
-	url = https://github.com/edicl/cl-interpol
 	shallow = true
 [submodule "_build/cl-unicode"]
 	path = _build/cl-unicode
@@ -178,65 +150,13 @@
 	path = _build/trivial-mimes
 	url = https://github.com/Shinmera/trivial-mimes
 	shallow = true
-[submodule "_build/cl-fad"]
-	path = _build/cl-fad
-	url = https://github.com/edicl/cl-fad/
-	shallow = true
 [submodule "_build/cl-base64"]
 	path = _build/cl-base64
 	url = https://gitlab.common-lisp.net/nyxt/cl-base64.git
 	shallow = true
-[submodule "_build/kmrcl"]
-	path = _build/kmrcl
-	url = https://gitlab.common-lisp.net/nyxt/kmrcl.git
-	shallow = true
 [submodule "_build/cl-plus-ssl"]
 	path = _build/cl-plus-ssl
 	url = https://github.com/cl-plus-ssl/cl-plus-ssl
-	shallow = true
-[submodule "_build/lack"]
-	path = _build/lack
-	url = https://github.com/fukamachi/lack
-	shallow = true
-[submodule "_build/circular-streams"]
-	path = _build/circular-streams
-	url = https://github.com/fukamachi/circular-streams
-	shallow = true
-[submodule "_build/http-body"]
-	path = _build/http-body
-	url = https://github.com/fukamachi/http-body
-	shallow = true
-[submodule "_build/jonathan"]
-	path = _build/jonathan
-	url = https://github.com/Rudolph-Miller/jonathan
-	shallow = true
-[submodule "_build/ironclad"]
-	path = _build/ironclad
-	url = https://github.com/sharplispers/ironclad/
-	shallow = true
-[submodule "_build/clack"]
-	path = _build/clack
-	url = https://github.com/fukamachi/clack
-	shallow = true
-[submodule "_build/cl-fastcgi"]
-	path = _build/cl-fastcgi
-	url = https://github.com/KDr2/cl-fastcgi/
-	shallow = true
-[submodule "_build/hunchentoot"]
-	path = _build/hunchentoot
-	url = https://github.com/edicl/hunchentoot
-	shallow = true
-[submodule "_build/md5"]
-	path = _build/md5
-	url = https://github.com/pmai/md5
-	shallow = true
-[submodule "_build/rfc2388"]
-	path = _build/rfc2388
-	url = https://github.com/jdz/rfc2388
-	shallow = true
-[submodule "_build/cl-who"]
-	path = _build/cl-who
-	url = https://github.com/edicl/cl-who
 	shallow = true
 [submodule "_build/drakma"]
 	path = _build/drakma
@@ -274,10 +194,6 @@
 	path = _build/log4cl
 	url = https://github.com/sharplispers/log4cl
 	shallow = true
-[submodule "_build/metabang-bind"]
-	path = _build/metabang-bind
-	url = https://github.com/gwkkwg/metabang-bind
-	shallow = true
 [submodule "_build/slime"]
 	path = _build/slime
 	url = https://github.com/slime/slime/
@@ -306,10 +222,6 @@
 	path = _build/trivial-indent
 	url = https://github.com/Shinmera/trivial-indent
 	shallow = true
-[submodule "_build/form-fiddle"]
-	path = _build/form-fiddle
-	url = https://github.com/Shinmera/form-fiddle
-	shallow = true
 [submodule "_build/serapeum"]
 	path = _build/serapeum
 	url = https://github.com/ruricolist/serapeum
@@ -321,14 +233,6 @@
 [submodule "_build/trivia"]
 	path = _build/trivia
 	url = https://github.com/guicho271828/trivia
-	shallow = true
-[submodule "_build/fare-quasiquote"]
-	path = _build/fare-quasiquote
-	url = https://gitlab.common-lisp.net/frideau/fare-quasiquote.git
-	shallow = true
-[submodule "_build/fare-utils"]
-	path = _build/fare-utils
-	url = https://gitlab.common-lisp.net/frideau/fare-utils.git
 	shallow = true
 [submodule "_build/optima"]
 	path = _build/optima
@@ -525,10 +429,6 @@
 [submodule "_build/cl-sqlite"]
 	path = _build/cl-sqlite
 	url = https://github.com/TeMPOraL/cl-sqlite
-	shallow = true
-[submodule "_build/cl-symbol-munger"]
-	path = _build/cl-symbol-munger
-	url = https://github.com/AccelerationNet/symbol-munger
 	shallow = true
 [submodule "_build/cl-electron"]
 	path = _build/cl-electron
