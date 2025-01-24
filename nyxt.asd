@@ -29,7 +29,6 @@
                cl-qrencode
                cl-tld
                closer-mop
-               moptilities
                dexador
                enchant
                flexi-streams
@@ -71,8 +70,6 @@
                swank/exts
                trivia
                trivial-clipboard
-               trivial-features
-               trivial-garbage
                trivial-package-local-nicknames
                trivial-types
                unix-opts
