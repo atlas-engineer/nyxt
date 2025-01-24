@@ -29,6 +29,7 @@
                cl-qrencode
                cl-tld
                closer-mop
+               clss
                dexador
                enchant
                flexi-streams
@@ -37,26 +38,22 @@
                iolib/os
                lass
                local-time
-               lparallel
                log4cl
+               lparallel
                nclasses
                nfiles
-               njson/cl-json
                nhooks
+               njson/cl-json
                nkeymaps
                nsymbols/star
-               #-sbcl
-               osicat
+               #-sbcl osicat
                parenscript
+               phos
+               plump
                prompter
                py-configparser
                quri
                serapeum
-               str
-               phos
-               plump
-               clss
-               spinneret
                slynk
                slynk/arglists
                slynk/fancy-inspector
@@ -65,7 +62,9 @@
                slynk/package-fu
                slynk/stickers
                slynk/trace-dialog
+               spinneret
                sqlite
+               str
                swank
                swank/exts
                trivia
@@ -73,14 +72,14 @@
                trivial-package-local-nicknames
                trivial-types
                unix-opts
-               usocket
+               usocket                  ;due to small-web... fuck!
                ;; Local systems:
-               nyxt/user-interface
-               nyxt/text-buffer
                nyxt/analysis
                nyxt/download-manager
                nyxt/password-manager
-               nyxt/theme)
+               nyxt/text-buffer
+               nyxt/theme
+               nyxt/user-interface)
   :pathname #p"NYXT:source;"
   :components ((:file "utilities")
                (:file "types")
