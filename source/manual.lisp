@@ -724,10 +724,11 @@ automations and web page analysis.")
             " CLI flag and provide a script file to serve as the configuration file:")
         (:ncode
           "nyxt --headless --config /path/to/your/headless-config.lisp")
-        (:p "Note that you pass it a " (:i "configuration file")
-            "—headless mode is only different from the regular Nyxt functions in that it has
-no GUI, and is all the same otherwise, contrary to all the seeming similarities
-to the " (:code "--script") " flag usage.")
+        (:p "Note that you pass it a " (:i "configuration file") ",
+            i.e. headless mode is only different from the regular Nyxt functions
+            in that it has no GUI, and is all the same otherwise, contrary to
+            all the seeming similarities to the " (:code "--script") " flag
+            usage.")
         (:p "The example below showcases frequent idioms that are found in the
 mode's configuration file:")
         (:ncode
