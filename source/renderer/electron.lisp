@@ -190,8 +190,9 @@ Note that by changing the default value, modifier keys can be remapped."))
   (electron:get-zoom-factor (electron:web-contents buffer)))
 
 (defmethod (setf ffi-buffer-zoom-level) (value (buffer electron-buffer))
-  (when (and (floatp value) (plusp value))
-    (electron:set-zoom-factor (electron:web-contents buffer) value)))
+  (if (and (floatp value) (plusp value))
+      (electron:set-zoom-factor (electron:web-contents buffer) value)
+      (echo-warning "Zoom level must be a positive floating point number.")))
 
 (defmethod ffi-buffer-evaluate-javascript ((buffer electron-buffer) javascript
                                            &optional world-name)

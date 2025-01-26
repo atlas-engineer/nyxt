@@ -1718,8 +1718,9 @@ custom (the specified proxy) and none."
 (define-ffi-method ffi-buffer-zoom-level ((buffer gtk-buffer))
   (webkit:webkit-web-view-zoom-level (gtk-object buffer)))
 (define-ffi-method (setf ffi-buffer-zoom-level) (value (buffer gtk-buffer))
-  (when (and (floatp value) (plusp value))
-    (setf (webkit:webkit-web-view-zoom-level (gtk-object buffer)) value)))
+  (if (and (floatp value) (plusp value))
+      (setf (webkit:webkit-web-view-zoom-level (gtk-object buffer)) value)
+      (echo-warning "Zoom level must be a positive floating point number.")))
 
 (define-ffi-method ffi-inspector-show ((buffer gtk-buffer))
   (webkit:webkit-web-inspector-show
