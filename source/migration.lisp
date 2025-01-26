@@ -177,7 +177,8 @@ major versions."
   (conservative-history-movement-p)
   (:p "Deleted in favor of " (:nxref :slot 'global-history-p :class-name 'buffer) ".")
 
-  (nyxt/mode/no-procrastinate
+  (nyxt/mode/repl
+   nyxt/mode/no-procrastinate
    nyxt/mode/preview
    nyxt/mode/record-input-field
    nyxt/mode/remembrance
