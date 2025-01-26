@@ -493,7 +493,7 @@ buffer.")
     :documentation "The distance scroll-down or scroll-up will scroll.")
    (smooth-scrolling
     nil
-    :documentation "Whether to scroll smoothly with the mouse.")
+    :documentation "Whether to scroll smoothly.")
    (horizontal-scroll-distance
     50
     :type integer
