@@ -98,6 +98,7 @@ elements are scaled accordingly.")
          (:li (:code "execute-extended-command"))))
    (:li "Delete modes:"
         (:ul
+         (:li (:code "nyxt/mode/repl"))
          (:li (:code "nyxt/mode/no-procrastinate"))
          (:li (:code "nyxt/mode/preview"))
          (:li (:code "nyxt/mode/record-input-field"))
