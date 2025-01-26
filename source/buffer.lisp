@@ -488,7 +488,7 @@ Computed by `plump:parse', see `update-document-model' for details.")
     :documentation "Whether to keep search marks after exiting the prompt
 buffer.")
    (scroll-distance
-    50
+    32
     :type integer
     :documentation "The distance scroll-down or scroll-up will scroll.")
    (smooth-scrolling
