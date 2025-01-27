@@ -5,8 +5,6 @@
   (:documentation "Electron renderer."))
 (in-package :nyxt/renderer/electron)
 
-#+sbcl (pushnew 'electron:terminate sb-ext:*exit-hooks*)
-
 (define-class electron-renderer (renderer)
   ((name "Electron"))
   (:export-class-name-p t)
@@ -101,6 +99,8 @@
   (unless nyxt::*run-from-repl-p*
     (uiop:wait-process (electron:process electron:*interface*))
     (uiop:quit (nyxt:exit-code browser) #+bsd nil)))
+
+#+sbcl (pushnew 'electron:terminate sb-ext:*exit-hooks*)
 
 (defmethod ffi-kill-browser ((browser electron-browser))
   (declare (ignore browser))
