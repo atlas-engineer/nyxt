@@ -39,8 +39,7 @@ It inherits from `nyxt/mode/repeat:repeat-mode'."
     (lambda (mode)
       (unless (zerop (velocity mode))
         (with-current-buffer (buffer mode)
-          (nyxt/mode/document::scroll-down
-           :scroll-distance (velocity mode))))))))
+          (nyxt/mode/document:scroll-down :y-pixels (velocity mode))))))))
 
 (define-command velocity-incf (&key (cruise-control (find-submode 'cruise-control-mode)))
   "Increase the velocity."
