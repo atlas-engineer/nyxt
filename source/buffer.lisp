@@ -1074,11 +1074,11 @@ is listed first."
   (let ((prompt-buffer (current-prompt-buffer)))
     (if (prompt-buffer-p (focused-buffer))
         (prog1 (set-current-buffer (current-buffer))
-               (ps-eval :buffer prompt-buffer
-                 (setf (ps:@ (nyxt/ps:qs document "*") style opacity) "0.5")))
+          (ps-eval :buffer prompt-buffer
+            (setf (ps:@ (nyxt/ps:qs document "*") style opacity) "0.5")))
         (prog1 (ffi-focus-prompt-buffer prompt-buffer)
-               (ps-eval :buffer prompt-buffer
-                 (setf (ps:@ (nyxt/ps:qs document "*") style opacity) "1"))))))
+          (ps-eval :buffer prompt-buffer
+            (setf (ps:@ (nyxt/ps:qs document "*") style opacity) "1"))))))
 
 (defun switch-buffer-or-query-domain (domain)
   "Switch to a buffer if it exists for a given DOMAIN, otherwise query
