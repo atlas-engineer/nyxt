@@ -11,7 +11,7 @@
 (defsystem "nyxt"
   :defsystem-depends-on ("nasdf")
   :class :nasdf-system
-  :version "4"                          ; 4.0.0-pre-release-1
+  :version "4"                          ; 4.0.0-pre-release-2
   :author "Atlas Engineer LLC"
   :homepage "https://nyxt-browser.com"
   :description "Extensible web browser in Common Lisp"
