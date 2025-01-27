@@ -554,3 +554,8 @@ Dispatches on buffers and modes."))
     nil)
   (:documentation "Invoked on KEY press.
 Dispatches on buffers and modes."))
+
+(define-ffi-generic ffi-clear-browser-cache (browser)
+  (:method ((browser t))
+    (values))
+  (:documentation "Clear persistent browser cache"))
