@@ -490,15 +490,14 @@ buffer.")
    (scroll-distance
     32
     :type integer
-    :documentation "The distance scroll-down or scroll-up will scroll.")
+    :documentation "The distance in pixels for `scroll-down' or `scroll-up'.")
    (smooth-scrolling
     nil
     :documentation "Whether to scroll smoothly.")
    (horizontal-scroll-distance
     50
     :type integer
-    :documentation "Horizontal scroll distance. The distance scroll-left or
-scroll-right will scroll.")
+    :documentation "The distance in pixels for `scroll-left' or `scroll-right'.")
    (current-zoom-ratio
     1.0
     :type float
