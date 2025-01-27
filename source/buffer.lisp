@@ -1029,7 +1029,7 @@ This is a low-level function.  See `buffer-delete' and `delete-buffer'."
                                         (eq buffer (current-buffer)))
                               (set-current-buffer buffer)))))
    (prompter:active-attributes-keys
-    '("Title" "URL" "Keywords" "Context")
+    '("Title" "URL" "Keywords")
     :accessor nil))
   (:export-class-name-p t)
   (:metaclass user-class)
