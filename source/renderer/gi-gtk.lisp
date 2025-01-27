@@ -16,13 +16,14 @@
 For now it is also partly based on `nyxt/renderer/gtk'."))
 (in-package :nyxt/renderer/gi-gtk)
 
-(push :nyxt-gi-gtk *features*)
-
 (define-class gi-gtk-renderer (nyxt/renderer/gtk:gtk-renderer)
   ((name "GI-GTK"))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:documentation "WebKit (GI) renderer class."))
+
+(setf nyxt::*renderer* (make-instance 'gi-gtk-renderer))
+(pushnew :nyxt-gi-gtk *features*)
 
 (define-class gi-gtk-browser (nyxt/renderer/gtk:gtk-browser)
   ()
@@ -65,5 +66,3 @@ For now it is also partly based on `nyxt/renderer/gtk'."))
    (closer-mop:ensure-class 'renderer-browser
                             :direct-superclasses '(gi-gtk-browser)
                             :metaclass 'interface-class)))
-
-(setf nyxt::*renderer* (make-instance 'gi-gtk-renderer))

@@ -5,8 +5,6 @@
   (:documentation "Electron renderer."))
 (in-package :nyxt/renderer/electron)
 
-(push :nyxt-electron *features*)
-
 #+sbcl (pushnew 'electron:terminate sb-ext:*exit-hooks*)
 
 (define-class electron-renderer (renderer)
@@ -16,6 +14,9 @@
   (:export-predicate-name-p t)
   (:metaclass user-class)
   (:documentation "Electron renderer class."))
+
+(setf nyxt::*renderer* (make-instance 'electron-renderer))
+(pushnew :nyxt-electron *features*)
 
 (defmethod install ((renderer electron-renderer))
   (flet ((set-superclasses (renderer-class-sym+superclasses)
@@ -38,8 +39,6 @@
                                   renderer-scheme
                                   renderer-window
                                   renderer-buffer))))
-
-(setf nyxt::*renderer* (make-instance 'electron-renderer))
 
 (define-class electron-scheme (electron:protocol)
   ()

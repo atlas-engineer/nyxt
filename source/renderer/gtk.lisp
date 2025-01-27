@@ -5,14 +5,15 @@
     (:documentation "GTK renderer using direct CFFI bindings."))
 (in-package :nyxt/renderer/gtk)
 
-(push :nyxt-gtk *features*)
-
 (define-class gtk-renderer (renderer)
   ((name "GTK"))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
   (:documentation "WebKit renderer class."))
+
+(setf nyxt::*renderer* (make-instance 'gtk-renderer))
+(pushnew :nyxt-gtk *features*)
 
 (defmethod renderer-thread-p ((renderer gtk-renderer) &optional (thread (bt:current-thread)))
   (string= "cl-cffi-gtk main thread" (bt:thread-name thread)))
@@ -46,8 +47,6 @@
                                   renderer-scheme
                                   nyxt/mode/user-script:renderer-user-style
                                   nyxt/mode/user-script:renderer-user-script))))
-
-(setf nyxt::*renderer* (make-instance 'gtk-renderer))
 
 (define-class gtk-browser ()
   ((web-contexts
