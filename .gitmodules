@@ -438,3 +438,9 @@
 	path = _build/cl-colors-ng
 	url = https://codeberg.org/cage/cl-colors-ng.git
 	shallow = true
+[submodule "_build/cl-interpol"]
+	path = _build/cl-interpol
+	url = https://github.com/edicl/cl-interpol
+[submodule "_build/symbol-munger"]
+	path = _build/symbol-munger
+	url = https://github.com/AccelerationNet/symbol-munger
