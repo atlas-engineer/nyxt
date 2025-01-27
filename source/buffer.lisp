@@ -1373,15 +1373,10 @@ specified for their contents."
                                     (make-buffer-focus :url (url (first suggestion-values))))))
     (current-buffer)))
 
-(export-always 'reload-buffer)
-(defun reload-buffer (buffer)
-  "Reload BUFFER and return it."
-  (ffi-buffer-reload buffer))
-
 (define-command reload-current-buffer ()
   "Reload current buffer.
 Return it."
-  (reload-buffer (current-buffer)))
+  (ffi-buffer-reload (current-buffer)))
 
 (define-command reload-buffers
     (&optional (buffers
@@ -1391,7 +1386,7 @@ Return it."
   "Prompt for BUFFERS to be reloaded.
 Return BUFFERS."
   (when buffers
-    (mapcar #'reload-buffer (alex:ensure-list buffers)))
+    (mapcar #'ffi-buffer-reload (alex:ensure-list buffers)))
   buffers)
 
 (defun buffer-parent (&optional (buffer (current-buffer)))

@@ -153,7 +153,7 @@ and creates the foreign objects necessary for rendering the buffer."))
   (:documentation "Load URL into BUFFER through the renderer."))
 
 (define-ffi-generic ffi-buffer-reload (buffer)
-  (:documentation "Reload BUFFER via the renderer."))
+  (:documentation "Reload BUFFER via the renderer and return it."))
 
 (define-ffi-generic ffi-buffer-load-alternate-html (buffer html-content content-url url)
   (:documentation "Load HTML-CONTENT for CONTENT-URL into BUFFER through the renderer.

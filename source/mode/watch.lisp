@@ -37,7 +37,7 @@
    (nyxt/mode/repeat:repeat-interval 300.0)
    (nyxt/mode/repeat:repeat-action
     #'(lambda (mode)
-        (reload-buffer (buffer mode)))
+        (ffi-buffer-reload (buffer mode)))
     :type (maybe (function (nyxt/mode/repeat:repeat-mode))))))
 
 (define-command-global watch-buffer (&optional (buffer (current-buffer)))

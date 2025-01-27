@@ -47,7 +47,7 @@
                                                "nyxt-search-mark"))))
            (assert-match-count (pattern expected-count
                                 &optional (buffer (current-buffer)))
-             (reload-buffer buffer)
+             (ffi-buffer-reload buffer)
              (sleep 0.5)
              (nyxt/mode/search-buffer:search-document
               pattern

@@ -362,7 +362,7 @@ page:")
                 (:button.button
                  :onclick (ps:ps (nyxt/ps:lisp-eval
                                   (:title "re-load/re-generate the random number")
-                                  (reload-buffer buffer)))
+                                  (ffi-buffer-reload buffer)))
                  :title "Re-generate the random number again"
                  "New number"))))
           (:p "Several things to notice here:")

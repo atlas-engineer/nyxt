@@ -78,14 +78,14 @@ See `nyxt/mode/macro-edit' package documentation for implementation details."
 (defmethod add-function ((macro-editor macro-edit-mode) command)
   (alex:appendf (functions macro-editor)
                 (list command))
-  (reload-buffer (buffer macro-editor)))
+  (ffi-buffer-reload (buffer macro-editor)))
 
 (defun delete-nth (n list)
   (nconc (subseq list 0 n) (nthcdr (1+ n) list)))
 
 (defmethod remove-function ((macro-editor macro-edit-mode) command-index)
   (setf (functions macro-editor) (delete-nth command-index (functions macro-editor)))
-  (reload-buffer (buffer macro-editor)))
+  (ffi-buffer-reload (buffer macro-editor)))
 
 (defmethod macro-name ((macro-editor macro-edit-mode))
   (let ((name (ps-eval :buffer (buffer macro-editor)

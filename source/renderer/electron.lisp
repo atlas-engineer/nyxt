@@ -184,7 +184,8 @@ Note that by changing the default value, modifier keys can be remapped."))
   (electron:load-url buffer url))
 
 (defmethod ffi-buffer-reload ((buffer electron-buffer))
-  (electron:reload (electron:web-contents buffer)))
+  (electron:reload (electron:web-contents buffer))
+  buffer)
 
 (defmethod ffi-buffer-evaluate-javascript ((buffer electron-buffer) javascript
                                            &optional world-name)

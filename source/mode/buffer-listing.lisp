@@ -51,7 +51,7 @@ shown linearly instead."
                        :text "✕"
                        :title "Delete buffer"
                        `(nyxt::delete-buffer :buffers ,buffer)
-                       `(reload-buffer ,listing-buffer))
+                       `(ffi-buffer-reload ,listing-buffer))
                      (:nbutton
                        :class "buffer-button"
                        :text (format nil "~a - ~a" (render-url (url buffer)) (title buffer))
