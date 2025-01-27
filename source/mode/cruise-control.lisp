@@ -10,9 +10,11 @@ The main API point is `cruise-control-mode'."))
   "Mode for automatically scrolling up and down the page.
 It inherits from `nyxt/mode/repeat:repeat-mode'."
   ((rememberable-p t)
-   (velocity 0 :documentation "The distance the page is scrolling up or down
-  each update interval. A positive velocity corresponds to scrolling down, a
-  negative velocity corresponds to scrolling up.")
+   (velocity
+    0
+    :documentation "The distance the page is scrolling on each update interval.
+A positive velocity corresponds to scrolling down, a negative velocity
+corresponds to scrolling up.")
    (nyxt/mode/repeat:repeat-interval 0.10)
    ;; We're overriding it explicitly so that the cleanup of repeat-mode does not
    ;; erase the repeat action.
