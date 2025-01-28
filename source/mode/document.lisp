@@ -206,7 +206,7 @@ Only includes the strings that were pasted/copied inside Nyxt."))
           and do (return input)))
 
 (defmethod nyxt:on-signal-load-finished ((mode document-mode) url)
-  (when (force-zoom-ratio-default (buffer mode))
+  (when (zoom-ratio-default (buffer mode))
     (reset-page-zoom :buffer (buffer mode)))
   url)
 
@@ -327,7 +327,9 @@ The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
 (define-command reset-page-zoom (&key (buffer (current-buffer))
                                       (ratio (zoom-ratio-default buffer)))
   "Reset the BUFFER zoom to the `zoom-ratio-default' or RATIO."
-  (setf (current-zoom-ratio buffer) ratio))
+  (if ratio
+      (setf (current-zoom-ratio buffer) ratio)
+      (setf (current-zoom-ratio buffer) 1.0)))
 
 (define-internal-page summarize-buffer (&key (summary-length 5) (id (id (current-buffer))))
     (:title "*Summary*")
