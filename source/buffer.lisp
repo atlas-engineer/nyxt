@@ -498,14 +498,16 @@ buffer.")
     50
     :type integer
     :documentation "The distance in pixels for `scroll-left' or `scroll-right'.")
-   (current-zoom-ratio
-    1.0
+   (zoom-ratio
+    nil
     :type float
     :reader t
     :export t
-    :documentation "The current zoom ratio.")
+    :documentation "The current zoom ratio as per `ffi-buffer-zoom-ratio'.
+It is an implementation detail and must not be set by the user. For the
+user-facing slot, see `zoom-ratio-default'.")
    (zoom-ratio-step
-    0.2
+    0.1
     :type float
     :documentation "The step size for zooming in and out.")
    (zoom-ratio-default
@@ -523,11 +525,6 @@ down."))
   (:export-predicate-name-p t)
   (:metaclass user-class)
   (:documentation "Buffers holding structured documents."))
-
-(defmethod (setf current-zoom-ratio) (value (buffer document-buffer))
-  (when (plusp value)
-    (setf (slot-value buffer 'current-zoom-ratio) value
-          (ffi-buffer-zoom-level buffer) value)))
 
 (define-class context-buffer (buffer)
   ((last-access
