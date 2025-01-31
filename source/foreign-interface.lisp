@@ -223,13 +223,13 @@ PROXY-URL is a `quri:uri' and IGNORE-HOSTS a list of strings."))
 (define-ffi-generic ffi-buffer-download (buffer url)
   (:documentation "Download URL using the BUFFER web view."))
 
-(define-ffi-generic ffi-buffer-zoom-level (buffer)
+(define-ffi-generic ffi-buffer-zoom-ratio (buffer)
   (:method ((buffer t))
     (ps-eval :buffer buffer (ps:chain document body style zoom)))
   (:setter-p t)
   (:documentation "Return the zoom level of the document.
 Setf-able."))
-(defmethod (setf ffi-buffer-zoom-level) (value (buffer buffer))
+(defmethod (setf ffi-buffer-zoom-ratio) (value (buffer t))
   "Use JavaScript, if the renderer does not allow zooming natively."
   (ps-eval :buffer buffer
     (ps:let ((style (ps:chain document body style)))

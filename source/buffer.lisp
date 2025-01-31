@@ -527,7 +527,7 @@ down."))
 (defmethod (setf current-zoom-ratio) (value (buffer document-buffer))
   (when (plusp value)
     (setf (slot-value buffer 'current-zoom-ratio) value
-          (ffi-buffer-zoom-level buffer) value)))
+          (ffi-buffer-zoom-ratio buffer) value)))
 
 (define-class context-buffer (buffer)
   ((last-access

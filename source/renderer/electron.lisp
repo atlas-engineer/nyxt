@@ -186,6 +186,14 @@ Note that by changing the default value, modifier keys can be remapped."))
   (electron:reload (electron:web-contents buffer))
   buffer)
 
+(defmethod ffi-buffer-zoom-ratio ((buffer electron-buffer))
+  (electron:get-zoom-factor (electron:web-contents buffer)))
+
+(defmethod (setf ffi-buffer-zoom-ratio) (value (buffer electron-buffer))
+  (if (and (floatp value) (plusp value))
+      (electron:set-zoom-factor (electron:web-contents buffer) value)
+      (echo-warning "Zoom ratio must be a positive floating point number.")))
+
 (defmethod ffi-buffer-evaluate-javascript ((buffer electron-buffer) javascript
                                            &optional world-name)
   ;; TODO world-name is used in user-script mode.
