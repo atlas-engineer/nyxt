@@ -206,7 +206,10 @@ Only includes the strings that were pasted/copied inside Nyxt."))
           and do (return input)))
 
 (defmethod nyxt:on-signal-load-finished ((mode document-mode) url)
-  (reset-page-zoom :buffer (buffer mode))
+  (with-slots (buffer) mode
+    ;; Ensures that the buffer-local zoom ratio is honored.
+    (setf (ffi-buffer-zoom-ratio buffer)
+          (or (zoom-ratio buffer) (zoom-ratio-default buffer))))
   url)
 
 (define-internal-page show-url-qrcode (&key url)
@@ -316,17 +319,18 @@ The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
                                              (ps:@ window inner-height)))))))
 
 (define-command zoom-page (&key (buffer (current-buffer)))
-  "Zoom in the current page BUFFER."
-  (incf (current-zoom-ratio buffer) (zoom-ratio-step buffer)))
+  "Zoom in the current buffer."
+  (incf (ffi-buffer-zoom-ratio buffer) (zoom-ratio-step buffer)))
 
 (define-command unzoom-page (&key (buffer (current-buffer)))
-  "Zoom out the current page in BUFFER."
-  (decf (current-zoom-ratio buffer) (zoom-ratio-step buffer)))
+  "Zoom out the current buffer."
+  (decf (ffi-buffer-zoom-ratio buffer) (zoom-ratio-step buffer)))
 
-(define-command reset-page-zoom (&key (buffer (current-buffer))
-                                      (ratio (zoom-ratio-default buffer)))
-  "Reset the BUFFER zoom to the `zoom-ratio-default' or RATIO."
-  (setf (current-zoom-ratio buffer) ratio))
+(define-command reset-page-zoom (&key (buffer (current-buffer)))
+  "Reset to the default zoom."
+  ;; Delete `zoom-ratio-default' slot when we are able to get the initform of a
+  ;; slot set by `define-confuration'.
+  (setf (ffi-buffer-zoom-ratio buffer) (zoom-ratio-default buffer)))
 
 (define-internal-page summarize-buffer (&key (summary-length 5) (id (id (current-buffer))))
     (:title "*Summary*")

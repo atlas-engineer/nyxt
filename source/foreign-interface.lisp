@@ -235,6 +235,8 @@ Setf-able."))
     (ps:let ((style (ps:chain document body style)))
       (setf (ps:@ style zoom)
             (ps:lisp value)))))
+(defmethod (setf ffi-buffer-zoom-ratio) :after (value (buffer t))
+  (setf (slot-value buffer 'zoom-ratio) value))
 
 (define-ffi-generic ffi-buffer-get-document (buffer)
   (:method ((buffer t))
