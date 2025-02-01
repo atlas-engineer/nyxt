@@ -686,7 +686,7 @@ set of useful URLs or preparing a list to send to a someone else."
                                     :print-style (keymaps:name (keyscheme buffer)))))
                      (:nbutton
                        :class "button binding"
-                       :text (if bindings (first bindings) ">")
+                       :text (if bindings (first bindings) "⏎")
                        `(nyxt::run-async ,command))
                      (:nbutton
                        :class "button command"
