@@ -211,7 +211,6 @@ elements are scaled accordingly.")
      (:li "Improve UI of the interfaces bound to commands:"
           (:ul
            (:li (:nxref :command 'nyxt/mode/download:list-downloads))
-           (:li (:nxref :command 'nyxt/mode/history:list-history))
            (:li (:nxref :command 'nyxt/mode/buffer-listing:list-buffers))
            (:li (:nxref :command 'nyxt/mode/bookmark:list-bookmarks))
            (:li (:code "nyxt/mode/buffer-listing:buffers-panel"))
@@ -690,9 +689,6 @@ to open a file, save it, switch buffer or delete current buffer.")
      (:li "Add Emacs/VI text editing bindings in "
           (:nxref :mode 'nyxt/mode/prompt-buffer:prompt-buffer-mode)
           " and " (:code "nyxt/mode/repl:repl") ".")
-     (:li "Rebind " (:nxref :command 'nyxt/mode/history:history-forwards) " to "
-          (:nxref :command 'nyxt/mode/history:history-forwards-maybe-query)
-          " in the Emacs and VI schemes.")
      (:li "Rebind " (:nxref :command 'nyxt/mode/bookmark:bookmark-url) " and "
           (:nxref :command 'copy-title) " to be more consistent with other bindings.")
 

@@ -42,9 +42,7 @@ To make this change permanent, you can customize
                      :input (render-url (url buffer))
                      :sources (list
                                (make-instance 'prompter:raw-source
-                                              :name "URL")
-                               (make-instance 'nyxt/mode/history:history-all-source
-                                              :buffer buffer)))))
+                                              :name "URL")))))
         (and-let* ((url (if (stringp input)
                             (quri:uri input)
                             (url (htree:data input))))
