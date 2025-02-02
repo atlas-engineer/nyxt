@@ -38,10 +38,12 @@ search.")
   ((default-modes (cons 'history-mode %slot-value%))))
 
 (define-command history-backwards ()
-  "Navigate backwards.")
+  "Navigate backwards."
+  (ffi-buffer-navigate-backwards (current-buffer)))
 
 (define-command history-forwards ()
-  "Navigate forwards.")
+  "Navigate forwards."
+  (ffi-buffer-navigate-forwards (current-buffer)))
 
 (defun history-add (url &key (title "") (buffer (current-buffer)))
   "Add URL to the global history."
