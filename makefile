@@ -49,7 +49,7 @@ nyxt: $(lisp_files)
 	if [ "$(NYXT_RENDERER)" = "electron" ] && \
 	   [ "$(NODE_SETUP)" = "true" ] && \
 	   [ "$(NYXT_SUBMODULES)" = "true" ]; then \
-		npm install --verbose $(makefile_dir)_build/cl-electron; \
+		$(MAKE) -C $(makefile_dir)_build/cl-electron install; \
 	fi
 	$(lisp_eval) '(asdf:load-system :nyxt/$(NYXT_RENDERER)-application)' \
 		--eval '(asdf:make :nyxt/$(NYXT_RENDERER)-application)' \
