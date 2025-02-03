@@ -10,9 +10,9 @@
 For documentation on commands and keybindings, see the manual."
   ((rememberable-p nil)
    (nyxt/mode/hint:hints-selector
-    "a, b, p, del, h1, h2, h3, h4, h5, h6, i, option,
-strong, sub, sup, listing, xmp, plaintext, basefont, big, blink, center, font,
-marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
+    "a, b, p, del, h1, h2, h3, h4, h5, h6, i, option, strong, sub, sup, listing,
+xmp, plaintext, basefont, big, blink, center, font, marquee, multicol, nobr, s,
+spacer, strike, tt, u, wbr, code, cite, pre"
     :type string)
    (keyscheme-map
     (define-keyscheme-map "visual-mode" ()
