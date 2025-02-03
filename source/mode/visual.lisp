@@ -55,8 +55,7 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
        "C-a" 'beginning-line
        "C-e" 'end-line
        "C-g" 'visual-mode
-       "shift-space" 'toggle-mark
-       "C-space" 'toggle-mark)
+       "shift-space" 'toggle-mark)
       ;; vi keybindings only enable use of vim's plain "visual" mode for now
       keyscheme:vi-normal
       (list
