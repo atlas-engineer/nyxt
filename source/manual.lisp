@@ -80,11 +80,11 @@ add the following to your configuration:")
         (:ul
          (:li "vi bindings:"
               (:ncode
-                '(define-configuration buffer
+                '(define-configuration input-buffer
                   ((default-modes (pushnew 'nyxt/mode/vi:vi-normal-mode %slot-value%))))))
          (:li "Emacs bindings:"
               (:ncode
-                '(define-configuration buffer
+                '(define-configuration input-buffer
                   ((default-modes (pushnew 'nyxt/mode/emacs:emacs-mode %slot-value%)))))))
         (:p "You can create new scheme names with " (:nxref :function 'nkeymaps:make-keyscheme)
             ".  Also see the "
