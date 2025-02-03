@@ -6,8 +6,7 @@
 (in-package :nyxt/mode/visual)
 
 (define-mode visual-mode (nyxt/mode/hint:hint-mode)
-  "Visual mode enables HTML element selection and provides commands to select text using keyboard only.
-For documentation on commands and keybindings, see the manual."
+  "Browse the page with a cursor to select text."
   ((rememberable-p nil)
    (nyxt/mode/hint:hints-selector
     "a, b, p, del, h1, h2, h3, h4, h5, h6, i, option, strong, sub, sup, listing,
