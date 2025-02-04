@@ -32,10 +32,8 @@ bookmarks. If this is the case, prompt the user about bookmarking it."
                      (mapcar #'(lambda (e) (render-url (url e)))
                              (files:content (nyxt/mode/bookmark:bookmarks-file (current-buffer))))))
                (find url-address bookmark-url-strings :test #'string=))))
-    (and-let* ((history-entries (mapcar #'htree:data
-                                        (alex:hash-table-keys (htree:entries (buffer-history)))))
-               (current-url-history (find (url (current-buffer))
-                                          history-entries
+    (and-let* ((current-url-history (find (url (current-buffer))
+                                          (history-vector *browser*)
                                           :test #'equalp :key #'url))
                (implicit-visits-value (nyxt::implicit-visits current-url-history))
                (current-url-string (render-url (url current-url-history))))
