@@ -16,12 +16,6 @@ Libraries used are `plump', `clss', `nyxt/dom', `cl-base64', `cl-qrencode',
 `analysis'."))
 (in-package :nyxt/mode/document)
 
-;; TODO: Remove document-mode from special buffers (e.g. help).
-;; This is required because special buffers cannot be part of a history (and it breaks it).
-;; Bind C-l to set-url-new-buffer?  Wait: What if we click on a link?  url
-;; changes in special buffers should open a new one.
-;; Or else we require that all special-buffer-generating commands open a new buffer.
-
 (define-mode document-mode ()
   "Mode to interact with structured documents.
 This is typically for HTML pages, but other formats could be supported too.
