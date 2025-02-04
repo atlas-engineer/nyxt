@@ -191,14 +191,7 @@ prompt buffer.")
     (make-instance 'history-file)
     :type history-file
     :documentation "History file to read from when restoring session.
-See `restore-session-on-startup-p' to control this behavior.
 See also `history-file' in `context-buffer' for per-buffer history files.")
-   (restore-session-on-startup-p
-    nil
-    :type boolean
-    :documentation "Whether to restore buffers from the previous session.
-You can store and restore sessions manually to various files with
-`store-history-by-name' and `restore-history-by-name'.")
    (default-cookie-policy
     :no-third-party
     :type cookie-policy
@@ -367,7 +360,7 @@ errors correctly from then on."
     (finalize-history browser urls)))
 
 (defmethod finalize-history ((browser browser) urls)
-  "Startup finalization: Restore history, open URLs, display startup errors."
+  "Startup finalization: Open URLs, display startup errors."
   (macrolet ((with-protected-history (&body body)
                `(with-protect ("Error restoring history ~a: ~a"
                                (files:expand (history-file browser))
@@ -385,17 +378,9 @@ restored."
       ;; not be run.
       (handler-case
           (let ((init-buffer (current-buffer)))
-            (if (restore-session-on-startup-p browser)
-                (if (with-protected-history
-                        (restore-history-buffers
-                         (files:content (history-file browser))
-                         (history-file browser)))
-                    (open-urls urls)
-                    (open-urls (or urls (list (default-new-buffer-url browser)))))
-                (progn
-                  (log:info "Not restoring session.")
-                  (clear-history-owners)
-                  (open-urls (or urls (list (default-new-buffer-url browser))))))
+            (log:info "Not restoring session.")
+            (clear-history-owners)
+            (open-urls (or urls (list (default-new-buffer-url browser))))
             (buffer-delete init-buffer))
         (error (c)
           ;; TODO: Clear buffers or back up history?
