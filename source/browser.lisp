@@ -192,6 +192,10 @@ prompt buffer.")
     :type history-file
     :documentation "History file to read from when restoring session.
 See also `history-file' in `context-buffer' for per-buffer history files.")
+   (history-vector
+    (make-array 0 :fill-pointer t :adjustable t)
+    :type vector
+    :documentation "The list of all `history-entry' objects the user has created.")
    (default-cookie-policy
     :no-third-party
     :type cookie-policy
