@@ -371,42 +371,6 @@ Clicking on a link navigates the history in the corresponding buffer."
                                                                             (:ul (:raw (str:join "" b))))))))
                        "")))))))
 
-(define-internal-page buffer-history-tree (&key (id (id (current-buffer))))
-    (:title "*History Tree*" :page-mode 'nyxt/mode/history-tree:history-tree-mode)
-  "Display the history tree of a buffer.
-ID is a `buffer''s `id'."
-  (let ((buffer (nyxt::buffers-get id))
-        (mode (find-submode 'nyxt/mode/history-tree:history-tree-mode)))
-    (spinneret:with-html-string
-      (:nstyle (style mode))
-      (:h1 (format nil "History of ~a" buffer))
-      (:div (if buffer
-                (:raw (render-buffer-history-tree buffer))
-                "Buffer no longer exists.")))))
-
-(define-command-global buffer-history-tree (&key (buffer (current-buffer)))
-  "Display the history tree of a BUFFER."
-  (buffer-load-internal-page-focus 'buffer-history-tree :id (id buffer)))
-
-(define-internal-page-command-global history-tree ()
-  (output-buffer "*History*" 'nyxt/mode/history-tree:history-tree-mode)
-  "Display the whole, global history tree.
-It displays one branch per buffer.
-
-As such, when nodes are shared by multiple buffers, they are displayed multiple
-times.
-
-Thus it is not representative of how the Global History Tree deduplicates nodes
-internally, but this display is clearer and more navigable."
-  (let ((mode (find-submode 'nyxt/mode/history-tree:history-tree-mode output-buffer)))
-    (spinneret:with-html-string
-     (:nstyle (style mode))
-     (:body
-      (render-menu 'nyxt/mode/history:history-mode output-buffer)
-      (:h1 "History")
-      (dolist (buffer (buffer-list))
-        (:div (:raw (render-buffer-history-tree buffer))))))))
-
 (define-internal-page-command-global list-history (&key (limit 100))
     ;; TODO: Remove list-history-mode if we add a style slot to `internal-page's.
     (buffer "*History list*" 'nyxt/mode/list-history:list-history-mode)
