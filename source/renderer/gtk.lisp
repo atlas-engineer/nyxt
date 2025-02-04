@@ -943,7 +943,7 @@ See `finalize-buffer'."
              (setf (loading-renderer-history-p buffer) nil)
              (unless (eq (slot-value buffer 'nyxt::status) :failed)
                (setf (nyxt::status buffer) :finished))
-             (on-signal-load-finished buffer url)
+             (on-signal-load-finished buffer url (ffi-buffer-title buffer))
              (unless (internal-url-p url)
                (echo "Finished loading ~s." (render-url url))))))))
 
