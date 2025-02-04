@@ -14,25 +14,16 @@
 Not modifiable."
   (files:content (history-file buffer)))
 
-(define-class history-entry ()          ; TODO: Export?
+(define-class history-entry ()
   ((url
     (quri:uri "")
     :writer nil
     :type (or quri:uri string))
    (title "")
-   ;; TODO: For now we never increment the explicit-visits count.  Maybe we
-   ;; could use a new buffer slot to signal that the last load came from an
-   ;; explicit request?
-   (explicit-visits
-    0
-    :type integer
-    :documentation "Number of times the URL was visited by a prompt buffer request.  This does not
-include implicit visits.")
    (implicit-visits
     0
     :type integer
-    :documentation "Number of times the URL was visited by following a link on a page.
-This does not include explicit visits.")
+    :documentation "Number of times the URL was visited.")
    (scroll-position
     '()
     :type (list-of number)
