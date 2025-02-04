@@ -737,10 +737,6 @@ mode's configuration file:")
 exec nyxt --headless --no-auto-config --profile nosave --config \"$0\"
 |#"
           '(define-configuration browser
-            "Disable session restoration to speed up startup and get more reproducible
-behavior."
-            ((restore-session-on-startup-p nil)))
-          '(define-configuration browser
             "Load the URL of Nyxt repository by default in all new buffers.
 Alternatively, call `buffer-load' in `after-startup-hook'."
             ((default-new-buffer-url (quri:uri "https://github.com/atlas-engineer/nyxt"))))
