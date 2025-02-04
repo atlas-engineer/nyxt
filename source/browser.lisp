@@ -303,7 +303,7 @@ A list of strings is returned, as to comply with `uiop:launch-program' or
   (with-slots ((cmd external-editor-program)) browser
     (if (str:blank? cmd)
         (progn (echo-warning "Invalid value of `external-editor-program' browser slot.") nil)
-        (str:split " " cmd))))
+        (str:split " " cmd :omit-nulls t))))
 
 (defmethod default-search-engine ((browser browser))
   (first (search-engines browser)))
