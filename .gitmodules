@@ -441,6 +441,8 @@
 [submodule "_build/cl-interpol"]
 	path = _build/cl-interpol
 	url = https://github.com/edicl/cl-interpol
+	shallow = true
 [submodule "_build/symbol-munger"]
 	path = _build/symbol-munger
 	url = https://github.com/AccelerationNet/symbol-munger
+	shallow = true
