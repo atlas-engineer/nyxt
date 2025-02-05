@@ -194,7 +194,7 @@ prompt buffer.")
 See `restore-session-on-startup-p' to control this behavior.
 See also `history-file' in `context-buffer' for per-buffer history files.")
    (restore-session-on-startup-p
-    t
+    nil
     :type boolean
     :documentation "Whether to restore buffers from the previous session.
 You can store and restore sessions manually to various files with
