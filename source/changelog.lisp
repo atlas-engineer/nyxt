@@ -27,6 +27,8 @@
 
 (define-version "4.0.0"
   (:ul
+   (:li "Session is not restored on startup by default.  It is configurable via "
+        (:nxref :slot 'restore-session-on-startup-p :class-name 'browser) ".")
    (:li "Add buttons to quickly remove bookmarks in a buffer shown by "
         (:nxref :command 'nyxt/mode/bookmark:list-bookmarks))
    (:li "Refactor the " (:nxref :package :theme) " API.")
