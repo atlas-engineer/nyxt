@@ -500,7 +500,7 @@ buffer.")
     :documentation "The distance in pixels for `scroll-left' or `scroll-right'.")
    (zoom-ratio
     nil
-    :type float
+    :type (or null float)
     :reader t
     :export t
     :documentation "The current zoom ratio as per `ffi-buffer-zoom-ratio'.
