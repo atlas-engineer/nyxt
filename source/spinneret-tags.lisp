@@ -375,7 +375,7 @@ Returns all the linkable symbols from FORM as multiple values:
                          ((and (symbolp first)
                                (nsymbols:macro-symbol-p first))
                           (pushnew first macros)
-                          (let* ((arglist (swank-backend:arglist first))
+                          (let* ((arglist (trivial-arguments:arglist first))
                                  (rest-position (or (position '&rest arglist)
                                                     (position '&body arglist))))
                             (if rest-position

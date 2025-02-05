@@ -389,7 +389,7 @@ For generic functions, describe all the methods."
                                                (:td keymapname))))))))
                    (:nsection
                      :title "Argument list"
-                     (:pre (:code (prini-to-string (swank-backend:arglist input)
+                     (:pre (:code (prini-to-string (trivial-arguments:arglist input)
                                                    :package (symbol-package input)))))
                    #+sbcl
                    (unless (or (macro-function input)
