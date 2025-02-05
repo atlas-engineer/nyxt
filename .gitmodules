@@ -446,3 +446,11 @@
 	path = _build/symbol-munger
 	url = https://github.com/AccelerationNet/symbol-munger
 	shallow = true
+[submodule "_build/in-nomine"]
+	path = _build/in-nomine
+	url = https://github.com/phoe/in-nomine
+	shallow = true
+[submodule "_build/trivial-arguments"]
+	path = _build/trivial-arguments
+	url = https://github.com/Shinmera/trivial-arguments.git
+	shallow = true
