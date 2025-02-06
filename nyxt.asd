@@ -73,7 +73,6 @@
                trivial-package-local-nicknames
                trivial-types
                unix-opts
-               usocket                  ;due to small-web... fuck!
                ;; Local systems:
                nyxt/analysis
                nyxt/download-manager

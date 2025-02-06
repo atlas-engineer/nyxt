@@ -210,12 +210,6 @@ Please report this to the server admin.")))
           (error-help (format nil "Malformed URL: ~s" url)
                       (format nil "The URL you inputted most probably has a typo in it.
 Please, check URL correctness and try again.")))
-        (usocket:ns-condition (condition)
-          (error-help (format nil "Error resolving ~s" url)
-                      (format nil "Original text of ~a:~%~a" (type-of condition) condition)))
-        (usocket:socket-condition (condition)
-          (error-help (format nil "Socket malfunction when accessing ~s" url)
-                      (format nil "Original text of ~a:~%~a" (type-of condition) condition)))
         (condition (condition)
           (error-help "Unknown error"
                       (format nil "Original text of ~a:~%~a" (type-of condition) condition))))))
@@ -326,12 +320,6 @@ Implies that `small-web-mode' is enabled."
           (error-help
            "Malformed response"
            (format nil "The response for the URL you're requesting (~s) is malformed:~2%~a" url e)))
-        (usocket:ns-condition (condition)
-          (error-help (format nil "Error resolving ~s" url)
-                      (format nil "Original text of ~a:~%~a" (type-of condition) condition)))
-        (usocket:socket-condition (condition)
-          (error-help (format nil "Socket malfunction when accessing ~s" url)
-                      (format nil "Original text of ~a:~%~a" (type-of condition) condition)))
         (condition (condition)
           (error-help "Unknown error"
                       (format nil "Original text of ~a:~%~a" (type-of condition) condition))))))
