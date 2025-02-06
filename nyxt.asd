@@ -68,6 +68,7 @@
                swank
                swank/exts
                trivia
+               trivial-arguments
                trivial-clipboard
                trivial-package-local-nicknames
                trivial-types
