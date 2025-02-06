@@ -9,9 +9,6 @@
   "Mode to manage navigation history."
   ((visible-in-status-p nil)
    (history-blocklist '("https://duckduckgo.com/l/")
-                      ;; TODO: Find a more automated way to do it.  WebKitGTK
-                      ;; automatically removes such redirections from its
-                      ;; history.  How?
                       :type (list-of string)
                       :documentation "URL prefixes to not save in history.
 Example: DuckDuckGo redirections should be ignored or else going backward in
@@ -45,11 +42,6 @@ search.")
   "Navigate forwards."
   (ffi-buffer-navigate-forwards (current-buffer)))
 
-(defun history-add (url &key (title "") (buffer (current-buffer)))
-  "Add URL to the global history."
-  ;; TODO
-  )
-
 (export-always 'blocked-p)
 (defun blocked-p (url mode)
   "Check whether URL belongs to MODE's `history-blocklist'."
@@ -68,17 +60,13 @@ Uses `history-add' internally."
     (unless (quri:uri= url (url buffer))
       (log:debug "Picking different buffer URL instead: ~a"
                  (url buffer)))
-    (when (eq (slot-value buffer 'nyxt::status) :finished)
-      (with-current-buffer buffer
-        (history-add (url buffer) :title (title buffer)
-                                  :buffer buffer)))
+    (with-current-buffer buffer
+      (vector-push-extend (make-instance 'history-entry
+                                         :url (url buffer)
+                                         :title (title buffer))
+                          (history-vector *browser*)))
     url))
-
-(defmethod nyxt:on-signal-load-started ((mode history-mode) url)
-  (add-url-to-history url (buffer mode) mode)
-  url)
 
 (defmethod nyxt:on-signal-load-finished ((mode history-mode) url)
   (add-url-to-history url (buffer mode) mode)
   url)
-
