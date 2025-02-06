@@ -329,7 +329,7 @@ The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
 (define-command reset-page-zoom (&key (buffer (current-buffer)))
   "Reset to the default zoom."
   ;; Delete `zoom-ratio-default' slot when we are able to get the initform of a
-  ;; slot set by `define-confuration'.
+  ;; slot set by `define-configuration'.
   (setf (ffi-buffer-zoom-ratio buffer) (zoom-ratio-default buffer)))
 
 (define-internal-page summarize-buffer (&key (summary-length 5) (id (id (current-buffer))))
