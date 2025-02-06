@@ -28,9 +28,9 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "button4" 'previous-suggestion
        "down" 'next-suggestion
        "button5" 'next-suggestion
-       "home" 'first-suggestion
+       "shift-home" 'first-suggestion
        "pagehome" 'first-suggestion
-       "end" 'last-suggestion
+       "shift-end" 'last-suggestion
        "pageend" 'last-suggestion
        "pageup" 'previous-page
        "pagedown" 'next-page
