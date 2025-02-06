@@ -725,16 +725,6 @@ Return the created buffer."
   ;; Background buffers are invisible to the browser.
   (unless (background-buffer-p buffer)
     (buffers-set (id buffer) buffer))
-  ;; Register buffer in global history:
-  (files:with-file-content (history (history-file buffer)
-                            :default (make-history-tree buffer))
-    ;; Owner may already exist if history was just created with the above
-    ;; default value.
-    (unless (htree:owner history (id buffer))
-      (htree:add-owner history (id buffer)
-                       :creator-id (when (and parent-buffer
-                                              (global-history-p buffer))
-                                     (id parent-buffer)))))
   buffer)
 
 (export-always 'update-document-model)
@@ -908,13 +898,6 @@ The notion of first element is dictated by `containers:first-item'."
   (:documentation "Delete buffer after running `buffer-delete-hook'."))
 
 (defmethod buffer-delete ((buffer context-buffer))
-  (files:with-file-content (history (history-file buffer))
-    (when history
-      (and-let* ((owner (htree:owner history (id buffer)))
-                 (current (htree:current owner))
-                 (data (htree:data current)))
-        (setf (nyxt::scroll-position data) (nyxt:document-scroll-position buffer))
-        (htree:delete-owner history (id buffer)))))
   (call-next-method))
 
 (defun buffer-hide (buffer)
