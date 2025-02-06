@@ -124,37 +124,6 @@ lot."
                         (* 60 60)))))
            0))))
 
-(define-class history-disowned-source (prompter:source)
-  ((prompter:name "Disowned History")
-   (buffer :accessor buffer :initarg :buffer)
-   (prompter:enable-marks-p t)
-   (prompter:filter-preprocessor #'prompter:filter-exact-matches)
-   (prompter:constructor
-    (lambda (source)
-      (let* ((history (buffer-history (buffer source)))
-             (owner-less-history-entries
-               (when history
-                 (mapcar #'htree:data
-                         (sort
-                          (delete-if (lambda (entry) (htree:nodes entry))
-                                     (alex:hash-table-keys (htree:entries history)))
-                          (lambda (x y)
-                            (> (score-history-entry x)
-                               (score-history-entry y))))))))
-        owner-less-history-entries)))))
-
-(defun history-html-list (&key (limit 100))
-  (let* ((history (buffer-history))
-         (history-entries
-           (sort-by-time (alex:hash-table-keys (htree:entries history))
-                         :key #'htree:last-access)))
-    (spinneret:with-html-string
-      (loop for entry in (sera:take limit (the list history-entries))
-            for data = (htree:data entry)
-            collect (:tr (:td (title data))
-                         (:td (:a :href (render-url (url data))
-                                  (render-url (url data)))))))))
-
 (defmethod files:serialize ((profile nyxt-profile) (file history-file) stream &key)
   (let ((*package* (find-package :nyxt))
         (*print-length* nil))
