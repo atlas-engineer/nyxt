@@ -1185,12 +1185,7 @@ URL-DESIGNATOR is then transformed by BUFFER's `buffer-load-hook'."
 
 (define-class global-history-source (prompter:source)
   ((prompter:name "Global history")
-   ;; REVIEW: Collect history suggestions asynchronously or not?  It's fast
-   ;; enough with <10,000 entries on @ambrevar's laptop.
-   ;; (prompter:initial-suggestions (history-initial-suggestions))
-   (prompter:constructor (lambda (source)
-                           (declare (ignorable source))
-                           (history-initial-suggestions)))
+   (prompter:constructor (coerce (history-vector *browser*) 'list))
    (prompter:enable-marks-p t)
    (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:actions-on-return #'buffer-load*))

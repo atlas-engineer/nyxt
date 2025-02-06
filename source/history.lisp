@@ -31,8 +31,7 @@ Not modifiable."
 It's a list of a form (Y &OPTIONAL X)."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:documentation "Entry for the global history.
-The total number of visit for a given URL is (+ explicit-visits implicit-visits)."))
+  (:documentation "Entry for the global history."))
 
 (defmethod (setf url) (value (he history-entry))
   (setf (slot-value he 'url) (url value)))
@@ -44,7 +43,7 @@ The total number of visit for a given URL is (+ explicit-visits implicit-visits)
   (declare (ignore source))
   `(("Title" ,(title entry) (:width 3))
     ("URL" ,(render-url (url entry)) (:width 2))
-    ("Visits" ,(+ (implicit-visits entry) (explicit-visits entry)) (:width 1))))
+    ("Visits" ,(implicit-visits entry) (:width 1))))
 
 (export-always 'equals)
 (defmethod equals ((e1 history-entry) (e2 history-entry))
@@ -112,15 +111,11 @@ then become available for deletion with `delete-history-entry'."
   "Return history ENTRY score.
 The score gets higher for more recent entries and if they've been visited a
 lot."
-  ;; TODO: Or use current buffer last access?  Or both?
-  ;; WARNING: `htree:data-last-access' is slow, which is why we take a
-  ;; htree-entry instead which has much faster access to the last access.
   (let* ((entry (htree:data htree-entry))
          (last-access (htree:last-access htree-entry)))
     (+ (* 0.1
           ;; Total number of visits.
-          (+ (implicit-visits entry)
-             (explicit-visits entry)))
+          (implicit-visits entry))
        (if last-access
            (* 1.0
               ;; Inverse number of hours since the last access.
@@ -128,21 +123,6 @@ lot."
                  (1+ (/ (time:timestamp-difference (time:now) last-access)
                         (* 60 60)))))
            0))))
-
-(defun history-initial-suggestions (&key prefix-urls) ; TODO: Rename?  Make this a preprocessor so that it runs in the background?
-  "Return all history entries, with PREFIX-URLS prepended to the result."
-  (let* ((history (buffer-history))
-         (all-history-entries (when history
-                                (mapcar #'htree:data
-                                        (sort (alex:hash-table-keys (htree:entries history))
-                                              (lambda (x y)
-                                                (> (score-history-entry x)
-                                                   (score-history-entry y)))))))
-         (prefix-urls (delete-if #'uiop:emptyp prefix-urls)))
-    (when prefix-urls
-      (setf all-history-entries (append (mapcar #'quri:url-decode prefix-urls)
-                                        all-history-entries)))
-    all-history-entries))
 
 (define-class history-disowned-source (prompter:source)
   ((prompter:name "Disowned History")
