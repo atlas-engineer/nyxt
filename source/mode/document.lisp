@@ -406,7 +406,7 @@ The inner-text must not be modified, so that we can jump to the anchor of the sa
                                         headings
                                         :key (compose #'nyxt/dom:body #'element)
                                         :test #'equal)))
-             (_ (<= 0 new-position (1- (length headings)))))
+             ((<= 0 new-position (1- (length headings)))))
     (scroll-page-to-heading (elt headings new-position))))
 
 (define-command next-heading (&optional (buffer (current-buffer)))

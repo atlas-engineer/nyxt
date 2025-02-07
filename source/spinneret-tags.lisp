@@ -690,7 +690,7 @@ inject a closure right inside the forms."
                (let ((parent-section (parent-section heading)))
                  (:li (:a :href (format nil "#~a" (plump:attribute parent-section "id"))
                           (plump:text heading)))
-                 (serapeum:and-let* ((_ (< level depth))
+                 (serapeum:and-let* (((< level depth))
                                      (inner-level (1+ level))
                                      (inner-headers
                                       (clss:ordered-select (format nil "h~a" inner-level) parent-section)))
