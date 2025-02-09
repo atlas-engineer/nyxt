@@ -43,9 +43,7 @@ To make this change permanent, you can customize
                      :sources (list
                                (make-instance 'prompter:raw-source
                                               :name "URL")))))
-        (and-let* ((url (if (stringp input)
-                            (quri:uri input)
-                            (url (htree:data input))))
+        (and-let* ((url (quri:uri input))
                    (host (and (not (url-empty-p url))
                               (quri:uri-host url))))
           (echo "Added exception for ~s." host)
