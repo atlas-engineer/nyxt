@@ -34,9 +34,7 @@ This mode is a good candidate to be passed to `make-buffer'."
        "f1 v" 'describe-variable
        "f11" 'toggle-fullscreen
        "C-Y" 'nyxt/mode/download:list-downloads
-       "C-space" 'execute-command
-       "C-M-space" 'execute-extended-command
-       "C-shift-space" 'execute-predicted-command)
+       "C-space" 'execute-command)
       keyscheme:cua
       (list
        "f5" 'reload-current-buffer
@@ -86,7 +84,6 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-x 5 1" 'delete-window
        "C-x C-f" 'nyxt/mode/file-manager:open-file
        "M-x" 'execute-command
-       "C-M-x" 'execute-extended-command
        "M-1" (read-from-string "nyxt/mode/repeat:repeat-key")
        "M-2" (read-from-string "nyxt/mode/repeat:repeat-key")
        "M-3" (read-from-string "nyxt/mode/repeat:repeat-key")
