@@ -36,9 +36,6 @@ It's a list of a form (Y &OPTIONAL X)."))
 (defmethod (setf url) (value (he history-entry))
   (setf (slot-value he 'url) (url value)))
 
-(defmethod url ((node htree:node))
-  (url (htree:data node)))
-
 (defmethod prompter:object-attributes ((entry history-entry) (source prompter:source))
   (declare (ignore source))
   `(("Title" ,(title entry) (:width 3))
@@ -79,51 +76,6 @@ class."
 (defun history-tree-key (history-entry)
   (url history-entry))
 
-(defun make-history-tree (&optional (buffer (current-buffer)))
-  "Return a new global history tree for `history-entry' data."
-  (htree:make :key 'history-tree-key :initial-owners (when buffer (list (id buffer)))))
-
-(define-command delete-history-entry (&key (buffer (current-buffer)))
-  "Delete queried history entries.
-Only deletes the disowned entries (= the ones not belonging to a buffer)."
-  (let ((entries (prompt
-                  :prompt "Delete entries"
-                  :sources (make-instance 'history-disowned-source
-                                          :buffer buffer))))
-    (files:with-file-content (history (history-file buffer))
-      (dolist (entry entries)
-        (htree:delete-data history entry)))))
-
-(define-command reset-buffer-history (&key (buffers (prompt :prompt "Reset histories of buffer(s)"
-                                                            :sources (make-instance
-                                                                      'buffer-source
-                                                                      :actions-on-return #'identity))))
-  "Set selected BUFFER's history to the current URL only.
-This removes the parenthood with the parent buffer, if there was any.
-
-When called over many or all buffers, it may free many history entries which
-then become available for deletion with `delete-history-entry'."
-  (files:with-file-content (history (history-file (current-buffer)))
-    (dolist (buffer buffers)
-      (htree:reset-owner history (id buffer)))))
-
-(defun score-history-entry (htree-entry)
-  "Return history ENTRY score.
-The score gets higher for more recent entries and if they've been visited a
-lot."
-  (let* ((entry (htree:data htree-entry))
-         (last-access (htree:last-access htree-entry)))
-    (+ (* 0.1
-          ;; Total number of visits.
-          (implicit-visits entry))
-       (if last-access
-           (* 1.0
-              ;; Inverse number of hours since the last access.
-              (/ 1
-                 (1+ (/ (time:timestamp-difference (time:now) last-access)
-                        (* 60 60)))))
-           0))))
-
 (defmethod files:serialize ((profile nyxt-profile) (file history-file) stream &key)
   (let ((*package* (find-package :nyxt))
         (*print-length* nil))
@@ -142,124 +94,6 @@ lot."
 ;; REVIEW: This works around the issue of cl-prevalence to deserialize structs
 ;; with custom constructors: https://github.com/40ants/cl-prevalence/issues/16.
 (setf (fdefinition 'quri.uri::make-uri) #'quri.uri::%make-uri)
-
-;; Hack of cl-prevalence to support the history-tree custom hash tables:
-(defun history-deserialize-sexp (stream &optional (serialization-state (s-serialization::make-serialization-state)))
-  "Read and return an s-expression serialized version of a lisp object from stream, optionally reusing a serialization state"
-  (s-serialization::reset serialization-state)
-  (handler-bind ((reader-error (lambda (c)
-                                 (log:warn "~a" c)
-                                 (continue)))
-                 ;; CCL unintuitively raises simple-errors...
-                 #+ccl
-                 (simple-error (lambda (c)
-                                 (log:warn "~a" c)
-                                 (continue))))
-    (let* ((*package* (find-package :nyxt))
-           (sexp (safe-read stream nil stream)))
-      (if (eq sexp stream)
-          nil
-          (history-deserialize-sexp-internal sexp (s-serialization::get-hashtable serialization-state))))))
-
-;; Hack of cl-prevalence to support the history-tree custom hash tables:
-(defun history-deserialize-sexp-internal (sexp deserialized-objects)
-  (if (atom sexp)
-      sexp
-      (ecase (first sexp)
-        (:sequence (destructuring-bind (id &key class size elements) (rest sexp)
-                     (cond
-                       ((not class)
-                        (error "Unknown sequence class"))
-                       ((not size)
-                        (error "Unknown sequence size"))
-                       (t
-                        (let ((sequence (make-sequence class size)))
-                          (declare (ignorable sequence))
-                          (setf (gethash id deserialized-objects) sequence)
-                          (map-into sequence
-                                    #'(lambda (x) (history-deserialize-sexp-internal x deserialized-objects))
-                                    elements))))))
-        (:hash-table (destructuring-bind (id &key test size rehash-size rehash-threshold entries) (rest sexp)
-                       (cond
-                         ((not test)
-                          (error "Test function is unknown"))
-                         ((not size)
-                          (error "Hash table size is unknown"))
-                         ((not rehash-size)
-                          (error "Hash table's rehash-size is unknown"))
-                         ((not rehash-threshold)
-                          (error "Hash table's rehash-threshold is unknown"))
-                         (t
-                          (if (member test '(eq eql equal equalp))
-                              (let ((hash-table (make-hash-table :size size
-                                                                 :test test
-                                                                 :rehash-size rehash-size
-                                                                 :rehash-threshold rehash-threshold)))
-                                (setf (gethash id deserialized-objects) hash-table)
-                                (dolist (entry entries)
-                                  (setf (gethash (history-deserialize-sexp-internal (first entry) deserialized-objects) hash-table)
-                                        (history-deserialize-sexp-internal (rest entry) deserialized-objects)))
-                                hash-table)
-                              (let ((hash-table (htree::make-entry-hash-table)))
-                                (cl-custom-hash-table:with-custom-hash-table
-                                  (setf (gethash id deserialized-objects) hash-table)
-                                  (dolist (entry entries)
-                                    (setf (gethash (history-deserialize-sexp-internal (first entry) deserialized-objects) hash-table)
-                                          (history-deserialize-sexp-internal (rest entry) deserialized-objects))))
-                                hash-table))))))
-
-        (:object (destructuring-bind (id &key class slots) (rest sexp)
-                   (let ((object (s-serialization::deserialize-class class slots deserialized-objects)))
-                     (setf (gethash id deserialized-objects) object)
-                     (dolist (slot slots)
-                       (when (slot-exists-p object (first slot))
-                         (setf (slot-value object (first slot))
-                               (history-deserialize-sexp-internal (rest slot) deserialized-objects))))
-                     object)))
-        (:struct (destructuring-bind (id &key class slots) (rest sexp)
-                   (let ((object (s-serialization::deserialize-struct class slots deserialized-objects)))
-                     (setf (gethash id deserialized-objects) object)
-                     (dolist (slot slots)
-                       (when (slot-exists-p object (first slot))
-                         (setf (slot-value object (first slot))
-                               (history-deserialize-sexp-internal (rest slot) deserialized-objects))))
-                     object)))
-        (:cons (destructuring-bind (id cons-car cons-cdr) (rest sexp)
-                 (let ((conspair (cons nil nil)))
-                   (setf (gethash id deserialized-objects)
-                         conspair)
-                   (rplaca conspair (history-deserialize-sexp-internal cons-car deserialized-objects))
-                   (rplacd conspair (history-deserialize-sexp-internal cons-cdr deserialized-objects)))))
-        (:ref (gethash (rest sexp) deserialized-objects)))))
-
-(defmethod s-serialization::deserialize-class ((history (eql 'htree:history-tree)) slots deserialized-objects)
-  ;; We need this specialization because
-  ;; - `history-tree' cannot be make-instance'd without specifying some slots like `owners'.
-  ;; - We need a history tree
-  (declare (ignore slots deserialized-objects))
-  ;; WARNING: At this stage, there may be no current-buffer, we make sure to
-  ;; pass NIL to `make-history-tree' to avoid potential dead-locks.
-  (let ((history (make-history-tree nil)))
-    history))
-
-(defmethod files:deserialize ((profile nyxt-profile) (file history-file) raw-content &key)
-  "Restore the global/buffer-local history and session from the PATH."
-  (let ((data (let ((*package* (find-package :nyxt)))
-                ;; We need to make sure current package is :nyxt so that
-                ;; symbols are printed with consistent namespaces.
-                (history-deserialize-sexp raw-content))))
-    (match data
-      (nil nil)
-      ((guard (list version history) t)
-       ;; The equality is exclusively established on the first return value,
-       ;; i.e. the major version.
-       (unless (= (parse-version version) (version))
-         (log:warn "History major version ~s differs from current major version ~s"
-                   (parse-version version) (version)))
-       history)
-      (_ (progn
-           (error "Expected (list version history) structure.")
-           nil)))))
 
 (defun histories-directory (&optional (buffer (current-buffer)))
   "Get the directory where history files are stored, based on `history-file' of BUFFER."
