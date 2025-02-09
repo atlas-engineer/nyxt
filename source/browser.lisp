@@ -365,33 +365,15 @@ errors correctly from then on."
 
 (defmethod finalize-history ((browser browser) urls)
   "Startup finalization: Open URLs, display startup errors."
-  (macrolet ((with-protected-history (&body body)
-               `(with-protect ("Error restoring history ~a: ~a"
-                               (files:expand (history-file browser))
-                               :condition)
-                  ,@body)))
-    (labels ((clear-history-owners ()
-               "Warning: We clear the previous owners here.
-After this, buffers from a previous session are permanently lost, they cannot be
-restored."
-               (with-protected-history
-                   (files:with-file-content (history (history-file browser))
-                     (when history
-                       (clrhash (htree:owners history)))))))
-      ;; Must catch all history-related errors, otherwise subsequent code would
-      ;; not be run.
-      (handler-case
-          (let ((init-buffer (current-buffer)))
-            (log:info "Not restoring session.")
-            (clear-history-owners)
-            (open-urls (or urls (list (default-new-buffer-url browser))))
-            (buffer-delete init-buffer))
-        (error (c)
-          ;; TODO: Clear buffers or back up history?
-          (log:warn c)))
-      (lpara:fulfill (slot-value browser 'startup-promise))
-      (hooks:run-hook (after-startup-hook browser) browser)
-      (funcall* (startup-error-reporter-function browser)))))
+  (handler-case
+      (let ((init-buffer (current-buffer)))
+        (open-urls (or urls (list (default-new-buffer-url browser))))
+        (buffer-delete init-buffer))
+    (error (c)
+      (log:warn c)))
+  (lpara:fulfill (slot-value browser 'startup-promise))
+  (hooks:run-hook (after-startup-hook browser) browser)
+  (funcall* (startup-error-reporter-function browser)))
 
 ;; Catch a common case for a better error message.
 (defmethod buffers :before ((browser t))
