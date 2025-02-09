@@ -33,7 +33,6 @@
                dexador
                enchant
                flexi-streams
-               history-tree
                iolib
                iolib/os
                lass
