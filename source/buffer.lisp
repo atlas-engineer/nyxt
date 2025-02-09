@@ -1305,12 +1305,7 @@ specified for their contents."
                                     (remove (current-buffer) suggestions :key #'prompter:value)))
            (make-instance
             'global-history-source
-            :actions-on-return (append actions-on-return
-                                       (list (lambda-command delete-history-entry* (suggestion-values)
-                                               "Delete chosen history entries (not belonging to open buffers)."
-                                               (files:with-file-content (history (history-file buffer))
-                                                 (dolist (entry suggestion-values)
-                                                   (htree:delete-data history entry))))))))
+            :actions-on-return actions-on-return))
      (mappend (rcurry #'url-sources (uiop:ensure-list actions-on-return)) (modes buffer)))))
 
 (define-command set-url (&key (prefill-current-url-p t))
