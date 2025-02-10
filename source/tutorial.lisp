@@ -154,11 +154,7 @@ deleting the old path. The tree makes sure you never lose track of where you've
 been.")
         (:ul
          (list-command-information '(nyxt/mode/history:history-forwards
-                                     nyxt/mode/history:history-backwards
-                                     nyxt/mode/history:history-forwards-query
-                                     nyxt/mode/history:history-backwards-query
-                                     nyxt/mode/history:history-forwards-all-query
-                                     nyxt/mode/history:history-all-query)))
+                                     nyxt/mode/history:history-backwards)))
         (:p "You can also view a full tree of the history for a given buffer by
 invoking the command 'buffer-history-tree'."))
 

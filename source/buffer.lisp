@@ -725,16 +725,6 @@ Return the created buffer."
   ;; Background buffers are invisible to the browser.
   (unless (background-buffer-p buffer)
     (buffers-set (id buffer) buffer))
-  ;; Register buffer in global history:
-  (files:with-file-content (history (history-file buffer)
-                            :default (make-history-tree buffer))
-    ;; Owner may already exist if history was just created with the above
-    ;; default value.
-    (unless (htree:owner history (id buffer))
-      (htree:add-owner history (id buffer)
-                       :creator-id (when (and parent-buffer
-                                              (global-history-p buffer))
-                                     (id parent-buffer)))))
   buffer)
 
 (export-always 'update-document-model)
@@ -908,13 +898,6 @@ The notion of first element is dictated by `containers:first-item'."
   (:documentation "Delete buffer after running `buffer-delete-hook'."))
 
 (defmethod buffer-delete ((buffer context-buffer))
-  (files:with-file-content (history (history-file buffer))
-    (when history
-      (and-let* ((owner (htree:owner history (id buffer)))
-                 (current (htree:current owner))
-                 (data (htree:data current)))
-        (setf (nyxt::scroll-position data) (nyxt:document-scroll-position buffer))
-        (htree:delete-owner history (id buffer)))))
   (call-next-method))
 
 (defun buffer-hide (buffer)
@@ -1185,12 +1168,7 @@ URL-DESIGNATOR is then transformed by BUFFER's `buffer-load-hook'."
 
 (define-class global-history-source (prompter:source)
   ((prompter:name "Global history")
-   ;; REVIEW: Collect history suggestions asynchronously or not?  It's fast
-   ;; enough with <10,000 entries on @ambrevar's laptop.
-   ;; (prompter:initial-suggestions (history-initial-suggestions))
-   (prompter:constructor (lambda (source)
-                           (declare (ignorable source))
-                           (history-initial-suggestions)))
+   (prompter:constructor (remove-duplicates (coerce (history-vector *browser*) 'list) :test 'equals))
    (prompter:enable-marks-p t)
    (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:actions-on-return #'buffer-load*))
@@ -1327,12 +1305,7 @@ specified for their contents."
                                     (remove (current-buffer) suggestions :key #'prompter:value)))
            (make-instance
             'global-history-source
-            :actions-on-return (append actions-on-return
-                                       (list (lambda-command delete-history-entry* (suggestion-values)
-                                               "Delete chosen history entries (not belonging to open buffers)."
-                                               (files:with-file-content (history (history-file buffer))
-                                                 (dolist (entry suggestion-values)
-                                                   (htree:delete-data history entry))))))))
+            :actions-on-return actions-on-return))
      (mappend (rcurry #'url-sources (uiop:ensure-list actions-on-return)) (modes buffer)))))
 
 (define-command set-url (&key (prefill-current-url-p t))
@@ -1386,98 +1359,31 @@ Return BUFFERS."
     (mapcar #'ffi-buffer-reload (alex:ensure-list buffers)))
   buffers)
 
-(defun buffer-parent (&optional (buffer (current-buffer)))
-  (let ((history (buffer-history buffer)))
-    (and-let* ((owner (htree:owner history (id buffer)))
-               (parent-id (htree:creator-id owner)))
-      (gethash parent-id (buffers *browser*)))))
+(define-command switch-buffer-next (&optional (buffer (current-buffer)))
+  "Switch to the next buffer.
 
-(defun buffers-with-history (history)
-  "Return the list of buffers that have history HISTORY.
-HISTORY may be NIL for buffers without history."
-  (remove-if (complement (sera:eqs history))
-             (buffer-list)
-             :key #'buffer-history))
-
-(defun buffer-children (&optional (buffer (current-buffer)))
-  (let* ((history (buffer-history buffer))
-         (buffers (buffers-with-history history)))
-    (sort (sera:filter
-           (sera:eqs (id buffer))
-           buffers
-           :key (lambda (b) (when-let ((owner (htree:owner history (id b))))
-                              (htree:creator-id owner))))
-          #'< :key #'id)))
-
-(defun buffer-siblings (&optional (buffer (current-buffer)))
-  (let* ((history (buffer-history buffer))
-         (buffers (buffers-with-history history)))
-    (flet ((existing-creator-id (owner)
-             "If owner's creator does not exist anymore
-(that is, parent has been deleted), return NIL so it can mimic top-level owners."
-             (if (htree:owner history (htree:creator-id owner))
-                 (htree:creator-id owner)
-                 nil)))
-      (let* ((owner (htree:owner history (id buffer)))
-             (current-parent-id (when owner (existing-creator-id owner)))
-             (common-parent-buffers
-               (sera:filter
-                (sera:equals current-parent-id)
-                buffers
-                :key (lambda (b)
-                       (when-let ((owner (htree:owner history (id b))))
-                         (existing-creator-id owner)))))
-             (common-parent-buffers
-               (sort common-parent-buffers #'< :key #'id)))
-        (sera:split-sequence-if (sera:eqs (id buffer))
-                                common-parent-buffers
-                                :key #'id)))))
+If the first buffer, wrap around to the last buffer. Return it."
+  (let* ((buffer-list (buffer-list))
+         (current-buffer-position (position buffer buffer-list))
+         (next-buffer-position
+           (if (eq current-buffer-position 0)
+               (- (length buffer-list) 1)
+               (- current-buffer-position 1)))
+         (next-buffer (nth next-buffer-position buffer-list)))
+    (set-current-buffer next-buffer)))
 
 (define-command switch-buffer-previous (&optional (buffer (current-buffer)))
-  "Switch to the previous buffer in the buffer tree.
-Return it.
+  "Switch to the previous buffer in the buffer list.
 
-The tree is browsed in a depth-first fashion.
-When there is no previous buffer, go to the last one so as to cycle."
-  (labels ((buffer-last-child (&optional (buffer (current-buffer)))
-             (if-let ((next-siblings (second (buffer-siblings buffer))))
-               (buffer-last-child (alex:last-elt next-siblings))
-               (if-let ((children (buffer-children buffer)))
-                 (buffer-last-child (alex:last-elt children))
-                 buffer)))
-           (buffer-sibling-previous (&optional (buffer (current-buffer)))
-             (when-let ((previous-siblings (first (buffer-siblings buffer))))
-               (alex:last-elt previous-siblings))))
-    (when-let ((previous (or (when-let ((previous-sibling (buffer-sibling-previous buffer)))
-                               (if-let ((children (buffer-children previous-sibling)))
-                                 (buffer-last-child (first children))
-                                 previous-sibling))
-                             (buffer-parent buffer)
-                             (buffer-last-child buffer))))
-      (set-current-buffer previous))))
-
-(define-command switch-buffer-next (&optional (buffer (current-buffer)))
-  "Switch to the next buffer in the buffer tree.
-Return it.
-
-The tree is browsed in a depth-first fashion.
-When there is no next buffer, go to the first one so as to cycle."
-  (labels ((buffer-first-root (buffer)
-             (if-let ((parent (buffer-parent buffer)))
-               (buffer-first-root parent)
-               (first (first (buffer-siblings buffer)))))
-           (buffer-next-parent-sibling (buffer)
-             (when-let ((parent (buffer-parent buffer)))
-               (if-let ((next-siblings (second (buffer-siblings parent))))
-                 (first next-siblings)
-                 (buffer-next-parent-sibling parent))))
-           (buffer-sibling-next (&optional (buffer (current-buffer)))
-             (first (second (buffer-siblings buffer)))))
-    (when-let ((next (or (first (buffer-children buffer))
-                         (buffer-sibling-next buffer)
-                         (buffer-next-parent-sibling buffer)
-                         (buffer-first-root buffer))))
-      (set-current-buffer next))))
+If the last buffer, wrap around to the first bufffer. Return it."
+  (let* ((buffer-list (buffer-list))
+         (current-buffer-position (position buffer buffer-list))
+         (previous-buffer-position
+           (if (eq (+ 1 current-buffer-position) (length buffer-list))
+               0
+               (+ current-buffer-position 1)))
+         (previous-buffer (nth previous-buffer-position buffer-list)))
+    (set-current-buffer previous-buffer)))
 
 (define-command switch-buffer-last ()
   "Switch to the last visited buffer.

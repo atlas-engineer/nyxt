@@ -214,20 +214,14 @@ history optimizes is hub-and-spoke search, where you keep returning to a certain
 hub to start your search/navigation from a familiar point. You can enable the
 optimization (merely going back in history to the hub page, instead of creating
 a new history node) for this strategy by configuring "
-            (:nxref :slot 'nyxt/mode/history:backtrack-to-hubs-p
-              :class-name 'nyxt/mode/history:history-mode)
             " to T.")
         (:p "Another useful side to Nyxt tree-like history are braching-aware history
 commands, like "
-            (:nxref :command 'nyxt/mode/history:history-forwards-query)
             ", allowing one to choose which branch of history they are going to visit, if
 there are several. If there's only one branch, then this command behaves much
 like regular " (:nxref :command 'nyxt/mode/history:history-forwards) ".")
         (:p "There are commands that allow to move across all the history before or after
 the current node:")
-        (:ul (list-command-information '(nyxt/mode/history:history-backwards-query
-                                         nyxt/mode/history:history-forwards-all-query
-                                         nyxt/mode/history:history-all-query)))
         (:p "If you need to know more: most of the optimizations and data structures are
 in " (:nxref :package :history-tree) " library, while most of the Nyxt-specific interface is in "
 (:nxref :package :nyxt/mode/history-tree) "."))
@@ -736,10 +730,6 @@ mode's configuration file:")
 #|
 exec nyxt --headless --no-auto-config --profile nosave --config \"$0\"
 |#"
-          '(define-configuration browser
-            "Disable session restoration to speed up startup and get more reproducible
-behavior."
-            ((restore-session-on-startup-p nil)))
           '(define-configuration browser
             "Load the URL of Nyxt repository by default in all new buffers.
 Alternatively, call `buffer-load' in `after-startup-hook'."

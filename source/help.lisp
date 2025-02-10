@@ -256,25 +256,6 @@ invoking the " (:nxref :command 'toggle-modes) "command.")))))
            (:div.right
             (:p "By default, it is set to Nyxt's home screen."))))
          (:div.section
-          (:h3 "Session")
-          (:div.row
-           (:div.left
-            (:ncheckbox
-              :name "restore-session"
-              :checked (restore-session-on-startup-p *browser*)
-              :buffer buffer
-              '((restore-session-on-startup-p "Restore session on startup")
-                (nyxt::auto-configure
-                 :class-name 'browser
-                 :slot 'restore-session-on-startup-p
-                 :slot-value t)
-                (nyxt::auto-configure
-                 :class-name 'browser
-                 :slot 'restore-session-on-startup-p
-                 :slot-value nil))))
-           (:div.right
-            (:p "Restore buffers from previous sessions."))))
-         (:div.section
           (:h3 "Modes")
           (:div.row
            (:div.left
