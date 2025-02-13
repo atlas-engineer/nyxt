@@ -367,8 +367,6 @@ invoking the " (:nxref :command 'toggle-modes) "command.")))))
           (:h3 "Edit user files")
           (:div.row
            (:div.left
-            (:nbutton :text "Use Nyxt's editor"
-              '(nyxt/mode/editor::edit-user-file))
             (:nbutton :text "Use external editor"
               '(nyxt::edit-user-file-with-external-editor)))
            (:div.right

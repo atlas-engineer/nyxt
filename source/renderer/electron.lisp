@@ -80,9 +80,6 @@
                              :scheme-name "view-source"
                              :privileges "{}")
               (make-instance 'electron:protocol
-                             :scheme-name "editor"
-                             :privileges "{}")
-              (make-instance 'electron:protocol
                              :scheme-name "gopher"
                              :privileges "{}")
               (make-instance 'electron:protocol

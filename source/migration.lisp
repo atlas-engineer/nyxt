@@ -177,7 +177,9 @@ major versions."
   (conservative-history-movement-p)
   (:p "Deleted in favor of " (:nxref :slot 'global-history-p :class-name 'buffer) ".")
 
-  (nyxt/mode/repl
+  (nyxt/mode/editor
+   nyxt/mode/plaintext-editor
+   nyxt/mode/repl
    nyxt/mode/no-procrastinate
    nyxt/mode/preview
    nyxt/mode/record-input-field
@@ -185,7 +187,9 @@ major versions."
    nyxt/mode/tts)
   (:p "Deleted modes.")
 
-  (copy-placeholder
+  (editor-open-file
+   editor-write-file
+   copy-placeholder
    #:clean-configuration
    dashboard
    duplicate-buffer
@@ -325,7 +329,7 @@ major versions."
       (:code "nyxt/\([a-z-]*\)-mode") " with " (:code "nyxt/mode/\\1") ".")
 
   nyxt/editor-mode
-  (:p "Renamed to " (:nxref :class-name 'nyxt/mode/editor) "."
+  (:p "Renamed to " (:code "nyxt/mode/editor") "."
       " Query replace the regexp "
       (:code "nyxt/\([a-z-]*\)-mode") " with " (:code "nyxt/mode/\\1") ".")
 
