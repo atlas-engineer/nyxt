@@ -274,7 +274,6 @@ If FILES are not provided, prompt for them."
           (lambda-command edit-file-with-external-editor* (files)
             "Edit files in external editor."
             (edit-file-with-external-editor files))
-          ;; TODO: Edit files in Nyxt-internal editor.
           ;; TODO: File/directory copying.
           (lambda-command open-with* (files)
             "Open files with the selected program."

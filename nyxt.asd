@@ -158,12 +158,6 @@
                  (:file "download" :depends-on ("file-manager"))))
                (:file "mode/base" :depends-on ("Core modes"))
                (:file "status" :depends-on ("Core"))
-               (:module "Editor modes"
-                :pathname "mode"
-                :depends-on ("Core modes")
-                :components
-                ((:file "editor")
-                 (:file "plaintext-editor")))
                (:module "Help"
                 :pathname ""
                 :depends-on ("Core modes" "Modes")
@@ -241,7 +235,6 @@
                  (:file "cruise-control")
                  (:file "document")
                  (:file "download")
-                 (:file "editor")
                  (:file "emacs")
                  (:file "expedition")
                  (:file "file-manager")

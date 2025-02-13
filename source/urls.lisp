@@ -264,8 +264,7 @@ ARGS is an arbitrary keyword arguments list that is translated to a URL query."
 (defun internal-url-p (url)
   "Whether the URL is the `internal-page' one."
   ;; FIXME: Too simple. Maybe check for command presence too?
-  (or (string= "nyxt" (quri:uri-scheme (url url)))
-      (string= "editor" (quri:uri-scheme (url url)))))
+  (string= "nyxt" (quri:uri-scheme (url url))))
 
 (-> query-params->arglist ((types:association-list string string)) (values list &optional))
 (defun query-params->arglist (params)
