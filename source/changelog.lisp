@@ -76,6 +76,8 @@ elements are scaled accordingly.")
          (:li (:code "NASDF_COMPRESS"))))
    (:li "Delete commands:"
         (:ul
+         (:li (:code "editor-open-file"))
+         (:li (:code "editor-write-file"))
          (:li (:code "delete-panel-buffer"))
          (:li (:code "delete-all-panel-buffers"))
          (:li (:code "bookmarks-panel"))
@@ -102,6 +104,8 @@ elements are scaled accordingly.")
          (:li (:code "execute-extended-command"))))
    (:li "Delete modes:"
         (:ul
+         (:li (:code "nyxt/mode/editor"))
+         (:li (:code "nyxt/mode/plaintext-editor"))
          (:li (:code "nyxt/mode/repl"))
          (:li (:code "nyxt/mode/no-procrastinate"))
          (:li (:code "nyxt/mode/preview"))
@@ -180,7 +184,7 @@ elements are scaled accordingly.")
           (:nxref :mode 'nyxt/mode/vi:vi-insert-mode) "enabled.")
      (:li "The scroll position is remembered when issuing buffer reloading commands, such as "
           (:nxref :command 'reload-current-buffer) ".")
-     (:li "Improve performance of " (:nxref :command 'nyxt/mode/editor:edit-file) ".")
+     (:li "Improve performance of " (:code "nyxt/mode/editor:edit-file") ".")
      (:li "Fix bug that prevented listing buffers recovered via command "
           (:nxref :command 'reopen-buffer) "."))))
 
@@ -201,7 +205,7 @@ elements are scaled accordingly.")
           ". By default, it is set to DejaVu.")
      (:li "Review usage of proportional and monospace fonts.")
      (:li "Use monospace fonts in "
-          (:nxref :class-name 'nyxt/mode/editor:plaintext-editor-mode) ".")
+          (:code "nyxt/mode/editor:plaintext-editor-mode") ".")
      (:li "Replace source heading buttons in the "
           (:nxref :class-name 'prompt-buffer) ".")
      (:li "Review styling of the " (:nxref :class-name 'status-buffer) ", "
@@ -323,8 +327,8 @@ improve readability.")
           (:code "start-swank") " on the Flatpak distribution.")
      (:li "Fix warning signaling when a mismatch between the history file and the current
 Nyxt version exists.  It is only raised when the major version differs.")
-     (:li "Buffers of type " (:nxref :class-name 'nyxt/mode/editor:editor-buffer) " have  "
-          (:nxref :class-name 'nyxt/mode/editor:plaintext-editor-mode)
+     (:li "Buffers of type " (:code "nyxt/mode/editor:editor-buffer") " have  "
+          (:code "nyxt/mode/editor:plaintext-editor-mode")
           "enabled by default."))))
 
 (define-version "3.7.0"
@@ -620,7 +624,7 @@ specific one.")
          (:nxref :class-name 'nyxt/mode/search-buffer:search-buffer-mode)
          " refactor. The new implementation is more accurate and more flexible, as it
 allows manipulating matches as Lisp objects.")
-    (:li "Major improvement of " (:nxref :class-name 'nyxt/mode/editor:editor-mode) ".")))
+    (:li "Major improvement of " (:code "nyxt/mode/editor:editor-mode") ".")))
 
   (:nsection
     :title "Moves and removals"
@@ -679,7 +683,7 @@ forever.")
   (:nsection
     :title "Bindings"
     (:ul
-     (:li (:nxref :class-name 'nyxt/mode/editor:editor-mode)
+     (:li (:code "nyxt/mode/editor:editor-mode")
           " now has an equally powerful set of bindings in all key schemes, allowing one
 to open a file, save it, switch buffer or delete current buffer.")
      (:li (:nxref :mode 'nyxt/mode/visual:visual-mode)
