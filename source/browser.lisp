@@ -692,3 +692,8 @@ set of useful URLs or preparing a list to send to a someone else."
                        :class "button command"
                        :text name
                        `(nyxt::run-async ,command)))))))
+
+(define-command clear-cache ()
+  "Clear persistent browser cache"
+  (when *browser*
+    (ffi-clear-browser-cache *browser*)))
