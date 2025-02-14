@@ -260,6 +260,7 @@ Note that by changing the default value, modifier keys can be remapped."))
 
 (defmethod ffi-focus-prompt-buffer ((prompt-buffer prompt-buffer))
   (electron:focus prompt-buffer)
+  (electron:select-all prompt-buffer)
   prompt-buffer)
 
 (defmethod (setf ffi-height) ((height integer) (prompt-buffer prompt-buffer))
