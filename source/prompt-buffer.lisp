@@ -538,7 +538,9 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
 
 (defun prompt-render-focus (prompt-buffer)
   (ps-eval :async t :buffer prompt-buffer
-    (ps:chain (nyxt/ps:qs document "#input") (focus))))
+    (let ((input (ps:chain (nyxt/ps:qs document "#input"))))
+      (ps:chain input (focus))
+      (ps:chain input (select)))))
 
 (defun update-prompt-input (prompt-buffer &optional input)
   "This blocks and updates the view.
