@@ -117,6 +117,9 @@ major versions."
                               result)))))
 
 (define-migration "4"
+  (global-history-tree)
+  (:p "Deleted in favor of " (:nxref :slot 'history-vector :class-name 'browser) ".")
+
   (modifier-translator)
   (:p "See slot " (:code "modifier-plist") ".")
 
@@ -175,7 +178,7 @@ major versions."
   (:p "No support for lists as a value.  Strings are the only valid values.")
 
   (conservative-history-movement-p)
-  (:p "Deleted in favor of " (:nxref :slot 'global-history-p :class-name 'buffer) ".")
+  (:p "Deleted in favor of " (:code "global-history-p") ".")
 
   (nyxt/mode/editor
    nyxt/mode/plaintext-editor
