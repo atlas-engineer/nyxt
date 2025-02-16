@@ -130,7 +130,18 @@ Note that by changing the default value, modifier keys can be remapped."))
   (when (member (type-of buffer) '(status-buffer message-buffer prompt-buffer))
     (electron:load-url buffer "about:blank"))
   (initialize-listeners buffer)
+  (initialize-window-open-handler buffer)
   (finalize-buffer buffer :extra-modes extra-modes :no-hook-p no-hook-p))
+
+(defmethod initialize-window-open-handler ((buffer electron-buffer))
+  ;; When following a link with target="_blank" or through JS window.open,
+  ;; we don't want to let electron open a new window, instead we want to
+  ;; put it into a new buffer
+  (electron:override-window-open-handler
+   (electron:web-contents buffer)
+   (lambda (details)
+     (let ((url (assoc-value details :url)))
+       (make-buffer-focus :url (quri:uri url) :parent-buffer (current-buffer))))))
 
 (defmethod initialize-listeners ((buffer electron-buffer))
   (electron:add-listener buffer :before-input-event
