@@ -55,9 +55,6 @@ Only used to mandate whether the mode needs a toggler command:
     :accessor nil
     :documentation "A `status-buffer' indicator that mode is enabled, when
 `glyph-mode-presentation-p' is non-nil.")
-   (rememberable-p
-    t
-    :documentation "Whether this mode is visible to auto-rules.")
    (enabled-p
     nil
     :accessor t
@@ -386,7 +383,7 @@ For production code, see `find-submode' instead."
   (:documentation "Source listing names of modes not yet `enable'd (or `disable'd) in `buffers'."))
 
 (export-always 'enable-modes*)
-(defgeneric enable-modes* (modes buffers &rest args &key remember-p &allow-other-keys)
+(defgeneric enable-modes* (modes buffers &rest args &key &allow-other-keys)
   ;; FIXME: Better type dispatching? The types used to be:
   ;; (-> enable-modes* ((or sym:mode-symbol (list-of sym:mode-symbol))
   ;;                    (or buffer (list-of buffer))
@@ -408,8 +405,7 @@ For production code, see `find-submode' instead."
                 buffer)
               (sera:filter #'modable-buffer-p buffers))))
   (:documentation "Enable MODES in BUFFERS.
-ARGS are the keyword arguments for `make-instance'/`enable' on MODES.
-If REMEMBER-P is true, save active modes so that auto-rules don't override those."))
+ARGS are the keyword arguments for `make-instance'/`enable' on MODES."))
 
 (define-command enable-modes (&key
                               (modes nil modes-supplied-p)
@@ -436,12 +432,11 @@ If it's a single buffer, return it directly (not as a list)."
                        :prompt "Enable mode(s)"
                        :sources (make-instance 'inactive-mode-source
                                                :buffers buffers))))))
-    (enable-modes* modes buffers)
-    (remember-on-mode-toggle modes buffers :enabled-p t))
+    (enable-modes* modes buffers))
   buffers)
 
 (export-always 'disable-modes*)
-(defgeneric disable-modes* (modes buffers &rest args &key remember-p &allow-other-keys)
+(defgeneric disable-modes* (modes buffers &rest args &key &allow-other-keys)
   ;; FIXME: Better type dispatching?
   (:method (modes buffers &rest args &key &allow-other-keys)
     (declare (ignorable args))
@@ -456,8 +451,7 @@ If it's a single buffer, return it directly (not as a list)."
                         (delete nil (mapcar (lambda (mode) (find mode (modes buffer) :key #'name))
                                             modes))))
               buffers)))
-  (:documentation "Disable MODES in BUFFERS.
-If REMEMBER-P is true, save active modes so that auto-rules don't override those."))
+  (:documentation "Disable MODES in BUFFERS."))
 
 (define-command disable-modes (&key (modes nil modes-supplied-p)
                                (buffers (current-buffer) buffers-supplied-p))
@@ -480,8 +474,7 @@ If it's a single buffer, return it directly (not as a list)."
                        :prompt "Disable mode(s)"
                        :sources (make-instance 'active-mode-source
                                                :buffers buffers))))))
-    (disable-modes* modes buffers)
-    (remember-on-mode-toggle modes buffers :enabled-p nil))
+    (disable-modes* modes buffers))
   buffers)
 
 (define-command toggle-modes (&key (buffer (current-buffer)))
@@ -495,9 +488,7 @@ If it's a single buffer, return it directly (not as a list)."
          (modes-to-disable (set-difference (all-mode-symbols) modes-to-enable
                                            :test #'string=)))
     (disable-modes* modes-to-disable buffer)
-    (remember-on-mode-toggle modes-to-disable buffer :enabled-p nil)
-    (enable-modes* modes-to-enable buffer)
-    (remember-on-mode-toggle modes-to-enable buffer :enabled-p t))
+    (enable-modes* modes-to-enable buffer))
   buffer)
 
 ;; TODO: Factor `toggle-mode' and `toggle-modes' somehow?

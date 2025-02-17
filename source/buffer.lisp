@@ -335,54 +335,6 @@ Useful in FFI functions where we usually specialize things against
 Modes are instantiated over the result of the `default-modes' method, with
 `finalize-buffer' and not in the initform so that the instantiation form can
 access the initialized buffer.")
-   (auto-rules-file
-    (make-instance 'auto-rules-file)
-    :type auto-rules-file
-    :documentation "File where the auto-rules are saved.")
-   (apply-all-matching-auto-rules-p
-    nil
-    :type boolean
-    :documentation "Whether all matching auto-rules are applied to the URL.
-If nil, the most specific rule is applied.")
-   (prompt-on-mode-toggle-p
-    nil
-    :type boolean
-    :documentation "Whether the user is prompted to confirm adding the auto-rule
-on mode toggling.")
-   (previous-url
-    nil
-    :export nil
-    :type (or quri:uri null)
-    :documentation "The last URL for which auto-rules were applied.
-We need to know if the auto-rule has been applied before to avoid re-applying a
-rule for a sequence of pages that match the same rule.
-
-We can't rely on the previous history entry because dead buffers and
-session-restored buffers may have a history with a previous URL matching the
-same rule while obviously the rule has never been applied for the new-born
-buffer.")
-   (last-active-modes-url
-    nil
-    :export nil
-    :type (or quri:uri null)
-    :documentation "The last URL for which the active modes were saved.
-We need to store this to not overwrite the `last-active-modes' for a given URL
-if it's being reloaded.")
-   (last-active-modes
-    '()
-    :export nil
-    :type (or (cons mode-invocation *) null)
-    :documentation "The list of `mode-invocation's that were enabled on the last
-URL not covered by auto-rules.
-This is useful when alternating between URLs for which auto-rules are enabled or
-disabled.  Example browsing sequence:
-
-- https://example.org (no-script-mode no-image-mode) ; No rule.
-- https://nyxt-browser.com (dark-mode) ; Rule
-- https://en.wikipedia.org (no-script-mode no-image-mode) ; No rule.
-
-When browsing from nyxt-browser.com to en.wikipedia.org, the modes that were
-enabled before nyxt-browser.com are restored.")
    (enable-mode-hook
     (make-instance 'hook-mode)
     :type hook-mode

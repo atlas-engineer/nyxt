@@ -31,7 +31,6 @@ The commands that `repeat-mode' exposes are:
 See `nyxt/mode/repeat' package documentation for implementation details and
 internal programming APIs."
   ((visible-in-status-p nil)
-   (rememberable-p nil)
    (repeat-count
     nil
     :type (or integer null)

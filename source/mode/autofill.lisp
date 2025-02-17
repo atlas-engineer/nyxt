@@ -31,7 +31,6 @@ See the `autofill-mode' for the external user-facing APIs."))
 See `nyxt/mode/autofill' package documentation for implementation details and
 internal programming APIs."
   ((visible-in-status-p nil)
-   (rememberable-p t)
    (autofills
     (list (make-autofill :name "Name" :fill "My Name")
           (make-autofill :name "Hello Printer"

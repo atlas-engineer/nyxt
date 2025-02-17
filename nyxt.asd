@@ -115,7 +115,6 @@
                  (:file "window")
                  (:file "mode")
                  (:file "history")
-                 (:file "auto-rules")
                  (:file "spinneret-tags")
                  (:file "browser")
                  (:file "foreign-interface")

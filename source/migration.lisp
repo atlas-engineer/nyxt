@@ -187,7 +187,9 @@ major versions."
    nyxt/mode/tts)
   (:p "Deleted modes.")
 
-  (editor-open-file
+  (save-exact-modes-for-future-visits
+   save-non-default-modes-for-future-visits
+   editor-open-file
    editor-write-file
    copy-placeholder
    #:clean-configuration

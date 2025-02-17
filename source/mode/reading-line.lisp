@@ -17,8 +17,7 @@ Commands:
 
 - `jump-to-reading-line-cursor': If you navigate away from the reading line, you
   can always invoke this command to jump back to your reading position."
-  ((rememberable-p nil)
-   (visible-in-status-p nil)
+  ((visible-in-status-p nil)
    (keyscheme-map
     (define-keyscheme-map "reading-line-mode" ()
       keyscheme:cua

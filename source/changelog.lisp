@@ -27,6 +27,7 @@
 
 (define-version "4.0.0"
   (:ul
+   (:li "Delete all logic related to " (:code "auto-rules") ".")
    (:li "Session is not restored on startup by default.  It is configurable via "
         (:nxref :slot 'restore-session-on-startup-p :class-name 'browser) ".")
    (:li "Add buttons to quickly remove bookmarks in a buffer shown by "
@@ -76,6 +77,8 @@ elements are scaled accordingly.")
          (:li (:code "NASDF_COMPRESS"))))
    (:li "Delete commands:"
         (:ul
+         (:li (:code "save-exact-modes-for-future-visits"))
+         (:li (:code "save-non-default-modes-for-future-visits"))
          (:li (:code "editor-open-file"))
          (:li (:code "editor-write-file"))
          (:li (:code "delete-panel-buffer"))
@@ -614,7 +617,7 @@ instance using the " (:code "start-slynk") " command (thanks to @jgart!)")))
          (:nxref :class-name 'modable-buffer) ".")
     (:ul
      (:li "The new "
-          (:nxref :slot 'apply-all-matching-auto-rules-p :class-name 'modable-buffer)
+          (:code "apply-all-matching-auto-rules-p")
           " allows you to apply all the matching auto-rules instead of the most
 specific one.")
      (:li "There are default rules for Gopher, Gemini, and Nyxt-internal-pages.")

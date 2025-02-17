@@ -18,7 +18,6 @@ of Nyxt.")
   (spinneret:with-html-string
     (let ((auto-config-file (namestring (files:expand *auto-config-file*)))
           (config-file (namestring (files:expand *config-file*)))
-          (rules-file (namestring (files:expand (make-instance 'auto-rules-file))))
           (gtk-extensions-directory (namestring (uiop:merge-pathnames* "nyxt/" nasdf:*libdir*))))
       (:nsection :title "Configuration"
         (:p "Nyxt is written in the Common Lisp programming language which offers a
@@ -251,43 +250,6 @@ all hosts being blocked, execute command " (:code "describe-variable") ", choose
 loaded.  For instance, you can configure which Torrent program to start to load
 magnet links.  See the " (:nxref :function 'url-dispatching-handler) " function
 documentation."))
-
-      (:nsection :title "Auto rules"
-        (:p "Auto-rules toggle modes when the URL satisfies the given
-conditions. URL-dispatchers can also be used for this, but it is
-simpler to use an auto-rule. Given that Nyxt's functionality is
-mode-based, the consequences are far reaching.")
-        (:p "These can be used in the following ways:")
-        (:ul
-         (:li "Manually, by calling:")
-         (:dl
-          (:dt (:nxref :command 'save-non-default-modes-for-future-visits))
-          (:dd "which saves \"unusual\" modes - non-default modes that were
-toggled exclusively for a given URL.")
-          (:dt (:nxref :command 'save-exact-modes-for-future-visits))
-          (:dd "which saves the exact list of enabled modes for a given
-          URL."))
-         (:li "Automatically, by setting "
-              (:nxref :slot 'prompt-on-mode-toggle-p :class-name 'modable-buffer)
-              " to non-nil (refer to the "
-              (:a :href "#configuration" "configuration section") " for help)."))
-        (:p "All rules are stored at " (:code rules-file) ", which " (:u "is
-meant to be human-readable and human-writable")". You can find instructions at the top of it.
-The gist is that rules are mere Lisp lists which start with a condition that checks the
- URL. When conditions are met, modes are toggled. Besides user-defined conditions, the
-following are often useful: "
-(:ul
- (:li (:nxref :function 'match-domain))
- (:li (:nxref :function 'match-host))
- (:li (:nxref :function 'match-url))
- (:li (:nxref :function 'match-regex))
- (:li (:nxref :function 'match-scheme))))
-        (:p "By default, "
-            (:nxref :slot 'apply-all-matching-auto-rules-p :class-name 'modable-buffer)
-            " is nil meaning that only the most specific rules are honored.")
-        (:p "Auto-rules can also be defined for custom use-cases via "
-            (:nxref :function 'define-auto-rule) " and un-defined with "
-            (:nxref :function 'undefine-auto-rule) "."))
 
       (:nsection
         :title "Custom commands"

@@ -149,7 +149,6 @@ Run the BODY in the environment with these bound."
 Overrides many of the bindings in other modes, so you will have to
 disable/enable it as necessary."
   ((visible-in-status-p nil)
-   (rememberable-p nil)
    (keyscheme-map
     (define-keyscheme-map "input-edit-mode" ()
       ;; TODO: Add VI-normal?

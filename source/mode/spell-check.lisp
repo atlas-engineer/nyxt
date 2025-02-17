@@ -10,7 +10,6 @@ It leverages `enchant' under the hood."))
 (define-mode spell-check-mode ()
   "Enable spell checking of various text sources."
   ((visible-in-status-p nil)
-   (rememberable-p t)
    (spell-check-language
     "en_US"
     :documentation "Spell check language used by Nyxt.

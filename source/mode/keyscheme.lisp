@@ -18,8 +18,7 @@ Example of defining a keyscheme mode:
 
 (define-mode my-keyscheme-mode (nyxt/mode/keyscheme:keyscheme-mode)
   ((keyscheme keyscheme:my-keyscheme-mode)))"
-  ((rememberable-p nil)
-   (keyscheme                           ; This specialized `nyxt:keyscheme'.
+  ((keyscheme                           ; This specialized `nyxt:keyscheme'.
     keyscheme:cua
     :documentation "The `keymaps:keyscheme' to enable.")
    (previous-keyscheme

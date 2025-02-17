@@ -7,8 +7,7 @@
 
 (define-mode visual-mode (nyxt/mode/hint:hint-mode)
   "Browse the page with a cursor to select text."
-  ((rememberable-p nil)
-   (nyxt/mode/hint:hints-selector
+  ((nyxt/mode/hint:hints-selector
     "a, b, p, del, h1, h2, h3, h4, h5, h6, i, option, strong, sub, sup, listing,
 xmp, plaintext, basefont, big, blink, center, font, marquee, multicol, nobr, s,
 spacer, strike, tt, u, wbr, code, cite, pre"
