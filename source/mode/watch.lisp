@@ -33,8 +33,7 @@
 
 (define-mode watch-mode (nyxt/mode/repeat:repeat-mode)
   "Reload the current buffer every 5 minutes."
-  ((rememberable-p t)
-   (nyxt/mode/repeat:repeat-interval 300.0)
+  ((nyxt/mode/repeat:repeat-interval 300.0)
    (nyxt/mode/repeat:repeat-action
     #'(lambda (mode)
         (ffi-buffer-reload (buffer mode)))
@@ -43,4 +42,4 @@
 (define-command-global watch-buffer (&optional (buffer (current-buffer)))
   "Reload BUFFER at a prompted interval."
   (let ((interval (seconds-from-user-input)))
-    (enable-modes* 'watch-mode buffer :repeat-interval interval :remember-p t)))
+    (enable-modes* 'watch-mode buffer :repeat-interval interval)))

@@ -195,6 +195,7 @@ Implies that `small-web-mode' is enabled."))
           (let ((line (if (uiop:emptyp (quri:uri-path (quri:uri url)))
                           (buffer-load (str:concat url "/"))
                           (cl-gopher:parse-gopher-uri url))))
+            (enable-modes :modes '(small-web-mode))
             (if (and (typep line 'cl-gopher:search-line)
                      (uiop:emptyp (cl-gopher:terms line)))
                 (progn (setf (cl-gopher:terms line)
@@ -279,6 +280,7 @@ Implies that `small-web-mode' is enabled."
     (lambda (url)
       (handler-case
           (sera:mvlet* ((status meta body (gemini:request url)))
+            (enable-modes :modes '(small-web-mode))
             (unless (member status '(:redirect :permanent-redirect))
                 (setf (nyxt/mode/small-web:redirections (find-submode 'small-web-mode)) nil))
               (case status
@@ -323,6 +325,3 @@ Implies that `small-web-mode' is enabled."
         (condition (condition)
           (error-help "Unknown error"
                       (format nil "Original text of ~a:~%~a" (type-of condition) condition))))))
-
-(define-auto-rule '(match-scheme "gopher" "gemini")
-  :included '(small-web-mode))

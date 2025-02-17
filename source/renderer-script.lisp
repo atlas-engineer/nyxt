@@ -220,8 +220,6 @@ and must return a string.")
    (page-mode
     nil
     :export t
-    :writer nil
-    :reader t
     :type symbol
     :documentation "The mode that's specific to a nyxt:// page.
 It's automatically enabled when the page is loaded and disabled when another URL
@@ -288,12 +286,6 @@ See `find-internal-page-buffer'."))
                              (:body (:raw contents))))))
                   (values contents type status headers reason))))))))
 
-(defmethod (setf page-mode) (new-value (page internal-page))
-  (when (and new-value (rememberable-p new-value))
-    (undefine-auto-rule `(match-internal-page (quote ,(name page))))
-    (define-auto-rule `(match-internal-page (quote ,(name page)))
-      :included (list new-value))))
-
 (defmethod set-internal-page-method ((page internal-page) form)
   (when form
     (let* ((arglist (second form))
@@ -311,14 +303,11 @@ See `find-internal-page-buffer'."))
                      (name ,page)
                      ,@(mappend #'first keywords))))))))
 
-(defmethod initialize-instance :after ((page internal-page) &key form page-mode &allow-other-keys)
+(defmethod initialize-instance :after ((page internal-page) &key form &allow-other-keys)
   "Register PAGE into the globally known nyxt:// URLs."
   (when form
     (set-internal-page-method page form)
     (setf (form page) form))
-  (when page-mode
-    ;; NOTE: This is to trigger the auto-rule redefinition.
-    (setf (page-mode page) page-mode))
   (setf (gethash (name page) *nyxt-url-commands*) page))
 
 (defmethod reinitialize-instance :after ((page internal-page) &key form &allow-other-keys)

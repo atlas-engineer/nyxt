@@ -18,12 +18,8 @@ help on how to proceed."
          (:code "force-https-mode") " is on.")
      (:p "Since HTTP connections are not secure,"
          " it's not recommended to proceed if you don't trust the target host.")
-     (:p " If you really want to proceed, you can either:"
-         (:ul
-          (:li "disable "
-               (:code "force-https-mode") " temporarily;")
-          (:li "or disable it dynamically with auto-rules' "
-               (:code "save-exact-modes-for-future-visits") "."))))
+     (:p " If you really want to proceed, you can disable " (:code "force-https-mode")
+         " temporarily."))
    buffer))
 
 (define-mode force-https-mode ()

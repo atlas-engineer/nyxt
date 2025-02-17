@@ -12,7 +12,6 @@ Exposes the APIs below:
 (define-mode hint-mode ()
   "Interact with elements by typing a short character sequence."
   ((visible-in-status-p nil)
-   (rememberable-p nil)
    (hinting-type
     :emacs
     :type (member :emacs :vi)

@@ -9,8 +9,7 @@ The main API point is `cruise-control-mode'."))
 (define-mode cruise-control-mode (nyxt/mode/repeat:repeat-mode)
   "Mode for automatically scrolling up and down the page.
 It inherits from `nyxt/mode/repeat:repeat-mode'."
-  ((rememberable-p t)
-   (velocity
+  ((velocity
     0
     :documentation "The distance the page is scrolling on each update interval.
 A positive velocity corresponds to scrolling down, a negative velocity

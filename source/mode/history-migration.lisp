@@ -8,8 +8,7 @@ browsers."))
 
 (define-mode history-migration-mode ()
   "Mode for importing history from other browsers."
-  ((visible-in-status-p nil)
-   (rememberable-p nil))
+  ((visible-in-status-p nil))
   (:toggler-command-p nil))
 
 (define-class external-browser-history-source (prompter:source)

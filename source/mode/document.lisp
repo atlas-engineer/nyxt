@@ -35,7 +35,6 @@ Important pieces of functionality are:
 - Heading navigation.
 - Frame selection."
   ((visible-in-status-p nil)
-   (rememberable-p nil)
    (keyscheme-map
     (define-keyscheme-map "document-mode" ()
       keyscheme:default

@@ -221,8 +221,7 @@ If false, runs on the toplevel frame only.")
   "Mode to manage user scripts such as GreaseMonkey scripts.
 The mode can manage multiple scripts.  Each `user-script' behaves following to
 its own independent settings."
-  ((rememberable-p nil)
-   (user-scripts
+  ((user-scripts
     nil
     :reader user-scripts
     :type (list-of user-script)

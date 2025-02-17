@@ -8,7 +8,6 @@
 (define-mode search-buffer-mode ()
   "Incremental search on a single or multiple buffers."
   ((visible-in-status-p nil)
-   (rememberable-p nil)
    (style
     (theme:themed-css (theme *browser*)
       `("span[nyxt-search-mark]"

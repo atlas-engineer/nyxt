@@ -34,7 +34,6 @@ extended with custom logic.
 
 See `nyxt/mode/process' package documentation for implementation details and internal programming APIs."
   ((visible-in-status-p nil)
-   (rememberable-p nil)
    (path-url
     nil
     :type (or quri:uri null)

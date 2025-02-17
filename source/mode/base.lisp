@@ -7,7 +7,6 @@
   "Bind general-purpose commands defined by `define-command'.
 This mode is a good candidate to be passed to `make-buffer'."
   ((visible-in-status-p nil)
-   (rememberable-p nil)
    (keyscheme-map
     (define-keyscheme-map "base-mode" ()
       keyscheme:default
