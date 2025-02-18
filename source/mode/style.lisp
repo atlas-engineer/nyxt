@@ -73,8 +73,8 @@ If nil, look for CSS in `style-file' or `style-url'.")))
     (make-instance 'css-cache-data-path
                    :base-path (uiop:ensure-pathname (url->name url)))))
 
-(defmethod nyxt:on-signal-load-finished ((mode style-mode) url)
-  (declare (ignore url))
+(defmethod nyxt:on-signal-load-finished ((mode style-mode) url title)
+  (declare (ignore url title))
   (apply-style mode))
 
 (define-mode dark-mode (style-mode)
