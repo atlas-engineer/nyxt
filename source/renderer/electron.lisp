@@ -124,7 +124,8 @@ Note that by changing the default value, modifier keys can be remapped."))
   (:metaclass user-class)
   (:documentation "Electron buffer class."))
 
-(defmethod initialize-instance :after ((buffer electron-buffer) &key extra-modes no-hook-p)
+(defmethod customize-instance :after ((buffer electron-buffer)
+                                      &key extra-modes no-hook-p &allow-other-keys)
   ;; Otherwise the HTML document won't be set via JS.
    (when (member (type-of buffer) '(status-buffer message-buffer prompt-buffer))
     (electron:load-url buffer "about:blank"))
