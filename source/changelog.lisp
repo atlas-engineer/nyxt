@@ -27,6 +27,8 @@
 
 (define-version "4.0.0"
   (:ul
+   (:li "Delete: " (:code "ffi-buffer-make") ".")
+   (:li "Delete: " (:code "ffi-window-make") ".")
    (:li "Delete all logic related to " (:code "auto-rules") ".")
    (:li "Session is not restored on startup by default.  It is configurable via "
         (:nxref :slot 'restore-session-on-startup-p :class-name 'browser) ".")
