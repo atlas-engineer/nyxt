@@ -27,6 +27,8 @@
 
 (define-version "4.0.0"
   (:ul
+   (:li "Simplify status area URL display. Show hostname for HTTPS URLs, 
+show complete URL for HTTP (with a warning marker).")
    (:li "Delete: " (:code "ffi-buffer-make") ".")
    (:li "Delete: " (:code "ffi-window-make") ".")
    (:li "Delete all logic related to " (:code "auto-rules") ".")
