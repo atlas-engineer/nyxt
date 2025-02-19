@@ -208,7 +208,6 @@
   :pathname #p"NYXT:tests;"
   :components ((:file "package")
                (:file "offline/define-configuration")
-               (:file "offline/global-history")
                (:file "offline/prompt-buffer")
                (:file "offline/urls")
                (:file "offline/user-script-parsing")
