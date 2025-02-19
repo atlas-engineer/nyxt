@@ -234,9 +234,16 @@ By default, renders a hourglass when loading a URL."
 (export-always 'format-status-url)
 (defmethod format-status-url ((status status-buffer))
   "Format the current URL for the STATUS buffer."
-  (let ((buffer (current-buffer (window status))))
+  (let* ((buffer (current-buffer (window status)))
+         (url (url buffer))
+         (url-display
+           (cond ((equalp (quri:uri-scheme url) "https")
+                  (quri:uri-host (url (current-buffer))))
+                 ((equalp (quri:uri-scheme url) "http")
+                  (format nil "! ~a" (render-url url)))
+                 (t (render-url url)))))
     (spinneret:with-html-string
-      (:nbutton :buffer status :text (render-url (url buffer)) :title (title buffer)
+      (:nbutton :buffer status :text url-display :title (title buffer)
         '(nyxt:set-url)))))
 
 (export-always 'format-status-tabs)
