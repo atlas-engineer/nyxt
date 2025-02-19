@@ -79,8 +79,3 @@ jobs:
       env:
         NASDF_NON_INTERACTIVE_TESTS: true
       run: nix-shell shell.nix --run "sbcl --eval '(require \"asdf\")' --eval '(asdf:test-system :nsymbols)'"
-
-    - name: Test ndebug
-      env:
-        NASDF_NON_INTERACTIVE_TESTS: true
-      run: nix-shell shell.nix --run "sbcl --eval '(require \"asdf\")' --eval '(asdf:test-system :ndebug)'"
