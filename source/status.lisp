@@ -238,7 +238,7 @@ By default, renders a hourglass when loading a URL."
          (url (url buffer))
          (url-display
            (cond ((equalp (quri:uri-scheme url) "https")
-                  (quri:uri-host (url (current-buffer))))
+                  (quri:uri-host url))
                  ((equalp (quri:uri-scheme url) "http")
                   (format nil "! ~a" (render-url url)))
                  (t (render-url url)))))
