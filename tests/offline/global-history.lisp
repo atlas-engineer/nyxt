@@ -36,11 +36,12 @@
       (uiop:delete-file-if-exists (files:expand (history-file *browser*))))))
 
 (define-test history-restoration ()
-  (let* ((path (asdf:system-relative-pathname
-                :nyxt
-                "tests/test-data/history.lisp"))
-         (history (files:read-file nyxt::*nyxt-profile*
-                                   (make-instance 'history-file
-                                                  :base-path path))))
+  (let ((path (asdf:system-relative-pathname :nyxt "tests/test-data/history.lisp")))
     (assert-eq 3
-               (length history))))
+               (length (files:read-file nyxt::*nyxt-profile*
+                                        (make-instance 'history-file
+                                                       :base-path path))))))
+
+;; test write to history when mode is off
+;; test write blocked URLs
+;; test recent-history-entries n off-bounds
