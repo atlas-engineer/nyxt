@@ -120,6 +120,12 @@ major versions."
   (modifier-translator)
   (:p "See slot " (:code "modifier-plist") ".")
 
+  (ffi-buffer-make)
+  (:p "Use " (:code "(make-instance 'buffer)") " instead.")
+
+  (ffi-window-make)
+  (:p "Use " (:code "(make-instance 'window)") " instead.")
+
   (search-engines)
   (:p "Moved to " (:nxref :slot 'search-engines :class-name 'browser) ".")
 
