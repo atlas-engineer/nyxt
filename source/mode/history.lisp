@@ -63,7 +63,7 @@ Cut the display at LIMIT nodes."
                                           (length (history-vector *browser*)))
                   collect (let ((element (aref (history-vector *browser*) i)))
                             (:tr (:td (title element))
-                                 (:td (:a :href (quri:render-uri (url element)) 
+                                 (:td (:a :href (quri:render-uri (url element))
                                           (quri:render-uri (url element))))))))))
 
 (defun add-url-to-history (url buffer mode &key (title ""))
