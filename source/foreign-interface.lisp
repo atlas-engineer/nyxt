@@ -68,11 +68,6 @@ This is used to set the BUFFER `url' slot."))
 (define-ffi-generic ffi-buffer-title (buffer)
   (:documentation "Return a string corresponding to the BUFFER's title."))
 
-(define-ffi-generic ffi-window-make (browser)
-  (:method ((browser t))
-    (make-instance 'window))
-  (:documentation "Return a `window' and display it."))
-
 (define-ffi-generic ffi-window-to-foreground (window)
   (:method ((window t))
     (setf (slot-value *browser* 'last-active-window) window))
@@ -136,15 +131,9 @@ Usually setf-able."))
 Dispatches over `window' and classes inheriting from `buffer'.
 Usually setf-able."))
 
-(define-ffi-generic ffi-buffer-make (browser)
-  (:method ((browser t))
-    (make-instance 'buffer))
-  (:documentation "Return BUFFER and display it."))
-
 (define-ffi-generic ffi-buffer-initialize-foreign-object (buffer)
   (:documentation "Create and configure the foreign object for a given buffer.
-This differs from `ffi-buffer-make' because it takes an existing buffer object
-and creates the foreign objects necessary for rendering the buffer."))
+Create the foreign objects necessary for rendering the buffer."))
 
 (define-ffi-generic ffi-buffer-delete (buffer)
   (:documentation "Delete BUFFER."))
