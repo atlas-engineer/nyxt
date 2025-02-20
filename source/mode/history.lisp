@@ -36,13 +36,13 @@ search.")
 (define-configuration context-buffer
   ((default-modes (cons 'history-mode %slot-value%))))
 
-(define-command history-backwards ()
+(define-command history-backwards (&key (buffer (current-buffer)))
   "Navigate backwards."
-  (ffi-buffer-navigate-backwards (current-buffer)))
+  (ffi-buffer-navigate-backwards buffer))
 
-(define-command history-forwards ()
+(define-command history-forwards (&key (buffer (current-buffer)))
   "Navigate forwards."
-  (ffi-buffer-navigate-forwards (current-buffer)))
+  (ffi-buffer-navigate-forwards buffer))
 
 (export-always 'blocked-p)
 (defun blocked-p (url mode)
