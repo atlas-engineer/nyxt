@@ -19,6 +19,11 @@ hit a `threshold'. To change it to a different threshold (e.g. 50), do
     20
     :documentation "The number of hits after which to ")))
 
+;; unclear why it was deleted.
+;; fixme
+;; (defmethod enable ((mode bookmark-frequent-visits-mode) &key)
+;;   (nyxt:on-signal-load-finished mode (url (current-buffer))))
+
 (defun bookmark-frequent-visit (url threshold)
   "Check if current URL is frequently visited and not included in the
 bookmarks. If this is the case, prompt the user about bookmarking it."
@@ -29,9 +34,10 @@ bookmarks. If this is the case, prompt the user about bookmarking it."
                      (mapcar #'(lambda (e) (render-url (url e)))
                              (files:content (nyxt/mode/bookmark:bookmarks-file (current-buffer))))))
                (find url-address bookmark-url-strings :test #'string=))))
+    ;; fixme
     (and-let* ((implicit-visits-value (count url
                                              (history-vector *browser*)
-                                             :test 'equalp :key 'url))
+                                             :test #'equalp :key #'url))
                (current-url-string url))
       (when (and (> implicit-visits-value threshold)
                  (not (bookmarked-url-p current-url-string)))
