@@ -100,21 +100,22 @@ major versions."
 (export-always 'find-suggestions)
 (defun find-suggestions (string)
   "Find the migration suggestions that match the symbol from STRING."
-  (when-let ((sym (ignore-errors (uiop:safe-read-from-string string
-                                                             :package (find-package :nyxt)))))
+  (when-let ((sym (ignore-errors
+                   (uiop:safe-read-from-string string
+                                               :package (find-package :nyxt)))))
     (gethash (symbol-name sym) +migration-suggestions+)))
 
 (defmacro define-migration (major-version-string &body body)
   (let ((result '()))
     (cons 'progn
           (alex:doplist (symbols tip body result)
-                        (push `(make-instance 'suggestion
-                                              :symbols (uiop:ensure-list ',symbols)
-                                              :tip ,(if (stringp tip)
-                                                        tip
-                                                        `(lambda () (spinneret:with-html-string ,tip)))
-                                              :version ,major-version-string)
-                              result)))))
+            (push `(make-instance 'suggestion
+                                  :symbols (uiop:ensure-list ',symbols)
+                                  :tip ,(if (stringp tip)
+                                            tip
+                                            `(lambda () (spinneret:with-html-string ,tip)))
+                                  :version ,major-version-string)
+                  result)))))
 
 (define-migration "4"
   (modifier-translator)
