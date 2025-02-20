@@ -642,20 +642,6 @@ Example:
   (:metaclass user-class)
   (:documentation "Buffer for browsing the web."))
 
-(define-class background-buffer (web-buffer)
-  ()
-  (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:export-predicate-name-p t)
-  (:metaclass user-class)
-  (:documentation "A non-user-facing buffer to run background processes in.
-Examples of the processes to run in background buffers are:
-- Page scraping processes.
-- Anything else requiring a renderer running invisible to the user.
-
-These buffers are not referenced by `browser', so the only way to control these is to
-store them somewhere and `ffi-buffer-delete' them once done."))
-
 (defmethod customize-instance :after ((buffer buffer)
                                       &key (browser *browser*)
                                         no-hook-p
@@ -666,7 +652,6 @@ Return the created buffer."
   (unless (or no-hook-p
               (not browser))
     (hooks:run-hook (buffer-before-make-hook browser) buffer))
-  ;; Background buffers are invisible to the browser.
   buffer)
 
 (defmethod customize-instance :after ((buffer context-buffer) &key parent-buffer
@@ -674,9 +659,7 @@ Return the created buffer."
   "Finalize buffer.
 PARENT-BUFFER can we used to specify the parent in the history.
 Return the created buffer."
-  ;; Background buffers are invisible to the browser.
-  (unless (background-buffer-p buffer)
-    (buffers-set (id buffer) buffer))
+  (buffers-set (id buffer) buffer)
   ;; Register buffer in global history:
   (files:with-file-content (history (history-file buffer)
                             :default (make-history-tree buffer))
@@ -833,16 +816,6 @@ See `make-buffer'."
   (let ((buffer (make-buffer :url url :parent-buffer parent-buffer)))
     (set-current-buffer buffer)
     buffer))
-
-(export-always 'make-background-buffer)
-(-> make-background-buffer
-    (&key (:title string) (:modes (or null (cons symbol *))) (:url quri:uri))
-    *)
-(defun make-background-buffer (&rest args &key title modes url)
-  "Create a new web-aware buffer that won't be registered by the `browser'.
-See `make-buffer' for a description of the arguments."
-  (declare (ignorable title modes url))
-  (apply #'make-buffer (append (list :buffer-class 'background-buffer) args)))
 
 (-> add-to-recent-buffers (buffer) *)
 (defun add-to-recent-buffers (buffer)
