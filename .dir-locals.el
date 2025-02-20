@@ -1,5 +1,7 @@
 ((nil . ((fill-column . 80)
-         (project-vc-ignores . ("./_build"))))
+         (project-vc-ignores . ("./_build"))
+         (require-final-newline . t)
+         (eval . (add-hook 'before-save-hook 'delete-trailing-whitespace nil t))))
  (org-mode . ((org-edit-src-content-indentation 0)))
  (lisp-mode
   . ((eval . (cl-flet ((enhance-imenu-lisp
