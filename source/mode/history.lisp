@@ -2,8 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/history
-  (:documentation "Package for `history-mode'.
- Mode to store current buffer navigation into the global history."))
+  (:documentation "Package for `history-mode', mode to manage browsing history."))
 
 (in-package :nyxt/mode/history)
 
