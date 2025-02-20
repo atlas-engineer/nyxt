@@ -70,6 +70,5 @@ when deserializing a `history-entry')."
               (when (getf entry :url)
                 (setf (getf entry :url)
                       (quri:uri (getf entry :url))))
-              (apply #'make-instance 'history-entry
-                     entry))
+              (apply #'make-instance 'history-entry entry))
             entries)))
