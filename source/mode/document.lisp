@@ -3,17 +3,7 @@
 
 (nyxt:define-package :nyxt/mode/document
   (:shadow #:focus-first-input-field)
-  (:documentation "Package for `document-mode', mode to interact with structured documents.
-
-The APIs that it includes/uses internally are:
-- Copy-pasting: `ffi-buffer-copy', `ffi-buffer-paste', `ffi-buffer-cut',
-  `ffi-buffer-select-all', `ffi-buffer-undo', `ffi-buffer-redo'.
-- Heading management: `heading' class, `get-headings', `current-heading',
-  `scroll-page-to-heading', and `scroll-page-to-n-headings'.
-- `get-url-source' function.
-
-Libraries used are `plump', `clss', `nyxt/dom', `cl-base64', `cl-qrencode',
-`analysis'."))
+  (:documentation "Package for `document-mode', mode to interact with structured documents."))
 (in-package :nyxt/mode/document)
 
 ;; TODO: Remove document-mode from special buffers (e.g. help).
