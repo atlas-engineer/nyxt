@@ -1321,7 +1321,7 @@ See `finalize-buffer'."
     (let ((url (webkit:webkit-uri-request-uri
                 (webkit:webkit-navigation-action-get-request
                  (gobject:pointer navigation-action)))))
-      (gtk-object (make-buffer-focus :url (quri:uri url) :parent-buffer (current-buffer)))))
+      (gtk-object (make-buffer-focus :url (quri:uri url)))))
   (connect-signal buffer "context-menu" nil (web-view context-menu event hit-test-result)
     (declare (ignore web-view event hit-test-result))
     (loop with length = (webkit:webkit-context-menu-get-n-items context-menu)
