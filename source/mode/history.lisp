@@ -9,12 +9,10 @@
 (define-mode history-mode ()
   "Mode to manage navigation history."
   ((visible-in-status-p nil)
-   (history-blocklist '("https://duckduckgo.com/l/")
-                      :type (list-of string)
-                      :documentation "URL prefixes to not save in history.
-Example: DuckDuckGo redirections should be ignored or else going backward in
-history after consulting a result reloads the result, not the DuckDuckGo
-search.")
+   (history-blocklist
+    '()
+    :type (or null (list-of string))
+    :documentation "A list of URL prefixes that are excluded from history.")
    (keyscheme-map
     (define-keyscheme-map "history-mode" ()
       keyscheme:default
