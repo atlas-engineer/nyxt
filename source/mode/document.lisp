@@ -231,21 +231,17 @@ Warning: URL is a string."
 
 (export-always 'get-url-source)
 (defun get-url-source (url)
-  "Get HTML source for URL page, as a string.
-If the page is open in one of the buffers, just get the source from there.
-Otherwise, create a dummy buffer with URL to get its source."
-  (let ((buffer (or (find (url url) (buffer-list) :test #'quri:uri= :key #'url)
-                    (make-background-buffer :url (url url)))))
-    (unwind-protect
-         (let ((dom (if (web-buffer-p buffer)
-                        (nyxt/dom:copy (document-model buffer))
-                        (plump:parse (ffi-buffer-get-document buffer)))))
-           (loop for e across (clss:select "[nyxt-identifier]" dom)
-                 do (plump:remove-attribute e "nyxt-identifier"))
-           (map nil #'plump:remove-child (reverse (clss:select ".nyxt-hint" dom)))
-           (plump:serialize dom nil))
-      (when (background-buffer-p buffer)
-        (ffi-buffer-delete buffer)))))
+  "Get HTML source for URL page, as a string."
+  (let ((buffer (find url (buffer-list) :test #'quri:uri= :key #'url)))
+    (unless buffer
+      (return-from get-url-source (echo-warning "No buffer loaded URL: ~a" url)))
+    (let ((dom (if (web-buffer-p buffer)
+                   (nyxt/dom:copy (document-model buffer))
+                   (plump:parse (ffi-buffer-get-document buffer)))))
+      (loop for e across (clss:select "[nyxt-identifier]" dom)
+            do (plump:remove-attribute e "nyxt-identifier"))
+      (map nil #'plump:remove-child (reverse (clss:select ".nyxt-hint" dom)))
+      (plump:serialize dom nil))))
 
 (define-internal-scheme "view-source"
     (lambda (url)
