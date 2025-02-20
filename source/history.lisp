@@ -54,6 +54,7 @@ when deserializing a `history-entry')."
         (write-string ")")))))
 
 (defmethod files:serialize ((profile nyxt-profile) (file history-file) stream &key)
+  ;; Set package so that symbols are printed with consistent namespaces.
   (let ((*package* (find-package :nyxt))
         (*print-length* nil))
     (write-string "(" stream)
