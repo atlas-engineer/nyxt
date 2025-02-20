@@ -52,11 +52,10 @@ Or the equivalent columns for the browser in question."
              (echo "Importing history from ~a." db-path)
              (loop for (url title last-access visits) in (sqlite:execute-to-list db ,sql-query)
                    do (unless (url-empty-p url)
-                        (vector-push-extend
-                         (make-instance 'history-entry
-                                        :url url
-                                        :title title)
-                         (history-vector *browser*))))
+                        (vector-push-extend (make-instance 'history-entry
+                                                           :url url
+                                                           :title title)
+                                            (history-vector *browser*))))
              (setf history (history-vector *browser*))
              (echo "History import finished.")))))))
 
