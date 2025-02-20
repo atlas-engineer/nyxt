@@ -38,11 +38,10 @@ To make this change permanent, you can customize
       '(\"nyxt-browser.com\" \"example.org\"))"
   (if (find-submode 'certificate-exception-mode buffer)
       (let ((input (prompt1
-                     :prompt "URL host to add to exception list"
-                     :input (render-url (url buffer))
-                     :sources (list
-                               (make-instance 'prompter:raw-source
-                                              :name "URL")))))
+                    :prompt "URL host to add to exception list"
+                    :input (render-url (url buffer))
+                    :sources (make-instance 'prompter:raw-source
+                                            :name "URL"))))
         (and-let* ((url (quri:uri input))
                    (host (and (not (url-empty-p url))
                               (quri:uri-host url))))
