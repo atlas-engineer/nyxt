@@ -13,12 +13,7 @@ Hosts `list-buffers' page."
 
 (define-internal-page-command-global list-buffers (&key (cluster nil))
     (listing-buffer "*Buffers*" 'nyxt/mode/buffer-listing:buffer-listing-mode)
-  "Show all buffers and their interrelations.
-
-When a buffer is spawned from another one (e.g. by middle-clicking on a link),
-we say that a child buffer originates from a parent one. These kind of
-relationships define a buffer tree.  When LINEAR-VIEW-P is non-nil, buffers are
-shown linearly instead."
+  "Show all buffers."
   (labels ((cluster-buffers ()
              "Return buffers as hash table, where each value is a cluster (list of documents)."
              (let ((collection (make-instance 'analysis::document-collection)))
