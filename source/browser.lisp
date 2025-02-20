@@ -190,12 +190,11 @@ prompt buffer.")
    (history-file
     (make-instance 'history-file)
     :type history-file
-    :documentation "History file to read from when restoring session.
-See also `history-file' in `context-buffer' for per-buffer history files.")
+    :documentation "A file to persist history data across sessions.")
    (history-vector
     (make-array 0 :fill-pointer t :adjustable t)
     :type vector
-    :documentation "The list of all `history-entry' objects the user has created.")
+    :documentation "A vector holding `history-entry' objects.")
    (default-cookie-policy
     :no-third-party
     :type cookie-policy
@@ -364,7 +363,7 @@ errors correctly from then on."
     (finalize-history browser urls)))
 
 (defmethod finalize-history ((browser browser) urls)
-  "Startup finalization: Open URLs, display startup errors."
+  "Startup finalization: Restore history, open URLs, display startup errors."
   (let ((history-file-contents (files:content (history-file browser))))
     (setf (history-vector browser)
           (make-array (length history-file-contents)
