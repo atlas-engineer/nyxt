@@ -69,7 +69,7 @@ extracted by `annotate-highlighted-text' command."))
   (spinneret:with-html-string
     (:dl
      (:dt "URL")
-     (:dd (:a :href (url annotation) (url annotation)))
+     (:dd (:a :href (url annotation) (render-url (url annotation))))
      (:dt "Title")
      (:dd (page-title annotation))
      (:dt "Tags")
@@ -81,7 +81,7 @@ extracted by `annotate-highlighted-text' command."))
   (spinneret:with-html-string
     (:dl
      (:dt "URL")
-     (:dd (:a :href (url annotation) (url annotation)))
+     (:dd (:a :href (url annotation) (render-url (url annotation))))
      (:dt "Title")
      (:dd (page-title annotation))
      (:dt "Snippet")
