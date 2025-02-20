@@ -409,11 +409,11 @@ The buffer corresponding to the first URL is focused."
 If none is found, fall back to `keyscheme:cua'."
   (keymaps:get-keymap (or (keyscheme buffer) keyscheme:cua) buffer-keyscheme-map))
 
-(defun request-resource-open-url (&key url buffer &allow-other-keys)
-  (make-buffer :url url :parent-buffer buffer))
+(defun request-resource-open-url (&key url &allow-other-keys)
+  (make-buffer :url url))
 
-(defun request-resource-open-url-focus (&key url buffer &allow-other-keys)
-  (make-buffer-focus :url url :parent-buffer buffer))
+(defun request-resource-open-url-focus (&key url &allow-other-keys)
+  (make-buffer-focus :url url))
 
 (export-always 'renderer-request-data)
 (defclass renderer-request-data ()

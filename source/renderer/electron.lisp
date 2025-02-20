@@ -141,7 +141,7 @@ Note that by changing the default value, modifier keys can be remapped."))
    (electron:web-contents buffer)
    (lambda (details)
      (let ((url (assoc-value details :url)))
-       (make-buffer-focus :url (quri:uri url) :parent-buffer (current-buffer))))))
+       (make-buffer-focus :url (quri:uri url))))))
 
 (defmethod initialize-listeners ((buffer electron-buffer))
   (electron:add-listener buffer :before-input-event

@@ -635,7 +635,6 @@ Return the created buffer."
 
 (defmethod customize-instance :after ((buffer context-buffer) &key &allow-other-keys)
   "Finalize buffer.
-PARENT-BUFFER can we used to specify the parent in the history.
 Return the created buffer."
   (buffers-set (id buffer) buffer)
   buffer)
@@ -755,33 +754,29 @@ when `proxied-downloads-p' is true."
                              (url (if *browser*
                                       (default-new-buffer-url *browser*)
                                       (quri:uri (nyxt-url 'new))))
-                             parent-buffer
                              (load-url-p t) (buffer-class 'web-buffer)
                              &allow-other-keys)
   "Create a new buffer.
 MODES is a list of mode symbols.
 If URL is empty, the `default-new-buffer-url' browser slot is used instead.
 To load nothing, set it to 'about:blank'.
-PARENT-BUFFER is useful when we want to record buffer- and history relationships.
 LOAD-URL-P controls whether to load URL right at buffer creation."
   (let* ((url (url url))
          (buffer (apply #'make-instance
                         buffer-class
                         :title title
                         :extra-modes modes
-                        :parent-buffer parent-buffer
                         (append (unless (url-empty-p url) (list :url url))
-                                (uiop:remove-plist-keys '(:title :modes :url
-                                                          :parent-buffer :load-url-p)
+                                (uiop:remove-plist-keys '(:title :modes :url)
                                                         args)))))
     (when load-url-p
       (buffer-load url :buffer buffer))
     buffer))
 
-(define-command make-buffer-focus (&key (url (default-new-buffer-url *browser*)) parent-buffer)
+(define-command make-buffer-focus (&key (url (default-new-buffer-url *browser*)))
   "Switch to a new buffer.
 See `make-buffer'."
-  (let ((buffer (make-buffer :url url :parent-buffer parent-buffer)))
+  (let ((buffer (make-buffer :url url)))
     (set-current-buffer buffer)
     buffer))
 
