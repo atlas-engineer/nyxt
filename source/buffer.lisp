@@ -795,9 +795,6 @@ The notion of first element is dictated by `containers:first-item'."
     (ffi-buffer-delete buffer))
   (:documentation "Delete buffer after running `buffer-delete-hook'."))
 
-(defmethod buffer-delete ((buffer context-buffer))
-  (call-next-method))
-
 (defun buffer-hide (buffer)
   "Stop showing the buffer in Nyxt.
 Should be called from/instead of `ffi-buffer-delete' when the renderer view
