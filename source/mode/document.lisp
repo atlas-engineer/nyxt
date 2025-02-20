@@ -245,13 +245,13 @@ Warning: URL is a string."
 
 (define-internal-scheme "view-source"
     (lambda (url)
-      (values (get-url-source (quri:url-decode (quri:uri-path (quri:uri url))))
+      (values (get-url-source (quri:uri-path (quri:uri url)))
               "text/plain")))
 
 (define-command-global view-source (&key (url (url (current-buffer))))
   "View source of the URL (by default current page) in a separate buffer."
   (make-buffer-focus :url (quri:make-uri :scheme "view-source"
-                                         :path (quri:url-encode (quri:render-uri url)))))
+                                         :path (quri:render-uri url))))
 
 (define-command scroll-to-top (&key (smooth-p (smooth-scrolling (current-buffer))))
   "Scroll to the top of the current page."
