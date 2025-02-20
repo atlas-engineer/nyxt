@@ -19,10 +19,7 @@ hit a `threshold'. To change it to a different threshold (e.g. 50), do
     20
     :documentation "The number of hits after which to ")))
 
-(defmethod enable ((mode bookmark-frequent-visits-mode) &key)
-  (nyxt:on-signal-load-finished mode (url (current-buffer))))
-
-(defun bookmark-frequent-visit (threshold)
+(defun bookmark-frequent-visit (url threshold)
   "Check if current URL is frequently visited and not included in the
 bookmarks. If this is the case, prompt the user about bookmarking it."
   (labels ((bookmarked-url-p (url-address)
@@ -32,18 +29,15 @@ bookmarks. If this is the case, prompt the user about bookmarking it."
                      (mapcar #'(lambda (e) (render-url (url e)))
                              (files:content (nyxt/mode/bookmark:bookmarks-file (current-buffer))))))
                (find url-address bookmark-url-strings :test #'string=))))
-    (and-let* ((history-entries (mapcar #'htree:data
-                                        (alex:hash-table-keys (htree:entries (buffer-history)))))
-               (current-url-history (find (url (current-buffer))
-                                          history-entries
-                                          :test #'equalp :key #'url))
-               (implicit-visits-value (nyxt::implicit-visits current-url-history))
-               (current-url-string (render-url (url current-url-history))))
+    (and-let* ((implicit-visits-value (count url
+                                             (history-vector *browser*)
+                                             :test 'equalp :key 'url))
+               (current-url-string url))
       (when (and (> implicit-visits-value threshold)
                  (not (bookmarked-url-p current-url-string)))
         (if-confirm ((format nil "Bookmark ~a?" current-url-string))
             (nyxt/mode/bookmark:bookmark (quri:uri current-url-string)))))))
 
 (defmethod nyxt:on-signal-load-finished ((mode bookmark-frequent-visits-mode) url)
-  (bookmark-frequent-visit (threshold mode))
+  (bookmark-frequent-visit url (threshold mode))
   url)

@@ -41,8 +41,8 @@ Or the equivalent columns for the browser in question."
   `(define-command-global ,name ()
      ,docstring
      (let ((db-path ,file-path))
-       (files:with-file-content (history (history-file (current-buffer))
-                                 :default (nyxt::make-history-tree))
+       (files:with-file-content (history (history-file *browser*)
+                                 :default '())
          (handler-bind ((sqlite:sqlite-error
                           (lambda (_)
                             (declare (ignore _))
@@ -52,12 +52,12 @@ Or the equivalent columns for the browser in question."
              (echo "Importing history from ~a." db-path)
              (loop for (url title last-access visits) in (sqlite:execute-to-list db ,sql-query)
                    do (unless (url-empty-p url)
-                        (htree:add-entry history
-                                         (make-instance 'history-entry
-                                                        :url url
-                                                        :title title
-                                                        :implicit-visits visits)
-                                         (local-time:unix-to-timestamp last-access))))
+                        (vector-push-extend
+                         (make-instance 'history-entry
+                                        :url url
+                                        :title title)
+                         (history-vector *browser*))))
+             (setf history (history-vector *browser*))
              (echo "History import finished.")))))))
 
 (define-history-import-command import-history-from-firefox

@@ -33,7 +33,6 @@
                dexador
                enchant
                flexi-streams
-               history-tree
                iolib
                iolib/os
                lass
@@ -133,15 +132,13 @@
                  (:file "buffer-listing")
                  (:file "message")
                  (:file "passthrough")
-                 (:file "history-tree")
-                 (:file "list-history")
                  (:file "document" :depends-on ("passthrough"))
                  (:file "hint" :depends-on ("document"))
                  (:file "search-buffer")
                  (:file "spell-check" :depends-on ("document"))
                  (:file "help" :depends-on ("document" "search-buffer"))
-                 (:file "history" :depends-on ("history-tree" "list-history"))
-                 (:file "certificate-exception" :depends-on ("history"))
+                 (:file "history")
+                 (:file "certificate-exception")
                  (:file "keyscheme")
                  (:file "proxy")
                  (:file "process")
@@ -240,11 +237,9 @@
                  (:file "help")
                  (:file "hint-prompt-buffer")
                  (:file "hint")
-                 (:file "history-tree")
                  (:file "history")
                  (:file "input-edit")
                  (:file "keyscheme")
-                 (:file "list-history")
                  (:file "macro-edit")
                  (:file "message")
                  (:file "no-image")

@@ -40,11 +40,6 @@ jobs:
       # It runs the tests for system nyxt, not nyxt/${{matrix.renderer}}.
       run: nix-shell shell.nix --run 'make check'
 
-    - name: Test history-tree
-      env:
-        NASDF_NON_INTERACTIVE_TESTS: true
-      run: nix-shell shell.nix --run "sbcl --eval '(require \"asdf\")' --eval '(asdf:test-system :history-tree)'"
-
     - name: Test nhooks
       env:
         NASDF_NON_INTERACTIVE_TESTS: true

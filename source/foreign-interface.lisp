@@ -385,6 +385,18 @@ Return the text cut."))
 (define-ffi-generic ffi-buffer-redo (buffer)
   (:documentation "Redo the last undone text edit performed in BUFFER's web view."))
 
+(define-ffi-generic ffi-buffer-navigate-backwards (buffer)
+  (:method ((buffer t))
+    (ps-eval :async t :buffer buffer
+      (ps:chain history (back))))
+  (:documentation "Navigate backwards in the history."))
+
+(define-ffi-generic ffi-buffer-navigate-forwards (buffer)
+  (:method ((buffer t))
+    (ps-eval :async t :buffer buffer
+      (ps:chain history (forward))))
+  (:documentation "Navigate forwards in the history."))
+
 ;; TODO: Move to alists for arbitrary number of params?
 (defvar *context-menu-commands* (make-hash-table :test #'equal)
   "A hash table from labels to context menu commands.
