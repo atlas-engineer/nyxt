@@ -174,7 +174,6 @@
                  (:file "autofill")
                  (:file "blocker")
                  (:file "bookmark")
-                 (:file "bookmark-frequent-visits" :depends-on ("bookmark"))
                  (:file "bookmarklets")
                  (:file "cruise-control" :depends-on ("repeat"))
                  (:file "emacs")
@@ -221,8 +220,6 @@
                  (:file "annotate")
                  (:file "base")
                  (:file "blocker")
-                 ;; TODO Fix bookmark-frequent-visits-mode architecture
-                 ;; (:file "tests/offline/mode/bookmark-frequent-visits")
                  (:file "bookmark")
                  (:file "bookmarklets")
                  (:file "buffer-listing")
