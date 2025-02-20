@@ -3,9 +3,6 @@
 
 (in-package :nyxt/tests)
 
-;; TODO bookmark-frequent-visits-mode doesn't handle the fact that the
-;; (buffer-history) may return NIL.  I.e., the history-file may exist, but it
-;; may be an empty file
 (define-test toggle-bookmark-frequent-visits ()
   (let ((buffer (make-instance 'context-and-modable-buffer)))
     (with-current-buffer buffer
