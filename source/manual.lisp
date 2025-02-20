@@ -186,7 +186,7 @@ shifts.  For instance if " (:code "C-x C-F") " fails to match anything " (:code 
             (:nxref :class-name 'search-engine) "."))
 
       (:nsection :title "History"
-        (:p "Nyxt history model is a vector whose nodes are URLs.")
+        (:p "Nyxt history model is a vector whose elements are URLs.")
         (:p "History can be navigated with the arrow keys in the status buffer, or with
 commands like " (:nxref :command 'nyxt/mode/history:history-backwards) " and "
 (:nxref :command 'nyxt/mode/history:history-forwards)
