@@ -517,14 +517,14 @@ Dispatches on buffers and modes."))
   (:documentation "Invoked when URL loading is approved in OBJECT.
 Dispatches on buffers and modes."))
 
-(define-ffi-generic on-signal-load-finished (object url)
-  (:method ((buffer buffer) url)
+(define-ffi-generic on-signal-load-finished (object url title)
+  (:method ((buffer buffer) url title)
     (update-document-model :buffer buffer)
     (dolist (mode (modes buffer))
-      (on-signal-load-finished mode url))
+      (on-signal-load-finished mode url title))
     (run-thread "buffer-loaded-hook"
       (hooks:run-hook (buffer-loaded-hook buffer) buffer)))
-  (:method ((mode mode) url)
+  (:method ((mode mode) url title)
     url)
   (:documentation "Invoked when done loading URL in OBJECT.
 Dispatches on buffers and modes."))

@@ -67,8 +67,8 @@ Example:
 (defmethod disable ((mode force-https-mode) &key)
   (hooks:remove-hook (request-resource-hook (buffer mode)) 'force-https-handler))
 
-(defmethod on-signal-load-finished ((mode force-https-mode) url)
-  (declare (ignore url))
+(defmethod on-signal-load-finished ((mode force-https-mode) url title)
+  (declare (ignore url title))
   (when (eq (slot-value (buffer mode) 'nyxt::status) :finished)
     (setf (previous-url mode) (quri:uri "")))
   nil)

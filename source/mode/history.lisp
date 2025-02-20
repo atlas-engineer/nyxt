@@ -66,7 +66,7 @@ Cut the display at LIMIT nodes."
                                  (:td (:a :href (quri:render-uri (url element)) 
                                           (quri:render-uri (url element))))))))))
 
-(defun add-url-to-history (url buffer mode)
+(defun add-url-to-history (url buffer mode &key (title ""))
   "Add URL to BUFFER's `history-MODE'.
 Uses `history-add' internally."
   (unless (or (url-empty-p url)
@@ -77,12 +77,12 @@ Uses `history-add' internally."
                (slot-value buffer 'nyxt::status))
     (vector-push-extend (make-instance 'history-entry
                                        :url (quri:uri url)
-                                       :title (title buffer))
+                                       :title title)
                         (history-vector *browser*))
     (files:with-file-content (history (history-file *browser*))
       (setf history (history-vector *browser*)))
     url))
 
-(defmethod nyxt:on-signal-load-finished ((mode history-mode) url)
-  (add-url-to-history url (buffer mode) mode)
+(defmethod nyxt:on-signal-load-finished ((mode history-mode) url title)
+  (add-url-to-history url (buffer mode) mode :title title)
   url)
