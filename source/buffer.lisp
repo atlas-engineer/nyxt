@@ -1200,9 +1200,8 @@ specified for their contents."
             :filter-postprocessor (lambda (suggestions source input)
                                     (declare (ignore source input))
                                     (remove (current-buffer) suggestions :key #'prompter:value)))
-           (make-instance
-            'global-history-source
-            :actions-on-return actions-on-return))
+           (make-instance 'global-history-source
+                          :actions-on-return actions-on-return))
      (mappend (rcurry #'url-sources (uiop:ensure-list actions-on-return)) (modes buffer)))))
 
 (define-command set-url (&key (prefill-current-url-p t))
