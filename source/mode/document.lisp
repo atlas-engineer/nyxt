@@ -188,7 +188,8 @@ Only includes the strings that were pasted/copied inside Nyxt."))
           do (nyxt/dom:focus-select-element input)
           and do (return input)))
 
-(defmethod nyxt:on-signal-load-finished ((mode document-mode) url)
+(defmethod nyxt:on-signal-load-finished ((mode document-mode) url title)
+  (declare (ignore title))
   (with-slots (buffer) mode
     ;; Ensures that the buffer-local zoom ratio is honored.
     (setf (ffi-buffer-zoom-ratio buffer)

@@ -69,8 +69,8 @@ Commands:
             (+ (+ original-position (ps:lisp step-size)) "px"))))
   (jump-to-reading-line-cursor :buffer buffer))
 
-(defmethod on-signal-load-finished ((mode reading-line-mode) url)
-  (declare (ignore url))
+(defmethod on-signal-load-finished ((mode reading-line-mode) url title)
+  (declare (ignore url title))
   (enable mode))
 
 (defmethod enable ((mode reading-line-mode) &key)
