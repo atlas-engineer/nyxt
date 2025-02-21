@@ -287,6 +287,12 @@ A typical Nyxt session encompasses a single instance of this class, but nothing
 prevents otherwise.")
   (:metaclass user-class))
 
+(defmethod recent-history-entries (n (browser browser) &key (remove-duplicates-p t))
+  (let ((recent-entries (sera:slice (history-vector browser) (- n))))
+    (if remove-duplicates-p
+        (remove-duplicates recent-entries :test #'equals)
+        recent-entries)))
+
 (defmethod theme ((ignored (eql nil)))
   "Fallback theme in case `*browser*' is NIL."
   (declare (ignore ignored))
