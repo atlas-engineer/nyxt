@@ -42,8 +42,9 @@
   (ffi-buffer-navigate-forwards buffer))
 
 (export-always 'blocked-p)
-(defun blocked-p (url mode)
+(defmethod blocked-p (url (mode history-mode))
   "Check whether URL belongs to MODE's `history-blocklist'."
+  ;; test me!
   (find-if (rcurry #'str:starts-with? (render-url url))
            (history-blocklist mode)))
 
@@ -58,20 +59,16 @@ Cut the display at LIMIT nodes."
             (:tr (:th "Title") (:th "URL"))
             (loop for i from 0 below (min limit
                                           (length (history-vector *browser*)))
+                  ;; fix this let-binding...
                   collect (let ((element (aref (history-vector *browser*) i)))
                             (:tr (:td (title element))
                                  (:td (:a :href (quri:render-uri (url element))
                                           (quri:render-uri (url element))))))))))
 
-(defun add-url-to-history (url buffer mode &key (title ""))
-  "Add URL to BUFFER's `history-MODE'.
-Uses `history-add' internally."
+(defmethod add-url-to-history ((mode history-mode) url &key (title ""))
+  "Push URL to `history-vector'."
   (unless (or (url-empty-p url)
               (blocked-p url mode))
-    (log:debug "Notify URL ~a for buffer ~a with load status ~a"
-               url
-               buffer
-               (slot-value buffer 'nyxt::status))
     (vector-push-extend (make-instance 'history-entry
                                        :url (quri:uri url)
                                        :title title)
@@ -81,5 +78,5 @@ Uses `history-add' internally."
     url))
 
 (defmethod nyxt:on-signal-load-finished ((mode history-mode) url title)
-  (add-url-to-history url (buffer mode) mode :title title)
+  (add-url-to-history mode url :title title)
   url)
