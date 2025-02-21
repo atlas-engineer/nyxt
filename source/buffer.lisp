@@ -1259,6 +1259,7 @@ Return BUFFERS."
   "Switch to the next buffer.
 
 If the first buffer, wrap around to the last buffer. Return it."
+  ;; refactor with mod arithmetic.
   (let* ((buffer-list (buffer-list))
          (current-buffer-position (position buffer buffer-list))
          (next-buffer-position
@@ -1272,6 +1273,7 @@ If the first buffer, wrap around to the last buffer. Return it."
   "Switch to the previous buffer in the buffer list.
 
 If the last buffer, wrap around to the first bufffer. Return it."
+  ;; this should be same as switch-buffer-previous.
   (let* ((buffer-list (buffer-list))
          (current-buffer-position (position buffer buffer-list))
          (previous-buffer-position
