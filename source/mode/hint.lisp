@@ -472,19 +472,16 @@ FUNCTION is the action to perform on the selected elements."
     (dolist (option (mapcar (rcurry #'find options :test #'equalp) values))
       (nyxt/dom:select-option-element option select))))
 
-(defmethod %follow-hint-new-buffer-focus ((a nyxt/dom:a-element) &optional parent-buffer)
-  (make-buffer-focus :url (url a)
-                     :parent-buffer parent-buffer))
+(defmethod %follow-hint-new-buffer-focus ((a nyxt/dom:a-element))
+  (make-buffer-focus :url (url a)))
 
-(defmethod %follow-hint-new-buffer-focus ((element plump:element) &optional parent-buffer)
-  (declare (ignore parent-buffer))
+(defmethod %follow-hint-new-buffer-focus ((element plump:element))
   (%follow-hint element))
 
-(defmethod %follow-hint-new-buffer ((a nyxt/dom:a-element) &optional parent-buffer)
-  (make-buffer :url (url a) :parent-buffer parent-buffer :load-url-p nil))
+(defmethod %follow-hint-new-buffer ((a nyxt/dom:a-element))
+  (make-buffer :url (url a) :load-url-p nil))
 
-(defmethod %follow-hint-new-buffer ((element plump:element) &optional parent-buffer)
-  (declare (ignore parent-buffer))
+(defmethod %follow-hint-new-buffer ((element plump:element))
   (%follow-hint element))
 
 (defmethod %copy-hint-url ((a nyxt/dom:a-element))
@@ -518,7 +515,7 @@ FUNCTION is the action to perform on the selected elements."
   (let ((buffer (current-buffer)))
     (query-hints "Select elements"
                  (lambda (result)
-                   (%follow-hint-new-buffer-focus (first result) buffer)
+                   (%follow-hint-new-buffer-focus (first result))
                    (mapcar (rcurry #'%follow-hint-new-buffer buffer)
                            (rest result))))))
 

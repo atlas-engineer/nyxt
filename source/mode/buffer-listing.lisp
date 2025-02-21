@@ -11,23 +11,9 @@ Hosts `list-buffers' page."
   ((visible-in-status-p nil))
   (:toggler-command-p nil))
 
-(define-command list-buffers-as-tree ()
-  "List buffers in a tree."
-  (list-buffers))
-
-(define-command list-buffers-as-list ()
-  "List buffers as a list."
-  (list-buffers :linear-view-p t))
-
-(define-internal-page-command-global list-buffers (&key (cluster nil)
-                                                  linear-view-p) ; TODO: Document `cluster'.
+(define-internal-page-command-global list-buffers (&key (cluster nil))
     (listing-buffer "*Buffers*" 'nyxt/mode/buffer-listing:buffer-listing-mode)
-  "Show all buffers and their interrelations.
-
-When a buffer is spawned from another one (e.g. by middle-clicking on a link),
-we say that a child buffer originates from a parent one. These kind of
-relationships define a buffer tree.  When LINEAR-VIEW-P is non-nil, buffers are
-shown linearly instead."
+  "Show all buffers."
   (labels ((cluster-buffers ()
              "Return buffers as hash table, where each value is a cluster (list of documents)."
              (let ((collection (make-instance 'analysis::document-collection)))
@@ -57,13 +43,6 @@ shown linearly instead."
                        :text (format nil "~a - ~a" (render-url (url buffer)) (title buffer))
                        :title "Switch to buffer"
                        `(nyxt::switch-buffer :buffer ,buffer))))))
-           (buffer-tree->html (root-buffer)
-             "Present a single buffer tree in HTML."
-             (spinneret:with-html
-               (:div (buffer-markup root-buffer))
-               (:ul
-                (dolist (child-buffer (nyxt::buffer-children root-buffer))
-                  (:li (buffer-tree->html child-buffer))))))
            (cluster-markup (cluster-id cluster)
              "Present a cluster in HTML."
              (spinneret:with-html
@@ -85,7 +64,4 @@ shown linearly instead."
                  using (hash-value cluster) of (cluster-buffers)
                  collect (cluster-markup cluster-key cluster))
            (dolist (buffer (buffer-list))
-             (if linear-view-p
-                 (buffer-markup buffer)
-                 (unless (nyxt::buffer-parent buffer)
-                   (buffer-tree->html buffer)))))))))
+             (buffer-markup buffer)))))))
