@@ -338,58 +338,23 @@ idle, so it should do the job."
   ;; the `startup' may invoke the prompt buffer, which cannot be invoked from
   ;; the renderer thread: this is why we run the `startup' in a new thread from
   ;; there.
-  (on-renderer-ready "finalize-window"
-    ;; Restart on init error, in case `*config-file*' broke the state.
-    ;; We only `handler-case' when there is an init file, this way we avoid
-    ;; looping indefinitely.
-    (let ((restart-on-error? (not (or (getf *options* :no-config)
-                                      (not (uiop:file-exists-p (files:expand *config-file*)))))))
-      ;; Set `*restart-on-error*' globally instead of let-binding it to
-      ;; make it visible from all threads.
-      (setf *restart-on-error* restart-on-error?)
-      (finalize-window browser urls)))
+  (on-renderer-ready "finalize-startup"
+    (window-make browser)
+    (let ((history-file-contents (files:content (history-file browser))))
+      (setf (history-vector browser)
+            (make-array (length history-file-contents)
+                        :fill-pointer t
+                        :adjustable t
+                        :initial-contents history-file-contents)))
+    (open-urls (or urls (list (default-new-buffer-url browser))))
+    (lpara:fulfill (slot-value browser 'startup-promise))
+    (hooks:run-hook (after-startup-hook browser) browser)
+    (funcall* (startup-error-reporter-function browser)))
   ;; Set `init-time' at the end of finalize to take the complete startup time
   ;; into account.
   (setf (slot-value *browser* 'init-time)
         (time:timestamp-difference (time:now) startup-timestamp))
   (setf (slot-value *browser* 'ready-p) t))
-
-(defmethod finalize-window ((browser browser) urls)
-  "Startup finalization: Set up initial window.
-This step is crucial to get Nyxt to reach a usable step and be able to handle
-errors correctly from then on."
-  (window-make browser)
-  ;; History restoration and subsequent tasks are error-prone, thus they should
-  ;; be done once the browser is ready to handle errors ,that is ,once the
-  ;; renderer has displayed the window and its initial buffer.
-  (on-renderer-ready "finalize-buffer"
-    (finalize-first-buffer browser urls)))
-
-(defmethod finalize-first-buffer ((browser browser) urls)
-  "Startup finalization: Set up initial buffer."
-  (switch-buffer :buffer (make-buffer :url (quri:uri (nyxt-url 'new))))
-  (on-renderer-ready "finalize-history"
-    ;; If we've reached here browser should be functional, no need to restart on error.
-    (setf *restart-on-error* nil)
-    (finalize-history browser urls)))
-
-(defmethod finalize-history ((browser browser) urls)
-  "Startup finalization: Restore history, open URLs, display startup errors."
-  (let ((history-file-contents (files:content (history-file browser))))
-    (setf (history-vector browser)
-          (make-array (length history-file-contents)
-                      :fill-pointer t
-                      :adjustable t
-                      :initial-contents history-file-contents)))
-  (handler-case
-      (let ((init-buffer (current-buffer)))
-        (open-urls (or urls (list (default-new-buffer-url browser))))
-        (buffer-delete init-buffer))
-    (error (c)
-      (log:warn c)))
-  (lpara:fulfill (slot-value browser 'startup-promise))
-  (hooks:run-hook (after-startup-hook browser) browser)
-  (funcall* (startup-error-reporter-function browser)))
 
 ;; Catch a common case for a better error message.
 (defmethod buffers :before ((browser t))
