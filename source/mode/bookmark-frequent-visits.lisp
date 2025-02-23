@@ -42,7 +42,7 @@ bookmarks. If this is the case, prompt the user about bookmarking it."
       (when (and (> implicit-visits-value threshold)
                  (not (bookmarked-url-p current-url-string)))
         (if-confirm ((format nil "Bookmark ~a?" current-url-string))
-            (nyxt/mode/bookmark:bookmark-url :url current-url-string))))))
+            (nyxt/mode/bookmark:bookmark (quri:uri current-url-string)))))))
 
 (defmethod nyxt:on-signal-load-finished ((mode bookmark-frequent-visits-mode) url)
   (bookmark-frequent-visit (threshold mode))

@@ -31,6 +31,12 @@
 show complete URL for HTTP (with a warning marker).")
    (:li "Delete: " (:code "ffi-buffer-make") ".")
    (:li "Delete: " (:code "ffi-window-make") ".")
+   (:li "Rename " (:code "bookmark-add") " to " (:code "persist-bookmark") ".")
+   (:li "Create " (:code "add-bookmark") " to allow adding bookmarks from any source.")
+   (:li "Create " (:code "edit-bookmark") " to allow editing bookmarks.")
+   (:li "Delete " (:code "bookmark-current-url") ".")
+   (:li "Delete " (:code "bookmark-buffer-url") ".")
+   (:li "Delete " (:code "bookmark-url") ".")
    (:li "Delete all logic related to " (:code "auto-rules") ".")
    (:li "Session is not restored on startup by default.  It is configurable via "
         (:nxref :slot 'restore-session-on-startup-p :class-name 'browser) ".")
@@ -284,7 +290,7 @@ invoked via " (:code "flatpak-spawn --host <command> <command-args>") "."))))
           (:code "nyxt/mode/buffer-listing:buffers-panel") ".")))
   (:nsection :title "Bug fixes"
     (:ul
-     (:li "Fix command " (:nxref :command 'nyxt/mode/bookmark:bookmark-url) ".")
+     (:li "Fix command " (:code "nyxt/mode/bookmark:bookmark-url") ".")
      (:li "Fix commands that rely on "
           (:nxref :class-name 'browser :slot 'external-editor-program)
           ".")
@@ -704,7 +710,7 @@ to open a file, save it, switch buffer or delete current buffer.")
      (:li "Rebind " (:nxref :command 'nyxt/mode/history:history-forwards) " to "
           (:nxref :command 'nyxt/mode/history:history-forwards-maybe-query)
           " in the Emacs and VI schemes.")
-     (:li "Rebind " (:nxref :command 'nyxt/mode/bookmark:bookmark-url) " and "
+     (:li "Rebind " (:code "nyxt/mode/bookmark:bookmark-url") " and "
           (:nxref :command 'copy-title) " to be more consistent with other bindings.")
 
      (:li "Rebind " (:nxref :command 'nyxt/mode/download:list-downloads)"."
