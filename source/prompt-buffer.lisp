@@ -114,8 +114,13 @@ The following mouse keybindings are available:
           :background-color ,theme:primary-color
           :color ,theme:on-primary-color
           :padding-left "10px"
-          :line-height "28px")
+          :line-height "28px"
+          :max-width "40ch"
+          :overflow "hidden"
+          :white-space "nowrap"
+          :text-overflow "ellipsis")
         '("#prompt-input"
+          :min-width "10ch"
           :line-height "28px"
           :padding-right "10px")
         `("#prompt-extra"
