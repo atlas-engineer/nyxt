@@ -185,9 +185,11 @@ Bookmarks can have the following settings:")
          (:li (:code ":tags") ": A list of strings.  Useful to categorize and filter bookmarks."))
         (:p "Bookmark-related commands")
         (:ul
-         (list-command-information '(nyxt/mode/bookmark:bookmark-current-url nyxt/mode/bookmark:bookmark-buffer-url
-                                     nyxt/mode/bookmark:bookmark-url nyxt/mode/bookmark:bookmark-hint
-                                     nyxt/mode/bookmark:set-url-from-bookmark nyxt/mode/bookmark:delete-bookmark
+         (list-command-information '(nyxt/mode/bookmark:add-bookmark
+                                     nyxt/mode/bookmark:bookmark-hint
+                                     nyxt/mode/bookmark:set-url-from-bookmark
+                                     nyxt/mode/bookmark:edit-bookmark
+                                     nyxt/mode/bookmark:delete-bookmark
                                      nyxt/mode/bookmark:list-bookmarks
                                      nyxt/mode/bookmark:import-bookmarks-from-html
                                      nyxt/mode/bookmark-frequent-visits:bookmark-frequent-visits-mode))))
