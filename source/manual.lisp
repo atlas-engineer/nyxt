@@ -265,7 +265,7 @@ Lisp function, except the form is " (:code "define-command") " instead of "
             (let ((url (prompt
                         :prompt "Bookmark URL"
                         :sources 'prompter:raw-source)))
-              (nyxt/mode/bookmark:bookmark-add url))))
+              (nyxt/mode/bookmark:persist-bookmark url))))
         (:p "See the " (:nxref :class-name 'prompt-buffer) " class documentation for how
 to write custom prompt buffers.")
         (:p "You can also create your own context menu entries binding those to Lisp commands, using "
@@ -283,7 +283,7 @@ Nyxt provides. For example, one can use the "
         (:ncode
           '(ffi-add-context-menu-command
             (lambda ()
-              (nyxt/mode/bookmark:bookmark-add (url-at-point (current-buffer))))
+              (nyxt/mode/bookmark:persist-bookmark (url-at-point (current-buffer))))
             "Bookmark Link")))
 
       (:nsection :title "Custom URL schemes"
