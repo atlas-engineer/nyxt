@@ -241,9 +241,7 @@ buffer."))
         (:ul
          (list-command-information '(nyxt/mode/no-image:no-image-mode
                                      nyxt/mode/no-script:no-script-mode
-                                     nyxt/mode/no-webgl:no-webgl-mode)))
-        (:p "It is possible to enable these three modes at once
-   with: " (:code "reduce-bandwidth-mode") "."))
+                                     nyxt/mode/no-webgl:no-webgl-mode))))
 
       (:nsection :title "Structural navigation"
         (:p "It is possible to navigate through headings: ")
