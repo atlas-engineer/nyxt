@@ -117,6 +117,7 @@ elements are scaled accordingly.")
          (:li (:code "execute-extended-command"))))
    (:li "Delete modes:"
         (:ul
+         (:li (:code "nyxt/mode/reduce-bandwidth"))
          (:li (:code "nyxt/mode/editor"))
          (:li (:code "nyxt/mode/plaintext-editor"))
          (:li (:code "nyxt/mode/repl"))
