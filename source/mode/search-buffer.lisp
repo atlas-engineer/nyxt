@@ -203,7 +203,8 @@ Style it via CSS selector \".nyxt-current-search-mark\"."
       (when (ps:lisp scroll)
         (let ((match (nyxt/ps:qs (ps:@ document body) match-selector)))
           (when match
-            (ps:chain match (scroll-into-view (ps:create block "center")))))))))
+            (ps:chain match (scroll-into-view (ps:create block "center")))
+            (ps:chain match parent-element (focus))))))))
 
 (defmethod invisible-p ((match search-match))
   "Whether MATCH is invisible in its corresponding buffer."
