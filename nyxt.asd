@@ -33,7 +33,6 @@
                dexador
                enchant
                flexi-streams
-               history-tree
                iolib
                iolib/os
                lass
@@ -133,15 +132,13 @@
                  (:file "buffer-listing")
                  (:file "message")
                  (:file "passthrough")
-                 (:file "history-tree")
-                 (:file "list-history")
                  (:file "document" :depends-on ("passthrough"))
                  (:file "hint" :depends-on ("document"))
                  (:file "search-buffer")
                  (:file "spell-check" :depends-on ("document"))
                  (:file "help" :depends-on ("document" "search-buffer"))
-                 (:file "history" :depends-on ("history-tree" "list-history"))
-                 (:file "certificate-exception" :depends-on ("history"))
+                 (:file "history")
+                 (:file "certificate-exception")
                  (:file "keyscheme")
                  (:file "proxy")
                  (:file "process")
@@ -177,7 +174,6 @@
                  (:file "autofill")
                  (:file "blocker")
                  (:file "bookmark")
-                 (:file "bookmark-frequent-visits" :depends-on ("bookmark"))
                  (:file "bookmarklets")
                  (:file "cruise-control" :depends-on ("repeat"))
                  (:file "emacs")
@@ -212,7 +208,6 @@
   :pathname #p"NYXT:tests;"
   :components ((:file "package")
                (:file "offline/define-configuration")
-               (:file "offline/global-history")
                (:file "offline/prompt-buffer")
                (:file "offline/urls")
                (:file "offline/user-script-parsing")
@@ -224,8 +219,6 @@
                  (:file "annotate")
                  (:file "base")
                  (:file "blocker")
-                 ;; TODO Fix bookmark-frequent-visits-mode architecture
-                 ;; (:file "tests/offline/mode/bookmark-frequent-visits")
                  (:file "bookmark")
                  (:file "bookmarklets")
                  (:file "buffer-listing")
@@ -240,11 +233,9 @@
                  (:file "help")
                  (:file "hint-prompt-buffer")
                  (:file "hint")
-                 (:file "history-tree")
                  (:file "history")
                  (:file "input-edit")
                  (:file "keyscheme")
-                 (:file "list-history")
                  (:file "macro-edit")
                  (:file "message")
                  (:file "no-image")

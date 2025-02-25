@@ -190,15 +190,11 @@ prompt buffer.")
    (history-file
     (make-instance 'history-file)
     :type history-file
-    :documentation "History file to read from when restoring session.
-See `restore-session-on-startup-p' to control this behavior.
-See also `history-file' in `context-buffer' for per-buffer history files.")
-   (restore-session-on-startup-p
-    nil
-    :type boolean
-    :documentation "Whether to restore buffers from the previous session.
-You can store and restore sessions manually to various files with
-`store-history-by-name' and `restore-history-by-name'.")
+    :documentation "A file to persist history data across sessions.")
+   (history-vector
+    (make-array 0 :fill-pointer t :adjustable t)
+    :type vector
+    :documentation "A vector holding `history-entry' objects.")
    (default-cookie-policy
     :no-third-party
     :type cookie-policy
@@ -291,6 +287,17 @@ A typical Nyxt session encompasses a single instance of this class, but nothing
 prevents otherwise.")
   (:metaclass user-class))
 
+(export-always 'recent-history-entries)
+(defmethod recent-history-entries (n (browser browser) &key deduplicate-p)
+  "Return the N most recent browsing history entries as a list.
+
+When DEDUPLICATE-P is non-nil, remove duplicated entries."
+  (nreverse (coerce (let ((recent-entries (sera:slice (history-vector browser) (- n))))
+                      (if deduplicate-p
+                          (remove-duplicates recent-entries :test #'equals)
+                          recent-entries))
+                    'list)))
+
 (defmethod theme ((ignored (eql nil)))
   "Fallback theme in case `*browser*' is NIL."
   (declare (ignore ignored))
@@ -331,78 +338,23 @@ idle, so it should do the job."
   ;; the `startup' may invoke the prompt buffer, which cannot be invoked from
   ;; the renderer thread: this is why we run the `startup' in a new thread from
   ;; there.
-  (on-renderer-ready "finalize-window"
-    ;; Restart on init error, in case `*config-file*' broke the state.
-    ;; We only `handler-case' when there is an init file, this way we avoid
-    ;; looping indefinitely.
-    (let ((restart-on-error? (not (or (getf *options* :no-config)
-                                      (not (uiop:file-exists-p (files:expand *config-file*)))))))
-      ;; Set `*restart-on-error*' globally instead of let-binding it to
-      ;; make it visible from all threads.
-      (setf *restart-on-error* restart-on-error?)
-      (finalize-window browser urls)))
+  (on-renderer-ready "finalize-startup"
+    (window-make browser)
+    (let ((history-file-contents (files:content (history-file browser))))
+      (setf (history-vector browser)
+            (make-array (length history-file-contents)
+                        :fill-pointer t
+                        :adjustable t
+                        :initial-contents history-file-contents)))
+    (open-urls (or urls (list (default-new-buffer-url browser))))
+    (lpara:fulfill (slot-value browser 'startup-promise))
+    (hooks:run-hook (after-startup-hook browser) browser)
+    (funcall* (startup-error-reporter-function browser)))
   ;; Set `init-time' at the end of finalize to take the complete startup time
   ;; into account.
   (setf (slot-value *browser* 'init-time)
         (time:timestamp-difference (time:now) startup-timestamp))
   (setf (slot-value *browser* 'ready-p) t))
-
-(defmethod finalize-window ((browser browser) urls)
-  "Startup finalization: Set up initial window.
-This step is crucial to get Nyxt to reach a usable step and be able to handle
-errors correctly from then on."
-  (window-make browser)
-  ;; History restoration and subsequent tasks are error-prone, thus they should
-  ;; be done once the browser is ready to handle errors ,that is ,once the
-  ;; renderer has displayed the window and its initial buffer.
-  (on-renderer-ready "finalize-buffer"
-    (finalize-first-buffer browser urls)))
-
-(defmethod finalize-first-buffer ((browser browser) urls)
-  "Startup finalization: Set up initial buffer."
-  (switch-buffer :buffer (make-buffer :url (quri:uri (nyxt-url 'new))))
-  (on-renderer-ready "finalize-history"
-    ;; If we've reached here browser should be functional, no need to restart on error.
-    (setf *restart-on-error* nil)
-    (finalize-history browser urls)))
-
-(defmethod finalize-history ((browser browser) urls)
-  "Startup finalization: Restore history, open URLs, display startup errors."
-  (macrolet ((with-protected-history (&body body)
-               `(with-protect ("Error restoring history ~a: ~a"
-                               (files:expand (history-file browser))
-                               :condition)
-                  ,@body)))
-    (labels ((clear-history-owners ()
-               "Warning: We clear the previous owners here.
-After this, buffers from a previous session are permanently lost, they cannot be
-restored."
-               (with-protected-history
-                   (files:with-file-content (history (history-file browser))
-                     (when history
-                       (clrhash (htree:owners history)))))))
-      ;; Must catch all history-related errors, otherwise subsequent code would
-      ;; not be run.
-      (handler-case
-          (let ((init-buffer (current-buffer)))
-            (if (restore-session-on-startup-p browser)
-                (if (with-protected-history
-                        (restore-history-buffers
-                         (files:content (history-file browser))
-                         (history-file browser)))
-                    (open-urls urls)
-                    (open-urls (or urls (list (default-new-buffer-url browser)))))
-                (progn
-                  (log:info "Not restoring session.")
-                  (clear-history-owners)
-                  (open-urls (or urls (list (default-new-buffer-url browser))))))
-            (buffer-delete init-buffer))
-        (error (c)
-          ;; TODO: Clear buffers or back up history?
-          (log:warn c)))
-      (lpara:fulfill (slot-value browser 'startup-promise))
-      (hooks:run-hook (after-startup-hook browser) browser)
-      (funcall* (startup-error-reporter-function browser)))))
 
 ;; Catch a common case for a better error message.
 (defmethod buffers :before ((browser t))
@@ -432,11 +384,11 @@ The buffer corresponding to the first URL is focused."
 If none is found, fall back to `keyscheme:cua'."
   (keymaps:get-keymap (or (keyscheme buffer) keyscheme:cua) buffer-keyscheme-map))
 
-(defun request-resource-open-url (&key url buffer &allow-other-keys)
-  (make-buffer :url url :parent-buffer buffer))
+(defun request-resource-open-url (&key url &allow-other-keys)
+  (make-buffer :url url))
 
-(defun request-resource-open-url-focus (&key url buffer &allow-other-keys)
-  (make-buffer-focus :url url :parent-buffer buffer))
+(defun request-resource-open-url-focus (&key url &allow-other-keys)
+  (make-buffer-focus :url url))
 
 (export-always 'renderer-request-data)
 (defclass renderer-request-data ()

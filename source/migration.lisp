@@ -118,6 +118,15 @@ major versions."
                   result)))))
 
 (define-migration "4"
+  (backtrack-to-hubs-p)
+  (:p "Deleted.")
+
+  (global-history-tree)
+  (:p "Deleted in favor of " (:nxref :slot 'history-vector :class-name 'browser) ".")
+
+  (restore-session-on-startup-p)
+  (:p "Deleted.")
+
   (modifier-translator)
   (:p "See slot " (:code "modifier-plist") ".")
 
@@ -182,9 +191,12 @@ major versions."
   (:p "No support for lists as a value.  Strings are the only valid values.")
 
   (conservative-history-movement-p)
-  (:p "Deleted in favor of " (:nxref :slot 'global-history-p :class-name 'buffer) ".")
+  (:p "Deleted in favor of " (:code "global-history-p") ".")
 
-  (nyxt/mode/reduce-bandwidth
+  (nyxt/mode/list-history
+   nyxt/mode/history-tree
+   nyxt/mode/bookmark-frequent-visits
+   nyxt/mode/reduce-bandwidth
    nyxt/mode/editor
    nyxt/mode/plaintext-editor
    nyxt/mode/repl
@@ -195,7 +207,22 @@ major versions."
    nyxt/mode/tts)
   (:p "Deleted modes.")
 
-  (save-exact-modes-for-future-visits
+  (history-tree
+   buffer-history-tree
+   list-buffers-as-tree
+   list-buffers-as-list
+   delete-history-entry
+   reset-buffer-history
+   store-history-by-name
+   restore-history-by-name
+   history-backwards-query
+   history-forwards-direct-children
+   history-forwards-maybe-query
+   history-forwards-query
+   history-forwards-all-query
+   history-all-owner-nodes-query
+   history-all-query
+   save-exact-modes-for-future-visits
    save-non-default-modes-for-future-visits
    editor-open-file
    editor-write-file

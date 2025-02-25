@@ -141,7 +141,7 @@ Note that by changing the default value, modifier keys can be remapped."))
    (electron:web-contents buffer)
    (lambda (details)
      (let ((url (assoc-value details :url)))
-       (make-buffer-focus :url (quri:uri url) :parent-buffer (current-buffer))))))
+       (make-buffer-focus :url (quri:uri url))))))
 
 (defmethod initialize-listeners ((buffer electron-buffer))
   (electron:add-listener buffer :before-input-event
@@ -160,9 +160,10 @@ Note that by changing the default value, modifier keys can be remapped."))
     (electron:add-listener (electron:web-contents buffer) :did-finish-load
                            (lambda (_) (declare (ignore _))
                              (setf (nyxt::status buffer) :finished)
-                             (let ((url (ffi-buffer-url buffer)))
+                             (let ((url (ffi-buffer-url buffer))
+                                   (title (ffi-buffer-title buffer)))
                                (setf (url buffer) url)
-                               (on-signal-load-finished buffer url))))
+                               (on-signal-load-finished buffer url title))))
     (electron:add-listener (electron:web-contents buffer) :page-title-updated
                            (lambda (_) (declare (ignore _))
                              (on-signal-notify-title buffer (ffi-buffer-title buffer))))))

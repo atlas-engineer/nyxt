@@ -6,12 +6,6 @@
   (:documentation "Package for `document-mode', mode to interact with structured documents."))
 (in-package :nyxt/mode/document)
 
-;; TODO: Remove document-mode from special buffers (e.g. help).
-;; This is required because special buffers cannot be part of a history (and it breaks it).
-;; Bind C-l to set-url-new-buffer?  Wait: What if we click on a link?  url
-;; changes in special buffers should open a new one.
-;; Or else we require that all special-buffer-generating commands open a new buffer.
-
 (define-mode document-mode ()
   "Mode to interact with structured documents.
 This is typically for HTML pages, but other formats could be supported too.
@@ -194,7 +188,8 @@ Only includes the strings that were pasted/copied inside Nyxt."))
           do (nyxt/dom:focus-select-element input)
           and do (return input)))
 
-(defmethod nyxt:on-signal-load-finished ((mode document-mode) url)
+(defmethod nyxt:on-signal-load-finished ((mode document-mode) url title)
+  (declare (ignore title))
   (with-slots (buffer) mode
     ;; Ensures that the buffer-local zoom ratio is honored.
     (setf (ffi-buffer-zoom-ratio buffer)

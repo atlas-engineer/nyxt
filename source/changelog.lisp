@@ -27,7 +27,7 @@
 
 (define-version "4.0.0"
   (:ul
-   (:li "Simplify status area URL display. Show hostname for HTTPS URLs, 
+   (:li "Simplify status area URL display. Show hostname for HTTPS URLs,
 show complete URL for HTTP (with a warning marker).")
    (:li "Delete: " (:code "ffi-buffer-make") ".")
    (:li "Delete: " (:code "ffi-window-make") ".")
@@ -38,8 +38,12 @@ show complete URL for HTTP (with a warning marker).")
    (:li "Delete " (:code "bookmark-buffer-url") ".")
    (:li "Delete " (:code "bookmark-url") ".")
    (:li "Delete all logic related to " (:code "auto-rules") ".")
-   (:li "Session is not restored on startup by default.  It is configurable via "
-        (:nxref :slot 'restore-session-on-startup-p :class-name 'browser) ".")
+   (:li "Buffer tree navigation commands no longer available.")
+   (:li "History tree commands no longer available.")
+   (:li "Session restoration via slot " (:code "restore-session-on-startup-p")
+        " is no longer available.")
+   (:li "Global history is stored linearly in a vector.")
+   (:li "Per buffer history is not persisted.")
    (:li "Add buttons to quickly remove bookmarks in a buffer shown by "
         (:nxref :command 'nyxt/mode/bookmark:list-bookmarks))
    (:li "Refactor the " (:nxref :package :theme) " API.")
@@ -87,6 +91,21 @@ elements are scaled accordingly.")
          (:li (:code "NASDF_COMPRESS"))))
    (:li "Delete commands:"
         (:ul
+         (:li (:code "history-tree"))
+         (:li (:code "buffer-history-tree"))
+         (:li (:code "list-buffers-as-tree"))
+         (:li (:code "list-buffers-as-list"))
+         (:li (:code "delete-history-entry"))
+         (:li (:code "reset-buffer-history"))
+         (:li (:code "store-history-by-name"))
+         (:li (:code "restore-history-by-name"))
+         (:li (:code "history-backwards-query"))
+         (:li (:code "history-forwards-direct-children"))
+         (:li (:code "history-forwards-maybe-query"))
+         (:li (:code "history-forwards-query"))
+         (:li (:code "history-forwards-all-query"))
+         (:li (:code "history-all-owner-nodes-query"))
+         (:li (:code "history-all-query"))
          (:li (:code "save-exact-modes-for-future-visits"))
          (:li (:code "save-non-default-modes-for-future-visits"))
          (:li (:code "editor-open-file"))
@@ -117,6 +136,9 @@ elements are scaled accordingly.")
          (:li (:code "execute-extended-command"))))
    (:li "Delete modes:"
         (:ul
+         (:li (:code "nyxt/mode/list-history"))
+         (:li (:code "nyxt/mode/history-tree"))
+         (:li (:code "nyxt/mode/bookmark-frequent-visits"))
          (:li (:code "nyxt/mode/reduce-bandwidth"))
          (:li (:code "nyxt/mode/editor"))
          (:li (:code "nyxt/mode/plaintext-editor"))
@@ -487,7 +509,7 @@ buffers.")
    (:li "The REPL provides symbol suggestions by issuing "
         (:code "nyxt/mode/repl:suggest-into-cell") ", bound to "
         (:code "TAB (↹)") ".")
-   (:li (:nxref :slot 'global-history-p :class-name 'buffer)
+   (:li (:code "global-history-p")
         " is enabled by default.  The old behavior can be recovered by setting
         it to " (:code "nil") ".")
    (:li "Bind " (:nxref :command 'nyxt:delete-current-buffer) " uniformly for
@@ -529,7 +551,7 @@ vs. body-matching prompts). Thanks to @heiwiper!")
 @heiwiper!)")
     (:li "Session is restored on startup by default. Slot "
          (:code "session-restore-prompt") " has been replaced by "
-         (:nxref :slot 'restore-session-on-startup-p :class-name 'browser)
+         (:code "restore-session-on-startup-p")
          ", a boolean.")
     (:li (:nxref :class-name 'nyxt/mode/reduce-tracking:reduce-tracking-mode)
          " clears widely known tracking query parameters.")
@@ -544,8 +566,8 @@ to generate predictions for what your next command will be. The model is stored
 locally and is cleared after every session.")
     (:li "Support for key files and Yubikey locking in KeePassXC password interface.")
     (:li "History globality can be set on a per-buffer basis. "
-         "See the " (:nxref :slot 'global-history-p :class-name 'context-buffer) ".")
-    (:li (:nxref :slot 'backtrack-to-hubs-p :class-name 'nyxt/mode/history:history-mode)
+         "See the " (:code "global-history-p") " slot.")
+    (:li (:code "backtrack-to-hubs-p")
          " allows to revisit the \"hub\" URLs you often visit, instead of adding them to
 history anew.")
     (:li "When started with " (:code "--remote") " and without " (:code "--quit")
@@ -708,8 +730,8 @@ to open a file, save it, switch buffer or delete current buffer.")
      (:li "Add Emacs/VI text editing bindings in "
           (:nxref :mode 'nyxt/mode/prompt-buffer:prompt-buffer-mode)
           " and " (:code "nyxt/mode/repl:repl") ".")
-     (:li "Rebind " (:nxref :command 'nyxt/mode/history:history-forwards) " to "
-          (:nxref :command 'nyxt/mode/history:history-forwards-maybe-query)
+     (:li "Rebind " (:code "nyxt/mode/history:history-forwards") " to "
+          (:code "nyxt/mode/history:history-forwards-maybe-query")
           " in the Emacs and VI schemes.")
      (:li "Rebind " (:code "nyxt/mode/bookmark:bookmark-url") " and "
           (:nxref :command 'copy-title) " to be more consistent with other bindings.")

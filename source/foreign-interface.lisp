@@ -385,6 +385,18 @@ Return the text cut."))
 (define-ffi-generic ffi-buffer-redo (buffer)
   (:documentation "Redo the last undone text edit performed in BUFFER's web view."))
 
+(define-ffi-generic ffi-buffer-navigate-backwards (buffer)
+  (:method ((buffer t))
+    (ps-eval :async t :buffer buffer
+      (ps:chain history (back))))
+  (:documentation "Navigate backwards in the history."))
+
+(define-ffi-generic ffi-buffer-navigate-forwards (buffer)
+  (:method ((buffer t))
+    (ps-eval :async t :buffer buffer
+      (ps:chain history (forward))))
+  (:documentation "Navigate forwards in the history."))
+
 ;; TODO: Move to alists for arbitrary number of params?
 (defvar *context-menu-commands* (make-hash-table :test #'equal)
   "A hash table from labels to context menu commands.
@@ -505,14 +517,14 @@ Dispatches on buffers and modes."))
   (:documentation "Invoked when URL loading is approved in OBJECT.
 Dispatches on buffers and modes."))
 
-(define-ffi-generic on-signal-load-finished (object url)
-  (:method ((buffer buffer) url)
+(define-ffi-generic on-signal-load-finished (object url title)
+  (:method ((buffer buffer) url title)
     (update-document-model :buffer buffer)
     (dolist (mode (modes buffer))
-      (on-signal-load-finished mode url))
+      (on-signal-load-finished mode url title))
     (run-thread "buffer-loaded-hook"
       (hooks:run-hook (buffer-loaded-hook buffer) buffer)))
-  (:method ((mode mode) url)
+  (:method ((mode mode) url title)
     url)
   (:documentation "Invoked when done loading URL in OBJECT.
 Dispatches on buffers and modes."))

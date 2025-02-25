@@ -108,8 +108,8 @@ See also `vi-normal-mode' and `vi-insert-mode'."
                           (nyxt/ps:element-editable-p (nyxt/ps:active-element document))))))
      (enable-modes* 'vi-normal-mode buffer))))
 
-(defmethod on-signal-load-finished ((mode vi-insert-mode) url)
-  (declare (ignore url))
+(defmethod on-signal-load-finished ((mode vi-insert-mode) url title)
+  (declare (ignore url title))
   (enable-modes* 'vi-normal-mode (buffer mode))
   (vi-insert-on-input-fields (buffer mode)))
 

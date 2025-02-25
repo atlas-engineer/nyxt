@@ -147,21 +147,6 @@ by matching against the hint, the URL or the title.")
                                      nyxt/mode/hint:follow-hint-new-buffer-focus
                                      nyxt/mode/hint:follow-hint-new-buffer))))
 
-      (:nsection :title "Using the buffer history"
-        (:p "History is represented as a tree that you can traverse: when you go back
-in history, then follow a new URL, it effectively creates a new branch without
-deleting the old path. The tree makes sure you never lose track of where you've
-been.")
-        (:ul
-         (list-command-information '(nyxt/mode/history:history-forwards
-                                     nyxt/mode/history:history-backwards
-                                     nyxt/mode/history:history-forwards-query
-                                     nyxt/mode/history:history-backwards-query
-                                     nyxt/mode/history:history-forwards-all-query
-                                     nyxt/mode/history:history-all-query)))
-        (:p "You can also view a full tree of the history for a given buffer by
-invoking the command 'buffer-history-tree'."))
-
       (:nsection :title "Incremental Search"
         (:p "Nyxt's search is incremental, i.e. it begins as soon as you type
 the first character of the search string.  A single or multiple buffers can be
@@ -191,8 +176,7 @@ Bookmarks can have the following settings:")
                                      nyxt/mode/bookmark:edit-bookmark
                                      nyxt/mode/bookmark:delete-bookmark
                                      nyxt/mode/bookmark:list-bookmarks
-                                     nyxt/mode/bookmark:import-bookmarks-from-html
-                                     nyxt/mode/bookmark-frequent-visits:bookmark-frequent-visits-mode))))
+                                     nyxt/mode/bookmark:import-bookmarks-from-html))))
 
       (:nsection :title "Annotations"
         (:p "Annotations can have the following settings:")
