@@ -42,7 +42,7 @@
   (ffi-buffer-navigate-forwards buffer))
 
 (export-always 'blocked-p)
-(defun blocked-p (url mode)
+(defmethod blocked-p (url (mode history-mode))
   "Check whether URL belongs to MODE's `history-blocklist'."
   (find-if (rcurry #'str:starts-with? (render-url url))
            (history-blocklist mode)))
@@ -60,23 +60,18 @@
                   for url = (quri:render-uri (url entry))
                   collect (:tr (:td title) (:td (:a :href url url)))))))
 
-(defun add-url-to-history (url buffer mode &key (title ""))
-  "Add URL to BUFFER's `history-MODE'.
-Uses `history-add' internally."
-  (unless (or (url-empty-p url)
-              (blocked-p url mode))
-    (log:debug "Notify URL ~a for buffer ~a with load status ~a"
-               url
-               buffer
-               (slot-value buffer 'nyxt::status))
-    (vector-push-extend (make-instance 'history-entry
+(defmethod add-url-to-history (url (mode history-mode) &key (title ""))
+  "Push URL to `history-vector'."
+  (unless (blocked-p url mode)
+    (with-slots (history-vector history-file) *browser*
+        (vector-push-extend (make-instance 'history-entry
                                        :url (quri:uri url)
                                        :title title)
-                        (history-vector *browser*))
-    (files:with-file-content (history (history-file *browser*))
-      (setf history (history-vector *browser*)))
-    url))
+                        history-vector)
+    (files:with-file-content (history history-file)
+      (setf history history-vector))
+    url)))
 
 (defmethod nyxt:on-signal-load-finished ((mode history-mode) url title)
-  (add-url-to-history url (buffer mode) mode :title title)
+  (add-url-to-history url mode :title title)
   url)
