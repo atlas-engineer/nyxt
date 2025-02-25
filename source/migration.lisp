@@ -184,7 +184,8 @@ major versions."
   (conservative-history-movement-p)
   (:p "Deleted in favor of " (:nxref :slot 'global-history-p :class-name 'buffer) ".")
 
-  (nyxt/mode/editor
+  (nyxt/mode/reduce-bandwidth
+   nyxt/mode/editor
    nyxt/mode/plaintext-editor
    nyxt/mode/repl
    nyxt/mode/no-procrastinate
