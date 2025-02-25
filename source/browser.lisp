@@ -287,6 +287,17 @@ A typical Nyxt session encompasses a single instance of this class, but nothing
 prevents otherwise.")
   (:metaclass user-class))
 
+(export-always 'recent-history-entries)
+(defmethod recent-history-entries (n (browser browser) &key deduplicate-p)
+  "Return the N most recent browsing history entries as a list.
+
+When DEDUPLICATE-P is non-nil, remove duplicated entries."
+  (nreverse (coerce (let ((recent-entries (sera:slice (history-vector browser) (- n))))
+                      (if deduplicate-p
+                          (remove-duplicates recent-entries :test #'equals)
+                          recent-entries))
+                    'list)))
+
 (defmethod theme ((ignored (eql nil)))
   "Fallback theme in case `*browser*' is NIL."
   (declare (ignore ignored))

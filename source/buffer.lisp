@@ -1063,9 +1063,7 @@ URL-DESIGNATOR is then transformed by BUFFER's `buffer-load-hook'."
 
 (define-class global-history-source (prompter:source)
   ((prompter:name "Global history")
-   (prompter:constructor (reverse (remove-duplicates
-                                   (coerce (history-vector *browser*) 'list)
-                                   :test 'equals :from-end t)))
+   (prompter:constructor (recent-history-entries 200 *browser* :deduplicate-p t))
    (prompter:enable-marks-p t)
    (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:actions-on-return #'buffer-load*))

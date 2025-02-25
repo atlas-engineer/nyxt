@@ -49,19 +49,16 @@
 
 (define-internal-page-command-global list-history (&key (limit 100))
     (buffer "*History list*")
-  "Display the user history as a list.
-Cut the display at LIMIT nodes."
+  "Display the most recent browsing history entries up to LIMIT."
   (spinneret:with-html-string
     (:nstyle (style buffer))
     (:h1 "History")
     (:table :class "resizable-table"
             (:tr (:th "Title") (:th "URL"))
-            (loop for i from 0 below (min limit
-                                          (length (history-vector *browser*)))
-                  collect (let ((element (aref (history-vector *browser*) i)))
-                            (:tr (:td (title element))
-                                 (:td (:a :href (quri:render-uri (url element))
-                                          (quri:render-uri (url element))))))))))
+            (loop for entry in (recent-history-entries limit *browser*)
+                  for title = (title entry)
+                  for url = (quri:render-uri (url entry))
+                  collect (:tr (:td title) (:td (:a :href url url)))))))
 
 (defun add-url-to-history (url buffer mode &key (title ""))
   "Add URL to BUFFER's `history-MODE'.
