@@ -81,46 +81,34 @@ clean:
 FLATPAK_COMMAND = flatpak
 FLATPAK_BUILDER = flatpak-builder
 
-FLATPAK_WEBKITGTK_ID = engineer.atlas.Nyxt-WebKitGTK
-FLATPAK_WEBKITGTK_MANIFEST := $(FLATPAK_WEBKITGTK_ID).yaml
-FLATPAK_WEBKITGTK_EXPORT_REPOSITORY = build/nyxt-webkitgtk-flatpak-repository
+ifeq ($(NYXT_RENDERER), gi-gtk)
+	FLATPAK_ID = engineer.atlas.Nyxt-WebKitGTK
+	FLATPAK_MANIFEST := $(FLATPAK_ID).yaml
+	FLATPAK_EXPORT_REPOSITORY = build/nyxt-webkitgtk-flatpak-repository
+else ifeq ($(NYXT_RENDERER), electron)
+	FLATPAK_ID = engineer.atlas.Nyxt-Electron
+	FLATPAK_MANIFEST := $(FLATPAK_ID).yaml
+	FLATPAK_EXPORT_REPOSITORY = build/nyxt-electron-flatpak-repository
+endif
 
-.PHONY: flatpak-webkitgtk-build
-flatpak-webkitgtk-build:
+.PHONY: flatpak-build
+flatpak-build:
 # To start a shell before building add --build-shell=nyxt.
-	@$(FLATPAK_BUILDER) --force-clean --user --install --default-branch=local build $(FLATPAK_WEBKITGTK_MANIFEST)
+	$(FLATPAK_BUILDER) --force-clean --user --install --default-branch=local build $(FLATPAK_MANIFEST)
 
-.PHONY: flatpak-webkitgtk-run
-flatpak-webkitgtk-run:
-	@$(FLATPAK_COMMAND) run --branch=local $(FLATPAK_WEBKITGTK_ID)
+.PHONY: flatpak-run
+flatpak-run:
+	$(FLATPAK_COMMAND) run --branch=local $(FLATPAK_ID)
 
-.PHONY: flatpak-webkitgtk-repository
-flatpak-webkitgtk-repository:
-	mkdir -p $(FLATPAK_WEBKITGTK_EXPORT_REPOSITORY)
-	@$(FLATPAK_BUILDER) --force-clean --repo=$(FLATPAK_WEBKITGTK_EXPORT_REPOSITORY) build $(FLATPAK_WEBKITGTK_MANIFEST)
+.PHONY: flatpak-repository
+flatpak-repository:
+	mkdir -p $(FLATPAK_EXPORT_REPOSITORY)
+	$(FLATPAK_BUILDER) --force-clean --repo=$(FLATPAK_EXPORT_REPOSITORY) build $(FLATPAK_MANIFEST)
 
-.PHONY: flatpak-webkitgtk-bundle
-flatpak-webkitgtk-bundle:
-	@$(FLATPAK_COMMAND) build-bundle $(FLATPAK_WEBKITGTK_EXPORT_REPOSITORY) nyxt-webkitgtk.flatpak $(FLATPAK_WEBKITGTK_ID)
+.PHONY: flatpak-bundle
+flatpak-bundle:
+	$(FLATPAK_COMMAND) build-bundle $(FLATPAK_EXPORT_REPOSITORY) nyxt-$(NYXT_RENDERER).flatpak $(FLATPAK_ID)
 
-FLATPAK_ELECTRON_ID = engineer.atlas.Nyxt-Electron
-FLATPAK_ELECTRON_MANIFEST := $(FLATPAK_ELECTRON_ID).yaml
-FLATPAK_ELECTRON_EXPORT_REPOSITORY = build/nyxt-electron-flatpak-repository
-
-.PHONY: flatpak-electron-build
-flatpak-electron-build:
-# To start a shell before building add --build-shell=nyxt.
-	@$(FLATPAK_BUILDER) --force-clean --user --install --default-branch=local build $(FLATPAK_ELECTRON_MANIFEST)
-
-.PHONY: flatpak-electron-run
-flatpak-electron-run:
-	@$(FLATPAK_COMMAND) run --branch=local $(FLATPAK_ELECTRON_ID)
-
-.PHONY: flatpak-electron-repository
-flatpak-electron-repository:
-	mkdir -p $(FLATPAK_ELECTRON_EXPORT_REPOSITORY)
-	@$(FLATPAK_BUILDER) --force-clean --repo=$(FLATPAK_ELECTRON_EXPORT_REPOSITORY) build $(FLATPAK_ELECTRON_MANIFEST)
-
-.PHONY: flatpak-electron-bundle
-flatpak-electron-bundle:
-	@$(FLATPAK_COMMAND) build-bundle $(FLATPAK_ELECTRON_EXPORT_REPOSITORY) nyxt-electron.flatpak $(FLATPAK_ELECTRON_ID)
+.PHONY: clean-flatpak
+clean-flatpak:
+	rm -rf .flatpak-builder build *.flatpak
