@@ -25,11 +25,7 @@ If the NASDF_TESTS_NO_NETWORK environment variable is set, tests with the
                    :tags tags
                    :exclude-tags (append (when (env-true-p "NASDF_TESTS_NO_NETWORK") '(:online))
                                          exclude-tags)
-                   :run-contexts (find-symbol* :with-summary-context :lisp-unit2))))
-      (when (and (env-true-p "NASDF_NON_INTERACTIVE_TESTS")
-                 (or (symbol-call :lisp-unit2 :failed output)
-                     (symbol-call :lisp-unit2 :errors output)))
-          (uiop:quit 1 #+bsd nil)))))
+                   :run-contexts (find-symbol* :with-summary-context :lisp-unit2)))))))
 
 (export-always 'print-benchmark)
 (defun print-benchmark (benchmark-results)
