@@ -106,13 +106,6 @@ Note that by changing the default value, modifier keys can be remapped.")
 disconnect the signal handler when the object is finalized.")
    (gtk-proxy-url (quri:uri ""))
    (proxy-ignored-hosts '())
-   (loading-renderer-history-p
-    nil
-    :type boolean
-    :export nil
-    :documentation "Internal hack, do not use me!  WebKitGTK may trigger
-'load-failed' when loading a page from the WebKit-history cache.  Upstream bug?
-We use this slot to know when to ignore these load failures.")
    (handle-permission-requests-p
     nil
     :documentation "Whether permission requests are handled.
@@ -940,7 +933,6 @@ See `finalize-buffer'."
             ((eq load-event :webkit-load-committed)
              (on-signal-load-committed buffer url))
             ((eq load-event :webkit-load-finished)
-             (setf (loading-renderer-history-p buffer) nil)
              (unless (eq (slot-value buffer 'nyxt::status) :failed)
                (setf (nyxt::status buffer) :finished))
              (on-signal-load-finished buffer url (ffi-buffer-title buffer))
@@ -1278,43 +1270,37 @@ See `finalize-buffer'."
     (log:debug "Closed ~a" buffer))
   (connect-signal buffer "load-failed" nil (web-view load-event failing-url error)
     (declare (ignore load-event web-view))
-    ;; TODO: WebKitGTK sometimes (when?) triggers "load-failed" when loading a
-    ;; page from the renderer-history cache.  Upstream bug?  Anyways, we should
-    ;; ignore these.
     (on-signal-load-failed buffer (quri:uri failing-url))
-    (cond
-      ((loading-renderer-history-p buffer)
-       (setf (loading-renderer-history-p buffer) nil))
-      ((= 302 (webkit::g-error-code error))
-       (on-signal-load-canceled buffer (quri:uri failing-url)))
-      ((or (member (slot-value buffer 'nyxt::status) '(:finished :failed))
-           ;; WebKitGTK emits the WEBKIT_PLUGIN_ERROR_WILL_HANDLE_LOAD
-           ;; (204) if the plugin will handle loading content of the
-           ;; URL. This often happens with videos. The only thing we
-           ;; can do is ignore it.
-           ;;
-           ;; TODO: Use cl-webkit provided error types. How
-           ;; do we use it, actually?
-           (= 204 (webkit::g-error-code error)))
-       nil)
-      (t
-       (echo "Failed to load URL ~a in buffer ~a." failing-url (id buffer))
-       (setf (nyxt::status buffer) :failed)
-       (ffi-buffer-load-alternate-html
-        buffer
-        (spinneret:with-html-string
-          (:head
-           (:nstyle (style buffer)))
-          (:h1 "Page could not be loaded.")
-          (:h2 "URL: " failing-url)
-          (:ul
-           (:li "Try again in a moment, maybe the site will be available again.")
-           (:li "If the problem persists for every site, check your Internet connection.")
-           (:li "Make sure the URL is valid."
-                (when (quri:uri-https-p (quri:uri failing-url))
-                  "If this site does not support HTTPS, try with HTTP (insecure)."))))
-        failing-url
-        failing-url)))
+    (cond ((= 302 (webkit::g-error-code error))
+           (on-signal-load-canceled buffer (quri:uri failing-url)))
+          ((or (member (slot-value buffer 'nyxt::status) '(:finished :failed))
+               ;; WebKitGTK emits the WEBKIT_PLUGIN_ERROR_WILL_HANDLE_LOAD
+               ;; (204) if the plugin will handle loading content of the
+               ;; URL. This often happens with videos. The only thing we
+               ;; can do is ignore it.
+               ;;
+               ;; TODO: Use cl-webkit provided error types. How
+               ;; do we use it, actually?
+               (= 204 (webkit::g-error-code error)))
+           nil)
+          (t
+           (echo "Failed to load URL ~a in buffer ~a." failing-url (id buffer))
+           (setf (nyxt::status buffer) :failed)
+           (ffi-buffer-load-alternate-html
+            buffer
+            (spinneret:with-html-string
+              (:head
+               (:nstyle (style buffer)))
+              (:h1 "Page could not be loaded.")
+              (:h2 "URL: " failing-url)
+              (:ul
+               (:li "Try again in a moment, maybe the site will be available again.")
+               (:li "If the problem persists for every site, check your Internet connection.")
+               (:li "Make sure the URL is valid."
+                    (when (quri:uri-https-p (quri:uri failing-url))
+                      "If this site does not support HTTPS, try with HTTP (insecure)."))))
+            failing-url
+            failing-url)))
     t)
   (connect-signal buffer "create" nil (web-view navigation-action)
     (declare (ignore web-view))
@@ -1403,32 +1389,13 @@ See `finalize-buffer'."
     (when (prompt-buffer-p buffer) (setf (ffi-height buffer) 0))))
 
 (define-ffi-method ffi-buffer-load ((buffer gtk-buffer) url)
-  "Load URL in BUFFER.
-An optimization technique is to make use of the renderer history cache.
-For WebKit, if the URL matches an entry in the renderer-history then we fetch the
-page from the cache.
-
-We don't use the cache if URL matches BUFFER's URL since this means the user
-requested a reload.
-
-Note that we don't use the cache for internal pages (say nyxt:help) since it's
-local anyways, and it's better to refresh it if a load was queried."
+  "Load URL in BUFFER."
   (declare (type quri:uri url))
-  (let* ((history (renderer-history buffer))
-         (entry (or (find url history :test #'quri:uri= :key #'renderer-history-entry-url)
-                    (find url history :test #'quri:uri= :key #'renderer-history-entry-original-url))))
-    ;; Mark buffer as :loading right away so functions like
-    ;; `ffi-window-set-buffer' don't try to reload if they are called before the
-    ;; "load-changed" signal is emitted.
-    (when (web-buffer-p buffer)
-      (setf (nyxt::status buffer) :loading))
-    (if (and entry
-             (not (internal-url-p url))
-             (not (quri:uri= url (url buffer))))
-        (progn
-          (log:debug "Load URL from history entry ~a" entry)
-          (load-renderer-history-entry buffer entry))
-        (webkit:webkit-web-view-load-uri (gtk-object buffer) (quri:render-uri url)))))
+  ;; Mark buffer as :loading right away so functions like
+  ;; `ffi-window-set-buffer' don't try to reload if they are called before the
+  ;; "load-changed" signal is emitted.
+  (when (web-buffer-p buffer) (setf (nyxt::status buffer) :loading))
+  (webkit:webkit-web-view-load-uri (gtk-object buffer) (quri:render-uri url)))
 
 (define-ffi-method ffi-buffer-reload ((buffer gtk-buffer))
   (webkit:webkit-web-view-reload (gtk-object buffer))
@@ -1777,49 +1744,6 @@ Only the setf method is."
     (webkit:webkit-web-context-set-preferred-languages
      (webkit:webkit-web-view-web-context (gtk-object buffer))
      langs)))
-
-(defstruct renderer-history-entry
-  title
-  url
-  original-url
-  gtk-object)
-
-(define-ffi-method renderer-history ((buffer gtk-buffer))
-  "Return a list of `renderer-history-entry's for the current buffer.
-Oldest entries come last.
-
-This represents the history as remembered by WebKit.  Note that it is linear so
-it does not map 1:1 with Nyxt's history tree.  Nonetheless it allows us to make
-use of the WebKit history case for the current branch.  See `ffi-buffer-load'.
-
-As a second value, return the current buffer index starting from 0."
-  (let* ((bf-list (webkit:webkit-web-view-get-back-forward-list (gtk-object buffer)))
-         (length (webkit:webkit-back-forward-list-get-length bf-list))
-         (current (webkit:webkit-back-forward-list-get-current-item bf-list))
-         (history-list nil)
-         (current-index 0))
-    ;; The back-forward list is both negatively and positively indexed.  Seems
-    ;; that we can't easily know the first index nor the last one.  So let's
-    ;; iterate over the length backwards and forwards to make sure we get all
-    ;; elements in order.
-    (loop for i from (- length) to length
-          for item = (webkit:webkit-back-forward-list-get-nth-item bf-list i)
-          when (eq item current)
-          do (setf current-index (- length (length history-list))) ; Index from 0.
-          when item
-          do (push (make-renderer-history-entry
-                    :title (webkit:webkit-back-forward-list-item-get-title item)
-                    :url (quri:uri (webkit:webkit-back-forward-list-item-get-uri item))
-                    :original-url (quri:uri (webkit:webkit-back-forward-list-item-get-original-uri item))
-                    :gtk-object item)
-                   history-list))
-    (values history-list current-index)))
-
-(defmethod load-renderer-history-entry ((buffer gtk-buffer) history-entry)
-  (setf (loading-renderer-history-p buffer) t)
-  (webkit:webkit-web-view-go-to-back-forward-list-item
-   (gtk-object buffer)
-   (renderer-history-entry-gtk-object history-entry)))
 
 (define-ffi-method ffi-focused-p ((buffer gtk-buffer))
   (gtk:gtk-widget-is-focus (gtk-object buffer)))
