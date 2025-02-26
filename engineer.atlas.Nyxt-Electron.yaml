@@ -78,7 +78,7 @@ modules:
       env:
         XDG_CACHE_HOME: /run/build/nyxt/flatpak-node/cache
         npm_config_cache: /run/build/nyxt/flatpak-node/npm-cache
-        npm_config_nodedir: /run/build/nyxt/flatpak-node/cache/node-gyp/32.2.5
+        npm_config_nodedir: /run/build/nyxt/flatpak-node/cache/node-gyp/33.4.1
     build-commands:
       # Have node available at runtime
       - /usr/lib/sdk/node20/install-sdk.sh
@@ -87,12 +87,12 @@ modules:
       - ln -s ${FLATPAK_DEST}/node/bin/npm ${FLATPAK_DEST}/bin/npm
 
       # Install cl-electron-server
-      - cp _build/cl-electron/package.json _build/cl-electron/package-lock.json _build/cl-electron/source/server.js ${FLATPAK_DEST}
-      - npm install --offline --verbose --prefix ${FLATPAK_DEST}
+      - cd _build/cl-electron/ && npm install --offline --verbose
+      - cp -r _build/cl-electron/* ${FLATPAK_DEST}
 
       # Patch cl-electron
       - sed -i "s|(uiop:xdg-runtime-dir \"cl-electron/\")|(uiop:xdg-runtime-dir \"app/$FLATPAK_ID/cl-electron/\")|" _build/cl-electron/source/core.lisp
-      - sed -i "s|(asdf:system-relative-pathname :cl-electron \"source/server.js\")|#P\"$FLATPAK_DEST/server.js\"|" _build/cl-electron/source/core.lisp
+      - sed -i "s|(asdf:system-relative-pathname :cl-electron \"source/server.js\")|#P\"$FLATPAK_DEST/source/server.js\"|" _build/cl-electron/source/core.lisp
       - sed -i "s|(asdf:system-source-directory :cl-electron)|#P\"$FLATPAK_DEST\"|" _build/cl-electron/source/core.lisp
 
       # Compile Nyxt
