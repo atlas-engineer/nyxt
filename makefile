@@ -72,13 +72,9 @@ doc:
 check:
 	$(lisp_eval) '(asdf:test-system :nyxt)'
 
-.PHONY: clean-submodules
-clean-submodules:
-	git submodule deinit --force --all
-
 .PHONY: clean
-clean: clean-submodules
-	rm -rf build
+clean:
+	rm nyxt
 
 # Flatpak
 
