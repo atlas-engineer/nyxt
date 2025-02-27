@@ -47,4 +47,4 @@ the existing keyscheme `cua'."
   "Keyscheme inspired by the command mode in VI-family text editors.")
 (export-always 'vi-insert)
 (defvar vi-insert (make-keyscheme "vi-insert")
-  "Mostly blank keyscheme resembling the insert mode in VI-family editors.")
+  "Keyscheme inspired by the insert mode in VI-family editors.")
