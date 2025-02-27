@@ -196,13 +196,13 @@
   :depends-on (nyxt lisp-unit2)
   :pathname #p"NYXT:tests;"
   :components ((:file "package")
-               (:file "offline/define-configuration")
-               (:file "offline/prompt-buffer")
-               (:file "offline/urls")
-               (:file "offline/user-script-parsing")
-               (:file "offline/mode")
+               (:file "define-configuration")
+               (:file "prompt-buffer")
+               (:file "urls")
+               (:file "user-script-parsing")
+               (:file "mode")
                (:module "Modes"
-                :pathname "offline/mode"
+                :pathname "mode"
                 :components
                 ((:file "autofill")
                  (:file "annotate")
@@ -248,7 +248,7 @@
                  (:file "vi")
                  ;; TODO Fix visual-mode architecture.  Visit the file below for
                  ;; more information.
-                 ;; (:file "tests/offline/mode/visual")
+                 ;; (:file "visual")
                  (:file "user-script")
                  (:file "watch"))))
     :test-suite-args (:package :nyxt/tests))
@@ -309,12 +309,12 @@
   :defsystem-depends-on ("nasdf")
   :class :nasdf-test-system
   :depends-on (nyxt/gi-gtk lisp-unit2)
-  :pathname #p"NYXT:tests;"
+  :pathname #p"NYXT:tests;renderer;"
   :serial t
-  :components ((:file "renderer-package")
-               (:file "renderer-offline/set-url")
-               (:file "renderer-offline/custom-schemes")
-               (:file "renderer-offline/search-buffer"))
+  :components ((:file "package")
+               (:file "set-url")
+               (:file "custom-schemes")
+               (:file "search-buffer"))
   :test-suite-args (:package :nyxt/tests/renderer))
 
 (defsystem "nyxt/electron"
