@@ -207,7 +207,9 @@ major versions."
    nyxt/mode/tts)
   (:p "Deleted modes.")
 
-  (history-tree
+  (start-slynk
+   start-swank
+   history-tree
    buffer-history-tree
    list-buffers-as-tree
    list-buffers-as-list

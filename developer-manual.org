@@ -174,15 +174,6 @@ See [[file:~/common-lisp/nyxt/shell.nix][shell.nix]].
 Nyxt uses the =Make= build system.  Run =make= to display the documentation or
 see the [[../makefile][Makefile]] for more details.
 
-* Interact with a running Nyxt binary
-
-At Nyxt's runtime, it is possible to attach a REPL via SLIME (resp. SLY).
-
-1. From Nyxt, run the command =start-swank= (resp. =start-slynk=).  Note the
-   port number in the message buffer (by default, 4006).
-2. From Emacs, run =M-x slime-connect RET 127.0.0.1 RET 4006=
-   (resp. =sly-connect=).
-
 * Contributing
 
 Nyxt is a joint effort and we welcome contributors!  You can find tasks [[https://github.com/atlas-engineer/nyxt/issues?q=is%3Aissue+is%3Aopen+label%3Agood-first-issue][on our

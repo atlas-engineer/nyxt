@@ -53,19 +53,9 @@
                py-configparser
                quri
                serapeum
-               slynk
-               slynk/arglists
-               slynk/fancy-inspector
-               slynk/indentation
-               slynk/mrepl
-               slynk/package-fu
-               slynk/stickers
-               slynk/trace-dialog
                spinneret
                sqlite
                str
-               swank
-               swank/exts
                trivia
                trivial-arguments
                trivial-clipboard

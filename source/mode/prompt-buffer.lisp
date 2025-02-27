@@ -368,7 +368,6 @@ current unmarked suggestion."
    :attributes `(("Name" ,(or (ignore-errors
                                (symbol-name (typecase action
                                               (command (name action))
-                                              (function (slynk-backend:function-name action))
                                               (t action))))
                               "Lambda"))
                  ("Documentation" ,(documentation-line action 'function "")))))

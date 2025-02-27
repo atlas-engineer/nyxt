@@ -102,25 +102,8 @@ Specialize this generic function if you want to have a different markup for Lisp
 values in help buffers, REPL and elsewhere."))
 
 (defmethod value->html ((value function) &optional compact-p)
-  (spinneret:with-html-string
-    (let ((name (first (alex:ensure-list (swank-backend:function-name value)))))
-      (cond
-        ((and name (eq name 'lambda) compact-p)
-         (:raw (link-to value)))
-        ((and name (eq name 'lambda))
-         (multiple-value-bind (expression closure-p name)
-             (function-lambda-expression value)
-           (:dl
-            (:dt "name")
-            (:dd (:raw (escaped-literal-print name)))
-            (:dt "code")
-            (:dd (:raw (escaped-literal-print expression)))
-            (:dt "closure-p")
-            (:dd (:raw (value->html closure-p))))))
-        (name
-         (:a :href (nyxt-url 'describe-function :fn name)
-             (:raw (escaped-literal-print value))))
-        (t (:raw (escaped-literal-print value)))))))
+  (declare (ignore compact-p))
+  (spinneret:with-html-string (:raw (link-to value))))
 
 (defmethod value->html ((value list) &optional compact-p)
   (spinneret:with-html-string

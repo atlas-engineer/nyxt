@@ -91,6 +91,8 @@ elements are scaled accordingly.")
          (:li (:code "NASDF_COMPRESS"))))
    (:li "Delete commands:"
         (:ul
+         (:li (:code "start-slynk"))
+         (:li (:code "start-swank"))
          (:li (:code "history-tree"))
          (:li (:code "buffer-history-tree"))
          (:li (:code "list-buffers-as-tree"))
