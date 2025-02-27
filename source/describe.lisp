@@ -397,17 +397,6 @@ For generic functions, describe all the methods."
                      (:nsection
                        :title "Type"
                        (:p (:pre (format-function-type (sb-introspect:function-type input))))))
-                   (when-let* ((definition (swank:find-definition-for-thing (symbol-function input)))
-                               (not-error-p (null (getf definition :error)))
-                               (file (first (rest (getf definition :location)))))
-                     (:nsection
-                       :title "Source"
-                       :id "source"
-                       (:pre (format nil "Path: ~a" file))
-                       (:ncode :file file
-                         (multiple-value-bind (listing form)
-                             (function-lambda-string (symbol-function input))
-                           (or form listing)))))
                    (:nsection
                      :title "Describe"
                      (:pre (:code (with-output-to-string (s) (describe (symbol-function input) s)))))))
@@ -443,15 +432,7 @@ For generic functions, describe all the methods."
                       :level 4
                       :title "Argument list"
                       (:pre (:code (prini-to-string (closer-mop:method-lambda-list method)
-                                                    :package (symbol-package input)))))
-                    (multiple-value-bind (source form file)
-                        (source-for-thing method)
-                      (:nsection
-                        :title (format nil "Source (~a)" file)
-                        :id (string-downcase (symbol-name (gensym "SOURCE")))
-                        :level 4
-                        (:ncode :file file
-                          (or form source))))))))
+                                                    :package (symbol-package input)))))))))
           (spinneret:with-html-string
             (:nstyle (style buffer))
             (:h1 (format nil "~s" input) ; Use FORMAT to keep package prefix.
@@ -566,12 +547,6 @@ A command is a special kind of function that can be called with
               (:ul
                (dolist (command (sym:package-commands (symbol-package class)))
                  (:li (:nxref :command command))))))
-          (:nsection
-            :title "Source"
-            (multiple-value-bind (source s-expr file)
-                (source-for-thing (find-class class))
-              (declare (ignore source))
-              (:ncode :file file s-expr)))
           (when-let ((methods (safe-sort
                                (remove-if
                                 #'listp (mapcar #'mopu:generic-function-name

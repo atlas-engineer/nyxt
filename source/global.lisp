@@ -45,15 +45,6 @@ It can be initialized with
 It's possible to run multiple interfaces of Nyxt at the same time.  You can
 let-bind *browser* to temporarily switch interface.")
 
-(export-always '*swank-port*)
-(defvar *swank-port* 4006
-  "The port that Swank will open a new server on (default Emacs SLIME port
-is 4005, default set to 4006 in Nyxt to avoid collisions).")
-
-(export-always '*slynk-port*)
-(defvar *slynk-port* 4006
-  "The port that Slynk will open a new server on (default Emacs Sly port
-is 4005, default set to 4006 in Nyxt to avoid collisions).")
 
 (declaim (type (maybe renderer) *renderer*))
 (defparameter *renderer* nil

@@ -194,10 +194,6 @@
 	path = _build/log4cl
 	url = https://github.com/sharplispers/log4cl
 	shallow = true
-[submodule "_build/slime"]
-	path = _build/slime
-	url = https://github.com/slime/slime/
-	shallow = true
 [submodule "_build/moptilities"]
 	path = _build/moptilities
 	url = https://github.com/gwkkwg/moptilities/
@@ -373,10 +369,6 @@
 [submodule "_build/nkeymaps"]
 	path = _build/nkeymaps
 	url = https://github.com/atlas-engineer/nkeymaps
-	shallow = true
-[submodule "_build/sly"]
-	path = _build/sly
-	url = https://github.com/joaotavora/sly
 	shallow = true
 [submodule "_build/py-configparser"]
 	path = _build/py-configparser
