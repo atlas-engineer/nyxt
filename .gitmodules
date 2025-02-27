@@ -346,10 +346,6 @@
 	path = _build/iterate
 	url = https://gitlab.common-lisp.net/iterate/iterate.git
 	shallow = true
-[submodule "_build/osicat"]
-	path = _build/osicat
-	url = https://github.com/osicat/osicat
-	shallow = true
 [submodule "_build/cl-gopher"]
 	path = _build/cl-gopher
 	url = https://github.com/knusbaum/cl-gopher

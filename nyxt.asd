@@ -45,7 +45,6 @@
                njson/cl-json
                nkeymaps
                nsymbols/star
-               #-sbcl osicat
                parenscript
                phos
                plump

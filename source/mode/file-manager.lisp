@@ -60,30 +60,18 @@ otherwise (default) only include files."
                             files))))
 
 (defun current-user ()
-  #+sbcl
-  (sb-posix:passwd-name (sb-posix:getpwuid (sb-posix:getuid)))
-  #-sbcl
-  (uiop:getenv "USER"))
+  #+sbcl (sb-posix:passwd-name (sb-posix:getpwuid (sb-posix:getuid))))
 
 (defun group-id (user)
   "Return the group ID of USER name."
-  #+sbcl
-  (sb-posix:passwd-gid (sb-posix:getpwnam user))
-  #-sbcl
-  (assoc-value (osicat:user-info user) :group-id))
+  #+sbcl (sb-posix:passwd-gid (sb-posix:getpwnam user)))
 
 (defun file-group-id (file)
-  #+sbcl
-  (sb-posix:stat-gid (sb-posix:lstat file))
-  #-sbcl
-  (osicat-posix:stat-gid (osicat-posix:lstat file)))
+  #+sbcl (sb-posix:stat-gid (sb-posix:lstat file)))
 
 (export-always 'mtime)
 (defun mtime (path)
-  #+sbcl
-  (sb-posix:stat-mtime (sb-posix:stat path))
-  #-sbcl
-  (osicat-posix:stat-mtime (osicat-posix:stat path)))
+  #+sbcl (sb-posix:stat-mtime (sb-posix:stat path)))
 
 (-> executable-p ((or types:pathname-designator) &key (:user string)) boolean)
 (defun executable-p (file &key (user (current-user)))
