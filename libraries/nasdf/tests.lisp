@@ -11,10 +11,7 @@
     :reader test-suite-args
     :documentation "Arguments passed to `lisp-unit2:run-tests'."))
   (:documentation "Specialized system that runs `lisp-unit2' test suites, whose parameters are
-specified by the `test-suite-args' slot.
-
-If the NASDF_TESTS_NO_NETWORK environment variable is set, tests with the
-`:online' tags are excluded."))
+specified by the `test-suite-args' slot."))
 (import 'nasdf-test-system  :asdf-user)
 
 (defmethod perform ((op test-op) (c nasdf-test-system))
@@ -23,8 +20,6 @@ If the NASDF_TESTS_NO_NETWORK environment variable is set, tests with the
                    :lisp-unit2 :run-tests
                    :package package
                    :tags tags
-                   :exclude-tags (append (when (env-true-p "NASDF_TESTS_NO_NETWORK") '(:online))
-                                         exclude-tags)
                    :run-contexts (find-symbol* :with-summary-context :lisp-unit2)))))))
 
 (export-always 'print-benchmark)

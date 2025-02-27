@@ -112,8 +112,6 @@
               (string-append "\"" (assoc-ref inputs "wl-clipboard") "/bin/wl-paste\"")))))
        (add-before 'build 'fix-common-lisp-cache-folder
          (lambda _ (setenv "HOME" "/tmp")))
-       (add-before 'check 'configure-tests
-         (lambda _ (setenv "NASDF_TESTS_NO_NETWORK" "1")))
        (add-after 'install 'wrap-program
          (lambda* (#:key inputs outputs #:allow-other-keys)
            (let ((gsettings (assoc-ref inputs "gsettings-desktop-schemas")))
