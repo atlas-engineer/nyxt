@@ -386,7 +386,7 @@ regardless of the buffer, with a meaningful result."
     :type hook-keymaps-buffer
     :documentation "Hook run as a return value of `current-keymaps'.")
    (conservative-word-move
-    nil
+    t
     :documentation "If non-nil, the cursor moves to the end
 (resp. beginning) of the word when `move-forward-word'
 (resp. `move-backward-word') is called.")
