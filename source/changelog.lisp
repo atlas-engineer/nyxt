@@ -27,6 +27,9 @@
 
 (define-version "4.0.0"
   (:ul
+   (:li "Change default value of slot "
+        (:nxref :slot 'conservative-word-move :class-name 'input-buffer)
+        " as to match usual cursor movements by word.")
    (:li "Update: " (:code "modes") " now returns all of the modes for a buffer, and "
 (:code "enabled-modes") " now returns all of the enabled modes for a buffer.")
    (:li "Simplify status area URL display. Show hostname for HTTPS URLs,
