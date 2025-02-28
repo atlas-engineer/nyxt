@@ -356,7 +356,7 @@ This method should be called by the renderer after instantiating the web view
 of BUFFER."
   (unless no-hook-p
     (hooks:run-hook (buffer-make-hook browser) buffer))
-  (mapc #'enable (slot-value buffer 'modes))
+  (mapc #'enable (modes buffer))
   (enable-modes* (append (reverse (default-modes buffer))
                          (uiop:ensure-list extra-modes))
                  buffer)
@@ -374,7 +374,7 @@ regardless of the buffer, with a meaningful result."
 (export-always 'enabled-modes)
 (defmethod enabled-modes ((buffer modable-buffer))
   "Only return enabled modes."
-  (sera:filter #'enabled-p (slot-value buffer 'modes)))
+  (sera:filter #'enabled-p (modes buffer)))
 
 (define-class input-buffer (buffer)
   ((keyscheme
