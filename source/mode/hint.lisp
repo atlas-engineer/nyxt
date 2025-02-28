@@ -191,7 +191,7 @@ A positive value shifts to the bottom.")
 (define-parenscript set-hintable-attribute (selector)
   (ps:dolist (element (nyxt/ps:rqsa document (ps:lisp selector)))
     (if (ps:lisp (eq :vi (hinting-type (find-submode 'hint-mode))))
-        (when (nyxt/ps:element-in-view-port-p element)
+        (unless (nyxt/ps:element-overlapped-p element)
           (ps:chain element (set-attribute "nyxt-hintable" "")))
         (ps:chain element (set-attribute "nyxt-hintable" "")))))
 
