@@ -179,7 +179,7 @@ This leverages `mode-status' which can be specialized for individual modes."
             :text "±"
             :title (modes-string buffer)
             '(nyxt:toggle-modes))
-          (loop for mode in (sort-modes-for-status (modes buffer))
+          (loop for mode in (sort-modes-for-status (enabled-modes buffer))
                 collect
                 (let ((mode mode))
                   (when-let ((formatted-mode (mode-status status mode)))
@@ -193,7 +193,7 @@ This leverages `mode-status' which can be specialized for individual modes."
 (defun modes-string (buffer)
   (when (modable-buffer-p buffer)
     (format nil "~{~a~^~%~}" (append '("Enabled modes:")
-                                     (mapcar #'princ-to-string (modes buffer))))))
+                                     (mapcar #'princ-to-string (enabled-modes buffer))))))
 
 (export-always 'format-status-buttons)
 (defmethod format-status-buttons ((status status-buffer))

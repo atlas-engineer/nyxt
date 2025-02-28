@@ -300,7 +300,7 @@ Return nil if mode is not found."
     (if-let ((class (mode-class mode-symbol)))
       (let ((results (sera:filter
                       (rcurry #'closer-mop:subclassp class)
-                      (modes buffer)
+                      (enabled-modes buffer)
                       :key #'class-of)))
         (when (< 1 (length results))
           ;; TODO: What's the best action on multiple mode match?
@@ -359,7 +359,7 @@ For production code, see `find-submode' instead."
                             (mapcar
                              #'name
                              (mappend
-                              #'modes
+                              #'enabled-modes
                               (uiop:ensure-list (buffers source))))))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
@@ -374,7 +374,7 @@ For production code, see `find-submode' instead."
                            (let ((common-modes
                                    (reduce #'intersection
                                            (mapcar (lambda (b)
-                                                     (mapcar #'name (modes b)))
+                                                     (mapcar #'name (enabled-modes b)))
                                                    (uiop:ensure-list (buffers source))))))
                              (set-difference (all-mode-symbols) common-modes)))))
   (:export-class-name-p t)
@@ -448,7 +448,7 @@ If it's a single buffer, return it directly (not as a list)."
         (check-type buffer buffer))
       (mapcar (lambda (buffer)
                 (mapcar #'disable
-                        (delete nil (mapcar (lambda (mode) (find mode (modes buffer) :key #'name))
+                        (delete nil (mapcar (lambda (mode) (find mode (enabled-modes buffer) :key #'name))
                                             modes))))
               buffers)))
   (:documentation "Disable MODES in BUFFERS."))
@@ -484,7 +484,7 @@ If it's a single buffer, return it directly (not as a list)."
             :prompt "Mark modes to enable, unmark to disable"
             :sources (make-instance
                       'mode-source
-                      :marks (mapcar #'sera:class-name-of (modes buffer)))))
+                      :marks (mapcar #'sera:class-name-of (enabled-modes buffer)))))
          (modes-to-disable (set-difference (all-mode-symbols) modes-to-enable
                                            :test #'string=)))
     (disable-modes* modes-to-disable buffer)

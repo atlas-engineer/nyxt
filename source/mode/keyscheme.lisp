@@ -31,7 +31,7 @@ Example of defining a keyscheme mode:
   (setf (previous-keyscheme mode) (keyscheme (buffer mode)))
   (mapc #'disable
         (delete mode
-                (sera:filter #'keyscheme-mode-p (modes (buffer mode))))))
+                (sera:filter #'keyscheme-mode-p (enabled-modes (buffer mode))))))
 
 (defmethod enable ((mode keyscheme-mode) &key)
   (setf (keyscheme (buffer mode)) (keyscheme mode)))

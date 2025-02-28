@@ -340,7 +340,7 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
           (ps:lisp (str:join " "
                              (mapcar (curry #'mode-status
                                             (status-buffer (current-window)))
-                                     (sort-modes-for-status (modes prompt-buffer))))))))
+                                     (sort-modes-for-status (enabled-modes prompt-buffer))))))))
 
 (defmethod attribute-widths ((source prompter:source))
   "Return the widths of SOURCE's attribute columns (as ratios)."
@@ -464,7 +464,7 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
                     :title (format nil "Next source (~a)"
                                    (binding-keys (sym:resolve-symbol :next-source
                                                                      :command)
-                                                 :modes (modes prompt-buffer)))
+                                                 :modes (enabled-modes prompt-buffer)))
                     :buffer prompt-buffer
                     '(funcall (sym:resolve-symbol :next-source :command)))
                   #-darwin
@@ -474,7 +474,7 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
                     :title (format nil "Previous source (~a)"
                                    (binding-keys (sym:resolve-symbol :previous-source
                                                                      :command)
-                                                 :modes (modes prompt-buffer)))
+                                                 :modes (enabled-modes prompt-buffer)))
                     :buffer prompt-buffer
                     '(funcall (sym:resolve-symbol :previous-source :command)))
                   (prompter:name source)
@@ -497,7 +497,7 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
                     :title (format nil "Toggle attributes display (~a)"
                                    (binding-keys (sym:resolve-symbol 'toggle-attributes-display
                                                                      :command)
-                                                 :modes (modes prompt-buffer)))
+                                                 :modes (enabled-modes prompt-buffer)))
                     :buffer prompt-buffer
                     `(funcall (sym:resolve-symbol :toggle-attributes-display :command)
                               :source ,source))))

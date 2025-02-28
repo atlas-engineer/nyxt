@@ -328,9 +328,6 @@ Useful in FFI functions where we usually specialize things against
 (define-class modable-buffer (buffer)
   ((modes
     '()
-    :writer t
-    :export t
-    :reader nil
     :documentation "The list of mode instances.
 Modes are instantiated over the result of the `default-modes' method, with
 `finalize-buffer' and not in the initform so that the instantiation form can
@@ -374,9 +371,9 @@ The default specialization on `buffer' is useful to be able to call the method
 regardless of the buffer, with a meaningful result."
   '())
 
-(defmethod modes ((buffer modable-buffer))
-  "Only return enabled modes.
-To access all modes, including disabled ones, use `slot-value'."
+(export-always 'enabled-modes)
+(defmethod enabled-modes ((buffer modable-buffer))
+  "Only return enabled modes."
   (sera:filter #'enabled-p (slot-value buffer 'modes)))
 
 (define-class input-buffer (buffer)
@@ -1200,7 +1197,7 @@ specified for their contents."
                                     (remove (current-buffer) suggestions :key #'prompter:value)))
            (make-instance 'global-history-source
                           :actions-on-return actions-on-return))
-     (mappend (rcurry #'url-sources (uiop:ensure-list actions-on-return)) (modes buffer)))))
+     (mappend (rcurry #'url-sources (uiop:ensure-list actions-on-return)) (enabled-modes buffer)))))
 
 (define-command set-url (&key (prefill-current-url-p t))
   "Set the URL for the current buffer, completing with history."
