@@ -81,7 +81,7 @@ level.")
         (:nxref :slot 'nyxt/mode/hint:x-placement :class-name 'nyxt/mode/hint:hint-mode)
         " to draw hints on the right of the hinted element.  By default, they
 are drawn on the left.")
-    (:li "The size of the hints is dynamically set by taking into account the
+   (:li "The size of the hints is dynamically set by taking into account the
 size of the hinted element.")
    (:li "Fix bug that made Nyxt display an out of date version in several places.")
    (:li "Add " (:nxref :class-name 'message-buffer) " as a user class, thus
