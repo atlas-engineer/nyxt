@@ -30,18 +30,18 @@
    (:li "Change default value of slot "
         (:nxref :slot 'conservative-word-move :class-name 'input-buffer)
         " as to match usual cursor movements by word.")
-   (:li "Update: " (:code "modes") " now returns all of the modes for a buffer, and "
-(:code "enabled-modes") " now returns all of the enabled modes for a buffer.")
+   (:li (:nxref :function 'modes)
+        " now returns all of the modes for a buffer, while "
+        (:nxref :function 'enabled-modes) " returns only those enabled.")
    (:li "Simplify status area URL display. Show hostname for HTTPS URLs,
 show complete URL for HTTP (with a warning marker).")
-   (:li "Delete: " (:code "ffi-buffer-make") ".")
-   (:li "Delete: " (:code "ffi-window-make") ".")
-   (:li "Rename " (:code "bookmark-add") " to " (:code "persist-bookmark") ".")
-   (:li "Create " (:code "add-bookmark") " to allow adding bookmarks from any source.")
-   (:li "Create " (:code "edit-bookmark") " to allow editing bookmarks.")
-   (:li "Delete " (:code "bookmark-current-url") ".")
-   (:li "Delete " (:code "bookmark-buffer-url") ".")
-   (:li "Delete " (:code "bookmark-url") ".")
+   (:li "Delete " (:code "ffi-buffer-make") " and " (:code "ffi-window-make") ".")
+   (:li "Rename " (:code "bookmark-add") " to "
+        (:nxref :function 'nyxt/mode/bookmark:persist-bookmark) ".")
+   (:li "Add command " (:nxref :command 'nyxt/mode/bookmark:add-bookmark)
+        " to allow adding bookmarks from any source.")
+   (:li "Add command " (:nxref :command 'nyxt/mode/bookmark:edit-bookmark)
+        " to allow editing bookmarks.")
    (:li "Delete all logic related to " (:code "auto-rules") ".")
    (:li "Buffer tree navigation commands no longer available.")
    (:li "History tree commands no longer available.")
@@ -50,7 +50,7 @@ show complete URL for HTTP (with a warning marker).")
    (:li "Global history is stored linearly in a vector.")
    (:li "Per buffer history is not persisted.")
    (:li "Add buttons to quickly remove bookmarks in a buffer shown by "
-        (:nxref :command 'nyxt/mode/bookmark:list-bookmarks))
+        (:nxref :command 'nyxt/mode/bookmark:list-bookmarks) ".")
    (:li "Refactor the " (:nxref :package :theme) " API.")
    (:li "Delete support for panel buffers and all related logic.")
    (:li "Refactor " (:nxref :command 'quick-start) " as an internal page.")
@@ -96,6 +96,9 @@ elements are scaled accordingly.")
          (:li (:code "NASDF_COMPRESS"))))
    (:li "Delete commands:"
         (:ul
+         (:li (:code "bookmark-current-url"))
+         (:li (:code "bookmark-buffer-url"))
+         (:li (:code "bookmark-url"))
          (:li (:code "start-slynk"))
          (:li (:code "start-swank"))
          (:li (:code "history-tree"))
