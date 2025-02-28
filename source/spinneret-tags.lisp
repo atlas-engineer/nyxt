@@ -10,16 +10,14 @@
                                 (string f)))
                   forms)))
 
-(deftag :nstyle (body attrs &rest keys &key &allow-other-keys)
+(deftag :nstyle (body attrs &key &allow-other-keys)
   "Regular <style>, but with contents staying unescaped.
 Forms in BODY can be:
 - Literal strings --- get concatenated into a stylesheet as is.
 - Lists --- get processed by LASS' `lass:compile-and-write' and then
   concatenated."
-  (let ((keys keys))
-    (declare (ignorable keys))
-    `(:style ,@attrs (:raw (theme:with-theme (nyxt::theme nyxt:*browser*)
-                             (%nstyle-body (list ,@body)))))))
+  `(:style ,@attrs (:raw (theme:with-theme (nyxt::theme nyxt:*browser*)
+                           (%nstyle-body (list ,@body))))))
 
 (defun %nscript-body (forms)
   (reduce #'uiop:strcat
@@ -28,14 +26,12 @@ Forms in BODY can be:
                                 (string f)))
                   forms)))
 
-(deftag :nscript (body attrs &rest keys &key &allow-other-keys)
+(deftag :nscript (body attrs &key &allow-other-keys)
   "Regular <script>, but with contents staying unescaped.
 Forms in BODY can be:
 - Literal strings --- get concatenated into a stylesheet as is.
 - Lists --- get processed by Parenscript's `ps:ps*' and then concatenated."
-  (let ((keys keys))
-    (declare (ignorable keys))
-    `(:script ,@attrs (:raw (%nscript-body (list ,@body))))))
+  `(:script ,@attrs (:raw (%nscript-body (list ,@body)))))
 
 (serapeum:-> %nselect-onchange (string (nyxt:maybe nyxt:buffer) (nyxt:list-of list)) t)
 (defun %nselect-onchange (id buffer clauses)
@@ -73,7 +69,8 @@ forms in BUFFER."
                    (when title (list :title title))
                    (string-capitalize (or display (nyxt:prini-to-string value)))))))
 
-(deftag :nselect (body attrs &rest keys &key default (id (alexandria:required-argument 'id)) buffer &allow-other-keys)
+(deftag :nselect (body attrs &key default (id (alexandria:required-argument 'id))
+                       buffer &allow-other-keys)
   "Generate <select> tag from the BODY resembling cond clauses.
 
 BODY is a list of forms, each given by ((VALUE DISPLAY TITLE) . FORMS).
@@ -98,16 +95,14 @@ Example:
   `(3 (funcall ,#'(lambda () (nyxt:echo \"Too high!\")))))"
   (once-only (id)
     (with-gensyms (body-var)
-      (let ((keys keys))
-        (declare (ignorable keys))
-        `(let ((,body-var ,@body))
-           (:select.button
-            ,@attrs
-            :id ,id
-            :onchange (%nselect-onchange ,id ,buffer ,body-var)
-            ,@(when default
-                `((:option :selected t :disabled t ,default)))
-            (:raw (%nselect-options ,body-var))))))))
+      `(let ((,body-var ,@body))
+         (:select.button
+          ,@attrs
+          :id ,id
+          :onchange (%nselect-onchange ,id ,buffer ,body-var)
+          ,@(when default
+              `((:option :selected t :disabled t ,default)))
+          (:raw (%nselect-options ,body-var)))))))
 
 (serapeum:-> %nradio-onchange (list (nyxt:maybe nyxt:buffer)) t)
 (defun %nradio-onchange (onchange buffer)
@@ -135,20 +130,20 @@ Example:
                           :checked (equal id checked))
                          label (when vertical (:br))))))
 
-(deftag :nradio (body attrs &rest keys &key (name (alexandria:required-argument 'name)) checked vertical buffer &allow-other-keys)
+(deftag :nradio (body attrs &key (name (alexandria:required-argument 'name)) checked vertical buffer &allow-other-keys)
   "Generate radio buttons corresponding to clauses in BODY.
 Clauses should be of the form (ID LABEL . FORM), where FORM is evaluated
 when a radio button is selected."
-  (let ((keys keys)
-        (attrs attrs))
-    (declare (ignorable keys attrs))
-  (with-gensyms (body-var)
-    `(let ((,body-var ,(if (serapeum:single body)
-                           (first body)
-                           `(list ,@body))))
-       (:div
-        :class "radio-div"
-        (:raw (%nradio-inputs ,name ,buffer ,checked ,vertical ,body-var)))))))
+  (let ((attrs attrs))
+    ;; Hack to silence the fact that attrs is not used.
+    (declare (ignore attrs))
+    (with-gensyms (body-var)
+      `(let ((,body-var ,(if (serapeum:single body)
+                             (first body)
+                             `(list ,@body))))
+         (:div
+          :class "radio-div"
+          (:raw (%nradio-inputs ,name ,buffer ,checked ,vertical ,body-var)))))))
 
 (serapeum:-> %ncheckbox-onchange (list list (nyxt:maybe nyxt:buffer)) t)
 (defun %ncheckbox-onchange (checked-body unchecked-body buffer)
@@ -184,13 +179,13 @@ when a radio button is selected."
        :for name
        label))))
 
-(deftag :ncheckbox (body attrs &rest keys &key (name (alexandria:required-argument 'name)) checked buffer &allow-other-keys)
+(deftag :ncheckbox (body attrs &key (name (alexandria:required-argument 'name)) checked buffer &allow-other-keys)
   "Generate a checkbox corresponding to BODY.
 BODY should be of the form (ID LABEL FORM-CHECKED . FORM-UNCHECKED), where FORM-CHECKED is evaluated
 when the checkbox is checked and FORM-UNCHECKED when it is unchecked."
-  (let ((keys keys)
-        (attrs attrs))
-    (declare (ignorable keys attrs))
+  (let ((attrs attrs))
+    ;; Hack to silence the fact that attrs is not used.
+    (declare (ignore attrs))
     (with-gensyms (body-var)
       `(let* ((,body-var ,(if (serapeum:single body)
                               (first body)
@@ -236,7 +231,7 @@ CLASS-NAME is specific to :slot type."
     (t (nyxt:nyxt-url (read-from-string "nyxt:describe-any")
                       :input symbol))))
 
-(deftag :nxref (body attrs &rest keys &key slot mode class-name function macro command (command-key-p t) variable package (target "_self") &allow-other-keys)
+(deftag :nxref (body attrs &key slot mode class-name function macro command (command-key-p t) variable package (target "_self") &allow-other-keys)
   "Create a link to a respective describe-* page for BODY symbol.
 
 Relies on the type keywords (SLOT, MODE, CLASS-NAME, FUNCTION, MACRO, COMMAND,
@@ -245,8 +240,7 @@ VARIABLE, PACKAGE, TARGET) to guess the right page, always provide those.
 CLASS-NAME, if present, should be the symbol designating a class. It's not
 called CLASS because Spinneret has special behavior for CLASS pre-defined and
 non-overridable."
-  (let* ((keys keys)
-         (first (first body))
+  (let* ((first (first body))
          (symbol (or package variable function macro command slot class-name mode
                      (when (symbolp first) first)))
          (printable (or (when (and (symbolp first) (eq first symbol))
@@ -261,7 +255,6 @@ non-overridable."
                  ((and slot class-name) :slot)
                  (mode :mode)
                  (class-name :class))))
-    (declare (ignorable keys))
     (when (and (getf attrs :class)
                (or (getf attrs :slot)
                    (every #'null (list slot class-name mode function macro command variable package))))
@@ -454,7 +447,7 @@ LISTING is the string to enrich, autogenerated from FORM on demand."
                          (first body)
                          (%ncode-prini (first body) package))))))
 
-(deftag :ncode (body attrs &rest keys &key
+(deftag :ncode (body attrs &key
                      (package :nyxt)
                      (inline-p nil inline-provided-p)
                      (copy-p t) file (external-editor-p file)
@@ -473,27 +466,25 @@ Most *-P arguments mandate whether to add the buttons for:
   (EXTERNAL-EDITOR-P)."
   (once-only (package)
     (with-gensyms (body-var inline-var file-var first plaintext htmlized)
-      (let* ((keys keys)
-             (*print-escape* nil)
+      (let* ((*print-escape* nil)
              (id (nyxt:prini-to-string (gensym)))
              (select-code
                `(:nselect
-                  :id ,id
-                  :class "code-select"
-                  :default "☰"
-                  :style (if ,inline-var "font-weight: bold" "font-weight: normal")
-                  (list
-                   ,@(when copy-p
-                       `(`((copy "Copy" "Copy the code to clipboard.")
-                           (funcall (read-from-string "nyxt:ffi-buffer-copy")
-                                    (nyxt:current-buffer) ,,plaintext))))
-                   ,@(when (and file external-editor-p)
-                       `(`((external-editor
-                            "Open in external editor"
-                            "Open the file this code comes from in external editor.")
-                           (funcall (read-from-string "nyxt/mode/file-manager:edit-file-with-external-editor")
-                                    (uiop:ensure-list ,,file-var)))))))))
-        (declare (ignorable keys))
+                 :id ,id
+                 :class "code-select"
+                 :default "☰"
+                 :style (if ,inline-var "font-weight: bold" "font-weight: normal")
+                 (list
+                  ,@(when copy-p
+                      `(`((copy "Copy" "Copy the code to clipboard.")
+                          (funcall (read-from-string "nyxt:ffi-buffer-copy")
+                                   (nyxt:current-buffer) ,,plaintext))))
+                  ,@(when (and file external-editor-p)
+                      `(`((external-editor
+                           "Open in external editor"
+                           "Open the file this code comes from in external editor.")
+                          (funcall (read-from-string "nyxt/mode/file-manager:edit-file-with-external-editor")
+                                   (uiop:ensure-list ,,file-var)))))))))
         `(let* ((,body-var (list ,@body))
                 (,first (first ,body-var))
                 (,inline-var ,(if inline-provided-p
@@ -538,8 +529,7 @@ Most *-P arguments mandate whether to add the buttons for:
               :initial-value "")
       (alexandria:required-argument 'id)))
 
-(deftag :nsection (body attrs &rest keys
-                        &key (title (alexandria:required-argument 'title))
+(deftag :nsection (body attrs &key (title (alexandria:required-argument 'title))
                         level
                         (anchor-p t)
                         (open-p t)
@@ -558,33 +548,31 @@ hyphens, if not provided AND if the TITLE is a string.
 OPEN-P mandates whether the section is collapsed or not. True (= not collapsed)
 by default."
   (check-type level (or null (integer 2 6)))
-  (let ((keys keys))
-    (declare (ignorable keys))
-    (with-gensyms (id-var)
-      `(let ((spinneret::*html-path*
-               ;; Push as many :section tags into the path, as necessary to imply
-               ;; LEVEL for the sections inside this one. A trick on Spinneret to
-               ;; make it think it's deeply nested already.
-               (append
-                spinneret::*html-path*
-                (make-list ,(if level
-                                `(1- (- ,level (spinneret::heading-depth)))
-                                0)
-                           :initial-element :section)))
-             (,id-var ,id))
-         (:section.section
-          :id ,id-var
-          (:details
-           :open ,open-p
-           (:summary
-            :class "nsection-summary"
-            (:header
-             :style "display: inline"
-             (:h* :style "display: inline"
-               ,@attrs ,title)
-             " " (when ,anchor-p
-                   (:a :class "link nsection-anchor" :href (uiop:strcat "#" ,id-var) "#"))))
-           ,@body))))))
+  (with-gensyms (id-var)
+    `(let ((spinneret::*html-path*
+             ;; Push as many :section tags into the path, as necessary to imply
+             ;; LEVEL for the sections inside this one. A trick on Spinneret to
+             ;; make it think it's deeply nested already.
+             (append
+              spinneret::*html-path*
+              (make-list ,(if level
+                              `(1- (- ,level (spinneret::heading-depth)))
+                              0)
+                         :initial-element :section)))
+           (,id-var ,id))
+       (:section.section
+        :id ,id-var
+        (:details
+         :open ,open-p
+         (:summary
+          :class "nsection-summary"
+          (:header
+           :style "display: inline"
+           (:h* :style "display: inline"
+             ,@attrs ,title)
+           " " (when ,anchor-p
+                 (:a :class "link nsection-anchor" :href (uiop:strcat "#" ,id-var) "#"))))
+         ,@body)))))
 
 (serapeum:-> %nbutton-onclick (string (nyxt:maybe nyxt:buffer) (nyxt:list-of list)) t)
 (defun %nbutton-onclick (title buffer clauses)
@@ -598,8 +586,7 @@ TITLE is the debuggable name for the callback."
                    (list :buffer buffer)))
        ,@clauses))))
 
-(deftag :nbutton (body attrs &rest keys
-                       &key (text (alexandria:required-argument 'text)) title buffer
+(deftag :nbutton (body attrs &key (text (alexandria:required-argument 'text)) title buffer
                        &allow-other-keys)
   "A Lisp-invoking button with TEXT text and BODY action.
 Evaluates (via `nyxt/ps:lisp-eval') the BODY in BUFFER when clicked.
@@ -615,14 +602,12 @@ Example:
   '(nyxt:echo \"Hello!\")
   (list 'foo)
   `(funcall ,#'(lambda () (do-something-with closed-over-value))))"
-  (let ((keys keys))
-    (declare (ignorable keys))
-    `(:button.button
-      :onclick (%nbutton-onclick ,(or title text) ,buffer (list ,@body))
-      ,@(when title
-          (list :title title))
-      ,@attrs
-      ,text)))
+  `(:button.button
+    :onclick (%nbutton-onclick ,(or title text) ,buffer (list ,@body))
+    ,@(when title
+        (list :title title))
+    ,@attrs
+    ,text))
 
 (serapeum:-> %ninput-onfocus (list (nyxt:maybe nyxt:buffer)) t)
 (defun %ninput-onfocus (onfocus buffer)
@@ -646,7 +631,7 @@ Example:
                    (list :buffer buffer)))
        ,onchange))))
 
-(deftag :ninput (body attrs &rest keys &key rows cols onfocus onchange buffer &allow-other-keys)
+(deftag :ninput (body attrs &key rows cols onfocus onchange buffer &allow-other-keys)
   "Nicely styled <textarea> with a reasonable number of ROWS/COLS to accommodate the BODY.
 Calls Lisp forms in ONFOCUS and ONCHANGE when one focuses and edits the input (respectively).
 
@@ -655,23 +640,21 @@ BODY should be a string or an implicit progn producing a string.
 ONFOCUS, and ONCHANGE can consist of quoted lists or forms producing
 those. These lists will be compiled, so, if you want to close over some value,
 inject a closure right inside the forms."
-  (let ((keys keys))
-    (declare (ignorable keys))
-    (once-only (buffer)
-      (with-gensyms (input)
-        ;; NOTE: It's unlikely that BODY will have multiple forms, but better
-        ;; prepare for it, just in case someone goes stateful.
-        `(let ((,input (progn ,@body)))
-           (:textarea.input
-            :rows (or ,rows (1+ (count #\Newline ,input)) 1)
-            :cols (or ,cols (ignore-errors (reduce #'max (mapcar #'length (str:lines ,input)))) 80)
-            ,@(when onfocus
-                `(:onfocus (%ninput-onfocus ,onfocus ,buffer)))
-            ,@(when onchange
-                ;; More events here.
-                `(:onkeydown (%ninput-onchange ,onchange ,buffer)))
-            ,@attrs
-            (:raw (the string ,input))))))))
+  (once-only (buffer)
+    (with-gensyms (input)
+      ;; NOTE: It's unlikely that BODY will have multiple forms, but better
+      ;; prepare for it, just in case someone goes stateful.
+      `(let ((,input (progn ,@body)))
+         (:textarea.input
+          :rows (or ,rows (1+ (count #\Newline ,input)) 1)
+          :cols (or ,cols (ignore-errors (reduce #'max (mapcar #'length (str:lines ,input)))) 80)
+          ,@(when onfocus
+              `(:onfocus (%ninput-onfocus ,onfocus ,buffer)))
+          ,@(when onchange
+              ;; More events here.
+              `(:onkeydown (%ninput-onchange ,onchange ,buffer)))
+          ,@attrs
+          (:raw (the string ,input)))))))
 
 (serapeum:-> %ntoc-create-toc ((integer 2 6) string) *)
 (defun %ntoc-create-toc (depth body)
@@ -695,18 +678,16 @@ inject a closure right inside the forms."
         (loop for h2 across h2s
               collect (:ul (:raw (format-section h2 2))))))))
 
-(deftag :ntoc (body attrs &rest keys &key (title "Table of contents") (depth 3) &allow-other-keys)
+(deftag :ntoc (body attrs &key (title "Table of contents") (depth 3) &allow-other-keys)
   "Generate table of contents for BODY up to DEPTH.
 Looks for section tags with ID-s to link to.
 :nsection sections are perfectly suitable for that."
-  (let ((keys keys))
-    (declare (ignorable keys))
-    (with-gensyms (body-var)
-      `(let* ((*html-style* :tree)
-              (,body-var (with-html-string ,@body)))
-         (:nav#toc
-          ,@attrs
-          (:nsection
-            :title ,title
-            (:raw (%ntoc-create-toc ,depth ,body-var))))
-         (:raw ,body-var)))))
+  (with-gensyms (body-var)
+    `(let* ((*html-style* :tree)
+            (,body-var (with-html-string ,@body)))
+       (:nav#toc
+        ,@attrs
+        (:nsection
+         :title ,title
+         (:raw (%ntoc-create-toc ,depth ,body-var))))
+       (:raw ,body-var))))
