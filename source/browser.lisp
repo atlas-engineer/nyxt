@@ -529,11 +529,11 @@ The following example does a few things:
                     (when new-url
                       (setf (url request-data) new-url)
                       request-data)))
-                 (string (let ((action #'(lambda (url)
-                                           (uiop:launch-program
-                                            (format nil action
-                                                    (render-url url)))
-                                           nil)))
+                 (string (let ((action (lambda (url)
+                                         (uiop:launch-program
+                                          (format nil action
+                                                  (render-url url)))
+                                         nil)))
                            (funcall action url)
                            (log:info "Applied ~s shell-command URL-dispatcher on ~s"
                                      (symbol-name name)

@@ -137,8 +137,8 @@ In a later file, when you've defined `gtk-browser':
 Allows for composed object constructors/destructors, for instance."
   ;; TODO: Allow cascading down to children instead?
   (flet ((call-methods (methods)
-           (mapcar #'(lambda (method)
-                       `(call-method ,method))
+           (mapcar (lambda (method)
+                     `(call-method ,method))
                    methods)))
     (if (and (null before)
              (null around)

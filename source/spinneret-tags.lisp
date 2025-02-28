@@ -92,7 +92,7 @@ Example:
   :default \"Guess the number\"
   '(1 (nyxt:echo \"Too low!\"))
   (list 2 (nyxt:echo \"Correct!\"))
-  `(3 (funcall ,#'(lambda () (nyxt:echo \"Too high!\")))))"
+  `(3 (funcall ,(lambda () (nyxt:echo \"Too high!\")))))"
   (once-only (id)
     (with-gensyms (body-var)
       `(let ((,body-var ,@body))
@@ -601,7 +601,7 @@ Example:
   :text \"Do something\"
   '(nyxt:echo \"Hello!\")
   (list 'foo)
-  `(funcall ,#'(lambda () (do-something-with closed-over-value))))"
+  `(funcall ,(lambda () (do-something-with closed-over-value))))"
   `(:button.button
     :onclick (%nbutton-onclick ,(or title text) ,buffer (list ,@body))
     ,@(when title

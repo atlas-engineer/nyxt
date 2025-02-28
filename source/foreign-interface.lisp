@@ -442,7 +442,7 @@ Example:
 
 \(ffi-add-context-menu-command
  (list (list 'reload-current-buffer \"Reload it\")
-       (list #'(lambda () (delete-buffer :buffers (current-buffer))) \"Delete it\"))
+       (list (lambda () (delete-buffer :buffers (current-buffer))) \"Delete it\"))
  \"Buffer actions\")"))
 
 

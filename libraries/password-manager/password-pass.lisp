@@ -30,8 +30,8 @@
                         ;; the passwords.
                         (format nil "~a/**/*.gpg" directory)))
              (dir-length (length (namestring directory))))
-        (mapcar #'(lambda (x)
-                    (subseq (namestring x) dir-length (- (length (namestring x)) (length ".gpg"))))
+        (mapcar (lambda (x)
+                  (subseq (namestring x) dir-length (- (length (namestring x)) (length ".gpg"))))
                 raw-list)))))
 
 (defmethod clip-password ((password-interface password-store-interface) &key password-name service)

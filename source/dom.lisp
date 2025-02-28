@@ -53,7 +53,7 @@ The most useful functions are:
   ;; All HTML5 tags, including experimental ones. Scraped with:
   ;;
   ;; (format t "~{~a-element~^ ~}"
-  ;;         (map 'list #'(lambda (item)
+  ;;         (map 'list (lambda (item)
   ;;                        (slot-value (elt (slot-value item 'plump-dom::%children) 0)
   ;;                                    'plump-dom::%text))
   ;;              (clss:select ".item-name" (plump:parse (dex:get "https://htmlreference.io/")))))

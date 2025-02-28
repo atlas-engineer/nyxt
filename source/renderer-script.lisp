@@ -207,7 +207,7 @@ Overwrites the whole HTML document (head and body elements included)."
 (export-always 'match-internal-page)
 (defun match-internal-page (symbol)
   "Return a predicate for URL designators matching the page of SYMBOL name."
-  #'(lambda (url) (eq (internal-page-name url) symbol)))
+  (lambda (url) (eq (internal-page-name url) symbol)))
 
 (define-class internal-page (command)
   ((dynamic-title ; Not `title' so that it does not clash with other `title' methods.

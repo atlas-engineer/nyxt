@@ -45,28 +45,28 @@ internal programming APIs."
     :documentation "The action to repeat.
 It takes a `repeat-mode' instance as argument.")
    (nyxt/mode/process:firing-condition
-    #'(lambda (path-url mode)
-        (declare (ignore path-url))
-        (when (repeat-interval mode)
-          (sleep (repeat-interval mode)))
-        (cond ((repeat-count mode)
-               (if (zerop (repeat-count mode))
-                   :return
-                   (decf (repeat-count mode))))
-              (t t)))
+    (lambda (path-url mode)
+      (declare (ignore path-url))
+      (when (repeat-interval mode)
+        (sleep (repeat-interval mode)))
+      (cond ((repeat-count mode)
+             (if (zerop (repeat-count mode))
+                 :return
+                 (decf (repeat-count mode))))
+            (t t)))
     :documentation "See `nyxt/mode/process:firing-condition'.")
    (nyxt/mode/process:action
-    #'(lambda (path-url mode)
-        (declare (ignore path-url))
-        (funcall* (repeat-action mode) mode))
+    (lambda (path-url mode)
+      (declare (ignore path-url))
+      (funcall* (repeat-action mode) mode))
     :documentation "See `nyxt/mode/process:action'.")
    (nyxt/mode/process:cleanup
-    #'(lambda (path-url mode)
-        (declare (ignore path-url))
-        ;; Needed since the mode object might not have been garbage collected.
-        (setf (repeat-action mode) nil
-              (repeat-count mode) nil
-              (repeat-interval mode) 1.0))
+    (lambda (path-url mode)
+      (declare (ignore path-url))
+      ;; Needed since the mode object might not have been garbage collected.
+      (setf (repeat-action mode) nil
+            (repeat-count mode) nil
+            (repeat-interval mode) 1.0))
     :documentation "See `nyxt/mode/process:cleanup'.")))
 
 (defmethod enable ((mode repeat-mode) &key)
@@ -75,9 +75,9 @@ It takes a `repeat-mode' instance as argument.")
     (let ((prompted-action (prompt1 :prompt "Command to repeat"
                                     :sources 'nyxt:command-source)))
       (setf (repeat-action mode)
-            #'(lambda (mode)
-                (declare (ignore mode))
-                (funcall prompted-action))))))
+            (lambda (mode)
+              (declare (ignore mode))
+              (funcall prompted-action))))))
 
 (define-command-global repeat-every (&key (seconds (sera:parse-float
                                                     (prompt1 :prompt "Repeat every X seconds"
