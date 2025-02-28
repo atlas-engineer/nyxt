@@ -5,7 +5,7 @@
 
 (-> binding-keys (sym:function-symbol &key (:modes list)) *)
 (defun binding-keys (fn &key (modes (if (current-buffer)
-                                        (modes (current-buffer))
+                                        (enabled-modes (current-buffer))
                                         (mapcar #'make-instance (default-modes nil)))))
   ;; We can't use `(modes (make-instance 'buffer))' because modes are only
   ;; instantiated after the buffer web view, which is not possible if there is
@@ -29,7 +29,7 @@
 If non-empty, return the result of BUFFER's `current-keymaps-hook' instead."
   (let ((keymaps
           (when (input-buffer-p buffer)
-            (delete nil (mapcar #'keymap (modes buffer))))))
+            (delete nil (mapcar #'keymap (enabled-modes buffer))))))
     (if (and (input-buffer-p buffer) (current-keymaps-hook buffer))
         (hooks:run-hook (current-keymaps-hook buffer) keymaps buffer)
         keymaps)))
@@ -40,8 +40,8 @@ prompt buffer keymaps."
   (when-let ((buffer (active-buffer window)))
     (delete nil
             (mapcar #'keymap
-                    (append (modes buffer)
-                            (ignore-errors (modes (current-prompt-buffer))))))))
+                    (append (enabled-modes buffer)
+                            (ignore-errors (enabled-modes (current-prompt-buffer))))))))
 
 (-> pointer-event-p (keymaps:key) boolean)
 (defun pointer-event-p (key)

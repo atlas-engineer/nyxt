@@ -121,6 +121,12 @@ major versions."
   (backtrack-to-hubs-p)
   (:p "Deleted.")
 
+  (modes)
+  (:p "Return all of the modes of the buffer.")
+
+  (enabled-modes)
+  (:p "Return the enabled modes of the buffer.")
+
   (global-history-tree)
   (:p "Deleted in favor of " (:nxref :slot 'history-vector :class-name 'browser) ".")
 

@@ -128,7 +128,7 @@ See also `disable'."))
 (defmethod enable :around ((mode mode) &key &allow-other-keys)
   (let* ((buffer (buffer mode))
          (existing-instance (find (sera:class-name-of mode)
-                                  (remove-if (sera:eqs mode) (slot-value buffer 'modes))
+                                  (remove-if (sera:eqs mode) (modes buffer))
                                   :key #'sera:class-name-of)))
     (if existing-instance
         (log:debug "Not enabling ~s since other ~s instance is already in buffer ~a" mode existing-instance buffer)
@@ -140,9 +140,9 @@ See also `disable'."))
   (hooks:run-hook (enable-hook mode) mode)
   (let ((buffer (buffer mode)))
     ;; TODO: Should we move mode to the front on re-enable?
-    (unless (find mode (slot-value buffer 'modes))
+    (unless (find mode (modes buffer))
       (setf (modes buffer)
-            (cons mode (slot-value buffer 'modes))))
+            (cons mode (modes buffer))))
     (hooks:run-hook (enable-mode-hook buffer) mode)
     (when (and (prompt-buffer-p buffer)
                (eq (first (active-prompt-buffers (window buffer)))
@@ -300,7 +300,7 @@ Return nil if mode is not found."
     (if-let ((class (mode-class mode-symbol)))
       (let ((results (sera:filter
                       (rcurry #'closer-mop:subclassp class)
-                      (modes buffer)
+                      (enabled-modes buffer)
                       :key #'class-of)))
         (when (< 1 (length results))
           ;; TODO: What's the best action on multiple mode match?
@@ -359,7 +359,7 @@ For production code, see `find-submode' instead."
                             (mapcar
                              #'name
                              (mappend
-                              #'modes
+                              #'enabled-modes
                               (uiop:ensure-list (buffers source))))))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
@@ -374,7 +374,7 @@ For production code, see `find-submode' instead."
                            (let ((common-modes
                                    (reduce #'intersection
                                            (mapcar (lambda (b)
-                                                     (mapcar #'name (modes b)))
+                                                     (mapcar #'name (enabled-modes b)))
                                                    (uiop:ensure-list (buffers source))))))
                              (set-difference (all-mode-symbols) common-modes)))))
   (:export-class-name-p t)
@@ -398,7 +398,7 @@ For production code, see `find-submode' instead."
         (check-type buffer buffer))
       (mapcar (lambda (buffer)
                 (mapcar (lambda (mode-sym)
-                          (apply #'enable (or (find mode-sym (slot-value buffer 'modes) :key #'name)
+                          (apply #'enable (or (find mode-sym (modes buffer) :key #'name)
                                               (make-instance mode-sym :buffer buffer))
                                  args))
                         modes)
@@ -448,7 +448,7 @@ If it's a single buffer, return it directly (not as a list)."
         (check-type buffer buffer))
       (mapcar (lambda (buffer)
                 (mapcar #'disable
-                        (delete nil (mapcar (lambda (mode) (find mode (modes buffer) :key #'name))
+                        (delete nil (mapcar (lambda (mode) (find mode (enabled-modes buffer) :key #'name))
                                             modes))))
               buffers)))
   (:documentation "Disable MODES in BUFFERS."))
@@ -484,7 +484,7 @@ If it's a single buffer, return it directly (not as a list)."
             :prompt "Mark modes to enable, unmark to disable"
             :sources (make-instance
                       'mode-source
-                      :marks (mapcar #'sera:class-name-of (modes buffer)))))
+                      :marks (mapcar #'sera:class-name-of (enabled-modes buffer)))))
          (modes-to-disable (set-difference (all-mode-symbols) modes-to-enable
                                            :test #'string=)))
     (disable-modes* modes-to-disable buffer)
@@ -502,7 +502,7 @@ If it's a single buffer, return it directly (not as a list)."
                     &allow-other-keys)
   "Enable MODE-SYM if not already enabled, disable it otherwise."
   (when (modable-buffer-p buffer)
-    (let ((existing-instance (find mode-sym (slot-value buffer 'modes) :key #'sera:class-name-of)))
+    (let ((existing-instance (find mode-sym (modes buffer) :key #'sera:class-name-of)))
       (unless activate-supplied-p
         (setf activate (or (not existing-instance)
                            (not (enabled-p existing-instance)))))
