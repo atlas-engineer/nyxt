@@ -738,7 +738,8 @@ with this scheme.")
     (cffi:foreign-free pointer)))
 
 (defmethod ffi-register-custom-scheme ((scheme gtk-scheme))
-  ;; FIXME If a define-internal-scheme is updated at runtime, it is not honored.
+  "If a define-internal-scheme is updated at runtime, it is not honored. This
+appears to be a limitation of WebKit descendant engines."
   (webkit:webkit-web-context-register-uri-scheme-callback
    (web-context scheme)
    (name scheme)
