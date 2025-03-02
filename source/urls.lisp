@@ -350,6 +350,22 @@ TITLE is purely informative."
          "application/json")))
   (lambda (c) (log:debug "Error when evaluating lisp URL: ~a" c)))
 
+(define-internal-scheme "mailto"
+    (lambda (url)
+      (if *open-program*
+          (progn
+            (uiop:launch-program (list *open-program* (render-url url)))
+            (spinneret:with-html-string
+              (:style (style (current-buffer)))
+              (:body
+               (:p "Mail URL " (render-url url) " launched with default mail program."))))
+          (prog1
+              (spinneret:with-html-string
+                (:style (style (current-buffer)))
+                (:body
+                 (:p "Unable to launch Mail program for URL: " (render-url url))))
+            (echo "Unable to open mailto link for URL: ~s" (render-url url))))))
+
 (-> path= (quri:uri quri:uri) boolean)
 (defun path= (url1 url2)
   "Return non-nil when URL1 and URL2 have the same path."
