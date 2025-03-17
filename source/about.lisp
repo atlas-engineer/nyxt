@@ -9,8 +9,6 @@
   (spinneret:with-html-string
    (:nstyle (style buffer))
    (:h1 "Contributors")
-   (:p "Let us know if you've contributed to the development of Nyxt and would
-like to be included on this list.")
    (:ul
     (:li "Adom Hartell (@4t0m)")
     (:li "André A. Gomes (@aadcg)")
@@ -23,10 +21,8 @@ like to be included on this list.")
     (:li "Solomon Bloch (@noogie13)")
     (:li "Vincent Dardel (@vindarel)"))
    (:h1 "Supporters")
-   (:p "Many thanks to all our "
-       (:a :href "https://www.patreon.com/nyxt" "Patreon")
-       " backers who've supported Nyxt development continuously over the years.")
-   (:p "Thank you to " (:a :href "https://nlnet.nl/" "NLnet") " for supporting Nyxt!")
+   (:p "Many thanks to all of our backers who've supported Nyxt development.")
+   (:p "Thank you to NLnet for supporting Nyxt!")
    (:h1 "Crowdfunding backers")
    (:p "Thank you to all who have supported and made Nyxt possible!")
    (:h2 "2018-11 campaign: *NIX Support")
