@@ -33,8 +33,9 @@ For now it is also partly based on `nyxt/renderer/gtk'."))
 
 (defvar renderer-thread-name "Nyxt renderer thread")
 
-(defmethod nyxt/renderer/gtk::renderer-thread-p ((renderer gi-gtk-renderer)
-                                                 &optional (thread (bt:current-thread)))
+(defmethod nyxt/renderer/gtk::renderer-thread-p
+    ((renderer gi-gtk-renderer)
+     &optional (thread (bt:current-thread)))
   (string= (bt:thread-name thread)
            renderer-thread-name))
 
@@ -51,7 +52,8 @@ For now it is also partly based on `nyxt/renderer/gtk'."))
                  (gir:invoke ((gir:ffi "Gtk" "3.0") 'main)))))
         (setf nyxt/renderer/gtk::gtk-running-p t)
         (call-next-method)
-        (let ((main-thread (bt:make-thread #'main-func :name renderer-thread-name)))
+        (let ((main-thread (bt:make-thread
+                            #'main-func :name renderer-thread-name)))
           (unless nyxt::*run-from-repl-p*
             (bt:join-thread main-thread)
             (uiop:quit (nyxt:exit-code browser) #+bsd nil))))))
