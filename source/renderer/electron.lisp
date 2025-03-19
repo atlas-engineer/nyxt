@@ -411,6 +411,10 @@ Note that by changing the default value, modifier keys can be remapped."))
 (defmethod ffi-window-unmaximize ((window electron-window) &key &allow-other-keys)
   (electron:unmaximize window))
 
+(defmethod ffi-window-active ((browser electron-browser))
+  (or (find-if #'electron:is-focused (window-list))
+      (call-next-method)))
+
 ;; Input handling
 
 (defmethod input-modifier-translator ((buffer electron-buffer) input-event-modifier-state)
