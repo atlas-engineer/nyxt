@@ -7,8 +7,10 @@
 
 (in-package :nyxt/utilities)
 (serapeum:eval-always
-  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria-2 :nyxt/utilities)
-  (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
+  (trivial-package-local-nicknames:add-package-local-nickname
+   :alex :alexandria-2 :nyxt/utilities)
+  (trivial-package-local-nicknames:add-package-local-nickname
+   :sera :serapeum))
 
 (export-always '+newline+)
 (alex:define-constant +newline+ (string #\newline)
@@ -39,9 +41,10 @@ Particularly useful to avoid errors on already terminated threads."
   (when f (apply #'funcall f args)))
 
 (export-always 'prini)
-(defun prini (value stream &rest keys &key (case :downcase) (pretty t) (circle nil)
-                                        (readably nil) (package *package*) &allow-other-keys)
-  "PRINt for Interface: a printing primitive with the best aesthetics for Nyxt interfaces.
+(defun prini (value stream &rest keys
+              &key (case :downcase) (pretty t) (circle nil)
+                (readably nil) (package *package*) &allow-other-keys)
+  "PRINt for Interface: a printing primitive with the best aesthetics for Nyxt.
 `write'-s the VALUE to STREAM with CASE, PRETTY, CIRCLE, and READABLY set to the
 most intuitive values."
   (let ((*print-case* case)
@@ -53,8 +56,9 @@ most intuitive values."
     (apply #'write value :stream stream keys)))
 
 (export-always 'prini-to-string)
-(defun prini-to-string (value &rest keys &key (case :downcase) (pretty t) (circle nil)
-                                           (readably nil) (package *package*) &allow-other-keys)
+(defun prini-to-string (value &rest keys
+                        &key (case :downcase) (pretty t) (circle nil)
+                          (readably nil) (package *package*) &allow-other-keys)
   "A string-returning version of `prini'."
   (declare (ignorable case pretty circle readably package))
   (with-output-to-string (s)
@@ -112,8 +116,9 @@ package set to current package."
 (defun has-method-p (object generic-function)
   "Return non-nil if OBJECT has GENERIC-FUNCTION specialization."
   (some (lambda (method)
-          (subtypep (type-of object) (class-name
-                                      (first (closer-mop:method-specializers method)))))
+          (subtypep (type-of object)
+                    (class-name
+                     (first (closer-mop:method-specializers method)))))
         (closer-mop:generic-function-methods generic-function)))
 
 (export-always 'smart-case-test)
@@ -128,8 +133,7 @@ If there's any uppercase character, then it's case-sensitive."
 
 (-> system-depends-on-all ((or string asdf:system)) (cons string *))
 (defun system-depends-on-all (system)
-  "List SYSTEM dependencies recursively, even if SYSTEM is an inferred system.
-Inspired by https://gitlab.common-lisp.net/asdf/asdf/issues/10#note_5018."
+  "List SYSTEM dependencies recursively, even if SYSTEM is an inferred system."
   (let (depends)
     (labels ((deps (system)
                "Return the list of system dependencies as strings."
@@ -140,8 +144,8 @@ Inspired by https://gitlab.common-lisp.net/asdf/asdf/issues/10#note_5018."
                        (ignore-errors
                         (asdf:system-depends-on (asdf:find-system system nil)))))
              (subsystem? (system parent-system)
-               "Whether PARENT-SYSTEM is a parent of SYSTEM following the naming convention.
-For instance FOO is a parent of FOO/BAR."
+               "Whether PARENT-SYSTEM is a parent of SYSTEM
+following the ASDF naming convention.  For instance FOO is a parent of FOO/BAR."
                (alexandria:when-let ((match? (search system parent-system)))
                  (zerop match?)))
              (iter (systems)
