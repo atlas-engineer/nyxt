@@ -551,19 +551,14 @@ The following example does a few things:
 
 (export-always 'current-window)
 (defun current-window (&optional no-rescan)
-  ;; TODO: Get rid of the NO-RESCAN option and find a fast way to retrieve
-  ;; current window reliably.
-  ;; Tests:
-  ;; - Make two windows and make sure prompt-buffer gets spawned in the right window.
-  ;; - Delete the second window and see if the prompt-buffer still works in the first one.
   "Return the current window.
 If NO-RESCAN is non-nil, fetch the window from the `last-active-window' cache
 instead of asking the renderer for the active window.  It is faster but
-sometimes yields the wrong result."
+may yield the wrong result."
   (when *browser*
     (if (and no-rescan (slot-value *browser* 'last-active-window))
         (slot-value *browser* 'last-active-window)
-        ;; No window when browser is not started or does not implement `ffi-window-active'.
+        ;; No window when browser is not started.
         (ignore-errors (ffi-window-active *browser*)))))
 
 (export-always 'set-current-buffer)
