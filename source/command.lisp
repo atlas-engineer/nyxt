@@ -155,7 +155,7 @@ Example:
        (export-always ',name (symbol-package ',name))
        ;; Warning: We use `defgeneric' instead of `make-instance' (or even
        ;; `ensure-generic-function') so that the compiler stores source location
-       ;; information (for "go to definition" to work.
+       ;; information (for "go to definition" to work).
        (sera:lret ((gf (defgeneric ,name (,@(generalize-lambda-list arglist))
                          (:documentation ,doc)
                          (:method (,@arglist) ,@body)
