@@ -22,4 +22,5 @@ Return most recent entry in RING."
 (export-always 'copy-to-clipboard)
 (defun copy-to-clipboard (input)
   "Save INPUT text to clipboard, and ring."
-  (containers:insert-item (clipboard-ring *browser*) (trivial-clipboard:text input)))
+  (containers:insert-item (clipboard-ring *browser*)
+                          (trivial-clipboard:text input)))
