@@ -663,7 +663,7 @@ Return the created buffer."
         (when (slot-boundp buffer 'keywords) (setf (keywords buffer) nil))
         (setf (document-model buffer) dom)))))
 
-(defun dead-buffer-p (buffer)           ; TODO: Use this wherever needed.
+(defun dead-buffer-p (buffer)
   (not (buffers-get (id buffer))))
 
 (defmethod document-model ((buffer buffer))
