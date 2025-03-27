@@ -315,10 +315,6 @@ A list of strings is returned, as to comply with `uiop:launch-program' or
 (defmethod default-search-engine ((browser browser))
   (first (search-engines browser)))
 
-(defmethod get-containing-window-for-buffer ((buffer buffer) (browser browser))
-  "Get the window containing a buffer."
-  (find buffer (alex:hash-table-values (windows browser)) :key #'active-buffer))
-
 (defmacro on-renderer-ready (thread-name &body body)
   "Run BODY from a new thread when renderer is ready.
 `ffi-within-renderer-thread' runs its body on the renderer thread when it's

@@ -853,6 +853,11 @@ This is a low-level function.  See `buffer-delete' and `delete-buffer'."
   (when *browser*
     (alex:hash-table-values (windows *browser*))))
 
+(defmethod window ((buffer buffer))
+  "Get the window containing a buffer."
+  (find buffer (alex:hash-table-values (windows *browser*))
+        :key #'active-buffer))
+
 (defun last-active-buffer ()
   "Return buffer with most recent `last-access'."
   (first (sort-by-time (buffer-list))))
