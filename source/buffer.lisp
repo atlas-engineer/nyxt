@@ -882,10 +882,11 @@ If none exist, make a new inactive buffer."
   (echo "~a copied to clipboard." (title (current-buffer))))
 
 (defun buffer-initial-suggestions (&key current-is-last-p domain)
-  (let ((buffers (sera:filter (if domain
-                                  (match-domain domain)
-                                  #'identity)
-                              (sort-by-time (buffer-list)))))
+  (let* ((active-buffer (active-buffer (current-window)))
+         (buffers (sera:filter (if domain (match-domain domain) #'identity)
+                               (sort-by-time
+                                (remove active-buffer (buffer-list)))))
+         (buffers (push active-buffer buffers)))
     (when (and buffers current-is-last-p)
       (setf buffers (alex:rotate buffers -1)))
     buffers))
