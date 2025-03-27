@@ -129,7 +129,7 @@ This is useful to run scripts for instance."))))
       (when (socket-thread *browser*)
         (destroy-thread* (socket-thread *browser*))
         ;; Warning: Don't attempt to remove socket-path if socket-thread was not
-        ;; running or we risk remove an unrelated file.
+        ;; running or we risk removing an unrelated file.
         (let ((socket (files:expand *socket-file*)))
           (when (uiop:file-exists-p socket)
             (log:info "Deleting socket ~s." socket)
@@ -138,14 +138,7 @@ This is useful to run scripts for instance."))))
       ;; Reset global state.
       (setf *browser* nil
             *options* nil)
-      (uninstall *renderer*)
-      (unless *run-from-repl-p*
-        (run-thread "force-quitter"
-          ;; Force-quit in case `ffi-kill-browser' hangs.  Must be run in a
-          ;; separate thread because the renderer loop is waiting for this
-          ;; function to finish.
-          (sleep 1)
-          (uiop:quit code #+bsd nil))))))
+      (uninstall *renderer*))))
 
 ;; From sbcl/src/code/load.lisp.
 (defun maybe-skip-shebang-line (stream)
