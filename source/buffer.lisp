@@ -380,6 +380,10 @@ regardless of the buffer, with a meaningful result."
   "Only return enabled modes."
   (sera:filter #'enabled-p (modes buffer)))
 
+(defmethod enabled-modes ((buffer buffer))
+  "Unless a modable buffer, return NIL for modes."
+  nil)
+
 (define-class input-buffer (buffer)
   ((keyscheme
     keyscheme:cua
