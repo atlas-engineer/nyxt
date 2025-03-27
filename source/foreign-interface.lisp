@@ -96,9 +96,6 @@ The `:around' method ensures that `last-active-window' is set."))
 (define-ffi-generic ffi-window-set-buffer (window buffer &key focus)
   (:method :around ((window window) (buffer buffer) &key focus &allow-other-keys)
     (hooks:run-hook (window-set-buffer-hook window) window buffer)
-    ;; As to ensure `current-buffer' returns the right value if
-    ;; `ffi-window-set-buffer' is called inside `with-current-buffer'.
-    (setf %buffer nil)
     (when focus
       (let ((buried-buffer (active-buffer window))
             (now (time:now)))
