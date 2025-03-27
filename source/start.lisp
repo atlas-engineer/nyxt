@@ -93,12 +93,6 @@ Without --quit or --remote, the loading is done after parsing the config file
        :short #\q
        :long "quit"
        :description "Quit after --load or --eval.")
-      (:name :script
-       :long "script"
-       :arg-parser #'identity
-       :description
-       "Load the Lisp file (skip #! line if any), skip config file, then exit.
-Set to '-' to read standard input instead.")
       (:name :remote
        :short #\r
        :long "remote"
@@ -139,20 +133,6 @@ This is useful to run scripts for instance."))))
       (setf *browser* nil
             *options* nil)
       (uninstall *renderer*))))
-
-;; From sbcl/src/code/load.lisp.
-(defun maybe-skip-shebang-line (stream)
-  (let ((p (file-position stream)))
-    (when p
-      (flet ((next () (read-byte stream nil)))
-        (unwind-protect
-             (when (and (eq (next) (char-code #\#))
-                        (eq (next) (char-code #\!)))
-               (setf p nil)
-               (loop for x = (next)
-                     until (or (not x) (eq x (char-code #\newline)))))
-          (when p
-            (file-position stream p)))))))
 
 (cffi:defcallback handle-interrupt
     :void ((signum :int) (siginfo :pointer) (ptr :pointer))
@@ -329,7 +309,7 @@ The OPTIONS are the same as the command line options.
   ;; Options should be accessible anytime, even when run from the REPL.
   (setf *options* options)
   (destructuring-bind (&key (headless *headless-p*) verbose help version
-                         system-information script load eval quit remote
+                         system-information load eval quit remote
                        &allow-other-keys)
       options
     (setf *headless-p* headless)
@@ -349,16 +329,6 @@ The OPTIONS are the same as the command line options.
 
       (system-information
        (princ (system-information)))
-
-      (script
-       (setf *run-from-repl-p* t)       ; To report errors.
-       (flet ((run-script (stream)
-                (maybe-skip-shebang-line stream)
-                (load-lisp stream :package (find-package :nyxt-user))))
-         (match (getf options :script)
-           ("-" (run-script *standard-input*))
-           (file (with-open-file (f file :element-type :default)
-                   (run-script f))))))
 
       ((or remote
            (and (or load eval) quit))
