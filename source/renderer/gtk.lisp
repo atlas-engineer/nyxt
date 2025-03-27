@@ -217,9 +217,7 @@ the renderer thread, use `defmethod' instead."
           (uiop:quit (nyxt:exit-code browser) #+bsd nil)))))
 
 (define-ffi-method ffi-kill-browser ((browser gtk-browser))
-  ;; TODO: Terminating the GTK thread from the REPL seems to prevent Nyxt from
-  ;; starting again.
-  (unless nyxt::*run-from-repl-p* (gtk:leave-gtk-main)))
+  (gtk:leave-gtk-main))
 
 (define-class gtk-extensions-directory (nyxt-file)
   ((files:name "gtk-extensions")
