@@ -242,14 +242,15 @@ truncated string, and ELLIPSIS is added at the boundary when needed."
 
 (defmethod prompter:object-attributes ((match search-match) (source prompter:source))
   `(("Match ID" ,(id match) (:width 1))
-    ("Text" ,(centered-ellipsize (body match)
-                                 (text-index-beg match)
-                                 (if (sera:single (nodes match))
-                                     (text-index-end match)
-                                     (+ (reduce #'+
-                                                (butlast (nodes match))
-                                                :key (compose #'length #'plump:text))
-                                        (text-index-end match))))
+    ("Text" ,(centered-ellipsize
+              (body match)
+              (text-index-beg match)
+              (if (sera:single (nodes match))
+                  (text-index-end match)
+                  (+ (reduce #'+
+                             (butlast (nodes match))
+                             :key (lambda (i) (length (plump:text i))))
+                     (text-index-end match))))
             (:width 12))))
 
 (defun search-contiguous (pattern str &key (found-pattern nil)
