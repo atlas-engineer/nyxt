@@ -558,15 +558,19 @@ may yield the wrong result."
         (ignore-errors (ffi-window-active *browser*)))))
 
 (export-always 'set-current-buffer)
-(defun set-current-buffer (buffer &key (focus t))
+(defmethod set-current-buffer ((buffer modable-buffer) &key (focus t))
   "Set the active BUFFER for the active window.
 Return BUFFER."
-  (unless (eq 'prompt-buffer (sera:class-name-of buffer))
-    (if (current-window)
-        (ffi-window-set-buffer (current-window) buffer :focus focus)
-        (make-window buffer))
-    (set-window-title)
-    buffer))
+  (cond ((not (current-window)) (make-window buffer))
+        ((and (active-buffer-p buffer)
+              (not (eq (current-window) (window buffer))))
+         (ffi-window-set-buffer (window buffer) (get-inactive-buffer) :focus nil)
+         (ffi-window-set-buffer (current-window) buffer :focus focus))
+        ((and (not (active-buffer-p buffer))
+              (not (eq (current-window) (window buffer))))
+         (ffi-window-set-buffer (current-window) buffer :focus focus))
+        (t nil))
+  buffer)
 
 (export-always 'current-prompt-buffer)
 (defun current-prompt-buffer ()
