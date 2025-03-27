@@ -485,7 +485,7 @@ The value is saved to clipboard."
          (:br)
          (format nil "Atlas Engineer, 2018-~a" (time:timestamp-year (time:now)))))))
 
-(sera:eval-always ; To satisfy `fboundp' of `manual' at compile-time (e.g. CCL).
+(eval-always ; To satisfy `fboundp' of `manual' at compile-time (e.g. CCL).
   (define-internal-page-command-global manual ()
       (buffer "*Manual*" 'nyxt/mode/help:help-mode)
     "Display Nyxt manual."

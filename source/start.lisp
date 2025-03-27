@@ -29,7 +29,7 @@ set from the corresponding command line option.")
   (opts:describe)
   (uiop:quit 0 #+bsd nil))
 
-(sera:eval-always
+(eval-always
   (defun define-opts ()
     "Define command line options.
 This must be called on startup so that code is executed in the user environment
@@ -113,7 +113,7 @@ The remote instance must be listening on a socket which you can specify with
 This is useful to run scripts for instance."))))
 ;; Also define command line options at read-time because we parse
 ;; `opts::*options*' in `start'.
-(sera:eval-always (define-opts))
+(eval-always (define-opts))
 
 (define-command quit (&optional (code 0))
   "Quit Nyxt."
@@ -296,7 +296,7 @@ Otherwise bind socket and return the listening thread."
         (log:info "No instance running.")
         (uiop:quit 0 #+bsd nil))))
 
-(sera:eval-always
+(eval-always
   (defvar %start-args (mapcar (compose #'intern
                                        #'symbol-name
                                        #'opts::name)

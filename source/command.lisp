@@ -130,7 +130,7 @@ of arguments."
        ,(documentation function-symbol 'function)
        (,function-symbol (first arg-list)))))
 
-(sera:eval-always
+(eval-always
   (defun generalize-lambda-list (lambda-list)
     "Return a lambda-list compatible with generic-function definitions.
 Generic function lambda lists differ from ordinary lambda list in some ways;

@@ -192,7 +192,7 @@ Overwrites the whole HTML document (head and body elements included)."
     (ps-eval :async t :buffer buffer
       (ps:chain document body (|insertAdjacentHTML| "afterbegin" (ps:lisp style))))))
 
-(sera:eval-always
+(eval-always
   (defvar *nyxt-url-commands* (make-hash-table) ; TODO: Rename to `*internal-pages-command-list*'.
     "A map from allowed nyxt: URLs symbols to the functions that generate code of
   the pages related to these commands."))

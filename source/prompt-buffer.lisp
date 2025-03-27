@@ -3,7 +3,7 @@
 
 (in-package :nyxt)
 
-(sera:eval-always
+(eval-always
   (define-class prompt-buffer (network-buffer input-buffer modable-buffer prompter:prompter)
     ((window
       nil
@@ -600,14 +600,14 @@ See `update-prompt-input' to update the changes visually."
        (hide-prompt-buffer prompt-buffer)
        (error 'prompt-buffer-canceled)))))
 
-(sera:eval-always
+(eval-always
   (defvar %prompt-args (delete-duplicates (append
                                            (mopu:direct-slot-names 'prompt-buffer)
                                            (mopu:direct-slot-names 'prompter:prompter)
                                            ;; `customize-instance' `:after' arguments:
                                            '(extra-modes)))))
 (export-always 'prompt)
-(sera:eval-always
+(eval-always
   (defun prompt #.(append '(&rest args) `(&key ,@%prompt-args))
     "Open the prompt buffer, ready for user input.
 PROMPTER and PROMPT-BUFFER are plists of keyword arguments passed to the
@@ -639,7 +639,7 @@ See the documentation of `prompt-buffer' to know more about the options."
         (wait-on-prompt-buffer new-prompt)))))
 
 (export-always 'prompt1)
-(sera:eval-always
+(eval-always
   (defun prompt1 #.(append '(&rest args) `(&key ,@%prompt-args))
     "Return the first result of a prompt."
     (declare #.(cons 'ignorable %prompt-args))

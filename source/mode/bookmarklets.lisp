@@ -21,7 +21,7 @@ qualified methods to modify their behavior."))
 By default, this mode does nothing but expose the default bookmarklet commands."
   ((visible-in-status-p nil)))
 
-(sera:eval-always
+(eval-always
   (flet ((generate-body (source)
            `(let* ((source ,source)
                    (source (etypecase source

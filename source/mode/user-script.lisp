@@ -17,7 +17,7 @@
 (defun de-inject-user-styles (styles buffer)
   (mapcar (lambda (style) (ffi-buffer-remove-user-style buffer style)) styles))
 
-(sera:eval-always
+(eval-always
   (define-class user-script (renderer-user-script files:data-file nyxt-remote-file)
     ((code "" :type (maybe string))
      (version "")
@@ -179,7 +179,7 @@ Return:
   (:documentation "The basis for renderer-specific user style extensions.
 Should be redefined by the renderer."))
 
-(sera:eval-always
+(eval-always
   (define-class user-style (renderer-user-style files:data-file nyxt-remote-file)
     ((code "" :type (maybe string))
      (world-name

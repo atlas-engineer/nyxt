@@ -194,7 +194,7 @@ The `mode' superclass is automatically added if not present."
                    body))
          (direct-slots (first body))
          (options (rest body)))
-    `(sera:eval-always ; Important so that classes can be found from the same file at compile-time.
+    `(eval-always ; Important so that classes can be found from the same file at compile-time.
        (define-class ,name (,@(append direct-superclasses
                                       (unless (find 'mode direct-superclasses) '(mode))))
          ,direct-slots
