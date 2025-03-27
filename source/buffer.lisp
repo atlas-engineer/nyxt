@@ -800,9 +800,7 @@ associated to the buffer is already killed.
 This is a low-level function.  See `buffer-delete' for the high-level version."
   (let ((parent-window (find buffer (window-list) :key 'active-buffer)))
     (when parent-window
-      (let ((replacement-buffer (or (first (get-inactive-buffers))
-                                    (make-buffer :load-url-p nil
-                                                 :url (default-new-buffer-url *browser*)))))
+      (let ((replacement-buffer (get-inactive-buffer)))
         (ffi-window-set-buffer parent-window replacement-buffer)))
     (buffers-delete (id buffer))
     (add-to-recent-buffers buffer)))
@@ -862,11 +860,13 @@ This is a low-level function.  See `buffer-delete' and `delete-buffer'."
   "Return buffer with most recent `last-access'."
   (first (sort-by-time (buffer-list))))
 
-(defun get-inactive-buffers ()
-  "Return inactive buffers sorted by `last-access', when applicable."
-  (when-let ((inactive (set-difference (buffer-list)
-                                       (mapcar #'active-buffer (window-list)))))
-    (sort-by-time inactive)))
+(defun get-inactive-buffer ()
+  "Return inactive buffers sorted by `last-access', when applicable.
+If none exist, make a new inactive buffer."
+  (if-let ((inactive (set-difference (buffer-list)
+                                     (mapcar #'active-buffer (window-list)))))
+    (first (sort-by-time inactive))
+    (make-buffer)))
 
 (define-command copy-url ()
   "Save current URL to clipboard."
