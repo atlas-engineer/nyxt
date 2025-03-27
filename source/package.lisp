@@ -28,7 +28,7 @@ modes, commands, etc."))
                      #:assoc-value)
                     (:trivia #:match #:multiple-value-match #:lambda-match #:guard)
                     (:nkeymaps #:define-key #:define-keyscheme-map)
-                    (:serapeum #:export-always #:-> #:and-let*))
+                    (:serapeum #:export-always #:-> #:and-let* #:eval-always))
   "Default list of symbol imports used by `nyxt:define-package'.")
 
 (loop :for (package . symbols) in *imports*
