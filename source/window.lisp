@@ -88,6 +88,11 @@ The handlers take the window as argument."))
   "Return the title of WINDOW."
   (str:concat (title (active-buffer window)) " － Nyxt"))
 
+(defmethod (setf active-buffer) :around (value (window window))
+  (declare (ignore value))
+  (call-next-method)
+  (set-window-title))
+
 (defun print-status (&optional (window (current-window)))
   (with-slots (status-buffer) window
     (when (and window status-buffer)
