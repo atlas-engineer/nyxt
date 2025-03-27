@@ -38,7 +38,6 @@ The channel is popped when a prompt buffer is hidden.")
     :export nil
     :type boolean
     :documentation "Whether the window is displayed in fullscreen.")
-   ;; TODO: each frame should have a status buffer, not each window
    (maximized-p
     nil
     :export nil
