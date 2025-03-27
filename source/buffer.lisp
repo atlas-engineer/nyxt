@@ -860,6 +860,9 @@ This is a low-level function.  See `buffer-delete' and `delete-buffer'."
   "Return buffer with most recent `last-access'."
   (first (sort-by-time (buffer-list))))
 
+(defmethod active-buffer-p ((buffer buffer))
+  (find buffer (mapcar #'active-buffer (window-list))))
+
 (defun get-inactive-buffer ()
   "Return inactive buffers sorted by `last-access', when applicable.
 If none exist, make a new inactive buffer."
