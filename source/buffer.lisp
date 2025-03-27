@@ -39,6 +39,10 @@ inherited from the superclasses.")
    (key-stack
     '()
     :documentation "A stack of the key chords a user has pressed.")
+   (last-access
+    (time:now)
+    :export nil
+    :documentation "Timestamp when the buffer was last switched to.")
    (last-key
     nil
     :export nil
@@ -476,11 +480,7 @@ down."))
   (:documentation "Buffers holding structured documents."))
 
 (define-class context-buffer (buffer)
-  ((last-access
-    (time:now)
-    :export nil
-    :documentation "Timestamp when the buffer was last switched to.")
-   (download-directory
+  ((download-directory
     (make-instance 'download-directory)
     :type download-directory
     :documentation "Directory where downloads will be stored.")
