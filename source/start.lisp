@@ -12,21 +12,13 @@
 
 (defmethod files:resolve ((profile nyxt-profile) (socket socket-file))
   "Return finalized path for socket files."
-  (if (or (getf *options* :no-socket)
-          (multiple-value-bind (option-found? path) (get-properties *options* '(:socket))
-            (and option-found? (uiop:emptyp path))))
-      #p""
-      (uiop:ensure-pathname (or (getf *options* :socket) (call-next-method))
-                            :truenamize t)))
+  (uiop:ensure-pathname (or (getf *options* :socket) (call-next-method))
+                        :truenamize t))
 
 (export-always '*socket-file*)
 (defvar *socket-file* (make-instance 'socket-file)
   "Path of the Unix socket used to communicate between different instances of
 Nyxt.
-
-If `files:expand' resolves this to #p\"\", then Nyxt starts in multi-instance mode.
-This means that re-running Nyxt will start a new instance of Nyxt instead of
-prompting the first instance.
 
 This path cannot be set from the configuration file because we want to be able
 to set and use the socket without parsing any file.  Instead, the socket can be
@@ -82,11 +74,7 @@ Default: ~s" (files:expand *auto-config-file*)))
        :long "socket"
        :arg-parser #'identity
        :description "Set path to socket.
-Unless evaluating remotely (see --remote), Nyxt starts in single-instance mode when a socket is set.")
-      (:name :no-socket
-       :short #\S
-       :long "no-socket"
-       :description "Do not use any socket.")
+Unless evaluating remotely (see --remote).")
       (:name :eval
        :short #\e
        :long "eval"
@@ -108,15 +96,17 @@ Without --quit or --remote, the loading is done after parsing the config file
       (:name :script
        :long "script"
        :arg-parser #'identity
-       :description "Load the Lisp file (skip #! line if any), skip config file, then exit.
+       :description
+       "Load the Lisp file (skip #! line if any), skip config file, then exit.
 Set to '-' to read standard input instead.")
       (:name :remote
        :short #\r
        :long "remote"
-       :description "Send the --eval and --load arguments to the running instance of Nyxt.
+       :description
+       "Send the --eval and --load arguments to the running instance of Nyxt.
 Unless --quit is specified, also send s-expressions from the standard input.
-The remote instance must be listening on a socket which you can specify with --socket
-and have the `remote-execution-p' browser slot to non-nil.")
+The remote instance must be listening on a socket which you can specify with
+--socket and have the `remote-execution-p' browser slot to non-nil.")
       (:name :headless
        :long "headless"
        :description "Start Nyxt without showing any graphical element.
@@ -157,12 +147,7 @@ This is useful to run scripts for instance."))))
           (sleep 1)
           (uiop:quit code #+bsd nil))))))
 
-(define-command quit-after-clearing-session (&key confirmation-p) ; TODO: Rename?
-  "Close all buffers then quit Nyxt."
-  (delete-all-buffers :confirmation-p confirmation-p)
-  (quit))
-
-;; From sbcl/src/code/load.lisp
+;; From sbcl/src/code/load.lisp.
 (defun maybe-skip-shebang-line (stream)
   (let ((p (file-position stream)))
     (when p
