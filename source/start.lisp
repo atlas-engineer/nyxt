@@ -151,17 +151,6 @@ Don't run this from a REPL, prefer `start' instead."
                      (opts:arg-parser-failed #'handle-malformed-cli-arg))
         (opts:get-opts))
     (setf *run-from-repl-p* nil)             ; Not a REPL.
-    (let ((interrupt-sigaction (cffi:foreign-alloc '(:struct isys::sigaction))))
-      ;; Mimics https://www.systutorials.com/catching-the-signal-sent-by-kill-in-c-on-linux/
-      (isys:memset interrupt-sigaction 0 (cffi:foreign-type-size '(:struct isys::sigaction)))
-      (setf (cffi:foreign-slot-value
-             interrupt-sigaction '(:struct isys:sigaction) 'isys::sigaction)
-            (cffi:callback handle-interrupt))
-      (setf (cffi:foreign-slot-value
-             interrupt-sigaction '(:struct isys:sigaction) 'isys::flags)
-            isys:sa-siginfo)
-      (isys:sigaction isys:sigint interrupt-sigaction (cffi:null-pointer))
-      (isys:sigaction isys:sigterm interrupt-sigaction (cffi:null-pointer)))
     (apply #'start (append options (list :urls free-args)))))
 
 (defun eval-expr (expr)
