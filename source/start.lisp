@@ -150,7 +150,7 @@ Don't run this from a REPL, prefer `start' instead."
                      (opts:missing-arg #'handle-malformed-cli-arg)
                      (opts:arg-parser-failed #'handle-malformed-cli-arg))
         (opts:get-opts))
-    (setf *run-from-repl-p* nil)             ; Not a REPL.
+    (setf *run-from-repl-p* nil)
     (apply #'start (append options (list :urls free-args)))))
 
 (defun eval-expr (expr)
