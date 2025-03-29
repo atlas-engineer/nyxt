@@ -167,35 +167,18 @@ Don't run this from a REPL, prefer `start' instead."
           (format t "~&~a~&" (eval-protect last)))))))
 
 (defun parse-urls (expr)
-  "Do _not_ evaluate EXPR and try to open URLs that were send to it.
+  "Do _not_ evaluate EXPR and try to parse URLs that were sent to it.
 EXPR is expected to be as per the expression sent in `listen-or-query-socket'."
-  (let ((urls (ignore-errors (rest (read-from-string expr nil)))))
-    (if (and urls (every #'stringp urls))
-        (apply #'open-external-urls urls)
-        (progn
-          (log:warn "Could not extract URLs from ~s." expr)
-          nil))))
-
-(export-always 'open-external-urls)
-(-> open-external-urls (&rest string) *)
-(defun open-external-urls (&rest url-strings)
-  "Open URL-STRINGS on the renderer thread and return URLs.
-This is a convenience wrapper to make remote code execution to open URLs as
-short as possible.
-It takes URL-STRINGS so that the URL argument can be `cl-read' in case
-`remote-execution-p' is nil."
-  (let ((urls (remove-if #'url-empty-p (mapcar #'url url-strings))))
-    (if urls
-        (log:info "Externally requested URL(s): ~{~a~^, ~}" urls)
-        (log:info "Externally pinged."))
-    (ffi-within-renderer-thread (lambda () (open-urls urls)))
+  (let* ((urls (ignore-errors (rest (read-from-string expr nil))))
+         (urls (ignore-errors (remove-if #'url-empty-p (mapcar #'url urls)))))
+    (unless urls
+      (log:warn "Could not extract URLs from ~s." expr))
     urls))
 
 (defun listen-socket ()
   (files:with-paths ((socket-path *socket-file*))
     (let ((native-socket-path (uiop:native-namestring socket-path)))
       (ensure-directories-exist socket-path :mode #o700)
-      ;; TODO: Catch error against race conditions?
       (iolib:with-open-socket (s :address-family :local
                                  :connect :passive
                                  :local-filename native-socket-path)
@@ -204,20 +187,19 @@ It takes URL-STRINGS so that the URL argument can be `cl-read' in case
         (loop as connection = (iolib:accept-connection s)
               while connection
               do (progn
-                   (when-let ((expr (alex:read-stream-content-into-string connection)))
+                   (when-let
+                       ((expr (alex:read-stream-content-into-string connection)))
                      (unless (uiop:emptyp expr)
                        (if (remote-execution-p *browser*)
                            (progn
                              (log:info "External evaluation request: ~s" expr)
                              (eval-expr expr))
                            (progn
-                             (parse-urls expr)
-                             ;; It's customary to focus the browser window when
-                             ;; opening a URL (but not when evaluating Lisp
-                             ;; code).
-                             ;; If we get pinged too early, we do not have a current-window yet.
+                             (ffi-within-renderer-thread
+                              (lambda () (open-urls (parse-urls expr))))
                              (when (current-window)
-                               (ffi-window-to-foreground (current-window)))))))))))))
+                               (ffi-window-to-foreground
+                                (current-window)))))))))))))
 
 (defun listening-socket-p ()
   (ignore-errors
