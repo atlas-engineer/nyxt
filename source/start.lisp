@@ -176,6 +176,7 @@ EXPR is expected to be as per the expression sent in `listen-or-query-socket'."
     urls))
 
 (defun listen-socket ()
+  "Listen to to see if requests arise to open URLs or evaluate s-expressions."
   (files:with-paths ((socket-path *socket-file*))
     (let ((native-socket-path (uiop:native-namestring socket-path)))
       (ensure-directories-exist socket-path :mode #o700)
@@ -213,21 +214,21 @@ EXPR is expected to be as per the expression sent in `listen-or-query-socket'."
   "If another Nyxt is listening on the socket, tell it to open URLS.
 Otherwise bind socket and return the listening thread."
   (let ((socket-path (files:expand *socket-file*)))
-    (cond
-      ((listening-socket-p)
-       (if urls
-           (progn
-             (log:info "Nyxt already started, requesting to open URL(s): ~{~a~^, ~}" urls)
-             (iolib:with-open-socket (s :address-family :local
-                                        :remote-filename (uiop:native-namestring socket-path))
-               ;; Can't use `render-url' at this point because the GTK loop is not running.
-               (format s "~s" `(open-external-urls ,@(mapcar #'quri:render-uri urls)))))
-           (log:info "Nyxt already started."))
-       nil)
-      (t
-       (uiop:delete-file-if-exists socket-path) ; Safe since socket-path is a :socket at this point.
-       (run-thread "socket listener"
-         (listen-socket))))))
+    (if (listening-socket-p) ;; Check if Nyxt is already running.
+        (if urls
+            (progn
+              (log:info "Nyxt started, trying to open URL(s): ~{~a~^, ~}" urls)
+              (iolib:with-open-socket
+                  (s :address-family :local
+                     :remote-filename (uiop:native-namestring socket-path))
+                (format s "~s"
+                        `(open-external-urls
+                          ,@(mapcar #'quri:render-uri urls)))))
+            (log:info "Nyxt already started."))
+        (progn
+          (uiop:delete-file-if-exists socket-path)
+          (run-thread "socket listener"
+            (listen-socket))))))
 
 (defun remote-eval (expr)
   "If another Nyxt is listening on the socket, tell it to evaluate EXPR."
@@ -241,10 +242,9 @@ Otherwise bind socket and return the listening thread."
         (uiop:quit 0 #+bsd nil))))
 
 (eval-always
-  (defvar %start-args (mapcar (compose #'intern
-                                       #'symbol-name
-                                       #'opts::name)
-                              opts::*options*)))
+  (defvar %start-args
+    (mapcar (compose #'intern #'symbol-name #'opts::name) opts::*options*)))
+
 (export-always 'start)
 (defun start #.(append '(&rest options &key urls) %start-args)
   #.(format nil "Parse command line or REPL options then start the browser.
@@ -255,16 +255,8 @@ This function focuses on OPTIONS parsing.  For the actual startup procedure, see
 
 The OPTIONS are the same as the command line options.
 
-~a"
-            (with-output-to-string (s) (opts:describe :stream s)))
+~a" (with-output-to-string (s) (opts:describe :stream s)))
   (declare #.(cons 'ignorable %start-args))
-  (unless *renderer*
-    (log:warn "No renderer set, Nyxt will not be able to render pages.  Try:
-
-\(progn
- (asdf:load-system :nyxt/gi-gtk)
- (nyxt:ffi-initialize nyxt:*browser* '() (time:now)))
-"))
   ;; Nyxt extensions should be made accessible straight from the beginning,
   ;; e.g. before a script is run.
   (pushnew 'nyxt-source-registry asdf:*default-source-registries*)
@@ -273,10 +265,8 @@ The OPTIONS are the same as the command line options.
     (if (uiop:directory-exists-p source-directory)
         (set-nyxt-source-location source-directory)
         (log:debug "Nyxt source directory not found.")))
-
-  ;; Initialize the lparallel kernel
+  ;; Initialize the lparallel kernel.
   (initialize-lparallel-kernel)
-
   ;; Options should be accessible anytime, even when run from the REPL.
   (setf *options* options)
   (destructuring-bind (&key (headless *headless-p*) verbose help version
@@ -284,25 +274,19 @@ The OPTIONS are the same as the command line options.
                        &allow-other-keys)
       options
     (setf *headless-p* headless)
-
     (if verbose
         (progn
           (log:config :debug)
           (format t "Arguments parsed: ~a and ~a~&" options urls))
         (log:config :pattern *log-pattern*))
-
     (cond
       (help
        (opts:describe :prefix "nyxt [options] [URLs]"))
-
       (version
        (format t "Nyxt version ~a~&" +version+))
-
       (system-information
        (princ (system-information)))
-
-      ((or remote
-           (and (or load eval) quit))
+      ((or remote (and (or load eval) quit))
        (start-load-or-eval))
       (t
        (with-protect ("Error: ~a" :condition)
@@ -311,24 +295,19 @@ The OPTIONS are the same as the command line options.
 
 (defun load-or-eval (&key remote)
   (when remote
-    (log:info "Probing remote instance listening to ~a." (files:expand *socket-file*)))
+    (log:info "Probing remote instance listening to ~a."
+              (files:expand *socket-file*)))
   (loop for (opt value . nil) on *options*
         do (match opt
              (:load (let ((value (uiop:truename* value)))
-                      ;; Absolute path is necessary since remote process may have
-                      ;; a different working directory.
                       (if remote
                           (remote-eval (format nil "~s" `(load-lisp ,value)))
                           (load-lisp value))))
              (:eval (if remote
                         (remote-eval value)
                         (eval-expr value)))))
-  (when (and remote
-             (not (getf *options* :quit)))
-    (log:info "Reading s-expressions from standard input until end of input (Ctrl-D on *nix).")
-    ;; We do not use `safe-read' because this is controlled by the user anyways.
-    ;; TODO: `read' may fail, e.g. when a package prefix is not known, but the
-    ;; input would still be valid if the remote instance knows the package.
+  (when (and remote (not (getf *options* :quit)))
+    (log:info "Reading s-expressions from standard input (end with Ctrl+d).")
     (handler-case (loop for sexp = (read)
                         do (remote-eval (write-to-string sexp)))
       (end-of-file ()
@@ -341,8 +320,9 @@ The OPTIONS are the same as the command line options.
 The evaluation may happen on its own instance or on an already running instance."
   (let ((remote (getf *options* :remote)))
     (unless remote
-      (load-lisp (files:expand *auto-config-file*) :package (find-package :nyxt-user))
-      (load-lisp (files:expand *config-file*) :package (find-package :nyxt-user)))
+      (let ((user-package (find-package :nyxt-user)))
+        (load-lisp (files:expand *auto-config-file*) :package user-package)
+        (load-lisp (files:expand *config-file*) :package user-package)))
     (load-or-eval :remote remote)))
 
 (defun start-browser (url-strings)
@@ -360,18 +340,14 @@ Finally, run the browser, load URL-STRINGS if any, then run
         (let ((log-path (files:expand *log-file*)))
           (unless (files:nil-pathname-p log-path)
             (uiop:delete-file-if-exists log-path) ; Otherwise `log4cl' appends.
-            ;; REVIEW: Do we want to back up the log?
             (log:config :backup nil :pattern *log-pattern* :daily log-path)))
         (format t "Nyxt version ~a~&" +version+)
         (log:info "Source location: ~s" (files:expand *source-directory*))
-
         (install *renderer*)
-
         (let* ((urls (remove-if #'url-empty-p (mapcar #'url url-strings)))
                (startup-timestamp (time:now))
                (startup-error-reporter nil))
-          (if (or (getf *options* :no-socket)
-                  (null (files:expand *socket-file*))
+          (if (or (null (files:expand *socket-file*))
                   (not (listening-socket-p)))
               (progn
                 (load-lisp (files:expand *auto-config-file*)
@@ -392,10 +368,10 @@ Finally, run the browser, load URL-STRINGS if any, then run
                        'browser
                        :startup-error-reporter-function startup-error-reporter
                        :startup-timestamp startup-timestamp
-                       :socket-thread (unless (nfiles:nil-pathname-p (files:expand *socket-file*))
-                                        (listen-or-query-socket urls))))
-                ;; Defaulting to :nyxt-user is convenient when evaluating code
-                ;; (such as remote execution or the integrated REPL).
+                       :socket-thread
+                       (unless
+                           (nfiles:nil-pathname-p (files:expand *socket-file*))
+                         (listen-or-query-socket urls))))
                 ;; This must be done in a separate thread because the calling
                 ;; thread may have set `*package*' as an initial-binding (see
                 ;; `bt:make-thread'), as is the case with the SLY mrepl thread.
@@ -415,7 +391,7 @@ Finally, run the browser, load URL-STRINGS if any, then run
 
 (defun restart-with-message (&key condition backtrace)
   (flet ((set-error-message (condition backtrace)
-           (let ((*package* (find-package :cl))) ; Switch package to use non-nicknamed packages.
+           (let ((*package* (find-package :cl)))
              (write-to-string
               `(hooks:add-hook
                 (nyxt:after-init-hook nyxt:*browser*)
@@ -424,11 +400,13 @@ Finally, run the browser, load URL-STRINGS if any, then run
                  :fn (lambda ()
                        (setf (nyxt::startup-error-reporter-function *browser*)
                              (lambda ()
-                               (nyxt:echo-warning "Restarted without configuration file due to error: ~a"
-                                                  ,(princ-to-string condition))
-                               (nyxt::error-in-new-window "Initialization error"
-                                                          ,(princ-to-string condition)
-                                                          ,backtrace))))
+                               (nyxt:echo-warning
+                                "Restarted due to configuration error: ~a"
+                                ,(princ-to-string condition))
+                               (nyxt::error-in-new-window
+                                "Initialization error"
+                                ,(princ-to-string condition)
+                                ,backtrace))))
                  :name 'error-reporter))))))
     (log:warn "Restarting with ~s."
               (append (uiop:raw-command-line-arguments) '("--no-config"
