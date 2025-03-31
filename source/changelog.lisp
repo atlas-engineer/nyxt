@@ -27,6 +27,8 @@
 
 (define-version "4.0.0"
   (:ul
+   (:li "Disable no-socket mode. Nyxt will always start a socket to see if
+another instance is running.")
    (:li "Change default value of slot "
         (:nxref :slot 'conservative-word-move :class-name 'input-buffer)
         " as to match usual cursor movements by word.")
