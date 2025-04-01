@@ -171,7 +171,7 @@ first."
 Any `nyxt/mode/keyscheme:keyscheme-mode' is placed first.
 
 This leverages `mode-status' which can be specialized for individual modes."
-  (let ((buffer (current-buffer (window status))))
+  (let ((buffer (active-buffer (window status))))
     (if (modable-buffer-p buffer)
         (spinneret:with-html-string
           (:nbutton
@@ -225,7 +225,7 @@ This leverages `mode-status' which can be specialized for individual modes."
 (defmethod format-status-load-status ((status status-buffer))
   "Render the load status to HTML string.
 By default, renders a hourglass when loading a URL."
-  (let ((buffer (current-buffer (window status))))
+  (let ((buffer (active-buffer (window status))))
     (if (and (web-buffer-p buffer)
              (eq (slot-value buffer 'status) :loading))
         "⧖ "
@@ -234,7 +234,7 @@ By default, renders a hourglass when loading a URL."
 (export-always 'format-status-url)
 (defmethod format-status-url ((status status-buffer))
   "Format the current URL for the STATUS buffer."
-  (let* ((buffer (current-buffer (window status)))
+  (let* ((buffer (active-buffer (window status)))
          (url (url buffer))
          (url-display (cond ((quri:uri-https-p url)
                              (quri:uri-host url))
@@ -261,7 +261,7 @@ By default, renders a hourglass when loading a URL."
                    (domain (quri:uri-domain url))
                    (tab-display-text (if (internal-url-p url) "internal" domain))
                    (url url)
-                   (current-buffer (current-buffer (window status))))
+                   (current-buffer (active-buffer (window status))))
               (:span
                :class (if (string= (quri:uri-domain (url current-buffer))
                                    (quri:uri-domain url))
@@ -301,7 +301,7 @@ By default, renders a hourglass when loading a URL."
 To override all that is displayed on STATUS, redefine this method.  To partially
 override it, redefine methods such as `format-status-url' or
 `format-status-modes'."
-  (let* ((buffer (current-buffer (window status))))
+  (let* ((buffer (active-buffer (window status))))
     (spinneret:with-html-string
       (:div :id "container"
             #-darwin
