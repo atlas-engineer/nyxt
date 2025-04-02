@@ -223,7 +223,7 @@ This leverages `mode-status' which can be specialized for individual modes."
                   :title (format nil "Describe ~a" mode)
                   `(describe-class :class (quote ,(name mode))))))))))
 
-(defmethod modes-string ((buffer modable-buffer))
+(defmethod modes-string ((buffer buffer))
   (format nil "~{~a~^~%~}" (append '("Enabled modes:")
                                    (mapcar #'princ-to-string
                                            (enabled-modes buffer)))))
