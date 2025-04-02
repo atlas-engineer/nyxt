@@ -208,7 +208,7 @@ Any `nyxt/mode/keyscheme:keyscheme-mode' is placed first.
 This leverages `mode-status' which can be specialized for individual modes."
   (let ((buffer (active-buffer (window status))))
     (if (modable-buffer-p buffer)
-        (spinneret:with-html-string
+        (spinneret:with-html
           (:nbutton
             :buffer status
             :text "±"
@@ -234,7 +234,7 @@ This leverages `mode-status' which can be specialized for individual modes."
 (export-always 'format-status-buttons)
 (defmethod format-status-buttons ((status status-buffer))
   "Render interactive buttons to HTML string."
-  (spinneret:with-html-string
+  (spinneret:with-html
     (:nbutton
       :buffer status
       :text (:raw (glyph-left status))
@@ -277,7 +277,7 @@ By default, renders a hourglass when loading a URL."
                             ((quri:uri-http-p url)
                              (format nil "! ~a" (render-url url)))
                             (t (render-url url)))))
-    (spinneret:with-html-string
+    (spinneret:with-html
       (:nbutton :buffer status :text url-display :title (title buffer)
         '(nyxt:set-url)))))
 
@@ -286,7 +286,7 @@ By default, renders a hourglass when loading a URL."
   "Render the open buffers to HTML string suitable for STATUS."
   (let* ((buffers (buffer-list))
          (current-buffer (active-buffer (window status))))
-    (spinneret:with-html-string
+    (spinneret:with-html
       (loop for buffer in buffers
             collect
             (let* ((buffer buffer)
@@ -317,18 +317,15 @@ override it, redefine methods such as `format-status-url' or
       (:div :id "container"
             #-darwin
             (:div :id "controls"
-                  (:raw (format-status-buttons status)))
+                  (format-status-buttons status))
             (:div :id "url"
-                  (:raw
-                   (format-status-load-status status)
-                   (format-status-url status)))
+                  (:raw (format-status-load-status status))
+                  (format-status-url status))
             (:div :id "tabs"
-                  (:raw
-                   (format-status-tabs status)))
+                  (format-status-tabs status))
             (:div :id "modes"
                   :title (modes-string buffer)
-                  (:raw
-                   (format-status-modes status)))))))
+                  (format-status-modes status))))))
 
 (defvar *setf-handlers* (sera:dict)
   "A hash-table mapping (CLASS SLOT) pairs to (OBJECT HANDLER) pairs.
