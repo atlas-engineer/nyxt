@@ -66,14 +66,12 @@ A positive value shifts to the bottom.")
        "M-c h" 'copy-hint-url)
       keyscheme:emacs
       (list
-       "M-g M-g" 'follow-hint           ; Corresponds to Emacs' `goto-line'.
-       "C-u M-g M-g" 'follow-hint-new-buffer
-       "C-u M-g g" 'follow-hint-new-buffer
-       "M-g g" 'follow-hint-new-buffer-focus
+       "M-g" 'follow-hint
+       "M-G" 'follow-hint-new-buffer
+       "C-u M-g" 'follow-hint-new-buffer-focus
        "C-x C-w" 'copy-hint-url)
       keyscheme:vi-normal
       (list
-       ;; TODO bind copy-hint-url!
        "f" 'follow-hint
        "; f" 'follow-hint-new-buffer
        "F" 'follow-hint-new-buffer-focus)))))
