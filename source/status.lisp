@@ -225,11 +225,10 @@ This leverages `mode-status' which can be specialized for individual modes."
                       `(describe-class :class (quote ,(name mode))))))))
         "")))
 
-(defun modes-string (buffer)
-  (when (modable-buffer-p buffer)
-    (format nil "~{~a~^~%~}" (append '("Enabled modes:")
-                                     (mapcar #'princ-to-string
-                                             (enabled-modes buffer))))))
+(defmethod modes-string ((buffer modable-buffer))
+  (format nil "~{~a~^~%~}" (append '("Enabled modes:")
+                                   (mapcar #'princ-to-string
+                                           (enabled-modes buffer)))))
 
 (export-always 'format-status-buttons)
 (defmethod format-status-buttons ((status status-buffer))
