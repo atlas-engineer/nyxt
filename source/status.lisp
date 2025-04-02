@@ -18,9 +18,6 @@
    (glyph-mode-presentation-p
     nil
     :documentation "Display the modes as a list of glyphs.")
-   (display-tabs-by-last-access-p
-    nil
-    :documentation "Whether tabs are dynamically ordered by last access time.")
    (glyph-left (gethash "left.svg" *static-data*))
    (glyph-right (gethash "right.svg" *static-data*))
    (glyph-reload (gethash "reload.svg" *static-data*))
@@ -248,50 +245,26 @@ By default, renders a hourglass when loading a URL."
 (export-always 'format-status-tabs)
 (defmethod format-status-tabs ((status status-buffer))
   "Render the open buffers to HTML string suitable for STATUS."
-  (let* ((buffers (if (display-tabs-by-last-access-p status)
-                      (sort-by-time (buffer-list))
-                      (reverse (buffer-list))))
-         (domain-deduplicated-urls (remove-duplicates (mapcar #'url buffers)
-                                                      :test #'string=
-                                                      :key #'quri:uri-domain)))
+  (let* ((buffers (buffer-list))
+         (current-buffer (active-buffer (window status))))
     (spinneret:with-html-string
-      (loop for url in domain-deduplicated-urls
+      (loop for buffer in buffers
             collect
-            (let* ((internal-buffers (internal-buffer-list))
+            (let* ((buffer buffer)
+                   (url (url buffer))
                    (domain (quri:uri-domain url))
-                   (tab-display-text (if (internal-url-p url) "internal" domain))
-                   (url url)
-                   (current-buffer (active-buffer (window status))))
+                   (tab-display-text (if (internal-url-p url)
+                                         (quri:render-uri url)
+                                         domain)))
               (:span
-               :class (if (string= (quri:uri-domain (url current-buffer))
-                                   (quri:uri-domain url))
+               :class (if (eq current-buffer buffer)
                           "selected-tab tab"
                           "tab")
-               :onclick (ps:ps
-                          (if (or (= (ps:chain window event which) 2)
-                                  (= (ps:chain window event which) 4))
-                              (nyxt/ps:lisp-eval
-                               (:title "delete-tab-group"
-                                :buffer status)
-                               (let ((buffers-to-delete
-                                       (if (internal-url-p url)
-                                           internal-buffers
-                                           (sera:filter (match-domain domain) buffers))))
-                                 (prompt
-                                  :prompt "Delete buffer(s)"
-                                  :sources (make-instance 'buffer-source
-                                                          :constructor buffers-to-delete
-                                                          :marks buffers-to-delete
-                                                          :actions-on-return (list (lambda-mapped-command buffer-delete))))))
-                              (nyxt/ps:lisp-eval
-                               (:title "select-tab-group"
-                                :buffer status)
-                               (if (internal-url-p url)
-                                   (prompt
-                                    :prompt "Switch to buffer with internal page"
-                                    :sources (make-instance 'buffer-source
-                                                            :constructor internal-buffers))
-                                   (switch-buffer-or-query-domain domain)))))
+               :onclick
+               (ps:ps
+                 (nyxt/ps:lisp-eval
+                  (:title "select-tab" :buffer status)
+                  (set-current-buffer buffer)))
                tab-display-text))))))
 
 (export-always 'format-status)
