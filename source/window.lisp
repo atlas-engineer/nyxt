@@ -92,7 +92,7 @@ The handlers take the window as argument."))
   (call-next-method)
   (set-window-title))
 
-(defun print-status (&optional (window (current-window)))
+(defmethod print-status ((window window))
   (with-slots (status-buffer) window
     (when (and window status-buffer)
       (ffi-print-status window (format-status status-buffer))
