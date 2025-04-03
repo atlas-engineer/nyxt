@@ -325,6 +325,18 @@ override it, redefine methods such as `format-status-url' or
                   :title (modes-string buffer)
                   (format-status-modes status))))))
 
+(defmethod show-selected-tab ((status status-buffer))
+  "Scroll the selected tab into view."
+  (ps-eval :async t :buffer status
+    (let ((selected-tab
+            (ps:aref
+             (ps:chain document
+                       (get-elements-by-class-name "selected-tab")) 0)))
+      (if selected-tab
+          (ps:chain selected-tab
+                    (scroll-into-view (ps:create inline "center"
+                                                 behavior "smooth")))))))
+
 (defvar *setf-handlers* (sera:dict)
   "A hash-table mapping (CLASS SLOT) pairs to (OBJECT HANDLER) pairs.
 OBJECT is an instance of CLASS.
