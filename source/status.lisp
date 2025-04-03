@@ -119,6 +119,7 @@
         :text-align "left"
         :width "100%")
       `("#tabs"
+        :overflow-x "scroll"
         :line-height "75vh"
         :min-width "100px"
         :text-align "left"
