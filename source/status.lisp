@@ -303,6 +303,14 @@ By default, renders a hourglass when loading a URL."
                            (set-current-buffer buffer)))
                tab-display-text))))))
 
+(defmethod update-status-tabs ((status status-buffer))
+  "Update ONLY the status tabs to avoid redrawing the whole status buffer."
+  (ps-eval :async t :buffer status
+    (setf (ps:@ (nyxt/ps:qs document "#tabs") |innerHTML|)
+          (ps:lisp
+           (spinneret:with-html-string (format-status-tabs status)))))
+  (show-selected-tab status))
+
 (export-always 'format-status)
 (defmethod format-status ((status status-buffer))
   "Return a string corresponding to the body of the HTML document of STATUS.
@@ -386,7 +394,7 @@ See `define-setf-handler'."
       (lambda (buffer) (when (eq buffer (active-buffer window))
                          (print-status window))))
     (define-setf-handler window active-buffer status-buffer
-      (lambda (win) (when (eq win window) (print-status window))))
+      (lambda (win) (when (eq win window) (update-status-tabs status-buffer))))
     (define-setf-handler network-buffer status status-buffer
       (lambda (buffer) (when (eq buffer (active-buffer window))
                          (print-status window))))
