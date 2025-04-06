@@ -18,9 +18,7 @@
   - [[#tests][Tests]]
   - [[#functional-package-managers][Functional package managers]]
     - [[#guix][Guix]]
-    - [[#nix][Nix]]
 - [[#installation][Installation]]
-- [[#interact-with-a-running-nyxt-binary][Interact with a running Nyxt binary]]
 - [[#contributing][Contributing]]
   - [[#help][Help]]
   - [[#commit-style][Commit style]]
@@ -45,10 +43,10 @@ Nyxt is written in Common Lisp.  Currently, we only target one of its
 implementations - [[http://www.sbcl.org/][SBCL]].
 
 Nyxt also depends on Common Lisp libraries.  These are bundled in the tarball
-mentioned above or fetched as git submodules (under =./_build=).
+mentioned above or fetched as Git submodules (under =./_build=).
 
 Note for advanced users: the single source of truth for CL libraries is dictated
-by the git submodules.  Any Nyxt build that deviates from it is considered
+by the Git submodules.  Any Nyxt build that deviates from it is considered
 unofficial.  See environment variable =NYXT_SUBMODULES= defined in the makefile
 to override the default behavior.
 
@@ -142,7 +140,7 @@ since some of them are stateful:
 
 ** Functional package managers
 
-If you're a user of the Guix or Nix package managers, see the sections below.
+If you're a user of the Guix, see the section below.
 
 *** Guix
 
@@ -153,18 +151,6 @@ See [[file:~/common-lisp/nyxt/guix.scm][guix.scm]].
       '((nyxt-guix
          ("guix" "shell" "-D" "-f" "guix.scm"
           "--" "bash" "-c" "env LD_LIBRARY_PATH=\"$GUIX_ENVIRONMENT/lib\" sbcl")
-         :env ("CL_SOURCE_REGISTRY=~/common-lisp//:~/common-lisp/nyxt/_build//")
-         :directory "~/common-lisp/nyxt/")))
-#+end_src
-
-*** Nix
-
-See [[file:~/common-lisp/nyxt/shell.nix][shell.nix]].
-
-#+begin_src emacs-lisp
-(setq slime-lisp-implementations
-      '((nyxt-nix
-         ("nix-shell" "shell.nix" "--run" "sbcl --dynamic-space-size 3072")
          :env ("CL_SOURCE_REGISTRY=~/common-lisp//:~/common-lisp/nyxt/_build//")
          :directory "~/common-lisp/nyxt/")))
 #+end_src
@@ -192,7 +178,6 @@ Feel free to contact us at any point if you need guidance.
 - [[https://github.com/atlas-engineer/nyxt/issues][Open up an issue on GitHub]];
 - Find Nyxt on Libera IRC: [[https://kiwiirc.com/nextclient/irc.libera.chat/nyxt][#nyxt]];
 - [[https://discord.com/channels/1178074327309099069/1178074327309099072][Nyxt's discord]];
-- [[https://discourse.atlas.engineer/][Nyxt's discourse]].
 
 ** Commit style
 

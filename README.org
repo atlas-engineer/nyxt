@@ -66,7 +66,6 @@ Supported platforms:
 The Nyxt team maintains the following distribution means:
 
 - [[https://flathub.org/apps/engineer.atlas.Nyxt][Nyxt on Flathub]]
-- [[https://hpc.guix.info/package/nyxt][Nyxt on Guix]]
 
 [[https://repology.org/project/nyxt/versions][Non-official distribution means are supported by the community as well]].  We're
 not accountable for their quality, so we kindly ask to report issues to the
