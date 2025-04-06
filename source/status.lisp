@@ -260,10 +260,12 @@ This leverages `mode-status' which can be specialized for individual modes."
   "Render the load status to HTML string.
 By default, renders a hourglass when loading a URL."
   (let ((buffer (active-buffer (window status))))
-    (if (and (web-buffer-p buffer)
-             (eq (slot-value buffer 'status) :loading))
-        "⧖ "
-        "")))
+    (spinneret:with-html
+      (:span
+       (if (and (web-buffer-p buffer)
+                (eq (slot-value buffer 'status) :loading))
+           "⧖ "
+           "")))))
 
 (export-always 'format-status-url)
 (defmethod format-status-url ((status status-buffer))
@@ -331,7 +333,7 @@ override it, redefine methods such as `format-status-url' or
             (:div :id "controls"
                   (format-status-buttons status))
             (:div :id "url"
-                  (:raw (format-status-load-status status))
+                  (format-status-load-status status)
                   (format-status-url status))
             (:div :id "tabs"
                   (format-status-tabs status))
