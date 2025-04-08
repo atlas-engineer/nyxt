@@ -70,14 +70,16 @@ If the file is modified externally, Nyxt automatically reloads it."))
             (handler-case (call-next-method)
               (error (c)
                 (log:info "Failed to load ~s: ~a" path c)
-                (handler-case (let ((backup (files:backup path)))
-                                (log:info "Erroring file backed up at ~s." backup))
+                (handler-case
+                    (let ((backup (files:backup path)))
+                      (log:info "Erroring file backed up at ~s." backup))
                   (error (c)
                     (log:info "Failed to back up file: ~a" c)
                     nil))
                 nil)))))))
 
-(defmethod files:write-file :around ((profile nyxt-profile) (file nyxt-file) &key &allow-other-keys)
+(defmethod files:write-file :around ((profile nyxt-profile) (file nyxt-file)
+                                     &key &allow-other-keys)
   (if *run-from-repl-p*
       (call-next-method)
       (handler-case (call-next-method)
@@ -85,22 +87,26 @@ If the file is modified externally, Nyxt automatically reloads it."))
           (log:info "Failed to save ~s: ~a" (files:expand file) c)
           nil))))
 
-(defmethod files:serialize ((profile nyxt-profile) (file nyxt-lisp-file) stream &key)
+(defmethod files:serialize ((profile nyxt-profile)
+                            (file nyxt-lisp-file) stream &key)
   ;; We need to make sure current package is :nyxt so that symbols are printed
   ;; with consistent namespaces.
   (let ((*package* (find-package :nyxt))
         (*print-length* nil))
     (s-serialization:serialize-sexp (files:content file) stream)))
 
-(defmethod files:deserialize ((profile nyxt-profile) (file nyxt-lisp-file) raw-content &key)
+(defmethod files:deserialize ((profile nyxt-profile)
+                              (file nyxt-lisp-file) raw-content &key)
   ;; We need to make sure current package is :nyxt so that symbols are printed
   ;; with consistent namespaces.
   (let ((*package* (find-package :nyxt)))
     (s-serialization:deserialize-sexp raw-content)))
 
-(defmethod prompter:object-attributes ((file files:file) (source prompter:source))
+(defmethod prompter:object-attributes ((file files:file)
+                                       (source prompter:source))
   `(("Path" ,(uiop:native-namestring (files:expand file)) (:width 3))
-    ("Exists?" ,(if (uiop:file-exists-p (uiop:ensure-pathname (files:expand file)))
+    ("Exists?" ,(if (uiop:file-exists-p
+                     (uiop:ensure-pathname (files:expand file)))
                     "yes"
                     "no")
                (:width 1))
@@ -112,16 +118,18 @@ If the file is modified externally, Nyxt automatically reloads it."))
    (prompter:active-attributes-keys
     '("Path" "Exists?" "Type" "Name")
     :accessor nil)
-   (prompter:constructor (let ((path-map (make-hash-table :test 'equal)))
-                           (dolist (file (files:all-files))
-                             (and-let* ((file)
-                                        ((editable-p file))
-                                        (full-path (files:expand file)))
-                               (when (and (funcall (alex:disjoin #'nyxt-subpackage-p #'nyxt-user-subpackage-p)
-                                                   (symbol-package (sera:class-name-of file)))
-                                          (not (uiop:directory-pathname-p full-path)))
-                                 (setf (gethash full-path path-map) file))))
-                           (alex:hash-table-values path-map)))))
+   (prompter:constructor
+    (let ((path-map (make-hash-table :test 'equal)))
+      (dolist (file (files:all-files))
+        (and-let* ((file)
+                   ((editable-p file))
+                   (full-path (files:expand file)))
+          (when (and (funcall (alex:disjoin #'nyxt-subpackage-p
+                                            #'nyxt-user-subpackage-p)
+                              (symbol-package (sera:class-name-of file)))
+                     (not (uiop:directory-pathname-p full-path)))
+            (setf (gethash full-path path-map) file))))
+      (alex:hash-table-values path-map)))))
 
 (export-always 'xdg-download-dir)
 (defun xdg-download-dir ()
