@@ -403,10 +403,10 @@ See `define-setf-handler'."
       (lambda (mode) (when (eq (buffer mode) (active-buffer window))
                        (print-status status-buffer))))
     (define-setf-handler document-buffer url status-buffer
-      (lambda (buffer) (when (eq buffer (active-buffer window))
-                         (print-status status-buffer))))
+      (lambda (_) (declare (ignore _))
+        (print-status status-buffer)))
     (define-setf-handler window active-buffer status-buffer
-      (lambda (win) (declare (ignore win))
+      (lambda (_) (declare (ignore _))
         (update-status-tabs status-buffer)
         (update-status-url status-buffer)
         (show-selected-tab status-buffer)))
@@ -414,4 +414,5 @@ See `define-setf-handler'."
       (lambda (buffer) (when (eq buffer (active-buffer window))
                          (print-status status-buffer))))
     (define-setf-handler browser buffers status-buffer
-      (lambda (_) (declare (ignore _)) (print-status status-buffer)))))
+      (lambda (_) (declare (ignore _))
+        (print-status status-buffer)))))
