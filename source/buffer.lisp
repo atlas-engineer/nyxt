@@ -771,7 +771,7 @@ LOAD-URL-P controls whether to load URL right at buffer creation."
                                 (uiop:remove-plist-keys '(:title :modes :url)
                                                         args)))))
     (when load-url-p
-      (buffer-load url :buffer buffer))
+      (ffi-buffer-load buffer url))
     buffer))
 
 (define-command make-buffer-focus (&key (url (default-new-buffer-url *browser*)))
