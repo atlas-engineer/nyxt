@@ -281,16 +281,16 @@ Note that by changing the default value, modifier keys can be remapped."))
                            :width (assoc-value window-bounds :width)
                            :height (- (assoc-value window-bounds :height)
                                       (+ height
-                                         (height (status-buffer window))
-                                         (height (message-buffer window))))))
+                                         (ffi-height (status-buffer window))
+                                         (ffi-height (message-buffer window))))))
     (electron:add-bounded-view window
                                prompt-buffer
                                :window-bounds-alist-var bounds
                                :x 0
                                :y (- (assoc-value bounds :height)
                                      (+ height
-                                        (height (status-buffer window))
-                                        (height (message-buffer window))))
+                                        (ffi-height (status-buffer window))
+                                        (ffi-height (message-buffer window))))
                                :width (assoc-value bounds :width)
                                :height height)))
 
