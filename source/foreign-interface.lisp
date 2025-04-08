@@ -255,14 +255,13 @@ startup routine."))
 (define-ffi-generic ffi-inspector-show (buffer)
   (:documentation "Show the renderer built-in inspector."))
 
-(define-ffi-generic ffi-print-status (window html-body)
-  (:method ((window t) html-body)
-    (with-slots (status-buffer) window
-      (html-write (spinneret:with-html-string
-                    (:head (:nstyle (style status-buffer)))
-                    (:body (:raw html-body)))
-                  status-buffer)))
-  (:documentation "Display status buffer in WINDOW according to HTML-BODY.
+(define-ffi-generic ffi-print-status (status html-body)
+  (:method ((status-buffer t) html-body)
+    (html-write (spinneret:with-html-string
+                  (:head (:nstyle (style status-buffer)))
+                  (:body (:raw html-body)))
+                status-buffer))
+  (:documentation "Display status buffer according to HTML-BODY.
 The `style' of the `status-buffer' is honored."))
 
 (define-ffi-generic ffi-print-message (window html-body)

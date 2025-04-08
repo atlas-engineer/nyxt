@@ -388,19 +388,23 @@ automatically removed."
                              (gethash ,key *setf-handlers*)))
              (funcall* handler ,class-name)))))))
 
+(defmethod print-status ((status-buffer status-buffer))
+  (ffi-print-status status-buffer (format-status status-buffer))
+  (show-selected-tab status-buffer))
+
 (defmethod customize-instance :after ((status-buffer status-buffer) &key)
   "Add handlers to redraw STATUS-BUFFER.
 See `define-setf-handler'."
   (with-slots (window) status-buffer
     (define-setf-handler modable-buffer modes status-buffer
       (lambda (buffer) (when (eq buffer (active-buffer window))
-                         (print-status window))))
+                         (print-status status-buffer))))
     (define-setf-handler mode enabled-p status-buffer
       (lambda (mode) (when (eq (buffer mode) (active-buffer window))
-                       (print-status window))))
+                       (print-status status-buffer))))
     (define-setf-handler document-buffer url status-buffer
       (lambda (buffer) (when (eq buffer (active-buffer window))
-                         (print-status window))))
+                         (print-status status-buffer))))
     (define-setf-handler window active-buffer status-buffer
       (lambda (win) (declare (ignore win))
         (update-status-tabs status-buffer)
@@ -408,6 +412,6 @@ See `define-setf-handler'."
         (show-selected-tab status-buffer)))
     (define-setf-handler network-buffer status status-buffer
       (lambda (buffer) (when (eq buffer (active-buffer window))
-                         (print-status window))))
+                         (print-status status-buffer))))
     (define-setf-handler browser buffers status-buffer
-      (lambda (_) (declare (ignore _)) (mapc #'print-status (window-list))))))
+      (lambda (_) (declare (ignore _)) (print-status status-buffer)))))

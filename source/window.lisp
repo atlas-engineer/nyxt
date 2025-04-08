@@ -92,12 +92,6 @@ The handlers take the window as argument."))
   (call-next-method)
   (set-window-title))
 
-(defmethod print-status ((window window))
-  (with-slots (status-buffer) window
-    (when (and window status-buffer)
-      (ffi-print-status window (format-status status-buffer))
-      (show-selected-tab status-buffer))))
-
 (hooks:define-hook-type window (function (window))
   "Hook acting on `window's.")
 
