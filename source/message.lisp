@@ -15,54 +15,92 @@
     :reader height
     :export t
     :documentation "The height of the message buffer in pixels.")
-   (style (theme:themed-css (theme *browser*)
-            #-darwin
-            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "400" :src "url('nyxt-resource:PublicSans-Regular.woff')" "format('woff')")
-            #-darwin
-            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "400" :src "url('nyxt-resource:PublicSans-Italic.woff')" "format('woff')")
-            #-darwin
-            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "100" :src "url('nyxt-resource:PublicSans-Thin.woff')" "format('woff')")
-            #-darwin
-            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "100" :src "url('nyxt-resource:PublicSans-ThinItalic.woff')" "format('woff')")
-            #-darwin
-            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "200" :src "url('nyxt-resource:PublicSans-ExtraLight.woff')" "format('woff')")
-            #-darwin
-            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "200" :src "url('nyxt-resource:PublicSans-ExtraLightItalic.woff')" "format('woff')")
-            #-darwin
-            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "300" :src "url('nyxt-resource:PublicSans-Light.woff')" "format('woff')")
-            #-darwin
-            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "300" :src "url('nyxt-resource:PublicSans-LightItalic.woff')" "format('woff')")
-            #-darwin
-            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "500" :src "url('nyxt-resource:PublicSans-Medium.woff')" "format('woff')")
-            #-darwin
-            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "500" :src "url('nyxt-resource:PublicSans-MediumItalic.woff')" "format('woff')")
-            #-darwin
-            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "600" :src "url('nyxt-resource:PublicSans-SemiBold.woff')" "format('woff')")
-            #-darwin
-            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "600" :src "url('nyxt-resource:PublicSans-SemiBoldItalic.woff')" "format('woff')")
-            #-darwin
-            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "700" :src "url('nyxt-resource:PublicSans-Bold.woff')" "format('woff')")
-            #-darwin
-            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "700" :src "url('nyxt-resource:PublicSans-BoldItalic.woff')" "format('woff')")
-            #-darwin
-            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "800" :src "url('nyxt-resource:PublicSans-ExtraBold.woff')" "format('woff')")
-            #-darwin
-            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "800" :src "url('nyxt-resource:PublicSans-ExtraBoldItalic.woff')" "format('woff')")
-            #-darwin
-            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "900" :src "url('nyxt-resource:PublicSans-Black.woff')" "format('woff')")
-            #-darwin
-            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "900" :src "url('nyxt-resource:PublicSans-BlackItalic.woff')" "format('woff')")
-            #-darwin
-            '(:font-face :font-family "dejavu sans mono" :src "url('nyxt-resource:DejaVuSansMono.ttf')" "format('ttf')")
-            `(body
-              :background-color ,theme:background-color-
-              :color ,theme:on-background-color
-              :font-family ,theme:font-family
-              :font-size "75vh"
-              :line-height "100vh"
-              :padding 0
-              :padding-left "4px"
-              :margin 0))))
+   (style
+    (theme:themed-css (theme *browser*)
+      #-darwin
+      '(:font-face :font-family "public sans" :font-style "normal" :font-weight
+        "400" :src "url('nyxt-resource:PublicSans-Regular.woff')"
+        "format('woff')")
+      #-darwin
+      '(:font-face :font-family "public sans" :font-style "italic" :font-weight
+        "400" :src "url('nyxt-resource:PublicSans-Italic.woff')"
+        "format('woff')")
+      #-darwin
+      '(:font-face :font-family "public sans" :font-style "normal" :font-weight
+        "100" :src "url('nyxt-resource:PublicSans-Thin.woff')"
+        "format('woff')")
+      #-darwin
+      '(:font-face :font-family "public sans" :font-style "italic" :font-weight
+        "100" :src "url('nyxt-resource:PublicSans-ThinItalic.woff')"
+        "format('woff')")
+      #-darwin
+      '(:font-face :font-family "public sans" :font-style "normal" :font-weight
+        "200" :src "url('nyxt-resource:PublicSans-ExtraLight.woff')"
+        "format('woff')")
+      #-darwin
+      '(:font-face :font-family "public sans" :font-style "italic" :font-weight
+        "200" :src "url('nyxt-resource:PublicSans-ExtraLightItalic.woff')"
+        "format('woff')")
+      #-darwin
+      '(:font-face :font-family "public sans" :font-style "normal" :font-weight
+        "300" :src "url('nyxt-resource:PublicSans-Light.woff')"
+        "format('woff')")
+      #-darwin
+      '(:font-face :font-family "public sans" :font-style "italic" :font-weight
+        "300" :src "url('nyxt-resource:PublicSans-LightItalic.woff')"
+        "format('woff')")
+      #-darwin
+      '(:font-face :font-family "public sans" :font-style "normal" :font-weight
+        "500" :src "url('nyxt-resource:PublicSans-Medium.woff')"
+        "format('woff')")
+      #-darwin
+      '(:font-face :font-family "public sans" :font-style "italic" :font-weight
+        "500" :src "url('nyxt-resource:PublicSans-MediumItalic.woff')"
+        "format('woff')")
+      #-darwin
+      '(:font-face :font-family "public sans" :font-style "normal" :font-weight
+        "600" :src "url('nyxt-resource:PublicSans-SemiBold.woff')"
+        "format('woff')")
+      #-darwin
+      '(:font-face :font-family "public sans" :font-style "italic" :font-weight
+        "600" :src "url('nyxt-resource:PublicSans-SemiBoldItalic.woff')"
+        "format('woff')")
+      #-darwin
+      '(:font-face :font-family "public sans" :font-style "normal" :font-weight
+        "700" :src "url('nyxt-resource:PublicSans-Bold.woff')"
+        "format('woff')")
+      #-darwin
+      '(:font-face :font-family "public sans" :font-style "italic" :font-weight
+        "700" :src "url('nyxt-resource:PublicSans-BoldItalic.woff')"
+        "format('woff')")
+      #-darwin
+      '(:font-face :font-family "public sans" :font-style "normal" :font-weight
+        "800" :src "url('nyxt-resource:PublicSans-ExtraBold.woff')"
+        "format('woff')")
+      #-darwin
+      '(:font-face :font-family "public sans" :font-style "italic" :font-weight
+        "800" :src "url('nyxt-resource:PublicSans-ExtraBoldItalic.woff')"
+        "format('woff')")
+      #-darwin
+      '(:font-face :font-family "public sans" :font-style "normal" :font-weight
+        "900" :src "url('nyxt-resource:PublicSans-Black.woff')"
+        "format('woff')")
+      #-darwin
+      '(:font-face :font-family "public sans" :font-style "italic" :font-weight
+        "900" :src "url('nyxt-resource:PublicSans-BlackItalic.woff')"
+        "format('woff')")
+      #-darwin
+      '(:font-face :font-family "dejavu sans mono" :src
+        "url('nyxt-resource:DejaVuSansMono.ttf')" "format('ttf')")
+      `(body
+        :background-color ,theme:background-color-
+        :color ,theme:on-background-color
+        :font-family ,theme:font-family
+        :font-size "75vh"
+        :line-height "100vh"
+        :padding 0
+        :padding-left "4px"
+        :margin 0))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
@@ -74,7 +112,8 @@
 
 (defclass messages-appender (log4cl-impl:appender) ())
 
-(defmethod log4cl-impl:appender-do-append ((appender messages-appender) logger level log-func)
+(defmethod log4cl-impl:appender-do-append ((appender messages-appender)
+                                           logger level log-func)
   (when (<= level (if (getf *options* :verbose)
                       log4cl:+log-level-warn+
                       log4cl:+log-level-error+))
@@ -82,7 +121,8 @@
   (when *browser*
     (push
      ;; TODO: Include time in *Messages* entries.
-     ;; (make-instance 'log4cl:pattern-layout :conversion-pattern "<%p> [%D{%H:%M:%S}] %m%n" )
+     ;; (make-instance 'log4cl:pattern-layout :conversion-pattern "<%p>
+     ;; [%D{%H:%M:%S}] %m%n" )
      (with-output-to-string (s)
        (log4cl-impl:layout-to-stream
         (slot-value appender 'log4cl-impl:layout) s logger level log-func))
