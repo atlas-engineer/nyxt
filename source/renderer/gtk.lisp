@@ -401,6 +401,8 @@ response.  The BODY is wrapped with `with-protect'."
          (setf (gtk:gtk-widget-height-request status-container)
                (height status-buffer))
          (setf prompt-buffer-view (make-instance 'webkit:webkit-web-view))
+         ;; Force WebKit initialization by loading a URL.
+         (webkit:webkit-web-view-load-uri prompt-buffer-view "about:blank")
          (gtk:gtk-box-pack-end root-box-layout
                                prompt-buffer-container
                                :expand nil)
