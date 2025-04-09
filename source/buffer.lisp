@@ -3,8 +3,9 @@
 
 (in-package :nyxt)
 
-(hooks:define-hook-type keymaps-buffer (function ((list-of keymaps:keymap) buffer)
-                                                 (values &optional (list-of keymaps:keymap) buffer))
+(hooks:define-hook-type keymaps-buffer
+    (function ((list-of keymaps:keymap) buffer)
+              (values &optional (list-of keymaps:keymap) buffer))
   "Hook to modify keymaps.
 Get a list of `nkeymaps:keymap's and `buffer' and return a new list and buffer.")
 (export-always '(hook-keymaps-buffer))
@@ -51,255 +52,293 @@ inherited from the superclasses.")
    (url (quri:uri ""))
    (url-at-point (quri:uri ""))
    (title "")
-   (style (theme:themed-css (theme *browser*)
-            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "400" :src "url('nyxt-resource:PublicSans-Regular.woff')" "format('woff')")
-            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "400" :src "url('nyxt-resource:PublicSans-Italic.woff')" "format('woff')")
-            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "100" :src "url('nyxt-resource:PublicSans-Thin.woff')" "format('woff')")
-            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "100" :src "url('nyxt-resource:PublicSans-ThinItalic.woff')" "format('woff')")
-            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "200" :src "url('nyxt-resource:PublicSans-ExtraLight.woff')" "format('woff')")
-            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "200" :src "url('nyxt-resource:PublicSans-ExtraLightItalic.woff')" "format('woff')")
-            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "300" :src "url('nyxt-resource:PublicSans-Light.woff')" "format('woff')")
-            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "300" :src "url('nyxt-resource:PublicSans-LightItalic.woff')" "format('woff')")
-            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "500" :src "url('nyxt-resource:PublicSans-Medium.woff')" "format('woff')")
-            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "500" :src "url('nyxt-resource:PublicSans-MediumItalic.woff')" "format('woff')")
-            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "600" :src "url('nyxt-resource:PublicSans-SemiBold.woff')" "format('woff')")
-            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "600" :src "url('nyxt-resource:PublicSans-SemiBoldItalic.woff')" "format('woff')")
-            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "700" :src "url('nyxt-resource:PublicSans-Bold.woff')" "format('woff')")
-            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "700" :src "url('nyxt-resource:PublicSans-BoldItalic.woff')" "format('woff')")
-            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "800" :src "url('nyxt-resource:PublicSans-ExtraBold.woff')" "format('woff')")
-            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "800" :src "url('nyxt-resource:PublicSans-ExtraBoldItalic.woff')" "format('woff')")
-            '(:font-face :font-family "public sans" :font-style "normal" :font-weight "900" :src "url('nyxt-resource:PublicSans-Black.woff')" "format('woff')")
-            '(:font-face :font-family "public sans" :font-style "italic" :font-weight "900" :src "url('nyxt-resource:PublicSans-BlackItalic.woff')" "format('woff')")
-            '(:font-face :font-family "dejavu sans mono" :src "url('nyxt-resource:DejaVuSansMono.ttf')" "format('ttf')")
-            '(*
-              :box-sizing border-box)
-            `(body
-              :background-color ,theme:background-color
-              :color ,theme:on-background-color
-              :font-family ,theme:font-family
-              :margin-left "20px"
-              :margin-top "20px")
-            '(ul
-              :margin-top "0"
-              :margin-bottom "0")
-            '("details > *"
-              :margin-left "18px")
-            '("details > ul"
-              :margin-left "inherit")
-            '("details summary"
-              :margin-left "inherit"
-              :margin-bottom "8px"
-              :cursor "pointer")
-            '("summary::-webkit-details-marker"
-              :padding-bottom "4px")
-            '("details > summary"
-              :list-style-type "none")
-            '("details > summary::-webkit-details-marker"
-              :display "none")
-            '("details > summary::before"
-              :font-weight "bold"
-              :content "+"
-              :margin-right "5px"
-              :display "inline-block")
-            '("details[open] > summary::before"
-              :content "−")
-            '(.section
-              :margin-top "2em")
-            `("h1,h2,h3,h4,h5,h6"
-              :color ,theme:primary-color)
-            `(hr
-              :background-color ,theme:secondary-color
-              :color ,theme:on-secondary-color
-              :height "2px"
-              :border-radius "2px"
-              :border-width "0")
-            '(button
-              :background "transparent"
-              :color "inherit"
-              :border "none"
-              :padding 0
-              :font "inherit"
-              :outline "inherit")
-            `(.button
-              :appearance "menulist-button"
-              :background-color ,theme:primary-color
-              :color ,theme:on-primary-color
-              :display "inline-block"
-              :text-decoration "none"
-              :border-radius "2px"
-              :border-color ,theme:primary-color
-              :border-style "solid"
-              :border-width "0.2em"
-              :padding "0.2em"
-              :margin "0.2em")
-            `(select.button
-              :appearance auto
-              :background-color ,theme:primary-color
-              :color "black !important")
-            `(code
-              :font-family ,theme:monospace-font-family
-              :font-size "0.9rem")
-            `(.code-select
-              :position "absolute"
-              :top "0"
-              :right "0"
-              :padding-right "8px !important"
-              :direction "rtl"
-              :appearance "none !important"
-              :border "none"
-              :background-color "transparent !important"
-              :color "black !important")
-            `(".code-select:hover"
-              :color ,theme:action-color !important)
-            '((:and .button :hover)
-              :cursor "pointer"
-              :opacity 0.8)
-            `((:and .button (:or :visited :active))
-              :color ,theme:background-color)
-            `(.link
-              :appearance none
-              :text-decoration "underline"
-              :display "inline"
-              :color ,theme:primary-color)
-            '(".link:hover"
-              :opacity 0.8)
-            `(.action
-              :color ,theme:action-color)
-            `(.button.action
-              :background-color ,theme:action-color
-              :color ,theme:on-action-color
-              :border-color ,theme:action-color+)
-            `(.warning
-              :color ,theme:warning-color)
-            `(.button.warning
-              :background-color ,theme:warning-color
-              :color ,theme:on-warning-color
-              :border-color ,theme:warning-color+)
-            `(.success
-              :color ,theme:success-color)
-            `(.button.success
-              :background-color ,theme:success-color
-              :color ,theme:on-success-color
-              :border-color ,theme:success-color+)
-            `(.highlight
-              :color ,theme:highlight-color)
-            `(.button.highlight
-              :background-color ,theme:highlight-color
-              :color ,theme:on-highlight-color
-              :border-color ,theme:highlight-color+)
-            `(.plain
-              :color ,theme:on-background-color
-              :background-color ,theme:background-color)
-            `(.input
-              :appearance "textfield"
-              :display "inline-block"
-              :color "black"
-              :background-color "white"
-              :border "0.2em" solid ,theme:secondary-color
-              :border-radius "4px"
-              :outline "none"
-              :padding "0.2em"
-              :margin "0.2em")
-            `(a
-              :color ,theme:primary-color)
-            `("a:hover"
-              :opacity 0.8)
-            `(pre
-              :font-family ,theme:monospace-font-family
-              :font-size "0.9rem"
-              :border-radius "2px"
-              :overflow "auto"
-              :padding "5px")
-            '("table"
-              :border-radius "2px"
-              :border-spacing "0"
-              :width "100%")
-            `("pre, p code"
-              :color ,theme:on-secondary-color
-              :background-color ,theme:secondary-color+)
-            ;; FIXME: CSS4 has a :has() selector that would be perfect here:
-            ;; a:has(code) { color: theme:on-codeblock;} Unfortunately, LASS
-            ;; doesn't (yet?) support it. Thus the hack:
-            '("a code"
-              :text-decoration underline)
-            `("table, th, td"
-              :border-color ,theme:primary-color
-              :border-width "1px"
-              :border-style "solid"
-              :background-color ,theme:background-color
-              :color ,theme:on-background-color)
-            '("td, th"
-              :padding "6px")
-            `(th
-              :background-color ,theme:primary-color
-              :color ,theme:on-primary-color
-              :text-align "left")
-            '("th:first-of-type"
-              :border-top-left-radius "1px")
-            '("th:last-of-type"
-              :border-top-right-radius "1px")
-            '("tr:last-of-type td:first-of-type"
-              :border-bottom-left-radius "2px")
-            '("tr:last-of-type td:last-of-type"
-              :border-bottom-right-radius "2px")
-            '("table.resizable-table th"
-              :resize "horizontal"
-              :overflow "auto")
-            `("::selection"
-              :color ,theme:on-action-color
-              :background-color ,theme:action-color)
-            `(".mode-menu"
-              :overflow-x "scroll"
-              :white-space "nowrap"
-              :background-color ,theme:background-color-
-              :position "sticky"
-              :margin-top "-20px"
-              :top 0
-              :width "100%"
-              :height "32px")
-            `(".mode-menu > button"
-              :color ,theme:on-secondary-color
-              :padding-left "8px"
-              :padding-right "8px"
-              :font-size "14px"
-              :border-radius "2px"
-              :margin "0"
-              :margin-right "12px"
-              :border "none"
-              :height "32px")
-            `(".mode-menu > .binding"
-              :background-color ,theme:secondary-color)
-            `(".mode-menu > .command"
-              :background-color ,theme:background-color-)
-            '(".mode-menu::-webkit-scrollbar"
-              :display "none")
-            '("dl"
-              :display "grid"
-              :grid-template-columns "max-content auto"
-              :row-gap "10px"
-              :column-gap "10px")
-            `("dt"
-              :grid-column-start 1
-              :padding "4px"
-              :padding-left "8px"
-              :padding-right "8px"
-              :border-radius "2px"
-              :font-weight "bold"
-              :background-color ,theme:background-color-)
-            '("dd"
-              :margin-inline-start "0"
-              :grid-column-start 2)
-            '("dd pre"
-              :margin-top "0"
-              :margin-bottom "0")
-            '(".nsection-anchor"
-              :display "none")
-            '(".nsection-summary:hover .nsection-anchor"
-              :display "inline-block")))
+   (style
+    (theme:themed-css (theme *browser*)
+      '(:font-face :font-family "public sans" :font-style "normal" :font-weight
+        "400" :src "url('nyxt-resource:PublicSans-Regular.woff')"
+        "format('woff')")
+      '(:font-face :font-family "public sans" :font-style "italic" :font-weight
+        "400" :src "url('nyxt-resource:PublicSans-Italic.woff')"
+        "format('woff')")
+      '(:font-face :font-family "public sans" :font-style "normal" :font-weight
+        "100" :src "url('nyxt-resource:PublicSans-Thin.woff')"
+        "format('woff')")
+      '(:font-face :font-family "public sans" :font-style "italic" :font-weight
+        "100" :src "url('nyxt-resource:PublicSans-ThinItalic.woff')"
+        "format('woff')")
+      '(:font-face :font-family "public sans" :font-style "normal" :font-weight
+        "200" :src "url('nyxt-resource:PublicSans-ExtraLight.woff')"
+        "format('woff')")
+      '(:font-face :font-family "public sans" :font-style "italic" :font-weight
+        "200" :src "url('nyxt-resource:PublicSans-ExtraLightItalic.woff')"
+        "format('woff')")
+      '(:font-face :font-family "public sans" :font-style "normal" :font-weight
+        "300" :src "url('nyxt-resource:PublicSans-Light.woff')"
+        "format('woff')")
+      '(:font-face :font-family "public sans" :font-style "italic" :font-weight
+        "300" :src "url('nyxt-resource:PublicSans-LightItalic.woff')"
+        "format('woff')")
+      '(:font-face :font-family "public sans" :font-style "normal" :font-weight
+        "500" :src "url('nyxt-resource:PublicSans-Medium.woff')"
+        "format('woff')")
+      '(:font-face :font-family "public sans" :font-style "italic" :font-weight
+        "500" :src "url('nyxt-resource:PublicSans-MediumItalic.woff')"
+        "format('woff')")
+      '(:font-face :font-family "public sans" :font-style "normal" :font-weight
+        "600" :src "url('nyxt-resource:PublicSans-SemiBold.woff')"
+        "format('woff')")
+      '(:font-face :font-family "public sans" :font-style "italic" :font-weight
+        "600" :src "url('nyxt-resource:PublicSans-SemiBoldItalic.woff')"
+        "format('woff')")
+      '(:font-face :font-family "public sans" :font-style "normal" :font-weight
+        "700" :src "url('nyxt-resource:PublicSans-Bold.woff')"
+        "format('woff')")
+      '(:font-face :font-family "public sans" :font-style "italic" :font-weight
+        "700" :src "url('nyxt-resource:PublicSans-BoldItalic.woff')"
+        "format('woff')")
+      '(:font-face :font-family "public sans" :font-style "normal" :font-weight
+        "800" :src "url('nyxt-resource:PublicSans-ExtraBold.woff')"
+        "format('woff')")
+      '(:font-face :font-family "public sans" :font-style "italic" :font-weight
+        "800" :src "url('nyxt-resource:PublicSans-ExtraBoldItalic.woff')"
+        "format('woff')")
+      '(:font-face :font-family "public sans" :font-style "normal" :font-weight
+        "900" :src "url('nyxt-resource:PublicSans-Black.woff')"
+        "format('woff')")
+      '(:font-face :font-family "public sans" :font-style "italic" :font-weight
+        "900" :src "url('nyxt-resource:PublicSans-BlackItalic.woff')"
+        "format('woff')")
+      '(:font-face :font-family "dejavu sans mono"
+        :src "url('nyxt-resource:DejaVuSansMono.ttf')" "format('ttf')")
+      '(*
+        :box-sizing border-box)
+      `(body
+        :background-color ,theme:background-color
+        :color ,theme:on-background-color
+        :font-family ,theme:font-family
+        :margin-left "20px"
+        :margin-top "20px")
+      '(ul
+        :margin-top "0"
+        :margin-bottom "0")
+      '("details > *"
+        :margin-left "18px")
+      '("details > ul"
+        :margin-left "inherit")
+      '("details summary"
+        :margin-left "inherit"
+        :margin-bottom "8px"
+        :cursor "pointer")
+      '("summary::-webkit-details-marker"
+        :padding-bottom "4px")
+      '("details > summary"
+        :list-style-type "none")
+      '("details > summary::-webkit-details-marker"
+        :display "none")
+      '("details > summary::before"
+        :font-weight "bold"
+        :content "+"
+        :margin-right "5px"
+        :display "inline-block")
+      '("details[open] > summary::before"
+        :content "−")
+      '(.section
+        :margin-top "2em")
+      `("h1,h2,h3,h4,h5,h6"
+        :color ,theme:primary-color)
+      `(hr
+        :background-color ,theme:secondary-color
+        :color ,theme:on-secondary-color
+        :height "2px"
+        :border-radius "2px"
+        :border-width "0")
+      '(button
+        :background "transparent"
+        :color "inherit"
+        :border "none"
+        :padding 0
+        :font "inherit"
+        :outline "inherit")
+      `(.button
+        :appearance "menulist-button"
+        :background-color ,theme:primary-color
+        :color ,theme:on-primary-color
+        :display "inline-block"
+        :text-decoration "none"
+        :border-radius "2px"
+        :border-color ,theme:primary-color
+        :border-style "solid"
+        :border-width "0.2em"
+        :padding "0.2em"
+        :margin "0.2em")
+      `(select.button
+        :appearance auto
+        :background-color ,theme:primary-color
+        :color "black !important")
+      `(code
+        :font-family ,theme:monospace-font-family
+        :font-size "0.9rem")
+      `(.code-select
+        :position "absolute"
+        :top "0"
+        :right "0"
+        :padding-right "8px !important"
+        :direction "rtl"
+        :appearance "none !important"
+        :border "none"
+        :background-color "transparent !important"
+        :color "black !important")
+      `(".code-select:hover"
+        :color ,theme:action-color !important)
+      '((:and .button :hover)
+        :cursor "pointer"
+        :opacity 0.8)
+      `((:and .button (:or :visited :active))
+        :color ,theme:background-color)
+      `(.link
+        :appearance none
+        :text-decoration "underline"
+        :display "inline"
+        :color ,theme:primary-color)
+      '(".link:hover"
+        :opacity 0.8)
+      `(.action
+        :color ,theme:action-color)
+      `(.button.action
+        :background-color ,theme:action-color
+        :color ,theme:on-action-color
+        :border-color ,theme:action-color+)
+      `(.warning
+        :color ,theme:warning-color)
+      `(.button.warning
+        :background-color ,theme:warning-color
+        :color ,theme:on-warning-color
+        :border-color ,theme:warning-color+)
+      `(.success
+        :color ,theme:success-color)
+      `(.button.success
+        :background-color ,theme:success-color
+        :color ,theme:on-success-color
+        :border-color ,theme:success-color+)
+      `(.highlight
+        :color ,theme:highlight-color)
+      `(.button.highlight
+        :background-color ,theme:highlight-color
+        :color ,theme:on-highlight-color
+        :border-color ,theme:highlight-color+)
+      `(.plain
+        :color ,theme:on-background-color
+        :background-color ,theme:background-color)
+      `(.input
+        :appearance "textfield"
+        :display "inline-block"
+        :color "black"
+        :background-color "white"
+        :border "0.2em" solid ,theme:secondary-color
+        :border-radius "4px"
+        :outline "none"
+        :padding "0.2em"
+        :margin "0.2em")
+      `(a
+        :color ,theme:primary-color)
+      `("a:hover"
+        :opacity 0.8)
+      `(pre
+        :font-family ,theme:monospace-font-family
+        :font-size "0.9rem"
+        :border-radius "2px"
+        :overflow "auto"
+        :padding "5px")
+      '("table"
+        :border-radius "2px"
+        :border-spacing "0"
+        :width "100%")
+      `("pre, p code"
+        :color ,theme:on-secondary-color
+        :background-color ,theme:secondary-color+)
+      ;; FIXME: CSS4 has a :has() selector that would be perfect here:
+      ;; a:has(code) { color: theme:on-codeblock;} Unfortunately, LASS
+      ;; doesn't (yet?) support it. Thus the hack:
+      '("a code"
+        :text-decoration underline)
+      `("table, th, td"
+        :border-color ,theme:primary-color
+        :border-width "1px"
+        :border-style "solid"
+        :background-color ,theme:background-color
+        :color ,theme:on-background-color)
+      '("td, th"
+        :padding "6px")
+      `(th
+        :background-color ,theme:primary-color
+        :color ,theme:on-primary-color
+        :text-align "left")
+      '("th:first-of-type"
+        :border-top-left-radius "1px")
+      '("th:last-of-type"
+        :border-top-right-radius "1px")
+      '("tr:last-of-type td:first-of-type"
+        :border-bottom-left-radius "2px")
+      '("tr:last-of-type td:last-of-type"
+        :border-bottom-right-radius "2px")
+      '("table.resizable-table th"
+        :resize "horizontal"
+        :overflow "auto")
+      `("::selection"
+        :color ,theme:on-action-color
+        :background-color ,theme:action-color)
+      `(".mode-menu"
+        :overflow-x "scroll"
+        :white-space "nowrap"
+        :background-color ,theme:background-color-
+        :position "sticky"
+        :margin-top "-20px"
+        :top 0
+        :width "100%"
+        :height "32px")
+      `(".mode-menu > button"
+        :color ,theme:on-secondary-color
+        :padding-left "8px"
+        :padding-right "8px"
+        :font-size "14px"
+        :border-radius "2px"
+        :margin "0"
+        :margin-right "12px"
+        :border "none"
+        :height "32px")
+      `(".mode-menu > .binding"
+        :background-color ,theme:secondary-color)
+      `(".mode-menu > .command"
+        :background-color ,theme:background-color-)
+      '(".mode-menu::-webkit-scrollbar"
+        :display "none")
+      '("dl"
+        :display "grid"
+        :grid-template-columns "max-content auto"
+        :row-gap "10px"
+        :column-gap "10px")
+      `("dt"
+        :grid-column-start 1
+        :padding "4px"
+        :padding-left "8px"
+        :padding-right "8px"
+        :border-radius "2px"
+        :font-weight "bold"
+        :background-color ,theme:background-color-)
+      '("dd"
+        :margin-inline-start "0"
+        :grid-column-start 2)
+      '("dd pre"
+        :margin-top "0"
+        :margin-bottom "0")
+      '(".nsection-anchor"
+        :display "none")
+      '(".nsection-summary:hover .nsection-anchor"
+        :display "inline-block")))
    (buffer-delete-hook          ; TODO: Should we move this to `context-buffer'?
-    (make-instance 'hook-buffer)
-    :type hook-buffer
-    :documentation "Hook run before `buffer-delete' takes effect.
+                       (make-instance 'hook-buffer)
+                       :type hook-buffer
+                       :documentation "Hook run before `buffer-delete' takes effect.
 The handlers take the buffer as argument."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
@@ -324,7 +363,8 @@ Useful in FFI functions where we usually specialize things against
   buffer)
 
 (export-always 'finalize-buffer)
-(defmethod finalize-buffer ((buffer buffer) &key (browser *browser*) &allow-other-keys)
+(defmethod finalize-buffer ((buffer buffer)
+                            &key (browser *browser*) &allow-other-keys)
   "Finalize instantiation of BUFFER."
   (declare (ignore browser))
   t)
@@ -350,11 +390,12 @@ access the initialized buffer.")
   (:metaclass user-class)
   (:documentation "A buffer whose behavior can be modified with `mode's."))
 
-(defmethod finalize-buffer ((buffer modable-buffer) &key (browser *browser*) no-hook-p extra-modes)
+(defmethod finalize-buffer ((buffer modable-buffer)
+                            &key (browser *browser*) no-hook-p extra-modes)
   "Finalize instantiation of modable BUFFER.
 In particular,
 - run `buffer-make-hook';
-- `enable' the modes from the `modes' slot, the `default-modes' and the EXTRA-MODES,
+- `enable' the modes from the `modes' slot, `default-modes', and the EXTRA-MODES,
 - run `buffer-after-make-hook'.
 This method should be called by the renderer after instantiating the web view
 of BUFFER."
@@ -387,7 +428,7 @@ regardless of the buffer, with a meaningful result."
 (define-class input-buffer (buffer)
   ((keyscheme
     keyscheme:cua
-    :documentation "The keyscheme that will be used for all modes in the current buffer.")
+    :documentation "The keyscheme that will be used for all modes.")
    (current-keymaps-hook
     (make-instance 'hook-keymaps-buffer
                    :combination #'hooks:combine-composed-hook)
@@ -527,12 +568,13 @@ scope is that of buffers."))
   (:method append ((buffer buffer))
     (slot-value buffer 'default-modes))
   (:method :around ((buffer buffer))
-    "Remove the duplicates from the `default-modes' and bring them all to a proper form.
+    "Remove the duplicates from the `default-modes' and normalize them.
 This allows setting modes as :DARK-MODE or 'EMACS-MODE in whatever package, and
 Nsymbols will find the proper symbol, unless duplicate."
     (mapcar (alex:rcurry #'resolve-user-symbol :mode (list-all-packages))
             (remove-duplicates (call-next-method)
-                               ;; Modes at the beginning of the list have higher priority.
+                               ;; Modes at the beginning of the list have higher
+                               ;; priority.
                                :from-end t)))
   (:documentation "BUFFER's default modes. `append's all the methods applicable
 to BUFFER to get the full list of modes."))
@@ -541,7 +583,7 @@ to BUFFER to get the full list of modes."))
   ((status
     :unloaded
     :type (member :loading :finished :unloaded :failed)
-    :export nil ; TODO: Need to decide if we want progress / errors before exposing to the user.
+    :export nil
     :documentation "The status of the buffer.
 - `:loading' when loading a web resource.
 - `:finished' when done loading a web resource.
@@ -585,9 +627,9 @@ If a `request-data' object is returned, it gets passed to other handlers
 or right to the renderer if there are no more handlers.
 If nil is returned, stop the hook and cancel the resource load.
 
-The current buffer URL should not be relied upon.  With WebKitGTK, it is the same
-as (url REQUEST-DATA).
-If you need to access the URL before this request, inspect the document-mode history.
+The current buffer URL should not be relied upon.  With WebKitGTK, it is the
+same as (url REQUEST-DATA).  If you need to access the URL before this request,
+inspect the document-mode history.
 
 Example:
 
@@ -603,14 +645,15 @@ Example:
    (certificate-exceptions
     '()
     :type (list-of string)
-    :documentation "A list of hostnames for which certificate errors shall be ignored."))
+    :documentation "A list of hostnames for ignoring certificate errors."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
   (:metaclass user-class)
   (:documentation "Buffers that must interact with resources over the network."))
 
-(define-class web-buffer (context-buffer network-buffer modable-buffer document-buffer input-buffer)
+(define-class web-buffer
+    (context-buffer network-buffer modable-buffer document-buffer input-buffer)
   ((keywords
     nil
     :reader nil
@@ -634,7 +677,8 @@ Return the created buffer."
     (hooks:run-hook (buffer-before-make-hook browser) buffer))
   buffer)
 
-(defmethod customize-instance :after ((buffer context-buffer) &key &allow-other-keys)
+(defmethod customize-instance :after ((buffer context-buffer)
+                                      &key &allow-other-keys)
   "Finalize buffer.
 Return the created buffer."
   (buffers-set (id buffer) buffer)
@@ -650,16 +694,19 @@ Return the created buffer."
         (ps:chain node (set-attribute "nyxt-identifier"
                                       (ps:stringify nyxt-identifier-counter))))
       (incf nyxt-identifier-counter)
-      (dolist (child (if (ps:chain node shadow-root)
-                         (ps:chain *array
-                                   (from (ps:@ node shadow-root children))
-                                   (concat (ps:chain *array (from (ps:@ node children)))))
-                         (ps:chain node children)))
+      (dolist
+          (child
+           (if (ps:chain node shadow-root)
+               (ps:chain *array
+                         (from (ps:@ node shadow-root children))
+                         (concat (ps:chain *array (from (ps:@ node children)))))
+                   (ps:chain node children)))
         (add-nyxt-identifiers child))
       (when (ps:@ node shadow-root)
         (ps:chain node (set-attribute "nyxt-shadow-root" "")))
       nyxt-identifier-counter)
-    (setf nyxt-identifier-counter (add-nyxt-identifiers (ps:chain document body))))
+    (setf nyxt-identifier-counter
+          (add-nyxt-identifiers (ps:chain document body))))
   (when-let ((body-json (with-current-buffer buffer
                           (nyxt/dom::get-document-body-json))))
     (let ((dom (nyxt/dom::named-json-parse body-json)))
@@ -692,8 +739,9 @@ In case the page changed more than `document-model-delta-threshold', runs
               (element-count (%count-dom-elements)))
           (if (and value
                    element-count
-                   ;; Check whether the difference in element count is significant.
-                   (< (abs (- (length (clss:select "*" value)) (truncate element-count)))
+                   ;; Check the difference in element count.
+                   (< (abs (- (length (clss:select "*" value))
+                              (truncate element-count)))
                       (document-model-delta-threshold buffer)))
               value
               (progn
@@ -717,9 +765,10 @@ In case the page changed more than `document-model-delta-threshold', runs
   (or (slot-value buffer 'keywords)
       (when-let ((document (document-model buffer)))
         (setf (slot-value buffer 'keywords)
-              (analysis:extract-keywords (str:join " "
-                                                   (map 'list #'plump:text
-                                                        (clss:select "p" document))))))))
+              (analysis:extract-keywords
+               (str:join " "
+                         (map 'list #'plump:text
+                              (clss:select "p" document))))))))
 
 (define-class keyword-source (prompter:source)
   ((prompter:name "Keywords")
@@ -904,9 +953,10 @@ If none exist, make a new inactive buffer."
                                      (lambda-mapped-command buffer-delete)
                                      'reload-buffers))
    (prompter:actions-on-current-suggestion-enabled-p t)
-   (prompter:actions-on-current-suggestion (lambda-command set-current-buffer* (buffer)
-                                             "Set current BUFFER for the active window."
-                                             (set-current-buffer buffer :focus nil)))
+   (prompter:actions-on-current-suggestion
+    (lambda-command set-current-buffer* (buffer)
+      "Set current BUFFER for the active window."
+      (set-current-buffer buffer :focus nil)))
    (prompter:destructor (let ((buffer (current-buffer)))
                           (lambda (prompter source)
                             (declare (ignore source))
@@ -977,37 +1027,40 @@ is listed first."
          (mapcar #'buffer-delete
                  (sera:filter (or predicate #'identity) buffers))))
   (define-command delete-buffer
-      (&key (buffers (prompt
-                      :prompt "Delete buffer(s)"
-                      :sources (make-instance
-                                'buffer-source
-                                :enable-marks-p t
-                                :actions-on-return
-                                (list (lambda-mapped-command buffer-delete)
-                                      (lambda-command buffer-delete-duplicates* (buffers)
-                                        "Delete all buffers with same URLs, except the chosen ones."
-                                        (delete-all
-                                         (set-difference (buffer-list) buffers)
-                                         (lambda (buffer)
-                                           (member (url buffer) buffers
-                                                   :key #'url :test #'quri:uri-equal))))
-                                      (lambda-command buffer-delete-same-host* (buffers)
-                                        "Delete all the buffers with the same website open."
-                                        (delete-all
-                                         (buffer-list)
-                                         (lambda (buffer)
-                                           (member (quri:uri-host (url buffer))
-                                                   (mapcar #'url buffers)
-                                                   :key #'quri:uri-host
-                                                   :test #'string-equal))))
-                                      (lambda-command buffer-delete-same-url* (buffers)
-                                        "Delete all the buffers with the same page open."
-                                        (delete-all
-                                         (buffer-list)
-                                         (lambda (buffer)
-                                           (member (url buffer) buffers
-                                                   :key #'url :test #'quri:uri-equal)))))))
-                     buffers-supplied-p))
+      (&key
+       (buffers
+        (prompt
+         :prompt "Delete buffer(s)"
+         :sources (make-instance
+                   'buffer-source
+                   :enable-marks-p t
+                   :actions-on-return
+                   (list
+                    (lambda-mapped-command buffer-delete)
+                    (lambda-command buffer-delete-duplicates* (buffers)
+                      "Delete all buffers with same URLs, except selected."
+                      (delete-all
+                       (set-difference (buffer-list) buffers)
+                       (lambda (buffer)
+                         (member (url buffer) buffers
+                                 :key #'url :test #'quri:uri-equal))))
+                    (lambda-command buffer-delete-same-host* (buffers)
+                      "Delete all the buffers with the same website open."
+                      (delete-all
+                       (buffer-list)
+                       (lambda (buffer)
+                         (member (quri:uri-host (url buffer))
+                                 (mapcar #'url buffers)
+                                 :key #'quri:uri-host
+                                 :test #'string-equal))))
+                    (lambda-command buffer-delete-same-url* (buffers)
+                      "Delete all the buffers with the same page open."
+                      (delete-all
+                       (buffer-list)
+                       (lambda (buffer)
+                         (member (url buffer) buffers
+                                 :key #'url :test #'quri:uri-equal)))))))
+        buffers-supplied-p))
     "Query the buffer(s) to delete.
 
 BUFFERS should be a list of `buffer's."
@@ -1019,7 +1072,7 @@ BUFFERS should be a list of `buffer's."
   (let ((count (length (buffer-list))))
     (if confirmation-p
         (if-confirm ((format nil "Delete ~a buffer~p?" count count))
-                    (mapcar #'buffer-delete (buffer-list)))
+            (mapcar #'buffer-delete (buffer-list)))
         (mapcar #'buffer-delete (buffer-list)))))
 
 (define-command delete-current-buffer (&optional (buffer (current-buffer)))
@@ -1034,7 +1087,7 @@ When BUFFER is omitted, it defaults to the current one."
          (buffers-to-delete (remove buffer all-buffers))
          (count (list-length buffers-to-delete)))
     (if-confirm ((format nil "Delete ~a buffer~p?" count count))
-                (mapcar #'buffer-delete buffers-to-delete))))
+        (mapcar #'buffer-delete buffers-to-delete))))
 
 (export-always 'buffer-load)
 (-> buffer-load (url-designator &key (:buffer buffer)) *)
@@ -1045,7 +1098,8 @@ URL-DESIGNATOR is then transformed by BUFFER's `buffer-load-hook'."
   (let* ((url (url url-designator))
          (new-url
            (ignore-errors
-            (handler-bind ((error (lambda (c) (log:error "In `buffer-load-hook': ~a" c))))
+            (handler-bind
+                ((error (lambda (c) (log:error "In `buffer-load-hook': ~a" c))))
               (hooks:run-hook (slot-value buffer 'buffer-load-hook) url)))))
     (when new-url
       (check-type new-url quri:uri)
@@ -1059,7 +1113,7 @@ URL-DESIGNATOR is then transformed by BUFFER's `buffer-load-hook'."
         ((equal "javascript" (quri:uri-scheme url))
          (ffi-buffer-evaluate-javascript buffer (quri:url-decode (quri:uri-path url))))
         (t
-         (clrhash (lisp-url-callbacks buffer)) ; REVIEW: Is it the only spot where to clear the Lisp URL callbacks?
+         (clrhash (lisp-url-callbacks buffer))
          (ffi-buffer-load buffer url))))
     buffer))
 
@@ -1067,7 +1121,7 @@ URL-DESIGNATOR is then transformed by BUFFER's `buffer-load-hook'."
 ;; argument.
 (export-always 'buffer-load*)
 (defun buffer-load* (url-list)
-  "Load first element of URL-LIST in current buffer and the rest in new buffer(s)."
+  "Load first element of URL-LIST in current buffer and the rest in new buffers."
   (mapc (lambda (url) (make-buffer :url (url url))) (rest url-list))
   (buffer-load (url (first url-list))))
 
@@ -1111,12 +1165,14 @@ requested.  When the first word of `data' matches the `shortcut' of a
   (print-unreadable-object (query stream :type t)
     (format stream "~a" (data query))))
 
-(defmethod initialize-instance :after ((query url-or-query) &key &allow-other-keys)
+(defmethod initialize-instance :after ((query url-or-query)
+                                       &key &allow-other-keys)
   (with-slots (data kind search-engine search-query) query
     (setf data (str:trim data))
     (cond ((str:blankp data) t)
           ((valid-url-p data :check-tld-p nil) (setf kind :url))
-          ((ignore-errors (valid-url-p (str:concat "https://" data) :check-tld-p t))
+          ((ignore-errors (valid-url-p (str:concat "https://" data)
+                                       :check-tld-p t))
            (setf kind :url
                  data (str:concat "https://" data)))
           ((uiop:file-exists-p data)
@@ -1124,9 +1180,11 @@ requested.  When the first word of `data' matches the `shortcut' of a
                  data (str:concat "file://" (uiop:native-namestring data))))
           (t
            (let* ((terms (sera:tokens data))
-                  (explicit-engine (find (first terms) (search-engines *browser*)
-                                         :key #'shortcut :test #'string-equal))
-                  (engine (or explicit-engine (default-search-engine *browser*))))
+                  (explicit-engine
+                    (find (first terms) (search-engines *browser*)
+                          :key #'shortcut :test #'string-equal))
+                  (engine (or explicit-engine
+                              (default-search-engine *browser*))))
              (setf kind :search-query
                    search-engine engine)
              (if explicit-engine
@@ -1167,17 +1225,19 @@ requested.  When the first word of `data' matches the `shortcut' of a
       (declare (ignore source input))
       (sleep 0.15) ; Delay search suggestions while typing.
       (if-let ((_ (search-engine-suggestions-p *browser*))
-               (completion (search-suggestions (prompter:value (first prompt-suggestions)))))
+               (completion (search-suggestions
+                            (prompter:value (first prompt-suggestions)))))
         completion
         prompt-suggestions)))
    (prompter:filter nil)
    (prompter:actions-on-return #'buffer-load*))
   (:export-class-name-p t)
   (:metaclass user-class)
-  (:documentation "Source listing URL queries from user input in a DWIM fashion.  See
-`url-or-query'."))
+  (:documentation "Source listing URL queries from user input in a DWIM fashion.
+See `url-or-query'."))
 
-(defmethod prompter:object-attributes ((query url-or-query) (source url-or-query-source))
+(defmethod prompter:object-attributes ((query url-or-query)
+                                       (source url-or-query-source))
   (declare (ignore source))
   (with-slots (data kind search-engine search-query) query
     `(("Input" ,(or search-query data) (:width 5))
@@ -1198,19 +1258,23 @@ The returned sources should have `url' or `prompter:actions-on-return' methods
 specified for their contents."
   (let ((actions-on-return (uiop:ensure-list actions-on-return)))
     (append
-     (list (make-instance 'url-or-query-source :actions-on-return actions-on-return)
+     (list (make-instance 'url-or-query-source
+                          :actions-on-return actions-on-return)
            (make-instance
             'buffer-source
             :filter-preprocessor #'prompter:filter-exact-matches
-            :actions-on-return (append
-                                (list (lambda-unmapped-command set-current-buffer))
-                                actions-on-return)
-            :filter-postprocessor (lambda (suggestions source input)
-                                    (declare (ignore source input))
-                                    (remove (current-buffer) suggestions :key #'prompter:value)))
+            :actions-on-return
+            (append
+             (list (lambda-unmapped-command set-current-buffer))
+             actions-on-return)
+            :filter-postprocessor
+            (lambda (suggestions source input)
+              (declare (ignore source input))
+              (remove (current-buffer) suggestions :key #'prompter:value)))
            (make-instance 'global-history-source
                           :actions-on-return actions-on-return))
-     (mappend (rcurry #'url-sources (uiop:ensure-list actions-on-return)) (enabled-modes buffer)))))
+     (mappend (rcurry #'url-sources (uiop:ensure-list actions-on-return))
+              (enabled-modes buffer)))))
 
 (define-command set-url (&key (prefill-current-url-p t))
   "Set the URL for the current buffer, completing with history."
@@ -1224,10 +1288,12 @@ specified for their contents."
                   (make-buffer-focus :url (url (first suggestion-values))))
                 (lambda-command copy-url* (suggestions)
                   "Copy the URL of the chosen suggestion."
-                  (trivial-clipboard:text (render-url (url (first suggestions))))))))
+                  (trivial-clipboard:text
+                   (render-url (url (first suggestions))))))))
     (pushnew-url-history history (url (current-buffer)))
     (prompt :prompt "Open URL"
-            :input (if prefill-current-url-p (render-url (url (current-buffer))) "")
+            :input (if prefill-current-url-p
+                       (render-url (url (current-buffer))) "")
             :history history
             :sources (url-sources (current-buffer) actions-on-return))
     (current-buffer)))
@@ -1237,14 +1303,18 @@ specified for their contents."
   (let ((history (set-url-history *browser*)))
     (pushnew-url-history history (url (current-buffer)))
     (prompt :prompt "Open URL in new buffer"
-            :input (if prefill-current-url-p (render-url (url (current-buffer))) "")
+            :input (if prefill-current-url-p
+                       (render-url (url (current-buffer))) "")
             :history history
-            :sources (url-sources (current-buffer)
-                                  (lambda-command new-buffer-load (suggestion-values)
-                                    "Load URL(s) in new buffer(s)"
-                                    (mapc (lambda (suggestion) (make-buffer :url (url suggestion)))
-                                          (rest suggestion-values))
-                                    (make-buffer-focus :url (url (first suggestion-values))))))
+            :sources (url-sources
+                      (current-buffer)
+                      (lambda-command new-buffer-load (suggestion-values)
+                        "Load URL(s) in new buffer(s)"
+                        (mapc (lambda (suggestion)
+                                (make-buffer :url (url suggestion)))
+                              (rest suggestion-values))
+                        (make-buffer-focus
+                         :url (url (first suggestion-values))))))
     (current-buffer)))
 
 (define-command reload-current-buffer ()
@@ -1270,7 +1340,8 @@ Return BUFFERS."
                                   (length buffer-list))
                              buffer-list))))
 
-(define-command switch-buffer-previous (&key (offset 1) (buffer (current-buffer)))
+(define-command switch-buffer-previous
+    (&key (offset 1) (buffer (current-buffer)))
   "Switch to the previous buffer."
   (switch-buffer-next :offset (- offset) :buffer buffer))
 
@@ -1282,6 +1353,6 @@ The buffer with the most recent access time is returned."
     (set-current-buffer buffer)))
 
 (define-command open-inspector ()
-  "Open the inspector, a graphical tool to inspect and change the buffer's content."
+  "Open the inspector, a graphical tool to inspect the buffer."
   (ffi-inspector-show (current-buffer))
   (current-buffer))
