@@ -18,7 +18,7 @@
          (or (first (keymaps:pretty-binding-keys fn keymaps :print-style (keymaps:name (keyscheme buffer))))
              "unbound")
       (unless current-buffer
-        (buffer-delete buffer)))))
+        (ffi-buffer-delete buffer)))))
 
 (export-always 'current-keymaps)
 (defun current-keymaps (&optional (buffer (let ((prompt-buffer (current-prompt-buffer)))

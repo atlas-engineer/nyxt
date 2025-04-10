@@ -838,13 +838,6 @@ The notion of first element is dictated by `containers:first-item'."
     (containers:delete-item (recent-buffers *browser*) buffer)
     (containers:insert-item (recent-buffers *browser*) buffer)))
 
-(export-always 'buffer-delete)
-(defgeneric buffer-delete (buffer)
-  (:method ((buffer buffer))
-    (hooks:run-hook (buffer-delete-hook buffer) buffer)
-    (ffi-buffer-delete buffer))
-  (:documentation "Delete buffer after running `buffer-delete-hook'."))
-
 (defun buffer-hide (buffer)
   "Stop showing the buffer in Nyxt.
 Should be called from/instead of `ffi-buffer-delete' when the renderer view
@@ -950,7 +943,7 @@ If none exist, make a new inactive buffer."
    (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:enable-marks-p t)
    (prompter:actions-on-return (list (lambda-unmapped-command set-current-buffer)
-                                     (lambda-mapped-command buffer-delete)
+                                     (lambda-mapped-command ffi-buffer-delete)
                                      'reload-buffers))
    (prompter:actions-on-current-suggestion-enabled-p t)
    (prompter:actions-on-current-suggestion
@@ -1017,7 +1010,7 @@ is listed first."
 
 
 (flet ((delete-all (buffers &optional predicate)
-         (mapcar #'buffer-delete
+         (mapcar #'ffi-buffer-delete
                  (sera:filter (or predicate #'identity) buffers))))
   (define-command delete-buffer
       (&key
@@ -1029,7 +1022,7 @@ is listed first."
                    :enable-marks-p t
                    :actions-on-return
                    (list
-                    (lambda-mapped-command buffer-delete)
+                    (lambda-mapped-command ffi-buffer-delete)
                     (lambda-command buffer-delete-duplicates* (buffers)
                       "Delete all buffers with same URLs, except selected."
                       (delete-all
@@ -1063,19 +1056,19 @@ BUFFERS should be a list of `buffer's."
 (define-command delete-all-buffers ()
   "Delete all buffers, with confirmation."
   (if-confirm ((format nil "Delete ~a buffer(s)?" (length (buffer-list))))
-      (mapcar #'buffer-delete (buffer-list))))
+      (mapcar #'ffi-buffer-delete (buffer-list))))
 
 (define-command delete-current-buffer ()
   "Delete the current buffer and switch to the last visited one.
 If no other buffers exist, load the start page."
-  (buffer-delete (current-buffer)))
+  (ffi-buffer-delete (current-buffer)))
 
 (define-command delete-other-buffers (&optional (buffer (current-buffer)))
   "Delete all buffers except BUFFER.
 When BUFFER is omitted, it defaults to the current one."
   (let ((buffers-to-delete (remove buffer (buffer-list))))
     (if-confirm ((format nil "Delete ~a buffer(s)?" (length buffers-to-delete)))
-        (mapcar #'buffer-delete buffers-to-delete))))
+        (mapcar #'ffi-buffer-delete buffers-to-delete))))
 
 (export-always 'buffer-load)
 (-> buffer-load (url-designator &key (:buffer buffer)) *)

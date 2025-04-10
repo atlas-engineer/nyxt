@@ -128,6 +128,10 @@ Usually setf-able."))
 Create the foreign objects necessary for rendering the buffer."))
 
 (define-ffi-generic ffi-buffer-delete (buffer)
+  (:method ((buffer buffer))
+    (hooks:run-hook (buffer-delete-hook buffer) buffer)
+    (when (next-method-p)
+      (call-next-method)))
   (:documentation "Delete BUFFER."))
 
 (define-ffi-generic ffi-buffer-load (buffer url)
