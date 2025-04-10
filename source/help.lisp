@@ -472,7 +472,7 @@ The value is saved to clipboard."
             (:div :class "logo" (:raw (glyph-logo *browser*)))
             (:div
              (:div (:nbutton :class "set-url" :text "Set-URL"
-                     '(set-url :prefill-current-url-p nil))
+                     '(set-url))
                    (:span :class "binding"
                           (format nil "(~a)" (nyxt::binding-keys 'set-url))))
              (:div (:nbutton :class "execute-command" :text "Execute-Command"

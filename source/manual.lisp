@@ -381,7 +381,7 @@ you can safely set new inputs and select the necessary suggestions."))
          (:li "Commands :before and :after methods.")
          (:ul
           (:li "Try, for example, "
-               (:code "(defmethod set-url :after (&key (prefill-current-url-p t)) ...)")
+               (:code "(defmethod set-url :after (&key (default-action nil)) ...)")
                " to do something after the set-url finishes executing."))
          (:li "Modes 'enable' and 'disable' methods and their :before, :after, and :around methods.")
          (:li "Mode-specific hooks, like " (:nxref :slot 'nyxt/mode/download:before-download-hook
