@@ -974,19 +974,11 @@ buffer currently chosen as suggestion."))
        `("Keywords" ,(format nil "~:{~a~^ ~}" (keywords buffer)) (:width 2)))
     ("ID" ,(id buffer) (:width 1))))
 
-(define-command switch-buffer (&key buffer (current-is-last-p nil))
-  "Switch buffer using fuzzy completion.
-
-Buffers are ordered by most recent access time.  When CURRENT-IS-LAST-P is
-non-nil, the current buffer is listed last so that the last visited buffer
-is listed first."
-  (if buffer
-      (set-current-buffer buffer)
-      (prompt
-       :prompt "Switch to buffer"
-       :sources (make-instance 'buffer-source
-                               :constructor (buffer-initial-suggestions
-                                             :current-is-last-p current-is-last-p)))))
+(define-command switch-buffer ()
+  "Switch buffer using fuzzy completion."
+  (prompt
+   :prompt "Switch to buffer"
+   :sources (make-instance 'buffer-source)))
 
 (define-command switch-buffer-domain (&key domain (buffer (current-buffer)))
   "Switch to buffer sharing the same domain as the current one."
@@ -994,8 +986,9 @@ is listed first."
     (prompt
      :prompt "Switch to buffer in current domain"
      :sources (make-instance 'buffer-source
-                             :constructor (sera:filter (match-domain domain)
-                                                       (sort-by-time (buffer-list)))))))
+                             :constructor
+                             (sera:filter (match-domain domain)
+                                          (sort-by-time (buffer-list)))))))
 
 (define-command toggle-prompt-buffer-focus ()
   "Toggle the focus between the current buffer and the current prompt buffer."
