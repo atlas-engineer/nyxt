@@ -135,6 +135,23 @@ Create the foreign objects necessary for rendering the buffer."))
   (:documentation "Delete BUFFER."))
 
 (define-ffi-generic ffi-buffer-load (buffer url)
+  (:method ((buffer buffer) url)
+    (when-let ((url
+                (ignore-errors
+                 (handler-bind
+                     ((error (lambda (c)
+                               (log:error "In `buffer-load-hook': ~a" c))))
+                   (hooks:run-hook (slot-value buffer 'buffer-load-hook)
+                                   (url url))))))
+      (check-type url quri:uri)
+      (cond
+        ((equal "javascript" (quri:uri-scheme url))
+         (ffi-buffer-evaluate-javascript
+          buffer (quri:url-decode (quri:uri-path url))))
+        (t
+         (clrhash (lisp-url-callbacks buffer))
+         (call-next-method))))
+    buffer)
   (:documentation "Load URL into BUFFER through the renderer."))
 
 (define-ffi-generic ffi-buffer-reload (buffer)
