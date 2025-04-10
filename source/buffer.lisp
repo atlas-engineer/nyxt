@@ -1015,13 +1015,6 @@ is listed first."
           (ps-eval :buffer prompt-buffer
             (setf (ps:@ (nyxt/ps:qs document "*") style opacity) "1"))))))
 
-(defun switch-buffer-or-query-domain (domain)
-  "Switch to a buffer if it exists for a given DOMAIN, otherwise query
-  the user."
-  (let ((matching-buffers (sera:filter (match-domain domain) (buffer-list))))
-    (if (eql 1 (length matching-buffers))
-        (set-current-buffer (first matching-buffers))
-        (switch-buffer-domain :domain domain))))
 
 (flet ((delete-all (buffers &optional predicate)
          (mapcar #'buffer-delete
