@@ -1239,11 +1239,6 @@ See `url-or-query'."))
                      (t kind))
               (:width 2)))))
 
-(defun pushnew-url-history (history url)
-  "URL is not pushed if empty."
-  (when (and history (not (url-empty-p url)))
-    (prompter::history-pushnew history (render-url url))))
-
 (export-always 'url-sources)
 (defmethod url-sources ((buffer buffer) actions-on-return)
   "Return list of `set-url' sources.
@@ -1269,46 +1264,29 @@ specified for their contents."
      (mappend (rcurry #'url-sources (uiop:ensure-list actions-on-return))
               (enabled-modes buffer)))))
 
-(define-command set-url (&key (prefill-current-url-p t))
+(define-command set-url (&key (default-action #'buffer-load*))
   "Set the URL for the current buffer, completing with history."
-  (let ((history (set-url-history *browser*))
-        (actions-on-return
-          (list #'buffer-load*
-                (lambda-command new-buffer-load* (suggestion-values)
-                  "Load URL(s) in new buffer(s)."
-                  (mapc (lambda (suggestion) (make-buffer :url (url suggestion)))
-                        (rest suggestion-values))
-                  (make-buffer-focus :url (url (first suggestion-values))))
-                (lambda-command copy-url* (suggestions)
-                  "Copy the URL of the chosen suggestion."
-                  (trivial-clipboard:text
-                   (render-url (url (first suggestions))))))))
-    (pushnew-url-history history (url (current-buffer)))
+  (let* ((history (set-url-history *browser*))
+         (actions-on-return
+           (list #'buffer-load*
+                 (lambda-command copy-url* (suggestions)
+                   "Copy the URL of the chosen suggestion."
+                   (trivial-clipboard:text
+                    (render-url (url (first suggestions))))))))
+    (pushnew default-action actions-on-return)
     (prompt :prompt "Open URL"
-            :input (if prefill-current-url-p
-                       (render-url (url (current-buffer))) "")
+            :input (render-url (url (current-buffer)))
             :history history
             :sources (url-sources (current-buffer) actions-on-return))
     (current-buffer)))
 
-(define-command set-url-new-buffer (&key (prefill-current-url-p t))
-  "Prompt for a URL and set it in a new focused buffer."
-  (let ((history (set-url-history *browser*)))
-    (pushnew-url-history history (url (current-buffer)))
-    (prompt :prompt "Open URL in new buffer"
-            :input (if prefill-current-url-p
-                       (render-url (url (current-buffer))) "")
-            :history history
-            :sources (url-sources
-                      (current-buffer)
-                      (lambda-command new-buffer-load (suggestion-values)
-                        "Load URL(s) in new buffer(s)"
-                        (mapc (lambda (suggestion)
-                                (make-buffer :url (url suggestion)))
-                              (rest suggestion-values))
-                        (make-buffer-focus
-                         :url (url (first suggestion-values))))))
-    (current-buffer)))
+(define-command set-url-new-buffer ()
+  (set-url :default-action
+           (lambda-command new-buffer-load* (suggestion-values)
+             "Load URL(s) in new buffer(s)."
+             (mapc (lambda (suggestion) (make-buffer :url (url suggestion)))
+                   (rest suggestion-values))
+             (make-buffer-focus :url (url (first suggestion-values))))))
 
 (define-command reload-current-buffer ()
   "Reload current buffer.
