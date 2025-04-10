@@ -1060,13 +1060,10 @@ BUFFERS should be a list of `buffer's."
     (when buffers-supplied-p
       (delete-all (uiop:ensure-list buffers)))))
 
-(define-command delete-all-buffers (&key (confirmation-p t))
+(define-command delete-all-buffers ()
   "Delete all buffers, with confirmation."
-  (let ((count (length (buffer-list))))
-    (if confirmation-p
-        (if-confirm ((format nil "Delete ~a buffer~p?" count count))
-            (mapcar #'buffer-delete (buffer-list)))
-        (mapcar #'buffer-delete (buffer-list)))))
+  (if-confirm ((format nil "Delete ~a buffer(s)?" (length (buffer-list))))
+      (mapcar #'buffer-delete (buffer-list))))
 
 (define-command delete-current-buffer ()
   "Delete the current buffer and switch to the last visited one.
