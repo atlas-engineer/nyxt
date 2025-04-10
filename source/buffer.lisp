@@ -924,8 +924,8 @@ If none exist, make a new inactive buffer."
 
 (define-command copy-title ()
   "Save current page title to clipboard."
-  (copy-to-clipboard (title (current-buffer)))
-  (echo "~a copied to clipboard." (title (current-buffer))))
+  (echo "~a copied to clipboard."
+        (copy-to-clipboard (title (current-buffer)))))
 
 (defun buffer-initial-suggestions (&key current-is-last-p domain)
   (let* ((active-buffer (active-buffer (current-window)))
