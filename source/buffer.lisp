@@ -1068,18 +1068,16 @@ BUFFERS should be a list of `buffer's."
             (mapcar #'buffer-delete (buffer-list)))
         (mapcar #'buffer-delete (buffer-list)))))
 
-(define-command delete-current-buffer (&optional (buffer (current-buffer)))
+(define-command delete-current-buffer ()
   "Delete the current buffer and switch to the last visited one.
 If no other buffers exist, load the start page."
-  (buffer-delete buffer))
+  (buffer-delete (current-buffer)))
 
 (define-command delete-other-buffers (&optional (buffer (current-buffer)))
   "Delete all buffers except BUFFER.
 When BUFFER is omitted, it defaults to the current one."
-  (let* ((all-buffers (buffer-list))
-         (buffers-to-delete (remove buffer all-buffers))
-         (count (list-length buffers-to-delete)))
-    (if-confirm ((format nil "Delete ~a buffer~p?" count count))
+  (let ((buffers-to-delete (remove buffer (buffer-list))))
+    (if-confirm ((format nil "Delete ~a buffer(s)?" (length buffers-to-delete)))
         (mapcar #'buffer-delete buffers-to-delete))))
 
 (export-always 'buffer-load)
