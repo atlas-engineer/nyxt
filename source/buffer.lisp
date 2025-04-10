@@ -1209,9 +1209,6 @@ requested.  When the first word of `data' matches the `shortcut' of a
    (prompter:filter-preprocessor
     (lambda (suggestions source input)
       (declare (ignore suggestions source))
-      ;; Ideally, the source should be hidden when input in nil, but that would
-      ;; change the current buffer due to the default
-      ;; `prompter:actions-on-current-suggestion' for `buffer-source'.
       (list (make-instance 'url-or-query :data input))))
    (prompter:filter-postprocessor
     (lambda (prompt-suggestions source input)
