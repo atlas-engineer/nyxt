@@ -1322,8 +1322,7 @@ Return it."
                  :sources (make-instance 'buffer-source :enable-marks-p t))))
   "Prompt for BUFFERS to be reloaded.
 Return BUFFERS."
-  (when buffers
-    (mapcar #'ffi-buffer-reload (alex:ensure-list buffers)))
+  (mapcar #'ffi-buffer-reload (alex:ensure-list buffers))
   buffers)
 
 (define-command switch-buffer-next (&key (offset 1) (buffer (current-buffer)))
