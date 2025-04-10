@@ -193,7 +193,7 @@ Implies that `small-web-mode' is enabled."))
     (lambda (url)
       (handler-case
           (let ((line (if (uiop:emptyp (quri:uri-path (quri:uri url)))
-                          (buffer-load (str:concat url "/"))
+                          (ffi-buffer-load (current-buffer) (str:concat url "/"))
                           (cl-gopher:parse-gopher-uri url))))
             (enable-modes :modes '(small-web-mode))
             (if (and (typep line 'cl-gopher:search-line)
@@ -201,7 +201,7 @@ Implies that `small-web-mode' is enabled."))
                 (progn (setf (cl-gopher:terms line)
                              (prompt1 :prompt (format nil "Search query for ~a" url)
                                       :sources 'prompter:raw-source))
-                       (buffer-load (cl-gopher:uri-for-gopher-line line)))
+                       (ffi-buffer-load (current-buffer) (cl-gopher:uri-for-gopher-line line)))
                 (with-current-buffer (current-buffer) (gopher-render line))))
         (cl-gopher:bad-submenu-error ()
           (error-help (format nil "Malformed line at ~s" url)
@@ -292,7 +292,7 @@ Implies that `small-web-mode' is enabled."
                                            :height :fit-to-prompt
                                            :invisible-input-p (eq status :sensitive-input))
                                 (prompt-buffer-canceled () "")))))
-                   (buffer-load (str:concat url "?" text))
+                   (ffi-buffer-load (current-buffer) (str:concat url "?" text))
                    nil))
                 (:success
                  (if (str:starts-with-p "text/gemini" meta)
@@ -302,7 +302,7 @@ Implies that `small-web-mode' is enabled."
                  (push url (nyxt/mode/small-web:redirections (find-submode 'small-web-mode)))
                  (if (< (length (nyxt/mode/small-web:redirections (find-submode 'small-web-mode)))
                         (nyxt/mode/small-web:max-redirections (find-submode 'small-web-mode)))
-                     (progn (buffer-load (quri:merge-uris (quri:uri meta) (quri:uri url))) nil)
+                     (progn (ffi-buffer-load (current-buffer) (quri:merge-uris (quri:uri meta) (quri:uri url))) nil)
                      (error-help
                       "Error"
                       (format nil "The server has caused too many (~a+) redirections.~& ~a~{ -> ~a~}"

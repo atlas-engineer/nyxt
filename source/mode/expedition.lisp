@@ -27,7 +27,7 @@
   (if (> (length (urls expedition)) (+ 1 (index expedition)))
       (progn
         (incf (index expedition))
-        (buffer-load (nth (index expedition) (urls expedition))))
+        (ffi-buffer-load (buffer expedition) (nth (index expedition) (urls expedition))))
       (echo "End of expedition.")))
 
 (define-command expedition-previous (&key (expedition (find-submode 'expedition-mode)))
@@ -35,7 +35,7 @@
   (if (> (index expedition) 0)
       (progn
         (decf (index expedition))
-        (buffer-load (nth (index expedition) (urls expedition))))
+        (ffi-buffer-load (buffer expedition) (nth (index expedition) (urls expedition))))
       (echo "Start of expedition.")))
 
 (define-command-global select-frame-expedition (&key (buffer (current-buffer)))

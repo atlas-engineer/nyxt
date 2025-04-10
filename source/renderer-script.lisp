@@ -337,9 +337,10 @@ See `find-internal-page-buffer'."))
 (defun buffer-load-internal-page-focus (name &rest args)
   "Return internal page with name NAME and focus it.
 ARGS are passed as internal page parameters."
-  (set-current-buffer (buffer-load (apply #'nyxt-url name args)
-                                   :buffer (or (find-internal-page-buffer name)
-                                               (make-instance 'web-buffer)))))
+  (set-current-buffer (ffi-buffer-load
+                       (or (find-internal-page-buffer name)
+                           (make-instance 'web-buffer))
+                       (apply #'nyxt-url name args))))
 
 (export-always 'define-internal-page)
 (defmacro define-internal-page (name (&rest form-args) (&rest initargs) &body body)

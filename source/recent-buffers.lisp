@@ -16,7 +16,7 @@
     (ffi-buffer-initialize-foreign-object buffer)
     (add-to-recent-buffers buffer)
     (buffers-set (id buffer) buffer)
-    (buffer-load (url buffer) :buffer buffer)))
+    (ffi-buffer-load buffer (url buffer))))
 
 (define-class recent-buffer-source (prompter:source)
   ((prompter:name "Deleted buffers")

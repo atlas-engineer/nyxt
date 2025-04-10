@@ -439,7 +439,7 @@ FUNCTION is the action to perform on the selected elements."
   (nyxt/dom:click-element element))
 
 (defmethod %follow-hint ((a nyxt/dom:a-element))
-  (buffer-load (url a)))
+  (ffi-buffer-load (current-buffer) (url a)))
 
 (defmethod %follow-hint ((input nyxt/dom:input-element))
   (str:string-case (plump:attribute input "type")

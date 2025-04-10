@@ -62,10 +62,11 @@ See configuration slots `search-engines' and `search-engine-suggestions-p'."))
 (define-command query-selection-in-search-engine (&key (query-in-new-buffer-p t))
   "Search selected text using the queried search engine.
 When QUERY-IN-NEW-BUFFER-P is non-nil, open the results in a new buffer."
-  (buffer-load (format-url (ffi-buffer-copy (current-buffer))
-                           (prompt1 :prompt "Search engine"
-                                    :sources 'search-engine-source))
-               :buffer (if query-in-new-buffer-p (make-buffer-focus) (current-buffer))))
+  (ffi-buffer-load
+   (if query-in-new-buffer-p (make-buffer-focus) (current-buffer))
+   (format-url (ffi-buffer-copy (current-buffer))
+               (prompt1 :prompt "Search engine"
+                        :sources 'search-engine-source))))
 
 (define-class ddg-search-engine (search-engine)
   ((name "DuckDuckGo")

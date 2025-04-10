@@ -1070,41 +1070,13 @@ When BUFFER is omitted, it defaults to the current one."
     (if-confirm ((format nil "Delete ~a buffer(s)?" (length buffers-to-delete)))
         (mapcar #'ffi-buffer-delete buffers-to-delete))))
 
-(export-always 'buffer-load)
-(-> buffer-load (url-designator &key (:buffer buffer)) *)
-(defun buffer-load (url-designator &key (buffer (current-buffer)))
-  "Load URL-DESIGNATOR in BUFFER.
-URL-DESIGNATOR is then transformed by BUFFER's `buffer-load-hook'."
-  ;; TODO: Move all most of this code to `ffi-buffer-load :around'?
-  (let* ((url (url url-designator))
-         (new-url
-           (ignore-errors
-            (handler-bind
-                ((error (lambda (c) (log:error "In `buffer-load-hook': ~a" c))))
-              (hooks:run-hook (slot-value buffer 'buffer-load-hook) url)))))
-    (when new-url
-      (check-type new-url quri:uri)
-      (setf url new-url)
-      ;; We could have `on-url-load' and `on-url-unload' methods instead.
-      ;; `on-url-unload' could be used to perform some clean up, while
-      ;; `on-url-load' would perform the actual loading.
-      ;; Then subclass `quri:uri' with uri-js, uri-nyxt, uri-lisp, etc.
-      ;; Finally, specialize against these URLs.
-      (cond
-        ((equal "javascript" (quri:uri-scheme url))
-         (ffi-buffer-evaluate-javascript buffer (quri:url-decode (quri:uri-path url))))
-        (t
-         (clrhash (lisp-url-callbacks buffer))
-         (ffi-buffer-load buffer url))))
-    buffer))
-
 ;; Useful to be used by prompt buffer actions, since they take a list as
 ;; argument.
 (export-always 'buffer-load*)
 (defun buffer-load* (url-list)
   "Load first element of URL-LIST in current buffer and the rest in new buffers."
   (mapc (lambda (url) (make-buffer :url (url url))) (rest url-list))
-  (buffer-load (url (first url-list))))
+  (ffi-buffer-load (current-buffer) (url (first url-list))))
 
 (define-class global-history-source (prompter:source)
   ((prompter:name "Global history")

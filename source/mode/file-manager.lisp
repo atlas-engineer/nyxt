@@ -288,7 +288,7 @@ Can be used as a `open-file-function'."
          (let ((file-url (quri:make-uri-file :path filename)))
            (if new-buffer-p
                (make-buffer-focus :url file-url)
-               (buffer-load file-url))))
+               (ffi-buffer-load (current-buffer) file-url))))
         (*open-program*
          (let ((process (uiop:launch-program (list *open-program*
                                                    (uiop:native-namestring filename))
