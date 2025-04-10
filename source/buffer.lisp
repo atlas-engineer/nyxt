@@ -919,8 +919,8 @@ If none exist, make a new inactive buffer."
 
 (define-command copy-url ()
   "Save current URL to clipboard."
-  (copy-to-clipboard (render-url (url (current-buffer))))
-  (echo "~s copied to clipboard." (render-url (url (current-buffer)))))
+  (echo "~s copied to clipboard."
+        (copy-to-clipboard (render-url (url (current-buffer))))))
 
 (define-command copy-title ()
   "Save current page title to clipboard."
