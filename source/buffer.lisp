@@ -927,19 +927,11 @@ If none exist, make a new inactive buffer."
   (echo "~a copied to clipboard."
         (copy-to-clipboard (title (current-buffer)))))
 
-(defun buffer-initial-suggestions (&key current-is-last-p domain)
-  (let* ((active-buffer (active-buffer (current-window)))
-         (buffers (sera:filter (if domain (match-domain domain) #'identity)
-                               (sort-by-time
-                                (remove active-buffer (buffer-list)))))
-         (buffers (push active-buffer buffers)))
-    (when (and buffers current-is-last-p)
-      (setf buffers (alex:rotate buffers -1)))
-    buffers))
-
 (define-class buffer-source (prompter:source)
   ((prompter:name "Buffer list")
-   (prompter:constructor (buffer-initial-suggestions :current-is-last-p nil))
+   (prompter:constructor (append (list (active-buffer (current-window)))
+                                 (remove (active-buffer (current-window))
+                                         (buffer-list))))
    (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:enable-marks-p t)
    (prompter:actions-on-return (list (lambda-unmapped-command set-current-buffer)
