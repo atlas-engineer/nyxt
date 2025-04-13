@@ -125,13 +125,12 @@ Note that by changing the default value, modifier keys can be remapped."))
   (:documentation "Electron buffer class."))
 
 (defmethod customize-instance :after ((buffer electron-buffer)
-                                      &key extra-modes no-hook-p &allow-other-keys)
+                                      &key &allow-other-keys)
   ;; Otherwise the HTML document won't be set via JS.
   (when (member (type-of buffer) '(status-buffer message-buffer prompt-buffer))
     (electron:load-url buffer "about:blank"))
   (initialize-listeners buffer)
-  (initialize-window-open-handler buffer)
-  (finalize-buffer buffer :extra-modes extra-modes :no-hook-p no-hook-p))
+  (initialize-window-open-handler buffer))
 
 (defmethod initialize-window-open-handler ((buffer electron-buffer))
   ;; When following a link with target="_blank" or through JS window.open,

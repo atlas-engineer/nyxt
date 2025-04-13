@@ -362,19 +362,12 @@ Useful in FFI functions where we usually specialize things against
   "Dummy method to allow forwarding other key arguments."
   buffer)
 
-(export-always 'finalize-buffer)
-(defmethod finalize-buffer ((buffer buffer)
-                            &key (browser *browser*) &allow-other-keys)
-  "Finalize instantiation of BUFFER."
-  (declare (ignore browser))
-  t)
-
 (define-class modable-buffer (buffer)
   ((modes
     '()
     :documentation "The list of mode instances.
 Modes are instantiated over the result of the `default-modes' method, with
-`finalize-buffer' and not in the initform so that the instantiation form can
+`customize-instance' and not in the initform so that the instantiation form can
 access the initialized buffer.")
    (enable-mode-hook
     (make-instance 'hook-mode)
@@ -389,24 +382,6 @@ access the initialized buffer.")
   (:export-predicate-name-p t)
   (:metaclass user-class)
   (:documentation "A buffer whose behavior can be modified with `mode's."))
-
-(defmethod finalize-buffer ((buffer modable-buffer)
-                            &key (browser *browser*) no-hook-p extra-modes)
-  "Finalize instantiation of modable BUFFER.
-In particular,
-- run `buffer-make-hook';
-- `enable' the modes from the `modes' slot, `default-modes', and the EXTRA-MODES,
-- run `buffer-after-make-hook'.
-This method should be called by the renderer after instantiating the web view
-of BUFFER."
-  (unless no-hook-p
-    (hooks:run-hook (buffer-make-hook browser) buffer))
-  (mapc #'enable (modes buffer))
-  (enable-modes* (append (reverse (default-modes buffer))
-                         (uiop:ensure-list extra-modes))
-                 buffer)
-  (unless no-hook-p
-    (hooks:run-hook (buffer-after-make-hook browser) buffer)))
 
 (defmethod modes ((buffer buffer))
   "Return the modes active in BUFFER.
@@ -665,16 +640,33 @@ Example:
   (:metaclass user-class)
   (:documentation "Buffer for browsing the web."))
 
-(defmethod customize-instance :after ((buffer buffer)
-                                      &key (browser *browser*)
-                                        no-hook-p
-                                      &allow-other-keys)
+(defmethod customize-instance :after
+    ((buffer buffer) &key (browser *browser*) no-hook-p
+     &allow-other-keys)
   "Finalize buffer.
-When NO-HOOK-P is nil, run `*browser*'s `buffer-before-make-hook'.
 Return the created buffer."
-  (unless (or no-hook-p
-              (not browser))
+  (unless (or no-hook-p (not browser))
     (hooks:run-hook (buffer-before-make-hook browser) buffer))
+  buffer)
+
+(defmethod customize-instance :after
+    ((buffer modable-buffer)
+     &key (browser *browser*) no-hook-p extra-modes
+     &allow-other-keys)
+  "Finalize instantiation of modable BUFFER.
+In particular,
+- Run `buffer-make-hook';
+- `enable' the modes from the `modes' slot, `default-modes', and the
+EXTRA-MODES
+- Run `buffer-after-make-hook'."
+  (unless no-hook-p
+    (hooks:run-hook (buffer-make-hook browser) buffer))
+  (mapc #'enable (modes buffer))
+  (enable-modes* (append (reverse (default-modes buffer))
+                         (uiop:ensure-list extra-modes))
+                 buffer)
+  (unless no-hook-p
+    (hooks:run-hook (buffer-after-make-hook browser) buffer))
   buffer)
 
 (defmethod customize-instance :after ((buffer context-buffer)

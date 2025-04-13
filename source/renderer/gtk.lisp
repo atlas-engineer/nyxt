@@ -746,13 +746,8 @@ with this scheme.")
    (or (error-callback scheme)
        (lambda (c) (echo-warning "Error while routing ~s resource: ~a" scheme c)))))
 
-(defmethod customize-instance :after ((buffer gtk-buffer) &key extra-modes
-                                                            no-hook-p
-                                      &allow-other-keys)
-  "Make BUFFER with EXTRA-MODES.
-See `finalize-buffer'."
-  (ffi-buffer-initialize-foreign-object buffer)
-  (finalize-buffer buffer :extra-modes extra-modes :no-hook-p no-hook-p))
+(defmethod customize-instance :after ((buffer gtk-buffer) &key &allow-other-keys)
+  (ffi-buffer-initialize-foreign-object buffer))
 
 (define-ffi-method ffi-buffer-url ((buffer gtk-buffer))
   (quri:uri (webkit:webkit-web-view-uri (gtk-object buffer))))
