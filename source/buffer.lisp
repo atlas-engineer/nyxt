@@ -335,10 +335,10 @@ inherited from the superclasses.")
         :display "none")
       '(".nsection-summary:hover .nsection-anchor"
         :display "inline-block")))
-   (buffer-delete-hook          ; TODO: Should we move this to `context-buffer'?
-                       (make-instance 'hook-buffer)
-                       :type hook-buffer
-                       :documentation "Hook run before `buffer-delete' takes effect.
+   (buffer-delete-hook
+    (make-instance 'hook-buffer)
+    :type hook-buffer
+    :documentation "Hook run before `buffer-delete'.
 The handlers take the buffer as argument."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
