@@ -766,7 +766,7 @@ with this scheme.")
            context
            (gobject:pointer certificate)
            host)
-          (buffer-load url :buffer buffer)
+          (ffi-buffer-load buffer url)
           t)
         (progn
           (nyxt::tls-help buffer url)
@@ -1257,7 +1257,7 @@ with this scheme.")
      "Web process terminated for web view ~a because of ~[WEBKIT_WEB_PROCESS_CRASHED~;WEBKIT_WEB_PROCESS_EXCEEDED_MEMORY_LIMIT~;WEBKIT_WEB_PROCESS_TERMINATED_BY_API~]"
      web-view
      (cffi:foreign-enum-value 'webkit:webkit-web-process-termination-reason reason))
-    (buffer-delete buffer))
+    (ffi-buffer-delete buffer))
   (connect-signal buffer "close" nil (web-view)
     (declare (ignore web-view))
     (log:debug "Closed ~a" buffer))
