@@ -23,12 +23,13 @@ modes, commands, etc."))
 (sb-ext:lock-package :nyxt)
 
 (in-package :nyxt)
-(defvar *imports* '((:alexandria #:compose #:curry #:mappend #:rcurry
-                     #:if-let #:when-let #:when-let*
-                     #:assoc-value)
-                    (:trivia #:match #:multiple-value-match #:lambda-match #:guard)
-                    (:nkeymaps #:define-key #:define-keyscheme-map)
-                    (:serapeum #:export-always #:-> #:and-let* #:eval-always))
+(defvar *imports*
+  '((:alexandria #:compose #:curry #:mappend #:rcurry
+     #:if-let #:when-let #:when-let*
+     #:assoc-value)
+    (:trivia #:match #:multiple-value-match #:lambda-match #:guard)
+    (:nkeymaps #:define-key #:define-keyscheme-map)
+    (:serapeum #:export-always #:-> #:and-let* #:eval-always))
   "Default list of symbol imports used by `nyxt:define-package'.")
 
 (loop :for (package . symbols) in *imports*
@@ -48,16 +49,19 @@ modes, commands, etc."))
           (:j :njson/aliases)
           (:keymaps :nkeymaps)
           (:sym :nsymbols))
-        :do (trivial-package-local-nicknames:add-package-local-nickname nickname package :nyxt)))
+        :do (trivial-package-local-nicknames:add-package-local-nickname
+             nickname package :nyxt)))
 
 (defmacro nyxt::use-nyxt-package-nicknames (&optional (package *package*))
   "Define package nicknames in PACKAGE for Nyxt-used libraries.
 Effectively makes programming in PACKAGE same as programming in `:nyxt'."
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      (let ((*package* (find-package ,package)))
-       (dolist (pkgs (trivial-package-local-nicknames:package-local-nicknames :nyxt))
-         (trivial-package-local-nicknames:add-package-local-nickname (first pkgs) (package-name (rest pkgs))
-                                                                     (find-package ,package))))))
+       (dolist (pkgs (trivial-package-local-nicknames:package-local-nicknames
+                      :nyxt))
+         (trivial-package-local-nicknames:add-package-local-nickname
+          (first pkgs) (package-name (rest pkgs))
+          (find-package ,package))))))
 
 (defmacro without-package-locks (&body body)
   "Ignore package locks for the duration of the BODY.
@@ -78,7 +82,8 @@ Same as `progn' on implementations that don't have package locks."
      ,@(append
         '((:automatic-types-p t)
           (:accessor-name-package :slot-name)
-          (:predicate-name-transformer 'nclasses:always-dashed-predicate-name-transformer))
+          (:predicate-name-transformer
+           'nclasses:always-dashed-predicate-name-transformer))
        options)))
 
 (serapeum:export-always 'define-package :nyxt)
@@ -127,9 +132,14 @@ prefix.
 For instance, to be able to use `alex:' and `sera:' in place of `alexandria:'
 and `serapeum:':
 
-  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria-2 :nyxt-user)
-  (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum :nyxt-user)"))
+  (trivial-package-local-nicknames:add-package-local-nickname
+    :alex :alexandria-2 :nyxt-user)
+  (trivial-package-local-nicknames:add-package-local-nickname
+    :sera :serapeum :nyxt-user)"))
 
-(trivial-package-local-nicknames:add-package-local-nickname :hooks :nhooks :nyxt-user)
-(trivial-package-local-nicknames:add-package-local-nickname :files :nfiles :nyxt-user)
-(trivial-package-local-nicknames:add-package-local-nickname :keymaps :nkeymaps :nyxt-user)
+(trivial-package-local-nicknames:add-package-local-nickname
+ :hooks :nhooks :nyxt-user)
+(trivial-package-local-nicknames:add-package-local-nickname
+ :files :nfiles :nyxt-user)
+(trivial-package-local-nicknames:add-package-local-nickname
+ :keymaps :nkeymaps :nyxt-user)
