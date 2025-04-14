@@ -31,7 +31,8 @@ may be in Punycode."
 (defun fetch-url-title (url)
   "Return URL's title.
 The URL is fetched, which explains possible bottlenecks."
-  (ignore-errors (plump:text (aref (clss:select "title" (plump:parse (dex:get url))) 0))))
+  (ignore-errors (plump:text
+                  (aref (clss:select "title" (plump:parse (dex:get url))) 0))))
 
 (export-always 'error-help)
 (defun error-help (&optional (title "Unknown error") (text ""))
@@ -112,8 +113,9 @@ Public Suffix list, T otherwise."
 
 ;; Set specifier to T because *BROWSER* can be bound to NIL
 (defmethod browser-schemes append ((browser t))
-  (let ((nyxt-schemes (append '("blob" "javascript") (alex:hash-table-keys *schemes*)))
-        ;; List of URI schemes: https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
+  (let ((nyxt-schemes (append '("blob" "javascript")
+                              (alex:hash-table-keys *schemes*)))
+        ;; https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
         ;; Last updated 2024-08-05.
         (iana-schemes
           '("aaa" "aaas" "about" "acap" "acct" "cap" "cid" "coap" "coap+tcp"
@@ -236,11 +238,12 @@ Authority is compared case-insensitively (RFC 3986)."
 It is useful to request `internal-page's.
 
 ARGS is an arbitrary keyword arguments list that is translated to a URL query."
-  (let* ((query (quri:url-encode-params (mapcar (lambda (pair)
-                                                  (cons (symbol->param-name (first pair))
-                                                        (value->param-value (rest pair))))
-                                                (alex:plist-alist args))
-                                        :space-to-plus t))
+  (let* ((query (quri:url-encode-params
+                 (mapcar (lambda (pair)
+                           (cons (symbol->param-name (first pair))
+                                 (value->param-value (rest pair))))
+                         (alex:plist-alist args))
+                 :space-to-plus t))
          (url (quri:render-uri
                (quri:make-uri
                 :scheme "nyxt"
@@ -310,17 +313,19 @@ ARGS is an arbitrary keyword arguments list that is translated to a URL query."
                  :query `(("title" . ,title) ("buffer" . ,(id buffer)))))
 
 (export-always 'nyxt/ps::lisp-eval :nyxt/ps)
-(ps:defpsmacro nyxt/ps::lisp-eval ((&key (buffer '(nyxt:current-buffer)) title) &body body)
+(ps:defpsmacro nyxt/ps::lisp-eval ((&key (buffer '(nyxt:current-buffer)) title)
+                                   &body body)
   "Request a URL that evaluates BODY in BUFFER.
 TITLE is purely informative."
   `(fetch
-    (ps:lisp (quri:render-uri (lisp-url :buffer ,buffer
-                                        :title ,title
-                                        :callback ,(if (and (sera:single body)
-                                                            (member (first (first body))
-                                                                    '(lambda function)))
-                                                       (first body)
-                                                       `(lambda () ,@body)))))
+    (ps:lisp (quri:render-uri
+              (lisp-url :buffer ,buffer
+                        :title ,title
+                        :callback ,(if (and (sera:single body)
+                                            (member (first (first body))
+                                                    '(lambda function)))
+                                       (first body)
+                                       `(lambda () ,@body)))))
     (ps:create :mode "no-cors")))
 
 (define-internal-scheme "lisp"
@@ -333,7 +338,8 @@ TITLE is purely informative."
                   (buffer (find (read-from-string buffer-id)
                                 (internal-buffer-list :all t)
                                 :key 'id)))
-        (log:debug "Evaluate Lisp callback ~a in buffer ~a: ~a" request-id buffer title)
+        (log:debug "Evaluate Lisp callback ~a in buffer ~a: ~a"
+                   request-id buffer title)
         (values
          (if-let ((callback (sera:synchronized ((lisp-url-callbacks buffer))
                               (gethash request-id (lisp-url-callbacks buffer)))))
@@ -346,7 +352,8 @@ TITLE is purely informative."
                        (and (sequence-p callback-output)
                             (every #'scalar-p callback-output)))
                (j:encode callback-output)))
-           (log:warn "Request ~a isn't bound to a callback in buffer ~a" %url buffer))
+           (log:warn "Request ~a isn't bound to a callback in buffer ~a"
+                     %url buffer))
          "application/json")))
   (lambda (c) (log:debug "Error when evaluating lisp URL: ~a" c)))
 
@@ -423,7 +430,8 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
 (defun match-file-extension (extension &rest other-extensions)
   "Return a predicate for URL designators matching one of EXTENSION or OTHER-EXTENSIONS."
   (lambda (url-designator)
-    (some (curry #'string= (pathname-type (or (quri:uri-path (url url-designator)) "")))
+    (some (curry #'string= (pathname-type
+                            (or (quri:uri-path (url url-designator)) "")))
           (cons extension other-extensions))))
 
 (-> match-regex (string &rest string) (function (quri:uri) boolean))
