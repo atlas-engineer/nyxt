@@ -830,19 +830,6 @@ The notion of first element is dictated by `containers:first-item'."
     (containers:delete-item (recent-buffers *browser*) buffer)
     (containers:insert-item (recent-buffers *browser*) buffer)))
 
-(defun buffer-hide (buffer)
-  "Stop showing the buffer in Nyxt.
-Should be called from/instead of `ffi-buffer-delete' when the renderer view
-associated to the buffer is already killed.
-
-This is a low-level function.  See `buffer-delete' for the high-level version."
-  (let ((parent-window (find buffer (window-list) :key 'active-buffer)))
-    (when parent-window
-      (let ((replacement-buffer (get-inactive-buffer)))
-        (ffi-window-set-buffer parent-window replacement-buffer)))
-    (buffers-delete (id buffer))
-    (add-to-recent-buffers buffer)))
-
 (export-always 'buffer-list)
 (defun buffer-list ()
   "Order is stable."
