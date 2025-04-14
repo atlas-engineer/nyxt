@@ -865,10 +865,11 @@ The notion of first element is dictated by `containers:first-item'."
 
 This is a low-level function.  See `buffer-delete' and `delete-buffer'."
   ;; Mutate state of the hash table.
-  (remhash id (slot-value *browser* 'buffers))
-  ;; Notify `buffers' of the new hash table state. Useful, for example, to
-  ;; update the status buffer.
-  (setf (buffers *browser*) (buffers *browser*)))
+  (when *browser*
+    (remhash id (slot-value *browser* 'buffers))
+    ;; Notify `buffers' of the new hash table state. Useful, for example, to
+    ;; update the status buffer.
+    (setf (buffers *browser*) (buffers *browser*))))
 
 (export-always 'window-list)
 (defun window-list ()
