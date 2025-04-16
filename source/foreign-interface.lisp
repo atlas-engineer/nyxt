@@ -291,13 +291,12 @@ startup routine."))
   (:documentation "Display status buffer according to HTML-BODY.
 The `style' of the `status-buffer' is honored."))
 
-(define-ffi-generic ffi-print-message (window html-body)
-  (:method ((window t) html-body)
-    (with-slots (message-buffer) window
-      (html-write (spinneret:with-html-string
-                    (:head (:nstyle (style message-buffer)))
-                    (:body (:raw html-body)))
-                  message-buffer)))
+(define-ffi-generic ffi-print-message (message html-body)
+  (:method ((message-buffer t) html-body)
+    (html-write (spinneret:with-html-string
+                  (:head (:nstyle (style message-buffer)))
+                  (:body (:raw html-body)))
+                message-buffer))
   (:documentation "Print HTML-BODY in the WINDOW's message buffer.
 The `style' of the `message-buffer' is honored."))
 

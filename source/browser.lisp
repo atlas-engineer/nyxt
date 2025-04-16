@@ -541,9 +541,7 @@ The following example does a few things:
   (echo-warning "JavaScript error: ~a" condition))
 
 (defun print-message (html-body &optional (window (current-window)))
-  (with-slots (message-buffer) window
-    (when (and window message-buffer)
-      (ffi-print-message window html-body))))
+  (ffi-print-message (message-buffer window) html-body))
 
 (export-always 'current-window)
 (defun current-window (&optional no-rescan)
