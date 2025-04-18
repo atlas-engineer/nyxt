@@ -283,12 +283,8 @@ ARGS is an arbitrary keyword arguments list that is translated to a URL query."
 
 (define-internal-scheme "nyxt"
     (lambda (url)
-      (let* ((%url (quri:uri url))
-             (internal-page (find-url-internal-page %url)))
-        (if internal-page
-            (apply (form internal-page)
-                   (query-params->arglist (quri:uri-query-params %url)))
-            (warn "No internal page corresponds to URL ~a" %url)))))
+      (declare (ignore url))
+      ""))
 
 (define-internal-scheme "nyxt-resource"
     (lambda (url)

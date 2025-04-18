@@ -536,6 +536,13 @@ Dispatches on buffers and modes."))
 
 (define-ffi-generic on-signal-load-finished (object url title)
   (:method ((buffer buffer) url title)
+    (when (equal (quri:uri-scheme url) "nyxt")
+      (let* ((internal-page (find-url-internal-page url)))
+        (if internal-page
+            (html-write
+             (apply (form internal-page)
+                    (query-params->arglist (quri:uri-query-params url))) buffer)
+            (warn "No internal page corresponds to URL ~a" url))))
     (update-document-model :buffer buffer)
     (dolist (mode (enabled-modes buffer))
       (on-signal-load-finished mode url title))
