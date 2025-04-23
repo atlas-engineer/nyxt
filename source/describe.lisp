@@ -202,8 +202,9 @@ Otherwise prompt for matches."
            (:dt "Slot in " (:nxref :class-name class))
            (:dd (:nxref :class-name class :slot input))))))))
 
-(defmethod describe-any :around (&key (input nil input-supplied-p))
-  (declare (ignorable input))
+(defmethod describe-any :around (&key (input nil input-supplied-p)
+                                   %buffer%)
+  (declare (ignorable input %buffer%))
   (cond
     ((and input-supplied-p (symbolp input))
      (call-next-method))

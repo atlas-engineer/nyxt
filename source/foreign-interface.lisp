@@ -541,7 +541,10 @@ Dispatches on buffers and modes."))
         (if internal-page
             (html-write
              (apply (form internal-page)
-                    (query-params->arglist (quri:uri-query-params url))) buffer)
+                    (append
+                     (query-params->arglist (quri:uri-query-params url))
+                     (list :%buffer% buffer)))
+             buffer)
             (warn "No internal page corresponds to URL ~a" url))))
     (update-document-model :buffer buffer)
     (dolist (mode (enabled-modes buffer))

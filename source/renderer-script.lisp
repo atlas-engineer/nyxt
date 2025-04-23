@@ -289,16 +289,17 @@ See `find-internal-page-buffer'."))
 (defmethod set-internal-page-method ((page internal-page) form)
   (when form
     (let* ((arglist (second form))
+           (arglist-filtered (remove '%buffer% arglist))
            (body (cddr form))
            (documentation (nth-value 2 (alex:parse-body body :documentation t))))
       (multiple-value-bind (required optional rest keywords allow-other-keys-p aux key-p)
-          (alex:parse-ordinary-lambda-list arglist)
+          (alex:parse-ordinary-lambda-list arglist-filtered)
         (declare (ignore required optional allow-other-keys-p aux key-p))
         (closer-mop:ensure-method
          page
          `(lambda (,@(unless rest '(&rest args)) ,@arglist)
             ,@(when documentation (list documentation))
-            (declare (ignorable ,@(mappend #'cdar keywords) ,(or rest 'args)))
+            (declare (ignorable %buffer% ,@(mappend #'cdar keywords) ,(or rest 'args)))
             (funcall #'buffer-load-internal-page-focus
                      (name ,page)
                      ,@(mappend #'first keywords))))))))
@@ -342,6 +343,14 @@ ARGS are passed as internal page parameters."
                            (make-instance 'web-buffer))
                        (apply #'nyxt-url name args))))
 
+(defun ensure-keyword-argument (lambda-list keyword)
+  (unless (member keyword lambda-list)
+    (if (member '&key lambda-list)
+        ;; If &key exists, add the keyword argument at the end
+        (append lambda-list (list keyword))
+        ;; If &key doesn't exist, add it with the keyword
+        (append lambda-list (list '&key keyword)))))
+
 (export-always 'define-internal-page)
 (defmacro define-internal-page (name (&rest form-args) (&rest initargs) &body body)
   "Define an `internal-page'.
@@ -353,49 +362,48 @@ Example:
 \(define-internal-page my-page (&key arg1 arg2)
   (:title \"My beautiful page\")
   ...)"
-  `(apply #'make-instance 'internal-page
-          :name ',name
-          :visibility :anonymous
-          :lambda-list ',form-args
-          :form (quote (lambda (,@form-args) ,@body))
-          (list ,@initargs)))
+  (let ((arglist-with-buffer (ensure-keyword-argument form-args '%buffer%)))
+    `(apply #'make-instance 'internal-page
+            :name ',name
+            :visibility :anonymous
+            :lambda-list ',arglist-with-buffer
+            :form (quote (lambda (,@arglist-with-buffer)
+                           (declare (ignorable %buffer%))
+                           ,@body))
+            (list ,@initargs))))
 
 (export-always 'define-internal-page-command)
 (defmacro define-internal-page-command (name (&rest arglist)
                                         (buffer-var title &optional mode)
                                         &body body)
-  "Define a command called NAME creating an `internal-page'.
+  "Define a command called NAME creating an `internal-page`.
+
+The `:%buffer%` keyword argument is required. If the user includes their own `&key` in the ARGLIST, `:buffer` is added to it.
 
 Only keyword and rest arguments are accepted."
   (multiple-value-bind (stripped-body declarations documentation)
       (alex:parse-body body :documentation t)
-    `(progn
-       (export-always ',name (symbol-package ',name))
-       (sera:lret ((gf (defgeneric ,name (,@(unless (member '&rest arglist)
-                                              '(&rest args))
-                                          ,@(generalize-lambda-list arglist))
-                         (:documentation ,documentation)
-                         (:generic-function-class internal-page))))
-         (let ((wrapped-body '(lambda (,@arglist)
-                               ,@(when documentation (list documentation))
-                               ,@declarations
-                               (let ((,buffer-var (find-internal-page-buffer ',name)))
-                                 (declare (ignorable ,buffer-var))
-                                 ,@stripped-body))))
-           (set-internal-page-method gf wrapped-body)
-           (setf (slot-value #',name 'visibility) :mode)
-           (setf (page-mode #',name) ,mode)
-           (setf (slot-value #',name 'dynamic-title)
-                 ,(if (stringp title)
-                      title
-                      (let ((keywords (nth-value 3 (alex:parse-ordinary-lambda-list arglist)))
-                            (rest (nth-value 2 (alex:parse-ordinary-lambda-list arglist))))
-                        `(lambda (,@(unless (member '&rest arglist)
-                                      '(&rest args))
-                                  ,@arglist)
-                           (declare (ignorable ,@(mappend #'cdar keywords) ,(or rest 'args)))
-                           ,title))))
-           (setf (form gf) wrapped-body))))))
+    (let ((arglist-with-buffer (ensure-keyword-argument arglist '%buffer%)))
+      `(progn
+         (export-always ',name (symbol-package ',name))
+         (sera:lret ((gf (defgeneric ,name (,@(generalize-lambda-list arglist-with-buffer))
+                           (:documentation ,documentation)
+                           (:generic-function-class internal-page))))
+           (let ((wrapped-body '(lambda (,@arglist-with-buffer)
+                                 ,@(when documentation (list documentation))
+                                 ,@declarations
+                                 (let ((,buffer-var %buffer%))
+                                   (declare (ignorable ,buffer-var))
+                                   ,@stripped-body))))
+             (set-internal-page-method gf wrapped-body)
+             (setf (slot-value #',name 'visibility) :mode)
+             (setf (page-mode #',name) ,mode)
+             (setf (slot-value #',name 'dynamic-title)
+                   ,(if (stringp title)
+                        title
+                        "Internal Page"))
+             (setf (form gf) wrapped-body)))))))
+
 
 (export-always 'define-internal-page-command-global)
 (defmacro define-internal-page-command-global (name (&rest arglist)
