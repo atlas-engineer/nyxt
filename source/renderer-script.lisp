@@ -334,7 +334,7 @@ ARGS are passed as internal page parameters."
   (set-current-buffer (ffi-buffer-load
                        (or (find-internal-page-buffer name)
                            (make-instance 'web-buffer))
-                       (apply #'nyxt-url name args))))
+                       (quri:uri (apply #'nyxt-url name args)))))
 
 (defun ensure-keyword-argument (lambda-list keyword)
   (unless (member keyword lambda-list)
