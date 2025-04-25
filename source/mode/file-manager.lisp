@@ -309,7 +309,8 @@ Can be used as a `open-file-function'."
 (define-command-global open-file (&key (default-directory
                                         (if (quri:uri-file-p (url (current-buffer)))
                                             (uiop:pathname-directory-pathname
-                                             (quri:uri-path (url (current-buffer))))
+                                             (quri:url-decode
+                                              (quri:uri-path (url (current-buffer)))))
                                             *default-pathname-defaults*)))
   "Open a file from the filesystem.
 
