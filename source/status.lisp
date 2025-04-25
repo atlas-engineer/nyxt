@@ -293,7 +293,9 @@ By default, renders a hourglass when loading a URL."
                    (url (url buffer))
                    (domain (quri:uri-domain url))
                    (tab-display-text (if (internal-url-p url)
-                                         (quri:render-uri url)
+                                         (format nil "~a:~a"
+                                                 (quri:uri-scheme url)
+                                                 (quri:uri-path url))
                                          domain)))
               (:span
                :class (if (eq current-buffer buffer)
