@@ -265,26 +265,18 @@ See `find-internal-page-buffer'."))
         (error "Only rest and keyword parameters are allowed in an internal-page definition."))
       (setf (slot-value page 'form)
             (lambda (&rest args)
-              (declare (ignorable args))
-              (let ((*print-pretty* nil))
-                (destructuring-bind (contents &optional (type "text/html;charset=utf8") (status 200)
-                                                headers reason)
-                    (multiple-value-list (apply (compile nil lambda-expression) args))
-                  (when (and (str:starts-with-p "text/html" type)
-                             (or (null contents)
-                                 (< (length (clss:select "head, body" (plump:parse contents)))
-                                    2)))
-                    (setf contents
-                          (spinneret:with-html-string
-                            (:doctype)
-                            (:html
-                             (:head
-                              (:title (apply #'dynamic-title
-                                             (gethash (name page) *nyxt-url-commands*)
-                                             args))
-                              (:style (:raw (style (find-internal-page-buffer (name page))))))
-                             (:body (:raw contents))))))
-                  (values contents type status headers reason))))))))
+              (let ((*print-pretty* nil)
+                    (%buffer% (getf args :%buffer%))
+                    (contents (apply (compile nil lambda-expression) args)))
+                (spinneret:with-html-string
+                  (:doctype)
+                  (:html
+                   (:head
+                    (:title (apply #'dynamic-title
+                                   (gethash (name page) *nyxt-url-commands*)
+                                   args))
+                    (:style (:raw (style %buffer%))))
+                   (:body (:raw contents))))))))))
 
 (defmethod set-internal-page-method ((page internal-page) form)
   (when form
@@ -399,9 +391,15 @@ Only keyword and rest arguments are accepted."
              (setf (slot-value #',name 'visibility) :mode)
              (setf (page-mode #',name) ,mode)
              (setf (slot-value #',name 'dynamic-title)
-                   ,(if (stringp title)
-                        title
-                        "Internal Page"))
+                 ,(if (stringp title)
+                      title
+                      (let ((keywords (nth-value 3 (alex:parse-ordinary-lambda-list arglist-with-buffer)))
+                            (rest (nth-value 2 (alex:parse-ordinary-lambda-list arglist-with-buffer))))
+                        `(lambda (,@(unless (member '&rest arglist-with-buffer)
+                                      '(&rest args))
+                                  ,@arglist-with-buffer)
+                           (declare (ignorable ,@(mappend #'cdar keywords) ,(or rest 'args)))
+                           ,title))))
              (setf (form gf) wrapped-body)))))))
 
 
