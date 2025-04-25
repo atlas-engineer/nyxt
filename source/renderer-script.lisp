@@ -296,14 +296,16 @@ See `find-internal-page-buffer'."))
                      (name ,page)
                      ,@(mappend #'first keywords))))))))
 
-(defmethod initialize-instance :after ((page internal-page) &key form &allow-other-keys)
+(defmethod initialize-instance :after
+    ((page internal-page) &key form &allow-other-keys)
   "Register PAGE into the globally known nyxt:// URLs."
   (when form
     (set-internal-page-method page form)
     (setf (form page) form))
   (setf (gethash (name page) *nyxt-url-commands*) page))
 
-(defmethod reinitialize-instance :after ((page internal-page) &key form &allow-other-keys)
+(defmethod reinitialize-instance :after
+    ((page internal-page) &key form &allow-other-keys)
   "Register PAGE into the globally known nyxt:// URLs."
   (when form
     (set-internal-page-method page form)
@@ -316,8 +318,7 @@ See `find-internal-page-buffer'."))
           ((functionp title) (apply title args))
           (t (format nil "*~a*" (string-downcase (name page)))))))
 
-;; (-> find-internal-page-buffer (internal-page-symbol) (maybe buffer))
-(defun find-internal-page-buffer (name) ; TODO: Test if CCL can catch bad calls at compile-time.
+(defun find-internal-page-buffer (name)
   "Return first buffer which URL is a NAME `internal-page'."
   (find name (buffer-list) :key (compose #'internal-page-name #'url)))
 
@@ -365,14 +366,9 @@ Example:
             (list ,@initargs))))
 
 (export-always 'define-internal-page-command)
-(defmacro define-internal-page-command (name (&rest arglist)
-                                        (buffer-var title &optional mode)
-                                        &body body)
-  "Define a command called NAME creating an `internal-page`.
-
-The `:%buffer%` keyword argument is required. If the user includes their own `&key` in the ARGLIST, `:buffer` is added to it.
-
-Only keyword and rest arguments are accepted."
+(defmacro define-internal-page-command
+    (name (&rest arglist) (buffer-var title &optional mode) &body body)
+  "Define a command called NAME creating an `internal-page'."
   (multiple-value-bind (stripped-body declarations documentation)
       (alex:parse-body body :documentation t)
     (let ((arglist-with-buffer (ensure-keyword-argument arglist '%buffer%)))
@@ -404,12 +400,9 @@ Only keyword and rest arguments are accepted."
 
 
 (export-always 'define-internal-page-command-global)
-(defmacro define-internal-page-command-global (name (&rest arglist)
-                                               ;; TODO: Move `buffer-var' (and `title'?) to a keyword arg.
-                                               (buffer-var title &optional mode)
-                                               &body body)
-  "Define a global command called NAME creating an `internal-page'.
-
-Only keyword arguments are accepted."
-  `(prog1 (define-internal-page-command ,name (,@arglist) (,buffer-var ,title ,mode) ,@body)
+(defmacro define-internal-page-command-global
+    (name (&rest arglist) (buffer-var title &optional mode) &body body)
+  "Define a global command called NAME creating an `internal-page'."
+  `(prog1 (define-internal-page-command ,name (,@arglist)
+              (,buffer-var ,title ,mode) ,@body)
      (setf (slot-value #',name 'visibility) :global)))
