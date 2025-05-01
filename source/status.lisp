@@ -331,7 +331,6 @@ override it, redefine methods such as `format-status-url' or
   (let* ((buffer (active-buffer (window status))))
     (spinneret:with-html-string
       (:div :id "container"
-            #-darwin
             (:div :id "controls"
                   (format-status-buttons status))
             (:div :id "url"
