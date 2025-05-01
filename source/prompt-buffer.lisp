@@ -51,43 +51,24 @@ The following mouse keybindings are available:
 - M-button1: `set-action-on-return'.")
      (style
       (theme:themed-css (theme *browser*)
-        #-darwin
         '(:font-face :font-family "public sans" :font-style "normal" :font-weight "400" :src "url('nyxt-resource:PublicSans-Regular.woff')" "format('woff')")
-        #-darwin
         '(:font-face :font-family "public sans" :font-style "italic" :font-weight "400" :src "url('nyxt-resource:PublicSans-Italic.woff')" "format('woff')")
-        #-darwin
         '(:font-face :font-family "public sans" :font-style "normal" :font-weight "100" :src "url('nyxt-resource:PublicSans-Thin.woff')" "format('woff')")
-        #-darwin
         '(:font-face :font-family "public sans" :font-style "italic" :font-weight "100" :src "url('nyxt-resource:PublicSans-ThinItalic.woff')" "format('woff')")
-        #-darwin
         '(:font-face :font-family "public sans" :font-style "normal" :font-weight "200" :src "url('nyxt-resource:PublicSans-ExtraLight.woff')" "format('woff')")
-        #-darwin
         '(:font-face :font-family "public sans" :font-style "italic" :font-weight "200" :src "url('nyxt-resource:PublicSans-ExtraLightItalic.woff')" "format('woff')")
-        #-darwin
         '(:font-face :font-family "public sans" :font-style "normal" :font-weight "300" :src "url('nyxt-resource:PublicSans-Light.woff')" "format('woff')")
-        #-darwin
         '(:font-face :font-family "public sans" :font-style "italic" :font-weight "300" :src "url('nyxt-resource:PublicSans-LightItalic.woff')" "format('woff')")
-        #-darwin
         '(:font-face :font-family "public sans" :font-style "normal" :font-weight "500" :src "url('nyxt-resource:PublicSans-Medium.woff')" "format('woff')")
-        #-darwin
         '(:font-face :font-family "public sans" :font-style "italic" :font-weight "500" :src "url('nyxt-resource:PublicSans-MediumItalic.woff')" "format('woff')")
-        #-darwin
         '(:font-face :font-family "public sans" :font-style "normal" :font-weight "600" :src "url('nyxt-resource:PublicSans-SemiBold.woff')" "format('woff')")
-        #-darwin
         '(:font-face :font-family "public sans" :font-style "italic" :font-weight "600" :src "url('nyxt-resource:PublicSans-SemiBoldItalic.woff')" "format('woff')")
-        #-darwin
         '(:font-face :font-family "public sans" :font-style "normal" :font-weight "700" :src "url('nyxt-resource:PublicSans-Bold.woff')" "format('woff')")
-        #-darwin
         '(:font-face :font-family "public sans" :font-style "italic" :font-weight "700" :src "url('nyxt-resource:PublicSans-BoldItalic.woff')" "format('woff')")
-        #-darwin
         '(:font-face :font-family "public sans" :font-style "normal" :font-weight "800" :src "url('nyxt-resource:PublicSans-ExtraBold.woff')" "format('woff')")
-        #-darwin
         '(:font-face :font-family "public sans" :font-style "italic" :font-weight "800" :src "url('nyxt-resource:PublicSans-ExtraBoldItalic.woff')" "format('woff')")
-        #-darwin
         '(:font-face :font-family "public sans" :font-style "normal" :font-weight "900" :src "url('nyxt-resource:PublicSans-Black.woff')" "format('woff')")
-        #-darwin
         '(:font-face :font-family "public sans" :font-style "italic" :font-weight "900" :src "url('nyxt-resource:PublicSans-BlackItalic.woff')" "format('woff')")
-        #-darwin
         '(:font-face :font-family "dejavu sans mono" :src "url('nyxt-resource:DejaVuSansMono.ttf')" "format('ttf')")
         '(*
           :font-size "14px"
@@ -457,7 +438,6 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
                (:div.source
                 (:div.source-name
                  (:div
-                  #-darwin
                   (:nbutton
                     :id "next-source"
                     :text (:raw (gethash "down.svg" *static-data*))
@@ -467,7 +447,6 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
                                                  :modes (enabled-modes prompt-buffer)))
                     :buffer prompt-buffer
                     '(funcall (sym:resolve-symbol :next-source :command)))
-                  #-darwin
                   (:nbutton
                     :id "previous-source"
                     :text (:raw (gethash "up.svg" *static-data*))
@@ -490,7 +469,6 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
                                               :enable-marks-p (prompter:enable-marks-p source)))
                   (when (not (prompter:ready-p source)) "(In progress...)"))
                  (:div
-                  #-darwin
                   (:nbutton
                     :id "toggle-attributes"
                     :text (:raw (gethash "plus-minus.svg" *static-data*))
