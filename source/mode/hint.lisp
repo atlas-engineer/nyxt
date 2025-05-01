@@ -477,7 +477,7 @@ FUNCTION is the action to perform on the selected elements."
   (%follow-hint element))
 
 (defmethod %follow-hint-new-buffer ((a nyxt/dom:a-element))
-  (make-buffer :url (url a) :load-url-p nil))
+  (make-buffer :url (url a) :load-url-p t))
 
 (defmethod %follow-hint-new-buffer ((element plump:element))
   (%follow-hint element))
@@ -497,25 +497,20 @@ FUNCTION is the action to perform on the selected elements."
   (query-hints "Select elements"
                (lambda (results)
                  (%follow-hint (first results))
-                 (mapcar (rcurry #'%follow-hint-new-buffer (current-buffer))
-                         (rest results)))))
+                 (mapcar #'%follow-hint-new-buffer (rest results)))))
 
 (define-command follow-hint-new-buffer ()
   "Like `follow-hint', but selection is handled in background buffers."
   (query-hints "Select elements"
                (lambda (result)
-                 (mapcar (rcurry #'%follow-hint-new-buffer (current-buffer))
-                         result))))
+                 (mapcar #'%follow-hint-new-buffer result))))
 
-;; Consider renaming to follow-hint-new-foreground-buffer.
 (define-command follow-hint-new-buffer-focus ()
   "Like `follow-hint-new-buffer', but switch to the top background buffer."
-  (let ((buffer (current-buffer)))
-    (query-hints "Select elements"
-                 (lambda (result)
-                   (%follow-hint-new-buffer-focus (first result))
-                   (mapcar (rcurry #'%follow-hint-new-buffer buffer)
-                           (rest result))))))
+  (query-hints "Select elements"
+               (lambda (result)
+                 (%follow-hint-new-buffer-focus (first result))
+                 (mapcar #'%follow-hint-new-buffer (rest result)))))
 
 (define-command copy-hint-url ()
   "Save the element hint's URL to the clipboard."
