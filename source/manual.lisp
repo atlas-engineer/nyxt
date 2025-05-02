@@ -3,19 +3,9 @@
 
 (in-package :nyxt)
 
-(export-always 'manual-content)
-(defun manual-content ()
-  "Proxy function returning `manual' contents."
-  (spinneret:with-html-string
-    (:h1 "Nyxt manual")
-    (:p "This manual first includes the tutorial, then covers the configuration
-of Nyxt.")
-    (:ntoc
-      (:raw (tutorial-content))
-      (:raw (manual-sections)))))
 
-(defun manual-sections ()
-  (spinneret:with-html-string
+(defun manual-content ()
+  (spinneret:with-html
     (let ((auto-config-file (namestring (files:expand *auto-config-file*)))
           (config-file (namestring (files:expand *config-file*)))
           (gtk-extensions-directory (namestring (uiop:merge-pathnames* "nyxt/" nasdf:*libdir*))))

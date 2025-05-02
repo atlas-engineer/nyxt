@@ -491,7 +491,9 @@ The value is saved to clipboard."
     "Display Nyxt manual."
     (spinneret:with-html-string
       (:nstyle '(body :max-width "80ch"))
-      (:raw (manual-content)))))
+      (:ntoc
+        (tutorial-content)
+        (manual-content)))))
 
 (define-internal-page-command-global tutorial ()
     (buffer "*Tutorial*" 'nyxt/mode/help:help-mode)
@@ -502,7 +504,7 @@ The value is saved to clipboard."
     (:p "The following tutorial introduces core concepts and
 basic usage.  For more details, especially regarding configuration, see
 the " (:code (:a.link :href (nyxt-url 'manual) "manual")) ".")
-    (:raw (tutorial-content))))
+    (tutorial-content)))
 
 (define-internal-page-command-global show-system-information ()
     (buffer "*System information*")
@@ -531,7 +533,7 @@ clipboard."
 The `:download-link' is overloaded as a reference URL for external extensions as
 they are not served on the Nyxt website."
   (flet ((extension->html (extension)
-           (spinneret:with-html-string
+           (spinneret:with-html
              (:dl
               (:dt "Name")
               (:dd (assoc-value extension :name))
@@ -546,5 +548,5 @@ they are not served on the Nyxt website."
     (spinneret:with-html-string
       (:h1 "Nyxt extensions")
       (loop for extension in (cl-json:decode-json-from-string (dex:get endpoint))
-            collect (:div (:raw (extension->html extension))
+            collect (:div (extension->html extension)
                           (:hr))))))

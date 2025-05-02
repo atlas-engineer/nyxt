@@ -30,7 +30,7 @@ See `nyxt/mode/macro-edit' package documentation for implementation details."
   (:toggler-command-p nil))
 
 (defmethod render-functions ((macro-editor macro-edit-mode))
-  (spinneret:with-html-string
+  (spinneret:with-html
     (if (functions macro-editor)
         (:table
          (:tr
@@ -60,7 +60,6 @@ See `nyxt/mode/macro-edit' package documentation for implementation details."
     (buffer "*Macro edit*" 'nyxt/mode/macro-edit:macro-edit-mode)
   "Edit a macro."
   (spinneret:with-html-string
-    (:nstyle (style buffer))
     (render-menu 'nyxt/mode/macro-edit:macro-edit-mode buffer)
     (:h1 "Macro editor")
     (:dl
@@ -71,9 +70,8 @@ See `nyxt/mode/macro-edit' package documentation for implementation details."
     (:h2 "Commands")
     (:div
      :id "commands"
-     (:raw
-      (render-functions
-       (find-submode 'nyxt/mode/macro-edit:macro-edit-mode))))))
+     (render-functions
+      (find-submode 'nyxt/mode/macro-edit:macro-edit-mode)))))
 
 (defmethod add-function ((macro-editor macro-edit-mode) command)
   (alex:appendf (functions macro-editor)

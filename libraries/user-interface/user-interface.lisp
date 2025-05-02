@@ -15,8 +15,9 @@
 (defun unique-id ()
   (format nil "ui-element-~d" (incf *id*)))
 
-(defgeneric to-html-string (object)
-  (:documentation "The string HTML representation of OBJECT."))
+(defgeneric to-html (object)
+  (:documentation "The HTML representation of OBJECT.
+A form suitable to be compiled by Spinneret."))
 
 (export-always 'buffer)
 (defclass ui-element ()
@@ -58,9 +59,9 @@
   (when (slot-boundp button 'buffer)
     (update button)))
 
-(export-always 'to-html-string)
-(defmethod to-html-string ((button button))
-  (spinneret:with-html-string
+(export-always 'to-html)
+(defmethod to-html ((button button))
+  (spinneret:with-html
       (:button :id (id button)
                :class "button"
                :title (alt-text button)
@@ -76,8 +77,8 @@
   (when (slot-boundp paragraph 'buffer)
     (update paragraph)))
 
-(defmethod to-html-string ((paragraph paragraph))
-  (spinneret:with-html-string
+(defmethod to-html ((paragraph paragraph))
+  (spinneret:with-html
       (:p :id (id paragraph) (text paragraph))))
 
 (export-always 'progress-bar)
@@ -89,8 +90,8 @@
                :documentation "The percentage the progress bar is
 filled up, use a number between 0 and 100.")))
 
-(defmethod to-html-string ((progress-bar progress-bar))
-  (spinneret:with-html-string
+(defmethod to-html ((progress-bar progress-bar))
+  (spinneret:with-html
       (:div :class "progress-bar-base"
             (:div :class "progress-bar-fill"
                   :id (id progress-bar)

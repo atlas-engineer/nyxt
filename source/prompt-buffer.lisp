@@ -338,7 +338,7 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
           (make-list len :initial-element (/ 1 len))))))
 
 (defun render-attributes (source prompt-buffer)
-  (spinneret:with-html-string
+  (spinneret:with-html
     (when (prompter:suggestions source)
       (:table :class "source-content"
               (:colgroup
@@ -425,7 +425,7 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
                                                            (- suggestion-index cursor-index))
                                                           (prompter:run-action-on-return
                                                            (nyxt::current-prompt-buffer)))))))
-                                         (:raw attribute))))))))))
+                                         attribute)))))))))
 
 (export 'prompt-render-suggestions)
 (defmethod prompt-render-suggestions ((prompt-buffer prompt-buffer))
@@ -479,7 +479,7 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
                     :buffer prompt-buffer
                     `(funcall (sym:resolve-symbol :toggle-attributes-display :command)
                               :source ,source))))
-                (:raw (render-attributes source prompt-buffer))))))
+                (render-attributes source prompt-buffer)))))
       (ps-eval :async t :buffer prompt-buffer
         (setf (ps:@ (nyxt/ps:qs document "#suggestions") |innerHTML|)
               (ps:lisp

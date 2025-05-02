@@ -4,7 +4,7 @@
 (in-package :nyxt)
 
 (defun tutorial-content ()
-  (spinneret:with-html-string
+  (spinneret:with-html
     (:nsection :title "Core concepts"
 
       (:nsection :title "Keybindings and commands"

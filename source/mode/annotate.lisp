@@ -64,9 +64,8 @@ Command to create one is `annotate-current-url'."))
 The page is handled by underlying `url-annotation', while the snippet is
 extracted by `annotate-highlighted-text' command."))
 
-;; TODO: Wrap in <div>s with special CSS classes.
 (defmethod render ((annotation url-annotation))
-  (spinneret:with-html-string
+  (spinneret:with-html
     (:dl
      (:dt "URL")
      (:dd (:a :href (url annotation) (render-url (url annotation))))
@@ -78,7 +77,7 @@ extracted by `annotate-highlighted-text' command."))
      (:dd (data annotation)))))
 
 (defmethod render ((annotation snippet-annotation))
-  (spinneret:with-html-string
+  (spinneret:with-html
     (:dl
      (:dt "URL")
      (:dd (:a :href (url annotation) (render-url (url annotation))))
@@ -149,7 +148,7 @@ make-instance."
     (:h1 "Annotations")
     (or
      (loop for annotation in annotations
-           collect (:div (:raw (render annotation))
+           collect (:div (render annotation)
                          (:hr)))
      (:p "No annotations available."))))
 
