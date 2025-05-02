@@ -21,7 +21,8 @@
 (defmethod (setf url) (value (he history-entry))
   (setf (slot-value he 'url) (url value)))
 
-(defmethod prompter:object-attributes ((entry history-entry) (source prompter:source))
+(defmethod prompter:object-attributes
+    ((entry history-entry) (source prompter:source))
   (declare (ignore source))
   `(("Title" ,(title entry) (:width 3))
     ("URL" ,(render-url (url entry)) (:width 2))))
@@ -53,8 +54,8 @@ when deserializing a `history-entry')."
         (write-slot 'title)
         (write-string ")")))))
 
-(defmethod files:serialize ((profile nyxt-profile) (file history-file) stream &key)
-  ;; Set package so that symbols are printed with consistent namespaces.
+(defmethod files:serialize
+    ((profile nyxt-profile) (file history-file) stream &key)
   (let ((*package* (find-package :nyxt))
         (*print-length* nil))
     (write-string "(" stream)
@@ -64,7 +65,8 @@ when deserializing a `history-entry')."
     (write-string +newline+ stream)
     (write-string ")" stream)))
 
-(defmethod files:deserialize ((profile nyxt-profile) (path history-file) raw-content &key)
+(defmethod files:deserialize
+    ((profile nyxt-profile) (path history-file) raw-content &key)
   (let ((*package* (find-package :nyxt))
         (entries (safe-read raw-content)))
     (mapcar (lambda (entry)
