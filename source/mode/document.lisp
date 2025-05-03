@@ -583,15 +583,15 @@ The inner-text must not be modified, so that we can jump to the anchor of the sa
                 collect (object-create element)))
       (collect-selection (nyxt/ps:qsa document (list "a")) selection)))
     (loop for element in (get-selection)
-          collect (str:string-case (gethash "type" element )
+          collect (str:string-case (cdr (assoc :type element))
                     ("link"
                      (make-instance 'link
-                                    :url (gethash "href" element )
-                                    :body (plump:text (plump:parse (gethash "body" element )))))
+                                    :url (cdr (assoc :href element))
+                                    :body (cdr (assoc :body element))))
                     ("img"
                      (make-instance 'image
-                                    :url (gethash "src" element )
-                                    :alt (gethash "alt" element )))))))
+                                    :url (cdr (assoc :src element))
+                                    :alt (cdr (assoc :alt element))))))))
 
 (define-parenscript frame-element-selection-ready ()
   "Check to see if the selection is complete."
