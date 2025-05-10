@@ -366,7 +366,15 @@ Note that by changing the default value, modifier keys can be remapped."))
                                      (+ (height status-buffer)
                                         (height message-buffer)))
                                :width (assoc-value bounds :width)
-                               :height (height status-buffer))))
+                               :height (height status-buffer))
+    ;; TODO: Fix buffer deletion. We CANNOT hook on close to remove the view
+    ;; from the window because it is too late. Ergo, we must manually delete the
+    ;; currently viewed buffer without trying to mutate it via JS.
+    (electron:add-listener
+     window :close
+     (lambda (_) (declare (ignore _))
+       (when (current-view window)
+         (nyxt::buffers-delete (id (current-view window))))))))
 
 (defmethod ffi-window-delete ((window electron-window))
   (when (current-view window)
