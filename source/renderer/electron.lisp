@@ -336,7 +336,10 @@ Note that by changing the default value, modifier keys can be remapped."))
 ;; (defmethod ffi-preferred-languages ((buffer electron-buffer)))
 
 (define-class electron-window (electron:window)
-  ()
+  ((electron:options
+    "{autoHideMenuBar: true,
+      width: 1600,
+      height: 1200}"))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:metaclass user-class)
