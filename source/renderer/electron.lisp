@@ -339,7 +339,8 @@ Note that by changing the default value, modifier keys can be remapped."))
   ((electron:options
     "{autoHideMenuBar: true,
       width: 1600,
-      height: 1200}"))
+      height: 1200}")
+   (current-view))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:metaclass user-class)
@@ -368,6 +369,8 @@ Note that by changing the default value, modifier keys can be remapped."))
                                :height (height status-buffer))))
 
 (defmethod ffi-window-delete ((window electron-window))
+  (when (current-view window)
+    (electron:remove-view window (current-view window) :kill-view-p nil))
   (electron:kill window))
 
 (defmethod ffi-window-title ((window electron-window))
@@ -378,6 +381,8 @@ Note that by changing the default value, modifier keys can be remapped."))
 (defmethod ffi-window-set-buffer ((window electron-window)
                                   (buffer electron-buffer)
                                   &key (focus t))
+  (when (current-view window)
+    (electron:remove-view window (current-view window) :kill-view-p nil))
   (electron:add-bounded-view window
                              buffer
                              :window-bounds-alist-var bounds
@@ -391,6 +396,7 @@ Note that by changing the default value, modifier keys can be remapped."))
                                              (ffi-height prompt)
                                              0))))
   (when focus (electron:focus buffer))
+  (setf (current-view window) buffer)
   buffer)
 
 (defmethod ffi-height ((window electron-window))
