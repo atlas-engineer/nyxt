@@ -15,7 +15,7 @@
   (when (dead-buffer-p buffer)
     (ffi-buffer-initialize-foreign-object buffer)
     (add-to-recent-buffers buffer)
-    (buffers-set (id buffer) buffer)
+    (buffer-set (id buffer) buffer)
     (ffi-buffer-load buffer (url buffer))))
 
 (define-class recent-buffer-source (prompter:source)

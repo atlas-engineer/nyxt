@@ -585,7 +585,7 @@ A command is a special kind of function that can be called with
 (define-internal-page describe-bindings (&key (buffer-id (id (current-buffer))))
     (:title "*Help-bindings*" :page-mode 'nyxt/mode/help:help-mode)
   "Show a list of all available keybindings for buffer corresponding to BUFFER-ID."
-  (if-let ((buffer (nyxt::buffers-get buffer-id)))
+  (if-let ((buffer (nyxt::buffer-get buffer-id)))
     (spinneret:with-html-string
       (:h1 "Bindings")
       (:p (loop for keymap in (current-keymaps buffer)

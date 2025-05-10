@@ -374,7 +374,7 @@ Note that by changing the default value, modifier keys can be remapped."))
      window :close
      (lambda (_) (declare (ignore _))
        (when (current-view window)
-         (nyxt::buffers-delete (id (current-view window))))))))
+         (nyxt::buffer-delete (id (current-view window))))))))
 
 (defmethod ffi-window-delete ((window electron-window))
   (when (current-view window)

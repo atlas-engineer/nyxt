@@ -316,7 +316,7 @@ The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
     (:title "*Summary*")
   "Summarize the current buffer by creating a new summary buffer.
 ID is a buffer `id'."
-  (let ((buffer (nyxt::buffers-get id)))
+  (let ((buffer (nyxt::buffer-get id)))
     (let ((contents
             (serapeum:string-join
              (map 'list (lambda (e) (plump:text e))

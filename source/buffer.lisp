@@ -673,7 +673,7 @@ EXTRA-MODES
                                       &key &allow-other-keys)
   "Finalize buffer.
 Return the created buffer."
-  (buffers-set (id buffer) buffer)
+  (buffer-set (id buffer) buffer)
   buffer)
 
 (export-always 'update-document-model)
@@ -707,7 +707,7 @@ Return the created buffer."
         (setf (document-model buffer) dom)))))
 
 (defun dead-buffer-p (buffer)
-  (not (buffers-get (id buffer))))
+  (not (buffer-get (id buffer))))
 
 (defmethod document-model ((buffer buffer))
   "A wraparound accessor to BUFFER's `document-model'.
@@ -847,11 +847,11 @@ The notion of first element is dictated by `containers:first-item'."
                                 collect (status-buffer window)
                                 collect (message-buffer window))))))
 
-(defun buffers-get (id)
+(defun buffer-get (id)
   "Get the `buffer' with the corresponding ID."
   (gethash id (slot-value *browser* 'buffers)))
 
-(defun buffers-set (id buffer)
+(defun buffer-set (id buffer)
   "Ensure that entry ID->BUFFER belongs to `buffers' hash table."
   (when *browser*
     ;; Mutate state of the hash table.
@@ -860,7 +860,7 @@ The notion of first element is dictated by `containers:first-item'."
     ;; update the status buffer.
     (setf (buffers *browser*) (buffers *browser*))))
 
-(defun buffers-delete (id)
+(defun buffer-delete (id)
   "Remove `buffers' hash table entry matching key ID.
 
 This is a low-level function.  See `buffer-delete' and `delete-buffer'."

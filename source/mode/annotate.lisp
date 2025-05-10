@@ -155,7 +155,7 @@ make-instance."
 (define-internal-page show-annotations-for-current-url (&key (id (id (current-buffer))))
     (:title "*Annotations*")
   "Display the annotations associated to buffer with ID."
-  (let ((buffer (nyxt::buffers-get id)))
+  (let ((buffer (nyxt::buffer-get id)))
     (render-annotations (sera:filter (curry #'url-equal (url buffer))
                                      (files:content (annotations-file buffer))
                                      :key (compose #'quri:uri #'url)))))
