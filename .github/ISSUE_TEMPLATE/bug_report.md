@@ -14,4 +14,4 @@ assignees: ''
 **Information**
 - OS Name+Version:
 - Installation method (Flatpak, Guix, package manager, build from source):
-- Output of `show-system-information`:
+- Output of Nyxt command `show-system-information`:
