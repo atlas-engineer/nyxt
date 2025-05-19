@@ -100,7 +100,7 @@
       '("#controls > button"
         :margin-right "-3px"
         :max-width "24px"
-        :height "100%"
+        :height "35px"
         :aspect-ratio "1/1")
       `("#url"
         :background-color ,theme:background-color-
