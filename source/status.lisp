@@ -284,7 +284,7 @@ By default, renders a hourglass when loading a URL."
 (export-always 'format-status-tabs)
 (defmethod format-status-tabs ((status status-buffer))
   "Render the open buffers to HTML string suitable for STATUS."
-  (let* ((buffers (buffer-list))
+  (let* ((buffers (reverse (buffer-list)))
          (current-buffer (active-buffer (window status))))
     (spinneret:with-html
       (loop for buffer in buffers
