@@ -275,7 +275,7 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
   (prompt-render-focus prompt-buffer)
   (prompt-render-suggestions prompt-buffer)
   (setf (height prompt-buffer) (slot-value prompt-buffer 'height))
-  (ffi-focus-prompt-buffer prompt-buffer)
+  (ffi-focus-buffer prompt-buffer)
   (run-thread "Show prompt watcher"
     (update-prompt-input prompt-buffer)
     (hooks:run-hook (prompt-buffer-ready-hook *browser*) prompt-buffer)))

@@ -969,7 +969,7 @@ buffer currently chosen as suggestion."))
         (prog1 (set-current-buffer (current-buffer))
           (ps-eval :buffer prompt-buffer
             (setf (ps:@ (nyxt/ps:qs document "*") style opacity) "0.5")))
-        (prog1 (ffi-focus-prompt-buffer prompt-buffer)
+        (prog1 (ffi-focus-buffer prompt-buffer)
           (ps-eval :buffer prompt-buffer
             (setf (ps:@ (nyxt/ps:qs document "*") style opacity) "1"))))))
 

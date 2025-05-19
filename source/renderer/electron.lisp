@@ -266,9 +266,9 @@ Note that by changing the default value, modifier keys can be remapped."))
                          :width (assoc-value bounds :width)
                          :height height)))
 
-(defmethod ffi-focus-prompt-buffer ((prompt-buffer prompt-buffer))
-  (electron:focus prompt-buffer)
-  prompt-buffer)
+(defmethod ffi-focus-buffer ((buffer electron-buffer))
+  (electron:focus buffer)
+  buffer)
 
 (defmethod (setf ffi-height) ((height integer) (prompt-buffer prompt-buffer))
   (with-slots (window) prompt-buffer
