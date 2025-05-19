@@ -965,8 +965,8 @@ buffer currently chosen as suggestion."))
 (define-command toggle-prompt-buffer-focus ()
   "Toggle the focus between the current buffer and the current prompt buffer."
   (let ((prompt-buffer (current-prompt-buffer)))
-    (if (prompt-buffer-p (focused-buffer))
-        (prog1 (set-current-buffer (current-buffer))
+    (if (ffi-focused-p prompt-buffer)
+        (prog1 (ffi-focus-buffer (current-buffer))
           (ps-eval :buffer prompt-buffer
             (setf (ps:@ (nyxt/ps:qs document "*") style opacity) "0.5")))
         (prog1 (ffi-focus-buffer prompt-buffer)
