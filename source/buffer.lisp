@@ -1225,17 +1225,17 @@ Return BUFFERS."
   (mapcar #'ffi-buffer-reload (alex:ensure-list buffers))
   buffers)
 
-(define-command switch-buffer-next (&key (offset 1) (buffer (current-buffer)))
-  "Switch to the next buffer."
+(define-command switch-buffer-previous (&key (offset 1) (buffer (current-buffer)))
+  "Switch to the previous buffer."
   (let ((buffer-list (buffer-list)))
     (set-current-buffer (nth (mod (+ offset (position buffer buffer-list))
                                   (length buffer-list))
                              buffer-list))))
 
-(define-command switch-buffer-previous
+(define-command switch-buffer-next
     (&key (offset 1) (buffer (current-buffer)))
-  "Switch to the previous buffer."
-  (switch-buffer-next :offset (- offset) :buffer buffer))
+  "Switch to the next buffer."
+  (switch-buffer-previous :offset (- offset) :buffer buffer))
 
 (define-command switch-buffer-last ()
   "Switch to the last visited buffer.
