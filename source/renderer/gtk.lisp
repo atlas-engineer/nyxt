@@ -979,10 +979,10 @@ with this scheme.")
   (setf (gtk:gtk-widget-height-request (prompt-buffer-container (window buffer)))
         height))
 
-(define-ffi-method ffi-focus-prompt-buffer ((prompt-buffer prompt-buffer))
+(define-ffi-method ffi-focus-buffer ((buffer gtk-buffer))
   "Focus PROMPT-BUFFER in WINDOW."
-  (gtk:gtk-widget-grab-focus (gtk-object prompt-buffer))
-  prompt-buffer)
+  (gtk:gtk-widget-grab-focus (gtk-object buffer))
+  buffer)
 
 (define-ffi-method ffi-height ((buffer status-buffer))
   (gtk:gtk-widget-height-request (status-container (window buffer))))

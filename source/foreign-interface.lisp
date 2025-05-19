@@ -109,8 +109,8 @@ The `:around' method ensures that `last-active-window' is set."))
   (:documentation "Return BUFFER and display it in WINDOW as a side effect.
 Run `window-set-buffer-hook' over WINDOW and BUFFER before proceeding."))
 
-(define-ffi-generic ffi-focus-prompt-buffer (prompt-buffer)
-  (:documentation "Return PROMPT-BUFFER and focus it as a side effect."))
+(define-ffi-generic ffi-focus-buffer (buffer)
+  (:documentation "Return BUFFER and focus it as a side effect."))
 
 (define-ffi-generic ffi-height (object)
   (:setter-p t)
