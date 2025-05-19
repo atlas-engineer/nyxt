@@ -24,6 +24,8 @@ listed and chosen from with the command `set-action-on-return' (bound to
     (define-keyscheme-map "prompt-buffer-mode" ()
       keyscheme:default
       (list
+       "M-up" 'expand
+       "M-down" 'contract
        "up" 'previous-suggestion
        "button4" 'previous-suggestion
        "down" 'next-suggestion
@@ -61,9 +63,7 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "C-j" 'run-action-on-current-suggestion
        "C-c C-j" 'set-action-on-current-suggestion
        "tab" 'insert-current-suggestion
-       ; TODO: This is the Emacs Helm binding.  Better?
        "C-c C-f" 'toggle-actions-on-current-suggestion
-       ; TODO: This is the Emacs Helm binding.  Better?
        "C-]" 'toggle-attributes-display
        "M-shift-up" 'toggle-suggestions-display)
       keyscheme:cua
@@ -268,6 +268,12 @@ If N is negative, go to previous pages instead."
     ;; it.  Drawback is that it maybe result in too many draws.  If the caller
     ;; decides when redraw, it has more control.
     (prompt-render-suggestions prompt-buffer)))
+
+(define-command-prompt contract (prompt-buffer &key (delta 10))
+  (decf (ffi-height prompt-buffer) delta))
+
+(define-command-prompt expand (prompt-buffer &key (delta 10))
+  (incf (ffi-height prompt-buffer) delta))
 
 (define-command-prompt previous-page (prompt-buffer &key (n 1))
   "Select entry by N previous pages in PROMPT-BUFFER.
