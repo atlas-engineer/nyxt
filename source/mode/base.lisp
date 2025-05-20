@@ -59,6 +59,8 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-x C-left" 'switch-buffer-previous
        "C-x right" 'switch-buffer-next
        "C-x C-right" 'switch-buffer-next
+       "M-p" 'switch-buffer-previous
+       "M-n" 'switch-buffer-next
        "C-x o" 'toggle-prompt-buffer-focus
        "C-x b" 'switch-buffer
        "C-x k" 'delete-buffer
