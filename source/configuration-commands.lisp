@@ -17,11 +17,6 @@
            (:h1 title)
            (:h2 "Condition")
            (:pre condition-string)
-           (when-let ((suggestions (alex:mappend #'nyxt/migration:find-suggestions
-                                                 (sera:tokens condition-string))))
-             (:h2 "Suggestions")
-             (:ul (dolist (suggestion suggestions)
-                    (:li (:raw (nyxt/migration:tip suggestion))))))
            (:h2 "Backtrace")
            (:pre backtrace)))
         "text/html;charset=utf8")
