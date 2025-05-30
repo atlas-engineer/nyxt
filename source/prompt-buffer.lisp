@@ -267,7 +267,7 @@ See `prompt' for how to invoke prompts.")
 (defmethod customize-instance :after ((prompt-buffer prompt-buffer)
                                       &key extra-modes &allow-other-keys)
   (hooks:run-hook (prompt-buffer-make-hook *browser*) prompt-buffer)
-  (enable-modes* (append (reverse (default-modes prompt-buffer))
+  (enable-modes* (append (default-modes prompt-buffer)
                          (uiop:ensure-list extra-modes))
                  prompt-buffer))
 
