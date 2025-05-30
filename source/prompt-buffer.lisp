@@ -4,7 +4,8 @@
 (in-package :nyxt)
 
 (eval-always
-  (define-class prompt-buffer (network-buffer input-buffer modable-buffer prompter:prompter)
+  (define-class prompt-buffer
+      (network-buffer input-buffer modable-buffer prompter:prompter)
     ((window
       nil
       :type (or null window)
@@ -26,11 +27,12 @@ The options are:
       ;; Both set to nil since it overrides the default value.
       :accessor nil
       :export nil
-      :documentation "Override `prompter:history' to share input history globally.")
+      :documentation
+      "Override `prompter:history' to use input history globally.")
      (invisible-input-p
       nil
-      :documentation "Whether to replace input by a placeholder character.  This
-is useful to conceal passwords.")
+      :documentation "Whether to replace input by a placeholder character.
+This is useful to conceal passwords.")
      (hide-suggestion-count-p
       nil
       :documentation "Whether to hide the number of suggestions.
@@ -40,36 +42,66 @@ Affects both the prompt and its sources.")
       :export nil
       :documentation "Maximum number of total suggestions that were listed at
 some point.")
-     (mouse-support-p
-      t
-      :type boolean
-      :documentation "Whether to allow mouse events to act on prompt buffer suggestions.
-The following mouse keybindings are available:
-- button1: `run-action-on-return'
-- C-button1: `toggle-mark-forwards'
-- s-button1: `toggle-mark-forwards'
-- M-button1: `set-action-on-return'.")
      (style
       (theme:themed-css (theme *browser*)
-        '(:font-face :font-family "public sans" :font-style "normal" :font-weight "400" :src "url('nyxt-resource:PublicSans-Regular.woff')" "format('woff')")
-        '(:font-face :font-family "public sans" :font-style "italic" :font-weight "400" :src "url('nyxt-resource:PublicSans-Italic.woff')" "format('woff')")
-        '(:font-face :font-family "public sans" :font-style "normal" :font-weight "100" :src "url('nyxt-resource:PublicSans-Thin.woff')" "format('woff')")
-        '(:font-face :font-family "public sans" :font-style "italic" :font-weight "100" :src "url('nyxt-resource:PublicSans-ThinItalic.woff')" "format('woff')")
-        '(:font-face :font-family "public sans" :font-style "normal" :font-weight "200" :src "url('nyxt-resource:PublicSans-ExtraLight.woff')" "format('woff')")
-        '(:font-face :font-family "public sans" :font-style "italic" :font-weight "200" :src "url('nyxt-resource:PublicSans-ExtraLightItalic.woff')" "format('woff')")
-        '(:font-face :font-family "public sans" :font-style "normal" :font-weight "300" :src "url('nyxt-resource:PublicSans-Light.woff')" "format('woff')")
-        '(:font-face :font-family "public sans" :font-style "italic" :font-weight "300" :src "url('nyxt-resource:PublicSans-LightItalic.woff')" "format('woff')")
-        '(:font-face :font-family "public sans" :font-style "normal" :font-weight "500" :src "url('nyxt-resource:PublicSans-Medium.woff')" "format('woff')")
-        '(:font-face :font-family "public sans" :font-style "italic" :font-weight "500" :src "url('nyxt-resource:PublicSans-MediumItalic.woff')" "format('woff')")
-        '(:font-face :font-family "public sans" :font-style "normal" :font-weight "600" :src "url('nyxt-resource:PublicSans-SemiBold.woff')" "format('woff')")
-        '(:font-face :font-family "public sans" :font-style "italic" :font-weight "600" :src "url('nyxt-resource:PublicSans-SemiBoldItalic.woff')" "format('woff')")
-        '(:font-face :font-family "public sans" :font-style "normal" :font-weight "700" :src "url('nyxt-resource:PublicSans-Bold.woff')" "format('woff')")
-        '(:font-face :font-family "public sans" :font-style "italic" :font-weight "700" :src "url('nyxt-resource:PublicSans-BoldItalic.woff')" "format('woff')")
-        '(:font-face :font-family "public sans" :font-style "normal" :font-weight "800" :src "url('nyxt-resource:PublicSans-ExtraBold.woff')" "format('woff')")
-        '(:font-face :font-family "public sans" :font-style "italic" :font-weight "800" :src "url('nyxt-resource:PublicSans-ExtraBoldItalic.woff')" "format('woff')")
-        '(:font-face :font-family "public sans" :font-style "normal" :font-weight "900" :src "url('nyxt-resource:PublicSans-Black.woff')" "format('woff')")
-        '(:font-face :font-family "public sans" :font-style "italic" :font-weight "900" :src "url('nyxt-resource:PublicSans-BlackItalic.woff')" "format('woff')")
-        '(:font-face :font-family "dejavu sans mono" :src "url('nyxt-resource:DejaVuSansMono.ttf')" "format('ttf')")
+        '(:font-face :font-family "public sans" :font-style "normal"
+          :font-weight "400" :src
+          "url('nyxt-resource:PublicSans-Regular.woff')" "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "italic"
+          :font-weight "400" :src
+          "url('nyxt-resource:PublicSans-Italic.woff')" "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "normal"
+          :font-weight "100" :src
+          "url('nyxt-resource:PublicSans-Thin.woff')" "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "italic"
+          :font-weight "100" :src
+          "url('nyxt-resource:PublicSans-ThinItalic.woff')" "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "normal"
+          :font-weight "200" :src
+          "url('nyxt-resource:PublicSans-ExtraLight.woff')" "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "italic"
+          :font-weight "200" :src
+          "url('nyxt-resource:PublicSans-ExtraLightItalic.woff')"
+          "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "normal"
+          :font-weight "300" :src
+          "url('nyxt-resource:PublicSans-Light.woff')" "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "italic"
+          :font-weight "300" :src
+          "url('nyxt-resource:PublicSans-LightItalic.woff')" "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "normal"
+          :font-weight "500" :src
+          "url('nyxt-resource:PublicSans-Medium.woff')" "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "italic"
+          :font-weight "500" :src
+          "url('nyxt-resource:PublicSans-MediumItalic.woff')" "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "normal"
+          :font-weight "600" :src
+          "url('nyxt-resource:PublicSans-SemiBold.woff')" "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "italic"
+          :font-weight "600" :src
+          "url('nyxt-resource:PublicSans-SemiBoldItalic.woff')" "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "normal"
+          :font-weight "700" :src
+          "url('nyxt-resource:PublicSans-Bold.woff')" "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "italic"
+          :font-weight "700" :src
+          "url('nyxt-resource:PublicSans-BoldItalic.woff')" "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "normal"
+          :font-weight "800" :src
+          "url('nyxt-resource:PublicSans-ExtraBold.woff')" "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "italic"
+          :font-weight "800" :src
+          "url('nyxt-resource:PublicSans-ExtraBoldItalic.woff')"
+          "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "normal"
+          :font-weight "900" :src
+          "url('nyxt-resource:PublicSans-Black.woff')" "format('woff')")
+        '(:font-face :font-family "public sans" :font-style "italic"
+          :font-weight "900" :src
+          "url('nyxt-resource:PublicSans-BlackItalic.woff')" "format('woff')")
+        '(:font-face :font-family "dejavu sans mono" :src
+          "url('nyxt-resource:DejaVuSansMono.ttf')" "format('ttf')")
         '(*
           :font-size "14px"
           :line-height "18px")
@@ -153,7 +185,8 @@ The following mouse keybindings are available:
           :width "100%"
           :autofocus "true")
         `("#input:focus"
-          :border-color ,(cl-colors-ng:print-hex theme:action-color- :print-alpha 0.40))
+          :border-color
+          ,(cl-colors-ng:print-hex theme:action-color- :print-alpha 0.40))
         '(".source"
           :margin-left "10px"
           :margin-top "15px")
@@ -259,7 +292,8 @@ If PROMPT-BUFFER is not provided, use `current-prompt-buffer'."
   (prompter:current-source prompt-buffer))
 
 (export-always 'current-suggestion-value)
-(defun current-suggestion-value (&optional (prompt-buffer (current-prompt-buffer)))
+(defun current-suggestion-value
+    (&optional (prompt-buffer (current-prompt-buffer)))
   "Return selected PROMPT-BUFFER `prompter:suggestion' `prompter:value'.
 Return `prompter:source' as second value.
 To access the suggestion instead, see `prompter:%current-suggestion'."
@@ -291,19 +325,22 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
         (show-prompt-buffer (first (active-prompt-buffers window)))
         (ffi-window-set-buffer window (active-buffer window) :focus t))))
 
-(defun suggestion-and-mark-count (prompt-buffer suggestions marks &key enable-marks-p pad-p)
+(defun suggestion-and-mark-count
+    (prompt-buffer suggestions marks &key enable-marks-p pad-p)
   (alex:maxf (max-suggestions prompt-buffer)
              (length suggestions))
   (flet ((digits-count (n) (1+ (floor (log (abs n) 10)))))
     (unless (or (not suggestions)
                 (hide-suggestion-count-p prompt-buffer))
       (let ((padding (if pad-p
-                         (prin1-to-string (digits-count (max-suggestions prompt-buffer)))
+                         (prin1-to-string
+                          (digits-count (max-suggestions prompt-buffer)))
                          "0")))
         (format nil
                 (str:concat "[~a~" padding ",,,' @a]")
                 (if (or marks enable-marks-p)
-                    (format nil (str:concat "~" padding ",,,' @a/") (length marks))
+                    (format nil (str:concat "~" padding ",,,' @a/")
+                            (length marks))
                     "")
                 (length suggestions))))))
 
@@ -311,29 +348,34 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
   (ps-eval :async t :buffer prompt-buffer
     (setf (ps:@ (nyxt/ps:qs document "#prompt-extra") |innerHTML|)
           (ps:lisp
-           (suggestion-and-mark-count prompt-buffer
-                                      (prompter:all-suggestions prompt-buffer)
-                                      (prompter:all-marks prompt-buffer)
-                                      :pad-p t
-                                      :enable-marks-p (some #'prompter:enable-marks-p
-                                                            (prompter:sources prompt-buffer)))))
+           (suggestion-and-mark-count
+            prompt-buffer
+            (prompter:all-suggestions prompt-buffer)
+            (prompter:all-marks prompt-buffer)
+            :pad-p t
+            :enable-marks-p (some #'prompter:enable-marks-p
+                                  (prompter:sources prompt-buffer)))))
     (setf (ps:@ (nyxt/ps:qs document "#prompt-modes") |innerHTML|)
-          (ps:lisp (str:join " "
-                             (mapcar (curry #'mode-status
-                                            (status-buffer (current-window)))
-                                     (sort-modes-for-status (enabled-modes prompt-buffer))))))))
+          (ps:lisp
+           (str:join
+            " "
+            (mapcar (curry #'mode-status
+                           (status-buffer (current-window)))
+                    (sort-modes-for-status (enabled-modes prompt-buffer))))))))
 
 (defmethod attribute-widths ((source prompter:source))
   "Return the widths of SOURCE's attribute columns (as ratios)."
   ;; In a proportion a:b, a is the "mean" and b is the "extreme".
-  (let* ((means (mapcar (lambda (attr) (getf (third attr) ':width))
-                        (prompter:active-attributes (first (prompter:suggestions source))
-                                                    :source source)))
+  (let* ((means
+           (mapcar (lambda (attr) (getf (third attr) ':width))
+                   (prompter:active-attributes
+                    (first (prompter:suggestions source))
+                    :source source)))
          (extreme (ignore-errors (reduce #'+ means))))
     (if extreme
         (mapcar (lambda (ratio) (/ ratio extreme)) means)
         (let ((len (length means)))
-          (log:debug "Fallback on uniform width distribution for lack of allocation on ~a."
+          (log:debug "Fallback uniform width distribution: no allocation on ~a."
                      source)
           (make-list len :initial-element (/ 1 len))))))
 
@@ -442,18 +484,20 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
                     :id "next-source"
                     :text (:raw (gethash "down.svg" *static-data*))
                     :title (format nil "Next source (~a)"
-                                   (binding-keys (sym:resolve-symbol :next-source
-                                                                     :command)
-                                                 :modes (enabled-modes prompt-buffer)))
+                                   (binding-keys (sym:resolve-symbol
+                                                  :next-source :command)
+                                                 :modes (enabled-modes
+                                                         prompt-buffer)))
                     :buffer prompt-buffer
                     '(funcall (sym:resolve-symbol :next-source :command)))
                   (:nbutton
                     :id "previous-source"
                     :text (:raw (gethash "up.svg" *static-data*))
                     :title (format nil "Previous source (~a)"
-                                   (binding-keys (sym:resolve-symbol :previous-source
-                                                                     :command)
-                                                 :modes (enabled-modes prompt-buffer)))
+                                   (binding-keys (sym:resolve-symbol
+                                                  :previous-source :command)
+                                                 :modes (enabled-modes
+                                                         prompt-buffer)))
                     :buffer prompt-buffer
                     '(funcall (sym:resolve-symbol :previous-source :command)))
                   (prompter:name source)
@@ -463,31 +507,35 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
                    ;; `prompter:source' and handle the condition.  Note that
                    ;; `suggestion-and-mark-count' relies on the global prompt
                    ;; value `hide-suggestion-count-p'.
-                   (suggestion-and-mark-count prompt-buffer
-                                              (prompter:suggestions source)
-                                              (prompter:marks source)
-                                              :enable-marks-p (prompter:enable-marks-p source)))
+                   (suggestion-and-mark-count
+                    prompt-buffer
+                    (prompter:suggestions source)
+                    (prompter:marks source)
+                    :enable-marks-p (prompter:enable-marks-p source)))
                   (when (not (prompter:ready-p source)) "(In progress...)"))
                  (:div
                   (:nbutton
                     :id "toggle-attributes"
                     :text (:raw (gethash "plus-minus.svg" *static-data*))
                     :title (format nil "Toggle attributes display (~a)"
-                                   (binding-keys (sym:resolve-symbol 'toggle-attributes-display
-                                                                     :command)
-                                                 :modes (enabled-modes prompt-buffer)))
+                                   (binding-keys
+                                    (sym:resolve-symbol
+                                     'toggle-attributes-display :command)
+                                    :modes (enabled-modes prompt-buffer)))
                     :buffer prompt-buffer
-                    `(funcall (sym:resolve-symbol :toggle-attributes-display :command)
+                    `(funcall (sym:resolve-symbol
+                               :toggle-attributes-display :command)
                               :source ,source))))
                 (render-attributes source prompt-buffer)))))
       (ps-eval :async t :buffer prompt-buffer
         (setf (ps:@ (nyxt/ps:qs document "#suggestions") |innerHTML|)
               (ps:lisp
-               (sera:string-join (loop for i from current-source-index to last-source-index
-                                       for source = (nth i sources)
-                                       unless (null (prompter:suggestions source))
-                                         collect (source->html source))
-                                 +newline+)))))
+               (sera:string-join
+                (loop for i from current-source-index to last-source-index
+                      for source = (nth i sources)
+                      unless (null (prompter:suggestions source))
+                        collect (source->html source))
+                +newline+)))))
     (prompt-render-prompt prompt-buffer)))
 
 (defun prompt-render-skeleton (prompt-buffer)
@@ -512,7 +560,8 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
                            :text "×"
                            :title "Close prompt"
                            :buffer prompt-buffer
-                           '(funcall (sym:resolve-symbol :quit-prompt-buffer :command)))))
+                           '(funcall (sym:resolve-symbol
+                                      :quit-prompt-buffer :command)))))
                   (:div :id "suggestions"
                         :style (if (invisible-input-p prompt-buffer)
                                    "visibility:hidden;"
@@ -537,7 +586,8 @@ If you want to set the input, see `set-prompt-buffer-input'."
     ;; TODO: Stop loop when prompt-buffer is no longer current.
     (labels ((maybe-update-view ()
                (let ((next-source (when (find prompt-buffer
-                                              (active-prompt-buffers (window prompt-buffer)))
+                                              (active-prompt-buffers
+                                               (window prompt-buffer)))
                                     (prompter:next-ready-p prompt-buffer))))
                  (cond
                    ;; Nothing to do:
@@ -558,7 +608,8 @@ If you want to set the input, see `set-prompt-buffer-input'."
       (maybe-update-view))))
 
 (export-always 'set-prompt-buffer-input)
-(defun set-prompt-buffer-input (input &optional (prompt-buffer (current-prompt-buffer)))
+(defun set-prompt-buffer-input
+    (input &optional (prompt-buffer (current-prompt-buffer)))
   "Set HTML INPUT in PROMPT-BUFFER.
 See `update-prompt-input' to update the changes visually."
   (ps-eval :async t :buffer prompt-buffer
@@ -579,11 +630,12 @@ See `update-prompt-input' to update the changes visually."
        (error 'prompt-buffer-canceled)))))
 
 (eval-always
-  (defvar %prompt-args (delete-duplicates (append
-                                           (mopu:direct-slot-names 'prompt-buffer)
-                                           (mopu:direct-slot-names 'prompter:prompter)
-                                           ;; `customize-instance' `:after' arguments:
-                                           '(extra-modes)))))
+  (defvar %prompt-args
+    (delete-duplicates (append
+                        (mopu:direct-slot-names 'prompt-buffer)
+                        (mopu:direct-slot-names 'prompter:prompter)
+                        ;; `customize-instance' `:after' arguments:
+                        '(extra-modes)))))
 (export-always 'prompt)
 (eval-always
   (defun prompt #.(append '(&rest args) `(&key ,@%prompt-args))
@@ -602,16 +654,19 @@ See the documentation of `prompt-buffer' to know more about the options."
     (when-let ((prompt-text (getf args :prompt)))
       (when (str:ends-with-p ":" prompt-text)
         (log:warn "Prompt text ~s should not end with a ':'." prompt-text)
-        (setf (getf args :prompt) (string-right-trim (uiop:strcat ":" serapeum:whitespace) prompt-text))))
+        (setf (getf args :prompt) (string-right-trim
+                                   (uiop:strcat ":" serapeum:whitespace)
+                                   prompt-text))))
     (let ((prompt-object-channel (make-channel 1)))
       (ffi-within-renderer-thread
        (lambda ()
-         (let ((prompt-buffer (apply #'make-instance
-                                     'prompt-buffer
-                                     (append args
-                                             (list :window (current-window)
-                                                   :result-channel (make-channel)
-                                                   :interrupt-channel (make-channel))))))
+         (let ((prompt-buffer
+                 (apply #'make-instance
+                        'prompt-buffer
+                        (append args
+                                (list :window (current-window)
+                                      :result-channel (make-channel)
+                                      :interrupt-channel (make-channel))))))
            (calispel:! prompt-object-channel prompt-buffer))))
       (let ((new-prompt (calispel:? prompt-object-channel)))
         (wait-on-prompt-buffer new-prompt)))))
@@ -623,7 +678,8 @@ See the documentation of `prompt-buffer' to know more about the options."
     (declare #.(cons 'ignorable %prompt-args))
     (first (apply #'prompt args))))
 
-(defmethod prompter:object-attributes ((prompt-buffer prompt-buffer) (source prompter:source))
+(defmethod prompter:object-attributes
+    ((prompt-buffer prompt-buffer) (source prompter:source))
   (declare (ignore source))
   `(("Prompt" ,(prompter:prompt prompt-buffer))
     ("Input" ,(prompter:input prompt-buffer))))
