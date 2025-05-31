@@ -315,24 +315,14 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
         (show-prompt-buffer (first (active-prompt-buffers window)))
         (ffi-window-set-buffer window (active-buffer window) :focus t))))
 
-(defun suggestion-and-mark-count
-    (prompt-buffer suggestions marks &key enable-marks-p pad-p)
+(defun suggestion-and-mark-count (prompt-buffer suggestions marks &key enable-marks-p)
+  "Return a formatted string with counts of marks (if any) and suggestions."
   (alex:maxf (max-suggestions prompt-buffer)
              (length suggestions))
-  (flet ((digits-count (n) (1+ (floor (log (abs n) 10)))))
-    (unless (or (not suggestions)
-                (hide-suggestion-count-p prompt-buffer))
-      (let ((padding (if pad-p
-                         (prin1-to-string
-                          (digits-count (max-suggestions prompt-buffer)))
-                         "0")))
-        (format nil
-                (str:concat "[~a~" padding ",,,' @a]")
-                (if (or marks enable-marks-p)
-                    (format nil (str:concat "~" padding ",,,' @a/")
-                            (length marks))
-                    "")
-                (length suggestions))))))
+  (unless (hide-suggestion-count-p prompt-buffer)
+    (let ((marks-str (when (or marks enable-marks-p)
+                       (format nil "~d/" (length marks)))))
+      (format nil "[~a~d]" (or marks-str "") (length suggestions)))))
 
 (defmethod render-prompt ((prompt-buffer prompt-buffer))
   (ps-eval :async t :buffer prompt-buffer
@@ -342,7 +332,6 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
             prompt-buffer
             (prompter:all-suggestions prompt-buffer)
             (prompter:all-marks prompt-buffer)
-            :pad-p t
             :enable-marks-p (some #'prompter:enable-marks-p
                                   (prompter:sources prompt-buffer)))))
     (setf (ps:@ (nyxt/ps:qs document "#prompt-modes") |innerHTML|)
