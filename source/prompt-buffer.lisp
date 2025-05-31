@@ -299,12 +299,10 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
     (calispel:! (prompt-buffer-ready-channel window) prompt-buffer))
   (prompt-render-skeleton prompt-buffer)
   (prompt-render-focus prompt-buffer)
-  (prompt-render-suggestions prompt-buffer)
   (setf (height prompt-buffer) (slot-value prompt-buffer 'height))
   (ffi-focus-buffer prompt-buffer)
-  (run-thread "Show prompt watcher"
-    (update-prompt-input prompt-buffer)
-    (hooks:run-hook (prompt-buffer-ready-hook *browser*) prompt-buffer)))
+  (update-prompt-input prompt-buffer)
+  (hooks:run-hook (prompt-buffer-ready-hook *browser*) prompt-buffer))
 
 (defmethod hide-prompt-buffer ((prompt-buffer prompt-buffer))
   "Hide PROMPT-BUFFER and display the next active one, if any."
@@ -336,7 +334,7 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
                     "")
                 (length suggestions))))))
 
-(defun prompt-render-prompt (prompt-buffer)
+(defmethod render-prompt ((prompt-buffer prompt-buffer))
   (ps-eval :async t :buffer prompt-buffer
     (setf (ps:@ (nyxt/ps:qs document "#prompt-extra") |innerHTML|)
           (ps:lisp
@@ -520,7 +518,7 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
                       unless (null (prompter:suggestions source))
                         collect (source->html source))
                 +newline+)))))
-    (prompt-render-prompt prompt-buffer)))
+    (render-prompt prompt-buffer)))
 
 (defun prompt-render-skeleton (prompt-buffer)
   (html-write (spinneret:with-html-string
