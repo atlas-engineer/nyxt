@@ -20,7 +20,6 @@
       :documentation "The height occupied by the prompt buffer.
 The options are:
 - `:default', which sets it to a third of the window's height;
-- `:fit-to-prompt', which shrinks the height to fit the input area;
 - an integer, which corresponds to the height in pixels.")
      (prompter:history
       (prompt-buffer-generic-history *browser*)
@@ -274,14 +273,7 @@ See `prompt' for how to invoke prompts.")
 (defmethod (setf height) (value (prompt-buffer prompt-buffer))
   (setf (ffi-height prompt-buffer)
         (case value
-          (:default (round (/ (ffi-height (window prompt-buffer)) 3)))
-          (:fit-to-prompt
-           (ps-eval :buffer prompt-buffer
-             (+ (ps:chain (nyxt/ps:qs document "#prompt-area") offset-height)
-                ;; Buffer whitespace between the prompt buffer's input area and
-                ;; the status buffer.  Not clear how to the derive the value
-                ;; from another element's height.
-                4)))
+          (:default (round (/ (ffi-height (window prompt-buffer)) 4)))
           (t value)))
   (setf (slot-value prompt-buffer 'height) value))
 
