@@ -382,8 +382,7 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
                 for suggestion-index from (max 0 (- cursor-index (- (/ max-suggestion-count 2) 1)))
                 for suggestion in (nthcdr suggestion-index (prompter:suggestions source))
                 collect
-                (let ((suggestion-index suggestion-index)
-                      (cursor-index cursor-index))
+                (let ((suggestion-index suggestion-index))
                   (:tr :id (when (equal (list suggestion source)
                                         (multiple-value-list
                                          (prompter:%current-suggestion
@@ -401,13 +400,11 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
                                        (nyxt/ps:lisp-eval
                                         (:title "unmark-this-suggestion"
                                          :buffer prompt-buffer)
-                                        (prompter::set-current-suggestion
+                                        (prompter::set-current-suggestion-by-class-and-index
                                          prompt-buffer
-                                         (- suggestion-index cursor-index))
+                                         (class-name (class-of source))
+                                         suggestion-index)
                                         (prompter:toggle-mark prompt-buffer)
-                                        (prompter::set-current-suggestion
-                                         prompt-buffer
-                                         (- cursor-index suggestion-index))
                                         (prompt-render-suggestions prompt-buffer))))))
                        (loop for (nil attribute)
                                in (prompter:active-attributes
