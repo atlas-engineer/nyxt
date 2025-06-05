@@ -282,6 +282,7 @@ ARGS is an arbitrary keyword arguments list that is translated to a URL query."
            params))
 
 (define-internal-scheme "nyxt"
+    ;; Internal URLs are loaded via `on-signal-load-finished'.
     (lambda (url)
       (declare (ignore url))
       ""))
