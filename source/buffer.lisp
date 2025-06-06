@@ -369,6 +369,11 @@ Useful in FFI functions where we usually specialize things against
 Modes are instantiated over the result of the `default-modes' method, with
 `customize-instance' and not in the initform so that the instantiation form can
 access the initialized buffer.")
+   (page-mode
+    nil
+    :documentation "A single mode enabled for internal pages.
+This slot stores the mode enabled by internal pages. When the user navigates
+away from the internal page, this mode is disabled.")
    (enable-mode-hook
     (make-instance 'hook-mode)
     :type hook-mode
@@ -382,6 +387,15 @@ access the initialized buffer.")
   (:export-predicate-name-p t)
   (:metaclass user-class)
   (:documentation "A buffer whose behavior can be modified with `mode's."))
+
+(defmethod enable-page-mode ((modable-buffer modable-buffer) mode)
+  (enable-modes* mode modable-buffer)
+  (setf (page-mode modable-buffer) mode))
+
+(defmethod disable-page-mode ((modable-buffer modable-buffer))
+  (when (page-mode modable-buffer)
+    (disable-modes* (page-mode modable-buffer) modable-buffer)
+    (setf (page-mode modable-buffer) nil)))
 
 (defmethod modes ((buffer buffer))
   "Return the modes active in BUFFER.
