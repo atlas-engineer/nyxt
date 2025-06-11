@@ -55,7 +55,7 @@
   (electron:handle-callback scheme (callback scheme)))
 
 (define-class electron-browser (electron:interface)
-  ()
+  ((adblocking-enabled-p t))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:metaclass user-class)
