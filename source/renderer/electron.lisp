@@ -86,6 +86,9 @@
                              :scheme-name "gemini"
                              :privileges "{}")))
   (electron:launch electron:*interface*)
+  (when (adblocking-enabled-p browser)
+    (let ((adblocker (make-instance 'electron:adblocker-electron)))
+      (electron:default-block adblocker)))
   (maphash (lambda (scheme-name callbacks)
              (ffi-register-custom-scheme (make-instance 'scheme
                                                         :name scheme-name
