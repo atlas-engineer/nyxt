@@ -168,7 +168,20 @@ Note that by changing the default value, modifier keys can be remapped."))
                                (on-signal-load-finished buffer url title))))
     (electron:add-listener (electron:web-contents buffer) :page-title-updated
                            (lambda (_) (declare (ignore _))
-                             (on-signal-notify-title buffer (ffi-buffer-title buffer))))))
+                             (on-signal-notify-title buffer (ffi-buffer-title buffer))))
+    (unless (member (type-of buffer) '(status-buffer message-buffer prompt-buffer))
+      (electron:add-listener
+       (electron:web-contents buffer) :context-menu
+       (lambda (object params)
+         (declare (ignore object))
+         (print params)
+         (format nil  "[{label: 'Backward', click: () => {~a.goBack()}},
+                        {label: 'Forward', click: () => {~a.goForward()}},
+                        {label: 'Reload', click: () => {~a.reload()}},
+                       ]"
+                 (electron:remote-symbol (electron:web-contents buffer))
+                 (electron:remote-symbol (electron:web-contents buffer))
+                 (electron:remote-symbol (electron:web-contents buffer))))))))
 
 (defmethod ffi-buffer-initialize-foreign-object ((buffer electron-buffer))
   (electron::message
