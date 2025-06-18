@@ -187,20 +187,19 @@ EXPR is expected to be as per the expression sent in `listen-or-query-socket'."
         (log:info "Listening to socket: ~s" socket-path)
         (loop as connection = (iolib:accept-connection s)
               while connection
-              do (progn
-                   (when-let
-                       ((expr (alex:read-stream-content-into-string connection)))
-                     (unless (uiop:emptyp expr)
-                       (if (remote-execution-p *browser*)
-                           (progn
-                             (log:info "External evaluation request: ~s" expr)
-                             (eval-expr expr))
-                           (progn
-                             (ffi-within-renderer-thread
-                              (lambda () (open-urls (parse-urls expr))))
-                             (when (current-window)
-                               (ffi-window-to-foreground
-                                (current-window)))))))))))))
+              do (when-let
+                     ((expr (alex:read-stream-content-into-string connection)))
+                   (unless (uiop:emptyp expr)
+                     (if (remote-execution-p *browser*)
+                         (progn
+                           (log:info "External evaluation request: ~s" expr)
+                           (eval-expr expr))
+                       (progn
+                         (ffi-within-renderer-thread
+                          (lambda () (open-urls (parse-urls expr))))
+                         (when (current-window)
+                           (ffi-window-to-foreground
+                            (current-window))))))))))))
 
 (defun listening-socket-p ()
   (ignore-errors
@@ -221,9 +220,7 @@ Otherwise bind socket and return the listening thread."
               (iolib:with-open-socket
                   (s :address-family :local
                      :remote-filename (uiop:native-namestring socket-path))
-                (format s "~s"
-                        `(open-external-urls
-                          ,@(mapcar #'quri:render-uri urls)))))
+                (format s "~s" `(open-urls ,@(mapcar #'quri:render-uri urls)))))
             (log:info "Nyxt already started."))
         (progn
           (uiop:delete-file-if-exists socket-path)
