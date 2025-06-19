@@ -190,16 +190,16 @@ EXPR is expected to be as per the expression sent in `listen-or-query-socket'."
               do (when-let
                      ((expr (alex:read-stream-content-into-string connection)))
                    (unless (uiop:emptyp expr)
-                     (if (remote-execution-p *browser*)
-                         (progn
-                           (log:info "External evaluation request: ~s" expr)
-                           (eval-expr expr))
-                       (progn
-                         (ffi-within-renderer-thread
-                          (lambda () (open-urls (parse-urls expr))))
-                         (when (current-window)
-                           (ffi-window-to-foreground
-                            (current-window))))))))))))
+                     (cond ((remote-execution-p *browser*)
+                            (log:info "External evaluation request: ~s" expr)
+                            (eval-expr expr))
+                           ((parse-urls expr)
+                            (ffi-within-renderer-thread
+                             (lambda () (open-urls (parse-urls expr))))
+                            (when (current-window)
+                                (ffi-window-to-foreground
+                                 (current-window))))
+                           (t (make-window))))))))))
 
 (defun listening-socket-p ()
   (ignore-errors
@@ -214,14 +214,16 @@ EXPR is expected to be as per the expression sent in `listen-or-query-socket'."
 Otherwise bind socket and return the listening thread."
   (let ((socket-path (files:expand *socket-file*)))
     (if (listening-socket-p) ;; Check if Nyxt is already running.
-        (if urls
+        (iolib:with-open-socket
+            (s :address-family :local
+               :remote-filename (uiop:native-namestring socket-path))
+          (if urls
             (progn
               (log:info "Nyxt started, trying to open URL(s): ~{~a~^, ~}" urls)
-              (iolib:with-open-socket
-                  (s :address-family :local
-                     :remote-filename (uiop:native-namestring socket-path))
-                (format s "~s" `(open-urls ,@(mapcar #'quri:render-uri urls)))))
-            (log:info "Nyxt already started."))
+              (format s "~s" `(open-urls ,@(mapcar #'quri:render-uri urls))))
+            (progn
+              (log:info "Nyxt started, opening new window.")
+              (format s "~s" `(make-window)))))
         (progn
           (uiop:delete-file-if-exists socket-path)
           (run-thread "socket listener"
