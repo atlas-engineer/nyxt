@@ -16,8 +16,6 @@
   - [[#other][Other]]
 - [[#development-environment][Development environment]]
   - [[#tests][Tests]]
-  - [[#functional-package-managers][Functional package managers]]
-    - [[#guix][Guix]]
 - [[#installation][Installation]]
 - [[#contributing][Contributing]]
   - [[#help][Help]]
@@ -138,23 +136,6 @@ since some of them are stateful:
 (asdf:test-system :nyxt/gi-gtk)
 #+end_src
 
-** Functional package managers
-
-If you're a user of the Guix, see the section below.
-
-*** Guix
-
-See [[file:~/common-lisp/nyxt/guix.scm][guix.scm]].
-
-#+begin_src emacs-lisp
-(setq slime-lisp-implementations
-      '((nyxt-guix
-         ("guix" "shell" "-D" "-f" "guix.scm"
-          "--" "bash" "-c" "env LD_LIBRARY_PATH=\"$GUIX_ENVIRONMENT/lib\" sbcl")
-         :env ("CL_SOURCE_REGISTRY=~/common-lisp//:~/common-lisp/nyxt/_build//")
-         :directory "~/common-lisp/nyxt/")))
-#+end_src
-
 * Installation
 
 Nyxt uses the =Make= build system.  Run =make= to display the documentation or
@@ -176,8 +157,8 @@ Feel free to contact us at any point if you need guidance.
 
 - To learn Common Lisp, see [[https://nyxt-browser.com/learn-lisp]];
 - [[https://github.com/atlas-engineer/nyxt/issues][Open up an issue on GitHub]];
-- Find Nyxt on Libera IRC: [[https://kiwiirc.com/nextclient/irc.libera.chat/nyxt][#nyxt]];
-- [[https://discord.com/channels/1178074327309099069/1178074327309099072][Nyxt's discord]];
+- Find Nyxt on Libera IRC: =#nyxt=
+- [[https://discord.gg/YXCk7gDKgJ][Nyxt's Discord]];
 
 ** Commit style
 
