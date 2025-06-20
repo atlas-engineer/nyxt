@@ -589,11 +589,8 @@ See `update-prompt-input' to update the changes visually."
   "Block and return PROMPT-BUFFER results."
   (when (prompt-buffer-p prompt-buffer)
     (show-prompt-buffer prompt-buffer)
-    (prog1
-        (fair-alt-lparallel
-         (list (prompter:result-channel prompt-buffer)
-               (prompter:interrupt-channel prompt-buffer)))
-      (hide-prompt-buffer prompt-buffer))))
+    (lparallel.queue:pop-queue (prompter:result-channel prompt-buffer))
+    (hide-prompt-buffer prompt-buffer)))
 
 (eval-always
   (defvar %prompt-args
