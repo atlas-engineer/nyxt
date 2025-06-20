@@ -314,15 +314,9 @@ This is blocking, see `run-async' for an asynchronous way to run commands."
   (let ((channel (make-channel 1))
         (error-channel (make-channel 1)))
     (run-thread "run command"
-      ;; TODO: This `handler-case' overlaps with `with-protect' from `run-thread'.  Factor them!
-      (handler-case (calispel:! channel (run-command command args))
+      (handler-case (lparallel.queue:push-queue (run-command command args) channel)
         (condition (c)
-          (calispel:! error-channel c))))
-    (calispel:fair-alt
-      ((calispel:? channel result)
-       result)
-      ((calispel:? error-channel c)
-       (echo-warning "Error when running ~a: ~a" command c)))))
+          (lparallel.queue:push-queue c error-channel))))))
 
 (defun run-async (command &optional args)
   "Run COMMAND over ARGS asynchronously.

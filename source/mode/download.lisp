@@ -238,7 +238,7 @@ starvation issue if one thread consumes all messages. If in practice this
 becomes a problem, we should poll on each thread until the completion percentage
 is 100 OR a timeout is reached (during which no new progress has been made)."
   (when download-manager:*notifications*
-    (loop for d = (calispel:? download-manager:*notifications*)
+    (loop for d = (lparallel.queue:pop-queue download-manager:*notifications*)
           while d
           when (download-manager:finished-p d)
             do (hooks:run-hook (after-download-hook *browser*) download-render)

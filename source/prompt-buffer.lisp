@@ -296,7 +296,7 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
 (defmethod show-prompt-buffer ((prompt-buffer prompt-buffer))
   (with-slots (window) prompt-buffer
     (push prompt-buffer (active-prompt-buffers window))
-    (calispel:! (prompt-buffer-ready-channel window) prompt-buffer))
+    (lparallel.queue:push-queue prompt-buffer (prompt-buffer-ready-channel window)))
   (prompt-render-skeleton prompt-buffer)
   (prompt-render-focus prompt-buffer)
   (setf (height prompt-buffer) (slot-value prompt-buffer 'height))
@@ -309,7 +309,7 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
   (with-slots (window) prompt-buffer
     (alex:deletef (active-prompt-buffers window) prompt-buffer)
     ;; The channel values are irrelevant, so is the element order:
-    (calispel:? (prompt-buffer-ready-channel window) 0)
+    (lparallel.queue:pop-queue (prompt-buffer-ready-channel window))
     (ffi-buffer-delete prompt-buffer)
     (if (active-prompt-buffers window)
         (show-prompt-buffer (first (active-prompt-buffers window)))
@@ -585,17 +585,15 @@ See `update-prompt-input' to update the changes visually."
           (ps:lisp input)))
   (update-prompt-input prompt-buffer input))
 
-(defun wait-on-prompt-buffer (prompt-buffer) ; TODO: Export?  Better name?
+(defun wait-on-prompt-buffer (prompt-buffer)
   "Block and return PROMPT-BUFFER results."
   (when (prompt-buffer-p prompt-buffer)
     (show-prompt-buffer prompt-buffer)
-    (calispel:fair-alt
-      ((calispel:? (prompter:result-channel prompt-buffer) results)
-       (hide-prompt-buffer prompt-buffer)
-       results)
-      ((calispel:? (prompter:interrupt-channel prompt-buffer))
-       (hide-prompt-buffer prompt-buffer)
-       (error 'prompt-buffer-canceled)))))
+    (prog1
+        (fair-alt-lparallel
+         (list (prompter:result-channel prompt-buffer)
+               (prompter:interrupt-channel prompt-buffer)))
+      (hide-prompt-buffer prompt-buffer))))
 
 (eval-always
   (defvar %prompt-args
@@ -625,7 +623,7 @@ See the documentation of `prompt-buffer' to know more about the options."
         (setf (getf args :prompt) (string-right-trim
                                    (uiop:strcat ":" serapeum:whitespace)
                                    prompt-text))))
-    (let ((prompt-object-channel (make-channel 1)))
+    (let ((prompt-object-channel (lparallel.queue:make-queue)))
       (ffi-within-renderer-thread
        (lambda ()
          (let ((prompt-buffer
@@ -635,8 +633,8 @@ See the documentation of `prompt-buffer' to know more about the options."
                                 (list :window (current-window)
                                       :result-channel (make-channel)
                                       :interrupt-channel (make-channel))))))
-           (calispel:! prompt-object-channel prompt-buffer))))
-      (let ((new-prompt (calispel:? prompt-object-channel)))
+           (lparallel.queue:push-queue prompt-buffer prompt-object-channel))))
+      (let ((new-prompt (lparallel.queue:pop-queue prompt-object-channel)))
         (wait-on-prompt-buffer new-prompt)))))
 
 (export-always 'prompt1)
