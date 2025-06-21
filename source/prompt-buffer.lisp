@@ -321,8 +321,8 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
              (length suggestions))
   (unless (hide-suggestion-count-p prompt-buffer)
     (let ((marks-str (when (or marks enable-marks-p)
-                       (format nil "~d/" (length marks)))))
-      (format nil "[~a~d]" (or marks-str "") (length suggestions)))))
+                       (format nil "~2,' d/" (length marks)))))
+      (format nil "[~a~3,' d]" (or marks-str "") (length suggestions)))))
 
 (defmethod render-prompt ((prompt-buffer prompt-buffer))
   (ps-eval :async t :buffer prompt-buffer
