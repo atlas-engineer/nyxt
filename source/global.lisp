@@ -117,3 +117,7 @@ See `parse-version' for details on the returned values."
 (setf (gethash "nyxt.desktop" *static-data*)
       (alex:read-file-into-string
        (asdf:system-relative-pathname :nyxt "assets/nyxt.appimage.desktop")))
+
+(defun appimage-p ()
+  "Is the Lisp image running within the context of an AppImage?"
+  (uiop:getenv "APPIMAGE_PATH"))
