@@ -109,3 +109,11 @@ See `parse-version' for details on the returned values."
 
 (load-assets "fonts" #'alex:read-file-into-byte-vector)
 (load-assets "glyphs" #'alex:read-file-into-string)
+
+;; Load assets needed for `nyxt.desktop' creation.
+#+(and unix (not darwin))
+(load-assets "icons" #'alex:read-file-into-byte-vector)
+#+(and unix (not darwin))
+(setf (gethash "nyxt.desktop" *static-data*)
+      (alex:read-file-into-string
+       (asdf:system-relative-pathname :nyxt "assets/nyxt.appimage.desktop")))
