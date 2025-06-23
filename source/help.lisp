@@ -452,6 +452,11 @@ The value is saved to clipboard."
      :class "container"
      (:main
       (:nav
+       (when (appimage-p)
+         (:nbutton
+          :text "Install Desktop Shortcut"
+          :title "Install a `.desktop` entry so that Nyxt can be ran from your launcher."
+          '(add-desktop-entry)))
        (:nbutton
          :text "Quick-Start"
          :title "Display a short tutorial."
