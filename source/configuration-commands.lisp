@@ -94,3 +94,31 @@ On error, return the condition as a first value and the backtrace as second valu
         (clean-configuration)
         (load-lisp config-file :package (find-package :nyxt-user))
         (echo "~a loaded." config-file))))
+
+#+(and unix (not darwin))
+(define-command add-desktop-entry ()
+  "Install the running AppImage to the system menu via a `.desktop' entry.
+The path installed to is `~/.local/share/applications/'."
+  (let* ((appimage-path (uiop:getenv "APPIMAGE_PATH"))
+         (desktop-entry-dir "~/.local/share/applications/")
+         (icons-dir "~/.local/share/icons/hicolor/")
+         (desktop-entry-path (uiop:merge-pathnames*
+                              (make-pathname :name "nyxt.desktop")
+                              desktop-entry-dir)))
+    (ensure-directories-exist desktop-entry-dir)
+    (uiop:with-output-file (stream desktop-entry-path :if-exists :supersede)
+      (format stream (gethash "nyxt.desktop" *static-data*) appimage-path))
+    (loop for resolution in '("16x16" "32x32" "128x128" "256x256")
+          do (let* ((icon (gethash (format nil "nyxt_~a.png" resolution)
+                                   *static-data*))
+                    (icon-dir (uiop:merge-pathnames*
+                               (format nil "~a/apps/" resolution) icons-dir))
+                    (icon-path
+                      (uiop:merge-pathnames* "nyxt.png" icon-dir)))
+               (ensure-directories-exist icon-dir)
+               (uiop:with-output-file (stream icon-path :element-type
+                                              '(unsigned-byte 8)
+                                                        :if-exists :supersede)
+                 (write-sequence icon stream))))
+    (uiop:launch-program "update-desktop-database")
+    (echo "Added Nyxt to the system menu.~%")))
