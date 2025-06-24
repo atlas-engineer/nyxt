@@ -147,7 +147,9 @@
         :padding-left "4px"
         :text-align "right"
         :z-index "2"
-        :padding-right "3px")
+        :padding-right "3px"
+        :line-height "75vh"
+        :margin "4px")
       '("#modes > button"
         :border-radius "0"
         :padding-left "3px"
