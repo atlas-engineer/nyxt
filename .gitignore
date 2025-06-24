@@ -7,6 +7,8 @@ build/
 node_modules/
 package.json
 package-lock.json
+ocicl*
+init.lisp
 
 # Ignore compiled lisp files
 *.FASL
