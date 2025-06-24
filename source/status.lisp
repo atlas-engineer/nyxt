@@ -96,7 +96,8 @@
       `("#controls"
         :z-index "3"
         :flex-basis "90px"
-        :display "flex")
+        :display "flex"
+        :margin-top "1px")
       '("#controls > button"
         :margin-right "-3px"
         :max-width "24px"
@@ -154,8 +155,6 @@
         :border-radius "0"
         :padding-left "3px"
         :padding-right "3px")
-      '("#reload"
-        :margin-top "1px")
       '("#modes::-webkit-scrollbar"
         :display "none")
       '(button
