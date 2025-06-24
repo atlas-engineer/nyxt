@@ -442,7 +442,7 @@ The value is saved to clipboard."
         :border "none"
         :border-width "2px"
         :border-radius "2px"
-        :margin-bottom "17px")
+        :margin-bottom "16px")
       `(.execute-command
         :min-width "180px"
         :line-height "12px"
