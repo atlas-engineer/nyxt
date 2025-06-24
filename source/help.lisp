@@ -393,19 +393,24 @@ The value is saved to clipboard."
         :min-height "100vh"
         :padding "0"
         :margin "0")
-      `(nav
-        :text-align "center")
       `(.container
-        :padding-top "32px"
-        :display "flex"
-        :flex-direction "row"
-        :justify-content "center")
+        :padding "32px"
+        :display "grid"
+        :grid-template-columns "1fr 2fr"
+        :gap "2px"
+        :height "100%")
       `(.button
         :background-color ,theme:secondary-color+
         :padding "7px"
         :border "none"
         :color ,theme:on-secondary-color
-        :min-width "144px")
+        :min-width "100px")
+      `("nav .button"
+        :display "block"
+        :text-align "left"
+        :font-size "small")
+      `("#quick-access"
+        :margin-top "64px")
       `(.copyright
         :position "absolute"
         :bottom "12px"
@@ -414,8 +419,10 @@ The value is saved to clipboard."
         :color ,theme:action-color
         :font-size "24px"
         :font-weight "bold")
-      `(.main
-        :margin-top "35vh"
+      `("#start-container"
+        :display "flex"
+        :align-items "center")
+      `(.start
         :display "flex"
         :flex-direction "row")
       `(.logo
@@ -450,19 +457,19 @@ The value is saved to clipboard."
         :color ,theme:secondary-color))
     (:div
      :class "container"
-     (:main
-      (:nav
+     (:nav
+      (:div
        (when (appimage-p)
          (:nbutton
-          :text "Install Desktop Shortcut"
-          :title "Install a `.desktop` entry so that Nyxt can be ran from your launcher."
-          '(add-desktop-entry)))
+           :text "Install Desktop Shortcut"
+           :title "Install a `.desktop` entry so that Nyxt can be ran from your launcher."
+           '(add-desktop-entry)))
        (:nbutton
          :text "Quick-Start"
          :title "Display a short tutorial."
          '(quick-start))
        (:nbutton
-         :text "Describe-Bindings"
+         :text "Hotkeys"
          :title "List all keyboard shortcuts for the current buffer."
          '(make-buffer-focus :url (nyxt-url 'describe-bindings)))
        (:nbutton
@@ -473,17 +480,40 @@ The value is saved to clipboard."
          :text "Settings"
          :title "Set keyboard shortcuts (CUA/Emacs/vi), homepage URL or zoom."
          '(make-buffer-focus :url (nyxt-url 'common-settings))))
-      (:div :class "main"
-            (:div :class "logo" (:raw (glyph-logo *browser*)))
-            (:div
-             (:div (:nbutton :class "set-url" :text "Set-URL"
-                     '(set-url))
-                   (:span :class "binding"
-                          (format nil "(~a)" (nyxt::binding-keys 'set-url))))
-             (:div (:nbutton :class "execute-command" :text "Execute-Command"
-                     '(execute-command))
-                   (:span :class "binding"
-                          (format nil "(~a)" (nyxt::binding-keys 'execute-command)))))))
+      (:div
+       :id "quick-access"
+       (:nbutton
+         :text "Bookmarks"
+         :title "View all bookmarks."
+         '(make-buffer-focus :url (nyxt-url 'nyxt/mode/bookmark:list-bookmarks)))
+       (:nbutton
+         :text "Downloads"
+         :title "View downloads for the current session."
+         '(make-buffer-focus :url (nyxt-url 'nyxt/mode/download:list-downloads)))
+       (:nbutton
+         :text "History"
+         :title "List history."
+         '(make-buffer-focus :url (nyxt-url 'nyxt/mode/history:list-history)))
+       (:nbutton
+         :text "Annotations"
+         :title "Show annotations for all pages."
+         '(make-buffer-focus :url (nyxt-url 'nyxt/mode/annotate:show-annotations)))
+       (:nbutton
+         :text "Buffers"
+         :title "List all buffers."
+         '(make-buffer-focus :url (nyxt-url 'nyxt/mode/buffer-listing:list-buffers)))))
+     (:div :id "start-container"
+           (:div :class "start"
+                 (:div :class "logo" (:raw (glyph-logo *browser*)))
+                 (:div
+                  (:div (:nbutton :class "set-url" :text "Set-URL"
+                          '(set-url))
+                        (:span :class "binding"
+                               (format nil "(~a)" (nyxt::binding-keys 'set-url))))
+                  (:div (:nbutton :class "execute-command" :text "Execute-Command"
+                          '(execute-command))
+                        (:span :class "binding"
+                               (format nil "(~a)" (nyxt::binding-keys 'execute-command)))))))
      (:p :class "copyright"
          (:span :class "program-name" "Nyxt")
          (format nil " ~a (~a)" +version+ (name *renderer*))
