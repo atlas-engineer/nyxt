@@ -42,7 +42,7 @@ Hosts `list-buffers' page."
                        :class "buffer-button"
                        :text (format nil "~a - ~a" (render-url (url buffer)) (title buffer))
                        :title "Switch to buffer"
-                       `(nyxt::switch-buffer :buffer ,buffer))))))
+                       `(nyxt::set-current-buffer ,buffer))))))
            (cluster-markup (cluster-id cluster)
              "Present a cluster in HTML."
              (spinneret:with-html
