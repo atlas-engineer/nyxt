@@ -42,7 +42,6 @@ Should be redefined by the renderer."))
     :documentation "The interface element that shows `bytes-downloaded'.")
    (destination-path
     #p""
-    :reader t
     :export t
     :type pathname
     :documentation "The path where the download is written to.")
@@ -80,29 +79,10 @@ Example: open the loaded files with XDG-open
                     :name 'xdg-open-download)))))")
    (cancel-function
     nil
-    :reader t
     :export t
     :type (or null function)
     :documentation "The function that cancels the download.
 It can be set by the download engine.")
-   (cancel-button
-    (make-instance 'user-interface:button
-                   :text "Cancel"
-                   :action (ps:ps (nyxt/ps:lisp-eval
-                                   () (echo "Can't cancel download."))))
-    :export nil
-    :documentation "The interface element to cancel the download.
-The download is referenced by its URL. The URL for this button is therefore
-encoded as a funcall to cancel-download with an argument of the URL to cancel.")
-   (open-button
-    (make-instance 'user-interface:button
-                   :text "Open"
-                   :action (ps:ps (nyxt/ps:lisp-eval
-                                   () (echo "Can't open file, file path unknown."))))
-    :export nil
-    :documentation "The interface element to open the download.
-The file name to open is encoded within the button's URL when the destination
-path is set.")
    (progress-text
     (make-instance 'user-interface:paragraph)
     :export nil)
@@ -118,18 +98,10 @@ The `downloads' slot is populated by a list of these objects."))
 (hooks:define-hook-type download (function (download))
   "Hook acting on `download' objects.")
 
-(-> cancel-download (nyxt::url-designator) t)
-(defun cancel-download (url)
+(defmethod cancel-download ((download download))
   "Call `cancel-function' with URL as argument."
-  ;; FIXME Two downloads can share the same URL.
-  (when-let ((download (find url (downloads *browser*) :key #'url :test #'string=)))
-    (funcall (cancel-function download))
-    (echo "Download canceled: ~a." url)))
-
-(defmethod (setf cancel-function) (cancel-function (download download))
-  (setf (slot-value download 'cancel-function) cancel-function)
-  (setf (user-interface:action (cancel-button download))
-        (ps:ps (nyxt/ps:lisp-eval (:title "cancel-download") (cancel-download (url download))))))
+  (funcall (cancel-function download))
+  (echo "Download canceled: ~a." (url download)))
 
 (defmethod (setf status) (value (download download))
   (setf (slot-value download 'status) value)
@@ -148,11 +120,6 @@ The `downloads' slot is populated by a list of these objects."))
   (setf (user-interface:text (bytes-text download))
         (format nil "Bytes downloaded: ~a" (bytes-downloaded download))))
 
-(defmethod (setf destination-path) (path (download download))
-  (setf (slot-value download 'destination-path) path)
-  (setf (user-interface:action (open-button download))
-        (ps:ps (nyxt/ps:lisp-eval (:title "open-file") (nyxt/mode/file-manager:default-open-file-function path)))))
-
 (defmethod connect ((download download) buffer)
   "Connect the user-interface objects within the download to the
 buffer. This allows the user-interface objects to update their
@@ -160,8 +127,6 @@ appearance in the buffer when they are setf'd."
   (user-interface:connect (status-text download) buffer)
   (user-interface:connect (progress-text download) buffer)
   (user-interface:connect (bytes-text download) buffer)
-  (user-interface:connect (open-button download) buffer)
-  (user-interface:connect (cancel-button download) buffer)
   (user-interface:connect (progress download) buffer))
 
 (define-mode download-mode ()
@@ -213,22 +178,28 @@ download."
             for progress-text = (progress-text download)
             for bytes-text = (bytes-text download)
             for progress = (progress download)
-            for open-button = (open-button download)
-            for cancel-button = (cancel-button download)
+            for destination-path = (destination-path download)
             do (connect download buffer)
             collect
-               (:div :class "download"
-                     (when (member (status download) '(:unloaded :loading))
-                       (user-interface:to-html cancel-button))
-                     (when (eq (status download) :finished)
-                       (user-interface:to-html open-button))
-                     (:p :class "download-url" (:a :href url url))
-                     (:div :class "progress-bar-container"
-                           (user-interface:to-html progress))
-                     (:div :class "status"
-                           (user-interface:to-html progress-text)
-                           (user-interface:to-html bytes-text)
-                           (user-interface:to-html status-text))))
+            (:div :class "download"
+                  (when (member (status download) '(:unloaded :loading))
+                    (:nbutton
+                      :text "✕ Cancel Download"
+                      :title "Cancel Download"
+                      `(cancel-download ,download)))
+                  (when (eq (status download) :finished)
+                    (:nbutton
+                      :text "Open File"
+                      :title "Open File"
+                      `(nyxt/mode/file-manager:default-open-file-function
+                        ,destination-path)))
+                  (:p :class "download-url" (:a :href url url))
+                  (:div :class "progress-bar-container"
+                        (user-interface:to-html progress))
+                  (:div :class "status"
+                        (user-interface:to-html progress-text)
+                        (user-interface:to-html bytes-text)
+                        (user-interface:to-html status-text))))
       (:p "No downloads available.")))))
 
 (defun download-watch (download-render download-object)
