@@ -2,7 +2,8 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/download
-  (:documentation "Package for `download-mode', mode to manage downloads and the downloads page."))
+  (:documentation "Package for `download-mode', mode to manage downloads and the
+downloads page."))
 (in-package :nyxt/mode/download)
 
 (export-always 'renderer-download)
@@ -56,10 +57,11 @@ Example: echo the file name to be downloaded
 \(define-configuration nyxt/mode/download:download
   ((nyxt/mode/download:before-download-hook
     (hooks:add-hook %slot-value%
-                    (make-instance 'hooks:handler
-                                   :fn (lambda (download)
-                                         (echo \"The URL for the download is ~a\" (render-url (url download))))
-                                   :name 'echo-name)))))")
+      (make-instance 'hooks:handler
+                     :fn (lambda (download)
+                           (echo \"The URL for the download is ~a\"
+                             (render-url (url download))))
+                     :name 'echo-name)))))")
    (after-download-hook
     (make-instance 'hook-download)
     :type hook-download
@@ -71,12 +73,14 @@ Example: open the loaded files with XDG-open
   ((nyxt/mode/download:after-download-hook
     (hooks:add-hook
      %slot-value%
-     (make-instance 'hooks:handler
-                    :fn (lambda (download)
-                          (uiop:launch-program
-                           (list \"xdg-open\" (uiop:native-namestring
-                                             (nyxt/mode/download:destination-path download)))))
-                    :name 'xdg-open-download)))))")
+     (make-instance
+       'hooks:handler
+       :fn (lambda (download)
+             (uiop:launch-program
+              (list \"xdg-open\"
+                 (uiop:native-namestring
+                   (nyxt/mode/download:destination-path download)))))
+       :name 'xdg-open-download)))))")
    (cancel-function
     nil
     :export t
@@ -92,7 +96,7 @@ It can be set by the download engine.")
   (:metaclass user-class)
   (:export-accessor-names-p t)
   (:export-class-name-p t)
-  (:documentation "This class is used to represent a download within the *Downloads* buffer.
+  (:documentation "This class is used to represent a download.
 The `downloads' slot is populated by a list of these objects."))
 
 (hooks:define-hook-type download (function (download))
@@ -221,7 +225,8 @@ is 100 OR a timeout is reached (during which no new progress has been made)."
                    (download-manager:bytes-fetched download-object))
              (setf (completion-percentage download-render)
                    (* 100 (/ (download-manager:bytes-fetched download-object)
-                             (max 1 (download-manager:bytes-total download-object))))))))
+                             (max 1 (download-manager:bytes-total
+                                     download-object))))))))
 
 ;; TODO: To download any URL at any moment and not just in resource-query, we
 ;; need to query the cookies for URL.  Thus we need to add an IPC endpoint to
@@ -250,7 +255,8 @@ Return the `download' object matching the download."
                                                  :proxy proxy-url))
                  (push download downloads)
                  ;; Add a watcher / renderer for monitoring download
-                 (let ((download-render (make-instance 'download :url (render-url url))))
+                 (let ((download-render (make-instance 'download
+                                                       :url (render-url url))))
                    (hooks:run-hook (before-download-hook download) download)
                    (setf (destination-path download-render)
                          (uiop:ensure-pathname
