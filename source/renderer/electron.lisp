@@ -25,7 +25,8 @@
     (mapc #'set-superclasses '((renderer-browser electron-browser)
                                (renderer-scheme electron-scheme)
                                (renderer-window electron-window)
-                               (renderer-buffer electron-buffer)))))
+                               (renderer-buffer electron-buffer)
+                               (nyxt/mode/download:renderer-download electron-download)))))
 
 (defmethod uninstall ((renderer electron-renderer))
   (flet ((remove-superclasses (renderer-class-sym)
@@ -37,6 +38,19 @@
                                   renderer-scheme
                                   renderer-window
                                   renderer-buffer))))
+
+
+(define-class electron-download ()
+  ((remote-object))
+  (:documentation "Electron download class."))
+
+(defmethod update-status ((electron-download electron-download))
+  (setf (nyxt/mode/download:status electron-download)
+        (match (electron:state (remote-object electron-download))
+          ("completed" :finished)
+          ("progressing" :loading)
+          ("cancelled" :canceled)
+          ("interrupted" :failed))))
 
 (define-class electron-scheme (electron:protocol)
   ()
@@ -95,12 +109,42 @@
                                                         :callback (first callbacks)
                                                         :error-callback (second callbacks))))
            nyxt::*schemes*)
+  (let ((session (electron:default-session electron:*interface*)))
+    (electron:add-listener session :download-item-updated
+                           (lambda (session item)
+                             (declare (ignore session))
+                             (download-item-updated item))))
   (call-next-method)
   (unless nyxt::*run-from-repl-p*
     (uiop:wait-process (electron:process electron:*interface*))
     (uiop:quit (nyxt:exit-code browser) #+bsd nil)))
 
 #+sbcl (pushnew 'electron:terminate sb-ext:*exit-hooks*)
+
+(defun download-item-updated (download-item)
+  (let ((download (find download-item (downloads *browser*) :key #'remote-object)))
+    (if download
+        (progn
+          (setf (url download)
+                (electron:url (remote-object download))
+                (nyxt/mode/download:bytes-downloaded download)
+                (electron:received-bytes (remote-object download))
+                (nyxt/mode/download:completion-percentage download)
+                (electron:percent-complete (remote-object download))
+                (nyxt/mode/download:destination-path download)
+                (electron:save-path (remote-object download)))
+          (update-status download))
+        (progn
+          (let ((download (make-instance 'nyxt/mode/download:download
+                                         :remote-object download-item
+                                         :url "Loading.")))
+            (push download (downloads *browser*))
+            (setf (nyxt/mode/download::cancel-function download)
+                  (lambda ()
+                    (electron:cancel (remote-object download))))
+            (nyxt/mode/download:list-downloads)
+            (hooks:run-hook (nyxt/mode/download:before-download-hook download)
+                            download))))))
 
 (defmethod ffi-kill-browser ((browser electron-browser))
   (declare (ignore browser))
