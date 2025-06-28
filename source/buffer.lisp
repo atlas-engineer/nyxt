@@ -254,11 +254,8 @@ inherited from the superclasses.")
         :border-spacing "0"
         :width "100%")
       `("pre, p code"
-        :color ,theme:on-secondary-color
-        :background-color ,theme:secondary-color+)
-      ;; FIXME: CSS4 has a :has() selector that would be perfect here:
-      ;; a:has(code) { color: theme:on-codeblock;} Unfortunately, LASS
-      ;; doesn't (yet?) support it. Thus the hack:
+        :color ,theme:on-background-color
+        :background-color ,theme:background-color-)
       '("a code"
         :text-decoration underline)
       `("table, th, td"
