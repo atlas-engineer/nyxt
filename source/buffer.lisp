@@ -165,7 +165,7 @@ inherited from the superclasses.")
         :color ,theme:on-primary-color
         :display "inline-block"
         :text-decoration "none"
-        :border-radius "2px"
+        :border-radius "4px"
         :border-color ,theme:primary-color
         :border-style "solid"
         :border-width "0.2em"
