@@ -11,24 +11,10 @@ Hosts `list-buffers' page."
   ((visible-in-status-p nil))
   (:toggler-command-p nil))
 
-(define-internal-page-command-global list-buffers (&key (cluster nil))
+(define-internal-page-command-global list-buffers ()
     (listing-buffer "*Buffers*" 'nyxt/mode/buffer-listing:buffer-listing-mode)
   "Show all buffers."
-  (labels ((cluster-buffers ()
-             "Return buffers as hash table, where each value is a cluster (list of documents)."
-             (let ((collection (make-instance 'analysis::document-collection)))
-               (loop for buffer in (buffer-list)
-                     do (with-current-buffer buffer
-                          (analysis::add-document
-                           collection
-                           (make-instance 'analysis::document-cluster
-                                          :source buffer
-                                          :string-contents (document-get-paragraph-contents)))))
-               (analysis::tf-vectorize-documents collection)
-               (analysis::generate-document-distance-vectors collection)
-               (analysis::dbscan collection :minimum-points 1 :epsilon 0.075)
-               (analysis::clusters collection)))
-           (buffer-markup (buffer)
+  (labels ((buffer-markup (buffer)
              "Present a buffer in HTML."
              (let ((*print-pretty* nil))
                (spinneret:with-html
@@ -42,13 +28,7 @@ Hosts `list-buffers' page."
                        :class "buffer-button"
                        :text (format nil "~a - ~a" (render-url (url buffer)) (title buffer))
                        :title "Switch to buffer"
-                       `(nyxt::set-current-buffer ,buffer))))))
-           (cluster-markup (cluster-id cluster)
-             "Present a cluster in HTML."
-             (spinneret:with-html
-               (:div (:h2 (format nil "Cluster ~a" cluster-id))
-                     (loop for document in cluster
-                           collect (buffer-markup (analysis::source document)))))))
+                       `(nyxt::set-current-buffer ,buffer)))))))
     (spinneret:with-html-string
       (render-menu 'nyxt/mode/buffer-listing:buffer-listing-mode listing-buffer)
       (:h1 "Buffers")
@@ -59,9 +39,5 @@ Hosts `list-buffers' page."
           :text-align "left"
           :flex-grow "1"))
       (:div
-       (if cluster
-           (loop for cluster-key being the hash-key
-                 using (hash-value cluster) of (cluster-buffers)
-                 collect (cluster-markup cluster-key cluster))
-           (dolist (buffer (buffer-list))
-             (buffer-markup buffer)))))))
+       (dolist (buffer (buffer-list))
+         (buffer-markup buffer))))))
