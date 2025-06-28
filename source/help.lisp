@@ -433,15 +433,16 @@ The value is saved to clipboard."
         :height "100px"
         :padding-top "3px"
         :margin-right "12px")
+      `(".logo svg"
+        :border-radius "4px")
       `(.set-url
         :min-width "180px"
         :height "40px"
         :line-height "30px"
-        :color ,theme:on-action-color
+        :color ,theme:on-primary-color
         :background-color ,theme:action-color
         :border "none"
         :border-width "2px"
-        :border-radius "2px"
         :margin-bottom "16px")
       `(.execute-command
         :min-width "180px"
