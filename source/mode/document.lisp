@@ -252,41 +252,42 @@ Warning: URL is a string."
               (scroll-by (ps:create top (ps:chain document document-element scroll-height)
                                     behavior (ps:lisp (if smooth-p "smooth" "instant")))))))
 
+(defun scroll-page-anywhere (x y smooth-p)
+  (ps-eval
+    (ps:chain window (scroll-by
+                      (ps:create top (ps:lisp y)
+                                 left (ps:lisp x)
+                                 behavior
+                                 (ps:lisp (if smooth-p "smooth" "instant")))))
+    (ps:chain document document-element (scroll-by (ps:lisp x) (ps:lisp y)))
+    (ps:chain document body (scroll-by (ps:lisp x) (ps:lisp y)))
+    (let ((el (ps:chain document activeElement)))
+      (when el
+        (ps:chain el (scroll-by (ps:lisp x) (ps:lisp y)))))))
+
 (define-command scroll-down (&key (y-pixels (scroll-distance (current-buffer)))
                              (smooth-p (smooth-scrolling (current-buffer))))
   "Scroll down the current page.
 The amount scrolled is determined by the buffer's `scroll-distance'."
-  (ps-eval
-    (ps:chain window
-              (scroll-by (ps:create top (ps:lisp y-pixels)
-                                    behavior (ps:lisp (if smooth-p "smooth" "instant")))))))
+  (scroll-page-anywhere 0 y-pixels smooth-p))
 
 (define-command scroll-up (&key (y-pixels (scroll-distance (current-buffer)))
                            (smooth-p (smooth-scrolling (current-buffer))))
   "Scroll up the current page.
 The amount scrolled is determined by the buffer's `scroll-distance'."
-  (ps-eval
-    (ps:chain window
-              (scroll-by (ps:create top (ps:lisp (- y-pixels))
-                                    behavior (ps:lisp (if smooth-p "smooth" "instant")))))))
+  (scroll-page-anywhere 0 (- y-pixels) smooth-p))
 
 (define-command scroll-left (&key (x-pixels (horizontal-scroll-distance (current-buffer)))
                              (smooth-p (smooth-scrolling (current-buffer))))
   "Scroll left the current page.
 The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
-  (ps-eval
-    (ps:chain window
-              (scroll-by (ps:create left (ps:lisp (- x-pixels))
-                                    behavior (ps:lisp (if smooth-p "smooth" "instant")))))))
+  (scroll-page-anywhere (- x-pixels) 0 smooth-p))
 
 (define-command scroll-right (&key (x-pixels (horizontal-scroll-distance (current-buffer)))
                               (smooth-p (smooth-scrolling (current-buffer))))
   "Scroll right the current page.
 The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
-  (ps-eval
-    (ps:chain window
-              (scroll-by (ps:create left (ps:lisp x-pixels)
-                                    behavior (ps:lisp (if smooth-p "smooth" "instant")))))))
+  (scroll-page-anywhere x-pixels 0 smooth-p))
 
 (define-command scroll-page-down ()
   "Scroll down by one page height."
