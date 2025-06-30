@@ -132,7 +132,9 @@ This is useful to run scripts for instance."))))
       ;; Reset global state.
       (setf *browser* nil
             *options* nil)
-      (uninstall *renderer*))))
+      (uninstall *renderer*)
+      ;; Destroy all kernel threads.
+      (lparallel.kernel:end-kernel))))
 
 (cffi:defcallback handle-interrupt
     :void ((signum :int) (siginfo :pointer) (ptr :pointer))
