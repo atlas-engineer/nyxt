@@ -87,6 +87,10 @@
   (:export-predicate-name-p t)
   (:metaclass user-class))
 
+(defmethod initialize-instance :after ((message-buffer message-buffer)
+                                       &key &allow-other-keys)
+  (ffi-print-message message-buffer "Ready."))
+
 (defmethod (setf height) (value (message-buffer message-buffer))
   (setf (ffi-height message-buffer) value)
   (setf (slot-value message-buffer 'height) value))
