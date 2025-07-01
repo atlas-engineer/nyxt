@@ -1618,8 +1618,7 @@ with this scheme.")
       (unless (member (nyxt/mode/download:status download) '(:canceled :failed))
         (setf (nyxt/mode/download:status download) :finished)
         ;; If download was too small, it may not have been updated.
-        (setf (nyxt/mode/download:completion-percentage download) 100)
-        (hooks:run-hook (nyxt/mode/download:after-download-hook download) download)))))
+        (setf (nyxt/mode/download:completion-percentage download) 100)))))
 
 (defmethod ffi-buffer-download ((buffer gtk-buffer) url)
   (let* ((webkit-download (webkit:webkit-web-view-download-uri (gtk-object buffer) url))

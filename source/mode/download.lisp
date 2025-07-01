@@ -113,7 +113,8 @@ The `downloads' slot is populated by a list of these objects."))
         (format nil "Status: ~(~a~)." value))
   ;; Refresh downloads page and show it upon download completion.
   (when (eq value :finished)
-    (buffer-load-internal-page-focus 'list-downloads)))
+    (buffer-load-internal-page-focus 'list-downloads)
+    (hooks:run-hook (after-download-hook download) download)))
 
 (defmethod (setf completion-percentage) (percentage (download download))
   (setf (slot-value download 'completion-percentage) percentage)
