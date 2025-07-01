@@ -1621,12 +1621,7 @@ with this scheme.")
         (setf (nyxt/mode/download:completion-percentage download) 100)))))
 
 (defmethod ffi-buffer-download ((buffer gtk-buffer) url)
-  (let* ((webkit-download (webkit:webkit-web-view-download-uri (gtk-object buffer) url))
-         (download (make-instance 'nyxt/mode/download:download
-                                  :url url
-                                  :gtk-object webkit-download)))
-    (wrap-download webkit-download)
-    download))
+  (webkit:webkit-web-view-download-uri (gtk-object buffer) url))
 
 (define-ffi-method ffi-buffer-user-agent ((buffer gtk-buffer))
   (when-let ((settings (webkit:webkit-web-view-get-settings (gtk-object buffer))))
