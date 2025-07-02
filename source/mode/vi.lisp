@@ -38,12 +38,9 @@ See also `vi-insert-mode'."
       (when el
         (ps:chain el (blur))))))
 
-;; TODO: Move ESCAPE binding to the override map?
 (define-mode vi-insert-mode (nyxt/mode/keyscheme:keyscheme-mode)
   "Enable VI-style modal bindings (insert mode).
 See `vi-normal-mode'."
-  ;; We could inherit from vi-normal-mode to save the declaration of this slot
-  ;; but then (find-submode ... 'vi-normal-mode) would match vi-insert-mode.
   ((glyph "vi:I")
    (keyscheme keyscheme:vi-insert)
    (previous-vi-normal-mode nil
