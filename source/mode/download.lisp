@@ -110,7 +110,8 @@ The `downloads' slot is populated by a list of these objects."))
 (defmethod cancel-download ((download download))
   "Call `cancel-function' with URL as argument."
   (funcall (cancel-function download))
-  (echo "Download canceled: ~a." (url download)))
+  (echo "Download canceled: ~a." (url download))
+  (buffer-load-internal-page-focus 'list-downloads))
 
 (defmethod (setf status) (value (download download))
   (setf (slot-value download 'status) value)
