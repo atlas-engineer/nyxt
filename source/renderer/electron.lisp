@@ -368,8 +368,8 @@ Note that by changing the default value, modifier keys can be remapped."))
 (defmethod (setf ffi-buffer-sound-enabled-p) ((buffer electron-buffer) value)
   (electron:set-audio-muted (electron:web-contents buffer) (not value)))
 
-;; TODO Support download-mode.
-;; (defmethod ffi-buffer-download ((buffer electron-buffer) url))
+(defmethod ffi-buffer-download ((buffer electron-buffer) url)
+  (electron:download-url (electron:web-contents buffer) url))
 
 ;; TODO Support proxy-mode.
 ;; (defmethod ffi-buffer-proxy ((buffer electron-buffer)))
