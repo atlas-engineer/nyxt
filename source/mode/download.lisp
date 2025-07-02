@@ -102,6 +102,11 @@ The `downloads' slot is populated by a list of these objects."))
 (hooks:define-hook-type download (function (download))
   "Hook acting on `download' objects.")
 
+(defmethod initialize-instance :after ((download download)
+                                       &key &allow-other-keys)
+  (hooks:run-hook (before-download-hook download) download)
+  (list-downloads))
+
 (defmethod cancel-download ((download download))
   "Call `cancel-function' with URL as argument."
   (funcall (cancel-function download))
