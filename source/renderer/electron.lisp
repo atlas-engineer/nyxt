@@ -137,14 +137,11 @@
         (progn
           (let ((download (make-instance 'nyxt/mode/download:download
                                          :remote-object download-item
-                                         :url "Loading.")))
+                                         :url (electron:url download-item))))
             (push download (downloads *browser*))
             (setf (nyxt/mode/download::cancel-function download)
                   (lambda ()
-                    (electron:cancel (remote-object download))))
-            (nyxt/mode/download:list-downloads)
-            (hooks:run-hook (nyxt/mode/download:before-download-hook download)
-                            download))))))
+                    (electron:cancel (remote-object download)))))))))
 
 (defmethod ffi-kill-browser ((browser electron-browser))
   (declare (ignore browser))
