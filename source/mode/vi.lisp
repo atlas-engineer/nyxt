@@ -28,8 +28,15 @@ See also `vi-insert-mode'."
       keyscheme:vi-normal
       (list
        "i" 'vi-insert-mode
+       "escape" 'unfocus-current-element
        "v" 'nyxt/mode/visual:visual-mode)))))
 
+(define-command unfocus-current-element ()
+  "Unfocus the currently selected HTML element."
+  (ps-eval
+    (let ((el (ps:chain document active-element)))
+      (when el
+        (ps:chain el (blur))))))
 
 ;; TODO: Move ESCAPE binding to the override map?
 (define-mode vi-insert-mode (nyxt/mode/keyscheme:keyscheme-mode)
