@@ -89,8 +89,8 @@ A positive value shifts to the bottom.")
                              (if (eq (x-placement mode) :right) -100 0))
                           (y-translation mode))
       :padding "0px 0.3em"
-      :border-color ,(cl-colors-ng:print-hex theme:primary-color- :print-alpha 0.80)
-      :border-radius "2px"
+      :border-color ,(cl-colors-ng:print-hex theme:primary-color- :print-alpha 0.60)
+      :border-radius "4px"
       :border-width "2px"
       :border-style "solid"
       :z-index #.(1- (expt 2 31)))
