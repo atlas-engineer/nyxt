@@ -262,7 +262,95 @@ invoking the " (:nxref :command 'toggle-modes) "command.")))))
             (:p "Modes can also be set interactively by command "
                 (:nxref :command 'toggle-modes)
                 " ,or by specific mode togglers such as "
-                (:nxref :command 'nyxt/mode/no-sound:no-sound-mode) "."))))))))))
+                (:nxref :command 'nyxt/mode/no-sound:no-sound-mode) "."
+                (:nxref :command 'nyxt/mode/no-script:no-script-mode) ".")))))
+        (privacy-and-security
+         (:div.section
+          (:h3 "Privacy & Security Modes")
+          (:div.row
+           (:div.left
+            (:ncheckbox
+              :name "blocker-mode"
+              :checked (let ((modes (ignore-errors (get-configured-value 'web-buffer 'default-modes))))
+                        (when (or (and modes (find 'nyxt/mode/blocker:blocker-mode modes))
+                                  (find 'nyxt/mode/blocker:blocker-mode (default-modes (current-buffer))))
+                          t))
+              :buffer buffer
+              '((blocker-mode "Blocker mode")
+                (nyxt::auto-configure
+                 :form '(define-configuration (web-buffer)
+                         ((default-modes (pushnew 'nyxt/mode/blocker:blocker-mode %slot-value%)))))
+                (nyxt::auto-configure
+                 :form '(define-configuration (web-buffer)
+                         ((default-modes (remove-if (lambda (m)
+                                                      (string= (symbol-name m) "BLOCKER-MODE"))
+                                          %slot-value%)))))))
+            (:ncheckbox
+              :name "no-script-mode"
+              :checked (let ((modes (ignore-errors (get-configured-value 'web-buffer 'default-modes))))
+                        (when (or (and modes (find 'nyxt/mode/no-script:no-script-mode modes))
+                                  (find 'nyxt/mode/no-script:no-script-mode (default-modes (current-buffer))))
+                          t))
+              :buffer buffer
+              '((no-script-mode "No-Script mode")
+                (nyxt::auto-configure
+                 :form '(define-configuration (web-buffer)
+                         ((default-modes (pushnew 'nyxt/mode/no-script:no-script-mode %slot-value%)))))
+                (nyxt::auto-configure
+                 :form '(define-configuration (web-buffer)
+                         ((default-modes (remove-if (lambda (m)
+                                                      (string= (symbol-name m) "NO-SCRIPT-MODE"))
+                                          %slot-value%)))))))
+            (:ncheckbox
+              :name "reduce-tracking-mode"
+              :checked (let ((modes (ignore-errors (get-configured-value 'web-buffer 'default-modes))))
+                        (when (or (and modes (find 'nyxt/mode/reduce-tracking:reduce-tracking-mode modes))
+                                  (find 'nyxt/mode/reduce-tracking:reduce-tracking-mode (default-modes (current-buffer))))
+                          t))
+              :buffer buffer
+              '((reduce-tracking-mode "Reduce-Tracking mode")
+                (nyxt::auto-configure
+                 :form '(define-configuration (web-buffer)
+                         ((default-modes (pushnew 'nyxt/mode/reduce-tracking:reduce-tracking-mode %slot-value%)))))
+                (nyxt::auto-configure
+                 :form '(define-configuration (web-buffer)
+                         ((default-modes (remove-if (lambda (m)
+                                                      (string= (symbol-name m) "REDUCE-TRACKING-MODE"))
+                                          %slot-value%))))))))
+           (:div.right
+            (:p "Select security modes to be enabled by default on web buffers."))))
+         (:div.section
+          (:h3 "Cookie policy")
+          (:div.row
+           (:div.left
+            (:nradio
+              :name "default-cookie-policy"
+              :vertical t
+              :checked (or (get-configured-value 'browser 'default-cookie-policy)
+                        (default-cookie-policy *browser*))
+              :buffer buffer
+              '(:no-third-party "No third party"
+                (nyxt::auto-configure
+                 :form '(define-configuration browser
+                         ((default-cookie-policy :no-third-party)))))
+              '(:accept "Always accept"
+                (nyxt::auto-configure
+                 :form '(define-configuration browser
+                         ((default-cookie-policy :accept)))))
+              '(:never "Never accept"
+                (nyxt::auto-configure
+                 :form '(define-configuration browser
+                         ((default-cookie-policy :never))))))))))
+        (text-and-code
+         (:div.section
+          (:h3 "Edit user files")
+          (:div.row
+           (:div.left
+            (:nbutton :text "Use external editor"
+              '(nyxt::edit-user-file-with-external-editor)))
+           (:div.right
+            (:p "To use the external editor, please set the " (:code "VISUAL") " or "
+                (:code "EDITOR") "environment variables."))))))))))
 
 (defun tls-help (buffer url)
   "Helper function invoked upon TLS certificate errors."
