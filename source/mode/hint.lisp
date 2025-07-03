@@ -80,7 +80,7 @@ A positive value shifts to the bottom.")
   "The style of the hint overlays."
   (theme:themed-css (theme *browser*)
     `(".nyxt-hint"
-      :background-color ,(cl-colors-ng:print-hex theme:background-color- :print-alpha 0.925)
+      :background-color ,theme:background-color-
       :color ,theme:on-background-color
       :font-family ,theme:monospace-font-family
       :font-size ".85rem"
@@ -89,7 +89,7 @@ A positive value shifts to the bottom.")
                              (if (eq (x-placement mode) :right) -100 0))
                           (y-translation mode))
       :padding "0px 0.3em"
-      :border-color ,(cl-colors-ng:print-hex theme:primary-color- :print-alpha 0.60)
+      :border-color ,theme:primary-color+
       :border-radius "4px"
       :border-width "2px"
       :border-style "solid"
