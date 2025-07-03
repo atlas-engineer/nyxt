@@ -292,7 +292,7 @@
 	shallow = true
 [submodule "_build/unix-opts"]
 	path = _build/unix-opts
-	url = https://github.com/libre-man/unix-opts
+	url = https://github.com/atlas-engineer/unix-opts
 	shallow = true
 [submodule "_build/cl-webkit"]
 	path = _build/cl-webkit
