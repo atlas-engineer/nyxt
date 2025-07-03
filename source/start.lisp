@@ -104,7 +104,11 @@ The remote instance must be listening on a socket which you can specify with
       (:name :headless
        :long "headless"
        :description "Start Nyxt without showing any graphical element.
-This is useful to run scripts for instance."))))
+This is useful to run scripts for instance.")
+      (:name :electron-opts
+       :long "electron-opts"
+       :arg-parser #'identity
+       :description "Command-line options to pass to Electron"))))
 ;; Also define command line options at read-time because we parse
 ;; `opts::*options*' in `start'.
 (eval-always (define-opts))
