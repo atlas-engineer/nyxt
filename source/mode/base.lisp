@@ -32,6 +32,7 @@ This mode is a good candidate to be passed to `make-buffer'."
        "f1 s" 'describe-slot
        "f1 v" 'describe-variable
        "f11" 'toggle-fullscreen
+       "f10" 'toggle-toolbars
        "C-Y" 'nyxt/mode/download:list-downloads
        "C-space" 'execute-command)
       keyscheme:cua
