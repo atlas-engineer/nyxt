@@ -720,36 +720,38 @@ Return the created buffer."
 (defun dead-buffer-p (buffer)
   (not (buffer-get (id buffer))))
 
-(defmethod document-model ((buffer buffer))
+(defmethod document-model ((buffer buffer) &key use-cached-p)
   "A wraparound accessor to BUFFER's `document-model'.
 
 In case the page changed more than `document-model-delta-threshold', runs
 `update-document-model'."
-  (ps-labels :buffer buffer
-    ((%count-dom-elements
-      ()
-      (defvar dom-counter 0)
-      (defun count-dom-elements (node)
-        (incf dom-counter)
-        (dolist (child (ps:chain node children))
-          (count-dom-elements child))
-        dom-counter)
-      (setf dom-counter 0)
-      (count-dom-elements (nyxt/ps:qs document "html"))))
-    (if (dead-buffer-p buffer)
-        (slot-value buffer 'document-model)
-        (let ((value (slot-value buffer 'document-model))
-              (element-count (%count-dom-elements)))
-          (if (and value
-                   element-count
-                   ;; Check the difference in element count.
-                   (< (abs (- (length (clss:select "*" value))
-                              (truncate element-count)))
-                      (document-model-delta-threshold buffer)))
-              value
-              (progn
-                (update-document-model :buffer buffer)
-                (slot-value buffer 'document-model)))))))
+  (if use-cached-p
+      (slot-value buffer 'document-model)
+      (ps-labels :buffer buffer
+        ((%count-dom-elements
+          ()
+          (defvar dom-counter 0)
+          (defun count-dom-elements (node)
+            (incf dom-counter)
+            (dolist (child (ps:chain node children))
+              (count-dom-elements child))
+            dom-counter)
+          (setf dom-counter 0)
+          (count-dom-elements (nyxt/ps:qs document "html"))))
+        (if (dead-buffer-p buffer)
+            (slot-value buffer 'document-model)
+            (let ((value (slot-value buffer 'document-model))
+                  (element-count (%count-dom-elements)))
+              (if (and value
+                       element-count
+                       ;; Check the difference in element count.
+                       (< (abs (- (length (clss:select "*" value))
+                                  (truncate element-count)))
+                          (document-model-delta-threshold buffer)))
+                  value
+                  (progn
+                    (update-document-model :buffer buffer)
+                    (slot-value buffer 'document-model))))))))
 
 (defmethod proxy ((buffer buffer))
   (slot-value buffer 'proxy))
