@@ -196,7 +196,7 @@ A positive value shifts to the bottom.")
   (update-document-model :buffer buffer)
   (loop with hintable-elements = (sera:filter
                                   (lambda (el) (plump:attribute el "nyxt-identifier"))
-                                  (clss:select "[nyxt-hintable]" (document-model buffer)))
+                                  (clss:select "[nyxt-hintable]" (document-model buffer :use-cached-p t)))
         with hints = (generate-hints (length hintable-elements))
         for elem across hintable-elements
         for hint in hints
