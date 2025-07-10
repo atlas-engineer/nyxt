@@ -170,6 +170,11 @@ make-instance."
    (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:enable-marks-p t)))
 
+(defmethod prompter:object-attributes ((annotation annotation) (source prompter:source))
+  (declare (ignore source))
+  `(("Data" ,(data annotation) (:width 3))
+    ("Tags" ,(tags annotation) (:width 3))))
+
 (define-class annotation-tag-source (prompter:source)
   ((prompter:name "Tags")
    (prompter:filter-preprocessor
