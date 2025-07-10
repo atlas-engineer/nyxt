@@ -170,7 +170,7 @@ the basename when there's a single modified file.  For instance, for changes in
 =source/mode/blocker.lisp= the commit message would look as per below:
 
 #+begin_example
-mode/blocker: Short description of the change.
+mode/blocker: Short description of the change
 
 Further explanation.
 #+end_example
