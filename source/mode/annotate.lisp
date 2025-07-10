@@ -150,7 +150,7 @@ make-instance."
      (loop for annotation in annotations
            collect (:div (render annotation)
                          (:hr)))
-     (:p "No annotations available."))))
+     (:p "No annotations available/selected."))))
 
 (define-internal-page show-annotations-for-current-url (&key (id (id (current-buffer))))
     (:title "*Annotations*")
@@ -197,8 +197,10 @@ make-instance."
 (define-internal-page-command-global show-annotation ()
     (buffer "*Annotations*")
   "Show prompted annotations."
-  (render-annotations (prompt :prompt "Show annotation(s)"
-                              :sources (make-instance 'annotation-source))))
+  (handler-case (render-annotations
+                 (prompt :prompt "Show annotation(s)"
+                         :sources (make-instance 'annotation-source)))
+    (nyxt:prompt-buffer-canceled () (render-annotations nil))))
 
 (define-internal-page-command-global show-annotations ()
     (buffer "*Annotations*")
