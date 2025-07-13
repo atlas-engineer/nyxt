@@ -49,8 +49,32 @@ Prompt for a new value with prompt SOURCES and type-check
                        slot (type-of input) type)
          (lp))
         (t
-         (auto-configure :class-name class :slot slot :slot-value input)
+         (auto-configure :form `(define-configuration ,class
+                                 ((,slot ,input))))
          (echo "Update slot ~s to ~s. You might need to restart to experience the change." slot input))))))
+
+(defun get-configured-value (class-name slot-name)
+  "Create a temporary instance and apply auto-config to get the final value.
+
+This is kind of a hack to be able to restore the settings we put into auto-config.lisp,
+so that the settings UI isn't confusing."
+  (let* ((temp-instance (make-instance class-name))
+         (original-value (slot-value temp-instance slot-name)))
+    (files:with-file-content (config *auto-config-file*)
+      (dolist (form config)
+        (when (and (listp form)
+                   (eq (first form) 'define-configuration)
+                   (or (eq (second form) class-name)
+                       (and (listp (second form))
+                            (member class-name (second form)))))
+          (dolist (slot-spec (third form))
+            (when (and (listp slot-spec)
+                       (eq (first slot-spec) slot-name))
+              (let* ((%slot-value% (slot-value temp-instance slot-name))
+                     (%slot-default% original-value)
+                     (new-value (eval (second slot-spec))))
+                (setf (slot-value temp-instance slot-name) new-value)))))))
+    (slot-value temp-instance slot-name)))
 
 (define-internal-page-command-global common-settings (&key (section 'keybindings))
     (buffer "*Settings*" 'nyxt/mode/help:help-mode)
@@ -145,13 +169,16 @@ to the next."
             (:nradio
               :name "keyscheme"
               :vertical t
-              :checked (cond ((find "nyxt/mode/vi" (default-modes (current-buffer))
-                                    :key #'uiop:symbol-package-name :test #'string-equal)
-                              'vi)
-                             ((find "nyxt/mode/emacs" (default-modes (current-buffer))
-                                    :key #'uiop:symbol-package-name :test #'string-equal)
-                              'emacs)
-                             (t 'cua))
+              :checked (let ((modes (ignore-errors (get-configured-value 'input-buffer 'default-modes))))
+                        (cond ((or (and modes (find 'nyxt/mode/vi:vi-normal-mode modes))
+                                   (find "nyxt/mode/vi" (default-modes (current-buffer))
+                                         :key #'uiop:symbol-package-name :test #'string-equal))
+                               'vi)
+                              ((or (and modes (find 'nyxt/mode/emacs:emacs-mode modes))
+                                   (find "nyxt/mode/emacs" (default-modes (current-buffer))
+                                         :key #'uiop:symbol-package-name :test #'string-equal))
+                               'emacs)
+                              (t 'cua)))
               :buffer buffer
               '(cua "CUA (default)"
                 (nyxt::auto-configure
@@ -184,9 +211,11 @@ invoking the " (:nxref :command 'toggle-modes) "command.")))))
            (:div.left
             (:nradio
               :name "theme"
-              :checked (if (eq (theme *browser*) theme:+light-theme+)
-                           'theme:+light-theme+
-                           'theme:+dark-theme+)
+              :checked (let ((theme (or (ignore-errors (get-configured-value 'browser 'theme))
+                                        (theme *browser*))))
+                         (if (eq theme theme:+light-theme+)
+                             'theme:+light-theme+
+                             'theme:+dark-theme+))
               :vertical t
               :buffer buffer
               '(theme:+light-theme+ "Light theme"
@@ -203,9 +232,11 @@ invoking the " (:nxref :command 'toggle-modes) "command.")))))
            (:div.left
             (:nradio
               :name "darken"
-              :checked (if (find 'nyxt/mode/style:dark-mode (default-modes (current-buffer)))
-                           'dark
-                           'auto)
+              :checked (let ((modes (ignore-errors (get-configured-value 'web-buffer 'default-modes))))
+                        (if (or (and modes (find 'nyxt/mode/style:dark-mode modes))
+                                (find 'nyxt/mode/style:dark-mode (default-modes (current-buffer))))
+                            'dark
+                            'auto))
               :vertical t
               :buffer buffer
               '(auto "Default"
@@ -226,15 +257,16 @@ invoking the " (:nxref :command 'toggle-modes) "command.")))))
            (:div.left
             (:nselect
               :id "default-zoom-ratio"
-              :default (format nil "~a%" (* 100 (zoom-ratio-default (current-buffer))))
+              :default (let ((zoom (or (ignore-errors (get-configured-value 'document-buffer 'zoom-ratio-default))
+                                    (zoom-ratio-default (current-buffer)))))
+                        (format nil "~a%" (* 100 zoom)))
               (loop for number in '(30 50 67 80 90 100
                                     110 120 133 150 170
                                     200 240 300 400 500)
                     collect `((,number ,(format nil "~a%" number))
                               (nyxt::auto-configure
-                               :class-name 'document-buffer
-                               :slot 'zoom-ratio-default
-                               :slot-value ,(/ number 100.0)))))))))
+                               :form '(define-configuration document-buffer
+                                       ((zoom-ratio-default ,(/ number 100.0))))))))))))
         (buffer-defaults
          (:div.section
           (:h3 "Homepage")
@@ -280,7 +312,10 @@ invoking the " (:nxref :command 'toggle-modes) "command.")))))
            (:div.left
             (:ncheckbox
               :name "blocker-mode"
-              :checked (when (find 'nyxt/mode/blocker:blocker-mode (default-modes (current-buffer))) t)
+              :checked (let ((modes (ignore-errors (get-configured-value 'web-buffer 'default-modes))))
+                        (when (or (and modes (find 'nyxt/mode/blocker:blocker-mode modes))
+                                  (find 'nyxt/mode/blocker:blocker-mode (default-modes (current-buffer))))
+                          t))
               :buffer buffer
               '((blocker-mode "Blocker mode")
                 (nyxt::auto-configure
@@ -293,7 +328,10 @@ invoking the " (:nxref :command 'toggle-modes) "command.")))))
                                           %slot-value%)))))))
             (:ncheckbox
               :name "no-script-mode"
-              :checked (when (find 'nyxt/mode/no-script:no-script-mode (default-modes (current-buffer))) t)
+              :checked (let ((modes (ignore-errors (get-configured-value 'web-buffer 'default-modes))))
+                        (when (or (and modes (find 'nyxt/mode/no-script:no-script-mode modes))
+                                  (find 'nyxt/mode/no-script:no-script-mode (default-modes (current-buffer))))
+                          t))
               :buffer buffer
               '((no-script-mode "No-Script mode")
                 (nyxt::auto-configure
@@ -306,7 +344,10 @@ invoking the " (:nxref :command 'toggle-modes) "command.")))))
                                           %slot-value%)))))))
             (:ncheckbox
               :name "reduce-tracking-mode"
-              :checked (when (find 'nyxt/mode/reduce-tracking:reduce-tracking-mode (default-modes (current-buffer))) t)
+              :checked (let ((modes (ignore-errors (get-configured-value 'web-buffer 'default-modes))))
+                        (when (or (and modes (find 'nyxt/mode/reduce-tracking:reduce-tracking-mode modes))
+                                  (find 'nyxt/mode/reduce-tracking:reduce-tracking-mode (default-modes (current-buffer))))
+                          t))
               :buffer buffer
               '((reduce-tracking-mode "Reduce-Tracking mode")
                 (nyxt::auto-configure
@@ -326,23 +367,21 @@ invoking the " (:nxref :command 'toggle-modes) "command.")))))
             (:nradio
               :name "default-cookie-policy"
               :vertical t
-              :checked (default-cookie-policy *browser*)
+              :checked (or (get-configured-value 'browser 'default-cookie-policy)
+                        (default-cookie-policy *browser*))
               :buffer buffer
               '(:no-third-party "No third party"
                 (nyxt::auto-configure
-                 :class-name 'browser
-                 :slot 'default-cookie-policy
-                 :slot-value :no-third-party))
+                 :form '(define-configuration browser
+                         ((default-cookie-policy :no-third-party)))))
               '(:accept "Always accept"
                 (nyxt::auto-configure
-                 :class-name 'browser
-                 :slot 'default-cookie-policy
-                 :slot-value :accept))
+                 :form '(define-configuration browser
+                         ((default-cookie-policy :accept)))))
               '(:never "Never accept"
                 (nyxt::auto-configure
-                 :class-name 'browser
-                 :slot 'default-cookie-policy
-                 :slot-value :never)))))))
+                 :form '(define-configuration browser
+                         ((default-cookie-policy :never))))))))))
         (text-and-code
          (:div.section
           (:h3 "Edit user files")
