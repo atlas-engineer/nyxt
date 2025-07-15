@@ -312,29 +312,6 @@ The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
   ;; slot set by `define-configuration'.
   (setf (ffi-buffer-zoom-ratio buffer) (zoom-ratio-default buffer)))
 
-(define-internal-page summarize-buffer (&key (summary-length 5) (id (id (current-buffer))))
-    (:title "*Summary*")
-  "Summarize the current buffer by creating a new summary buffer.
-ID is a buffer `id'."
-  (let ((buffer (nyxt::buffer-get id)))
-    (let ((contents
-            (serapeum:string-join
-             (map 'list (lambda (e) (plump:text e))
-                  (clss:select "p" (document-model buffer)))
-             " ")))
-      (spinneret:with-html-string
-        (:h1 "Summary for: " (title buffer))
-        (:ul
-         (loop for point in (analysis:summarize-text contents :summary-length summary-length)
-               collect (:li point)))))))
-
-(define-command-global summarize-buffer (&key (summary-length 5) (buffer (current-buffer)))
-  "Summarize the current buffer by creating a new summary buffer.
-SUMMARY-LENGTH allows to list more/less summary items."
-  (buffer-load-internal-page-focus 'summarize-buffer
-                                   :summary-length summary-length
-                                   :id (id buffer)))
-
 (define-class heading ()
   ((inner-text "" :documentation "The inner text of the heading within the document.")
    (element nil :documentation "The header-representing element of `document-model'.")
