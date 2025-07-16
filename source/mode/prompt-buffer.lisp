@@ -87,8 +87,8 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "C-v" 'next-page
        "M-p" 'previous-source
        "M-n" 'next-source
-       "M-[" 'previous-source    ; Emacs Helm binding.
-       "M-]" 'next-source        ; Emacs Helm binding.
+       "M-[" 'previous-source
+       "M-]" 'next-source
        "C-M-n" 'scroll-other-buffer-down
        "C-M-p" 'scroll-other-buffer-up
        "C-M-v" 'scroll-page-down-other-buffer
