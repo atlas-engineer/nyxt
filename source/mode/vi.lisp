@@ -28,7 +28,7 @@ See also `vi-insert-mode'."
       keyscheme:vi-normal
       (list
        "i" 'vi-insert-mode
-       "escape" 'unfocus-current-element
+       "q" 'unfocus-current-element
        "v" 'nyxt/mode/visual:visual-mode)))))
 
 (define-command unfocus-current-element ()
