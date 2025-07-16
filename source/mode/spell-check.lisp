@@ -17,7 +17,8 @@ For a list of more languages available, see `spell-check-list-languages'.")
    (keyscheme-map
     (define-keyscheme-map "spell-check-mode" ()
       keyscheme:cua
-      (list)                            ; TODO: Add CUA bindings!
+      (list
+       "f7" 'spell-check-word)
       keyscheme:emacs
       (list
        "M-$" 'spell-check-word)
