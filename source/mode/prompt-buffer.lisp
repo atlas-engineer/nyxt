@@ -64,8 +64,7 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "C-c C-j" 'set-action-on-current-suggestion
        "tab" 'insert-current-suggestion
        "C-c C-f" 'toggle-actions-on-current-suggestion
-       "C-]" 'toggle-attributes-display
-       "M-shift-up" 'toggle-suggestions-display)
+       "C-]" 'toggle-attributes-display)
       keyscheme:cua
       (list
        "C-up" 'first-suggestion
@@ -324,11 +323,6 @@ current unmarked suggestion."
     (setf (prompter:active-attributes-keys source)
           attributes)
     (prompt-render-suggestions prompt-buffer)))
-
-(define-command-prompt toggle-suggestions-display (prompt-buffer)
-  "Toggle between showing suggestions."
-  (setf (height prompt-buffer)
-        (if (eq (height prompt-buffer) :fit-to-prompt) :default :fit-to-prompt)))
 
 (define-class prompt-buffer-command-source (command-source)
   ((prompter:name "Prompt buffer commands")

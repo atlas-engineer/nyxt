@@ -511,7 +511,7 @@ buffers.")
   (:ul
    (:li "Add support for PDF.js.")
    (:li "Add command "
-        (:nxref :command 'nyxt/mode/prompt-buffer:toggle-suggestions-display)
+        (:code "nyxt/mode/prompt-buffer:toggle-suggestions-display")
         ", that allows collapsing the prompt buffer to its input area.")
    (:li "Improve the UI of the REPL.")
    (:li "Output multiple values when evaluating Lisp expressions from "
