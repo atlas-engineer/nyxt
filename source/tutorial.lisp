@@ -245,8 +245,7 @@ English but it is possible to change the slot "
                                      nyxt/mode/spell-check:spell-check-word-at-cursor
                                      nyxt/mode/spell-check:spell-check-suggest-word
                                      nyxt/mode/spell-check:spell-check-highlighted-word
-                                     nyxt/mode/spell-check:spell-check-list-languages
-                                     nyxt/mode/spell-check:spell-check-text-input))))
+                                     nyxt/mode/spell-check:spell-check-list-languages))))
 
       (:nsection :title "Visual mode"
         (:p "Select text without a mouse. Nyxt's "

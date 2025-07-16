@@ -103,22 +103,3 @@ suggestions."
     (let ((result (enchant:dict-check lang word)))
       (or result
           (enchant:dict-suggest lang word)))))
-
-(define-command spell-check-text-input (&key text)
-  "Spell check full text input provided by the user."
-  (let ((selected-text (prompt :prompt "Suggest spelling"
-                               :input text
-                               :sources 'enchant-text-input)))
-    (trivial-clipboard:text selected-text)
-    (echo "Text saved to clipboard.")))
-
-(define-class enchant-text-input (prompter:source)
-  ((case-sensitive-p nil)
-   (minimum-search-length 3)
-   (prompter:name "Enchant for text")
-   (prompter:filter nil)
-   (prompter:filter-preprocessor
-    (lambda (preprocessed-suggestions text input)
-      (declare (ignore preprocessed-suggestions))
-      (when (>= (length input) (slot-value text 'minimum-search-length))
-        (mapcar #'spell-check-and-suggest (str:words input)))))))
