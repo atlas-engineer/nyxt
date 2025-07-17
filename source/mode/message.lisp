@@ -9,7 +9,7 @@ All the APIs of the `message-mode' are exported, no implementation details."))
 (define-mode message-mode ()
   "Mode for log and message listing.
 Mainly used on `list-messages' page."
-  ((visible-in-status-p nil))
+  ()
   (:toggler-command-p nil))
 
 (define-command clear-messages ()

@@ -15,8 +15,7 @@ There are implementation details for (almost) every command in this mode:
   "Mode for creating and editing macros.
 
 See `nyxt/mode/macro-edit' package documentation for implementation details."
-  ((visible-in-status-p nil)
-   (macro-name
+  ((macro-name
     ""
     :accessor nil
     :documentation "The descriptive name used for the macro.")

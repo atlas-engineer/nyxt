@@ -13,8 +13,7 @@ Utilizes the `nyxt/keyscheme' API, `nyxt/mode/keyscheme' APIs, and
 
 See the mode `keyscheme-map' for special bindings and `nyxt/mode/passthrough'
 package documentation for implementation details and internal programming APIs."
-  ((visible-in-status-p nil)
-   (keyscheme-map
+  ((keyscheme-map
     (define-keyscheme-map "passthrough-mode" ()
       keyscheme:default
       (list

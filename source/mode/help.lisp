@@ -11,8 +11,7 @@
 Useful to enable on Nyxt help pages (such as `manual' or `describe-*') to
 provide convenient navigation keybindings.  For instance, \"s\" becomes bound
 `nyxt/mode/search-buffer:search-buffer'."
-  ((visible-in-status-p nil)
-   (keyscheme-map
+  ((keyscheme-map
     (define-keyscheme-map "help-mode" ()
       keyscheme:default
       (list

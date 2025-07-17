@@ -8,7 +8,7 @@
 (define-mode buffer-listing-mode ()
   "Mode for buffer-listing.
 Hosts `list-buffers' page."
-  ((visible-in-status-p nil))
+  ()
   (:toggler-command-p nil))
 
 (define-internal-page-command-global list-buffers ()
