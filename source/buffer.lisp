@@ -174,7 +174,7 @@ inherited from the superclasses.")
       `(select.button
         :appearance auto
         :background-color ,theme:primary-color
-        :color "black !important")
+        :color ,theme:on-primary-color)
       `(code
         :font-family ,theme:monospace-font-family
         :font-size "0.9rem")
