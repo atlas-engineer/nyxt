@@ -68,16 +68,9 @@ Allows looking through the colors based on their names, HEX values, and
 rgb()/hsl() CSS functions representing them."))
 
 (defmethod prompter:object-attributes ((color string) (source color-source))
-  (flet ((display (string)
-           (spinneret:with-html-string
-             (:span
-              :style (format nil "background-color: ~a; color: ~a; border: 0.1em solid ~a; border-radius: 2px;"
-                             color (theme:contrasting-color color) (theme:contrasting-color color))
-              string))))
-    `(("Color" ,(display color))
-      ("HEX" ,(display (cl-colors-ng:print-hex color)))
-      ("RGB" ,(display (cl-colors-ng:print-css-rgb/a color)))
-      ("HSL" ,(display (cl-colors-ng:print-css-hsl color))))))
+  `(("Color" ,color)
+    ("HEX" ,(cl-colors-ng:print-hex color))
+    ("RGB" ,(cl-colors-ng:print-css-rgb/a color))))
 
 (define-command-global pick-color ()
   "Pick a color and copy it to clipboard.
