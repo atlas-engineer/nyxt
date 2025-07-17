@@ -16,8 +16,8 @@ provide convenient navigation keybindings.  For instance, \"s\" becomes bound
       keyscheme:default
       (list
        "q" 'delete-current-buffer
-       "n" 'nyxt/mode/document:next-heading
-       "p" 'nyxt/mode/document:previous-heading
+       "n" 'nyxt/mode/document:scroll-down
+       "p" 'nyxt/mode/document:scroll-up
        "m" 'nyxt/mode/document:jump-to-heading
        "s" 'nyxt/mode/search-buffer:search-buffer
        "?" (sym:resolve-symbol :describe-bindings :command)))))

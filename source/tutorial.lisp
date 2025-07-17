@@ -231,8 +231,6 @@ buffer."))
         (:p "It is possible to navigate through headings: ")
         (:ul
          (list-command-information '(nyxt/mode/document:jump-to-heading
-                                     nyxt/mode/document:previous-heading
-                                     nyxt/mode/document:next-heading
                                      nyxt/mode/document:jump-to-heading-buffers))))
 
       (:nsection :title "Spelling check"

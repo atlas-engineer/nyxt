@@ -644,8 +644,8 @@ and the page textual content can be displayed even offline. See "
   (:nsection
    :title "New commands"
    (:ul
-    (:li "New " (:nxref :command 'nyxt/mode/document:next-heading) " and "
-         (:nxref :command 'nyxt/mode/document:previous-heading)
+    (:li "New " (:code "nyxt/mode/document:next-heading") " and "
+         (:code "nyxt/mode/document:previous-heading")
          " commands to jump between neighboring headings.")
     (:li "New " (:nxref :command 'toggle-message-buffer)  " and "
          (:nxref :command 'toggle-status-buffer) " commands. And "

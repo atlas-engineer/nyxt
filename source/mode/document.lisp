@@ -27,8 +27,6 @@ Important pieces of functionality are:
        "M-i" 'focus-first-input-field
        "C-M-c" 'open-inspector
        "C-C" 'open-inspector
-       "M-{" 'previous-heading
-       "M-}" 'next-heading
        "C-p" 'print-buffer
        "C-+" 'zoom-page
        "C-=" 'zoom-page              ; Because + shifted = on QWERTY.
@@ -87,8 +85,6 @@ Important pieces of functionality are:
       (list
        "g h" 'jump-to-heading
        "g H" 'jump-to-heading-buffers
-       "{" 'previous-heading
-       "}" 'next-heading
        "y y" 'copy
        "p" 'paste
        ;; Debatable: means "insert after cursor" in Vi(m).
@@ -350,29 +346,9 @@ The inner-text must not be modified, so that we can jump to the anchor of the sa
                    (< (abs (- (scroll-position h1) vertical-scroll-position))
                       (abs (- (scroll-position h2) vertical-scroll-position))))))))
 
-;; TODO: Make a method on plump:node? Extract to nyxt/dom?
 (defun scroll-page-to-heading (heading)
   (set-current-buffer (buffer heading) :focus nil)
   (nyxt/dom:scroll-to-element (element heading)))
-
-(defun scroll-page-to-n-headings (n &optional (buffer (current-buffer)))
-  "Scroll to the N adjacent heading of the BUFFER."
-  (and-let* ((headings (get-headings :buffer buffer))
-             (new-position (+ n
-                              (position (nyxt/dom:body (element (current-heading buffer)))
-                                        headings
-                                        :key (compose #'nyxt/dom:body #'element)
-                                        :test #'equal)))
-             ((<= 0 new-position (1- (length headings)))))
-    (scroll-page-to-heading (elt headings new-position))))
-
-(define-command next-heading (&optional (buffer (current-buffer)))
-  "Scroll to the next heading of the BUFFER."
-  (scroll-page-to-n-headings 1 buffer))
-
-(define-command previous-heading (&optional (buffer (current-buffer)))
-  "Scroll to the previous heading of the BUFFER."
-  (scroll-page-to-n-headings -1 buffer))
 
 (define-class heading-source (prompter:source)
   ((prompter:name "Headings")
