@@ -98,11 +98,3 @@ When QUERY-IN-NEW-BUFFER-P is non-nil, open the results in a new buffer."
   (unless (str:blankp query)
     (coerce (j:get 1 (request (format-completion-url query wikipedia)))
             'list)))
-
-(define-class atlas-searx-search-engine (search-engine)
-  ((name "Atlas SearXNG")
-   (shortcut "searx")
-   (control-url "https://search.atlas.engineer/searxng/search?q=~a")
-   (control-completion-url nil))
-  (:export-class-name-p t)
-  (:documentation "A representation of the Atlas SearXNG search engine."))
