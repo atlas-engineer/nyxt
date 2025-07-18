@@ -357,8 +357,8 @@ height of the status/prompt/message buffer."
                                :x 0
                                :y (- (assoc-value bounds :height)
                                      (+ height
-                                        (ffi-height (status-buffer window))
-                                        (ffi-height (message-buffer window))))
+                                        (set-height (status-buffer window))
+                                        (set-height (message-buffer window))))
                                :width (assoc-value bounds :width)
                                :height height)))
 
@@ -427,7 +427,7 @@ height of the status/prompt/message buffer."
                                :window-bounds-alist-var bounds
                                :x 0
                                :y (- (assoc-value bounds :height)
-                                     (height message-buffer))
+                                     (set-height message-buffer))
                                :width (assoc-value bounds :width)
                                :height (set-height message-buffer))
     (electron:add-bounded-view window
@@ -435,8 +435,8 @@ height of the status/prompt/message buffer."
                                :window-bounds-alist-var bounds
                                :x 0
                                :y (- (assoc-value bounds :height)
-                                     (+ (height status-buffer)
-                                        (height message-buffer)))
+                                     (+ (set-height status-buffer)
+                                        (set-height message-buffer)))
                                :width (assoc-value bounds :width)
                                :height (set-height status-buffer))
     ;; TODO: Fix buffer deletion. We CANNOT hook on close to remove the view
