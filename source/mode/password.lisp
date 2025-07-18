@@ -162,24 +162,6 @@ for which the `executable' slot is non-nil."
                           :height :fit-to-prompt
                           :invisible-input-p t))))
 
-(define-command copy-password-prompt-details (&optional (buffer (current-buffer)))
-  "Copy password prompting for all the details without suggestions."
-  (password-debug-info)
-  (if (password-interface buffer)
-      (let* ((password-name (prompt1
-                              :prompt "Name of password"
-                              :sources 'prompter:raw-source))
-             (service (prompt1
-                        :prompt "Service"
-                        :sources 'prompter:raw-source)))
-        (handler-case
-            (password:clip-password (password-interface buffer)
-                                    :password-name password-name
-                                    :service service)
-          (error (c)
-            (echo-warning "Error retrieving password: ~a" c))))
-      (echo-warning "No password manager found.")))
-
 (define-command copy-password (&optional (buffer (current-buffer)))
   "Query password and save to clipboard.
 See also `copy-password-prompt-details'."
