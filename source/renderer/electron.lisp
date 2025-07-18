@@ -164,7 +164,11 @@
       :meta "super")
     :type list
     :documentation "A map between Electron's and Nyxt's terminology for modifier keys.
-Note that by changing the default value, modifier keys can be remapped."))
+Note that by changing the default value, modifier keys can be remapped.")
+   (set-height
+    :documentation "The height the buffer has been requested to be set to.
+It does not represent the current height as reported by the renderer, or
+the default height."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:metaclass user-class)
@@ -318,6 +322,7 @@ Note that by changing the default value, modifier keys can be remapped."))
   (assoc-value (electron:get-bounds buffer) :height))
 
 (defmethod (setf ffi-height) ((height integer) (buffer electron-buffer))
+  (setf (set-height buffer) height)
   (let ((bounds (electron:get-bounds buffer)))
     (electron:set-bounds buffer
                          :x (assoc-value bounds :x)
@@ -409,6 +414,8 @@ Note that by changing the default value, modifier keys can be remapped."))
   (electron:remove-menu window)
   (let ((message-buffer (message-buffer window))
         (status-buffer (status-buffer window)))
+    (setf (set-height message-buffer) (height message-buffer))
+    (setf (set-height status-buffer) (height status-buffer))
     (electron:add-bounded-view window
                                message-buffer
                                :window-bounds-alist-var bounds
@@ -416,7 +423,7 @@ Note that by changing the default value, modifier keys can be remapped."))
                                :y (- (assoc-value bounds :height)
                                      (height message-buffer))
                                :width (assoc-value bounds :width)
-                               :height (height message-buffer))
+                               :height (set-height message-buffer))
     (electron:add-bounded-view window
                                status-buffer
                                :window-bounds-alist-var bounds
@@ -425,7 +432,7 @@ Note that by changing the default value, modifier keys can be remapped."))
                                      (+ (height status-buffer)
                                         (height message-buffer)))
                                :width (assoc-value bounds :width)
-                               :height (height status-buffer))
+                               :height (set-height status-buffer))
     ;; TODO: Fix buffer deletion. We CANNOT hook on close to remove the view
     ;; from the window because it is too late. Ergo, we must manually delete the
     ;; currently viewed buffer without trying to mutate it via JS.
