@@ -318,6 +318,19 @@ the default height."))
 ;; TODO
 ;; (defmethod ffi-buffer-cookie-policy ((buffer electron-buffer)))
 
+(defun update-active-buffer-bounds (window delta)
+  "Recalculate the bounds of the active window to compensate for changes in the
+height of the status/prompt/message buffer."
+  (let ((window-bounds (electron:get-bounds window)))
+    (electron:set-bounds (active-buffer window)
+                         :x 0
+                         :y 0
+                         :width (assoc-value window-bounds :width)
+                         :height (- (assoc-value window-bounds :height)
+                                    (+ delta
+                                       (ffi-height (status-buffer window))
+                                       (ffi-height (message-buffer window)))))))
+
 (defmethod ffi-height ((buffer electron-buffer))
   (assoc-value (electron:get-bounds buffer) :height))
 
@@ -328,7 +341,8 @@ the default height."))
                          :x (assoc-value bounds :x)
                          :y (assoc-value bounds :y)
                          :width (assoc-value bounds :width)
-                         :height height)))
+                         :height height))
+  (update-active-buffer-bounds (window buffer) 0))
 
 (defmethod ffi-focus-buffer ((buffer electron-buffer))
   (electron:focus buffer)
@@ -336,15 +350,7 @@ the default height."))
 
 (defmethod (setf ffi-height) ((height integer) (prompt-buffer prompt-buffer))
   (with-slots (window) prompt-buffer
-    (let ((window-bounds (electron:get-bounds window)))
-      (electron:set-bounds (active-buffer window)
-                           :x 0
-                           :y 0
-                           :width (assoc-value window-bounds :width)
-                           :height (- (assoc-value window-bounds :height)
-                                      (+ height
-                                         (ffi-height (status-buffer window))
-                                         (ffi-height (message-buffer window))))))
+    (update-active-buffer-bounds window height)
     (electron:add-bounded-view window
                                prompt-buffer
                                :window-bounds-alist-var bounds
