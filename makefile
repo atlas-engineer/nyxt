@@ -11,14 +11,14 @@ ifeq ($(LISP), sbcl)
 	SBCL_FLAGS=--dynamic-space-size $(shell sbcl --noinform --no-userinit --non-interactive --eval '(prin1 (max 3072 (/ (sb-ext:dynamic-space-size) 1024 1024)))' --quit | tail -1)
 endif
 
-LISP_FLAGS ?= $(SBCL_FLAGS) --no-userinit --non-interactive
+LISP_FLAGS ?= $(SBCL_FLAGS) --non-interactive
 
-NYXT_SUBMODULES ?= true
+NYXT_OCICL ?= true
 NYXT_RENDERER ?= gi-gtk
 NASDF_USE_LOGICAL_PATHS ?= true
 NODE_SETUP ?= true
 
-export NYXT_SUBMODULES
+export NYXT_OCICL
 export NYXT_RENDERER
 export NASDF_USE_LOGICAL_PATHS
 export NODE_SETUP
@@ -29,12 +29,14 @@ help:
 
 makefile_dir := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-ifeq ($(NYXT_SUBMODULES),true)
-	CL_SOURCE_REGISTRY = $(makefile_dir)_build//
+LISP_OCICL = --userinit $(makefile_dir)init.lisp
+
+ifeq ($(NYXT_OCICL),true)
+	CL_SOURCE_REGISTRY = $(makefile_dir)ocicl//
 	export CL_SOURCE_REGISTRY
 endif
 
-lisp_eval:=$(LISP) $(LISP_FLAGS) \
+lisp_eval:=$(LISP) $(LISP_FLAGS) $(LISP_OCICL)\
 	--eval '(require "asdf")' \
 	--eval '(asdf:load-asd "$(makefile_dir)/libraries/nasdf/nasdf.asd")' \
 	--eval '(asdf:load-asd "$(makefile_dir)/nyxt.asd")' \
@@ -46,10 +48,12 @@ lisp_quit:=--eval '(uiop:quit 0 \#+bsd nil)'
 ## keep a Make dependency on the Lisp files.
 lisp_files := nyxt.asd $(shell find . -type f -name '*.lisp')
 nyxt: $(lisp_files)
+	ocicl setup > init.lisp; \
 	if [ "$(NYXT_RENDERER)" = "electron" ] && \
 	   [ "$(NODE_SETUP)" = "true" ] && \
-	   [ "$(NYXT_SUBMODULES)" = "true" ]; then \
-		$(MAKE) -C $(makefile_dir)_build/cl-electron install; \
+	   [ "$(NYXT_OCICL)" = "true" ]; then \
+		ocicl install cl-electron; \
+		$(MAKE) -C $(makefile_dir)ocicl/cl-electron* install; \
 	fi
 	$(lisp_eval) '(asdf:load-system :nyxt/$(NYXT_RENDERER)-application)' \
 		--eval '(asdf:make :nyxt/$(NYXT_RENDERER)-application)' \
