@@ -416,8 +416,9 @@ See `define-setf-handler'."
         (print-status status-buffer)))
     (define-setf-handler window active-buffer status-buffer
       (lambda (_) (declare (ignore _))
-        (update-status-tabs status-buffer)
         (update-status-url status-buffer)
+        (update-status-modes status-buffer)
+        (update-status-tabs status-buffer)
         (show-selected-tab status-buffer)))
     (define-setf-handler network-buffer status status-buffer
       (lambda (buffer) (when (eq buffer (active-buffer window))
