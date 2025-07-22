@@ -42,14 +42,17 @@ corresponds to scrolling up.")
         (with-current-buffer (buffer mode)
           (nyxt/mode/document:scroll-down :y-pixels (velocity mode))))))))
 
-(define-command velocity-incf (&key (cruise-control (find-submode 'cruise-control-mode)))
+(define-command velocity-incf (&key (cruise-control
+                                     (find-submode 'cruise-control-mode)))
   "Increase the velocity."
   (incf (velocity cruise-control)))
 
-(define-command velocity-decf (&key (cruise-control (find-submode 'cruise-control-mode)))
+(define-command velocity-decf (&key (cruise-control
+                                     (find-submode 'cruise-control-mode)))
   "Decrease the velocity."
   (decf (velocity cruise-control)))
 
-(define-command velocity-zero (&key (cruise-control (find-submode 'cruise-control-mode)))
+(define-command velocity-zero (&key (cruise-control
+                                     (find-submode 'cruise-control-mode)))
   "Zero the velocity. Scrolling will stop."
   (setf (velocity cruise-control) 0))
