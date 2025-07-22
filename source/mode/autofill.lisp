@@ -73,7 +73,8 @@ it will be in conflict with common-lisp:fill."))
   (:export-accessor-names-p t)
   (:export-predicate-name-p t))
 
-(defmethod initialize-instance :after ((autofill autofill) &key &allow-other-keys)
+(defmethod initialize-instance :after ((autofill autofill)
+                                       &key &allow-other-keys)
   (closer-mop:set-funcallable-instance-function
    autofill (typecase (autofill-fill autofill)
               (string (lambda () (autofill-fill autofill)))
@@ -88,9 +89,11 @@ it will be in conflict with common-lisp:fill."))
                         (funcall (first autofills))))))
   (:export-class-name-p t)
   (:metaclass user-class)
-  (:documentation "A source listing all the available `autofill's in the current `autofill-mode'."))
+  (:documentation "A source listing all the available `autofill's
+in the current `autofill-mode'."))
 
-(defmethod prompter:object-attributes ((autofill autofill) (source prompter:source))
+(defmethod prompter:object-attributes ((autofill autofill)
+                                       (source prompter:source))
   (declare (ignore source))
   `(("Name" ,(autofill-name autofill) (:width 1))
     ("Fill" ,(let ((f (autofill-fill autofill)))
