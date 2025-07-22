@@ -2,7 +2,8 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/watch
-  (:documentation "Package for `watch-mode', which reloads buffers at regular time intervals."))
+  (:documentation "Package for `watch-mode', which reloads buffers at regular
+time intervals."))
 (in-package :nyxt/mode/watch)
 
 (defun seconds-from-user-input ()
@@ -24,7 +25,8 @@
                         active-time-units))
          (to-seconds-multipliers
            (mapcar
-            (lambda (elem) (rest (assoc elem to-seconds-alist :test 'string-equal)))
+            (lambda (elem) (rest (assoc elem to-seconds-alist
+                                        :test 'string-equal)))
             active-time-units)))
     (echo "Refreshing every ~:@{~{~d ~}~a~:@}"
           (list times active-time-units))
