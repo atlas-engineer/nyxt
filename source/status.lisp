@@ -308,6 +308,13 @@ By default, renders a hourglass when loading a URL."
                            (set-current-buffer buffer)))
                tab-display-text))))))
 
+(defmethod update-status-modes ((status status-buffer))
+  "Update ONLY the modes to avoid redrawing the whole status buffer."
+  (ps-eval :async t :buffer status
+    (setf (ps:@ (nyxt/ps:qs document "#modes") |innerHTML|)
+          (ps:lisp
+           (spinneret:with-html-string (format-status-modes status))))))
+
 (defmethod update-status-tabs ((status status-buffer))
   "Update ONLY the status tabs to avoid redrawing the whole status buffer."
   (ps-eval :async t :buffer status
