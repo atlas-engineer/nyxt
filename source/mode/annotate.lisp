@@ -152,7 +152,8 @@ make-instance."
                          (:hr)))
      (:p "No annotations available/selected."))))
 
-(define-internal-page show-annotations-for-current-url (&key (id (id (current-buffer))))
+(define-internal-page show-annotations-for-current-url
+    (&key (id (id (current-buffer))))
     (:title "*Annotations*")
   "Display the annotations associated to buffer with ID."
   (let ((buffer (nyxt::buffer-get id)))
@@ -160,9 +161,11 @@ make-instance."
                                      (files:content (annotations-file buffer))
                                      :key (compose #'quri:uri #'url)))))
 
-(define-command-global show-annotations-for-current-url (&key (buffer (current-buffer)))
+(define-command-global show-annotations-for-current-url
+    (&key (buffer (current-buffer)))
   "Create a new buffer with the annotations of the current URL of BUFFER."
-  (buffer-load-internal-page-focus 'show-annotations-for-current-url :id (id buffer)))
+  (buffer-load-internal-page-focus 'show-annotations-for-current-url
+                                   :id (id buffer)))
 
 (define-class annotation-source (prompter:source)
   ((prompter:name "Annotations")
@@ -170,7 +173,8 @@ make-instance."
    (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:enable-marks-p t)))
 
-(defmethod prompter:object-attributes ((annotation annotation) (source prompter:source))
+(defmethod prompter:object-attributes ((annotation annotation)
+                                       (source prompter:source))
   (declare (ignore source))
   `(("Data" ,(data annotation) (:width 3))
     ("Tags" ,(tags annotation) (:width 3))))
