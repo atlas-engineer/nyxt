@@ -37,22 +37,25 @@ See `nyxt/mode/macro-edit' package documentation for implementation details."
           (:th "Command"))
          (loop for function in (functions macro-editor)
                for index from 0
-               collect (:tr (:td (:nbutton :class "button"
-                                   :text "Remove Command"
-                                   :title "Remove from the macro"
-                                   `(nyxt/mode/macro-edit::remove-function
-                                     (find-submode 'macro-edit-mode)
-                                     ,index))
-                                 (:a.button
-                                  :title "Help"
-                                  :target "_blank"
-                                  :href (nyxt-url 'describe-function
-                                                  :fn (name (nth index (functions macro-editor))))
-                                  "Command Information"))
-                            (:td (let ((name (symbol-name (name function))))
-                                   (if (str:upcase? name)
-                                       (string-downcase name)
-                                       name))))))
+               collect
+               (:tr (:td (:nbutton :class "button"
+                           :text "Remove Command"
+                           :title "Remove from the macro"
+                           `(nyxt/mode/macro-edit::remove-function
+                             (find-submode 'macro-edit-mode)
+                             ,index))
+                         (:a.button
+                          :title "Help"
+                          :target "_blank"
+                          :href (nyxt-url 'describe-function
+                                          :fn (name (nth
+                                                     index
+                                                     (functions macro-editor))))
+                          "Command Information"))
+                    (:td (let ((name (symbol-name (name function))))
+                           (if (str:upcase? name)
+                               (string-downcase name)
+                               name))))))
         (:p "No commands added to macro."))))
 
 (define-internal-page-command-global edit-macro ()
@@ -81,7 +84,8 @@ See `nyxt/mode/macro-edit' package documentation for implementation details."
   (nconc (subseq list 0 n) (nthcdr (1+ n) list)))
 
 (defmethod remove-function ((macro-editor macro-edit-mode) command-index)
-  (setf (functions macro-editor) (delete-nth command-index (functions macro-editor)))
+  (setf (functions macro-editor)
+        (delete-nth command-index (functions macro-editor)))
   (ffi-buffer-reload (buffer macro-editor)))
 
 (defmethod macro-name ((macro-editor macro-edit-mode))
@@ -110,7 +114,8 @@ See `nyxt/mode/macro-edit' package documentation for implementation details."
                    (functions macro-editor))))
     `(define-command-global ,name () ,description ,@commands)))
 
-(define-command add-command (&optional (macro-editor (find-submode 'macro-edit-mode)))
+(define-command add-command
+    (&optional (macro-editor (find-submode 'macro-edit-mode)))
   "Add a command to the macro."
   (add-function macro-editor (prompt1
                               :prompt "Add command"
@@ -120,7 +125,8 @@ See `nyxt/mode/macro-edit' package documentation for implementation details."
   (and (macro-name macro-editor)
        (functions macro-editor)))
 
-(define-command save-macro (&optional (macro-editor (find-submode 'macro-edit-mode)))
+(define-command save-macro
+    (&optional (macro-editor (find-submode 'macro-edit-mode)))
   "Save the macro to the `*auto-config-file*' file."
   (if (macro-form-valid-p macro-editor)
       (progn
@@ -128,7 +134,8 @@ See `nyxt/mode/macro-edit' package documentation for implementation details."
         (echo "Saved macro to ~s." (files:expand *auto-config-file*)))
       (echo "Macro form is invalid; check it has a title and functions.")))
 
-(define-command evaluate-macro (&optional (macro-editor (find-submode 'macro-edit-mode)))
+(define-command evaluate-macro
+    (&optional (macro-editor (find-submode 'macro-edit-mode)))
   "Evaluate the macro for testing."
   (if (macro-form-valid-p macro-editor)
       (progn
