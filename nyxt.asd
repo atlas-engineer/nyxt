@@ -268,20 +268,10 @@
 
 (defsystem "nyxt/documentation"
   :depends-on (nyxt)
-  :output-files (compile-op (o c)
-                            (values (list (system-relative-pathname c "manual.html"))
-                                    t))
   :perform (compile-op (o c)
-                       (let ((man-source (component-pathname (find-component (find-system "nyxt")
-                                                                             "manual")))
-                             (man-dump (output-file o c)))
-                         (if (or (not (file-exists-p man-dump))
-                                 (> (symbol-call :nyxt/mode/file-manager :mtime man-source)
-                                    (symbol-call :nyxt/mode/file-manager :mtime man-dump)))
-                             (with-open-file (out man-dump :direction :output :if-exists :supersede)
-                               (write-string (symbol-call :nyxt :manual-content) out)
-                               (format *error-output* "Manual dumped to ~s.~&" man-dump))
-                             (format *error-output* "Manual at ~s is up-to-date.~&" man-dump)))))
+                       (with-open-file (out "manual.html" :direction :output :if-exists :supersede)
+                         (write-string (symbol-call :nyxt :manual-html) out)
+                         (format *error-output* "Manual dumped to ~s.~&" "manual.html"))))
 
 (defsystem "nyxt/gtk"
   :defsystem-depends-on ("nasdf")

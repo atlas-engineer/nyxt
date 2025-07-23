@@ -3,6 +3,11 @@
 
 (in-package :nyxt)
 
+(defun manual-html ()
+  (spinneret:with-html-string
+    (:ntoc
+      (tutorial-content)
+      (manual-content))))
 
 (defun manual-content ()
   (spinneret:with-html
