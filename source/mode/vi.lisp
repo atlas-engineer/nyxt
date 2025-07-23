@@ -2,7 +2,8 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/vi
-  (:documentation "Package for `vi-normal-mode' and `vi-insert-mode', which provide VI-style bindings."))
+  (:documentation "Package for `vi-normal-mode' and `vi-insert-mode',
+which provide VI-style bindings."))
 (in-package :nyxt/mode/vi)
 
 (define-mode vi-normal-mode (nyxt/mode/keyscheme:keyscheme-mode)
@@ -73,14 +74,16 @@ See `vi-normal-mode'."
 (defmethod disable ((mode vi-normal-mode) &key)
   (setf (forward-input-events-p (buffer mode)) t))
 
-(define-command switch-to-vi-normal-mode (&optional (mode (find-submode 'vi-insert-mode
-                                                                        (or (current-prompt-buffer)
-                                                                            (current-buffer)))))
+(define-command switch-to-vi-normal-mode
+    (&optional (mode (find-submode 'vi-insert-mode
+                                   (or (current-prompt-buffer)
+                                       (current-buffer)))))
   "Switch to the mode remembered to be the matching VI-normal one for this MODE.
 See also `vi-normal-mode' and `vi-insert-mode'."
   (when mode
     (enable-modes* (list (or (and (previous-vi-normal-mode mode)
-                                  (sera:class-name-of (previous-vi-normal-mode mode)))
+                                  (sera:class-name-of
+                                   (previous-vi-normal-mode mode)))
                              'vi-normal-mode))
                    (buffer mode))))
 
@@ -104,12 +107,14 @@ See also `vi-normal-mode' and `vi-insert-mode'."
     ((j:and (find-submode 'vi-normal-mode buffer)
             (ps-eval :buffer buffer
               (and (nyxt/ps:active-element document)
-                   (nyxt/ps:element-editable-p (nyxt/ps:active-element document)))))
+                   (nyxt/ps:element-editable-p
+                    (nyxt/ps:active-element document)))))
      (enable-modes* 'vi-insert-mode buffer))
     ((j:and (find-submode 'vi-insert-mode buffer)
             (j:not (ps-eval :buffer buffer
                      (and (nyxt/ps:active-element document)
-                          (nyxt/ps:element-editable-p (nyxt/ps:active-element document))))))
+                          (nyxt/ps:element-editable-p
+                           (nyxt/ps:active-element document))))))
      (enable-modes* 'vi-normal-mode buffer))))
 
 (defmethod on-signal-load-finished ((mode vi-insert-mode) url title)
