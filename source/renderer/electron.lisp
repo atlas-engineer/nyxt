@@ -375,7 +375,7 @@ height of the status/prompt/message buffer."
 
 (defmethod ffi-buffer-sound-enabled-p ((buffer electron-buffer))
   (not (electron:muted-p (electron:web-contents buffer))))
-(defmethod (setf ffi-buffer-sound-enabled-p) ((buffer electron-buffer) value)
+(defmethod (setf ffi-buffer-sound-enabled-p) (value (buffer electron-buffer))
   (electron:set-audio-muted (electron:web-contents buffer) (not value)))
 
 (defmethod ffi-buffer-download ((buffer electron-buffer) url)
