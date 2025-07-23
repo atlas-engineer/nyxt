@@ -151,7 +151,6 @@ disable/enable it as necessary."
   ((visible-in-status-p nil)
    (keyscheme-map
     (define-keyscheme-map "input-edit-mode" ()
-      ;; TODO: Add VI-normal?
       keyscheme:emacs
       (list
        "C-b" 'cursor-backwards
