@@ -15,7 +15,7 @@ at ./_build.  Otherwise, they need to be made visible to ASDF by other means.
 In case you have received an archive that includes the source of these Lisp
 dependencies, then it all should work out of the box.
 
-NYXT_RENDERER sets the renderer, by default "gi-gtk".
+NYXT_RENDERER sets the renderer, by default "electron".
 
 NYXT_VERSION forces the version number, in the rare eventuality that it can't be
 fetched in another way.

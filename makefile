@@ -14,7 +14,7 @@ endif
 LISP_FLAGS ?= $(SBCL_FLAGS) --no-userinit --non-interactive
 
 NYXT_SUBMODULES ?= true
-NYXT_RENDERER ?= gi-gtk
+NYXT_RENDERER ?= electron
 NASDF_USE_LOGICAL_PATHS ?= true
 NODE_SETUP ?= true
 
@@ -58,11 +58,6 @@ nyxt: $(lisp_files)
 .PHONY: all
 all: nyxt
 
-.PHONY: install
-install: all
-	$(lisp_eval) '(asdf:load-system :nyxt/$(NYXT_RENDERER)-application)' \
-		--eval '(asdf:make :nyxt/install)' $(lisp_quit)
-
 .PHONY: doc
 doc:
 	$(lisp_eval) '(asdf:load-system :nyxt)' \
@@ -75,40 +70,3 @@ check:
 .PHONY: clean
 clean:
 	rm nyxt
-
-# Flatpak
-
-FLATPAK_COMMAND = flatpak
-FLATPAK_BUILDER = flatpak-builder
-
-ifeq ($(NYXT_RENDERER), gi-gtk)
-	FLATPAK_ID = engineer.atlas.Nyxt-WebKitGTK
-	FLATPAK_MANIFEST := $(FLATPAK_ID).yaml
-	FLATPAK_EXPORT_REPOSITORY = build/nyxt-webkitgtk-flatpak-repository
-else ifeq ($(NYXT_RENDERER), electron)
-	FLATPAK_ID = engineer.atlas.Nyxt-Electron
-	FLATPAK_MANIFEST := $(FLATPAK_ID).yaml
-	FLATPAK_EXPORT_REPOSITORY = build/nyxt-electron-flatpak-repository
-endif
-
-.PHONY: flatpak-build
-flatpak-build:
-# To start a shell before building add --build-shell=nyxt.
-	$(FLATPAK_BUILDER) --force-clean --user --install --default-branch=local build $(FLATPAK_MANIFEST)
-
-.PHONY: flatpak-run
-flatpak-run:
-	$(FLATPAK_COMMAND) run --branch=local $(FLATPAK_ID)
-
-.PHONY: flatpak-repository
-flatpak-repository:
-	mkdir -p $(FLATPAK_EXPORT_REPOSITORY)
-	$(FLATPAK_BUILDER) --force-clean --repo=$(FLATPAK_EXPORT_REPOSITORY) build $(FLATPAK_MANIFEST)
-
-.PHONY: flatpak-bundle
-flatpak-bundle:
-	$(FLATPAK_COMMAND) build-bundle $(FLATPAK_EXPORT_REPOSITORY) nyxt-$(NYXT_RENDERER).flatpak $(FLATPAK_ID)
-
-.PHONY: clean-flatpak
-clean-flatpak:
-	rm -rf .flatpak-builder build *.flatpak
