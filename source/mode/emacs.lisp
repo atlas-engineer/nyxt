@@ -16,5 +16,5 @@ Example:
 
 \(define-configuration buffer
   ((default-modes (append '(emacs-mode) %slot-value%))))"
-  ((glyph "ε")
+  ((glyph "e")
    (keyscheme keyscheme:emacs)))
