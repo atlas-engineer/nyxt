@@ -14,7 +14,7 @@
 (define-mode hint-prompt-buffer-mode (nyxt/mode/prompt-buffer:prompt-buffer-mode)
   "`prompt-buffer' mode for element hinting.
 
-Provides keybindings `toggle-hints-transparency' and `scroll-to-hint'."
+Provides keybindings `scroll-to-hint'."
   ((visible-in-status-p nil)
    (keyscheme-map
     (define-keyscheme-map "hint-prompt-buffer-mode" ()
