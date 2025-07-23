@@ -1,8 +1,5 @@
 # Ignore build artifacts
 nyxt
-.flatpak-builder/
-nyxt-flatpak-repository/
-*.flatpak
 build/
 node_modules/
 package.json
@@ -34,9 +31,6 @@ package-lock.json
 
 # Generated documentation
 manual.html
-
-# Ignore flake lockfile
-flake.lock
 
 # Ignore etags/ctags
 TAGS
