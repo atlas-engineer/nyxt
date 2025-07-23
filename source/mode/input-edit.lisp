@@ -148,8 +148,7 @@ Run the BODY in the environment with these bound."
   "Mode for editing input areas in HTML.
 Overrides many of the bindings in other modes, so you will have to
 disable/enable it as necessary."
-  ((visible-in-status-p nil)
-   (keyscheme-map
+  ((keyscheme-map
     (define-keyscheme-map "input-edit-mode" ()
       keyscheme:emacs
       (list
@@ -160,4 +159,5 @@ disable/enable it as necessary."
        "M-f" 'cursor-forwards-word
        "M-backspace" 'delete-backwards-word
        "C-backspace" 'delete-backwards-word
-       "M-d" 'delete-forwards-word)))))
+       "M-d" 'delete-forwards-word
+       "C-g" 'input-edit-mode)))))

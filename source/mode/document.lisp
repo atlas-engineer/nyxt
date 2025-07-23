@@ -80,6 +80,7 @@ Important pieces of functionality are:
        "M->" 'scroll-to-bottom
        "M-v" 'scroll-page-up
        "C-v" 'scroll-page-down
+       "C-c C-e" 'nyxt/mode/input-edit:input-edit-mode
        "C-u C-x C-f" 'edit-with-external-editor)
       keyscheme:vi-normal
       (list
