@@ -40,7 +40,8 @@ function."))
                              &optional initial-contents
                                initial-cursor-position)
                             &body body)
-  "Create a BUFFER-NAME buffer with INITIAL-CONTENTS and CURSOR-NAME at INITIAL-CURSOR-POSITION.
+  "Create a BUFFER-NAME buffer with INITIAL-CONTENTS and CURSOR-NAME at
+INITIAL-CURSOR-POSITION.
 Run the BODY in the environment with these bound."
   `(let ((,buffer-name (make-instance 'text-buffer:text-buffer))
          (,cursor-name (make-instance 'text-buffer:cursor)))
@@ -48,12 +49,14 @@ Run the BODY in the environment with these bound."
      (when ,initial-contents
        (text-buffer::insert-string ,cursor-name ,initial-contents))
      (when ,initial-cursor-position
-       (setf (cluffer:cursor-position ,cursor-name) (truncate ,initial-cursor-position)))
+       (setf (cluffer:cursor-position ,cursor-name)
+             (truncate ,initial-cursor-position)))
      ,@body))
 
 (export-always 'with-input-area)
 (defmacro with-input-area ((contents cursor-position) &body body)
-  "Bind CONTENTS and CURSOR-POSITION to the ones in the currently focused input field."
+  "Bind CONTENTS and CURSOR-POSITION to the ones in the currently focused
+input field."
   (let ((unprocessed-cursor (gensym)))
     `(let* ((,contents (active-input-area-content))
             (,unprocessed-cursor (active-input-area-cursor))
@@ -62,7 +65,7 @@ Run the BODY in the environment with these bound."
        (declare (ignorable ,contents ,cursor-position))
        (if ,cursor-position
            ,@body
-           (echo-warning "Cannot get cursor position. Are you in an input field?")))))
+           (echo-warning "Cannot get cursor. Are you in an input field?")))))
 
 (defun move-n-elements (n)
   (with-input-area (contents cursor-position)
