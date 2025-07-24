@@ -2,7 +2,8 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/message
-  (:documentation "Package for `message-mode', a mode for messages and logs display.
+  (:documentation "Package for `message-mode', a mode for displaying messages
+and logs.
 All the APIs of the `message-mode' are exported, no implementation details."))
 (in-package :nyxt/mode/message)
 
