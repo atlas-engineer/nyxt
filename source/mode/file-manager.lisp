@@ -7,7 +7,7 @@ from the prompt buffer."))
 (in-package :nyxt/mode/file-manager)
 
 (nyxt/mode/prompt-buffer::define-command-prompt directory-up (prompt-buffer)
-  "Remove one level of directory nesting from the current PROMPT-BUFFER file input."
+  "Move one level up from the current PROMPT-BUFFER input."
   (let* ((input (prompter:input prompt-buffer))
          (path (uiop:parse-native-namestring input))
          (parent (if (uiop:directory-pathname-p path)
@@ -39,7 +39,8 @@ opening files with external programs."
             (uiop:directory-files directory))))
 
 (export-always 'recursive-directory-elements)
-(-> recursive-directory-elements (types:pathname-designator &key (:include-directories-p boolean))
+(-> recursive-directory-elements (types:pathname-designator &key
+                                  (:include-directories-p boolean))
     (list-of pathname))
 (defun recursive-directory-elements (directory &key include-directories-p)
   "Get contents of DIRECTORY and all of its recursive subdirectories.
@@ -123,7 +124,8 @@ When the user is unspecified, take the current one."
     (string-equal (pathname-type pathname) ext)))
 
 (defun make-file-source-preprocessor ()
-  "Return a preprocessor that lists all files satisfying `extensions' and `allow-directories'.
+  "Return a preprocessor that lists all files satisfying `extensions' and
+`allow-directories'.
 It's suitable for `prompter:filter-preprocessor'."
   (lambda (suggestions source input)
     (declare (ignore suggestions))
@@ -141,7 +143,8 @@ It's suitable for `prompter:filter-preprocessor'."
                         (allow-directories source))
                    (and (uiop:file-pathname-p path)
                         (or (null (extensions source))
-                            (str:s-member (extensions source) (pathname-type path)))))))
+                            (str:s-member (extensions source)
+                                          (pathname-type path)))))))
          (directory-elements directory)))
        source
        input))))
@@ -195,7 +198,7 @@ Other formats are opened relying on the OS.")
                      (:supported-p boolean)
                      (:new-buffer-p boolean)))
     :documentation "Function used to open files.
-Takes the name of the file as the first argument and accepts two keyword arguments:
+Take the file name as the first argument and accept two keyword arguments:
 
 - :supported-p as to whether the file extension is supported by Nyxt (i.e. its
   extension is one of `supported-media-types');
@@ -208,9 +211,10 @@ Takes the name of the file as the first argument and accepts two keyword argumen
 (define-class open-file-source (file-source) ()
   (:metaclass user-class))
 
-(defun supported-media-or-directory (filename
-                                     &optional (file-source (make-instance 'file-source)))
-  "Return T if this filename's extension is a media that Nyxt can open (or a directory).
+(defun supported-media-or-directory
+    (filename &optional (file-source (make-instance 'file-source)))
+  "Return T if this filename's extension is a media that Nyxt can open
+(or a directory).
 See `supported-media-types' of `file-mode'."
   (or (and (uiop:directory-pathname-p filename)
            (uiop:directory-exists-p filename))
@@ -219,14 +223,17 @@ See `supported-media-types' of `file-mode'."
         (find extension extensions :test #'string-equal))))
 
 (define-command-global edit-file-with-external-editor
-    (&optional (files (prompt :prompt "File(s) to edit"
-                              :input (uiop:native-namestring (uiop:getcwd))
-                              :extra-modes 'nyxt/mode/file-manager:file-manager-mode
-                              :sources 'file-source)))
+    (&optional
+     (files (prompt :prompt "File(s) to edit"
+                    :input (uiop:native-namestring (uiop:getcwd))
+                    :extra-modes 'nyxt/mode/file-manager:file-manager-mode
+                    :sources 'file-source)))
   "Edit the FILES using `external-editor-program'.
 If FILES are not provided, prompt for them."
-  (echo "Issued \"~{~a~^ ~}\" to edit ~s." (external-editor-program *browser*) files)
-  (with-protect ("Failed editing: ~a. See `external-editor-program' slot." :condition)
+  (echo "Issued \"~{~a~^ ~}\" to edit ~s."
+        (external-editor-program *browser*) files)
+  (with-protect
+      ("Failed editing: ~a. See `external-editor-program' slot." :condition)
     (uiop:launch-program `(,@(external-editor-program *browser*)
                            ,@(mapcar #'uiop:native-namestring files)))))
 
@@ -267,8 +274,9 @@ If FILES are not provided, prompt for them."
             "Open files with the selected program."
             (let ((program (prompt1 :prompt "Choose program"
                                     :sources 'program-source)))
-              (uiop:launch-program (cons (uiop:native-namestring program)
-                                         (mapcar #'uiop:native-namestring files)))))))))
+              (uiop:launch-program
+               (cons (uiop:native-namestring program)
+                     (mapcar #'uiop:native-namestring files)))))))))
 
 (export-always 'default-open-file-function)
 (defun default-open-file-function (filename &key supported-p new-buffer-p)
@@ -290,9 +298,10 @@ Can be used as a `open-file-function'."
                (make-buffer-focus :url file-url)
                (ffi-buffer-load (current-buffer) file-url))))
         (*open-program*
-         (let ((process (uiop:launch-program (list *open-program*
-                                                   (uiop:native-namestring filename))
-                                             :error-output :stream)))
+         (let ((process (uiop:launch-program
+                         (list *open-program*
+                               (uiop:native-namestring filename))
+                         :error-output :stream)))
            (nyxt:echo "Opening ~s with ~s." filename *open-program*)
            (run-thread "file opener"
              (let ((status (uiop:wait-process process)))
@@ -306,12 +315,13 @@ Can be used as a `open-file-function'."
     ;; We can probably signal something and display a notification.
     (error (c) (log:error "Opening ~a: ~a~&" filename c))))
 
-(define-command-global open-file (&key (default-directory
-                                        (if (quri:uri-file-p (url (current-buffer)))
-                                            (uiop:pathname-directory-pathname
-                                             (quri:url-decode
-                                              (quri:uri-path (url (current-buffer)))))
-                                            *default-pathname-defaults*)))
+(define-command-global open-file
+    (&key (default-directory
+           (if (quri:uri-file-p (url (current-buffer)))
+               (uiop:pathname-directory-pathname
+                (quri:url-decode
+                 (quri:uri-path (url (current-buffer)))))
+               *default-pathname-defaults*)))
   "Open a file from the filesystem.
 
 The user is prompted with the prompt buffer, files are browsable with
@@ -333,4 +343,5 @@ it. Every type in `supported-media-types' will be opened directly in Nyxt."
 
 (define-command-global download-open-file ()
   "Open file in Nyxt or externally."
-  (open-file :default-directory (files:expand (download-directory (current-buffer)))))
+  (open-file :default-directory
+             (files:expand (download-directory (current-buffer)))))
