@@ -26,7 +26,8 @@ Hosts `list-buffers' page."
                        `(ffi-buffer-reload ,listing-buffer))
                      (:nbutton
                        :class "buffer-button"
-                       :text (format nil "~a - ~a" (render-url (url buffer)) (title buffer))
+                       :text (format nil "~a - ~a"
+                                     (render-url (url buffer)) (title buffer))
                        :title "Switch to buffer"
                        `(nyxt::set-current-buffer ,buffer)))))))
     (spinneret:with-html-string
