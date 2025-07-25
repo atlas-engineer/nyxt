@@ -41,7 +41,9 @@ time intervals."))
       (ffi-buffer-reload (buffer mode)))
     :type (maybe (function (nyxt/mode/repeat:repeat-mode))))))
 
-(define-command-global watch-buffer (&optional (buffer (current-buffer)))
-  "Reload BUFFER at a prompted interval."
+(defmethod enable ((mode watch-mode) &key)
   (let ((interval (seconds-from-user-input)))
-    (enable-modes* 'watch-mode buffer :repeat-interval interval)))
+    (setf (nyxt/mode/repeat:repeat-interval mode) interval))
+  (setf (nyxt/mode/repeat:repeat-action mode)
+        (lambda (mode)
+          (ffi-buffer-reload (buffer mode)))))
