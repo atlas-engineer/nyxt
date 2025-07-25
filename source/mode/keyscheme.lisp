@@ -2,7 +2,8 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/keyscheme
-  (:documentation "Package for `keyscheme-mode' that all modes setting `keyscheme' should inherit from.
+  (:documentation "Package for `keyscheme-mode' that all modes setting
+`keyscheme' should inherit from.
 Ensures that a single keybindings mode, such as `nyxt/mode/emacs', is enabled."))
 (in-package :nyxt/mode/keyscheme)
 
