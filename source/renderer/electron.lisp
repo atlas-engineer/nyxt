@@ -391,9 +391,30 @@ height of the status/prompt/message buffer."
 ;; (defmethod ffi-buffer-add-user-script ((buffer electron-buffer) script))
 ;; (defmethod ffi-buffer-remove-user-script ((buffer electron-buffer) script))
 
-;; TODO Support no-image mode.
-;; (defmethod ffi-buffer-auto-load-image-enabled-p ((buffer electron-buffer)))
-;; (defmethod (setf ffi-buffer-auto-load-image-enabled-p) ((buffer electron-buffer)))
+(defmethod ffi-buffer-auto-load-image-enabled-p ((buffer electron-buffer))
+  (echo "Disabling images not supported by Electron back-end.")
+  (error "Disabling images not supported by Electron back-end."))
+(defmethod (setf ffi-buffer-auto-load-image-enabled-p) (value (buffer electron-buffer))
+  (declare (ignore buffer value))
+  (echo "Disabling images not supported by Electron back-end.")
+  (error "Disabling images not supported by Electron back-end."))
+
+(defmethod ffi-buffer-javascript-markup-enabled-p ((buffer electron-buffer))
+  (echo "Disabling JavaScript not supported by Electron back-end.")
+  (error "Disabling JavaScript not supported by Electron back-end."))
+(defmethod (setf ffi-buffer-javascript-markup-enabled-p) (value (buffer electron-buffer))
+  (declare (ignore buffer value))
+  (echo "Disabling JavaScript not supported by Electron back-end.")
+  (error "Disabling JavaScript not supported by Electron back-end."))
+
+(defmethod ffi-buffer-webgl-enabled-p ((buffer electron-buffer))
+  (echo "Disabling WebGL not supported by Electron back-end.")
+  (error "Disabling WebGL not supported by Electron back-end."))
+(defmethod (setf ffi-buffer-webgl-enabled-p) (value (buffer electron-buffer))
+  (declare (ignore buffer value))
+  (echo "Disabling WebGL not supported by Electron back-end.")
+  (error "Disabling WebGL not supported by Electron back-end."))
+
 
 ;; TODO Support reduce-tracking mode.
 ;; See https://stackoverflow.com/a/35672988
