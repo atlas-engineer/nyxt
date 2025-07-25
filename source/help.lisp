@@ -128,6 +128,8 @@ to the next."
        :href (nyxt-url 'common-settings :section 'buffer-defaults)
        "Buffer settings"))
      (:div.content
+      (:div.section
+       (:h2 "Settings applied on restart."))
       (case section
         (keybindings
          (:div.section
@@ -186,9 +188,7 @@ invoking the " (:nxref :command 'toggle-modes) "command.")))))
                                               ((theme theme:+light-theme+)))))
               '(theme:+dark-theme+ "Dark theme"
                 (nyxt::auto-configure :form '(define-configuration browser
-                                              ((theme theme:+dark-theme+)))))))
-           (:div.right
-            (:p "Themes for Nyxt's UI."))))
+                                              ((theme theme:+dark-theme+)))))))))
          (:div.section
           (:h3 "Webpage theme")
           (:div.row
@@ -209,9 +209,7 @@ invoking the " (:nxref :command 'toggle-modes) "command.")))))
               '(dark "Darkened"
                 (nyxt::auto-configure
                  :form '(define-configuration (web-buffer)
-                         ((default-modes (pushnew 'nyxt/mode/style:dark-mode %slot-value%))))))))
-           (:div.right
-            (:p "Select Darkened to style webpages with a dark background."))))
+                         ((default-modes (pushnew 'nyxt/mode/style:dark-mode %slot-value%))))))))))
          (:div.section
           (:h3 "Default zoom")
           (:div.row
