@@ -2,7 +2,8 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/visual
-  (:documentation "Package for `visual-mode', which enables keyboard-driven HTML selection."))
+  (:documentation "Package for `visual-mode', which enables keyboard-driven HTML
+selection."))
 (in-package :nyxt/mode/visual)
 
 (define-mode visual-mode (nyxt/mode/hint:hint-mode)
@@ -92,7 +93,8 @@ spacer, strike, tt, u, wbr, code, cite, pre"
   (unlock-page-keypresses)
   (setf (mark-set mode) nil))
 
-(defmethod prompter:object-attributes ((element nyxt/dom:text-element) (source prompter:source))
+(defmethod prompter:object-attributes ((element nyxt/dom:text-element)
+                                       (source prompter:source))
   `(("Hint" ,(plump:attribute element "nyxt-hint"))
     ("Text" ,(plump:text element))))
 
@@ -165,7 +167,6 @@ spacer, strike, tt, u, wbr, code, cite, pre"
     (setf (mark-set mode) nil)
     (echo "Mark deactivated")))
 
-;; See https://developer.mozilla.org/en-US/docs/Web/API/Selection/modify#parameters
 (define-parenscript caret-move (&key action direction scale (n 1))
   (let ((sel (ps:chain window (get-selection)))
         (parent-el (ps:chain window (get-selection) focus-node parent-element)))
