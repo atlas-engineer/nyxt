@@ -174,7 +174,6 @@
                  (:file "no-webgl")
                  (:file "password")
                  (:file "reading-line")
-                 (:file "reduce-tracking")
                  (:file "repeat")
                  (:file "small-web")
                  (:file "style" :depends-on ("bookmarklets"))
@@ -235,7 +234,6 @@
                  (:file "prompt-buffer")
                  (:file "proxy")
                  (:file "reading-line")
-                 (:file "reduce-tracking")
                  ;; TODO Fix repeat-mode architecture.  Visit the file below for
                  ;; more information.
                  ;; (:file "repeat")

@@ -212,11 +212,6 @@ Setf-able."))
   (:documentation "Return non-nil when the sound is enabled in BUFFER.
 Setf-able."))
 
-(define-ffi-generic ffi-buffer-user-agent (buffer)
-  (:setter-p t)
-  (:documentation "Return the user agent as a string.
-Setf-able."))
-
 (define-ffi-generic ffi-buffer-proxy (buffer)
   (:setter-p t)
   (:documentation "Return the proxy URL as a `quri:uri'.
@@ -301,12 +296,6 @@ The `style' of the `message-buffer' is honored."))
   (:setter-p t)
   (:documentation "Return the cookie policy.
 Setf-able.  Valid values are determined by the `cookie-policy' type."))
-
-(define-ffi-generic ffi-preferred-languages (buffer)
-  (:setter-p t)
-  (:documentation "Set the list of preferred languages in the HTTP header \"Accept-Language:\".
-Setf-able, where the languages value is a list of strings like '(\"en_US\"
-\"fr_FR\")."))
 
 (define-ffi-generic ffi-focused-p (buffer)
   (:documentation "Return non-nil when BUFFER is focused."))
