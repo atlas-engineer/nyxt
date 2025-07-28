@@ -149,8 +149,7 @@
                 :components
                 ((:file "help")
                  (:file "about")
-                 (:file "tutorial")
-                 (:file "changelog")))
+                 (:file "tutorial")))
                (:file "configuration-commands" :depends-on ("Help"))
                (:file "start" :depends-on ("configuration-commands"))
                (:file "manual" :depends-on ("configuration-commands"))
