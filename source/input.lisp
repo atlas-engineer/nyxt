@@ -109,8 +109,17 @@ Return nil to forward to renderer or non-nil otherwise."
       (multiple-value-bind (bound-function matching-keymap translated-key)
           (the keyscheme:nyxt-keymap-value
                (keymaps:lookup-key key-stack (current-keymaps buffer)))
-        (declare (ignore matching-keymap))
         (cond
+          ((and (input-buffer-p buffer)
+                (forward-input-events-p buffer)
+                (and matching-keymap
+                     (not (str:starts-with-p "passthrough-mode"
+                                             (keymaps:name matching-keymap)))
+                     (not (str:starts-with-p "vi-insert-mode"
+                                             (keymaps:name matching-keymap)))))
+           (log:debug "Forward key ~s." (keyspecs key-stack))
+           (setf key-stack nil)
+           nil)
           ((keymaps:keymap-p bound-function)
            (log:debug "Prefix binding ~a." (keyspecs key-stack translated-key))
            t)
@@ -124,11 +133,6 @@ Return nil to forward to renderer or non-nil otherwise."
                (unwind-protect (funcall (command-dispatcher *browser*) command)
                  (setf key-stack nil)))
              t))
-          ((or (and (input-buffer-p buffer) (forward-input-events-p buffer))
-               (pointer-event-p (first (last key-stack))))
-           (log:debug "Forward key ~s." (keyspecs key-stack))
-           (setf key-stack nil)
-           nil)
           (t
            (log:debug "Fallback forward key ~s." (keyspecs key-stack))
            (setf key-stack nil)
