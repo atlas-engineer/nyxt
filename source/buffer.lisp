@@ -426,7 +426,7 @@ regardless of the buffer, with a meaningful result."
 (resp. beginning) of the word when `move-forward-word'
 (resp. `move-backward-word') is called.")
    (forward-input-events-p
-    t
+    nil
     :documentation "When non-nil, keyboard events are
 forwarded to the renderer when no binding is found.  Pointer
 events (e.g. mouse events) are not affected by this, they are always
