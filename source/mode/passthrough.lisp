@@ -18,3 +18,9 @@ package documentation for implementation details and internal programming APIs."
       keyscheme:default
       (list
        "C-M-z" 'passthrough-mode)))))
+
+(defmethod enable ((mode passthrough-mode) &key)
+  (setf (forward-input-events-p (buffer mode)) t))
+
+(defmethod disable ((mode passthrough-mode) &key)
+  (setf (forward-input-events-p (buffer mode)) nil))
