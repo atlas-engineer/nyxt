@@ -4,9 +4,10 @@
 (in-package :nyxt)
 
 (-> binding-keys (sym:function-symbol &key (:modes list)) *)
-(defun binding-keys (fn &key (modes (if (current-buffer)
-                                        (enabled-modes (current-buffer))
-                                        (mapcar #'make-instance (default-modes nil)))))
+(defun binding-keys
+    (fn &key (modes (if (current-buffer)
+                        (enabled-modes (current-buffer))
+                        (mapcar #'make-instance (default-modes nil)))))
   ;; We can't use `(modes (make-instance 'buffer))' because modes are only
   ;; instantiated after the buffer web view, which is not possible if there is
   ;; no *browser*.
@@ -15,16 +16,18 @@
                      (make-instance 'input-buffer)))
          (keymaps (delete nil (mapcar #'keymap modes))))
     (unwind-protect
-         (or (first (keymaps:pretty-binding-keys fn keymaps :print-style (keymaps:name (keyscheme buffer))))
+         (or (first (keymaps:pretty-binding-keys
+                     fn keymaps :print-style (keymaps:name (keyscheme buffer))))
              "unbound")
       (unless current-buffer
         (ffi-buffer-delete buffer)))))
 
 (export-always 'current-keymaps)
-(defun current-keymaps (&optional (buffer (let ((prompt-buffer (current-prompt-buffer)))
-                                            (if (and prompt-buffer (ffi-focused-p prompt-buffer))
-                                                prompt-buffer
-                                                (current-buffer)))))
+(defun current-keymaps
+    (&optional (buffer (let ((prompt-buffer (current-prompt-buffer)))
+                         (if (and prompt-buffer (ffi-focused-p prompt-buffer))
+                             prompt-buffer
+                             (current-buffer)))))
   "Return the list of `keymap' for the current buffer, ordered by priority.
 If non-empty, return the result of BUFFER's `current-keymaps-hook' instead."
   (let ((keymaps
@@ -41,7 +44,8 @@ prompt buffer keymaps."
     (delete nil
             (mapcar #'keymap
                     (append (enabled-modes buffer)
-                            (ignore-errors (enabled-modes (current-prompt-buffer))))))))
+                            (ignore-errors (enabled-modes
+                                            (current-prompt-buffer))))))))
 
 (-> pointer-event-p (keymaps:key) boolean)
 (defun pointer-event-p (key)
@@ -103,9 +107,10 @@ Return nil to forward to renderer or non-nil otherwise."
         (setf (last-event buffer) event))
       (when (prompt-buffer-p buffer)
         (run-thread "update-prompt-buffer"
-          (update-prompt-input buffer
-                               (ps-eval :buffer buffer
-                                 (ps:chain (nyxt/ps:qs document "#input") value)))))
+          (update-prompt-input
+           buffer
+           (ps-eval :buffer buffer
+             (ps:chain (nyxt/ps:qs document "#input") value)))))
       (multiple-value-bind (bound-function matching-keymap translated-key)
           (the keyscheme:nyxt-keymap-value
                (keymaps:lookup-key key-stack (current-keymaps buffer)))
@@ -124,10 +129,13 @@ Return nil to forward to renderer or non-nil otherwise."
            (log:debug "Prefix binding ~a." (keyspecs key-stack translated-key))
            t)
           ((typep bound-function '(and (not null) (or symbol command)))
-           (let ((command (typecase bound-function
-                            (symbol (symbol-function (resolve-user-symbol bound-function :command)))
-                            (command bound-function))))
-             (log:debug "Found key binding ~a to ~a." (keyspecs key-stack translated-key) bound-function)
+           (let ((command
+                   (typecase bound-function
+                     (symbol (symbol-function
+                              (resolve-user-symbol bound-function :command)))
+                     (command bound-function))))
+             (log:debug "Found key binding ~a to ~a."
+                        (keyspecs key-stack translated-key) bound-function)
              (setf (last-key buffer) (first key-stack))
              (run-thread "run-command"
                (unwind-protect (funcall (command-dispatcher *browser*) command)
