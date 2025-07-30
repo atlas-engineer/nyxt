@@ -419,16 +419,6 @@ height of the status/prompt/message buffer."
   (echo "Setting Proxy per buffer not supported by the Electron back-end.")
   (error "Setting Proxy per buffer not supported by the Electron back-end."))
 
-;; TODO Support reduce-tracking mode.
-;; See https://stackoverflow.com/a/35672988
-;; See https://www.electronjs.org/docs/latest/api/web-contents#contentsloadurlurl-options
-;; (defmethod ffi-buffer-user-agent ((buffer electron-buffer)))
-;; (defmethod (setf ffi-buffer-user-agent) (value (buffer electron-buffer)))
-;; (defmethod ffi-tracking-prevention ((buffer electron-buffer)))
-;; (defmethod (setf ffi-tracking-prevention) (value (buffer electron-buffer)))
-;; See https://www.electronjs.org/docs/latest/api/session#sessetuseragentuseragent-acceptlanguages.
-;; (defmethod ffi-preferred-languages ((buffer electron-buffer)))
-
 (define-class electron-window (electron:window)
   ((electron:options
     "{autoHideMenuBar: true,
