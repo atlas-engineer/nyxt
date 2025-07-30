@@ -2,7 +2,8 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/password
-  (:documentation "Package for `password-mode', mode to interface with password managers.
+  (:documentation "Package for `password-mode', mode to interface with password
+managers.
 
 Relies on the `password' library for most package manager interactions. In
 particular:
@@ -45,7 +46,8 @@ Password interfaces are configurable through a `customize-instance' method.")))
   (password-interface (find-submode 'password-mode buffer)))
 
 (defun make-password-interface-user-classes ()
-  "Define classes with the `user-class' metaclass so that users may use `customize-instance'."
+  "Define classes with the `user-class' metaclass so that users may use
+`customize-instance'."
   (dolist (interface password:*interfaces*)
     (closer-mop:ensure-class (intern (symbol-name interface))
                              :direct-superclasses (list interface)
@@ -54,7 +56,8 @@ Password interfaces are configurable through a `customize-instance' method.")))
 (make-password-interface-user-classes)
 
 (defun make-password-interface ()
-  "Return the instance of the first password interface among `password:*interfaces*'
+  "Return the instance of the first password interface among
+`password:*interfaces*'
 for which the `executable' slot is non-nil."
   (some (lambda (interface)
           (let ((instance (make-instance interface)))
@@ -66,12 +69,15 @@ for which the `executable' slot is non-nil."
   (list (lambda-command clip-password (password-name)
           (let ((buffer (buffer (current-source)))
                 (password-name (first password-name)))
-            (password:clip-password (password-interface buffer) :password-name password-name)
-            (echo "Password saved to clipboard for ~a seconds." (password:sleep-timer (password-interface buffer)))))
+            (password:clip-password (password-interface buffer)
+                                    :password-name password-name)
+            (echo "Password saved to clipboard for ~a seconds."
+                  (password:sleep-timer (password-interface buffer)))))
         (lambda-command clip-username (password-name)
           (let ((buffer (buffer (current-source)))
                 (password-name (first password-name)))
-            (if (password:clip-username (password-interface buffer) :password-name password-name)
+            (if (password:clip-username (password-interface buffer)
+                                        :password-name password-name)
                 (echo "Username saved to clipboard.")
                 (echo "No username found."))))))
 
@@ -102,16 +108,19 @@ for which the `executable' slot is non-nil."
   (password-debug-info)
   (cond
     ((and (password-interface buffer)
-          (nyxt:has-method-p (password-interface (find-submode 'password-mode buffer))
+          (nyxt:has-method-p (password-interface
+                              (find-submode 'password-mode buffer))
                              #'password:save-password))
      (with-password (password-interface buffer)
-       (let* ((password-name (prompt1 :prompt "Name for new password"
-                                      :input (or (quri:uri-domain (url (current-buffer)))
-                                                 "")
-                                      :sources 'prompter:raw-source))
-              (new-password (prompt1 :prompt "New password (leave empty to generate)"
-                                     :sources 'prompter:raw-source
-                                     :invisible-input-p t))
+       (let* ((password-name
+                (prompt1 :prompt "Name for new password"
+                         :input (or (quri:uri-domain (url (current-buffer)))
+                                    "")
+                         :sources 'prompter:raw-source))
+              (new-password
+                (prompt1 :prompt "New password (leave empty to generate)"
+                         :sources 'prompter:raw-source
+                         :invisible-input-p t))
               (username (prompt1 :prompt "Username (can be empty)"
                                  :sources 'prompter:raw-source)))
          (password:save-password (password-interface buffer)
@@ -124,17 +133,21 @@ for which the `executable' slot is non-nil."
                      (string-downcase
                       (class-name (class-of (password-interface buffer))))))))
 
-(defmethod password::execute :before ((password-interface password:keepassxc-interface) (arguments list) &rest run-program-args &key &allow-other-keys)
+(defmethod password::execute :before
+    ((password-interface password:keepassxc-interface) (arguments list)
+     &rest run-program-args &key &allow-other-keys)
   (declare (ignore arguments run-program-args))
   (when (password::yubikey-slot password-interface)
     (echo "Tap your Yubikey to prove KeePassXC database access")))
 
-(defmethod password:complete-interface ((password-interface password:keepassxc-interface))
+(defmethod password:complete-interface
+    ((password-interface password:keepassxc-interface))
   (loop until (password:password-correct-p password-interface)
         unless (and (password::password-file password-interface)
                     (string-equal "kdbx"
-                                  (pathname-type (pathname (password::password-file
-                                                            password-interface)))))
+                                  (pathname-type
+                                   (pathname (password::password-file
+                                              password-interface)))))
           do (setf (password::password-file password-interface)
                    (uiop:native-namestring
                     (prompt1
@@ -149,15 +162,18 @@ for which the `executable' slot is non-nil."
                         (prompt1
                          :prompt "Password database key file"
                          :extra-modes 'nyxt/mode/file-manager:file-manager-mode
-                         :sources (make-instance 'nyxt/mode/file-manager:file-source)))))
+                         :sources (make-instance
+                                   'nyxt/mode/file-manager:file-source)))))
         unless (password::yubikey-slot password-interface)
           do (if-confirm ("Do you use Yubikey for password database locking")
                  (setf (password::yubikey-slot password-interface)
                        (prompt1 :prompt "Yubikey slot[:port]"
                                 :sources (make-instance 'prompter:raw-source))))
         do (setf (password::master-password password-interface)
-                 (prompt1 :prompt (format nil "Database password for ~a (leave empty if none)"
-                                          (password::password-file password-interface))
+                 (prompt1
+                  :prompt
+                  (format nil "Database password for ~a (leave empty if none)"
+                          (password::password-file password-interface))
                           :sources 'prompter:raw-source
                           :height :fit-to-prompt
                           :invisible-input-p t))))
@@ -187,7 +203,8 @@ See also `copy-password-prompt-details'."
                           'password-source
                           :buffer buffer
                           :password-instance (password-interface buffer)
-                          :actions-on-return (sera:filter (sera:eqs 'clip-username)
-                                                          password-source-actions
-                                                          :key #'name))))
+                          :actions-on-return
+                          (sera:filter (sera:eqs 'clip-username)
+                                       password-source-actions
+                                       :key #'name))))
       (echo-warning "No password manager found.")))
