@@ -387,6 +387,10 @@ height of the status/prompt/message buffer."
 ;; (defmethod ffi-buffer-add-user-script ((buffer electron-buffer) script))
 ;; (defmethod ffi-buffer-remove-user-script ((buffer electron-buffer) script))
 
+
+;; TODO: Implement image / javascript disabling by deleting/recreating the view
+;; with the appropriate WebPreferences. It is not possible to enable/disable
+;; WebPreferences in real-time due to limitations in Electron.
 (defmethod ffi-buffer-auto-load-image-enabled-p ((buffer electron-buffer))
   (echo "Disabling images not supported by Electron back-end.")
   (error "Disabling images not supported by Electron back-end."))
