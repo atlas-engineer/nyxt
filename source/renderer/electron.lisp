@@ -381,10 +381,6 @@ height of the status/prompt/message buffer."
 (defmethod ffi-buffer-download ((buffer electron-buffer) url)
   (electron:download-url (electron:web-contents buffer) url))
 
-;; TODO Support proxy-mode.
-;; (defmethod ffi-buffer-proxy ((buffer electron-buffer)))
-;; (defmethod (setf ffi-buffer-proxy) (value (buffer electron-buffer)))
-
 ;; TODO Support user-script mode.
 ;; (defmethod ffi-buffer-add-user-style ((buffer electron-buffer) style))
 ;; (defmethod ffi-buffer-remove-user-style ((buffer electron-buffer) style))
@@ -415,6 +411,13 @@ height of the status/prompt/message buffer."
   (echo "Disabling WebGL not supported by Electron back-end.")
   (error "Disabling WebGL not supported by Electron back-end."))
 
+(defmethod ffi-buffer-proxy ((buffer electron-buffer))
+  (echo "Setting Proxy per buffer not supported by the Electron back-end.")
+  (error "Setting Proxy per buffer not supported by the Electron back-end."))
+(defmethod (setf ffi-buffer-proxy) (value (buffer electron-buffer))
+  (declare (ignore buffer value))
+  (echo "Setting Proxy per buffer not supported by the Electron back-end.")
+  (error "Setting Proxy per buffer not supported by the Electron back-end."))
 
 ;; TODO Support reduce-tracking mode.
 ;; See https://stackoverflow.com/a/35672988
