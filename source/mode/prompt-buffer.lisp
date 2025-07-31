@@ -2,12 +2,13 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/prompt-buffer
-  (:documentation "Package for `prompt-buffer-mode' to interact with the `prompt-buffer'."))
+  (:documentation "Package for `prompt-buffer-mode' to interact with the
+`prompt-buffer'."))
 (in-package :nyxt/mode/prompt-buffer)
 
 (define-mode prompt-buffer-mode ()
-  "The prompt buffer is where all interactions between Nyxt and the user take place.
-It displays a list of suggestions which are filtered as the user types.
+  "The prompt buffer is where all interactions between Nyxt and the user take
+place.  It displays a list of suggestions which are filtered as the user types.
 
 Many prompter-buffer-specific commands are available; you can list them with
 `run-prompt-buffer-command', bound to \"f1 b\" by default.
@@ -116,8 +117,6 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "k" 'previous-suggestion
        "j" 'next-suggestion
        "C-k" 'previous-suggestion
-       ;; C-j and C-k are useful in insert mode since "j", "k" are taken.
-       ;; We bind C-j and C-k in normal mode for consistency between the two modes.
        "C-j" 'next-suggestion
        "g g" 'first-suggestion
        "G" 'last-suggestion
@@ -126,7 +125,6 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "K" 'previous-source
        "J" 'next-source
        "C-K" 'previous-source
-       ;; Same as with C-j.
        "C-J" 'next-source
        "M-j" 'scroll-other-buffer-down
        "M-k" 'scroll-other-buffer-up
@@ -163,7 +161,8 @@ listed and chosen from with the command `set-action-on-return' (bound to
 (export-always 'define-command-prompt)
 (defmacro define-command-prompt (name (prompt-buffer &rest arglist) &body body)
   "Like `define-command', but the first argument is special:
-- it is considered a keyword argument if `&keyword' is in arglist, `&optional' otherwise,
+- it is considered a keyword argument if `&keyword' is in arglist, `&optional'
+  otherwise,
 - it is bound to `current-prompt-buffer' if unspecified,
 - the body is skipped and a warning is emitted unless non-nil."
   (multiple-value-bind (forms declares documentation)
@@ -172,11 +171,13 @@ listed and chosen from with the command `set-action-on-return' (bound to
         (alex:parse-ordinary-lambda-list arglist)
       (flet ((unparse-arguments (prompt-buffer-sym)
                (if keywords
-                   (push `((,(intern (string prompt-buffer-sym) "KEYWORD") ,prompt-buffer-sym) (current-prompt-buffer) nil)
+                   (push `((,(intern (string prompt-buffer-sym) "KEYWORD")
+                            ,prompt-buffer-sym) (current-prompt-buffer) nil)
                          keywords)
                    (push `(,prompt-buffer-sym (current-prompt-buffer) nil)
                          optional))
-               (sera:unparse-ordinary-lambda-list required optional rest keywords aok? aux key?)))
+               (sera:unparse-ordinary-lambda-list
+                required optional rest keywords aok? aux key?)))
         `(define-command ,name ,(unparse-arguments prompt-buffer)
            ,@(sera:unsplice documentation)
            ,@declares
@@ -187,9 +188,6 @@ listed and chosen from with the command `set-action-on-return' (bound to
 (define-command-prompt next-suggestion (prompt-buffer)
   "Select next entry in prompt buffer."
   (prompter:next-suggestion prompt-buffer)
-  ;; TODO: Update display?  The library should probably decide when to update
-  ;; it.  Drawback is that it maybe result in too many draws.  If the caller
-  ;; decides when redraw, it has more control.
   (prompt-render-suggestions prompt-buffer))
 
 (define-command-prompt previous-suggestion (prompt-buffer)
@@ -239,7 +237,7 @@ listed and chosen from with the command `set-action-on-return' (bound to
   "Select entry by N next pages in PROMPT-BUFFER.
 If N is negative, go to previous pages instead."
   (unless (= 0 n)
-    (let ((step-page-index              ; TODO: Add multi-source support.
+    (let ((step-page-index
             (ps-eval :buffer prompt-buffer
               (defun step-row (row)
                 (ps:chain
@@ -263,9 +261,6 @@ If N is negative, go to previous pages instead."
       (and-let* ((index-diff step-page-index))
         (prompter:next-suggestion prompt-buffer
                                   index-diff)))
-    ;; TODO: Update display?  The library should probably decide when to update
-    ;; it.  Drawback is that it maybe result in too many draws.  If the caller
-    ;; decides when redraw, it has more control.
     (prompt-render-suggestions prompt-buffer)))
 
 (define-command-prompt contract (prompt-buffer &key (delta 10))
@@ -309,17 +304,19 @@ current unmarked suggestion."
                 :test #'equal)
         suggestion-values)))
 
-(define-command-prompt toggle-attributes-display (prompt-buffer
-                                                  &key (source (current-source prompt-buffer)))
+(define-command-prompt toggle-attributes-display
+    (prompt-buffer &key (source (current-source prompt-buffer)))
   "Prompt for which prompter attributes to display."
-  (let ((attributes (prompt :prompt "Mark attributes to display"
-                            :sources
-                            (make-instance
-                             'attribute-source
-                             :marks (intersection (prompter:active-attributes-keys source)
-                                                  (prompter:attributes-keys-non-default source)
-                                                  :test #'string=)
-                             :constructor (prompter:attributes-keys-non-default source)))))
+  (let ((attributes
+          (prompt :prompt "Mark attributes to display"
+                  :sources
+                  (make-instance
+                   'attribute-source
+                   :marks (intersection
+                           (prompter:active-attributes-keys source)
+                           (prompter:attributes-keys-non-default source)
+                           :test #'string=)
+                   :constructor (prompter:attributes-keys-non-default source)))))
     (setf (prompter:active-attributes-keys source)
           attributes)
     (prompt-render-suggestions prompt-buffer)))
@@ -340,31 +337,33 @@ current unmarked suggestion."
 
 (define-command-prompt run-prompt-buffer-command (prompt-buffer)
   "Prompt for a command to call in PROMPT-BUFFER."
-  (let ((command (prompt1 :prompt "Command to run in current prompt buffer"
-                          :sources (make-instance 'prompt-buffer-command-source
-                                                  :parent-prompt-buffer prompt-buffer))))
+  (let ((command
+          (prompt1 :prompt "Command to run in current prompt buffer"
+                   :sources (make-instance
+                             'prompt-buffer-command-source
+                             :parent-prompt-buffer prompt-buffer))))
     (funcall* command)))
 
 (defun prompt-buffer-actions-on-return (&optional (window (current-window)))
-  (or (and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
+  (or (and-let* ((first-prompt-buffer
+                  (first (nyxt::active-prompt-buffers window))))
         (prompter:actions-on-return first-prompt-buffer))
       (progn
         (echo-warning "No actions to choose from.")
         (error 'prompt-buffer-canceled))))
 
-(defun prompt-buffer-actions-on-current-suggestion (&optional (window (current-window)))
+(defun prompt-buffer-actions-on-current-suggestion
+    (&optional (window (current-window)))
   (and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
-    (prompter:actions-on-current-suggestion (prompter:current-source first-prompt-buffer))))
+    (prompter:actions-on-current-suggestion
+     (prompter:current-source first-prompt-buffer))))
 
-;; TODO: Should actions-on-return be commands?  For now, they can be either
-;; commands or symbols.
 (defun make-action-suggestion (action &optional source input)
   "Return a `suggestion' wrapped around ACTION."
   (declare (ignore source input))
   (make-instance
    'prompter:suggestion
    :value action
-   ;; TODO: Include bindings in attributes.
    :attributes `(("Name" ,(or (ignore-errors
                                (symbol-name (typecase action
                                               (command (name action))
@@ -392,13 +391,14 @@ current unmarked suggestion."
         (prompter:run-action-on-return prompt-buffer action))))
 
 (define-command-prompt run-action-on-current-suggestion (prompt-buffer)
-  "Run `prompter::default-action-on-current-suggestion' without closing PROMPT-BUFFER."
+  "Run `prompter::default-action-on-current-suggestion' without closing
+PROMPT-BUFFER."
   (prompter:run-action-on-current-suggestion prompt-buffer))
 
 (define-command-prompt set-action-on-current-suggestion (prompt-buffer)
   "Set `prompter:actions-on-current-suggestion' without closing PROMPT-BUFFER."
   (when-let ((action (prompt1 :prompt "Set current suggestion action"
-                                   :sources 'action-on-current-suggestion-source)))
+                              :sources 'action-on-current-suggestion-source)))
     (prompter:set-action-on-current-suggestion action prompt-buffer)))
 
 (define-command-prompt quit-prompt-buffer (prompt-buffer)
@@ -406,12 +406,15 @@ current unmarked suggestion."
   (prompter:destroy prompt-buffer))
 
 (define-command-prompt toggle-actions-on-current-suggestion (prompt-buffer)
-  "Toggle whether `prompter:actions-on-current-suggestion' are enabled for PROMPT-BUFFER."
+  "Toggle whether `prompter:actions-on-current-suggestion' are enabled for
+PROMPT-BUFFER."
   (prompter:toggle-actions-on-current-suggestion prompt-buffer)
   (echo "Current suggestion actions: ~:[dis~;en~]abled."
-        (prompter:actions-on-current-suggestion-enabled-p (current-source prompt-buffer))))
+        (prompter:actions-on-current-suggestion-enabled-p
+         (current-source prompt-buffer))))
 
-(define-command-prompt toggle-mark-forwards (prompt-buffer &key (direction :forward))
+(define-command-prompt toggle-mark-forwards
+    (prompt-buffer &key (direction :forward))
   "Mark current suggestion and `next-suggestion'.
 Only available if current PROMPT-BUFFER source `enable-marks-p' is non-nil.
 DIRECTION can be `:forward' or `:backward' and specifies which suggestion to
@@ -450,8 +453,9 @@ Only available if `prompter:enable-marks-p' is non-nil."
   (let* ((marks (prompter:all-marks prompt-buffer))
          (props (if marks
                     (mapcar #'prompter:attributes-default marks)
-                    (list (prompter:attributes-default (prompter:%current-suggestion
-                                                       prompt-buffer)))))
+                    (list (prompter:attributes-default
+                           (prompter:%current-suggestion
+                            prompt-buffer)))))
          ;; Reverse so that text is ordered from oldest mark to newest.
          (text (str:join +newline+ (reverse props))))
     (unless (str:emptyp text)
@@ -514,16 +518,14 @@ Only available if `prompter:enable-marks-p' is non-nil."
 ;; FIXME: Move scroll.lisp from document-mode so that prompt-buffer.lisp can reach
 ;; it.  Ideas?
 
-(define-command-prompt scroll-other-buffer-up (prompt-buffer
-                                               &key (scroll-distance
-                                                     (scroll-distance (current-buffer))))
+(define-command-prompt scroll-other-buffer-up
+    (prompt-buffer &key (scroll-distance (scroll-distance (current-buffer))))
   "Scroll up the buffer behind the prompt."
   (ps-eval :async t :buffer (current-buffer)
     (ps:chain window (scroll-by 0 (ps:lisp (- scroll-distance))))))
 
-(define-command-prompt scroll-other-buffer-down (prompt-buffer
-                                                 &key (scroll-distance
-                                                       (scroll-distance (current-buffer))))
+(define-command-prompt scroll-other-buffer-down
+    (prompt-buffer &key (scroll-distance (scroll-distance (current-buffer))))
   "Scroll down the buffer behind the prompt."
   (ps-eval :async t :buffer (current-buffer)
     (ps:chain window (scroll-by 0 (ps:lisp scroll-distance)))))
@@ -531,8 +533,9 @@ Only available if `prompter:enable-marks-p' is non-nil."
 (define-command-prompt scroll-page-up-other-buffer (prompt-buffer)
   "Scroll up the buffer behind the prompt by one page."
   (ps-eval :async t :buffer (current-buffer)
-    (ps:chain window (scroll-by 0 (- (* (ps:lisp (page-scroll-ratio (current-buffer)))
-                                        (ps:@ window inner-height)))))))
+    (ps:chain window
+              (scroll-by 0 (- (* (ps:lisp (page-scroll-ratio (current-buffer)))
+                                 (ps:@ window inner-height)))))))
 
 (define-command-prompt scroll-page-down-other-buffer (prompt-buffer)
   "Scroll down the buffer behind the prompt by one page."
@@ -540,55 +543,13 @@ Only available if `prompter:enable-marks-p' is non-nil."
     (ps:chain window (scroll-by 0 (* (ps:lisp (page-scroll-ratio (current-buffer)))
                                      (ps:@ window inner-height))))))
 
-(defmethod default-modes append ((buffer prompt-buffer))
-  '(prompt-buffer-mode))
-(defmethod default-modes :around ((buffer prompt-buffer))
-  ;; TODO: `prompt-buffer' should not be a web-buffer.
-  (set-difference (call-next-method) (list (sym:resolve-symbol :document-mode :mode)
-                                           (sym:resolve-symbol :base-mode :mode))))
+(defmethod default-modes append ((buffer prompt-buffer)) '(prompt-buffer-mode))
 
-;; FIXME: Arglist used to have prompt-buffer, but it's not URL-serializable.
-;; Maybe have prompt-buffers have IDs so that we can identify those by IDs?
-;; How do we actually identify prompt-buffers?
-(define-internal-page-command describe-prompt-buffer ()
-    (buffer (str:concat "*Help-" (prompter:prompt (current-prompt-buffer)) "-prompter*")
-            ;; TODO: Can we somehow fix the load order in the .asd?
-            (sym:resolve-symbol :help-mode :mode))
-  ;; FIXME: List the documentation of the command using the prompt instead of
-  ;; the prompt-buffer documentation somehow?
+(defmethod default-modes :around ((buffer prompt-buffer))
+  (set-difference (call-next-method)
+                  (list (sym:resolve-symbol :document-mode :mode)
+                        (sym:resolve-symbol :base-mode :mode))))
+
+(define-command describe-prompt-buffer ()
   "Describe a prompt buffer instance."
-  (let* ((prompt-buffer (current-prompt-buffer))
-         (modes (modes prompt-buffer))
-         (sources (prompter:sources prompt-buffer)))
-    (spinneret:with-html-string
-      (:h1 (prompter:prompt prompt-buffer) "(" (:nxref :class-name 'prompt-buffer) ")")
-      (:pre (:code (:raw (resolve-backtick-quote-links
-                          (documentation 'prompt-buffer 'type) :nyxt/mode/prompt-buffer))))
-      (:h2 "Modes and keybindings:")
-      (:dl
-       ;; TODO: Reuse `describe-bindings' infra.
-       (loop for mode in modes
-             collect (:dt (:nxref :class-name (sera:class-name-of mode)))
-             if (gethash (keyscheme prompt-buffer) (keyscheme-map mode))
-               collect  (:dd (:table
-                              (:tr (:th "Binding") (:th "Command"))
-                              (loop for (keyspec . binding)
-                                      in (alex:hash-table-alist
-                                          (keymaps:keymap->map
-                                           (nyxt::get-keymap prompt-buffer (keyscheme-map mode))))
-                                    collect (:tr (:td keyspec)
-                                                 (:td (typecase binding
-                                                        (symbol (:nxref :function binding))
-                                                        (command (:nxref :function (name binding)))
-                                                        (keyword (:nxref :function (sym:resolve-symbol binding :function)))
-                                                        (t (:a :href (nyxt-url
-                                                                      'describe-value
-                                                                      :id (nyxt::ensure-inspected-id binding))
-                                                               binding))))))))
-             else
-               collect (:dd "No binding")))
-      (:h2 "Sources:")
-      (:dl
-       (loop for source in sources
-             collect (:dt (:nxref :class-name (sera:class-name-of source)))
-             collect (:dd (documentation (class-of source) t)))))))
+  (describe-bindings :buffer (current-prompt-buffer)))
