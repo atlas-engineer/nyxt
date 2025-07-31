@@ -862,7 +862,12 @@ The notion of first element is dictated by `containers:first-item'."
 
 (defun buffer-get (id)
   "Get the `buffer' with the corresponding ID."
-  (gethash id (slot-value *browser* 'buffers)))
+  (or (gethash id (slot-value *browser* 'buffers))
+      (find-if
+       (lambda (prompt-buffer) (eql (id prompt-buffer) id))
+       (mapcan
+        #'active-prompt-buffers
+        (alexandria:hash-table-values (windows *browser*))))))
 
 (defun buffer-set (id buffer)
   "Ensure that entry ID->BUFFER belongs to `buffers' hash table."
