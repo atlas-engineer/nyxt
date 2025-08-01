@@ -213,7 +213,6 @@ If false, runs on the toplevel frame only.")
     (alex:write-string-into-file (files:url-content style) destination :if-exists :supersede)))
 
 (defmethod customize-instance :after ((style user-style) &key)
-  ;; TODO: Somehow parse @-moz-document patterns?
   (when (uiop:emptyp (code style))
     (setf (code style) (files:content style))))
 
