@@ -220,13 +220,6 @@ modes previously selected. Finally, " (:code "toggle-mode") " also allows
 activation and deactivation of multiple modes, but only for the current
 buffer."))
 
-      (:nsection :title "Light navigation"
-        (:p "Reduce bandwidth usage via: ")
-        (:ul
-         (list-command-information '(nyxt/mode/no-image:no-image-mode
-                                     nyxt/mode/no-script:no-script-mode
-                                     nyxt/mode/no-webgl:no-webgl-mode))))
-
       (:nsection :title "Structural navigation"
         (:p "It is possible to navigate through headings: ")
         (:ul
@@ -429,10 +422,10 @@ shortcut."))
          buffer.")
          (:hr)
          (:p "Example:")
-         (:p "To enjoy the image-less Web, you can enable "
-             (:nxref :mode 'nyxt/mode/no-image:no-image-mode)
+         (:p "To enjoy the silent Web, you can enable "
+             (:nxref :mode 'nyxt/mode/no-sound:no-sound-mode)
              " by invoking the command "
-             (:nxref :command 'nyxt/mode/no-image:no-image-mode) ".")
+             (:nxref :command 'nyxt/mode/no-sound:no-sound-mode) ".")
          (:p "Again, you can access this command, and all others via "
              (:nxref :command 'nyxt:execute-command) ".")
          (:hr)

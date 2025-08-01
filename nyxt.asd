@@ -127,11 +127,8 @@
                  (:file "spell-check" :depends-on ("document"))
                  (:file "help" :depends-on ("document" "search-buffer"))
                  (:file "history")
-                 (:file "certificate-exception")
                  (:file "keyscheme")
-                 (:file "proxy")
-                 (:file "process")
-                 (:file "user-script")))
+                 (:file "process")))
                (:file "describe" :depends-on ("Core modes"))
                (:module "Prompter modes"
                 :pathname "mode"
@@ -159,19 +156,14 @@
                 :components
                 ((:file "annotate")
                  (:file "autofill")
-                 (:file "blocker")
                  (:file "bookmark")
                  (:file "bookmarklets")
                  (:file "cruise-control" :depends-on ("repeat"))
                  (:file "emacs")
                  (:file "expedition")
-                 (:file "force-https")
                  (:file "history-migration")
                  (:file "macro-edit")
-                 (:file "no-image")
-                 (:file "no-script")
                  (:file "no-sound")
-                 (:file "no-webgl")
                  (:file "password")
                  (:file "reading-line")
                  (:file "repeat")
@@ -274,8 +266,17 @@
   :defsystem-depends-on ("nasdf")
   :class :nasdf-system
   :depends-on (nyxt cl-webkit2)
-  :pathname #p"NYXT:source;renderer;"
-  :components ((:file "gtk")))
+  :pathname #p"NYXT:source;"
+  :components ((:file "renderer/gtk")
+               ;; TODO: Port to other renderers.
+               (:file "mode/blocker")
+               (:file "mode/certificate-exception")
+               (:file "mode/force-https")
+               (:file "mode/user-script")
+               (:file "mode/no-image")
+               (:file "mode/no-script")
+               (:file "mode/no-webgl")
+               (:file "mode/proxy")))
 
 (defsystem "nyxt/gi-gtk"
   :defsystem-depends-on ("nasdf")

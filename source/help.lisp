@@ -262,7 +262,7 @@ invoking the " (:nxref :command 'toggle-modes) "command.")))))
             (:p "Modes can also be set interactively by command "
                 (:nxref :command 'toggle-modes)
                 " ,or by specific mode togglers such as "
-                (:nxref :command 'nyxt/mode/no-script:no-script-mode) "."))))))))))
+                (:nxref :command 'nyxt/mode/no-sound:no-sound-mode) "."))))))))))
 
 (defun tls-help (buffer url)
   "Helper function invoked upon TLS certificate errors."

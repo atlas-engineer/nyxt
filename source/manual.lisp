@@ -45,8 +45,8 @@ similar programming language.")
         (:p "Example:")
         (:ncode
           '(define-configuration web-buffer
-            ((default-modes (pushnew 'nyxt/mode/no-script:no-script-mode %slot-value%)))))
-        (:p "The above turns on the 'no-script-mode' (disables JavaScript) by default for
+            ((default-modes (pushnew 'nyxt/mode/no-sound:no-sound-mode %slot-value%)))))
+        (:p "The above turns on the 'no-sound-mode' (disables sound) by default for
 every buffer.")
         (:p "The " (:nxref :macro 'define-configuration) " macro can be used to customize
 the slots of classes like the browser, buffers, windows, etc.")
@@ -189,16 +189,6 @@ commands like " (:nxref :command 'nyxt/mode/history:history-backwards) " and "
       (:nsection :title "Downloads"
         (:p "See the " (:nxref :command 'nyxt/mode/download:list-downloads) " command and the "
             (:nxref :slot 'download-path :class-name 'buffer) " buffer slot documentation."))
-
-      (:nsection :title "Proxy and Tor"
-        (:p "See the " (:nxref :class-name 'nyxt/mode/proxy:proxy-mode) " documentation."))
-
-      (:nsection :title "Blocker mode"
-        (:p "This mode blocks access to websites related to specific hosts. To see
-all hosts being blocked, execute command " (:code "describe-variable") ", choose variable "
-(:code "NYXT/MODE/BLOCKER:*DEFAULT-HOSTLIST*") ", and read data on "
-(:code "nyxt/mode/blocker:url-body") " slot." " To customize host blocking, read the "
-(:nxref :class-name 'nyxt/mode/blocker:blocker-mode) " documentation."))
 
       (:nsection :title "URL-dispatchers"
         (:p "You can configure which actions to take depending on the URL to be
@@ -570,159 +560,6 @@ existing instance instead of a separate instance that exits immediately.")
 immediate communication with an instance:")
         (:pre (:code "nyxt --remote
 (echo \"~s\" (+ 1 2)) ;; Shows '3' in the message buffer of remote Nyxt")))
-
-      (:nsection :title "User scripts"
-        (:p "User scripts are a conventional and lightweight way to run arbitrary JavaScript
-code on some set of pages/conditions. While not as powerful as either
-WebExtensions on Lisp-native extensions to Nyxt, those hook into the tenderer
-inner working and allow you to change the page and JavaScript objects associated
-to it.")
-        (:p "As an example, you can remove navbars from all the pages you visit with this
-small configuration snippet (note that you'd need to have "
-            (:nxref :class-name 'nyxt/mode/user-script:user-script-mode)
-            " in your " (:nxref :function 'default-modes "buffer default-modes") " ):")
-        (:ncode
-          '(define-configuration web-buffer
-            "Enable user-script-mode, if you didn't already."
-            ((default-modes (pushnew 'nyxt/mode/user-script:user-script-mode %slot-value%))))
-
-          '(define-configuration nyxt/mode/user-script:user-script-mode
-            ((nyxt/mode/user-script:user-scripts
-              (list
-               (make-instance 'nyxt/mode/user-script:user-script
-                :code "// ==UserScript==
-                              // @name          No navbars!
-                              // @description	A simple script to remove navbars
-                              // @run-at        document-end
-                              // @include       http://*/*
-                              // @include       https://*/*
-                              // @noframes
-                              // ==/UserScript==
-
-                              var elem = document.querySelector(\"header\") || document.querySelector(\"nav\");
-                              if (elem) {
-                              elem.parentNode.removeChild(elem);
-                              }"))
-              :doc "Alternatively, save the code to some file and use
-:base-path #p\"/path/to/our/file.user.js\".
-Or fetch a remote script with
-url (quri:uri \"https://example.com/script.user.js\")"))))
-        (:p (:a :href "https://wiki.greasespot.net/Metadata_Block" "Greasemonkey documentation")
-            " lists all the possible properties that a user script might have. To Nyxt
-implementation, only those are meaningful:")
-        (:dl
-         (:dt "@include and " (:nxref :function 'nyxt/mode/user-script:include))
-         (:dd "Sets the URL pattern to enable this script for. Follows the pattern "
-              (:code "scheme://host/path")
-              ", where scheme is either a literal scheme or and asterisk (matching any
-scheme), and host and path are any valid characters plus asterisks (matching any
-set of characters) anywhere.")
-         (:dt "@match")
-         (:dd "Same as @include.")
-         (:dt "@exclude and " (:nxref :function 'nyxt/mode/user-script:exclude))
-         (:dd "Similar to @include, but rather disables the script for the matching pages.")
-         (:dt "@noframes and " (:nxref :function 'nyxt/mode/user-script:all-frames-p))
-         (:dd "When present, disables the script for all the frames but toplevel ones. When
-absent, injects the script everywhere. The Lisp-side"
-              (:nxref :function 'nyxt/mode/user-script:all-frames-p) "works in an opposite way.")
-         (:dt "@run-at and " (:nxref :function 'nyxt/mode/user-script:run-at))
-         (:dd "When to run a script. Allowed values: document-start, document-end,
-document-idle (in Nyxt implementation, same as document-end).")
-         (:dt "@require")
-         (:dd "Allows including arbitrary JS files hosted on the Internet or loaded from the
-same place as the script itself. Neat for including some JS libraries, like jQuery.")))
-
-      (:nsection :title "Headless mode"
-        (:p "Similarly to Nyxt's scripting functionality, headless mode runs without a
-graphical user interface. Possible use-cases for this mode are web scraping,
-automations and web page analysis.")
-        (:p "To enable headless mode, simply start Nyxt with the "
-            (:code "--headless")
-            " CLI flag and provide a script file to serve as the configuration file:")
-        (:ncode
-          "nyxt --headless --config /path/to/your/headless-config.lisp")
-        (:p "Note that you pass it a " (:i "configuration file") ",
-            i.e. headless mode is only different from the regular Nyxt functions
-            in that it has no GUI, and is all the same otherwise, contrary to
-            all the seeming similarities to the " (:code "--script") " flag
-            usage.")
-        (:p "The example below showcases frequent idioms that are found in the
-mode's configuration file:")
-        (:ncode
-          "#!/bin/sh
-#|
-exec nyxt --headless --no-auto-config --profile nosave --config \"$0\"
-|#"
-          '(define-configuration browser
-            "Load the URL of Nyxt repository by default in all new buffers.
-Alternatively, call `buffer-load' in `after-startup-hook'."
-            ((default-new-buffer-url (quri:uri "https://github.com/atlas-engineer/nyxt"))))
-          "\(hooks:on (after-startup-hook *browser*) (browser)
-  ;; Once the page's done loading, do your thing.
-  (hooks:once-on (buffer-loaded-hook (current-buffer)) (buffer)
-    ;; It's sometimes necessary to sleep, as `buffer-loaded-hook' fires when the
-    ;; page is loaded, which does not mean that all the resources and scripts
-    ;; are done loading yet. Give it some time there.
-    (sleep 0.5)
-    ;; All the Nyxt reporting happens in headless mode, so you may want to log
-    ;; it with `echo' and `echo-warning'.
-    (echo \"Nyxt GitHub repo open.\")
-    ;; Updating the `document-model' so that it includes the most relevant
-    ;; information about the page.
-    (nyxt:update-document-model)
-    ;; Click the star button.
-    (nyxt/dom:click-element
-     (elt (clss:select \"[aria-label=\\\"Star this repository\\\"]\"
-                       (document-model buffer))
-                       0))
-    (echo \"Clicked the star.\")
-    ;; It's good tone to `nyxt:quit' after you're done, but if you use nyxt
-    ;; --no-socket, you don't have to. Just be ready for some RAM eating :)
-    (nyxt:quit)))")
-        (:p "The contents of headless-config.lisp feature configuration forms that
-make Nyxt perform some actions to the opened pages and/or on certain
-hooks. Things you'd most probably want to put there are: ")
-        (:ul
-         (:li "Hook bindings, using the " (:nxref :package 'nhooks)
-              " library and hooks provided by Nyxt.")
-         (:li "Operations on the page. Check the " (:nxref :package 'nyxt/dom) "
-          library and the " (:nxref :function 'document-model) " method.")
-         (:ul
-          (:li "The " (:nxref :function 'document-model)
-               " method has a reasonably fresh copy of the page DOM (Document Object Model,
-reflecting the dynamic structure of the page). It is a " (:nxref :package 'plump "Plump")
-               " DOM, which means that all " (:nxref :package 'plump "Plump") " (and "
-               (:nxref :package 'clss "CLSS") ") functions can be used on it.")
-          (:li (:nxref :function 'update-document-model)
-               " is a function to force DOM re-parsing for the cases when you consider the
-current " (:nxref :function 'document-model) " too outdated.")
-          (:li (:nxref :function 'clss:select)
-               " is a CLSS function to find elements using CSS selectors (a terse
-           notation for web page element description).")
-          ;; FIXME: Make a nxref once we update CLSS submodule.
-          (:li (:code"clss:ordered-select") " is the same as "
-               (:nxref :function 'clss:select)
-               ", except it guarantees that all the elements are returned in a
-           depth-first traversal order.")
-          (:li (:nxref :function 'nyxt/dom:click-element)
-               " to programmatically click a certain element (including the ones returned by "
-               (:nxref :function 'clss:select) ".)")
-          (:li (:nxref :function 'nyxt/dom:focus-select-element) " to focus an input
-           field, for example.")
-          (:li (:nxref :function 'nyxt/dom:check-element) " to check a checkbox or a radio button.")
-          (:li (:nxref :function 'nyxt/dom:select-option-element) " to select an option from the "
-               (:code "<select>") " element options.")))
-        (:p "Additionally, headless mode gracefully interacts with other CLI toggles the
-Nyxt has:")
-        (:ul
-         (:li (:code "--headless") " itself! Notice that you can debug your script
-by omitting this CLI flag.  When you're confident enough about it, put it back
-in. A good debugging tip, isn't it?")
-         (:li (:code "--no-socket")
-              " flag allows starting as many Nyxt instances as your machine can
-handle. Useful to parallelize computations.")
-         (:li (:code "--profile nosave")
-              " to not pollute your history and cache with the script-accessed pages.")))
 
       (:nsection :title "Advanced configuration"
         (:p "While " (:nxref :macro 'define-configuration) " is convenient, it is mostly
