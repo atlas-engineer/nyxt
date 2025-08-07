@@ -589,8 +589,10 @@ Return nil when key must be discarded, e.g. for modifiers."
        ("F10" "f10")
        ("F11" "f11")
        ("F12" "f12")
+       ((simple-string #\K #\e #\y key-value) (string-downcase (string key-value)))
+       ((simple-string #\D #\i #\g #\i #\t digit-value) (string digit-value))
        ;; but return event's key, again for international compatibility
-       (_ key-string)))))
+       (_ code-string)))))
 
 (defmethod on-signal-key-press-event ((sender electron-buffer) event)
   (when (string= "keyDown" (assoc-value event :type))
