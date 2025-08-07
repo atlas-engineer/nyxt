@@ -526,57 +526,71 @@ height of the status/prompt/message buffer."
   (when-let ((state input-event-modifier-state))
     (mapcar (lambda (modifier) (getf (modifier-plist buffer) modifier)) state)))
 
-(defun translate-code-string (code-string)
+(defun check-alpha (str)
+  "Check if a given event key is of length 1 and an alphanumeric character"
+  (if (and (eq (length str) 1)
+           (alphanumericp (aref str 0)))
+      str
+      nil))
+
+(defun translate-code-string (code-string key-string)
   "Return string representation of a keyval.
 Return nil when key must be discarded, e.g. for modifiers."
-  (match code-string
-    ;; Compatibility layer between GDK keycode names and those of Browsers.
-    ;; https://gitlab.gnome.org/GNOME/gtk/-/blob/main/gdk/gdkkeysyms.h
-    ;; https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
-    ((or "ControlLeft" "ControlRight"
-         "ShiftLeft" "ShiftRight"
-         "MetaLeft" "MetaRight"
-         "AltLeft" "AltRight")
-     nil)
-    ("Minus" "hyphen")
-    ("Equal" "=")
-    ("Space" "space")
-    ("Enter" "return")
-    ("Escape" "escape")
-    ("Tab" "tab")
-    ("Comma" ",")
-    ("Period" ".")
-    ("Slash" "/")
-    ("Semicolon" ";")
-    ("Quote" "'")
-    ("BracketLeft" "[")
-    ("BracketRight" "]")
-    ("Backslash" "\\")
-    ("Backquote" "`")
-    ("Backspace" "backspace")
-    ("ArrowUp" "up")
-    ("ArrowDown" "down")
-    ("ArrowRight" "right")
-    ("ArrowLeft" "left")
-    ("PageUp" "pageup")
-    ("PageDown" "pagedown")
-    ("Home" "home")
-    ("End" "end")
-    ("F1" "f1")
-    ("F2" "f2")
-    ("F3" "f3")
-    ("F4" "f4")
-    ("F5" "f5")
-    ("F6" "f6")
-    ("F7" "f7")
-    ("F8" "f8")
-    ("F9" "f9")
-    ("F10" "f10")
-    ("F11" "f11")
-    ("F12" "f12")
-    ((simple-string #\K #\e #\y key-value) (string-downcase (string key-value)))
-    ((simple-string #\D #\i #\g #\i #\t digit-value) (string digit-value))
-    (_ code-string)))
+  (cond
+    ;; First case: it's an alphanumeric character
+    ;; For Compatibility with non-QWERTY keyboard layouts,
+    ;;     the event's *key* is used for comparison
+    ((check-alpha key-string)
+     (string-downcase key-string))
+
+    ;; otherwise match the event's *code* for special keys
+    ((match code-string
+       ;; Compatibility layer between GDK keycode names and those of Browsers.
+       ;; https://gitlab.gnome.org/GNOME/gtk/-/blob/main/gdk/gdkkeysyms.h
+       ;; https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
+       ((or "ControlLeft" "ControlRight"
+            "ShiftLeft" "ShiftRight"
+            "MetaLeft" "MetaRight"
+            "AltLeft" "AltRight")
+        nil)
+       ("Minus" "hyphen")
+       ("Equal" "=")
+       ("Space" "space")
+       ("Enter" "return")
+       ("Escape" "escape")
+       ("Tab" "tab")
+       ("Comma" ",")
+       ("Period" ".")
+       ("Slash" "/")
+       ("Semicolon" ";")
+       ("Quote" "'")
+       ("BracketLeft" "[")
+       ("BracketRight" "]")
+       ("Backslash" "\\")
+       ("Backquote" "`")
+       ("Backspace" "backspace")
+       ("ArrowUp" "up")
+       ("ArrowDown" "down")
+       ("ArrowRight" "right")
+       ("ArrowLeft" "left")
+       ("PageUp" "pageup")
+       ("PageDown" "pagedown")
+       ("Home" "home")
+       ("End" "end")
+       ("F1" "f1")
+       ("F2" "f2")
+       ("F3" "f3")
+       ("F4" "f4")
+       ("F5" "f5")
+       ("F6" "f6")
+       ("F7" "f7")
+       ("F8" "f8")
+       ("F9" "f9")
+       ("F10" "f10")
+       ("F11" "f11")
+       ("F12" "f12")
+       ;; but return event's key, again for international compatibility
+       (_ key-string)))))
 
 (defmethod on-signal-key-press-event ((sender electron-buffer) event)
   (when (string= "keyDown" (assoc-value event :type))
@@ -584,7 +598,7 @@ Return nil when key must be discarded, e.g. for modifiers."
                                        (when (assoc-value event :control) :control)
                                        (when (assoc-value event :alt) :alt)
                                        (when (assoc-value event :meta) :meta))))
-          (key-string (translate-code-string (assoc-value event :code))))
+          (key-string (translate-code-string (assoc-value event :code) (assoc-value event :key))))
       (flet ((key () (keymaps:make-key :value key-string
                                        :modifiers (input-modifier-translator sender modifiers)
                                        :status :pressed)))
