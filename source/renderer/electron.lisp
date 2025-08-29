@@ -532,14 +532,6 @@ Return nil when key must be discarded, e.g. for modifiers."
   ;; See https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key
   ;; See https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
   (match code-string
-    ;; Compatibility layer between GDK keycode names and those of Browsers.
-    ;; https://gitlab.gnome.org/GNOME/gtk/-/blob/main/gdk/gdkkeysyms.h
-    ;; https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
-    ((or "ControlLeft" "ControlRight"
-         "ShiftLeft" "ShiftRight"
-         "MetaLeft" "MetaRight"
-         "AltLeft" "AltRight")
-     nil)
     ("Minus" "hyphen")
     ("Equal" "=")
     ("Space" "space")
@@ -578,6 +570,14 @@ Return nil when key must be discarded, e.g. for modifiers."
     ("F12" "f12")
     ((simple-string #\K #\e #\y key-value) (string-downcase (string key-value)))
     ((simple-string #\D #\i #\g #\i #\t digit-value) (string digit-value))
+    ;; Compatibility layer between GDK keycode names and those of Browsers.
+    ;; https://gitlab.gnome.org/GNOME/gtk/-/blob/main/gdk/gdkkeysyms.h
+    ;; https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
+    ((or "ControlLeft" "ControlRight"
+         "ShiftLeft" "ShiftRight"
+         "MetaLeft" "MetaRight"
+         "AltLeft" "AltRight")
+     nil)
     (_ code-string)))
 
 (defmethod on-signal-key-press-event ((sender electron-buffer) event)
