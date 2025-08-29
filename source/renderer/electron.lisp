@@ -537,6 +537,7 @@ Return nil when key must be discarded, e.g. for modifiers."
     ("Minus" "hyphen")
     ("Equal" "=")
     ("Space" "space")
+    ("Return" "return")
     ("Enter" "return")
     ("Escape" "escape")
     ("Tab" "tab")
