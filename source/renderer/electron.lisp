@@ -532,6 +532,8 @@ Return nil when key must be discarded, e.g. for modifiers."
   ;; See https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key
   ;; See https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
   (match code-string
+    ((simple-string #\Space) "space")
+    ((simple-string key) (string-downcase key))
     ((simple-string #\K #\e #\y key-value) (string-downcase (string key-value)))
     ((simple-string #\D #\i #\g #\i #\t digit-value) (string digit-value))
     ("Minus" "hyphen")
