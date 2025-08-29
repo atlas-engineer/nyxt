@@ -528,39 +528,129 @@ height of the status/prompt/message buffer."
 
 (defun translate-key-string (key-string)
   "Return string representation of a keyval.
+
+Downcased GDK names will be prioritized where possible, e.g. \"Enter\" will
+return \"return\", and \"BrightnessDown\" \"monbrightnessdown\".
+
+Shifted characters will return their downcased equivalent, e.g. \"A\" will
+return \"a\".
+
+Names without a GDK equivalent will be returned as-is, e.g. \"MediaPlayPause\"
+returns \"MediaPlayPause\" even though \"MediaPlay\" returns \"audioplay\" and
+\"MediaPause\" returns \"audiopause\".
+
 Return nil when key must be discarded, e.g. for modifiers."
-  ;; See https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key
-  ;; See https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
+  ;; Compatibility layer between GDK keycode names and those of Browsers.
+  ;; E.g. We might remap "Foo" to "bar" (GDK_KEY_BAR).
+  ;;
+  ;; See
+  ;; - https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key
+  ;; - https://gitlab.gnome.org/GNOME/gtk/-/blob/main/gdk/gdkkeysyms.h
+  ;; - https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
   (match key-string
+    ;; We handle these first as they're assumed to be hit frequently.
     ((simple-string #\Space) "space")
     ((simple-string key) (string-downcase key))
-    ((simple-string #\K #\e #\y key-value) (string-downcase (string key-value)))
-    ((simple-string #\D #\i #\g #\i #\t digit-value) (string digit-value))
-    ("Minus" "hyphen")
-    ("Equal" "=")
-    ("Space" "space")
-    ("Return" "return")
+    ;; Other whitespace keys
     ("Enter" "return")
-    ("Escape" "escape")
     ("Tab" "tab")
-    ("Comma" ",")
-    ("Period" ".")
-    ("Slash" "/")
-    ("Semicolon" ";")
-    ("Quote" "'")
-    ("BracketLeft" "[")
-    ("BracketRight" "]")
-    ("Backslash" "\\")
-    ("Backquote" "`")
-    ("Backspace" "backspace")
-    ("ArrowUp" "up")
+    ;; Navigation keys
     ("ArrowDown" "down")
-    ("ArrowRight" "right")
     ("ArrowLeft" "left")
-    ("PageUp" "pageup")
-    ("PageDown" "pagedown")
-    ("Home" "home")
+    ("ArrowRight" "right")
+    ("ArrowUp" "up")
     ("End" "end")
+    ("Home" "home")
+    ("PageDown" "pagedown")
+    ("PageUp" "pageup")
+    ;; Editing keys
+    ("Backspace" "backspace")
+    ("Clear" "clear")
+    ("Copy" "copy")
+    ("CrSel" "cursorselect")
+    ("Cut" "cut")
+    ("delete" "delete")
+    ("EreaseEof" "exselect") ; GDK doesn't differantiate between VK_EREOF and VK_EXSEL
+    ("ExSel" "exselect")
+    ("Insert" "insert")
+    ("Paste" "paste")
+    ("Redo" "redo")
+    ("Undo" "undo")
+    ;; UI keys
+    ("Again" "redo")
+    ("Attn" "attn")
+    ("Cancel" "cancel")
+    ("ContextMenu" "menu")
+    ("Escape" "escape")
+    ("Execute" "execute")
+    ("Find" "find")
+    ("Help" "help")
+    ("Pause" "pause")
+    ("Play" "play")
+    ("Select" "select")
+    ("ZoomIn" "zoomin")
+    ("ZoomOut" "zoomout")
+    ;; Device keys
+    ("BrightnessDown" "monbrightnessdown")
+    ("BrightnessUp" "monbrightnessup")
+    ("Eject" "eject")
+    ("LogOff" "logoff")
+    ;; "PowerOff" is ambiguous. Both GDK_KEY_PowerDown and GDK_KEY_PowerOff is
+    ;; listed. We map it to "poweroff", and add an additional "PowerDown" in
+    ;; case it is sometimes reported.
+    ("PowerOff" "poweroff")
+    ("PowerDown" "powerdown")
+    ;; "PrintScreen" is ambiguous. It is says to be GDK_KEY_2370_PrintScreen,
+    ;; GDK_KEY_Print and GDK_KEY_Sys_Req. Emacs reports "print", but the browser
+    ;; also has a "Print" which should map to GDK_KEY_Print, so We report it as
+    ;; "printscreen" instead.
+    ("PrintScreen" "printscreen")
+    ("Hibernate" "hibernate")
+    ;; "Standby" is ambiguous. It says both GDK_KEY_Standby, GDK_KEY_Suspend and
+    ;; GDK_KEY_Sleep. We map it to sleep as the keycode is named KEYCODE_SLEEP.
+    ("Standby" "sleep")
+    ("WakeUp" "wakeup")
+    ;; IME and composition keys
+    ;; Not sure how these should be handled, so we ignore them for now.
+    ("AllCandidates" "multiplecandidate")
+    ;; "Alphanumeric" is ambiguous. It is reported both as GDK_KEY_Eisu_Shift
+    ;; and GDK_KEY_Eisu_toggle.
+    ("Alphanumeric" "eisu_toggle")
+    ("CodeInput" "codeinput")
+    ("Compose" "multi_key")
+    ("Convert" "henkan")
+    ;; For dead keys, we should inspect compositionupdate
+    ;; https://developer.mozilla.org/en-US/docs/Web/API/Element/compositionupdate_event
+    ("Dead" "Dead")
+    ("GroupFirst" "iso_first_group")
+    ("GroupLast" "iso_last_group")
+    ("GroupNext" "iso_next_group")
+    ("GroupPrevious" "iso_prev_group")
+    ;; "ModeChange" is ambiguous. It says both GDK_KEY_Mode_switch and GDK_KEY_script_switch
+    ("ModeChange" "mode_switch")
+    ("NonConvert" "muhenkan")
+    ("PreviousCandidate" "previouscandidate")
+    ("SingleCandidate" "singlecandidate")
+    ;; Korean keyboards only
+    ;; Not sure how these should be handled, so we ignore them for now.
+    ("HangulMode" "hangul")
+    ("HanjaMode" "hangul_hanja")
+    ("JunjaMode" "hangul_jeonja")
+    ;; Japanese keyboards only
+    ;; Not sure how these should be handled, so we ignore them for now.
+    ("Eisu" "eisu_toggle")
+    ("Hankaku" "hankaku")
+    ("Hiragana" "hiragana")
+    ("HiraganaKatakana" "hiragana_katakana")
+    ;; "KanaMode" is ambiguous. It says GDK_KEY_Kana_Lock and GDK_KEY_Shift
+    ("KanaMode" "kana_lock")
+    ("KanjiMode" "kanji")
+    ("Katakana" "katakana")
+    ("Romaji" "romaji")
+    ("Zenkaku" "zenkaku")
+    ("ZenkakuHankaku" "zenkaku_hankaku")
+    ;; Function keys
+    ;; Some of these has both a GDK_KEY_Fx and GDK_KEY_KP_Fx mapping.
     ("F1" "f1")
     ("F2" "f2")
     ("F3" "f3")
@@ -581,14 +671,97 @@ Return nil when key must be discarded, e.g. for modifiers."
     ("F18" "f18")
     ("F19" "f19")
     ("F20" "f20")
-    ;; Compatibility layer between GDK keycode names and those of Browsers.
-    ;; https://gitlab.gnome.org/GNOME/gtk/-/blob/main/gdk/gdkkeysyms.h
-    ;; https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
-    ((or "ControlLeft" "ControlRight"
-         "ShiftLeft" "ShiftRight"
-         "MetaLeft" "MetaRight"
-         "AltLeft" "AltRight")
+    ;; Multimedia keys
+    ("MediaFastForward" "audioforward")
+    ("MediaPause" "audiopause")
+    ("MediaPlay" "audioplay")
+    ("MediaRecord" "audiorecord")
+    ("MediaRewind" "audiorewind")
+    ("MediaStop" "audiostop")
+    ("MediaTrackNext" "audionext")
+    ("MediaTrackPrevious" "audioprev")
+    ("AudioVolumeDown" "audiolowervolume")
+    ("AudioVolumeMute" "audiomute")
+    ("AudioVolumeUp" "audioraisevolume")
+    ("MicrophoneVolumeMute" "audiomicmute")
+    ;; Media controller keys
+    ("Dimmer" "brightnessadjust")
+    ("MediaAudioTrack" "audiocycletrack")
+    ("RandomToggle" "audiorandomplay")
+    ("SplitScreenToggle" "splitscreen")
+    ("Subtitle" "subtitle")
+    ("VideoModeNext" "next_vmode")
+    ;; Document keys
+    ("Close" "close")
+    ("New" "new")
+    ("Open" "open")
+    ;; See also note for "PrintScreen"
+    ("Print" "print")
+    ("Save" "save")
+    ("SpellCheck" "spell")
+    ("MailForward" "mailforward")
+    ("MailReply" "reply")
+    ("MailSend" "send")
+    ;; Application selector keys
+    ("LaunchCalculator" "calculator")
+    ("LaunchCalendar" "calendar")
+    ("LaunchMail" "mail")
+    ;; "LaunchMediaPlayer" is ambiguous. It says GDK_KEY_CD, GDK_KEY_Video and
+    ;; GDK_KEY_AudioMedia. We choose the last as it has the name media in it
+    ;; which other mappings use.
+    ("LaunchMediaPlayer" "audiomedia")
+    ("LaunchMyComputer" "mycomputer")
+    ("LaunchPhone" "phone")
+    ("LaunchScreenSaver" "screensaver")
+    ("LaunchSpreadsheet" "excel")
+    ("LaunchWebBrowser" "www")
+    ("LaunchWebCam" "webcam")
+    ("LaunchWordProcessor" "word")
+    ("LaunchApplication1" "launch0")
+    ("LaunchApplication2" "launch1")
+    ("LaunchApplication3" "launch2")
+    ("LaunchApplication4" "launch3")
+    ("LaunchApplication5" "launch4")
+    ("LaunchApplication6" "launch5")
+    ("LaunchApplication7" "launch6")
+    ("LaunchApplication8" "launch7")
+    ("LaunchApplication9" "launch8")
+    ("LaunchApplication10" "launch9")
+    ("LaunchApplication11" "launcha")
+    ("LaunchApplication12" "launchb")
+    ("LaunchApplication13" "launchc")
+    ("LaunchApplication14" "launchd")
+    ("LaunchApplication15" "launche")
+    ("LaunchApplication16" "launchf")
+    ;; Browser control keys
+    ("BrowserBack" "back")
+    ("BrowserFavorites" "favorites")
+    ("BrowserForward" "forward")
+    ("BrowserHome" "homepage")
+    ("BrowserRefresh" "refresh")
+    ("BrowserSearch" "search")
+    ("BrowserStop" "stop")
+    ;; Numeric keypad keys
+    ;; NOTE: Digits on the keypad is mapped to the digits rather KP_0 etc.
+    ("Decimal" "kp_decimal")
+    ("Multiply" "kp_multiply")
+    ("Add" "kp_add")
+    ("Clear" "clear")
+    ("Divide" "kp_divide")
+    ("Subtract" "kp_subtract")
+    ("Separator" "kp_separator")
+    ;; Modifier keys
+    ((or "Alt"
+         "AltGraph"
+         "Control"
+         "Fn"
+         "Hyper"
+         "Meta"
+         "Shift"
+         "Super"
+         "Symbol")
      nil)
+    ("Unidentified" nil)
     (_ key-string)))
 
 (defmethod on-signal-key-press-event ((sender electron-buffer) event)
