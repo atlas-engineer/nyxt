@@ -550,6 +550,7 @@ Return nil when key must be discarded, e.g. for modifiers."
   (match key-string
     ;; We handle these first as they're assumed to be hit frequently.
     ((simple-string #\Space) "space")
+    ((simple-string #\-) "hyphen")
     ((simple-string key) (string-downcase key))
     ;; Other whitespace keys
     ("Enter" "return")
