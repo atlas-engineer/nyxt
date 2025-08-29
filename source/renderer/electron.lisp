@@ -526,12 +526,12 @@ height of the status/prompt/message buffer."
   (when-let ((state input-event-modifier-state))
     (mapcar (lambda (modifier) (getf (modifier-plist buffer) modifier)) state)))
 
-(defun translate-code-string (code-string)
+(defun translate-key-string (key-string)
   "Return string representation of a keyval.
 Return nil when key must be discarded, e.g. for modifiers."
   ;; See https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key
   ;; See https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
-  (match code-string
+  (match key-string
     ((simple-string #\Space) "space")
     ((simple-string key) (string-downcase key))
     ((simple-string #\K #\e #\y key-value) (string-downcase (string key-value)))
@@ -589,7 +589,7 @@ Return nil when key must be discarded, e.g. for modifiers."
          "MetaLeft" "MetaRight"
          "AltLeft" "AltRight")
      nil)
-    (_ code-string)))
+    (_ key-string)))
 
 (defmethod on-signal-key-press-event ((sender electron-buffer) event)
   (when (string= "keyDown" (assoc-value event :type))
@@ -597,7 +597,7 @@ Return nil when key must be discarded, e.g. for modifiers."
                                        (when (assoc-value event :control) :control)
                                        (when (assoc-value event :alt) :alt)
                                        (when (assoc-value event :meta) :meta))))
-          (key-string (translate-code-string (assoc-value event :code))))
+          (key-string (translate-key-string (assoc-value event :key))))
       (flet ((key () (keymaps:make-key :value key-string
                                        :modifiers (input-modifier-translator sender modifiers)
                                        :status :pressed)))
