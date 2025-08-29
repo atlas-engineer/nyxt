@@ -529,6 +529,8 @@ height of the status/prompt/message buffer."
 (defun translate-code-string (code-string)
   "Return string representation of a keyval.
 Return nil when key must be discarded, e.g. for modifiers."
+  ;; See https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key
+  ;; See https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
   (match code-string
     ;; Compatibility layer between GDK keycode names and those of Browsers.
     ;; https://gitlab.gnome.org/GNOME/gtk/-/blob/main/gdk/gdkkeysyms.h
