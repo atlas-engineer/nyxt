@@ -40,6 +40,11 @@
     ;; Outputting to string blocks `pass'.
     :output 'nil))
 
+(defmethod clip-otp ((password-interface password-store-interface) &key password-name service)
+  (declare (ignore service))
+  (execute password-interface (list "otp" "--clip" password-name)
+           :output 'nil))
+
 (defvar *multiline-separator* ": *"
   "A regular expression to separate keys from values in the `pass' multiline format.")
 
