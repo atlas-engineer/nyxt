@@ -27,6 +27,10 @@
 (defgeneric clip-username (password-interface &key password-name service)
   (:documentation "Retrieve specific login by name of the password entry."))
 
+(export-always 'clip-otp)
+(defgeneric clip-otp (password-interface &key password-name service)
+  (:documentation "Retrive specific OTP code by name."))
+
 (export-always 'save-password)
 (defgeneric save-password (password-interface
                            &key password-name username password service)
