@@ -519,7 +519,11 @@ down."))
     :initform :renderer
     :type symbol
     :documentation "Select a download engine to use, such as `:lisp' or
-`:renderer'."))
+`:renderer'.")
+   (web-context-name
+    "default"
+    :type string
+    :documentation "Name of the renderer web context for this buffer. Use \"incognito\" to use a non-persistent context."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)

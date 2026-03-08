@@ -61,7 +61,9 @@
 (defmethod get-web-context ((browser gtk-browser) name)
   (alexandria:ensure-gethash name
                              (web-contexts browser)
-                             (make-web-context)))
+                             (if (string= name "incognito")
+                                 (make-web-context-incognito)
+                                 (make-web-context))))
 
 (defmethod browser-schemes append ((browser gtk-browser))
   '("webkit" "webkit-pdfjs-viewer"))
@@ -284,6 +286,54 @@ the renderer thread, use `defmethod' instead."
      (uiop:native-namestring (files:expand (make-instance 'nyxt-data-directory
                                                           :base-path "cookies")))
      :webkit-cookie-persistent-storage-text)
+    (setf (ffi-buffer-cookie-policy cookie-manager) (default-cookie-policy *browser*))
+    context))
+
+(defun make-web-context-incognito ()
+  "Create a WebKit web context without persistent storage for cookies.
+Other settings mirror `make-web-context'."
+  (let* ((context (make-instance 'webkit:webkit-web-context
+                                 :website-data-manager
+                                 (make-instance 'webkit-website-data-manager)))
+         (cookie-manager (webkit:webkit-web-context-get-cookie-manager context))
+         (gtk-extensions-path (files:expand (make-instance 'gtk-extensions-directory))))
+    (webkit:webkit-web-context-set-spell-checking-enabled context t)
+    ;; Need to set the initial language list.
+    (let ((pointer (cffi:foreign-alloc :string
+                                       :initial-contents (list (or (uiop:getenv "LANG")
+                                                                   (uiop:getenv "LANGUAGE")
+                                                                   (uiop:getenv "LC_CTYPE")
+                                                                   "en_US"))
+                                       :null-terminated-p t)))
+      (webkit:webkit-web-context-set-spell-checking-languages context pointer)
+      (cffi:foreign-free pointer))
+    (when (and (not (nfiles:nil-pathname-p gtk-extensions-path))
+               (or (uiop:directory-exists-p gtk-extensions-path)
+                   (handler-case
+                       (nth-value 1 (ensure-directories-exist gtk-extensions-path))
+                     (file-error ()))))
+      (log:info "GTK extensions directory: ~s" gtk-extensions-path)
+      (gobject:g-signal-connect
+       context "initialize-web-extensions"
+       (lambda (context)
+         (with-protect ("Error in \"initialize-web-extensions\" signal thread: ~a" :condition)
+           (webkit:webkit-web-context-set-web-extensions-directory
+            context
+            (uiop:native-namestring gtk-extensions-path))))))
+    (gobject:g-signal-connect
+     context "download-started"
+     (lambda (context download)
+       (declare (ignore context))
+       (with-protect ("Error in \"download-started\" signal thread: ~a" :condition)
+         (wrap-download download))))
+    (maphash (lambda (scheme-name callbacks)
+               (ffi-register-custom-scheme (make-instance 'scheme
+                                                          :name scheme-name
+                                                          :web-context context
+                                                          :callback (first callbacks)
+                                                          :error-callback (second callbacks))))
+             nyxt::*schemes*)
+    ;; IMPORTANT: Do NOT set persistent cookie storage here for incognito.
     (setf (ffi-buffer-cookie-policy cookie-manager) (default-cookie-policy *browser*))
     context))
 
@@ -1173,7 +1223,11 @@ with this scheme.")
             ;; A single web view is shared by all prompt buffers of a window.
             (prompt-buffer-view (window buffer))
             (make-instance 'webkit:webkit-web-view
-                           :web-context (get-web-context *browser* "default"))))
+                           :web-context (get-web-context *browser*
+                                                         (if (and (typep buffer 'nyxt:context-buffer)
+                                                                  (slot-boundp buffer 'nyxt::web-context-name))
+                                                             (slot-value buffer 'nyxt::web-context-name)
+                                                             "default")))))
   (when (document-buffer-p buffer)
     (setf (ffi-buffer-smooth-scrolling-enabled-p buffer) (smooth-scrolling buffer)))
   ;; TODO: Maybe define an FFI method?

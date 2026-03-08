@@ -62,15 +62,16 @@
 
 (defmethod add-url-to-history (url (mode history-mode) &key (title ""))
   "Push URL to `history-vector'."
-  (unless (blocked-p url mode)
+  (unless (or (blocked-p url mode)
+              (nyxt:find-submode 'nyxt/mode/incognito:incognito-mode (buffer mode)))
     (with-slots (history-vector history-file) *browser*
-        (vector-push-extend (make-instance 'history-entry
-                                       :url (quri:uri url)
-                                       :title title)
-                        history-vector)
-    (files:with-file-content (history history-file)
-      (setf history history-vector))
-    url)))
+      (vector-push-extend (make-instance 'history-entry
+                                         :url (quri:uri url)
+                                         :title title)
+                          history-vector)
+      (files:with-file-content (history history-file)
+        (setf history history-vector))
+      url)))
 
 (defmethod nyxt:on-signal-load-finished ((mode history-mode) url title)
   (add-url-to-history url mode :title title)

@@ -112,7 +112,8 @@
                  (:file "prompt-buffer")
                  (:file "command-commands")
                  (:file "recent-buffers")
-                 (:file "external-editor")))
+                 (:file "external-editor")
+                 (:file "mode/incognito")))
                (:module "Core modes"
                 :pathname "mode"
                 :depends-on ("Core")
