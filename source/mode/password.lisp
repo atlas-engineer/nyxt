@@ -79,7 +79,14 @@ for which the `executable' slot is non-nil."
             (if (password:clip-username (password-interface buffer)
                                         :password-name password-name)
                 (echo "Username saved to clipboard.")
-                (echo "No username found."))))))
+                (echo "No username found."))))
+        (lambda-command clip-otp (password-name)
+            (let ((buffer (buffer (current-source)))
+                  (password-name (first password-name)))
+              (password:clip-otp (password-interface buffer)
+                                 :password-name password-name)
+              (echo "OTP Code saved to clipboard for ~a seconds."
+                    (password:sleep-timer (password-interface buffer)))))))
 
 (define-class password-source (prompter:source)
   ((prompter:name "Passwords")
@@ -208,3 +215,20 @@ See also `copy-password-prompt-details'."
                                        password-source-actions
                                        :key #'name))))
       (echo-warning "No password manager found.")))
+
+(define-command copy-otp (&optional (buffer (current-buffer)))
+  "Query otp code and save to clipboard"
+  (password-debug-info)
+  (if (password-interface buffer)
+      (with-password (password-interface buffer)
+        (prompt :prompt "OTP Code"
+                :input (quri:uri-domain (url buffer))
+                :sources (make-instance
+                          'password-source
+                          :buffer buffer
+                          :password-instance (password-interface buffer)
+                          :actions-on-return
+                          (sera:filter (sera:eqs 'clip-otp)
+                                       password-source-actions
+                                       :key #'name))))
+      (echo-warning "No password manager found")))
