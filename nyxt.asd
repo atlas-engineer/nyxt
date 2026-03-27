@@ -52,6 +52,7 @@
                py-configparser
                quri
                serapeum
+               sophisticated-clipboard
                spinneret
                sqlite
                str

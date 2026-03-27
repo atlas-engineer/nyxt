@@ -13,7 +13,7 @@
       `("span[nyxt-search-mark]"
         :background-color ,theme:secondary-color !important
         :color ,theme:on-secondary-color !important
-        :border-radius 2px
+        :border-radius 0px
         :z-index #.(1- (expt 2 31)))
       `("span[nyxt-search-mark].nyxt-current-search-mark"
         :background-color ,theme:highlight-color !important)
@@ -210,7 +210,7 @@ Style it via CSS selector \".nyxt-current-search-mark\"."
   "Whether MATCH is invisible in its corresponding buffer."
   (ps-eval :buffer (buffer match)
     (let ((elem (nyxt/ps:qs (ps:@ document body) (ps:lisp (css-selector match)))))
-          (and elem (nyxt/ps:element-invisible-p elem)))))
+         (and elem (nyxt/ps:element-invisible-p elem)))))
 
 ;; More powerful than sera:ellipsize or str:shorten.
 ;; TODO Add tests.

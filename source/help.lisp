@@ -177,18 +177,25 @@ invoking the " (:nxref :command 'toggle-modes) "command.")))))
           (:div.row
            (:div.left
             (:nradio
-              :name "theme"
-              :checked (if (eq (theme *browser*) theme:+light-theme+)
-                           'theme:+light-theme+
-                           'theme:+dark-theme+)
-              :vertical t
-              :buffer buffer
-              '(theme:+light-theme+ "Light theme"
-                (nyxt::auto-configure :form '(define-configuration browser
-                                              ((theme theme:+light-theme+)))))
-              '(theme:+dark-theme+ "Dark theme"
-                (nyxt::auto-configure :form '(define-configuration browser
-                                              ((theme theme:+dark-theme+)))))))))
+             :name "theme"
+             :checked (let ((theme (or (ignore-errors (get-configured-value 'browser 'theme))
+                                       (theme *browser*))))
+                        (cond ((eq theme theme:+light-theme+) 'theme:+light-theme+)
+                              ((eq theme theme:+oled-theme+) 'theme:+oled-theme+)
+                              (t 'theme:+dark-theme+)))
+             :vertical t
+             :buffer buffer
+             '(theme:+light-theme+ "Light theme"
+               (nyxt::auto-configure :form '(define-configuration browser
+                                             ((theme theme:+light-theme+)))))
+             '(theme:+dark-theme+ "Dark theme"
+               (nyxt::auto-configure :form '(define-configuration browser
+                                             ((theme theme:+dark-theme+)))))
+             '(theme:+oled-theme+ "OLED theme"
+               (nyxt::auto-configure :form '(define-configuration browser
+                                             ((theme theme:+oled-theme+)))))))
+           (:div.right
+            (:p "Themes for Nyxt's UI."))))
          (:div.section
           (:h3 "Webpage theme")
           (:div.row
@@ -262,61 +269,11 @@ invoking the " (:nxref :command 'toggle-modes) "command.")))))
             (:p "Modes can also be set interactively by command "
                 (:nxref :command 'toggle-modes)
                 " ,or by specific mode togglers such as "
-                (:nxref :command 'nyxt/mode/no-sound:no-sound-mode) "."
-                (:nxref :command 'nyxt/mode/no-script:no-script-mode) ".")))))
+                (:nxref :command 'nyxt/mode/no-sound:no-sound-mode) ".")))))
         (privacy-and-security
          (:div.section
           (:h3 "Privacy & Security Modes")
           (:div.row
-           (:div.left
-            (:ncheckbox
-              :name "blocker-mode"
-              :checked (let ((modes (ignore-errors (get-configured-value 'web-buffer 'default-modes))))
-                        (when (or (and modes (find 'nyxt/mode/blocker:blocker-mode modes))
-                                  (find 'nyxt/mode/blocker:blocker-mode (default-modes (current-buffer))))
-                          t))
-              :buffer buffer
-              '((blocker-mode "Blocker mode")
-                (nyxt::auto-configure
-                 :form '(define-configuration (web-buffer)
-                         ((default-modes (pushnew 'nyxt/mode/blocker:blocker-mode %slot-value%)))))
-                (nyxt::auto-configure
-                 :form '(define-configuration (web-buffer)
-                         ((default-modes (remove-if (lambda (m)
-                                                      (string= (symbol-name m) "BLOCKER-MODE"))
-                                          %slot-value%)))))))
-            (:ncheckbox
-              :name "no-script-mode"
-              :checked (let ((modes (ignore-errors (get-configured-value 'web-buffer 'default-modes))))
-                        (when (or (and modes (find 'nyxt/mode/no-script:no-script-mode modes))
-                                  (find 'nyxt/mode/no-script:no-script-mode (default-modes (current-buffer))))
-                          t))
-              :buffer buffer
-              '((no-script-mode "No-Script mode")
-                (nyxt::auto-configure
-                 :form '(define-configuration (web-buffer)
-                         ((default-modes (pushnew 'nyxt/mode/no-script:no-script-mode %slot-value%)))))
-                (nyxt::auto-configure
-                 :form '(define-configuration (web-buffer)
-                         ((default-modes (remove-if (lambda (m)
-                                                      (string= (symbol-name m) "NO-SCRIPT-MODE"))
-                                          %slot-value%)))))))
-            (:ncheckbox
-              :name "reduce-tracking-mode"
-              :checked (let ((modes (ignore-errors (get-configured-value 'web-buffer 'default-modes))))
-                        (when (or (and modes (find 'nyxt/mode/reduce-tracking:reduce-tracking-mode modes))
-                                  (find 'nyxt/mode/reduce-tracking:reduce-tracking-mode (default-modes (current-buffer))))
-                          t))
-              :buffer buffer
-              '((reduce-tracking-mode "Reduce-Tracking mode")
-                (nyxt::auto-configure
-                 :form '(define-configuration (web-buffer)
-                         ((default-modes (pushnew 'nyxt/mode/reduce-tracking:reduce-tracking-mode %slot-value%)))))
-                (nyxt::auto-configure
-                 :form '(define-configuration (web-buffer)
-                         ((default-modes (remove-if (lambda (m)
-                                                      (string= (symbol-name m) "REDUCE-TRACKING-MODE"))
-                                          %slot-value%))))))))
            (:div.right
             (:p "Select security modes to be enabled by default on web buffers."))))
          (:div.section
@@ -406,7 +363,7 @@ The value is saved to clipboard."
       `("nav .button"
         :display "block"
         :text-align "left"
-        :font-size "small")
+        :font-size "11px")
       `("#quick-access"
         :margin-top "64px")
       `(.copyright
@@ -432,7 +389,7 @@ The value is saved to clipboard."
         :padding-top "3px"
         :margin-right "12px")
       `(".logo svg"
-        :border-radius "4px")
+        :border-radius "3px")
       `(.set-url
         :min-width "180px"
         :height "40px"
@@ -453,7 +410,7 @@ The value is saved to clipboard."
       `(.binding
         :margin-left "12px"
         :font-weight "bold"
-        :color ,theme:secondary-color))
+        :color ,theme:on-secondary-color))
     (:div
      :class "container"
      (:nav
@@ -464,7 +421,7 @@ The value is saved to clipboard."
            :title "Install a `.desktop` entry so that Nyxt can be ran from your launcher."
            '(add-desktop-entry)))
        (:nbutton
-         :text "Quick-Start"
+         :text "Slow-Start"
          :title "Display a short tutorial."
          '(quick-start))
        (:nbutton

@@ -90,7 +90,7 @@ A positive value shifts to the bottom.")
                           (y-translation mode))
       :padding "0px 0.3em"
       :border-color ,theme:primary-color+
-      :border-radius "4px"
+      :border-radius "0px"
       :border-width "2px"
       :border-style "solid"
       :z-index #.(1- (expt 2 31)))

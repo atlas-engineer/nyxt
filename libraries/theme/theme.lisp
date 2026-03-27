@@ -193,3 +193,30 @@ Example:
                  :warning-color "#EBCB8B"
                  :warning-color+ "#D08770"
                  :on-warning-color "#2E3440"))
+
+(export-always '+oled-theme+)
+(defvar +oled-theme+
+  (make-instance 'theme
+                 :background-color+ "#000000"
+                 :background-color  "#000000"
+                 :background-color- "#111111"
+                 :primary-color+    "#FFFFFF"
+                 :primary-color     "#CCCCCC"
+                 :primary-color-    "#999999"
+                 :secondary-color+  "#444444"
+                 :secondary-color   "#000000"
+                 :secondary-color-  "#222222"
+                 :action-color+     "#0099FF"
+                 :action-color      "#007ACC"
+                 :action-color-     "#005999"
+                 :highlight-color+  "#FFFF00"
+                 :highlight-color   "#FFCC00"
+                 :highlight-color-  "#FF9900"
+                 :success-color+    "#00FF88"
+                 :success-color     "#00CC66"
+                 :success-color-    "#009944"
+                 :warning-color+    "#FF6666"
+                 :warning-color     "#FF3333"
+                 :warning-color-    "#CC0000"
+                 :font-family       "TT Fors Trial"
+                 :monospace-font-family "Berkeley Mono"))

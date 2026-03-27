@@ -37,7 +37,6 @@ internal programming APIs."
     (define-keyscheme-map "bookmarks-mode" ()
       keyscheme:default
       (list
-       "C-b" 'list-bookmarks
        "C-m g" 'bookmark-hint)
       keyscheme:cua
       (list

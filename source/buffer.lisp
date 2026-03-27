@@ -150,7 +150,7 @@ inherited from the superclasses.")
         :background-color ,theme:secondary-color
         :color ,theme:on-secondary-color
         :height "2px"
-        :border-radius "2px"
+        :border-radius "0px"
         :border-width "0")
       '(button
         :background "transparent"
@@ -165,7 +165,7 @@ inherited from the superclasses.")
         :color ,theme:on-primary-color
         :display "inline-block"
         :text-decoration "none"
-        :border-radius "4px"
+        :border-radius "0px"
         :border-color ,theme:primary-color
         :border-style "solid"
         :border-width "0.2em"
@@ -235,7 +235,7 @@ inherited from the superclasses.")
         :color "black"
         :background-color "white"
         :border "0.2em" solid ,theme:secondary-color
-        :border-radius "4px"
+        :border-radius "0px"
         :outline "none"
         :padding "0.2em"
         :margin "0.2em")
@@ -246,11 +246,11 @@ inherited from the superclasses.")
       `(pre
         :font-family ,theme:monospace-font-family
         :font-size "0.9rem"
-        :border-radius "2px"
+        :border-radius "0px"
         :overflow "auto"
         :padding "5px")
       '("table"
-        :border-radius "2px"
+        :border-radius "0px"
         :border-spacing "0"
         :width "100%")
       `("pre, p code"
@@ -297,8 +297,8 @@ inherited from the superclasses.")
         :color ,theme:on-secondary-color
         :padding-left "8px"
         :padding-right "8px"
-        :font-size "14px"
-        :border-radius "2px"
+        :font-size "9px"
+        :border-radius "0px"
         :margin "0"
         :margin-right "12px"
         :border "none"
@@ -319,7 +319,7 @@ inherited from the superclasses.")
         :padding "4px"
         :padding-left "8px"
         :padding-right "8px"
-        :border-radius "2px"
+        :border-radius "0px"
         :font-weight "bold"
         :background-color ,theme:background-color-)
       '("dd"
@@ -703,7 +703,7 @@ Return the created buffer."
                (ps:chain *array
                          (from (ps:@ node shadow-root children))
                          (concat (ps:chain *array (from (ps:@ node children)))))
-                   (ps:chain node children)))
+               (ps:chain node children)))
         (add-nyxt-identifiers child))
       (when (ps:@ node shadow-root)
         (ps:chain node (set-attribute "nyxt-shadow-root" "")))

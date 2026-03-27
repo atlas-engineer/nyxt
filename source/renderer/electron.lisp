@@ -101,6 +101,8 @@
                              :privileges "{}")))
   (setf (electron:launch-options electron:*interface*)
         (cl-ppcre:split "\\s+"  (getf *options* :electron-opts)))
+  (setf (electron:launch-options electron:*interface*)
+        '("--no-sandbox" "--enable-feautures=UseOzonePlatform" "--ozone-platform=wayland"))
   (electron:launch electron:*interface*)
   (when (adblocking-enabled-p browser)
     (let ((adblocker (make-instance 'electron:adblocker-electron)))
@@ -284,10 +286,10 @@ the default height."))
 
 (defmethod ffi-buffer-copy ((buffer electron-buffer) &optional (text nil text-provided-p))
   (if text-provided-p
-      (trivial-clipboard:text text)
+      (setf (sophisticated-clipboard:clipboard-text) text)
       (progn
         (electron:copy (electron:web-contents buffer))
-        (trivial-clipboard:content))))
+        (sophisticated-clipboard:clipboard-text))))
 
 (defmethod ffi-buffer-paste ((buffer electron-buffer) &optional (text nil text-provided-p))
   (if text-provided-p
@@ -296,7 +298,7 @@ the default height."))
 
 (defmethod ffi-buffer-cut ((buffer electron-buffer))
   (electron:cut (electron:web-contents buffer))
-  (trivial-clipboard:text))
+  (sophisticated-clipboard:clipboard-text))
 
 (defmethod ffi-buffer-select-all ((buffer electron-buffer))
   (electron:select-all (electron:web-contents buffer)))

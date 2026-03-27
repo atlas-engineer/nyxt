@@ -49,3 +49,27 @@ buffer."
   (if (style mode)
       (nyxt::html-set-style (style mode) (buffer mode))
       (nyxt/mode/bookmarklets:darken (buffer mode))))
+
+;; Define a new mode that will contain your custom CSS for fonts.
+(define-mode font-mode (nyxt/mode/style:style-mode)
+  "A mode to set custom fonts for web pages."
+  ((visible-in-status-p t)
+   (style
+    (theme:themed-css (theme *browser*)
+      ;; Set the default font for all elements.
+      '((:or p b h1 h2 h3 h4 h5 h6 li strong em u mark sup sub q blockquote figure ul ol dl dt dd)
+        :font-family "\"TT Fors Trial\", \"TT Livret Text\", sans-serif")
+      ;; Set the monospace font for specific elements.
+      '((:or code
+             pre
+             tt
+             (:and pre > *)
+             (:and tt > *)
+             (:and code > *)
+             .react-code-lines
+             (:and .react-code-lines span)
+             .react-code-text
+             (:and .react-code-text span)
+             .react-line-numbers
+             .react-line-number)
+        :font-family "\"Berkeley Mono\", monospace")))))

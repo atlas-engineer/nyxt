@@ -114,7 +114,7 @@ some point.")
           :grid-template-rows "auto 1fr")
         `("#prompt-area"
           :margin "4px"
-          :border-radius "3px"
+          :border-radius "0px"
           :background-color ,theme:primary-color
           :color ,theme:on-primary-color
           :border-top "2px solid"
@@ -175,7 +175,7 @@ some point.")
         `(input
           :font-family ,theme:monospace-font-family)
         `("#input"
-          :border-radius "4px"
+          :border-radius "0px"
           :height "28px"
           :background-color ,theme:background-color
           :color ,theme:on-background-color
@@ -196,7 +196,7 @@ some point.")
           :display "flex"
           :justify-content "space-between"
           :align-items "stretch"
-          :border-radius "3px")
+          :border-radius "0px")
         '(".source-name > div"
           :line-height "26px")
         '(".source-name > div > button"
@@ -225,7 +225,7 @@ some point.")
            :color ,theme:on-background-color
            :overflow "hidden"
            :text-overflow "ellipsis"
-           :border-radius "2px"
+           :border-radius "0px"
            :white-space "nowrap"
            :height "20px"
            :padding-left "4px")
@@ -240,7 +240,7 @@ some point.")
            :color ,theme:on-secondary-color
            :font-weight "normal"
            :padding-left "4px"
-           :border-radius "2px"
+           :border-radius "0px"
            :text-align "left"))
         `("#selection"
           :background-color ,theme:action-color
