@@ -110,7 +110,9 @@ Important pieces of functionality are:
        "pageup" 'scroll-page-up
        "C-f" 'scroll-page-down
        "space" 'scroll-page-down
-       "pagedown" 'scroll-page-down)))))
+       "pagedown" 'scroll-page-down
+       "C-d" 'scroll-half-page-down
+       "C-u" 'scroll-half-page-up)))))
 
 (define-configuration document-buffer
   ((default-modes (cons 'document-mode %slot-value%))))
@@ -294,6 +296,14 @@ The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
   "Scroll up by one page height."
   (ps-eval (ps:chain window (scroll-by 0 (- (* (ps:lisp (page-scroll-ratio (current-buffer)))
                                              (ps:@ window inner-height)))))))
+
+(define-command scroll-half-page-down ()
+  "Scroll down by half a page height."
+  (ps-eval (ps:chain window (scroll-by 0 (/ (ps:@ window inner-height) 2)))))
+
+(define-command scroll-half-page-up ()
+  "Scroll up by half a page height."
+  (ps-eval (ps:chain window (scroll-by 0 (- (/ (ps:@ window inner-height) 2))))))
 
 (define-command zoom-page (&key (buffer (current-buffer)))
   "Zoom in the current buffer."
