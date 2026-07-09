@@ -163,15 +163,45 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
 
 (export-always 'add-stylesheet)
 (defun add-stylesheet (id style &optional (buffer (current-buffer)))
-  "Set STYLE of element featuring ID."
-  (ps-eval :async t :buffer buffer
-    (unless (nyxt/ps:qs document (ps:lisp (str:concat "#" id)))
-      (ps:try
-       (ps:let ((style-element (ps:chain document (create-element "style"))))
+  "Add or replace STYLE on the style element featuring ID."
+  (ps-eval :buffer buffer
+    (ps:try
+     (ps:let ((style-element
+                (nyxt/ps:qs document (ps:lisp (str:concat "#" id)))))
+       (unless style-element
+         (setf style-element (ps:chain document (create-element "style")))
          (setf (ps:@ style-element id) (ps:lisp id))
-         (ps:chain document head (append-child style-element))
-         (setf (ps:chain style-element inner-text) (ps:lisp style)))
-       (:catch (error))))))
+         (ps:chain document head (append-child style-element)))
+       (setf (ps:chain style-element inner-text) (ps:lisp style)))
+     (:catch (error)))))
+
+(export-always 'set-document-theme)
+(defun set-document-theme (declarations &optional (buffer (current-buffer)))
+  "Set CSS custom properties from DECLARATIONS on BUFFER's root element."
+  (ps-eval :buffer buffer
+    (ps:try
+     (ps:let* ((root (ps:@ document document-element))
+               (parsed-style
+                 (ps:@ (ps:chain document (create-element "span")) style)))
+       (ps:chain *Array
+                 (from (ps:@ root style))
+                 (filter
+                  (lambda (property)
+                    (ps:chain property (starts-with "--nyxt-theme-"))))
+                 (for-each
+                  (lambda (property)
+                    (ps:chain root style (remove-property property)))))
+       (setf (ps:@ parsed-style css-text) (ps:lisp declarations))
+       (ps:chain *Array
+                 (from parsed-style)
+                 (for-each
+                  (lambda (property)
+                    (ps:chain root style
+                              (set-property
+                               property
+                               (ps:chain parsed-style
+                                         (get-property-value property))))))))
+     (:catch (error)))))
 
 (defun html-write (html-document &optional (buffer (current-buffer)))
   "Set BUFFER's document to HTML-DOCUMENT.

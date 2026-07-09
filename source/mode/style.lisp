@@ -31,9 +31,13 @@ If nil, look for CSS in `style-file' or `style-url'.")))
             (style-file mode)))))
   (apply-style mode))
 
+(defun style-element-id (mode)
+  (format nil "nyxt-style-mode-~(~a~)"
+          (symbol-name (class-name (class-of mode)))))
+
 (defmethod apply-style ((mode style-mode))
   (when (style mode)
-    (nyxt::html-set-style (style mode) (buffer mode))))
+    (nyxt:add-stylesheet (style-element-id mode) (style mode) (buffer mode))))
 
 (defmethod nyxt:on-signal-load-finished ((mode style-mode) url title)
   (declare (ignore url title))
@@ -47,5 +51,29 @@ buffer."
 
 (defmethod apply-style ((mode dark-mode))
   (if (style mode)
-      (nyxt::html-set-style (style mode) (buffer mode))
+      (nyxt:add-stylesheet (style-element-id mode) (style mode) (buffer mode))
       (nyxt/mode/bookmarklets:darken (buffer mode))))
+
+;; Define a new mode that will contain your custom CSS for fonts.
+(define-mode font-mode (nyxt/mode/style:style-mode)
+  "A mode to set custom fonts for web pages."
+  ((visible-in-status-p t)
+   (style
+    (theme:themed-css-variables (theme *browser*)
+      ;; Set the default font for all elements.
+      `((:or p b h1 h2 h3 h4 h5 h6 li strong em u mark sup sub q blockquote figure ul ol dl dt dd)
+        :font-family ,theme:font-family)
+      ;; Set the monospace font for specific elements.
+      `((:or code
+             pre
+             tt
+             (:and pre > *)
+             (:and tt > *)
+             (:and code > *)
+             .react-code-lines
+             (:and .react-code-lines span)
+             .react-code-text
+             (:and .react-code-text span)
+             .react-line-numbers
+             .react-line-number)
+        :font-family ,theme:monospace-font-family)))))

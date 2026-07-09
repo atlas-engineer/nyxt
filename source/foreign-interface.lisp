@@ -264,6 +264,11 @@ specific threads."))
 (define-ffi-generic ffi-kill-browser (browser)
   (:documentation "Terminate the renderer process."))
 
+(define-ffi-generic ffi-apply-theme (browser theme)
+  (:method ((browser t) (theme t))
+    (declare (ignore browser theme)))
+  (:documentation "Apply THEME to renderer-native surfaces owned by BROWSER."))
+
 (define-ffi-generic ffi-initialize (browser urls startup-timestamp)
   (:method ((browser t) urls startup-timestamp)
     (finalize-startup browser urls startup-timestamp))
@@ -317,7 +322,7 @@ Setf-able.  Valid values are determined by the `cookie-policy' type."))
       ;; To avoid this, we can 'flush' the clipboard to ensure that the copied text
       ;; is present the clipboard and need not be retrieved from the GTK thread.
       ;; TODO: Do we still need to flush now that we have multiple threads?
-      ;; (trivial-clipboard:text (trivial-clipboard:text))
+      ;; (sophisticated-clipboard:clipboard-text (sophisticated-clipboard:clipboard-text))
 
       (sera:lret ((input (if text-provided-p text (copy))))
         (copy-to-clipboard input)
@@ -344,7 +349,29 @@ Should return the copied text or NIL, if something goes wrong."))
               (text-to-paste (or (ps:lisp input-text)
                                  (ps:chain navigator clipboard (read-text)))))
           (when (nyxt/ps:element-editable-p active-element)
-            (nyxt/ps:insert-at active-element text-to-paste))
+            ;; Check if it's an image-accepting element and we have an image
+            (cond
+              ((and (ps:lisp (sophisticated-clipboard:clipboard-has-type-p "image/png"))
+                    (or (string= tag "TEXTAREA")
+                        (and (string= tag "INPUT")
+                             (string= (ps:@ active-element type) "file"))
+                        (ps:@ active-element content-editable)))
+               ;; Handle image paste for content-editable areas
+               (ps:lisp
+                (let ((image-data (sophisticated-clipboard:clipboard-image)))
+                  (when image-data
+                    ;; Convert to data URL and insert as img element
+                    (ps-eval :buffer buffer
+                      (let ((img (ps:chain document (create-element "img")))
+                            (blob (ps:new (*blob (list (ps:lisp image-data))
+                                                 (ps:create type "image/png"))))
+                            (url (ps:chain *url* (create-object-url blob))))
+                        (setf (ps:@ img src) url)
+                        (ps:chain document (exec-command "insertHTML" false
+                                                       (ps:@ img outer-html)))))))))
+              (text-to-paste
+               ;; Regular text paste
+               (nyxt/ps:insert-at active-element text-to-paste))))
           text-to-paste)))
       (if text-provided-p
           (paste text)

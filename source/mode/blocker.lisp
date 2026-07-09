@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/blocker
-  (:documentation "Package for `blocker-mode', mode to block requests for listed hosts.
+  (:documentation "Package for `blocker-mode', mode to block requests for hosts.
 `blocker-mode' relies on:
 - `hostlist' as the hostlist representation.
 - `*default-hostlist*' as the most reliable hostlist.
@@ -49,9 +49,10 @@ See the `hostlist' class documentation."
 
 (export-always '*default-hostlist*)
 (defparameter *default-hostlist*
-  (make-instance 'hostlist
-                 :url (quri:uri "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts")
-                 :base-path #p"hostlist-stevenblack.txt")
+  (make-instance
+   'hostlist
+   :url (quri:uri "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts")
+   :base-path #p"hostlist-stevenblack.txt")
   "Default hostlist for `blocker-mode'.")
 
 (define-mode blocker-mode ()
@@ -69,7 +70,8 @@ Example:
 
 \(define-mode my-blocker-mode (nyxt/mode/blocker:blocker-mode)
   \"Blocker mode with custom hosts from `*my-blocked-hosts*'.\"
-  ((nyxt/mode/blocker:hostlists (list *my-blocked-hosts* nyxt/mode/blocker:*default-hostlist*))))
+  ((nyxt/mode/blocker:hostlists
+     (list *my-blocked-hosts* nyxt/mode/blocker:*default-hostlist*))))
 
 \(define-configuration :buffer
   ((default-modes (append '(my-blocker-mode) %slot-default%))))
@@ -102,14 +104,17 @@ internal programming APIs."
     (hooks:remove-hook (request-resource-hook (buffer mode))
                        'request-resource-block)))
 
-(defmethod files:write-file ((profile nyxt-profile) (hostlist hostlist) &key destination)
+(defmethod
+ files:write-file ((profile nyxt-profile) (hostlist hostlist) &key destination)
   "Write the downloaded hostlist to disk.
 This is the raw downloaded content and not the serialized parsed content.
 This gives more integrity guarantees to the user and allows external manipulation."
   (unless (uiop:emptyp (files:url-content hostlist))
-    (alex:write-string-into-file (files:url-content hostlist) destination :if-exists :supersede)))
+    (alex:write-string-into-file (files:url-content hostlist) destination
+                                 :if-exists :supersede)))
 
-(defmethod files:deserialize ((profile nyxt-profile) (hostlist hostlist) raw-content &key)
+(defmethod
+ files:deserialize ((profile nyxt-profile) (hostlist hostlist) raw-content &key)
   (flet ((empty-line? (line)
            (< (length line) 2))
          (comment? (line)
@@ -151,6 +156,9 @@ This is an acceptable handler for `request-resource-hook'."
           (mapcar #'closer-mop:slot-definition-name
                   (closer-mop:class-slots (class-of object)))))
 
-(define-command update-hostlists (&optional (blocker-mode (find-submode 'nyxt/mode/blocker:blocker-mode (current-buffer))))
+(define-command
+ update-hostlists
+ (&optional (blocker-mode
+             (find-submode 'nyxt/mode/blocker:blocker-mode (current-buffer))))
   "Forces update for all the hostlists of `blocker-mode'."
   (clrhash (blocked-hosts blocker-mode)))

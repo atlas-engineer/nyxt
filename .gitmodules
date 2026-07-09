@@ -416,7 +416,11 @@
 	shallow = true
 [submodule "_build/cl-electron"]
 	path = _build/cl-electron
-	url = https://github.com/atlas-engineer/cl-electron/
+	url = https://github.com/luciusmagn/cl-electron/
+	shallow = true
+[submodule "_build/sophisticated-clipboard"]
+	path = _build/sophisticated-clipboard
+	url = https://github.com/luciusmagn/sophisticated-clipboard
 	shallow = true
 [submodule "_build/cl-colors-ng"]
 	path = _build/cl-colors-ng

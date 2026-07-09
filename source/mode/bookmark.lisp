@@ -37,7 +37,6 @@ internal programming APIs."
     (define-keyscheme-map "bookmarks-mode" ()
       keyscheme:default
       (list
-       "C-b" 'list-bookmarks
        "C-m g" 'bookmark-hint)
       keyscheme:cua
       (list
@@ -59,7 +58,7 @@ internal programming APIs."
        "m M" 'add-bookmark
        "m m" 'add-bookmark
        "m d" 'delete-bookmark)))
-   (style (theme:themed-css (theme *browser*)
+   (style (theme:themed-css-variables (theme *browser*)
             '("dl"
               :margin-left "8px")
             ;; Taken from buffer.lisp to save space for big bookmark lists.

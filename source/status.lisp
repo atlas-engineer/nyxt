@@ -23,7 +23,7 @@
    (glyph-reload (gethash "reload.svg" *static-data*))
    (glyph-lambda (gethash "lambda.svg" *static-data*))
    (style
-    (theme:themed-css (theme *browser*)
+    (theme:themed-css-variables (theme *browser*)
       '(:font-face :font-family "public sans" :font-style "normal" :font-weight
         "400" :src "url('nyxt-resource:PublicSans-Regular.woff')"
         "format('woff')")
@@ -110,7 +110,7 @@
         :line-height "75vh"
         :margin "4px"
         :padding-left "8px"
-        :border-radius "4px"
+        :border-radius "0px"
         :z-index "2"
         :flex-grow "3"
         :flex-shrink "2"
@@ -132,7 +132,7 @@
       '("#tabs::-webkit-scrollbar"
         :display "none")
       `(".tab"
-        :border-radius "4px"
+        :border-radius "0px"
         :color ,theme:on-secondary-color
         :display "inline-block"
         :padding-left "18px"
@@ -142,7 +142,7 @@
         :font "inherit"
         :outline "inherit")
       `("#modes"
-        :border-radius "4px"
+        :border-radius "0px"
         :background-color ,theme:secondary-color
         :color ,theme:on-background-color
         :padding-left "4px"
@@ -162,7 +162,7 @@
         :color "inherit"
         :text-decoration "transparent"
         :border "transparent"
-        :border-radius "2px"
+        :border-radius "0px"
         :padding 0
         :font "inherit"
         :outline "inherit")
@@ -297,7 +297,9 @@ By default, renders a hourglass when loading a URL."
                                          (format nil "~a:~a"
                                                  (quri:uri-scheme url)
                                                  (quri:uri-path url))
-                                         domain)))
+                                         (or domain
+                                             (title buffer)
+                                             "<Untitled>"))))
               (:span
                :class (if (eq current-buffer buffer)
                           "selected-tab tab"
