@@ -101,8 +101,6 @@
                              :privileges "{}")))
   (setf (electron:launch-options electron:*interface*)
         (cl-ppcre:split "\\s+"  (getf *options* :electron-opts)))
-  (setf (electron:launch-options electron:*interface*)
-        '("--no-sandbox" "--enable-feautures=UseOzonePlatform" "--ozone-platform=wayland"))
   (electron:launch electron:*interface*)
   (when (adblocking-enabled-p browser)
     (let ((adblocker (make-instance 'electron:adblocker-electron)))
