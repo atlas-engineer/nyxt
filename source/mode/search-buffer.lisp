@@ -9,7 +9,7 @@
   "Incremental search on a single or multiple buffers."
   ((visible-in-status-p nil)
    (style
-    (theme:themed-css (theme *browser*)
+    (theme:themed-css-variables (theme *browser*)
       `("span[nyxt-search-mark]"
         :background-color ,theme:secondary-color !important
         :color ,theme:on-secondary-color !important

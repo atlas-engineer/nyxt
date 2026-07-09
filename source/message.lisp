@@ -16,7 +16,7 @@
     :export t
     :documentation "The height of the message buffer in pixels.")
    (style
-    (theme:themed-css (theme *browser*)
+    (theme:themed-css-variables (theme *browser*)
       '(:font-face :font-family "public sans" :font-style "normal" :font-weight
         "400" :src "url('nyxt-resource:PublicSans-Regular.woff')"
         "format('woff')")

@@ -146,7 +146,7 @@ appearance in the buffer when they are setf'd."
 (define-mode download-mode ()
   "Display list of downloads."
   ((style
-    (theme:themed-css (theme *browser*)
+    (theme:themed-css-variables (theme *browser*)
       `(".download"
         :background-color ,theme:background-color
         :color ,theme:on-background-color

@@ -141,9 +141,10 @@
                  (:file "download" :depends-on ("file-manager"))))
                (:file "mode/base" :depends-on ("Core modes"))
                (:file "status" :depends-on ("Core"))
+               (:file "theme" :depends-on ("status"))
                (:module "Help"
                 :pathname ""
-                :depends-on ("Core modes" "Modes")
+                :depends-on ("Core modes" "Modes" "theme")
                 :components
                 ((:file "help")
                  (:file "about")
@@ -188,6 +189,7 @@
   :components ((:file "package")
                (:file "define-configuration")
                (:file "prompt-buffer")
+               (:file "theme")
                (:file "urls")
                (:file "user-script-parsing")
                (:file "mode")

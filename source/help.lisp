@@ -59,7 +59,7 @@ The changes are saved to `*auto-config-file*', and persist from one Nyxt session
 to the next."
   (spinneret:with-html-string
     (:nstyle
-      (theme:themed-css (theme *browser*)
+      (theme:themed-css-variables (theme *browser*)
         '("body,h3"
           :margin 0)
         '(".radio-div,.checkbox-div"
@@ -181,19 +181,39 @@ invoking the " (:nxref :command 'toggle-modes) "command.")))))
              :checked (let ((theme (or (ignore-errors (get-configured-value 'browser 'theme))
                                        (theme *browser*))))
                         (cond ((eq theme theme:+light-theme+) 'theme:+light-theme+)
+                              ((eq theme theme:+acme-theme+) 'theme:+acme-theme+)
+                              ((eq theme theme:+kanagawa-dragon-theme+)
+                               'theme:+kanagawa-dragon-theme+)
                               ((eq theme theme:+oled-theme+) 'theme:+oled-theme+)
                               (t 'theme:+dark-theme+)))
              :vertical t
              :buffer buffer
              '(theme:+light-theme+ "Light theme"
-               (nyxt::auto-configure :form '(define-configuration browser
-                                             ((theme theme:+light-theme+)))))
+               (progn
+                 (nyxt::auto-configure :form '(define-configuration browser
+                                               ((theme theme:+light-theme+))))
+                 (set-runtime-theme theme:+light-theme+)))
              '(theme:+dark-theme+ "Dark theme"
-               (nyxt::auto-configure :form '(define-configuration browser
-                                             ((theme theme:+dark-theme+)))))
+               (progn
+                 (nyxt::auto-configure :form '(define-configuration browser
+                                               ((theme theme:+dark-theme+))))
+                 (set-runtime-theme theme:+dark-theme+)))
+             '(theme:+acme-theme+ "Acme theme"
+               (progn
+                 (nyxt::auto-configure :form '(define-configuration browser
+                                               ((theme theme:+acme-theme+))))
+                 (set-runtime-theme theme:+acme-theme+)))
+             '(theme:+kanagawa-dragon-theme+ "Kanagawa Dragon theme"
+               (progn
+                 (nyxt::auto-configure
+                  :form '(define-configuration browser
+                           ((theme theme:+kanagawa-dragon-theme+))))
+                 (set-runtime-theme theme:+kanagawa-dragon-theme+)))
              '(theme:+oled-theme+ "OLED theme"
-               (nyxt::auto-configure :form '(define-configuration browser
-                                             ((theme theme:+oled-theme+)))))))
+               (progn
+                 (nyxt::auto-configure :form '(define-configuration browser
+                                               ((theme theme:+oled-theme+))))
+                 (set-runtime-theme theme:+oled-theme+))))
            (:div.right
             (:p "Themes for Nyxt's UI."))))
          (:div.section
@@ -307,7 +327,7 @@ invoking the " (:nxref :command 'toggle-modes) "command.")))))
               '(nyxt::edit-user-file-with-external-editor)))
            (:div.right
             (:p "To use the external editor, please set the " (:code "VISUAL") " or "
-                (:code "EDITOR") "environment variables."))))))))))
+                (:code "EDITOR") "environment variables.")))))))))))
 
 (defun tls-help (buffer url)
   "Helper function invoked upon TLS certificate errors."
@@ -343,7 +363,7 @@ The value is saved to clipboard."
     (buffer "*New buffer*")
   "Display a page suitable as `default-new-buffer-url'."
   (spinneret:with-html-string
-    (:nstyle
+    (:ntheme-style
       `(body
         :min-height "100vh"
         :padding "0"
@@ -381,9 +401,7 @@ The value is saved to clipboard."
         :display "flex"
         :flex-direction "row")
       `(.logo
-        :color ,(if (theme:dark-p theme:theme)
-                    theme:action-color
-                    theme:on-background-color)
+        :color "var(--nyxt-theme-logo-color)"
         :width "100px"
         :height "100px"
         :padding-top "3px"

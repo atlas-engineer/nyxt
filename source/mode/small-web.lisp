@@ -38,7 +38,7 @@ Gemini support is a bit more brittle, but you can override `line->html' for
    (max-redirections
     5
     :documentation "The maximum number of times a redirection is attempted.")
-   (style (theme:themed-css (nyxt::theme *browser*)
+   (style (theme:themed-css-variables (nyxt::theme *browser*)
             `(body
               :background-color ,theme:background-color)
             `(pre
@@ -142,7 +142,9 @@ Implies that `small-web-mode' is enabled."))
 (defun file-link->html (line)
   (spinneret:with-html-string
     (:a :class "button"
-        :style (format nil "background-color: ~a" (theme:primary-color (theme *browser*)))
+        :style (format nil
+                       "background-color: var(--nyxt-theme-primary-color, ~a)"
+                       (theme:primary-color (theme *browser*)))
         :href (cl-gopher:uri-for-gopher-line line)
         (:b "[FILE] ") (cl-gopher:display-string line))
     (:br)))

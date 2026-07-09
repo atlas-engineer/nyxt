@@ -151,6 +151,20 @@
   (declare (ignore browser))
   (electron:terminate))
 
+(defun apply-electron-theme-background
+    (surface &optional
+               (browser *browser*)
+               (current-theme (and browser (theme browser))))
+  (when current-theme
+    (alex:when-let ((color (theme:background-color current-theme)))
+      (electron:set-background-color surface color))))
+
+(defmethod ffi-apply-theme ((browser electron-browser) (theme theme:theme))
+  (dolist (window (window-list))
+    (apply-electron-theme-background window browser theme))
+  (dolist (buffer (nyxt::live-theme-buffers))
+    (apply-electron-theme-background buffer browser theme)))
+
 (define-class electron-buffer (electron:view)
   ((electron:options
     ""
@@ -178,6 +192,7 @@ the default height."))
 
 (defmethod customize-instance :after ((buffer electron-buffer)
                                       &key &allow-other-keys)
+  (apply-electron-theme-background buffer)
   ;; Otherwise the HTML document won't be set via JS.
   (when (member (type-of buffer) '(status-buffer message-buffer prompt-buffer))
     (electron:load-url buffer "about:blank"))
@@ -237,6 +252,7 @@ the default height."))
    buffer
    (format nil "~a = new WebContentsView(~a)"
            (electron:remote-symbol buffer) (electron:options buffer)))
+  (apply-electron-theme-background buffer)
   (initialize-listeners buffer)
   buffer)
 
@@ -438,6 +454,7 @@ height of the status/prompt/message buffer."
 
 (defmethod initialize-instance :after ((window electron-window) &key)
   (electron:remove-menu window)
+  (apply-electron-theme-background window)
   (let ((message-buffer (message-buffer window))
         (status-buffer (status-buffer window)))
     (setf (set-height message-buffer) (height message-buffer))

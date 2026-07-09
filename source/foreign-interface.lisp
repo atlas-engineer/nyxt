@@ -264,6 +264,11 @@ specific threads."))
 (define-ffi-generic ffi-kill-browser (browser)
   (:documentation "Terminate the renderer process."))
 
+(define-ffi-generic ffi-apply-theme (browser theme)
+  (:method ((browser t) (theme t))
+    (declare (ignore browser theme)))
+  (:documentation "Apply THEME to renderer-native surfaces owned by BROWSER."))
+
 (define-ffi-generic ffi-initialize (browser urls startup-timestamp)
   (:method ((browser t) urls startup-timestamp)
     (finalize-startup browser urls startup-timestamp))

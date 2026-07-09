@@ -42,7 +42,7 @@ Affects both the prompt and its sources.")
       :documentation "Maximum number of total suggestions that were listed at
 some point.")
      (style
-      (theme:themed-css (theme *browser*)
+      (theme:themed-css-variables (theme *browser*)
         '(:font-face :font-family "public sans" :font-style "normal"
           :font-weight "400" :src
           "url('nyxt-resource:PublicSans-Regular.woff')" "format('woff')")
@@ -185,7 +185,8 @@ some point.")
           :autofocus "true")
         `("#input:focus"
           :border-color
-          ,(cl-colors-ng:print-hex theme:action-color- :print-alpha 0.40))
+          ,(format nil "color-mix(in srgb, ~a 40%, transparent)"
+                   theme:action-color-))
         '(".source"
           :margin-left "10px"
           :margin-top "15px")

@@ -78,7 +78,7 @@ A positive value shifts to the bottom.")
 
 (defmethod style ((mode hint-mode))
   "The style of the hint overlays."
-  (theme:themed-css (theme *browser*)
+  (theme:themed-css-variables (theme *browser*)
     `(".nyxt-hint"
       :background-color ,theme:background-color-
       :color ,theme:on-background-color
