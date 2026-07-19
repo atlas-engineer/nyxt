@@ -182,11 +182,74 @@ Note that by changing the default value, modifier keys can be remapped.")
    (set-height
     :documentation "The height the buffer has been requested to be set to.
 It does not represent the current height as reported by the renderer, or
-the default height."))
+the default height.")
+   (popup-parent
+    nil
+    :export nil
+    :documentation "The buffer whose WebContents opened this popup.")
+   (popup-children
+    '()
+    :export nil
+    :documentation "Popup buffers opened by this buffer.")
+   (renderer-destroyed-p
+    nil
+    :export nil
+    :type boolean
+    :documentation "Whether Electron destroyed the WebContents before Nyxt did."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:metaclass user-class)
   (:documentation "Electron buffer class."))
+
+(defun live-buffer-p (buffer)
+  "Whether BUFFER is still registered with the browser."
+  (and buffer
+       *browser*
+       (eq buffer (nyxt::buffer-get (id buffer)))))
+
+(defun electron-window-containing-view (buffer)
+  (find-if (lambda (window)
+             (find buffer (electron:views window)))
+           (window-list)))
+
+(defun clear-adopted-view-reference (buffer)
+  "Release the JavaScript global which keeps an adopted view alive."
+  (when (electron:existing-p buffer)
+    (ignore-errors
+     (electron::message buffer
+                        (format nil "~a = undefined"
+                                (electron:remote-symbol buffer))))))
+
+(defun popup-buffer-url (details)
+  (let ((url (assoc-value details :url)))
+    (handler-case (quri:uri (if (and (stringp url) (not (str:emptyp url)))
+                                url
+                                "about:blank"))
+      (error () (quri:uri "about:blank")))))
+
+(defun popup-buffer-title (details)
+  (let ((frame-name (assoc-value details :frame-name))
+        (url (assoc-value details :url)))
+    (cond ((and (stringp frame-name)
+                (not (str:emptyp frame-name))
+                (not (string= frame-name "_blank")))
+           frame-name)
+          ((and (stringp url)
+                (not (str:emptyp url))
+                (not (string= url "about:blank")))
+           url)
+          (t "Popup"))))
+
+(defun close-popup-buffer (popup)
+  "Remove a popup Electron closed, restoring its opener when possible."
+  (when (live-buffer-p popup)
+    (let ((popup-window (window popup))
+          (parent (popup-parent popup)))
+      (when (and popup-window
+                 (live-buffer-p parent)
+                 (not (nyxt::active-buffer-p parent)))
+        (ffi-window-set-buffer popup-window parent :focus t))
+      (ffi-buffer-delete popup))))
 
 (defmethod customize-instance :after ((buffer electron-buffer)
                                       &key &allow-other-keys)
@@ -198,14 +261,40 @@ the default height."))
   (initialize-window-open-handler buffer))
 
 (defmethod initialize-window-open-handler ((buffer electron-buffer))
-  ;; When following a link with target="_blank" or through JS window.open,
-  ;; we don't want to let electron open a new window, instead we want to
-  ;; put it into a new buffer
-  (electron:override-window-open-handler
-   (electron:web-contents buffer)
-   (lambda (details)
-     (let ((url (assoc-value details :url)))
-       (make-buffer-focus :url (quri:uri url))))))
+  "Adopt Electron popup WebContentsViews as Nyxt buffers.
+Unlike opening DETAILS' URL in a fresh buffer, adoption preserves the opener,
+POST body, named-window identity, `postMessage', and `window.close' semantics."
+  (let ((popups (make-hash-table :test #'equal)))
+    (electron:override-window-open-handler
+     (electron:web-contents buffer)
+     (lambda (details)
+       (let ((event (assoc-value details :event))
+             (remote-symbol (assoc-value details :remote-symbol)))
+         (cond
+           ((equal event "created")
+            (unless remote-symbol
+              (error "Electron popup event has no remote symbol: ~s" details))
+            (let* ((popup
+                     (make-buffer :url (popup-buffer-url details)
+                                  :title (popup-buffer-title details)
+                                  :load-url-p nil
+                                  :existing-p t
+                                  :remote-symbol remote-symbol
+                                  :popup-parent buffer))
+                   (owner-window (or (electron-window-containing-view buffer)
+                                     (current-window))))
+              (setf (gethash remote-symbol popups) popup)
+              (pushnew popup (popup-children buffer))
+              (if owner-window
+                  (ffi-window-set-buffer owner-window popup :focus t)
+                  (set-current-buffer popup))))
+           ((equal event "closed")
+            (alex:when-let ((popup (gethash remote-symbol popups)))
+              (remhash remote-symbol popups)
+              (setf (renderer-destroyed-p popup) t)
+              (close-popup-buffer popup)))
+           (t
+            (warn "Unknown Electron popup event: ~s" details))))))))
 
 (defmethod initialize-listeners ((buffer electron-buffer))
   (electron:add-listener buffer :before-input-event
@@ -250,18 +339,46 @@ the default height."))
    buffer
    (format nil "~a = new WebContentsView(~a)"
            (electron:remote-symbol buffer) (electron:options buffer)))
+  (setf (renderer-destroyed-p buffer) nil)
   (apply-electron-theme-background buffer)
   (initialize-listeners buffer)
+  (initialize-window-open-handler buffer)
   buffer)
 
+(defmethod ffi-buffer-delete :before ((buffer electron-buffer))
+  (alex:when-let ((parent (popup-parent buffer)))
+    (alex:deletef (popup-children parent) buffer)
+    (setf (popup-parent buffer) nil))
+  (dolist (popup (copy-list (popup-children buffer)))
+    (when (live-buffer-p popup)
+      (ffi-buffer-delete popup)))
+  (setf (popup-children buffer) nil))
+
 (defmethod ffi-buffer-delete ((buffer electron-buffer))
-  (electron:remove-view (current-window) buffer :kill-view-p t))
+  (alex:when-let ((window (electron-window-containing-view buffer)))
+    (electron:remove-view window buffer :kill-view-p nil))
+  (if (renderer-destroyed-p buffer)
+      (progn
+        (electron:release buffer)
+        (alex:when-let ((web-contents (slot-value buffer 'electron:web-contents)))
+          (electron:release web-contents)))
+      (electron:kill buffer))
+  (clear-adopted-view-reference buffer))
 
 (defmethod ffi-buffer-url ((buffer electron-buffer))
   (quri:uri (electron:get-url buffer)))
 
 (defmethod ffi-buffer-title ((buffer electron-buffer))
-  (electron:get-title buffer))
+  (let ((renderer-title (electron:get-title buffer)))
+    (if (and (popup-parent buffer)
+             (or (not (stringp renderer-title))
+                 (str:emptyp renderer-title)))
+        (let ((current-title (title buffer)))
+          (if (and (stringp current-title)
+                   (not (str:emptyp current-title)))
+              current-title
+              "Popup"))
+        renderer-title)))
 
 (defmethod ffi-buffer-load ((buffer electron-buffer) url)
   (electron:load-url buffer url))

@@ -310,7 +310,18 @@
 (defsystem "nyxt/electron"
   :depends-on (nyxt cl-electron)
   :pathname #p"NYXT:source;renderer;"
-  :components ((:file "electron")))
+  :components ((:file "electron"))
+  :in-order-to ((test-op (test-op "nyxt/electron/tests"))))
+
+(defsystem "nyxt/electron/tests"
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-test-system
+  :depends-on (nyxt/electron lisp-unit2)
+  :pathname #p"NYXT:tests;renderer;electron;"
+  :serial t
+  :components ((:file "package")
+               (:file "popup"))
+  :test-suite-args (:package :nyxt/tests/renderer/electron))
 
 ;; We should not set the build-pathname in systems that have a component.
 ;; Indeed, when an external program (like Guix) builds components, it needs to
