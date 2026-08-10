@@ -35,6 +35,17 @@ mkdir -p ~/common-lisp
 git clone --recurse-submodules https://github.com/atlas-engineer/nyxt ~/common-lisp/nyxt
 #+end_src
 
+If you already have a clone that was made without submodules, fetch them with:
+
+#+begin_src sh
+cd ~/common-lisp/nyxt
+git submodule update --init --recursive
+#+end_src
+
+There are 111 submodules, all living under =./_build=, and they are shallow (see
+=shallow = true= in =.gitmodules=).  Populating them is a prerequisite for any
+build.
+
 ** Common Lisp
 
 Nyxt is written in Common Lisp.  Currently, we only target one of its
@@ -82,7 +93,16 @@ following plugins:
 
 *** Electron
 
-Experimental support for [[https://www.electronjs.org/][Electron]].  Further documentation soon.
+[[https://www.electronjs.org/][Electron]] is the default renderer (the =NYXT_RENDERER= make variable is set to
+=electron=) and only requires
+[[https://nodejs.org/][Node.js]] and =npm=; the WebKitGTK shared objects above are not needed.
+
+The Electron runtime is installed by =npm= on demand: =make all= runs
+=make -C _build/cl-electron install=, which is simply =npm install= under
+=_build/cl-electron=, before any Lisp code is compiled.  This is a fast,
+network-dependent step, so a failure here (missing =npm=, no network access, or
+an empty =_build/cl-electron= submodule) aborts the build almost immediately.
+Set =NODE_SETUP=false= to skip it.
 
 ** Other
 
@@ -140,6 +160,101 @@ since some of them are stateful:
 
 Nyxt uses the =Make= build system.  Run =make= to display the documentation or
 see the [[../makefile][Makefile]] for more details.
+
+*** Prerequisites
+
+- [[http://www.sbcl.org/][SBCL]] (the only supported Common Lisp implementation);
+- =make=;
+- [[https://nodejs.org/][Node.js]] and =npm= (only for the default Electron renderer);
+- the system packages listed in the [[*Bill of Materials][Bill of Materials]] section, most of which
+  apply to the WebKitGTK renderer only.
+
+Examples (package names vary across distributions):
+
+#+begin_src sh
+# Debian / Ubuntu
+sudo apt install sbcl make nodejs npm \
+    libwebkit2gtk-4.1-0 libfixposix3 libssl3 \
+    xclip # or wl-clipboard on Wayland
+#+end_src
+
+#+begin_src sh
+# Arch Linux (=make= ships with =base-devel=)
+sudo pacman -S --needed sbcl nodejs npm \
+    webkit2gtk-4.1 openssl libfixposix sqlite \
+    xclip # or wl-clipboard on Wayland
+#+end_src
+
+Quicklisp is *not* required: all Lisp dependencies are bundled as submodules
+under =./_build=, and any build that resolves them through Quicklisp instead is
+considered unofficial (see =NYXT_SUBMODULES= in the makefile).
+
+*** Fresh check-out
+
+#+begin_src sh
+mkdir -p ~/common-lisp
+git clone --recurse-submodules https://github.com/atlas-engineer/nyxt ~/common-lisp/nyxt
+cd ~/common-lisp/nyxt
+#+end_src
+
+For an existing clone started without submodules (or after an interrupted
+checkout):
+
+#+begin_src sh
+git submodule update --init --recursive
+#+end_src
+
+Populating the submodules is the very first thing to get right: a missing one
+typically fails the build before Lisp compilation even starts, with a =make=
+"No such file or directory" or an ASDF =MISSING-DEPENDENCY= error.  Empty
+directories left over from an interrupted checkout can confuse git; remove them
+and re-run the command above:
+
+#+begin_src sh
+for d in _build/*/; do [ -d "$d" ] && [ -z "$(ls -A "$d")" ] && rm -rf "$d"; done
+git submodule update --init --recursive
+#+end_src
+
+*** Building the binary
+
+#+begin_src sh
+make all
+#+end_src
+
+This generates the =./nyxt= binary with the default (Electron) renderer.  The
+first run downloads the Electron runtime via =npm= and compiles every Lisp
+dependency under =./_build=, so expect several minutes and several hundred
+megabytes of output.  Subsequent runs are incremental: =.lisp= files are
+tracked as make dependencies, so only out-of-date ones are recompiled (change a
+file and re-run =make all=).
+
+For the WebKitGTK renderer instead:
+
+#+begin_src sh
+make all NYXT_RENDERER=gi-gtk
+#+end_src
+
+Other targets: =make check= runs the test suite, =make doc= builds the static
+documentation, and =make clean= removes the =./nyxt= binary.  Note that the
+INSTALL file (shown by =make= / =make help=) mentions =make install=, but no
+such top-level target exists in the makefile.
+
+*** Running the tests
+
+#+begin_src sh
+make check
+#+end_src
+
+It restarts Lisp, loads the =:nyxt= system, and runs the test suite.  Some tests
+are stateful, so restart the Lisp image before and after running them (see the
+[[*Development environment][Development environment]] section).
+
+*** Troubleshooting
+
+- An *immediate* failure mentioning =electron=: the first step of =make all= is
+  =npm install= under =_build/cl-electron=.  This needs =node= and =npm= on the
+  =PATH= plus network access, and fails within seconds - before any Common Lisp
+  code is touched.
 
 * Contributing
 
