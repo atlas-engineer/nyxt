@@ -14,9 +14,20 @@
     - [[#webkitgtk][WebKitGTK]]
     - [[#electron][Electron]]
   - [[#other][Other]]
+- [[#architecture][Architecture]]
+  - [[#one-lisp-image-compiler-included][One Lisp image, compiler included]]
+  - [[#what-lives-outside-the-binary][What lives outside the binary]]
+  - [[#extending-without-rebuilding][Extending without rebuilding]]
+- [[#build-artifacts][Build artifacts]]
+  - [[#appimage-and-packaged-layout][AppImage and packaged layout]]
 - [[#development-environment][Development environment]]
   - [[#tests][Tests]]
 - [[#installation][Installation]]
+  - [[#prerequisites][Prerequisites]]
+  - [[#fresh-check-out][Fresh check-out]]
+  - [[#building-the-binary][Building the binary]]
+  - [[#running-the-tests][Running the tests]]
+  - [[#troubleshooting][Troubleshooting]]
 - [[#contributing][Contributing]]
   - [[#help][Help]]
   - [[#commit-style][Commit style]]
@@ -118,6 +129,115 @@ Additionally, the following packages:
 - xclip :: when using X system;
 - wl-clipboard :: when using Wayland;
 - enchant :: spellchecking (optional).
+
+* Architecture
+
+Nyxt ships as a single executable which is a whole Common Lisp image, not a
+core program with the Lisp fixed on disk.  This matters to anyone planning to
+modify or extend it: the binary is self-contained, and user Lisp is compiled
+at run time by an embedded compiler rather than at build time.
+
+** One Lisp image, compiler included
+
+=make all= invokes =asdf:make :nyxt/electron-application=, which dumps a core
+image with `save-lisp-and-die`: the SBCL run-time, the full Lisp compiler,
+Nyxt's own source, and all bundled dependencies (the =_build= submodules) are
+compiled into the =./nyxt= ELF executable.
+
+Two consequences follow:
+
+- The compiler is embedded so user code can be compiled at run time.  This is
+  what makes the extension model work (see the Configuration section of the
+  in-browser manual, =source/manual.lisp=) and accounts for most of the
+  binary's size (on the order of one hundred megabytes).
+- The binary does not need the source tree or =_build= to run.  At start-up,
+  =*source-directory*= (=source/configuration.lisp=) is looked for at ASDF's
+  system source-directory, then the XDG data directories, then =share/nyxt/=
+  relative to the binary.  If none of these contain a =nyxt.asd=, Nyxt logs
+  "Nyxt source directory not found" and runs anyway.  A deployed binary in
+  =/usr/local/bin/= with no other files works.
+
+** What lives outside the binary
+
+Lisp itself is fully inside the image; three things are not:
+
+- System shared libraries loaded through CFFI: WebKitGTK/GTK, OpenSSL,
+  libfixposix, SQLite.  See the [[*Bill of Materials][Bill of Materials]].
+- The renderer.  Nyxt is not a web engine: the default Electron renderer is a
+  separate Node/Electron program under =_build/cl-electron/=, whose
+  =node_modules= (hundreds of megabytes) must be present at run time.  See
+  the [[*Electron][Electron]] entry in the Bill of Materials.
+- User data: =~/.config/nyxt/= for configuration and
+  =~/.local/share/nyxt/extensions/= for Lisp extensions.
+
+** Extending without rebuilding
+
+Because the image embeds the compiler, extension is additive at run time
+rather than a recompile:
+
+- =config.lisp= is loaded with =cl:load= at every start-up into the
+  =:nyxt-user= package (=source/start.lisp=).  =define-configuration= patches
+  the slots of internal classes without touching the sources, and
+  =define-command= adds commands.
+- Extensions are regular ASDF systems dropped in =*extensions-directory*=
+  (=~/.local/share/nyxt/extensions=), discovered automatically through
+  =nyxt-source-registry=, and loaded with =(asdf:load-system ...)=.
+- Live evaluation is available through =--eval=, =--load=, =--script= and the
+  =--remote= REPL (see the Scripting section of the in-browser manual).
+
+The binary is only rebuilt when Nyxt's own source changes.
+
+* Build artifacts
+
+What a build (=make all=) produces, and what must be kept around afterwards:
+
+- =./nyxt= :: the self-contained executable described in the
+  [[*Architecture][Architecture]] section.
+- =_build/= :: 111 shallow submodule check-outs of the Lisp dependencies.
+  Build-time only: their code is compiled into the image and nothing is read
+  from them at run time.  Safe to delete after a successful build (but re-run
+  =git submodule update --init --recursive= to restore them).
+- =_build/cl-electron/node_modules/= :: the Electron renderer host, installed
+  by =npm=.  Run-time dependency of the default renderer; keep it, or re-run
+  =make -C _build/cl-electron install= to restore it.
+- =~/.cache/common-lisp/sbcl-.../= :: the SBCL FASL cache.  User Lisp
+  (configuration, extensions, =--eval=) is compiled on demand by the embedded
+  compiler and cached here.  Delete it when behavior seems stale.
+- =manual.html= :: a static dump of the manual, produced by =make doc= (the
+  =nyxt/documentation= system) for offline reading.  The manual itself is
+  always available at run time inside the binary.
+
+** AppImage and packaged layout
+
+Official releases ship as an AppImage: a read-only filesystem image mounted at
+=$APPDIR=, running the =nyxt= binary from inside it.  It is laid out by the
+=nasdf= installer (=nyxt.asd= lines 348-356, =libraries/nasdf/install.lisp=),
+so it bundles:
+
+- =usr/bin/nyxt= :: the self-contained Lisp image described in the
+  [[*Architecture][Architecture]] section.
+- =usr/share/nyxt/= :: a copy of Nyxt's own sources (=source=, =libraries=,
+  =nasdf=) so that =*source-directory*= resolves inside the AppImage at run
+  time (the binary looks for =share/nyxt/nyxt.asd= relative to itself, see
+  =source/configuration.lisp=).
+- =usr/share/applications/nyxt.desktop= and
+  =usr/share/metainfo/nyxt.metainfo.xml= :: the desktop entry and AppStream
+  metadata.
+- =usr/share/icons/= :: the scalable =nyxt.svg= and multi-resolution PNG icons
+  used by desktop environments.
+- The renderer runtime (the Electron host and its =node_modules= for the
+  default renderer) and the system CFFI shared libraries that the image
+  loads, bundled so that the AppImage is self-contained.
+
+At run time, Nyxt detects the AppImage via the =APPIMAGE_PATH= environment
+variable (=appimage-p= in =source/global.lisp=): the in-browser help then
+offers an "Install Desktop Shortcut" button, and the =add-desktop-entry=
+command (=source/configuration-commands.lisp=) writes a launcher entry into
+=~/.local/share/applications/= and copies icons into
+=~/.local/share/icons/hicolor/=.
+
+Note that the AppImage assembly itself is done by the release pipeline, not by
+the makefile; this checkout only declares the packaged components above.
 
 * Development environment
 
