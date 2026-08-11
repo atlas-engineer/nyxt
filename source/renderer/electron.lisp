@@ -16,6 +16,61 @@
 (setf nyxt::*renderer* (make-instance 'electron-renderer))
 (pushnew :nyxt-electron *features*)
 
+;; Link-hover: show the hovered link's URL in the status bar, mirroring the
+;; WebKitGTK renderer's native `on-signal-mouse-target-changed' behavior
+;; (`source/renderer/gtk.lisp').  Electron has no native hover signal and no
+;; page-JavaScript-to-Lisp bridge on arbitrary web pages, so we piggyback on
+;; the one page-to-Lisp event Electron already reports: `page-title-updated'.
+;; An injected script sets `document.title' to a reserved marker plus the
+;; hovered link's URL on `mouseover' (restoring the real title on `mouseout');
+;; we recognise the marker here and turn it into `url-at-point' plus a status
+;; message instead of a tab-title change.
+(defparameter *nyxt-link-hover-marker*
+  (concatenate 'string
+               (string (code-char #xE000)) ; private-use char: collision-proof
+               "NYXTHOVER:")
+  "Prefix reserved for the link-hover relay, carried in `document.title'.
+Deliberately rare so it can't collide with a real page title.")
+
+(defparameter *nyxt-link-hover-script*
+  (format nil "
+(function () {
+  if (window.__nyxtHoverInstalled) return;
+  window.__nyxtHoverInstalled = true;
+  var marker = '~a';
+  var originalTitle = document.title;
+  document.addEventListener('mouseover', function (e) {
+    var a = e.target && e.target.closest
+      ? e.target.closest('a[href], area[href]') : null;
+    document.title = marker + (a ? a.href : '');
+  }, true);
+  document.addEventListener('mouseout', function () {
+    if (document.title.indexOf(marker) === 0) document.title = originalTitle;
+  }, true);
+})();"
+          *nyxt-link-hover-marker*)
+  "JavaScript injected into each Electron page to relay link-hover to Lisp.")
+
+(defun link-hovered-url (title)
+  "If TITLE carries the link-hover marker, return the hovered URL (may be empty).
+Return NIL when TITLE is a regular page title."
+  (let ((marker-length (length *nyxt-link-hover-marker*)))
+    (when (and title
+               (>= (length title) marker-length)
+               (string= title *nyxt-link-hover-marker* :end1 marker-length))
+      (subseq title marker-length))))
+
+(defun signal-link-hover (buffer url-string)
+  "Show BUFFER's hovered link URL, mirroring the WebKitGTK renderer.
+Sets `url-at-point' and prints \"→ URL\"; clears both when URL-STRING is empty."
+  (if (uiop:emptyp url-string)
+      (progn
+        (setf (url-at-point buffer) (quri:uri ""))
+        (nyxt::print-message ""))
+      (progn
+        (setf (url-at-point buffer) (quri:uri url-string))
+        (nyxt::print-message (format nil "→ ~a" url-string)))))
+
 (defmethod install ((renderer electron-renderer))
   (flet ((set-superclasses (renderer-class-sym+superclasses)
            (closer-mop:ensure-finalized
@@ -212,10 +267,17 @@ the default height."))
                              (let ((url (ffi-buffer-url buffer))
                                    (title (ffi-buffer-title buffer)))
                                (setf (url buffer) url)
-                               (on-signal-load-finished buffer url title))))
+                               (on-signal-load-finished buffer url title)
+                               ;; Install the link-hover relay script on the page.
+                               (ffi-buffer-evaluate-javascript-async
+                                buffer *nyxt-link-hover-script*))))
     (electron:add-listener (electron:web-contents buffer) :page-title-updated
                            (lambda (_) (declare (ignore _))
-                             (on-signal-notify-title buffer (ffi-buffer-title buffer))))
+                             (let* ((title (ffi-buffer-title buffer))
+                                    (hovered-url (link-hovered-url title)))
+                               (if hovered-url
+                                   (signal-link-hover buffer hovered-url)
+                                   (on-signal-notify-title buffer title)))))
     (unless (member (type-of buffer) '(status-buffer message-buffer prompt-buffer))
       (electron:add-listener
        (electron:web-contents buffer) :context-menu
