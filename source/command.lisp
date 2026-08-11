@@ -315,8 +315,11 @@ This is blocking, see `run-async' for an asynchronous way to run commands."
         (error-channel (make-channel 1)))
     (run-thread "run command"
       ;; TODO: This `handler-case' overlaps with `with-protect' from `run-thread'.  Factor them!
+      ;; Catch `error' (not `condition'): warnings (e.g. nkeymaps' benign
+      ;; `override-existing-binding' during buffer creation) must not abort a
+      ;; command and be reported as "Error when running".
       (handler-case (calispel:! channel (run-command command args))
-        (condition (c)
+        (error (c)
           (calispel:! error-channel c))))
     (calispel:fair-alt
       ((calispel:? channel result)
