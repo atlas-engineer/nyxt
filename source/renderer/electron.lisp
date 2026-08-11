@@ -102,6 +102,12 @@
   (setf (electron:launch-options electron:*interface*)
         (cl-ppcre:split "\\s+"  (getf *options* :electron-opts)))
   (electron:launch electron:*interface*)
+  ;; Set the app name to `nyxt' so the window's WM_CLASS (used by window
+  ;; managers to match/style windows) is `nyxt' instead of Electron's default
+  ;; `electron'.  This is sent after launch but before Nyxt creates any window,
+  ;; so Electron applies it to the WM_CLASS of every window (verified:
+  ;; WM_CLASS becomes "nyxt", "nyxt").
+  (electron::message electron:*interface* "app.setName('nyxt')")
   (when (adblocking-enabled-p browser)
     (let ((adblocker (make-instance 'electron:adblocker-electron)))
       (electron:default-block adblocker)))
