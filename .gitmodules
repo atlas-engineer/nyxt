@@ -60,7 +60,7 @@
 	shallow = true
 [submodule "_build/closer-mop"]
 	path = _build/closer-mop
-	url = https://github.com/pcostanza/closer-mop
+	url = https://codeberg.org/pcostanza/closer-mop
 	shallow = true
 [submodule "_build/cluffer"]
 	path = _build/cluffer
@@ -437,4 +437,8 @@
 [submodule "_build/trivial-arguments"]
 	path = _build/trivial-arguments
 	url = https://github.com/Shinmera/trivial-arguments.git
+	shallow = true
+[submodule "_build/mgl-pax"]
+	path = _build/mgl-pax
+	url = https://github.com/melisgl/mgl-pax
 	shallow = true
