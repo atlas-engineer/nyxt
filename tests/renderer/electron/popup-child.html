@@ -1,0 +1,8 @@
+<!doctype html>
+<title>popup-child</title>
+<script>
+  setTimeout(() => {
+    opener.postMessage(location.search, '*');
+    window.close();
+  }, 300);
+</script>

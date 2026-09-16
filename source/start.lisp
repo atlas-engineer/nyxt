@@ -175,11 +175,39 @@ Don't run this from a REPL, prefer `start' instead."
 (defun parse-urls (expr)
   "Do _not_ evaluate EXPR and try to parse URLs that were sent to it.
 EXPR is expected to be as per the expression sent in `listen-or-query-socket'."
-  (let* ((urls (ignore-errors (rest (read-from-string expr nil))))
+  (let* ((form (ignore-errors
+                 (with-input-from-string (input expr)
+                   (let ((*package* (find-package :nyxt)))
+                     (alex:when-let ((forms (safe-slurp-stream-forms input)))
+                       (when (alex:length= 1 forms)
+                         (first forms)))))))
+         (form-length (and (listp form) (ignore-errors (list-length form))))
+         (urls (and form-length
+                    (plusp form-length)
+                    (eq (first form) 'open-urls)
+                    (every #'stringp (rest form))
+                    (rest form)))
          (urls (ignore-errors (remove-if #'url-empty-p (mapcar #'url urls)))))
     (unless urls
       (log:warn "Could not extract URLs from ~s." expr))
     urls))
+
+(defun parse-runtime-theme-request (expr)
+  "Return a whitelisted runtime theme name from socket expression EXPR."
+  (ignore-errors
+    (with-input-from-string (input expr)
+      (let ((*package* (find-package :cl-user)))
+        (let ((forms (safe-slurp-stream-forms input)))
+          (when (alex:length= 1 forms)
+            (let* ((form (first forms))
+                   (form-length (and (listp form) (list-length form))))
+              (when (and (eql form-length 2)
+                         (eq (first form) 'set-runtime-theme)
+                         (stringp (second form))
+                         (member (second form)
+                                 '("acme" "kanagawa-dragon")
+                                 :test #'string=))
+                (second form)))))))))
 
 (defun listen-socket ()
   "Listen to to see if requests arise to open URLs or evaluate s-expressions."
@@ -196,16 +224,23 @@ EXPR is expected to be as per the expression sent in `listen-or-query-socket'."
               do (when-let
                      ((expr (alex:read-stream-content-into-string connection)))
                    (unless (uiop:emptyp expr)
-                     (cond ((remote-execution-p *browser*)
-                            (log:info "External evaluation request: ~s" expr)
-                            (eval-expr expr))
-                           ((parse-urls expr)
-                            (ffi-within-renderer-thread
-                             (lambda () (open-urls (parse-urls expr))))
-                            (when (current-window)
+                     (let* ((theme-name (parse-runtime-theme-request expr))
+                            (urls (unless (or theme-name
+                                              (remote-execution-p *browser*))
+                                    (parse-urls expr))))
+                       (cond (theme-name
+                              (ffi-within-renderer-thread
+                               (lambda () (set-runtime-theme theme-name))))
+                             ((remote-execution-p *browser*)
+                              (log:info "External evaluation request: ~s" expr)
+                              (eval-expr expr))
+                             (urls
+                              (ffi-within-renderer-thread
+                               (lambda () (open-urls urls)))
+                              (when (current-window)
                                 (ffi-window-to-foreground
                                  (current-window))))
-                           (t (make-window))))))))))
+                             (t (make-window)))))))))))
 
 (defun listening-socket-p ()
   (ignore-errors

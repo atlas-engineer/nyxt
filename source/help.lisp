@@ -59,7 +59,7 @@ The changes are saved to `*auto-config-file*', and persist from one Nyxt session
 to the next."
   (spinneret:with-html-string
     (:nstyle
-      (theme:themed-css (theme *browser*)
+      (theme:themed-css-variables (theme *browser*)
         '("body,h3"
           :margin 0)
         '(".radio-div,.checkbox-div"
@@ -177,18 +177,45 @@ invoking the " (:nxref :command 'toggle-modes) "command.")))))
           (:div.row
            (:div.left
             (:nradio
-              :name "theme"
-              :checked (if (eq (theme *browser*) theme:+light-theme+)
-                           'theme:+light-theme+
-                           'theme:+dark-theme+)
-              :vertical t
-              :buffer buffer
-              '(theme:+light-theme+ "Light theme"
-                (nyxt::auto-configure :form '(define-configuration browser
-                                              ((theme theme:+light-theme+)))))
-              '(theme:+dark-theme+ "Dark theme"
-                (nyxt::auto-configure :form '(define-configuration browser
-                                              ((theme theme:+dark-theme+)))))))))
+             :name "theme"
+             :checked (let ((theme (or (ignore-errors (get-configured-value 'browser 'theme))
+                                       (theme *browser*))))
+                        (cond ((eq theme theme:+light-theme+) 'theme:+light-theme+)
+                              ((eq theme theme:+acme-theme+) 'theme:+acme-theme+)
+                              ((eq theme theme:+kanagawa-dragon-theme+)
+                               'theme:+kanagawa-dragon-theme+)
+                              ((eq theme theme:+oled-theme+) 'theme:+oled-theme+)
+                              (t 'theme:+dark-theme+)))
+             :vertical t
+             :buffer buffer
+             '(theme:+light-theme+ "Light theme"
+               (progn
+                 (nyxt::auto-configure :form '(define-configuration browser
+                                               ((theme theme:+light-theme+))))
+                 (set-runtime-theme theme:+light-theme+)))
+             '(theme:+dark-theme+ "Dark theme"
+               (progn
+                 (nyxt::auto-configure :form '(define-configuration browser
+                                               ((theme theme:+dark-theme+))))
+                 (set-runtime-theme theme:+dark-theme+)))
+             '(theme:+acme-theme+ "Acme theme"
+               (progn
+                 (nyxt::auto-configure :form '(define-configuration browser
+                                               ((theme theme:+acme-theme+))))
+                 (set-runtime-theme theme:+acme-theme+)))
+             '(theme:+kanagawa-dragon-theme+ "Kanagawa Dragon theme"
+               (progn
+                 (nyxt::auto-configure
+                  :form '(define-configuration browser
+                           ((theme theme:+kanagawa-dragon-theme+))))
+                 (set-runtime-theme theme:+kanagawa-dragon-theme+)))
+             '(theme:+oled-theme+ "OLED theme"
+               (progn
+                 (nyxt::auto-configure :form '(define-configuration browser
+                                               ((theme theme:+oled-theme+))))
+                 (set-runtime-theme theme:+oled-theme+))))
+           (:div.right
+            (:p "Themes for Nyxt's UI."))))
          (:div.section
           (:h3 "Webpage theme")
           (:div.row
@@ -262,7 +289,45 @@ invoking the " (:nxref :command 'toggle-modes) "command.")))))
             (:p "Modes can also be set interactively by command "
                 (:nxref :command 'toggle-modes)
                 " ,or by specific mode togglers such as "
-                (:nxref :command 'nyxt/mode/no-sound:no-sound-mode) "."))))))))))
+                (:nxref :command 'nyxt/mode/no-sound:no-sound-mode) ".")))))
+        (privacy-and-security
+         (:div.section
+          (:h3 "Privacy & Security Modes")
+          (:div.row
+           (:div.right
+            (:p "Select security modes to be enabled by default on web buffers."))))
+         (:div.section
+          (:h3 "Cookie policy")
+          (:div.row
+           (:div.left
+            (:nradio
+              :name "default-cookie-policy"
+              :vertical t
+              :checked (or (get-configured-value 'browser 'default-cookie-policy)
+                        (default-cookie-policy *browser*))
+              :buffer buffer
+              '(:no-third-party "No third party"
+                (nyxt::auto-configure
+                 :form '(define-configuration browser
+                         ((default-cookie-policy :no-third-party)))))
+              '(:accept "Always accept"
+                (nyxt::auto-configure
+                 :form '(define-configuration browser
+                         ((default-cookie-policy :accept)))))
+              '(:never "Never accept"
+                (nyxt::auto-configure
+                 :form '(define-configuration browser
+                         ((default-cookie-policy :never))))))))))
+        (text-and-code
+         (:div.section
+          (:h3 "Edit user files")
+          (:div.row
+           (:div.left
+            (:nbutton :text "Use external editor"
+              '(nyxt::edit-user-file-with-external-editor)))
+           (:div.right
+            (:p "To use the external editor, please set the " (:code "VISUAL") " or "
+                (:code "EDITOR") "environment variables.")))))))))))
 
 (defun tls-help (buffer url)
   "Helper function invoked upon TLS certificate errors."
@@ -298,7 +363,7 @@ The value is saved to clipboard."
     (buffer "*New buffer*")
   "Display a page suitable as `default-new-buffer-url'."
   (spinneret:with-html-string
-    (:nstyle
+    (:ntheme-style
       `(body
         :min-height "100vh"
         :padding "0"
@@ -318,7 +383,7 @@ The value is saved to clipboard."
       `("nav .button"
         :display "block"
         :text-align "left"
-        :font-size "small")
+        :font-size "11px")
       `("#quick-access"
         :margin-top "64px")
       `(.copyright
@@ -336,15 +401,13 @@ The value is saved to clipboard."
         :display "flex"
         :flex-direction "row")
       `(.logo
-        :color ,(if (theme:dark-p theme:theme)
-                    theme:action-color
-                    theme:on-background-color)
+        :color "var(--nyxt-theme-logo-color)"
         :width "100px"
         :height "100px"
         :padding-top "3px"
         :margin-right "12px")
       `(".logo svg"
-        :border-radius "4px")
+        :border-radius "3px")
       `(.set-url
         :min-width "180px"
         :height "40px"
@@ -365,7 +428,7 @@ The value is saved to clipboard."
       `(.binding
         :margin-left "12px"
         :font-weight "bold"
-        :color ,theme:secondary-color))
+        :color ,theme:on-secondary-color))
     (:div
      :class "container"
      (:nav
@@ -376,7 +439,7 @@ The value is saved to clipboard."
            :title "Install a `.desktop` entry so that Nyxt can be ran from your launcher."
            '(add-desktop-entry)))
        (:nbutton
-         :text "Quick-Start"
+         :text "Slow-Start"
          :title "Display a short tutorial."
          '(quick-start))
        (:nbutton

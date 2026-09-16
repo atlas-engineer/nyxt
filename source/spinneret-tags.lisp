@@ -19,6 +19,12 @@ Forms in BODY can be:
   `(:style ,@attrs (:raw (theme:with-theme (nyxt::theme nyxt:*browser*)
                            (%nstyle-body (list ,@body))))))
 
+(deftag :ntheme-style (body attrs &key &allow-other-keys)
+  "Like `:nstyle', but keep theme slot values live through CSS variables."
+  `(:style ,@attrs
+    (:raw (theme:with-theme-css-variables (nyxt::theme nyxt:*browser*)
+            (%nstyle-body (list ,@body))))))
+
 (defun %nscript-body (forms)
   (reduce #'uiop:strcat
           (mapcar (lambda (f) (typecase f

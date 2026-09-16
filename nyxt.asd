@@ -52,6 +52,7 @@
                py-configparser
                quri
                serapeum
+               sophisticated-clipboard
                spinneret
                sqlite
                str
@@ -140,9 +141,10 @@
                  (:file "download" :depends-on ("file-manager"))))
                (:file "mode/base" :depends-on ("Core modes"))
                (:file "status" :depends-on ("Core"))
+               (:file "theme" :depends-on ("status"))
                (:module "Help"
                 :pathname ""
-                :depends-on ("Core modes" "Modes")
+                :depends-on ("Core modes" "Modes" "theme")
                 :components
                 ((:file "help")
                  (:file "about")
@@ -187,6 +189,7 @@
   :components ((:file "package")
                (:file "define-configuration")
                (:file "prompt-buffer")
+               (:file "theme")
                (:file "urls")
                (:file "user-script-parsing")
                (:file "mode")
@@ -307,7 +310,18 @@
 (defsystem "nyxt/electron"
   :depends-on (nyxt cl-electron)
   :pathname #p"NYXT:source;renderer;"
-  :components ((:file "electron")))
+  :components ((:file "electron"))
+  :in-order-to ((test-op (test-op "nyxt/electron/tests"))))
+
+(defsystem "nyxt/electron/tests"
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-test-system
+  :depends-on (nyxt/electron lisp-unit2)
+  :pathname #p"NYXT:tests;renderer;electron;"
+  :serial t
+  :components ((:file "package")
+               (:file "popup"))
+  :test-suite-args (:package :nyxt/tests/renderer/electron))
 
 ;; We should not set the build-pathname in systems that have a component.
 ;; Indeed, when an external program (like Guix) builds components, it needs to

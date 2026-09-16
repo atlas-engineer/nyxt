@@ -420,7 +420,7 @@ The inner-text must not be modified, so that we can jump to the anchor of the sa
 
 (defun frame-element-select ()
   "Allow the user to draw a frame around elements to select them."
-  (let ((overlay-style (theme:themed-css (theme *browser*)
+  (let ((overlay-style (theme:themed-css-variables (theme *browser*)
                          `("#nyxt-overlay"
                            :position "fixed"
                            :top "0"
@@ -430,7 +430,7 @@ The inner-text must not be modified, so that we can jump to the anchor of the sa
                            :opacity 0.00
                            :background ,theme:on-background-color
                            :z-index #.(1- (expt 2 31)))))
-        (selection-rectangle-style (theme:themed-css (theme *browser*)
+        (selection-rectangle-style (theme:themed-css-variables (theme *browser*)
                                      `("#nyxt-rectangle-selection"
                                        :position "absolute"
                                        :top "0"

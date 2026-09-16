@@ -137,6 +137,56 @@ Example:
              :color ,(if (theme:dark-p theme:theme) \"yellow\" \"green\")))"
   `(with-theme ,theme (lass:compile-and-write ,@forms)))
 
+(defun css-variable-name (slot)
+  (let ((name (string-downcase (symbol-name slot))))
+    (format nil "--nyxt-theme-~a"
+            (cond ((uiop:string-suffix-p "+" name)
+                   (concatenate 'string (subseq name 0 (1- (length name)))
+                                "-plus"))
+                  ((uiop:string-suffix-p "-" name)
+                   (concatenate 'string (subseq name 0 (1- (length name)))
+                                "-minus"))
+                  (t name)))))
+
+(defun css-variable-reference (slot theme)
+  (let ((name (css-variable-name slot))
+        (value (funcall slot theme)))
+    (if value
+        (format nil "var(~a, ~a)" name value)
+        (format nil "var(~a)" name))))
+
+(export-always 'with-theme-css-variables)
+(defmacro with-theme-css-variables (theme-instance &body body)
+  "Evaluate BODY with THEME slots bound to live CSS custom-property references."
+  (let ((slots (mopu:direct-slot-names 'theme)))
+    `(let ((theme ,theme-instance))
+       (let ,(loop for slot in slots
+                   collect `(,slot (css-variable-reference ',slot theme)))
+         (declare (ignorable ,@slots))
+         ,@body))))
+
+(export-always 'themed-css-variables)
+(defmacro themed-css-variables (theme &body forms)
+  "Generate CSS with theme values backed by live custom properties."
+  `(with-theme-css-variables ,theme
+     (lass:compile-and-write ,@forms)))
+
+(export-always 'css-variables)
+(defun css-variables (theme)
+  "Return inline CSS declarations defining THEME's live custom properties."
+  (with-output-to-string (stream)
+    (dolist (slot (mopu:direct-slot-names 'theme))
+      (let ((value (funcall slot theme)))
+        (when value
+          (format stream "~a:~a;" (css-variable-name slot) value))))
+    (format stream "--nyxt-theme-logo-color:~a;"
+            (if (dark-p theme)
+                (action-color theme)
+                (on-background-color theme)))
+    (format stream "--nyxt-theme-color-scheme:~a;color-scheme:~a;"
+            (if (dark-p theme) "dark" "light")
+            (if (dark-p theme) "dark" "light"))))
+
 (export-always '+light-theme+)
 (defvar +light-theme+
   (make-instance 'theme
@@ -193,3 +243,98 @@ Example:
                  :warning-color "#EBCB8B"
                  :warning-color+ "#D08770"
                  :on-warning-color "#2E3440"))
+
+(export-always '+oled-theme+)
+(defvar +oled-theme+
+  (make-instance 'theme
+                 :background-color+ "#000000"
+                 :background-color  "#000000"
+                 :background-color- "#111111"
+                 :primary-color+    "#FFFFFF"
+                 :primary-color     "#CCCCCC"
+                 :primary-color-    "#999999"
+                 :secondary-color+  "#444444"
+                 :secondary-color   "#000000"
+                 :secondary-color-  "#222222"
+                 :action-color+     "#0099FF"
+                 :action-color      "#007ACC"
+                 :action-color-     "#005999"
+                 :highlight-color+  "#FFFF00"
+                 :highlight-color   "#FFCC00"
+                 :highlight-color-  "#FF9900"
+                 :success-color+    "#00FF88"
+                 :success-color     "#00CC66"
+                 :success-color-    "#009944"
+                 :warning-color+    "#FF6666"
+                 :warning-color     "#FF3333"
+                 :warning-color-    "#CC0000"
+                 :font-family       "TT Fors Trial"
+                 :monospace-font-family "Berkeley Mono"))
+
+(export-always '+acme-theme+)
+(defvar +acme-theme+
+  (make-instance 'theme
+                 :background-color+ "#FFFFF4"
+                 :background-color  "#FFFFE8"
+                 :background-color- "#EFEFD8"
+                 :on-background-color "#444444"
+                 :primary-color+    "#005555"
+                 :primary-color     "#007777"
+                 :primary-color-    "#007F7F"
+                 :on-primary-color  "#FFFFFF"
+                 :secondary-color+  "#A8EFEB"
+                 :secondary-color   "#E1FAFF"
+                 :secondary-color-  "#EFEFD8"
+                 :on-secondary-color "#444444"
+                 :action-color+     "#0B3E82"
+                 :action-color      "#1054AF"
+                 :action-color-     "#2F6FC4"
+                 :on-action-color   "#FFFFFF"
+                 :highlight-color+  "#E8EB98"
+                 :highlight-color   "#F8FCE8"
+                 :highlight-color-  "#FFFFE8"
+                 :on-highlight-color "#444444"
+                 :success-color+    "#004400"
+                 :success-color     "#005500"
+                 :success-color-    "#006600"
+                 :on-success-color  "#FFFFFF"
+                 :warning-color+    "#660000"
+                 :warning-color     "#880000"
+                 :warning-color-    "#AA2222"
+                 :on-warning-color  "#FFFFFF"
+                 :font-family       "ProFontExtended"
+                 :monospace-font-family "ProFontExtended"))
+
+(export-always '+kanagawa-dragon-theme+)
+(defvar +kanagawa-dragon-theme+
+  (make-instance 'theme
+                 :background-color+ "#0D0C0C"
+                 :background-color  "#080606"
+                 :background-color- "#181616"
+                 :on-background-color "#C5C9C5"
+                 :primary-color+    "#AFC0C7"
+                 :primary-color     "#8BA4B0"
+                 :primary-color-    "#6F8995"
+                 :on-primary-color  "#080606"
+                 :secondary-color+  "#181616"
+                 :secondary-color   "#1E3F52"
+                 :secondary-color-  "#2D4F67"
+                 :on-secondary-color "#C5C9C5"
+                 :action-color+     "#98C1BA"
+                 :action-color      "#7AA89F"
+                 :action-color-     "#658F88"
+                 :on-action-color   "#080606"
+                 :highlight-color+  "#D8CAA8"
+                 :highlight-color   "#C4B28A"
+                 :highlight-color-  "#A99975"
+                 :on-highlight-color "#080606"
+                 :success-color+    "#A8B99A"
+                 :success-color     "#8A9A7B"
+                 :success-color-    "#728366"
+                 :on-success-color  "#080606"
+                 :warning-color+    "#DE918A"
+                 :warning-color     "#C4746E"
+                 :warning-color-    "#AF625D"
+                 :on-warning-color  "#080606"
+                 :font-family       "ProFontExtended"
+                 :monospace-font-family "ProFontExtended"))

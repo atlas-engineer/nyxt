@@ -42,7 +42,7 @@ Affects both the prompt and its sources.")
       :documentation "Maximum number of total suggestions that were listed at
 some point.")
      (style
-      (theme:themed-css (theme *browser*)
+      (theme:themed-css-variables (theme *browser*)
         '(:font-face :font-family "public sans" :font-style "normal"
           :font-weight "400" :src
           "url('nyxt-resource:PublicSans-Regular.woff')" "format('woff')")
@@ -114,7 +114,7 @@ some point.")
           :grid-template-rows "auto 1fr")
         `("#prompt-area"
           :margin "4px"
-          :border-radius "3px"
+          :border-radius "0px"
           :background-color ,theme:primary-color
           :color ,theme:on-primary-color
           :border-top "2px solid"
@@ -175,7 +175,7 @@ some point.")
         `(input
           :font-family ,theme:monospace-font-family)
         `("#input"
-          :border-radius "4px"
+          :border-radius "0px"
           :height "28px"
           :background-color ,theme:background-color
           :color ,theme:on-background-color
@@ -185,7 +185,8 @@ some point.")
           :autofocus "true")
         `("#input:focus"
           :border-color
-          ,(cl-colors-ng:print-hex theme:action-color- :print-alpha 0.40))
+          ,(format nil "color-mix(in srgb, ~a 40%, transparent)"
+                   theme:action-color-))
         '(".source"
           :margin-left "10px"
           :margin-top "15px")
@@ -196,7 +197,7 @@ some point.")
           :display "flex"
           :justify-content "space-between"
           :align-items "stretch"
-          :border-radius "3px")
+          :border-radius "0px")
         '(".source-name > div"
           :line-height "26px")
         '(".source-name > div > button"
@@ -225,7 +226,7 @@ some point.")
            :color ,theme:on-background-color
            :overflow "hidden"
            :text-overflow "ellipsis"
-           :border-radius "2px"
+           :border-radius "0px"
            :white-space "nowrap"
            :height "20px"
            :padding-left "4px")
@@ -240,7 +241,7 @@ some point.")
            :color ,theme:on-secondary-color
            :font-weight "normal"
            :padding-left "4px"
-           :border-radius "2px"
+           :border-radius "0px"
            :text-align "left"))
         `("#selection"
           :background-color ,theme:action-color

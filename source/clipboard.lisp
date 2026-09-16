@@ -9,8 +9,8 @@
   "Check if clipboard-content is most recent entry in RING.
 If not, insert clipboard-content into RING.
 Return most recent entry in RING."
-  (let ((clipboard-content (handler-case (trivial-clipboard:text)
-                             (uiop:subprocess-error ()
+  (let ((clipboard-content (handler-case (sophisticated-clipboard:clipboard-text)
+                             (error ()
                                nil))))
     (when clipboard-content
       (unless (string= clipboard-content (unless (containers:empty-p ring)
@@ -21,6 +21,12 @@ Return most recent entry in RING."
 
 (export-always 'copy-to-clipboard)
 (defun copy-to-clipboard (input)
-  "Save INPUT text to clipboard, and ring."
-  (containers:insert-item (clipboard-ring *browser*)
-                          (trivial-clipboard:text input)))
+  "Save INPUT to clipboard, supporting both text and images."
+  (etypecase input
+    (string
+     (setf (sophisticated-clipboard:clipboard-text) input)
+     (containers:insert-item (clipboard-ring *browser*) input))
+    ((vector (unsigned-byte 8))
+     ;; For binary data like images
+     (setf (sophisticated-clipboard:clipboard-image) input)
+     input)))

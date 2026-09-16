@@ -32,7 +32,7 @@ Commands:
       (list
        "K" 'reading-line-cursor-up
        "J" 'reading-line-cursor-down)))
-   (style (theme:themed-css (theme *browser*)
+   (style (theme:themed-css-variables (theme *browser*)
             `("#reading-line-cursor"
               :position "absolute"
               :top "10px"

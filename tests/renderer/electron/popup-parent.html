@@ -1,0 +1,28 @@
+<!doctype html>
+<title>popup-parent</title>
+<script>
+  let messages = 0;
+  let firstPopup;
+
+  window.navigateFirstPopup = () => {
+    firstPopup.location.href = 'popup-child.html?first';
+  };
+
+  window.openPersistentPopup = () => {
+    window.open('', 'persistent-popup', 'width=500,height=600');
+  };
+
+  window.addEventListener('message', () => {
+    document.title = `oauth-ok-${++messages}`;
+    if (messages === 1) {
+      setTimeout(() => {
+        window.open('popup-child.html?second', 'oauth-popup-2',
+                    'width=500,height=600');
+      }, 300);
+    }
+  });
+
+  setTimeout(() => {
+    firstPopup = window.open('', '_blank', 'width=500,height=600');
+  }, 100);
+</script>
