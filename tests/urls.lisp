@@ -57,7 +57,16 @@
   (assert-equal 'new
                 (internal-page-name "nyxt:new"))
   (assert-equal 'new
-                (internal-page-name "nyxt://new")))
+                (internal-page-name "nyxt://new"))
+  (assert-eq 'nyxt/mode/buffer-listing:list-buffers
+             (internal-page-name "nyxt://nyxt/mode/buffer-listing:list-buffers"))
+  ;; A standard-scheme parser turns lisp:897 into host 0.0.3.129.
+  (assert-string= "897"
+                  (nyxt::lisp-request-id
+                   (quri:uri "lisp://0.0.3.129/?title=nbutton%20Set-URL&buffer=1")))
+  (assert-string= "897"
+                  (nyxt::lisp-request-id
+                   (quri:uri "lisp:897?title=nbutton%20Set-URL&buffer=1"))))
 
 (define-test url-processing ()
   ;; "Invalid URL (empty host)"

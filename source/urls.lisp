@@ -260,9 +260,15 @@ ARGS is an arbitrary keyword arguments list that is translated to a URL query."
               (_ (string= "nyxt" (quri:uri-scheme %url))))
     (let* ((raw-path (quri:uri-path %url))
            (path (and raw-path (string-trim '(#\/) raw-path)))
-           (name (if (or (null path) (string= path ""))
-                     (quri:uri-host %url)
-                     path)))
+           (host (quri:uri-host %url))
+           ;; A standard URL parser splits nyxt:package/name into a host and a
+           ;; path. Join them back so the page name stays a qualified symbol.
+           (name (cond
+                   ((and host path (plusp (length path)))
+                    (format nil "~a/~a" host path))
+                   ((and path (plusp (length path)))
+                    path)
+                   (t host))))
       (when name
         (uiop:safe-read-from-string (str:upcase name) :package :nyxt)))))
 
@@ -293,6 +299,35 @@ ARGS is an arbitrary keyword arguments list that is translated to a URL query."
 (define-internal-scheme "nyxt-resource"
     (lambda (url)
       (nth-value 0 (gethash (quri:uri-path (url url)) *static-data*))))
+
+(defun dotted-ipv4-integer (host)
+  "Return the decimal value of dotted IPv4 HOST, or NIL.
+A standard-scheme parser rewrites a numeric host, so callback id 897 arrives
+as 0.0.3.129."
+  (let ((parts (and host (str:split "." host :omit-nulls t))))
+    (when (and parts
+               (= (length parts) 4)
+               (every (lambda (part)
+                        (and (plusp (length part))
+                             (every #'digit-char-p part)
+                             (<= (parse-integer part) 255)))
+                      parts))
+      (write-to-string
+       (reduce (lambda (total part)
+                 (+ (* total 256) (parse-integer part)))
+               parts
+               :initial-value 0)))))
+
+(defun lisp-request-id (url)
+  "Callback id stored for a `lisp' URL.
+The id is the path. An empty path means the host is the id, after undoing an
+IPv4 rewrite of a numeric host."
+  (let* ((raw-path (quri:uri-path url))
+         (path (and raw-path (string-trim '(#\/) raw-path))))
+    (if (and path (plusp (length path)))
+        path
+        (let ((host (quri:uri-host url)))
+          (or (dotted-ipv4-integer host) host)))))
 
 (-> lisp-url (&rest t &key (:id string)
               (:buffer t)
@@ -329,7 +364,7 @@ TITLE is purely informative."
 (define-internal-scheme "lisp"
     (lambda (url)
       (when-let* ((%url (quri:uri url))
-                  (request-id (quri:uri-path %url))
+                  (request-id (lisp-request-id %url))
                   (query (quri:uri-query-params %url))
                   (title (assoc-value query "title" :test 'equal))
                   (buffer-id (assoc-value query "buffer" :test 'equal))
