@@ -288,7 +288,7 @@
 	shallow = true
 [submodule "_build/cl-webkit"]
 	path = _build/cl-webkit
-	url = https://github.com/joachifm/cl-webkit
+	url = https://github.com/atlas-engineer/cl-webkit
 	shallow = true
 [submodule "_build/cl-gobject-introspection"]
 	path = _build/cl-gobject-introspection
