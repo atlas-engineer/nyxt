@@ -17,6 +17,16 @@
 (pushnew :nyxt-electron *features*)
 
 (defmethod install ((renderer electron-renderer))
+  ;; Cl-electron leaves `ID*.socket' files in its runtime directory on exit, and
+  ;; there is no cleanup on abnormal termination. If a later launch reuses such
+  ;; a stale socket path, binding fails ("socket already in use", ECONNRESET)
+  ;; and the renderer never connects, so no window opens. Sweep the socket
+  ;; directory here, before the node process boots and creates fresh sockets
+  ;; for this instance.
+  (let ((socket-dir (uiop:xdg-runtime-dir "cl-electron/")))
+    (when (uiop:directory-exists-p socket-dir)
+      (dolist (socket (uiop:directory-files socket-dir "*.socket"))
+        (ignore-errors (uiop:delete-file-if-exists socket)))))
   (flet ((set-superclasses (renderer-class-sym+superclasses)
            (closer-mop:ensure-finalized
             (closer-mop:ensure-class (first renderer-class-sym+superclasses)
