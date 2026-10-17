@@ -14,9 +14,20 @@
     - [[#webkitgtk][WebKitGTK]]
     - [[#electron][Electron]]
   - [[#other][Other]]
+- [[#architecture][Architecture]]
+  - [[#one-lisp-image-compiler-included][One Lisp image, compiler included]]
+  - [[#what-lives-outside-the-binary][What lives outside the binary]]
+  - [[#extending-without-rebuilding][Extending without rebuilding]]
+- [[#build-artifacts][Build artifacts]]
+  - [[#appimage-and-packaged-layout][AppImage and packaged layout]]
 - [[#development-environment][Development environment]]
   - [[#tests][Tests]]
 - [[#installation][Installation]]
+  - [[#prerequisites][Prerequisites]]
+  - [[#fresh-check-out][Fresh check-out]]
+  - [[#building-the-binary][Building the binary]]
+  - [[#running-the-tests][Running the tests]]
+  - [[#troubleshooting][Troubleshooting]]
 - [[#contributing][Contributing]]
   - [[#help][Help]]
   - [[#commit-style][Commit style]]
@@ -34,6 +45,17 @@ Either get a tarball (=nyxt-<version>-source-with-submodules.tar.xz=) from a
 mkdir -p ~/common-lisp
 git clone --recurse-submodules https://github.com/atlas-engineer/nyxt ~/common-lisp/nyxt
 #+end_src
+
+If you already have a clone that was made without submodules, fetch them with:
+
+#+begin_src sh
+cd ~/common-lisp/nyxt
+git submodule update --init --recursive
+#+end_src
+
+There are 111 submodules, all living under =./_build=, and they are shallow (see
+=shallow = true= in =.gitmodules=).  Populating them is a prerequisite for any
+build.
 
 ** Common Lisp
 
@@ -82,7 +104,16 @@ following plugins:
 
 *** Electron
 
-Experimental support for [[https://www.electronjs.org/][Electron]].  Further documentation soon.
+[[https://www.electronjs.org/][Electron]] is the default renderer (the =NYXT_RENDERER= make variable is set to
+=electron=) and only requires
+[[https://nodejs.org/][Node.js]] and =npm=; the WebKitGTK shared objects above are not needed.
+
+The Electron runtime is installed by =npm= on demand: =make all= runs
+=make -C _build/cl-electron install=, which is simply =npm install= under
+=_build/cl-electron=, before any Lisp code is compiled.  This is a fast,
+network-dependent step, so a failure here (missing =npm=, no network access, or
+an empty =_build/cl-electron= submodule) aborts the build almost immediately.
+Set =NODE_SETUP=false= to skip it.
 
 ** Other
 
@@ -98,6 +129,115 @@ Additionally, the following packages:
 - xclip :: when using X system;
 - wl-clipboard :: when using Wayland;
 - enchant :: spellchecking (optional).
+
+* Architecture
+
+Nyxt ships as a single executable which is a whole Common Lisp image, not a
+core program with the Lisp fixed on disk.  This matters to anyone planning to
+modify or extend it: the binary is self-contained, and user Lisp is compiled
+at run time by an embedded compiler rather than at build time.
+
+** One Lisp image, compiler included
+
+=make all= invokes =asdf:make :nyxt/electron-application=, which dumps a core
+image with `save-lisp-and-die`: the SBCL run-time, the full Lisp compiler,
+Nyxt's own source, and all bundled dependencies (the =_build= submodules) are
+compiled into the =./nyxt= ELF executable.
+
+Two consequences follow:
+
+- The compiler is embedded so user code can be compiled at run time.  This is
+  what makes the extension model work (see the Configuration section of the
+  in-browser manual, =source/manual.lisp=) and accounts for most of the
+  binary's size (on the order of one hundred megabytes).
+- The binary does not need the source tree or =_build= to run.  At start-up,
+  =*source-directory*= (=source/configuration.lisp=) is looked for at ASDF's
+  system source-directory, then the XDG data directories, then =share/nyxt/=
+  relative to the binary.  If none of these contain a =nyxt.asd=, Nyxt logs
+  "Nyxt source directory not found" and runs anyway.  A deployed binary in
+  =/usr/local/bin/= with no other files works.
+
+** What lives outside the binary
+
+Lisp itself is fully inside the image; three things are not:
+
+- System shared libraries loaded through CFFI: WebKitGTK/GTK, OpenSSL,
+  libfixposix, SQLite.  See the [[*Bill of Materials][Bill of Materials]].
+- The renderer.  Nyxt is not a web engine: the default Electron renderer is a
+  separate Node/Electron program under =_build/cl-electron/=, whose
+  =node_modules= (hundreds of megabytes) must be present at run time.  See
+  the [[*Electron][Electron]] entry in the Bill of Materials.
+- User data: =~/.config/nyxt/= for configuration and
+  =~/.local/share/nyxt/extensions/= for Lisp extensions.
+
+** Extending without rebuilding
+
+Because the image embeds the compiler, extension is additive at run time
+rather than a recompile:
+
+- =config.lisp= is loaded with =cl:load= at every start-up into the
+  =:nyxt-user= package (=source/start.lisp=).  =define-configuration= patches
+  the slots of internal classes without touching the sources, and
+  =define-command= adds commands.
+- Extensions are regular ASDF systems dropped in =*extensions-directory*=
+  (=~/.local/share/nyxt/extensions=), discovered automatically through
+  =nyxt-source-registry=, and loaded with =(asdf:load-system ...)=.
+- Live evaluation is available through =--eval=, =--load=, =--script= and the
+  =--remote= REPL (see the Scripting section of the in-browser manual).
+
+The binary is only rebuilt when Nyxt's own source changes.
+
+* Build artifacts
+
+What a build (=make all=) produces, and what must be kept around afterwards:
+
+- =./nyxt= :: the self-contained executable described in the
+  [[*Architecture][Architecture]] section.
+- =_build/= :: 111 shallow submodule check-outs of the Lisp dependencies.
+  Build-time only: their code is compiled into the image and nothing is read
+  from them at run time.  Safe to delete after a successful build (but re-run
+  =git submodule update --init --recursive= to restore them).
+- =_build/cl-electron/node_modules/= :: the Electron renderer host, installed
+  by =npm=.  Run-time dependency of the default renderer; keep it, or re-run
+  =make -C _build/cl-electron install= to restore it.
+- =~/.cache/common-lisp/sbcl-.../= :: the SBCL FASL cache.  User Lisp
+  (configuration, extensions, =--eval=) is compiled on demand by the embedded
+  compiler and cached here.  Delete it when behavior seems stale.
+- =manual.html= :: a static dump of the manual, produced by =make doc= (the
+  =nyxt/documentation= system) for offline reading.  The manual itself is
+  always available at run time inside the binary.
+
+** AppImage and packaged layout
+
+Official releases ship as an AppImage: a read-only filesystem image mounted at
+=$APPDIR=, running the =nyxt= binary from inside it.  It is laid out by the
+=nasdf= installer (=nyxt.asd= lines 348-356, =libraries/nasdf/install.lisp=),
+so it bundles:
+
+- =usr/bin/nyxt= :: the self-contained Lisp image described in the
+  [[*Architecture][Architecture]] section.
+- =usr/share/nyxt/= :: a copy of Nyxt's own sources (=source=, =libraries=,
+  =nasdf=) so that =*source-directory*= resolves inside the AppImage at run
+  time (the binary looks for =share/nyxt/nyxt.asd= relative to itself, see
+  =source/configuration.lisp=).
+- =usr/share/applications/nyxt.desktop= and
+  =usr/share/metainfo/nyxt.metainfo.xml= :: the desktop entry and AppStream
+  metadata.
+- =usr/share/icons/= :: the scalable =nyxt.svg= and multi-resolution PNG icons
+  used by desktop environments.
+- The renderer runtime (the Electron host and its =node_modules= for the
+  default renderer) and the system CFFI shared libraries that the image
+  loads, bundled so that the AppImage is self-contained.
+
+At run time, Nyxt detects the AppImage via the =APPIMAGE_PATH= environment
+variable (=appimage-p= in =source/global.lisp=): the in-browser help then
+offers an "Install Desktop Shortcut" button, and the =add-desktop-entry=
+command (=source/configuration-commands.lisp=) writes a launcher entry into
+=~/.local/share/applications/= and copies icons into
+=~/.local/share/icons/hicolor/=.
+
+Note that the AppImage assembly itself is done by the release pipeline, not by
+the makefile; this checkout only declares the packaged components above.
 
 * Development environment
 
@@ -140,6 +280,101 @@ since some of them are stateful:
 
 Nyxt uses the =Make= build system.  Run =make= to display the documentation or
 see the [[../makefile][Makefile]] for more details.
+
+*** Prerequisites
+
+- [[http://www.sbcl.org/][SBCL]] (the only supported Common Lisp implementation);
+- =make=;
+- [[https://nodejs.org/][Node.js]] and =npm= (only for the default Electron renderer);
+- the system packages listed in the [[*Bill of Materials][Bill of Materials]] section, most of which
+  apply to the WebKitGTK renderer only.
+
+Examples (package names vary across distributions):
+
+#+begin_src sh
+# Debian / Ubuntu
+sudo apt install sbcl make nodejs npm \
+    libwebkit2gtk-4.1-0 libfixposix3 libssl3 \
+    xclip # or wl-clipboard on Wayland
+#+end_src
+
+#+begin_src sh
+# Arch Linux (=make= ships with =base-devel=)
+sudo pacman -S --needed sbcl nodejs npm \
+    webkit2gtk-4.1 openssl libfixposix sqlite \
+    xclip # or wl-clipboard on Wayland
+#+end_src
+
+Quicklisp is *not* required: all Lisp dependencies are bundled as submodules
+under =./_build=, and any build that resolves them through Quicklisp instead is
+considered unofficial (see =NYXT_SUBMODULES= in the makefile).
+
+*** Fresh check-out
+
+#+begin_src sh
+mkdir -p ~/common-lisp
+git clone --recurse-submodules https://github.com/atlas-engineer/nyxt ~/common-lisp/nyxt
+cd ~/common-lisp/nyxt
+#+end_src
+
+For an existing clone started without submodules (or after an interrupted
+checkout):
+
+#+begin_src sh
+git submodule update --init --recursive
+#+end_src
+
+Populating the submodules is the very first thing to get right: a missing one
+typically fails the build before Lisp compilation even starts, with a =make=
+"No such file or directory" or an ASDF =MISSING-DEPENDENCY= error.  Empty
+directories left over from an interrupted checkout can confuse git; remove them
+and re-run the command above:
+
+#+begin_src sh
+for d in _build/*/; do [ -d "$d" ] && [ -z "$(ls -A "$d")" ] && rm -rf "$d"; done
+git submodule update --init --recursive
+#+end_src
+
+*** Building the binary
+
+#+begin_src sh
+make all
+#+end_src
+
+This generates the =./nyxt= binary with the default (Electron) renderer.  The
+first run downloads the Electron runtime via =npm= and compiles every Lisp
+dependency under =./_build=, so expect several minutes and several hundred
+megabytes of output.  Subsequent runs are incremental: =.lisp= files are
+tracked as make dependencies, so only out-of-date ones are recompiled (change a
+file and re-run =make all=).
+
+For the WebKitGTK renderer instead:
+
+#+begin_src sh
+make all NYXT_RENDERER=gi-gtk
+#+end_src
+
+Other targets: =make check= runs the test suite, =make doc= builds the static
+documentation, and =make clean= removes the =./nyxt= binary.  Note that the
+INSTALL file (shown by =make= / =make help=) mentions =make install=, but no
+such top-level target exists in the makefile.
+
+*** Running the tests
+
+#+begin_src sh
+make check
+#+end_src
+
+It restarts Lisp, loads the =:nyxt= system, and runs the test suite.  Some tests
+are stateful, so restart the Lisp image before and after running them (see the
+[[*Development environment][Development environment]] section).
+
+*** Troubleshooting
+
+- An *immediate* failure mentioning =electron=: the first step of =make all= is
+  =npm install= under =_build/cl-electron=.  This needs =node= and =npm= on the
+  =PATH= plus network access, and fails within seconds - before any Common Lisp
+  code is touched.
 
 * Contributing
 
