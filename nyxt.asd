@@ -342,6 +342,28 @@
   :build-pathname "nyxt"
   :entry-point "nyxt:entry-point")
 
+(defsystem "nyxt/cef"
+  :depends-on (nyxt cl-cef)
+  :pathname #p"NYXT:source;"
+  :serial t
+  :components ((:file "mode/blocker")
+               (:file "mode/certificate-exception")
+               (:file "mode/force-https")
+               (:file "mode/user-script")
+               (:file "mode/no-image")
+               (:file "mode/no-script")
+               (:file "mode/no-webgl")
+               (:file "mode/proxy")
+               (:file "renderer/cef")))
+
+(defsystem "nyxt/cef-application"
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-system
+  :depends-on (nyxt/cef)
+  :build-operation "program-op"
+  :build-pathname "nyxt"
+  :entry-point "nyxt:entry-point")
+
 (defsystem "nyxt/install"
   :defsystem-depends-on ("nasdf")
   :class :nyxt-renderer-system

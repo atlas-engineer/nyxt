@@ -258,10 +258,13 @@ ARGS is an arbitrary keyword arguments list that is translated to a URL query."
 (defun internal-page-name (url)
   (when-let* ((%url (quri:uri url))
               (_ (string= "nyxt" (quri:uri-scheme %url))))
-    ;; As to account for nyxt:foo and nyxt://foo.
-    (uiop:safe-read-from-string (str:upcase (or (quri:uri-path %url)
-                                                (quri:uri-host %url)))
-                                :package :nyxt)))
+    (let* ((raw-path (quri:uri-path %url))
+           (path (and raw-path (string-trim '(#\/) raw-path)))
+           (name (if (or (null path) (string= path ""))
+                     (quri:uri-host %url)
+                     path)))
+      (when name
+        (uiop:safe-read-from-string (str:upcase name) :package :nyxt)))))
 
 (export-always 'internal-url-p)
 (defun internal-url-p (url)

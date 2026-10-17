@@ -30,7 +30,7 @@ help:
 makefile_dir := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 ifeq ($(NYXT_SUBMODULES),true)
-	CL_SOURCE_REGISTRY = $(makefile_dir)_build//
+	CL_SOURCE_REGISTRY = $(makefile_dir)_build//:$(makefile_dir)libraries//
 	export CL_SOURCE_REGISTRY
 endif
 
@@ -50,6 +50,12 @@ nyxt: $(lisp_files)
 	   [ "$(NODE_SETUP)" = "true" ] && \
 	   [ "$(NYXT_SUBMODULES)" = "true" ]; then \
 		$(MAKE) -C $(makefile_dir)_build/cl-electron install; \
+	fi
+	if [ "$(NYXT_RENDERER)" = "cef" ] && [ -n "$(CEF_ROOT)" ]; then \
+		cmake -S $(makefile_dir)_build/cl-cef \
+			-B $(makefile_dir)_build/cl-cef/build \
+			-DCEF_ROOT="$(CEF_ROOT)" && \
+		cmake --build $(makefile_dir)_build/cl-cef/build; \
 	fi
 	$(lisp_eval) '(asdf:load-system :nyxt/$(NYXT_RENDERER)-application)' \
 		--eval '(asdf:make :nyxt/$(NYXT_RENDERER)-application)' \

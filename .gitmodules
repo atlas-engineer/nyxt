@@ -418,6 +418,10 @@
 	path = _build/cl-electron
 	url = https://github.com/atlas-engineer/cl-electron/
 	shallow = true
+[submodule "_build/cl-cef"]
+	path = _build/cl-cef
+	url = https://github.com/atlas-engineer/cl-cef/
+	shallow = true
 [submodule "_build/cl-colors-ng"]
 	path = _build/cl-colors-ng
 	url = https://codeberg.org/cage/cl-colors-ng.git
