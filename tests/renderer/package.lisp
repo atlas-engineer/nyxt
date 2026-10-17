@@ -16,7 +16,7 @@
 (defmacro with-prompt-buffer-test (command &body body)
   (alexandria:with-gensyms (thread)
     `(let ((,thread (bt:make-thread (lambda () ,command))))
-       (calispel:? (prompt-buffer-ready-channel (current-window)))
+       (lparallel.queue:pop-queue (prompt-buffer-ready-channel (current-window)))
        ,@body
        (run-action-on-return)
        (bt:join-thread ,thread))))
@@ -32,10 +32,10 @@
       (nyxt:set-prompt-buffer-input url prompt-buffer)
       (prompter:all-ready-p prompt-buffer)
       (hooks:once-on (nyxt:buffer-loaded-hook (nyxt:current-buffer)) buffer
-        (calispel:! url-channel (nyxt:render-url (nyxt:url buffer))))
+        (lparallel.queue:push-queue (nyxt:render-url (nyxt:url buffer)) url-channel))
       (nyxt/mode/prompt-buffer:run-action-on-return prompt-buffer))
     (nyxt:run-thread "run set-url"
       ;; TODO: Test if thread returns.
       (nyxt:set-url))
-    (assert-string= url (calispel:? url-channel 5))
+    (assert-string= url (lparallel.queue:try-pop-queue url-channel :timeout 5))
     (nyxt:quit)))

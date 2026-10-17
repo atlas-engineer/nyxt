@@ -16,8 +16,8 @@
                 :socket "/tmp/nyxt-test.socket")
     (with-current-buffer (nyxt:make-buffer-focus :url "test:test")
       (hooks:once-on (nyxt:buffer-loaded-hook (current-buffer)) (buffer)
-        (calispel:! ready-channel t))
-      (calispel:? ready-channel)
+        (lparallel.queue:push-queue t ready-channel))
+      (lparallel.queue:pop-queue ready-channel)
       (sleep 1)
       (assert-equal "pass"
                     (nyxt:ps-eval (ps:chain (nyxt/ps:qs document "p") inner-text))))
@@ -50,8 +50,8 @@
                 :socket "/tmp/nyxt-test.socket")
     (with-current-buffer (nyxt:make-buffer-focus :url "iframe-embed:test")
       (hooks:once-on (nyxt:buffer-loaded-hook (current-buffer)) (buffer)
-        (calispel:! ready-channel t))
-      (calispel:? ready-channel)
+        (lparallel.queue:push-queue t ready-channel))
+      (lparallel.queue:pop-queue ready-channel)
       ;; More than enough time for nyxt:new to load and check-iframe-loaded to fire.
       (sleep 1)
       (assert-equal ""

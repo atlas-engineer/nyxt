@@ -6,14 +6,6 @@
 	path = _build/bordeaux-threads
 	url = https://github.com/sionescu/bordeaux-threads
 	shallow = true
-[submodule "_build/calispel"]
-	path = _build/calispel
-	url = https://github.com/hawkir/calispel
-	shallow = true
-[submodule "_build/cl-jpl-util"]
-	path = _build/cl-jpl-util
-	url = https://github.com/hawkir/cl-jpl-util
-	shallow = true
 [submodule "_build/trivial-garbage"]
 	path = _build/trivial-garbage
 	url = https://github.com/trivial-garbage/trivial-garbage
@@ -305,10 +297,6 @@
 [submodule "_build/lparallel"]
 	path = _build/lparallel
 	url = https://github.com/lmj/lparallel/
-	shallow = true
-[submodule "_build/jpl-queues"]
-	path = _build/jpl-queues
-	url = https://gitlab.common-lisp.net/nyxt/jpl-queues.git
 	shallow = true
 [submodule "_build/mt19937"]
 	path = _build/mt19937

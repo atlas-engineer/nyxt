@@ -137,7 +137,7 @@ Only send if last update was more than `update-interval' seconds ago."
          (time-diff (- new-time (last-update download))))
     (when (or (< (update-interval download) time-diff)
               (finished-p download))
-      (calispel:! *notifications* download)
+      (lparallel.queue:push-queue download *notifications*)
       (setf (last-update-speed download)
             (if (= 0 time-diff)
                 0
@@ -159,7 +159,7 @@ If DIRECTORY is nil, `default-download-directory' will be used.  COOKIES can
 specify a cookie jar as a string, which is useful for authenticated downloads.
 PROXY is the full proxy address, e.g. \"socks5://127.0.0.1:9050\"."
   (unless *notifications*
-    (setf *notifications* (make-instance 'calispel:channel)))
+    (setf *notifications* (lparallel.queue:make-queue)))
   (let ((download (cache :url url
                          :directory (download-directory directory)
                          :cookies cookies

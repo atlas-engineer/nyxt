@@ -311,18 +311,16 @@ context of a mode are listed."
 (defun run (command &optional args)
   "Run COMMAND over ARGS and return its result.
 This is blocking, see `run-async' for an asynchronous way to run commands."
-  (let ((channel (make-channel 1))
-        (error-channel (make-channel 1)))
+  (let ((channel (make-channel 1)))
     (run-thread "run command"
       ;; TODO: This `handler-case' overlaps with `with-protect' from `run-thread'.  Factor them!
-      (handler-case (calispel:! channel (run-command command args))
+      (handler-case (lparallel.queue:push-queue (cons t (run-command command args)) channel)
         (condition (c)
-          (calispel:! error-channel c))))
-    (calispel:fair-alt
-      ((calispel:? channel result)
-       result)
-      ((calispel:? error-channel c)
-       (echo-warning "Error when running ~a: ~a" command c)))))
+          (lparallel.queue:push-queue (cons nil c) channel))))
+    (destructuring-bind (success . value) (lparallel.queue:pop-queue channel)
+      (if success
+          value
+          (echo-warning "Error when running ~a: ~a" command value)))))
 
 (defun run-async (command &optional args)
   "Run COMMAND over ARGS asynchronously.

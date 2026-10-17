@@ -151,7 +151,7 @@ Otherwise run the THUNK on the renderer thread by passing it a channel and wait 
       (let ((channel (nyxt::make-channel 1)))
         (within-gtk-thread
           (funcall thunk channel))
-        (calispel:? channel))))
+        (lparallel.queue:pop-queue channel))))
 
 (defun %within-renderer-thread-async (thunk)
   "Same as `%within-renderer-thread' but THUNK is not blocking and does
@@ -177,27 +177,25 @@ the renderer thread, use `defmethod' instead."
        ,@declares
        (if (renderer-thread-p nyxt::*renderer*)
            (progn ,@forms)
-           (let ((channel (nyxt::make-channel 1))
-                 (error-channel (nyxt::make-channel 1)))
+           (let ((channel (nyxt::make-channel 1)))
              (within-gtk-thread
                ;; TODO: Abstract this into `with-protect-from-thread'?
                (if (or nyxt::*run-from-repl-p* nyxt::*restart-on-error*)
                    (let ((current-condition nil))
                      (restart-case
                          (handler-bind ((condition (lambda (c) (setf current-condition c))))
-                           (calispel:! channel (progn ,@forms)))
+                           (lparallel.queue:push-queue (cons t (progn ,@forms)) channel))
                        (abort-ffi-method ()
                          :report "Pass condition to calling thread."
-                         (calispel:! error-channel current-condition))))
-                   (handler-case (calispel:! channel (progn ,@forms))
+                         (lparallel.queue:push-queue (cons nil current-condition) channel))))
+                   (handler-case (lparallel.queue:push-queue (cons t (progn ,@forms)) channel)
                      (condition (c)
-                       (calispel:! error-channel c)))))
-             (calispel:fair-alt
-               ((calispel:? channel result)
-                result)
-               ((calispel:? error-channel condition)
-                (with-protect ("Error in FFI method: ~a" :condition)
-                  (error condition)))))))))
+                       (lparallel.queue:push-queue (cons nil c) channel)))))
+             (destructuring-bind (success . value) (lparallel.queue:pop-queue channel)
+               (if success
+                   value
+                   (with-protect ("Error in FFI method: ~a" :condition)
+                     (error value)))))))))
 
 (defmethod ffi-initialize ((browser gtk-browser) urls startup-timestamp)
   "gtk:within-main-loop handles all the GTK initialization."
@@ -1412,7 +1410,7 @@ with this scheme.")
         (if channel
             (lambda (result jsc-result)
               (declare (ignore jsc-result))
-              (calispel:! channel result))
+              (lparallel.queue:push-queue result channel))
             (lambda (result jsc-result)
               (declare (ignore jsc-result))
               result))
@@ -1420,7 +1418,7 @@ with this scheme.")
           (nyxt::javascript-error-handler condition)
           ;; Notify the listener that we are done.
           (when channel
-            (calispel:! channel nil)))
+            (lparallel.queue:push-queue nil channel)))
         world-name)))))
 
 (defmethod ffi-buffer-evaluate-javascript-async ((buffer gtk-buffer) javascript &optional world-name)
@@ -1689,16 +1687,17 @@ custom (the specified proxy) and none."
               ;; TODO: Update upstream to export and fix `with-g-async-ready-callback'.
               (webkit::with-g-async-ready-callback (callback
                                                      (declare (ignorable webkit::user-data webkit::source-object))
-                                                     (calispel:! result-channel
-                                                                 (webkit:webkit-cookie-manager-get-accept-policy-finish
-                                                                  cookie-manager
-                                                                  webkit::result)))
+                                                     (lparallel.queue:push-queue
+                                                      (webkit:webkit-cookie-manager-get-accept-policy-finish
+                                                       cookie-manager
+                                                       webkit::result)
+                                                      result-channel))
                 (webkit:webkit-cookie-manager-get-accept-policy
                  cookie-manager
                  (cffi:null-pointer)
                  callback
                  (cffi:null-pointer))))))
-        (calispel:? result-channel))))
+        (lparallel.queue:pop-queue result-channel))))
 (defmethod (setf ffi-buffer-cookie-policy) (value (buffer gtk-buffer))
   "Set the cookie policy to VALUE.
 Valid values are determined by the `cookie-policy' type."
@@ -1760,11 +1759,11 @@ Only the setf method is."
                (progn
                  (webkit:webkit-web-view-execute-editing-command
                   (gtk-object gtk-buffer) webkit2:+webkit-editing-command-copy+)
-                 (calispel:! channel t)
+                 (lparallel.queue:push-queue t channel)
                  (echo "~s copied to clipboard." text))
-               (calispel:! channel nil)))
+               (lparallel.queue:push-queue nil channel)))
          (lambda (e) (echo-warning "~s failed to copy to clipboard." e)))
-        (if (calispel:? channel)
+        (if (lparallel.queue:pop-queue channel)
             (trivial-clipboard:text)
             nil))))
 
@@ -1788,10 +1787,10 @@ Only the setf method is."
            (progn
              (webkit:webkit-web-view-execute-editing-command
               (gtk-object gtk-buffer) webkit2:+webkit-editing-command-cut+)
-             (calispel:! channel t))
-           (calispel:! channel nil)))
+             (lparallel.queue:push-queue t channel))
+           (lparallel.queue:push-queue nil channel)))
      (lambda (e) (echo-warning "Cannot cut: ~a" e)))
-    (if (calispel:? channel)
+    (if (lparallel.queue:pop-queue channel)
         (trivial-clipboard:text)
         nil)))
 

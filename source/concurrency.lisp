@@ -52,17 +52,12 @@ raised condition."
             ,@body)))))
 
 (defun make-channel (&optional size)
-  "Return a channel of capacity SIZE.
-If SIZE is NIL, capacity is infinite."
-  (cond
-    ((null size)
-     (make-instance 'calispel:channel
-                    :buffer (make-instance 'jpl-queues:unbounded-fifo-queue)))
-    ((zerop size)
-     (make-instance 'calispel:channel))
-    ((plusp size)
-     (make-instance 'calispel:channel
-                    :buffer (make-instance 'jpl-queues:bounded-fifo-queue :capacity size)))))
+  "Return an lparallel queue of capacity SIZE.
+If SIZE is NIL, capacity is infinite.
+`lparallel.queue:push-queue' blocks when a fixed-capacity queue is full."
+  (if (and size (plusp size))
+      (lparallel.queue:make-queue :fixed-capacity size)
+      (lparallel.queue:make-queue)))
 
 (defun drain-channel (channel &optional timeout)
   "Listen to CHANNEL until a value is available, then return all CHANNEL values
@@ -71,11 +66,13 @@ TIMEOUT specifies how long to wait for a value after the first one.
 This is a blocking operation."
   (labels ((fetch ()
              (multiple-value-bind (value received?)
-                 (calispel:? channel timeout)
+                 (if timeout
+                     (lparallel.queue:try-pop-queue channel :timeout timeout)
+                     (values (lparallel.queue:pop-queue channel) t))
                (if received?
                    (cons value (fetch))
                    nil))))
-    (cons (calispel:? channel)
+    (cons (lparallel.queue:pop-queue channel)
           (nreverse (fetch)))))
 
 (export-always 'run-thread)
@@ -98,8 +95,7 @@ evaluated in order."
   (let ((channel (make-channel 2)))
     (run-thread "evaluator"
       (let ((*standard-output* (make-string-output-stream)))
-        (calispel:!
-         channel
+        (lparallel.queue:push-queue
          (with-input-from-string (input string)
            (first
             (last
@@ -107,9 +103,10 @@ evaluated in order."
                        (multiple-value-list
                         (with-protect ("Error in s-exp evaluation: ~a" :condition)
                           (eval s-exp))))
-                     (safe-slurp-stream-forms input))))))
-        (calispel:! channel (get-output-stream-string *standard-output*))))
-    (values (calispel:? channel) (calispel:? channel))))
+                     (safe-slurp-stream-forms input)))))
+         channel)
+        (lparallel.queue:push-queue (get-output-stream-string *standard-output*) channel)))
+    (values (lparallel.queue:pop-queue channel) (lparallel.queue:pop-queue channel))))
 
 (defun evaluate-async (string)
   "Like `evaluate' but does not block and does not return the result."

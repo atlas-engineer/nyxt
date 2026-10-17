@@ -18,7 +18,6 @@
   :license "BSD 3-Clause"
   :depends-on (alexandria
                bordeaux-threads
-               calispel
                cl-base64
                cl-colors-ng
                cl-gopher
@@ -384,10 +383,10 @@
 (defsystem "nyxt/download-manager"
   :defsystem-depends-on ("nasdf")
   :class :nasdf-system
-  :depends-on (calispel
-               cl-ppcre
+  :depends-on (cl-ppcre
                dexador
                log4cl
+               lparallel
                quri
                str)
   :pathname #p"NYXT:libraries;download-manager;"
