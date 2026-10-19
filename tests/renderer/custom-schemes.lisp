@@ -42,6 +42,26 @@
          (:iframe :src "nyxt:new")
          (:span#text-check "")))))
 
+(nyxt:define-internal-scheme "test-other"
+    (lambda (url)
+      (declare (ignore url))
+      (spinneret:with-html-string (:p "other"))))
+
+(define-test second-custom-scheme ()
+  (let ((ready-channel (nyxt::make-channel 1)))
+    (nyxt:start :no-config t
+                :no-auto-config t
+                :headless t
+                :socket "/tmp/nyxt-test.socket")
+    (with-current-buffer (nyxt:make-buffer-focus :url "test-other:page")
+      (hooks:once-on (nyxt:buffer-loaded-hook (current-buffer)) (buffer)
+        (lparallel.queue:push-queue t ready-channel))
+      (lparallel.queue:pop-queue ready-channel)
+      (sleep 1)
+      (assert-equal "other"
+                    (nyxt:ps-eval (ps:chain (nyxt/ps:qs document "p") inner-text))))
+    (nyxt:quit)))
+
 (define-test nyxt-url-not-iframe-embeddable ()
   (let ((ready-channel (nyxt::make-channel 1)))
     (nyxt:start :no-config t

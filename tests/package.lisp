@@ -12,3 +12,6 @@
 
 (uiop:delete-directory-tree (nfiles:expand (make-instance 'nyxt:nyxt-data-directory))
                             :validate t :if-does-not-exist :ignore)
+
+;; Mode instantiation runs `buffer-make-hook' on `*browser*'.
+(setf nyxt:*browser* (make-instance 'nyxt:browser))

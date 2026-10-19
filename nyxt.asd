@@ -188,6 +188,12 @@
                (:file "prompt-buffer")
                (:file "urls")
                (:file "user-script-parsing")
+               (:file "history")
+               (:file "buffer")
+               (:file "command")
+               (:file "search-engine")
+               (:file "utilities")
+               (:file "dom")
                (:file "mode")
                (:module "Modes"
                 :pathname "mode"
@@ -236,8 +242,7 @@
                  ;; TODO Fix visual-mode architecture.  Visit the file below for
                  ;; more information.
                  ;; (:file "visual")
-                 (:file "user-script")
-                 (:file "watch"))))
+                 (:file "user-script"))))
     :test-suite-args (:package :nyxt/tests))
 
 (defsystem "nyxt/benchmarks"
@@ -300,7 +305,8 @@
   :components ((:file "package")
                (:file "set-url")
                (:file "custom-schemes")
-               (:file "search-buffer"))
+               (:file "search-buffer")
+               (:file "buffer"))
   :test-suite-args (:package :nyxt/tests/renderer))
 
 (defsystem "nyxt/electron"
