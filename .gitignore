@@ -38,3 +38,5 @@ TAGS
 # Ignore C object files and libraries
 *.o
 *.so
+
+ocicl

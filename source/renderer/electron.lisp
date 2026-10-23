@@ -100,7 +100,9 @@
                              :scheme-name "gemini"
                              :privileges "{}")))
   (setf (electron:launch-options electron:*interface*)
-        (cl-ppcre:split "\\s+"  (getf *options* :electron-opts)))
+        (let ((electron-opts (getf *options* :electron-opts)))
+          (when electron-opts
+            (cl-ppcre:split "\\s+" electron-opts))))
   (electron:launch electron:*interface*)
   (when (adblocking-enabled-p browser)
     (let ((adblocker (make-instance 'electron:adblocker-electron)))

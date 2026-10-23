@@ -271,7 +271,7 @@
   :class :nasdf-system
   :depends-on (nyxt cl-webkit2)
   :pathname #p"NYXT:source;"
-  :components ((:file "renderer/gtk")
+  :components ((:file "renderer/gtk" :depends-on ("mode/user-script"))
                ;; TODO: Port to other renderers.
                (:file "mode/blocker")
                (:file "mode/certificate-exception")

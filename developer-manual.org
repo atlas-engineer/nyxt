@@ -27,12 +27,14 @@
 * Bill of Materials
 ** Source
 
-Either get a tarball (=nyxt-<version>-source-with-submodules.tar.xz=) from a
+Either get a tarball from a
 [[https://github.com/atlas-engineer/nyxt/releases][tagged release]], or clone as a git repository:
 
 #+begin_src sh
 mkdir -p ~/common-lisp
-git clone --recurse-submodules https://github.com/atlas-engineer/nyxt ~/common-lisp/nyxt
+git clone https://github.com/atlas-engineer/nyxt ~/common-lisp/nyxt
+cd ~/common-lisp/nyxt
+ocicl install
 #+end_src
 
 ** Common Lisp
@@ -40,13 +42,12 @@ git clone --recurse-submodules https://github.com/atlas-engineer/nyxt ~/common-l
 Nyxt is written in Common Lisp.  Currently, we only target one of its
 implementations - [[http://www.sbcl.org/][SBCL]].
 
-Nyxt also depends on Common Lisp libraries.  These are bundled in the tarball
-mentioned above or fetched as Git submodules (under =./_build=).
-
-Note for advanced users: the single source of truth for CL libraries is dictated
-by the Git submodules.  Any Nyxt build that deviates from it is considered
-unofficial.  See environment variable =NYXT_SUBMODULES= defined in the makefile
-to override the default behavior.
+Common Lisp libraries are managed by [[https://github.com/ocicl/ocicl][Ocicl]].
+=ocicl.csv= pins each system to an OCI registry artifact, or to a Git commit
+when the registry does not publish that system.  =ocicl install= fetches the
+pinned sources into =./ocicl=, which is not part of the repository.  =make=
+runs that install and loads =ocicl-runtime= so ASDF can find the systems.
+Run the Lisp image with its current directory at the repository root.
 
 ** Web renderers
 
@@ -110,8 +111,7 @@ comfortable with Emacs.  Add the snippet below to Emacs' init file.
 
 #+begin_src emacs-lisp
 (setq slime-lisp-implementations
-      '((nyxt ("sbcl" "--dynamic-space-size 3072")
-              :env ("CL_SOURCE_REGISTRY=~/common-lisp//:~/common-lisp/nyxt/_build//"))))
+      '((nyxt ("sbcl" "--dynamic-space-size 3072"))))
 #+end_src
 
 Start the REPL by issuing =M-- M-x sly RET nyxt RET= and evaluate:
@@ -123,7 +123,9 @@ Start the REPL by issuing =M-- M-x sly RET nyxt RET= and evaluate:
 
 Note that:
 
-- [[https://asdf.common-lisp.dev/asdf/Configuring-ASDF-to-find-your-systems.html][ASDF must be configured to find the required systems]];
+- =ocicl setup= must have been run, and the Lisp startup file must load
+  =ocicl-runtime=, so ASDF finds the systems pinned in =ocicl.csv=.  Start the
+  REPL from the repository root;
 - =cffi= must be configured to find the required shared objects by setting env
   var =LD_LIBRARY_PATH= or =cffi:*foreign-library-directories*=.
 

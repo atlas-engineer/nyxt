@@ -1742,12 +1742,6 @@ Only the setf method is."
     (webkit:webkit-web-view-web-context (gtk-object buffer)))
    value))
 
-(defmethod enable :after ((mode nyxt/mode/reduce-tracking:reduce-tracking-mode) &key)
-  (setf (itp-enabled-p (buffer mode)) t))
-
-(defmethod disable :after ((mode nyxt/mode/reduce-tracking:reduce-tracking-mode) &key)
-  (setf (itp-enabled-p (buffer mode)) nil))
-
 (defmethod ffi-buffer-copy ((gtk-buffer gtk-buffer) &optional (text nil text-provided-p))
   (if text-provided-p
       (trivial-clipboard:text text)
