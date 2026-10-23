@@ -585,15 +585,6 @@ See `update-prompt-input' to update the changes visually."
           (ps:lisp input)))
   (update-prompt-input prompt-buffer input))
 
-(defun prompt-channel-pop (channel timeout)
-  "Read one value from CHANNEL, waiting up to TIMEOUT seconds.
-The second value is true when a value arrived.
-`prompter' sends results and cancels on Calispel channels. Some Nyxt channels
-are lparallel queues."
-  (if (typep channel 'lparallel.queue:queue)
-      (lparallel.queue:try-pop-queue channel :timeout timeout)
-      (calispel:? channel timeout)))
-
 (defun wait-on-prompt-buffer (prompt-buffer) ; TODO: Export?  Better name?
   "Block and return PROMPT-BUFFER results."
   (when (prompt-buffer-p prompt-buffer)
@@ -602,16 +593,19 @@ are lparallel queues."
     ;; both are waiting so a completed prompt is not reported as a cancel.
     (loop
       (multiple-value-bind (results received-p)
-          (prompt-channel-pop (prompter:result-channel prompt-buffer) 0)
+          (lparallel.queue:try-pop-queue (prompter:result-channel prompt-buffer)
+                                         :timeout 0)
         (when received-p
           (hide-prompt-buffer prompt-buffer)
           (return results)))
       (multiple-value-bind (interrupted received-p)
-          (prompt-channel-pop (prompter:interrupt-channel prompt-buffer) 0.05)
+          (lparallel.queue:try-pop-queue (prompter:interrupt-channel prompt-buffer)
+                                         :timeout 0.05)
         (declare (ignore interrupted))
         (when received-p
           (multiple-value-bind (results result-received-p)
-              (prompt-channel-pop (prompter:result-channel prompt-buffer) 0)
+              (lparallel.queue:try-pop-queue (prompter:result-channel prompt-buffer)
+                                             :timeout 0)
             (hide-prompt-buffer prompt-buffer)
             (if result-received-p
                 (return results)

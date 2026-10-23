@@ -239,24 +239,13 @@ SUGGESTION-P, when supplied, is called with the selected suggestion."
     (error (prompt-error)))
   (bt:join-thread thread))
 
-(defun lparallel-queue-p (channel)
-  "True when CHANNEL is an lparallel queue.
-In-tree Nyxt creates lparallel queues. The loaded prompter still uses Calispel."
-  (let ((queue-type (find-symbol "QUEUE" "LPARALLEL.QUEUE")))
-    (and queue-type (typep channel queue-type))))
-
 (defun channel-push (value channel)
-  (if (lparallel-queue-p channel)
-      (funcall (find-symbol "PUSH-QUEUE" "LPARALLEL.QUEUE") value channel)
-      (funcall (find-symbol "!" "CALISPEL") channel value)))
+  (lparallel.queue:push-queue value channel))
 
 (defun channel-pop (channel timeout)
   "Return the next value from CHANNEL, waiting up to TIMEOUT seconds.
 The second value is true when a value arrived."
-  (if (lparallel-queue-p channel)
-      (funcall (find-symbol "TRY-POP-QUEUE" "LPARALLEL.QUEUE")
-               channel :timeout timeout)
-      (funcall (find-symbol "?" "CALISPEL") channel timeout)))
+  (lparallel.queue:try-pop-queue channel :timeout timeout))
 
 (defun drive-prompts (command-thunk steps)
   "Run COMMAND-THUNK and handle each prompt it opens with the functions in STEPS."
