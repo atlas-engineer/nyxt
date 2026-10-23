@@ -83,7 +83,9 @@
          (error-help "Scheme error" (princ-to-string condition)))))))
 
 (define-class cef-browser (cef:interface)
-  ()
+  ((adblocking-enabled-p
+    t
+    :documentation "When non-nil, load uBlock Origin's default lists and block matching requests."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:metaclass user-class)
@@ -111,6 +113,8 @@
             (append (cef:launch-options interface)
                     '("--ozone-platform=x11"))))
     (cef:launch interface)
+    (when (adblocking-enabled-p browser)
+      (cef:default-block (make-instance 'cef:adblocker)))
     (maphash (lambda (scheme-name callbacks)
                (ffi-register-custom-scheme
                 (make-instance 'scheme
