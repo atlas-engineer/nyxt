@@ -8,19 +8,18 @@
     (fn &key (modes (if (current-buffer)
                         (enabled-modes (current-buffer))
                         (mapcar #'make-instance (default-modes nil)))))
-  ;; We can't use `(modes (make-instance 'buffer))' because modes are only
-  ;; instantiated after the buffer web view, which is not possible if there is
-  ;; no *browser*.
-  (let* ((current-buffer (current-buffer))
-         (buffer (or (current-buffer)
-                     (make-instance 'input-buffer)))
-         (keymaps (delete nil (mapcar #'keymap modes))))
-    (unwind-protect
-         (or (first (keymaps:pretty-binding-keys
-                     fn keymaps :print-style (keymaps:name (keyscheme buffer))))
-             "unbound")
-      (unless current-buffer
-        (ffi-buffer-delete buffer)))))
+  ;; Do not instantiate `input-buffer' here. On CEF that creates a browser
+  ;; view, and suggestion rendering calls this on a thread with no current
+  ;; buffer. Creating and destroying that view takes the prompt's web view
+  ;; with it.
+  (let ((buffer (current-buffer))
+        (keymaps (delete nil (mapcar #'keymap modes))))
+    (or (first (keymaps:pretty-binding-keys
+                fn keymaps
+                :print-style (keymaps:name (if buffer
+                                               (keyscheme buffer)
+                                               keyscheme:cua))))
+        "unbound")))
 
 (export-always 'current-keymaps)
 (defun current-keymaps

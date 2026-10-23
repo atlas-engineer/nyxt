@@ -386,12 +386,16 @@ the default height.")
 (defmethod ffi-buffer-evaluate-javascript ((buffer cef-buffer) javascript
                                            &optional world-name)
   (declare (ignore world-name))
-  (cef:execute-javascript-synchronous (cef:web-contents buffer) javascript))
+  (if-let ((contents (cef:web-contents buffer)))
+    (cef:execute-javascript-synchronous contents javascript)
+    (warn "CEF buffer ~a has no web view; skipping JavaScript." buffer)))
 
 (defmethod ffi-buffer-evaluate-javascript-async ((buffer cef-buffer) javascript
                                                  &optional world-name)
   (declare (ignore world-name))
-  (cef:execute-javascript (cef:web-contents buffer) javascript))
+  (if-let ((contents (cef:web-contents buffer)))
+    (cef:execute-javascript contents javascript)
+    (warn "CEF buffer ~a has no web view; skipping JavaScript." buffer)))
 
 (defmethod ffi-inspector-show ((buffer cef-buffer))
   (cef:open-dev-tools buffer))

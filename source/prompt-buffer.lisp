@@ -297,9 +297,11 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
   (with-slots (window) prompt-buffer
     (push prompt-buffer (active-prompt-buffers window))
     (lparallel.queue:push-queue prompt-buffer (prompt-buffer-ready-channel window)))
+  ;; Height attachment can replace the document, so draw the skeleton after
+  ;; the view is in the window. On CEF a write before that has no HTML element.
+  (setf (height prompt-buffer) (slot-value prompt-buffer 'height))
   (prompt-render-skeleton prompt-buffer)
   (prompt-render-focus prompt-buffer)
-  (setf (height prompt-buffer) (slot-value prompt-buffer 'height))
   (ffi-focus-buffer prompt-buffer)
   (update-prompt-input prompt-buffer)
   (hooks:run-hook (prompt-buffer-ready-hook *browser*) prompt-buffer))
@@ -507,34 +509,38 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
     (render-prompt prompt-buffer)))
 
 (defun prompt-render-skeleton (prompt-buffer)
-  (html-write (spinneret:with-html-string
-                (:head (:nstyle (style prompt-buffer)))
-                (:body
-                 (:div
-                  :id "root"
-                  (:div
-                   :id "prompt-area"
-                   (:div :id "prompt" (prompter:prompt prompt-buffer))
-                   (:div :id "prompt-extra" :class "arrow-right" "[?/?]")
-                   (:div :id "prompt-input"
-                         (:input :type (if (invisible-input-p prompt-buffer)
-                                           "password"
-                                           "text")
-                                 :id "input"
-                                 :value (prompter:input prompt-buffer)))
-                   (:div :id "prompt-modes" :class "arrow-left" "")
-                   (:div :id "close-button" :class "arrow-left"
-                         (:nbutton
-                           :text "×"
-                           :title "Close prompt"
-                           :buffer prompt-buffer
-                           '(funcall (sym:resolve-symbol
-                                      :quit-prompt-buffer :command)))))
-                  (:div :id "suggestions"
-                        :style (if (invisible-input-p prompt-buffer)
-                                   "visibility:hidden;"
-                                   "visibility:visible;")))))
-              prompt-buffer))
+  ;; Synchronous. `html-write' returns before CEF applies the document, and
+  ;; `update-prompt-input' then reads `#input' while it is still missing.
+  (ps-eval :buffer prompt-buffer
+    (setf (ps:chain document (get-elements-by-tag-name "html") 0 |innerHTML|)
+          (ps:lisp
+           (spinneret:with-html-string
+             (:head (:nstyle (style prompt-buffer)))
+             (:body
+              (:div
+               :id "root"
+               (:div
+                :id "prompt-area"
+                (:div :id "prompt" (prompter:prompt prompt-buffer))
+                (:div :id "prompt-extra" :class "arrow-right" "[?/?]")
+                (:div :id "prompt-input"
+                      (:input :type (if (invisible-input-p prompt-buffer)
+                                        "password"
+                                        "text")
+                              :id "input"
+                              :value (prompter:input prompt-buffer)))
+                (:div :id "prompt-modes" :class "arrow-left" "")
+                (:div :id "close-button" :class "arrow-left"
+                      (:nbutton
+                        :text "×"
+                        :title "Close prompt"
+                        :buffer prompt-buffer
+                        '(funcall (sym:resolve-symbol
+                                   :quit-prompt-buffer :command)))))
+               (:div :id "suggestions"
+                     :style (if (invisible-input-p prompt-buffer)
+                                "visibility:hidden;"
+                                "visibility:visible;")))))))))
 
 (defun prompt-render-focus (prompt-buffer)
   (ps-eval :async t :buffer prompt-buffer
@@ -580,7 +586,10 @@ If you want to set the input, see `set-prompt-buffer-input'."
     (input &optional (prompt-buffer (current-prompt-buffer)))
   "Set HTML INPUT in PROMPT-BUFFER.
 See `update-prompt-input' to update the changes visually."
-  (ps-eval :async t :buffer prompt-buffer
+  ;; Synchronous so the following read-back sees this value. An async write
+  ;; still queued when `update-prompt-input' compares the DOM restarts the
+  ;; source update from the previous text.
+  (ps-eval :buffer prompt-buffer
     (setf (ps:@ (nyxt/ps:qs document "#input") value)
           (ps:lisp input)))
   (update-prompt-input prompt-buffer input))

@@ -526,11 +526,15 @@ Dispatches on buffers and modes."))
         (alex:if-let ((internal-page (find-url-internal-page url)))
           (progn
             (enable-page-mode buffer (page-mode internal-page))
+            ;; `nbutton' registers its callback on `current-buffer'. This runs
+            ;; on a load thread, where that would be some other buffer, so the
+            ;; click would look up an id that has no callback.
             (html-write
-             (apply (form internal-page)
-                    (append
-                     (query-params->arglist (quri:uri-query-params url))
-                     (list :%buffer% buffer)))
+             (with-current-buffer buffer
+               (apply (form internal-page)
+                      (append
+                       (query-params->arglist (quri:uri-query-params url))
+                       (list :%buffer% buffer))))
              buffer))
           (warn "No internal page corresponds to URL ~a" url))
         (disable-page-mode buffer))
