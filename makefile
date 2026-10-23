@@ -76,6 +76,11 @@ doc: ocicl-install
 check: ocicl-install
 	$(lisp_eval) '(asdf:test-system :nyxt)'
 
+.PHONY: integration
+integration: ocicl-install
+	XDG_SESSION_TYPE=x11 DISPLAY=$${DISPLAY:-:1} $(lisp_eval) \
+		"(progn (push (lambda (name) (let ((name (asdf:coerce-name name))) (when (or (string= name \"nyxt\") (uiop:string-prefix-p \"nyxt/\" name)) #p\"$(makefile_dir)nyxt.asd\"))) asdf:*system-definition-search-functions*) (asdf:test-system :nyxt/integration))"
+
 .PHONY: clean
 clean:
 	rm nyxt

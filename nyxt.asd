@@ -347,6 +347,18 @@
   :build-pathname "nyxt"
   :entry-point "nyxt:entry-point")
 
+(defsystem "nyxt/integration"
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-test-system
+  :depends-on (nyxt/electron lisp-unit2)
+  :description "Browse through the Electron UI: prompts, pages, and status."
+  :pathname #p"NYXT:tests;integration;"
+  :serial t
+  :components ((:file "package")
+               (:file "support")
+               (:file "browsing"))
+  :test-suite-args (:package :nyxt/tests/integration))
+
 (defsystem "nyxt/cef"
   :depends-on (nyxt cl-cef)
   :pathname #p"NYXT:source;"
