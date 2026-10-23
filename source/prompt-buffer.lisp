@@ -585,6 +585,15 @@ See `update-prompt-input' to update the changes visually."
           (ps:lisp input)))
   (update-prompt-input prompt-buffer input))
 
+(defun prompt-channel-pop (channel timeout)
+  "Read one value from CHANNEL, waiting up to TIMEOUT seconds.
+The second value is true when a value arrived.
+`prompter' sends results and cancels on Calispel channels. Some Nyxt channels
+are lparallel queues."
+  (if (typep channel 'lparallel.queue:queue)
+      (lparallel.queue:try-pop-queue channel :timeout timeout)
+      (calispel:? channel timeout)))
+
 (defun wait-on-prompt-buffer (prompt-buffer) ; TODO: Export?  Better name?
   "Block and return PROMPT-BUFFER results."
   (when (prompt-buffer-p prompt-buffer)
@@ -593,19 +602,16 @@ See `update-prompt-input' to update the changes visually."
     ;; both are waiting so a completed prompt is not reported as a cancel.
     (loop
       (multiple-value-bind (results received-p)
-          (lparallel.queue:try-pop-queue (prompter:result-channel prompt-buffer)
-                                         :timeout 0)
+          (prompt-channel-pop (prompter:result-channel prompt-buffer) 0)
         (when received-p
           (hide-prompt-buffer prompt-buffer)
           (return results)))
       (multiple-value-bind (interrupted received-p)
-          (lparallel.queue:try-pop-queue (prompter:interrupt-channel prompt-buffer)
-                                         :timeout 0.05)
+          (prompt-channel-pop (prompter:interrupt-channel prompt-buffer) 0.05)
         (declare (ignore interrupted))
         (when received-p
           (multiple-value-bind (results result-received-p)
-              (lparallel.queue:try-pop-queue (prompter:result-channel prompt-buffer)
-                                             :timeout 0)
+              (prompt-channel-pop (prompter:result-channel prompt-buffer) 0)
             (hide-prompt-buffer prompt-buffer)
             (if result-received-p
                 (return results)
@@ -645,10 +651,7 @@ See the documentation of `prompt-buffer' to know more about the options."
          (let ((prompt-buffer
                  (apply #'make-instance
                         'prompt-buffer
-                        (append args
-                                (list :window (current-window)
-                                      :result-channel (make-channel)
-                                      :interrupt-channel (make-channel))))))
+                        (append args (list :window (current-window))))))
            (lparallel.queue:push-queue prompt-buffer prompt-object-channel))))
       (let ((new-prompt (lparallel.queue:pop-queue prompt-object-channel)))
         (wait-on-prompt-buffer new-prompt)))))
