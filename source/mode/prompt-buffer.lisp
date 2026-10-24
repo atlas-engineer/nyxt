@@ -515,33 +515,29 @@ Only available if `prompter:enable-marks-p' is non-nil."
   "Select the prompt buffer's input text."
   (ffi-buffer-select-all prompt-buffer))
 
-;; FIXME: Move scroll.lisp from document-mode so that prompt-buffer.lisp can reach
-;; it.  Ideas?
-
 (define-command-prompt scroll-other-buffer-up
     (prompt-buffer &key (scroll-distance (scroll-distance (current-buffer))))
   "Scroll up the buffer behind the prompt."
-  (ps-eval :async t :buffer (current-buffer)
-    (ps:chain window (scroll-by 0 (ps:lisp (- scroll-distance))))))
+  (nyxt/mode/document:scroll-document
+   :y (- scroll-distance)
+   :behavior (if (smooth-scrolling (current-buffer)) "smooth" "instant")))
 
 (define-command-prompt scroll-other-buffer-down
     (prompt-buffer &key (scroll-distance (scroll-distance (current-buffer))))
   "Scroll down the buffer behind the prompt."
-  (ps-eval :async t :buffer (current-buffer)
-    (ps:chain window (scroll-by 0 (ps:lisp scroll-distance)))))
+  (nyxt/mode/document:scroll-document
+   :y scroll-distance
+   :behavior (if (smooth-scrolling (current-buffer)) "smooth" "instant")))
 
 (define-command-prompt scroll-page-up-other-buffer (prompt-buffer)
   "Scroll up the buffer behind the prompt by one page."
-  (ps-eval :async t :buffer (current-buffer)
-    (ps:chain window
-              (scroll-by 0 (- (* (ps:lisp (page-scroll-ratio (current-buffer)))
-                                 (ps:@ window inner-height)))))))
+  (nyxt/mode/document:scroll-document
+   :y-ratio (- (page-scroll-ratio (current-buffer)))))
 
 (define-command-prompt scroll-page-down-other-buffer (prompt-buffer)
   "Scroll down the buffer behind the prompt by one page."
-  (ps-eval :async t :buffer (current-buffer)
-    (ps:chain window (scroll-by 0 (* (ps:lisp (page-scroll-ratio (current-buffer)))
-                                     (ps:@ window inner-height))))))
+  (nyxt/mode/document:scroll-document
+   :y-ratio (page-scroll-ratio (current-buffer))))
 
 (defmethod default-modes append ((buffer prompt-buffer)) '(prompt-buffer-mode))
 

@@ -32,6 +32,27 @@
     (:p "The article body is about the lighthouse.")
     (:a :href (nyxt:nyxt-url 'nyxt::integration-home) "Back to the gazette")))
 
+(nyxt:define-internal-page nyxt::integration-body-scroller ()
+    (:title "Body scroller")
+  "A page whose body scrolls because both html and body are height 100%."
+  (spinneret:with-html-string
+    (:style "html, body { margin: 0; padding: 0; width: 100%; height: 100%;
+              overflow-x: hidden; }")
+    (:p "Top of the body scroller")
+    (:div :style "height: 8000px")
+    (:h2 "Far end of the body")))
+
+(nyxt:define-internal-page nyxt::integration-nested-scroller ()
+    (:title "Nested scroller")
+  "A page that scrolls an inner box while the viewport itself cannot."
+  (spinneret:with-html-string
+    (:style "html, body { margin: 0; height: 100%; overflow: hidden; }
+             #scroller { height: 100%; overflow: auto; }")
+    (:div :id "scroller"
+          (:p "Top of the nested scroller")
+          (:div :style "height: 8000px")
+          (:h2 "Far end of the nest"))))
+
 #+sb-package-locks
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (sb-ext:lock-package :nyxt))
@@ -41,6 +62,12 @@
 
 (defun article-url ()
   (nyxt:nyxt-url 'nyxt::integration-article))
+
+(defun body-scroller-url ()
+  (nyxt:nyxt-url 'nyxt::integration-body-scroller))
+
+(defun nested-scroller-url ()
+  (nyxt:nyxt-url 'nyxt::integration-nested-scroller))
 
 (defun wait-until (predicate &key (timeout 15) (description "condition"))
   (let ((deadline (+ (get-internal-real-time)
@@ -73,6 +100,13 @@
 (defun scroll-y (&optional (buffer (nyxt:current-buffer)))
   (or (ignore-errors
        (nyxt:ps-eval :buffer buffer (ps:@ window page-y-offset)))
+      0))
+
+(defun element-scroll-top (selector &optional (buffer (nyxt:current-buffer)))
+  (or (ignore-errors
+       (nyxt:ps-eval :buffer buffer
+         (ps:let ((element (nyxt/ps:qs document (ps:lisp selector))))
+           (when element (ps:@ element scroll-top)))))
       0))
 
 (defun search-mark-count (&optional (buffer (nyxt:current-buffer)))

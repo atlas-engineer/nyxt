@@ -235,65 +235,169 @@ Warning: URL is a string."
   (make-buffer-focus :url (quri:make-uri :scheme "view-source"
                                          :path (quri:render-uri url))))
 
+(export-always 'scroll-document)
+(defun scroll-document (&key (x 0) (y 0) y-ratio (behavior "instant") edge
+                          (buffer (current-buffer)))
+  "Scroll BUFFER by X and Y pixels, or to EDGE.
+Y-RATIO, when given, replaces Y with that fraction of the window height.
+EDGE is \"top\" or \"bottom\". BEHAVIOR is \"instant\" or \"smooth\".
+
+The element that moves is the document scrolling element, then `body', then
+the largest visible scrollable ancestor of a point in the window.
+`window.scrollBy' moves only the viewport. A page that sets `height: 100%'
+and `overflow-x: hidden' on both `html' and `body' computes `overflow-y' to
+`auto', so `body' is the scroll container and the viewport offset stays 0.
+Wheel input scrolls that body. Page Down scrolls the viewport, and so does
+nothing on that page. A synthetic wheel event lets the page cancel the scroll,
+so the commands keep a script and aim it at the box that has room to move."
+  (ps-eval :buffer buffer
+    (let* ((delta-x (ps:lisp x))
+           (delta-y (if (ps:lisp y-ratio)
+                        (* (ps:lisp (or y-ratio 0))
+                           (ps:@ window inner-height))
+                        (ps:lisp y)))
+           (behavior (ps:lisp behavior))
+           (edge (ps:lisp edge)))
+      (labels ((overflow-scrolls (value)
+                 (or (= value "auto")
+                     (= value "scroll")
+                     (= value "overlay")))
+               (room (position size client delta)
+                 (let ((limit (- size client)))
+                   (cond
+                     ((or (not delta) (<= limit 0)) nil)
+                     ((> delta 0) (< position limit))
+                     (t (> position 0)))))
+               (can-scroll (el dx dy)
+                 (when (and el (= (ps:@ el node-type) 1))
+                   (let* ((root (or (ps:@ document scrolling-element)
+                                    (ps:@ document document-element)))
+                          (root-p (eq el root))
+                          (style (unless root-p
+                                   (ps:chain window (get-computed-style el)))))
+                     (or (and dy
+                              (or root-p
+                                  (overflow-scrolls (ps:@ style overflow-y)))
+                              (room (ps:@ el scroll-top)
+                                    (ps:@ el scroll-height)
+                                    (ps:@ el client-height)
+                                    dy))
+                         (and dx
+                              (or root-p
+                                  (overflow-scrolls (ps:@ style overflow-x)))
+                              (room (ps:@ el scroll-left)
+                                    (ps:@ el scroll-width)
+                                    (ps:@ el client-width)
+                                    dx))))))
+               (parent-of (el)
+                 (when el
+                   (or (ps:@ el parent-element)
+                       (let ((root (ps:chain el (get-root-node))))
+                         (and root (ps:@ root host))))))
+               (visible-area (el)
+                 (let* ((rect (ps:chain el (get-bounding-client-rect)))
+                        (width (- (ps:chain *math (min (ps:@ rect right)
+                                                       (ps:@ window inner-width)))
+                                  (ps:chain *math (max (ps:@ rect left) 0))))
+                        (height (- (ps:chain *math (min (ps:@ rect bottom)
+                                                        (ps:@ window inner-height)))
+                                   (ps:chain *math (max (ps:@ rect top) 0)))))
+                   (if (or (<= width 0) (<= height 0))
+                       0
+                       (* width height))))
+               (find-scroller (dx dy)
+                 (let* ((root (or (ps:@ document scrolling-element)
+                                  (ps:@ document document-element)))
+                        (body (ps:@ document body)))
+                   (cond
+                     ((can-scroll root dx dy) root)
+                     ((and body (not (eq body root)) (can-scroll body dx dy))
+                      body)
+                     (t
+                      (let ((best nil)
+                            (best-area 0)
+                            (xs (array 0.5 0.5 0.3 0.7 0.5))
+                            (ys (array 0.5 0.35 0.65 0.65 0.8)))
+                        (loop for index from 0 below (length xs)
+                              do (let ((el (ps:chain document
+                                                     (element-from-point
+                                                      (* (ps:@ window inner-width)
+                                                         (aref xs index))
+                                                      (* (ps:@ window inner-height)
+                                                         (aref ys index))))))
+                                   (loop while el
+                                         do (when (can-scroll el dx dy)
+                                              (let ((area (visible-area el)))
+                                                (when (> area best-area)
+                                                  (setf best el
+                                                        best-area area))))
+                                            (setf el (parent-of el)))))
+                        (or best root)))))))
+        (let* ((probe-x (if edge 0 delta-x))
+               (probe-y (cond
+                          ((equal edge "top") -1)
+                          ((equal edge "bottom") 1)
+                          (t delta-y)))
+               (element (find-scroller probe-x probe-y)))
+          (when element
+            (cond
+              ((equal edge "top")
+               (ps:chain element (scroll-to (ps:create top 0 behavior behavior))))
+              ((equal edge "bottom")
+               (ps:chain element
+                         (scroll-to (ps:create top (ps:@ element scroll-height)
+                                               behavior behavior))))
+              (t
+               (ps:chain element
+                         (scroll-by (ps:create left delta-x
+                                               top delta-y
+                                               behavior behavior)))))))))))
+
 (define-command scroll-to-top (&key (smooth-p (smooth-scrolling (current-buffer))))
   "Scroll to the top of the current page."
-  (ps-eval
-    (ps:chain window
-              (scroll-by (ps:create top (- (ps:chain document document-element scroll-height))
-                                    behavior (ps:lisp (if smooth-p "smooth" "instant")))))))
+  (scroll-document :edge "top"
+                   :behavior (if smooth-p "smooth" "instant")))
 
 (define-command scroll-to-bottom (&key (smooth-p (smooth-scrolling (current-buffer))))
   "Scroll to the bottom of the current page."
-  (ps-eval
-    (ps:chain window
-              (scroll-by (ps:create top (ps:chain document document-element scroll-height)
-                                    behavior (ps:lisp (if smooth-p "smooth" "instant")))))))
+  (scroll-document :edge "bottom"
+                   :behavior (if smooth-p "smooth" "instant")))
 
 (define-command scroll-down (&key (y-pixels (scroll-distance (current-buffer)))
                              (smooth-p (smooth-scrolling (current-buffer))))
   "Scroll down the current page.
 The amount scrolled is determined by the buffer's `scroll-distance'."
-  (ps-eval
-    (ps:chain window
-              (scroll-by (ps:create top (ps:lisp y-pixels)
-                                    behavior (ps:lisp (if smooth-p "smooth" "instant")))))))
+  (scroll-document :y y-pixels
+                   :behavior (if smooth-p "smooth" "instant")))
 
 (define-command scroll-up (&key (y-pixels (scroll-distance (current-buffer)))
                            (smooth-p (smooth-scrolling (current-buffer))))
   "Scroll up the current page.
 The amount scrolled is determined by the buffer's `scroll-distance'."
-  (ps-eval
-    (ps:chain window
-              (scroll-by (ps:create top (ps:lisp (- y-pixels))
-                                    behavior (ps:lisp (if smooth-p "smooth" "instant")))))))
+  (scroll-document :y (- y-pixels)
+                   :behavior (if smooth-p "smooth" "instant")))
 
 (define-command scroll-left (&key (x-pixels (horizontal-scroll-distance (current-buffer)))
                              (smooth-p (smooth-scrolling (current-buffer))))
   "Scroll left the current page.
 The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
-  (ps-eval
-    (ps:chain window
-              (scroll-by (ps:create left (ps:lisp (- x-pixels))
-                                    behavior (ps:lisp (if smooth-p "smooth" "instant")))))))
+  (scroll-document :x (- x-pixels)
+                   :behavior (if smooth-p "smooth" "instant")))
 
 (define-command scroll-right (&key (x-pixels (horizontal-scroll-distance (current-buffer)))
                               (smooth-p (smooth-scrolling (current-buffer))))
   "Scroll right the current page.
 The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
-  (ps-eval
-    (ps:chain window
-              (scroll-by (ps:create left (ps:lisp x-pixels)
-                                    behavior (ps:lisp (if smooth-p "smooth" "instant")))))))
+  (scroll-document :x x-pixels
+                   :behavior (if smooth-p "smooth" "instant")))
 
 (define-command scroll-page-down ()
   "Scroll down by one page height."
-  (ps-eval (ps:chain window (scroll-by 0 (* (ps:lisp (page-scroll-ratio (current-buffer)))
-                                          (ps:@ window inner-height))))))
+  (scroll-document :y-ratio (page-scroll-ratio (current-buffer))))
 
 (define-command scroll-page-up ()
   "Scroll up by one page height."
-  (ps-eval (ps:chain window (scroll-by 0 (- (* (ps:lisp (page-scroll-ratio (current-buffer)))
-                                             (ps:@ window inner-height)))))))
+  (scroll-document :y-ratio (- (page-scroll-ratio (current-buffer)))))
 
 (define-command zoom-page (&key (buffer (current-buffer)))
   "Zoom in the current buffer."
