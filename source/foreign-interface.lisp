@@ -300,6 +300,18 @@ Setf-able.  Valid values are determined by the `cookie-policy' type."))
 (define-ffi-generic ffi-focused-p (buffer)
   (:documentation "Return non-nil when BUFFER is focused."))
 
+(defun buffer-selection-text (buffer)
+  "Return the selected text in BUFFER.
+Input and textarea selections are included; `window.getSelection' misses those."
+  (let ((value (ignore-errors
+                (ffi-buffer-evaluate-javascript
+                 buffer
+                 "(function(){var el=document.activeElement;if(el&&(el.tagName==='INPUT'||el.tagName==='TEXTAREA')&&typeof el.selectionStart==='number'){return String(el.value||'').slice(el.selectionStart,el.selectionEnd);}var selection=window.getSelection();return selection?selection.toString():'';})()"))))
+    (cond
+      ((stringp value) value)
+      ((and (consp value) (stringp (first value))) (first value))
+      (t ""))))
+
 (define-ffi-generic ffi-buffer-copy (buffer &optional text)
   (:method :around ((buffer t) &optional text)
     (declare (ignore text))
@@ -308,20 +320,11 @@ Setf-able.  Valid values are determined by the `cookie-policy' type."))
     (sera:lret ((result (call-next-method)))
       (ring-insert-clipboard (clipboard-ring *browser*))))
   (:method ((buffer t) &optional (text nil text-provided-p))
-    (ps-labels :buffer buffer ((copy () (ps:chain window (get-selection) (to-string))))
-      ;; On some systems like Xorg, clipboard pasting happens just-in-time.  So if we
-      ;; copy something from the context menu 'Copy' action, upon pasting we will
-      ;; retrieve the text from the GTK thread.  This is prone to create
-      ;; dead-locks (e.g. when executing a Parenscript that acts upon the clipboard).
-      ;;
-      ;; To avoid this, we can 'flush' the clipboard to ensure that the copied text
-      ;; is present the clipboard and need not be retrieved from the GTK thread.
-      ;; TODO: Do we still need to flush now that we have multiple threads?
-      ;; (trivial-clipboard:text (trivial-clipboard:text))
-
-      (sera:lret ((input (if text-provided-p text (copy))))
+    (let ((input (if text-provided-p text (buffer-selection-text buffer))))
+      (when (or text-provided-p (and (stringp input) (not (uiop:emptyp input))))
         (copy-to-clipboard input)
-        (echo "~s copied to clipboard." input))))
+        (echo "~s copied to clipboard." input))
+      input))
   (:documentation "Copy selected text in BUFFER to the system clipboard.
 If TEXT is provided, add it to system clipboard instead of selected text.
 Should return the copied text or NIL, if something goes wrong."))

@@ -43,6 +43,7 @@ cl-cffi-gtk-opengl-demo, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e
 cl-cffi-gtk-pango, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-cffi-gtk/pango/cl-cffi-gtk-pango.asd
 cl-cffi-gtk-test, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-cffi-gtk/test/cl-cffi-gtk-test.asd
 cl-change-case, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-change-case/cl-change-case.asd
+cl-clipboard, git+https://github.com/atlas-engineer/cl-clipboard@e52a716f03bf38a4bb2774d34135c2ffcafa341b, cl-clipboard-e52a716/cl-clipboard.asd
 cl-colors-ng, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-colors-ng/cl-colors-ng.asd
 cl-containers, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-containers/cl-containers.asd
 cl-containers-documentation, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-containers/cl-containers-documentation.asd

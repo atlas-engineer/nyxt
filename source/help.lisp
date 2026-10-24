@@ -291,7 +291,7 @@ file, see the "
 (define-command nyxt-version ()
   "Display the version of Nyxt in the `message-buffer'.
 The value is saved to clipboard."
-  (trivial-clipboard:text +version+)
+  (copy-to-clipboard +version+)
   (echo "Version ~a" +version+))
 
 (define-internal-page-command-global new ()

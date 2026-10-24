@@ -18,7 +18,9 @@
   :license "BSD 3-Clause"
   :depends-on (alexandria
                bordeaux-threads
+               cffi
                cl-base64
+               cl-clipboard
                cl-colors-ng
                cl-gopher
                cl-json
@@ -56,7 +58,6 @@
                str
                trivia
                trivial-arguments
-               trivial-clipboard
                trivial-package-local-nicknames
                trivial-types
                unix-opts
@@ -460,11 +461,11 @@
   :defsystem-depends-on ("nasdf")
   :class :nasdf-system
   :depends-on (bordeaux-threads
+               cl-clipboard
                cl-ppcre
                nclasses
                serapeum
                str
-               trivial-clipboard
                uiop)
   :pathname #p"NYXT:libraries;password-manager;"
   :components ((:file "package")

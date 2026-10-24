@@ -56,22 +56,26 @@ arguments.
 When the WAIT-P is NIL, `uiop:launch-program' is used instead of
 `uiop:run-program'."))
 
+(defun clipboard-copy (text)
+  (setf (cl-clipboard:text) text))
+
+(defun clipboard-paste ()
+  (ignore-errors (cl-clipboard:text)))
+
 (defun safe-clipboard-text ()
   "Return clipboard content, or \"\" if the content is not textual."
-  ;; xclip errors out when the clipboard contains non-text:
-  ;; https://github.com/astrand/xclip/issues/38#issuecomment-466625564.
-  (ignore-errors (trivial-clipboard:text)))
+  (or (ignore-errors (clipboard-paste)) ""))
 
 ;;; Prerequisite Functions
 (defmethod clip-password-string ((password-interface password-interface) pass)
-  (trivial-clipboard:text pass)
+  (clipboard-copy pass)
   (bt:make-thread
    (lambda ()
      (sleep (sleep-timer password-interface))
      (when (string= (safe-clipboard-text) pass)
        ;; Reset the clipboard so that the user does not accidentally paste
        ;; something else.
-       (trivial-clipboard:text "")))))
+       (clipboard-copy "")))))
 
 
 ;;; Commands to wrap together.

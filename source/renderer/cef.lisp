@@ -405,19 +405,28 @@ the default height.")
 
 (defmethod ffi-buffer-copy ((buffer cef-buffer) &optional (text nil text-provided-p))
   (if text-provided-p
-      (trivial-clipboard:text text)
-      (progn
+      (setf (clipboard-text) text)
+      (let ((selection (nyxt::buffer-selection-text buffer)))
+        ;; Copy runs first so the page sees the event. CEF does not export a
+        ;; clipboard of its own, so the text is published here afterwards.
         (cef:copy (cef:web-contents buffer))
-        (trivial-clipboard:content))))
+        (if (and (stringp selection) (not (uiop:emptyp selection)))
+            (setf (clipboard-text) selection)
+            (clipboard-text)))))
 
 (defmethod ffi-buffer-paste ((buffer cef-buffer) &optional (text nil text-provided-p))
-  (if text-provided-p
-      (cef:insert-text (cef:web-contents buffer) text)
-      (cef:paste (cef:web-contents buffer))))
+  (let ((text (if text-provided-p text (clipboard-text))))
+    (if text
+        (cef:insert-text (cef:web-contents buffer) text)
+        (cef:paste (cef:web-contents buffer)))
+    text))
 
 (defmethod ffi-buffer-cut ((buffer cef-buffer))
-  (cef:cut (cef:web-contents buffer))
-  (trivial-clipboard:text))
+  (let ((selection (nyxt::buffer-selection-text buffer)))
+    (cef:cut (cef:web-contents buffer))
+    (when (and (stringp selection) (not (uiop:emptyp selection)))
+      (setf (clipboard-text) selection))
+    selection))
 
 (defmethod ffi-buffer-select-all ((buffer cef-buffer))
   (cef:select-all (cef:web-contents buffer)))

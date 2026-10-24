@@ -184,28 +184,21 @@
                   (string-equal "INPUT" (nyxt/mode/document:active-element-tag)))
                 :description "the note field")
     (assert-true (string-equal "INPUT" (nyxt/mode/document:active-element-tag)))
-    ;; Copy uses the system clipboard. A Wayland session without wl-copy cannot
-    ;; complete that step; focusing the field above is still checked.
-    (handler-case
-        (progn
-          (nyxt/mode/message:clear-messages)
-          (nyxt:copy-title)
-          (wait-for-text "Gazette"
-                         :buffer (nyxt:message-buffer (nyxt:current-window)))
-          (let ((clip (trivial-clipboard:text)))
-            (assert-true (and (stringp clip) (search "Gazette" clip))))
-          (nyxt/mode/document:paste)
-          (wait-until (lambda ()
-                        (search "Gazette"
-                                (input-value (nyxt:current-buffer) "#note")))
-                      :description "the pasted title")
-          (nyxt:copy-url)
-          (nyxt/mode/message:list-messages)
-          (wait-for-text (home-url))
-          (assert-true (search "Messages" (page-text))))
-      (error (condition)
-        (unless (search "wl-copy" (princ-to-string condition))
-          (error condition))))))
+    (nyxt/mode/message:clear-messages)
+    (nyxt:copy-title)
+    (wait-for-text "Gazette"
+                   :buffer (nyxt:message-buffer (nyxt:current-window)))
+    (let ((clip (nyxt:clipboard-text)))
+      (assert-true (and (stringp clip) (search "Gazette" clip))))
+    (nyxt/mode/document:paste)
+    (wait-until (lambda ()
+                  (search "Gazette"
+                          (input-value (nyxt:current-buffer) "#note")))
+                :description "the pasted title")
+    (nyxt:copy-url)
+    (nyxt/mode/message:list-messages)
+    (wait-for-text (home-url))
+    (assert-true (search "Messages" (page-text)))))
 
 (define-test bookmark-and-revisit ()
   (with-page ((home-url) "Gazette" :page-title "Gazette")

@@ -3,15 +3,25 @@
 
 (in-package :nyxt)
 
+;; The system clipboard is cl-clipboard. This file keeps Nyxt's clipboard ring
+;; on top of it.
+
+(export-always 'clipboard-text)
+(defun clipboard-text ()
+  "Return the system clipboard text, or NIL when it is unavailable or holds no text."
+  (cl-clipboard:text))
+
+(defun (setf clipboard-text) (text)
+  "Set the system clipboard to TEXT."
+  (setf (cl-clipboard:text) text))
+
 (-> ring-insert-clipboard (containers:ring-buffer-reverse) (maybe string))
 (export-always 'ring-insert-clipboard)
 (defun ring-insert-clipboard (ring)
   "Check if clipboard-content is most recent entry in RING.
 If not, insert clipboard-content into RING.
 Return most recent entry in RING."
-  (let ((clipboard-content (handler-case (trivial-clipboard:text)
-                             (uiop:subprocess-error ()
-                               nil))))
+  (let ((clipboard-content (clipboard-text)))
     (when clipboard-content
       (unless (string= clipboard-content (unless (containers:empty-p ring)
                                            (containers:first-item ring)))
@@ -21,6 +31,7 @@ Return most recent entry in RING."
 
 (export-always 'copy-to-clipboard)
 (defun copy-to-clipboard (input)
-  "Save INPUT text to clipboard, and ring."
-  (containers:insert-item (clipboard-ring *browser*)
-                          (trivial-clipboard:text input)))
+  "Save INPUT text to the system clipboard and the clipboard ring."
+  (let ((input (setf (clipboard-text) input)))
+    (containers:insert-item (clipboard-ring *browser*) input)
+    input))

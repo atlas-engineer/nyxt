@@ -333,7 +333,7 @@ buffers in the background."
                      (make-buffer-focus :url (url (first suggestion-values))))
                    (lambda-command copy-url* (suggestions)
                      "Copy bookmark URL."
-                     (trivial-clipboard:text (render-url (url (first suggestions)))))
+                     (copy-to-clipboard (render-url (url (first suggestions)))))
                    'delete-bookmark))))
 
 (export-always 'list-bookmarks)

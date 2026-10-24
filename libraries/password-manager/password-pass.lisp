@@ -83,7 +83,7 @@ The prefix is discarded from the result and returned."
                                      (find key entries :test #'string-equal :key #'first))
                                    *username-keys*))))
       (when username-entry
-        (trivial-clipboard:text (second username-entry))
+        (clipboard-copy (second username-entry))
         (second username-entry)))))
 
 (defmethod save-password ((password-interface password-store-interface)

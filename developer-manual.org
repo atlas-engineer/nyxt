@@ -96,8 +96,9 @@ The packages that provide the following shared objects are required:
 
 Additionally, the following packages:
 
-- xclip :: when using X system;
-- wl-clipboard :: when using Wayland;
+- wayland-scanner, wayland-client, and libX11 :: Linux clipboard, via
+  [[https://github.com/atlas-engineer/cl-clipboard][cl-clipboard]]. Nyxt owns the
+  selection itself, so =xclip= and =wl-clipboard= are not required;
 - enchant :: spellchecking (optional).
 
 * Development environment

@@ -459,7 +459,7 @@ Only available if `prompter:enable-marks-p' is non-nil."
          ;; Reverse so that text is ordered from oldest mark to newest.
          (text (str:join +newline+ (reverse props))))
     (unless (str:emptyp text)
-      (trivial-clipboard:text text)
+      (copy-to-clipboard text)
       (echo "~s copied to clipboard." text))))
 
 (define-command-prompt paste (prompt-buffer)

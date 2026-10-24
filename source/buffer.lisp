@@ -1200,7 +1200,7 @@ specified for their contents."
            (list #'buffer-load*
                  (lambda-command copy-url* (suggestions)
                    "Copy the URL of the chosen suggestion."
-                   (trivial-clipboard:text
+                   (copy-to-clipboard
                     (render-url (url (first suggestions))))))))
     (pushnew default-action actions-on-return)
     (prompt :prompt "Open URL"

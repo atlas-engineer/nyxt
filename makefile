@@ -3,8 +3,6 @@
 
 ## Use Bourne shell syntax.
 SHELL = /bin/sh
-UNAME := $(shell uname)
-
 LISP ?= sbcl
 SBCL_FLAGS =
 ifeq ($(LISP), sbcl)
@@ -84,4 +82,4 @@ integration: ocicl-install
 
 .PHONY: clean
 clean:
-	rm nyxt
+	rm -f nyxt

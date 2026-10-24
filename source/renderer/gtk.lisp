@@ -1744,36 +1744,49 @@ Only the setf method is."
 
 (defmethod ffi-buffer-copy ((gtk-buffer gtk-buffer) &optional (text nil text-provided-p))
   (if text-provided-p
-      (trivial-clipboard:text text)
-      (let ((channel (nyxt::make-channel 1)))
+      (setf (clipboard-text) text)
+      (let ((selection (nyxt::buffer-selection-text gtk-buffer))
+            (channel (nyxt::make-channel 1)))
         (webkit:webkit-web-view-can-execute-editing-command
          (gtk-object gtk-buffer) webkit2:+webkit-editing-command-copy+
          (lambda (can-execute?)
-           (if can-execute?
-               (progn
-                 (webkit:webkit-web-view-execute-editing-command
-                  (gtk-object gtk-buffer) webkit2:+webkit-editing-command-copy+)
-                 (lparallel.queue:push-queue t channel)
-                 (echo "~s copied to clipboard." text))
-               (lparallel.queue:push-queue nil channel)))
-         (lambda (e) (echo-warning "~s failed to copy to clipboard." e)))
-        (if (lparallel.queue:pop-queue channel)
-            (trivial-clipboard:text)
-            nil))))
+           (when can-execute?
+             (webkit:webkit-web-view-execute-editing-command
+              (gtk-object gtk-buffer) webkit2:+webkit-editing-command-copy+))
+           (lparallel.queue:push-queue can-execute? channel))
+         (lambda (e)
+           (echo-warning "~s failed to copy to clipboard." e)
+           (lparallel.queue:push-queue nil channel)))
+        (lparallel.queue:pop-queue channel)
+        ;; Take ownership after WebKit's copy. A headless GTK clipboard write
+        ;; does not reach the compositor, and this process has to answer later
+        ;; paste requests.
+        (if (and (stringp selection) (not (uiop:emptyp selection)))
+            (progn
+              (setf (clipboard-text) selection)
+              (echo "~s copied to clipboard." selection)
+              selection)
+            (let ((clip (clipboard-text)))
+              (when clip
+                (echo "~s copied to clipboard." clip))
+              clip)))))
 
 (defmethod ffi-buffer-paste ((gtk-buffer gtk-buffer) &optional (text nil text-provided-p))
-  (webkit:webkit-web-view-can-execute-editing-command
-   (gtk-object gtk-buffer) webkit2:+webkit-editing-command-paste+
-   (lambda (can-execute?)
-     (when can-execute?
-       (when text-provided-p
-         (trivial-clipboard:text text))
-       (webkit:webkit-web-view-execute-editing-command
-        (gtk-object gtk-buffer) webkit2:+webkit-editing-command-paste+)))
-   (lambda (e) (echo-warning "~s failed to paste." e))))
+  (let ((text (if text-provided-p text (clipboard-text))))
+    (when text
+      (setf (clipboard-text) text))
+    (webkit:webkit-web-view-can-execute-editing-command
+     (gtk-object gtk-buffer) webkit2:+webkit-editing-command-paste+
+     (lambda (can-execute?)
+       (when can-execute?
+         (webkit:webkit-web-view-execute-editing-command
+          (gtk-object gtk-buffer) webkit2:+webkit-editing-command-paste+)))
+     (lambda (e) (echo-warning "~s failed to paste." e)))
+    text))
 
 (defmethod ffi-buffer-cut ((gtk-buffer gtk-buffer))
-  (let ((channel (nyxt::make-channel 1)))
+  (let ((selection (nyxt::buffer-selection-text gtk-buffer))
+        (channel (nyxt::make-channel 1)))
     (webkit:webkit-web-view-can-execute-editing-command
      (gtk-object gtk-buffer) webkit2:+webkit-editing-command-cut+
      (lambda (can-execute?)
@@ -1783,10 +1796,13 @@ Only the setf method is."
               (gtk-object gtk-buffer) webkit2:+webkit-editing-command-cut+)
              (lparallel.queue:push-queue t channel))
            (lparallel.queue:push-queue nil channel)))
-     (lambda (e) (echo-warning "Cannot cut: ~a" e)))
-    (if (lparallel.queue:pop-queue channel)
-        (trivial-clipboard:text)
-        nil)))
+     (lambda (e)
+       (echo-warning "Cannot cut: ~a" e)
+       (lparallel.queue:push-queue nil channel)))
+    (when (lparallel.queue:pop-queue channel)
+      (when (and (stringp selection) (not (uiop:emptyp selection)))
+        (setf (clipboard-text) selection))
+      selection)))
 
 (defmethod ffi-buffer-select-all ((gtk-buffer gtk-buffer))
   (webkit:webkit-web-view-can-execute-editing-command

@@ -286,19 +286,29 @@ the default height."))
 
 (defmethod ffi-buffer-copy ((buffer electron-buffer) &optional (text nil text-provided-p))
   (if text-provided-p
-      (trivial-clipboard:text text)
-      (progn
+      (setf (clipboard-text) text)
+      (let ((selection (nyxt::buffer-selection-text buffer)))
+        ;; The editing command lets the page handle the copy event. It does not
+        ;; publish a Wayland selection without an input serial, so the text is
+        ;; published here afterwards and this process stays the owner.
         (electron:copy (electron:web-contents buffer))
-        (trivial-clipboard:content))))
+        (if (and (stringp selection) (not (uiop:emptyp selection)))
+            (setf (clipboard-text) selection)
+            (clipboard-text)))))
 
 (defmethod ffi-buffer-paste ((buffer electron-buffer) &optional (text nil text-provided-p))
-  (if text-provided-p
-      (electron:insert-text (electron:web-contents buffer) text)
-      (electron:paste (electron:web-contents buffer))))
+  (let ((text (if text-provided-p text (clipboard-text))))
+    (if text
+        (electron:insert-text (electron:web-contents buffer) text)
+        (electron:paste (electron:web-contents buffer)))
+    text))
 
 (defmethod ffi-buffer-cut ((buffer electron-buffer))
-  (electron:cut (electron:web-contents buffer))
-  (trivial-clipboard:text))
+  (let ((selection (nyxt::buffer-selection-text buffer)))
+    (electron:cut (electron:web-contents buffer))
+    (when (and (stringp selection) (not (uiop:emptyp selection)))
+      (setf (clipboard-text) selection))
+    selection))
 
 (defmethod ffi-buffer-select-all ((buffer electron-buffer))
   (electron:select-all (electron:web-contents buffer)))
