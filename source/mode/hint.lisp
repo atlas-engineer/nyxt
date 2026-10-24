@@ -16,8 +16,9 @@ Exposes the APIs below:
     :emacs
     :type (member :emacs :vi)
     :documentation "Set the hinting mechanism.
-Hints are drawn for the visible viewport in both cases. The prompt lists those
-links immediately; their URLs are filled in afterwards.
+Hints for the visible viewport are drawn and listed immediately. The rest of
+the page is added to the prompt afterwards, and those badges are drawn in the
+background. URLs are filled in after each batch.
 In :emacs, the usual `prompt-buffer' facilities are available.
 In :vi, the `prompt-buffer' is collapsed to the input area and a hint is
 followed when the input matches its hint string.")
@@ -248,7 +249,10 @@ are spread through the list. This is Vimium's alphabet-hint assignment."
 
 (defun show-viewport-hints (buffer selector alphabet css x-placement show-scope-p)
   "Draw hint badges for SELECTOR elements in BUFFER's viewport.
-Return a list of records (id, tag, hint, type). URLs are not collected here."
+Off-screen elements are stashed in the page for `draw-pending-hint-batch'.
+Hint strings cover the whole page, so later badges do not collide with these.
+Return records (id, tag, hint, type) for the visible elements. URLs are not
+collected here."
   (normalize-hint-records
    (ps-eval :buffer buffer
      (defun nyxt-hint-next-id ()
@@ -302,22 +306,29 @@ Return a list of records (id, tag, hint, type). URLs are not collected here."
                                 (ps:@ hit parent-node host)
                                 (ps:@ hit parent-node))))
          (eq hit element)))
-     (defun nyxt-hint-visible-anchor (element right-align-p)
+     (defun nyxt-hint-classify (element right-align-p)
+       "Return an anchor, an off-screen marker, or nil.
+An anchor is in the viewport and not covered. Anything else with a box is
+off-screen: below the fold, clipped by a scroller, or covered. Its badge is
+drawn later and stays hidden until the element is actually visible."
        (let ((computed (ps:chain window (get-computed-style element))))
          (when (or (= (ps:getprop computed "visibility") "hidden")
                    (= (ps:@ computed display) "none")
                    (<= (parse-float (ps:@ computed opacity)) 0)
                    (and (= (ps:@ element tag-name) "INPUT")
                         (= (ps:chain (or (ps:@ element type) "") (to-lower-case)) "hidden")))
-           (return-from nyxt-hint-visible-anchor nil))
-         (let ((rects (ps:chain element (get-client-rects))))
+           (return-from nyxt-hint-classify nil))
+         (let ((rects (ps:chain element (get-client-rects)))
+               (offscreen-p nil))
            (loop for rect-index from 0 below (ps:@ rects length)
                  for raw = (aref rects rect-index)
                  for left = (ps:chain *math (max (ps:@ raw left) 0))
                  for top = (ps:chain *math (max (ps:@ raw top) 0))
                  for right = (ps:chain *math (min (ps:@ raw right) (ps:@ window inner-width)))
                  for bottom = (ps:chain *math (min (ps:@ raw bottom) (ps:@ window inner-height)))
-                 do (when (and (>= (- right left) 3)
+                 do (when (and (>= (ps:@ raw width) 3)
+                               (>= (ps:@ raw height) 3))
+                      (if (and (>= (- right left) 3)
                                (>= (- bottom top) 3)
                                (< top (- (ps:@ window inner-height) 4))
                                (< left (- (ps:@ window inner-width) 4))
@@ -328,9 +339,18 @@ Return a list of records (id, tag, hint, type). URLs are not collected here."
                                    (nyxt-hint-hits-p element
                                                      (/ (+ left right) 2)
                                                      (/ (+ top bottom) 2))))
-                      (return-from nyxt-hint-visible-anchor
-                        (ps:create :left (if right-align-p right left)
-                                   :top top)))))))
+                          (return-from nyxt-hint-classify
+                            (ps:create :left (if right-align-p right left)
+                                       :top top))
+                          ;; Not on screen, or on screen but covered or clipped.
+                          ;; Keep it for the background pass.
+                          (setf offscreen-p t))))
+           (when offscreen-p
+             (return-from nyxt-hint-classify (ps:create :offscreen t))))))
+     (defun nyxt-hint-visible-anchor (element right-align-p)
+       (let ((found (nyxt-hint-classify element right-align-p)))
+         (when (and found (not (ps:@ found offscreen)))
+           found)))
      (defun nyxt-hint-place (anchor hint right-align-p)
        (let* ((estimated (+ (* (length hint) 11) 10))
               (left (ps:@ anchor left))
@@ -364,6 +384,13 @@ Scrolls inside the page and the page itself both change that position."
                                  (ps:@ badge style top) (+ (ps:@ place top) "px")
                                  (ps:@ badge style left) (+ (ps:@ place left) "px")))
                          (setf (ps:@ badge style display) "none")))))))))
+     ;; The overlay is position:fixed in the top layer, so the compositor scrolls
+     ;; the page without moving the badges. The scroll event arrives after that
+     ;; frame is painted; this schedules one layout for the next frame. Badges
+     ;; therefore trail their links while a scroll is in motion and settle when
+     ;; it stops. Measuring each element, rather than translating the overlay by
+     ;; the document scroll offset, is what keeps sticky headers and nested
+     ;; scrollers correct.
      (defun nyxt-hint-on-scroll ()
        (unless (ps:@ window nyxt-hint-scroll-frame)
          (setf (ps:@ window nyxt-hint-scroll-frame)
@@ -372,50 +399,95 @@ Scrolls inside the page and the page itself both change that position."
                           (lambda ()
                             (setf (ps:@ window nyxt-hint-scroll-frame) 0)
                             (nyxt-hint-layout)))))))
+     (defun nyxt-hint-record (element hint)
+       (ps:create :id (ps:chain element (get-attribute "nyxt-identifier"))
+                  :tag (ps:@ element tag-name)
+                  :hint hint
+                  :type (or (ps:chain element (get-attribute "type")) "")))
+     (defun nyxt-hint-add-badge (shadow element hint right-align-p show-scope-p)
+       (nyxt-hint-ensure-id element)
+       (ps:chain element (set-attribute "nyxt-hintable" ""))
+       (ps:chain element (set-attribute "nyxt-hint" hint))
+       (when show-scope-p
+         (ps:chain element class-list (add "nyxt-element-hint")))
+       (let ((badge (ps:chain document (create-element "span"))))
+         (setf (ps:@ badge class-name) "nyxt-hint"
+               (ps:@ badge id) (+ "nyxt-hint-" hint)
+               (ps:@ badge nyxt-element) element
+               (ps:@ badge nyxt-hint) hint
+               (ps:@ badge nyxt-right-align) right-align-p
+               (ps:@ badge style position) "absolute")
+         (loop for char-index from 0 below (length hint)
+               for glyph = (ps:chain document (create-element "span"))
+               do (setf (ps:@ glyph text-content) (aref hint char-index))
+               do (ps:chain badge (append-child glyph)))
+         (ps:chain shadow (append-child badge))))
+     (defun nyxt-hint-draw-pending (limit)
+       "Append up to LIMIT stashed off-screen badges and return their records."
+       (let ((host (nyxt/ps:qs-id document "nyxt-hints"))
+             (pending (ps:@ window nyxt-hint-pending))
+             (records (array)))
+         (when (and host pending (ps:@ host shadow-root) (> limit 0))
+           (let ((shadow (ps:@ host shadow-root))
+                 (count 0))
+             (loop while (and (< count limit) (> (ps:@ pending length) 0))
+                   do (let* ((item (ps:chain pending (shift)))
+                             (element (ps:@ item element))
+                             (hint (ps:@ item hint)))
+                        (incf count)
+                        (when (and element (ps:@ element is-connected))
+                          (nyxt-hint-add-badge shadow element hint
+                                               (ps:@ window nyxt-hint-right-align)
+                                               (ps:@ window nyxt-hint-show-scope))
+                          (ps:chain records (push (nyxt-hint-record element hint))))))
+             (nyxt-hint-layout)))
+         records))
      (let* ((selector (ps:lisp selector))
             (alphabet (ps:lisp alphabet))
             (css (ps:lisp css))
             (right-align-p (ps:lisp (eq x-placement :right)))
             (show-scope-p (ps:lisp show-scope-p))
             (old (nyxt/ps:qs-id document "nyxt-hints"))
-            (candidates (array))
+            (visible (array))
+            (offscreen-elements (array))
             (hints-parent (ps:chain document (create-element "div")))
             (shadow (ps:chain hints-parent (attach-shadow (ps:create mode "open"))))
             (style (ps:new (|CSSStyleSheet|))))
        (when old
          (ps:chain old (remove)))
+       (setf (ps:@ window nyxt-hint-right-align) right-align-p
+             (ps:@ window nyxt-hint-show-scope) show-scope-p
+             (ps:@ window nyxt-hint-pending) (array)
+             (ps:@ window nyxt-hint-draw-pending) nyxt-hint-draw-pending)
        (ps:dolist (element (nyxt/ps:rqsa document selector))
-         (let ((anchor (nyxt-hint-visible-anchor element right-align-p)))
-           (when anchor
-             (ps:chain candidates (push (ps:create :element element :anchor anchor))))))
-       (let ((hint-strings (nyxt-hint-strings (length candidates) alphabet))
-             (records (array)))
-         (loop for index from 0 below (ps:chain *math (min (length candidates) (length hint-strings)))
-               for candidate = (aref candidates index)
-               for hint = (aref hint-strings index)
+         (let ((found (nyxt-hint-classify element right-align-p)))
+           (cond
+             ((not found))
+             ((ps:@ found offscreen)
+              (ps:chain offscreen-elements (push element)))
+             (t
+              (ps:chain visible (push (ps:create :element element :anchor found)))))))
+       (let ((hint-strings (nyxt-hint-strings
+                            (+ (length visible) (length offscreen-elements))
+                            alphabet))
+             (records (array))
+             (pending (array)))
+         (loop for visible-index from 0 below (length visible)
+               for candidate = (aref visible visible-index)
+               for hint = (aref hint-strings visible-index)
                for element = (ps:@ candidate element)
-               for badge = (ps:chain document (create-element "span"))
+               when hint
+               do (nyxt-hint-add-badge shadow element hint right-align-p show-scope-p)
+               and do (ps:chain records (push (nyxt-hint-record element hint))))
+         (loop for offscreen-index from 0 below (length offscreen-elements)
+               for element = (aref offscreen-elements offscreen-index)
+               for hint = (aref hint-strings (+ (length visible) offscreen-index))
+               when hint
                do (nyxt-hint-ensure-id element)
-               do (ps:chain element (set-attribute "nyxt-hintable" ""))
-               do (ps:chain element (set-attribute "nyxt-hint" hint))
-               do (when show-scope-p
-                    (ps:chain element class-list (add "nyxt-element-hint")))
-               do (setf (ps:@ badge class-name) "nyxt-hint"
-                        (ps:@ badge id) (+ "nyxt-hint-" hint)
-                        (ps:@ badge nyxt-element) element
-                        (ps:@ badge nyxt-hint) hint
-                        (ps:@ badge nyxt-right-align) right-align-p
-                        (ps:@ badge style position) "absolute")
-               do (loop for char-index from 0 below (length hint)
-                        for glyph = (ps:chain document (create-element "span"))
-                        do (setf (ps:@ glyph text-content) (aref hint char-index))
-                        do (ps:chain badge (append-child glyph)))
-               do (ps:chain shadow (append-child badge))
-               do (ps:chain records
-                            (push (ps:create :id (ps:chain element (get-attribute "nyxt-identifier"))
-                                             :tag (ps:@ element tag-name)
-                                             :hint hint
-                                             :type (or (ps:chain element (get-attribute "type")) "")))))
+               and do (ps:chain element (set-attribute "nyxt-hintable" ""))
+               and do (ps:chain element (set-attribute "nyxt-hint" hint))
+               and do (ps:chain pending (push (ps:create :element element :hint hint))))
+         (setf (ps:@ window nyxt-hint-pending) pending)
          (ps:chain style (replace-sync css))
          (setf (ps:chain shadow adopted-style-sheets) (array style))
          (setf (ps:@ hints-parent id) "nyxt-hints")
@@ -528,37 +600,89 @@ Scrolls inside the page and the page itself both change that position."
                                                     :options options)))))))
          records)))))
 
+(defun draw-pending-hint-batch (buffer limit)
+  "Draw up to LIMIT stashed off-screen badges in BUFFER.
+Return their hint records, or nil when none remain or hints were dismissed."
+  (normalize-hint-records
+   (ps-eval :buffer buffer
+     (if (= (ps:typeof (ps:@ window nyxt-hint-draw-pending)) "function")
+         (ps:chain window (nyxt-hint-draw-pending (ps:lisp limit)))
+         (array)))))
+
+(defun hint-prompt (source)
+  "Return the active prompt whose sources include SOURCE."
+  (when-let ((prompt (current-prompt-buffer)))
+    (when (and (find source (prompter:sources prompt))
+               (find prompt (nyxt::active-prompt-buffers (window prompt))))
+      prompt)))
+
+(defun refresh-hint-prompt (source &key (attempts 1))
+  "Recompute SOURCE's prompt listing. Return the prompt, or nil if it is gone.
+ATTEMPTS waits that many times for the prompt to appear."
+  (loop for attempt below attempts
+        for prompt = (hint-prompt source)
+        do (when prompt
+             (prompter:refresh prompt)
+             (prompt-render-suggestions prompt)
+             (return prompt))
+           (when (< attempt (1- attempts))
+             (sleep 0.02))))
+
+(defun append-hint-suggestions (source elements)
+  "Add ELEMENTS to SOURCE's initial suggestions.
+The prompter builds that list once. Off-screen hints arrive later, so they are
+appended under the same lock `refresh' uses. The caller refreshes the prompt."
+  (let ((wrapped (prompter:ensure-suggestions-list source elements)))
+    (bt:with-lock-held ((slot-value source 'prompter::initial-suggestions-lock))
+      (setf (slot-value source 'prompter::initial-suggestions)
+            (append (prompter:initial-suggestions source) wrapped)))
+    wrapped))
+
+(defun apply-hint-detail-records (elements records)
+  "Copy URL and text fields from RECORDS onto the matching ELEMENTS."
+  (dolist (element elements)
+    (when-let ((record (find (nyxt/dom:get-nyxt-id element)
+                             records
+                             :key (lambda (record)
+                                    (hint-record-field record :id))
+                             :test #'string=)))
+      (apply-hint-details element record))))
+
 (defun load-hint-details (elements buffer source)
-  "Fill ELEMENTS' URLs and text, then refresh SOURCE's prompt listing."
-  (unless elements
-    (return-from load-hint-details nil))
+  "Fill URLs for ELEMENTS, then add off-screen hints to SOURCE in batches.
+The visible rows are already listed. Each batch is drawn, appended, and the
+prompt is refreshed, then its URLs are filled in."
   (let ((browser *browser*))
     (run-thread "hint-urls"
       (let ((*browser* browser))
         (with-protect ("Hint URL load failed: ~a" :condition)
-          (let ((records (fetch-hint-details buffer elements)))
-            (dolist (element elements)
-              (when-let ((record (find (nyxt/dom:get-nyxt-id element)
-                                       records
-                                       :key (lambda (record)
-                                              (hint-record-field record :id))
-                                       :test #'string=)))
-                (apply-hint-details element record))))
-          (loop for attempt below 50
-                for prompt = (current-prompt-buffer)
-                do (when (and prompt
-                              (find source (prompter:sources prompt))
-                              (find prompt (nyxt::active-prompt-buffers (window prompt))))
-                     (prompter:refresh prompt)
-                     (prompt-render-suggestions prompt)
-                     (return))
-                   (sleep 0.02)))))))
+          (block hint-load
+            (when elements
+              (apply-hint-detail-records
+               elements (fetch-hint-details buffer elements)))
+            (unless (refresh-hint-prompt source :attempts 50)
+              (return-from hint-load))
+            (loop
+              (unless (hint-prompt source)
+                (return))
+              (let ((more (mapcar #'make-hint-element
+                                  (draw-pending-hint-batch buffer 200))))
+                (unless more
+                  (return))
+                (append-hint-suggestions source more)
+                (unless (refresh-hint-prompt source)
+                  (return))
+                (apply-hint-detail-records
+                 more (fetch-hint-details buffer more))
+                (unless (refresh-hint-prompt source)
+                  (return))))))))))
 
 (defun add-hints (&key selector (buffer (current-buffer)) source css alphabet
                     (x-placement :left) show-hint-scope-p)
-  "Hint the visible elements matching SELECTOR and return plump elements for them.
-Badges are drawn before this function returns. When SOURCE is given, URLs and
-link text are loaded on a background thread and the prompt is refreshed."
+  "Hint elements matching SELECTOR and return plump elements for the viewport.
+Viewport badges are drawn before this function returns. When SOURCE is given,
+a background thread fills their URLs, then draws off-screen badges and adds
+those elements to the prompt."
   (let* ((records (show-viewport-hints buffer selector alphabet css x-placement show-hint-scope-p))
          (elements (mapcar #'make-hint-element records)))
     (when source
@@ -571,6 +695,7 @@ link text are loaded on a background thread and the prompt is refreshed."
     (ps:chain element (remove-attribute "nyxt-hint"))))
 
 (define-parenscript-async remove-hint-elements ()
+  (setf (ps:@ window nyxt-hint-pending) (array))
   (ps:let ((hints-parent (nyxt/ps:qs-id document "nyxt-hints")))
     (when hints-parent
       (when (ps:@ hints-parent hide-popover)
@@ -606,7 +731,11 @@ If SCROLL (default to NIL), scroll the hint into view."
           (ps:chain current-hint class-list (remove "nyxt-current-hint"))))
       (ps:chain %element class-list (add "nyxt-current-hint"))
       (when (ps:lisp scroll)
-        (ps:chain %element (scroll-into-view (ps:create block "center")))))))
+        ;; Scroll the link, not the badge. Off-screen badges are hidden and
+        ;; live in the fixed overlay, so scrolling the badge would not move
+        ;; the page.
+        (ps:chain (or (ps:@ %element nyxt-element) %element)
+                  (scroll-into-view (ps:create block "center")))))))
 
 (define-parenscript-async set-hint-visibility (hint state)
   "Set visibility STATE of HINT element.
@@ -628,6 +757,47 @@ The badge itself stays opaque so the remaining characters stay readable."
               do (if (< index (ps:lisp prefix-length))
                      (ps:chain span class-list (add "nyxt-match-hint"))
                      (ps:chain span class-list (remove "nyxt-match-hint"))))))))
+
+(defvar *hint-follow-lock* (bt:make-lock "hint-follow"))
+(defvar *hint-follow-input* (make-hash-table :test 'eq)
+  "Prompt to the input that should follow once the pause elapses.")
+
+(defun hint-follow-pending (prompt input)
+  "Return T when PROMPT is still waiting to follow INPUT."
+  (let ((pending (gethash prompt *hint-follow-input*)))
+    (and (stringp pending) (string-equal input pending))))
+
+(defun cancel-hint-follow (prompt)
+  "Drop a pending follow for PROMPT and restore vi-style auto-return."
+  (bt:with-lock-held (*hint-follow-lock*)
+    (remhash prompt *hint-follow-input*))
+  (setf (prompter:auto-return-p prompt)
+        (eq :vi (hinting-type (find-submode 'hint-mode)))))
+
+(defun schedule-hint-follow (prompt input)
+  "Follow PROMPT after half a second if INPUT is still what the user has typed.
+A finished hint such as \"ap\" may be the start of a longer query such as
+\"apply\", or of a hint that is still being drawn off-screen."
+  (let ((browser (when (boundp '*browser*) *browser*)))
+    (bt:with-lock-held (*hint-follow-lock*)
+      (when (hint-follow-pending prompt input)
+        (setf (prompter:auto-return-p prompt) nil)
+        (return-from schedule-hint-follow nil))
+      (setf (gethash prompt *hint-follow-input*) input)
+      ;; A single exact row would otherwise follow before the pause.
+      (setf (prompter:auto-return-p prompt) nil))
+    (run-thread "hint-follow"
+      (let ((*browser* browser))
+        (block hint-follow
+          (sleep 1/2)
+          (bt:with-lock-held (*hint-follow-lock*)
+            (unless (and (hint-follow-pending prompt input)
+                         (string-equal input (prompter:input prompt))
+                         (not (prompter:returned-p prompt)))
+              (return-from hint-follow nil))
+            (setf (gethash prompt *hint-follow-input*) nil)
+            (setf (prompter:returned-p prompt) t))
+          (prompter:run-action-on-return prompt))))))
 
 (define-class hint-source (prompter:source)
   ((prompter:name "Hints")
@@ -674,19 +844,23 @@ The badge itself stays opaque so the remaining characters stay readable."
                (and (not (str:empty? input))
                     (string-equal input (hint-string suggestion))))
              suggestions)
-          ;; A finished two-character hint is one link. Follow it instead of
-          ;; keeping longer or fuzzy matches ahead of it.
+          ;; A finished two-character hint is one link. Follow it after a short
+          ;; pause, so typing can continue into a longer query or an off-screen
+          ;; hint that has not been listed yet.
           (if (and (= 2 (length input)) (sera:single exact))
               (progn
                 (when-let ((prompt (current-prompt-buffer)))
-                  (setf (prompter:auto-return-p prompt) t))
+                  (schedule-hint-follow prompt input))
                 exact)
-              (multiple-value-bind (matching-hints other-hints)
+              (progn
+                (when-let ((prompt (current-prompt-buffer)))
+                  (cancel-hint-follow prompt))
+                (multiple-value-bind (matching-hints other-hints)
                   (sera:partition
                    (lambda (suggestion)
                      (str:starts-with-p input (hint-string suggestion) :ignore-case t))
                    rest)
-                (append exact matching-hints other-hints)))))))
+                (append exact matching-hints other-hints))))))))
    (prompter:actions-on-current-suggestion
     (when (eq :emacs (hinting-type (find-submode 'hint-mode)))
       (lambda-command highlight-current-hint* (suggestion)
