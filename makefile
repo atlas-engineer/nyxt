@@ -36,6 +36,7 @@ lisp_eval:=$(LISP) $(LISP_FLAGS) \
 	--eval '(require "asdf")' \
 	--eval '(load "$(OCICL_RUNTIME)")' \
 	--eval '(setf ocicl-runtime:*download* nil)' \
+	--eval '(push (lambda (name) (let ((name (asdf:coerce-name name))) (when (or (string= name "nyxt") (uiop:string-prefix-p "nyxt/" name)) (pathname "$(makefile_dir)nyxt.asd")))) asdf:*system-definition-search-functions*)' \
 	--eval '(asdf:load-asd "$(makefile_dir)/libraries/nasdf/nasdf.asd")' \
 	--eval '(asdf:load-asd "$(makefile_dir)/nyxt.asd")' \
 	--eval
