@@ -171,7 +171,15 @@
                  (:file "style" :depends-on ("bookmarklets"))
                  (:file "visual")
                  (:file "vi")
-                 (:file "watch"))))
+                 (:file "watch")
+                 (:file "blocker")
+                 (:file "certificate-exception")
+                 (:file "force-https")
+                 (:file "no-image")
+                 (:file "no-script")
+                 (:file "no-webgl")
+                 (:file "proxy")
+                 (:file "user-script"))))
   :in-order-to ((test-op (test-op "nyxt/tests")
                          ;; Dumping the manual may catch errors.
                          (compile-op "nyxt/documentation")
@@ -272,16 +280,7 @@
   :class :nasdf-system
   :depends-on (nyxt cl-webkit2)
   :pathname #p"NYXT:source;"
-  :components ((:file "renderer/gtk" :depends-on ("mode/user-script"))
-               ;; TODO: Port to other renderers.
-               (:file "mode/blocker")
-               (:file "mode/certificate-exception")
-               (:file "mode/force-https")
-               (:file "mode/user-script")
-               (:file "mode/no-image")
-               (:file "mode/no-script")
-               (:file "mode/no-webgl")
-               (:file "mode/proxy")))
+  :components ((:file "renderer/gtk")))
 
 (defsystem "nyxt/gi-gtk"
   :defsystem-depends-on ("nasdf")
@@ -364,15 +363,7 @@
   :depends-on (nyxt cl-cef)
   :pathname #p"NYXT:source;"
   :serial t
-  :components ((:file "mode/blocker")
-               (:file "mode/certificate-exception")
-               (:file "mode/force-https")
-               (:file "mode/user-script")
-               (:file "mode/no-image")
-               (:file "mode/no-script")
-               (:file "mode/no-webgl")
-               (:file "mode/proxy")
-               (:file "renderer/cef")))
+  :components ((:file "renderer/cef")))
 
 (defsystem "nyxt/cef-application"
   :defsystem-depends-on ("nasdf")
