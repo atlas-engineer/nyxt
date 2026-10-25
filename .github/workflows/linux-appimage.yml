@@ -1,0 +1,63 @@
+name: Linux AppImage
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  appimage:
+    name: Build CEF AppImage
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - name: Check out Nyxt
+        uses: actions/checkout@v4
+
+      - name: Install build packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            bzip2 \
+            ca-certificates \
+            cmake \
+            curl \
+            git \
+            libenchant-2-dev \
+            libfixposix-dev \
+            libsqlite3-dev \
+            libssl-dev \
+            libwayland-dev \
+            libx11-dev \
+            pkg-config
+
+      - name: Install SBCL
+        run: |
+          version=2.4.5
+          curl -fsSL -o /tmp/sbcl.tar.bz2 \
+            "https://downloads.sourceforge.net/project/sbcl/sbcl/${version}/sbcl-${version}-x86-64-linux-binary.tar.bz2"
+          tar -xjf /tmp/sbcl.tar.bz2 -C /tmp
+          sudo sh "/tmp/sbcl-${version}-x86-64-linux/install.sh"
+          sbcl --version
+
+      - name: Install Ocicl
+        run: |
+          curl -fsSL https://ocicl.github.io/ocicl/deb-repo/ocicl-archive-keyring.gpg \
+            | sudo tee /usr/share/keyrings/ocicl-archive-keyring.asc >/dev/null
+          echo "deb [signed-by=/usr/share/keyrings/ocicl-archive-keyring.asc] https://ocicl.github.io/ocicl/deb-repo stable main" \
+            | sudo tee /etc/apt/sources.list.d/ocicl.list >/dev/null
+          sudo apt-get update
+          sudo apt-get install -y ocicl
+          ocicl setup
+
+      - name: Build the AppImage
+        run: sh .github/linux-appimage.sh
+
+      - name: Upload AppImage
+        uses: actions/upload-artifact@v4
+        with:
+          name: Nyxt-x86_64.AppImage
+          path: build/appimage/Nyxt-x86_64.AppImage
+          if-no-files-found: error

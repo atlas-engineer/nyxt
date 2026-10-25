@@ -91,11 +91,33 @@
   (:metaclass user-class)
   (:documentation "CEF browser class."))
 
+(defun configure-appimage-cef (interface)
+  "Point INTERFACE at the CEF runtime inside an AppImage.
+APPDIR is set by the AppImage runtime. Development builds leave the
+defaults, which resolve next to the cl-cef system."
+  (let ((appdir (uiop:getenv "APPDIR")))
+    (when (and appdir (plusp (length appdir)))
+      (let* ((root (uiop:ensure-directory-pathname
+                    (uiop:merge-pathnames*
+                     #p"usr/lib/cef/"
+                     (uiop:ensure-directory-pathname
+                      (uiop:parse-native-namestring appdir)))))
+             (helper (uiop:merge-pathnames* #p"cl-cef-helper" root))
+             (library (uiop:merge-pathnames* #p"libcl-cef.so" root)))
+        (when (and (uiop:file-exists-p helper)
+                   (uiop:file-exists-p library))
+          (setf (uiop:getenv "CL_CEF_LIBRARY") (uiop:native-namestring library))
+          (setf (cef:subprocess-path interface) helper
+                (cef:resources-dir-path interface) root
+                (cef:locales-dir-path interface)
+                (uiop:merge-pathnames* #p"locales/" root)))))))
+
 (defmethod ffi-initialize ((browser cef-browser) urls startup-timestamp)
   (declare (ignore urls startup-timestamp))
   (log:debug "Initializing CEF Interface")
   (let ((interface (make-instance 'cef:interface)))
     (setf cef:*interface* interface)
+    (configure-appimage-cef interface)
     ;; Scheme names and privilege bits are fixed at CEF startup. Handlers are
     ;; attached to the same objects once the UI thread is in its message loop.
     (setf (cef:protocols interface)
