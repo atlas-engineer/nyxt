@@ -258,6 +258,15 @@ the default height.")
 (defun event-url (data)
   (quri:uri (or (assoc-value data :url) "")))
 
+(defmacro run-buffer-thread (name buffer &body body)
+  "Run BODY when BUFFER's page view is still alive.
+Load callbacks are queued on other threads. `ffi-buffer-delete' clears the
+view before those threads run, and a call into the missing view has no method."
+  `(run-thread ,name
+     (when (and (cef:web-contents ,buffer)
+                (not (nyxt::dead-buffer-p ,buffer)))
+       ,@body)))
+
 (defmethod initialize-listeners ((buffer cef-buffer))
   (cef:add-listener buffer :before-input-event
                     (lambda (buffer event)
@@ -276,19 +285,19 @@ the default height.")
                       (lambda (buffer data)
                         (setf (nyxt::status buffer) :loading)
                         (let ((url (event-url data)))
-                          (run-thread "load-started"
+                          (run-buffer-thread "load-started" buffer
                             (on-signal-load-started buffer url)))))
     (cef:add-listener buffer :did-redirect-navigation
                       (lambda (buffer data)
                         (let ((url (event-url data)))
-                          (run-thread "load-redirected"
+                          (run-buffer-thread "load-redirected" buffer
                             (setf (url buffer) url)
                             (on-signal-load-redirected buffer url)))))
     (cef:add-listener buffer :did-finish-load
                       (lambda (buffer data)
                         (setf (nyxt::status buffer) :finished)
                         (let ((url (event-url data)))
-                          (run-thread "load-finished"
+                          (run-buffer-thread "load-finished" buffer
                             (setf (url buffer) url)
                             (on-signal-load-finished buffer url (ffi-buffer-title buffer))))))
     (cef:add-listener buffer :did-fail-load
@@ -297,18 +306,18 @@ the default height.")
                         (unless (eql (assoc-value data :error-code) -3)
                           (setf (nyxt::status buffer) :failed)
                           (let ((url (event-url data)))
-                            (run-thread "load-failed"
+                            (run-buffer-thread "load-failed" buffer
                               (on-signal-load-failed buffer url))))))
     (cef:add-listener buffer :address-change
                       (lambda (buffer data)
                         (let ((url (event-url data)))
-                          (run-thread "notify-uri"
+                          (run-buffer-thread "notify-uri" buffer
                             (setf (url buffer) url)
                             (on-signal-notify-uri buffer url)))))
     (cef:add-listener buffer :page-title-updated
                       (lambda (buffer data)
                         (let ((title (or (assoc-value data :title) "")))
-                          (run-thread "notify-title"
+                          (run-buffer-thread "notify-title" buffer
                             (on-signal-notify-title buffer title)))))
     (cef:add-listener buffer :fullscreen
                       (lambda (buffer data)
@@ -376,12 +385,19 @@ the default height.")
   (cef:load-html buffer html-content))
 
 (defmethod ffi-buffer-zoom-ratio ((buffer cef-buffer))
-  (cef:get-zoom-factor (cef:web-contents buffer)))
+  (if-let ((contents (cef:web-contents buffer)))
+    (cef:get-zoom-factor contents)
+    (or (zoom-ratio buffer) 1.0)))
 
 (defmethod (setf ffi-buffer-zoom-ratio) (value (buffer cef-buffer))
-  (if (and (floatp value) (plusp value))
-      (cef:set-zoom-factor (cef:web-contents buffer) value)
-      (echo-warning "Zoom ratio must be a positive floating point number.")))
+  (cond
+    ((not (and (floatp value) (plusp value)))
+     (echo-warning "Zoom ratio must be a positive floating point number."))
+    ;; `document-mode' applies the zoom from `on-signal-load-finished'. That
+    ;; thread can still be running after delete has cleared the view.
+    (t
+     (when-let ((contents (cef:web-contents buffer)))
+       (cef:set-zoom-factor contents value)))))
 
 (defmethod ffi-buffer-evaluate-javascript ((buffer cef-buffer) javascript
                                            &optional world-name)
