@@ -1195,7 +1195,9 @@ specified for their contents."
               (enabled-modes buffer)))))
 
 (define-command set-url (&key (default-action #'buffer-load*))
-  "Set the URL for the current buffer, completing with history."
+  "Set the URL for the current buffer, completing with history.
+The prompt starts with a `composite-source', the top suggestions from each
+source, so a result can be chosen without moving through every source."
   (let* ((history (set-url-history *browser*))
          (actions-on-return
            (list #'buffer-load*
@@ -1207,6 +1209,7 @@ specified for their contents."
     (prompt :prompt "Open URL"
             :input (render-url (url (current-buffer)))
             :history history
+            :composite-source-p t
             :sources (url-sources (current-buffer) actions-on-return))
     (current-buffer)))
 

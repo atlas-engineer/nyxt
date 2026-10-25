@@ -306,20 +306,23 @@ current unmarked suggestion."
 
 (define-command-prompt toggle-attributes-display
     (prompt-buffer &key (source (current-source prompt-buffer)))
-  "Prompt for which prompter attributes to display."
-  (let ((attributes
-          (prompt :prompt "Mark attributes to display"
-                  :sources
-                  (make-instance
-                   'attribute-source
-                   :marks (intersection
-                           (prompter:active-attributes-keys source)
-                           (prompter:attributes-keys-non-default source)
-                           :test #'string=)
-                   :constructor (prompter:attributes-keys-non-default source)))))
-    (setf (prompter:active-attributes-keys source)
-          attributes)
-    (prompt-render-suggestions prompt-buffer)))
+  "Prompt for which prompter attributes to display.
+The composite source keeps each originating source's default columns, so this
+command does nothing there."
+  (unless (typep source 'prompter:composite-source)
+    (let ((attributes
+            (prompt :prompt "Mark attributes to display"
+                    :sources
+                    (make-instance
+                     'attribute-source
+                     :marks (intersection
+                             (prompter:active-attributes-keys source)
+                             (prompter:attributes-keys-non-default source)
+                             :test #'string=)
+                     :constructor (prompter:attributes-keys-non-default source)))))
+      (setf (prompter:active-attributes-keys source)
+            attributes)
+      (prompt-render-suggestions prompt-buffer))))
 
 (define-class prompt-buffer-command-source (command-source)
   ((prompter:name "Prompt buffer commands")

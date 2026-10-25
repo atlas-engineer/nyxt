@@ -36,6 +36,13 @@ This is useful to conceal passwords.")
       nil
       :documentation "Whether to hide the number of suggestions.
 Affects both the prompt and its sources.")
+     (composite-source-p
+      nil
+      :documentation "Whether to prepend a `composite-source' to `sources'.
+The composite source lists the top `prompter:suggestions-per-source' suggestions
+from each source, in source order, so a result can be chosen without moving
+through every source.
+`set-url' enables this. Other prompts leave it off.")
      (max-suggestions
       0
       :export nil
@@ -242,6 +249,8 @@ some point.")
            :padding-left "4px"
            :border-radius "2px"
            :text-align "left"))
+        `(".source-content.composite tr"
+          :font-family ,theme:monospace-font-family)
         `("#selection"
           :background-color ,theme:action-color
           :color ,theme:on-action-color)
@@ -262,6 +271,49 @@ invoking `prompt-buffer:history'.
 
 See `prompt' for how to invoke prompts.")
     (:metaclass user-class)))
+
+(define-class composite-source (prompter:composite-source)
+  ()
+  (:metaclass user-class)
+  (:export-class-name-p t)
+  (:export-predicate-name-p t)
+  (:documentation "Prompt source listing the top suggestions from each other source.
+How many are taken from each source is `prompter:suggestions-per-source', 1 by
+default. Configure it with `define-configuration' on this class.
+Each suggestion shows the originating source's default columns, with no column
+headings. Every row has as many columns as the source with the most, so the
+columns line up. The columns cannot be edited from here.
+Selecting a suggestion runs the actions of the source it came from.
+`set-url' prepends this source; other prompts enable it with `composite-source-p'."))
+
+(defun ensure-prompt-source (specifier)
+  "Return a `prompter:source' instance for SPECIFIER."
+  (cond
+    ((typep specifier 'prompter:source) specifier)
+    ((and (symbolp specifier)
+          (find-class specifier nil)
+          (subtypep specifier 'prompter:source))
+     (make-instance specifier))
+    (t (error "Bad source specifier ~s." specifier))))
+
+(defun add-composite-source (sources)
+  "Return SOURCES with a `composite-source' of those sources prepended.
+SOURCES may contain source instances or source class names."
+  (let ((instances (mapcar #'ensure-prompt-source (uiop:ensure-list sources))))
+    (cons (make-instance 'composite-source :sources instances)
+          instances)))
+
+(defmethod initialize-instance :around
+    ((prompt-buffer prompt-buffer)
+     &rest args
+     &key composite-source-p (sources nil sources-p)
+     &allow-other-keys)
+  (if (and composite-source-p sources-p)
+      (apply #'call-next-method
+             prompt-buffer
+             :sources (add-composite-source sources)
+             (alexandria:remove-from-plist args :sources))
+      (call-next-method)))
 
 (defmethod customize-instance :after ((prompt-buffer prompt-buffer)
                                       &key extra-modes &allow-other-keys)
@@ -360,7 +412,111 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
                      source)
           (make-list len :initial-element (/ 1 len))))))
 
+(defun attribute-width-ratios (attributes)
+  "Return column width ratios for ATTRIBUTES, or a uniform split."
+  (let* ((widths (mapcar (lambda (attribute) (getf (third attribute) :width))
+                         attributes))
+         (total (ignore-errors (reduce #'+ widths))))
+    (if total
+        (mapcar (lambda (width) (/ width total)) widths)
+        (let ((len (length attributes)))
+          (make-list len :initial-element (/ 1 (max 1 len)))))))
+
+(defun attribute-text (attribute)
+  "Return ATTRIBUTE's display text."
+  (let ((value (second attribute)))
+    (if (stringp value)
+        value
+        "")))
+
+(defun origin-default-attributes (suggestion origin)
+  "Return the columns ORIGIN displays for SUGGESTION.
+A source with no column selection contributes every column. These are the
+columns shown before column editing."
+  (let ((attributes (prompter:attributes suggestion)))
+    (if (typep origin 'prompter:source)
+        (loop for key in (prompter:active-attributes-keys origin)
+              for attribute = (assoc key attributes :test #'string=)
+              when attribute
+                collect attribute)
+        attributes)))
+
+(defun composite-rows (source)
+  "Return (INDEX SUGGESTION ATTRIBUTES) for each suggestion in SOURCE.
+ATTRIBUTES are the originating source's default columns."
+  (loop for suggestion in (prompter:suggestions source)
+        for index from 0
+        collect (list index
+                      suggestion
+                      (origin-default-attributes
+                       suggestion
+                       (prompter:match-data suggestion)))))
+
+(defun pad-attributes (attributes length)
+  "Return ATTRIBUTES followed by empty columns until it is LENGTH long."
+  (append attributes
+          (make-list (max 0 (- length (length attributes)))
+                     :initial-element '("" ""))))
+
+(defun render-composite-attributes (source prompt-buffer)
+  "Render SOURCE as one table with no column headings.
+Every row has as many cells as the suggestion with the most default columns,
+so the columns line up. Shorter rows leave the extra cells empty."
+  (let* ((rows (composite-rows source))
+         (column-count (reduce #'max rows
+                               :key (lambda (row) (length (third row)))
+                               :initial-value 0))
+         (widest (find column-count rows
+                       :key (lambda (row) (length (third row)))))
+         (widths (attribute-width-ratios (if widest (third widest) '()))))
+    (spinneret:with-html
+      (when (plusp column-count)
+        (:table :class "source-content composite"
+                (:colgroup
+                 (dolist (width widths)
+                   (:col :style (format nil "width: ~,2f%" (* 100 width)))))
+                (dolist (row rows)
+                  (let ((suggestion-index (first row))
+                        (suggestion (second row)))
+                    (:tr :id (when (equal (list suggestion source)
+                                          (multiple-value-list
+                                           (prompter:%current-suggestion
+                                            prompt-buffer)))
+                               "selection")
+                         (loop for attribute in (pad-attributes (third row)
+                                                                column-count)
+                               for text = (attribute-text attribute)
+                               collect
+                               (:td :title text
+                                    :onclick
+                                    (ps:ps
+                                      (cond
+                                        ((ps:chain window event ctrl-key)
+                                         (nyxt/ps:lisp-eval
+                                          (:title "mark-this-suggestion"
+                                           :buffer prompt-buffer)
+                                          (prompter::set-current-suggestion-by-class-and-index
+                                           prompt-buffer
+                                           (class-name (class-of source))
+                                           suggestion-index)
+                                          (prompter:toggle-mark prompt-buffer)
+                                          (prompt-render-suggestions prompt-buffer)))
+                                        (t
+                                         (nyxt/ps:lisp-eval
+                                          (:title "return-this-suggestion"
+                                           :buffer prompt-buffer)
+                                          (prompter::set-current-suggestion-by-class-and-index
+                                           prompt-buffer
+                                           (class-name (class-of source))
+                                           suggestion-index)
+                                          (prompter:run-action-on-return
+                                           (nyxt::current-prompt-buffer))))))
+                                    text))))))))))
+
 (defun render-attributes (source prompt-buffer)
+  (when (typep source 'prompter:composite-source)
+    (return-from render-attributes
+      (render-composite-attributes source prompt-buffer)))
   (spinneret:with-html
     (when (prompter:suggestions source)
       (:table :class "source-content"
@@ -483,19 +639,20 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
                     (prompter:marks source)
                     :enable-marks-p (prompter:enable-marks-p source)))
                   (when (not (prompter:ready-p source)) "(In progress...)"))
-                 (:div
-                  (:nbutton
-                    :id "toggle-attributes"
-                    :text (:raw (gethash "plus-minus.svg" *static-data*))
-                    :title (format nil "Toggle attributes display (~a)"
-                                   (binding-keys
-                                    (sym:resolve-symbol
-                                     'toggle-attributes-display :command)
-                                    :modes (enabled-modes prompt-buffer)))
-                    :buffer prompt-buffer
-                    `(funcall (sym:resolve-symbol
-                               :toggle-attributes-display :command)
-                              :source ,source))))
+                 (unless (typep source 'prompter:composite-source)
+                   (:div
+                    (:nbutton
+                      :id "toggle-attributes"
+                      :text (:raw (gethash "plus-minus.svg" *static-data*))
+                      :title (format nil "Toggle attributes display (~a)"
+                                     (binding-keys
+                                      (sym:resolve-symbol
+                                       'toggle-attributes-display :command)
+                                      :modes (enabled-modes prompt-buffer)))
+                      :buffer prompt-buffer
+                      `(funcall (sym:resolve-symbol
+                                 :toggle-attributes-display :command)
+                                :source ,source)))))
                 (render-attributes source prompt-buffer)))))
       (ps-eval :async t :buffer prompt-buffer
         (setf (ps:@ (nyxt/ps:qs document "#suggestions") |innerHTML|)
