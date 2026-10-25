@@ -15,6 +15,7 @@
 
 (setf nyxt::*renderer* (make-instance 'cef-renderer))
 (pushnew :nyxt-cef *features*)
+(pushnew :nyxt-cef-status-host-as-path *features*)
 
 (defmethod renderer-thread-p ((renderer cef-renderer) &optional (thread (bt:current-thread)))
   (and (cef:on-ui-thread-p)
