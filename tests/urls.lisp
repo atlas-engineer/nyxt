@@ -20,7 +20,11 @@
                    (quri:uri "lisp://0.0.3.129/?title=nbutton%20Set-URL&buffer=1")))
   (assert-string= "897"
                   (nyxt::lisp-request-id
-                   (quri:uri "lisp:897?title=nbutton%20Set-URL&buffer=1"))))
+                   (quri:uri "lisp:897?title=nbutton%20Set-URL&buffer=1")))
+  ;; `lisp-url' emits a standard URL. The id stays the path.
+  (assert-string= "897"
+                  (nyxt::lisp-request-id
+                   (quri:uri "lisp://callback/897?title=nbutton%20Set-URL&buffer=1"))))
 
 (define-test url-processing ()
   ;; "Invalid URL (empty host)"

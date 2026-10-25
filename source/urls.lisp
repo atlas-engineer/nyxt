@@ -338,11 +338,15 @@ IPv4 rewrite of a numeric host."
                    (buffer (alex:required-argument 'buffer))
                    (callback (alex:required-argument 'callback))
                    title)
+  "Register CALLBACK under ID on BUFFER and return the URL that runs it.
+`lisp' is a standard scheme, so the URL has a host. `lisp:ID' is not a URL
+`fetch' will send, and a numeric host is rewritten to dotted IPv4."
   (sera:synchronized ((lisp-url-callbacks buffer))
     (log:debug "Registering callback ~a in buffer ~a" id buffer)
     (setf (gethash id (lisp-url-callbacks buffer)) callback))
   (quri:make-uri :scheme "lisp"
-                 :path id
+                 :host "callback"
+                 :path (uiop:strcat "/" id)
                  :query `(("title" . ,title) ("buffer" . ,(id buffer)))))
 
 (export-always 'nyxt/ps::lisp-eval :nyxt/ps)
@@ -361,6 +365,17 @@ TITLE is purely informative."
                                        `(lambda () ,@body)))))
     (ps:create :mode "no-cors")))
 
+(-> lisp-callback-buffer (buffer) buffer)
+(defun lisp-callback-buffer (buffer)
+  "Return the buffer in which BUFFER's `lisp' callback should run.
+A status buffer stores its callbacks the same way any `lisp' URL buffer does.
+The commands on that panel, such as `history-backwards', act on the window's
+page. They read `current-buffer', which would otherwise be the panel."
+  (or (and (status-buffer-p buffer)
+           (window buffer)
+           (active-buffer (window buffer)))
+      buffer))
+
 (define-internal-scheme "lisp"
     (lambda (url)
       (when-let* ((%url (quri:uri url))
@@ -376,7 +391,9 @@ TITLE is purely informative."
         (values
          (if-let ((callback (sera:synchronized ((lisp-url-callbacks buffer))
                               (gethash request-id (lisp-url-callbacks buffer)))))
-           (let ((callback-output (with-current-buffer buffer (run callback))))
+           (let ((callback-output
+                   (with-current-buffer (lisp-callback-buffer buffer)
+                     (run callback))))
              ;; Objects and other complex structures make cl-json choke.
              ;; TODO: Maybe encode it to the format that `cl-json' supports,
              ;; then we can override the encoding and decoding methods and allow
