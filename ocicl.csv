@@ -165,7 +165,7 @@ plump-lexer, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c143
 plump-parser, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/plump/plump-parser.asd
 proc-parse, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/proc-parse/proc-parse.asd
 proc-parse-test, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/proc-parse/proc-parse-test.asd
-prompter, git+https://github.com/atlas-engineer/prompter@a8b77a7a310b2e6a79902d5052ce28cca4dba730#ref=a8b77a7a310b2e6a79902d5052ce28cca4dba730, prompter-a8b77a7/prompter.asd
+prompter, git+https://github.com/atlas-engineer/prompter@d215cd854adf406f416a1961986d02b4967c9700#ref=d215cd854adf406f416a1961986d02b4967c9700, prompter-d215cd8/prompter.asd
 puri, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/puri/puri.asd
 py-configparser, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/py-configparser/py-configparser.asd
 py-configparser-tests, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/py-configparser/tests/py-configparser-tests.asd
