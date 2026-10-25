@@ -39,6 +39,9 @@ Truenamed so it still matches paths after Nyxt resolves symlinks.")
                           (file nyxt/mode/bookmark:bookmarks-file))
   (uiop:merge-pathnames* #p"bookmarks.lisp" *data-directory*))
 
+(defmethod files:resolve ((profile nyxt:nyxt-profile) (file nyxt:zoom-ratios-file))
+  (uiop:merge-pathnames* #p"zoom-ratios.lisp" *data-directory*))
+
 (dolist (name '("history.lisp" "bookmarks.lisp" "nyxt.log"))
   (with-open-file (stream (uiop:merge-pathnames* name *data-directory*)
                           :direction :output

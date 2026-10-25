@@ -96,6 +96,7 @@
   (assert-test-file (make-instance 'nyxt:history-file))
   (assert-test-file (make-instance 'nyxt:log-file))
   (assert-test-file (make-instance 'nyxt/mode/bookmark:bookmarks-file))
+  (assert-test-file (make-instance 'nyxt:zoom-ratios-file))
   (let* ((failure nil)
          (thread (bt:make-thread
                   (lambda ()

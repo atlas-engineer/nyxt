@@ -224,7 +224,9 @@ invoking the " (:nxref :command 'toggle-modes) "command.")))))
                               (nyxt::auto-configure
                                :class-name 'document-buffer
                                :slot 'zoom-ratio-default
-                               :slot-value ,(/ number 100.0)))))))))
+                               :slot-value ,(/ number 100.0))))))
+           (:div.right
+            (:p "Nyxt remembers the zoom for each site and uses this ratio when a site has none.")))))
         (buffer-defaults
          (:div.section
           (:h3 "Homepage")

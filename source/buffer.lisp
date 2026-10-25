@@ -489,7 +489,8 @@ buffer.")
     :export t
     :documentation "The current zoom ratio as per `ffi-buffer-zoom-ratio'.
 It is an implementation detail and must not be set by the user. For the
-user-facing slot, see `zoom-ratio-default'.")
+user-facing default, see `zoom-ratio-default'. The ratio remembered for a
+host lives in the browser's `zoom-ratios'.")
    (zoom-ratio-step
     0.1
     :type float

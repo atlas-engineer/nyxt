@@ -55,6 +55,12 @@ This is an acceptable `hooks:combination' for `hooks:hook'."
   (:documentation "Renderer-specific representation for the global browser.
 Should be redefined by the renderer."))
 
+(define-class zoom-ratios-file (files:data-file nyxt-lisp-file)
+  ((files:base-path #p"zoom-ratios")
+   (files:name "zoom-ratios"))
+  (:export-class-name-p t)
+  (:documentation "Persisted mapping of hostnames to zoom ratios."))
+
 (define-class browser (renderer-browser)
   ((search-engines
     (mapcar #'make-instance '(ddg-search-engine
@@ -194,6 +200,18 @@ prompt buffer.")
     (make-array 0 :fill-pointer t :adjustable t)
     :type vector
     :documentation "A vector holding `history-entry' objects.")
+   (zoom-ratios-file
+    (make-instance 'zoom-ratios-file)
+    :type zoom-ratios-file
+    :documentation "File where per-host zoom ratios are persisted.")
+   (zoom-ratios
+    (make-hash-table :test 'equal)
+    :type hash-table
+    :documentation "Zoom ratios remembered for each host.
+Keys are hostnames such as \"www.example.com\", as returned by `zoom-host'.
+Values are zoom ratios. This mirrors Firefox site-specific zoom: every page on
+a host shares one ratio, and other hosts keep their own.
+`remember-zoom' updates the table and `zoom-ratios-file'.")
    (default-cookie-policy
     :no-third-party
     :type cookie-policy
@@ -314,6 +332,100 @@ A list of strings is returned, as to comply with `uiop:launch-program' or
 (defmethod default-search-engine ((browser browser))
   (first (search-engines browser)))
 
+(export-always 'zoom-host)
+(defun zoom-host (url)
+  "Return the host that shares URL's zoom, or NIL.
+The host is the full hostname, without a port. Firefox stores site zoom the
+same way: every page on \"www.example.com\" shares a ratio, across HTTP and
+HTTPS, and \"docs.example.com\" does not. Internal pages and URLs with no host
+are not site-specific."
+  (let ((url (ignore-errors (url url))))
+    (when (and url (not (internal-url-p url)))
+      (let ((host (quri:uri-host url)))
+        (when (and (stringp host) (plusp (length host)))
+          (string-downcase host))))))
+
+(defun replace-zoom-ratios (table entries)
+  "Reset TABLE from ENTRIES, a list of (host . zoom) conses.
+Hostnames are stored lower-case. Missing or non-positive ratios are ignored."
+  (clrhash table)
+  (when (listp entries)
+    (dolist (entry entries)
+      (when (consp entry)
+        (let ((host (car entry))
+              (zoom (cdr entry)))
+          (when (and (stringp host)
+                     (plusp (length host))
+                     (realp zoom)
+                     (plusp zoom))
+            (setf (gethash (string-downcase host) table)
+                  (float zoom 1.0)))))))
+  table)
+
+(export-always 'load-zoom-ratios)
+(defun load-zoom-ratios (&optional (browser *browser*))
+  "Replace BROWSER's `zoom-ratios' with the contents of `zoom-ratios-file'."
+  (sera:synchronized ((zoom-ratios browser))
+    (replace-zoom-ratios (zoom-ratios browser)
+                         (files:content (zoom-ratios-file browser))))
+  browser)
+
+(defun persist-zoom-ratios (&optional (browser *browser*))
+  "Write BROWSER's `zoom-ratios' to `zoom-ratios-file'."
+  (setf (files:content (zoom-ratios-file browser))
+        (sera:synchronized ((zoom-ratios browser))
+          (loop for host being the hash-key of (zoom-ratios browser)
+                  using (hash-value zoom)
+                collect (cons host zoom)))))
+
+(export-always 'remembered-zoom)
+(defun remembered-zoom (url &optional (browser *browser*))
+  "Return the zoom ratio remembered for URL's host, or NIL."
+  (when browser
+    (when-let ((host (zoom-host url)))
+      (sera:synchronized ((zoom-ratios browser))
+        (gethash host (zoom-ratios browser))))))
+
+(export-always 'remember-zoom)
+(defun remember-zoom (url zoom &key (browser *browser*) (persist-p t))
+  "Remember ZOOM for URL's host in BROWSER.
+A null or non-positive ZOOM forgets the host. URLs without a host are ignored.
+The table is written to `zoom-ratios-file' when PERSIST-P is non-nil.
+Return the host, or NIL when URL is not site-specific."
+  (when-let ((host (and browser (zoom-host url))))
+    (sera:synchronized ((zoom-ratios browser))
+      (if (and zoom (realp zoom) (plusp zoom))
+          (setf (gethash host (zoom-ratios browser)) (float zoom 1.0))
+          (remhash host (zoom-ratios browser))))
+    (when persist-p
+      (persist-zoom-ratios browser))
+    host))
+
+(export-always 'zoom-ratio-for-url)
+(defun zoom-ratio-for-url (url &optional (buffer (current-buffer)))
+  "Return the zoom ratio to display for URL.
+A host uses its remembered ratio, or BUFFER's `zoom-ratio-default' when none
+is remembered. The previous page's zoom is not carried onto a different host.
+URLs without a host keep BUFFER's current zoom, or the default when it has
+none. Return 1.0 when BUFFER is NIL and no ratio applies."
+  (let ((default (if buffer
+                     (zoom-ratio-default buffer)
+                     1.0)))
+    (if (zoom-host url)
+        (or (remembered-zoom url) default)
+        (if buffer
+            (or (zoom-ratio buffer) default)
+            1.0))))
+
+(export-always 'buffers-on-host)
+(defun buffers-on-host (host)
+  "Return web buffers open on HOST."
+  (when host
+    (sera:filter (lambda (buffer)
+                   (and (web-buffer-p buffer)
+                        (equal host (zoom-host (url buffer)))))
+                 (buffer-list))))
+
 (defmacro on-renderer-ready (thread-name &body body)
   "Run BODY from a new thread when renderer is ready.
 `ffi-within-renderer-thread' runs its body on the renderer thread when it's
@@ -341,6 +453,7 @@ idle, so it should do the job."
                         :fill-pointer t
                         :adjustable t
                         :initial-contents history-file-contents)))
+    (load-zoom-ratios browser)
     (open-urls (or urls (list (default-new-buffer-url browser))))
     (lpara:fulfill (slot-value browser 'startup-promise))
     (hooks:run-hook (after-startup-hook browser) browser)
