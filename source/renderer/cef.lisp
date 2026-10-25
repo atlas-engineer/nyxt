@@ -134,6 +134,12 @@ defaults, which resolve next to the cl-cef system."
       (setf (cef:launch-options interface)
             (append (cef:launch-options interface)
                     '("--ozone-platform=x11"))))
+    ;; Without this, a Chrome-style window is listed as Chromium.
+    (unless (some (lambda (option)
+                    (and (stringp option) (search "--class=" option)))
+                  (cef:launch-options interface))
+      (setf (cef:launch-options interface)
+            (append (cef:launch-options interface) '("--class=nyxt"))))
     (cef:launch interface)
     (when (adblocking-enabled-p browser)
       (cef:default-block (make-instance 'cef:adblocker)))
@@ -149,14 +155,55 @@ defaults, which resolve next to the cl-cef system."
                         (lambda (session item)
                           (declare (ignore session))
                           (download-item-updated item)))))
+  ;; cl-cef installs its own handler, which only stops CEF. Replace it so a
+  ;; kill runs Nyxt's quit, including the socket and the exit hook.
+  (install-exit-signals)
   (call-next-method)
   (unless nyxt::*run-from-repl-p*
     (cef:join)
-    (uiop:quit (nyxt:exit-code browser) #+bsd nil)))
+    ;; `finish-output' nil makes SBCL abort instead of waiting for other
+    ;; threads. A worker blocked in a CEF call, or a Chromium pool thread,
+    ;; would otherwise keep this process and its helpers alive after shutdown.
+    (uiop:quit (nyxt:exit-code browser) nil)))
 
 (defmethod ffi-kill-browser ((browser cef-browser))
   (declare (ignore browser))
   (cef:terminate))
+
+(defvar *exit-lock* (bt:make-lock "nyxt-cef-exit"))
+(defvar *exit-requested* nil)
+
+(defun request-exit ()
+  "Quit Nyxt from a thread that is not handling the signal.
+The UI thread has to return to the CEF message loop before browsers can close."
+  (bt:with-lock-held (*exit-lock*)
+    (when *exit-requested*
+      (return-from request-exit nil))
+    (setf *exit-requested* t))
+  (bt:make-thread
+   (lambda ()
+     ;; `quit' closes the browsers and leaves `cef:join'. When the browser is
+     ;; not ready, `quit' does nothing and the process would stay up.
+     (ignore-errors (nyxt:quit))
+     (when (and cef:*interface* (ignore-errors (cef:alive-p cef:*interface*)))
+       (ignore-errors (cef:terminate))
+       (uiop:quit 0 nil)))
+   :name "nyxt shutdown"))
+
+#+sbcl
+(defun install-exit-signals ()
+  "Exit through `quit' when the process is killed.
+Chromium's subprocesses are not in Nyxt's process group, so an unhandled
+SIGTERM takes the process down in the kernel and leaves them running."
+  (flet ((shutdown (&rest ignored)
+           (declare (ignore ignored))
+           (request-exit)))
+    (sb-sys:enable-interrupt sb-unix:sigint #'shutdown)
+    (sb-sys:enable-interrupt sb-unix:sigterm #'shutdown)))
+
+#-sbcl
+(defun install-exit-signals ()
+  nil)
 
 (define-class cef-download ()
   ((remote-object))
@@ -693,8 +740,16 @@ view, so a window-sized view makes the text fill the screen."
              (nyxt::buffer-delete id))))))))
 
 (defmethod ffi-window-delete ((window cef-window))
-  (when (current-view window)
-    (cef:remove-view window (current-view window) :kill-view-p nil))
+  ;; Close the browsers before the window. Closing the window first detaches
+  ;; the views and leaves the Chromium processes running.
+  (let ((views (list (message-buffer window)
+                     (status-buffer window)
+                     (current-view window))))
+    (when-let ((prompt (current-prompt-buffer)))
+      (push prompt views))
+    (dolist (view views)
+      (when view
+        (ignore-errors (cef:kill view)))))
   (cef:kill window))
 
 (defmethod ffi-window-to-foreground ((window cef-window))
