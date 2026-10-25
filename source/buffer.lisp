@@ -145,6 +145,7 @@ inherited from the superclasses.")
       '(.section
         :margin-top "2em")
       `("h1,h2,h3,h4,h5,h6"
+        :font-family "public sans"
         :color ,theme:primary-color)
       `(hr
         :background-color ,theme:secondary-color
