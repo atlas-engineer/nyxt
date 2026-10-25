@@ -103,8 +103,13 @@ See `parse-version' for details on the returned values."
 
 (defun load-assets (subdirectory read-function)
   (mapcar (lambda (i)
-            (setf (gethash (file-namestring i) *static-data*)
-                  (funcall read-function i)))
+            (let* ((name (file-namestring i))
+                   (content (funcall read-function i)))
+              ;; Standard URL parsers can lowercase host-like resource names,
+              ;; e.g. `nyxt-resource:Font.woff' -> `nyxt-resource://font.woff/'.
+              ;; Keep a lowercase alias so scheme lookups stay stable.
+              (setf (gethash name *static-data*) content
+                    (gethash (string-downcase name) *static-data*) content)))
           (uiop:directory-files (asdf:system-relative-pathname :nyxt (format nil "assets/~a/" subdirectory)))))
 
 (load-assets "fonts" #'alex:read-file-into-byte-vector)

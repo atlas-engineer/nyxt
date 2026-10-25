@@ -296,9 +296,53 @@ ARGS is an arbitrary keyword arguments list that is translated to a URL query."
       (declare (ignore url))
       ""))
 
+(-> nyxt-resource-name ((or quri:uri string)) (values (maybe string) &optional))
+(defun nyxt-resource-name (url)
+  "Return the static asset name encoded in URL.
+For standard URL parsers, `nyxt-resource:asset.ext' can end up in host instead
+of path."
+  (let* ((%url (quri:uri url))
+         (raw-path (quri:uri-path %url))
+         (path (and raw-path (string-trim '(#\/) raw-path)))
+         (host (quri:uri-host %url)))
+    (cond
+      ((and path (plusp (length path)))
+       path)
+      ((and host (plusp (length host)))
+       host)
+      (t nil))))
+
+(-> nyxt-resource-mime-type ((maybe string)) (values (maybe string) &optional))
+(defun nyxt-resource-mime-type (resource-name)
+  "Return MIME type for RESOURCE-NAME, if recognized."
+  (when resource-name
+    (cond
+      ((str:ends-with-p ".woff2" resource-name :ignore-case t) "font/woff2")
+      ((str:ends-with-p ".woff" resource-name :ignore-case t) "font/woff")
+      ((str:ends-with-p ".ttf" resource-name :ignore-case t) "font/ttf")
+      ((str:ends-with-p ".otf" resource-name :ignore-case t) "font/otf")
+      ((str:ends-with-p ".svg" resource-name :ignore-case t) "image/svg+xml")
+      ((str:ends-with-p ".png" resource-name :ignore-case t) "image/png")
+      ((str:ends-with-p ".jpg" resource-name :ignore-case t) "image/jpeg")
+      ((str:ends-with-p ".jpeg" resource-name :ignore-case t) "image/jpeg")
+      ((str:ends-with-p ".gif" resource-name :ignore-case t) "image/gif")
+      (t nil))))
+
 (define-internal-scheme "nyxt-resource"
     (lambda (url)
-      (nth-value 0 (gethash (quri:uri-path (url url)) *static-data*))))
+      (let ((resource-name (nyxt-resource-name (url url))))
+        (multiple-value-bind (resource present-p)
+            (and resource-name (gethash resource-name *static-data*))
+          (if present-p
+              ;; CEF parses `nyxt-resource:asset.ext' as a standard URL and may
+              ;; treat requests as cross-origin. Allow reads from internal pages.
+              (values resource
+                      (nyxt-resource-mime-type resource-name)
+                      nil
+                      '(("Access-Control-Allow-Origin" . "*")
+                        ("Access-Control-Allow-Methods" . "GET, OPTIONS")
+                        ("Cross-Origin-Resource-Policy" . "cross-origin")))
+              (values "" "text/plain" 404 nil "Not Found"))))))
 
 (defun dotted-ipv4-integer (host)
   "Return the decimal value of dotted IPv4 HOST, or NIL.
