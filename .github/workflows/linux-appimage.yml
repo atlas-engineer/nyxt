@@ -39,7 +39,8 @@ jobs:
           curl -fsSL -o /tmp/sbcl.tar.bz2 \
             "https://downloads.sourceforge.net/project/sbcl/sbcl/${version}/sbcl-${version}-x86-64-linux-binary.tar.bz2"
           tar -xjf /tmp/sbcl.tar.bz2 -C /tmp
-          sudo sh "/tmp/sbcl-${version}-x86-64-linux/install.sh"
+          cd "/tmp/sbcl-${version}-x86-64-linux"
+          sudo sh install.sh
           sbcl --version
 
       - name: Install Ocicl
