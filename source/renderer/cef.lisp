@@ -299,7 +299,12 @@ the default height.")
   ;; Every view is Alloy. A Chrome window hosts one Chrome BrowserView and
   ;; any number of Alloy ones. A second Chrome page opens as its own
   ;; Chromium window, and that view cannot be moved into this window.
-  (apply #'call-next-method buffer :alloy-p t initargs))
+  ;; Panels load about:blank. The shared profile stores a zoom for that URL,
+  ;; and a panel on the shared context renders at that zoom.
+  (apply #'call-next-method buffer
+         :alloy-p t
+         :isolated-context-p (panel-buffer-p buffer)
+         initargs))
 
 (defmethod customize-instance :after ((buffer cef-buffer) &key &allow-other-keys)
   (ffi-buffer-initialize-foreign-object buffer))
