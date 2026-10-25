@@ -185,14 +185,26 @@ the default height."))
   (initialize-window-open-handler buffer))
 
 (defmethod initialize-window-open-handler ((buffer electron-buffer))
-  ;; When following a link with target="_blank" or through JS window.open,
-  ;; we don't want to let electron open a new window, instead we want to
-  ;; put it into a new buffer
+  ;; target=_blank, window.open, and modified clicks would open a window.
+  ;; Load the URL in a Nyxt buffer instead. Middle click and Control-click
+  ;; are a background tab. Shift with either focuses that buffer.
   (electron:override-window-open-handler
    (electron:web-contents buffer)
    (lambda (details)
-     (let ((url (assoc-value details :url)))
-       (make-buffer-focus :url (quri:uri url))))))
+     (let* ((url (quri:uri (or (assoc-value details :url) "")))
+            (disposition (assoc-value details :disposition))
+            (tab (member disposition '("background-tab" "foreground-tab")
+                         :test #'string=)))
+       (cond
+         ((and tab (network-buffer-p buffer) (not (url-empty-p url)))
+          (let ((handler (nyxt::request-resource-handler
+                          buffer
+                          :modifiers (when (string= disposition "foreground-tab")
+                                       (input-modifier-translator buffer '(:shift))))))
+            (when handler
+              (funcall handler :url url :buffer buffer))))
+         ((not (url-empty-p url))
+          (make-buffer-focus :url url)))))))
 
 (defmethod initialize-listeners ((buffer electron-buffer))
   (electron:add-listener buffer :before-input-event

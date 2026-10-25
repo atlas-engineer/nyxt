@@ -498,6 +498,26 @@ If none is found, fall back to `keyscheme:cua'."
 (defun request-resource-open-url-focus (&key url &allow-other-keys)
   (make-buffer-focus :url url))
 
+(-> request-resource-handler (network-buffer &key (:modifiers list)) (or symbol function null))
+(defun request-resource-handler (buffer &key modifiers)
+  "Return the function a middle click runs for a link in BUFFER.
+MODIFIERS are the strings passed to `keymaps:make-key'. A plain middle click
+passes none and runs `request-resource-open-url' by default. A shifted middle
+click passes (\"shift\") and runs `request-resource-open-url-focus'.
+Return NIL when the click is unbound."
+  (let* ((key (keymaps:make-key :value "button2"
+                                :modifiers modifiers
+                                :status :pressed))
+         (keymap (get-keymap buffer (request-resource-keyscheme-map buffer)))
+         (bound-function (when keymap
+                           (keymaps:lookup-key (list key) keymap))))
+    (when (and bound-function
+               (not (keymaps:keymap-p bound-function))
+               (or (functionp bound-function)
+                   (and (symbolp bound-function)
+                        (fboundp bound-function))))
+      bound-function)))
+
 (export-always 'renderer-request-data)
 (defclass renderer-request-data ()
   ()

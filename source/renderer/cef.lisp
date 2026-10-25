@@ -350,6 +350,9 @@ view before those threads run, and a call into the missing view has no method."
     (cef:add-listener buffer :hover
                       (lambda (buffer data)
                         (on-signal-hover buffer data)))
+    (cef:add-listener buffer :open-url-from-tab
+                      (lambda (buffer data)
+                        (open-url-from-tab buffer data)))
     (cef:add-listener buffer :did-start-loading
                       (lambda (buffer data)
                         (setf (nyxt::status buffer) :loading)
@@ -891,6 +894,26 @@ Return nil when key must be discarded, e.g. for modifiers."
                                             :modifiers modifiers
                                             :status :pressed)))
       (dispatch-input-event event sender))))
+
+(defun open-url-from-tab (buffer data)
+  "Open a middle-clicked link in a new buffer.
+Return T so CEF does not navigate BUFFER. A background tab stays in the
+background. A foreground tab, such as Shift and middle click, is focused.
+The buffer is created off the UI thread. Creating a view from this callback
+re-enters CEF."
+  (let ((url-string (or (assoc-value data :url) ""))
+        (disposition (assoc-value data :disposition)))
+    (when (and (not (uiop:emptyp url-string))
+               (member disposition '("background-tab" "foreground-tab") :test #'string=))
+      (let ((handler (nyxt::request-resource-handler
+                      buffer
+                      :modifiers (when (string= disposition "foreground-tab")
+                                   (input-modifier-translator buffer '(:shift))))))
+        (when handler
+          (let ((url (quri:uri url-string)))
+            (run-thread "open-url-from-tab"
+              (funcall handler :url url :buffer buffer)))
+          t)))))
 
 (defun on-signal-hover (buffer data)
   (let ((url (or (assoc-value data :url) "")))
