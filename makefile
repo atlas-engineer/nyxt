@@ -60,6 +60,7 @@ nyxt: $(lisp_files) ocicl-install
 		cmake --build "$$cef_dir/build"; \
 	fi
 	$(lisp_eval) '(asdf:load-system :nyxt/$(NYXT_RENDERER)-application)' \
+		--eval '(nyxt:prepare-relocatable-libraries)' \
 		--eval '(asdf:make :nyxt/$(NYXT_RENDERER)-application)' \
 		$(lisp_quit) || (printf "\n%s\n%s\n" "Compilation failed, see the above stacktrace." && exit 1)
 

@@ -145,6 +145,68 @@ This is useful to run scripts for instance.")
   (declare (ignore signum siginfo ptr))
   (quit))
 
+(defvar *relocatable-foreign-libraries* '()
+  "Shared libraries opened while the image was built.
+SBCL reopens saved libraries before `sb-ext:*init-hooks*' run, using the
+path from the build machine. These are left out of the image and loaded
+again from that path when it still exists, or from the AppImage.")
+
+(defun relocatable-library-p (namestring)
+  "Whether NAMESTRING is a library this image opened, rather than the loader."
+  (and namestring
+       (plusp (length namestring))
+       (not (search "linux-vdso" namestring))
+       (not (search "ld-linux" namestring))))
+
+(defun foreign-library-candidates (namestring)
+  "Paths to try when loading the library that was opened from NAMESTRING."
+  (let ((base (file-namestring (uiop:parse-native-namestring namestring)))
+        (candidates '()))
+    (when (search "libcl-clipboard" base)
+      (when-let ((override (uiop:getenv "CL_CLIPBOARD_LIBRARY")))
+        (push override candidates)))
+    (when-let ((appdir (uiop:getenv "APPDIR")))
+      (let ((root (uiop:ensure-directory-pathname
+                   (uiop:parse-native-namestring appdir))))
+        (dolist (directory '("usr/bin/" "usr/lib/" "usr/lib/cef/"))
+          (push (uiop:native-namestring
+                 (uiop:merge-pathnames*
+                  base
+                  (uiop:ensure-directory-pathname
+                   (uiop:merge-pathnames* directory root))))
+                candidates))))
+    (push namestring candidates)
+    (push base candidates)
+    (nreverse candidates)))
+
+(defun reload-relocatable-libraries ()
+  "Load the shared libraries recorded by `prepare-relocatable-libraries'."
+  (dolist (namestring *relocatable-foreign-libraries*)
+    (let ((path (find-if (lambda (candidate)
+                           (and candidate
+                                (plusp (length candidate))
+                                (or (not (position #\/ candidate))
+                                    (uiop:file-exists-p candidate))))
+                         (foreign-library-candidates namestring))))
+      (when path
+        (handler-case (sb-alien:load-shared-object path :dont-save t)
+          (error (condition)
+            (format t "~&Could not load ~a from ~a: ~a~%" namestring path condition)
+            (finish-output)))))))
+
+(export-always 'prepare-relocatable-libraries)
+(defun prepare-relocatable-libraries ()
+  "Drop build-machine library paths from the image about to be saved.
+Call this after the application system is loaded and before `asdf:make'."
+  (setf *relocatable-foreign-libraries* '())
+  (dolist (object sb-sys:*shared-objects*)
+    (let ((namestring (sb-alien::shared-object-namestring object)))
+      (when (relocatable-library-p namestring)
+        (push namestring *relocatable-foreign-libraries*)
+        (setf (sb-alien::shared-object-dont-save object) t))))
+  (pushnew 'reload-relocatable-libraries sb-ext:*init-hooks*)
+  *relocatable-foreign-libraries*)
+
 (export-always 'entry-point)
 (defun entry-point ()
   "Read the CLI arguments and start the browser.
