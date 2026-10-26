@@ -103,14 +103,6 @@ Most recent messages are first.")
     (make-ring)
     :documentation "The ring with all the clipboard contents Nyxt could cache.
 Note that it may be incomplete.")
-   (command-model
-    (make-instance 'analysis:sequence-model)
-    :documentation "This model is used to generate predictions for what the user will do.
-Which commands will they invoke next?")
-   (last-command
-    nil
-    :type (maybe function)
-    :documentation "The last command invoked by the user.")
    (command-dispatcher
     #'dispatch-command
     :type (or sym:function-symbol function)

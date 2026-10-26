@@ -70,22 +70,7 @@ prompt buffer keymaps."
 (defun dispatch-command (function)
   "Run FUNCTION asynchronously."
   (echo-dismiss)
-  (let ((ignored-commands '(execute-command
-                            execute-predicted-command
-                            next-suggestion
-                            previous-suggestion
-                            next-source
-                            previous-source))
-        (function-function (typecase function
-                             (symbol (symbol-function function))
-                             (function function))))
-    (unless (find (name function-function)
-                  ignored-commands
-                  :test (lambda (x y) (search (symbol-name x) (symbol-name y))))
-      (analysis:add-record (command-model *browser*)
-                           (list (last-command *browser*) function))
-      (setf (last-command *browser*) function-function))
-    (run-async function)))
+  (run-async function))
 
 (export-always 'dispatch-input-event)
 (defun dispatch-input-event (event buffer)
