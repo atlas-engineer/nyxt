@@ -438,9 +438,9 @@ view before those threads run, and a call into the missing view has no method."
 
 (defmethod ffi-buffer-delete ((buffer cef-buffer))
   (when (cef:web-contents buffer)
-    (if (and (window buffer) (typep (window buffer) 'cef-window))
-        (cef:remove-view (window buffer) buffer :kill-view-p t)
-        (cef:kill buffer)))
+    (if-let ((window (window buffer)))
+      (cef:remove-view window buffer :kill-view-p t)
+      (cef:kill buffer)))
   (setf (listeners-p buffer) nil))
 
 (defmethod ffi-buffer-url ((buffer cef-buffer))
@@ -620,7 +620,7 @@ height of the status/prompt/message buffer."
 CEF's isolated worlds are not available through this bridge."
   (let ((include (or (nyxt/mode/user-script:include script)
                      '("http://*/*" "https://*/*")))
-        (exclude (or (nyxt/mode/user-script:exclude script) '()))
+        (exclude (nyxt/mode/user-script:exclude script))
         (code (nyxt/mode/user-script:code script)))
     (format nil "(function(){
 var href = location.href;
@@ -696,7 +696,7 @@ if (exclude.some(match)) return;
 (defmethod (setf ffi-buffer-proxy) (proxy-specifier (buffer cef-buffer))
   (let* ((spec (alex:ensure-list proxy-specifier))
          (proxy-url (or (first spec) (quri:uri "")))
-         (ignore-hosts (or (second spec) '())))
+         (ignore-hosts (second spec)))
     (setf (cef-proxy-url buffer) proxy-url
           (cef-proxy-ignored-hosts buffer) ignore-hosts)
     (cef:set-proxy (cef:web-contents buffer)
