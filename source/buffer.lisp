@@ -344,29 +344,65 @@ inherited from the superclasses.")
       `("::selection"
         :color ,theme:on-action-color
         :background-color ,theme:action-color)
+      ;; One rounded bar, a step darker than the page. Rows are positioned, so
+      ;; the bar needs its own layer or they paint over it.
       `(".mode-menu"
-        :overflow-x "scroll"
+        :position "sticky"
+        :z-index "2"
+        :top "7px"
+        :display "flex"
+        :align-items "center"
+        :flex-wrap "nowrap"
+        :box-sizing "border-box"
+        :width "100%"
+        :margin "0 0 24px"
+        :padding "7px"
+        :overflow-x "auto"
         :white-space "nowrap"
         :background-color ,theme:background-color-
-        :position "sticky"
-        :margin-top "-24px"
-        :top 0
-        :width "100%"
-        :height "32px")
-      `(".mode-menu > button"
-        :color ,theme:on-secondary-color
-        :padding-left "8px"
-        :padding-right "8px"
-        :font-size "14px"
-        :border-radius "2px"
+        :border-radius "7px"
+        :scrollbar-width "none")
+      `(".mode-menu > button.button"
+        :appearance "none"
+        :display "inline-flex"
+        :align-items "center"
+        :flex "none"
+        :box-sizing "border-box"
+        :height "32px"
         :margin "0"
-        :margin-right "12px"
+        :padding "0 11px"
         :border "none"
-        :height "32px")
-      `(".mode-menu > .binding"
-        :background-color ,theme:secondary-color)
-      `(".mode-menu > .command"
-        :background-color ,theme:background-color-)
+        :border-radius "7px"
+        :background-color "transparent"
+        :color ,theme:on-background-color
+        :font-size "17px"
+        :font-weight "400"
+        :line-height "24px"
+        :cursor "pointer"
+        :opacity "1")
+      `(".mode-menu > button.binding"
+        :padding-right "7px"
+        :border-radius "7px 0 0 7px"
+        :color ,theme:primary-color
+        :font-size "11px"
+        :line-height "17px")
+      `(".mode-menu > button.command"
+        :padding-left "7px"
+        :margin-right "17px"
+        :border-radius "0 7px 7px 0")
+      `(".mode-menu > button.button:hover"
+        :background-color ,theme:background-color
+        :opacity "1")
+      `(".mode-menu > button.binding:hover + button.command"
+        :background-color ,theme:background-color
+        :opacity "1")
+      `(".mode-menu > button.binding:has(+ button.command:hover)"
+        :background-color ,theme:background-color
+        :opacity "1")
+      `(".mode-menu > button.button:focus-visible"
+        :outline "2px solid"
+        :outline-color ,theme:action-color
+        :outline-offset "2px")
       '(".mode-menu::-webkit-scrollbar"
         :display "none")
       '("dl"

@@ -97,6 +97,7 @@ Hosts `list-buffers' page."
           :outline "2px solid"
           :outline-color ,theme:action-color
           :outline-offset "2px"))
+      (render-menu 'buffer-listing-mode listing-buffer)
       (:h1 "Buffers")
       (:ul :class "list"
            (dolist (buffer (buffer-list))

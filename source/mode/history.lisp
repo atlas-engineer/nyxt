@@ -52,6 +52,7 @@
   "Display the most recent browsing history entries up to LIMIT."
   (spinneret:with-html-string
     (:nstyle (style buffer))
+    (render-menu 'history-mode buffer)
     (:h1 "History")
     (:ul :class "list"
          (loop for entry in (recent-history-entries limit *browser*)
