@@ -116,8 +116,10 @@ inherited from the superclasses.")
         :background-color ,theme:background-color
         :color ,theme:on-background-color
         :font-family ,theme:font-family
-        :margin-left "20px"
-        :margin-top "20px")
+        :font-size "17px"
+        :line-height "24px"
+        :margin "0"
+        :padding "24px")
       '(ul
         :margin-top "0"
         :margin-bottom "0")
@@ -146,6 +148,63 @@ inherited from the superclasses.")
         :margin-top "2em")
       `("h1,h2,h3,h4,h5,h6"
         :font-family "public sans"
+        :color ,theme:primary-color)
+      `(h1
+        :margin "37px 0 24px"
+        :font-size "37px"
+        :font-weight "600"
+        :line-height "55px"
+        :color ,theme:on-background-color)
+      '("h1:first-of-type"
+        :margin-top "0")
+      ;; Name over detail. 7 + 24 + 17 + 7 = 55, so every row is one height.
+      ;; The row runs 17px past the text, and a hairline sits on the text edge.
+      '(ul.list
+        :list-style "none"
+        :margin "0 -17px"
+        :padding "0")
+      '("ul.list > li"
+        :position "relative"
+        :height "55px"
+        :margin "0"
+        :padding "0")
+      `("ul.list > li:not(:last-child)::after"
+        :content ""
+        :position "absolute"
+        :right "17px"
+        :bottom "0"
+        :left "17px"
+        :height "1px"
+        :background-color ,theme:background-color-)
+      `("ul.list a"
+        :display "block"
+        :box-sizing "border-box"
+        :height "55px"
+        :padding "7px 17px"
+        :border-radius "7px"
+        :text-decoration "none"
+        :color ,theme:on-background-color)
+      `("ul.list a:hover"
+        :background-color ,theme:background-color-
+        :opacity "1")
+      `("ul.list a:focus-visible"
+        :outline "2px solid"
+        :outline-color ,theme:action-color
+        :outline-offset "2px"
+        :opacity "1")
+      '("ul.list a span"
+        :display "block"
+        :white-space "nowrap"
+        :overflow "hidden"
+        :text-overflow "ellipsis")
+      '("ul.list a span:first-of-type"
+        :height "24px"
+        :font-size "17px"
+        :line-height "24px")
+      `("ul.list a span:last-of-type"
+        :height "17px"
+        :font-size "11px"
+        :line-height "17px"
         :color ,theme:primary-color)
       `(hr
         :background-color ,theme:secondary-color
@@ -290,7 +349,7 @@ inherited from the superclasses.")
         :white-space "nowrap"
         :background-color ,theme:background-color-
         :position "sticky"
-        :margin-top "-20px"
+        :margin-top "-24px"
         :top 0
         :width "100%"
         :height "32px")

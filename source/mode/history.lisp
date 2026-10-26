@@ -53,12 +53,15 @@
   (spinneret:with-html-string
     (:nstyle (style buffer))
     (:h1 "History")
-    (:table :class "resizable-table"
-            (:tr (:th "Title") (:th "URL"))
-            (loop for entry in (recent-history-entries limit *browser*)
-                  for title = (title entry)
-                  for url = (quri:render-uri (url entry))
-                  collect (:tr (:td title) (:td (:a :href url url)))))))
+    (:ul :class "list"
+         (loop for entry in (recent-history-entries limit *browser*)
+               for title = (title entry)
+               for url = (quri:render-uri (url entry))
+               for heading = (if (str:emptyp title) url title)
+               collect (:li (:a :href url :title url
+                                (:span heading)
+                                (:span (unless (string= heading url)
+                                         url))))))))
 
 (defmethod add-url-to-history (url (mode history-mode) &key (title ""))
   "Push URL to `history-vector'."
