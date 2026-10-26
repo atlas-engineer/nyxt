@@ -378,10 +378,6 @@ The value is saved to clipboard."
            :title "Install a `.desktop` entry so that Nyxt can be ran from your launcher."
            '(add-desktop-entry)))
        (:nbutton
-         :text "Quick-Start"
-         :title "Display a short tutorial."
-         '(quick-start))
-       (:nbutton
          :text "Hotkeys"
          :title "List all keyboard shortcuts for the current buffer."
          '(make-buffer-focus :url (nyxt-url 'describe-bindings)))
