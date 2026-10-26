@@ -299,135 +299,170 @@ The value is saved to clipboard."
 (define-internal-page-command-global new ()
     (buffer "*New buffer*")
   "Display a page suitable as `default-new-buffer-url'."
-  (spinneret:with-html-string
-    (:nstyle
-      `(body
-        :min-height "100vh"
-        :padding "0"
-        :margin "0")
-      `(.container
-        :padding "32px"
-        :display "grid"
-        :grid-template-columns "1fr 2fr"
-        :gap "2px"
-        :height "100%")
-      `(.button
-        :background-color ,theme:secondary-color+
-        :padding "7px"
-        :border "none"
-        :color ,theme:on-secondary-color
-        :min-width "100px")
-      `("nav .button"
-        :display "block"
-        :text-align "left"
-        :font-size "small")
-      `("#quick-access"
-        :margin-top "64px")
-      `(.copyright
-        :position "absolute"
-        :bottom "12px"
-        :right "48px")
-      `(.program-name
-        :color ,theme:action-color
-        :font-size "24px"
-        :font-weight "bold")
-      `("#start-container"
-        :display "flex"
-        :align-items "center")
-      `(.start
-        :display "flex"
-        :flex-direction "row")
-      `(.logo
-        :color ,(if (theme:dark-p theme:theme)
-                    theme:action-color
-                    theme:on-background-color)
-        :width "100px"
-        :height "100px"
-        :padding-top "3px"
-        :margin-right "12px")
-      `(".logo svg"
-        :border-radius "4px")
-      `(.set-url
-        :min-width "180px"
-        :height "40px"
-        :line-height "30px"
-        :color ,theme:on-primary-color
-        :background-color ,theme:action-color
-        :border "none"
-        :border-width "2px"
-        :margin-bottom "16px")
-      `(.execute-command
-        :min-width "180px"
-        :line-height "12px"
-        :height "40px"
-        :border "none"
-        :background-color ,theme:primary-color
-        :border-color ,theme:primary-color
-        :color ,theme:on-primary-color)
-      `(.binding
-        :margin-left "12px"
-        :font-weight "bold"
-        :color ,theme:secondary-color))
-    (:div
-     :class "container"
-     (:nav
-      (:div
-       (when (appimage-p)
-         (:nbutton
-           :text "Install Desktop Shortcut"
-           :title "Install a `.desktop` entry so that Nyxt can be ran from your launcher."
-           '(add-desktop-entry)))
-       (:nbutton
-         :text "Hotkeys"
-         :title "List all keyboard shortcuts for the current buffer."
-         '(make-buffer-focus :url (nyxt-url 'describe-bindings)))
-       (:nbutton
-         :text "Manual"
-         :title "Detailed Nyxt documentation including configuration guides."
-         '(make-buffer-focus :url (nyxt-url 'manual)))
-       (:nbutton
-         :text "Settings"
-         :title "Set keyboard shortcuts (CUA/Emacs/vi), homepage URL or zoom."
-         '(make-buffer-focus :url (nyxt-url 'common-settings))))
-      (:div
-       :id "quick-access"
-       (:nbutton
-         :text "Bookmarks"
-         :title "View all bookmarks."
-         '(make-buffer-focus :url (nyxt-url 'nyxt/mode/bookmark:list-bookmarks)))
-       (:nbutton
-         :text "Downloads"
-         :title "View downloads for the current session."
-         '(make-buffer-focus :url (nyxt-url 'nyxt/mode/download:list-downloads)))
-       (:nbutton
-         :text "History"
-         :title "List history."
-         '(make-buffer-focus :url (nyxt-url 'nyxt/mode/history:list-history)))
-       (:nbutton
-         :text "Annotations"
-         :title "Show annotations for all pages."
-         '(make-buffer-focus :url (nyxt-url 'nyxt/mode/annotate:show-annotations)))
-       (:nbutton
-         :text "Buffers"
-         :title "List all buffers."
-         '(make-buffer-focus :url (nyxt-url 'nyxt/mode/buffer-listing:list-buffers)))))
-     (:div :id "start-container"
-           (:div :class "start"
-                 (:div :class "logo" (:raw (glyph-logo *browser*)))
-                 (:div
-                  (:div (:nbutton :class "set-url" :text "Set-URL"
-                          '(set-url))
-                        (:span :class "binding"
-                               (format nil "(~a)" (nyxt::binding-keys 'set-url))))
-                  (:div (:nbutton :class "execute-command" :text "Execute-Command"
-                          '(execute-command))
-                        (:span :class "binding"
-                               (format nil "(~a)" (nyxt::binding-keys 'execute-command)))))))
-     (:p :class "copyright"
-         (:span :class "program-name" "Nyxt")
-         (format nil " ~a (~a)" +version+ (name *renderer*))
-         (:br)
-         (format nil "Atlas Engineer, 2018-~a" (time:timestamp-year (time:now)))))))
+  ;; The logo and the two actions are one group, locked to the same height.
+  ;; The page list starts one step (37px) below that group. Content and the
+  ;; corner credit share that same 37px inset.
+  (labels ((command-row (heading detail description command)
+             "Present COMMAND as a name plus its binding."
+             (spinneret:with-html
+               (:li
+                 (:a :href "#"
+                     :title description
+                     :onclick (ps:ps
+                                (ps:chain event (prevent-default))
+                                (nyxt/ps:lisp-eval
+                                 (:title heading
+                                  :buffer buffer)
+                                 (funcall command))
+                                nil)
+                     (:span heading)
+                     (:span detail)))))
+           (page-row (heading detail description url)
+             "Present URL as a name plus a short description."
+             (spinneret:with-html
+               (:li
+                 (:a :href url
+                     :title description
+                     (:span heading)
+                     (:span detail))))))
+    (spinneret:with-html-string
+      (:nstyle
+        '(body
+          :min-height "100vh"
+          :padding "37px"
+          :padding-bottom "112px")
+        `(.start
+          :display "flex"
+          :align-items "center"
+          :margin "0 0 37px")
+        `(.logo
+          :color ,(if (theme:dark-p theme:theme)
+                      theme:action-color
+                      theme:on-background-color)
+          :width "100px"
+          :height "100px"
+          :flex "none"
+          :margin-right "17px")
+        '(".logo svg"
+          :display "block"
+          :width "100px"
+          :height "100px"
+          :border-radius "7px")
+        '(.actions
+          :display "flex"
+          :flex-direction "column"
+          :align-items "flex-start")
+        '("div.actions > div"
+          :display "flex"
+          :align-items "center")
+        '("div.actions > div:first-child"
+          :margin-bottom "17px")
+        `("button.set-url, button.execute-command"
+          :appearance "none"
+          :display "inline-flex"
+          :align-items "center"
+          :justify-content "center"
+          :box-sizing "border-box"
+          :min-width "180px"
+          :height "40px"
+          :margin "0"
+          :padding "0 17px"
+          :border "none"
+          :border-radius "7px"
+          :font-size "17px"
+          :font-weight "400"
+          :line-height "24px"
+          :cursor "pointer")
+        `("button.set-url"
+          :background-color ,theme:action-color
+          :color ,theme:on-primary-color)
+        `("button.execute-command"
+          :background-color ,theme:primary-color
+          :color ,theme:on-primary-color)
+        '("button.set-url:hover, button.execute-command:hover"
+          :opacity "0.8")
+        `(.binding
+          :margin-left "12px"
+          :font-weight "600"
+          :color ,theme:secondary-color)
+        `(.copyright
+          :position "fixed"
+          :z-index "1"
+          :right "37px"
+          :bottom "37px"
+          :margin "0"
+          :text-align "right"
+          :font-size "17px"
+          :line-height "24px"
+          :color ,theme:on-background-color)
+        `(.program-name
+          :color ,theme:action-color
+          :font-size "24px"
+          :font-weight "600"
+          :line-height "24px"))
+      (:div :class "start"
+            (:div :class "logo" (:raw (glyph-logo *browser*)))
+            (:div :class "actions"
+                  (:div
+                   (:nbutton :class "set-url"
+                             :text "Set-URL"
+                             :title "Open an address."
+                             :buffer buffer
+                             '(set-url))
+                   (:span :class "binding"
+                          (format nil "(~a)" (binding-keys 'set-url))))
+                  (:div
+                   (:nbutton :class "execute-command"
+                             :text "Execute-Command"
+                             :title "Run a command by name."
+                             :buffer buffer
+                             '(execute-command))
+                   (:span :class "binding"
+                          (format nil "(~a)" (binding-keys 'execute-command))))))
+      (:ul :class "list"
+           (page-row "Bookmarks"
+                     "Saved pages"
+                     "View all bookmarks."
+                     (nyxt-url 'nyxt/mode/bookmark:list-bookmarks))
+           (page-row "History"
+                     "Pages you have visited"
+                     "List history."
+                     (nyxt-url 'nyxt/mode/history:list-history))
+           (page-row "Buffers"
+                     "Open pages"
+                     "List all buffers."
+                     (nyxt-url 'nyxt/mode/buffer-listing:list-buffers))
+           (page-row "Downloads"
+                     "Files from this session"
+                     "View downloads for the current session."
+                     (nyxt-url 'nyxt/mode/download:list-downloads))
+           (page-row "Annotations"
+                     "Notes on pages"
+                     "Show annotations for all pages."
+                     (nyxt-url 'nyxt/mode/annotate:show-annotations))
+           (page-row "Manual"
+                     "Documentation"
+                     "Detailed Nyxt documentation, including configuration guides."
+                     (nyxt-url 'manual))
+           (page-row "Settings"
+                     "Shortcuts, homepage, and zoom"
+                     "Set keyboard shortcuts, the homepage URL, or zoom."
+                     (nyxt-url 'common-settings))
+           (page-row "Keyboard shortcuts"
+                     "Bindings for this buffer"
+                     "List all keyboard shortcuts for the current buffer."
+                     (nyxt-url 'describe-bindings))
+           (when (appimage-p)
+             (command-row "Install desktop shortcut"
+                          nil
+                          "Install a desktop entry so Nyxt can be started from your launcher."
+                          #'add-desktop-entry)))
+      (:p :class "copyright"
+          (:span :class "program-name" "Nyxt")
+          (format nil " ~a (~a)" +version+ (name *renderer*))
+          (:br)
+          (format nil "Atlas Engineer, 2018-~a"
+                  (time:timestamp-year (time:now)))))))
 
 (define-internal-page-command-global manual ()
     (buffer "*Manual*" 'nyxt/mode/help:help-mode)
