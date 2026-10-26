@@ -344,25 +344,39 @@ inherited from the superclasses.")
       `("::selection"
         :color ,theme:on-action-color
         :background-color ,theme:action-color)
-      ;; One rounded bar, a step darker than the page. Rows are positioned, so
-      ;; the bar needs its own layer or they paint over it.
       `(".mode-menu"
         :position "sticky"
         :z-index "2"
-        :top "7px"
+        :top "0"
+        :box-sizing "border-box"
+        :margin "-24px -24px 24px"
+        :padding "7px 17px 0"
+        :background-color "transparent"
+        :background-image ,(format nil "linear-gradient(~a, ~a), ~
+                                               linear-gradient(~a, ~a), ~
+                                               linear-gradient(~a, ~a)"
+                                   theme:background-color theme:background-color
+                                   theme:background-color theme:background-color
+                                   theme:background-color theme:background-color)
+        :background-size "100% 7px, 17px 100%, 17px 100%"
+        :background-position "top, left, right"
+        :background-repeat "no-repeat")
+      `(".mode-menu-bar"
         :display "flex"
         :align-items "center"
         :flex-wrap "nowrap"
         :box-sizing "border-box"
         :width "100%"
-        :margin "0 0 24px"
         :padding "7px"
         :overflow-x "auto"
         :white-space "nowrap"
-        :background-color ,theme:background-color-
+        :background-color ,(format nil "color-mix(in srgb, ~a 82%, transparent)"
+                                   theme:background-color-)
+        :backdrop-filter "saturate(180%) blur(20px)"
+        :-webkit-backdrop-filter "saturate(180%) blur(20px)"
         :border-radius "7px"
         :scrollbar-width "none")
-      `(".mode-menu > button.button"
+      `(".mode-menu-bar > button.button"
         :appearance "none"
         :display "inline-flex"
         :align-items "center"
@@ -380,30 +394,30 @@ inherited from the superclasses.")
         :line-height "24px"
         :cursor "pointer"
         :opacity "1")
-      `(".mode-menu > button.binding"
+      `(".mode-menu-bar > button.binding"
         :padding-right "7px"
         :border-radius "7px 0 0 7px"
         :color ,theme:primary-color
         :font-size "11px"
         :line-height "17px")
-      `(".mode-menu > button.command"
+      `(".mode-menu-bar > button.command"
         :padding-left "7px"
         :margin-right "17px"
         :border-radius "0 7px 7px 0")
-      `(".mode-menu > button.button:hover"
+      `(".mode-menu-bar > button.button:hover"
         :background-color ,theme:background-color
         :opacity "1")
-      `(".mode-menu > button.binding:hover + button.command"
+      `(".mode-menu-bar > button.binding:hover + button.command"
         :background-color ,theme:background-color
         :opacity "1")
-      `(".mode-menu > button.binding:has(+ button.command:hover)"
+      `(".mode-menu-bar > button.binding:has(+ button.command:hover)"
         :background-color ,theme:background-color
         :opacity "1")
-      `(".mode-menu > button.button:focus-visible"
+      `(".mode-menu-bar > button.button:focus-visible"
         :outline "2px solid"
         :outline-color ,theme:action-color
         :outline-offset "2px")
-      '(".mode-menu::-webkit-scrollbar"
+      '(".mode-menu-bar::-webkit-scrollbar"
         :display "none")
       '("dl"
         :display "grid"

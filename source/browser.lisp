@@ -746,18 +746,19 @@ set of useful URLs or preparing a list to send to a someone else."
   "Render a menu for a given mode symbol."
   (spinneret:with-html
     (:div :class "mode-menu"
-          (loop for command in (list-mode-commands mode-symbol)
-                collect
-                   (let ((name (string-downcase (closer-mop:generic-function-name command)))
-                         (bindings (keymaps:pretty-binding-keys
-                                    (name command)
-                                    (current-keymaps buffer)
-                                    :print-style (keymaps:name (keyscheme buffer)))))
-                     (:nbutton
-                       :class "button binding"
-                       :text (if bindings (first bindings) "⏎")
-                       `(nyxt::run-async ,command))
-                     (:nbutton
-                       :class "button command"
-                       :text name
-                       `(nyxt::run-async ,command)))))))
+          (:div :class "mode-menu-bar"
+                (loop for command in (list-mode-commands mode-symbol)
+                      collect
+                         (let ((name (string-downcase (closer-mop:generic-function-name command)))
+                               (bindings (keymaps:pretty-binding-keys
+                                          (name command)
+                                          (current-keymaps buffer)
+                                          :print-style (keymaps:name (keyscheme buffer)))))
+                           (:nbutton
+                             :class "button binding"
+                             :text (if bindings (first bindings) "⏎")
+                             `(nyxt::run-async ,command))
+                           (:nbutton
+                             :class "button command"
+                             :text name
+                             `(nyxt::run-async ,command))))))))
