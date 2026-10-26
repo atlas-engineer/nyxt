@@ -22,8 +22,13 @@ Mainly used on `list-messages' page."
     (buffer "*Messages*" 'nyxt/mode/message:message-mode)
   "Show the *Messages* buffer."
   (spinneret:with-html-string
+    (:nstyle
+      '("ul.messages"
+        :padding-left "17px")
+      '("ul.messages > li::marker"
+        :font-size "11px"))
     (render-menu 'nyxt/mode/message:message-mode buffer)
     (:h1 "Messages")
-    (:ul
+    (:ul :class "messages"
      (loop for message in (reverse (nyxt:messages-content *browser*))
            collect (:li (:pre message))))))
