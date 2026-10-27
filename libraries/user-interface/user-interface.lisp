@@ -91,12 +91,18 @@ A form suitable to be compiled by Spinneret."))
 filled up, use a number between 0 and 100.")))
 
 (defmethod to-html ((progress-bar progress-bar))
-  (spinneret:with-html
+  (let ((percentage (percentage progress-bar)))
+    (spinneret:with-html
       (:div :class "progress-bar-base"
             (:div :class "progress-bar-fill"
                   :id (id progress-bar)
+                  :style (format nil "width: ~,1f%;"
+                                 (if (and (realp percentage)
+                                          (<= 0 percentage 100))
+                                     percentage
+                                     0))
                   ;; empty string to force markup to make closing :div tag
-                  ""))))
+                  "")))))
 
 (defmethod (setf percentage) :after (percentage (progress-bar progress-bar))
   (declare (ignorable percentage))
