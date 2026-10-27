@@ -639,21 +639,119 @@ clipboard."
   "List available extensions for Nyxt.
 The `:download-link' is overloaded as a reference URL for external extensions as
 they are not served on the Nyxt website."
-  (flet ((extension->html (extension)
-           (spinneret:with-html
-             (:dl
-              (:dt "Name")
-              (:dd (assoc-value extension :name))
-              (:dt "Description")
-              (:dd (assoc-value extension :description))
-              (:dt "Link")
-              (let ((link (if (assoc-value extension :internal-p)
-                              (format nil "https://nyxt-browser.com~a"
-                                      (assoc-value extension :link))
-                              (assoc-value extension :download-link))))
-                (:dd (:a :href link link)))))))
-    (spinneret:with-html-string
-      (:h1 "Nyxt extensions")
-      (loop for extension in (cl-json:decode-json-from-string (dex:get endpoint))
-            collect (:div (extension->html extension)
-                          (:hr))))))
+  (labels ((extension-name (extension)
+             (or (assoc-value extension :name)
+                 "Unnamed extension"))
+           (extension-description (extension)
+             (or (assoc-value extension :description)
+                 "No description available."))
+           (extension-link (extension)
+             (if (assoc-value extension :internal-p)
+                 (format nil "https://nyxt-browser.com~a"
+                         (assoc-value extension :link))
+                 (assoc-value extension :download-link)))
+           (extension-row (extension)
+             (let ((link (extension-link extension)))
+               (spinneret:with-html
+                 (:tr :class (if link "clickable" "")
+                      :onclick (when link (format nil "window.location.href='~a'" link))
+                      :onkeydown (when link (format nil "if(event.key==='Enter'||event.key===' '){event.preventDefault();window.location.href='~a';}" link))
+                      :tabindex (when link "0")
+                      :title (or link "")
+                  (:td :class "name"
+                       (extension-name extension))
+                  (:td :class "description"
+                       (:span :class "description-clamp"
+                              (extension-description extension))))))))
+    (let ((extensions (sort (cl-json:decode-json-from-string (dex:get endpoint))
+                            #'string<
+                            :key #'extension-name)))
+      (spinneret:with-html-string
+        (:nstyle
+          '("table.extensions"
+            :width "100%"
+            :margin "0"
+            :border "none"
+            :border-collapse "separate"
+            :border-spacing "0"
+            :table-layout "fixed")
+          `("table.extensions th, table.extensions td"
+            :border "none"
+            :border-radius "0"
+            :background-color "transparent"
+            :color ,theme:on-background-color
+            :font-size "17px"
+            :font-weight "400"
+            :line-height "24px"
+            :text-align "left"
+            :vertical-align "middle"
+            :padding "0"
+            :overflow "hidden"
+            :text-overflow "ellipsis"
+            :white-space "nowrap")
+          `("table.extensions thead th"
+            :position "sticky"
+            :top "0"
+            :z-index "1"
+            :height "32px"
+            :padding "0 17px 7px 0"
+            :font-size "11px"
+            :font-weight "600"
+            :line-height "17px"
+            :color ,theme:primary-color
+            :background-color ,theme:background-color
+            :box-shadow ,(format nil "inset 0 -1px 0 ~a" theme:background-color-))
+          '("table.extensions thead th:nth-child(1)"
+            :width "30%")
+          '("table.extensions thead th:nth-child(2)"
+            :width "70%"
+            :padding-right "0")
+          `("table.extensions tbody td"
+            :height "63px"
+            :padding-right "17px"
+            :box-shadow ,(format nil "inset 0 -1px 0 ~a" theme:background-color-))
+          '("table.extensions tbody td:last-child"
+            :padding-right "0")
+          '("table.extensions tbody td.name"
+            :font-weight "600")
+          '("table.extensions tbody tr:last-child td"
+            :box-shadow "none")
+          `("table.extensions tbody tr.clickable:hover td"
+            :background-color ,theme:background-color-
+            :box-shadow "none")
+          '("table.extensions tbody tr.clickable:has(+ tr.clickable:hover) td"
+            :box-shadow "none")
+          '("table.extensions tbody tr.clickable:hover td:first-child"
+            :border-top-left-radius "7px"
+            :border-bottom-left-radius "7px")
+          '("table.extensions tbody tr.clickable:hover td:last-child"
+            :border-top-right-radius "7px"
+            :border-bottom-right-radius "7px")
+          '("table.extensions tbody tr.clickable"
+            :cursor "pointer")
+          `("table.extensions tbody tr.clickable:focus-visible td"
+            :outline "2px solid"
+            :outline-color ,theme:action-color
+            :outline-offset "-2px")
+          `("table.extensions td.description"
+            :color ,theme:primary-color
+            :white-space "normal")
+          '("table.extensions td.description .description-clamp"
+            :display "-webkit-box"
+            :-webkit-box-orient "vertical"
+            :-webkit-line-clamp "2"
+            :overflow "hidden"
+            :line-height "17px"
+            :max-height "34px"
+            :white-space "normal"))
+        (:h1 "Nyxt extensions")
+        (if extensions
+            (:table :class "extensions"
+                    (:thead
+                     (:tr
+                      (:th "Name")
+                      (:th "Description")))
+                    (:tbody
+                     (dolist (extension extensions)
+                       (extension-row extension))))
+            (:p "No extensions are currently listed."))))))
