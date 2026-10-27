@@ -321,10 +321,6 @@ automate the reading experience:")
         (:p "Or even automate actions based on conditions: "
             (:ul
              (list-command-information '(nyxt/mode/repeat:repeat-mode))))
-        (:p "Nyxt also offers a no-code interface to build automation via Common Lisp
-macros: ")
-        (:ul
-         (list-command-information '(nyxt/mode/macro-edit:edit-macro)))
         (:p "Lastly, the  " (:nxref :mode 'nyxt/mode/process:process-mode) " must be highlighted: ")
         (:p (:nxref :mode 'nyxt/mode/process:process-mode) " is actually a building block
 for other modes previously mentioned, such as " (:nxref :mode 'nyxt/mode/repeat:repeat-mode) ".
