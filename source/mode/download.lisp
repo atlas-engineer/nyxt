@@ -113,11 +113,84 @@ The `downloads' slot is populated by a list of these objects."))
   (echo "Download canceled: ~a." (url download))
   (buffer-load-internal-page-focus 'list-downloads))
 
+(-> format-unit (real string) (values string &optional))
+(defun format-unit (value unit)
+  "Return VALUE with UNIT, dropping a trailing \".0\"."
+  (let ((text (format nil "~,1f" value)))
+    (format nil "~a ~a"
+            (if (str:ends-with-p ".0" text)
+                (format nil "~d" (round value))
+                text)
+            unit)))
+
+(-> format-bytes (real) (values string &optional))
+(defun format-bytes (bytes)
+  "Return BYTES as a short size such as \"1.2 MB\"."
+  (let ((bytes (max 0 (round bytes))))
+    (cond
+      ((< bytes 1024)
+       (format nil "~d B" bytes))
+      ((< bytes (expt 1024 2))
+       (format-unit (/ bytes 1024.0) "KB"))
+      ((< bytes (expt 1024 3))
+       (format-unit (/ bytes (expt 1024.0 2)) "MB"))
+      (t
+       (format-unit (/ bytes (expt 1024.0 3)) "GB")))))
+
+(-> download-filename (download) (values string &optional))
+(defun download-filename (download)
+  "Return the file name DOWNLOAD is saved as.
+The URL's last segment is used when the destination is not known yet."
+  (let ((filename (file-namestring (destination-path download))))
+    (if (not (str:emptyp filename))
+        filename
+        (or (ignore-errors
+              (let ((base (file-namestring
+                           (or (quri:uri-path (quri:uri (url download))) ""))))
+                (unless (str:emptyp base)
+                  base)))
+            (let ((url (url download)))
+              (etypecase url
+                (string url)
+                (quri:uri (quri:render-uri url))))))))
+
+(-> download-summary (download) (values string &optional))
+(defun download-summary (download)
+  "Return the short line under DOWNLOAD's name.
+Progress while it is running, the destination once the file is ready,
+or the status word when it failed or was canceled."
+  (ecase (status download)
+    (:finished
+     (let ((path (uiop:native-namestring (destination-path download))))
+       (if (str:emptyp path)
+           "Finished"
+           path)))
+    (:failed "Failed")
+    (:canceled "Canceled")
+    ((:loading :unloaded)
+     (let* ((percentage (completion-percentage download))
+            (percent (when (and (realp percentage)
+                                (plusp percentage)
+                                (<= percentage 100))
+                       (format nil "~d%" (round percentage))))
+            (bytes (bytes-downloaded download))
+            (size (when (and (realp bytes) (plusp bytes))
+                    (format-bytes bytes)))
+            (parts (remove nil (list percent size))))
+       (if parts
+           (str:join " · " parts)
+           "Starting")))))
+
+(-> refresh-download-summary (download) (values string &optional))
+(defun refresh-download-summary (download)
+  "Update the line under DOWNLOAD's name from its current state."
+  (setf (user-interface:text (status-text download))
+        (download-summary download)))
+
 (defmethod (setf status) (value (download download))
   (setf (slot-value download 'status) value)
-  (setf (user-interface:text (status-text download))
-        (format nil "Status: ~(~a~)." value))
-  ;; Refresh downloads page and show it upon download completion.
+  (refresh-download-summary download)
+  ;; Refresh the downloads page and show it when the file is ready.
   (when (eq value :finished)
     (buffer-load-internal-page-focus 'list-downloads)
     (hooks:run-hook (after-download-hook download) download)))
@@ -125,96 +198,152 @@ The `downloads' slot is populated by a list of these objects."))
 (defmethod (setf completion-percentage) (percentage (download download))
   (setf (slot-value download 'completion-percentage) percentage)
   (setf (user-interface:percentage (progress download))
-        (completion-percentage download))
-  (setf (user-interface:text (progress-text download))
-        (format nil "Completion: ~,2f%" (completion-percentage download))))
+        (if (and (realp percentage) (<= 0 percentage 100))
+            percentage
+            0))
+  (refresh-download-summary download))
 
 (defmethod (setf bytes-downloaded) (bytes (download download))
   (setf (slot-value download 'bytes-downloaded) bytes)
-  (setf (user-interface:text (bytes-text download))
-        (format nil "Bytes downloaded: ~a" (bytes-downloaded download))))
+  (refresh-download-summary download))
 
 (defmethod connect ((download download) buffer)
-  "Connect the user-interface objects within the download to the
-buffer. This allows the user-interface objects to update their
-appearance in the buffer when they are setf'd."
+  "Connect DOWNLOAD's summary and progress bar to BUFFER.
+Later updates of those values redraw on BUFFER."
   (user-interface:connect (status-text download) buffer)
-  (user-interface:connect (progress-text download) buffer)
-  (user-interface:connect (bytes-text download) buffer)
   (user-interface:connect (progress download) buffer))
 
 (define-mode download-mode ()
   "Display list of downloads."
-  ((style
-    (theme:themed-css (theme *browser*)
-      `(".download"
-        :background-color ,theme:background-color
-        :color ,theme:on-background-color
-        :margin-top "10px"
-        :padding-left "5px"
-        :brightness "80%"
-        :border-radius "2px")
-      '(".download-url"
-        :overflow "auto"
-        :white-space "nowrap")
-      `(".download-url a"
-        :color ,theme:on-background-color
-        :font-size "small")
-      '(".status p"
-        :display "inline-block"
-        :margin-right "10px")
-      '(".progress-bar-container"
-        :height "20px"
-        :width "100%")
-      `(".progress-bar-base"
-        :background-color ,theme:secondary-color
-        :height "100%")
-      `(".progress-bar-fill"
-        :background-color ,theme:success-color
-        :height "100%"))))
+  ()
   (:toggler-command-p nil))
 
 (define-internal-page-command-global list-downloads ()
     (buffer "*Downloads*" 'download-mode)
-  "Display a buffer listing all downloads.
-We iterate through the browser's downloads to draw every single
-download."
-  (spinneret:with-html-string
-    (:nstyle (style (find-submode 'download-mode)))
-    (render-menu 'download-mode buffer)
-    (:h1 "Downloads")
-    (:hr)
-    (:div
-     (or
-      (loop for download in (downloads *browser*)
-            for url = (url download)
-            for status-text = (status-text download)
-            for progress-text = (progress-text download)
-            for bytes-text = (bytes-text download)
-            for progress = (progress download)
-            for destination-path = (destination-path download)
-            do (connect download buffer)
-            collect
-            (:div :class "download"
-                  (when (member (status download) '(:unloaded :loading))
-                    (:nbutton
-                      :text "✕ Cancel Download"
-                      :title "Cancel Download"
-                      `(cancel-download ,download)))
-                  (when (eq (status download) :finished)
-                    (:nbutton
-                      :text "Open File"
-                      :title "Open File"
-                      `(nyxt/mode/file-manager:default-open-file-function
-                        ,destination-path)))
-                  (:p :class "download-url" (:a :href url url))
-                  (:div :class "progress-bar-container"
-                        (user-interface:to-html progress))
-                  (:div :class "status"
-                        (user-interface:to-html progress-text)
-                        (user-interface:to-html bytes-text)
-                        (user-interface:to-html status-text))))
-      (:p "No downloads available.")))))
+  "Display a list of downloads for this session."
+  ;; One list, the same rows as history: the file name over one short line.
+  ;; That line is the progress, or the destination path when the file is
+  ;; ready. A 2px bar sits on the hairline while the download is running.
+  ;; Cancel is the hover control used on the buffer and bookmark lists.
+  (labels ((download-row (download)
+             "Present DOWNLOAD as its file name and a short status line."
+             ;; Fresh binding so each row's callback closes over its own download.
+             (let* ((download download)
+                    (url (url download))
+                    (status (status download))
+                    (path (uiop:native-namestring (destination-path download)))
+                    (finished-p (and (eq status :finished)
+                                     (not (str:emptyp path))))
+                    (active-p (member status '(:unloaded :loading))))
+               (setf (user-interface:text (status-text download))
+                     (download-summary download)
+                     (user-interface:percentage (progress download))
+                     (let ((percentage (completion-percentage download)))
+                       (if (and (realp percentage) (<= 0 percentage 100))
+                           percentage
+                           0)))
+               (connect download buffer)
+               (spinneret:with-html
+                 (:li :class (string-downcase (symbol-name status))
+                      (:a :href (if finished-p "#" url)
+                          :title (if finished-p path url)
+                          :onclick (when finished-p
+                                     (ps:ps
+                                       (ps:chain event (prevent-default))
+                                       (nyxt/ps:lisp-eval
+                                        (:title "open-download"
+                                         :buffer buffer)
+                                        (nyxt/mode/file-manager:default-open-file-function
+                                         (destination-path download)))
+                                       nil))
+                          (:span (download-filename download))
+                          (:span :id (user-interface:id (status-text download))
+                                 (user-interface:text (status-text download))))
+                      (user-interface:to-html (progress download))
+                      (when active-p
+                        (:button :class "close"
+                                 :type "button"
+                                 :title "Cancel"
+                                 :onclick (ps:ps
+                                            (nyxt/ps:lisp-eval
+                                             (:title "cancel-download"
+                                              :buffer buffer)
+                                             (cancel-download download)))
+                                 "×")))))))
+    (spinneret:with-html-string
+      ;; Cancel is 28px inside the 17px inset. 17 + 28 + 17 = 62.
+      (:nstyle
+        '("ul.list > li.loading > a, ul.list > li.unloaded > a"
+          :padding-right "62px")
+        `("ul.list > li:hover > a"
+          :background-color ,theme:background-color-
+          :opacity "1")
+        '("ul.list > li:hover::after"
+          :background-color "transparent")
+        '("ul.list > li:has(+ li:hover)::after"
+          :background-color "transparent")
+        '("ul.list > li.loading::after, ul.list > li.unloaded::after"
+          :background-color "transparent")
+        `("ul.list button.close"
+          :position "absolute"
+          :z-index "1"
+          :top "13px"
+          :right "17px"
+          :display "flex"
+          :align-items "center"
+          :justify-content "center"
+          :box-sizing "border-box"
+          :width "28px"
+          :height "28px"
+          :margin "0"
+          :padding "0"
+          :border "none"
+          :border-radius "14px"
+          :appearance "none"
+          :background-color "transparent"
+          :color ,theme:primary-color
+          :font-size "17px"
+          :line-height "17px"
+          :cursor "pointer"
+          :opacity "0"
+          :transition "opacity 120ms ease, background-color 120ms ease")
+        '("ul.list > li:hover > button.close, ul.list button.close:focus-visible"
+          :opacity "1")
+        `("ul.list button.close:hover"
+          :background-color ,theme:background-color
+          :color ,theme:on-background-color)
+        `("ul.list button.close:focus-visible"
+          :outline "2px solid"
+          :outline-color ,theme:action-color
+          :outline-offset "2px")
+        `("ul.list > li.failed a span:last-of-type"
+          :color ,theme:warning-color)
+        `("ul.list .progress-bar-base"
+          :position "absolute"
+          :z-index "1"
+          :right "17px"
+          :bottom "0"
+          :left "17px"
+          :height "2px"
+          :pointer-events "none"
+          :background-color ,theme:background-color-)
+        `("ul.list .progress-bar-fill"
+          :height "100%"
+          :background-color ,theme:action-color)
+        '("ul.list > li:not(.loading):not(.unloaded) .progress-bar-base"
+          :display "none")
+        `("p.empty"
+          :margin "0"
+          :font-size "17px"
+          :line-height "24px"
+          :color ,theme:primary-color))
+      (render-menu 'download-mode buffer)
+      (:h1 "Downloads")
+      (if (downloads *browser*)
+          (:ul :class "list"
+               (dolist (download (downloads *browser*))
+                 (download-row download)))
+          (:p :class "empty" "No downloads.")))))
 
 (define-command-global download-url ()
   "Download the page or file of the current buffer."
