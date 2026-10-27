@@ -461,30 +461,20 @@ syntax highlighting and actions. If not provided, is determined automatically
 based on BODY length.
 
 Most *-P arguments mandate whether to add the buttons for:
-- Copying the source to clipboard (COPY-P).
-- Editing the FILE it comes from (if present), in `nyxt:external-editor-program'
-  (EXTERNAL-EDITOR-P)."
+- Copying the source to clipboard (COPY-P)."
   (once-only (package)
     (with-gensyms (body-var inline-var file-var first plaintext htmlized)
       (let* ((*print-escape* nil)
-             (id (nyxt:prini-to-string (gensym)))
-             (select-code
-               `(:nselect
-                 :id ,id
-                 :class "code-select"
-                 :default "☰"
-                 :style (if ,inline-var "font-weight: bold" "font-weight: normal")
-                 (list
-                  ,@(when copy-p
-                      `(`((copy "Copy" "Copy the code to clipboard.")
-                          (funcall (read-from-string "nyxt:ffi-buffer-copy")
-                                   (nyxt:current-buffer) ,,plaintext))))
-                  ,@(when (and file external-editor-p)
-                      `(`((external-editor
-                           "Open in external editor"
-                           "Open the file this code comes from in external editor.")
-                          (funcall (read-from-string "nyxt/mode/file-manager:edit-file-with-external-editor")
-                                   (uiop:ensure-list ,,file-var)))))))))
+             (copy-button
+               (when copy-p
+                 `(:button.button.code-select
+                   :title "Copy the code to clipboard."
+                   :onclick (%nbutton-onclick "Copy code" nil
+                                              (list
+                                               `(funcall (read-from-string "nyxt:ffi-buffer-copy")
+                                                         (nyxt:current-buffer)
+                                                         ,,plaintext)))
+                   "Copy"))))
         `(let* ((,body-var (list ,@body))
                 (,first (first ,body-var))
                 (,inline-var ,(if inline-provided-p
@@ -510,9 +500,9 @@ Most *-P arguments mandate whether to add the buttons for:
                                 (mapcar (lambda (f) (%ncode-htmlize-unless-string f ,package)) ,body-var)))))
            (declare (ignorable ,plaintext ,file-var))
            ,(if inline-p
-                `(:span (:code ,@attrs (:raw ,htmlized)) ,select-code)
+                `(:span (:code ,@attrs (:raw ,htmlized)) ,copy-button)
                 `(:div :style "position: relative"
-                       ,select-code
+                       ,copy-button
                        (:pre ,@attrs
                              (:raw ,htmlized)))))))))
 

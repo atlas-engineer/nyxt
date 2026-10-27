@@ -123,6 +123,8 @@ inherited from the superclasses.")
       '(ul
         :margin-top "0"
         :margin-bottom "0")
+      '("ul li::marker"
+        :font-size "0.75em")
       '("details > *"
         :margin-left "18px")
       '("details > ul"
@@ -240,16 +242,20 @@ inherited from the superclasses.")
         :font-size "0.9rem")
       `(.code-select
         :position "absolute"
-        :top "0"
-        :right "0"
-        :padding-right "8px !important"
-        :direction "rtl"
-        :appearance "none !important"
+        :top "8px"
+        :right "8px"
+        :height "24px"
+        :padding "0 8px"
+        :margin "0"
         :border "none"
-        :background-color "transparent !important"
-        :color "black !important")
+        :border-radius "6px"
+        :background-color ,theme:background-color
+        :color ,theme:primary-color
+        :font-size "11px"
+        :line-height "17px")
       `(".code-select:hover"
-        :color ,theme:action-color !important)
+        :background-color ,theme:background-color-
+        :color ,theme:action-color)
       '((:and .button :hover)
         :cursor "pointer"
         :opacity 0.8)
@@ -306,9 +312,9 @@ inherited from the superclasses.")
       `(pre
         :font-family ,theme:monospace-font-family
         :font-size "0.9rem"
-        :border-radius "2px"
+        :border-radius "8px"
         :overflow "auto"
-        :padding "5px")
+        :padding "12px")
       '("table"
         :border-radius "2px"
         :border-spacing "0"
@@ -429,7 +435,7 @@ inherited from the superclasses.")
         :padding "4px"
         :padding-left "8px"
         :padding-right "8px"
-        :border-radius "2px"
+        :border-radius "8px"
         :font-weight "bold"
         :background-color ,theme:background-color-)
       '("dd"
