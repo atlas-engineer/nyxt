@@ -580,30 +580,236 @@ A command is a special kind of function that can be called with
   (when mode
     (describe-class :class mode)))
 
+(-> pretty-keyspec (string string) (values string &optional))
+(defun pretty-keyspec (keyspec print-style)
+  "Return KEYSPEC written in PRINT-STYLE.
+\"cua\" spells modifiers the same way `nkeymaps:pretty-binding-keys' does.
+Any other style keeps the keyspec."
+  (if (string= print-style "cua")
+      (str:replace-all
+       "M-" #-(or darwin win32) "Alt+" #+darwin "Option+" #+win32 "Alt+"
+       (str:replace-all
+        "S-" #-(or darwin win32) "Super+" #+darwin "Command+" #+win32 "Win+"
+        (str:replace-all
+         "s-" #-(or darwin win32) "Shift+" #+darwin "Shift+" #+win32 "Shift+"
+         (str:replace-all
+          "C-" #-(or darwin win32) "Ctrl+" #+darwin "Ctrl+" #+win32 "Ctrl+"
+          keyspec))))
+      keyspec))
+
+(-> keymap-section-title (string string) (values string &optional))
+(defun keymap-section-title (name scheme-name)
+  "Return a short heading for keymap NAME.
+\"prompt-buffer-mode-emacs-map\" with scheme \"emacs\" becomes \"Prompt buffer\"."
+  (let* ((schemes (sort (remove-if #'uiop:emptyp
+                                   (remove-duplicates
+                                    (remove nil (list scheme-name
+                                                      "vi-normal" "vi-insert"
+                                                      "emacs" "default" "cua"))
+                                    :test #'string=))
+                        #'> :key #'length))
+         (stem (if (str:ends-with-p "-map" name)
+                   (subseq name 0 (- (length name) 4))
+                   name))
+         (stem (or (loop for scheme in schemes
+                         for suffix = (format nil "-~a" scheme)
+                         when (str:ends-with-p suffix stem)
+                           return (subseq stem 0 (- (length stem) (length suffix))))
+                   stem))
+         (stem (if (str:ends-with-p "-mode" stem)
+                   (subseq stem 0 (- (length stem) 5))
+                   stem))
+         (words (str:split "-" stem :omit-nulls t)))
+    (if words
+        (format nil "~@(~a~)~{ ~a~}" (first words) (rest words))
+        name)))
+
+(-> binding-symbol (t) (values (or symbol null) &optional))
+(defun binding-symbol (bound-value)
+  "Return the symbol BOUND-VALUE names."
+  (typecase bound-value
+    (command (name bound-value))
+    (symbol bound-value)))
+
+(-> binding-label (t) (values string &optional))
+(defun binding-label (bound-value)
+  "Return the name to show for BOUND-VALUE."
+  (let ((symbol (binding-symbol bound-value)))
+    (if symbol
+        (string-downcase (symbol-name symbol))
+        (prini-to-string bound-value))))
+
+(-> binding-summary (t) (values string &optional))
+(defun binding-summary (bound-value)
+  "Return the first documentation line of BOUND-VALUE."
+  (or (when-let ((symbol (binding-symbol bound-value)))
+        (documentation-line symbol 'function nil))
+      ""))
+
+(-> binding-target (t) (values (or string null) &optional))
+(defun binding-target (bound-value)
+  "Return the help page URL for BOUND-VALUE."
+  (when-let ((symbol (binding-symbol bound-value)))
+    (nyxt-url 'describe-function :fn symbol)))
+
 ;; Buffers can't be passed as argument since Nyxt URLs don't handle unreadable
 ;; objects.
 (define-internal-page describe-bindings (&key (buffer-id (id (current-buffer))))
     (:title "*Help-bindings*" :page-mode 'nyxt/mode/help:help-mode)
   "Show a list of all available keybindings for buffer corresponding to BUFFER-ID."
-  (if-let ((buffer (nyxt::buffer-get buffer-id)))
-    (spinneret:with-html-string
-      (:h1 "Bindings")
-      (:p (loop for keymap in (current-keymaps buffer)
-                collect (:div
-                         (:h2 (keymaps:name keymap))
-                         (:table
-                          (:tr
-                           (:th "Command")
-                           (:th "Documentation"))
-                          (loop for keyspec being the hash-keys
-                                  in (keymaps:keymap-with-parents->map keymap)
-                                    using (hash-value bound-value)
-                                collect (:tr
-                                         (:td (typecase bound-value
-                                                (sym:command-symbol (:nxref :command bound-value))
-                                                (command (:nxref :command (name bound-value)))
-                                                (t (prini-to-string bound-value))))
-                                         (:td (documentation-line bound-value 'function "")))))))))
+  ;; One table, grouped by keymap. Rows are a single 44px line: command,
+  ;; shortcut, description. 17px separates a group label from its rows and
+  ;; gutters the columns. 37px separates groups. Hairlines sit on the row
+  ;; edge and drop out under the hover, the way a Safari table does.
+  (if-let ((buffer (buffer-get buffer-id)))
+    (if (input-buffer-p buffer)
+        (let ((print-style (keymaps:name (keyscheme buffer))))
+          (labels ((binding-pairs (keymap)
+                     "Return KEYMAP's bindings as (KEYSPEC . VALUE) pairs, sorted by command."
+                     (sort (alex:hash-table-alist (keymaps:keymap-with-parents->map keymap))
+                           #'string<
+                           :key (lambda (pair)
+                                  (format nil "~a ~a"
+                                          (binding-label (cdr pair))
+                                          (car pair)))))
+                   (binding-row (keyspec bound-value)
+                     "Present one binding as a command, its shortcut, and its summary."
+                     (let* ((label (binding-label bound-value))
+                            (summary (binding-summary bound-value))
+                            (key (pretty-keyspec keyspec print-style)))
+                       (spinneret:with-html
+                         (:tr
+                          (:td :class "command"
+                               (:a :href (binding-target bound-value)
+                                   :title (if (str:emptyp summary) label summary)
+                                   label))
+                          (:td :class "shortcut" key)
+                          (:td :class "detail" summary)))))
+                   (groups ()
+                     "Return (TITLE PAIRS) for every keymap that has bindings."
+                     (loop for keymap in (current-keymaps buffer)
+                           for pairs = (binding-pairs keymap)
+                           when pairs
+                             collect (list (keymap-section-title
+                                            (or (keymaps:name keymap) "")
+                                            print-style)
+                                           pairs))))
+            (spinneret:with-html-string
+              (:nstyle
+                '("table.bindings"
+                  :width "100%"
+                  :margin "0"
+                  :border "none"
+                  :border-collapse "separate"
+                  :border-spacing "0"
+                  :table-layout "fixed")
+                `("table.bindings th, table.bindings td"
+                  :border "none"
+                  :border-radius "0"
+                  :background-color "transparent"
+                  :color ,theme:on-background-color
+                  :font-size "17px"
+                  :font-weight "400"
+                  :line-height "24px"
+                  :text-align "left"
+                  :vertical-align "middle"
+                  :padding "0"
+                  :overflow "hidden"
+                  :text-overflow "ellipsis"
+                  :white-space "nowrap")
+                `("table.bindings thead th"
+                  :position "sticky"
+                  :top "0"
+                  :z-index "1"
+                  :height "32px"
+                  :padding "0 17px 7px 0"
+                  :font-size "11px"
+                  :font-weight "600"
+                  :line-height "17px"
+                  :color ,theme:primary-color
+                  :background-color ,theme:background-color
+                  :box-shadow ,(format nil "inset 0 -1px 0 ~a" theme:background-color-))
+                '("table.bindings thead th:last-child"
+                  :padding-right "0")
+                '("table.bindings thead th:nth-child(1)"
+                  :width "26%")
+                '("table.bindings thead th:nth-child(2)"
+                  :width "22%")
+                `("table.bindings tbody td"
+                  :height "44px"
+                  :padding-right "17px"
+                  :box-shadow ,(format nil "inset 0 -1px 0 ~a" theme:background-color-))
+                '("table.bindings tbody td:last-child"
+                  :padding-right "0")
+                '("table.bindings tbody tr:last-child td"
+                  :box-shadow "none")
+                '("table.bindings tbody tr:has(+ tr.group) td"
+                  :box-shadow "none")
+                `("table.bindings tbody tr:not(.group):hover td"
+                  :background-color ,theme:background-color-
+                  :box-shadow "none")
+                '("table.bindings tbody tr:not(.group):has(+ tr:not(.group):hover) td"
+                  :box-shadow "none")
+                '("table.bindings tbody tr:not(.group):hover td:first-child"
+                  :border-top-left-radius "7px"
+                  :border-bottom-left-radius "7px")
+                '("table.bindings tbody tr:not(.group):hover td:last-child"
+                  :border-top-right-radius "7px"
+                  :border-bottom-right-radius "7px")
+                `("table.bindings td.command a"
+                  :display "block"
+                  :overflow "hidden"
+                  :text-overflow "ellipsis"
+                  :white-space "nowrap"
+                  :color ,theme:on-background-color
+                  :text-decoration "none"
+                  :opacity "1")
+                '("table.bindings td.command a:hover"
+                  :opacity "1")
+                `("table.bindings td.command a:focus-visible"
+                  :outline "2px solid"
+                  :outline-color ,theme:action-color
+                  :outline-offset "2px")
+                '("table.bindings td.shortcut"
+                  :font-weight "600")
+                `("table.bindings td.detail"
+                  :color ,theme:primary-color)
+                `("table.bindings tr.group th"
+                  :height "auto"
+                  :padding "37px 0 7px"
+                  :border-radius "0"
+                  :font-size "17px"
+                  :font-weight "600"
+                  :line-height "24px"
+                  :color ,theme:on-background-color
+                  :background-color "transparent"
+                  :box-shadow "none"
+                  :overflow "visible"
+                  :white-space "normal")
+                '("table.bindings tbody tr.group:first-of-type th"
+                  :padding-top "17px")
+                '("table.bindings tr:last-of-type td"
+                  :border-radius "0")
+                '("table.bindings th:first-of-type, table.bindings th:last-of-type"
+                  :border-radius "0"))
+              (:h1 "Bindings")
+              (if-let ((groups (groups)))
+                (:table :class "bindings"
+                  (:thead
+                   (:tr
+                    (:th "Command")
+                    (:th "Shortcut")
+                    (:th "Description")))
+                  (:tbody
+                   (dolist (group groups)
+                     (:tr :class "group"
+                          (:th :colspan 3 :scope "rowgroup" (first group)))
+                     (dolist (pair (second group))
+                       (binding-row (car pair) (cdr pair))))))
+                (:p "This buffer has no keybindings.")))))
+        (spinneret:with-html-string
+          (:h1 "Bindings")
+          (:p "This buffer has no keybindings.")))
     (spinneret:with-html-string
       (:h1 "Bindings")
       (:p (format nil "Buffer with ID ~a does not exist." buffer-id)))))
