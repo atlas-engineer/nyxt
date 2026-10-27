@@ -580,9 +580,7 @@ core to finalize the instance."))
         (:p "To install an extension, copy inside the "
             (:nxref :variable '*extensions-directory*) " (default to "
             (:code "~/.local/share/nyxt/extensions")").")
-        (:p "Extensions are regular Common Lisp systems.")
-        (:p "Please find a catalog of Nyxt extensions "
-            (:a :href (nyxt-url 'list-extensions) "here") "."))
+        (:p "Extensions are regular Common Lisp systems."))
 
       (:nsection :title "Blocking ads using AdBlock rules"
         (:p "With WebkitGTK backend you can use "
