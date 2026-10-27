@@ -57,214 +57,325 @@ Prompt for a new value with prompt SOURCES and type-check
   "Display an interface to tweak frequently sought-after user options.
 The changes are saved to `*auto-config-file*', and persist from one Nyxt session
 to the next."
-  (spinneret:with-html-string
-    (:nstyle
-      (theme:themed-css (theme *browser*)
-        '("body,h3"
-          :margin 0)
-        '(".radio-div,.checkbox-div"
-          :margin-top "1em")
-        '(".radio-label,.checkbox-input"
-          :display block
-          :padding-bottom "0.5em")
-        '(".radio-input,.checkbox-input"
-          :display inline-block
-          :margin-right "0.5em"
-          :margin-left "3em")
-        '("select.button,.button"
-          :display block
-          :margin "1em 0 0.5em 2.5em")
-        '(.section
-          :margin 0
-          :padding "2em 0 0.5em 1.5em")
-        '(.row
-          :display "flex"
-          :margin-top "1em")
-        `(.tabs
-          :flex "0 0 180px"
-          :background-color ,theme:background-color+)
-        `(.content
-          :flex "85%"
-          :background-color ,theme:background-color-)
-        '(.left
-          :flex "0 0 256px")
-        `(.right
-          :color ,theme:primary-color
-          :padding-top "1em"
-          :padding-left "4em"
-          :max-width "50ch")
-        '(p
-          :margin 0
-          :padding-bottom "0.5em")
-        `(.tab-button
-          :display "block"
-          :text-decoration "none"
-          :background-color ,theme:background-color+
-          :color ,theme:action-color-
-          :padding "1.5em 1em"
+  ;; SECTION stays so a link from the old tabbed page still opens.
+  (declare (ignorable section))
+  ;; Title and lead are one group, 17px apart. Each settings group starts
+  ;; 37px down. A row is 55px: a name over an 11px detail, control on the right.
+  (let ((homepage (default-new-buffer-url *browser*)))
+    (spinneret:with-html-string
+      (:nstyle
+        `(body
+          :padding "37px"
+          :color-scheme ,(if (theme:dark-p theme:theme) "dark" "light"))
+        '("h1"
+          :margin-bottom "17px")
+        `("p.lead"
+          :margin "0"
+          :font-size "17px"
+          :line-height "24px"
+          :color ,theme:primary-color)
+        '(.page
+          :max-width "800px")
+        '("table.settings"
           :width "100%"
+          :margin "0"
           :border "none"
-          :outline "none"
+          :border-radius "0"
+          :border-collapse "separate"
+          :border-spacing "0"
+          :table-layout "auto")
+        `("table.settings th, table.settings td"
+          :border "none"
+          :border-radius "0"
+          :background-color "transparent"
+          :color ,theme:on-background-color
+          :font-size "17px"
+          :font-weight "400"
+          :line-height "24px"
           :text-align "left"
-          :cursor "pointer")
-        `((:and .tab-button :hover)
-          :background-color ,theme:background-color-)
-        `(.tab-button.active
+          :vertical-align "middle"
+          :padding "0")
+        '("table.settings td.setting"
+          :height "55px"
+          :padding "7px 17px 7px 0"
+          :max-width "0"
+          :width "100%"
+          :overflow "hidden"
+          :vertical-align "top")
+        '("table.settings td.setting span"
+          :display "block"
+          :overflow "hidden"
+          :text-overflow "ellipsis"
+          :white-space "nowrap")
+        '("table.settings td.setting span.name"
+          :height "24px"
+          :font-size "17px"
+          :line-height "24px")
+        `("table.settings td.setting span.detail"
+          :height "17px"
+          :font-size "11px"
+          :line-height "17px"
+          :color ,theme:primary-color)
+        '("table.settings td.control"
+          :width "1%"
+          :height "55px"
+          :padding "0"
+          :text-align "right"
+          :white-space "nowrap"
+          :overflow "visible")
+        `("table.settings tbody td"
+          :box-shadow ,(format nil "inset 0 -1px 0 ~a" theme:background-color-))
+        '("table.settings tbody tr:last-child td"
+          :box-shadow "none")
+        `("table.settings tr.group th"
+          :height "auto"
+          :padding "37px 0 0"
+          :font-size "17px"
+          :font-weight "600"
+          :line-height "24px"
+          :color ,theme:on-background-color
+          :background-color "transparent"
+          :box-shadow "none"
+          :overflow "visible"
+          :white-space "normal")
+        `("table.settings .radio-div"
+          :display "inline-flex"
+          :align-items "center"
+          :height "28px"
+          :margin "0"
+          :padding "2px"
+          :border-radius "7px"
           :background-color ,theme:background-color-
-          :color ,theme:on-background-color)))
-    (:div.row
-     :style "min-height: 100%; margin: 0"
-     (:div.tabs
-      (:a.tab-button
-       :class (when (equal section 'keybindings) "active")
-       :href (nyxt-url 'common-settings :section 'keybindings)
-       "Keyboard shortcuts")
-      (:a.tab-button
-       :class (when (equal section 'theme-and-style) "active")
-       :href (nyxt-url 'common-settings :section 'theme-and-style)
-       "Theme & Style")
-      (:a.tab-button
-       :class (when (equal section 'buffer-defaults) "active")
-       :href (nyxt-url 'common-settings :section 'buffer-defaults)
-       "Buffer settings"))
-     (:div.content
-      (:div.section
-       (:h2 "Settings applied on restart."))
-      (case section
-        (keybindings
-         (:div.section
-          (:h3 "Keybindings")
-          (:div.row
-           (:div.left
-            (:nradio
-              :name "keyscheme"
-              :vertical t
-              :checked (cond ((find "nyxt/mode/vi" (default-modes (current-buffer))
-                                    :key #'uiop:symbol-package-name :test #'string-equal)
-                              'vi)
-                             ((find "nyxt/mode/emacs" (default-modes (current-buffer))
-                                    :key #'uiop:symbol-package-name :test #'string-equal)
-                              'emacs)
-                             (t 'cua))
-              :buffer buffer
-              '(cua "CUA (default)"
-                (nyxt::auto-configure
-                 :form '(define-configuration (input-buffer)
-                         ((default-modes (remove-if (lambda (m)
-                                                      (find (symbol-name m)
-                                                            '("EMACS-MODE" "VI-NORMAL-MODE" "VI-INSERT-MODE")
-                                                            :test #'string=))
-                                          %slot-value%))))))
-              '(emacs "Emacs"
-                (nyxt::auto-configure
-                 :form '(define-configuration (input-buffer)
-                         ((default-modes (pushnew 'nyxt/mode/emacs:emacs-mode %slot-value%))))))
-              '(vi "vi"
-                (progn
-                  (nyxt::auto-configure
-                   :form '(define-configuration (input-buffer)
-                           ((default-modes (pushnew 'nyxt/mode/vi:vi-normal-mode %slot-value%)))))
-                  (nyxt::auto-configure
-                   :form '(define-configuration (prompt-buffer)
-                           ((default-modes (pushnew 'nyxt/mode/vi:vi-insert-mode %slot-value%)))))))))
-           (:div.right
-            (:p "Set the default keybindings (requires restarting Nyxt).")
-            (:p "Keybindings can also be enabled on a per-buffer basis by
-invoking the " (:nxref :command 'toggle-modes) "command.")))))
-        (theme-and-style
-         (:div.section
-          (:h3 "Browser interface")
-          (:div.row
-           (:div.left
-            (:nradio
-              :name "theme"
-              :checked (if (eq (theme *browser*) theme:+light-theme+)
-                           'theme:+light-theme+
-                           'theme:+dark-theme+)
-              :vertical t
-              :buffer buffer
-              '(theme:+light-theme+ "Light theme"
-                (nyxt::auto-configure :form '(define-configuration browser
-                                              ((theme theme:+light-theme+)))))
-              '(theme:+dark-theme+ "Dark theme"
-                (nyxt::auto-configure :form '(define-configuration browser
-                                              ((theme theme:+dark-theme+)))))))))
-         (:div.section
-          (:h3 "Webpage theme")
-          (:div.row
-           (:div.left
-            (:nradio
-              :name "darken"
-              :checked (if (find 'nyxt/mode/style:dark-mode (default-modes (current-buffer)))
-                           'dark
-                           'auto)
-              :vertical t
-              :buffer buffer
-              '(auto "Default"
-                (nyxt::auto-configure
-                 :form '(define-configuration (web-buffer)
-                         ((default-modes (remove-if (lambda (m)
-                                                      (string= (symbol-name m) "DARK-MODE"))
-                                          %slot-value%))))))
-              '(dark "Darkened"
-                (nyxt::auto-configure
-                 :form '(define-configuration (web-buffer)
-                         ((default-modes (pushnew 'nyxt/mode/style:dark-mode %slot-value%))))))))))
-         (:div.section
-          (:h3 "Default zoom")
-          (:div.row
-           (:div.left
-            (:nselect
-              :id "default-zoom-ratio"
-              :default (format nil "~a%" (* 100 (zoom-ratio-default (current-buffer))))
-              (loop for number in '(30 50 67 80 90 100
-                                    110 120 133 150 170
-                                    200 240 300 400 500)
-                    collect `((,number ,(format nil "~a%" number))
+          :vertical-align "middle")
+        `("table.settings .radio-label"
+          :position "relative"
+          :display "inline-flex"
+          :align-items "center"
+          :height "24px"
+          :margin "0"
+          :padding "0 11px"
+          :border-radius "5px"
+          :font-size "17px"
+          :font-weight "400"
+          :line-height "24px"
+          :color ,theme:on-background-color
+          :cursor "pointer"
+          :user-select "none")
+        '("table.settings .radio-input"
+          :position "absolute"
+          :width "1px"
+          :height "1px"
+          :margin "0"
+          :opacity "0")
+        `("table.settings .radio-label:has(.radio-input:checked)"
+          :background-color ,theme:background-color+
+          :font-weight "600")
+        `("table.settings .radio-label:has(.radio-input:focus-visible)"
+          :outline "2px solid"
+          :outline-color ,theme:action-color
+          :outline-offset "1px")
+        `("table.settings button.button"
+          :appearance "none"
+          :display "inline-flex"
+          :align-items "center"
+          :justify-content "center"
+          :height "28px"
+          :margin "0"
+          :padding "0 11px"
+          :border "none"
+          :border-radius "7px"
+          :background-color ,theme:background-color+
+          :box-shadow ,(format nil "inset 0 0 0 1px ~a" theme:background-color-)
+          :color ,theme:on-background-color
+          :font-size "17px"
+          :font-weight "400"
+          :line-height "24px"
+          :cursor "pointer")
+        `("table.settings select.button"
+          :appearance "none"
+          :display "inline-block"
+          :height "28px"
+          :margin "0"
+          :padding "0 28px 0 11px"
+          :border "none"
+          :border-radius "7px"
+          :background-color ,theme:background-color+
+          :background-image ,(concatenate
+                              'string
+                              "linear-gradient(45deg, transparent 50%, currentColor 50%), "
+                              "linear-gradient(135deg, currentColor 50%, transparent 50%)")
+          :background-position "calc(100% - 16px) center, calc(100% - 11px) center"
+          :background-size "5px 5px, 5px 5px"
+          :background-repeat "no-repeat"
+          :box-shadow ,(format nil "inset 0 0 0 1px ~a" theme:background-color-)
+          :color ,theme:on-background-color
+          :font-size "17px"
+          :font-weight "600"
+          :line-height "24px"
+          :text-align "left"
+          :cursor "pointer"
+          :vertical-align "middle")
+        `("table.settings button.button:hover, table.settings select.button:hover"
+          :background-color ,theme:background-color-)
+        `("table.settings button.button:focus-visible, table.settings select.button:focus-visible"
+          :outline "2px solid"
+          :outline-color ,theme:action-color
+          :outline-offset "2px"))
+      (:div :class "page"
+            (:h1 "Settings")
+            (:p :class "lead" "These settings apply on restart.")
+            (:table :class "settings"
+                    (:tbody
+                     (:tr :class "group"
+                          (:th :colspan 2 :scope "rowgroup" "Keyboard"))
+                     (:tr
+                      (:td :class "setting"
+                           (:span :class "name" "Keybindings")
+                           (:span :class "detail" "The keys new buffers start with."))
+                      (:td :class "control"
+                           (:nradio
+                            :name "keyscheme"
+                            :checked (cond ((find "nyxt/mode/vi" (default-modes (current-buffer))
+                                                  :key #'uiop:symbol-package-name
+                                                  :test #'string-equal)
+                                            'vi)
+                                           ((find "nyxt/mode/emacs" (default-modes (current-buffer))
+                                                  :key #'uiop:symbol-package-name
+                                                  :test #'string-equal)
+                                            'emacs)
+                                           (t 'cua))
+                            :buffer buffer
+                            '(cua "CUA"
                               (nyxt::auto-configure
-                               :class-name 'document-buffer
-                               :slot 'zoom-ratio-default
-                               :slot-value ,(/ number 100.0))))))
-           (:div.right
-            (:p "Nyxt remembers the zoom for each site and uses this ratio when a site has none.")))))
-        (buffer-defaults
-         (:div.section
-          (:h3 "Homepage")
-          (:div.row
-           (:div.left
-            (:nbutton :text "Set default URL"
-              '(nyxt::configure-slot 'default-new-buffer-url 'browser
-                :sources (list
-                          (make-instance
-                           'prompter:raw-source
-                           :name "New URL")
-                          (make-instance
-                           'global-history-source
-                           :enable-marks-p nil
-                           :actions-on-return #'identity))
-                :input (render-url (default-new-buffer-url *browser*))
-                :postprocess (lambda (url-or-history-entry)
-                               (render-url (url url-or-history-entry))))))
-           (:div.right
-            (:p "By default, it is set to Nyxt's home screen."))))
-         (:div.section
-          (:h3 "Modes")
-          (:div.row
-           (:div.left
-            (:nbutton :text "Set default modes"
-              '(nyxt::configure-slot 'default-modes 'buffer
-                :sources (make-instance
-                          'mode-source
-                          :marks (default-modes (current-buffer)))
-                :postprocess (lambda (modes)
-                               `(quote ,modes))
-                :type 'cons)))
-           (:div.right
-            (:p "Specify default modes for new buffers.")
-            (:p "Modes can also be set interactively by command "
-                (:nxref :command 'toggle-modes)
-                " ,or by specific mode togglers such as "
-                (:nxref :command 'nyxt/mode/no-sound:no-sound-mode) "."))))))))))
+                               :form '(define-configuration (input-buffer)
+                                       ((default-modes (remove-if (lambda (m)
+                                                                    (find (symbol-name m)
+                                                                          '("EMACS-MODE"
+                                                                            "VI-NORMAL-MODE"
+                                                                            "VI-INSERT-MODE")
+                                                                          :test #'string=))
+                                                        %slot-value%))))))
+                            '(emacs "Emacs"
+                              (nyxt::auto-configure
+                               :form '(define-configuration (input-buffer)
+                                       ((default-modes (pushnew 'nyxt/mode/emacs:emacs-mode
+                                                                %slot-value%))))))
+                            '(vi "vi"
+                              (progn
+                                (nyxt::auto-configure
+                                 :form '(define-configuration (input-buffer)
+                                         ((default-modes (pushnew 'nyxt/mode/vi:vi-normal-mode
+                                                                  %slot-value%)))))
+                                (nyxt::auto-configure
+                                 :form '(define-configuration (prompt-buffer)
+                                         ((default-modes (pushnew 'nyxt/mode/vi:vi-insert-mode
+                                                                  %slot-value%))))))))))
+                     (:tr :class "group"
+                          (:th :colspan 2 :scope "rowgroup" "Appearance"))
+                     (:tr
+                      (:td :class "setting"
+                           (:span :class "name" "Interface")
+                           (:span :class "detail" "Nyxt's own pages and prompts."))
+                      (:td :class "control"
+                           (:nradio
+                            :name "theme"
+                            :checked (if (eq (theme *browser*) theme:+light-theme+)
+                                         'theme:+light-theme+
+                                         'theme:+dark-theme+)
+                            :buffer buffer
+                            '(theme:+light-theme+ "Light"
+                              (nyxt::auto-configure
+                               :form '(define-configuration browser
+                                       ((theme theme:+light-theme+)))))
+                            '(theme:+dark-theme+ "Dark"
+                              (nyxt::auto-configure
+                               :form '(define-configuration browser
+                                       ((theme theme:+dark-theme+))))))))
+                     (:tr
+                      (:td :class "setting"
+                           (:span :class "name" "Webpages")
+                           (:span :class "detail" "Pages you visit."))
+                      (:td :class "control"
+                           (:nradio
+                            :name "darken"
+                            :checked (if (find 'nyxt/mode/style:dark-mode
+                                               (default-modes (current-buffer)))
+                                         'dark
+                                         'auto)
+                            :buffer buffer
+                            '(auto "Default"
+                              (nyxt::auto-configure
+                               :form '(define-configuration (web-buffer)
+                                       ((default-modes (remove-if (lambda (m)
+                                                                    (string= (symbol-name m)
+                                                                             "DARK-MODE"))
+                                                        %slot-value%))))))
+                            '(dark "Darkened"
+                              (nyxt::auto-configure
+                               :form '(define-configuration (web-buffer)
+                                       ((default-modes (pushnew 'nyxt/mode/style:dark-mode
+                                                                %slot-value%)))))))))
+                     (:tr
+                      (:td :class "setting"
+                           (:span :class "name" "Zoom")
+                           (:span :class "detail" "Used when a site has no saved zoom."))
+                      (:td :class "control"
+                           (:nselect
+                            :id "default-zoom-ratio"
+                            :buffer buffer
+                            :default (format nil "~d%"
+                                             (round (* 100 (zoom-ratio-default (current-buffer)))))
+                            (loop for number in '(30 50 67 80 90 100
+                                                  110 120 133 150 170
+                                                  200 240 300 400 500)
+                                  collect `((,number ,(format nil "~a%" number))
+                                            (nyxt::auto-configure
+                                             :class-name 'document-buffer
+                                             :slot 'zoom-ratio-default
+                                             :slot-value ,(/ number 100.0)))))))
+                     (:tr :class "group"
+                          (:th :colspan 2 :scope "rowgroup" "Buffers"))
+                     (:tr
+                      (:td :class "setting"
+                           (:span :class "name" "Homepage")
+                           (:span :class "detail"
+                                  :title (render-url homepage)
+                                  (if (quri:uri= (url homepage) (url (nyxt-url 'new)))
+                                      "Nyxt's home screen"
+                                      (render-url homepage))))
+                      (:td :class "control"
+                           (:nbutton
+                            :text "Set default URL"
+                            :title "Choose the address a new buffer opens."
+                            :buffer buffer
+                            '(nyxt::configure-slot 'default-new-buffer-url 'browser
+                              :sources (list
+                                        (make-instance
+                                         'prompter:raw-source
+                                         :name "New URL")
+                                        (make-instance
+                                         'global-history-source
+                                         :enable-marks-p nil
+                                         :actions-on-return #'identity))
+                              :input (render-url (default-new-buffer-url *browser*))
+                              :postprocess (lambda (url-or-history-entry)
+                                             (render-url (url url-or-history-entry)))))))
+                     (:tr
+                      (:td :class "setting"
+                           (:span :class "name" "Modes")
+                           (:span :class "detail" "Started on every new buffer."))
+                      (:td :class "control"
+                           (:nbutton
+                            :text "Set default modes"
+                            :title "Choose the modes a new buffer starts with."
+                            :buffer buffer
+                            '(nyxt::configure-slot 'default-modes 'buffer
+                              :sources (make-instance
+                                        'mode-source
+                                        :marks (default-modes (current-buffer)))
+                              :postprocess (lambda (modes)
+                                             `(quote ,modes))
+                              :type 'cons))))))))))
 
 (defun tls-help (buffer url)
   "Helper function invoked upon TLS certificate errors."
