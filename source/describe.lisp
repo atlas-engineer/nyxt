@@ -658,9 +658,11 @@ Any other style keeps the keyspec."
     (:title "*Help-bindings*" :page-mode 'nyxt/mode/help:help-mode)
   "Show a list of all available keybindings for buffer corresponding to BUFFER-ID."
   ;; One table, grouped by keymap. Rows are a single 44px line: command,
-  ;; shortcut, description. 17px separates a group label from its rows and
-  ;; gutters the columns. 37px separates groups. Hairlines sit on the row
-  ;; edge and drop out under the hover, the way a Safari table does.
+  ;; shortcut, description. Section titles are 24px, a step above the 17px
+  ;; command names. 55px above a later title (more than one row) opens the
+  ;; group; 7px under the title keeps it with its commands. The first title
+  ;; sits 17px under the column labels. 17px gutters the columns. Hairlines
+  ;; sit on the row edge and drop out under the hover.
   (if-let ((buffer (buffer-get buffer-id)))
     (if (input-buffer-p buffer)
         (let ((print-style (keymaps:name (keyscheme buffer))))
@@ -776,11 +778,11 @@ Any other style keeps the keyspec."
                   :color ,theme:primary-color)
                 `("table.bindings tr.group th"
                   :height "auto"
-                  :padding "37px 0 7px"
+                  :padding "55px 0 7px"
                   :border-radius "0"
-                  :font-size "17px"
+                  :font-size "24px"
                   :font-weight "600"
-                  :line-height "24px"
+                  :line-height "37px"
                   :color ,theme:on-background-color
                   :background-color "transparent"
                   :box-shadow "none"
