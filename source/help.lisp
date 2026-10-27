@@ -707,7 +707,7 @@ they are not served on the Nyxt website."
             :width "70%"
             :padding-right "0")
           `("table.extensions tbody td"
-            :height "63px"
+            :height "68px"
             :padding-right "17px"
             :box-shadow ,(format nil "inset 0 -1px 0 ~a" theme:background-color-))
           '("table.extensions tbody td:last-child"
@@ -741,8 +741,8 @@ they are not served on the Nyxt website."
             :-webkit-box-orient "vertical"
             :-webkit-line-clamp "2"
             :overflow "hidden"
-            :line-height "17px"
-            :max-height "34px"
+            :line-height "20px"
+            :max-height "40px"
             :white-space "normal"))
         (:h1 "Nyxt extensions")
         (if extensions
