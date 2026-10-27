@@ -285,18 +285,22 @@ By default, renders a hourglass when loading a URL."
 (export-always 'format-status-tabs)
 (defun format-internal-tab-display-text (url)
   "Return display text for internal URL tabs.
-When CEF uses the host for an internal page identifier, recover it as a path."
-  (let* ((scheme (quri:uri-scheme url))
-         (path (or (quri:uri-path url) "/"))
-         (host (quri:uri-host url))
-         (path-display (if (and (member :nyxt-cef-status-host-as-path *features*)
-                                (or (null (quri:uri-path url))
-                                    (string= (quri:uri-path url) "/"))
-                                host
-                                (not (uiop:emptyp host)))
-                           host
-                           path)))
-    (format nil "~a:~a" scheme path-display)))
+The text is the page name. A standard parser may store that name in the host,
+or in the path under `page'."
+  (let ((scheme (quri:uri-scheme url))
+        (name (internal-page-name url)))
+    (if name
+        (format nil "~a:~a" scheme (symbol->param-name name))
+        (let* ((path (or (quri:uri-path url) "/"))
+               (host (quri:uri-host url))
+               (path-display (if (and (member :nyxt-cef-status-host-as-path *features*)
+                                      (or (null (quri:uri-path url))
+                                          (string= (quri:uri-path url) "/"))
+                                      host
+                                      (not (uiop:emptyp host)))
+                                 host
+                                 path)))
+          (format nil "~a:~a" scheme path-display)))))
 
 (defmethod format-status-tabs ((status status-buffer))
   "Render the open buffers to HTML string suitable for STATUS."

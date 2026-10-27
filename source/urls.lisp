@@ -231,24 +231,51 @@ Authority is compared case-insensitively (RFC 3986)."
       (str:concat +escape+ (let ((*package* (find-package :nyxt)))
                              (prin1-to-string value)))))
 
+(alex:define-constant +nyxt-page-host+ "page"
+  :test #'equal
+  :documentation "Host for an internal page name that is not itself a hostname.
+A name such as `nyxt/mode/history:list-history' contains characters a standard
+URL host rejects. `nyxt-url' stores that name in the path.")
+
+(-> nyxt-page-hostname-p (string) boolean)
+(defun nyxt-page-hostname-p (name)
+  "Whether NAME can be the host of a `nyxt' URL.
+A standard-scheme parser rewrites a numeric host to dotted IPv4, and it
+rejects ':' and '/' in the host. Those names are stored in the path instead."
+  (and (plusp (length name))
+       (every (lambda (char)
+                (or (char<= #\a char #\z)
+                    (char<= #\0 char #\9)
+                    (char= char #\-)))
+              name)
+       (notevery #'digit-char-p name)))
+
 (export-always 'nyxt-url)
 (-> nyxt-url (t &rest t &key &allow-other-keys) string)
 (defun nyxt-url (fn &rest args &key &allow-other-keys)
   "Return a nyxt scheme URL encoding a call to FN with ARGS.
 It is useful to request `internal-page's.
 
-ARGS is an arbitrary keyword arguments list that is translated to a URL query."
+ARGS is an arbitrary keyword arguments list that is translated to a URL query.
+The URL has an authority. `nyxt' is a standard scheme, and a link without '//'
+is resolved against the page that contains it."
   (let* ((query (quri:url-encode-params
                  (mapcar (lambda (pair)
                            (cons (symbol->param-name (first pair))
                                  (value->param-value (rest pair))))
                          (alex:plist-alist args))
                  :space-to-plus t))
+         (name (symbol->param-name fn))
+         (query-arg (unless (uiop:emptyp query) query))
          (url (quri:render-uri
-               (quri:make-uri
-                :scheme "nyxt"
-                :path (symbol->param-name fn)
-                :query (unless (uiop:emptyp query) query)))))
+               (if (nyxt-page-hostname-p name)
+                   (quri:make-uri :scheme "nyxt"
+                                  :host name
+                                  :query query-arg)
+                   (quri:make-uri :scheme "nyxt"
+                                  :host +nyxt-page-host+
+                                  :path (uiop:strcat "/" name)
+                                  :query query-arg)))))
     (if (internal-page-symbol-p fn)
         url
         (error "URL ~a is undefined." url))))
@@ -256,21 +283,31 @@ ARGS is an arbitrary keyword arguments list that is translated to a URL query."
 (export-always 'internal-page-name)
 (-> internal-page-name ((or string quri:uri)) t)
 (defun internal-page-name (url)
+  "Return the symbol naming the internal page at URL, or NIL."
   (when-let* ((%url (quri:uri url))
               (_ (string= "nyxt" (quri:uri-scheme %url))))
     (let* ((raw-path (quri:uri-path %url))
            (path (and raw-path (string-trim '(#\/) raw-path)))
            (host (quri:uri-host %url))
-           ;; A standard URL parser splits nyxt:package/name into a host and a
-           ;; path. Join them back so the page name stays a qualified symbol.
+           ;; `nyxt://page/<name>' holds a name that is not a hostname.
+           ;; A standard parser also splits `nyxt:package/name' into a host and
+           ;; a path. Join that pair so the page name stays one symbol.
            (name (cond
+                   ((and host
+                         (string-equal host +nyxt-page-host+)
+                         path
+                         (plusp (length path)))
+                    path)
                    ((and host path (plusp (length path)))
                     (format nil "~a/~a" host path))
                    ((and path (plusp (length path)))
                     path)
                    (t host))))
+      ;; A link resolved against the current page can name a package that does
+      ;; not exist. That URL is not a page.
       (when name
-        (uiop:safe-read-from-string (str:upcase name) :package :nyxt)))))
+        (ignore-errors
+          (uiop:safe-read-from-string (str:upcase name) :package :nyxt))))))
 
 (export-always 'internal-url-p)
 (defun internal-url-p (url)

@@ -14,6 +14,35 @@
                 (internal-page-name "nyxt://new"))
   (assert-eq 'nyxt/mode/buffer-listing:list-buffers
              (internal-page-name "nyxt://nyxt/mode/buffer-listing:list-buffers"))
+  ;; A standard scheme resolves `nyxt:name' against the current page.
+  ;; `nyxt-url' emits an absolute URL so the link target stays the page.
+  (assert-string= "nyxt://new"
+                  (nyxt-url 'new))
+  (assert-eq 'new
+             (internal-page-name "nyxt://new/"))
+  (assert-string= "nyxt://page/nyxt/mode/history:list-history"
+                  (nyxt-url 'nyxt/mode/history:list-history))
+  (assert-eq 'nyxt/mode/history:list-history
+             (internal-page-name (nyxt-url 'nyxt/mode/history:list-history)))
+  (assert-string= "nyxt://describe-value"
+                  (nyxt-url 'nyxt::describe-value))
+  (assert-eq 'nyxt::describe-value
+             (internal-page-name (nyxt-url 'nyxt::describe-value)))
+  (assert-string= "nyxt://page/nyxt/mode/document:show-url-qrcode"
+                  (nyxt-url 'nyxt/mode/document:show-url-qrcode))
+  (assert-eq 'nyxt/mode/document:show-url-qrcode
+             (internal-page-name (nyxt-url 'nyxt/mode/document:show-url-qrcode)))
+  (assert-eq 'nyxt/mode/document:show-url-qrcode
+             (internal-page-name "nyxt://page/nyxt/mode/document::show-url-qrcode"))
+  (assert-eq 'describe-function
+             (internal-page-name (nyxt-url 'describe-function :fn 'new)))
+  (assert-false
+   (internal-page-name "nyxt://new/nyxt/mode/history:list-history"))
+  (assert-string= "nyxt:new"
+                  (nyxt::format-internal-tab-display-text (quri:uri "nyxt://new/")))
+  (assert-string= "nyxt:nyxt/mode/history:list-history"
+                  (nyxt::format-internal-tab-display-text
+                   (quri:uri "nyxt://page/nyxt/mode/history:list-history")))
   ;; A standard-scheme parser turns lisp:897 into host 0.0.3.129.
   (assert-string= "897"
                   (nyxt::lisp-request-id
