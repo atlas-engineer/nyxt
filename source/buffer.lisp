@@ -306,9 +306,9 @@ inherited from the superclasses.")
       `(pre
         :font-family ,theme:monospace-font-family
         :font-size "0.9rem"
-        :border-radius "2px"
+        :border-radius "8px"
         :overflow "auto"
-        :padding "5px")
+        :padding "24px")
       '("table"
         :border-radius "2px"
         :border-spacing "0"
