@@ -58,16 +58,7 @@ internal programming APIs."
        "m o" 'set-url-from-bookmark
        "m M" 'add-bookmark
        "m m" 'add-bookmark
-       "m d" 'delete-bookmark)))
-   (style (theme:themed-css (theme *browser*)
-            '("dl"
-              :margin-left "8px")
-            ;; Taken from buffer.lisp to save space for big bookmark lists.
-            `(button
-              :color ,theme:on-secondary-color
-              :display "inline-block"
-              :text-decoration "none"
-              :margin-right "8px")))))
+       "m d" 'delete-bookmark)))))
 
 (define-configuration context-buffer
   ((default-modes (cons 'bookmark-mode %slot-value%))))
@@ -85,6 +76,36 @@ internal programming APIs."
               (push bookmark (gethash tag bookmarks-table nil)))
             (push bookmark (gethash tags bookmarks-table nil)))))
     bookmarks-table))
+
+(-> bookmark-groups (buffer) list)
+(defun bookmark-groups (buffer)
+  "Return BUFFER's bookmarks grouped by tag.
+Each group is a list of the tag (NIL when the bookmark has none) and its
+bookmarks. Groups are ordered by tag, case-insensitively, with untagged
+bookmarks last. Bookmarks in a group are ordered by the title shown on the
+page, then by URL."
+  (labels ((heading (bookmark)
+             (let ((title (title bookmark)))
+               (if (str:emptyp title)
+                   (render-url (url bookmark))
+                   title)))
+           (bookmark< (a b)
+             (let ((heading-a (heading a))
+                   (heading-b (heading b)))
+               (if (string-equal heading-a heading-b)
+                   (url< (url a) (url b))
+                   (string-lessp heading-a heading-b))))
+           (tag< (a b)
+             (cond
+               ((null a) nil)
+               ((null b) t)
+               (t (string-lessp a b)))))
+    (let ((groups '()))
+      (maphash (lambda (tag bookmarks)
+                 (push (list tag (sort (copy-list bookmarks) #'bookmark<))
+                       groups))
+               (group-bookmarks buffer))
+      (sort groups #'tag< :key #'first))))
 
 (define-class bookmarks-file (files:data-file nyxt-lisp-file)
   ((files:base-path #p"bookmarks")
@@ -341,42 +362,113 @@ buffers in the background."
     (bookmarks-buffer "*Bookmarks*")
   "List all bookmarks in a new buffer.
 Splits bookmarks into groups by tags."
-  (let ((bookmarks (group-bookmarks bookmarks-buffer)))
-    (spinneret:with-html-string
-      (:nstyle (style (find-submode 'bookmark-mode (current-buffer)))) ; TODO: Make sure this is the right buffer
-      (render-menu 'bookmark-mode bookmarks-buffer)
-      (:h1 "Bookmarks")
-      (cond
-        ((zerop (hash-table-count bookmarks))
-         (:p (format nil "No bookmarks in ~s." (files:expand (bookmarks-file bookmarks-buffer)))))
-        (t (maphash
-            (lambda (tag bookmarks)
-              (:nsection
-                :title (or tag "Unsorted")
-                :id (or tag "unsorted")
-                :open-p nil
-                (dolist (bookmark bookmarks)
-                  (let ((url (render-url (url bookmark)))
-                        (title (title bookmark))
-                        (tags  (tags bookmark)))
-                    (:div
-                     :class "bookmark-entry"
-                     (:dl
-                      (:dt
-                       (:button
-                        :onclick
-                        (ps:ps
-                          (let ((section (ps:chain (nyxt/ps:active-element document)
-                                                   (closest ".bookmark-entry"))))
-                            (ps:chain section parent-node (remove-child section)))
-                          (nyxt/ps:lisp-eval (:title "Delete"
-                                              :buffer bookmarks-buffer)
-                                             (delete-bookmark url)))
-                        "×")
-                       (:a :href url title))
-                      (when tags
-                        (:dd (:pre (format nil "Tags: ~{~a~^, ~}" tags))))))))))
-            bookmarks))))))
+  (labels ((bookmark-row (bookmark)
+             "Present BOOKMARK as a title, its URL, and a delete control."
+             (let* ((url (render-url (url bookmark)))
+                    (title (title bookmark))
+                    (heading (if (str:emptyp title) url title))
+                    (detail (unless (string= heading url)
+                              url)))
+               (spinneret:with-html
+                 (:li
+                  (:a :href url
+                      :title (or detail heading)
+                      (:span heading)
+                      (:span detail))
+                  (:button :class "close"
+                           :type "button"
+                           :title "Delete"
+                           :onclick
+                           (ps:ps
+                             (nyxt/ps:lisp-eval
+                              (:title "delete-bookmark"
+                               :buffer bookmarks-buffer)
+                              (delete-bookmark url)
+                              (ffi-buffer-reload bookmarks-buffer)))
+                           "×"))))))
+    (let ((groups (bookmark-groups bookmarks-buffer)))
+      (spinneret:with-html-string
+        ;; Close control is 28px inside a 17px inset. 17 + 28 + 17 = 62.
+        ;; The control sits on the link, so the link's own hover ends there.
+        (:nstyle
+          '("ul.list > li > a"
+            :padding-right "62px")
+          `("ul.list > li:hover > a"
+            :background-color ,theme:background-color-
+            :opacity "1")
+          '("ul.list > li:hover::after"
+            :background-color "transparent")
+          '("ul.list > li:has(+ li:hover)::after"
+            :background-color "transparent")
+          `("ul.list button.close"
+            :position "absolute"
+            :z-index "1"
+            :top "13px"
+            :right "17px"
+            :display "flex"
+            :align-items "center"
+            :justify-content "center"
+            :box-sizing "border-box"
+            :width "28px"
+            :height "28px"
+            :margin "0"
+            :padding "0"
+            :border "none"
+            :border-radius "14px"
+            :appearance "none"
+            :background-color "transparent"
+            :color ,theme:primary-color
+            :font-size "17px"
+            :line-height "17px"
+            :cursor "pointer"
+            :opacity "0"
+            :transition "opacity 120ms ease, background-color 120ms ease")
+          '("ul.list > li:hover > button.close, ul.list button.close:focus-visible"
+            :opacity "1")
+          `("ul.list button.close:hover"
+            :background-color ,theme:background-color
+            :color ,theme:on-background-color)
+          `("ul.list button.close:focus-visible"
+            :outline "2px solid"
+            :outline-color ,theme:action-color
+            :outline-offset "2px")
+          ;; 17px above the first tag, 37px above the later ones, 7px under it.
+          '("h1.grouped"
+            :margin-bottom "0")
+          '(".bookmark-groups"
+            :padding-top "17px")
+          '(".bookmark-group"
+            :margin-top "37px")
+          '(".bookmark-group:first-of-type"
+            :margin-top "0")
+          `(".bookmark-group h2"
+            :margin "0 0 7px"
+            :font-size "17px"
+            :font-weight "600"
+            :line-height "24px"
+            :color ,theme:on-background-color))
+        (render-menu 'bookmark-mode bookmarks-buffer)
+        (cond
+          ((null groups)
+           (:h1 "Bookmarks")
+           (:p (format nil "No bookmarks in ~s."
+                       (files:expand (bookmarks-file bookmarks-buffer)))))
+          ;; No tags: the same list as the buffer page, without a heading.
+          ((and (null (rest groups))
+                (null (first (first groups))))
+           (:h1 "Bookmarks")
+           (:ul :class "list"
+                (dolist (bookmark (second (first groups)))
+                  (bookmark-row bookmark))))
+          (t
+           (:h1 :class "grouped" "Bookmarks")
+           (:div :class "bookmark-groups"
+                 (dolist (group groups)
+                   (:section :class "bookmark-group"
+                             (:h2 (or (first group) "Unsorted"))
+                             (:ul :class "list"
+                                  (dolist (bookmark (second group))
+                                    (bookmark-row bookmark))))))))))))
 
 (defmethod serialize-object ((entry bookmark-entry) stream)
   (unless (url-empty-p (url entry))
