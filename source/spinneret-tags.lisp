@@ -512,8 +512,9 @@ Most *-P arguments mandate whether to add the buttons for:
            ,(if inline-p
                 `(:span (:code ,@attrs (:raw ,htmlized)) ,select-code)
                 `(:div :style "position: relative"
-                       (:pre ,@attrs ,select-code
-                             (:code (:raw ,htmlized))))))))))
+                       ,select-code
+                       (:pre ,@attrs
+                             (:raw ,htmlized)))))))))
 
 (defun %nsection-id (title)
   (if (stringp title)

@@ -59,8 +59,11 @@ The changes are saved to `*auto-config-file*', and persist from one Nyxt session
 to the next."
   ;; SECTION stays so a link from the old tabbed page still opens.
   (declare (ignorable section))
-  ;; Title and lead are one group, 17px apart. Each settings group starts
-  ;; 37px down. A row is 55px: a name over an 11px detail, control on the right.
+  ;; Title and lead are one group, 17px apart. Section titles are 24px, a
+  ;; step above the 17px setting names. 55px above a later title opens the
+  ;; group; 7px under the title keeps it with its settings. The first title
+  ;; sits 17px under the lead. A row is 55px: a name over an 11px detail,
+  ;; control on the right.
   (let ((homepage (default-new-buffer-url *browser*)))
     (spinneret:with-html-string
       (:nstyle
@@ -127,17 +130,21 @@ to the next."
           :box-shadow ,(format nil "inset 0 -1px 0 ~a" theme:background-color-))
         '("table.settings tbody tr:last-child td"
           :box-shadow "none")
+        '("table.settings tbody tr:has(+ tr.group) td"
+          :box-shadow "none")
         `("table.settings tr.group th"
           :height "auto"
-          :padding "37px 0 0"
-          :font-size "17px"
+          :padding "55px 0 7px"
+          :font-size "24px"
           :font-weight "600"
-          :line-height "24px"
+          :line-height "37px"
           :color ,theme:on-background-color
           :background-color "transparent"
           :box-shadow "none"
           :overflow "visible"
           :white-space "normal")
+        '("table.settings tbody tr.group:first-of-type th"
+          :padding-top "17px")
         `("table.settings .radio-div"
           :display "inline-flex"
           :align-items "center"
@@ -579,7 +586,13 @@ The value is saved to clipboard."
     (buffer "*Manual*" 'nyxt/mode/help:help-mode)
   "Display Nyxt manual."
   (spinneret:with-html-string
-    (:nstyle '(body :max-width "80ch"))
+    (:nstyle
+      '(body :max-width "80ch")
+      ;; Headings and links share the theme gray. One step darker than
+      ;; `primary-color' so the long pages stay readable.
+      `("h2, h3, h4, h5, h6, a, .link"
+        :color ,theme:primary-color-))
+    (:h1 "Nyxt Manual")
     (:ntoc
       (tutorial-content)
       (manual-content))))
@@ -588,7 +601,12 @@ The value is saved to clipboard."
     (buffer "*Tutorial*" 'nyxt/mode/help:help-mode)
   "Display Nyxt tutorial."
   (spinneret:with-html-string
-    (:nstyle '(body :max-width "80ch"))
+    (:nstyle
+      '(body :max-width "80ch")
+      ;; Headings and links share the theme gray. One step darker than
+      ;; `primary-color' so the long pages stay readable.
+      `("h2, h3, h4, h5, h6, a, .link"
+        :color ,theme:primary-color-))
     (:h1 "Nyxt tutorial")
     (:p "The following tutorial introduces core concepts and
 basic usage.  For more details, especially regarding configuration, see
