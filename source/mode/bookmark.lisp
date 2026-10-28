@@ -442,9 +442,8 @@ Splits bookmarks into groups by tags."
           '(".bookmark-group:first-of-type"
             :margin-top "0")
           '(".bookmark-group h2"
+            :text-transform "capitalize"
             :margin "0 0 7px"
-            :font-size "17px"
-            :font-weight "600"
             :line-height "24px"))
         (render-menu 'bookmark-mode bookmarks-buffer)
         (cond
