@@ -87,6 +87,14 @@ See `sym:package-functions' for an example of LISTER."
   "Return first non-empty line in STRING."
   (find-if (complement #'uiop:emptyp) (sera:lines string)))
 
+(-> package-display-name (string) (values string &optional))
+(defun package-display-name (name)
+  "Return NAME with its first character uppercase and the rest lowercase."
+  (if (uiop:emptyp name)
+      ""
+      (str:concat (string-upcase (subseq name 0 1))
+                  (string-downcase (subseq name 1)))))
+
 (-> documentation-paragraphs ((maybe string)) (values (list-of string) &optional))
 (defun documentation-paragraphs (string)
   "Return the non-empty paragraphs of STRING, each collapsed to one line."
@@ -327,7 +335,7 @@ Otherwise prompt for matches."
                            (:a :href (nyxt-url 'describe-package
                                                :package (package-name other))
                                :title (unless (uiop:emptyp detail) detail)
-                               (:span (package-name other))
+                               (:span (string-downcase (package-name other)))
                                (:span detail)))))))))
       (spinneret:with-html-string
         (:nstyle
@@ -358,9 +366,10 @@ Otherwise prompt for matches."
             :color ,theme:on-background-color)
           '("h2:first-of-type"
             :margin-top "37px"))
-        (:h1 (package-name package))
+        (:h1 (package-display-name (package-name package)))
         (when nicknames
-          (:p :class "nicknames" (str:join ", " (safe-sort nicknames))))
+          (:p :class "nicknames"
+              (str:join ", " (mapcar #'package-display-name (safe-sort nicknames)))))
         (dolist (paragraph (documentation-paragraphs (documentation package t)))
           (:p :class "summary"
               (:raw (resolve-backtick-quote-links paragraph package))))
