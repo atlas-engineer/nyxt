@@ -418,9 +418,10 @@ The value is saved to clipboard."
     (buffer "*New buffer*")
   "Display a page suitable as `default-new-buffer-url'."
   ;; The logo and the two actions are one group. Each action is a 37px
-  ;; control with its shortcut on the right; the two stack 17px apart and
-  ;; center on the logo. The page list starts one step (37px) below that
-  ;; group. Content and the corner credit share that same 37px inset.
+  ;; control with its shortcut on the right; the two stack 17px apart, and
+  ;; the logo is that same 91px so the black square stays the height of the
+  ;; buttons. The page list starts one step (37px) below that group. Content
+  ;; and the corner credit share that same 37px inset.
   (labels ((command-row (heading detail description command)
              "Present COMMAND as a name plus its binding."
              (spinneret:with-html
@@ -458,14 +459,14 @@ The value is saved to clipboard."
           :color ,(if (theme:dark-p theme:theme)
                       theme:action-color
                       theme:on-background-color)
-          :width "100px"
-          :height "100px"
+          :width "91px"
+          :height "91px"
           :flex "none"
           :margin-right "17px")
         '(".logo svg"
           :display "block"
-          :width "100px"
-          :height "100px"
+          :width "91px"
+          :height "91px"
           :border-radius "7px")
         '(.actions
           :display "flex"
@@ -484,8 +485,7 @@ The value is saved to clipboard."
           :padding "0 17px"
           :border "none"
           :border-radius "7px"
-          :background-color ,theme:background-color+
-          :box-shadow ,(format nil "inset 0 0 0 1px ~a" theme:background-color-)
+          :background-color "#f1f1f1"
           :color ,theme:on-background-color
           :font-size "17px"
           :font-weight "400"
@@ -494,15 +494,14 @@ The value is saved to clipboard."
           :cursor "pointer"
           :opacity "1")
         `("button.set-url"
-          :font-weight "600"
-          :color ,theme:action-color)
-        `("button.set-url:hover, button.execute-command:hover, button.set-url:active, button.execute-command:active"
-          :background-color ,theme:background-color-
+          :background-image ,(format nil "linear-gradient(~a, ~a)"
+                                     theme:action-color theme:action-color)
+          :background-size "calc(100% - 14px) 3px"
+          :background-repeat "no-repeat"
+          :background-position "center bottom")
+        '("button.set-url:hover, button.execute-command:hover, button.set-url:active, button.execute-command:active"
+          :background-color "#e6e6e6"
           :opacity "1")
-        `("button.set-url:hover, button.set-url:active"
-          :color ,theme:action-color)
-        `("button.execute-command:hover, button.execute-command:active"
-          :color ,theme:on-background-color)
         `("button.set-url:focus-visible, button.execute-command:focus-visible"
           :outline "2px solid"
           :outline-color ,theme:action-color
