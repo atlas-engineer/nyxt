@@ -11,6 +11,14 @@ jobs:
     name: Build CEF AppImage
     runs-on: ubuntu-24.04
     timeout-minutes: 120
+    # The apt repo still ships ocicl 2.20.0. That release retries a reset
+    # connection three times, and every worker waits the same interval, so a
+    # GitHub runner opening eight downloads at once gets reset again together.
+    # Six retries is the budget 2.21.0 takes when CI is set. Two workers keeps
+    # the registry from resetting the whole batch.
+    env:
+      OCICL_HTTP_RETRIES: "6"
+      OCICL_DOWNLOAD_CONCURRENCY: "2"
     steps:
       - name: Check out Nyxt
         uses: actions/checkout@v7
