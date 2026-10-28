@@ -34,18 +34,82 @@ The URL is fetched, which explains possible bottlenecks."
   (ignore-errors (plump:text
                   (aref (clss:select "title" (plump:parse (dex:get url))) 0))))
 
+(-> notice-css (string string string) (values string &optional))
+(export-always 'notice-css)
+(defun notice-css (primary on-background monospace)
+  "Return the stylesheet for a short notice.
+PRIMARY and ON-BACKGROUND are theme colors. MONOSPACE is the code font.
+The page is a title, an optional detail line, then paragraphs. A block of
+text keeps its line breaks without a card."
+  (reduce #'uiop:strcat
+          (mapcar #'lass:compile-and-write
+                  `(("h1"
+                     :margin "0"
+                     :overflow "hidden"
+                     :text-overflow "ellipsis"
+                     :white-space "nowrap")
+                    (".detail"
+                     :margin "17px 0 0"
+                     :font-size "17px"
+                     :line-height "24px"
+                     :overflow-wrap "anywhere"
+                     :color ,primary)
+                    (".summary"
+                     :max-width "80ch"
+                     :margin "17px 0 0"
+                     :font-size "17px"
+                     :line-height "24px")
+                    ("h2"
+                     :margin "55px 0 7px"
+                     :font-size "24px"
+                     :font-weight "600"
+                     :line-height "37px"
+                     :color ,on-background)
+                    ("h2:first-of-type"
+                     :margin-top "37px")
+                    (".log"
+                     :margin "17px 0 0"
+                     :padding "0"
+                     :border-radius "0"
+                     :background-color "transparent"
+                     :color ,on-background
+                     :font-family ,monospace
+                     :font-size "17px"
+                     :line-height "24px"
+                     :white-space "pre-wrap"
+                     :overflow-wrap "anywhere")
+                    ("h2 + .log"
+                     :margin-top "0")
+                    ("p code"
+                     :padding "0"
+                     :border-radius "0"
+                     :background-color "transparent"
+                     :font-size "17px"
+                     :line-height "24px")))))
+
 (export-always 'error-help)
 (defun error-help (&optional (title "Unknown error") (text ""))
   "A helper to print error messages as displayable HTML."
-  (values
-   (spinneret:with-html-string
-     (:head
-      (:title title)
-      (:style (:raw (style (current-buffer)))))
-     (:body
-      (:h1 title)
-      (:pre text)))
-   "text/html;charset=utf8"))
+  (let ((theme (theme *browser*)))
+    (values
+     (spinneret:with-html-string
+       (:doctype)
+       (:html
+        (:head
+         (:title title)
+         (:style
+          (:raw (uiop:strcat
+                 (style (current-buffer))
+                 (notice-css (theme:primary-color theme)
+                             (theme:on-background-color theme)
+                             (theme:monospace-font-family theme))))))
+        (:body
+         (:h1 title)
+         (cond
+           ((uiop:emptyp text) nil)
+           ((find #\Newline text) (:pre :class "log" text))
+           (t (:p :class "summary" text))))))
+     "text/html;charset=utf8")))
 
 (export-always 'renderer-scheme)
 (defclass renderer-scheme ()

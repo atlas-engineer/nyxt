@@ -1279,17 +1279,7 @@ with this scheme.")
            (setf (nyxt::status buffer) :failed)
            (ffi-buffer-load-alternate-html
             buffer
-            (spinneret:with-html-string
-              (:head
-               (:nstyle (style buffer)))
-              (:h1 "Page could not be loaded.")
-              (:h2 "URL: " failing-url)
-              (:ul
-               (:li "Try again in a moment, maybe the site will be available again.")
-               (:li "If the problem persists for every site, check your Internet connection.")
-               (:li "Make sure the URL is valid."
-                    (when (quri:uri-https-p (quri:uri failing-url))
-                      "If this site does not support HTTPS, try with HTTP (insecure)."))))
+            (network-error-html buffer failing-url)
             failing-url
             failing-url)))
     t)

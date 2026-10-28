@@ -12,13 +12,21 @@ help on how to proceed."
   (setf (nyxt::status buffer) :failed)
   (nyxt::html-set
    (spinneret:with-html-string
-     (:nstyle (style buffer))
-     (:h1 (format nil "HTTPS → HTTP loop: ~a" (render-url url)))
-     (:p "The HTTPS address you are trying to visit redirects to HTTP while the "
+     (:nstyle
+      (style buffer)
+      (notice-css theme:primary-color
+                  theme:on-background-color
+                  theme:monospace-font-family))
+     (:h1 "HTTPS loop")
+     (:p :class "detail" (render-url url))
+     (:p :class "summary"
+         "The HTTPS address you are trying to visit redirects to HTTP while the "
          (:code "force-https-mode") " is on.")
-     (:p "Since HTTP connections are not secure,"
+     (:p :class "summary"
+         "Since HTTP connections are not secure,"
          " it's not recommended to proceed if you don't trust the target host.")
-     (:p " If you really want to proceed, you can disable " (:code "force-https-mode")
+     (:p :class "summary"
+         "If you really want to proceed, you can disable " (:code "force-https-mode")
          " temporarily."))
    buffer))
 

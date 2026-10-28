@@ -208,40 +208,75 @@ See `sym:package-functions' for an example of LISTER."
 When input exists, list all the symbols that may match it.
 Otherwise prompt for matches."
   (when (symbolp input)
-    (spinneret:with-html-string
-      (:h1 (princ-to-string input))
-      (:p (princ-to-string input)
-          " may refer to several things. Please choose the one that you need.")
-      (:dl
-       (when (boundp input)
-         (:dt "Variable")
-         (:dd (:nxref :variable input)))
-       (cond
-         ((sym:mode-symbol-p input)
-          (:dt "Mode")
-          (:dd (:nxref :mode input)))
-         ((sym:class-symbol-p input)
-          (:dt "Class")
-          (:nxref :class-name input))
-         (t nil))
-       (cond
-         ((sym:command-symbol-p input)
-          (:dt "Command")
-          (:dd (:nxref :command input)))
-         ((sym:macro-symbol-p input)
-          (:dt "Macro")
-          (:dd (:nxref :macro input)))
-         ((sym:function-symbol-p input)
-          (:dt "Function")
-          (:dd (:nxref :function input))))
-       (when (find-package input)
-         (:dt "Package")
-         (:dd (:nxref :package input)))
-       (dolist (class (sym:package-classes (union (nyxt-packages) (list (symbol-package input)))
-                                           :external))
-         (when (find input (class-slots class))
-           (:dt "Slot in " (:nxref :class-name class))
-           (:dd (:nxref :class-name class :slot input))))))))
+    (labels ((doc-line (object doc-type)
+               "Return the first documentation line of OBJECT, or an empty string."
+               (alex:if-let ((doc (documentation object doc-type)))
+                 (or (first-line doc) "")
+                 ""))
+             (sense-row (kind url detail &optional title)
+               "Present one meaning of the name as a row."
+               (let ((caption (or title detail)))
+                 (spinneret:with-html
+                   (:li
+                    (:a :href url
+                        :title (unless (uiop:emptyp caption) caption)
+                        (:span kind)
+                        (:span detail)))))
+               nil))
+      (spinneret:with-html-string
+        (:nstyle
+          '(h1
+            :margin "0"
+            :overflow "hidden"
+            :text-overflow "ellipsis"
+            :white-space "nowrap")
+          '(.summary
+            :max-width "80ch"
+            :margin "17px 0"
+            :font-size "17px"
+            :line-height "24px"))
+        (:h1 (variable-display-name input))
+        (:p :class "summary" "This name refers to more than one thing.")
+        (:ul :class "list"
+             (when (boundp input)
+               (sense-row "Variable"
+                          (nyxt-url 'describe-variable :variable input)
+                          (doc-line input 'variable)))
+             (cond
+               ((sym:mode-symbol-p input)
+                (sense-row "Mode"
+                           (nyxt-url 'describe-class :class input)
+                           (doc-line input 'type)))
+               ((sym:class-symbol-p input)
+                (sense-row "Class"
+                           (nyxt-url 'describe-class :class input)
+                           (doc-line input 'type)))
+               (t nil))
+             (cond
+               ((sym:command-symbol-p input)
+                (sense-row "Command"
+                           (nyxt-url 'describe-function :fn input)
+                           (doc-line input 'function)))
+               ((sym:macro-symbol-p input)
+                (sense-row "Macro"
+                           (nyxt-url 'describe-function :fn input)
+                           (doc-line input 'function)))
+               ((sym:function-symbol-p input)
+                (sense-row "Function"
+                           (nyxt-url 'describe-function :fn input)
+                           (doc-line input 'function)))
+               (t nil))
+             (alex:when-let ((package (find-package input)))
+               (sense-row "Package"
+                          (nyxt-url 'describe-package :package (package-name package))
+                          (doc-line package t)))
+             (dolist (class (sym:package-classes
+                             (union (nyxt-packages) (list (symbol-package input)))
+                             :external))
+               (when (find input (class-slots class))
+                 (sense-row "Slot"
+                            (nyxt-url 'describe-slot :class class :name input)
+                            (variable-display-name class)))))))))
 
 (defmethod describe-any :around (&key (input nil input-supplied-p)
                                    %buffer%)

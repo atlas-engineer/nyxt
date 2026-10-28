@@ -389,24 +389,59 @@ to the next."
   (setf (status buffer) :failed)
   (html-set
    (spinneret:with-html-string
-     (:h1 (format nil "TLS Certificate Error: ~a" (render-url url)))
-     (:p "The address you are trying to visit has an invalid
+     (:nstyle
+      (style buffer)
+      (notice-css theme:primary-color
+                  theme:on-background-color
+                  theme:monospace-font-family))
+     (:h1 "Certificate error")
+     (:p :class "detail" (render-url url))
+     (:p :class "summary"
+         "The address you are trying to visit has an invalid
 certificate. By default Nyxt refuses to establish a secure connection
 to a host with an erroneous certificate (e.g. self-signed ones). This
 could mean that the address you are attempting the access is
 compromised.")
-     (:p "If you trust the address nonetheless, you can add an exception
+     (:p :class "summary"
+         "If you trust the address nonetheless, you can add an exception
 for the current hostname with the "
          (:code "add-domain-to-certificate-exceptions")
          " command.  The "
          (:code "certificate-exception-mode")
          " must be active for the current buffer (which is the
 default).")
-     (:p "To persist hostname exceptions in your initialization
+     (:p :class "summary"
+         "To persist hostname exceptions in your initialization
 file, see the "
          (:code "add-domain-to-certificate-exceptions")
          " documentation."))
    buffer))
+
+(-> network-error-html (buffer string) (values string &optional))
+(export-always 'network-error-html)
+(defun network-error-html (buffer url-string)
+  "Return the page shown when URL-STRING could not be loaded in BUFFER."
+  (spinneret:with-html-string
+    (:doctype)
+    (:html
+     (:head
+      (:title "Page could not be loaded")
+      (:nstyle
+       (style buffer)
+       (notice-css theme:primary-color
+                   theme:on-background-color
+                   theme:monospace-font-family)))
+     (:body
+      (:h1 "Page could not be loaded")
+      (:p :class "detail" url-string)
+      (:p :class "summary"
+          "Try again in a moment, maybe the site will be available again.")
+      (:p :class "summary"
+          "If the problem persists for every site, check your Internet connection.")
+      (:p :class "summary"
+          (str:concat "Make sure the URL is valid."
+                      (when (quri:uri-https-p (quri:uri url-string))
+                        " If this site does not support HTTPS, try with HTTP (insecure).")))))))
 
 (define-command nyxt-version ()
   "Display the version of Nyxt in the `message-buffer'.
@@ -630,11 +665,85 @@ the " (:code (:a.link :href (nyxt-url 'manual) "manual")) ".")
 It is of particular interest when reporting bugs.  The content is saved to
 clipboard."
   (let* ((*print-length* nil)
-         (nyxt-information (system-information)))
+         (*print-pretty* nil)
+         (nyxt-information (system-information))
+         (lines (remove-if #'uiop:emptyp (sera:lines nyxt-information)))
+         (facts (loop for line in lines
+                      for colon = (position #\: line)
+                      when (and colon
+                                (not (str:starts-with-p "Features:" line)))
+                        collect (list (subseq line 0 colon)
+                                      (str:trim (subseq line (1+ colon))))))
+         (features (alex:when-let ((line (find-if (lambda (line)
+                                                    (str:starts-with-p "Features:" line))
+                                                  lines)))
+                     (str:trim (subseq line (length "Features:"))))))
     (prog1
         (spinneret:with-html-string
+          (:nstyle
+            '(h1
+              :margin "0")
+            `(.note
+              :margin "7px 0 0"
+              :font-size "11px"
+              :line-height "17px"
+              :color ,theme:primary-color)
+            '(ul.facts
+              :list-style "none"
+              :margin "17px -17px 0"
+              :padding "0")
+            '("ul.facts > li"
+              :position "relative"
+              :box-sizing "border-box"
+              :height "55px"
+              :margin "0"
+              :padding "7px 17px")
+            `("ul.facts > li:not(:last-child)::after"
+              :content ""
+              :position "absolute"
+              :right "17px"
+              :bottom "0"
+              :left "17px"
+              :height "1px"
+              :background-color ,theme:background-color-)
+            '("ul.facts span"
+              :display "block"
+              :overflow "hidden"
+              :text-overflow "ellipsis"
+              :white-space "nowrap")
+            '("ul.facts span.name"
+              :height "24px"
+              :font-size "17px"
+              :line-height "24px")
+            `("ul.facts span.value"
+              :height "17px"
+              :font-size "11px"
+              :line-height "17px"
+              :color ,theme:primary-color)
+            `(h2
+              :margin "55px 0 7px"
+              :font-size "24px"
+              :font-weight "600"
+              :line-height "37px"
+              :color ,theme:on-background-color)
+            `(.features
+              :margin "0"
+              :font-family ,theme:monospace-font-family
+              :font-size "11px"
+              :line-height "17px"
+              :overflow-wrap "anywhere"
+              :color ,theme:primary-color))
           (:h1 "System information")
-          (:pre nyxt-information))
+          (:p :class "note" "Saved to the clipboard.")
+          (:ul :class "facts"
+               (dolist (fact facts)
+                 (let ((name (first fact))
+                       (value (second fact)))
+                   (:li
+                    (:span :class "name" name)
+                    (:span :class "value" :title value value)))))
+          (:h2 "Features")
+          (:p :class "features" features))
       (copy-to-clipboard nyxt-information)
       (log:info nyxt-information)
       (echo "System information saved to clipboard."))))

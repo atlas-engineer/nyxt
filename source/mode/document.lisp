@@ -204,11 +204,28 @@ Warning: URL is a string."
          (stream (flex:make-in-memory-output-stream)))
     (cl-qrencode:encode-png-stream url stream)
     (spinneret:with-html-string
-      (:p (:u url))
-      (:p (:img :src (str:concat "data:image/png;base64,"
-                                 (cl-base64:usb8-array-to-base64-string
-                                  (flex:get-output-stream-sequence stream)))
-                :alt url)))))
+      (:nstyle
+        '(h1
+          :margin "0")
+        '(.url
+          :max-width "80ch"
+          :margin "17px 0 0"
+          :font-size "17px"
+          :line-height "24px"
+          :overflow-wrap "anywhere")
+        '(img
+          :display "block"
+          :width "222px"
+          :height "auto"
+          :margin-top "37px"
+          :border-radius "7px"
+          :image-rendering "pixelated"))
+      (:h1 "QR code")
+      (:p :class "url" url)
+      (:img :src (str:concat "data:image/png;base64,"
+                             (cl-base64:usb8-array-to-base64-string
+                              (flex:get-output-stream-sequence stream)))
+            :alt url))))
 
 (define-command-global show-url-qrcode (&key (buffer (current-buffer)))
   "Display the QR code containing the URL of BUFFER in a new page."

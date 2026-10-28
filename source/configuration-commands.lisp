@@ -8,18 +8,17 @@
                (error-buffer (make-instance 'document-buffer)))
     (with-current-buffer error-buffer
       (html-set
-       (values
-        (spinneret:with-html-string
-          (:head
-           (:title title)
-           (:nstyle (style (current-buffer))))
-          (:body
-           (:h1 title)
-           (:h2 "Condition")
-           (:pre condition-string)
-           (:h2 "Backtrace")
-           (:pre backtrace)))
-        "text/html;charset=utf8")
+       (spinneret:with-html-string
+         (:nstyle
+          (style (current-buffer))
+          (notice-css theme:primary-color
+                      theme:on-background-color
+                      theme:monospace-font-family))
+         (:h1 title)
+         (:h2 "Condition")
+         (:pre :class "log" condition-string)
+         (:h2 "Backtrace")
+         (:pre :class "log" backtrace))
        error-buffer))
     (ffi-window-set-buffer window error-buffer)))
 
