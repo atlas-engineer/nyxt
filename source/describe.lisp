@@ -1072,12 +1072,88 @@ A command is a special kind of function that can be called with
   (when command
     (describe-function :fn command)))
 
+(-> class-slot (t t)
+    (values (maybe closer-mop:effective-slot-definition) &optional))
+(defun class-slot (class name)
+  "Return the effective slot definition NAME of CLASS.
+Return NIL when CLASS and NAME do not name a slot."
+  (when (and (symbolp class) (symbolp name))
+    (let ((class-object (find-class class nil)))
+      (when class-object
+        (mopu:finalize-class-if-necessary class-object)
+        (find name (closer-mop:class-slots class-object)
+              :key #'closer-mop:slot-definition-name)))))
+
 (define-internal-page-command-global describe-slot
     (&key class name)
-    (buffer (str:concat "*Help-" (symbol-name name) "*") 'nyxt/mode/help:help-mode)
+    (buffer (str:concat "*Help-" (if name (symbol-name name) "slot") "*")
+            'nyxt/mode/help:help-mode)
   "Inspect a slot and show it in a help buffer."
   (if (and class name)
-      (describe-slot* name class :independent-p t)
+      (let* ((definition (class-slot class name))
+             (package (when (symbolp name) (symbol-package name)))
+             (home (or package *package*))
+             (type (when definition (closer-mop:slot-definition-type definition)))
+             (type-text (unless (member type '(t nil))
+                          (prini-to-string type :pretty nil :package home))))
+        (spinneret:with-html-string
+          (:nstyle
+            '(h1
+              :margin "0")
+            `(.package
+              :margin "7px 0 0"
+              :font-size "11px"
+              :line-height "17px"
+              :color ,theme:primary-color)
+            '(.summary
+              :max-width "80ch"
+              :margin "17px 0 0"
+              :font-size "17px"
+              :line-height "24px")
+            (describe-value-css theme:primary-color
+                                theme:on-background-color
+                                theme:action-color
+                                theme:background-color-)
+            `(.signature
+              :margin "0"
+              :font-family ,theme:monospace-font-family
+              :font-size "17px"
+              :font-weight "400"
+              :line-height "24px"
+              :color ,theme:on-background-color
+              :white-space "pre-wrap"
+              :overflow-wrap "anywhere"))
+          (if definition
+              (progn
+                (:h1 (variable-display-name name))
+                (when package
+                  (:p :class "package"
+                      (package-display-name (package-name package))))
+                (dolist (paragraph (documentation-paragraphs
+                                    (documentation definition t)))
+                  (:p :class "summary"
+                      (:raw (resolve-backtick-quote-links paragraph home))))
+                (:p :class "facts"
+                    (:span
+                     (:a :href (nyxt-url 'describe-class :class class)
+                         (variable-display-name class)))
+                    (when type-text
+                      (:span
+                       (if (and (symbolp type) (find-class type nil))
+                           (:a :href (nyxt-url 'describe-class :class type)
+                               type-text)
+                           type-text))))
+                (when (closer-mop:slot-definition-initfunction definition)
+                  (:h2 "Default")
+                  (:p :class "signature"
+                      (let ((*print-right-margin* 80))
+                        (prini-to-string
+                         (closer-mop:slot-definition-initform definition)
+                         :pretty t
+                         :package home)))))
+              (progn
+                (:h1 (if (symbolp name) (variable-display-name name) "Slot"))
+                (:p :class "summary" "This slot is not available.")))))
       (let ((slot (prompt1
                    :prompt "Describe slot"
                    :sources '(slot-source
@@ -1086,37 +1162,48 @@ A command is a special kind of function that can be called with
         (describe-slot :class (class-sym slot) :name (name slot))
         "")))
 
-(defun describe-slot* (slot class &key independent-p)
-  "Create the HTML that represents a slot."
-  ;; TODO: Adapt HTML sections / lists to describe-slot and describe-class.
-  ;; TODO: Parse docstrings and highlight code samples.
-  (let ((props (mopu:slot-properties (find-class class) slot))
-        (*package* (symbol-package slot)))
-    (spinneret:with-html-string
-      (if independent-p
-          (:h1 (prini-to-string slot))
-          (:h3 (prini-to-string slot)))
-      (:dl
-       (when independent-p
-         (:dt "Class")
-         (:dd (:pre (:a :href (nyxt-url 'describe-class :class class) class))))
-       (when (getf props :type)
-         (:dt "Type ")
-         (:dd (:pre (if (or (subtypep (getf props :type) 'standard-object)
-                            (subtypep (getf props :type) 'structure-object))
-                        (:a :href (nyxt-url 'describe-class
-                                            :class (getf props :type))
-                            (prini-to-string (getf props :type)))
-                        (prini-to-string (getf props :type))))))
-       (when (getf props :initform)
-         (:dt "Default value")
-         (:dd (:ncode (prini-to-string (getf props :initform)))))
-       (when (getf props :documentation)
-         (:dt "Documentation")
-         (:dd (:pre (:code (:raw (resolve-backtick-quote-links
-                                  (getf props :documentation) (symbol-package slot))))))))
-      (unless independent-p
-        (:br "")))))
+(-> documentation-first-line (t symbol) (values (maybe string) &optional))
+(defun documentation-first-line (object doc-type)
+  "Return the first non-empty line of OBJECT's DOC-TYPE documentation."
+  (let ((doc (documentation object doc-type)))
+    (when doc
+      (let ((line (first-line doc)))
+        (and line
+             (not (uiop:emptyp (str:trim line)))
+             (str:trim line))))))
+
+(-> slot-row-detail (symbol symbol package) (values string &optional))
+(defun slot-row-detail (class slot package)
+  "Return the one-line detail for SLOT of CLASS."
+  (let ((definition (class-slot class slot)))
+    (or (and definition (documentation-first-line definition t))
+        (let ((type (and definition
+                         (closer-mop:slot-definition-type definition))))
+          (unless (member type '(t nil))
+            (prini-to-string type :pretty nil :package package)))
+        (and definition
+             (closer-mop:slot-definition-initfunction definition)
+             (prini-to-string (closer-mop:slot-definition-initform definition)
+                              :pretty nil
+                              :package package))
+        "")))
+
+(-> write-class-section (string list function function) (values null &optional))
+(defun write-class-section (title items url detail)
+  "Write TITLE and a name-over-detail list of ITEMS.
+URL and DETAIL receive an item. DETAIL returns the second line, or NIL."
+  (when items
+    (spinneret:with-html
+      (:h2 title)
+      (:ul :class "list"
+           (dolist (item items)
+             (let ((text (or (funcall detail item) "")))
+               (:li
+                (:a :href (funcall url item)
+                    :title (unless (uiop:emptyp text) text)
+                    (:span (variable-display-name item))
+                    (:span text))))))))
+  nil)
 
 (define-internal-page-command-global describe-class
     (&key
@@ -1125,56 +1212,104 @@ A command is a special kind of function that can be called with
              :sources '(class-source
                         class-non-nyxt-source
                         class-internal-source))))
-    (buffer (str:concat "*Help-" (symbol-name class) "*") 'nyxt/mode/help:help-mode)
+    (buffer (str:concat "*Help-" (if class (symbol-name class) "class") "*")
+            'nyxt/mode/help:help-mode)
   "Inspect a class and show it in a help buffer."
-  (if (find-class class nil)
-      (let* ((slots (safe-sort (class-slots class :visibility :external)))
-             (slot-descs (sera:string-join (mapcar (rcurry #'describe-slot* class) slots) ""))
-             (*print-case* :downcase)
-             (mode-p (subtypep class 'mode)))
-        (spinneret:with-html-string
-          (:nstyle (style buffer))
-          (:h1 (symbol-name class) " (" (sera:class-name-of (find-class class)) ")")
-          (:pre (:code (:raw (resolve-backtick-quote-links (documentation class 'type) (symbol-package class)))))
-          ;; TODO: Show mode keybindings for a better mode help (would be a
-          ;; killer one)? We'd need to do some hack to inspect the keybindings
-          ;; from the class somehow. Maybe :allocation :class so that keymap is
-          ;; allocated/modified in place?
-          ;; REVIEW: Maybe (make-instance MODE-NAME)?
-          (:nsection
-            :title "Slots"
-            (:raw slot-descs))
-          (when mode-p
-            (:nsection
-              :title "Commands"
-              (:ul
-               (dolist (command (sym:package-commands (symbol-package class)))
-                 (:li (:nxref :command command))))))
-          (when-let ((methods (safe-sort
-                               (remove-if
-                                #'listp (mapcar #'mopu:generic-function-name
-                                                (mopu:generic-functions class))))))
-            (:nsection
-              :title "Methods"
-              (:ul (loop for method in methods
-                         collect (:li (:a :href (nyxt-url 'describe-function :fn method) method))))))
-          (when (mopu:direct-superclasses class)
-            (:nsection
-              :title "Direct superclasses"
-              (:ul (loop for class-name in (mapcar #'class-name (mopu:direct-superclasses class))
-                         collect (:li (:a :href (nyxt-url 'describe-class :class class-name) class-name))))))
-          (when (mopu:direct-subclasses class)
-            (:nsection
-              :title "Direct subclasses"
-              (:ul (loop for class-name in (safe-sort (mapcar #'class-name (mopu:direct-subclasses class)))
-                         collect (:li (:a :href (nyxt-url 'describe-class :class class-name) class-name))))))
-          (:nsection
-            :title "Describe"
-            (:pre (:code (with-output-to-string (s) (describe class s)))))))
-      (spinneret:with-html-string
-        (:nstyle (style buffer))
-        (:h2 (format nil "~s" class))
-        (:p "Unbound."))))
+  (let ((class-object (and (symbolp class) class (find-class class nil))))
+    (spinneret:with-html-string
+      (:nstyle
+        '(h1
+          :margin "0")
+        `(.package
+          :margin "7px 0 0"
+          :font-size "11px"
+          :line-height "17px"
+          :color ,theme:primary-color)
+        '(.summary
+          :max-width "80ch"
+          :margin "17px 0 0"
+          :font-size "17px"
+          :line-height "24px")
+        (describe-value-css theme:primary-color
+                            theme:on-background-color
+                            theme:action-color
+                            theme:background-color-))
+      (if class-object
+          (let* ((package (symbol-package class))
+                 (home (or package *package*))
+                 (metaclass (sera:class-name-of class-object))
+                 (mode-p (subtypep class 'mode))
+                 (slots (safe-sort (class-slots class :visibility :external)))
+                 (commands (when (and mode-p package)
+                             (safe-sort (sym:package-commands package))))
+                 (methods (safe-sort
+                           (remove-if #'listp
+                                      (mapcar #'mopu:generic-function-name
+                                              (mopu:generic-functions class)))))
+                 (supers (remove nil
+                                 (mapcar #'class-name
+                                         (mopu:direct-superclasses class))))
+                 (subs (safe-sort
+                        (remove nil
+                                (mapcar #'class-name
+                                        (mopu:direct-subclasses class))))))
+            (progn
+              (:h1 (variable-display-name class))
+              (when package
+                (:p :class "package"
+                    (package-display-name (package-name package))))
+              (dolist (paragraph (documentation-paragraphs
+                                  (documentation class 'type)))
+                (:p :class "summary"
+                    (:raw (resolve-backtick-quote-links paragraph home))))
+              (when (or mode-p metaclass)
+                (:p :class "facts"
+                    (when mode-p
+                      (:span "mode"))
+                    (when metaclass
+                      (:span
+                       (if (and (symbolp metaclass) (find-class metaclass nil))
+                           (:a :href (nyxt-url 'describe-class :class metaclass)
+                               (variable-display-name metaclass))
+                           (prini-to-string metaclass :pretty nil :package home))))))
+              ;; TODO: Show mode keybindings for a better mode help (would be a
+              ;; killer one)? We'd need to do some hack to inspect the keybindings
+              ;; from the class somehow. Maybe :allocation :class so that keymap is
+              ;; allocated/modified in place?
+              ;; REVIEW: Maybe (make-instance MODE-NAME)?
+              (write-class-section
+               "Slots" slots
+               (lambda (slot)
+                 (nyxt-url 'describe-slot :class class :name slot))
+               (lambda (slot)
+                 (slot-row-detail class slot home)))
+              (write-class-section
+               "Commands" commands
+               (lambda (command)
+                 (nyxt-url 'describe-function :fn command))
+               (lambda (command)
+                 (documentation-first-line command 'function)))
+              (write-class-section
+               "Methods" methods
+               (lambda (method)
+                 (nyxt-url 'describe-function :fn method))
+               (lambda (method)
+                 (documentation-first-line method 'function)))
+              (write-class-section
+               "Direct superclasses" supers
+               (lambda (super)
+                 (nyxt-url 'describe-class :class super))
+               (lambda (super)
+                 (documentation-first-line super 'type)))
+              (write-class-section
+               "Direct subclasses" subs
+               (lambda (sub)
+                 (nyxt-url 'describe-class :class sub))
+               (lambda (sub)
+                 (documentation-first-line sub 'type)))))
+          (progn
+            (:h1 (if (symbolp class) (variable-display-name class) "Class"))
+            (:p :class "summary" "This class is not available."))))))
 
 (define-command-global describe-mode (&key (mode (prompt1 :prompt "Describe mode"
                                                           :sources 'mode-source)))
