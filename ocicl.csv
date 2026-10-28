@@ -25,7 +25,7 @@ chipz, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c
 chunga, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/chunga/chunga.asd
 cl-base64, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-base64/cl-base64.asd
 cl-base64-tests, ghcr.io/ocicl/cl-base64@sha256:702412dbc1ed825e275fb23e22c29527eb786bf644e47c7621bf0dbb34e17c7e, cl-base64-20240503-80496b7/cl-base64-tests.asd
-cl-cef, git+https://github.com/atlas-engineer/cl-cef@27dca56ad69b523243d013595d33a481abd51d87#ref=27dca56ad69b523243d013595d33a481abd51d87, cl-cef-27dca56/cl-cef.asd
+cl-cef, git+https://github.com/atlas-engineer/cl-cef@71a28e9242e29585b84015e45e30da3f19c52476#ref=71a28e9242e29585b84015e45e30da3f19c52476, cl-cef-71a28e9/cl-cef.asd
 cl-cffi-gtk, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-cffi-gtk/gtk/cl-cffi-gtk.asd
 cl-cffi-gtk-cairo, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-cffi-gtk/cairo/cl-cffi-gtk-cairo.asd
 cl-cffi-gtk-demo-cairo, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-cffi-gtk/demo/cairo-demo/cl-cffi-gtk-demo-cairo.asd
