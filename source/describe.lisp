@@ -626,12 +626,350 @@ PRIMARY, ON-BACKGROUND, ACTION, and BACKGROUND- are the theme colors."
           (:p :class "facts"
               (:span "unbound"))))))
 
-(defun format-function-type (function-type)
-  (match function-type
-    ((list 'function argument-types return-types)
-     (with-output-to-string (s)
-       (format s "Argument types: ~s~&" argument-types)
-       (format s "Return types: ~s~&" return-types)))))
+(-> function-kind (symbol) (values string &optional))
+(defun function-kind (symbol)
+  "Return the kind of function SYMBOL names."
+  (cond
+    ((not (fboundp symbol))
+     "unbound")
+    ((macro-function symbol)
+     "macro")
+    ((sym:command-symbol-p symbol)
+     "command")
+    ((typep (symbol-function symbol) 'generic-function)
+     "generic function")
+    (t
+     "function")))
+
+(-> function-lambda-list (symbol) (values list boolean &optional))
+(defun function-lambda-list (symbol)
+  "Return SYMBOL's lambda list.
+The second value is NIL when the lambda list is unknown."
+  (let ((lambda-list (trivial-arguments:arglist symbol)))
+    (if (eq lambda-list :unknown)
+        (values nil nil)
+        (values lambda-list t))))
+
+(-> lambda-list-string (list (maybe package)) (values string &optional))
+(defun lambda-list-string (lambda-list package)
+  "Return LAMBDA-LIST printed on one line in PACKAGE."
+  (if lambda-list
+      (prini-to-string lambda-list :pretty nil :package (or package *package*))
+      "()"))
+
+(-> function-type-parts (symbol) (values (maybe list) &optional))
+(defun function-type-parts (symbol)
+  "Return (ARGUMENT-TYPES RETURN-TYPE) for an ordinary function SYMBOL.
+Generic functions, macros, and unknown types return NIL."
+  #-sbcl
+  (declare (ignore symbol))
+  #+sbcl
+  (when (and (fboundp symbol)
+             (not (macro-function symbol))
+             (not (typep (symbol-function symbol) 'generic-function)))
+    (match (sb-introspect:function-type symbol)
+      ((list 'function argument-types return-type)
+       (list argument-types return-type)))))
+
+(-> source-file-name (pathname) (values (maybe string) &optional))
+(defun source-file-name (pathname)
+  "Return PATHNAME's name and type, without a version component."
+  (let ((name (pathname-name pathname))
+        (type (pathname-type pathname)))
+    (cond
+      ((or (null name) (eq name :unspecific))
+       nil)
+      ((or (null type) (eq type :unspecific))
+       (string-downcase name))
+      (t
+       (string-downcase (format nil "~a.~a" name type))))))
+
+(-> function-source-name (symbol) (values (maybe string) &optional))
+(defun function-source-name (symbol)
+  "Return the file name where SYMBOL's function is defined."
+  #-sbcl
+  (declare (ignore symbol))
+  #+sbcl
+  (when (fboundp symbol)
+    (let ((source (sb-introspect:find-definition-source
+                   (or (macro-function symbol)
+                       (symbol-function symbol)))))
+      (when source
+        (let ((pathname (sb-introspect:definition-source-pathname source)))
+          (when pathname
+            (source-file-name pathname)))))))
+
+(-> specializer-label (t) (values string &optional))
+(defun specializer-label (specializer)
+  "Return a short name for method SPECIALIZER."
+  (let ((*print-length* 4)
+        (*print-lines* 1))
+    (if (ignore-errors (typep specializer 'closer-mop:eql-specializer))
+        (str:trim (prini-to-string
+                   (closer-mop:eql-specializer-object specializer)
+                   :pretty nil))
+        (let ((name (ignore-errors (class-name specializer))))
+          (if (and (symbolp name) name)
+              (variable-display-name name)
+              (str:trim (prini-to-string (or name specializer) :pretty nil)))))))
+
+(-> write-specializer (t) (values null &optional))
+(defun write-specializer (specializer)
+  "Write SPECIALIZER as text, or a link when it names a class."
+  (let ((name (ignore-errors (class-name specializer))))
+    (spinneret:with-html
+      (if (and (symbolp name)
+               name
+               (not (eq name t))
+               (not (ignore-errors (typep specializer 'closer-mop:eql-specializer)))
+               (find-class name nil))
+          (:a :href (nyxt-url 'describe-class :class name)
+              (specializer-label specializer))
+          (:span (specializer-label specializer)))))
+  nil)
+
+(-> method-qualifier-list (t) (values list &optional))
+(defun method-qualifier-list (method)
+  "Return METHOD's qualifiers."
+  #+sbcl
+  (sb-mop:method-qualifiers method)
+  #-sbcl
+  (declare (ignore method))
+  #-sbcl
+  nil)
+
+(-> method-sort-key (t) (values string &optional))
+(defun method-sort-key (method)
+  "Return a sort key for METHOD from its specializers, then its qualifiers."
+  (format nil "~{~a~^ ~} ~{~a~^ ~}"
+          (mapcar #'specializer-label (mopu:method-specializers method))
+          (mapcar (lambda (qualifier)
+                    (prini-to-string qualifier :pretty nil))
+                  (method-qualifier-list method))))
+
+(-> function-bindings (symbol buffer) (values list &optional))
+(defun function-bindings (symbol buffer)
+  "Return (SHORTCUT TITLE) pairs for SYMBOL in every keymap."
+  (let ((print-style (keymaps:name (keyscheme buffer))))
+    (safe-sort
+     (mapcar (lambda (pair)
+               (list (pretty-keyspec (first pair) print-style)
+                     (keymap-section-title (or (keymaps:name (second pair)) "")
+                                           print-style)))
+             (nth-value 1 (keymaps:binding-keys symbol (all-keymaps))))
+     :key (lambda (row)
+            (format nil "~a ~a" (second row) (first row)))
+     :predicate #'string-lessp)))
+
+(-> write-method (t symbol buffer) (values null &optional))
+(defun write-method (method symbol buffer)
+  "Write METHOD as its specializers, its documentation, and a remove control."
+  (let ((package (or (symbol-package symbol) *package*))
+        (qualifiers (method-qualifier-list method))
+        (specializers (mopu:method-specializers method)))
+    (spinneret:with-html
+      (:div :class "method"
+            (:div :class "method-head"
+                  (let ((*print-pretty* nil))
+                    (spinneret:with-html
+                      (:p :class "signature"
+                          (when qualifiers
+                            (:span :class "qualifiers"
+                                   (str:join " " (mapcar (lambda (qualifier)
+                                                           (prini-to-string qualifier :pretty nil))
+                                                         qualifiers))))
+                          "("
+                          (loop for (specializer . rest) on specializers
+                                do (write-specializer specializer)
+                                when rest
+                                  do (spinneret:with-html " "))
+                          ")")))
+                  (:button :class "remove"
+                           :type "button"
+                           :title "Remove method"
+                           :onclick (ps:ps (nyxt/ps:lisp-eval
+                                            (:buffer buffer :title "describe-function")
+                                            (remove-method
+                                             (closer-mop:method-generic-function method)
+                                             method)
+                                            (reload-current-buffer)))
+                           "Remove"))
+            (dolist (paragraph (documentation-paragraphs (documentation method t)))
+              (:p :class "summary"
+                  (:raw (resolve-backtick-quote-links paragraph package))))))
+    nil))
+
+(-> describe-function-css (string string string string string string string)
+    (values string &optional))
+(defun describe-function-css (primary on-background action background background- font mono)
+  "Return the stylesheet for the function page.
+PRIMARY, ON-BACKGROUND, ACTION, BACKGROUND, and BACKGROUND- are the theme colors.
+FONT and MONO are the theme's text and monospace families."
+  (reduce #'uiop:strcat
+          (mapcar #'lass:compile-and-write
+                  (list
+                   '(h1
+                     :margin "0")
+                   `(.package
+                     :margin "7px 0 0"
+                     :font-size "11px"
+                     :line-height "17px"
+                     :color ,primary)
+                   '(.summary
+                     :max-width "80ch"
+                     :margin "17px 0 0"
+                     :font-size "17px"
+                     :line-height "24px")
+                   `(.facts
+                     :display "flex"
+                     :flex-wrap "wrap"
+                     :gap "7px 17px"
+                     :margin "17px 0 0"
+                     :font-size "11px"
+                     :line-height "17px"
+                     :color ,primary)
+                   `(h2
+                     :margin "55px 0 7px"
+                     :font-size "24px"
+                     :font-weight "600"
+                     :line-height "37px"
+                     :color ,on-background)
+                   '("h2:first-of-type"
+                     :margin-top "37px")
+                   `(.signature
+                     :margin "0"
+                     :font-family ,mono
+                     :font-size "17px"
+                     :font-weight "400"
+                     :line-height "24px"
+                     :color ,on-background
+                     :white-space "normal"
+                     :overflow-wrap "anywhere")
+                   `(".signature a"
+                     :color ,on-background
+                     :font-family ,mono
+                     :text-decoration "none"
+                     :opacity "1")
+                   `(".signature a:hover"
+                     :color ,action
+                     :opacity "1")
+                   `(".signature a:focus-visible"
+                     :outline "2px solid"
+                     :outline-color ,action
+                     :outline-offset "2px"
+                     :opacity "1")
+                   `(.qualifiers
+                     :margin-right "7px"
+                     :font-family ,font
+                     :font-weight "600"
+                     :color ,primary)
+                   `(.types
+                     :margin "7px 0 0"
+                     :font-size "11px"
+                     :line-height "17px"
+                     :color ,primary)
+                   '(".types div"
+                     :display "flex"
+                     :align-items "baseline"
+                     :gap "17px")
+                   '(".types .label"
+                     :flex "none"
+                     :font-weight "600")
+                   `(".types div span:last-child"
+                     :min-width "0"
+                     :font-family ,mono
+                     :overflow-wrap "anywhere")
+                   '("table.bindings"
+                     :width "100%"
+                     :margin "0"
+                     :border "none"
+                     :border-collapse "separate"
+                     :border-spacing "0")
+                   `("table.bindings th, table.bindings td"
+                     :border "none"
+                     :border-radius "0"
+                     :background-color "transparent"
+                     :color ,on-background
+                     :font-size "17px"
+                     :font-weight "400"
+                     :line-height "24px"
+                     :text-align "left"
+                     :vertical-align "middle"
+                     :padding "0"
+                     :overflow "hidden"
+                     :text-overflow "ellipsis"
+                     :white-space "nowrap")
+                   `("table.bindings thead th"
+                     :position "sticky"
+                     :top "0"
+                     :z-index "1"
+                     :height "auto"
+                     :padding "0 17px 7px 0"
+                     :background-color ,background
+                     :box-shadow "none"
+                     :font-size "11px"
+                     :font-weight "600"
+                     :line-height "17px"
+                     :color ,primary)
+                   '("table.bindings th:last-child, table.bindings td:last-child"
+                     :padding-right "0")
+                   `("table.bindings tbody td"
+                     :height "44px"
+                     :padding-right "17px"
+                     :box-shadow ,(format nil "inset 0 -1px 0 ~a" background-))
+                   '("table.bindings tbody tr:last-child td"
+                     :box-shadow "none")
+                   '("table.bindings td.shortcut"
+                     :width "1%"
+                     :font-weight "600")
+                   `("table.bindings td.keymap"
+                     :color ,primary)
+                   `("table.bindings tbody tr:hover td"
+                     :background-color ,background-
+                     :box-shadow "none")
+                   '("table.bindings tbody tr:has(+ tr:hover) td"
+                     :box-shadow "none")
+                   '("table.bindings tbody tr:hover td:first-child"
+                     :border-top-left-radius "7px"
+                     :border-bottom-left-radius "7px")
+                   '("table.bindings tbody tr:hover td:last-child"
+                     :border-top-right-radius "7px"
+                     :border-bottom-right-radius "7px")
+                   '(.method
+                     :margin-top "17px")
+                   '(".method:first-of-type"
+                     :margin-top "0")
+                   '(.method-head
+                     :display "flex"
+                     :align-items "baseline"
+                     :gap "17px")
+                   '(".method-head .signature"
+                     :flex "1 1 auto"
+                     :min-width "0"
+                     :margin "0")
+                   `(".method button.remove"
+                     :flex "none"
+                     :margin-left "auto"
+                     :padding "0"
+                     :border "none"
+                     :background-color "transparent"
+                     :font-family ,font
+                     :font-size "11px"
+                     :font-weight "400"
+                     :line-height "17px"
+                     :color ,primary
+                     :white-space "nowrap"
+                     :cursor "pointer")
+                   `(".method button.remove:hover"
+                     :color ,action)
+                   `(".method button.remove:focus-visible"
+                     :outline "2px solid"
+                     :outline-color ,action
+                     :outline-offset "2px")
+                   '(".method .summary"
+                     :margin-top "7px")
+                   '(".method .summary + .summary"
+                     :margin-top "17px")))))
 
 (define-internal-page-command-global describe-function
     (&key
@@ -645,96 +983,83 @@ PRIMARY, ON-BACKGROUND, ACTION, and BACKGROUND- are the theme colors."
   "Inspect a function and show it in a help buffer.
 For generic functions, describe all the methods."
   (if function
-      (let ((input function))
-        (flet ((fun-desc (input)
-                 (spinneret:with-html-string
-                   (:pre (:code (:raw (resolve-backtick-quote-links (documentation input 'function) (symbol-package input)))))
-                   (when (sym:command-symbol-p input)
-                     (let* ((key-keymap-pairs (nth-value 1 (keymaps:pretty-binding-keys input (all-keymaps) :print-style (keymaps:name (keyscheme buffer)))))
-                            (key-keymapname-pairs (mapcar (lambda (pair)
-                                                            (list (first pair)
-                                                                  (keymaps:name (second pair))))
-                                                          key-keymap-pairs)))
-                       (when key-keymapname-pairs
-                         (:nsection
-                           :title "Bindings"
-                           (:table
-                            (:tr
-                             (:th "Binding")
-                             (:th "Keymap name"))
-                            (loop for (binding keymapname) in key-keymapname-pairs
-                                  collect (:tr (:td binding)
-                                               (:td keymapname))))))))
-                   (:nsection
-                     :title "Argument list"
-                     (:pre (:code (prini-to-string (trivial-arguments:arglist input)
-                                                   :package (symbol-package input)))))
-                   #+sbcl
-                   (unless (or (macro-function input)
-                               (eq 'function (sb-introspect:function-type input)))
-                     (:nsection
-                       :title "Type"
-                       (:p (:pre (format-function-type (sb-introspect:function-type input))))))
-                   (:nsection
-                     :title "Describe"
-                     (:pre (:code (with-output-to-string (s) (describe (symbol-function input) s)))))))
-               (method-desc (method)
-                 (spinneret:with-html-string
-                   (:details
-                    (:summary
-                     (:h3 :style "display: inline"
-                          (format nil "~s" input) " "
-                          (:raw (format
-                                 nil "(~{~a~^ ~})"
-                                 (mapcar (lambda (class)
-                                           (cond
-                                             ((ignore-errors (mopu:subclassp class 'standard-object))
-                                              (spinneret:with-html-string
-                                                (:a :href (nyxt-url 'describe-class
-                                                                    :class (class-name class))
-                                                    (prini-to-string (class-name class)))))
-                                             ((ignore-errors (eq t (class-name class)))
-                                              "t")
-                                             (t (nyxt::escaped-literal-print class))))
-                                         (mopu:method-specializers method))))))
-                    (:button
-                     :class "button"
-                     :onclick (ps:ps (nyxt/ps:lisp-eval (:buffer buffer :title "describe-function")
-                                                        (remove-method (closer-mop:method-generic-function method)
-                                                                       method)
-                                                        (reload-current-buffer)))
-                     "Remove method")
-                    (:pre (:code (:raw (resolve-backtick-quote-links
-                                        (documentation method 't) (symbol-package (mopu:method-name method))))))
-                    (:nsection
-                      :level 4
-                      :title "Argument list"
-                      (:pre (:code (prini-to-string (closer-mop:method-lambda-list method)
-                                                    :package (symbol-package input)))))))))
-          (spinneret:with-html-string
-            (:nstyle (style buffer))
-            (:h1 (format nil "~s" input) ; Use FORMAT to keep package prefix.
-                 (cond
-                   ((macro-function input) " (macro)")
-                   ((sym:command-symbol-p input)
-                    " (command)")
-                   ((typep (symbol-function input) 'generic-function)
-                    " (generic function)")))
-            (cond
-              ((not (fboundp input))
-               (:p "Unbound."))
-              ((typep (symbol-function input) 'generic-function)
-               (:raw (fun-desc input))
-               (unless (sym:command-symbol-p input)
-                 (:nsection
-                   :title "Methods"
-                   (:raw (sera:string-join
-                          (mapcar #'method-desc
-                                  (mopu:generic-function-methods
-                                   (symbol-function input)))
-                          "")))))
-              (t
-               (:raw (fun-desc input)))))))
+      (let* ((input function)
+             (package (symbol-package input))
+             (bound (fboundp input))
+             (kind (function-kind input))
+             (source (function-source-name input))
+             (type-parts (when bound (function-type-parts input))))
+        (multiple-value-bind (lambda-list lambda-list-p)
+            (if bound
+                (function-lambda-list input)
+                (values nil nil))
+          (let ((bindings (when (and bound (sym:command-symbol-p input))
+                            (function-bindings input buffer)))
+                (methods (when (and bound
+                                    (not (sym:command-symbol-p input))
+                                    (typep (symbol-function input) 'generic-function))
+                           (safe-sort (mopu:generic-function-methods
+                                       (symbol-function input))
+                                      :key #'method-sort-key
+                                      :predicate #'string-lessp))))
+            (spinneret:with-html-string
+              (:nstyle
+                (describe-function-css theme:primary-color
+                                       theme:on-background-color
+                                       theme:action-color
+                                       theme:background-color
+                                       theme:background-color-
+                                       theme:font-family
+                                       theme:monospace-font-family))
+              (:h1 (variable-display-name input))
+              (when package
+                (:p :class "package"
+                    (package-display-name (package-name package))))
+              (dolist (paragraph (documentation-paragraphs
+                                  (documentation input 'function)))
+                (:p :class "summary"
+                    (:raw (resolve-backtick-quote-links paragraph package))))
+              (:p :class "facts"
+                  (:span kind)
+                  (when source
+                    (:span source)))
+              (when (or lambda-list-p type-parts)
+                (:h2 "Arguments")
+                (when lambda-list-p
+                  (:p :class "signature"
+                      (lambda-list-string lambda-list package)))
+                (when type-parts
+                  (destructuring-bind (argument-types return-type) type-parts
+                    (when (or argument-types (not (eq return-type '*)))
+                      (:div :class "types"
+                            (when argument-types
+                              (:div
+                               (:span :class "label" "Argument types")
+                               (:span (lambda-list-string argument-types package))))
+                            (unless (eq return-type '*)
+                              (:div
+                               (:span :class "label" "Return types")
+                               (:span (if (listp return-type)
+                                          (lambda-list-string return-type package)
+                                          (prini-to-string return-type
+                                                           :pretty nil
+                                                           :package (or package *package*)))))))))))
+              (when bindings
+                (:h2 "Bindings")
+                (:table :class "bindings"
+                        (:thead
+                         (:tr
+                          (:th "Shortcut")
+                          (:th "Keymap")))
+                        (:tbody
+                         (dolist (binding bindings)
+                           (:tr
+                            (:td :class "shortcut" (first binding))
+                            (:td :class "keymap" (second binding)))))))
+              (when methods
+                (:h2 "Methods")
+                (dolist (method methods)
+                  (write-method method input buffer)))))))
       (prompt :prompt "Describe function"
               :sources 'function-source)))
 
