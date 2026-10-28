@@ -657,12 +657,6 @@ Any other style keeps the keyspec."
 (define-internal-page describe-bindings (&key (buffer-id (id (current-buffer))))
     (:title "*Help-bindings*" :page-mode 'nyxt/mode/help:help-mode)
   "Show a list of all available keybindings for buffer corresponding to BUFFER-ID."
-  ;; One table, grouped by keymap. Rows are a single 44px line: command,
-  ;; shortcut, description. Section titles are 24px, a step above the 17px
-  ;; command names. 55px above a later title (more than one row) opens the
-  ;; group; 7px under the title keeps it with its commands. The first title
-  ;; sits 17px under the column labels. 17px gutters the columns. Hairlines
-  ;; sit on the row edge and drop out under the hover.
   (if-let ((buffer (buffer-get buffer-id)))
     (if (input-buffer-p buffer)
         (let ((print-style (keymaps:name (keyscheme buffer))))
@@ -705,6 +699,10 @@ Any other style keeps the keyspec."
                   :border-collapse "separate"
                   :border-spacing "0"
                   :table-layout "fixed")
+                '("table.bindings col.command"
+                  :width "26%")
+                '("table.bindings col.shortcut"
+                  :width "22%")
                 `("table.bindings th, table.bindings td"
                   :border "none"
                   :border-radius "0"
@@ -719,24 +717,6 @@ Any other style keeps the keyspec."
                   :overflow "hidden"
                   :text-overflow "ellipsis"
                   :white-space "nowrap")
-                `("table.bindings thead th"
-                  :position "sticky"
-                  :top "0"
-                  :z-index "1"
-                  :height "32px"
-                  :padding "0 17px 7px 0"
-                  :font-size "11px"
-                  :font-weight "600"
-                  :line-height "17px"
-                  :color ,theme:primary-color
-                  :background-color ,theme:background-color
-                  :box-shadow ,(format nil "inset 0 -1px 0 ~a" theme:background-color-))
-                '("table.bindings thead th:last-child"
-                  :padding-right "0")
-                '("table.bindings thead th:nth-child(1)"
-                  :width "26%")
-                '("table.bindings thead th:nth-child(2)"
-                  :width "22%")
                 `("table.bindings tbody td"
                   :height "44px"
                   :padding-right "17px"
@@ -797,11 +777,10 @@ Any other style keeps the keyspec."
               (:h1 "Bindings")
               (if-let ((groups (groups)))
                 (:table :class "bindings"
-                  (:thead
-                   (:tr
-                    (:th "Command")
-                    (:th "Shortcut")
-                    (:th "Description")))
+                  (:colgroup
+                   (:col :class "command")
+                   (:col :class "shortcut")
+                   (:col))
                   (:tbody
                    (dolist (group groups)
                      (:tr :class "group"
