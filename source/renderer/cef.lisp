@@ -92,6 +92,23 @@
   (:metaclass user-class)
   (:documentation "CEF browser class."))
 
+(-> install-window-icon () (values boolean &optional))
+(defun install-window-icon ()
+  "Give CEF Nyxt's icons so a running window is not drawn with Chromium's logo.
+The base image is 16 pixels. Larger files use the ratio of their pixel size
+to that base, which is the scale CEF stores on an icon."
+  (let ((installed nil))
+    (loop for (name scale) in '(("nyxt_16x16.png" 1.0)
+                                ("nyxt_32x32.png" 2.0)
+                                ("nyxt_128x128.png" 8.0)
+                                ("nyxt_256x256.png" 16.0)
+                                ("nyxt_512x512.png" 32.0))
+          for png = (gethash name *static-data*)
+          when (and png (plusp (length png)))
+            do (cef:add-app-icon scale png)
+               (setf installed t))
+    installed))
+
 (defun configure-appimage-cef (interface)
   "Point INTERFACE at the CEF runtime inside an AppImage.
 APPDIR is set by the AppImage runtime. Development builds leave the
@@ -141,6 +158,8 @@ defaults, which resolve next to the cl-cef system."
                   (cef:launch-options interface))
       (setf (cef:launch-options interface)
             (append (cef:launch-options interface) '("--class=nyxt"))))
+    (cef:set-window-class "nyxt")
+    (install-window-icon)
     (cef:launch interface)
     (when (adblocking-enabled-p browser)
       (cef:default-block (make-instance 'cef:adblocker)))
