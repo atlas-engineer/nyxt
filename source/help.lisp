@@ -602,10 +602,8 @@ The value is saved to clipboard."
   (spinneret:with-html-string
     (:nstyle
       '(body :max-width "80ch")
-      ;; Headings and links share the theme gray. One step darker than
-      ;; `primary-color' so the long pages stay readable.
-      `("h2, h3, h4, h5, h6, a, .link"
-        :color ,theme:primary-color-))
+      `("a, .link"
+        :color ,theme:heading-color))
     (:h1 "Nyxt Manual")
     (:ntoc
       (tutorial-content)
@@ -617,10 +615,8 @@ The value is saved to clipboard."
   (spinneret:with-html-string
     (:nstyle
       '(body :max-width "80ch")
-      ;; Headings and links share the theme gray. One step darker than
-      ;; `primary-color' so the long pages stay readable.
-      `("h2, h3, h4, h5, h6, a, .link"
-        :color ,theme:primary-color-))
+      `("a, .link"
+        :color ,theme:heading-color))
     (:h1 "Nyxt tutorial")
     (:p "The following tutorial introduces core concepts and
 basic usage.  For more details, especially regarding configuration, see

@@ -150,7 +150,7 @@ inherited from the superclasses.")
         :margin-top "2em")
       `("h1,h2,h3,h4,h5,h6"
         :font-family "public sans"
-        :color ,theme:primary-color)
+        :color ,theme:heading-color)
       `(h1
         :margin "37px 0 24px"
         :font-size "37px"

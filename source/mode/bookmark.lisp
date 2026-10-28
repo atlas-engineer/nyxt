@@ -441,12 +441,11 @@ Splits bookmarks into groups by tags."
             :margin-top "37px")
           '(".bookmark-group:first-of-type"
             :margin-top "0")
-          `(".bookmark-group h2"
+          '(".bookmark-group h2"
             :margin "0 0 7px"
             :font-size "17px"
             :font-weight "600"
-            :line-height "24px"
-            :color ,theme:on-background-color))
+            :line-height "24px"))
         (render-menu 'bookmark-mode bookmarks-buffer)
         (cond
           ((null groups)
