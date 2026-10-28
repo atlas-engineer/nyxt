@@ -27,6 +27,9 @@ interfaces. E.g. ~background+~ and ~background-~.
 
 Additionally, a foreground color is defined. E.g. ~on-background~.
 
+~heading~ is the text color for section titles. It has no plus, minus, or
+on- variation. When omitted, it falls back to ~primary-~.
+
 This rationale is loosely based on [[https://m2.material.io/design/material-theming/implementing-your-theme.html][Google Material Design Guidelines]].
 
 ** Example

@@ -60,6 +60,8 @@
     :documentation "Less contrasting variation of `warning-color'.")
    (on-warning-color
     :documentation "The color for elements/text in front of `warning-color'.")
+   (heading-color
+    :documentation "Color for headings. Darker than `primary-color'. When omitted, defaults to `primary-color-'.")
    (font-family
     "Public Sans"
     :documentation "The font family to use by default.")
@@ -93,7 +95,11 @@
           do (when (and (not (slot-value theme plus-color))
                         (slot-value theme regular-color))
                (setf (slot-value theme plus-color)
-                     (slot-value theme regular-color))))))
+                     (slot-value theme regular-color)))))
+  (unless (slot-value theme 'heading-color)
+    (setf (slot-value theme 'heading-color)
+          (or (slot-value theme 'primary-color-)
+              (slot-value theme 'on-background-color)))))
 
 (export-always 'dark-p)
 (defmethod dark-p ((theme theme))
@@ -146,6 +152,7 @@ Example:
                  :primary-color+    "#999999"
                  :primary-color     "#686868"
                  :primary-color-    "#555555"
+                 :heading-color     "#444444"
                  :secondary-color+  "#BFBFBF"
                  :secondary-color   "#A6A6A6"
                  :secondary-color-  "#909090"
@@ -172,6 +179,7 @@ Example:
                  :primary-color- "#5E81AC"
                  :primary-color "#5E81AC"
                  :primary-color+ "#81A1C1"
+                 :heading-color "#5E81AC"
                  :on-primary-color "#ECEFF4"
                  :secondary-color- "#4C566A"
                  :secondary-color "#4C566A"

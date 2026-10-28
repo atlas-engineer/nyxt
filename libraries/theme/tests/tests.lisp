@@ -59,6 +59,19 @@
                                       (funcall on-color theme)
                                       min-color--contrast)))))
 
+(define-test heading-color ()
+  (assert-string= "#444444" (theme:heading-color theme:+light-theme+))
+  (assert-string= "#5E81AC" (theme:heading-color theme:+dark-theme+))
+  (assert-true (>= (theme:contrast-ratio
+                    (theme:heading-color theme:+light-theme+)
+                    (theme:background-color theme:+light-theme+))
+                   4.5))
+  (let ((theme (make-instance 'theme:theme
+                              :background-color "white"
+                              :primary-color "#686868"
+                              :primary-color- "#555555")))
+    (assert-string= "#555555" (theme:heading-color theme))))
+
 (define-test default-light-theme-contrast ()
   (assert-contrast theme:+light-theme+))
 
