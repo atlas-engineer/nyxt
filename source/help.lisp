@@ -417,9 +417,10 @@ The value is saved to clipboard."
 (define-internal-page-command-global new ()
     (buffer "*New buffer*")
   "Display a page suitable as `default-new-buffer-url'."
-  ;; The logo and the two actions are one group, locked to the same height.
-  ;; The page list starts one step (37px) below that group. Content and the
-  ;; corner credit share that same 37px inset.
+  ;; The logo and the two actions are one group. Each action is a 37px
+  ;; control with its shortcut on the right; the two stack 17px apart and
+  ;; center on the logo. The page list starts one step (37px) below that
+  ;; group. Content and the corner credit share that same 37px inset.
   (labels ((command-row (heading detail description command)
              "Present COMMAND as a name plus its binding."
              (spinneret:with-html
@@ -469,40 +470,50 @@ The value is saved to clipboard."
         '(.actions
           :display "flex"
           :flex-direction "column"
-          :align-items "flex-start")
-        '("div.actions > div"
-          :display "flex"
-          :align-items "center")
-        '("div.actions > div:first-child"
-          :margin-bottom "17px")
+          :align-items "stretch"
+          :gap "17px")
         `("button.set-url, button.execute-command"
           :appearance "none"
-          :display "inline-flex"
+          :display "flex"
           :align-items "center"
-          :justify-content "center"
+          :justify-content "space-between"
+          :gap "17px"
           :box-sizing "border-box"
-          :min-width "180px"
-          :height "40px"
+          :height "37px"
           :margin "0"
           :padding "0 17px"
           :border "none"
           :border-radius "7px"
+          :background-color ,theme:background-color+
+          :box-shadow ,(format nil "inset 0 0 0 1px ~a" theme:background-color-)
+          :color ,theme:on-background-color
           :font-size "17px"
           :font-weight "400"
           :line-height "24px"
-          :cursor "pointer")
+          :white-space "nowrap"
+          :cursor "pointer"
+          :opacity "1")
         `("button.set-url"
-          :background-color ,theme:action-color
-          :color ,theme:on-primary-color)
-        `("button.execute-command"
-          :background-color ,theme:primary-color
-          :color ,theme:on-primary-color)
-        '("button.set-url:hover, button.execute-command:hover"
-          :opacity "0.8")
-        `(.binding
-          :margin-left "12px"
           :font-weight "600"
-          :color ,theme:secondary-color)
+          :color ,theme:action-color)
+        `("button.set-url:hover, button.execute-command:hover, button.set-url:active, button.execute-command:active"
+          :background-color ,theme:background-color-
+          :opacity "1")
+        `("button.set-url:hover, button.set-url:active"
+          :color ,theme:action-color)
+        `("button.execute-command:hover, button.execute-command:active"
+          :color ,theme:on-background-color)
+        `("button.set-url:focus-visible, button.execute-command:focus-visible"
+          :outline "2px solid"
+          :outline-color ,theme:action-color
+          :outline-offset "2px"
+          :opacity "1")
+        `("button.set-url .binding, button.execute-command .binding"
+          :flex "none"
+          :font-size "11px"
+          :font-weight "400"
+          :line-height "17px"
+          :color ,theme:primary-color)
         `(.copyright
           :position "fixed"
           :z-index "1"
@@ -521,22 +532,26 @@ The value is saved to clipboard."
       (:div :class "start"
             (:div :class "logo" (:raw (glyph-logo *browser*)))
             (:div :class "actions"
-                  (:div
-                   (:nbutton :class "set-url"
-                             :text "Set-URL"
-                             :title "Open an address."
-                             :buffer buffer
-                             '(set-url))
-                   (:span :class "binding"
-                          (format nil "(~a)" (binding-keys 'set-url))))
-                  (:div
-                   (:nbutton :class "execute-command"
-                             :text "Execute-Command"
-                             :title "Run a command by name."
-                             :buffer buffer
-                             '(execute-command))
-                   (:span :class "binding"
-                          (format nil "(~a)" (binding-keys 'execute-command))))))
+                  (:button :class "set-url"
+                           :type "button"
+                           :title "Open an address."
+                           :onclick (ps:ps
+                                      (nyxt/ps:lisp-eval
+                                       (:title "Set URL"
+                                        :buffer buffer)
+                                       (set-url)))
+                           "Set URL"
+                           (:span :class "binding" (binding-keys 'set-url)))
+                  (:button :class "execute-command"
+                           :type "button"
+                           :title "Run a command by name."
+                           :onclick (ps:ps
+                                      (nyxt/ps:lisp-eval
+                                       (:title "Execute command"
+                                        :buffer buffer)
+                                       (execute-command)))
+                           "Execute command"
+                           (:span :class "binding" (binding-keys 'execute-command)))))
       (:ul :class "list"
            (page-row "Bookmarks"
                      "Saved pages"
