@@ -95,6 +95,21 @@ See `sym:package-functions' for an example of LISTER."
       (str:concat (string-upcase (subseq name 0 1))
                   (string-downcase (subseq name 1)))))
 
+(-> variable-display-name (symbol) (values string &optional))
+(defun variable-display-name (symbol)
+  "Return SYMBOL's name in lowercase, with a leading colon when it is a keyword."
+  (let ((name (string-downcase (symbol-name symbol))))
+    (if (keywordp symbol)
+        (str:concat ":" name)
+        name)))
+
+(-> variable-kind (symbol) (values string &optional))
+(defun variable-kind (symbol)
+  "Return whether SYMBOL is a constant or a special variable."
+  (if (constantp symbol)
+      "constant"
+      "special"))
+
 (-> documentation-paragraphs ((maybe string)) (values (list-of string) &optional))
 (defun documentation-paragraphs (string)
   "Return the non-empty paragraphs of STRING, each collapsed to one line."
@@ -300,20 +315,193 @@ Otherwise prompt for matches."
         :input input
         :sources sources)))))
 
+(-> value-title (t) (values string &optional))
+(defun value-title (value)
+  "Return a single-line print of VALUE."
+  (let ((*print-lines* 1)
+        (*print-length* *inspector-print-length*))
+    (str:trim (str:replace-all (string #\Newline) " "
+                               (prini-to-string value :pretty nil :circle t)))))
+
+(-> describe-value-css (string string string string) (values string &optional))
+(defun describe-value-css (primary on-background action background-)
+  "Return the stylesheet for a value's type line and structure.
+PRIMARY, ON-BACKGROUND, ACTION, and BACKGROUND- are the theme colors."
+  (reduce #'uiop:strcat
+          (mapcar #'lass:compile-and-write
+                  (list
+                   `(.facts
+                     :display "flex"
+                     :flex-wrap "wrap"
+                     :gap "7px 17px"
+                     :margin "17px 0 0"
+                     :font-size "11px"
+                     :line-height "17px"
+                     :color ,primary)
+                   `(".facts a"
+                     :color ,primary
+                     :text-decoration "none"
+                     :opacity "1")
+                   `(".facts a:hover"
+                     :color ,action
+                     :opacity "1")
+                   `(".facts a:focus-visible"
+                     :outline "2px solid"
+                     :outline-color ,action
+                     :outline-offset "2px")
+                   `(h2
+                     :margin "55px 0 7px"
+                     :font-size "24px"
+                     :font-weight "600"
+                     :line-height "37px"
+                     :color ,on-background)
+                   '("h2:first-of-type"
+                     :margin-top "37px")
+                   '(.value
+                     :margin "0"
+                     :min-width "0"
+                     :max-width "100%"
+                     :font-size "17px"
+                     :line-height "24px")
+                   '(".value div"
+                     :max-width "100%"
+                     :min-width "0")
+                   `(".value pre, .value code"
+                     :margin "0"
+                     :padding "0"
+                     :border-radius "0"
+                     :background-color "transparent"
+                     :color ,on-background
+                     :font-size "17px"
+                     :line-height "24px")
+                   '(".value ul"
+                     :list-style "none"
+                     :margin "0"
+                     :padding "0")
+                   '(".value li"
+                     :font-size "17px"
+                     :line-height "24px")
+                   '(".value dl"
+                     :display "block"
+                     :margin "0")
+                   `(".value dt"
+                     :margin "17px 0 0"
+                     :padding "0"
+                     :border-radius "0"
+                     :background-color "transparent"
+                     :font-size "17px"
+                     :font-weight "400"
+                     :line-height "24px"
+                     :color ,on-background)
+                   '(".value dt:first-of-type"
+                     :margin-top "0")
+                   `(".value dd"
+                     :margin "0"
+                     :max-width "100%"
+                     :min-width "0"
+                     :overflow-x "auto"
+                     :font-size "11px"
+                     :line-height "17px"
+                     :color ,primary)
+                   `(".value dd li, .value dd code, .value dd a, .value dd pre"
+                     :font-size "11px"
+                     :line-height "17px"
+                     :color ,primary)
+                   `(".value a, .value a.link"
+                     :color ,on-background
+                     :text-decoration "none"
+                     :opacity "1")
+                   '(".value a:hover"
+                     :opacity "1")
+                   `(".value a:focus-visible"
+                     :outline "2px solid"
+                     :outline-color ,action
+                     :outline-offset "2px")
+                   `(".value dd a, .value dd a.link"
+                     :color ,primary)
+                   '(".value table"
+                     :width "auto"
+                     :margin "0"
+                     :border "none"
+                     :border-collapse "separate"
+                     :border-spacing "0")
+                   '(".value caption"
+                     :display "none")
+                   `(".value th, .value td"
+                     :border "none"
+                     :border-radius "0"
+                     :background-color "transparent"
+                     :color ,on-background
+                     :font-size "17px"
+                     :font-weight "400"
+                     :line-height "24px"
+                     :text-align "left"
+                     :vertical-align "middle"
+                     :padding "0 17px 0 0"
+                     :height "44px"
+                     :white-space "nowrap"
+                     :box-shadow ,(format nil "inset 0 -1px 0 ~a" background-))
+                   `(".value th"
+                     :height "auto"
+                     :padding "0 17px 7px 0"
+                     :font-size "11px"
+                     :font-weight "600"
+                     :line-height "17px"
+                     :color ,primary
+                     :box-shadow "none")
+                   '(".value th:last-child, .value td:last-child"
+                     :padding-right "0")
+                   '(".value tr:last-child td, .value tr:last-child th"
+                     :box-shadow "none")
+                   `(".value tbody tr:hover td"
+                     :background-color ,background-
+                     :box-shadow "none")
+                   '(".value tbody tr:has(+ tr:hover) td"
+                     :box-shadow "none")
+                   '(".value tbody tr:hover td:first-child"
+                     :border-top-left-radius "7px"
+                     :border-bottom-left-radius "7px")
+                   '(".value tbody tr:hover td:last-child"
+                     :border-top-right-radius "7px"
+                     :border-bottom-right-radius "7px")))))
+
 (define-internal-page describe-value
     (&key id)
     (:title "*Help-value*" :page-mode 'nyxt/mode/help:help-mode)
   "Inspect value under ID and show it in a help buffer."
-  (and-let* ((id id)
-             (value (inspected-value id)))
+  (let ((value (and id (inspected-value id))))
     (spinneret:with-html-string
-      (:h1 (:raw (escaped-literal-print value)))
-      (:dl
-       (:dt "Type")
-       (:dd (:pre (if (sym:class-symbol-p (type-of value))
-                      (:nxref :class-name (type-of value))
-                      (prini-to-string (type-of value))))))
-      (:p (:raw (value->html value))))))
+      (:nstyle
+        '(h1
+          :margin "0"
+          :overflow "hidden"
+          :text-overflow "ellipsis"
+          :white-space "nowrap")
+        '(.summary
+          :max-width "80ch"
+          :margin "17px 0 0"
+          :font-size "17px"
+          :line-height "24px")
+        (describe-value-css theme:primary-color
+                            theme:on-background-color
+                            theme:action-color
+                            theme:background-color-))
+      (if value
+          (progn
+            (:h1 (value-title value))
+            (:p :class "facts"
+                (:span
+                 (let ((type (type-of value)))
+                   (if (and (symbolp type) (find-class type nil))
+                       (:a :href (nyxt-url 'describe-class :class type)
+                           (prini-to-string type))
+                       (prini-to-string type)))))
+            (:h2 "Value")
+            (:div :class "value"
+                  (:raw (value->html value))))
+          (progn
+            (:h1 "Value")
+            (:p :class "summary" "This value is no longer available."))))))
 
 (define-internal-page-command-global describe-package
     (&key (package
@@ -393,24 +581,50 @@ Otherwise prompt for matches."
                                    variable-internal-source))))
     (buffer (str:concat "*Help-" (symbol-name variable) "*") 'nyxt/mode/help:help-mode)
   "Inspect a variable and show it in a help buffer."
-  (let ((*print-case* :downcase))
-    (if (boundp variable)
-        (spinneret:with-html-string
-          (:nstyle (style buffer))
-          (:h1 (format nil "~s" variable)) ; Use FORMAT to keep package prefix.
-          (:pre (:code (:raw (resolve-backtick-quote-links (documentation variable 'variable)
-                                                           (symbol-package variable)))))
-          (:h2 "Type")
-          (:pre (princ-to-string (type-of (symbol-value variable))))
-          (:h2 "Current Value:")
-          (:p (:raw (value->html (symbol-value variable))))
-          (:nsection
-            :title "Describe"
-           (:pre (:code (with-output-to-string (s) (describe variable s))))))
-        (spinneret:with-html-string
-          (:nstyle (style buffer))
-          (:h1 (format nil "~s" variable))
-          (:p "Unbound")))))
+  (let* ((bound (boundp variable))
+         (value (when bound (symbol-value variable)))
+         (type (when bound (type-of value)))
+         (package (symbol-package variable)))
+    (spinneret:with-html-string
+      (:nstyle
+        '(h1
+          :margin "0")
+        `(.package
+          :margin "7px 0 0"
+          :font-size "11px"
+          :line-height "17px"
+          :color ,theme:primary-color)
+        '(.summary
+          :max-width "80ch"
+          :margin "17px 0 0"
+          :font-size "17px"
+          :line-height "24px")
+        (describe-value-css theme:primary-color
+                            theme:on-background-color
+                            theme:action-color
+                            theme:background-color-))
+      (:h1 (variable-display-name variable))
+      (when package
+        (:p :class "package"
+            (package-display-name (package-name package))))
+      (dolist (paragraph (documentation-paragraphs
+                          (documentation variable 'variable)))
+        (:p :class "summary"
+            (:raw (resolve-backtick-quote-links paragraph package))))
+      (if bound
+          (progn
+            (:p :class "facts"
+                (:span (variable-kind variable))
+                (:span
+                 (if (and (symbolp type) (find-class type nil))
+                     (:a :href (nyxt-url 'describe-class :class type)
+                         (prini-to-string type))
+                     (prini-to-string type))))
+            (:h2 "Value")
+            (:div :class "value"
+                  (:raw (value->html value))))
+          (:p :class "facts"
+              (:span "unbound"))))))
 
 (defun format-function-type (function-type)
   (match function-type
