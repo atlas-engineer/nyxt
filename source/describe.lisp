@@ -87,6 +87,24 @@ See `sym:package-functions' for an example of LISTER."
   "Return first non-empty line in STRING."
   (find-if (complement #'uiop:emptyp) (sera:lines string)))
 
+(-> documentation-paragraphs ((maybe string)) (values (list-of string) &optional))
+(defun documentation-paragraphs (string)
+  "Return the non-empty paragraphs of STRING, each collapsed to one line."
+  (if (null string)
+      '()
+      (let ((paragraphs '())
+            (lines '()))
+        (flet ((collect ()
+                 (when lines
+                   (push (str:join " " (nreverse lines)) paragraphs)
+                   (setf lines '()))))
+          (dolist (line (sera:lines string))
+            (if (uiop:emptyp (str:trim line))
+                (collect)
+                (push (str:trim line) lines)))
+          (collect))
+        (nreverse paragraphs))))
+
 (defmethod prompter:object-attributes ((symbol symbol) (source prompter:source))
   (declare (ignore source))
   `(("Name" ,(prini-to-string symbol) (:width 1))
@@ -297,30 +315,66 @@ Otherwise prompt for matches."
   "Inspect a package and show it in a help buffer."
   (let* ((package (find-package package))
          (total-symbols (sym:package-symbols (list package)))
-         (external-symbols (sym:package-symbols (list package) :visibility :external)))
-    (flet ((package-markup (package)
-             (spinneret:with-html
-               (:a :href (nyxt-url 'describe-package :package (package-name package))
-                   (package-name package)))))
+         (external-symbols (sym:package-symbols (list package) :visibility :external))
+         (nicknames (package-nicknames package)))
+    (labels ((package-list (packages)
+               (spinneret:with-html
+                 (:ul :class "list"
+                      (dolist (other (safe-sort packages :key #'package-name))
+                        (let* ((doc (documentation other t))
+                               (detail (or (and doc (first-line doc)) "")))
+                          (:li
+                           (:a :href (nyxt-url 'describe-package
+                                               :package (package-name other))
+                               :title (unless (uiop:emptyp detail) detail)
+                               (:span (package-name other))
+                               (:span detail)))))))))
       (spinneret:with-html-string
-        (:nstyle (style buffer))
+        (:nstyle
+          '(h1
+            :margin "0")
+          `(.nicknames
+            :margin "7px 0 0"
+            :font-size "11px"
+            :line-height "17px"
+            :color ,theme:primary-color)
+          '(.summary
+            :max-width "80ch"
+            :margin "17px 0 0"
+            :font-size "17px"
+            :line-height "24px")
+          `(.counts
+            :display "flex"
+            :gap "17px"
+            :margin "17px 0 0"
+            :font-size "11px"
+            :line-height "17px"
+            :color ,theme:primary-color)
+          `(h2
+            :margin "55px 0 7px"
+            :font-size "24px"
+            :font-weight "600"
+            :line-height "37px"
+            :color ,theme:on-background-color)
+          '("h2:first-of-type"
+            :margin-top "37px"))
         (:h1 (package-name package))
-        (:pre (:code (:raw (resolve-backtick-quote-links (documentation (find-package package) t) package))))
-        (:h2 "Symbols:")
-        (:ul
-         (:li "External: " (length external-symbols))
-         (:li "Internal: " (- (length total-symbols) (length external-symbols)))
-         (:li "Total: " (length total-symbols)))
+        (when nicknames
+          (:p :class "nicknames" (str:join ", " (safe-sort nicknames))))
+        (dolist (paragraph (documentation-paragraphs (documentation package t)))
+          (:p :class "summary"
+              (:raw (resolve-backtick-quote-links paragraph package))))
+        (:p :class "counts"
+            (:span (format nil "~d external" (length external-symbols)))
+            (:span (format nil "~d internal"
+                           (- (length total-symbols) (length external-symbols))))
+            (:span (format nil "~d total" (length total-symbols))))
         (when (package-use-list package)
-          (:h2 "Use list:")
-          (:ul
-           (dolist (use (safe-sort (package-use-list package) :key #'package-name))
-             (:li (package-markup use)))))
+          (:h2 "Uses")
+          (package-list (package-use-list package)))
         (when (package-used-by-list package)
-          (:h2 "Used by list:")
-          (:ul
-           (dolist (use (safe-sort (package-used-by-list package) :key #'package-name))
-             (:li (package-markup use)))))))))
+          (:h2 "Used by")
+          (package-list (package-used-by-list package)))))))
 
 (define-internal-page-command-global describe-variable
     (&key
