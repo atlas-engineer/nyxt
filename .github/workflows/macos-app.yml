@@ -1,0 +1,62 @@
+name: macOS app
+
+on:
+  workflow_dispatch:
+
+jobs:
+  app:
+    name: Build CEF app
+    runs-on: macos-15
+    timeout-minutes: 180
+    env:
+      OCICL_HTTP_RETRIES: "6"
+      OCICL_DOWNLOAD_CONCURRENCY: "2"
+    steps:
+      - name: Check out Nyxt
+        uses: actions/checkout@v7
+
+      - name: Install build packages
+        run: |
+          brew install cmake make openssl@3 sqlite enchant libfixposix pkg-config sbcl ocicl
+
+      - name: Cache SBCL 2.4.5
+        id: sbcl
+        uses: actions/cache@v4
+        with:
+          path: build/host-sbcl
+          key: sbcl-2.4.5-${{ runner.os }}-${{ runner.arch }}
+
+      - name: Build SBCL 2.4.5
+        if: steps.sbcl.outputs.cache-hit != 'true'
+        run: |
+          version=2.4.5
+          prefix="$GITHUB_WORKSPACE/build/host-sbcl"
+          unset SBCL_HOME
+          curl -fsSL -o /tmp/sbcl.tar.bz2 \
+            "https://downloads.sourceforge.net/project/sbcl/sbcl/${version}/sbcl-${version}-source.tar.bz2"
+          tar -xjf /tmp/sbcl.tar.bz2 -C /tmp
+          cd "/tmp/sbcl-${version}"
+          export GNUMAKE=gmake
+          export MAKEFLAGS="-j2"
+          sh make.sh --prefix="$prefix" \
+            --xc-host='sbcl --no-userinit --disable-debugger'
+          sh install.sh
+          rm -rf "/tmp/sbcl-${version}" /tmp/sbcl.tar.bz2
+          "$prefix/bin/sbcl" --version
+
+      - name: Install Ocicl
+        run: ocicl setup
+
+      - name: Build the app
+        run: |
+          export PATH="$GITHUB_WORKSPACE/build/host-sbcl/bin:$PATH"
+          export LISP=sbcl
+          sbcl --version
+          sh .github/macos-app.sh
+
+      - name: Upload app
+        uses: actions/upload-artifact@v7
+        with:
+          name: Nyxt-${{ runner.arch }}.app.tar.gz
+          path: build/macos/Nyxt-*.app.tar.gz
+          if-no-files-found: error

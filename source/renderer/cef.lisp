@@ -130,12 +130,55 @@ defaults, which resolve next to the cl-cef system."
                 (cef:locales-dir-path interface)
                 (uiop:merge-pathnames* #p"locales/" root)))))))
 
+(-> macos-bundle-contents () (or null pathname))
+(defun macos-bundle-contents ()
+  "Contents directory when this executable is inside a macOS app bundle."
+  #+(and darwin sbcl)
+  (let* ((runtime (ignore-errors
+                   (uiop:native-namestring sb-ext:*runtime-pathname*)))
+         (marker "/Contents/MacOS/")
+         (start (and runtime (search marker runtime))))
+    (when start
+      (uiop:ensure-directory-pathname
+       (subseq runtime 0 (+ start (length "/Contents"))))))
+  #-(and darwin sbcl)
+  nil)
+
+(-> configure-macos-cef (cef:interface) null)
+(defun configure-macos-cef (interface)
+  "Point INTERFACE at the CEF framework inside a macOS app bundle.
+Development builds leave the defaults, which resolve next to the cl-cef system.
+Helper bundles are named after the nyxt executable."
+  (declare (ignorable interface))
+  #+darwin
+  (let ((contents (macos-bundle-contents)))
+    (when contents
+      (let* ((resources (uiop:merge-pathnames*
+                         #p"Frameworks/Chromium Embedded Framework.framework/Resources/"
+                         contents))
+             (helper (uiop:merge-pathnames*
+                      (uiop:parse-native-namestring
+                       "Frameworks/nyxt Helper.app/Contents/MacOS/nyxt Helper")
+                      contents))
+             (library (uiop:merge-pathnames* #p"MacOS/libcl-cef.dylib" contents))
+             (locales (uiop:merge-pathnames* #p"locales/" resources)))
+        (when (uiop:file-exists-p library)
+          (setf (uiop:getenv "CL_CEF_LIBRARY") (uiop:native-namestring library)))
+        (when (uiop:file-exists-p helper)
+          (setf (cef:subprocess-path interface) helper))
+        (when (uiop:directory-exists-p resources)
+          (setf (cef:resources-dir-path interface) resources))
+        (when (uiop:directory-exists-p locales)
+          (setf (cef:locales-dir-path interface) locales)))))
+  nil)
+
 (defmethod ffi-initialize ((browser cef-browser) urls startup-timestamp)
   (declare (ignore urls startup-timestamp))
   (log:debug "Initializing CEF Interface")
   (let ((interface (make-instance 'cef:interface)))
     (setf cef:*interface* interface)
     (configure-appimage-cef interface)
+    (configure-macos-cef interface)
     ;; Scheme names and privilege bits are fixed at CEF startup. Handlers are
     ;; attached to the same objects once the UI thread is in its message loop.
     (setf (cef:protocols interface)
