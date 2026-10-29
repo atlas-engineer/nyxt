@@ -96,11 +96,11 @@ opaque badge with a halo so the letters stay readable on any page."
         :background-color ,background
         :color ,foreground
         :font-family ,theme:monospace-font-family
-        :font-size "13px"
+        :font-size "12px"
         :font-weight "bold"
         :font-variant-ligatures "none"
-        :letter-spacing "0.04em"
-        :line-height "1.25"
+        :letter-spacing "0.02em"
+        :line-height "1.2"
         :white-space "nowrap"
         :text-shadow ,(format nil "0 0 1px ~a" background)
         :box-shadow ,(format nil "0 0 0 1px ~a, 0 2px 5px rgba(0, 0, 0, 0.45)" background)
@@ -108,9 +108,9 @@ opaque badge with a halo so the letters stay readable on any page."
                             (+ (x-translation mode)
                                (if (eq (x-placement mode) :right) -100 0))
                             (y-translation mode))
-        :padding "1px 4px 0px 4px"
+        :padding "0 3px"
         :border-color ,theme:primary-color+
-        :border-radius "4px"
+        :border-radius "3px"
         :border-width "2px"
         :border-style "solid"
         :opacity "1"
@@ -352,7 +352,7 @@ drawn later and stays hidden until the element is actually visible."
          (when (and found (not (ps:@ found offscreen)))
            found)))
      (defun nyxt-hint-place (anchor hint right-align-p)
-       (let* ((estimated (+ (* (length hint) 11) 10))
+       (let* ((estimated (+ (* (length hint) 10) 8))
               (left (ps:@ anchor left))
               (top (ps:chain *math (min (ps:chain *math (max (ps:@ anchor top) 0))
                                         (- (ps:@ window inner-height) 18)))))
