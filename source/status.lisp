@@ -133,7 +133,8 @@
         :display "block"
         :flex "none"
         :height "24px"
-        :width "auto")
+        :width "auto"
+        :transform "translateY(2px)")
       `("#url"
         :display "flex"
         :align-items "center"
@@ -188,19 +189,47 @@
       '("#tabs::-webkit-scrollbar"
         :display "none")
       `(".tab"
+        :display "inline-flex"
+        :align-items "center"
+        :gap "4px"
         :flex "none"
         :height "28px"
         :margin 0
-        :padding "0 12px"
+        :padding "0 4px 0 12px"
         :border-radius "7px"
         :font-size "13px"
         :font-weight "400"
-        :line-height "28px"
-        :text-align "center"
+        :line-height "16px"
         :white-space "nowrap"
         :color ,theme:on-secondary-color
         :background-color "transparent"
         :cursor "pointer")
+      `(".tab-close"
+        :display "inline-flex"
+        :align-items "center"
+        :justify-content "center"
+        :flex "none"
+        :box-sizing "border-box"
+        :width "16px"
+        :height "16px"
+        :margin 0
+        :padding 0
+        :border "none"
+        :border-radius "8px"
+        :background-color "transparent"
+        :color "inherit"
+        :font-size "11px"
+        :font-weight "400"
+        :line-height "16px"
+        :cursor "pointer"
+        :transform "translateY(1.5px)")
+      '(".tab-close::before"
+        :content "×"
+        :display "block"
+        :line-height "1"
+        :transform "translateY(-1px)")
+      `(".tab-close:hover"
+        :background-color ,theme:secondary-color)
       `("#modes"
         :display "flex"
         :align-items "center"
@@ -227,6 +256,10 @@
         :color "inherit"
         :background-color "transparent"
         :cursor "pointer")
+      '("#modes .mode-delta"
+        :display "inline-block"
+        :transform "translateY(2px) scaleY(0.65)"
+        :transform-origin "center")
       '(button
         :appearance "none"
         :background-color "transparent"
@@ -297,7 +330,7 @@ This leverages `mode-status' which can be specialized for individual modes."
     (spinneret:with-html
       (:nbutton
         :buffer status
-        :text "±"
+        :text (:raw "<span class=\"mode-delta\">Δ</span>")
         :title (modes-string buffer)
         '(nyxt:toggle-modes))
       (loop for mode in (sort-modes-for-status (enabled-modes buffer))
@@ -408,10 +441,20 @@ or in the path under `page'."
                           tab-display-text
                           (title buffer))
                :onclick (ps:ps
-                          (nyxt/ps:lisp-eval
-                           (:title "select-tab" :buffer status)
-                           (set-current-buffer buffer)))
-               tab-display-text))))))
+                          (unless (ps:chain event target (closest ".tab-close"))
+                            (nyxt/ps:lisp-eval
+                             (:title "select-tab" :buffer status)
+                             (set-current-buffer buffer))))
+               tab-display-text
+               (:button
+                :class "tab-close"
+                :type "button"
+                :title "Close buffer"
+                :onclick (ps:ps
+                           (ps:chain event (stop-propagation))
+                           (nyxt/ps:lisp-eval
+                            (:title "close-tab" :buffer status)
+                            (delete-buffer :buffers buffer))))))))))
 
 (defmethod update-status-modes ((status status-buffer))
   "Update ONLY the modes to avoid redrawing the whole status buffer."
