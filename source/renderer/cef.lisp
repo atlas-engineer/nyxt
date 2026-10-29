@@ -742,8 +742,7 @@ the Chrome-style page."))
 
 (defun place-panel-views (window)
   "Stack the status bar under the page and the message bar under that.
-Each bar is a fixed height. The status document uses vh, which tracks the
-view, so a window-sized view makes the text fill the screen."
+Each bar is a fixed height."
   (let ((message-buffer (message-buffer window))
         (status-buffer (status-buffer window)))
     (cef:set-bar-height status-buffer

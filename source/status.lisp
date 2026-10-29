@@ -9,7 +9,7 @@
     :type (maybe window)
     :documentation "The `window' to which the status buffer is attached.")
    (height
-    36
+    40
     :type integer
     :writer nil
     :reader height
@@ -22,6 +22,7 @@
    (glyph-right (gethash "right.svg" *static-data*))
    (glyph-reload (gethash "reload.svg" *static-data*))
    (glyph-lambda (gethash "lambda.svg" *static-data*))
+   (glyph-plus (gethash "plus.svg" *static-data*))
    (style
     (theme:themed-css (theme *browser*)
       '(:font-face :font-family "public sans" :font-style "normal" :font-weight
@@ -80,102 +81,186 @@
         "format('woff')")
       '(:font-face :font-family "dejavu sans mono" :src
         "url('nyxt-resource:DejaVuSansMono.ttf')" "format('ttf')")
+      '(html
+        :height "100%"
+        :overflow "hidden")
       `(body
-        :background-color ,theme:secondary-color+
+        :display "flex"
+        :align-items "center"
+        :height "100%"
+        :overflow "hidden"
+        :box-sizing "border-box"
+        :background-color ,(format nil "color-mix(in srgb, ~a 55%, ~a)"
+                                  theme:secondary-color+
+                                  theme:background-color)
         :color ,theme:on-secondary-color
         :font-family ,theme:font-family
-        :line-height "100vh"
-        :font-size "40vh"
+        :font-size "13px"
+        :line-height "16px"
         :white-space "nowrap"
+        :user-select "none"
         :padding 0
         :margin 0)
+      '(*
+        :box-sizing "border-box")
       '("#container"
         :display "flex"
-        :justify-content "space-between"
-        :overflow-y "hidden")
-      `("#controls"
-        :z-index "3"
-        :flex-basis "90px"
+        :align-items "center"
+        :flex "auto"
+        :min-width "0"
+        :height "28px"
+        :gap "12px"
+        :padding "0 8px"
+        :overflow "hidden")
+      '("#controls"
         :display "flex"
-        :margin-top "1px")
-      '("#controls > button"
-        :margin-right "-3px"
-        :max-width "24px"
-        :height "35px"
-        :aspect-ratio "1/1")
-      `("#url"
-        :background-color ,theme:background-color-
-        :color ,theme:on-background-color
-        :min-width "100px"
-        :line-height "75vh"
-        :margin "4px"
-        :padding-left "8px"
-        :border-radius "4px"
-        :z-index "2"
-        :flex-grow "3"
-        :flex-shrink "2"
+        :align-items "center"
+        :gap "5px"
+        :flex "none")
+      `("#controls button, #new-buffer"
+        :display "inline-flex"
+        :align-items "center"
+        :justify-content "center"
+        :width "28px"
+        :height "28px"
+        :margin 0
+        :padding 0
         :overflow "hidden"
-        :flex-basis "144px")
+        :border-radius "7px"
+        :color ,theme:on-secondary-color
+        :cursor "pointer")
+      '("#controls svg, #new-buffer svg"
+        :display "block"
+        :flex "none"
+        :height "24px"
+        :width "auto")
+      `("#url"
+        :display "flex"
+        :align-items "center"
+        :gap "5px"
+        :flex "1 1 144px"
+        :min-width "122px"
+        :height "28px"
+        :margin 0
+        :padding "0 12px"
+        :border-radius "7px"
+        :background-color ,theme:background-color+
+        :color ,theme:on-background-color
+        :overflow "hidden"
+        :cursor "pointer")
+      `("#url > span"
+        :flex "none"
+        :font-size "13px"
+        :font-weight "400"
+        :line-height "16px"
+        :color ,theme:on-background-color)
+      '("#url > span:empty"
+        :display "none")
       '("#url button"
+        :flex "auto"
+        :min-width "0"
+        :height "28px"
+        :margin 0
+        :padding 0
+        :overflow "hidden"
+        :text-overflow "ellipsis"
         :text-align "left"
-        :width "100%")
-      `("#tabs"
-        :overflow-x "scroll"
-        :line-height "75vh"
-        :min-width "100px"
-        :text-align "left"
-        :padding-left "3px"
-        :z-index "1"
-        :flex-grow "10"
-        :flex-shrink "4"
-        :flex-basis "144px")
+        :background-color "transparent"
+        :border-radius "0"
+        :font-size "13px"
+        :font-weight "400"
+        :line-height "28px"
+        :cursor "pointer")
+      '("#buffers"
+        :display "flex"
+        :align-items "center"
+        :gap "5px"
+        :flex "1 1 auto"
+        :min-width "0"
+        :overflow "hidden")
+      '("#tabs"
+        :display "flex"
+        :align-items "center"
+        :gap "5px"
+        :flex "0 1 auto"
+        :min-width "40px"
+        :overflow-x "auto")
       '("#tabs::-webkit-scrollbar"
         :display "none")
       `(".tab"
-        :border-radius "4px"
+        :flex "none"
+        :height "28px"
+        :margin 0
+        :padding "0 12px"
+        :border-radius "7px"
+        :font-size "13px"
+        :font-weight "400"
+        :line-height "28px"
+        :text-align "center"
+        :white-space "nowrap"
         :color ,theme:on-secondary-color
-        :display "inline-block"
-        :padding-left "18px"
-        :padding-right "18px"
-        :margin "4px"
-        :text-decoration "transparent"
-        :font "inherit"
-        :outline "inherit")
+        :background-color "transparent"
+        :cursor "pointer")
       `("#modes"
-        :border-radius "4px"
-        :background-color ,theme:secondary-color
-        :color ,theme:on-background-color
-        :padding-left "4px"
-        :text-align "right"
-        :z-index "2"
-        :padding-right "3px"
-        :line-height "75vh"
-        :margin "4px")
-      '("#modes > button"
-        :border-radius "0"
-        :padding-left "3px"
-        :padding-right "3px")
+        :display "flex"
+        :align-items "center"
+        :flex "none"
+        :height "28px"
+        :margin 0
+        :padding 0
+        :overflow-x "auto"
+        :background-color "transparent"
+        :color ,theme:on-secondary-color
+        :font-size "13px"
+        :font-weight "400"
+        :line-height "28px")
       '("#modes::-webkit-scrollbar"
         :display "none")
-      '(button
-        :background "transparent"
+      '("#modes button"
+        :height "28px"
+        :margin 0
+        :padding "0 5px"
+        :border-radius "7px"
+        :font-size "13px"
+        :font-weight "400"
+        :line-height "28px"
         :color "inherit"
-        :text-decoration "transparent"
-        :border "transparent"
-        :border-radius "2px"
+        :background-color "transparent"
+        :cursor "pointer")
+      '(button
+        :appearance "none"
+        :background-color "transparent"
+        :color "inherit"
+        :text-decoration "none"
+        :border "none"
+        :border-radius "7px"
+        :margin 0
         :padding 0
         :font "inherit"
-        :outline "inherit")
-      `((:and (:or .button .tab "#url") :hover)
-        :cursor "pointer"
-        :background-color ,theme:action-color
-        :color ,theme:on-action-color)
-      `((:and (:or .button .tab) :active)
-        :background-color ,theme:action-color-
-        :color ,theme:on-action-color)
+        :outline "none")
+      `("#controls button:hover, #new-buffer:hover, #modes button:hover"
+        :background-color ,theme:secondary-color)
+      `(".tab:hover"
+        :background-color ,(format nil "color-mix(in srgb, ~a 60%, ~a)"
+                                   theme:secondary-color
+                                   theme:background-color))
+      `("#url:hover"
+        :background-color ,theme:background-color)
+      `("button:focus-visible"
+        :outline "2px solid"
+        :outline-color ,theme:action-color
+        :outline-offset "0")
       `(.selected-tab
-        :background-color ,theme:background-color+
-        :color ,theme:on-background-color))))
+        :background-color ,(format nil "color-mix(in srgb, ~a 60%, ~a)"
+                                   theme:secondary-color
+                                   theme:background-color)
+        :color ,theme:on-secondary-color
+        :font-weight "400")
+      `(".selected-tab:hover"
+        :background-color ,(format nil "color-mix(in srgb, ~a 60%, ~a)"
+                                   theme:secondary-color
+                                   theme:background-color)
+        :color ,theme:on-secondary-color))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
@@ -319,6 +404,9 @@ or in the path under `page'."
                :class (if (eq current-buffer buffer)
                           "selected-tab tab"
                           "tab")
+               :title (if (uiop:emptyp (title buffer))
+                          tab-display-text
+                          (title buffer))
                :onclick (ps:ps
                           (nyxt/ps:lisp-eval
                            (:title "select-tab" :buffer status)
@@ -346,13 +434,24 @@ or in the path under `page'."
           (ps:lisp
            (spinneret:with-html-string (format-status-url status))))))
 
+(export-always 'format-status-new-buffer)
+(defmethod format-status-new-buffer ((status status-buffer))
+  "Render the new-buffer button to HTML string."
+  (spinneret:with-html
+    (:nbutton
+      :buffer status
+      :id "new-buffer"
+      :text (:raw (glyph-plus status))
+      :title "New buffer"
+      '(nyxt:make-buffer-focus))))
+
 (export-always 'format-status)
 (defmethod format-status ((status status-buffer))
   "Return a string corresponding to the body of the HTML document of STATUS.
 
 To override all that is displayed on STATUS, redefine this method. To partially
-override it, redefine methods such as `format-status-url' or
-`format-status-modes'."
+override it, redefine methods such as `format-status-url',
+`format-status-tabs', or `format-status-new-buffer'."
   (let* ((buffer (active-buffer (window status))))
     (spinneret:with-html-string
       (:div :id "container"
@@ -361,8 +460,10 @@ override it, redefine methods such as `format-status-url' or
             (:div :id "url"
                   (format-status-load-status status)
                   (format-status-url status))
-            (:div :id "tabs"
-                  (format-status-tabs status))
+            (:div :id "buffers"
+                  (:div :id "tabs"
+                        (format-status-tabs status))
+                  (format-status-new-buffer status))
             (:div :id "modes"
                   :title (modes-string buffer)
                   (format-status-modes status))))))
