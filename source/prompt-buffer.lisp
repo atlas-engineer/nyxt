@@ -262,10 +262,12 @@ some point.")
           :height "5px")
         `("#toggle-attributes"
           :color ,theme:primary-color)
-        '("#toggle-attributes svg"
-          :display "block"
-          :width "8px"
-          :height "12px")
+        '("#toggle-attributes .attribute-delta"
+          :display "inline-block"
+          :font-size "13px"
+          :line-height "1"
+          :transform "scaleY(0.65)"
+          :transform-origin "center")
         `(".suggestion-and-mark-count"
           :flex "none"
           :font-family ,theme:monospace-font-family
@@ -734,7 +736,7 @@ so the columns line up. Shorter rows leave the extra cells empty."
                    (:div
                     (:nbutton
                       :id "toggle-attributes"
-                      :text (:raw (gethash "plus-minus.svg" *static-data*))
+                      :text (:raw "<span class=\"attribute-delta\">Δ</span>")
                       :title (format nil "Toggle attributes display (~a)"
                                      (binding-keys
                                       (sym:resolve-symbol
