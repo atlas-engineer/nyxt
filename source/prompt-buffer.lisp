@@ -109,158 +109,249 @@ some point.")
         '(:font-face :font-family "dejavu sans mono" :src
           "url('nyxt-resource:DejaVuSansMono.ttf')" "format('ttf')")
         '(*
-          :font-size "14px"
-          :line-height "18px")
+          :box-sizing "border-box")
+        '(html
+          :height "100%")
         `(body
-          :background-color ,theme:background-color-
+          :height "100%"
+          :overflow "hidden"
+          :background-color ,theme:background-color
+          :color ,theme:on-background-color
           :font-family ,theme:font-family
+          :font-size "13px"
+          :font-weight "400"
+          :line-height "16px"
           :margin "0")
         '("#root"
           :height "100%"
           :display "grid"
           :grid-template-rows "auto 1fr")
         `("#prompt-area"
-          :margin "4px"
-          :border-radius "3px"
-          :background-color ,theme:primary-color
-          :color ,theme:on-primary-color
-          :border-top "2px solid"
-          :border-bottom "2px solid"
-          :border-color ,theme:primary-color
           :display "grid"
-          :grid-template-columns "auto auto 1fr auto auto")
-        `("#prompt"
-          :background-color ,theme:primary-color
-          :color ,theme:on-primary-color
-          :padding-left "10px"
-          :line-height "28px"
+          :grid-template-columns "auto auto minmax(0, 1fr) auto auto"
+          :align-items "center"
+          :height "40px"
+          :gap "8px"
+          :padding "0 8px"
+          :background-color ,(format nil "color-mix(in srgb, ~a 55%, ~a)"
+                                     theme:secondary-color+
+                                     theme:background-color)
+          :color ,theme:on-secondary-color
+          :box-shadow ,(format nil "inset 0 -1px 0 ~a" theme:background-color-))
+        '("#prompt"
           :max-width "40ch"
           :overflow "hidden"
           :white-space "nowrap"
-          :text-overflow "ellipsis")
-        '("#prompt-input"
-          :min-width "10ch"
-          :line-height "28px"
-          :padding-right "10px")
+          :text-overflow "ellipsis"
+          :font-size "13px"
+          :font-weight "400"
+          :line-height "28px")
         `("#prompt-extra"
           :font-family ,theme:monospace-font-family
-          :min-width "12px"
-          :background-color ,theme:primary-color
-          :color ,theme:on-primary-color
+          :font-size "13px"
+          :font-weight "400"
           :line-height "28px"
-          :padding-right "5px")
-        `("#prompt-modes"
-          :line-height "28px"
-          :padding-left "3px"
-          :padding-right "3px")
-        `("#close-button"
-          :text-align "right"
-          :padding-right "7px"
-          :background-color ,theme:primary-color
-          :min-width "24px"
-          :line-height "28px"
-          :font-weight "bold"
-          :font-size "20px")
+          :white-space "nowrap")
+        '("#prompt-modes"
+          :max-width "24ch"
+          :overflow "hidden"
+          :white-space "nowrap"
+          :text-overflow "ellipsis"
+          :font-size "13px"
+          :font-weight "400"
+          :line-height "28px")
+        '("#close-button"
+          :display "flex"
+          :align-items "center"
+          :justify-content "center")
+        '("#close-button button"
+          :display "inline-flex"
+          :align-items "center"
+          :justify-content "center"
+          :width "28px"
+          :height "28px"
+          :border-radius "7px"
+          :font-size "17px"
+          :font-weight "400"
+          :line-height "1")
         '(button
-          :background "transparent"
+          :appearance "none"
+          :background-color "transparent"
           :color "inherit"
           :text-decoration "none"
           :border "none"
-          :padding 0
+          :border-radius "7px"
+          :margin "0"
+          :padding "0"
           :font "inherit"
-          :outline "inherit")
-        `(.button.action
-          :background-color ,theme:action-color
-          :color ,theme:on-action-color)
-        `((:and .button :hover)
-          :cursor "pointer"
-          :color ,theme:action-color)
-        `(".button:hover svg path"
-          :stroke ,theme:action-color-)
-        `((:and .button (:or :visited :active))
-          :color ,theme:background-color)
-        `(input
-          :font-family ,theme:monospace-font-family)
-        `("#input"
-          :border-radius "4px"
-          :height "28px"
-          :background-color ,theme:background-color
-          :color ,theme:on-background-color
-          :border 2px solid ,theme:secondary-color
           :outline "none"
+          :cursor "pointer")
+        `("#input"
+          :height "28px"
           :width "100%"
-          :autofocus "true")
-        `("#input:focus"
-          :border-color
-          ,(cl-colors-ng:print-hex theme:action-color- :print-alpha 0.40))
-        '(".source"
-          :margin-left "10px"
-          :margin-top "15px")
-        `(".source-name"
-          :padding-left "4px"
-          :background-color ,theme:secondary-color
-          :color ,theme:on-secondary-color
-          :display "flex"
-          :justify-content "space-between"
-          :align-items "stretch"
-          :border-radius "3px")
-        '(".source-name > div"
-          :line-height "26px")
-        '(".source-name > div > button"
-          :padding "5px 5px 5px 0px"
-          :min-height "100%")
-        '("#next-source > svg, #previous-source > svg"
-          :margin-bottom "2px"
-          :height "5px")
-        '("#previous-source"
-          :padding 0)
-        '("#next-source"
-          :padding 0)
-        `("#suggestions"
+          :margin "0"
+          :padding "6px 12px"
+          :border "none"
+          :border-radius "7px"
+          :outline "none"
+          :background-color ,theme:background-color+
           :color ,theme:on-background-color
-          :margin-right "3px"
-          :overflow "hidden")
-        `(".suggestion-and-mark-count"
-          :font-family ,theme:monospace-font-family)
-        `(".source-content"
-          :box-sizing "border-box"
-          :padding-left "16px"
-          :margin-left "2px"
-          :width "100%"
-          :table-layout "fixed"
-          (td
-           :color ,theme:on-background-color
-           :overflow "hidden"
-           :text-overflow "ellipsis"
-           :border-radius "2px"
-           :white-space "nowrap"
-           :height "20px"
-           :padding-left "4px")
-          ("tr:not(:first-child)"
-           :font-family ,theme:monospace-font-family)
-          ("tr:hover"
-           :background-color ,theme:action-color-
-           :color ,theme:on-action-color
-           :cursor "pointer")
-          (th
-           :background-color ,theme:secondary-color+
-           :color ,theme:on-secondary-color
-           :font-weight "normal"
-           :padding-left "4px"
-           :border-radius "2px"
-           :text-align "left"))
-        `(".source-content.composite tr"
-          :font-family ,theme:monospace-font-family)
-        `("#selection"
+          :font-family ,theme:font-family
+          :font-size "13px"
+          :font-weight "400"
+          :line-height "16px"
+          :caret-color ,theme:on-background-color)
+        `("#input::selection"
           :background-color ,theme:action-color
-          :color ,theme:on-action-color)
-        `(.marked
-          :background-color ,theme:secondary-color
-          :color ,theme:on-secondary-color
-          :font-weight "bold")
-        `(.selected
-          :background-color ,theme:primary-color
-          :color ,theme:on-primary-color))
+          :color ,(let ((rgb (cl-colors-ng:as-rgb theme:on-background-color)))
+                    (cl-colors-ng:print-hex
+                     (cl-colors-ng:rgb (- 1 (cl-colors-ng:rgb-red rgb))
+                                       (- 1 (cl-colors-ng:rgb-green rgb))
+                                       (- 1 (cl-colors-ng:rgb-blue rgb)))
+                     :print-alpha nil)))
+        `("button:focus-visible"
+          :outline "2px solid"
+          :outline-color ,theme:action-color
+          :outline-offset "0")
+        `("#close-button button:hover"
+          :background-color ,theme:secondary-color)
+        `("#suggestions"
+          :overflow "hidden"
+          :padding-top "7px"
+          :color ,theme:on-background-color)
+        '(".source"
+          :padding "0 8px")
+        '(".source + .source"
+          :margin-top "37px")
+        `(".source-name"
+          :display "flex"
+          :align-items "center"
+          :justify-content "space-between"
+          :gap "5px"
+          :height "28px"
+          :color ,theme:on-background-color
+          :font-size "13px"
+          :font-weight "400"
+          :line-height "28px")
+        '(".source-name > div"
+          :display "flex"
+          :align-items "center"
+          :gap "5px"
+          :min-width "0")
+        '(".source-name > div:first-child"
+          :flex "1"
+          :overflow "hidden")
+        `(".source-name button"
+          :display "inline-flex"
+          :align-items "center"
+          :justify-content "center"
+          :flex "none"
+          :width "28px"
+          :height "28px"
+          :border-radius "7px"
+          :color ,theme:on-background-color)
+        `(".source-name button:hover"
+          :background-color ,theme:background-color-)
+        '("#next-source, #previous-source"
+          :width "8px")
+        '("#previous-source"
+          :margin-left "-3px")
+        '("#next-source svg, #previous-source svg"
+          :display "block"
+          :width "8px"
+          :height "5px")
+        `("#toggle-attributes"
+          :color ,theme:primary-color)
+        '("#toggle-attributes svg"
+          :display "block"
+          :width "8px"
+          :height "12px")
+        `(".suggestion-and-mark-count"
+          :flex "none"
+          :font-family ,theme:monospace-font-family
+          :font-size "11px"
+          :line-height "16px"
+          :color ,theme:primary-color)
+        `(".source-content"
+          :width "100%"
+          :margin "0"
+          :border "none"
+          :border-collapse "separate"
+          :border-spacing "0"
+          :table-layout "fixed"
+          :font-size "13px"
+          :font-weight "400"
+          :line-height "16px")
+        `(".source-content th, .source-content td"
+          :border "none"
+          :overflow "hidden"
+          :text-overflow "ellipsis"
+          :white-space "nowrap"
+          :text-align "left"
+          :vertical-align "middle")
+        `(".source-content th"
+          :height "24px"
+          :padding "0 12px"
+          :background-color "transparent"
+          :color ,theme:primary-color
+          :font-size "11px"
+          :font-weight "600"
+          :line-height "16px"
+          :box-shadow ,(format nil "inset 0 -1px 0 ~a" theme:background-color-))
+        `(".source-content td"
+          :height "28px"
+          :padding "0 12px"
+          :color ,theme:on-background-color
+          :font-weight "400"
+          :box-shadow ,(format nil "inset 0 -1px 0 ~a" theme:background-color-))
+        '(".source-content th:first-child, .source-content td:first-child"
+          :border-radius "7px 0 0 7px")
+        '(".source-content th:last-child, .source-content td:last-child"
+          :border-radius "0 7px 7px 0")
+        '(".source-content th:only-child, .source-content td:only-child"
+          :border-radius "7px")
+        '(".source-content .mark"
+          :width "28px"
+          :padding "0"
+          :overflow "visible"
+          :text-align "center"
+          :text-overflow "clip")
+        `(".source-content .mark input"
+          :display "inline-block"
+          :width "13px"
+          :height "13px"
+          :margin "0"
+          :vertical-align "middle"
+          :accent-color ,theme:action-color)
+        `(".source-content tr:hover td"
+          :background-color ,theme:background-color-
+          :box-shadow "none"
+          :cursor "pointer")
+        `("#selection td"
+          :background-color ,(format nil "color-mix(in srgb, ~a 60%, ~a)"
+                                     theme:secondary-color
+                                     theme:background-color)
+          :color ,theme:on-background-color
+          :font-weight "400"
+          :box-shadow "none")
+        '("#selection td:first-child"
+          :border-radius "5px 0 0 5px")
+        '("#selection td:last-child"
+          :border-radius "0 5px 5px 0")
+        '("#selection td:only-child"
+          :border-radius "5px")
+        `(".marked td"
+          :background-color ,(format nil "color-mix(in srgb, ~a 35%, ~a)"
+                                     theme:secondary-color
+                                     theme:background-color)
+          :color ,theme:on-background-color
+          :font-weight "400")
+        `(".selected"
+          :background-color ,(format nil "color-mix(in srgb, ~a 60%, ~a)"
+                                     theme:secondary-color
+                                     theme:background-color)
+          :color ,theme:on-background-color
+          :font-weight "400"))
       :documentation "The CSS applied to prompt buffer."))
     (:export-class-name-p t)
     (:export-accessor-names-p t)
@@ -522,14 +613,14 @@ so the columns line up. Shorter rows leave the extra cells empty."
       (:table :class "source-content"
               (:colgroup
                (when (prompter:enable-marks-p source)
-                 (:col :style "width: 25px"))
+                 (:col :class "mark" :style "width: 28px"))
                (dolist (width (attribute-widths source))
                  (:col :style (format nil "width: ~,2f%" (* 100 width)))))
               (:tr
                :style (if (sera:single (prompter:active-attributes-keys source))
                           "display:none;"
                           "display:revert;")
-               (when (prompter:enable-marks-p source) (:th " "))
+               (when (prompter:enable-marks-p source) (:th :class "mark" " "))
                (loop for attribute-key in (prompter:active-attributes-keys source)
                      collect (:th (spinneret:escape-string attribute-key))))
               (loop
@@ -549,7 +640,7 @@ so the columns line up. Shorter rows leave the extra cells empty."
                        :class (when (prompter:marked-p source (prompter:value suggestion))
                                 "marked")
                        (when (prompter:enable-marks-p source)
-                         (:td
+                         (:td :class "mark"
                           (:input
                            :type "checkbox"
                            :checked (prompter:marked-p
