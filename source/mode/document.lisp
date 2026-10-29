@@ -494,11 +494,16 @@ The inner-text must not be modified, so that we can jump to the anchor of the sa
                                        :width "0"
                                        :height "0"
                                        :box-sizing "border-box"
-                                       :border "2px solid"
+                                       :border "1px solid"
                                        :border-color ,theme:action-color
-                                       :outline "1px solid"
-                                       :outline-color ,theme:background-color
-                                       :background-color "transparent"
+                                       :border-radius "4px"
+                                       :background-color
+                                       ,(let ((rgb (cl-colors-ng:as-rgb theme:action-color)))
+                                          (format nil "rgb(~d ~d ~d / 0.18)"
+                                                  (round (* 255 (cl-colors-ng:rgb-red rgb)))
+                                                  (round (* 255 (cl-colors-ng:rgb-green rgb)))
+                                                  (round (* 255 (cl-colors-ng:rgb-blue rgb)))))
+                                       :box-shadow "0 0 0 0.5px rgba(0, 0, 0, 0.12)"
                                        :pointer-events "none"
                                        :z-index ,(1- (expt 2 30)))))
         (handle-style (theme:themed-css (theme *browser*)
@@ -509,9 +514,11 @@ The inner-text must not be modified, so that we can jump to the anchor of the sa
                           :margin-left "-4px"
                           :margin-top "-4px"
                           :box-sizing "border-box"
-                          :background-color ,theme:background-color
-                          :border "2px solid"
+                          :background-color "#ffffff"
+                          :border "1px solid"
                           :border-color ,theme:action-color
+                          :border-radius "1px"
+                          :box-shadow "0 0 0 0.5px rgba(0, 0, 0, 0.16)"
                           :pointer-events "none"
                           :z-index ,(expt 2 30)))))
     (ps-labels :async t
