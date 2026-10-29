@@ -32,9 +32,9 @@ jobs:
             sudo ln -sfn openssl3/libcrypto.dylib /opt/local/lib/libcrypto.dylib
           fi
 
-      - name: Cache SBCL 2.4.5
+      - name: Restore SBCL 2.4.5
         id: sbcl
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: build/host-sbcl
           key: sbcl-2.4.5-${{ runner.os }}-${{ runner.arch }}
@@ -64,6 +64,13 @@ jobs:
           sh install.sh
           rm -rf "/tmp/sbcl-${version}" /tmp/sbcl.tar.bz2 "$bootstrap" /tmp/sbcl-bootstrap.tar.bz2
           "$prefix/bin/sbcl" --version
+
+      - name: Save SBCL 2.4.5
+        if: steps.sbcl.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: build/host-sbcl
+          key: sbcl-2.4.5-${{ runner.os }}-${{ runner.arch }}
 
       - name: Install Ocicl
         run: ocicl setup

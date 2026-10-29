@@ -7,6 +7,7 @@
 #   Nyxt.app/Contents/Info.plist
 #   Nyxt.app/Contents/MacOS/apprun
 #   Nyxt.app/Contents/MacOS/nyxt
+#   Nyxt.app/Contents/MacOS/nyxt.core
 #   Nyxt.app/Contents/MacOS/libcl-cef.dylib
 #   Nyxt.app/Contents/MacOS/libcl-clipboard.dylib
 #   Nyxt.app/Contents/Frameworks/                 Lisp shared libraries
@@ -149,6 +150,7 @@ resolve() {
 }
 
 macho_deps() {
+    local file listing line
     file=$1
     listing=$(mktemp)
     otool -L "$file" | sed '1d' > "$listing"
@@ -164,6 +166,7 @@ macho_deps() {
 }
 
 retarget_framework() {
+    local binary new listing dep
     binary=$1
     new=$2
     if ! otool -L "$binary" | grep -q 'Chromium Embedded Framework'; then
@@ -277,10 +280,42 @@ cp -f "$clipboard_dir/libcl-clipboard.dylib" "$stage/Contents/MacOS/libcl-clipbo
 chmod 755 "$stage/Contents/MacOS/libcl-clipboard.dylib"
 cp -f "$root/nyxt" "$stage/Contents/MacOS/nyxt"
 chmod 755 "$stage/Contents/MacOS/nyxt"
+dynamic_mb=$(python3 - "$stage/Contents/MacOS/nyxt" "$stage/Contents/MacOS/nyxt.core" <<'PY'
+import os, struct, sys
+path, core_path = sys.argv[1], sys.argv[2]
+size = os.path.getsize(path)
+with open(path, "rb") as src:
+    if size < 16:
+        sys.exit("executable is too small to contain an SBCL core")
+    src.seek(-16, os.SEEK_END)
+    offset, magic = struct.unpack("<QQ", src.read(16))
+    if offset <= 0 or offset >= size - 16:
+        sys.exit("executable has no embedded SBCL core")
+    src.seek(offset)
+    if struct.unpack("<Q", src.read(8))[0] != magic:
+        sys.exit("embedded SBCL core magic does not match")
+    src.seek(offset + 8)
+    words = struct.unpack("<5Q", src.read(40))
+    mb = 3072
+    if words[0] == 0x31EBF355:
+        space = words[2]
+        if space % (1024 * 1024) == 0:
+            parsed = space // (1024 * 1024)
+            if 512 <= parsed <= 8192:
+                mb = parsed
+    src.seek(offset)
+    blob = src.read()
+with open(core_path, "wb") as dst:
+    dst.write(blob)
+os.truncate(path, offset)
+print(mb)
+PY
+)
 
 frameworks="$stage/Contents/Frameworks"
 
 stage_library() {
+    local src real base alias listing dep neighbor
     src=$1
     if [ ! -e "$src" ]; then
         return 0
@@ -354,6 +389,7 @@ stage_named /opt/local/lib libfixposix.dylib libfixposix.4.dylib
 stage_named /opt/local/lib libenchant-2.dylib libenchant-2.2.dylib
 
 rewrite_staged() {
+    local dest base listing dep depbase
     for dest in "$frameworks"/*.dylib; do
         if [ ! -f "$dest" ] || [ -L "$dest" ]; then
             continue
@@ -376,16 +412,60 @@ rewrite_staged() {
 }
 rewrite_staged
 
-cat > "$stage/Contents/MacOS/apprun" <<'EOF'
-#!/bin/sh
-set -eu
-here=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
-export DYLD_LIBRARY_PATH="$here/../Frameworks${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}"
-export DYLD_FALLBACK_LIBRARY_PATH="$here/../Frameworks${DYLD_FALLBACK_LIBRARY_PATH:+:$DYLD_FALLBACK_LIBRARY_PATH}"
-export CL_CEF_LIBRARY="$here/libcl-cef.dylib"
-export CL_CLIPBOARD_LIBRARY="$here/libcl-clipboard.dylib"
-exec "$here/nyxt" "$@"
+cat > "$work/apprun.c" <<'EOF'
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <mach-o/dyld.h>
+
+int main(int argc, char **argv) {
+    char exe[4096];
+    char nyxt[4096];
+    char core[4096];
+    char frameworks[4096];
+    char libcef[4096];
+    char libclip[4096];
+    char *slash;
+    char **args;
+    uint32_t size;
+    int i;
+    int n;
+
+    size = (uint32_t)sizeof exe;
+    if (_NSGetExecutablePath(exe, &size) != 0)
+        return 1;
+    slash = strrchr(exe, '/');
+    if (slash == NULL)
+        return 1;
+    *slash = '\0';
+    snprintf(nyxt, sizeof nyxt, "%s/nyxt", exe);
+    snprintf(core, sizeof core, "%s/nyxt.core", exe);
+    snprintf(frameworks, sizeof frameworks, "%s/../Frameworks", exe);
+    snprintf(libcef, sizeof libcef, "%s/libcl-cef.dylib", exe);
+    snprintf(libclip, sizeof libclip, "%s/libcl-clipboard.dylib", exe);
+    setenv("DYLD_LIBRARY_PATH", frameworks, 1);
+    setenv("DYLD_FALLBACK_LIBRARY_PATH", frameworks, 1);
+    setenv("CL_CEF_LIBRARY", libcef, 1);
+    setenv("CL_CLIPBOARD_LIBRARY", libclip, 1);
+    args = calloc((size_t)argc + 5, sizeof *args);
+    if (args == NULL)
+        return 1;
+    n = 0;
+    args[n++] = nyxt;
+    args[n++] = "--dynamic-space-size";
+    args[n++] = NYXT_DYNAMIC_MB_STR;
+    args[n++] = "--core";
+    args[n++] = core;
+    for (i = 1; i < argc; i++)
+        args[n++] = argv[i];
+    args[n] = NULL;
+    execv(nyxt, args);
+    perror("nyxt");
+    return 1;
+}
 EOF
+clang -O2 -DNYXT_DYNAMIC_MB_STR=\"$dynamic_mb\" -o "$stage/Contents/MacOS/apprun" "$work/apprun.c"
 chmod 755 "$stage/Contents/MacOS/apprun"
 printf '%s' 'APPL????' > "$stage/Contents/PkgInfo"
 
@@ -496,6 +576,7 @@ sign() {
 }
 
 sign_machos() {
+    local root_dir listing candidate
     root_dir=$1
     listing=$(mktemp)
     find "$root_dir" -type f > "$listing"
