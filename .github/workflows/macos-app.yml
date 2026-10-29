@@ -15,9 +15,22 @@ jobs:
       - name: Check out Nyxt
         uses: actions/checkout@v7
 
+      - name: Install MacPorts
+        run: |
+          curl -fsSL -o /tmp/macports.pkg \
+            "https://github.com/macports/macports-base/releases/download/v2.11.6/MacPorts-2.11.6-15-Sequoia.pkg"
+          sudo installer -pkg /tmp/macports.pkg -target /
+          echo "/opt/local/bin" >> "$GITHUB_PATH"
+          echo "/opt/local/sbin" >> "$GITHUB_PATH"
+
       - name: Install build packages
         run: |
-          brew install cmake make openssl@3 sqlite enchant libfixposix pkg-config sbcl ocicl
+          sudo port -N selfupdate
+          sudo port -N install cmake gmake openssl3 sqlite3 enchant2 libfixposix pkgconfig ocicl
+          if [ ! -e /opt/local/lib/libssl.dylib ]; then
+            sudo ln -sfn openssl3/libssl.dylib /opt/local/lib/libssl.dylib
+            sudo ln -sfn openssl3/libcrypto.dylib /opt/local/lib/libcrypto.dylib
+          fi
 
       - name: Cache SBCL 2.4.5
         id: sbcl
@@ -31,7 +44,15 @@ jobs:
         run: |
           version=2.4.5
           prefix="$GITHUB_WORKSPACE/build/host-sbcl"
+          bootstrap_version=2.4.0
+          bootstrap_sha=020b167896a6362a105b981be77b0d995750ab15
+          bootstrap="/tmp/sbcl-${bootstrap_version}-arm64-darwin"
           unset SBCL_HOME
+          curl -fsSL -o /tmp/sbcl-bootstrap.tar.bz2 \
+            "https://downloads.sourceforge.net/project/sbcl/sbcl/${bootstrap_version}/sbcl-${bootstrap_version}-arm64-darwin-binary.tar.bz2"
+          echo "${bootstrap_sha}  /tmp/sbcl-bootstrap.tar.bz2" | shasum -a 1 -c -
+          tar -xjf /tmp/sbcl-bootstrap.tar.bz2 -C /tmp
+          chmod 755 "$bootstrap/run-sbcl.sh" "$bootstrap/src/runtime/sbcl"
           curl -fsSL -o /tmp/sbcl.tar.bz2 \
             "https://downloads.sourceforge.net/project/sbcl/sbcl/${version}/sbcl-${version}-source.tar.bz2"
           tar -xjf /tmp/sbcl.tar.bz2 -C /tmp
@@ -39,9 +60,9 @@ jobs:
           export GNUMAKE=gmake
           export MAKEFLAGS="-j2"
           sh make.sh --prefix="$prefix" \
-            --xc-host='sbcl --no-userinit --disable-debugger'
+            --xc-host="$bootstrap/run-sbcl.sh --no-userinit --disable-debugger"
           sh install.sh
-          rm -rf "/tmp/sbcl-${version}" /tmp/sbcl.tar.bz2
+          rm -rf "/tmp/sbcl-${version}" /tmp/sbcl.tar.bz2 "$bootstrap" /tmp/sbcl-bootstrap.tar.bz2
           "$prefix/bin/sbcl" --version
 
       - name: Install Ocicl

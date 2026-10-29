@@ -88,14 +88,22 @@ endif()
 EOF
 fi
 
-if command -v brew >/dev/null 2>&1; then
-    pkg_config="$(brew --prefix openssl@3)/lib/pkgconfig:$(brew --prefix libfixposix)/lib/pkgconfig"
+if [ -d /opt/local/bin ]; then
+    PATH="/opt/local/bin:/opt/local/sbin:$PATH"
+    export PATH
+fi
+if [ -d /opt/local/lib/pkgconfig ]; then
+    pkg_config="/opt/local/lib/pkgconfig"
+    if [ -d /opt/local/libexec/openssl3/lib/pkgconfig ]; then
+        pkg_config="/opt/local/libexec/openssl3/lib/pkgconfig:$pkg_config"
+    fi
     if [ -n "${PKG_CONFIG_PATH:-}" ]; then
         PKG_CONFIG_PATH="$pkg_config:$PKG_CONFIG_PATH"
     else
         PKG_CONFIG_PATH="$pkg_config"
     fi
     export PKG_CONFIG_PATH
+    export DYLD_LIBRARY_PATH="/opt/local/lib${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}"
 fi
 
 make NYXT_RENDERER=cef CEF_ROOT="$CEF_ROOT" NODE_SETUP=false nyxt
@@ -332,14 +340,18 @@ stage_named() {
     return 1
 }
 
-if ! command -v brew >/dev/null 2>&1; then
-    printf '%s\n' "Homebrew is required to locate OpenSSL, Enchant, and libfixposix." >&2
+if [ ! -d /opt/local/lib ]; then
+    printf '%s\n' "MacPorts is required to locate OpenSSL, Enchant, and libfixposix." >&2
     exit 1
 fi
-stage_named "$(brew --prefix openssl@3)/lib" libssl.dylib libssl.3.dylib
-stage_named "$(brew --prefix openssl@3)/lib" libcrypto.dylib libcrypto.3.dylib
-stage_named "$(brew --prefix libfixposix)/lib" libfixposix.dylib libfixposix.4.dylib
-stage_named "$(brew --prefix enchant)/lib" libenchant-2.dylib libenchant-2.2.dylib
+openssl_lib=/opt/local/libexec/openssl3/lib
+if [ ! -d "$openssl_lib" ]; then
+    openssl_lib=/opt/local/lib/openssl3
+fi
+stage_named "$openssl_lib" libssl.dylib libssl.3.dylib
+stage_named "$openssl_lib" libcrypto.dylib libcrypto.3.dylib
+stage_named /opt/local/lib libfixposix.dylib libfixposix.4.dylib
+stage_named /opt/local/lib libenchant-2.dylib libenchant-2.2.dylib
 
 rewrite_staged() {
     for dest in "$frameworks"/*.dylib; do
