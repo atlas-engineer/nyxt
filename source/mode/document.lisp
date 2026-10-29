@@ -37,6 +37,7 @@ Firefox, and reused for every page on that host.
        "C-0" 'reset-page-zoom)
       keyscheme:cua
       (list
+       "C-M-s" 'select-frame-new-buffer
        "C-h" 'jump-to-heading
        "C-M-h" 'jump-to-heading-buffers
        "C-c" 'copy
@@ -61,6 +62,7 @@ Firefox, and reused for every page on that host.
        "C-u C-o" 'edit-with-external-editor)
       keyscheme:emacs
       (list
+       "C-c C-s" 'select-frame-new-buffer
        "C-." 'jump-to-heading
        "C-M-." 'jump-to-heading-buffers
        "C-g" 'nothing              ; Emacs users may hit C-g out of habit.
@@ -85,6 +87,7 @@ Firefox, and reused for every page on that host.
        "C-u C-x C-f" 'edit-with-external-editor)
       keyscheme:vi-normal
       (list
+       "g F" 'select-frame-new-buffer
        "g h" 'jump-to-heading
        "g H" 'jump-to-heading-buffers
        "y y" 'copy
@@ -469,7 +472,7 @@ The inner-text must not be modified, so that we can jump to the anchor of the sa
    (url "")))
 
 (defun frame-element-select ()
-  "Allow the user to draw a frame around elements to select them."
+  "Install a drag box. Drag draws it, drags inside move it, and edge drags resize it."
   (let ((overlay-style (theme:themed-css (theme *browser*)
                          `("#nyxt-overlay"
                            :position "fixed"
@@ -479,27 +482,52 @@ The inner-text must not be modified, so that we can jump to the anchor of the sa
                            :bottom "0"
                            :opacity 0.00
                            :background ,theme:on-background-color
+                           :cursor "crosshair"
+                           :user-select "none"
+                           :touch-action "none"
                            :z-index #.(1- (expt 2 31)))))
         (selection-rectangle-style (theme:themed-css (theme *browser*)
                                      `("#nyxt-rectangle-selection"
                                        :position "absolute"
                                        :top "0"
                                        :left "0"
-                                       :border-style "dotted"
-                                       :border-width "4px"
-                                       :border-color ,theme:background-color
-                                       :background-color ,theme:on-background-color
-                                       :opacity 0.10
-                                       :z-index ,(1- (expt 2 30))))))
+                                       :width "0"
+                                       :height "0"
+                                       :box-sizing "border-box"
+                                       :border "2px solid"
+                                       :border-color ,theme:action-color
+                                       :outline "1px solid"
+                                       :outline-color ,theme:background-color
+                                       :background-color "transparent"
+                                       :pointer-events "none"
+                                       :z-index ,(1- (expt 2 30)))))
+        (handle-style (theme:themed-css (theme *browser*)
+                        `(".nyxt-frame-handle"
+                          :position "absolute"
+                          :width "8px"
+                          :height "8px"
+                          :margin-left "-4px"
+                          :margin-top "-4px"
+                          :box-sizing "border-box"
+                          :background-color ,theme:background-color
+                          :border "2px solid"
+                          :border-color ,theme:action-color
+                          :pointer-events "none"
+                          :z-index ,(expt 2 30)))))
     (ps-labels :async t
       ((add-overlay
-        (overlay-style selection-rectangle-style)
-        "Add a selectable overlay to the screen."
-        (defparameter selection
-          (ps:create x1 0 y1 0
-                     x2 0 y2 0
-                     set1 false
-                     set2 false))
+        (overlay-style selection-rectangle-style handle-style)
+        "Add a drag box to the page."
+        (setf (ps:@ window nyxt-frame-selection)
+              (ps:create x1 0 y1 0 x2 0 y2 0
+                         ready nil
+                         dragging nil
+                         ended 0
+                         mode ""
+                         ox 0 oy 0
+                         sx1 0 sy1 0 sx2 0 sy2 0))
+        (defun frame-box ()
+          (ps:@ window nyxt-frame-selection))
         (defun add-stylesheet ()
           (unless (nyxt/ps:qs document "#nyxt-stylesheet")
             (ps:let ((style-element (ps:chain document (create-element "style"))))
@@ -508,6 +536,13 @@ The inner-text must not be modified, so that we can jump to the anchor of the sa
         (defun add-style (style)
           (ps:let ((style-element (nyxt/ps:qs document "#nyxt-stylesheet")))
             (ps:chain style-element sheet (insert-rule style 0))))
+        (defun remove-existing ()
+          (dolist (id (list "nyxt-overlay" "nyxt-rectangle-selection"))
+            (ps:let ((element (nyxt/ps:qs document (+ "#" id))))
+              (when element
+                (ps:chain element (remove)))))
+          (ps:dolist (handle (nyxt/ps:qsa document ".nyxt-frame-handle"))
+            (ps:chain handle (remove))))
         (defun add-overlay ()
           (ps:let ((element (ps:chain document (create-element "div"))))
             (add-style (ps:lisp overlay-style))
@@ -518,74 +553,233 @@ The inner-text must not be modified, so that we can jump to the anchor of the sa
             (add-style (ps:lisp selection-rectangle-style))
             (setf (ps:@ element id) "nyxt-rectangle-selection")
             (ps:chain document body (append-child element))))
+        (defun add-handles ()
+          (add-style (ps:lisp handle-style))
+          (dolist (name (list "nw" "n" "ne" "e" "se" "s" "sw" "w"))
+            (ps:let ((element (ps:chain document (create-element "div"))))
+              (setf (ps:@ element id) (+ "nyxt-frame-" name))
+              (setf (ps:@ element class-name) "nyxt-frame-handle")
+              (setf (ps:@ element style display) "none")
+              (ps:chain document body (append-child element)))))
+        (defun normalize ()
+          (ps:let* ((frame (frame-box))
+                    (left (ps:chain |Math| (min (ps:@ frame x1) (ps:@ frame x2))))
+                    (right (ps:chain |Math| (max (ps:@ frame x1) (ps:@ frame x2))))
+                    (top (ps:chain |Math| (min (ps:@ frame y1) (ps:@ frame y2))))
+                    (bottom (ps:chain |Math| (max (ps:@ frame y1) (ps:@ frame y2)))))
+            (setf (ps:@ frame x1) left
+                  (ps:@ frame x2) right
+                  (ps:@ frame y1) top
+                  (ps:@ frame y2) bottom)))
+        (defun place-handles ()
+          (ps:let* ((frame (frame-box))
+                    (x1 (ps:@ frame x1))
+                    (y1 (ps:@ frame y1))
+                    (x2 (ps:@ frame x2))
+                    (y2 (ps:@ frame y2))
+                    (mx (/ (+ x1 x2) 2))
+                    (my (/ (+ y1 y2) 2))
+                    (show (if (and (> (- x2 x1) 0) (> (- y2 y1) 0))
+                              "block"
+                              "none"))
+                    (points (list (list "nw" x1 y1)
+                                  (list "n" mx y1)
+                                  (list "ne" x2 y1)
+                                  (list "e" x2 my)
+                                  (list "se" x2 y2)
+                                  (list "s" mx y2)
+                                  (list "sw" x1 y2)
+                                  (list "w" x1 my))))
+            (dolist (point points)
+              (ps:let ((handle (nyxt/ps:qs document (+ "#nyxt-frame-" (elt point 0)))))
+                (setf (ps:@ handle style left) (+ (elt point 1) "px"))
+                (setf (ps:@ handle style top) (+ (elt point 2) "px"))
+                (setf (ps:@ handle style display) show)))))
         (defun update-selection-rectangle ()
-          (ps:let ((element (nyxt/ps:qs document "#nyxt-rectangle-selection")))
-            (setf (ps:@ element style left) (+ (ps:chain selection x1) "px"))
-            (setf (ps:@ element style top) (+ (ps:chain selection y1) "px"))
+          (normalize)
+          (ps:let* ((frame (frame-box))
+                    (element (nyxt/ps:qs document "#nyxt-rectangle-selection")))
+            (setf (ps:@ element style left) (+ (ps:@ frame x1) "px"))
+            (setf (ps:@ element style top) (+ (ps:@ frame y1) "px"))
             (setf (ps:@ element style width)
-                  (+ (- (ps:chain selection x2)
-                        (ps:chain selection x1))
-                     "px"))
+                  (+ (- (ps:@ frame x2) (ps:@ frame x1)) "px"))
             (setf (ps:@ element style height)
-                  (+ (- (ps:chain selection y2)
-                        (ps:chain selection y1))
-                     "px"))))
+                  (+ (- (ps:@ frame y2) (ps:@ frame y1)) "px"))
+            (place-handles)))
+        (defun zone (x y)
+          (ps:let* ((frame (frame-box))
+                    (pad 12)
+                    (left (ps:@ frame x1))
+                    (right (ps:@ frame x2))
+                    (top (ps:@ frame y1))
+                    (bottom (ps:@ frame y2)))
+            (if (not (ps:@ frame ready))
+                "draw"
+                (ps:let ((near-left (<= (ps:chain |Math| (abs (- x left))) pad))
+                         (near-right (<= (ps:chain |Math| (abs (- x right))) pad))
+                         (near-top (<= (ps:chain |Math| (abs (- y top))) pad))
+                         (near-bottom (<= (ps:chain |Math| (abs (- y bottom))) pad))
+                         (in-x (and (>= x (- left pad)) (<= x (+ right pad))))
+                         (in-y (and (>= y (- top pad)) (<= y (+ bottom pad)))))
+                  (cond
+                    ((and near-top near-left) "nw")
+                    ((and near-top near-right) "ne")
+                    ((and near-bottom near-left) "sw")
+                    ((and near-bottom near-right) "se")
+                    ((and near-top in-x) "n")
+                    ((and near-bottom in-x) "s")
+                    ((and near-left in-y) "w")
+                    ((and near-right in-y) "e")
+                    ((and (>= x left) (<= x right) (>= y top) (<= y bottom)) "move")
+                    (t "draw"))))))
+        (defun set-cursor (mode)
+          (ps:let ((overlay (nyxt/ps:qs document "#nyxt-overlay")))
+            (when overlay
+              (setf (ps:@ overlay style cursor)
+                    (cond
+                      ((or (equal mode "nw") (equal mode "se")) "nwse-resize")
+                      ((or (equal mode "ne") (equal mode "sw")) "nesw-resize")
+                      ((or (equal mode "n") (equal mode "s")) "ns-resize")
+                      ((or (equal mode "e") (equal mode "w")) "ew-resize")
+                      ((equal mode "move") "move")
+                      (t "crosshair"))))))
+        (defun begin (x y mode)
+          (ps:let ((frame (frame-box)))
+            (setf (ps:@ frame ox) x
+                  (ps:@ frame oy) y
+                  (ps:@ frame sx1) (ps:@ frame x1)
+                  (ps:@ frame sy1) (ps:@ frame y1)
+                  (ps:@ frame sx2) (ps:@ frame x2)
+                  (ps:@ frame sy2) (ps:@ frame y2)
+                  (ps:@ frame mode) mode
+                  (ps:@ frame dragging) t
+                  (ps:@ frame ready) t)
+            (when (equal mode "draw")
+              (setf (ps:@ frame x1) x
+                    (ps:@ frame y1) y
+                    (ps:@ frame x2) x
+                    (ps:@ frame y2) y))
+            (update-selection-rectangle)
+            (set-cursor mode)))
+        (defun apply-drag (x y)
+          (ps:let* ((frame (frame-box))
+                    (dx (- x (ps:@ frame ox)))
+                    (dy (- y (ps:@ frame oy)))
+                    (mode (ps:@ frame mode)))
+            (cond
+              ((equal mode "move")
+               (setf (ps:@ frame x1) (+ (ps:@ frame sx1) dx)
+                     (ps:@ frame y1) (+ (ps:@ frame sy1) dy)
+                     (ps:@ frame x2) (+ (ps:@ frame sx2) dx)
+                     (ps:@ frame y2) (+ (ps:@ frame sy2) dy)))
+              ((equal mode "draw")
+               (setf (ps:@ frame x1) (ps:@ frame ox)
+                     (ps:@ frame y1) (ps:@ frame oy)
+                     (ps:@ frame x2) x
+                     (ps:@ frame y2) y)
+               (normalize))
+              (t
+               (setf (ps:@ frame x1) (ps:@ frame sx1)
+                     (ps:@ frame y1) (ps:@ frame sy1)
+                     (ps:@ frame x2) (ps:@ frame sx2)
+                     (ps:@ frame y2) (ps:@ frame sy2))
+               (when (or (equal mode "n") (equal mode "nw") (equal mode "ne"))
+                 (setf (ps:@ frame y1) (+ (ps:@ frame sy1) dy)))
+               (when (or (equal mode "s") (equal mode "sw") (equal mode "se"))
+                 (setf (ps:@ frame y2) (+ (ps:@ frame sy2) dy)))
+               (when (or (equal mode "w") (equal mode "nw") (equal mode "sw"))
+                 (setf (ps:@ frame x1) (+ (ps:@ frame sx1) dx)))
+               (when (or (equal mode "e") (equal mode "ne") (equal mode "se"))
+                 (setf (ps:@ frame x2) (+ (ps:@ frame sx2) dx)))
+               (normalize)))))
+        (defun finish (e)
+          (ps:let ((frame (frame-box))
+                   (overlay (nyxt/ps:qs document "#nyxt-overlay")))
+            (when (and frame (ps:@ frame dragging))
+              (ps:chain e (prevent-default))
+              (apply-drag (ps:@ e |pageX|) (ps:@ e |pageY|))
+              (update-selection-rectangle)
+              (setf (ps:@ frame dragging) nil)
+              (setf (ps:@ frame ended) (1+ (ps:@ frame ended)))
+              (set-cursor (zone (ps:@ e |pageX|) (ps:@ e |pageY|))))
+            (when (and overlay
+                       (ps:chain overlay (has-pointer-capture (ps:@ e pointer-id))))
+              (ps:chain overlay (release-pointer-capture (ps:@ e pointer-id))))))
         (defun add-listeners ()
-          (setf (ps:@ (nyxt/ps:qs document "#nyxt-overlay") onmousemove)
-                (lambda (e)
-                  (when (and (ps:chain selection set1)
-                             (not (ps:chain selection set2)))
-                    (setf (ps:chain selection x2) (ps:chain e |pageX|))
-                    (setf (ps:chain selection y2) (ps:chain e |pageY|))
-                    (update-selection-rectangle))))
-          (setf (ps:@ (nyxt/ps:qs document "#nyxt-overlay") onclick)
-                (lambda (e)
-                  (if (not (ps:chain selection set1))
-                      (progn
-                        (setf (ps:chain selection x1) (ps:chain e |pageX|))
-                        (setf (ps:chain selection y1) (ps:chain e |pageY|))
-                        (setf (ps:chain selection set1) true))
-                      (progn
-                        (setf (ps:chain selection x2) (ps:chain e |pageX|))
-                        (setf (ps:chain selection y2) (ps:chain e |pageY|))
-                        (setf (ps:chain selection set2) true))))))
+          (ps:let ((overlay (nyxt/ps:qs document "#nyxt-overlay")))
+            (ps:chain overlay (add-event-listener
+                               "pointerdown"
+                               (lambda (e)
+                                 (when (= (ps:@ e button) 0)
+                                   (ps:chain e (prevent-default))
+                                   (ps:chain e (stop-propagation))
+                                   (ps:chain overlay (set-pointer-capture (ps:@ e pointer-id)))
+                                   (begin (ps:@ e |pageX|)
+                                          (ps:@ e |pageY|)
+                                          (zone (ps:@ e |pageX|) (ps:@ e |pageY|)))))))
+            (ps:chain overlay (add-event-listener
+                               "pointermove"
+                               (lambda (e)
+                                 (ps:let ((frame (frame-box)))
+                                   (if (and frame (ps:@ frame dragging))
+                                       (progn
+                                         (ps:chain e (prevent-default))
+                                         (apply-drag (ps:@ e |pageX|) (ps:@ e |pageY|))
+                                         (update-selection-rectangle))
+                                       (set-cursor (zone (ps:@ e |pageX|)
+                                                         (ps:@ e |pageY|))))))))
+            (ps:chain overlay (add-event-listener "pointerup" (lambda (e) (finish e))))
+            (ps:chain overlay (add-event-listener "pointercancel"
+                                                   (lambda (e) (finish e))))
+            (ps:chain overlay (add-event-listener
+                               "wheel"
+                               (lambda (e)
+                                 (ps:chain window (scroll-by (ps:@ e delta-x) (ps:@ e delta-y)))
+                                 (ps:chain e (prevent-default)))
+                               (ps:create :passive nil)))))
+        (remove-existing)
         (add-stylesheet)
         (add-overlay)
         (add-selection-rectangle)
+        (add-handles)
         (add-listeners)))
-      (add-overlay overlay-style selection-rectangle-style))))
+      (add-overlay overlay-style selection-rectangle-style handle-style))))
 
 (defun frame-element-get-selection ()
-  "Get the selected elements drawn by the user."
+  "Get the links inside the drag box."
   (ps-labels
     ((get-selection
       ()
-      (defun element-in-selection-p (selection element)
-        "Determine if a element is bounded within a selection."
-        (ps:let* ((element-rect (ps:chain element (get-bounding-client-rect)))
-                  (offsetX (ps:chain window |pageXOffset|))
-                  (offsetY (ps:chain window |pageYOffset|))
-                  (element-left (+ (ps:chain element-rect left) offsetX))
-                  (element-right (+ (ps:chain element-rect right) offsetX))
-                  (element-top (+ (ps:chain element-rect top) offsetY))
-                  (element-bottom (+ (ps:chain element-rect bottom) offsetY)))
-          (if (and
-               (<= element-left (ps:chain selection x2))
-               (>= element-right (ps:chain selection x1))
-               (<= element-top (ps:chain selection y2))
-               (>= element-bottom (ps:chain selection y1)))
-              t nil)))
-      (defun object-create (element)
-        (cond ((equal "A" (ps:@ element tag-name))
-               (ps:create "type" "link" "href" (ps:@ element href) "body" (ps:@ element |innerHTML|)))
-              ((equal "IMG" (ps:@ element tag-name))
-               (ps:create "type" "img" "src" (ps:@ element src) "alt" (ps:@ element alt)))))
-      (defun collect-selection (elements selection)
-        "Collect elements within a selection"
-        (loop for element in elements
-              when (element-in-selection-p selection element)
-                collect (object-create element)))
-      (collect-selection (nyxt/ps:qsa document (list "a")) selection)))
+      (ps:let ((frame (ps:@ window nyxt-frame-selection)))
+        (defun element-in-selection-p (frame element)
+          "Determine if a element is bounded within a selection."
+          (ps:let* ((element-rect (ps:chain element (get-bounding-client-rect)))
+                    (offset-x (ps:chain window |pageXOffset|))
+                    (offset-y (ps:chain window |pageYOffset|))
+                    (element-left (+ (ps:chain element-rect left) offset-x))
+                    (element-right (+ (ps:chain element-rect right) offset-x))
+                    (element-top (+ (ps:chain element-rect top) offset-y))
+                    (element-bottom (+ (ps:chain element-rect bottom) offset-y)))
+            (and (<= element-left (ps:@ frame x2))
+                 (>= element-right (ps:@ frame x1))
+                 (<= element-top (ps:@ frame y2))
+                 (>= element-bottom (ps:@ frame y1)))))
+        (defun object-create (element)
+          (cond ((equal "A" (ps:@ element tag-name))
+                 (ps:create "type" "link"
+                            "href" (ps:@ element href)
+                            "body" (ps:@ element |innerHTML|)))
+                ((equal "IMG" (ps:@ element tag-name))
+                 (ps:create "type" "img"
+                            "src" (ps:@ element src)
+                            "alt" (ps:@ element alt)))))
+        (defun collect-selection (elements frame)
+          "Collect elements within a selection"
+          (loop for element in elements
+                when (element-in-selection-p frame element)
+                  collect (object-create element)))
+        (when (and frame (ps:@ frame ready))
+          (collect-selection (nyxt/ps:qsa document (list "a")) frame)))))
     (loop for element in (get-selection)
           collect (str:string-case (cdr (assoc :type element))
                     ("link"
@@ -597,33 +791,136 @@ The inner-text must not be modified, so that we can jump to the anchor of the sa
                                     :url (cdr (assoc :src element))
                                     :alt (cdr (assoc :alt element))))))))
 
-(define-parenscript frame-element-selection-ready ()
-  "Check to see if the selection is complete."
-  (and (ps:chain selection set1)
-       (ps:chain selection set2)))
+(define-parenscript frame-element-state ()
+  "Return whether the drag box is ready and whether a drag is in progress."
+  (ps:let ((frame (ps:@ window nyxt-frame-selection)))
+    (when frame
+      (ps:create :dragging (ps:@ frame dragging)
+                 :ready (ps:@ frame ready)
+                 :ended (ps:@ frame ended)))))
 
 (defun frame-element-clear ()
   "Clear the selection frame created by the user."
   (ps-eval
-    (ps:chain (nyxt/ps:qs document "#nyxt-rectangle-selection") (remove))
-    (ps:chain (nyxt/ps:qs document "#nyxt-overlay") (remove))))
+    (ps:let ((rectangle (nyxt/ps:qs document "#nyxt-rectangle-selection"))
+             (overlay (nyxt/ps:qs document "#nyxt-overlay")))
+      (when rectangle
+        (ps:chain rectangle (remove)))
+      (when overlay
+        (ps:chain overlay (remove))))
+    (ps:dolist (handle (nyxt/ps:qsa document ".nyxt-frame-handle"))
+      (ps:chain handle (remove)))
+    (setf (ps:@ window nyxt-frame-selection) nil)))
+
+(defun frame-source-selection ()
+  (remove-duplicates (mapcar #'url (frame-element-get-selection))
+                     :test #'equal))
+
+(-> frame-prompt (prompter:source window) (maybe prompt-buffer))
+(defun frame-prompt (source window)
+  "Return WINDOW's prompt when it is showing SOURCE."
+  (when-let ((prompt (first (nyxt::active-prompt-buffers window))))
+    (when (find source (prompter:sources prompt))
+      prompt)))
+
+(-> activate-frame-prompt (prompt-buffer) t)
+(defun activate-frame-prompt (prompt)
+  "Focus PROMPT and keep it fully opaque."
+  (ffi-within-renderer-thread (lambda () (ffi-focus-buffer prompt)))
+  (ps-eval :buffer prompt
+    (setf (ps:@ (nyxt/ps:qs document "*") style opacity) "1")
+    (ps:let ((input (nyxt/ps:qs document "#input")))
+      (when input
+        (ps:chain input (focus))))))
+
+(-> replace-frame-suggestions (prompter:source list) t)
+(defun replace-frame-suggestions (source urls)
+  "Replace SOURCE's suggestions with URLS, dropping marks that left the box."
+  (let ((wrapped (prompter:ensure-suggestions-list source urls)))
+    (setf (slot-value source 'prompter::marks)
+          (remove-if-not (lambda (mark)
+                           (member mark urls :test #'equalp))
+                         (prompter:marks source)))
+    (bt:with-lock-held ((slot-value source 'prompter::initial-suggestions-lock))
+      (setf (slot-value source 'prompter::initial-suggestions) wrapped))))
+
+(defun keep-frame-prompt-opaque (prompt)
+  "Leave PROMPT undimmed while the pointer is on the page."
+  (ps-eval :async t :buffer prompt
+    (setf (ps:@ (nyxt/ps:qs document "*") style opacity) "1")))
+
+(-> watch-frame-selection (prompter:source buffer window) t)
+(defun watch-frame-selection (source buffer window)
+  "Update SOURCE as the drag box changes, and refocus its prompt when a drag ends."
+  (let ((browser *browser*))
+    (run-thread "frame-selection"
+      (let ((*browser* browser)
+            (seen-p nil)
+            (misses 0)
+            (last-urls :none)
+            (last-ended 0))
+        (loop
+          (sleep 0.12)
+          (unless (slot-value source 'alive-p)
+            (return))
+          (let ((prompt (frame-prompt source window)))
+            (cond
+              ((and prompt (not seen-p))
+               (setf seen-p t)
+               (sleep 0.25))
+              ((not prompt)
+               (when (or seen-p (> (incf misses) 50))
+                 (return)))
+              (t
+               (handler-case
+                   (with-current-buffer buffer
+                     (let* ((state (frame-element-state))
+                            (dragging (and state (cdr (assoc :dragging state))))
+                            (ready (and state (cdr (assoc :ready state))))
+                            (ended (or (and state (cdr (assoc :ended state))) 0))
+                            (urls (when ready
+                                    (frame-source-selection))))
+                       (when dragging
+                         (keep-frame-prompt-opaque prompt))
+                       (when (and ready (not (equal urls last-urls)))
+                         (setf last-urls urls)
+                         (replace-frame-suggestions source (or urls '()))
+                         (prompter:refresh prompt)
+                         (prompt-render-suggestions prompt))
+                       (unless (eql ended last-ended)
+                         (setf last-ended ended)
+                         (when (plusp ended)
+                           (activate-frame-prompt prompt)))))
+                 (error ()
+                   nil))))))))))
 
 (define-class frame-source (prompter:source)
   ((prompter:name "Selection Frame")
-   (buffer :accessor buffer :initarg :buffer)
-   (prompter:constructor (lambda (source)
-                           (with-current-buffer (buffer source)
-                             (frame-element-select)
-                             (prog1
-                                 (loop
-                                   do (sleep 0.25)
-                                   when (frame-element-selection-ready)
-                                   return (frame-source-selection))
-                               (toggle-prompt-buffer-focus)))))))
+   (buffer
+    nil
+    :type (maybe buffer)
+    :documentation "Page whose links the drag box selects.")
+   (alive-p
+    t
+    :type boolean
+    :documentation "Whether the drag box is still updating this source.")
+   (prompter:constructor
+    (lambda (source)
+      (let ((buffer (buffer source))
+            (window (window (buffer source))))
+        (with-current-buffer buffer
+          (frame-element-select))
+        (when window
+          (watch-frame-selection source buffer window)))
+      nil))
+   (prompter:destructor
+    (lambda (prompter source)
+      (declare (ignore prompter))
+      (setf (slot-value source 'alive-p) nil)))))
 
 (define-command select-frame-new-buffer (&key (buffer (current-buffer)))
-  "Select a frame and open the links in new buffers."
-  (prompt :prompt "Open selected links in new buffers"
+  "Draw a box and open its links in new buffers. Drag to draw, move, or resize."
+  (prompt :prompt "Drag a box around the links to open"
           :sources (make-instance
                     'frame-source
                     :buffer buffer
@@ -631,11 +928,8 @@ The inner-text must not be modified, so that we can jump to the anchor of the sa
                     :actions-on-return (lambda-command open-new-buffers (urls)
                                          (mapcar (lambda (i) (make-buffer :url (quri:uri i)))
                                                  urls)))
-          :after-destructor (lambda () (with-current-buffer buffer
-                                    (frame-element-clear)))))
-
-(defun frame-source-selection ()
-  (remove-duplicates (mapcar #'url (frame-element-get-selection))
-                     :test #'equal))
+          :after-destructor (lambda ()
+                              (with-current-buffer buffer
+                                (frame-element-clear)))))
 
 (pushnew 'document-mode nyxt::%default-modes)
