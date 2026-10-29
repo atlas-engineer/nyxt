@@ -7,7 +7,7 @@
 #   Nyxt.app/Contents/Info.plist
 #   Nyxt.app/Contents/MacOS/apprun
 #   Nyxt.app/Contents/MacOS/nyxt
-#   Nyxt.app/Contents/MacOS/nyxt.core
+#   Nyxt.app/Contents/Resources/nyxt.core
 #   Nyxt.app/Contents/MacOS/libcl-cef.dylib
 #   Nyxt.app/Contents/MacOS/libcl-clipboard.dylib
 #   Nyxt.app/Contents/Frameworks/                 Lisp shared libraries
@@ -280,7 +280,7 @@ cp -f "$clipboard_dir/libcl-clipboard.dylib" "$stage/Contents/MacOS/libcl-clipbo
 chmod 755 "$stage/Contents/MacOS/libcl-clipboard.dylib"
 cp -f "$root/nyxt" "$stage/Contents/MacOS/nyxt"
 chmod 755 "$stage/Contents/MacOS/nyxt"
-dynamic_mb=$(python3 - "$stage/Contents/MacOS/nyxt" "$stage/Contents/MacOS/nyxt.core" <<'PY'
+dynamic_mb=$(python3 - "$stage/Contents/MacOS/nyxt" "$stage/Contents/Resources/nyxt.core" <<'PY'
 import os, struct, sys
 path, core_path = sys.argv[1], sys.argv[2]
 size = os.path.getsize(path)
@@ -440,7 +440,7 @@ int main(int argc, char **argv) {
         return 1;
     *slash = '\0';
     snprintf(nyxt, sizeof nyxt, "%s/nyxt", exe);
-    snprintf(core, sizeof core, "%s/nyxt.core", exe);
+    snprintf(core, sizeof core, "%s/../Resources/nyxt.core", exe);
     snprintf(frameworks, sizeof frameworks, "%s/../Frameworks", exe);
     snprintf(libcef, sizeof libcef, "%s/libcl-cef.dylib", exe);
     snprintf(libclip, sizeof libclip, "%s/libcl-clipboard.dylib", exe);
@@ -581,6 +581,9 @@ sign_machos() {
     listing=$(mktemp)
     find "$root_dir" -type f > "$listing"
     while IFS= read -r candidate; do
+        case $candidate in
+            "$stage/Contents/MacOS/apprun"|*.core) continue ;;
+        esac
         if file "$candidate" | grep -q Mach-O; then
             sign "$candidate"
         fi
