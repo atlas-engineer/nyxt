@@ -283,31 +283,41 @@ chmod 755 "$stage/Contents/MacOS/nyxt"
 dynamic_mb=$(python3 - "$stage/Contents/MacOS/nyxt" "$stage/Contents/Resources/nyxt.core" <<'PY'
 import os, struct, sys
 path, core_path = sys.argv[1], sys.argv[2]
-size = os.path.getsize(path)
 with open(path, "rb") as src:
-    if size < 16:
-        sys.exit("executable is too small to contain an SBCL core")
-    src.seek(-16, os.SEEK_END)
-    offset, magic = struct.unpack("<QQ", src.read(16))
-    if offset <= 0 or offset >= size - 16:
-        sys.exit("executable has no embedded SBCL core")
-    src.seek(offset)
-    if struct.unpack("<Q", src.read(8))[0] != magic:
-        sys.exit("embedded SBCL core magic does not match")
-    src.seek(offset + 8)
-    words = struct.unpack("<5Q", src.read(40))
-    mb = 3072
-    if words[0] == 0x31EBF355:
-        space = words[2]
-        if space % (1024 * 1024) == 0:
-            parsed = space // (1024 * 1024)
-            if 512 <= parsed <= 8192:
-                mb = parsed
-    src.seek(offset)
-    blob = src.read()
+    data = src.read()
+size = len(data)
+if size < 32:
+    sys.exit("executable is too small to contain an SBCL core")
+magic_macho = struct.unpack_from("<I", data, 0)[0]
+if magic_macho != 0xFEEDFACF:
+    sys.exit("executable is not a thin 64-bit Mach-O")
+ncmds = struct.unpack_from("<I", data, 16)[0]
+command = 32
+macho_end = 0
+for _ in range(ncmds):
+    cmd, cmdsize = struct.unpack_from("<II", data, command)
+    if cmd == 0x19:
+        fileoff, filesize = struct.unpack_from("<QQ", data, command + 40)
+        macho_end = max(macho_end, fileoff + filesize)
+    command += cmdsize
+offset, core_magic = struct.unpack_from("<QQ", data, size - 16)
+if offset <= 0 or offset >= size - 16:
+    sys.exit("executable has no embedded SBCL core")
+if struct.unpack_from("<Q", data, offset)[0] != core_magic:
+    sys.exit("embedded SBCL core magic does not match")
+if macho_end <= 0 or macho_end > offset:
+    sys.exit("Mach-O layout does not leave the SBCL core outside the segments")
+words = struct.unpack_from("<5Q", data, offset + 8)
+mb = 3072
+if words[0] == 0x31EBF355:
+    space = words[2]
+    if space % (1024 * 1024) == 0:
+        parsed = space // (1024 * 1024)
+        if 512 <= parsed <= 8192:
+            mb = parsed
 with open(core_path, "wb") as dst:
-    dst.write(blob)
-os.truncate(path, offset)
+    dst.write(data[offset:])
+os.truncate(path, macho_end)
 print(mb)
 PY
 )
