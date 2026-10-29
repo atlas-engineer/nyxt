@@ -26,7 +26,7 @@ jobs:
       - name: Install build packages
         run: |
           sudo port -N selfupdate
-          sudo port -N install cmake gmake openssl3 sqlite3 enchant2 libfixposix pkgconfig ocicl
+          sudo port -N install cmake gmake git openssl3 sqlite3 enchant2 libfixposix pkgconfig ocicl
           if [ ! -e /opt/local/lib/libssl.dylib ]; then
             sudo ln -sfn openssl3/libssl.dylib /opt/local/lib/libssl.dylib
             sudo ln -sfn openssl3/libcrypto.dylib /opt/local/lib/libcrypto.dylib
