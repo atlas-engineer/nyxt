@@ -86,7 +86,26 @@
 (define-class cef-browser (cef:interface)
   ((adblocking-enabled-p
     t
-    :documentation "When non-nil, load uBlock Origin's default lists and block matching requests."))
+    :documentation "When non-nil, load uBlock Origin's default lists and block matching requests.")
+   (web-extensions-p
+    t
+    :type boolean
+    :documentation "When non-nil, load unpacked Chromium web extensions before startup.
+Each subdirectory of the web-extensions data directory, and each entry of
+`web-extension-paths', is loaded when it contains a manifest.json.
+Manifest V2 and Manifest V3 are both loaded. On CEF 150, Manifest V2 stays
+enabled for these unpacked directories. Additions apply on the next start.")
+   (web-extension-paths
+    '()
+    :type list
+    :documentation "Extra directories of unpacked Chromium web extensions.
+A directory that itself contains manifest.json is one extension. Otherwise
+each child directory that contains manifest.json is an extension.")
+   (web-extensions
+    '()
+    :type list
+    :documentation "Chromium web extensions passed to CEF for this process.
+Filled at startup from `web-extension-paths' and the web-extensions data directory."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:metaclass user-class)
@@ -216,6 +235,7 @@ This is the expanded `download-directory'."
             (append (cef:launch-options interface) '("--class=nyxt"))))
     (cef:set-window-class "nyxt")
     (install-window-icon)
+    (configure-web-extensions browser interface)
     (cef:launch interface)
     (when (adblocking-enabled-p browser)
       (cef:default-block (make-instance 'cef:adblocker)))

@@ -603,6 +603,12 @@ The value is saved to clipboard."
                      "Files from this session"
                      "View downloads for the current session."
                      (nyxt-url 'nyxt/mode/download:list-downloads))
+           (when-let* ((package (find-package :nyxt/renderer/cef))
+                       (command (find-symbol "LIST-WEB-EXTENSIONS" package)))
+             (page-row "Web extensions"
+                       "Install and remove"
+                       "Install a directory, a package, or the page you are viewing."
+                       (nyxt-url command)))
            (page-row "Annotations"
                      "Notes on pages"
                      "Show annotations for all pages."

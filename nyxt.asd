@@ -361,7 +361,8 @@
   :depends-on (nyxt cl-cef)
   :pathname #p"NYXT:source;"
   :serial t
-  :components ((:file "renderer/cef")))
+  :components ((:file "renderer/cef")
+               (:file "renderer/web-extension")))
 
 (defsystem "nyxt/cef-application"
   :defsystem-depends-on ("nasdf")
