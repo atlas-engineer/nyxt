@@ -6,7 +6,7 @@ on:
 jobs:
   app:
     name: Build CEF app
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 180
     env:
       OCICL_HTTP_RETRIES: "6"
@@ -18,7 +18,7 @@ jobs:
       - name: Install MacPorts
         run: |
           curl -fsSL -o /tmp/macports.pkg \
-            "https://github.com/macports/macports-base/releases/download/v2.11.6/MacPorts-2.11.6-15-Sequoia.pkg"
+            "https://github.com/macports/macports-base/releases/download/v2.11.6/MacPorts-2.11.6-26-Tahoe.pkg"
           sudo installer -pkg /tmp/macports.pkg -target /
           echo "/opt/local/bin" >> "$GITHUB_PATH"
           echo "/opt/local/sbin" >> "$GITHUB_PATH"
@@ -32,17 +32,18 @@ jobs:
             sudo ln -sfn openssl3/libcrypto.dylib /opt/local/lib/libcrypto.dylib
           fi
 
-      - name: Restore SBCL 2.4.5
+      - name: Restore SBCL 2.6.10
         id: sbcl
         uses: actions/cache/restore@v4
         with:
           path: build/host-sbcl
-          key: sbcl-2.4.5-${{ runner.os }}-${{ runner.arch }}
+          key: sbcl-2.6.10-${{ runner.os }}-${{ runner.arch }}
 
-      - name: Build SBCL 2.4.5
+      - name: Build SBCL 2.6.10
         if: steps.sbcl.outputs.cache-hit != 'true'
         run: |
-          version=2.4.5
+          version=2.6.10
+          source_sha=4542c2d34a78f60850c9a3a9929434b1ab6668a6
           prefix="$GITHUB_WORKSPACE/build/host-sbcl"
           bootstrap_version=2.4.0
           bootstrap_sha=020b167896a6362a105b981be77b0d995750ab15
@@ -55,6 +56,7 @@ jobs:
           chmod 755 "$bootstrap/run-sbcl.sh" "$bootstrap/src/runtime/sbcl"
           curl -fsSL -o /tmp/sbcl.tar.bz2 \
             "https://downloads.sourceforge.net/project/sbcl/sbcl/${version}/sbcl-${version}-source.tar.bz2"
+          echo "${source_sha}  /tmp/sbcl.tar.bz2" | shasum -a 1 -c -
           tar -xjf /tmp/sbcl.tar.bz2 -C /tmp
           cd "/tmp/sbcl-${version}"
           export GNUMAKE=gmake
@@ -65,12 +67,12 @@ jobs:
           rm -rf "/tmp/sbcl-${version}" /tmp/sbcl.tar.bz2 "$bootstrap" /tmp/sbcl-bootstrap.tar.bz2
           "$prefix/bin/sbcl" --version
 
-      - name: Save SBCL 2.4.5
+      - name: Save SBCL 2.6.10
         if: steps.sbcl.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           path: build/host-sbcl
-          key: sbcl-2.4.5-${{ runner.os }}-${{ runner.arch }}
+          key: sbcl-2.6.10-${{ runner.os }}-${{ runner.arch }}
 
       - name: Install Ocicl
         run: ocicl setup
