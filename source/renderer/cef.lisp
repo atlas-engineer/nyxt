@@ -172,6 +172,16 @@ Helper bundles are named after the nyxt executable."
           (setf (cef:locales-dir-path interface) locales)))))
   nil)
 
+(-> cef-download-directory () (values pathname &optional))
+(defun cef-download-directory ()
+  "Return the directory downloaded files are written to.
+This is the expanded `download-directory'."
+  (let ((path (or (ignore-errors (files:expand (make-instance 'download-directory)))
+                  (xdg-download-dir))))
+    (when (files:nil-pathname-p path)
+      (setf path (xdg-download-dir)))
+    (ensure-directories-exist (uiop:ensure-directory-pathname path))))
+
 (defmethod ffi-initialize ((browser cef-browser) urls startup-timestamp)
   (declare (ignore urls startup-timestamp))
   (log:debug "Initializing CEF Interface")
@@ -179,6 +189,9 @@ Helper bundles are named after the nyxt executable."
     (setf cef:*interface* interface)
     (configure-appimage-cef interface)
     (configure-macos-cef interface)
+    (let ((directory (cef-download-directory)))
+      (log:debug "Saving downloads to ~s." directory)
+      (setf (cef:download-directory interface) directory))
     ;; Scheme names and privilege bits are fixed at CEF startup. Handlers are
     ;; attached to the same objects once the UI thread is in its message loop.
     (setf (cef:protocols interface)
