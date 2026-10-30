@@ -34,7 +34,7 @@ jobs:
 
       - name: Restore SBCL 2.6.10
         id: sbcl
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: build/host-sbcl
           key: sbcl-2.6.10-${{ runner.os }}-${{ runner.arch }}
@@ -69,7 +69,7 @@ jobs:
 
       - name: Save SBCL 2.6.10
         if: steps.sbcl.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: build/host-sbcl
           key: sbcl-2.6.10-${{ runner.os }}-${{ runner.arch }}
