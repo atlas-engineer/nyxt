@@ -141,7 +141,7 @@ moptilities, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c143
 moptilities-test, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/moptilities/moptilities-test.asd
 mt19937, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/mt19937/mt19937.asd
 multilang-documentation-utils, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/documentation-utils/multilang-documentation-utils.asd
-named-readtables, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/named-readtables/named-readtables.asd
+named-readtables, ghcr.io/ocicl/named-readtables@sha256:9c467a5a6d7b4e928d4ca48986e14312cf29cd5a71347be0ebb515ebb964ced2, named-readtables-20260701-9b774b5/named-readtables.asd
 named-readtables-test, ghcr.io/ocicl/named-readtables@sha256:9c467a5a6d7b4e928d4ca48986e14312cf29cd5a71347be0ebb515ebb964ced2, named-readtables-20260701-9b774b5/named-readtables-test.asd
 nasdf, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/libraries/nasdf/nasdf.asd
 nclasses, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/nclasses/nclasses.asd

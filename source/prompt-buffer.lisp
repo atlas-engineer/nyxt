@@ -872,7 +872,7 @@ See `update-prompt-input' to update the changes visually."
 
 (eval-always
   (defvar %prompt-args
-    (delete-duplicates (append
+    (remove-duplicates (append
                         (mopu:direct-slot-names 'prompt-buffer)
                         (mopu:direct-slot-names 'prompter:prompter)
                         ;; `customize-instance' `:after' arguments:

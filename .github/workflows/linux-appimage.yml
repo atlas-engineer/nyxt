@@ -43,7 +43,7 @@ jobs:
 
       - name: Install SBCL
         run: |
-          version=2.4.5
+          version=2.6.10
           curl -fsSL -o /tmp/sbcl.tar.bz2 \
             "https://downloads.sourceforge.net/project/sbcl/sbcl/${version}/sbcl-${version}-x86-64-linux-binary.tar.bz2"
           tar -xjf /tmp/sbcl.tar.bz2 -C /tmp
