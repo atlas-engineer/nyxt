@@ -152,6 +152,38 @@ some point.")
           :font-weight "400"
           :line-height "28px"
           :white-space "nowrap")
+        '(".count-total"
+          :display "inline-flex"
+          :align-items "center"
+          :justify-content "center"
+          :box-sizing "border-box"
+          :width "3ch"
+          :min-width "3ch"
+          :max-width "3ch"
+          :vertical-align "middle")
+        '(".loading"
+          :display "inline-flex"
+          :align-items "center"
+          :justify-content "center"
+          :box-sizing "border-box"
+          :width "100%"
+          :min-width "0"
+          :max-width "100%"
+          :gap "3px")
+        '(".loading span"
+          :width "4px"
+          :height "4px"
+          :border-radius "50%"
+          :background-color "currentColor"
+          :opacity "0.2"
+          :animation "prompt-loading 1.2s ease-in-out infinite")
+        '(".loading span:nth-child(2)"
+          :animation-delay "0.2s")
+        '(".loading span:nth-child(3)"
+          :animation-delay "0.4s")
+        '(:keyframes "prompt-loading"
+          ("0%, 80%, 100%" :opacity "0.2")
+          ("40%" :opacity "1"))
         '("#prompt-modes"
           :max-width "24ch"
           :overflow "hidden"
@@ -462,25 +494,54 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
         (show-prompt-buffer (first (active-prompt-buffers window)))
         (ffi-window-set-buffer window (active-buffer window) :focus t))))
 
-(defun suggestion-and-mark-count (prompt-buffer suggestions marks &key enable-marks-p)
-  "Return a formatted string with counts of marks (if any) and suggestions."
+(-> suggestion-and-mark-count
+    (prompt-buffer list list &key (:enable-marks-p boolean) (:loading-p boolean))
+    string)
+(defun suggestion-and-mark-count
+    (prompt-buffer suggestions marks &key enable-marks-p loading-p)
+  "Return the bracketed mark and suggestion count.
+When LOADING-P is non-nil, the suggestion total is the loading mark."
   (alex:maxf (max-suggestions prompt-buffer)
              (length suggestions))
-  (unless (hide-suggestion-count-p prompt-buffer)
-    (let ((marks-str (when (or marks enable-marks-p)
-                       (format nil "~2,' d/" (length marks)))))
-      (format nil "[~a~3,' d]" (or marks-str "") (length suggestions)))))
+  (if (hide-suggestion-count-p prompt-buffer)
+      ""
+      (format nil "[~a<span class=\"count-total\">~a</span>]"
+              (if (or marks enable-marks-p)
+                  (format nil "<span class=\"count-marks\">~2,' d/</span>"
+                          (length marks))
+                  "")
+              (if loading-p
+                  "<span class=\"loading\" aria-hidden=\"true\"><span></span><span></span><span></span></span>"
+                  (format nil "~3,' d" (length suggestions))))))
+
+(-> prompt-count-html (prompt-buffer) string)
+(defun prompt-count-html (prompt-buffer)
+  "Return PROMPT-BUFFER's bracketed count.
+The suggestion total is the loading mark while a source is still computing."
+  (suggestion-and-mark-count
+   prompt-buffer
+   (prompter:all-suggestions prompt-buffer)
+   (prompter:all-marks prompt-buffer)
+   :enable-marks-p (some #'prompter:enable-marks-p
+                         (prompter:sources prompt-buffer))
+   :loading-p (notevery #'prompter:ready-p
+                        (prompter:sources prompt-buffer))))
+
+(-> prompt-render-loading (prompt-buffer) boolean)
+(defun prompt-render-loading (prompt-buffer)
+  "Show the loading mark in the suggestion count while a source is computing."
+  (let ((loading-p (notevery #'prompter:ready-p (prompter:sources prompt-buffer))))
+    (ps-eval :async t :buffer prompt-buffer
+      (let ((count (nyxt/ps:qs document "#prompt-count")))
+        (when count
+          (setf (ps:@ count |innerHTML|)
+                (ps:lisp (prompt-count-html prompt-buffer))))))
+    loading-p))
 
 (defmethod render-prompt ((prompt-buffer prompt-buffer))
   (ps-eval :async t :buffer prompt-buffer
-    (setf (ps:@ (nyxt/ps:qs document "#prompt-extra") |innerHTML|)
-          (ps:lisp
-           (suggestion-and-mark-count
-            prompt-buffer
-            (prompter:all-suggestions prompt-buffer)
-            (prompter:all-marks prompt-buffer)
-            :enable-marks-p (some #'prompter:enable-marks-p
-                                  (prompter:sources prompt-buffer)))))
+    (setf (ps:@ (nyxt/ps:qs document "#prompt-count") |innerHTML|)
+          (ps:lisp (prompt-count-html prompt-buffer)))
     (setf (ps:@ (nyxt/ps:qs document "#prompt-modes") |innerHTML|)
           (ps:lisp
            (str:join
@@ -726,12 +787,12 @@ so the columns line up. Shorter rows leave the extra cells empty."
                    ;; `prompter:source' and handle the condition.  Note that
                    ;; `suggestion-and-mark-count' relies on the global prompt
                    ;; value `hide-suggestion-count-p'.
-                   (suggestion-and-mark-count
-                    prompt-buffer
-                    (prompter:suggestions source)
-                    (prompter:marks source)
-                    :enable-marks-p (prompter:enable-marks-p source)))
-                  (when (not (prompter:ready-p source)) "(In progress...)"))
+                   (:raw (suggestion-and-mark-count
+                          prompt-buffer
+                          (prompter:suggestions source)
+                          (prompter:marks source)
+                          :enable-marks-p (prompter:enable-marks-p source)
+                          :loading-p (not (prompter:ready-p source))))))
                  (unless (typep source 'prompter:composite-source)
                    (:div
                     (:nbutton
@@ -753,7 +814,8 @@ so the columns line up. Shorter rows leave the extra cells empty."
                (sera:string-join
                 (loop for i from current-source-index to last-source-index
                       for source = (nth i sources)
-                      unless (null (prompter:suggestions source))
+                      when (or (prompter:suggestions source)
+                               (not (prompter:ready-p source)))
                         collect (source->html source))
                 +newline+)))))
     (render-prompt prompt-buffer)))
@@ -772,7 +834,9 @@ so the columns line up. Shorter rows leave the extra cells empty."
                (:div
                 :id "prompt-area"
                 (:div :id "prompt" (prompter:prompt prompt-buffer))
-                (:div :id "prompt-extra" :class "arrow-right" "[?/?]")
+                (:div :id "prompt-extra" :class "arrow-right"
+                      (:span :id "prompt-count"
+                             (:raw (prompt-count-html prompt-buffer))))
                 (:div :id "prompt-input"
                       (:input :type (if (invisible-input-p prompt-buffer)
                                         "password"
@@ -812,6 +876,7 @@ If you want to set the input, see `set-prompt-buffer-input'."
                (let ((next-source (when (find prompt-buffer
                                               (active-prompt-buffers
                                                (window prompt-buffer)))
+                                    (prompt-render-loading prompt-buffer)
                                     (prompter:next-ready-p prompt-buffer))))
                  (cond
                    ;; Nothing to do:
