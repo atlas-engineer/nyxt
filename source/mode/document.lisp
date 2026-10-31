@@ -2,7 +2,6 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/document
-  (:shadow #:focus-first-input-field)
   (:documentation "Package for `document-mode', mode to interact with structured documents."))
 (in-package :nyxt/mode/document)
 
@@ -25,7 +24,6 @@ Firefox, and reused for every page on that host.
       keyscheme:default
       (list
        "C-M-Z" 'nyxt/mode/passthrough:passthrough-mode
-       "M-i" 'focus-first-input-field
        "C-M-c" 'open-inspector
        "C-C" 'open-inspector
        "C-p" 'print-buffer
@@ -174,20 +172,6 @@ Only includes the strings that were pasted/copied inside Nyxt."))
 (define-command select-all (&optional (buffer (current-buffer)))
   "Select all the text in the text field."
   (ffi-buffer-select-all buffer))
-
-(define-command focus-first-input-field (&key (buffer (current-buffer)))
-  "Move the focus to the first inputtable element of BUFFER."
-  ;; There are two basic ways to have an editable widget on a webpage:
-  ;; - Using <input>/<textarea>,
-  ;; - or marking any other element as contenteditable:
-  ;;   https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/contenteditable
-  (loop with inputs = (clss:ordered-select "input, textarea, [contenteditable]" (document-model buffer))
-        for input across inputs
-        when (ps-eval :buffer buffer
-               (nyxt/ps:element-editable-p
-                (nyxt/ps:qs-nyxt-id document (ps:lisp (nyxt/dom:get-nyxt-id input)))))
-          do (nyxt/dom:focus-select-element input)
-          and do (return input)))
 
 (defmethod nyxt:on-signal-load-finished ((mode document-mode) url title)
   (declare (ignore title))
