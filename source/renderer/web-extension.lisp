@@ -1172,7 +1172,7 @@ Chromium keeps a failed registration and will not start the new worker."
                  (handler-case
                      (string= (string-trim '(#\newline #\return #\space #\tab)
                                            (uiop:read-file-string stamp))
-                              "6")
+                              "13")
                    (error ()
                      nil)))
       (handler-case
@@ -1183,7 +1183,7 @@ Chromium keeps a failed registration and will not start the new worker."
                                       :if-exists :supersede
                                       :if-does-not-exist :create
                                       :external-format :utf-8)
-              (write-string "6" out)))
+              (write-string "13" out)))
         (error (condition)
           (log:warn "Could not reset extension service workers: ~a." condition)))))
   nil)

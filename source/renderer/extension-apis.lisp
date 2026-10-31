@@ -14,7 +14,7 @@
 (defun now-ms ()
   (round (* 1000 (time:timestamp-to-unix (time:now)))))
 
-(defun extension-update-tab (tab-id properties)
+(defun extension-update-tab (tab-id properties &optional (extension-id ""))
   "Load PROPERTIES's URL in the tab TAB-ID and return the tab."
   (let ((buffer (find-extension-tab tab-id))
         (properties (or properties (json-object))))
@@ -22,7 +22,7 @@
       (error "No tab with id: ~a." tab-id))
     (let ((url-text (json-string properties "url")))
       (when url-text
-        (let ((uri (quri:uri url-text)))
+        (let ((uri (quri:uri (extension-absolute-url extension-id url-text))))
           (setf (url buffer) uri)
           (ffi-buffer-load buffer uri))))
     (multiple-value-bind (active present-p) (json-field properties "active")
@@ -784,9 +784,9 @@ REVISION orders overlapping updates. An older revision is ignored."
 
 (extension-op "tabs.update"
               (lambda (request extension-id)
-                (declare (ignore extension-id))
                 (op-result (extension-update-tab (nth-value 0 (json-field request "tabId"))
-                                                 (request-object request "properties")))))
+                                                 (request-object request "properties")
+                                                 extension-id))))
 
 (extension-op "tabs.reload"
               (lambda (request extension-id)

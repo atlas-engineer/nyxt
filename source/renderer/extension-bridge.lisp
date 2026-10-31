@@ -3,8 +3,9 @@
 
 (in-package :nyxt/renderer/cef)
 
-(defvar *extension-bridge-port* nil)
 (defvar *extension-bridge-token* "")
+(defvar *extension-tabs-create-ours* ""
+  "How the extension worker's chrome.tabs.create was replaced, or a failure note.")
 (defvar *extension-bridge-started* nil)
 (defvar *extension-clients* (make-hash-table :test 'equal))
 (defvar *extension-clients-lock* (bt:make-lock "extension clients"))
@@ -223,8 +224,8 @@
   (let ((client (extension-client extension-id)))
     (bt:with-lock-held ((extension-client-lock client))
       (setf (extension-client-events client)
-            (append (extension-client-events client) (list event))))
-    (bt:condition-notify (extension-client-wait client)))
+            (append (extension-client-events client) (list event)))
+      (bt:condition-notify (extension-client-wait client))))
   event)
 
 (-> broadcast-extension-event (hash-table) hash-table)
@@ -238,8 +239,8 @@
     (dolist (client clients)
       (bt:with-lock-held ((extension-client-lock client))
         (setf (extension-client-events client)
-              (append (extension-client-events client) (list event))))
-      (bt:condition-notify (extension-client-wait client))))
+              (append (extension-client-events client) (list event)))
+        (bt:condition-notify (extension-client-wait client)))))
   event)
 
 (-> take-extension-events (string real) vector)
@@ -414,10 +415,36 @@
                                  (extension-tabs)))
           'vector))
 
-(-> extension-create-tab ((or null hash-table)) hash-table)
-(defun extension-create-tab (properties)
+(-> absolute-url-p (string) boolean)
+(defun absolute-url-p (text)
+  "Return T when TEXT begins with a URI scheme."
+  (let ((colon (position #\: text)))
+    (and colon
+         (plusp colon)
+         (every (lambda (char)
+                  (or (alphanumericp char)
+                      (char= char #\+)
+                      (char= char #\-)
+                      (char= char #\.)))
+                (subseq text 0 colon)))))
+
+(-> extension-absolute-url (string string) string)
+(defun extension-absolute-url (extension-id url-text)
+  "Return URL-TEXT as an absolute URL.
+A path with no scheme belongs to the extension EXTENSION-ID."
+  (cond
+    ((uiop:emptyp url-text) "about:blank")
+    ((absolute-url-p url-text) url-text)
+    ((plusp (length extension-id))
+     (uiop:strcat "chrome-extension://" extension-id "/"
+                  (string-left-trim "/" url-text)))
+    (t url-text)))
+
+(-> extension-create-tab ((or null hash-table) &optional string) hash-table)
+(defun extension-create-tab (properties &optional (extension-id ""))
   "Open a Nyxt buffer for chrome.tabs.create and return its tab object."
-  (let* ((url-text (or (json-string properties "url") "about:blank"))
+  (let* ((url-text (extension-absolute-url extension-id
+                                           (or (json-string properties "url") "")))
          (buffer (make-buffer :url (quri:uri url-text))))
     (cond
       ((json-bool properties "active" t)
@@ -622,16 +649,29 @@ this entry point."
       (push item *extension-menu-items*)
       item)))
 
+(-> context-menu-text (keyword) (or null string))
+(defun context-menu-text (key)
+  "Return the non-empty string for KEY in the context menu that was clicked."
+  (let ((value (and (listp *context-menu-hit*)
+                    (assoc-value *context-menu-hit* key))))
+    (when (and (stringp value) (plusp (length value)))
+      value)))
+
 (-> menu-click-event (string string) hash-table)
 (defun menu-click-event (extension-id menu-id)
   (declare (ignore extension-id))
-  (let ((tab (or (current-extension-tab) :null)))
+  (let* ((tab (or (current-extension-tab) :null))
+         (page (or (context-menu-text :page-url)
+                   (and (hash-table-p tab) (json-string tab "url"))
+                   "")))
     (extension-event "contextMenus.onClicked"
                      (json-object "menuItemId" menu-id
                                   "editable" nil
-                                  "pageUrl" (if (hash-table-p tab)
-                                                (or (json-string tab "url") "")
-                                                ""))
+                                  "pageUrl" page
+                                  "linkUrl" (or (context-menu-text :link-url) "")
+                                  "srcUrl" (or (context-menu-text :src-url) "")
+                                  "frameUrl" (or (context-menu-text :frame-url) "")
+                                  "selectionText" (or (context-menu-text :selection-text) ""))
                      tab)))
 
 (defvar *extension-click-at* (make-hash-table :test 'equal)
@@ -650,6 +690,40 @@ A context-menu or toolbar click can be reported twice for one gesture."
       (and previous
            (< (- now previous) internal-time-units-per-second)))))
 
+(-> open-extension-menu-page (string string) (or null hash-table))
+(defun open-extension-menu-page (extension-id menu-id)
+  "Open the extension page for a context-menu item that carries a page address.
+QR Code Generator reads that address from the c query of its page. Its own
+chrome.tabs.create is Chromium's, which does not open a Nyxt buffer."
+  (when (member menu-id '("ctx_page" "ctx_link" "ctx_string") :test #'string=)
+    (let* ((extension (find extension-id (listed-web-extensions)
+                            :key #'extension-id :test #'string=))
+           (page (and extension (page extension)))
+           (target (or (context-menu-text :link-url)
+                       (context-menu-text :selection-text)
+                       (context-menu-text :page-url)
+                       (let ((tab (current-extension-tab)))
+                         (when (hash-table-p tab)
+                           (json-string tab "url"))))))
+      (when (and (stringp page) (plusp (length page))
+                 (stringp target) (plusp (length target)))
+        (extension-create-tab
+         (json-object "url" (uiop:strcat (string-left-trim "/" page)
+                                         "?c="
+                                         (quri:url-encode target))
+                      "active" t)
+         extension-id)))))
+
+(-> wake-extension-worker (t) null)
+(defun wake-extension-worker (buffer)
+  "Start extension workers for the page in BUFFER.
+A stopped service worker does not see a queued context-menu click until it runs."
+  (when (extension-tab-p buffer)
+    (ffi-buffer-evaluate-javascript-async
+     buffer
+     "window.postMessage({__nyxt:\"wake\"}, \"*\")"))
+  nil)
+
 (-> extension-context-menu-entries () list)
 (defun extension-context-menu-entries ()
   "Return context-menu rows for items extensions have created."
@@ -662,7 +736,9 @@ A context-menu or toolbar click can be reported twice for one gesture."
                         (unless (repeat-extension-click-p
                                  (uiop:strcat extension-id " " menu-id))
                           (enqueue-event extension-id
-                                         (menu-click-event extension-id menu-id)))))))
+                                         (menu-click-event extension-id menu-id))
+                          (open-extension-menu-page extension-id menu-id)
+                          (wake-extension-worker (current-buffer)))))))
             (reverse *extension-menu-items*))))
 
 (-> note-extension-tab (buffer) (or null hash-table))
@@ -739,8 +815,11 @@ Nyxt can make, because this window has no toolbar button."
         (extension-id (or (json-string request "extensionId") "")))
     (cond
       ((string= op "events")
-       (json-object "ok" t
-                    "result" (take-extension-events extension-id 20)))
+       (progn
+         (setf *extension-tabs-create-ours*
+               (or (json-string request "tabsHook") ""))
+         (json-object "ok" t
+                      "result" (take-extension-events extension-id 0))))
       ((string= op "tabs.query")
        (json-object "ok" t
                     "result" (extension-query-tabs (let ((query (nth-value 0 (json-field request "query"))))
@@ -749,7 +828,8 @@ Nyxt can make, because this window has no toolbar button."
        (json-object "ok" t
                     "result" (extension-create-tab
                               (let ((properties (nth-value 0 (json-field request "properties"))))
-                                (when (hash-table-p properties) properties)))))
+                                (when (hash-table-p properties) properties))
+                              extension-id)))
       ((string= op "tabs.get")
        (let ((buffer (find-extension-tab (nth-value 0 (json-field request "tabId")))))
          (unless buffer
@@ -817,158 +897,129 @@ Nyxt can make, because this window has no toolbar button."
              (funcall handler request extension-id)
              (error "Unknown extension bridge request ~a." op)))))))
 
-(-> read-http-headers (stream) list)
-(defun read-http-headers (stream)
-  (loop for line = (read-line stream nil nil)
-        while line
-        for trimmed = (string-trim '(#\return #\space #\tab) line)
-        until (zerop (length trimmed))
-        collect trimmed))
-
-(-> header-value (list string) (or null string))
-(defun header-value (headers name)
-  (let ((prefix (uiop:strcat (string-downcase name) ":")))
-    (loop for header in headers
-          when (str:starts-with-p prefix (string-downcase header))
-            return (string-trim '(#\space #\tab) (subseq header (length prefix))))))
-
-(-> read-http-body (stream list) string)
-(defun read-http-body (stream headers)
-  (let ((length (parse-integer (or (header-value headers "content-length") "0")
-                               :junk-allowed t)))
-    (if (or (null length) (not (plusp length)) (> length 16000000))
-        ""
-        (let ((buffer (make-string length)))
-          (read-sequence buffer stream)
-          buffer))))
-
-(-> write-http-json (stream integer string) null)
-(defun write-http-json (stream status text)
-  (format stream "HTTP/1.1 ~d ~a~c~c" status (if (= status 200) "OK" "Error") #\return #\newline)
-  (format stream "Content-Type: application/json; charset=utf-8~c~c" #\return #\newline)
-  (format stream "Content-Length: ~d~c~c" (length text) #\return #\newline)
-  (format stream "Connection: close~c~c~c~c" #\return #\newline #\return #\newline)
-  (write-string text stream)
-  (finish-output stream)
-  nil)
-
-(-> handle-bridge-client (stream) null)
-(defun handle-bridge-client (stream)
-  (handler-case
-      (let* ((headers (read-http-headers stream))
-             (body (read-http-body stream headers))
-             (token (or (header-value headers "x-nyxt-token") "")))
-        (unless (and (plusp (length *extension-bridge-token*))
-                     (string= token *extension-bridge-token*))
-          (write-http-json stream 403 (j:encode (json-object "ok" nil "error" "Forbidden.")))
-          (return-from handle-bridge-client nil))
-        (let* ((request (handler-case
-                            (j:decode body)
-                          (error ()
-                            nil)))
-               (response (handler-case
-                             (if (hash-table-p request)
-                                 (bridge-request request)
-                                 (error "The bridge request is not an object."))
-                           (error (condition)
-                             (json-object "ok" nil "error" (princ-to-string condition))))))
-          (write-http-json stream 200 (j:encode response))))
-    (end-of-file ()
-      nil)
-    (error ()
-      nil)))
-
 (-> bridge-token () string)
 (defun bridge-token ()
   (with-output-to-string (out)
     (loop repeat 32
           do (write-char (char "0123456789abcdef" (random 16)) out))))
 
+(-> extension-bridge-headers () list)
+(defun extension-bridge-headers ()
+  '(("access-control-allow-origin" . "*")
+    ("cache-control" . "no-store")))
+
+(-> extension-bridge-json (list integer string string) (values string string integer list string))
+(defun extension-bridge-json (headers status text reason)
+  (values text "application/json" status headers reason))
+
+(-> extension-bridge-payload (string) hash-table)
+(defun extension-bridge-payload (url)
+  "Return the object encoded in URL's q parameter."
+  (let* ((params (handler-case
+                     (quri:uri-query-params (quri:uri url))
+                   (error ()
+                     nil)))
+         (text (cdr (assoc "q" params :test #'string=)))
+         (request (when (stringp text)
+                    (handler-case
+                        (j:decode text)
+                      (error ()
+                        nil)))))
+    (unless (hash-table-p request)
+      (error "The bridge request is not an object."))
+    request))
+
+(-> extension-scheme-response (string) (values string string integer list string))
+(defun extension-scheme-response (url)
+  "Answer one extension shim request carried by URL."
+  (let ((headers (extension-bridge-headers)))
+    (handler-case
+        (let ((request (extension-bridge-payload url)))
+          (unless (and (plusp (length *extension-bridge-token*))
+                       (string= (or (json-string request "token") "")
+                                *extension-bridge-token*))
+            (return-from extension-scheme-response
+              (extension-bridge-json headers 403
+                                     (j:encode (json-object "ok" nil "error" "Forbidden."))
+                                     "Forbidden")))
+          (let ((response (handler-case
+                              (bridge-request request)
+                            (error (condition)
+                              (json-object "ok" nil "error" (princ-to-string condition))))))
+            (extension-bridge-json headers 200 (j:encode response) "OK")))
+      (error (condition)
+        (extension-bridge-json headers 400
+                               (j:encode (json-object "ok" nil
+                                                      "error" (princ-to-string condition)))
+                               "Bad Request")))))
+
+(define-internal-scheme "nyxt-bridge" #'extension-scheme-response)
+
 (-> extension-bridge-file () pathname)
 (defun extension-bridge-file ()
   (uiop:xdg-cache-home "nyxt/extension-bridge"))
 
-(-> saved-extension-bridge () (values (or null integer) (or null string)))
-(defun saved-extension-bridge ()
-  "Return the port and token written for this profile, when both are present."
+(-> bridge-token-p (t) boolean)
+(defun bridge-token-p (token)
+  (and (stringp token)
+       (= 32 (length token))
+       (every (lambda (char) (digit-char-p char 16)) token)))
+
+(-> saved-extension-bridge-token () (or null string))
+(defun saved-extension-bridge-token ()
+  "Return the bridge token kept for this profile.
+The previous file stored a port on the first line and the token on the second."
   (let ((file (extension-bridge-file)))
     (unless (uiop:file-exists-p file)
-      (return-from saved-extension-bridge (values nil nil)))
-    (let ((lines (handler-case
-                     (uiop:read-file-lines file)
-                   (error ()
-                     '()))))
-      (if (and (stringp (first lines))
-               (stringp (second lines))
-               (plusp (length (first lines)))
-               (= 32 (length (second lines)))
-               (every #'digit-char-p (first lines))
-               (every (lambda (char) (digit-char-p char 16)) (second lines)))
-          (values (parse-integer (first lines)) (second lines))
-          (values nil nil)))))
+      (return-from saved-extension-bridge-token nil))
+    (let* ((lines (handler-case (uiop:read-file-lines file) (error () '())))
+           (token (find-if #'bridge-token-p lines)))
+      token)))
 
-(-> remember-extension-bridge (integer string) pathname)
-(defun remember-extension-bridge (port token)
+(-> remember-extension-bridge-token (string) string)
+(defun remember-extension-bridge-token (token)
   (let ((file (extension-bridge-file)))
     (ensure-directories-exist file)
     (with-open-file (out file :direction :output
                               :if-exists :supersede
                               :if-does-not-exist :create
                               :external-format :utf-8)
-      (format out "~a~%~a~%" port token))
-    file))
+      (write-line token out))
+    token))
 
-(-> start-extension-bridge (&optional integer) integer)
-(defun start-extension-bridge (&optional (port 0))
-  "Listen on 127.0.0.1 for extension shim requests and return the port."
-  (let ((server (iolib:make-socket :address-family :internet
-                                   :type :stream
-                                   :connect :passive
-                                   :local-host "127.0.0.1"
-                                   :local-port port
-                                   :reuse-address t
-                                   :backlog 32)))
-    (setf *extension-bridge-port* (iolib:local-port server))
-    (bt:make-thread
-     (lambda ()
-       (loop for client = (handler-case
-                              (iolib:accept-connection server)
-                            (error ()
-                              nil))
-             while client
-             do (let ((connection client))
-                  (bt:make-thread
-                   (lambda ()
-                     (unwind-protect
-                          (handle-bridge-client connection)
-                       (handler-case
-                           (close connection)
-                         (error ()
-                           nil))))
-                   :name "extension bridge"))))
-     :name "extension bridge accept")
-    *extension-bridge-port*))
+(-> shim-file-token (pathname) (or null string))
+(defun shim-file-token (directory)
+  "Return the token already written into DIRECTORY's shim, if it is valid.
+A cached service worker keeps that copy, so a new token would be refused."
+  (let ((file (uiop:merge-pathnames* #p"_nyxt/shim.js"
+                                     (uiop:ensure-directory-pathname directory))))
+    (unless (uiop:file-exists-p file)
+      (return-from shim-file-token nil))
+    (let ((text (handler-case (uiop:read-file-string file) (error () ""))))
+      (let ((at (search "var token = '" text)))
+        (when at
+          (let* ((start (+ at (length "var token = '")))
+                 (token (subseq text start (min (length text) (+ start 32)))))
+            (when (bridge-token-p token)
+              token)))))))
 
-(-> ensure-extension-bridge () integer)
-(defun ensure-extension-bridge ()
-  "Start the extension bridge once and return its port."
+(-> ensure-extension-bridge (&optional (or null pathname)) string)
+(defun ensure-extension-bridge (&optional directory)
+  "Choose the extension bridge token once for this process.
+DIRECTORY's shim token is kept when present, so a worker cached from the last
+launch still matches."
   (unless *extension-bridge-started*
-    (multiple-value-bind (port token) (saved-extension-bridge)
-      (setf *extension-bridge-token* (or token (bridge-token)))
-      (handler-case
-          (start-extension-bridge (or port 0))
-        (error ()
-          (setf *extension-bridge-token* (bridge-token))
-          (start-extension-bridge 0))))
-    (remember-extension-bridge *extension-bridge-port* *extension-bridge-token*)
+    (setf *extension-bridge-token*
+          (or (and directory (shim-file-token directory))
+              (saved-extension-bridge-token)
+              (bridge-token)))
+    (remember-extension-bridge-token *extension-bridge-token*)
     (setf *extension-bridge-started* t))
-  *extension-bridge-port*)
+  *extension-bridge-token*)
 
 (-> shim-text () string)
 (defun shim-text ()
-  (let ((source (extension-shim-javascript)))
-    (setf source (str:replace-all "__NYXT_PORT__" (princ-to-string *extension-bridge-port*) source))
-    (str:replace-all "__NYXT_TOKEN__" *extension-bridge-token* source)))
+  (str:replace-all "__NYXT_TOKEN__" *extension-bridge-token* (extension-shim-javascript)))
 
 (-> write-extension-text (pathname string) pathname)
 (defun write-extension-text (path text)
@@ -1052,9 +1103,12 @@ Nyxt can make, because this window has no toolbar button."
               (vector-add scripts "_nyxt/shim.js" :front t)))))
   nil)
 
-(-> install-permission (hash-table string string) null)
-(defun install-permission (manifest key item)
-  (setf (gethash key manifest) (vector-add (gethash key manifest) item))
+(-> remove-permission (hash-table string string) null)
+(defun remove-permission (manifest key item)
+  (let ((items (remove item (json-list (gethash key manifest)) :test #'equal)))
+    (if items
+        (setf (gethash key manifest) (coerce items 'vector))
+        (remhash key manifest)))
   nil)
 
 (-> relative-shim-src (pathname pathname) string)
@@ -1086,6 +1140,31 @@ Nyxt can make, because this window has no toolbar button."
                         (subseq text (1+ end))))))))
   nil)
 
+(-> extension-js-files (pathname) list)
+(defun extension-js-files (directory)
+  (let ((files '()))
+    (labels ((walk (path)
+               (dolist (file (uiop:directory-files path))
+                 (when (string-equal (pathname-type file) "js")
+                   (push file files)))
+               (dolist (child (uiop:subdirectories path))
+                 (unless (string= (first (last (pathname-directory child))) "_nyxt")
+                   (walk child)))))
+      (walk (uiop:ensure-directory-pathname directory)))
+    files))
+
+(-> redirect-tab-creation (pathname) null)
+(defun redirect-tab-creation (directory)
+  "Point chrome.tabs.create in DIRECTORY at Nyxt.
+Chromium's own function cannot be replaced, and it does not open a Nyxt buffer."
+  (dolist (file (extension-js-files directory))
+    (let ((text (handler-case (uiop:read-file-string file) (error () nil))))
+      (when (and text (search "chrome.tabs.create" text))
+        (write-extension-text
+         file
+         (str:replace-all "chrome.tabs.create" "globalThis.__nyxtTabsCreate" text)))))
+  nil)
+
 (-> extension-html-files (pathname) list)
 (defun extension-html-files (directory)
   (let ((files '()))
@@ -1111,7 +1190,7 @@ The original manifest is kept at _nyxt/source-manifest.json."
                (current (j:decode text)))
           (unless (hash-table-p current)
             (return-from install-extension-shim nil))
-          (ensure-extension-bridge)
+          (ensure-extension-bridge directory)
           (let ((manifest (source-manifest directory current text))
                 (root (uiop:ensure-directory-pathname directory)))
             (write-extension-text (uiop:merge-pathnames* #p"_nyxt/shim.js" root) (shim-text))
@@ -1123,14 +1202,14 @@ The original manifest is kept at _nyxt/source-manifest.json."
                     (vector-add (gethash "content_scripts" manifest)
                                 (content-bridge-entry)
                                 :front t)))
-            (install-permission manifest "host_permissions" "http://127.0.0.1/*")
-            (unless (eql (json-integer (gethash "manifest_version" manifest)) 3)
-              (install-permission manifest "permissions" "http://127.0.0.1/*"))
+            (remove-permission manifest "host_permissions" "http://127.0.0.1/*")
+            (remove-permission manifest "permissions" "http://127.0.0.1/*")
             (write-extension-text file (j:encode manifest))
             (when *extension-static-rules-hook*
               (funcall *extension-static-rules-hook* root manifest))
             (dolist (html (extension-html-files root))
               (inject-shim-tag html root))
+            (redirect-tab-creation root)
             file))
       (error (condition)
         (log:warn "Could not install the extension shim in ~a: ~a." directory condition)

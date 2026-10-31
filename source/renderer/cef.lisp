@@ -64,24 +64,31 @@
   (setf (slot-value scheme 'cef:scheme-name)
         (name scheme)))
 
+(defvar *custom-scheme-lock* (bt:make-lock "nyxt custom scheme"))
+
 (defmethod ffi-register-custom-scheme ((scheme cef-scheme))
   (cef:handle-callback
    scheme
    (lambda (url)
-     (handler-case
-         (if (callback scheme)
-             (multiple-value-bind (body mime status headers reason)
-                 (funcall (callback scheme) url)
-               ;; An empty document has no element for `html-write' to fill.
-               (if (and (stringp body) (string= body ""))
-                   (values "<html><head></head><body></body></html>"
-                           (or mime "text/html") status headers reason)
-                   (values body mime status headers reason)))
-             (values "" "text/plain" 404 nil "Not Found"))
-       (condition (condition)
-         (when (error-callback scheme)
-           (funcall (error-callback scheme) condition))
-         (error-help "Scheme error" (princ-to-string condition)))))))
+     (flet ((serve ()
+              (handler-case
+                  (if (callback scheme)
+                      (multiple-value-bind (body mime status headers reason)
+                          (funcall (callback scheme) url)
+                        ;; An empty document has no element for `html-write' to fill.
+                        (if (and (stringp body) (string= body ""))
+                            (values "<html><head></head><body></body></html>"
+                                    (or mime "text/html") status headers reason)
+                            (values body mime status headers reason)))
+                      (values "" "text/plain" 404 nil "Not Found"))
+                (condition (condition)
+                  (when (error-callback scheme)
+                    (funcall (error-callback scheme) condition))
+                  (error-help "Scheme error" (princ-to-string condition))))))
+       (if (string= (name scheme) "nyxt-bridge")
+           (serve)
+           (bt:with-lock-held (*custom-scheme-lock*)
+             (serve)))))))
 
 (define-class cef-browser (cef:interface)
   ((adblocking-enabled-p
@@ -251,6 +258,7 @@ This is the expanded `download-directory'."
                                :callback (first callbacks)
                                :error-callback (second callbacks))))
              nyxt::*schemes*)
+    (cef:ensure-scheme-threads)
     (let ((session (cef:default-session interface)))
       (cef:add-listener session :download-item-updated
                         (lambda (session item)
@@ -1024,6 +1032,10 @@ re-enters CEF."
 (defvar *context-menu-commands-by-id* (make-hash-table)
   "Command id assigned while a context menu is open, to the command it runs.")
 
+(defvar *context-menu-hit* nil
+  "Alist for the context menu command running on this thread.
+Keys are :page-url, :link-url, :selection-text, :src-url, and :frame-url.")
+
 (defvar +menu-id-user-first+ 26500
   "CEF MENU_ID_USER_FIRST. Lower ids belong to Chromium.")
 
@@ -1059,8 +1071,11 @@ re-enters CEF."
 (defun run-context-menu-command (data)
   (let* ((raw (assoc-value data :command-id))
          (command-id (if (realp raw) (round raw) raw))
-         (command (gethash command-id *context-menu-commands-by-id*)))
+         (command (gethash command-id *context-menu-commands-by-id*))
+         (hit data))
     (when command
       (if (command-p command)
           (nyxt::run-async command)
-          (run-thread "context-menu-command" (funcall command))))))
+          (run-thread "context-menu-command"
+            (let ((*context-menu-hit* hit))
+              (funcall command)))))))

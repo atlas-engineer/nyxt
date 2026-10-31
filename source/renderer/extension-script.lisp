@@ -36,7 +36,7 @@
             (ps:@ |globalThis| |__nyxtShim|)
             (js-return))
           (setf (ps:@ |globalThis| |__nyxtShim|) t)
-          (ps:var |BRIDGE| "http://127.0.0.1:__NYXT_PORT__")
+          (ps:var |BRIDGE| "nyxt-bridge://rpc/")
           (ps:var |TOKEN| "__NYXT_TOKEN__")
           (ps:var |PENDING| (ps:new (|Map|)))
           (ps:var |SEQUENCE| 0)
@@ -47,6 +47,7 @@
           (ps:var |offscreenTab| nil)
           (ps:var |sidePanelPath| "")
           (ps:var |grantedOrigins| (ps:array))
+          (ps:var |tabsHook| "")
           (defun
             |RPC|
             (|OP| |PAYLOAD|)
@@ -68,20 +69,17 @@
                     (|KEY|)
                     (setf (aref |BODY| |KEY|) (aref |PAYLOAD| |KEY|))
                     (js-return)))))
+            (setf (aref |BODY| "token") |TOKEN|)
+            (incf |SEQUENCE|)
+            (setf (aref |BODY| "n") |SEQUENCE|)
             (js-return
               (ps:chain
                 (ps:chain
                   (|FETCH|
-                    (+ |BRIDGE| "/rpc")
-                    (ps:create
-                      |METHOD|
-                      "POST"
-                      |HEADERS|
-                      (ps:create "content-type" "application/json" "x-nyxt-token" |TOKEN|)
-                      |BODY|
-                      (ps:chain
-                        |json|
-                        (|STRINGIFY| |BODY|))))
+                    (+ |BRIDGE|
+                       (+ "?q="
+                          (|encodeURIComponent|
+                           (ps:chain |json| (|STRINGIFY| |BODY|))))))
                   (|THEN|
                     (lambda
                       (|RESPONSE|)
@@ -187,7 +185,11 @@
             (ps:chain
               (ps:chain
                 (ps:chain
-                  (|RPC| "events")
+                  (|RPC|
+                    "events"
+                    (ps:create
+                      |tabsHook|
+                      (or |tabsHook| "")))
                   (|THEN|
                     (lambda
                       (|EVENTS|)
@@ -201,7 +203,7 @@
               (|THEN|
                 (lambda
                   ()
-                  (|setTimeout| |POLL| 50)
+                  (|setTimeout| |POLL| 100)
                   (js-return))))
             (js-return))
           (if
@@ -388,19 +390,120 @@
                             (|TABS|)
                             (js-return (or |TABS| (ps:array))))))
                       |CALLBACK|))))
-              (|REPLACE|
-                (ps:@ |CHROME| |TABS|)
-                "create"
+              (ps:var
+                |tabsCreate|
                 (lambda
                   (|PROPERTIES| |CALLBACK|)
+                  (ps:var |PROPS| (or |PROPERTIES| (ps:create)))
+                  (ps:var |URL| (and |PROPS| (ps:@ |PROPS| |URL|)))
+                  (if
+                    (and
+                      (eql (ps:typeof |URL|) "string")
+                      |URL|
+                      (not (ps:chain (ps:new (|RegExp| "^[a-zA-Z][a-zA-Z0-9+.-]*:")) (test |URL|)))
+                      (and (ps:@ |CHROME| |RUNTIME|)
+                           (eql (ps:typeof (ps:@ |CHROME| |RUNTIME| |getURL|)) "function")))
+                    (setf
+                      |PROPS|
+                      (ps:chain
+                        |Object|
+                        (|ASSIGN|
+                         (ps:create)
+                         |PROPS|
+                         (ps:create |URL| (ps:chain |CHROME| |RUNTIME| (|getURL| |URL|)))))))
                   (js-return
                     (|BOTH|
-                      (|RPC|
-                        "tabs.create"
-                        (ps:create
-                          |PROPERTIES|
-                          (or |PROPERTIES| (ps:create))))
+                      (|RPC| "tabs.create" (ps:create |PROPERTIES| |PROPS|))
                       |CALLBACK|))))
+              (setf (ps:@ |globalThis| |__nyxtTabsCreate|) |tabsCreate|)
+              (defun |tabsSame| ()
+                (ps:try
+                  (js-return (eql (ps:@ |CHROME| |TABS| |create|) |tabsCreate|))
+                  (:catch (|ERROR|)
+                    (js-return ps:false))))
+              (setf |tabsHook| "start")
+              (ps:try
+                (setf (ps:@ |CHROME| |TABS| |create|) |tabsCreate|)
+                (if (|tabsSame|) (setf |tabsHook| "assign"))
+                (:catch (|ERROR|)
+                  (setf |tabsHook| "assign-throw")))
+              (if
+                (not (|tabsSame|))
+                (ps:try
+                  (ps:chain
+                    |Object|
+                    (|defineProperty|
+                     (ps:@ |CHROME| |TABS|)
+                     "create"
+                     (ps:create |CONFIGURABLE| t |WRITABLE| t |VALUE| |tabsCreate|)))
+                  (if (|tabsSame|) (setf |tabsHook| "define"))
+                  (:catch (|ERROR|)
+                    (setf |tabsHook| (+ |tabsHook| ":define-throw")))))
+              (if
+                (not (|tabsSame|))
+                (ps:try
+                  (ps:chain
+                    |Object|
+                    (|defineProperty|
+                     (ps:chain |Object| (|getPrototypeOf| (ps:@ |CHROME| |TABS|)))
+                     "create"
+                     (ps:create |CONFIGURABLE| t |WRITABLE| t |VALUE| |tabsCreate|)))
+                  (if (|tabsSame|) (setf |tabsHook| "proto"))
+                  (:catch (|ERROR|)
+                    (setf |tabsHook| (+ |tabsHook| ":proto-throw")))))
+              (ps:var
+                |tabsProxy|
+                (ps:new
+                  (|Proxy|
+                   (ps:@ |CHROME| |TABS|)
+                   (ps:create
+                    |GET|
+                    (lambda
+                      (|TARGET| |NAME| |RECEIVER|)
+                      (if (eql |NAME| "create")
+                          (js-return |tabsCreate|))
+                      (ps:var |VALUE| (ps:chain |Reflect| (|GET| |TARGET| |NAME| |RECEIVER|)))
+                      (if (eql (ps:typeof |VALUE|) "function")
+                          (js-return (ps:chain |VALUE| (|BIND| |TARGET|))))
+                      (js-return |VALUE|))))))
+              (if
+                (not (|tabsSame|))
+                (ps:try
+                  (ps:chain
+                    |Object|
+                    (|defineProperty|
+                     |CHROME|
+                     "tabs"
+                     (ps:create
+                      |CONFIGURABLE| t
+                      |GET| (lambda () (js-return |tabsProxy|)))))
+                  (if (|tabsSame|) (setf |tabsHook| "chrome-get"))
+                  (:catch (|ERROR|)
+                    (setf |tabsHook| (+ |tabsHook| ":chrome-throw")))))
+              (if
+                (not (|tabsSame|))
+                (ps:try
+                  (setf (ps:@ |CHROME| |TABS|) |tabsProxy|)
+                  (if (|tabsSame|) (setf |tabsHook| "chrome-assign"))
+                  (:catch (|ERROR|)
+                    (setf |tabsHook| (+ |tabsHook| ":chrome-assign-throw")))))
+              (if
+                (not (|tabsSame|))
+                (ps:try
+                  (setf (ps:@ |globalThis| |CHROME|)
+                        (ps:new
+                          (|Proxy|
+                           |CHROME|
+                           (ps:create
+                            |GET|
+                            (lambda
+                              (|TARGET| |NAME| |RECEIVER|)
+                              (if (eql |NAME| "tabs")
+                                  (js-return |tabsProxy|))
+                              (js-return (ps:chain |Reflect| (|GET| |TARGET| |NAME| |RECEIVER|))))))))
+                  (if (|tabsSame|) (setf |tabsHook| "global-chrome"))
+                  (:catch (|ERROR|)
+                    (setf |tabsHook| (+ |tabsHook| ":global-throw")))))
               (|REPLACE|
                 (ps:@ |CHROME| |TABS|)
                 "get"
@@ -4362,8 +4465,21 @@
                 (if
                   (or
                     (/= (ps:@ |EVENT| |SOURCE|) |WINDOW|)
-                    (not (ps:@ |EVENT| |DATA|))
-                    (/= (ps:@ |EVENT| |DATA| |__NYXT|) "deliver"))
+                    (not (ps:@ |EVENT| |DATA|)))
+                  (js-return))
+                (if
+                  (eql (ps:@ |EVENT| |DATA| |__NYXT|) "wake")
+                  (progn
+                    (ps:try
+                      (ps:chain
+                        |CHROME|
+                        |RUNTIME|
+                        (|sendMessage| (ps:create |__NYXT| "wake"))
+                        (|CATCH| (lambda () (js-return))))
+                      (:catch (|ERROR|) nil))
+                    (js-return)))
+                (if
+                  (/= (ps:@ |EVENT| |DATA| |__NYXT|) "deliver")
                   (js-return))
                 (|DELIVER| (ps:@ |EVENT| |DATA|))
                 (js-return))))
