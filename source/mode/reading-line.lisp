@@ -12,7 +12,7 @@ your reading position.
 
 The line sits on a line of text. `reading-line-cursor-up' and
 `reading-line-cursor-down' move it to the previous or next line, keeping the
-horizontal position in the text.
+horizontal position in the text. A click on text moves the line to that spot.
 
 Commands:
 
@@ -20,7 +20,7 @@ Commands:
   line cursor.
 
 - `jump-to-reading-line-cursor': If you navigate away from the reading line, you
-  can always invoke this command to jump back to your reading position."
+  can always invoke this command to center the view port on it."
   ((visible-in-status-p nil)
    (keyscheme-map
     (define-keyscheme-map "reading-line-mode" ()
@@ -68,7 +68,7 @@ Position and size are set from the text line under the cursor.")))
         (ps:chain api (move (ps:lisp direction)))))))
 
 (define-command jump-to-reading-line-cursor (&key (buffer (current-buffer)))
-  "Move the view port to show the reading line cursor."
+  "Center the view port on the reading line."
   (ps-eval :buffer buffer
     (let ((api (ps:@ window nyxt-reading-line)))
       (when api
@@ -86,6 +86,11 @@ Position and size are set from the text line under the cursor.")))
   "Insert the reading line into BUFFER and follow lines of text."
   (ps-eval :buffer buffer
     (when (ps:@ document body)
+      (let ((previous (ps:@ window nyxt-reading-line)))
+        (when (and previous (ps:@ previous click-listener))
+          (ps:chain document (remove-event-listener "click"
+                                                    (ps:@ previous click-listener)
+                                                    t))))
       (let ((cursor (ps:chain document (query-selector "#reading-line-cursor")))
             (style (ps:chain document (query-selector "#reading-line-style"))))
         (when cursor
@@ -509,6 +514,32 @@ Position and size are set from the text line under the cursor.")))
                             (ps:chain cursor (scroll-into-view
                                               (ps:create block "nearest" inline "nearest"))))
                           placed)))))
+             place-at
+             (lambda (client-x client-y)
+               (let* ((api (ps:@ window nyxt-reading-line))
+                      (text-block (ps:chain api (block-at client-x client-y 48)))
+                      (lines (when text-block
+                               (ps:chain api (line-boxes text-block))))
+                      (chosen nil))
+                 (when lines
+                   (loop named click-line
+                         for index from 0 below (ps:@ lines length)
+                         do (let ((candidate (aref lines index)))
+                              (when (and (>= client-y (- (ps:@ candidate top) 4))
+                                         (<= client-y (+ (ps:@ candidate bottom) 4)))
+                                (setf chosen candidate)
+                                (return-from click-line)))))
+                 (when chosen
+                   (setf (ps:@ api column-x) (+ client-x (ps:@ window scroll-x)))
+                   (ps:chain api (place (ps:chain api (geometry text-block chosen))))
+                   t)))
+             click-listener
+             (lambda (event)
+               (when (= (ps:@ event button) 0)
+                 (let ((api (ps:@ window nyxt-reading-line)))
+                   (when api
+                     (ps:chain api (place-at (ps:@ event client-x)
+                                             (ps:@ event client-y)))))))
              jump
              (lambda ()
                (let ((api (ps:@ window nyxt-reading-line))
@@ -518,10 +549,13 @@ Position and size are set from the text line under the cursor.")))
                              (< (ps:@ (ps:chain cursor (get-bounding-client-rect)) height) 1))
                      (ps:chain api (place-initial)))
                    (ps:chain cursor (scroll-into-view
-                                     (ps:create block "nearest" inline "nearest"))))))))
+                                     (ps:create block "center" inline "nearest"))))))))
       (let ((api (ps:@ window nyxt-reading-line)))
         (when api
-          (ps:chain api (place-initial)))))))
+          (ps:chain api (place-initial))
+          (ps:chain document (add-event-listener "click"
+                                                 (ps:@ api click-listener)
+                                                 t)))))))
 
 (defmethod on-signal-load-finished ((mode reading-line-mode) url title)
   (declare (ignore url title))
@@ -532,8 +566,13 @@ Position and size are set from the text line under the cursor.")))
 
 (defmethod disable ((mode reading-line-mode) &key)
   (ps-eval :buffer (buffer mode)
-    (let ((cursor (ps:chain document (query-selector "#reading-line-cursor")))
+    (let ((api (ps:@ window nyxt-reading-line))
+          (cursor (ps:chain document (query-selector "#reading-line-cursor")))
           (style (ps:chain document (query-selector "#reading-line-style"))))
+      (when (and api (ps:@ api click-listener))
+        (ps:chain document (remove-event-listener "click"
+                                                  (ps:@ api click-listener)
+                                                  t)))
       (when cursor
         (ps:chain cursor (remove)))
       (when style
